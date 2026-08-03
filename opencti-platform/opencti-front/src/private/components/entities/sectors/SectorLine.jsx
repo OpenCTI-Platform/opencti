@@ -70,11 +70,11 @@ class SectorLineComponent extends Component {
           </ListItemIcon>
           <ListItemText
             sx={{ margin: 0, height: '28px' }}
-            primary={(
+            primary={
               <div>
                 <div className={classes.name}>
                   {node.name}
-                  {node.draftVersion && (<DraftChip style={{ verticalAlign: 1 }} />)}
+                  {node.draftVersion && <DraftChip style={{ verticalAlign: 1 }} />}
                 </div>
                 <div className={classes.description}>
                   {node.description?.length > 0
@@ -82,7 +82,7 @@ class SectorLineComponent extends Component {
                     : t('This sector does not have any description.')}
                 </div>
               </div>
-            )}
+            }
           />
           <ListItemIcon classes={{ root: classes.goIcon }}>
             <KeyboardArrowRightOutlined />
@@ -92,12 +92,7 @@ class SectorLineComponent extends Component {
           <List style={{ margin: 0, padding: 0 }}>
             {map(
               (subSector) => (
-
-                <SectorLine
-                  key={subSector.id}
-                  node={subSector}
-                  isSubSector={true}
-                />
+                <SectorLine key={subSector.id} node={subSector} isSubSector={true} />
               ),
               subSectors,
             )}
@@ -116,10 +111,7 @@ SectorLineComponent.propTypes = {
   fd: PropTypes.func,
 };
 
-export const SectorLine = compose(
-  inject18n,
-  withStyles(styles),
-)(SectorLineComponent);
+export const SectorLine = compose(inject18n, withStyles(styles))(SectorLineComponent);
 
 class SectorLineDummyComponent extends Component {
   render() {
@@ -127,22 +119,10 @@ class SectorLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton
-            animation="wave"
-            variant="circular"
-            width={30}
-            height={30}
-          />
+          <Skeleton animation="wave" variant="circular" width={30} height={30} />
         </ListItemIcon>
         <ListItemText
-          primary={(
-            <Skeleton
-              animation="wave"
-              variant="rectangular"
-              width="90%"
-              height={20}
-            />
-          )}
+          primary={<Skeleton animation="wave" variant="rectangular" width="90%" height={20} />}
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
           <KeyboardArrowRightOutlined />
@@ -156,7 +136,4 @@ SectorLineDummyComponent.propTypes = {
   classes: PropTypes.object,
 };
 
-export const SectorLineDummy = compose(
-  inject18n,
-  withStyles(styles),
-)(SectorLineDummyComponent);
+export const SectorLineDummy = compose(inject18n, withStyles(styles))(SectorLineDummyComponent);

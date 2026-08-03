@@ -14,7 +14,11 @@ export type WorkerOptions = {
   };
 };
 
-export const safeRender = async (template: string, data: Data, options?: SafeRenderOptions & WorkerOptions): Promise<string> => {
+export const safeRender = async (
+  template: string,
+  data: Data,
+  options?: SafeRenderOptions & WorkerOptions,
+): Promise<string> => {
   // Handle empty template directly without worker
   if (!template) {
     return '';
@@ -24,7 +28,10 @@ export const safeRender = async (template: string, data: Data, options?: SafeRen
 
   // Determine the correct worker path based on the environment
   const isProduction = import.meta.url.endsWith('.mjs');
-  const workerUrl = new URL(isProduction ? 'safeEjs.worker.mjs' : '../../build/safeEjs.worker.mjs', import.meta.url);
+  const workerUrl = new URL(
+    isProduction ? 'safeEjs.worker.mjs' : '../../build/safeEjs.worker.mjs',
+    import.meta.url,
+  );
 
   // Handle escape function - remove it from options if it exists (can't be serialized)
   const workerOptions = { ...options };

@@ -10,11 +10,7 @@ interface CardStatisticProps {
   icon?: ReactNode;
 }
 
-const CardStatistic = ({
-  label,
-  value,
-  icon,
-}: CardStatisticProps) => {
+const CardStatistic = ({ label, value, icon }: CardStatisticProps) => {
   const theme = useTheme<Theme>();
 
   const valueStyle = {
@@ -26,23 +22,12 @@ const CardStatistic = ({
   return (
     <Card sx={{ paddingY: 2 }}>
       <Stack height="100%" justifyContent="space-between">
-        <Typography
-          color={theme.palette.text.light}
-          variant="body2"
-          gutterBottom
-        >
+        <Typography color={theme.palette.text.light} variant="body2" gutterBottom>
           {label}
         </Typography>
 
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-        >
-          <div
-            data-testid={`card-stat-${label}`}
-            style={valueStyle}
-          >
+        <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <div data-testid={`card-stat-${label}`} style={valueStyle}>
             {value}
           </div>
           {icon}

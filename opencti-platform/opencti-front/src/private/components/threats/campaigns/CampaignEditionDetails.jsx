@@ -4,7 +4,11 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { useTheme } from '@mui/styles';
-import { campaignEditionOverviewFocus, campaignMutationRelationAdd, campaignMutationRelationDelete } from './CampaignEditionOverview';
+import {
+  campaignEditionOverviewFocus,
+  campaignMutationRelationAdd,
+  campaignMutationRelationDelete,
+} from './CampaignEditionOverview';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -25,11 +29,7 @@ const campaignMutationFieldPatch = graphql`
     $references: [String]
   ) {
     campaignEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         ...CampaignEditionDetails_campaign
         ...Campaign_campaign
       }
@@ -62,10 +62,7 @@ const CampaignEditionDetailsComponent = (props) => {
     objective: Yup.string().nullable(),
     references: Yup.array(),
   };
-  const campaignValidator = useSchemaEditionValidation(
-    'Campaign',
-    basicShape,
-  );
+  const campaignValidator = useSchemaEditionValidation('Campaign', basicShape);
 
   const queries = {
     fieldPatch: campaignMutationFieldPatch,
@@ -73,22 +70,18 @@ const CampaignEditionDetailsComponent = (props) => {
     deleteRelation: campaignMutationRelationDelete,
     editionFocus: campaignEditionOverviewFocus,
   };
-  const editor = useFormEditor(
-    campaign,
-    enableReferences,
-    queries,
-    campaignValidator,
-  );
+  const editor = useFormEditor(campaign, enableReferences, queries, campaignValidator);
 
-  const handleChangeFocus = (name) => commitMutation({
-    mutation: campaignEditionDetailsFocus,
-    variables: {
-      id: campaign.id,
-      input: {
-        focusOn: name,
+  const handleChangeFocus = (name) =>
+    commitMutation({
+      mutation: campaignEditionDetailsFocus,
+      variables: {
+        id: campaign.id,
+        input: {
+          focusOn: name,
+        },
       },
-    },
-  });
+    });
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -96,14 +89,8 @@ const CampaignEditionDetailsComponent = (props) => {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
-      R.assoc(
-        'first_seen',
-        values.first_seen ? parse(values.first_seen).format() : null,
-      ),
-      R.assoc(
-        'last_seen',
-        values.last_seen ? parse(values.last_seen).format() : null,
-      ),
+      R.assoc('first_seen', values.first_seen ? parse(values.first_seen).format() : null),
+      R.assoc('last_seen', values.last_seen ? parse(values.last_seen).format() : null),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
@@ -114,8 +101,7 @@ const CampaignEditionDetailsComponent = (props) => {
       variables: {
         id: campaign.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       setSubmitting,
@@ -154,14 +140,7 @@ const CampaignEditionDetailsComponent = (props) => {
       validationSchema={campaignValidator}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <Form style={{ marginTop: theme.spacing(2) }}>
           <AlertConfidenceForEntity entity={campaign} />
           <Field
@@ -173,9 +152,7 @@ const CampaignEditionDetailsComponent = (props) => {
               label: t_i18n('First seen'),
               variant: 'standard',
               fullWidth: true,
-              helperText: (
-                <SubscriptionFocus context={context} fieldName="first_seen" />
-              ),
+              helperText: <SubscriptionFocus context={context} fieldName="first_seen" />,
             }}
           />
           <Field
@@ -188,9 +165,7 @@ const CampaignEditionDetailsComponent = (props) => {
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
-              helperText: (
-                <SubscriptionFocus context={context} fieldName="last_seen" />
-              ),
+              helperText: <SubscriptionFocus context={context} fieldName="last_seen" />,
             }}
           />
           <Field
@@ -203,9 +178,7 @@ const CampaignEditionDetailsComponent = (props) => {
             style={{ marginTop: 20 }}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="objective" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="objective" />}
           />
           {enableReferences && (
             <CommitMessage

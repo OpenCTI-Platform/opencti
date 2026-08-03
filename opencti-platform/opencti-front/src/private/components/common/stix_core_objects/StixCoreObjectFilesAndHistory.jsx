@@ -14,7 +14,11 @@ import Button from '@common/button/Button';
 import { InfoOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import DraftWorkspaceViewer from '../files/draftWorkspace/DraftWorkspaceViewer';
-import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE, fileManagerCreateDraftAskJobImportMutation } from '../files/FileManager';
+import {
+  CONTENT_MAX_MARKINGS_HELPERTEXT,
+  CONTENT_MAX_MARKINGS_TITLE,
+  fileManagerCreateDraftAskJobImportMutation,
+} from '../files/FileManager';
 import ManageImportConnectorMessage from '../../data/import/ManageImportConnectorMessage';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import FileExportViewer from '../files/FileExportViewer';
@@ -75,14 +79,9 @@ export const stixCoreObjectFilesAndHistoryAskJobImportMutation = graphql`
 `;
 
 export const stixCoreObjectFilesAndHistoryExportMutation = graphql`
-  mutation StixCoreObjectFilesAndHistoryExportMutation(
-    $id: ID!
-    $input: ExportAskInput!
-  ) {
+  mutation StixCoreObjectFilesAndHistoryExportMutation($id: ID!, $input: ExportAskInput!) {
     stixDomainObjectEdit(id: $id) {
-      exportAsk(
-        input: $input
-      ) {
+      exportAsk(input: $input) {
         id
         name
         uploadStatus
@@ -105,23 +104,18 @@ export const stixCoreObjectFilesAndHistoryExportMutation = graphql`
 export const scopesConn = (exportConnectors) => {
   const scopes = uniq(flatten(map((c) => c.connector_scope, exportConnectors)));
   const connectors = map((s) => {
-    const filteredConnectors = filter(
-      (e) => includes(s, e.connector_scope),
-      exportConnectors,
-    );
-    return map(
-      (x) => ({ data: { name: x.name, active: x.active } }),
-      filteredConnectors,
-    );
+    const filteredConnectors = filter((e) => includes(s, e.connector_scope), exportConnectors);
+    return map((x) => ({ data: { name: x.name, active: x.active } }), filteredConnectors);
   }, scopes);
   const zipped = zip(scopes, connectors);
   return fromPairs(zipped);
 };
 
-const exportValidation = (t_i18n) => Yup.object().shape({
-  format: Yup.string().trim().required(t_i18n('This field is required')),
-  type: Yup.string().trim().required(t_i18n('This field is required')),
-});
+const exportValidation = (t_i18n) =>
+  Yup.object().shape({
+    format: Yup.string().trim().required(t_i18n('This field is required')),
+    type: Yup.string().trim().required(t_i18n('This field is required')),
+  });
 
 const importValidation = (t_i18n, configurations) => {
   const shape = {
@@ -157,12 +151,11 @@ const StixCoreObjectFilesAndHistory = ({
 
   const entityMarkings = convertMarkings(entity);
 
-  const exportScopes = uniq(
-    flatten(map((c) => c.connector_scope, connectorsExport)),
-  );
+  const exportScopes = uniq(flatten(map((c) => c.connector_scope, connectorsExport)));
   const exportConnsPerFormat = scopesConn(connectorsExport);
 
-  const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
+  const isExportActive = (format) =>
+    filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
   const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
   const handleOpenImport = (file) => setFileToImport(file);
   const handleCloseImport = () => {
@@ -179,7 +172,8 @@ const StixCoreObjectFilesAndHistory = ({
   };
 
   const onSubmitImport = (values, { setSubmitting, resetForm }) => {
-    const { connector_id, configuration, objectMarking, validation_mode, authorizedMembers } = values;
+    const { connector_id, configuration, objectMarking, validation_mode, authorizedMembers } =
+      values;
     const shouldCreateDraft = validation_mode === 'draft' && !draftContext;
     let config = configuration;
     // Dynamically inject the markings chosen by the user into the csv mapper.
@@ -192,7 +186,9 @@ const StixCoreObjectFilesAndHistory = ({
       }
     }
     commitMutation({
-      mutation: shouldCreateDraft ? fileManagerCreateDraftAskJobImportMutation : stixCoreObjectFilesAndHistoryAskJobImportMutation,
+      mutation: shouldCreateDraft
+        ? fileManagerCreateDraftAskJobImportMutation
+        : stixCoreObjectFilesAndHistoryAskJobImportMutation,
       variables: {
         fileName: fileToImport.id,
         connectorId: connector_id,
@@ -210,9 +206,10 @@ const StixCoreObjectFilesAndHistory = ({
               .map((member) => ({
                 id: member.value,
                 access_right: member.accessRight,
-                groups_restriction_ids: member.groupsRestriction?.length > 0
-                  ? member.groupsRestriction.map((group) => group.value)
-                  : undefined,
+                groups_restriction_ids:
+                  member.groupsRestriction?.length > 0
+                    ? member.groupsRestriction.map((group) => group.value)
+                    : undefined,
               })),
       },
       onCompleted: () => {
@@ -249,10 +246,7 @@ const StixCoreObjectFilesAndHistory = ({
           },
         });
         const entityPage = store.get(id);
-        const conn = ConnectionHandler.getConnection(
-          entityPage,
-          'Pagination_exportFiles',
-        );
+        const conn = ConnectionHandler.getConnection(entityPage, 'Pagination_exportFiles');
         for (let index = 0; index < payloads.length; index += 1) {
           const payload = payloads[index];
           const newEdge = payload.setLinkedRecord(payload, 'node');
@@ -278,8 +272,8 @@ const StixCoreObjectFilesAndHistory = ({
     setSelectedConnector(connectors.find((c) => c.id === value));
   };
 
-  const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
-    && selectedConnector?.configurations?.length === 0;
+  const invalidCsvMapper =
+    selectedConnector?.name === 'ImportCsv' && selectedConnector?.configurations?.length === 0;
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
   const onCsvMapperSelection = (option) => {
     const parsedOption = typeof option === 'string' ? JSON.parse(option) : option;
@@ -288,7 +282,8 @@ const StixCoreObjectFilesAndHistory = ({
       ...parsedOption,
       representations: [...parsedRepresentations],
     };
-    const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceParsedCsvMapper(selectedCsvMapper);
+    const hasUserChoiceCsvMapperRepresentations =
+      resolveHasUserChoiceParsedCsvMapper(selectedCsvMapper);
     setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
   };
 
@@ -302,11 +297,7 @@ const StixCoreObjectFilesAndHistory = ({
   });
   return (
     <div className={classes.container} data-testid="sco-data-file-and-history">
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-      >
+      <Grid container={true} spacing={3} classes={{ container: classes.gridContainer }}>
         <FileImportViewer
           entity={entity}
           connectors={importConnsPerFormat}
@@ -317,10 +308,7 @@ const StixCoreObjectFilesAndHistory = ({
           handleOpenExport={handleOpenExport}
           isExportPossible={isExportPossible}
         />
-        <WorkbenchFileViewer
-          entity={entity}
-          handleOpenImport={handleOpenImport}
-        />
+        <WorkbenchFileViewer entity={entity} handleOpenImport={handleOpenImport} />
         <DraftWorkspaceViewer entityId={entity.id} />
         <FileExternalReferencesViewer
           entity={entity}
@@ -328,15 +316,18 @@ const StixCoreObjectFilesAndHistory = ({
           handleOpenImport={handleOpenImport}
         />
         <Grid item xs={12} style={{ paddingTop: 14 }}>
-          <StixCoreObjectHistory
-            stixCoreObjectId={id}
-            withoutRelations={withoutRelations}
-          />
+          <StixCoreObjectHistory stixCoreObjectId={id} withoutRelations={withoutRelations} />
         </Grid>
       </Grid>
       <Formik
         enableReinitialize={true}
-        initialValues={{ connector_id: '', validation_mode: 'draft', configuration: '', objectMarking: [], ...draftInitialValues }}
+        initialValues={{
+          connector_id: '',
+          validation_mode: 'draft',
+          configuration: '',
+          objectMarking: [],
+          ...draftInitialValues,
+        }}
         validationSchema={importValidation(t_i18n, selectedConnector?.configurations?.length > 0)}
         onSubmit={onSubmitImport}
         onReset={handleCloseImport}
@@ -358,18 +349,12 @@ const StixCoreObjectFilesAndHistory = ({
                 onChange={handleSelectConnector}
               >
                 {connectorsImport.map((connector, i) => {
-                  const disabled = !fileToImport
-                    || (connector.connector_scope.length > 0
-                      && !includes(
-                        fileToImport.metaData.mimetype,
-                        connector.connector_scope,
-                      ));
+                  const disabled =
+                    !fileToImport ||
+                    (connector.connector_scope.length > 0 &&
+                      !includes(fileToImport.metaData.mimetype, connector.connector_scope));
                   return (
-                    <MenuItem
-                      key={i}
-                      value={connector.id}
-                      disabled={disabled || !connector.active}
-                    >
+                    <MenuItem key={i} value={connector.id} disabled={disabled || !connector.active}>
                       {connector.name}
                     </MenuItem>
                   );
@@ -385,16 +370,10 @@ const StixCoreObjectFilesAndHistory = ({
                   containerstyle={{ marginTop: 20, width: '100%' }}
                   setFieldValue={setFieldValue}
                 >
-                  <MenuItem
-                    key="draft"
-                    value="draft"
-                  >
+                  <MenuItem key="draft" value="draft">
                     Draft
                   </MenuItem>
-                  <MenuItem
-                    key="workbench"
-                    value="workbench"
-                  >
+                  <MenuItem key="workbench" value="workbench">
                     Workbench
                   </MenuItem>
                 </Field>
@@ -441,42 +420,36 @@ const StixCoreObjectFilesAndHistory = ({
                   />
                 </>
               )}
-              {selectedConnector?.configurations?.length > 0
-                ? (
-                    <Field
-                      component={SelectField}
-                      variant="standard"
-                      name="configuration"
-                      label={t_i18n('Configuration')}
-                      fullWidth={true}
-                      containerstyle={{ marginTop: 20, width: '100%' }}
-                      onChange={(_, value) => onCsvMapperSelection(value)}
-                    >
-                      {selectedConnector.configurations.map((config) => {
-                        return (
-                          <MenuItem
-                            key={config.id}
-                            value={config.configuration}
-                          >
-                            {config.name}
-                          </MenuItem>
-                        );
-                      })}
-                    </Field>
-                  ) : <ManageImportConnectorMessage name={selectedConnector?.name} />
-              }
-              {selectedConnector?.name === 'ImportCsv'
-                && hasUserChoiceCsvMapper
-                && (
-                  <>
-                    <ObjectMarkingField
-                      name="objectMarking"
-                      style={fieldSpacingContainerStyle}
-                      setFieldValue={setFieldValue}
-                    />
-                  </>
-                )
-              }
+              {selectedConnector?.configurations?.length > 0 ? (
+                <Field
+                  component={SelectField}
+                  variant="standard"
+                  name="configuration"
+                  label={t_i18n('Configuration')}
+                  fullWidth={true}
+                  containerstyle={{ marginTop: 20, width: '100%' }}
+                  onChange={(_, value) => onCsvMapperSelection(value)}
+                >
+                  {selectedConnector.configurations.map((config) => {
+                    return (
+                      <MenuItem key={config.id} value={config.configuration}>
+                        {config.name}
+                      </MenuItem>
+                    );
+                  })}
+                </Field>
+              ) : (
+                <ManageImportConnectorMessage name={selectedConnector?.name} />
+              )}
+              {selectedConnector?.name === 'ImportCsv' && hasUserChoiceCsvMapper && (
+                <>
+                  <ObjectMarkingField
+                    name="objectMarking"
+                    style={fieldSpacingContainerStyle}
+                    setFieldValue={setFieldValue}
+                  />
+                </>
+              )}
               <DialogActions>
                 <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}
@@ -514,14 +487,18 @@ const StixCoreObjectFilesAndHistory = ({
                 onClose={handleCloseExport}
                 fullWidth={true}
                 data-testid="StixCoreObjectFilesAndHistoryExportDialog"
-                title={(
+                title={
                   <Stack direction="row" alignItems="center" gap={1}>
                     {t_i18n('Generate an export')}
-                    <Tooltip title={t_i18n('Your max shareable markings will be applied to the content max markings')}>
+                    <Tooltip
+                      title={t_i18n(
+                        'Your max shareable markings will be applied to the content max markings',
+                      )}
+                    >
                       <InfoOutlined fontSize="small" color="primary" />
                     </Tooltip>
                   </Stack>
-                )}
+                }
               >
                 <Field
                   component={SelectField}
@@ -532,11 +509,7 @@ const StixCoreObjectFilesAndHistory = ({
                   containerstyle={{ width: '100%' }}
                 >
                   {exportScopes.map((value, i) => (
-                    <MenuItem
-                      key={i}
-                      value={value}
-                      disabled={!isExportActive(value)}
-                    >
+                    <MenuItem key={i} value={value} disabled={!isExportActive(value)}>
                       {value}
                     </MenuItem>
                   ))}
@@ -549,9 +522,7 @@ const StixCoreObjectFilesAndHistory = ({
                   fullWidth={true}
                   containerstyle={fieldSpacingContainerStyle}
                 >
-                  <MenuItem value="simple">
-                    {t_i18n('Simple export (just the entity)')}
-                  </MenuItem>
+                  <MenuItem value="simple">{t_i18n('Simple export (just the entity)')}</MenuItem>
                   <MenuItem value="full">
                     {t_i18n('Full export (entity and first neighbours)')}
                   </MenuItem>
@@ -559,7 +530,9 @@ const StixCoreObjectFilesAndHistory = ({
                 <ObjectMarkingField
                   name="contentMaxMarkings"
                   label={t_i18n(CONTENT_MAX_MARKINGS_TITLE)}
-                  onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values, setFieldValue)}
+                  onChange={(_, values) =>
+                    handleSelectedContentMaxMarkingsChange(values, setFieldValue)
+                  }
                   style={fieldSpacingContainerStyle}
                   setFieldValue={setFieldValue}
                   limitToMaxSharing
@@ -576,10 +549,7 @@ const StixCoreObjectFilesAndHistory = ({
                   <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t_i18n('Cancel')}
                   </Button>
-                  <Button
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
+                  <Button onClick={submitForm} disabled={isSubmitting}>
                     {t_i18n('Create')}
                   </Button>
                 </DialogActions>
@@ -606,8 +576,7 @@ const StixCoreObjectFilesAndHistoryFragment = createFragmentContainer(
   StixCoreObjectFilesAndHistory,
   {
     connectorsExport: graphql`
-      fragment StixCoreObjectFilesAndHistory_connectorsExport on Connector
-      @relay(plural: true) {
+      fragment StixCoreObjectFilesAndHistory_connectorsExport on Connector @relay(plural: true) {
         id
         name
         active
@@ -616,8 +585,7 @@ const StixCoreObjectFilesAndHistoryFragment = createFragmentContainer(
       }
     `,
     connectorsImport: graphql`
-      fragment StixCoreObjectFilesAndHistory_connectorsImport on Connector
-      @relay(plural: true) {
+      fragment StixCoreObjectFilesAndHistory_connectorsImport on Connector @relay(plural: true) {
         id
         name
         active
@@ -634,7 +602,4 @@ const StixCoreObjectFilesAndHistoryFragment = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreObjectFilesAndHistoryFragment);
+export default compose(inject18n, withStyles(styles))(StixCoreObjectFilesAndHistoryFragment);

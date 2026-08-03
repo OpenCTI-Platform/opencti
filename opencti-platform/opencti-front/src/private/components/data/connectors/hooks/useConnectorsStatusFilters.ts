@@ -3,9 +3,8 @@ import { ConnectorsStatusFilterState } from '@components/data/connectors/Connect
 import { ConnectorsListQuery } from '@components/data/connectors/__generated__/ConnectorsListQuery.graphql';
 import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
 
-type Connector
-  = NonNullable<ConnectorsListQuery['response']['connectors']>[number]
-    & Partial<NonNullable<ConnectorsStateQuery['response']['connectors']>[number]>;
+type Connector = NonNullable<ConnectorsListQuery['response']['connectors']>[number] &
+  Partial<NonNullable<ConnectorsStateQuery['response']['connectors']>[number]>;
 
 type UseConnectorsStatusFiltersProps = {
   connectors: Connector[];
@@ -18,7 +17,10 @@ const parseBooleanParam = (value: string | null): boolean | null => {
   return null;
 };
 
-const useConnectorsStatusFilters = ({ connectors, searchParams }: UseConnectorsStatusFiltersProps) => {
+const useConnectorsStatusFilters = ({
+  connectors,
+  searchParams,
+}: UseConnectorsStatusFiltersProps) => {
   const [filters, setFilters] = useState<ConnectorsStatusFilterState>({
     search: searchParams.get('search') || '',
     slug: searchParams.get('slug') || '',
@@ -32,7 +34,9 @@ const useConnectorsStatusFilters = ({ connectors, searchParams }: UseConnectorsS
     if (filters.isManaged !== null) params.set('is_managed', String(filters.isManaged));
 
     const queryString = params.toString();
-    const newUrl = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
+    const newUrl = queryString
+      ? `${window.location.pathname}?${queryString}`
+      : window.location.pathname;
     // replace history with the params so on back on browser, reload the page with
     // the last filters set
     window.history.replaceState({}, '', newUrl);

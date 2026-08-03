@@ -7,8 +7,17 @@ import type { EventAddInput, QueryEventsArgs } from '../../generated/graphql';
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityEvent, ENTITY_TYPE_EVENT } from './event-types';
 
-export const findById = (context: AuthContext, user: AuthUser, channelId: string): BasicStoreEntityEvent => {
-  return storeLoadById(context, user, channelId, ENTITY_TYPE_EVENT) as unknown as BasicStoreEntityEvent;
+export const findById = (
+  context: AuthContext,
+  user: AuthUser,
+  channelId: string,
+): BasicStoreEntityEvent => {
+  return storeLoadById(
+    context,
+    user,
+    channelId,
+    ENTITY_TYPE_EVENT,
+  ) as unknown as BasicStoreEntityEvent;
 };
 
 export const findEventPaginated = (context: AuthContext, user: AuthUser, opts: QueryEventsArgs) => {

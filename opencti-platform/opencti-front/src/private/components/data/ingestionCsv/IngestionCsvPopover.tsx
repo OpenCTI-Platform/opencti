@@ -5,7 +5,9 @@ import { IngestionCsvEditionContainerQuery } from '@components/data/ingestionCsv
 import { IngestionCsvLinesPaginationQuery$variables } from '@components/data/ingestionCsv/__generated__/IngestionCsvLinesPaginationQuery.graphql';
 import { IngestionCsvCreationContainer } from '@components/data/ingestionCsv/IngestionCsvCreation';
 import { ingestionCsvEditionPatch } from '@components/data/ingestionCsv/IngestionCsvEdition';
-import IngestionCsvEditionContainer, { ingestionCsvEditionContainerQuery } from '@components/data/ingestionCsv/IngestionCsvEditionContainer';
+import IngestionCsvEditionContainer, {
+  ingestionCsvEditionContainerQuery,
+} from '@components/data/ingestionCsv/IngestionCsvEditionContainer';
 import MoreVert from '@mui/icons-material/MoreVert';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -31,11 +33,11 @@ const ingestionCsvPopoverDeletionMutation = graphql`
 `;
 
 const ingestionCsvPopoverResetStateMutation = graphql`
-    mutation IngestionCsvPopoverResetStateMutation($id: ID!) {
-        ingestionCsvResetState(id: $id) {
-            ...IngestionCsvLine_node
-        }
+  mutation IngestionCsvPopoverResetStateMutation($id: ID!) {
+    ingestionCsvResetState(id: $id) {
+      ...IngestionCsvLine_node
     }
+  }
 `;
 
 const ingestionCsvPopoverExportQuery = graphql`
@@ -72,7 +74,9 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
   const handleClose = () => setAnchorEl(null);
 
   // -- Edition --
-  const [queryRef, loadQuery] = useQueryLoader<IngestionCsvEditionContainerQuery>(ingestionCsvEditionContainerQuery);
+  const [queryRef, loadQuery] = useQueryLoader<IngestionCsvEditionContainerQuery>(
+    ingestionCsvEditionContainerQuery,
+  );
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
   const handleOpenUpdate = () => {
     setDisplayUpdate(true);
@@ -187,10 +191,9 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
   // -- Export --
 
   const exportCsvFeed = async () => {
-    const { ingestionCsv } = await fetchQuery(
-      ingestionCsvPopoverExportQuery,
-      { id: ingestionCsvId },
-    ).toPromise() as IngestionCsvPopoverExportQuery$data;
+    const { ingestionCsv } = (await fetchQuery(ingestionCsvPopoverExportQuery, {
+      id: ingestionCsvId,
+    }).toPromise()) as IngestionCsvPopoverExportQuery$data;
 
     if (ingestionCsv) {
       const blob = new Blob([ingestionCsv.toConfigurationExport], { type: 'text/json' });
@@ -215,37 +218,14 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
         >
           <MoreVert />
         </IconButton>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleClose}
-        >
-          {!running && (
-            <MenuItem onClick={handleOpenStart}>
-              {t_i18n('Start')}
-            </MenuItem>
-          )}
-          {running && (
-            <MenuItem onClick={handleOpenStop}>
-              {t_i18n('Stop')}
-            </MenuItem>
-          )}
-          <MenuItem onClick={handleOpenUpdate}>
-            {t_i18n('Update')}
-          </MenuItem>
-          <MenuItem onClick={handleExport}>
-            {t_i18n('Export')}
-          </MenuItem>
-          <MenuItem onClick={handleOpenDuplicate}>
-            {t_i18n('Duplicate')}
-          </MenuItem>
-          <MenuItem onClick={handleOpenResetState}>
-            {t_i18n('Reset state')}
-          </MenuItem>
-          <MenuItem onClick={handleOpenDelete}>
-            {t_i18n('Delete')}
-          </MenuItem>
-
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+          {!running && <MenuItem onClick={handleOpenStart}>{t_i18n('Start')}</MenuItem>}
+          {running && <MenuItem onClick={handleOpenStop}>{t_i18n('Stop')}</MenuItem>}
+          <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
+          <MenuItem onClick={handleExport}>{t_i18n('Export')}</MenuItem>
+          <MenuItem onClick={handleOpenDuplicate}>{t_i18n('Duplicate')}</MenuItem>
+          <MenuItem onClick={handleOpenResetState}>{t_i18n('Reset state')}</MenuItem>
+          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         </Menu>
         {queryRef && (
           <React.Suspense>
@@ -284,65 +264,32 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
             {t_i18n('Do you want to reset the state of this CSV Feed?')}
           </DialogContentText>
           <DialogActions>
-            <Button
-              variant="secondary"
-              onClick={handleCloseResetState}
-              disabled={resetting}
-            >
+            <Button variant="secondary" onClick={handleCloseResetState} disabled={resetting}>
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitResetState}
-              disabled={resetting}
-            >
+            <Button onClick={submitResetState} disabled={resetting}>
               {t_i18n('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>
-        <Dialog
-          open={displayStart}
-          onClose={handleCloseStart}
-          title={t_i18n('Are you sure?')}
-        >
-          <DialogContentText>
-            {t_i18n('Do you want to start this CSV Feed?')}
-          </DialogContentText>
+        <Dialog open={displayStart} onClose={handleCloseStart} title={t_i18n('Are you sure?')}>
+          <DialogContentText>{t_i18n('Do you want to start this CSV Feed?')}</DialogContentText>
           <DialogActions>
-            <Button
-              onClick={handleCloseStart}
-              disabled={starting}
-            >
+            <Button onClick={handleCloseStart} disabled={starting}>
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitStart}
-              color="secondary"
-              disabled={starting}
-            >
+            <Button onClick={submitStart} color="secondary" disabled={starting}>
               {t_i18n('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>
-        <Dialog
-          open={displayStop}
-          onClose={handleCloseStop}
-          title={t_i18n('Are you sure?')}
-        >
-          <DialogContentText>
-            {t_i18n('Do you want to stop this CSV Feed?')}
-          </DialogContentText>
+        <Dialog open={displayStop} onClose={handleCloseStop} title={t_i18n('Are you sure?')}>
+          <DialogContentText>{t_i18n('Do you want to stop this CSV Feed?')}</DialogContentText>
           <DialogActions>
-            <Button
-              onClick={handleCloseStop}
-              disabled={stopping}
-            >
+            <Button onClick={handleCloseStop} disabled={stopping}>
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitStop}
-              color="secondary"
-              disabled={stopping}
-            >
+            <Button onClick={submitStop} color="secondary" disabled={stopping}>
               {t_i18n('Confirm')}
             </Button>
           </DialogActions>

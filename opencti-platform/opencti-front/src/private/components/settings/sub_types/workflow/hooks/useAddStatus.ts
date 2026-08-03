@@ -6,8 +6,12 @@ const useAddStatus = (selectedElement: Node | Edge) => {
   const { setNodes, setEdges, getNode } = useReactFlow();
   const onClick = (values: Status): void => {
     const isPlaceholder = selectedElement?.type === WorkflowNodeType.placeholder;
-    const sourceNode = (isEdge(selectedElement) || isPlaceholder) && (selectedElement as Edge)?.source ? getNode((selectedElement as Edge).source) : null;
-    const targetNode = isEdge(selectedElement) && selectedElement?.target ? getNode(selectedElement.target) : null;
+    const sourceNode =
+      (isEdge(selectedElement) || isPlaceholder) && (selectedElement as Edge)?.source
+        ? getNode((selectedElement as Edge).source)
+        : null;
+    const targetNode =
+      isEdge(selectedElement) && selectedElement?.target ? getNode(selectedElement.target) : null;
 
     const statusId = values.statusTemplate.id;
 
@@ -57,7 +61,11 @@ const useAddStatus = (selectedElement: Node | Edge) => {
         },
       ];
 
-      setNodes((nds) => [...nds.filter((n) => n.id !== selectedElement.id), newTransitionNode, newStatusNode]);
+      setNodes((nds) => [
+        ...nds.filter((n) => n.id !== selectedElement.id),
+        newTransitionNode,
+        newStatusNode,
+      ]);
       setEdges((eds) => [...eds, ...newEdges]);
       return;
     }
@@ -103,21 +111,27 @@ const useAddStatus = (selectedElement: Node | Edge) => {
           source: sourceNode.id,
           target: firstNewNode.id,
           type: WorkflowNodeType.transition,
-          ...(sourceNode.type === WorkflowNodeType.transition ? { markerEnd: { type: MarkerType.ArrowClosed } } : {}),
+          ...(sourceNode.type === WorkflowNodeType.transition
+            ? { markerEnd: { type: MarkerType.ArrowClosed } }
+            : {}),
         },
         {
           id: `e-${firstNewNode.id}->${secondNewNode.id}`,
           source: firstNewNode.id,
           target: secondNewNode.id,
           type: WorkflowNodeType.transition,
-          ...(sourceNode.type === WorkflowNodeType.status ? { markerEnd: { type: MarkerType.ArrowClosed } } : {}),
+          ...(sourceNode.type === WorkflowNodeType.status
+            ? { markerEnd: { type: MarkerType.ArrowClosed } }
+            : {}),
         },
         {
           id: `e-${secondNewNode.id}->${targetNode.id}`,
           source: secondNewNode.id,
           target: targetNode.id,
           type: WorkflowNodeType.transition,
-          ...(sourceNode.type === WorkflowNodeType.transition ? { markerEnd: { type: MarkerType.ArrowClosed } } : {}),
+          ...(sourceNode.type === WorkflowNodeType.transition
+            ? { markerEnd: { type: MarkerType.ArrowClosed } }
+            : {}),
         },
       ];
 

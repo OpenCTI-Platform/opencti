@@ -15,8 +15,20 @@ vi.mock('../hooks/useAuth', () => ({
       id: 'user-1',
       name: 'Test User',
       allowed_marking: [
-        { id: 'marking-1', definition_type: 'TLP', definition: 'TLP:GREEN', x_opencti_order: 1, x_opencti_color: '#2e7d32' },
-        { id: 'marking-2', definition_type: 'TLP', definition: 'TLP:AMBER', x_opencti_order: 2, x_opencti_color: '#d84315' },
+        {
+          id: 'marking-1',
+          definition_type: 'TLP',
+          definition: 'TLP:GREEN',
+          x_opencti_order: 1,
+          x_opencti_color: '#2e7d32',
+        },
+        {
+          id: 'marking-2',
+          definition_type: 'TLP',
+          definition: 'TLP:AMBER',
+          x_opencti_order: 2,
+          x_opencti_color: '#d84315',
+        },
       ],
     },
     schema: {
@@ -39,11 +51,17 @@ vi.mock('../hooks/useAuth', () => ({
         { id: 'External-Reference' },
       ],
       filterKeysSchema: new Map([
-        ['Stix-Core-Object', new Map([
-          ['status_id', { type: 'id', elementsForFilterValuesSearch: ['StatusTemplate'] }],
-          ['objectLabel', { type: 'id', elementsForFilterValuesSearch: ['Label'] }],
-          ['objectMarking', { type: 'id', elementsForFilterValuesSearch: ['Marking-Definition'] }],
-        ])],
+        [
+          'Stix-Core-Object',
+          new Map([
+            ['status_id', { type: 'id', elementsForFilterValuesSearch: ['StatusTemplate'] }],
+            ['objectLabel', { type: 'id', elementsForFilterValuesSearch: ['Label'] }],
+            [
+              'objectMarking',
+              { type: 'id', elementsForFilterValuesSearch: ['Marking-Definition'] },
+            ],
+          ]),
+        ],
       ]),
     },
   }),
@@ -137,15 +155,19 @@ vi.mock('@components/data/DataTableToolBar', () => ({
 
 import useSearchEntities from './useSearchEntities';
 
-const createEvent = (value: string) => ({
-  target: { value },
-}) as unknown as React.BaseSyntheticEvent;
+const createEvent = (value: string) =>
+  ({
+    target: { value },
+  }) as unknown as React.BaseSyntheticEvent;
 
 describe('useSearchEntities', () => {
   const defaultOptions = {
     availableEntityTypes: undefined,
     availableRelationshipTypes: undefined,
-    searchContext: { entityTypes: ['Stix-Core-Object'] } as { entityTypes: string[]; elementType?: string },
+    searchContext: { entityTypes: ['Stix-Core-Object'] } as {
+      entityTypes: string[];
+      elementType?: string;
+    },
     searchScope: {} as Record<string, string[]>,
     setInputValues: vi.fn(),
   };
@@ -316,7 +338,10 @@ describe('useSearchEntities', () => {
   it('should include object-label relationship type when entityTypes include object-label', () => {
     const options = {
       ...defaultOptions,
-      searchContext: { entityTypes: ['stix-core-relationship', 'object-label'] } as { entityTypes: string[]; elementType?: string },
+      searchContext: { entityTypes: ['stix-core-relationship', 'object-label'] } as {
+        entityTypes: string[];
+        elementType?: string;
+      },
     };
     const { result } = renderHook(() => useSearchEntities(options));
     const [, searchEntities] = result.current;
@@ -377,9 +402,7 @@ describe('useSearchEntities', () => {
   it('should map StatusTemplate results to Vocabulary type', async () => {
     const mockData = {
       statusTemplates: {
-        edges: [
-          { node: { id: 'st-1', name: 'In Progress', color: '#f39c12' } },
-        ],
+        edges: [{ node: { id: 'st-1', name: 'In Progress', color: '#f39c12' } }],
       },
     };
     mockFetchQuery.mockReturnValue({ toPromise: () => Promise.resolve(mockData) });

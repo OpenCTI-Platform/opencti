@@ -8,7 +8,12 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCoreObjects';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
-import type { WidgetColumn, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import type {
+  WidgetColumn,
+  WidgetDataSelection,
+  WidgetHost,
+  WidgetParameters,
+} from '../../../../utils/widget/widget';
 import { DraftsListQuery } from './__generated__/DraftsListQuery.graphql';
 
 const defaultDraftColumns: WidgetColumn[] = [
@@ -29,12 +34,7 @@ export const draftsListQuery = graphql`
     $orderMode: OrderingMode
     $filters: FilterGroup
   ) {
-    draftWorkspaces(
-      first: $first
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    ) {
+    draftWorkspaces(first: $first, orderBy: $orderBy, orderMode: $orderMode, filters: $filters) {
       edges {
         node {
           id
@@ -87,9 +87,9 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): DraftsListQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const orderBy = (selection.sort_by && selection.sort_by.length > 0
-    ? selection.sort_by
-    : 'created_at') as DraftsListQuery['variables']['orderBy'];
+  const orderBy = (
+    selection.sort_by && selection.sort_by.length > 0 ? selection.sort_by : 'created_at'
+  ) as DraftsListQuery['variables']['orderBy'];
   const { filters } = computeWidgetFiltersForSelection(selection, config);
   return {
     first: selection.number ?? 10,
@@ -168,7 +168,13 @@ const DraftsList = ({
   const { t_i18n } = useFormatter();
   const rootRef = useRef<HTMLDivElement>(null);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<DraftsListQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<DraftsListQuery>({
     perspective: 'entities',
     dataSelection,
     host,

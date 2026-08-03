@@ -55,42 +55,109 @@ type BasicDefinition = {
   requiredCapabilities?: string[];
 };
 
-type GetRawIdsFn<T extends BasicStoreAttribute> = (item: T, getEntitiesMapFromCache:
-<Z extends BasicStoreIdentifier | StixObject>(type: string) => Promise<Map<string | StixId, Z>>) => Promise<{ id: string; source?: string }[]>;
+type GetRawIdsFn<T extends BasicStoreAttribute> = (
+  item: T,
+  getEntitiesMapFromCache: <Z extends BasicStoreIdentifier | StixObject>(
+    type: string,
+  ) => Promise<Map<string | StixId, Z>>,
+) => Promise<{ id: string; source?: string }[]>;
 
-type RepresentativeFn<T extends BasicStoreAttribute> = (item: T, dict: Record<string, string>, opts: Formating) => string;
+type RepresentativeFn<T extends BasicStoreAttribute> = (
+  item: T,
+  dict: Record<string, string>,
+  opts: Formating,
+) => string;
 
-export type MappingDefinition<T extends BasicStoreAttribute = BasicStoreAttribute> = AttributeDefinition<T> & {
-  associatedFilterKeys?: { key: string; label: string }[]; // filter key and their label, to add if key is different from: 'parentAttributeName.nestedAttributeName'
-};
-
-export type BasicObjectDefinition<T extends BasicStoreAttribute = BasicStoreAttribute> = ObjectDefinition<T> & {
-  mappings: MappingDefinition<T>[];
-  // if the object attribute can be used for sorting, we need to know how
-  sortBy?: {
-    path: string; // path leading to the value that serves for sorting
-    type: string; // type of this value, copied for convenience from corresponding mapping (checked at registration)
+export type MappingDefinition<T extends BasicStoreAttribute = BasicStoreAttribute> =
+  AttributeDefinition<T> & {
+    associatedFilterKeys?: { key: string; label: string }[]; // filter key and their label, to add if key is different from: 'parentAttributeName.nestedAttributeName'
   };
-};
+
+export type BasicObjectDefinition<T extends BasicStoreAttribute = BasicStoreAttribute> =
+  ObjectDefinition<T> & {
+    mappings: MappingDefinition<T>[];
+    // if the object attribute can be used for sorting, we need to know how
+    sortBy?: {
+      path: string; // path leading to the value that serves for sorting
+      type: string; // type of this value, copied for convenience from corresponding mapping (checked at registration)
+    };
+  };
 export type DateAttribute = { type: 'date' } & BasicDefinition;
 export type BooleanAttribute = { type: 'boolean' } & BasicDefinition;
-export type NumericAttribute = { type: 'numeric'; precision: 'integer' | 'long' | 'float'; scalable?: boolean } & BasicDefinition;
-export type IdAttribute = { type: 'string'; format: 'id'; entityTypes: string[]; attrRawIds?: GetRawIdsFn<string>; representative?: RepresentativeFn<string> } & BasicDefinition;
+export type NumericAttribute = {
+  type: 'numeric';
+  precision: 'integer' | 'long' | 'float';
+  scalable?: boolean;
+} & BasicDefinition;
+export type IdAttribute = {
+  type: 'string';
+  format: 'id';
+  entityTypes: string[];
+  attrRawIds?: GetRawIdsFn<string>;
+  representative?: RepresentativeFn<string>;
+} & BasicDefinition;
 export type TextAttribute = { type: 'string'; format: 'short' | 'text' } & BasicDefinition;
 export type EnumAttribute = { type: 'string'; format: 'enum'; values: string[] } & BasicDefinition;
-export type VocabAttribute = { type: 'string'; format: 'vocabulary'; vocabularyCategory: string } & BasicDefinition;
-export type JsonAttribute = { type: 'string'; format: 'json'; attrRawIds?: GetRawIdsFn<string>; representative?: RepresentativeFn<string>; multiple: false; schemaDef?: Record<string, any> } & BasicDefinition;
-export type ObjectDefinition<T extends BasicStoreAttribute = BasicStoreAttribute> = { type: 'object'; attrRawIds?: GetRawIdsFn<T>; representative?: RepresentativeFn<T> } & BasicDefinition;
-export type FlatObjectAttribute<T extends BasicStoreAttribute> = { type: 'object'; format: 'flat' } & ObjectDefinition<T>;
-export type ObjectAttribute<T extends BasicStoreAttribute = BasicStoreAttribute> = { type: 'object'; format: 'standard' } & BasicObjectDefinition<T>;
-export type NestedObjectAttribute<T extends BasicStoreAttribute = BasicStoreAttribute> = { type: 'object'; format: 'nested' } & BasicObjectDefinition<T>;
-export type RefAttribute = { type: 'ref'; attrRawIds?: GetRawIdsFn<string>; databaseName: string; stixName: string; isRefExistingForTypes: Checker; datable?: boolean; toTypes: string[] } & BasicDefinition;
-export type StringAttribute = IdAttribute | TextAttribute | EnumAttribute | VocabAttribute | JsonAttribute;
-export type ComplexAttribute<T extends BasicStoreAttribute = BasicStoreAttribute> = FlatObjectAttribute<T> | ObjectAttribute<T> | NestedObjectAttribute<T>;
-export type ComplexAttributeWithMappings<T extends BasicStoreAttribute = BasicStoreAttribute> = ObjectAttribute<T> | NestedObjectAttribute<T>;
+export type VocabAttribute = {
+  type: 'string';
+  format: 'vocabulary';
+  vocabularyCategory: string;
+} & BasicDefinition;
+export type JsonAttribute = {
+  type: 'string';
+  format: 'json';
+  attrRawIds?: GetRawIdsFn<string>;
+  representative?: RepresentativeFn<string>;
+  multiple: false;
+  schemaDef?: Record<string, any>;
+} & BasicDefinition;
+export type ObjectDefinition<T extends BasicStoreAttribute = BasicStoreAttribute> = {
+  type: 'object';
+  attrRawIds?: GetRawIdsFn<T>;
+  representative?: RepresentativeFn<T>;
+} & BasicDefinition;
+export type FlatObjectAttribute<T extends BasicStoreAttribute> = {
+  type: 'object';
+  format: 'flat';
+} & ObjectDefinition<T>;
+export type ObjectAttribute<T extends BasicStoreAttribute = BasicStoreAttribute> = {
+  type: 'object';
+  format: 'standard';
+} & BasicObjectDefinition<T>;
+export type NestedObjectAttribute<T extends BasicStoreAttribute = BasicStoreAttribute> = {
+  type: 'object';
+  format: 'nested';
+} & BasicObjectDefinition<T>;
+export type RefAttribute = {
+  type: 'ref';
+  attrRawIds?: GetRawIdsFn<string>;
+  databaseName: string;
+  stixName: string;
+  isRefExistingForTypes: Checker;
+  datable?: boolean;
+  toTypes: string[];
+} & BasicDefinition;
+export type StringAttribute =
+  | IdAttribute
+  | TextAttribute
+  | EnumAttribute
+  | VocabAttribute
+  | JsonAttribute;
+export type ComplexAttribute<T extends BasicStoreAttribute = BasicStoreAttribute> =
+  | FlatObjectAttribute<T>
+  | ObjectAttribute<T>
+  | NestedObjectAttribute<T>;
+export type ComplexAttributeWithMappings<T extends BasicStoreAttribute = BasicStoreAttribute> =
+  | ObjectAttribute<T>
+  | NestedObjectAttribute<T>;
 
-export type AttributeDefinition<T extends BasicStoreAttribute = BasicStoreAttribute> = NumericAttribute | DateAttribute | BooleanAttribute
-  | StringAttribute | ComplexAttribute<T> | RefAttribute;
+export type AttributeDefinition<T extends BasicStoreAttribute = BasicStoreAttribute> =
+  | NumericAttribute
+  | DateAttribute
+  | BooleanAttribute
+  | StringAttribute
+  | ComplexAttribute<T>
+  | RefAttribute;
 
 export const shortStringFormats = ['id', 'short', 'enum', 'vocabulary'];
 export const longStringFormats = ['text', 'json'];
@@ -148,8 +215,29 @@ export const draftChange: ObjectAttribute = {
   upsert: false,
   isFilterable: true,
   mappings: [
-    { name: 'draft_operation', label: 'Draft operation', type: 'string', format: 'enum', values: getDraftOperations(), mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'draft_updates_patch', label: 'Draft update patch', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    {
+      name: 'draft_operation',
+      label: 'Draft operation',
+      type: 'string',
+      format: 'enum',
+      values: getDraftOperations(),
+      mandatoryType: 'external',
+      editDefault: false,
+      multiple: false,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'draft_updates_patch',
+      label: 'Draft update patch',
+      type: 'string',
+      format: 'json',
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: false,
+      upsert: true,
+      isFilterable: false,
+    },
   ],
 };
 
@@ -165,10 +253,50 @@ export const iAttributes: ObjectAttribute = {
   upsert: false,
   isFilterable: false,
   mappings: [
-    { name: 'name', label: 'Attribute name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'updated_at', label: 'Updated at', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
-    { name: 'confidence', label: 'Confidence', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'user_id', label: 'Last modifier', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_USER], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
+    {
+      name: 'name',
+      label: 'Attribute name',
+      type: 'string',
+      format: 'short',
+      mandatoryType: 'external',
+      editDefault: true,
+      multiple: false,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'updated_at',
+      label: 'Updated at',
+      type: 'date',
+      editDefault: false,
+      mandatoryType: 'no',
+      multiple: false,
+      upsert: false,
+      isFilterable: true,
+    },
+    {
+      name: 'confidence',
+      label: 'Confidence',
+      type: 'numeric',
+      precision: 'integer',
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: false,
+      upsert: false,
+      isFilterable: true,
+    },
+    {
+      name: 'user_id',
+      label: 'Last modifier',
+      type: 'string',
+      format: 'id',
+      entityTypes: [ENTITY_TYPE_USER],
+      editDefault: false,
+      mandatoryType: 'no',
+      multiple: false,
+      upsert: false,
+      isFilterable: false,
+    },
   ],
 };
 
@@ -198,7 +326,11 @@ export const creators: IdAttribute = {
   multiple: true,
   upsert: true,
   isFilterable: true,
-  representative: (raw_creator_id: string, userIdToUserNameMap: Record<string, string>, _): string => {
+  representative: (
+    raw_creator_id: string,
+    userIdToUserNameMap: Record<string, string>,
+    _,
+  ): string => {
     return userIdToUserNameMap[raw_creator_id] ?? 'Restricted';
   },
 };
@@ -254,13 +386,81 @@ export const files: ObjectAttribute<OpenCTIFile> = {
   isFilterable: false,
   mappings: [
     id,
-    { name: 'name', label: 'Name', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
-    { name: 'description', label: 'Description', type: 'string', format: 'text', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
-    { name: 'version', label: 'Version', type: 'date', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
-    { name: 'mime_type', label: 'Mime type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
-    { name: 'inCarousel', label: 'Include in carousel', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'order', label: 'Order in carousel', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'file_markings', label: 'Markings', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
+    {
+      name: 'name',
+      label: 'Name',
+      type: 'string',
+      format: 'short',
+      editDefault: false,
+      mandatoryType: 'no',
+      multiple: true,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'description',
+      label: 'Description',
+      type: 'string',
+      format: 'text',
+      editDefault: false,
+      mandatoryType: 'no',
+      multiple: true,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'version',
+      label: 'Version',
+      type: 'date',
+      editDefault: false,
+      mandatoryType: 'no',
+      multiple: true,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'mime_type',
+      label: 'Mime type',
+      type: 'string',
+      format: 'short',
+      editDefault: false,
+      mandatoryType: 'no',
+      multiple: true,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'inCarousel',
+      label: 'Include in carousel',
+      type: 'boolean',
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: false,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'order',
+      label: 'Order in carousel',
+      type: 'numeric',
+      precision: 'integer',
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: false,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'file_markings',
+      label: 'Markings',
+      type: 'string',
+      format: 'short',
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: true,
+      upsert: true,
+      isFilterable: true,
+    },
   ],
   attrRawIds: async (item, _) => {
     const { file_markings = [] } = item;
@@ -284,7 +484,17 @@ export const changes: NestedObjectAttribute = {
   upsert: false,
   isFilterable: false,
   mappings: [
-    { name: 'field', label: 'Field', type: 'string', format: 'short', editDefault: false, mandatoryType: 'external', multiple: true, upsert: true, isFilterable: false },
+    {
+      name: 'field',
+      label: 'Field',
+      type: 'string',
+      format: 'short',
+      editDefault: false,
+      mandatoryType: 'external',
+      multiple: true,
+      upsert: true,
+      isFilterable: false,
+    },
     {
       name: 'changes_added',
       label: 'Added value',
@@ -296,8 +506,28 @@ export const changes: NestedObjectAttribute = {
       upsert: true,
       isFilterable: false,
       mappings: [
-        { name: 'raw', label: 'Raw', type: 'string', format: 'text', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: false },
-        { name: 'translated', label: 'Translated', type: 'string', format: 'text', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: false },
+        {
+          name: 'raw',
+          label: 'Raw',
+          type: 'string',
+          format: 'text',
+          editDefault: false,
+          mandatoryType: 'external',
+          multiple: false,
+          upsert: false,
+          isFilterable: false,
+        },
+        {
+          name: 'translated',
+          label: 'Translated',
+          type: 'string',
+          format: 'text',
+          editDefault: false,
+          mandatoryType: 'external',
+          multiple: false,
+          upsert: false,
+          isFilterable: false,
+        },
       ],
     },
     {
@@ -311,8 +541,28 @@ export const changes: NestedObjectAttribute = {
       upsert: true,
       isFilterable: false,
       mappings: [
-        { name: 'raw', label: 'Raw', type: 'string', format: 'text', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: false },
-        { name: 'translated', label: 'Translated', type: 'string', format: 'text', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: false },
+        {
+          name: 'raw',
+          label: 'Raw',
+          type: 'string',
+          format: 'text',
+          editDefault: false,
+          mandatoryType: 'external',
+          multiple: false,
+          upsert: false,
+          isFilterable: false,
+        },
+        {
+          name: 'translated',
+          label: 'Translated',
+          type: 'string',
+          format: 'text',
+          editDefault: false,
+          mandatoryType: 'external',
+          multiple: false,
+          upsert: false,
+          isFilterable: false,
+        },
       ],
     },
   ],
@@ -338,12 +588,39 @@ export const authorizedMembers: NestedObjectAttribute<AuthorizedMembers> = {
   representative: (item, translate, _ = DefaultFormating): string => {
     const groupIds = item.groups_restriction_ids ?? [];
     const organizationGroups = groupIds.map((id) => translate[id]).join(', ');
-    return translate[item.id] + (groupIds.length > 0 ? ' x [' + organizationGroups + ']' : '') + ' (' + item.access_right + ')';
+    return (
+      translate[item.id] +
+      (groupIds.length > 0 ? ' x [' + organizationGroups + ']' : '') +
+      ' (' +
+      item.access_right +
+      ')'
+    );
   },
   mappings: [
     id,
-    { name: 'access_right', label: 'Access right', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
-    { name: 'groups_restriction_ids', label: 'Groups restriction IDs', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_GROUP], editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
+    {
+      name: 'access_right',
+      label: 'Access right',
+      type: 'string',
+      format: 'short',
+      editDefault: false,
+      mandatoryType: 'no',
+      multiple: true,
+      upsert: true,
+      isFilterable: false,
+    },
+    {
+      name: 'groups_restriction_ids',
+      label: 'Groups restriction IDs',
+      type: 'string',
+      format: 'id',
+      entityTypes: [ENTITY_TYPE_GROUP],
+      editDefault: false,
+      mandatoryType: 'no',
+      multiple: true,
+      upsert: true,
+      isFilterable: false,
+    },
   ],
 };
 
@@ -382,8 +659,28 @@ export const metrics: NestedObjectAttribute = {
   upsert: true,
   isFilterable: false,
   mappings: [
-    { name: 'name', label: 'Metric name', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
-    { name: 'value', label: 'Metric value', type: 'numeric', precision: 'float', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+    {
+      name: 'name',
+      label: 'Metric name',
+      type: 'string',
+      format: 'short',
+      editDefault: false,
+      mandatoryType: 'no',
+      multiple: false,
+      upsert: true,
+      isFilterable: false,
+    },
+    {
+      name: 'value',
+      label: 'Metric value',
+      type: 'numeric',
+      precision: 'float',
+      editDefault: false,
+      mandatoryType: 'no',
+      multiple: false,
+      upsert: true,
+      isFilterable: false,
+    },
   ],
 };
 
@@ -479,10 +776,49 @@ export const errors: ObjectAttribute = {
   isFilterable: true,
   mappings: [
     id,
-    { name: 'message', label: 'Message', type: 'string', format: 'text', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
-    { name: 'error', label: 'Error', type: 'string', format: 'text', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
-    { name: 'source', label: 'Source', type: 'string', format: 'text', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
-    { name: 'timestamp', label: 'Timestamp', type: 'date', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
+    {
+      name: 'message',
+      label: 'Message',
+      type: 'string',
+      format: 'text',
+      editDefault: false,
+      mandatoryType: 'no',
+      multiple: true,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'error',
+      label: 'Error',
+      type: 'string',
+      format: 'text',
+      editDefault: false,
+      mandatoryType: 'no',
+      multiple: true,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'source',
+      label: 'Source',
+      type: 'string',
+      format: 'text',
+      editDefault: false,
+      mandatoryType: 'no',
+      multiple: true,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'timestamp',
+      label: 'Timestamp',
+      type: 'date',
+      editDefault: false,
+      mandatoryType: 'no',
+      multiple: true,
+      upsert: true,
+      isFilterable: true,
+    },
   ],
 };
 
@@ -498,8 +834,29 @@ export const coverageInformation: NestedObjectAttribute = {
   upsert_force_replace: true,
   isFilterable: false, // Filter will be done by a special key
   mappings: [
-    { name: 'coverage_name', label: 'Coverage name', type: 'string', format: 'vocabulary', vocabularyCategory: 'coverage_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'coverage_score', label: 'Coverage score', type: 'numeric', mandatoryType: 'external', precision: 'float', upsert: true, editDefault: false, multiple: false, isFilterable: false },
+    {
+      name: 'coverage_name',
+      label: 'Coverage name',
+      type: 'string',
+      format: 'vocabulary',
+      vocabularyCategory: 'coverage_ov',
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: false,
+      upsert: false,
+      isFilterable: false,
+    },
+    {
+      name: 'coverage_score',
+      label: 'Coverage score',
+      type: 'numeric',
+      mandatoryType: 'external',
+      precision: 'float',
+      upsert: true,
+      editDefault: false,
+      multiple: false,
+      isFilterable: false,
+    },
   ],
 };
 
@@ -514,10 +871,50 @@ export const opinionsMetrics: ObjectAttribute = {
   upsert: true,
   isFilterable: true,
   mappings: [
-    { name: 'mean', label: 'Opinions mean', type: 'numeric', precision: 'float', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
-    { name: 'max', label: 'Opinions max', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
-    { name: 'min', label: 'Opinions min', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
-    { name: 'total', label: 'Opinions total number', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
+    {
+      name: 'mean',
+      label: 'Opinions mean',
+      type: 'numeric',
+      precision: 'float',
+      editDefault: false,
+      mandatoryType: 'no',
+      multiple: false,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'max',
+      label: 'Opinions max',
+      type: 'numeric',
+      precision: 'integer',
+      editDefault: false,
+      mandatoryType: 'no',
+      multiple: false,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'min',
+      label: 'Opinions min',
+      type: 'numeric',
+      precision: 'integer',
+      editDefault: false,
+      mandatoryType: 'no',
+      multiple: false,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'total',
+      label: 'Opinions total number',
+      type: 'numeric',
+      precision: 'integer',
+      editDefault: false,
+      mandatoryType: 'no',
+      multiple: false,
+      upsert: true,
+      isFilterable: true,
+    },
   ],
 };
 

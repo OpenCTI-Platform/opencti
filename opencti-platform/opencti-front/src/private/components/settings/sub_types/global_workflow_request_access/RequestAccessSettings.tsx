@@ -35,7 +35,11 @@ interface RequestAccessSettingsProps {
   dataConfiguration: RequestAccessConfigurationEdition_requestAccess$key;
 }
 
-const RequestAccessSettings = ({ subTypeId, data, dataConfiguration }: RequestAccessSettingsProps) => {
+const RequestAccessSettings = ({
+  subTypeId,
+  data,
+  dataConfiguration,
+}: RequestAccessSettingsProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
@@ -66,21 +70,20 @@ const RequestAccessSettings = ({ subTypeId, data, dataConfiguration }: RequestAc
           </Typography>
           <SubTypeStatusPopover subTypeId={subTypeId} scope={StatusScopeEnum.REQUEST_ACCESS} />
         </Stack>
-        <ItemStatusTemplate
-          statuses={statusList}
-          disabled={requestAccessWorkflowDisabled}
-        />
+        <ItemStatusTemplate statuses={statusList} disabled={requestAccessWorkflowDisabled} />
       </div>
       <div style={{ marginTop: 20 }}>
-        <Paper
-          style={paperStyle}
-          variant="outlined"
-          className="paper-for-grid"
-        >
+        <Paper style={paperStyle} variant="outlined" className="paper-for-grid">
           <Typography variant="h3" gutterBottom={true}>
             {t_i18n('Request access actions configuration')}
-            <RequestAccessConfigurationPopover data={dataConfiguration} requestAccessWorkflowDisabled={requestAccessWorkflowDisabled} />
-            <RequestAccessStatus data={dataConfiguration} requestAccessWorkflowDisabled={requestAccessWorkflowDisabled} />
+            <RequestAccessConfigurationPopover
+              data={dataConfiguration}
+              requestAccessWorkflowDisabled={requestAccessWorkflowDisabled}
+            />
+            <RequestAccessStatus
+              data={dataConfiguration}
+              requestAccessWorkflowDisabled={requestAccessWorkflowDisabled}
+            />
           </Typography>
         </Paper>
       </div>

@@ -74,13 +74,16 @@ export const aiLanguage: { value: string; label: string; name: string }[] = [
 ];
 
 interface AppIntlProviderProps {
-  settings: AppIntlProvider_settings$data | { platform_language: string; platform_translations: string };
+  settings:
+    | AppIntlProvider_settings$data
+    | { platform_language: string; platform_translations: string };
   children: ReactNode;
 }
 
 const AppIntlProvider: FunctionComponent<AppIntlProviderProps> = ({ settings, children }) => {
   const { locale } = useContext(UserContext);
-  const baseMessages = i18n.messages[locale] || i18n.messages[DEFAULT_LANG as keyof typeof i18n.messages];
+  const baseMessages =
+    i18n.messages[locale] || i18n.messages[DEFAULT_LANG as keyof typeof i18n.messages];
   const translation = JSON.parse(settings.platform_translations ?? '{}');
   const messages = { ...baseMessages, ...(translation[locale] ?? {}) };
   moment.locale(locale);

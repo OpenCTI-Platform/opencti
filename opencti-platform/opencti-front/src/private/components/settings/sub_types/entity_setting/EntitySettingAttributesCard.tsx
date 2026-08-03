@@ -23,18 +23,9 @@ const EntitySettingAttributesCard = () => {
       title={t_i18n('Attributes')}
       titleSx={{ alignItems: 'end' }}
       sx={{ paddingTop: 0, paddingBottom: 0 }}
-      action={(
-        <SearchInput
-          variant="thin"
-          onSubmit={helpers.handleSearch}
-          keyword={searchTerm}
-        />
-      )}
+      action={<SearchInput variant="thin" onSubmit={helpers.handleSearch} keyword={searchTerm} />}
     >
-      <EntitySettingAttributes
-        entitySettingsData={subType.settings}
-        searchTerm={searchTerm}
-      />
+      <EntitySettingAttributes entitySettingsData={subType.settings} searchTerm={searchTerm} />
     </Card>
   );
 };

@@ -147,10 +147,7 @@ const IngestionCatalogCard = ({
 
   const link = `/dashboard/integrations/catalog/${connector.slug}`;
 
-  const connectorMetadata = getConnectorMetadata(
-    connector.container_type,
-    t_i18n,
-  );
+  const connectorMetadata = getConnectorMetadata(connector.container_type, t_i18n);
 
   const handleCardClick = () => {
     navigate(link);
@@ -163,7 +160,8 @@ const IngestionCatalogCard = ({
         height: '100%',
         '& .MuiCard-root': {
           border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
-          transition: 'transform 0.3s ease-in-out, border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+          transition:
+            'transform 0.3s ease-in-out, border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
         },
         '&:hover .MuiCard-root': {
           transform: 'translateY(-2px)',

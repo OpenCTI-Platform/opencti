@@ -8,12 +8,20 @@ import { MESSAGING$ } from '../../../../relay/environment';
 import DeleteDialog from '../../../../components/DeleteDialog';
 
 const securityPlatformDeletionMutation = graphql`
-mutation SecurityPlatformDeletionMutation($id: ID!) {
+  mutation SecurityPlatformDeletionMutation($id: ID!) {
     securityPlatformDelete(id: $id)
-}
+  }
 `;
 
-const SecurityPlatformDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boolean; handleClose: () => void }) => {
+const SecurityPlatformDeletion = ({
+  id,
+  isOpen,
+  handleClose,
+}: {
+  id: string;
+  isOpen: boolean;
+  handleClose: () => void;
+}) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const deletion = useDeletion({ handleClose });
@@ -21,14 +29,12 @@ const SecurityPlatformDeletion = ({ id, isOpen, handleClose }: { id: string; isO
 
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: ('entity_SecurityPlatform') },
+    values: { entity_type: 'entity_SecurityPlatform' },
   });
 
-  const [commit] = useApiMutation(
-    securityPlatformDeletionMutation,
-    undefined,
-    { successMessage: deleteSuccessMessage },
-  );
+  const [commit] = useApiMutation(securityPlatformDeletionMutation, undefined, {
+    successMessage: deleteSuccessMessage,
+  });
 
   const submitDelete = () => {
     setDeleting(true);

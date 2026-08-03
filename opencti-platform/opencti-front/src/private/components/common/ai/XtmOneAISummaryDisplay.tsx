@@ -38,12 +38,16 @@ const XtmOneAISummaryDisplay: FunctionComponent<XtmOneAISummaryDisplayProps> = (
     <>
       {noAgent && (
         <Alert severity="warning" variant="outlined" style={{ marginTop: 10 }}>
-          {t_i18n('No agent available for this action. Ask your administrator to configure XTM One.')}
+          {t_i18n(
+            'No agent available for this action. Ask your administrator to configure XTM One.',
+          )}
         </Alert>
       )}
 
       {errorMessage ? (
-        <Alert severity="warning" variant="outlined" style={{ marginBlock: 20 }}>{errorMessage}</Alert>
+        <Alert severity="warning" variant="outlined" style={{ marginBlock: 20 }}>
+          {errorMessage}
+        </Alert>
       ) : (
         <>
           <Alert severity="info" variant="outlined" style={{ marginTop: 10, marginBottom: 16 }}>
@@ -54,14 +58,26 @@ const XtmOneAISummaryDisplay: FunctionComponent<XtmOneAISummaryDisplayProps> = (
           {!loading && content && (
             <>
               <Divider />
-              <div style={{ float: 'right', marginTop: 20, display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <div
+                style={{
+                  float: 'right',
+                  marginTop: 20,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                }}
+              >
                 {generatedAt && (
                   <Typography variant="caption">
                     {t_i18n('Generated on')} {new Date(generatedAt).toLocaleString()}.
                   </Typography>
                 )}
                 <Tooltip title={t_i18n('Copy to clipboard')}>
-                  <IconButton size="small" color="primary" onClick={() => copyToClipboard(t_i18n, content)}>
+                  <IconButton
+                    size="small"
+                    color="primary"
+                    onClick={() => copyToClipboard(t_i18n, content)}
+                  >
                     <ContentCopyOutlined fontSize="small" />
                   </IconButton>
                 </Tooltip>

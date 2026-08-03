@@ -22,7 +22,11 @@ import type { Theme } from '../../../../components/Theme';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { insertNode } from '../../../../utils/store';
@@ -120,20 +124,24 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
   const { t_i18n } = useFormatter();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const { mandatoryAttributes } = useIsMandatoryAttribute(NOTE_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    created: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    attribute_abstract: Yup.string().nullable(),
-    content: Yup.string().trim().min(2),
-    confidence: Yup.number().nullable(),
-    note_types: Yup.array().nullable(),
-    likelihood: Yup.number().min(0).max(100),
-    createdBy: Yup.object().nullable(),
-    objectLabel: Yup.array().nullable(),
-    objectMarking: Yup.array().nullable(),
-    externalReferences: Yup.array().nullable(),
-    file: Yup.mixed().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      created: Yup.date().typeError(
+        t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'),
+      ),
+      attribute_abstract: Yup.string().nullable(),
+      content: Yup.string().trim().min(2),
+      confidence: Yup.number().nullable(),
+      note_types: Yup.array().nullable(),
+      likelihood: Yup.number().min(0).max(100),
+      createdBy: Yup.object().nullable(),
+      objectLabel: Yup.array().nullable(),
+      objectMarking: Yup.array().nullable(),
+      externalReferences: Yup.array().nullable(),
+      file: Yup.mixed().nullable(),
+    },
+    mandatoryAttributes,
+  );
   // createdBy must be excluded from the validation if user is not an editor, it will be handled directly by the backend
   const noteValidator = useDynamicSchemaCreationValidation(
     mandatoryAttributes,
@@ -142,14 +150,15 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
   );
 
   const [commit] = useApiMutation(
-    userIsKnowledgeEditor
-      ? noteCreationMutation
-      : noteCreationUserMutation,
+    userIsKnowledgeEditor ? noteCreationMutation : noteCreationUserMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Note')} ${t_i18n('successfully created')}` },
+    {
+      successMessage: `${t_i18n('entity_Note')} ${t_i18n('successfully created')}`,
+    },
   );
 
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
 
   const onSubmit: FormikConfig<NoteAddInput>['onSubmit'] = async (
     values,
@@ -232,7 +241,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             component={TextField}
             name="attribute_abstract"
             label={t_i18n('Abstract')}
-            required={(mandatoryAttributes.includes('attribute_abstract'))}
+            required={mandatoryAttributes.includes('attribute_abstract')}
             fullWidth={true}
             style={{ marginTop: 20 }}
             askAi={true}
@@ -241,7 +250,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             component={MarkdownField}
             name="content"
             label={t_i18n('Content')}
-            required={(mandatoryAttributes.includes('content'))}
+            required={mandatoryAttributes.includes('content')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -256,19 +265,16 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             label={t_i18n('Note types')}
             type="note_types_ov"
             name="note_types"
-            required={(mandatoryAttributes.includes('note_types'))}
+            required={mandatoryAttributes.includes('note_types')}
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}
             multiple={true}
           />
-          <ConfidenceField
-            entityType="Note"
-            containerStyle={fieldSpacingContainerStyle}
-          />
+          <ConfidenceField entityType="Note" containerStyle={fieldSpacingContainerStyle} />
           <Field
             component={SliderField}
             name="likelihood"
-            required={(mandatoryAttributes.includes('likelihood'))}
+            required={mandatoryAttributes.includes('likelihood')}
             label={t_i18n('Likelihood')}
             fullWidth={true}
             style={{ marginTop: 20 }}
@@ -276,44 +282,37 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
           {userIsKnowledgeEditor && (
             <CreatedByField
               name="createdBy"
-              required={(mandatoryAttributes.includes('createdBy'))}
+              required={mandatoryAttributes.includes('createdBy')}
               style={{ marginTop: 10 }}
               setFieldValue={setFieldValue}
             />
           )}
           <ObjectLabelField
             name="objectLabel"
-            required={(mandatoryAttributes.includes('objectLabel'))}
+            required={mandatoryAttributes.includes('objectLabel')}
             style={{ marginTop: userIsKnowledgeEditor ? 20 : 10 }}
             setFieldValue={setFieldValue}
             values={values.objectLabel}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"
-            required={(mandatoryAttributes.includes('externalReferences'))}
+            required={mandatoryAttributes.includes('externalReferences')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
           <FormButtonContainer>
-            <Button
-              variant="secondary"
-              onClick={handleReset}
-              disabled={isSubmitting}
-            >
+            <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitForm}
-              disabled={isSubmitting}
-            >
+            <Button onClick={submitForm} disabled={isSubmitting}>
               {t_i18n('Create')}
             </Button>
           </FormButtonContainer>
@@ -340,14 +339,8 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
   );
   const renderClassic = () => {
     return (
-      <Drawer
-        title={t_i18n('Create a note')}
-        controlledDial={CreateNoteControlledDial}
-      >
-        <NoteCreationForm
-          inputValue={inputValue}
-          updater={updater}
-        />
+      <Drawer title={t_i18n('Create a note')} controlledDial={CreateNoteControlledDial}>
+        <NoteCreationForm inputValue={inputValue} updater={updater} />
       </Drawer>
     );
   };
@@ -362,11 +355,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
         >
           <Add />
         </Fab>
-        <Dialog
-          open={open}
-          onClose={() => setOpen(false)}
-          title={t_i18n('Create a note')}
-        >
+        <Dialog open={open} onClose={() => setOpen(false)} title={t_i18n('Create a note')}>
           <NoteCreationForm
             inputValue={inputValue}
             updater={updater}

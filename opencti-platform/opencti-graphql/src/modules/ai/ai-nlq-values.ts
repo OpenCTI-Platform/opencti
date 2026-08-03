@@ -10,8 +10,7 @@ export const modeDescription = {
     description: 'Requires all filter conditions to be met (logical AND).',
   },
   [FilterMode.Or]: {
-    description:
-      'Requires at least one filter condition to be met (logical OR).',
+    description: 'Requires at least one filter condition to be met (logical OR).',
   },
 };
 
@@ -35,41 +34,34 @@ export const operatorDescription = {
     description: 'Filters for values greater than the given numeric value.',
   },
   [FilterOperator.Gte]: {
-    description:
-      'Filters for values greater than or equal to the given numeric value.',
+    description: 'Filters for values greater than or equal to the given numeric value.',
   },
   [FilterOperator.Lt]: {
     description: 'Filters for values less than the given numeric value.',
   },
   [FilterOperator.Lte]: {
-    description:
-      'Filters for values less than or equal to the given numeric value.',
+    description: 'Filters for values less than or equal to the given numeric value.',
   },
   [FilterOperator.Match]: {
-    description:
-      'Filters for values that match a specified pattern (regex or similar).',
+    description: 'Filters for values that match a specified pattern (regex or similar).',
   },
   [FilterOperator.Nil]: {
     description: 'Filters for values that are null or missing.',
   },
   [FilterOperator.NotContains]: {
-    description:
-      "Inverse of 'contains'; filters for values not containing the substring.",
+    description: "Inverse of 'contains'; filters for values not containing the substring.",
   },
   [FilterOperator.NotEndsWith]: {
-    description:
-      "Inverse of 'ends_with'; filters for values not ending with the substring.",
+    description: "Inverse of 'ends_with'; filters for values not ending with the substring.",
   },
   [FilterOperator.NotEq]: {
-    description:
-      "Inverse of 'eq'; filters for values that do not match the given criterion.",
+    description: "Inverse of 'eq'; filters for values that do not match the given criterion.",
   },
   [FilterOperator.NotNil]: {
     description: 'Filters for values that are not null or missing.',
   },
   [FilterOperator.NotStartsWith]: {
-    description:
-      "Inverse of 'starts_with'; filters for values not starting with the substring.",
+    description: "Inverse of 'starts_with'; filters for values not starting with the substring.",
   },
   [FilterOperator.Script]: {
     description: 'Filters using a custom script or expression.',
@@ -81,20 +73,17 @@ export const operatorDescription = {
     description: 'Filters for values that start with the given substring.',
   },
   [FilterOperator.Wildcard]: {
-    description:
-      'Filters for values matching a wildcard pattern (e.g., * or ?).',
+    description: 'Filters for values matching a wildcard pattern (e.g., * or ?).',
   },
   [FilterOperator.Within]: {
     description:
       'Filters for values falling within the specified boundaries or range (e.g., between two numbers or dates).',
   },
   [FilterOperator.OnlyEqTo]: {
-    description:
-      'Filters for all values exactly matching the given criterion.',
+    description: 'Filters for all values exactly matching the given criterion.',
   },
   [FilterOperator.NotOnlyEqTo]: {
-    description:
-      'Filters for all values that do not exactly match the given criterion.',
+    description: 'Filters for all values that do not exactly match the given criterion.',
   },
   [FilterOperator.HasChanged]: {
     description:
@@ -195,8 +184,7 @@ export const relationshipDescription = {
     description: 'Specifies that this is a subtechnique of a broader tactic.',
   },
   [RelationshipEnum.TARGETS]: {
-    description:
-      'Indicates targeting of an individual, organization, or system.',
+    description: 'Indicates targeting of an individual, organization, or system.',
   },
   [RelationshipEnum.USES]: {
     description: 'Indicates usage of a tool, malware, or technique.',
@@ -214,8 +202,7 @@ export const relationshipDescription = {
     description: 'Indicates a foundation or dependency on another entity.',
   },
   [RelationshipEnum.BEACONS_TO]: {
-    description:
-      'Indicates communication or signaling to a remote destination.',
+    description: 'Indicates communication or signaling to a remote destination.',
   },
   [RelationshipEnum.BELONGS_TO]: {
     description: 'Indicates membership or ownership by another entity.',
@@ -296,16 +283,13 @@ export const relationshipDescription = {
     description: 'Indicates involvement in an operation, event, or activity.',
   },
   [RelationshipEnum.PUBLISHES]: {
-    description:
-      'Specifies that an entity publishes content, data, or reports.',
+    description: 'Specifies that an entity publishes content, data, or reports.',
   },
   [RelationshipEnum.REMEDIATES]: {
-    description:
-      'Indicates that an entity addresses or fixes a vulnerability or issue.',
+    description: 'Indicates that an entity addresses or fixes a vulnerability or issue.',
   },
   [RelationshipEnum.REPORTS_TO]: {
-    description:
-      'Specifies a hierarchical reporting relationship between entities.',
+    description: 'Specifies a hierarchical reporting relationship between entities.',
   },
   [RelationshipEnum.RESIDES_IN]: {
     description:
@@ -316,16 +300,14 @@ export const relationshipDescription = {
       'Indicates that an entity, such as a domain name, resolves to another entity like an IP address.',
   },
   [RelationshipEnum.REVOKED_BY]: {
-    description:
-      'Specifies that an entity has been revoked or invalidated by another authority.',
+    description: 'Specifies that an entity has been revoked or invalidated by another authority.',
   },
   [RelationshipEnum.STATIC_ANALYSIS_OF]: {
     description:
       'Indicates that an entity is derived from the static analysis of a sample or artifact.',
   },
   [RelationshipEnum.SUBNARRATIVE_OF]: {
-    description:
-      'Indicates that one narrative is a sub-part or subset of a larger narrative.',
+    description: 'Indicates that one narrative is a sub-part or subset of a larger narrative.',
   },
   [RelationshipEnum.SUPPORTS]: {
     description:
@@ -437,19 +419,16 @@ enum EntityObservableEnum {
 export const entityObservableDescription = {
   // Entity
   [EntityObservableEnum.ADMINISTRATIVE_AREA]: {
-    description:
-      'Geographical or administrative boundary (non-standard STIX, OpenCTI extension).',
+    description: 'Geographical or administrative boundary (non-standard STIX, OpenCTI extension).',
   },
   [EntityObservableEnum.ATTACK_PATTERN]: {
     description: 'STIX: TTP describing a malicious technique (MITRE ATT&CK).',
   },
   [EntityObservableEnum.CAMPAIGN]: {
-    description:
-      'STIX: A grouping of adversarial activity over a particular timeframe.',
+    description: 'STIX: A grouping of adversarial activity over a particular timeframe.',
   },
   [EntityObservableEnum.CHANNEL]: {
-    description:
-      'OpenCTI extension: A communication channel (IRC, Telegram, social media, etc.).',
+    description: 'OpenCTI extension: A communication channel (IRC, Telegram, social media, etc.).',
   },
   [EntityObservableEnum.CITY]: {
     description: 'Geographical city-level object (OpenCTI extension).',
@@ -458,67 +437,53 @@ export const entityObservableDescription = {
     description: 'Geographical country-level object (OpenCTI extension).',
   },
   [EntityObservableEnum.COURSE_OF_ACTION]: {
-    description:
-      'STIX: A recommendation or guidance to prevent or respond to a threat.',
+    description: 'STIX: A recommendation or guidance to prevent or respond to a threat.',
   },
   [EntityObservableEnum.DATA_COMPONENT]: {
-    description:
-      'Represents a subpart of a data source (common in detection definitions).',
+    description: 'Represents a subpart of a data source (common in detection definitions).',
   },
   [EntityObservableEnum.DATA_SOURCE]: {
-    description:
-      'STIX: A source of information used to collect relevant security data.',
+    description: 'STIX: A source of information used to collect relevant security data.',
   },
   [EntityObservableEnum.EVENT]: {
-    description:
-      'Generic event (OpenCTI). Could be a significant cybersecurity occurrence.',
+    description: 'Generic event (OpenCTI). Could be a significant cybersecurity occurrence.',
   },
   [EntityObservableEnum.FEEDBACK]: {
-    description:
-      'User feedback or comment about an entity (OpenCTI extension).',
+    description: 'User feedback or comment about an entity (OpenCTI extension).',
   },
   [EntityObservableEnum.GROUPING]: {
-    description:
-      'STIX: A set of objects grouped together for a specific context.',
+    description: 'STIX: A set of objects grouped together for a specific context.',
   },
   [EntityObservableEnum.INCIDENT]: {
-    description:
-      'OpenCTI extension: A cybersecurity incident referencing a security breach.',
+    description: 'OpenCTI extension: A cybersecurity incident referencing a security breach.',
   },
   [EntityObservableEnum.CASE_INCIDENT]: {
-    description:
-      'OpenCTI extension: An incident case used for investigation workflows.',
+    description: 'OpenCTI extension: An incident case used for investigation workflows.',
   },
   [EntityObservableEnum.INDICATOR]: {
-    description:
-      'STIX: A pattern-based detection for suspicious or malicious activity (IOC).',
+    description: 'STIX: A pattern-based detection for suspicious or malicious activity (IOC).',
   },
   [EntityObservableEnum.INDIVIDUAL]: {
-    description:
-      'OpenCTI extension: An individual person relevant to an investigation.',
+    description: 'OpenCTI extension: An individual person relevant to an investigation.',
   },
   [EntityObservableEnum.INFRASTRUCTURE]: {
-    description:
-      'STIX: Adversarial or victim infrastructure (servers, domains, etc.).',
+    description: 'STIX: Adversarial or victim infrastructure (servers, domains, etc.).',
   },
   [EntityObservableEnum.INTRUSION_SET]: {
     description:
       'STIX: A grouped set of adversarial behaviors, resources, and patterns over time (APT group).',
   },
   [EntityObservableEnum.LANGUAGE]: {
-    description:
-      'OpenCTI extension: A spoken or programming language relevant to the entity.',
+    description: 'OpenCTI extension: A spoken or programming language relevant to the entity.',
   },
   [EntityObservableEnum.MALWARE]: {
-    description:
-      'STIX: Malicious software such as ransomware, trojan, worm, etc.',
+    description: 'STIX: Malicious software such as ransomware, trojan, worm, etc.',
   },
   [EntityObservableEnum.MALWARE_ANALYSIS]: {
     description: 'STIX: The process or results of analyzing a malware sample.',
   },
   [EntityObservableEnum.NARRATIVE]: {
-    description:
-      'OpenCTI extension: A narrative or storyline used in reporting.',
+    description: 'OpenCTI extension: A narrative or storyline used in reporting.',
   },
   [EntityObservableEnum.NOTE]: {
     description: 'STIX: A non-rewritable note containing user commentary.',
@@ -531,47 +496,37 @@ export const entityObservableDescription = {
     description: 'STIX: A subjective assessment of the information provided.',
   },
   [EntityObservableEnum.ORGANIZATION]: {
-    description:
-      'An organization, company, or institution relevant to the CTI context.',
+    description: 'An organization, company, or institution relevant to the CTI context.',
   },
   [EntityObservableEnum.POSITION]: {
-    description:
-      'A specific job position or role in an organization (OpenCTI extension).',
+    description: 'A specific job position or role in an organization (OpenCTI extension).',
   },
   [EntityObservableEnum.REGION]: {
-    description:
-      'A broader geographic region (continent, supra-national zone).',
+    description: 'A broader geographic region (continent, supra-national zone).',
   },
   [EntityObservableEnum.REPORT]: {
-    description:
-      'STIX: A collection of threat intelligence detailing a set of related objects.',
+    description: 'STIX: A collection of threat intelligence detailing a set of related objects.',
   },
   [EntityObservableEnum.STIX_CYBER_OBSERVABLE]: {
-    description:
-      'STIX: A technical artifact or observable (file, domain, IP address, etc.).',
+    description: 'STIX: A technical artifact or observable (file, domain, IP address, etc.).',
   },
   [EntityObservableEnum.CASE_RFI]: {
-    description:
-      'OpenCTI extension: A request for information in an investigation workflow.',
+    description: 'OpenCTI extension: A request for information in an investigation workflow.',
   },
   [EntityObservableEnum.CASE_RFT]: {
-    description:
-      'OpenCTI extension: A request for takedown in an investigation workflow.',
+    description: 'OpenCTI extension: A request for takedown in an investigation workflow.',
   },
   [EntityObservableEnum.SECTOR]: {
     description: 'An industry or business sector (finance, telecom, etc.).',
   },
   [EntityObservableEnum.SYSTEM]: {
-    description:
-      'A system or device relevant to an investigation or infrastructure.',
+    description: 'A system or device relevant to an investigation or infrastructure.',
   },
   [EntityObservableEnum.TASK]: {
-    description:
-      'An action item in an operational or investigative workflow (OpenCTI extension).',
+    description: 'An action item in an operational or investigative workflow (OpenCTI extension).',
   },
   [EntityObservableEnum.THREAT_ACTOR_GROUP]: {
-    description:
-      'STIX: A collective threat actor entity (APT group, cybercriminal gang).',
+    description: 'STIX: A collective threat actor entity (APT group, cybercriminal gang).',
   },
   [EntityObservableEnum.THREAT_ACTOR_INDIVIDUAL]: {
     description: 'STIX: A single individual threat actor.',
@@ -581,24 +536,21 @@ export const entityObservableDescription = {
       'STIX: A software tool used by threat actors, possibly dual-use (legitimate or malicious).',
   },
   [EntityObservableEnum.VULNERABILITY]: {
-    description:
-      'STIX: A flaw in software or hardware that can be exploited (e.g., CVE).',
+    description: 'STIX: A flaw in software or hardware that can be exploited (e.g., CVE).',
   },
   // Observable
   [EntityObservableEnum.ARTIFACT]: {
     description: 'A physical or digital object used as evidence or reference.',
   },
   [EntityObservableEnum.AUTONOMOUS_SYSTEM]: {
-    description:
-      'A collection of IP networks and routers under common administration.',
+    description: 'A collection of IP networks and routers under common administration.',
   },
   [EntityObservableEnum.BANK_ACCOUNT]: {
     type: z.literal(EntityObservableEnum.BANK_ACCOUNT),
     description: 'A financial account held at a bank or financial institution.',
   },
   [EntityObservableEnum.CREDENTIAL]: {
-    description:
-      'Authentication information such as usernames, passwords, or tokens.',
+    description: 'Authentication information such as usernames, passwords, or tokens.',
   },
   [EntityObservableEnum.CRYPTOCURRENCY_WALLET]: {
     description: 'A digital wallet used to store cryptocurrency credentials.',
@@ -638,19 +590,16 @@ export const entityObservableDescription = {
     description: 'A MAC address used for network interface identification.',
   },
   [EntityObservableEnum.MEDIA_CONTENT]: {
-    description:
-      'Digital media content such as images, videos, or audio files.',
+    description: 'Digital media content such as images, videos, or audio files.',
   },
   [EntityObservableEnum.MUTEX]: {
-    description:
-      'A mutual exclusion object used to manage access to shared resources.',
+    description: 'A mutual exclusion object used to manage access to shared resources.',
   },
   [EntityObservableEnum.NETWORK_TRAFFIC]: {
     description: 'Data packets or flows representing network traffic.',
   },
   [EntityObservableEnum.PAYMENT_CARD]: {
-    description:
-      'Credit or debit card information used for financial transactions.',
+    description: 'Credit or debit card information used for financial transactions.',
   },
   [EntityObservableEnum.PERSONA]: {
     description: "A digital representation of an individual's online identity.",
@@ -659,8 +608,7 @@ export const entityObservableDescription = {
     description: 'A telephone number used for contact or communication.',
   },
   [EntityObservableEnum.PROCESS]: {
-    description:
-      'An instance of a running program or process in an operating system.',
+    description: 'An instance of a running program or process in an operating system.',
   },
   [EntityObservableEnum.SOFTWARE]: {
     description: 'A software application or system.',
@@ -672,24 +620,19 @@ export const entityObservableDescription = {
     description: 'A number used to track shipments or other items.',
   },
   [EntityObservableEnum.URL]: {
-    description:
-      'A Uniform Resource Locator specifying the address of a resource on the internet.',
+    description: 'A Uniform Resource Locator specifying the address of a resource on the internet.',
   },
   [EntityObservableEnum.USER_ACCOUNT]: {
-    description:
-      'An account representing a user, used for authentication and access control.',
+    description: 'An account representing a user, used for authentication and access control.',
   },
   [EntityObservableEnum.USER_AGENT]: {
-    description:
-      'A string representing the client software making a request (e.g., browser, bot).',
+    description: 'A string representing the client software making a request (e.g., browser, bot).',
   },
   [EntityObservableEnum.WINDOWS_REGISTRY_KEY]: {
-    description:
-      'A key in the Windows Registry containing configuration settings.',
+    description: 'A key in the Windows Registry containing configuration settings.',
   },
   [EntityObservableEnum.WINDOWS_REGISTRY_VALUE_TYPE]: {
-    description:
-      'The type of a value in the Windows Registry (e.g., REG_SZ, REG_DWORD).',
+    description: 'The type of a value in the Windows Registry (e.g., REG_SZ, REG_DWORD).',
   },
   [EntityObservableEnum.X509_CERTIFICATE]: {
     description: 'A digital certificate conforming to the X.509 standard.',
@@ -698,7 +641,8 @@ export const entityObservableDescription = {
     description: 'A key used to securely authenticate to servers and services over SSH.',
   },
   [EntityObservableEnum.AI_PROMPT]: {
-    description: 'A prompt used to interact with an AI model, relevant for AI-related threat intelligence.',
+    description:
+      'A prompt used to interact with an AI model, relevant for AI-related threat intelligence.',
   },
   [EntityObservableEnum.IMEI]: {
     description: 'An identifier used to identify a specific mobile device.',

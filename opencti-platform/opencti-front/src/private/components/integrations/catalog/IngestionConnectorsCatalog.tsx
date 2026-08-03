@@ -19,7 +19,10 @@ interface IngestionConnectorsCatalogsProps {
   children: ({ data }: { data: IngestionConnectorsCatalogsQuery['response'] }) => React.ReactNode;
 }
 
-const IngestionConnectorsCatalogs: React.FC<IngestionConnectorsCatalogsProps> = ({ queryRef, children }) => {
+const IngestionConnectorsCatalogs: React.FC<IngestionConnectorsCatalogsProps> = ({
+  queryRef,
+  children,
+}) => {
   const data = usePreloadedQuery(ingestionConnectorsCatalogsQuery, queryRef);
 
   return children({ data });

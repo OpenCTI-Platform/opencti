@@ -3,7 +3,14 @@ import { Dispatch, SetStateAction, SyntheticEvent, useCallback, useState } from 
 import { v4 as uuid } from 'uuid';
 import { type SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
 import { OrderMode, PaginationOptions } from '../../components/list_lines';
-import { emptyFilterGroup, findFilterFromKey, isFilterGroupNotEmpty, isUniqFilter, removeEmptyFiltersFromList, useFetchFilterKeysSchema } from '../filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  findFilterFromKey,
+  isFilterGroupNotEmpty,
+  isUniqFilter,
+  removeEmptyFiltersFromList,
+  useFetchFilterKeysSchema,
+} from '../filters/filtersUtils';
 import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
 import { MESSAGING$ } from '../../relay/environment';
 import {
@@ -19,7 +26,12 @@ import {
 } from '../filters/filtersManageStateUtil';
 import { LocalStorage } from './useLocalStorageModel';
 import useBus from './useBus';
-import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from '../filters/filtersHelpers-types';
+import {
+  Filter,
+  FilterGroup,
+  FilterValue,
+  handleFilterHelpers,
+} from '../filters/filtersHelpers-types';
 
 export interface NumberOfElements {
   number?: number;
@@ -34,7 +46,11 @@ export interface UseLocalStorageHelpers extends handleFilterHelpers {
   handleAddFilter: HandleAddFilter;
   handleRemoveRepresentationFilter: (id: string, value: FilterValue) => void;
   handleAddRepresentationFilter: (id: string, value: FilterValue) => void;
-  handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => void;
+  handleChangeRepresentationFilter: (
+    id: string,
+    oldValue: FilterValue,
+    newValue: FilterValue,
+  ) => void;
   handleAddSingleValueFilter: (id: string, value?: FilterValue) => void;
   handleReplaceFilterValues: (id: string, values: FilterValue[]) => void;
   handleSwitchFilter: HandleAddFilter;
@@ -50,9 +66,13 @@ export interface UseLocalStorageHelpers extends handleFilterHelpers {
   handleRemoveSavedFilters: () => void;
 }
 
-export const localStorageToPaginationOptions = (
-  { searchTerm, filters, sortBy, orderAsc, ...props }: LocalStorage,
-): PaginationOptions => {
+export const localStorageToPaginationOptions = ({
+  searchTerm,
+  filters,
+  sortBy,
+  orderAsc,
+  ...props
+}: LocalStorage): PaginationOptions => {
   // Remove only display options, not query linked
   const localOptions = { ...props };
   delete localOptions.openExports;
@@ -102,10 +122,7 @@ const buildParamsFromHistory = (params: LocalStorage) => {
     redirectionMode: params.redirectionMode,
     pageSize: params.pageSize,
     view: params.view,
-    types:
-      params.types && params.types.length > 0
-        ? params.types.join(',')
-        : undefined,
+    types: params.types && params.types.length > 0 ? params.types.join(',') : undefined,
   });
 };
 
@@ -113,7 +130,8 @@ const searchParamsToStorage = (searchObject: URLSearchParams) => {
   const zoom = searchObject.get('zoom');
   const stringFilters = searchObject.get('filters');
   let filters = stringFilters ? JSON.parse(stringFilters) : undefined;
-  if (filters && !filters.mode) { // if filters are in the old format
+  if (filters && !filters.mode) {
+    // if filters are in the old format
     // Remove the filters from local storage
     filters = undefined;
     // Remove the filters from the URL
@@ -121,23 +139,20 @@ const searchParamsToStorage = (searchObject: URLSearchParams) => {
     const newUrl = currentUrl.split('?')[0];
     window.history.replaceState(null, '', newUrl);
     // Display a warning message
-    setTimeout(() => { // delay the message to be sure the page is loaded
-      MESSAGING$.notifyError('Your url contains filters in a deprecated format, parameters stored in the url have been removed.');
+    setTimeout(() => {
+      // delay the message to be sure the page is loaded
+      MESSAGING$.notifyError(
+        'Your url contains filters in a deprecated format, parameters stored in the url have been removed.',
+      );
     }, 1000);
   }
   return removeEmptyFields({
     filters,
     zoom: zoom ? JSON.parse(zoom) : undefined,
-    searchTerm: searchObject.get('searchTerm')
-      ? searchObject.get('searchTerm')
-      : undefined,
+    searchTerm: searchObject.get('searchTerm') ? searchObject.get('searchTerm') : undefined,
     sortBy: searchObject.get('sortBy'),
-    types: searchObject.get('types')
-      ? searchObject.get('types')?.split(',')
-      : undefined,
-    orderAsc: searchObject.get('orderAsc')
-      ? searchObject.get('orderAsc') === 'true'
-      : undefined,
+    types: searchObject.get('types') ? searchObject.get('types')?.split(',') : undefined,
+    orderAsc: searchObject.get('orderAsc') ? searchObject.get('orderAsc') === 'true' : undefined,
     timeField: searchObject.get('timeField'),
     dashboard: searchObject.get('dashboard'),
     pageSize: searchObject.get('pageSize'),
@@ -155,11 +170,7 @@ const setStoredValueToHistory = (
   if (!R.equals(urlParams, buildParamsFromHistory(finalParams))) {
     const effectiveParams = new URLSearchParams(urlParams);
     let newUrl = window.location.pathname;
-    if (
-      Object.entries(urlParams).some(
-        ([k, v]) => initialValue?.[k as keyof LocalStorage] !== v,
-      )
-    ) {
+    if (Object.entries(urlParams).some(([k, v]) => initialValue?.[k as keyof LocalStorage] !== v)) {
       newUrl += `?${effectiveParams.toString()}`;
     }
     window.history.replaceState(null, '', newUrl);
@@ -180,9 +191,7 @@ const useLocalStorage = <T extends LocalStorage = LocalStorage>(
     }
     try {
       const searchParams = new URLSearchParams(window.location.search);
-      const finalParams = !ignoreUri
-        ? searchParamsToStorage(searchParams)
-        : null;
+      const finalParams = !ignoreUri ? searchParamsToStorage(searchParams) : null;
       // Get from local storage by key
       const item = window.localStorage.getItem(key);
       // Parse stored json or if none return initialValue
@@ -217,9 +226,7 @@ const useLocalStorage = <T extends LocalStorage = LocalStorage>(
   });
   // Return a wrapped version of useState's setter function that ...
   // ... persists the new value to localStorage.
-  const setValue = (
-    value: T | ((val: T) => T),
-  ) => {
+  const setValue = (value: T | ((val: T) => T)) => {
     try {
       // Allow value to be a function so we have same API as useState
       let valueToStore = value instanceof Function ? value(storedValue) : value;
@@ -260,9 +267,12 @@ export const usePaginationLocalStorage = <U>(
 ): PaginationLocalStorage<U> => {
   const [viewStorage, setValue] = useLocalStorage(key, initialValue, ignoreUri);
 
-  const callback = useCallback((v: LocalStorage) => {
-    setValue(v);
-  }, [viewStorage]);
+  const callback = useCallback(
+    (v: LocalStorage) => {
+      setValue(v);
+    },
+    [viewStorage],
+  );
 
   const dispatch = useBus(`${key}_paginationStorage`, callback);
 
@@ -299,17 +309,20 @@ export const usePaginationLocalStorage = <U>(
       dispatch(`${key}_paginationStorage`, newValue);
     },
     handleSearch: (value: string) => {
-      const newValue = (value === '') ? {
-        ...viewStorage,
-        searchTerm: value,
-        sortBy: storedSortBy === '_score' ? undefined : storedSortBy,
-        orderAsc: storedOrderAsc,
-      } : {
-        ...viewStorage,
-        searchTerm: value,
-        sortBy: '_score',
-        orderAsc: false,
-      };
+      const newValue =
+        value === ''
+          ? {
+              ...viewStorage,
+              searchTerm: value,
+              sortBy: storedSortBy === '_score' ? undefined : storedSortBy,
+              orderAsc: storedOrderAsc,
+            }
+          : {
+              ...viewStorage,
+              searchTerm: value,
+              sortBy: '_score',
+              orderAsc: false,
+            };
       setValue(newValue);
       dispatch(`${key}_paginationStorage`, newValue);
     },
@@ -332,7 +345,8 @@ export const usePaginationLocalStorage = <U>(
           const filter = findFilterFromKey(viewStorage.filters.filters, k, op);
           if (filter) {
             const values = filter.values.filter((val) => val !== id);
-            if (values && values.length > 0) { // values is not empty: only remove 'id' from 'values'
+            if (values && values.length > 0) {
+              // values is not empty: only remove 'id' from 'values'
               const newFilterElement = {
                 id: uuid(),
                 key: k,
@@ -343,8 +357,7 @@ export const usePaginationLocalStorage = <U>(
               const newBaseFilters = {
                 ...viewStorage.filters,
                 filters: [
-                  ...viewStorage.filters.filters
-                    .filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
+                  ...viewStorage.filters.filters.filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
                   newFilterElement, // remove value=id
                 ],
               };
@@ -354,12 +367,12 @@ export const usePaginationLocalStorage = <U>(
               };
               setValue(newValue);
               dispatch(`${key}_paginationStorage`, newValue);
-            } else { // values is empty: remove the filter with key=k and operator=op
+            } else {
+              // values is empty: remove the filter with key=k and operator=op
               const newBaseFilters = {
                 ...viewStorage.filters,
                 filters: [
-                  ...viewStorage.filters.filters
-                    .filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
+                  ...viewStorage.filters.filters.filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
                 ],
               };
               const newValue = {
@@ -373,8 +386,7 @@ export const usePaginationLocalStorage = <U>(
         } else {
           const newBaseFilters = {
             ...viewStorage.filters,
-            filters: viewStorage.filters.filters
-              .filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
+            filters: viewStorage.filters.filters.filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
           };
           const newValue = {
             ...viewStorage,
@@ -408,18 +420,14 @@ export const usePaginationLocalStorage = <U>(
         dispatch(`${key}_paginationStorage`, newValue);
       }
     },
-    handleAddFilter: (
-      k: string,
-      id: string | null,
-      defaultOp = 'eq',
-      event?: SyntheticEvent,
-    ) => {
+    handleAddFilter: (k: string, id: string | null, defaultOp = 'eq', event?: SyntheticEvent) => {
       if (event) {
         event.stopPropagation();
         event.preventDefault();
       }
       let op = defaultOp;
-      if (id === null && op === 'eq') { // handle clicking on 'no label' in entities list
+      if (id === null && op === 'eq') {
+        // handle clicking on 'no label' in entities list
         op = 'nil';
       }
       const filter = viewStorage.filters
@@ -428,9 +436,7 @@ export const usePaginationLocalStorage = <U>(
       if (viewStorage.filters && filter) {
         let newValues: string[] = [];
         if (id !== null) {
-          newValues = isUniqFilter(k, filterKeysSchema)
-            ? [id]
-            : R.uniq([...filter.values, id]);
+          newValues = isUniqFilter(k, filterKeysSchema) ? [id] : R.uniq([...filter.values, id]);
         }
         const newFilterElement = {
           id: uuid(),
@@ -442,7 +448,9 @@ export const usePaginationLocalStorage = <U>(
         const newBaseFilters = {
           ...viewStorage.filters,
           filters: [
-            ...viewStorage.filters.filters.map((f) => (f.key === k && f.operator === op ? newFilterElement : f)),
+            ...viewStorage.filters.filters.map((f) =>
+              f.key === k && f.operator === op ? newFilterElement : f,
+            ),
           ],
         };
         const newValue = {
@@ -459,14 +467,16 @@ export const usePaginationLocalStorage = <U>(
           operator: op,
           mode: 'or',
         };
-        const newBaseFilters = viewStorage.filters ? {
-          ...viewStorage.filters,
-          filters: [...viewStorage.filters.filters, newFilterElement], // add new filter
-        } : {
-          mode: 'and',
-          filterGroups: [],
-          filters: [newFilterElement],
-        };
+        const newBaseFilters = viewStorage.filters
+          ? {
+              ...viewStorage.filters,
+              filters: [...viewStorage.filters.filters, newFilterElement], // add new filter
+            }
+          : {
+              mode: 'and',
+              filterGroups: [],
+              filters: [newFilterElement],
+            };
         const newValue = {
           ...viewStorage,
           filters: newBaseFilters,
@@ -475,10 +485,7 @@ export const usePaginationLocalStorage = <U>(
         dispatch(`${key}_paginationStorage`, newValue);
       }
     },
-    handleRemoveRepresentationFilter: (
-      id: string,
-      value: string,
-    ) => {
+    handleRemoveRepresentationFilter: (id: string, value: string) => {
       if (viewStorage?.filters) {
         const filters = viewStorage?.filters;
         const newValue = {
@@ -492,7 +499,8 @@ export const usePaginationLocalStorage = <U>(
       }
     },
     handleAddRepresentationFilter: (id: string, value: string) => {
-      if (value === null) { // handle clicking on 'no label' in entities list
+      if (value === null) {
+        // handle clicking on 'no label' in entities list
         const findCorrespondingFilter = viewStorage.filters?.filters.find((f) => id === f.id);
         if (findCorrespondingFilter && ['objectLabel'].includes(findCorrespondingFilter.key)) {
           if (viewStorage.filters) {
@@ -522,7 +530,11 @@ export const usePaginationLocalStorage = <U>(
         dispatch(`${key}_paginationStorage`, newValue);
       }
     },
-    handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => {
+    handleChangeRepresentationFilter: (
+      id: string,
+      oldValue: FilterValue,
+      newValue: FilterValue,
+    ) => {
       const filters = viewStorage?.filters;
       if (!filters) {
         return;
@@ -583,12 +595,7 @@ export const usePaginationLocalStorage = <U>(
         dispatch(`${key}_paginationStorage`, newValue);
       }
     },
-    handleSwitchFilter: (
-      k: string,
-      id: string | null,
-      op = 'eq',
-      event?: SyntheticEvent,
-    ) => {
+    handleSwitchFilter: (k: string, id: string | null, op = 'eq', event?: SyntheticEvent) => {
       if (event) {
         event.stopPropagation();
         event.preventDefault();
@@ -604,8 +611,7 @@ export const usePaginationLocalStorage = <U>(
         const newBaseFilters = {
           ...viewStorage.filters,
           filters: [
-            ...viewStorage.filters.filters
-              .filter((f) => f.key !== k || f.operator !== op), // remove filter with k as key and op as operator
+            ...viewStorage.filters.filters.filter((f) => f.key !== k || f.operator !== op), // remove filter with k as key and op as operator
             newFilterElement, // add new filter
           ],
         };
@@ -616,14 +622,16 @@ export const usePaginationLocalStorage = <U>(
         setValue(newValue);
         dispatch(`${key}_paginationStorage`, newValue);
       } else {
-        const newBaseFilters = viewStorage.filters ? {
-          ...viewStorage.filters,
-          filters: [...viewStorage.filters.filters, newFilterElement], // set new filter
-        } : {
-          mode: 'and',
-          filterGroups: [],
-          filters: [newFilterElement],
-        };
+        const newBaseFilters = viewStorage.filters
+          ? {
+              ...viewStorage.filters,
+              filters: [...viewStorage.filters.filters, newFilterElement], // set new filter
+            }
+          : {
+              mode: 'and',
+              filterGroups: [],
+              filters: [newFilterElement],
+            };
         const newValue = {
           ...viewStorage,
           filters: newBaseFilters,
@@ -663,7 +671,8 @@ export const usePaginationLocalStorage = <U>(
     },
     handleChangeView: (value: string) => {
       const oldValue = viewStorage.view;
-      const noReset = (oldValue === 'lines' && value === 'cards') || (oldValue === 'cards' && value === 'lines');
+      const noReset =
+        (oldValue === 'lines' && value === 'cards') || (oldValue === 'cards' && value === 'lines');
       const newValue = noReset
         ? {
             ...viewStorage,
@@ -684,7 +693,11 @@ export const usePaginationLocalStorage = <U>(
       setValue(newValue);
       dispatch(`${key}_paginationStorage`, newValue);
     },
-    handleSetNumberOfElements: (nbElements: { number?: number; symbol?: string; original?: number }) => {
+    handleSetNumberOfElements: (nbElements: {
+      number?: number;
+      symbol?: string;
+      original?: number;
+    }) => {
       if (!R.equals(nbElements, viewStorage.numberOfElements)) {
         const { number, symbol, original } = nbElements;
         const newValue = {
@@ -752,7 +765,10 @@ export const usePaginationLocalStorage = <U>(
       const { filters } = viewStorage;
       const newValue = {
         ...viewStorage,
-        filters: handleAddFilterWithEmptyValueUtil({ filters: filters ?? emptyFilterGroup, filter }),
+        filters: handleAddFilterWithEmptyValueUtil({
+          filters: filters ?? emptyFilterGroup,
+          filter,
+        }),
         latestAddFilterId: filter.id,
         latestAddFilterKey: filter.key,
       };

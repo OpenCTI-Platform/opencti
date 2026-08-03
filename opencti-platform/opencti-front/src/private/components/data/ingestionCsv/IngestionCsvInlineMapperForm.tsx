@@ -7,7 +7,9 @@ import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import { FormikHelpers } from 'formik/dist/types';
 import { SelectChangeEvent } from '@mui/material/Select';
-import CsvMapperRepresentationForm, { RepresentationFormEntityOption } from '@components/data/csvMapper/representations/CsvMapperRepresentationForm';
+import CsvMapperRepresentationForm, {
+  RepresentationFormEntityOption,
+} from '@components/data/csvMapper/representations/CsvMapperRepresentationForm';
 import { CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { CsvMapperProvider } from '@components/data/csvMapper/CsvMapperContext';
@@ -20,11 +22,12 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import { representationInitialization } from '../csvMapper/representations/RepresentationUtils';
 import { CsvMapperAddInput, formDataToCsvMapper } from '../csvMapper/CsvMapperUtils';
 
-const csvMapperValidation = (t_i18n: (s: string) => string) => Yup.object().shape({
-  has_header: Yup.boolean().required(t_i18n('This field is required')),
-  separator: Yup.string().trim().required(t_i18n('This field is required')),
-  skipLineChar: Yup.string().max(1),
-});
+const csvMapperValidation = (t_i18n: (s: string) => string) =>
+  Yup.object().shape({
+    has_header: Yup.boolean().required(t_i18n('This field is required')),
+    separator: Yup.string().trim().required(t_i18n('This field is required')),
+    skipLineChar: Yup.string().max(1),
+  });
 
 const defaultCsvMapperValue: CsvMapperFormData = {
   id: '',
@@ -42,8 +45,14 @@ interface CsvMapperFormProps {
   returnCSVFormat?: (field: string, value: CsvMapperAddInput) => void;
 }
 
-const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, setCSVMapperFieldValue, returnCSVFormat }) => {
-  const csvMapperFormData = csvMapper ? csvFeedCsvMapperToFormData(csvMapper) : defaultCsvMapperValue;
+const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({
+  csvMapper,
+  setCSVMapperFieldValue,
+  returnCSVFormat,
+}) => {
+  const csvMapperFormData = csvMapper
+    ? csvFeedCsvMapperToFormData(csvMapper)
+    : defaultCsvMapperValue;
   const { t_i18n } = useFormatter();
   // extracting available entities and relationships types from schema
   const { schema } = useAuth();
@@ -82,7 +91,8 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
         ...scr,
         value: scr.id,
         type: 'entity_Stix-Core-Relationship',
-      })).concat({
+      }))
+      .concat({
         id: 'stix-sighting-relationship',
         label: 'stix-sighting-relationship',
         value: 'stix-sighting-relationship',
@@ -118,8 +128,9 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
   // -- ERRORS --
   // on edit mode, csvMapperFormData.errors might be set; on create mode backend validation is not done yet so error is null
   const [hasError, setHasError] = useState<boolean>(
-    !!csvMapperFormData.errors?.length
-    || (csvMapperFormData.entity_representations.length === 0 && csvMapperFormData.relationship_representations.length === 0),
+    !!csvMapperFormData.errors?.length ||
+      (csvMapperFormData.entity_representations.length === 0 &&
+        csvMapperFormData.relationship_representations.length === 0),
   );
   let errors: Map<string, string> = new Map();
   const handleRepresentationErrors = (key: string, value: boolean) => {
@@ -129,12 +140,18 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
 
   useEffect(() => {
     if (returnCSVFormat) {
-      returnCSVFormat('csv_mapper', formDataToCsvMapper(csvMapperFormData) as unknown as CsvMapperAddInput);
+      returnCSVFormat(
+        'csv_mapper',
+        formDataToCsvMapper(csvMapperFormData) as unknown as CsvMapperAddInput,
+      );
     }
   }, []);
 
   const handleOnSubmit = (values: CsvMapperFormData) => {
-    setCSVMapperFieldValue('csv_mapper', formDataToCsvMapper(values) as unknown as CsvMapperAddInput);
+    setCSVMapperFieldValue(
+      'csv_mapper',
+      formDataToCsvMapper(values) as unknown as CsvMapperAddInput,
+    );
   };
   return (
     <CsvMapperProvider>
@@ -147,16 +164,20 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
         {({ setFieldValue, values, dirty }) => {
           useEffect(() => {
             if (dirty && !hasError) {
-              setCSVMapperFieldValue('csv_mapper', formDataToCsvMapper(values) as unknown as CsvMapperAddInput);
+              setCSVMapperFieldValue(
+                'csv_mapper',
+                formDataToCsvMapper(values) as unknown as CsvMapperAddInput,
+              );
             }
           }, [values, dirty, hasError]);
           return (
             <Form>
-              <Box sx={{
-                display: 'flex',
-                alignItems: 'center',
-                marginTop: 2.5,
-              }}
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginTop: 2.5,
+                }}
               >
                 <Field
                   component={SwitchField}
@@ -176,38 +197,30 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
                   />
                 </Tooltip>
               </Box>
-              <Box sx={{
-                marginTop: 2.5,
-              }}
+              <Box
+                sx={{
+                  marginTop: 2.5,
+                }}
               >
                 <Typography>{t_i18n('CSV separator')}</Typography>
-                <Box sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
                 >
                   <RadioGroup
                     aria-label="CSV separator"
                     name="separator"
                     style={{ flexDirection: 'row' }}
                     value={values.separator}
-                    onChange={(event: SelectChangeEvent) => setFieldValue('separator', event.target.value)}
+                    onChange={(event: SelectChangeEvent) =>
+                      setFieldValue('separator', event.target.value)
+                    }
                   >
-                    <FormControlLabel
-                      value=","
-                      control={<Radio />}
-                      label={t_i18n('Comma')}
-                    />
-                    <FormControlLabel
-                      value=";"
-                      control={<Radio />}
-                      label={t_i18n('Semicolon')}
-                    />
-                    <FormControlLabel
-                      value="|"
-                      control={<Radio />}
-                      label={t_i18n('Pipe')}
-                    />
+                    <FormControlLabel value="," control={<Radio />} label={t_i18n('Comma')} />
+                    <FormControlLabel value=";" control={<Radio />} label={t_i18n('Semicolon')} />
+                    <FormControlLabel value="|" control={<Radio />} label={t_i18n('Pipe')} />
                   </RadioGroup>
                 </Box>
               </Box>
@@ -217,7 +230,6 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
                   display: 'flex',
                   alignItems: 'end',
                   gap: '8px',
-
                 }}
               >
                 <Field
@@ -238,11 +250,12 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
                 </Tooltip>
               </Box>
 
-              <Box sx={{
-                display: 'flex',
-                alignItems: 'center',
-                marginTop: 2.5,
-              }}
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginTop: 2.5,
+                }}
               >
                 <Typography variant="h3" sx={{ m: 0 }}>
                   {t_i18n('Representations for entity')}
@@ -250,8 +263,7 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
                 <IconButton
                   color="secondary"
                   aria-label="Add"
-                  onClick={() => onAddEntityRepresentation(setFieldValue, values)
-                  }
+                  onClick={() => onAddEntityRepresentation(setFieldValue, values)}
                 >
                   <Add fontSize="small" />
                 </IconButton>
@@ -283,11 +295,12 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
                 )}
               />
 
-              <Box sx={{
-                display: 'flex',
-                alignItems: 'center',
-                marginTop: 2.5,
-              }}
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginTop: 2.5,
+                }}
               >
                 <Typography variant="h3" sx={{ m: 0 }}>
                   {t_i18n('Representations for relationship')}
@@ -295,8 +308,7 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
                 <IconButton
                   color="secondary"
                   aria-label="Add"
-                  onClick={() => onAddRelationshipRepresentation(setFieldValue, values)
-                  }
+                  onClick={() => onAddRelationshipRepresentation(setFieldValue, values)}
                 >
                   <Add fontSize="small" />
                 </IconButton>

@@ -21,7 +21,11 @@ import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCo
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import { getPaddingRight } from '../../../../utils/utils';
 import GroupingEdition from './GroupingEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
@@ -90,9 +94,7 @@ const groupingQuery = graphql`
 
 const RootGrouping = () => {
   const { groupingId } = useParams() as { groupingId: string };
-  const subConfig = useMemo<
-    GraphQLSubscriptionConfig<RootReportSubscription>
-  >(
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootReportSubscription>>(
     () => ({
       subscription,
       variables: { id: groupingId },
@@ -100,7 +102,8 @@ const RootGrouping = () => {
     [groupingId],
   );
   const location = useLocation();
-  const enableReferences = useIsEnforceReference('Grouping') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
+  const enableReferences =
+    useIsEnforceReference('Grouping') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
 
@@ -118,27 +121,44 @@ const RootGrouping = () => {
           if (props) {
             if (props.grouping) {
               const { grouping } = props;
-              const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
+              const isKnowledgeOrContent =
+                location.pathname.includes('knowledge') || location.pathname.includes('content');
               const paddingRight = getPaddingRight(location.pathname, basePath, false);
-              const currentAccessRight = useGetCurrentUserAccessRight(grouping.currentUserAccessRight);
+              const currentAccessRight = useGetCurrentUserAccessRight(
+                grouping.currentUserAccessRight,
+              );
               return (
                 <div style={{ paddingRight }}>
-                  <Breadcrumbs elements={[
-                    { label: t_i18n('Analyses') },
-                    { label: t_i18n('Groupings'), link: PATH_GROUPINGS },
-                    { label: grouping.name, current: true },
-                  ]}
+                  <Breadcrumbs
+                    elements={[
+                      { label: t_i18n('Analyses') },
+                      { label: t_i18n('Groupings'), link: PATH_GROUPINGS },
+                      { label: grouping.name, current: true },
+                    ]}
                   />
                   <ContainerHeader
                     container={grouping}
-                    EditComponent={(
+                    EditComponent={
                       <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
                         <GroupingEdition groupingId={grouping.id} />
                       </Security>
-                    )}
-                    DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
-                      <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]} hasAccess={currentAccessRight.canEdit}>
-                        <GroupingDeletion groupingId={grouping.id} isOpen={isOpen} handleClose={onClose} />
+                    }
+                    DeleteComponent={({
+                      isOpen,
+                      onClose,
+                    }: {
+                      isOpen: boolean;
+                      onClose: () => void;
+                    }) => (
+                      <Security
+                        needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
+                        hasAccess={currentAccessRight.canEdit}
+                      >
+                        <GroupingDeletion
+                          groupingId={grouping.id}
+                          isOpen={isOpen}
+                          handleClose={onClose}
+                        />
                       </Security>
                     )}
                     enableQuickSubscription={true}
@@ -151,8 +171,7 @@ const RootGrouping = () => {
                     entity={grouping}
                     basePath={basePath}
                     pages={{
-                      overview:
-                        <Grouping grouping={grouping} />,
+                      overview: <Grouping grouping={grouping} />,
                       knowledge: (
                         <GroupingKnowledgeComponent
                           grouping={grouping}
@@ -160,10 +179,7 @@ const RootGrouping = () => {
                         />
                       ),
                       content: (
-                        <StixCoreObjectContentRoot
-                          stixCoreObject={grouping}
-                          isContainer={true}
-                        />
+                        <StixCoreObjectContentRoot stixCoreObject={grouping} isContainer={true} />
                       ),
                       entities: (
                         <ContainerStixDomainObjects
@@ -188,12 +204,22 @@ const RootGrouping = () => {
                         />
                       ),
                     }}
-                    extraActions={!isKnowledgeOrContent && (
-                      <>
-                        <AIInsights id={grouping.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
-                        <StixCoreObjectSecurityCoverage id={grouping.id} coverage={grouping.securityCoverage} />
-                      </>
-                    )}
+                    extraActions={
+                      !isKnowledgeOrContent && (
+                        <>
+                          <AIInsights
+                            id={grouping.id}
+                            tabs={['containers']}
+                            defaultTab="containers"
+                            isContainer={true}
+                          />
+                          <StixCoreObjectSecurityCoverage
+                            id={grouping.id}
+                            coverage={grouping.securityCoverage}
+                          />
+                        </>
+                      )
+                    }
                   />
                 </div>
               );

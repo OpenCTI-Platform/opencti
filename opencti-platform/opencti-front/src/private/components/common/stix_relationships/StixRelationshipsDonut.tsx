@@ -5,7 +5,11 @@ import { useFormatter } from '../../../../components/i18n';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
-import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import type {
+  WidgetDataSelection,
+  WidgetHost,
+  WidgetParameters,
+} from '../../../../utils/widget/widget';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { StixRelationshipsDonutDistributionQuery } from '@components/common/stix_relationships/__generated__/StixRelationshipsDonutDistributionQuery.graphql';
@@ -116,10 +120,7 @@ const StixRelationshipsDonutComponent = ({
   dataSelection,
   onMounted,
 }: StixRelationshipsDonutComponentProps) => {
-  const data = usePreloadedQuery(
-    stixRelationshipsDonutsDistributionQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery(stixRelationshipsDonutsDistributionQuery, queryRef);
 
   if (!data?.stixRelationshipsDistribution?.length) {
     return <WidgetNoData />;
@@ -139,7 +140,10 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixRelationshipsDonutDistributionQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { filters, dynamicFrom, dynamicTo } = buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
+  const { filters, dynamicFrom, dynamicTo } = buildRelationshipSingleWidgetBaseQueryVariables(
+    selection,
+    config,
+  );
 
   return {
     field: selection.attribute ?? 'entity_type',
@@ -176,7 +180,13 @@ const StixRelationshipsDonut = ({
 }: StixRelationshipsDonutProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsDonutDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixRelationshipsDonutDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,

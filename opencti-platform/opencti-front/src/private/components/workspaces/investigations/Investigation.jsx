@@ -29,12 +29,7 @@ class InvestigationComponent extends Component {
           render={({ props }) => {
             if (props) {
               if (props.workspace) {
-                return (
-                  <InvestigationGraph
-                    id={workspace.id}
-                    data={props.workspace}
-                  />
-                );
+                return <InvestigationGraph id={workspace.id} data={props.workspace} />;
               }
               return <ErrorNotFound />;
             }

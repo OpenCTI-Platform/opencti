@@ -35,7 +35,7 @@ export const supportPackageLinesQuery = graphql`
       @arguments(
         search: $search
         count: $count
-        cursor: $cursor   
+        cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
       )
@@ -43,14 +43,15 @@ export const supportPackageLinesQuery = graphql`
 `;
 
 const supportPackageLinesFragment = graphql`
-  fragment SupportPackageLines_data on Query 
+  fragment SupportPackageLines_data on Query
   @argumentDefinitions(
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
     orderBy: { type: "SupportPackageOrdering", defaultValue: created_at }
-    orderMode: { type: "OrderingMode", defaultValue: desc } 
-  ) @refetchable(queryName: "SupportPackageLinesRefetchQuery") {
+    orderMode: { type: "OrderingMode", defaultValue: desc }
+  )
+  @refetchable(queryName: "SupportPackageLinesRefetchQuery") {
     supportPackages(
       search: $search
       first: $count
@@ -115,16 +116,13 @@ const SupportPackageLines: FunctionComponent<SupportPackageLinesProps> = ({
         isLoading={isLoadingMore}
         dataColumns={dataColumns}
         dataList={data?.supportPackages?.edges ?? []}
-        globalCount={
-          data?.supportPackages?.pageInfo?.globalCount ?? nbOfRowsToLoad
-        }
+        globalCount={data?.supportPackages?.pageInfo?.globalCount ?? nbOfRowsToLoad}
         LineComponent={SupportPackageLine}
         DummyLineComponent={LineDummy}
         nbOfRowsToLoad={nbOfRowsToLoad}
         paginationOptions={paginationOptions}
       />
     </>
-
   );
 };
 

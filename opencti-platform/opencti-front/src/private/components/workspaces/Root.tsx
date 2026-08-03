@@ -39,26 +39,11 @@ const InvestigationWorkspaceRoute = () => (
 
 const Root = () => (
   <Routes>
-    <Route
-      path="/dashboards/*"
-      element={<DashboardRoute />}
-    />
-    <Route
-      path="/dashboards/:workspaceId/*"
-      element={<DashboardWorkspaceRoute />}
-    />
-    <Route
-      path="/dashboards_public/*"
-      element={<PublicDashboardRoute />}
-    />
-    <Route
-      path="/investigations/*"
-      element={<InvestigationRoute />}
-    />
-    <Route
-      path="/investigations/:workspaceId/*"
-      element={<InvestigationWorkspaceRoute />}
-    />
+    <Route path="/dashboards/*" element={<DashboardRoute />} />
+    <Route path="/dashboards/:workspaceId/*" element={<DashboardWorkspaceRoute />} />
+    <Route path="/dashboards_public/*" element={<PublicDashboardRoute />} />
+    <Route path="/investigations/*" element={<InvestigationRoute />} />
+    <Route path="/investigations/:workspaceId/*" element={<InvestigationWorkspaceRoute />} />
   </Routes>
 );
 

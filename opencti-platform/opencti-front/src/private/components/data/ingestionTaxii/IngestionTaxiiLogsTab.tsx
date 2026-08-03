@@ -33,7 +33,9 @@ const IngestionTaxiiLogsTabBody: React.FC<{
   feedName: string;
 }> = ({ queryRef, feedName }) => {
   const data = usePreloadedQuery(ingestionTaxiiLogsTabQuery, queryRef);
-  const logs = (data?.ingestionTaxiiLogs ?? []).filter((e): e is NonNullable<typeof e> => e != null);
+  const logs = (data?.ingestionTaxiiLogs ?? []).filter(
+    (e): e is NonNullable<typeof e> => e != null,
+  );
 
   return <IngestionLogTab name={feedName} logHistory={logs} />;
 };
@@ -41,7 +43,9 @@ const IngestionTaxiiLogsTabBody: React.FC<{
 // Displays the TAXII feed ingestion logs directly in the feed detail page's "Logs" tab.
 const IngestionTaxiiLogsTab: React.FC<IngestionTaxiiLogsTabProps> = ({ feedId, feedName }) => {
   const { t_i18n } = useFormatter();
-  const [queryRef, loadQuery] = useQueryLoader<IngestionTaxiiLogsTabQuery>(ingestionTaxiiLogsTabQuery);
+  const [queryRef, loadQuery] = useQueryLoader<IngestionTaxiiLogsTabQuery>(
+    ingestionTaxiiLogsTabQuery,
+  );
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
@@ -77,11 +81,11 @@ const IngestionTaxiiLogsTab: React.FC<IngestionTaxiiLogsTabProps> = ({ feedId, f
       </Stack>
       {queryRef ? (
         <Suspense
-          fallback={(
+          fallback={
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
               <CircularProgress size={32} />
             </Box>
-          )}
+          }
         >
           <IngestionTaxiiLogsTabBody queryRef={queryRef} feedName={feedName} />
         </Suspense>

@@ -66,12 +66,8 @@ const CustomFieldPopover: FunctionComponent<CustomFieldPopoverProps> = ({
       variables: {
         id: data.id,
       },
-      updater: (store: RecordSourceSelectorProxy) => deleteNode(
-        store,
-        'Pagination_customFieldDefinitions',
-        paginationOptions,
-        data.id,
-      ),
+      updater: (store: RecordSourceSelectorProxy) =>
+        deleteNode(store, 'Pagination_customFieldDefinitions', paginationOptions, data.id),
       onCompleted: () => {
         setDeleting(false);
         handleCloseDelete();
@@ -100,11 +96,7 @@ const CustomFieldPopover: FunctionComponent<CustomFieldPopoverProps> = ({
         <QueryRenderer
           query={customFieldEditionQuery}
           variables={{ id: data.id }}
-          render={({
-            props,
-          }: {
-            props: CustomFieldPopoverEditionQuery$data;
-          }) => {
+          render={({ props }: { props: CustomFieldPopoverEditionQuery$data }) => {
             if (props && props.customFieldDefinition) {
               return (
                 <CustomFieldEdition
@@ -123,7 +115,9 @@ const CustomFieldPopover: FunctionComponent<CustomFieldPopoverProps> = ({
         message={t_i18n('Do you want to delete this custom field?')}
         warning={{
           title: t_i18n('This is a highly destructive action'),
-          message: t_i18n('Deleting this custom field will remove its value from all entities currently using it.'),
+          message: t_i18n(
+            'Deleting this custom field will remove its value from all entities currently using it.',
+          ),
         }}
       />
     </>

@@ -29,20 +29,17 @@ const PositionEditionContainer = (props) => {
   );
 };
 
-const PositionEditionFragment = createFragmentContainer(
-  PositionEditionContainer,
-  {
-    position: graphql`
-      fragment PositionEditionContainer_position on Position {
-        id
-        ...PositionEditionOverview_position
-        editContext {
-          name
-          focusOn
-        }
+const PositionEditionFragment = createFragmentContainer(PositionEditionContainer, {
+  position: graphql`
+    fragment PositionEditionContainer_position on Position {
+      id
+      ...PositionEditionOverview_position
+      editContext {
+        name
+        focusOn
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default PositionEditionFragment;

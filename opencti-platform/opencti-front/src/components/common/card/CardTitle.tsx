@@ -9,12 +9,7 @@ interface CardTitleProps extends PropsWithChildren {
   sx?: SxProps;
 }
 
-const CardTitle = ({
-  children,
-  alignItems = 'center',
-  action,
-  sx = {},
-}: CardTitleProps) => {
+const CardTitle = ({ children, alignItems = 'center', action, sx = {} }: CardTitleProps) => {
   const theme = useTheme<Theme>();
 
   const containerSx: SxProps = {
@@ -35,12 +30,7 @@ const CardTitle = ({
   };
 
   return (
-    <Stack
-      direction="row"
-      justifyContent="space-between"
-      alignItems={alignItems}
-      sx={containerSx}
-    >
+    <Stack direction="row" justifyContent="space-between" alignItems={alignItems} sx={containerSx}>
       <Typography variant="h5" sx={titleSx}>
         {children}
       </Typography>

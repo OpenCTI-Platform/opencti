@@ -14,15 +14,15 @@ import { SyncImportQuery$data } from './__generated__/SyncImportQuery.graphql';
 
 export const syncImportQuery = graphql`
   query SyncImportQuery($file: Upload!) {
-      synchronizerAddInputFromImport(file: $file) {
-        name,
-        uri,
-        stream_id,
-        current_state_date,
-        listen_deletion,
-        ssl_verify,
-        no_dependencies,
-        synchronized,
+    synchronizerAddInputFromImport(file: $file) {
+      name
+      uri
+      stream_id
+      current_state_date
+      listen_deletion
+      ssl_verify
+      no_dependencies
+      synchronized
     }
   }
 `;
@@ -34,12 +34,18 @@ interface SyncImportProps {
   // Called when the prefilled creation drawer closes (creation or cancel).
   onClose?: () => void;
 }
-const SyncImport: FunctionComponent<SyncImportProps> = ({ paginationOptions, hideTrigger, onClose }) => {
+const SyncImport: FunctionComponent<SyncImportProps> = ({
+  paginationOptions,
+  hideTrigger,
+  onClose,
+}) => {
   const { fileId, serviceInstanceId } = useParams();
   const navigate = useNavigate();
   const inputFileRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState<boolean>(false);
-  const [ingestSynchronizerData, setIngestSynchronizerData] = useState<SyncImportQuery$data['synchronizerAddInputFromImport'] | undefined>(undefined);
+  const [ingestSynchronizerData, setIngestSynchronizerData] = useState<
+    SyncImportQuery$data['synchronizerAddInputFromImport'] | undefined
+  >(undefined);
   const { t_i18n } = useFormatter();
 
   const handleFileImport = async (file: File) => {

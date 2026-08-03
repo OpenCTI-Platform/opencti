@@ -14,9 +14,7 @@ export const up = async (next) => {
     },
     query: {
       bool: {
-        must: [
-          { term: { 'entity_type.keyword': { value: 'trigger' } } },
-        ],
+        must: [{ term: { 'entity_type.keyword': { value: 'trigger' } } }],
       },
     },
   };
@@ -33,13 +31,15 @@ export const up = async (next) => {
     },
     query: {
       bool: {
-        must: [
-          { term: { 'entity_type.keyword': { value: 'trigger' } } },
-        ],
+        must: [{ term: { 'entity_type.keyword': { value: 'trigger' } } }],
       },
     },
   };
-  await elUpdateByQueryForMigration('[MIGRATION] Trigger event_types attribute modification', READ_DATA_INDICES, eventTypeUpdateQuery);
+  await elUpdateByQueryForMigration(
+    '[MIGRATION] Trigger event_types attribute modification',
+    READ_DATA_INDICES,
+    eventTypeUpdateQuery,
+  );
   logApp.info('[MIGRATION] Trigger type modifications done.');
   next();
 };

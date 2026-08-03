@@ -3,7 +3,10 @@ import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
 import { graphql } from 'react-relay';
 import { FileUploadOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton/ToggleButton';
-import { IngestionJsonCreationContainer, IngestionJsonImportedInput } from '@components/data/ingestionJson/IngestionJsonCreation';
+import {
+  IngestionJsonCreationContainer,
+  IngestionJsonImportedInput,
+} from '@components/data/ingestionJson/IngestionJsonCreation';
 import { IngestionJsonLinesPaginationQuery$variables } from '@components/data/ingestionJson/__generated__/IngestionJsonLinesPaginationQuery.graphql';
 import { IngestionJsonImportMutation } from '@components/data/ingestionJson/__generated__/IngestionJsonImportMutation.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -55,12 +58,18 @@ interface IngestionJsonImportProps {
   onClose?: () => void;
 }
 
-const IngestionJsonImport: FunctionComponent<IngestionJsonImportProps> = ({ paginationOptions, hideTrigger, onClose }) => {
+const IngestionJsonImport: FunctionComponent<IngestionJsonImportProps> = ({
+  paginationOptions,
+  hideTrigger,
+  onClose,
+}) => {
   const inputFileRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState<boolean>(false);
   const [importedInput, setImportedInput] = useState<IngestionJsonImportedInput | null>(null);
   const { t_i18n } = useFormatter();
-  const [commitImportMutation] = useApiMutation<IngestionJsonImportMutation>(ingestionJsonImportMutation);
+  const [commitImportMutation] = useApiMutation<IngestionJsonImportMutation>(
+    ingestionJsonImportMutation,
+  );
 
   const fileImport = (event: BaseSyntheticEvent) => {
     const file = event.target.files[0];

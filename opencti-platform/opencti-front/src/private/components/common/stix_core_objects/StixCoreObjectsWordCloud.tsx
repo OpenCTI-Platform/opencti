@@ -109,12 +109,7 @@ const StixCoreObjectsWordCloudComponent = ({
   if (data.length === 0) {
     return <WidgetNoData />;
   }
-  return (
-    <WidgetWordCloud
-      data={data}
-      groupBy={groupBy}
-    />
-  );
+  return <WidgetWordCloud data={data} groupBy={groupBy} />;
 };
 
 const DATA_SELECTION_TYPES = ['Stix-Core-Object'];
@@ -124,7 +119,10 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixCoreObjectsWordCloudDistributionQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(selection, config);
+  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(
+    selection,
+    config,
+  );
 
   return {
     types: DATA_SELECTION_TYPES,
@@ -160,7 +158,13 @@ const StixCoreObjectsWordCloud = ({
   refreshRate = null,
 }: StixCoreObjectsWordCloudProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsWordCloudDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixCoreObjectsWordCloudDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,

@@ -209,9 +209,14 @@ const buildInitialValues = (data: SamlProviderData): SamlFormValues => {
     issuer: conf.issuer ?? '',
     entry_point: conf.entry_point ?? '',
     idp_certificate: conf.idp_certificate ?? '',
-    private_key_action: (conf.private_key as SecretInfo)?.source === 'EXTERNAL' && (conf.private_key as SecretInfo)?.external_secret_name ? 'use_external_secret' : 'keep',
+    private_key_action:
+      (conf.private_key as SecretInfo)?.source === 'EXTERNAL' &&
+      (conf.private_key as SecretInfo)?.external_secret_name
+        ? 'use_external_secret'
+        : 'keep',
     private_key_new_value: '',
-    private_key_secret_name: ((conf.private_key as SecretInfo)?.external_secret_name as string) ?? '',
+    private_key_secret_name:
+      ((conf.private_key as SecretInfo)?.external_secret_name as string) ?? '',
     logout_remote: conf.logout_remote ?? false,
     want_assertions_signed: conf.want_assertions_signed ?? false,
     want_authn_response_signed: conf.want_authn_response_signed ?? false,
@@ -225,9 +230,14 @@ const buildInitialValues = (data: SamlProviderData): SamlFormValues => {
     disable_requested_authn_context: conf.disable_requested_authn_context ?? false,
     disable_request_acs_url: conf.disable_request_acs_url ?? false,
     skip_request_compression: conf.skip_request_compression ?? false,
-    decryption_pvk_action: (conf.decryption_pvk as SecretInfo)?.source === 'EXTERNAL' && (conf.decryption_pvk as SecretInfo)?.external_secret_name ? 'use_external_secret' : 'keep',
+    decryption_pvk_action:
+      (conf.decryption_pvk as SecretInfo)?.source === 'EXTERNAL' &&
+      (conf.decryption_pvk as SecretInfo)?.external_secret_name
+        ? 'use_external_secret'
+        : 'keep',
     decryption_pvk_new_value: '',
-    decryption_pvk_secret_name: ((conf.decryption_pvk as SecretInfo)?.external_secret_name as string) ?? '',
+    decryption_pvk_secret_name:
+      ((conf.decryption_pvk as SecretInfo)?.external_secret_name as string) ?? '',
     decryption_cert: conf.decryption_cert ?? '',
     email_expr: conf.user_info_mapping?.email_expr ?? '',
     name_expr: conf.user_info_mapping?.name_expr ?? '',
@@ -237,7 +247,10 @@ const buildInitialValues = (data: SamlProviderData): SamlFormValues => {
       default_groups: [...(conf.groups_mapping?.default_groups ?? [])],
       groups_expr: [...(conf.groups_mapping?.groups_expr ?? [])],
       group_splitter: conf.groups_mapping?.group_splitter ?? '',
-      groups_mapping: (conf.groups_mapping?.groups_mapping ?? []).map((m) => ({ provider: m.provider, platform: m.platform })),
+      groups_mapping: (conf.groups_mapping?.groups_mapping ?? []).map((m) => ({
+        provider: m.provider,
+        platform: m.platform,
+      })),
       auto_create_groups: conf.groups_mapping?.auto_create_groups ?? false,
       prevent_default_groups: conf.groups_mapping?.prevent_default_groups ?? false,
       extend_platform_groups: conf.groups_mapping?.extend_platform_groups ?? false,
@@ -246,7 +259,10 @@ const buildInitialValues = (data: SamlProviderData): SamlFormValues => {
       default_organizations: [...(conf.organizations_mapping?.default_organizations ?? [])],
       organizations_expr: [...(conf.organizations_mapping?.organizations_expr ?? [])],
       organizations_splitter: conf.organizations_mapping?.organizations_splitter ?? '',
-      organizations_mapping: (conf.organizations_mapping?.organizations_mapping ?? []).map((m) => ({ provider: m.provider, platform: m.platform })),
+      organizations_mapping: (conf.organizations_mapping?.organizations_mapping ?? []).map((m) => ({
+        provider: m.provider,
+        platform: m.platform,
+      })),
       auto_create_organizations: conf.organizations_mapping?.auto_create_organizations ?? false,
     },
     extra_conf: (conf.extra_conf ?? []).map((e) => ({ type: e.type, key: e.key, value: e.value })),
@@ -283,7 +299,9 @@ const SamlProviderForm = ({
   const [currentTab, setCurrentTab] = useState(0);
   const isEditing = !!data;
   const [overrideIdentifier, setOverrideIdentifier] = useState(!!data?.identifier_override);
-  const [overrideCallbackUrl, setOverrideCallbackUrl] = useState(!!data?.configuration?.callback_url);
+  const [overrideCallbackUrl, setOverrideCallbackUrl] = useState(
+    !!data?.configuration?.callback_url,
+  );
 
   const [commitCreate] = useApiMutation<SamlProviderFormCreateMutation>(samlCreateMutation);
   const [commitEdit] = useApiMutation<SamlProviderFormEditMutation>(samlEditMutation);
@@ -312,7 +330,7 @@ const SamlProviderForm = ({
         description: values.description || null,
         enabled: values.enabled,
         button_label_override: values.button_label_override || null,
-        identifier_override: overrideIdentifier ? (values.identifier_override || null) : null,
+        identifier_override: overrideIdentifier ? values.identifier_override || null : null,
       },
       configuration: {
         issuer: values.issuer,
@@ -323,7 +341,7 @@ const SamlProviderForm = ({
           : values.private_key_action === 'use_external_secret'
             ? { private_key: { external_secret_name: values.private_key_secret_name || null } }
             : { private_key: { new_value_cleartext: values.private_key_new_value || null } }),
-        callback_url: overrideCallbackUrl ? (values.callback_url || null) : null,
+        callback_url: overrideCallbackUrl ? values.callback_url || null : null,
         logout_remote: values.logout_remote,
         want_assertions_signed: values.want_assertions_signed,
         want_authn_response_signed: values.want_authn_response_signed,
@@ -340,7 +358,9 @@ const SamlProviderForm = ({
         ...(values.decryption_pvk_action === 'keep'
           ? {}
           : values.decryption_pvk_action === 'use_external_secret'
-            ? { decryption_pvk: { external_secret_name: values.decryption_pvk_secret_name || null } }
+            ? {
+                decryption_pvk: { external_secret_name: values.decryption_pvk_secret_name || null },
+              }
             : { decryption_pvk: { new_value_cleartext: values.decryption_pvk_new_value || null } }),
         decryption_cert: values.decryption_cert || null,
         user_info_mapping: {
@@ -389,7 +409,12 @@ const SamlProviderForm = ({
         variables: { input },
         updater: (store: RecordSourceSelectorProxy) => {
           if (paginationOptions) {
-            insertNode(store, 'Pagination_authenticationProviders', paginationOptions, 'samlProviderAdd');
+            insertNode(
+              store,
+              'Pagination_authenticationProviders',
+              paginationOptions,
+              'samlProviderAdd',
+            );
           }
         },
         onCompleted: () => {
@@ -413,9 +438,10 @@ const SamlProviderForm = ({
       enableReinitialize
     >
       {({ handleReset, submitForm, isSubmitting, dirty, values, setFieldValue }) => {
-        const effectiveIdentifier = overrideIdentifier && values.identifier_override
-          ? values.identifier_override
-          : slugifyIdentifier(values.name);
+        const effectiveIdentifier =
+          overrideIdentifier && values.identifier_override
+            ? values.identifier_override
+            : slugifyIdentifier(values.name);
         const computedCallbackUrl = effectiveIdentifier
           ? `${settings.platform_url}/auth/${effectiveIdentifier}/callback`
           : '';
@@ -434,15 +460,15 @@ const SamlProviderForm = ({
           }
         };
 
-        const displayedCallbackUrl = overrideCallbackUrl && values.callback_url
-          ? values.callback_url
-          : computedCallbackUrl;
+        const displayedCallbackUrl =
+          overrideCallbackUrl && values.callback_url ? values.callback_url : computedCallbackUrl;
 
         // Detect mismatch between callback URL override and the effective identifier
-        const callbackUrlMismatch = overrideCallbackUrl
-          && values.callback_url
-          && effectiveIdentifier
-          && !values.callback_url.includes(`/auth/${effectiveIdentifier}/callback`);
+        const callbackUrlMismatch =
+          overrideCallbackUrl &&
+          values.callback_url &&
+          effectiveIdentifier &&
+          !values.callback_url.includes(`/auth/${effectiveIdentifier}/callback`);
 
         return (
           <Form>
@@ -480,39 +506,61 @@ const SamlProviderForm = ({
                 <Accordion
                   variant="outlined"
                   defaultExpanded={overrideIdentifier || overrideCallbackUrl}
-                  sx={{ mt: 2, borderRadius: 1, overflow: 'hidden', '&:before': { display: 'none' } }}
+                  sx={{
+                    mt: 2,
+                    borderRadius: 1,
+                    overflow: 'hidden',
+                    '&:before': { display: 'none' },
+                  }}
                 >
                   <AccordionSummary expandIcon={<ExpandMoreOutlined />} sx={{ px: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, overflow: 'hidden', width: '100%' }}>
-                      <Typography variant="caption" color="textSecondary" sx={{ whiteSpace: 'nowrap' }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        overflow: 'hidden',
+                        width: '100%',
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        color="textSecondary"
+                        sx={{ whiteSpace: 'nowrap' }}
+                      >
                         {t_i18n('Callback URL')}
                       </Typography>
                       {displayedCallbackUrl ? (
                         <ItemCopy content={displayedCallbackUrl} variant="inLine" />
                       ) : (
-                        <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic' }}>
+                        <Typography
+                          variant="body2"
+                          color="textSecondary"
+                          sx={{ fontStyle: 'italic' }}
+                        >
                           {t_i18n('Enter a configuration name to generate the callback URL.')}
                         </Typography>
                       )}
                     </Box>
                   </AccordionSummary>
                   <AccordionDetails sx={{ px: 2, pb: 3 }}>
-                    <Box sx={{
-                      display: 'grid',
-                      gridTemplateColumns: 'auto 1fr',
-                      alignItems: 'end',
-                      columnGap: 2,
-                      rowGap: 2,
-                    }}
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: 'auto 1fr',
+                        alignItems: 'end',
+                        columnGap: 2,
+                        rowGap: 2,
+                      }}
                     >
                       <FormControlLabel
-                        control={(
+                        control={
                           <MuiSwitch
                             checked={overrideIdentifier}
                             onChange={(_, checked) => handleToggleOverride(checked)}
                             size="small"
                           />
-                        )}
+                        }
                         label={t_i18n('Override identifier')}
                         componentsProps={{ typography: { variant: 'body2' } }}
                         sx={{ m: 0 }}
@@ -529,13 +577,13 @@ const SamlProviderForm = ({
                         disabled={!overrideIdentifier}
                       />
                       <FormControlLabel
-                        control={(
+                        control={
                           <MuiSwitch
                             checked={overrideCallbackUrl}
                             onChange={(_, checked) => handleToggleCallbackUrl(checked)}
                             size="small"
                           />
-                        )}
+                        }
                         label={t_i18n('Override callback URL')}
                         componentsProps={{ typography: { variant: 'body2' } }}
                         sx={{ m: 0 }}
@@ -552,13 +600,17 @@ const SamlProviderForm = ({
                           />
                           {callbackUrlMismatch && (
                             <Tooltip
-                              title={t_i18n('The callback URL does not contain the expected identifier path. The authentication callback will not work unless the URL includes "/auth/{identifier}/callback" where {identifier} matches the provider identifier.')}
+                              title={t_i18n(
+                                'The callback URL does not contain the expected identifier path. The authentication callback will not work unless the URL includes "/auth/{identifier}/callback" where {identifier} matches the provider identifier.',
+                              )}
                             >
                               <ErrorOutlined color="error" sx={{ mb: 0.5, fontSize: 20 }} />
                             </Tooltip>
                           )}
                         </Box>
-                      ) : <span />}
+                      ) : (
+                        <span />
+                      )}
                     </Box>
                   </AccordionDetails>
                 </Accordion>
@@ -680,7 +732,9 @@ const SamlProviderForm = ({
                       style={{ marginTop: 20 }}
                     />
                     <SecretFieldControl
-                      secretInfo={(data?.configuration?.decryption_pvk ?? null) as SecretInfo | null}
+                      secretInfo={
+                        (data?.configuration?.decryption_pvk ?? null) as SecretInfo | null
+                      }
                       namePrefix="decryption_pvk"
                       label={t_i18n('Decryption private key')}
                       isEditing={isEditing}
@@ -766,9 +820,19 @@ const SamlProviderForm = ({
                       {({ push, remove }) => (
                         <>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <Typography variant="body2" color="textSecondary" style={{ width: '20%' }}>{t_i18n('Type')}</Typography>
-                            <Typography variant="body2" color="textSecondary" style={{ flex: 1 }}>{t_i18n('Key')}</Typography>
-                            <Typography variant="body2" color="textSecondary" style={{ flex: 1 }}>{t_i18n('Value')}</Typography>
+                            <Typography
+                              variant="body2"
+                              color="textSecondary"
+                              style={{ width: '20%' }}
+                            >
+                              {t_i18n('Type')}
+                            </Typography>
+                            <Typography variant="body2" color="textSecondary" style={{ flex: 1 }}>
+                              {t_i18n('Key')}
+                            </Typography>
+                            <Typography variant="body2" color="textSecondary" style={{ flex: 1 }}>
+                              {t_i18n('Value')}
+                            </Typography>
                             <IconButton
                               color="primary"
                               aria-label={t_i18n('Add')}
@@ -779,7 +843,11 @@ const SamlProviderForm = ({
                             </IconButton>
                           </div>
                           {values.extra_conf.length === 0 && (
-                            <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic', mt: 1 }}>
+                            <Typography
+                              variant="body2"
+                              color="textSecondary"
+                              sx={{ fontStyle: 'italic', mt: 1 }}
+                            >
                               {t_i18n('No extra configuration entries. Click + to add one.')}
                             </Typography>
                           )}

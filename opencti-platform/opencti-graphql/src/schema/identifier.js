@@ -10,12 +10,26 @@ import { isStixDomainObject, isStixObjectAliased } from './stixDomainObject';
 import * as M from './stixMetaObject';
 import { isStixMetaObject } from './stixMetaObject';
 import * as C from './stixCyberObservable';
-import { isStixCyberObservable, isStixCyberObservableHashedObservable } from './stixCyberObservable';
-import { BASE_TYPE_RELATION, OASIS_NAMESPACE, OPENCTI_NAMESPACE, OPENCTI_PLATFORM_UUID, STIX_TYPE_SIGHTING } from './general';
+import {
+  isStixCyberObservable,
+  isStixCyberObservableHashedObservable,
+} from './stixCyberObservable';
+import {
+  BASE_TYPE_RELATION,
+  OASIS_NAMESPACE,
+  OPENCTI_NAMESPACE,
+  OPENCTI_PLATFORM_UUID,
+  STIX_TYPE_SIGHTING,
+} from './general';
 import { isInternalRelationship } from './internalRelationship';
 import { isStixCoreRelationship } from './stixCoreRelationship';
 import { isStixSightingRelationship } from './stixSightingRelationship';
-import { isEmptyField, isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import {
+  isEmptyField,
+  isNotEmptyField,
+  UPDATE_OPERATION_ADD,
+  UPDATE_OPERATION_REMOVE,
+} from '../database/utils';
 import { now } from '../utils/format';
 import { isBasicRelationship } from './stixRelationship';
 import { convertTypeToStixType } from '../database/stix-2-1-converter';
@@ -85,7 +99,10 @@ const STATIC_STANDARD_IDS = [
   { id: MARKING_TLP_CLEAR_ID, data: { definition_type: 'TLP', definition: 'TLP:CLEAR' } },
   { id: MARKING_TLP_GREEN_ID, data: { definition_type: 'TLP', definition: 'TLP:GREEN' } },
   { id: MARKING_TLP_AMBER_ID, data: { definition_type: 'TLP', definition: 'TLP:AMBER' } },
-  { id: MARKING_TLP_AMBER_STRICT_ID, data: { definition_type: 'TLP', definition: 'TLP:AMBER+STRICT' } },
+  {
+    id: MARKING_TLP_AMBER_STRICT_ID,
+    data: { definition_type: 'TLP', definition: 'TLP:AMBER+STRICT' },
+  },
   { id: MARKING_TLP_RED_ID, data: { definition_type: 'TLP', definition: 'TLP:RED' } },
 ];
 const getStaticIdFromData = (data) => {
@@ -100,15 +117,24 @@ const stixBaseCyberObservableContribution = {
     [C.ENTITY_DIRECTORY]: [{ src: 'path' }], // path
     [C.ENTITY_DOMAIN_NAME]: [{ src: 'value' }], // value
     [C.ENTITY_EMAIL_ADDR]: [{ src: 'value' }], // value
-    [C.ENTITY_EMAIL_MESSAGE]: [{ src: 'from', dest: 'from_ref' }, { src: 'subject' }, { src: 'body' }], // from_ref, subject, body
+    [C.ENTITY_EMAIL_MESSAGE]: [
+      { src: 'from', dest: 'from_ref' },
+      { src: 'subject' },
+      { src: 'body' },
+    ], // from_ref, subject, body
     [C.ENTITY_HASHED_OBSERVABLE_ARTIFACT]: [[{ src: 'hashes' }], [{ src: 'url' }]], // hashes, (!) payload_bin > Cause of volume
     [C.ENTITY_HASHED_OBSERVABLE_STIX_FILE]: [[{ src: 'hashes' }], [{ src: NAME_FIELD }]], // hashes, name, (!) extensions, parent_directory_ref
-    [C.ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE]: [[{ src: 'hashes' }], [{ src: 'serial_number' }], [{ src: 'subject' }]], // hashes, serial_number
+    [C.ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE]: [
+      [{ src: 'hashes' }],
+      [{ src: 'serial_number' }],
+      [{ src: 'subject' }],
+    ], // hashes, serial_number
     [C.ENTITY_IPV4_ADDR]: [{ src: 'value' }], // value
     [C.ENTITY_IPV6_ADDR]: [{ src: 'value' }], // value
     [C.ENTITY_MAC_ADDR]: [{ src: 'value' }], // value
     [C.ENTITY_MUTEX]: [{ src: NAME_FIELD }], // name
-    [C.ENTITY_NETWORK_TRAFFIC]: [ // start, (!) end, src_ref, dst_ref, src_port, dst_port, protocols, (!) extensions
+    [C.ENTITY_NETWORK_TRAFFIC]: [
+      // start, (!) end, src_ref, dst_ref, src_port, dst_port, protocols, (!) extensions
       { src: 'start' },
       { src: 'end' },
       { src: INPUT_SRC, dest: 'src_ref' },
@@ -118,9 +144,19 @@ const stixBaseCyberObservableContribution = {
       { src: 'protocols' },
     ],
     [C.ENTITY_PROCESS]: [{ src: 'pid', dependencies: ['command_line'] }, { src: 'command_line' }], // v4
-    [C.ENTITY_SOFTWARE]: [{ src: NAME_FIELD }, { src: 'cpe' }, { src: 'swid' }, { src: 'vendor' }, { src: 'version' }], // name, cpe, swid, vendor, version
+    [C.ENTITY_SOFTWARE]: [
+      { src: NAME_FIELD },
+      { src: 'cpe' },
+      { src: 'swid' },
+      { src: 'vendor' },
+      { src: 'version' },
+    ], // name, cpe, swid, vendor, version
     [C.ENTITY_URL]: [{ src: 'value' }], // value
-    [C.ENTITY_USER_ACCOUNT]: [{ src: 'account_type' }, { src: 'user_id' }, { src: 'account_login' }], // account_type, user_id, account_login
+    [C.ENTITY_USER_ACCOUNT]: [
+      { src: 'account_type' },
+      { src: 'user_id' },
+      { src: 'account_login' },
+    ], // account_type, user_id, account_login
     [C.ENTITY_WINDOWS_REGISTRY_KEY]: [{ src: 'attribute_key', dst: 'key' }, { src: 'values' }], // key, values
     // Added types
     [C.ENTITY_CRYPTOGRAPHIC_KEY]: [{ src: 'value' }],
@@ -141,8 +177,16 @@ const stixBaseCyberObservableContribution = {
     [C.ENTITY_ICCID]: [{ src: 'value' }],
     [C.ENTITY_IMSI]: [{ src: 'value' }],
     // Types embedded
-    [C.ENTITY_EMAIL_MIME_PART_TYPE]: [{ src: 'body' }, { src: 'content_type' }, { src: 'content_disposition' }],
-    [C.ENTITY_WINDOWS_REGISTRY_VALUE_TYPE]: [{ src: 'name' }, { src: 'data' }, { src: 'data_type' }],
+    [C.ENTITY_EMAIL_MIME_PART_TYPE]: [
+      { src: 'body' },
+      { src: 'content_type' },
+      { src: 'content_disposition' },
+    ],
+    [C.ENTITY_WINDOWS_REGISTRY_VALUE_TYPE]: [
+      { src: 'name' },
+      { src: 'data' },
+      { src: 'data_type' },
+    ],
   },
   resolvers: {
     from(from) {
@@ -211,30 +255,67 @@ const stixBaseEntityContribution = {
     // Entities
     [D.ENTITY_TYPE_ATTACK_PATTERN]: [[{ src: X_MITRE_ID_FIELD }], [{ src: NAME_FIELD }]],
     [D.ENTITY_TYPE_CAMPAIGN]: [{ src: NAME_FIELD }],
-    [D.ENTITY_TYPE_CONTAINER_NOTE]: [{ src: 'content' }, { src: 'created', dependencies: ['content'] }, { src: 'attribute_abstract', dependencies: ['content'] }],
+    [D.ENTITY_TYPE_CONTAINER_NOTE]: [
+      { src: 'content' },
+      { src: 'created', dependencies: ['content'] },
+      { src: 'attribute_abstract', dependencies: ['content'] },
+    ],
     [D.ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: [{ src: 'objects' }],
-    [D.ENTITY_TYPE_CONTAINER_OPINION]: [{ src: 'opinion' }, { src: 'created', dependencies: ['opinion'] }],
+    [D.ENTITY_TYPE_CONTAINER_OPINION]: [
+      { src: 'opinion' },
+      { src: 'created', dependencies: ['opinion'] },
+    ],
     [D.ENTITY_TYPE_CONTAINER_REPORT]: [{ src: NAME_FIELD }, { src: 'published' }],
     [D.ENTITY_TYPE_COURSE_OF_ACTION]: [[{ src: X_MITRE_ID_FIELD }], [{ src: NAME_FIELD }]],
-    [D.ENTITY_TYPE_IDENTITY_INDIVIDUAL]: [{ src: NAME_FIELD }, { src: 'identity_class', dependencies: [NAME_FIELD] }],
-    [D.ENTITY_TYPE_IDENTITY_SECTOR]: [{ src: NAME_FIELD }, { src: 'identity_class', dependencies: [NAME_FIELD] }],
-    [D.ENTITY_TYPE_IDENTITY_SYSTEM]: [{ src: NAME_FIELD }, { src: 'identity_class', dependencies: [NAME_FIELD] }],
+    [D.ENTITY_TYPE_IDENTITY_INDIVIDUAL]: [
+      { src: NAME_FIELD },
+      { src: 'identity_class', dependencies: [NAME_FIELD] },
+    ],
+    [D.ENTITY_TYPE_IDENTITY_SECTOR]: [
+      { src: NAME_FIELD },
+      { src: 'identity_class', dependencies: [NAME_FIELD] },
+    ],
+    [D.ENTITY_TYPE_IDENTITY_SYSTEM]: [
+      { src: NAME_FIELD },
+      { src: 'identity_class', dependencies: [NAME_FIELD] },
+    ],
     [D.ENTITY_TYPE_INFRASTRUCTURE]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_INTRUSION_SET]: [{ src: NAME_FIELD }],
-    [D.ENTITY_TYPE_LOCATION_CITY]: [{ src: NAME_FIELD }, { src: 'x_opencti_location_type', dependencies: [NAME_FIELD] }],
-    [D.ENTITY_TYPE_LOCATION_COUNTRY]: [{ src: NAME_FIELD }, { src: 'x_opencti_location_type', dependencies: [NAME_FIELD] }],
-    [D.ENTITY_TYPE_LOCATION_REGION]: [{ src: NAME_FIELD }, { src: 'x_opencti_location_type', dependencies: [NAME_FIELD] }],
-    [D.ENTITY_TYPE_LOCATION_POSITION]: [[{ src: 'latitude' }, { src: 'longitude' }], [{ src: NAME_FIELD }]],
+    [D.ENTITY_TYPE_LOCATION_CITY]: [
+      { src: NAME_FIELD },
+      { src: 'x_opencti_location_type', dependencies: [NAME_FIELD] },
+    ],
+    [D.ENTITY_TYPE_LOCATION_COUNTRY]: [
+      { src: NAME_FIELD },
+      { src: 'x_opencti_location_type', dependencies: [NAME_FIELD] },
+    ],
+    [D.ENTITY_TYPE_LOCATION_REGION]: [
+      { src: NAME_FIELD },
+      { src: 'x_opencti_location_type', dependencies: [NAME_FIELD] },
+    ],
+    [D.ENTITY_TYPE_LOCATION_POSITION]: [
+      [{ src: 'latitude' }, { src: 'longitude' }],
+      [{ src: NAME_FIELD }],
+    ],
     [D.ENTITY_TYPE_MALWARE]: [{ src: NAME_FIELD }],
-    [D.ENTITY_TYPE_THREAT_ACTOR_GROUP]: [{ src: NAME_FIELD }, { src: INNER_TYPE, dependencies: [NAME_FIELD] }],
+    [D.ENTITY_TYPE_THREAT_ACTOR_GROUP]: [
+      { src: NAME_FIELD },
+      { src: INNER_TYPE, dependencies: [NAME_FIELD] },
+    ],
     [D.ENTITY_TYPE_TOOL]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_VULNERABILITY]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_INCIDENT]: [{ src: NAME_FIELD }, { src: 'created', dependencies: [NAME_FIELD] }],
     // Stix Meta
-    [M.ENTITY_TYPE_MARKING_DEFINITION]: [{ src: 'definition', dependencies: ['definition_type'] }, { src: 'definition_type' }],
+    [M.ENTITY_TYPE_MARKING_DEFINITION]: [
+      { src: 'definition', dependencies: ['definition_type'] },
+      { src: 'definition_type' },
+    ],
     [M.ENTITY_TYPE_LABEL]: [{ src: 'value' }],
     [M.ENTITY_TYPE_KILL_CHAIN_PHASE]: [{ src: 'phase_name' }, { src: 'kill_chain_name' }],
-    [M.ENTITY_TYPE_EXTERNAL_REFERENCE]: [[{ src: 'url' }], [{ src: 'source_name', dependencies: ['external_id'] }, { src: 'external_id' }]],
+    [M.ENTITY_TYPE_EXTERNAL_REFERENCE]: [
+      [{ src: 'url' }],
+      [{ src: 'source_name', dependencies: ['external_id'] }, { src: 'external_id' }],
+    ],
   },
   resolvers: {
     name(data) {
@@ -277,8 +358,10 @@ const stixBaseRelationshipContribution = {
   definition: {
     relationship: [
       { src: 'relationship_type' },
-      { src: 'from', dest: 'source_ref', dependencies: ['to'] }, { src: 'to', dest: 'target_ref', dependencies: ['from'] },
-      { src: 'start_time' }, { src: 'stop_time' },
+      { src: 'from', dest: 'source_ref', dependencies: ['to'] },
+      { src: 'to', dest: 'target_ref', dependencies: ['from'] },
+      { src: 'start_time' },
+      { src: 'stop_time' },
     ],
   },
   resolvers: {
@@ -295,8 +378,10 @@ const stixBaseSightingContribution = {
   definition: {
     sighting: [
       { src: 'relationship_type', dest: 'type' },
-      { src: 'from', dest: 'sighting_of_ref', dependencies: ['to'] }, { src: 'to', dest: 'where_sighted_refs', dependencies: ['from'] },
-      { src: 'first_seen' }, { src: 'last_seen' },
+      { src: 'from', dest: 'sighting_of_ref', dependencies: ['to'] },
+      { src: 'to', dest: 'where_sighted_refs', dependencies: ['from'] },
+      { src: 'first_seen' },
+      { src: 'last_seen' },
     ],
   },
   resolvers: {
@@ -318,8 +403,19 @@ const identifierContributions = [
   stixBaseRelationshipContribution,
   stixBaseSightingContribution,
 ];
-export const isSupportedStixType = (stixType) => [...identifierContributions.map((identifier) => Object.keys(identifier.definition)).flat()
-  .map((type) => type.toLowerCase()), 'identity', 'location', 'file', 'relationship', 'sighting', 'threat-actor'].includes(stixType);
+export const isSupportedStixType = (stixType) =>
+  [
+    ...identifierContributions
+      .map((identifier) => Object.keys(identifier.definition))
+      .flat()
+      .map((type) => type.toLowerCase()),
+    'identity',
+    'location',
+    'file',
+    'relationship',
+    'sighting',
+    'threat-actor',
+  ].includes(stixType);
 export const registerModelIdentifier = (identifier) => {
   identifierContributions.push(identifier);
 };
@@ -337,8 +433,13 @@ export const idGen = (type, data, namespace) => {
   if (isEmptyField(data)) {
     const contrib = resolveContribution(type);
     const properties = contrib.definition[type].flat();
-    const missingKeys = properties.flat().map((p) => p.src).join(' - ');
-    throw FunctionalError(`Missing required elements for ${type} creation (${missingKeys})`, { properties });
+    const missingKeys = properties
+      .flat()
+      .map((p) => p.src)
+      .join(' - ');
+    throw FunctionalError(`Missing required elements for ${type} creation (${missingKeys})`, {
+      properties,
+    });
   }
   // In some cases like TLP, standard id are fixed by the community
   const findStaticId = getStaticIdFromData(data);
@@ -464,10 +565,14 @@ const isStandardIdChanged = (previous, updated, operation) => {
   // If same way, test if only adding is part of operation
   const cleanPrevious = cleanObject(previous);
   const { way: previousWay } = generateDataUUID(previous.entity_type, cleanPrevious);
-  const dataPrevious = R.fromPairs(Object.entries(cleanPrevious).filter(([k]) => previousWay.map((w) => w.src).includes(k)));
+  const dataPrevious = R.fromPairs(
+    Object.entries(cleanPrevious).filter(([k]) => previousWay.map((w) => w.src).includes(k)),
+  );
   const cleanUpdated = cleanObject(updated);
   const { way: currentWay } = generateDataUUID(updated.entity_type, cleanUpdated);
-  const dataUpdated = R.fromPairs(Object.entries(cleanUpdated).filter(([k]) => currentWay.map((w) => w.src).includes(k)));
+  const dataUpdated = R.fromPairs(
+    Object.entries(cleanUpdated).filter(([k]) => currentWay.map((w) => w.src).includes(k)),
+  );
   const patch = jsonpatch.compare(dataPrevious, dataUpdated);
   const numberOfOperations = patch.length;
   // If no operations, standard id will not change
@@ -534,13 +639,17 @@ export const generateAliasesId = (rawAliases, instance) => {
   const aliases = R.uniq(rawAliases.filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
   // Alias is an identifier only if the alias rules are respected.
   const regexpEntityRules = ALIASES_RULES[instance.entity_type.toLowerCase()] ?? [];
-  const filteredAliases = regexpEntityRules.length > 0
-    ? aliases.filter((alias) => regexpEntityRules.some((rule) => RegExp(rule).test(alias))) : aliases;
+  const filteredAliases =
+    regexpEntityRules.length > 0
+      ? aliases.filter((alias) => regexpEntityRules.some((rule) => RegExp(rule).test(alias)))
+      : aliases;
   // Generate ids for each remaining alias
-  return R.uniq(filteredAliases.map((alias) => {
-    const instanceWithAliasAsName = { ...instance, name: alias };
-    return generateStandardId(instance.entity_type, instanceWithAliasAsName);
-  }));
+  return R.uniq(
+    filteredAliases.map((alias) => {
+      const instanceWithAliasAsName = { ...instance, name: alias };
+      return generateStandardId(instance.entity_type, instanceWithAliasAsName);
+    }),
+  );
 };
 export const generateAliasesIdsForInstance = (instance) => {
   const aliases = [...(instance.aliases || []), ...(instance.x_opencti_aliases || [])];
@@ -552,13 +661,12 @@ export const generateHashedObservableStandardIds = (instance) => {
   const ids = [];
   if (isStixCyberObservableHashedObservable(entity_type)) {
     if (instance.hashes) {
-      const hashIds = Object.entries(instance.hashes)
-        .flatMap(([hashKey, hashValue]) => {
-          if (!hashValue) return [];
-          return generateStandardId(entity_type, {
-            hashes: { [hashKey]: hashValue },
-          });
+      const hashIds = Object.entries(instance.hashes).flatMap(([hashKey, hashValue]) => {
+        if (!hashValue) return [];
+        return generateStandardId(entity_type, {
+          hashes: { [hashKey]: hashValue },
         });
+      });
       pushAll(ids, hashIds);
     }
   }

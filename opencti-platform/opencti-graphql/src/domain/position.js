@@ -1,8 +1,15 @@
 import { createEntity } from '../database/middleware';
-import { pageEntitiesConnection, loadEntityThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import {
+  pageEntitiesConnection,
+  loadEntityThroughRelationsPaginated,
+  storeLoadById,
+} from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_POSITION } from '../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_LOCATION_COUNTRY,
+  ENTITY_TYPE_LOCATION_POSITION,
+} from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { RELATION_LOCATED_AT } from '../schema/stixCoreRelationship';
 import { ValidationError } from '../config/errors';
@@ -16,7 +23,14 @@ export const findPositionPaginated = (context, user, args) => {
 };
 
 export const locatedAtCity = async (context, user, positionId) => {
-  return loadEntityThroughRelationsPaginated(context, user, positionId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY, false);
+  return loadEntityThroughRelationsPaginated(
+    context,
+    user,
+    positionId,
+    RELATION_LOCATED_AT,
+    ENTITY_TYPE_LOCATION_COUNTRY,
+    false,
+  );
 };
 
 // Validate coordinates to prevent invalid values

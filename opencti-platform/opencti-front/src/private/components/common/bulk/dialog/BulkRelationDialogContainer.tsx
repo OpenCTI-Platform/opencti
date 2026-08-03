@@ -40,10 +40,7 @@ const BulkRelationDialogContainer = ({
 
   return (
     <>
-      <Button
-        onClick={handleOpenDialog}
-        variant={buttonVariant}
-      >
+      <Button onClick={handleOpenDialog} variant={buttonVariant}>
         {t_i18n('Create relations in bulk')}
       </Button>
       {isDialogOpen && (

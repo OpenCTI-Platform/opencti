@@ -23,7 +23,11 @@ export const up = async (next) => {
           script: { source, lang: 'painless', params: { files: eventFiles } },
         });
       }
-      return deleteFiles(context, SYSTEM_USER, groupFiles.map((g) => g.id));
+      return deleteFiles(
+        context,
+        SYSTEM_USER,
+        groupFiles.map((g) => g.id),
+      );
     });
   };
   await Promise.map(importEntries, concurrentChange, { concurrency: ES_MAX_CONCURRENCY });

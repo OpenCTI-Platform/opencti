@@ -27,7 +27,10 @@ interface AccordionAttackPatternProps {
   attackPatternIdsToOverlap?: string[];
   isSecurityPlatform: boolean;
   isCoverage?: boolean;
-  coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>>;
+  coverageMap?: Map<
+    string,
+    ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>
+  >;
   entityId?: string;
 }
 
@@ -46,7 +49,8 @@ const AccordionAttackPattern = ({
   const { t_i18n } = useFormatter();
 
   // Get coverage information if in coverage mode
-  const coverage = isCoverage && coverageMap ? coverageMap.get(attackPattern.attack_pattern_id) : null;
+  const coverage =
+    isCoverage && coverageMap ? coverageMap.get(attackPattern.attack_pattern_id) : null;
 
   // Calculate colors based on coverage score for active/covered boxes
   const getCoverageColors = () => {
@@ -57,7 +61,9 @@ const AccordionAttackPattern = ({
     }
 
     // Check if parent or any sub-technique is covered
-    const hasAnyCoveredSubTechniques = attackPattern.subAttackPatterns?.some((sub) => (sub as FilteredSubAttackPattern).isCovered);
+    const hasAnyCoveredSubTechniques = attackPattern.subAttackPatterns?.some(
+      (sub) => (sub as FilteredSubAttackPattern).isCovered,
+    );
 
     if (!attackPattern.isCovered && !hasAnyCoveredSubTechniques) {
       // Neither parent nor sub-techniques are covered - use default styles
@@ -67,11 +73,12 @@ const AccordionAttackPattern = ({
 
     // Calculate coverage including sub-techniques
     const parentCoverage = attackPattern.isCovered ? coverage : null;
-    const subCoverages = attackPattern.subAttackPatterns
-      ?.filter((sub) => (sub as FilteredSubAttackPattern).isCovered)
-      ?.map((sub) => coverageMap?.get((sub as FilteredSubAttackPattern).attack_pattern_id))
-      .filter(Boolean)
-      .flat() || [];
+    const subCoverages =
+      attackPattern.subAttackPatterns
+        ?.filter((sub) => (sub as FilteredSubAttackPattern).isCovered)
+        ?.map((sub) => coverageMap?.get((sub as FilteredSubAttackPattern).attack_pattern_id))
+        .filter(Boolean)
+        .flat() || [];
 
     const allCoverages = [...(parentCoverage || []), ...subCoverages];
 
@@ -89,7 +96,8 @@ const AccordionAttackPattern = ({
     }
 
     // Get the average coverage score from all coverages (parent + sub-techniques)
-    const avgScore = allCoverages.reduce((sum, c) => sum + (c?.coverage_score || 0), 0) / allCoverages.length;
+    const avgScore =
+      allCoverages.reduce((sum, c) => sum + (c?.coverage_score || 0), 0) / allCoverages.length;
 
     // Calculate color based on score (0-100)
     // Green to red gradient
@@ -131,7 +139,7 @@ const AccordionAttackPattern = ({
     >
       <MuiAccordionSummary
         onClick={(e) => handleOpen(attackPattern, e)}
-        expandIcon={(
+        expandIcon={
           <IconButton
             aria-label={expanded ? t_i18n('Collapse') : t_i18n('Expand')}
             onClick={(event) => {
@@ -139,12 +147,13 @@ const AccordionAttackPattern = ({
               setExpanded(!expanded);
             }}
           >
-            <ArrowForwardIosSharpIcon sx={{
-              fontSize: '0.9rem',
-            }}
+            <ArrowForwardIosSharpIcon
+              sx={{
+                fontSize: '0.9rem',
+              }}
             />
           </IconButton>
-        )}
+        }
         sx={{
           minHeight: 0,
           paddingLeft: 0,
@@ -155,7 +164,11 @@ const AccordionAttackPattern = ({
           '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
             transform: 'rotate(90deg)',
           },
-          '.MuiAccordionSummary-content': { justifyContent: 'space-between', marginBlock: 1.25, alignItems: 'center' },
+          '.MuiAccordionSummary-content': {
+            justifyContent: 'space-between',
+            marginBlock: 1.25,
+            alignItems: 'center',
+          },
         }}
       >
         <Typography variant="body2" fontSize={10}>
@@ -164,16 +177,14 @@ const AccordionAttackPattern = ({
 
         {isCoverage && attackPattern.isCovered && (
           <Box sx={{ marginLeft: 'auto' }}>
-            <SecurityCoverageScores
-              coverage_information={coverage || null}
-              variant="matrix"
-            />
+            <SecurityCoverageScores coverage_information={coverage || null} variant="matrix" />
           </Box>
         )}
 
-        {!isCoverage && attackPatternIdsToOverlap?.length !== undefined
-          && (attackPattern.isCovered || isSubAttackPatternCovered(attackPattern as FilteredAttackPattern))
-          && (
+        {!isCoverage &&
+          attackPatternIdsToOverlap?.length !== undefined &&
+          (attackPattern.isCovered ||
+            isSubAttackPatternCovered(attackPattern as FilteredAttackPattern)) && (
             <AttackPatternsMatrixShouldCoverIcon
               isOverlapping={attackPattern.isOverlapping || false}
             />

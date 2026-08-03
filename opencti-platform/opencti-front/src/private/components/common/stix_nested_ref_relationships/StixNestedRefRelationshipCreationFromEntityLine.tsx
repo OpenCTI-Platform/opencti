@@ -144,8 +144,8 @@ const stixNestedRefRelationshipCreationFromEntityLineFragment = graphql`
       description
     }
     ... on MalwareAnalysis {
-      result_name 
-    } 
+      result_name
+    }
     ... on StixCyberObservable {
       x_opencti_description
       observable_value
@@ -240,7 +240,9 @@ interface StixNestedRefRelationshipCreationFromEntityLineProps {
   index: number;
 }
 
-export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<StixNestedRefRelationshipCreationFromEntityLineProps> = ({
+export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
+  StixNestedRefRelationshipCreationFromEntityLineProps
+> = ({
   node,
   dataColumns,
   onLabelClick,
@@ -258,82 +260,58 @@ export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      onClick={(event) => (event.shiftKey
-        ? onToggleShiftEntity(index, data, event)
-        : onToggleEntity(data, event))
+      onClick={(event) =>
+        event.shiftKey ? onToggleShiftEntity(index, data, event) : onToggleEntity(data, event)
       }
     >
       <ListItemIcon
         classes={{ root: classes.itemIcon }}
         style={{ minWidth: 40 }}
-        onClick={(event) => (event.shiftKey
-          ? onToggleShiftEntity(index, data, event)
-          : onToggleEntity(data, event))
+        onClick={(event) =>
+          event.shiftKey ? onToggleShiftEntity(index, data, event) : onToggleEntity(data, event)
         }
       >
         <Checkbox
           edge="start"
           checked={
-            (selectAll && !(data.id in (deSelectedElements || {})))
-            || data.id in (selectedElements || {})
+            (selectAll && !(data.id in (deSelectedElements || {}))) ||
+            data.id in (selectedElements || {})
           }
           disableRipple={true}
         />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         {flagUrl ? (
-          <img
-            style={{ width: 20 }}
-            src={flagUrl}
-            alt={data.name}
-          />
+          <img style={{ width: 20 }} src={flagUrl} alt={data.name} />
         ) : (
           <ItemIcon type={data.entity_type} />
         )}
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.entity_type.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.entity_type.width }}>
               <ItemEntityType entityType={data.entity_type} />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.value.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.value.width }}>
               {getMainRepresentative(data)}
-              {data.draftVersion && (<DraftChip />)}
+              {data.draftVersion && <DraftChip />}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.createdBy.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.createdBy.width }}>
               {data.createdBy?.name ?? EMPTY_VALUE}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectLabel.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.objectLabel.width }}>
               <StixCoreObjectLabels
                 variant="inList"
                 labels={data.objectLabel}
                 onClick={onLabelClick}
               />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectMarking.width }}
-            >
-              <ItemMarkings
-                markingDefinitions={data.objectMarking ?? []}
-                limit={1}
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.objectMarking.width }}>
+              <ItemMarkings markingDefinitions={data.objectMarking ?? []} limit={1} />
             </div>
           </div>
-        )}
+        }
       />
     </ListItem>
   );
@@ -341,83 +319,38 @@ export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
 
 export const StixNestedRefRelationshipCreationFromEntityLineDummy = ({
   dataColumns,
-}: { dataColumns: DataColumns }) => {
+}: {
+  dataColumns: DataColumns;
+}) => {
   const classes = useStyles();
   return (
-    <ListItem
-      classes={{ root: classes.item }}
-      divider={true}
-      style={{ minWidth: 40 }}
-    >
-      <ListItemIcon
-        classes={{ root: classes.itemIconDisabled }}
-        style={{ minWidth: 40 }}
-      >
+    <ListItem classes={{ root: classes.item }} divider={true} style={{ minWidth: 40 }}>
+      <ListItemIcon classes={{ root: classes.itemIconDisabled }} style={{ minWidth: 40 }}>
         <CircleOutlined />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.entity_type.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.entity_type.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.value.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.value.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.createdBy.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.createdBy.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectLabel.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.objectLabel.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectMarking.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="100%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.objectMarking.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="100%" height="100%" />
             </div>
           </div>
-        )}
+        }
       />
     </ListItem>
   );

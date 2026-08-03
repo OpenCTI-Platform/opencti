@@ -17,10 +17,7 @@ const GraphLoadingAlert = () => {
   const [showAlert, setShowAlert] = useState(false);
 
   const {
-    graphState: {
-      loadingCurrent,
-      loadingTotal,
-    },
+    graphState: { loadingCurrent, loadingTotal },
   } = useGraphContext();
 
   useEffect(() => {
@@ -33,9 +30,12 @@ const GraphLoadingAlert = () => {
         startTime.current = undefined;
         // Ensure the alert is displayed long enough to let understand
         // the user what is going on and avoid blink effect.
-        setTimeout(() => {
-          setShowAlert(false);
-        }, durationDelta < 0 ? 0 : durationDelta);
+        setTimeout(
+          () => {
+            setShowAlert(false);
+          },
+          durationDelta < 0 ? 0 : durationDelta,
+        );
       }
     } else {
       setShowAlert(true);
@@ -65,12 +65,12 @@ const GraphLoadingAlert = () => {
         overflow: 'hidden',
       }}
     >
-      <Typography>
-        {t_i18n('The graph is currently loading data.')}
-      </Typography>
+      <Typography>{t_i18n('The graph is currently loading data.')}</Typography>
       <Typography sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <span>{t_i18n('Data fetched:')}</span>
-        <span>{loadingCurrent} / {loadingTotal}</span>
+        <span>
+          {loadingCurrent} / {loadingTotal}
+        </span>
       </Typography>
       <LinearProgress
         sx={{

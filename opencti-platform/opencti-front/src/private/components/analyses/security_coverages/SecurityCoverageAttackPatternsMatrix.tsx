@@ -2,7 +2,9 @@ import React, { FunctionComponent, useState } from 'react';
 import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
 import { SecurityCoverageAttackPatternsMatrix_securityCoverage$data } from './__generated__/SecurityCoverageAttackPatternsMatrix_securityCoverage.graphql';
-import StixCoreRelationshipCreationFromEntity, { TargetEntity } from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
+import StixCoreRelationshipCreationFromEntity, {
+  TargetEntity,
+} from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
 
 interface SecurityCoverageAttackPatternsMatrixProps {
@@ -12,20 +14,22 @@ interface SecurityCoverageAttackPatternsMatrixProps {
   relay: RelayRefetchProp;
 }
 
-const SecurityCoverageAttackPatternsMatrixComponent: FunctionComponent<SecurityCoverageAttackPatternsMatrixProps> = ({
-  securityCoverage,
-  searchTerm,
-  selectedKillChain,
-  relay,
-}) => {
+const SecurityCoverageAttackPatternsMatrixComponent: FunctionComponent<
+  SecurityCoverageAttackPatternsMatrixProps
+> = ({ securityCoverage, searchTerm, selectedKillChain, relay }) => {
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
 
-  const attackPatterns = ((securityCoverage.attackPatterns?.edges ?? [])
+  const attackPatterns = (securityCoverage.attackPatterns?.edges ?? [])
     .map((edge) => edge.node)
     .filter((node) => node?.to !== null && node?.to !== undefined)
-    .map((node) => node.to)) as unknown as Parameters<typeof AttackPatternsMatrix>[0]['attackPatterns'];
+    .map((node) => node.to) as unknown as Parameters<
+    typeof AttackPatternsMatrix
+  >[0]['attackPatterns'];
 
-  const attackPatternsCoverageMap = new Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>>();
+  const attackPatternsCoverageMap = new Map<
+    string,
+    ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>
+  >();
   (securityCoverage.attackPatterns?.edges ?? []).forEach((edge) => {
     const { node } = edge;
     if (node && node.to?.id) {
@@ -84,7 +88,7 @@ const SecurityCoverageAttackPatternsMatrix = createRefetchContainer(
   SecurityCoverageAttackPatternsMatrixComponent,
   {
     securityCoverage: graphql`
-      fragment SecurityCoverageAttackPatternsMatrix_securityCoverage on SecurityCoverage 
+      fragment SecurityCoverageAttackPatternsMatrix_securityCoverage on SecurityCoverage
       @argumentDefinitions(
         search: { type: "String" }
         count: { type: "Int", defaultValue: 200 }

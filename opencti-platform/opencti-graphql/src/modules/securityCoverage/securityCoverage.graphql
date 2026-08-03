@@ -8,7 +8,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   standard_id: String!
   entity_type: String!
   parent_types: [String!]!
-  metrics:[Metric]
+  metrics: [Metric]
   # StixObject
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -205,8 +205,6 @@ type Query {
   ): SecurityCoverageConnection @auth(for: [KNOWLEDGE])
 }
 
-
-
 # Mutations
 input SecurityCoverageAddInput {
   name: String! @constraint(minLength: 2, format: "not-blank")
@@ -246,15 +244,27 @@ input SecurityCoverageAddInput {
 }
 
 type Mutation {
-  securityCoverageAdd(input: SecurityCoverageAddInput!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityCoverageAdd(input: SecurityCoverageAddInput!): SecurityCoverage
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   securityCoverageDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  securityCoverageFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
-  securityCoverageContextPatch(id: ID!, input: EditContext!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityCoverageFieldPatch(
+    id: ID!
+    input: [EditInput]!
+    commitMessage: String
+    references: [String]
+  ): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityCoverageContextPatch(id: ID!, input: EditContext!): SecurityCoverage
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   securityCoverageContextClean(id: ID!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
-  securityCoverageRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  securityCoverageRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityCoverageRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
+    @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityCoverageRelationDelete(
+    id: ID!
+    toId: StixRef!
+    relationship_type: String!
+  ): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 extend type Subscription {
-    securityCoverage(id: ID!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityCoverage(id: ID!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
 }

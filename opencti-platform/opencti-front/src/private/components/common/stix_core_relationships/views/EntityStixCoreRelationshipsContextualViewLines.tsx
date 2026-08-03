@@ -38,7 +38,7 @@ const contextualViewLinesFragment = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-    )  @connection(key: "Pagination_stixCoreObjects") {
+    ) @connection(key: "Pagination_stixCoreObjects") {
       edges {
         node {
           ...EntityStixCoreRelationshipsContextualViewLine_node
@@ -64,15 +64,15 @@ export const contextualViewLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...EntityStixCoreRelationshipsContextualViewLines_data
-    @arguments(
-      types: $types
-      search: $search
-      count: $count
-      cursor: $cursor
-      filters: $filters
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        types: $types
+        search: $search
+        count: $count
+        cursor: $cursor
+        filters: $filters
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 
@@ -87,7 +87,9 @@ interface EntityStixCoreRelationshipsContextualViewLinesProps {
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
 }
 
-const EntityStixCoreRelationshipsContextualViewLinesComponent: FunctionComponent<EntityStixCoreRelationshipsContextualViewLinesProps> = ({
+const EntityStixCoreRelationshipsContextualViewLinesComponent: FunctionComponent<
+  EntityStixCoreRelationshipsContextualViewLinesProps
+> = ({
   queryRef,
   dataColumns,
   paginationOptions,

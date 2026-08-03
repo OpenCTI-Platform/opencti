@@ -74,19 +74,23 @@ describe('UserEditionPassword', () => {
     await user.click(screen.getByRole('button', { name: 'Force password change' }));
 
     const commitMutationMock = commitMutation as Mock;
-    expect(commitMutationMock).toHaveBeenCalledWith(expect.objectContaining({
-      variables: {
-        id: 'user-1',
-        input: {
-          key: 'password_valid_until',
-          value: [expect.any(String)],
+    expect(commitMutationMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        variables: {
+          id: 'user-1',
+          input: {
+            key: 'password_valid_until',
+            value: [expect.any(String)],
+          },
         },
-      },
-    }));
+      }),
+    );
 
     const config = commitMutationMock.mock.calls[0][0];
     config.onCompleted?.();
-    expect(MESSAGING$.notifySuccess).toHaveBeenCalledWith('Password change will be required at next login');
+    expect(MESSAGING$.notifySuccess).toHaveBeenCalledWith(
+      'Password change will be required at next login',
+    );
   });
 
   it('submits password update mutation', async () => {
@@ -97,15 +101,17 @@ describe('UserEditionPassword', () => {
     await user.click(screen.getByRole('button', { name: 'Update' }));
 
     const commitMutationMock = commitMutation as Mock;
-    expect(commitMutationMock).toHaveBeenCalledWith(expect.objectContaining({
-      variables: {
-        id: 'user-1',
-        input: {
-          key: 'password',
-          value: 'NewPassword123!',
+    expect(commitMutationMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        variables: {
+          id: 'user-1',
+          input: {
+            key: 'password',
+            value: 'NewPassword123!',
+          },
         },
-      },
-    }));
+      }),
+    );
   });
 
   it('renders formatted expiry date when provided', () => {

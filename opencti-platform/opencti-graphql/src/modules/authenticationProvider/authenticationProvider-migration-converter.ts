@@ -144,8 +144,7 @@ export class ConfigExtractor {
 
   /** Return all key/value pairs that were NOT consumed during conversion. */
   getUnconsumedEntries(): [string, unknown][] {
-    return Object.entries(this.config)
-      .filter(([key]) => !this.consumed.has(key));
+    return Object.entries(this.config).filter(([key]) => !this.consumed.has(key));
   }
 }
 
@@ -217,7 +216,10 @@ export interface ConvertedLdapProvider {
   warnings: string[];
 }
 
-export type ConvertedProvider = ConvertedOidcProvider | ConvertedSamlProvider | ConvertedLdapProvider;
+export type ConvertedProvider =
+  | ConvertedOidcProvider
+  | ConvertedSamlProvider
+  | ConvertedLdapProvider;
 
 // ---------------------------------------------------------------------------
 // Helpers — all pure, no side effects
@@ -226,7 +228,9 @@ export type ConvertedProvider = ConvertedOidcProvider | ConvertedSamlProvider | 
 /**
  * Convert env mapping entries ("remote:platform" strings) to GraphQL MappingEntryInput[].
  */
-export const convertMappingEntries = (entries: EnvMappingEntry[] | undefined): MappingEntryInput[] => {
+export const convertMappingEntries = (
+  entries: EnvMappingEntry[] | undefined,
+): MappingEntryInput[] => {
   if (!entries || !Array.isArray(entries)) return [];
   return entries
     .map((entry) => {
@@ -243,7 +247,10 @@ export const convertMappingEntries = (entries: EnvMappingEntry[] | undefined): M
  * Arrays produce one entry per element (same key repeated), so the backend
  * groups them back into an array at runtime.
  */
-export const toExtraConfEntry = (key: string, value: unknown): ExtraConfEntryInput | ExtraConfEntryInput[] | null => {
+export const toExtraConfEntry = (
+  key: string,
+  value: unknown,
+): ExtraConfEntryInput | ExtraConfEntryInput[] | null => {
   if (value === undefined || value === null) return null;
   if (typeof value === 'boolean') {
     return { type: ExtraConfEntryType.Boolean, key, value: String(value) };
@@ -368,7 +375,9 @@ const collectExtraConf = (
         extraConf.push(result);
       }
     } else {
-      warnings.push(`Config key "${key}" could not be converted to extra_conf (unsupported type: ${typeof value}).`);
+      warnings.push(
+        `Config key "${key}" could not be converted to extra_conf (unsupported type: ${typeof value}).`,
+      );
     }
   }
   return extraConf;
@@ -412,7 +421,10 @@ const buildOidcOrgsExpr = (om: EnvOrganizationsManagement | undefined): string[]
   return paths.map((p) => `${prefix}.${p}`);
 };
 
-export const convertOidcEnvConfig = (envKey: string, entry: EnvProviderEntry): ConvertedOidcProvider => {
+export const convertOidcEnvConfig = (
+  envKey: string,
+  entry: EnvProviderEntry,
+): ConvertedOidcProvider => {
   const ext = new ConfigExtractor(entry.config ?? {});
   const warnings: string[] = [];
 
@@ -431,7 +443,9 @@ export const convertOidcEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   // Callback URL — redirect_uris (OIDC standard) or callback_url (OpenCTI convention)
   // redirect_uris can be an array; if so, take the first element
   const rawRedirectUris = ext.get<string | string[] | null>('redirect_uris', null);
-  const redirectUri = Array.isArray(rawRedirectUris) ? (rawRedirectUris[0] ?? null) : rawRedirectUris;
+  const redirectUri = Array.isArray(rawRedirectUris)
+    ? (rawRedirectUris[0] ?? null)
+    : rawRedirectUris;
   const callbackUrl = ext.get<string | null>('callback_url', null) ?? redirectUri;
 
   // Scopes: merge default + groups_scope + organizations_scope
@@ -447,7 +461,9 @@ export const convertOidcEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const getFromIdToken = ext.get<boolean>('get_user_attributes_from_id_token', false);
   const userInfoPrefix = getFromIdToken ? 'tokens.id_token' : 'user_info';
   if (getFromIdToken) {
-    warnings.push('get_user_attributes_from_id_token=true: user info expressions prefixed with "tokens.id_token" instead of "user_info".');
+    warnings.push(
+      'get_user_attributes_from_id_token=true: user info expressions prefixed with "tokens.id_token" instead of "user_info".',
+    );
   }
 
   const userInfoMapping: UserInfoMappingInput = {
@@ -510,7 +526,10 @@ export const convertOidcEnvConfig = (envKey: string, entry: EnvProviderEntry): C
 // SAML conversion
 // ---------------------------------------------------------------------------
 
-export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): ConvertedSamlProvider => {
+export const convertSamlEnvConfig = (
+  envKey: string,
+  entry: EnvProviderEntry,
+): ConvertedSamlProvider => {
   const ext = new ConfigExtractor(entry.config ?? {});
   const warnings: string[] = [];
 
@@ -535,13 +554,17 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const VALID_SIGNATURE_ALGORITHMS = ['sha1', 'sha256', 'sha512'];
   let signatureAlgorithm: string | null = rawSignatureAlgorithm;
   if (rawSignatureAlgorithm && !VALID_SIGNATURE_ALGORITHMS.includes(rawSignatureAlgorithm)) {
-    warnings.push(`signature_algorithm "${rawSignatureAlgorithm}" is not valid (allowed: ${VALID_SIGNATURE_ALGORITHMS.join(', ')}). Falling back to null.`);
+    warnings.push(
+      `signature_algorithm "${rawSignatureAlgorithm}" is not valid (allowed: ${VALID_SIGNATURE_ALGORITHMS.join(', ')}). Falling back to null.`,
+    );
     signatureAlgorithm = null;
   }
   const digestAlgorithm = ext.get<string | null>('digest_algorithm', null);
   const rawAuthnContext = ext.get<string | string[] | null>('authn_context', null);
   const authnContext: string[] | null = rawAuthnContext
-    ? (Array.isArray(rawAuthnContext) ? rawAuthnContext : [rawAuthnContext])
+    ? Array.isArray(rawAuthnContext)
+      ? rawAuthnContext
+      : [rawAuthnContext]
     : null;
   const disableRequestedAuthnContext = ext.get<boolean>('disable_requested_authn_context', false);
   const disableRequestAcsUrl = ext.get<boolean>('disable_request_acs_url', false);
@@ -568,9 +591,10 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const preventDefaultGroups = ext.get<boolean>('prevent_default_groups', false);
   const extendPlatformGroups = ext.get<boolean>('extend_platform_groups', false);
   const gm = resolveGroupsManagement(ext, 'saml', warnings);
-  const groupsExpr = (gm?.groups_mapping && gm.groups_mapping.length > 0)
-    ? (gm.group_attributes || ['groups']).map(quotePathSegment)
-    : [];
+  const groupsExpr =
+    gm?.groups_mapping && gm.groups_mapping.length > 0
+      ? (gm.group_attributes || ['groups']).map(quotePathSegment)
+      : [];
   const groupsMapping: GroupsMappingInput = {
     auto_create_groups: autoCreateGroup,
     prevent_default_groups: preventDefaultGroups,
@@ -591,9 +615,10 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const organizationsMapping: OrganizationsMappingInput = {
     auto_create_organizations: false,
     default_organizations: organizationsDefault,
-    organizations_expr: (om && Object.keys(om).length > 0)
-      ? [(om.organizations_path || ['organizations']).map(quotePathSegment).join('.')]
-      : [],
+    organizations_expr:
+      om && Object.keys(om).length > 0
+        ? [(om.organizations_path || ['organizations']).map(quotePathSegment).join('.')]
+        : [],
     organizations_mapping: convertMappingEntries(om?.organizations_mapping),
   };
 
@@ -639,7 +664,10 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
 // LDAP conversion
 // ---------------------------------------------------------------------------
 
-export const convertLdapEnvConfig = (envKey: string, entry: EnvProviderEntry): ConvertedLdapProvider => {
+export const convertLdapEnvConfig = (
+  envKey: string,
+  entry: EnvProviderEntry,
+): ConvertedLdapProvider => {
   const ext = new ConfigExtractor(entry.config ?? {});
   const warnings: string[] = [];
 
@@ -677,9 +705,10 @@ export const convertLdapEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const preventDefaultGroups = ext.get<boolean>('prevent_default_groups', false);
   const extendPlatformGroups = ext.get<boolean>('extend_platform_groups', false);
   const gm = resolveGroupsManagement(ext, 'ldap', warnings);
-  const groupsExpr = (gm?.groups_mapping && gm.groups_mapping.length > 0)
-    ? [quotePathSegment(gm.group_attribute ?? 'cn')]
-    : [];
+  const groupsExpr =
+    gm?.groups_mapping && gm.groups_mapping.length > 0
+      ? [quotePathSegment(gm.group_attribute ?? 'cn')]
+      : [];
   const groupsMapping: GroupsMappingInput = {
     auto_create_groups: autoCreateGroup,
     prevent_default_groups: preventDefaultGroups,
@@ -696,9 +725,10 @@ export const convertLdapEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const organizationsMapping: OrganizationsMappingInput = {
     auto_create_organizations: false,
     default_organizations: organizationsDefault,
-    organizations_expr: (om && Object.keys(om).length > 0)
-      ? (om.organizations_path || ['organizations']).map(quotePathSegment)
-      : [],
+    organizations_expr:
+      om && Object.keys(om).length > 0
+        ? (om.organizations_path || ['organizations']).map(quotePathSegment)
+        : [],
     organizations_mapping: convertMappingEntries(om?.organizations_mapping),
   };
 
@@ -743,12 +773,15 @@ export const convertLdapEnvConfig = (envKey: string, entry: EnvProviderEntry): C
  * Facebook and Github are OAuth2-only — the issuer is a placeholder
  * that the administrator MUST replace with a proper OIDC-compatible endpoint.
  */
-const DEPRECATED_STRATEGY_DEFAULTS: Record<string, {
-  issuer: string;
-  scopes: string[];
-  issuerIsPlaceholder: boolean;
-  strategyLabel: string;
-}> = {
+const DEPRECATED_STRATEGY_DEFAULTS: Record<
+  string,
+  {
+    issuer: string;
+    scopes: string[];
+    issuerIsPlaceholder: boolean;
+    strategyLabel: string;
+  }
+> = {
   GoogleStrategy: {
     issuer: 'https://accounts.google.com',
     scopes: ['openid', 'email', 'profile'],
@@ -780,7 +813,10 @@ const DEPRECATED_STRATEGY_DEFAULTS: Record<string, {
  * into the OIDC model. The config shape is simpler than full OIDC —
  * just client_id, client_secret, callback_url, and strategy-specific fields.
  */
-export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry): ConvertedOidcProvider => {
+export const convertDeprecatedToOidc = (
+  envKey: string,
+  entry: EnvProviderEntry,
+): ConvertedOidcProvider => {
   const ext = new ConfigExtractor(entry.config ?? {});
   const warnings: string[] = [];
   const defaults = DEPRECATED_STRATEGY_DEFAULTS[entry.strategy];
@@ -800,7 +836,9 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
 
   // Callback URL — redirect_uris (OIDC standard) or callback_url (OpenCTI convention)
   const rawRedirectUris = ext.get<string | string[] | null>('redirect_uris', null);
-  const redirectUri = Array.isArray(rawRedirectUris) ? (rawRedirectUris[0] ?? null) : rawRedirectUris;
+  const redirectUri = Array.isArray(rawRedirectUris)
+    ? (rawRedirectUris[0] ?? null)
+    : rawRedirectUris;
   const callbackUrl = ext.get<string | null>('callback_url', null) ?? redirectUri;
 
   // Issuer: Auth0 derives from config.domain, others use well-known URLs
@@ -817,7 +855,9 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
     const useProxy = ext.get<boolean>('use_proxy', false);
     const baseURL = ext.get<string | null>('baseURL', null);
 
-    const scopes = scope ? scope.split(/\s+/) : (defaults?.scopes ?? ['openid', 'email', 'profile']);
+    const scopes = scope
+      ? scope.split(/\s+/)
+      : (defaults?.scopes ?? ['openid', 'email', 'profile']);
 
     const configuration: OidcConfigurationInput = {
       issuer,
@@ -835,8 +875,20 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
         firstname_expr: 'user_info.given_name',
         lastname_expr: 'user_info.family_name',
       },
-      groups_mapping: { auto_create_groups: false, prevent_default_groups: false, extend_platform_groups: false, default_groups: [], groups_expr: [], groups_mapping: [] },
-      organizations_mapping: { auto_create_organizations: false, default_organizations: [], organizations_expr: [], organizations_mapping: [] },
+      groups_mapping: {
+        auto_create_groups: false,
+        prevent_default_groups: false,
+        extend_platform_groups: false,
+        default_groups: [],
+        groups_expr: [],
+        groups_mapping: [],
+      },
+      organizations_mapping: {
+        auto_create_organizations: false,
+        default_organizations: [],
+        organizations_expr: [],
+        organizations_mapping: [],
+      },
       extra_conf: collectExtraConf(ext, warnings),
     };
 
@@ -849,8 +901,8 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
 
   if (defaults?.issuerIsPlaceholder) {
     warnings.push(
-      `${strategyLabel} does not natively support OIDC discovery. `
-      + `The issuer "${issuer}" is a placeholder. You may need to configure an OIDC-compatible proxy or switch to a generic OIDC provider.`,
+      `${strategyLabel} does not natively support OIDC discovery. ` +
+        `The issuer "${issuer}" is a placeholder. You may need to configure an OIDC-compatible proxy or switch to a generic OIDC provider.`,
     );
   }
 
@@ -874,8 +926,20 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
       firstname_expr: 'user_info.given_name',
       lastname_expr: 'user_info.family_name',
     },
-    groups_mapping: { auto_create_groups: false, prevent_default_groups: false, extend_platform_groups: false, default_groups: [], groups_expr: [], groups_mapping: [] },
-    organizations_mapping: { auto_create_organizations: false, default_organizations: [], organizations_expr: [], organizations_mapping: [] },
+    groups_mapping: {
+      auto_create_groups: false,
+      prevent_default_groups: false,
+      extend_platform_groups: false,
+      default_groups: [],
+      groups_expr: [],
+      groups_mapping: [],
+    },
+    organizations_mapping: {
+      auto_create_organizations: false,
+      default_organizations: [],
+      organizations_expr: [],
+      organizations_mapping: [],
+    },
     extra_conf: extraConf,
   };
 
@@ -886,7 +950,10 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
  * Convert a single env provider entry to the new GraphQL input format.
  * Pure function — no side effects.
  */
-export const convertSSOProviderEntry = (envKey: string, entry: EnvProviderEntry): ConvertedProvider | undefined => {
+export const convertSSOProviderEntry = (
+  envKey: string,
+  entry: EnvProviderEntry,
+): ConvertedProvider | undefined => {
   const { strategy } = entry;
   switch (strategy) {
     case 'OpenIDConnectStrategy':
@@ -912,7 +979,9 @@ export type EnvProvider = { envKey: string; identifier: string; provider: Conver
  * identifier, only the first is kept; the duplicate is reported as an error.
  * Pure function — no side effects.
  */
-export const convertAllSSOEnvProviders = (envProviders: Record<string, EnvProviderEntry>): EnvProvider[] => {
+export const convertAllSSOEnvProviders = (
+  envProviders: Record<string, EnvProviderEntry>,
+): EnvProvider[] => {
   const results: EnvProvider[] = [];
   const seenIdentifiers = new Map<string, string>(); // identifier → first envKey
   for (const [envKey, entry] of Object.entries(envProviders)) {

@@ -21,7 +21,9 @@ const IngestionSchedulingField = ({ handleSubmitField }: IngestionSchedulingProp
       onChange={handleSubmitField}
       containerstyle={fieldSpacingContainerStyle}
     >
-      <MenuItem value="auto">{t_i18n('Platform default')} ({t_i18n('around 30 secs')})</MenuItem>
+      <MenuItem value="auto">
+        {t_i18n('Platform default')} ({t_i18n('around 30 secs')})
+      </MenuItem>
       <MenuItem value="PT5M">{t_i18n('5 minutes')}</MenuItem>
       <MenuItem value="PT15M">{t_i18n('15 minutes')}</MenuItem>
       <MenuItem value="PT30M">{t_i18n('30 minutes')}</MenuItem>

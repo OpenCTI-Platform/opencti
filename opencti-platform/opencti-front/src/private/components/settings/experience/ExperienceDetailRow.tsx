@@ -20,18 +20,25 @@ const ExperienceDetailRow = ({ label, divider = true, children }: ExperienceDeta
   const theme = useTheme<Theme>();
 
   return (
-    <Box sx={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      gap: 2,
-      paddingY: 1.25,
-      borderBottom: divider ? `1px solid ${alpha(theme.palette.text?.primary ?? '#ffffff', 0.08)}` : 'none',
-    }}
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 2,
+        paddingY: 1.25,
+        borderBottom: divider
+          ? `1px solid ${alpha(theme.palette.text?.primary ?? '#ffffff', 0.08)}`
+          : 'none',
+      }}
     >
-      {typeof label === 'string'
-        ? <Typography variant="body2" color="textSecondary">{label}</Typography>
-        : label}
+      {typeof label === 'string' ? (
+        <Typography variant="body2" color="textSecondary">
+          {label}
+        </Typography>
+      ) : (
+        label
+      )}
       {children}
     </Box>
   );

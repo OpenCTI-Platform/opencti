@@ -31,11 +31,18 @@ import { decodeSearchKeyword } from '../../../utils/SearchUtils';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useManagerConfiguration from '../../../utils/hooks/useManagerConfiguration';
 import Security from '../../../utils/Security';
-import useGranted, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD, SETTINGS_FILEINDEXING } from '../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+  SETTINGS_FILEINDEXING,
+} from '../../../utils/hooks/useGranted';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { graphql } from 'react-relay';
 import DataTable from '../../../components/dataGrid/DataTable';
-import { SearchIndexedFilesPaginationQuery, SearchIndexedFilesPaginationQuery$variables } from './__generated__/SearchIndexedFilesPaginationQuery.graphql';
+import {
+  SearchIndexedFilesPaginationQuery,
+  SearchIndexedFilesPaginationQuery$variables,
+} from './__generated__/SearchIndexedFilesPaginationQuery.graphql';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import { SearchIndexedFiles_data$data } from './__generated__/SearchIndexedFiles_data.graphql';
 import Tooltip from '@mui/material/Tooltip';
@@ -53,14 +60,14 @@ const SearchIndexedFileLineFragment = graphql`
     file_id
     searchOccurrences
     entity {
-      ...on StixObject {
+      ... on StixObject {
         id
         entity_type
         representative {
           main
         }
       }
-      ...on StixCoreObject {
+      ... on StixCoreObject {
         objectMarking {
           id
           definition_type
@@ -74,17 +81,8 @@ const SearchIndexedFileLineFragment = graphql`
 `;
 
 export const searchIndexedFilesLinesQuery = graphql`
-  query SearchIndexedFilesPaginationQuery(
-    $search: String
-    $first: Int
-    $cursor: ID
-  ) {
-    ...SearchIndexedFiles_data
-    @arguments(
-      search: $search
-      first: $first
-      cursor: $cursor
-    )
+  query SearchIndexedFilesPaginationQuery($search: String, $first: Int, $cursor: ID) {
+    ...SearchIndexedFiles_data @arguments(search: $search, first: $first, cursor: $cursor)
   }
 `;
 
@@ -96,11 +94,8 @@ export const searchIndexedFilesLinesFragment = graphql`
     cursor: { type: "ID" }
   )
   @refetchable(queryName: "SearchIndexedFilesLinesRefetchQuery") {
-    indexedFiles(
-      search: $search
-      first: $first
-      after: $cursor
-    ) @connection(key: "Pagination_indexedFiles") {
+    indexedFiles(search: $search, first: $first, after: $cursor)
+      @connection(key: "Pagination_indexedFiles") {
       edges {
         node {
           id
@@ -136,24 +131,19 @@ const SearchIndexedFilesComponent = () => {
     sortBy: '_score',
     orderAsc: true,
   };
-  const {
-    helpers: storageHelpers,
-    paginationOptions,
-  } = usePaginationLocalStorage<SearchIndexedFilesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    initialValues,
-    true,
-  );
+  const { helpers: storageHelpers, paginationOptions } =
+    usePaginationLocalStorage<SearchIndexedFilesPaginationQuery$variables>(
+      LOCAL_STORAGE_KEY,
+      initialValues,
+      true,
+    );
 
   const queryPaginationOptions = {
     ...paginationOptions,
     search: searchTerm,
   };
 
-  const queryRef = useQueryLoading(
-    searchIndexedFilesLinesQuery,
-    queryPaginationOptions,
-  );
+  const queryRef = useQueryLoading(searchIndexedFilesLinesQuery, queryPaginationOptions);
 
   const fileSearchEnabled = isFileIndexManagerEnable();
 
@@ -176,7 +166,9 @@ const SearchIndexedFilesComponent = () => {
         percentWidth: 10,
         isSortable: false,
         render: (node: SearchIndexedFilesFile_node$data) => {
-          return (node.searchOccurrences && node.searchOccurrences > 99) ? '99+' : node.searchOccurrences;
+          return node.searchOccurrences && node.searchOccurrences > 99
+            ? '99+'
+            : node.searchOccurrences;
         },
       },
       entity_type: {
@@ -184,11 +176,7 @@ const SearchIndexedFilesComponent = () => {
         percentWidth: 15,
         isSortable: false,
         render: (node: SearchIndexedFilesFile_node$data) => (
-          <>
-            {node.entity && (
-              <ItemEntityType entityType={node.entity.entity_type} />
-            )}
-          </>
+          <>{node.entity && <ItemEntityType entityType={node.entity.entity_type} />}</>
         ),
       },
       entity_name: {
@@ -196,11 +184,7 @@ const SearchIndexedFilesComponent = () => {
         percentWidth: 25,
         isSortable: false,
         render: (node: SearchIndexedFilesFile_node$data) => (
-          <>
-            {node.entity && (
-              <>{defaultRender(node.entity?.representative.main)}</>
-            )}
-          </>
+          <>{node.entity && <>{defaultRender(node.entity?.representative.main)}</>}</>
         ),
       },
       objectMarking: {
@@ -209,10 +193,7 @@ const SearchIndexedFilesComponent = () => {
         render: (node: SearchIndexedFilesFile_node$data) => (
           <>
             {node.entity && (
-              <ItemMarkings
-                markingDefinitions={node.entity.objectMarking ?? []}
-                limit={1}
-              />
+              <ItemMarkings markingDefinitions={node.entity.objectMarking ?? []} limit={1} />
             )}
           </>
         ),
@@ -232,7 +213,9 @@ const SearchIndexedFilesComponent = () => {
         {queryRef && (
           <DataTable
             dataColumns={dataColumns}
-            resolvePath={(data: SearchIndexedFiles_data$data) => data.indexedFiles?.edges?.map((n) => n?.node)}
+            resolvePath={(data: SearchIndexedFiles_data$data) =>
+              data.indexedFiles?.edges?.map((n) => n?.node)
+            }
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
             globalSearch={searchTerm}
@@ -242,16 +225,20 @@ const SearchIndexedFilesComponent = () => {
             disableLineSelection
             onLineClick={(file) => window.open(getFileUri(file.file_id), '_blank')}
             actions={(node) => {
-              let entityLink = node.entity ? `${resolveLink(node.entity.entity_type)}/${node.entity.id}` : '';
-              if (entityLink && isGrantedToFiles && node.entity?.entity_type !== 'External-Reference') {
+              let entityLink = node.entity
+                ? `${resolveLink(node.entity.entity_type)}/${node.entity.id}`
+                : '';
+              if (
+                entityLink &&
+                isGrantedToFiles &&
+                node.entity?.entity_type !== 'External-Reference'
+              ) {
                 entityLink = entityLink.concat('/files');
               }
               if (node.entity && entityLink) {
                 return (
                   <Tooltip title={t_i18n('Open the entity overview in a separated tab')}>
-                    <IconButton
-                      onClick={() => window.open(entityLink, '_blank')}
-                    >
+                    <IconButton onClick={() => window.open(entityLink, '_blank')}>
                       <OpenInNewOutlined fontSize="medium" />
                     </IconButton>
                   </Tooltip>
@@ -268,11 +255,7 @@ const SearchIndexedFilesComponent = () => {
     <ExportContextProvider>
       <div>
         {!isFileIndexingRunning && (
-          <Alert
-            severity="warning"
-            variant="outlined"
-            style={{ marginBottom: 30 }}
-          >
+          <Alert severity="warning" variant="outlined" style={{ marginBottom: 30 }}>
             <AlertTitle style={{ marginBottom: 0 }}>
               {t_i18n('File indexing is not started.')}
               <Security
@@ -301,13 +284,9 @@ const SearchIndexedFilesComponent = () => {
 const SearchIndexedFiles = () => {
   const isEnterpriseEdition = useEnterpriseEdition();
   if (!isEnterpriseEdition) {
-    return (
-      <EnterpriseEdition feature="File indexing" />
-    );
+    return <EnterpriseEdition feature="File indexing" />;
   }
-  return (
-    <SearchIndexedFilesComponent />
-  );
+  return <SearchIndexedFilesComponent />;
 };
 
 export default SearchIndexedFiles;

@@ -24,20 +24,13 @@ const DrawerHeader = ({ title, onClose, endContent }: DrawerHeaderProps) => {
         justifyContent: 'space-between',
       }}
     >
-      <Typography
-        variant="h5"
-        style={{ textWrap: 'nowrap' }}
-      >
+      <Typography variant="h5" style={{ textWrap: 'nowrap' }}>
         {title}
       </Typography>
 
       <Stack direction="row" alignItems="center" gap={1}>
         {endContent}
-        <IconButton
-          aria-label="Close"
-          onClick={onClose}
-          size="default"
-        >
+        <IconButton aria-label="Close" onClick={onClose} size="default">
           <Close />
         </IconButton>
       </Stack>

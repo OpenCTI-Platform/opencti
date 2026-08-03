@@ -25,9 +25,15 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
 import AdministrativeAreaEdition from './AdministrativeAreaEdition';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import AdministrativeAreaDeletion from './AdministrativeAreaDeletion';
-import { PATH_ADMINISTRATIVE_AREA, PATH_ADMINISTRATIVE_AREAS } from '@components/common/routes/paths';
+import {
+  PATH_ADMINISTRATIVE_AREA,
+  PATH_ADMINISTRATIVE_AREAS,
+} from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootAdministrativeAreasSubscription($id: ID!) {
@@ -81,10 +87,11 @@ interface RootAdministrativeAreaComponentProps {
   administrativeAreaId: string;
 }
 
-const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }: RootAdministrativeAreaComponentProps) => {
-  const subConfig = useMemo<
-    GraphQLSubscriptionConfig<RootAdministrativeAreasSubscription>
-  >(
+const RootAdministrativeAreaComponent = ({
+  queryRef,
+  administrativeAreaId,
+}: RootAdministrativeAreaComponentProps) => {
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootAdministrativeAreasSubscription>>(
     () => ({
       subscription,
       variables: { id: administrativeAreaId },
@@ -107,7 +114,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }: Roo
           <Routes>
             <Route
               path="/knowledge/*"
-              element={(
+              element={
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -127,37 +134,38 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }: Roo
                   ]}
                   data={administrativeArea}
                 />
-              )}
+              }
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs elements={[
-              { label: t_i18n('Locations') },
-              { label: t_i18n('Administrative areas'), link: PATH_ADMINISTRATIVE_AREAS },
-              { label: administrativeArea.name, current: true },
-            ]}
+            <Breadcrumbs
+              elements={[
+                { label: t_i18n('Locations') },
+                { label: t_i18n('Administrative areas'), link: PATH_ADMINISTRATIVE_AREAS },
+                { label: administrativeArea.name, current: true },
+              ]}
             />
             <StixDomainObjectHeader
               entityType="Administrative-Area"
               disableSharing={true}
               stixDomainObject={administrativeArea}
-              EditComponent={(
+              EditComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <AdministrativeAreaEdition
-                    administrativeAreaId={administrativeArea.id}
-                  />
+                  <AdministrativeAreaEdition administrativeAreaId={administrativeArea.id} />
                 </Security>
-              )}
-              RelateComponent={(
+              }
+              RelateComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <StixCoreRelationshipCreationFromEntityHeader
-                    data={administrativeArea}
-                  />
+                  <StixCoreRelationshipCreationFromEntityHeader data={administrativeArea} />
                 </Security>
-              )}
+              }
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                  <AdministrativeAreaDeletion id={administrativeArea.id} isOpen={isOpen} handleClose={onClose} />
+                  <AdministrativeAreaDeletion
+                    id={administrativeArea.id}
+                    isOpen={isOpen}
+                    handleClose={onClose}
+                  />
                 </Security>
               )}
               enableQuickSubscription={true}
@@ -169,20 +177,18 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }: Roo
               entity={administrativeArea}
               basePath={basePath}
               pages={{
-                overview:
-                  <AdministrativeArea administrativeAreaData={administrativeArea} />,
+                overview: <AdministrativeArea administrativeAreaData={administrativeArea} />,
                 knowledge: (
                   <div key={forceUpdate}>
                     <AdministrativeAreaKnowledge administrativeAreaData={administrativeArea} />
                   </div>
                 ),
-                content: (
-                  <StixCoreObjectContentRoot
-                    stixCoreObject={administrativeArea}
+                content: <StixCoreObjectContentRoot stixCoreObject={administrativeArea} />,
+                analyses: (
+                  <StixCoreObjectOrStixCoreRelationshipContainers
+                    stixDomainObjectOrStixCoreRelationship={administrativeArea}
                   />
                 ),
-                analyses:
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={administrativeArea} />,
                 sightings: (
                   <EntityStixSightingRelationships
                     entityId={administrativeArea.id}
@@ -199,8 +205,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }: Roo
                     entity={administrativeArea}
                   />
                 ),
-                history:
-                  <StixCoreObjectHistory stixCoreObjectId={administrativeAreaId} />,
+                history: <StixCoreObjectHistory stixCoreObjectId={administrativeAreaId} />,
               }}
             />
           </div>
@@ -216,15 +221,17 @@ const RootAdministrativeArea = () => {
   const { administrativeAreaId } = useParams() as {
     administrativeAreaId: string;
   };
-  const queryRef = useQueryLoading<RootAdministrativeAreaQuery>(
-    administrativeAreaQuery,
-    { id: administrativeAreaId },
-  );
+  const queryRef = useQueryLoading<RootAdministrativeAreaQuery>(administrativeAreaQuery, {
+    id: administrativeAreaId,
+  });
   return (
     <>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-          <RootAdministrativeAreaComponent queryRef={queryRef} administrativeAreaId={administrativeAreaId} />
+          <RootAdministrativeAreaComponent
+            queryRef={queryRef}
+            administrativeAreaId={administrativeAreaId}
+          />
         </React.Suspense>
       )}
     </>

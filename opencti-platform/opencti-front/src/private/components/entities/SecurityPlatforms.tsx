@@ -1,12 +1,18 @@
 import React from 'react';
 import { graphql } from 'react-relay';
-import { SecurityPlatformsPaginationQuery, SecurityPlatformsPaginationQuery$variables } from '@components/entities/__generated__/SecurityPlatformsPaginationQuery.graphql';
+import {
+  SecurityPlatformsPaginationQuery,
+  SecurityPlatformsPaginationQuery$variables,
+} from '@components/entities/__generated__/SecurityPlatformsPaginationQuery.graphql';
 import { securityPlatformFragment } from '@components/entities/securityPlatforms/SecurityPlatform';
 import { SecurityPlatformsLines_data$data } from '@components/entities/__generated__/SecurityPlatformsLines_data.graphql';
 import SecurityPlatformCreation from '@components/entities/securityPlatforms/SecurityPlatformCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
@@ -26,14 +32,14 @@ export const securityPlatformsQuery = graphql`
     $filters: FilterGroup
   ) {
     ...SecurityPlatformsLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -85,12 +91,16 @@ const SecurityPlatforms = () => {
   };
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Security platform'));
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<SecurityPlatformsPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    initialValues,
-  );
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<SecurityPlatformsPaginationQuery$variables>(
+      LOCAL_STORAGE_KEY,
+      initialValues,
+    );
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext('SecurityPlatform', viewStorage.filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext(
+    'SecurityPlatform',
+    viewStorage.filters,
+  );
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -128,22 +138,25 @@ const SecurityPlatforms = () => {
 
   return (
     <div data-testid="security-platform-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Security platforms'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Entities') },
+          { label: t_i18n('Security platforms'), current: true },
+        ]}
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: SecurityPlatformsLines_data$data) => data.securityPlatforms?.edges?.map((n) => n?.node)}
+          resolvePath={(data: SecurityPlatformsLines_data$data) =>
+            data.securityPlatforms?.edges?.map((n) => n?.node)
+          }
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={securityPlatformFragment}
           exportContext={{ entity_type: 'SecurityPlatform' }}
-          createButton={(
-            <SecurityPlatformCreation
-              paginationOptions={queryPaginationOptions}
-            />
-          )}
+          createButton={<SecurityPlatformCreation paginationOptions={queryPaginationOptions} />}
         />
       )}
     </div>

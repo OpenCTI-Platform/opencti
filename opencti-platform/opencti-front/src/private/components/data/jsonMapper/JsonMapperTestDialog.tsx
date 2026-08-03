@@ -81,11 +81,7 @@ const JsonMapperTestDialog: FunctionComponent<JsonMapperTestDialogProps> = ({
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      title={t_i18n('Testing JSON mapper')}
-    >
+    <Dialog open={open} onClose={handleClose} title={t_i18n('Testing JSON mapper')}>
       <Box
         sx={{
           display: 'flex',
@@ -107,21 +103,11 @@ const JsonMapperTestDialog: FunctionComponent<JsonMapperTestDialogProps> = ({
             'Select a sample file in JSON format, with a maximum size of 1MB to limit the processing time.',
           )}
         >
-          <InformationOutline
-            fontSize="small"
-            color="primary"
-            style={{ cursor: 'default' }}
-          />
+          <InformationOutline fontSize="small" color="primary" style={{ cursor: 'default' }} />
         </Tooltip>
       </Box>
-      <Box
-        sx={{ display: 'inline-flex', textAlign: 'center', marginTop: '8px' }}
-      >
-        <Button
-          color="secondary"
-          disabled={!value || loading}
-          onClick={onTest}
-        >
+      <Box sx={{ display: 'inline-flex', textAlign: 'center', marginTop: '8px' }}>
+        <Button color="secondary" disabled={!value || loading} onClick={onTest}>
           {t_i18n('Test')}
         </Button>
         {loading && (
@@ -130,26 +116,31 @@ const JsonMapperTestDialog: FunctionComponent<JsonMapperTestDialogProps> = ({
           </Box>
         )}
       </Box>
-      {result
-        && (
-          <Box
-            sx={{
-              paddingTop: '8px',
-              fontSize: '1rem',
-              gap: '8px',
-              justifyContent: 'center',
-              display: 'flex',
-            }}
-          >
-            <span>{t_i18n('Objects found')} : </span>
-            <span><strong>{result?.jsonMapperTest?.nbEntities} </strong> {t_i18n('Entities')}</span>
-            <span><strong>{result?.jsonMapperTest?.nbRelationships}</strong> {t_i18n('Relationships')}</span>
-          </Box>
-        )
-      }
+      {result && (
+        <Box
+          sx={{
+            paddingTop: '8px',
+            fontSize: '1rem',
+            gap: '8px',
+            justifyContent: 'center',
+            display: 'flex',
+          }}
+        >
+          <span>{t_i18n('Objects found')} : </span>
+          <span>
+            <strong>{result?.jsonMapperTest?.nbEntities} </strong> {t_i18n('Entities')}
+          </span>
+          <span>
+            <strong>{result?.jsonMapperTest?.nbRelationships}</strong> {t_i18n('Relationships')}
+          </span>
+        </Box>
+      )}
       <Box sx={{ marginTop: '8px' }}>
         <CodeBlock
-          code={result?.jsonMapperTest?.objects || t_i18n('You will find here the result in JSON format.')}
+          code={
+            result?.jsonMapperTest?.objects ||
+            t_i18n('You will find here the result in JSON format.')
+          }
           language="json"
         />
       </Box>

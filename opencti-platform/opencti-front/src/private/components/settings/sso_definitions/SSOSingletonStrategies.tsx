@@ -68,9 +68,27 @@ const SSOSingletonStrategiesContent = () => {
   const isHttpsEnabled = settings.platform_https_enabled;
 
   const strategiesData: StrategyRow[] = [
-    { id: 'local', name: t_i18n('Local'), type: t_i18n('FORM'), enabled: localEnabled, strategy: 'local' },
-    { id: 'header', name: t_i18n('HTTP headers'), type: t_i18n('SSO'), enabled: headerEnabled, strategy: 'header' },
-    { id: 'cert', name: t_i18n('Client Certificate'), type: t_i18n('SSO'), enabled: certEnabled, strategy: 'cert' },
+    {
+      id: 'local',
+      name: t_i18n('Local'),
+      type: t_i18n('FORM'),
+      enabled: localEnabled,
+      strategy: 'local',
+    },
+    {
+      id: 'header',
+      name: t_i18n('HTTP headers'),
+      type: t_i18n('SSO'),
+      enabled: headerEnabled,
+      strategy: 'header',
+    },
+    {
+      id: 'cert',
+      name: t_i18n('Client Certificate'),
+      type: t_i18n('SSO'),
+      enabled: certEnabled,
+      strategy: 'cert',
+    },
   ];
 
   const dataColumns: DataTableProps['dataColumns'] = {
@@ -92,7 +110,10 @@ const SSOSingletonStrategiesContent = () => {
       isSortable: false,
       render: (node: StrategyRow) => {
         const showEE = node.strategy !== 'local' && !isEnterpriseEdition;
-        const isEnabled = node.enabled && (node.strategy !== 'cert' || isHttpsEnabled) && (node.strategy === 'local' || isEnterpriseEdition);
+        const isEnabled =
+          node.enabled &&
+          (node.strategy !== 'cert' || isHttpsEnabled) &&
+          (node.strategy === 'local' || isEnterpriseEdition);
         const showCertHttpsInfo = node.strategy === 'cert' && !isHttpsEnabled;
         return (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, opacity: 1 }}>
@@ -100,9 +121,17 @@ const SSOSingletonStrategiesContent = () => {
               label={isEnabled ? t_i18n('Active') : t_i18n('Disabled')}
               status={isEnabled}
             />
-            {showEE && <span onClick={(e) => e.stopPropagation()}><EEChip /></span>}
+            {showEE && (
+              <span onClick={(e) => e.stopPropagation()}>
+                <EEChip />
+              </span>
+            )}
             {showCertHttpsInfo && (
-              <Tooltip title={t_i18n('Client certificate requires the platform to be configured with HTTPS')}>
+              <Tooltip
+                title={t_i18n(
+                  'Client certificate requires the platform to be configured with HTTPS',
+                )}
+              >
                 <IconButton
                   size="small"
                   disabled
@@ -190,9 +219,15 @@ const SSOSingletonStrategiesContent = () => {
           onClose={() => setEditingStrategy(null)}
         >
           <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            {editingStrategy === 'local' && <LocalStrategyForm onCancel={() => setEditingStrategy(null)} />}
-            {editingStrategy === 'cert' && <CertStrategyForm onCancel={() => setEditingStrategy(null)} />}
-            {editingStrategy === 'header' && <HeaderStrategyForm onCancel={() => setEditingStrategy(null)} />}
+            {editingStrategy === 'local' && (
+              <LocalStrategyForm onCancel={() => setEditingStrategy(null)} />
+            )}
+            {editingStrategy === 'cert' && (
+              <CertStrategyForm onCancel={() => setEditingStrategy(null)} />
+            )}
+            {editingStrategy === 'header' && (
+              <HeaderStrategyForm onCancel={() => setEditingStrategy(null)} />
+            )}
           </Suspense>
         </Drawer>
       )}

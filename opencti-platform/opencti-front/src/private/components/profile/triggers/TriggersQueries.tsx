@@ -26,10 +26,7 @@ export const triggersQueriesKnowledgeSearchQuery = graphql`
 `;
 
 export const triggersQueriesActivitySearchQuery = graphql`
-  query TriggersQueriesSearchActivityQuery(
-    $search: String
-    $filters: FilterGroup
-  ) {
+  query TriggersQueriesSearchActivityQuery($search: String, $filters: FilterGroup) {
     triggersActivity(search: $search, filters: $filters) {
       edges {
         node {
@@ -50,10 +47,7 @@ export const triggersQueriesActivitySearchQuery = graphql`
 `;
 
 export const triggersQueriesSearchQuery = graphql`
-  query TriggersQueriesSearchQuery(
-    $search: String
-    $filters: FilterGroup
-  ) {
+  query TriggersQueriesSearchQuery($search: String, $filters: FilterGroup) {
     triggers(search: $search, filters: $filters) {
       edges {
         node {

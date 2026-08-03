@@ -15,11 +15,7 @@ export const vocabularyQuery = graphql`
     $orderBy: VocabularyOrdering
     $orderMode: OrderingMode
   ) {
-    vocabularies(
-      filters: $filters
-      orderBy: $orderBy
-      orderMode: $orderMode
-    ) {
+    vocabularies(filters: $filters, orderBy: $orderBy, orderMode: $orderMode) {
       edges {
         node {
           id
@@ -90,18 +86,16 @@ const OpenVocabFieldComponent = ({
     .sort((a, b) => a.category.localeCompare(b.category));
 
   const internalOnChange = (v: VocabFieldValue) => {
-    const values = Array.isArray(v)
-      ? v.map((item) => item?.value ?? item)
-      : v?.value ?? v;
+    const values = Array.isArray(v) ? v.map((item) => item?.value ?? item) : (v?.value ?? v);
     onChange?.(name, values);
     if (isEdition) {
       onSubmit?.(name, values);
     }
   };
 
-  const helperText = editContext
-    ? <SubscriptionFocus context={editContext} fieldName={name} />
-    : undefined;
+  const helperText = editContext ? (
+    <SubscriptionFocus context={editContext} fieldName={name} />
+  ) : undefined;
 
   return (
     <Field
@@ -119,18 +113,15 @@ const OpenVocabFieldComponent = ({
         optionProps: HTMLAttributes<HTMLDivElement>,
         { value, description }: VocabFieldOption,
       ) => (
-        <Tooltip
-          {...optionProps}
-          key={value}
-          title={description}
-          placement="bottom-start"
-        >
+        <Tooltip {...optionProps} key={value} title={description} placement="bottom-start">
           <MenuItem value={value}>{value}</MenuItem>
         </Tooltip>
       )}
       groupBy={Array.isArray(type) ? (o: VocabFieldOption) => o.category : undefined}
       getOptionDisabled={(o: VocabFieldOption) => disabledOptions.includes(o.value)}
-      isOptionEqualToValue={(o: VocabFieldOption, v: VocabFieldOption | string) => o.value === (typeof v === 'string' ? v : v?.value)}
+      isOptionEqualToValue={(o: VocabFieldOption, v: VocabFieldOption | string) =>
+        o.value === (typeof v === 'string' ? v : v?.value)
+      }
       textfieldprops={{
         label,
         helperText,
@@ -150,23 +141,20 @@ const OpenVocabField = (props: OpenVocabFieldProps) => {
     ? props.type.map((n) => typeToCategory(n))
     : [typeToCategory(props.type)];
 
-  const queryRef = useQueryLoading<OpenVocabFieldQuery>(
-    vocabularyQuery,
-    {
-      filters: {
-        mode: 'or',
-        filterGroups: [],
-        filters: [
-          {
-            key: ['category'],
-            values: filterCategories,
-            operator: 'eq',
-            mode: 'or',
-          },
-        ],
-      },
+  const queryRef = useQueryLoading<OpenVocabFieldQuery>(vocabularyQuery, {
+    filters: {
+      mode: 'or',
+      filterGroups: [],
+      filters: [
+        {
+          key: ['category'],
+          values: filterCategories,
+          operator: 'eq',
+          mode: 'or',
+        },
+      ],
     },
-  );
+  });
 
   const FallbackAutoComplete = (
     <Field
@@ -187,12 +175,7 @@ const OpenVocabField = (props: OpenVocabFieldProps) => {
 
   return (
     <Suspense fallback={FallbackAutoComplete}>
-      {queryRef && (
-        <OpenVocabFieldComponent
-          {...props}
-          queryRef={queryRef}
-        />
-      )}
+      {queryRef && <OpenVocabFieldComponent {...props} queryRef={queryRef} />}
     </Suspense>
   );
 };

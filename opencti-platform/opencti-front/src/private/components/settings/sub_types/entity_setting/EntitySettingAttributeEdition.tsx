@@ -35,20 +35,18 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const entitySettingAttributeEditionPatch = graphql`
-  mutation EntitySettingAttributeEditionPatchMutation(
-    $ids: [ID!]!
-    $input: [EditInput!]!
-  ) {
+  mutation EntitySettingAttributeEditionPatchMutation($ids: [ID!]!, $input: [EditInput!]!) {
     entitySettingsFieldPatch(ids: $ids, input: $input) {
       ...EntitySettingAttributes_entitySetting
     }
   }
 `;
 
-const attributeValidation = () => Yup.object().shape({
-  mandatory: Yup.boolean().nullable(),
-  default_values: Yup.mixed().nullable(),
-});
+const attributeValidation = () =>
+  Yup.object().shape({
+    mandatory: Yup.boolean().nullable(),
+    default_values: Yup.mixed().nullable(),
+  });
 
 interface AttributeFormikValues {
   mandatory: boolean;
@@ -86,9 +84,7 @@ const EntitySettingAttributeEdition = ({
     const scale = JSON.parse(attributeScale) as Scale;
     return scale.local_config;
   };
-  const [scaleErrors, setScaleErrors] = useState<FormikErrors<FormikValues>>(
-    {},
-  );
+  const [scaleErrors, setScaleErrors] = useState<FormikErrors<FormikValues>>({});
 
   const [commit] = useApiMutation(entitySettingAttributeEditionPatch);
 
@@ -110,9 +106,7 @@ const EntitySettingAttributeEdition = ({
       newValues.scale = { local_config: values.scale };
     }
 
-    const currentKeyIdx = saveConfiguration.findIndex(
-      (a) => a.name === attribute.name,
-    );
+    const currentKeyIdx = saveConfiguration.findIndex((a) => a.name === attribute.name);
     if (currentKeyIdx > -1) {
       saveConfiguration[currentKeyIdx] = {
         ...saveConfiguration[currentKeyIdx],
@@ -142,7 +136,9 @@ const EntitySettingAttributeEdition = ({
   };
 
   const defaultValues = () => {
-    const defaultValueAttribute = entitySetting.defaultValuesAttributes.find((element) => element.name === attribute.name);
+    const defaultValueAttribute = entitySetting.defaultValuesAttributes.find(
+      (element) => element.name === attribute.name,
+    );
     const attributeDefaultValues = defaultValueAttribute?.defaultValues ?? attribute.defaultValues;
     const values = attributeDefaultValues ? [...attributeDefaultValues] : [];
     return computeDefaultValues(
@@ -157,11 +153,9 @@ const EntitySettingAttributeEdition = ({
   const values: AttributeFormikValues = {
     mandatory: attribute.mandatory,
     default_values: defaultValues(),
-    scale: attribute.scale
-      ? getScaleConfig(attribute.scale)
-      : ({} as ScaleConfig),
+    scale: attribute.scale ? getScaleConfig(attribute.scale) : ({} as ScaleConfig),
   };
-  const customScale = (values.scale && isCustomScale(values.scale)) ? values.scale : null;
+  const customScale = values.scale && isCustomScale(values.scale) ? values.scale : null;
   const text = attribute.label ?? attribute.name;
   const attributeName = t_i18n(capitalizeFirstLetter(text));
   return (
@@ -176,13 +170,7 @@ const EntitySettingAttributeEdition = ({
         validationSchema={attributeValidation()}
         onSubmit={onSubmit}
       >
-        {({
-          submitForm,
-          isSubmitting,
-          setFieldValue,
-          initialValues,
-          isValid,
-        }) => (
+        {({ submitForm, isSubmitting, setFieldValue, initialValues, isValid }) => (
           <Form>
             <Field
               component={SwitchField}
@@ -213,11 +201,7 @@ const EntitySettingAttributeEdition = ({
             <div className={classes.buttons}>
               <Button
                 onClick={submitForm}
-                disabled={
-                  isSubmitting
-                  || !isValid
-                  || Object.keys(scaleErrors).length > 0
-                }
+                disabled={isSubmitting || !isValid || Object.keys(scaleErrors).length > 0}
                 classes={{ root: classes.button }}
               >
                 {t_i18n('Update')}

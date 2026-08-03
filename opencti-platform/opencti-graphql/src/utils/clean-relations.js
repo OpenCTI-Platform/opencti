@@ -23,7 +23,10 @@ const computeMissingRelationsForType = async (context, relationType) => {
       sort: { 'internal_id.keyword': 'asc' },
       query: {
         bool: {
-          should: [{ match_phrase: { entity_type: relationType } }, { match_phrase: { parent_types: relationType } }],
+          should: [
+            { match_phrase: { entity_type: relationType } },
+            { match_phrase: { parent_types: relationType } },
+          ],
           minimum_should_match: 1,
         },
       },
@@ -38,14 +41,19 @@ const computeMissingRelationsForType = async (context, relationType) => {
       body,
     };
     const queryRelations = await elRawSearch(context, SYSTEM_USER, relationType, query);
-    const { hits, total: { value: valTotal } } = queryRelations.hits;
+    const {
+      hits,
+      total: { value: valTotal },
+    } = queryRelations.hits;
     if (hits.length === 0) {
       hasNextPage = false;
     } else {
       const lastHit = R.last(hits);
       searchAfter = R.head(lastHit.sort);
       counter += hits.length;
-      const connectionIds = R.uniq(R.flatten(hits.map((h) => h._source.connections.map((c) => c.internal_id))));
+      const connectionIds = R.uniq(
+        R.flatten(hits.map((h) => h._source.connections.map((c) => c.internal_id))),
+      );
       const findTerms = connectionIds.map((c) => {
         return { term: { 'internal_id.keyword': c } };
       });

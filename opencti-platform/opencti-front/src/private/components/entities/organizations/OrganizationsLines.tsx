@@ -31,14 +31,14 @@ export const organizationsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...OrganizationsLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -103,9 +103,7 @@ const OrganizationsLines: FunctionComponent<OrganizationsLinesProps> = ({
       hasMore={hasMore}
       isLoading={isLoadingMore}
       dataList={data?.organizations?.edges ?? []}
-      globalCount={
-        data?.organizations?.pageInfo?.globalCount ?? nbOfRowsToLoad
-      }
+      globalCount={data?.organizations?.pageInfo?.globalCount ?? nbOfRowsToLoad}
       LineComponent={OrganizationLine}
       DummyLineComponent={OrganizationLineDummy}
       dataColumns={dataColumns}

@@ -3,12 +3,17 @@ type RfiRequestAccessConfiguration {
   isUserCanAction: Boolean!
 }
 
-type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
+type CaseRfi implements BasicObject &
+  StixObject &
+  StixCoreObject &
+  StixDomainObject &
+  Container &
+  Case {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
   parent_types: [String!]!
-  metrics:[Metric]
+  metrics: [Metric]
   # StixObject
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -221,7 +226,10 @@ type Query {
     search: String
     toStix: Boolean
   ): CaseRfiConnection @auth(for: [KNOWLEDGE])
-  caseRfiContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
+  caseRfiContainsStixObjectOrStixRelationship(
+    id: String!
+    stixObjectOrStixRelationshipId: String!
+  ): Boolean @auth(for: [KNOWLEDGE])
 }
 
 # Mutations
@@ -267,6 +275,8 @@ input CaseRfiAddInput {
 type Mutation {
   caseRfiAdd(input: CaseRfiAddInput!): CaseRfi @auth(for: [KNOWLEDGE_KNUPDATE])
   caseRfiDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  caseRfiApprove(id: ID!): CaseRfi @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  caseRfiDecline(id: ID!): CaseRfi @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  caseRfiApprove(id: ID!): CaseRfi
+    @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  caseRfiDecline(id: ID!): CaseRfi
+    @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
 }

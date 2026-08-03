@@ -2,20 +2,36 @@ import React, { FunctionComponent, useContext, useEffect, useState } from 'react
 import useAuth from '../../../../../utils/hooks/useAuth';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import { QueryRenderer } from '../../../../../relay/environment';
-import EntityStixCoreRelationshipsLinesAll, { entityStixCoreRelationshipsLinesAllQuery } from '../EntityStixCoreRelationshipsLinesAll';
-import EntityStixCoreRelationshipsLinesTo, { entityStixCoreRelationshipsLinesToQuery } from '../EntityStixCoreRelationshipsLinesTo';
-import EntityStixCoreRelationshipsLinesFrom, { entityStixCoreRelationshipsLinesFromQuery } from '../EntityStixCoreRelationshipsLinesFrom';
+import EntityStixCoreRelationshipsLinesAll, {
+  entityStixCoreRelationshipsLinesAllQuery,
+} from '../EntityStixCoreRelationshipsLinesAll';
+import EntityStixCoreRelationshipsLinesTo, {
+  entityStixCoreRelationshipsLinesToQuery,
+} from '../EntityStixCoreRelationshipsLinesTo';
+import EntityStixCoreRelationshipsLinesFrom, {
+  entityStixCoreRelationshipsLinesFromQuery,
+} from '../EntityStixCoreRelationshipsLinesFrom';
 import ToolBar from '../../../data/ToolBar';
 import useEntityToggle from '../../../../../utils/hooks/useEntityToggle';
 import { KNOWLEDGE_KNUPDATE } from '../../../../../utils/hooks/useGranted';
 import StixCoreRelationshipCreationFromEntity from '../StixCoreRelationshipCreationFromEntity';
 import Security from '../../../../../utils/Security';
-import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
+import {
+  computeTargetStixCyberObservableTypes,
+  computeTargetStixDomainObjectTypes,
+  isStixCyberObservables,
+} from '../../../../../utils/stixTypeUtils';
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
-import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
+import {
+  isFilterGroupNotEmpty,
+  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
+} from '../../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
-import { CreateRelationshipContext, useInitCreateRelationshipContext } from '../CreateRelationshipContextProvider';
+import {
+  CreateRelationshipContext,
+  useInitCreateRelationshipContext,
+} from '../CreateRelationshipContextProvider';
 
 interface EntityStixCoreRelationshipsRelationshipsViewProps {
   entityId: string;
@@ -38,7 +54,9 @@ interface EntityStixCoreRelationshipsRelationshipsViewProps {
   isCoverage?: boolean;
 }
 
-const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStixCoreRelationshipsRelationshipsViewProps> = ({
+const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<
+  EntityStixCoreRelationshipsRelationshipsViewProps
+> = ({
   entityId,
   entityLink,
   defaultStartTime,
@@ -59,116 +77,113 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
   isCoverage = false,
 }) => {
   const { viewStorage, helpers: storageHelpers, localStorageKey } = localStorage;
-  const {
-    numberOfElements,
-    filters,
-    searchTerm,
-    sortBy,
-    orderAsc,
-    openExports,
-    view,
-  } = viewStorage;
+  const { numberOfElements, filters, searchTerm, sortBy, orderAsc, openExports, view } =
+    viewStorage;
   const { setState: setCreateRelationshipContext } = useContext(CreateRelationshipContext);
 
   const { platformModuleHelpers } = useAuth();
   const isObservables = isStixCyberObservables(stixCoreObjectTypes);
   const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
-  const dataColumns: DataColumns = isCoverage ? {
-    [isObservables ? 'observable_value' : 'name']: {
-      label: isObservables ? 'Value' : 'Name',
-      width: '30%',
-      isSortable: false,
-    },
-    coverage_information: {
-      label: 'Coverage',
-      width: '15%',
-      isSortable: false,
-    },
-    createdBy: {
-      label: 'Author',
-      width: '12%',
-      isSortable: isRuntimeSort,
-    },
-    creator: {
-      label: 'Creators',
-      width: '12%',
-      isSortable: isRuntimeSort,
-    },
-    start_time: {
-      label: 'Start time',
-      width: '8%',
-      isSortable: true,
-    },
-    stop_time: {
-      label: 'Stop time',
-      width: '8%',
-      isSortable: true,
-    },
-    confidence: {
-      label: 'Confidence',
-      isSortable: true,
-      width: '7%',
-    },
-    objectMarking: {
-      label: 'Marking',
-      isSortable: isRuntimeSort,
-      width: '8%',
-    },
-  } : {
-    relationship_type: {
-      label: 'Relationship type',
-      width: '8%',
-      isSortable: true,
-    },
-    entity_type: {
-      label: 'Entity type',
-      width: '10%',
-      isSortable: false,
-    },
-    [isObservables ? 'observable_value' : 'name']: {
-      label: isObservables ? 'Value' : 'Name',
-      width: '20%',
-      isSortable: false,
-    },
-    createdBy: {
-      label: 'Author',
-      width: '10%',
-      isSortable: isRuntimeSort,
-    },
-    creator: {
-      label: 'Creators',
-      width: '10%',
-      isSortable: isRuntimeSort,
-    },
-    start_time: {
-      label: 'Start time',
-      width: '8%',
-      isSortable: true,
-    },
-    stop_time: {
-      label: 'Stop time',
-      width: '8%',
-      isSortable: true,
-    },
-    created_at: {
-      label: 'Platform creation date',
-      width: '8%',
-      isSortable: true,
-    },
-    confidence: {
-      label: 'Confidence',
-      isSortable: true,
-      width: '6%',
-    },
-    objectMarking: {
-      label: 'Marking',
-      isSortable: isRuntimeSort,
-      width: '8%',
-    },
-  };
+  const dataColumns: DataColumns = isCoverage
+    ? {
+        [isObservables ? 'observable_value' : 'name']: {
+          label: isObservables ? 'Value' : 'Name',
+          width: '30%',
+          isSortable: false,
+        },
+        coverage_information: {
+          label: 'Coverage',
+          width: '15%',
+          isSortable: false,
+        },
+        createdBy: {
+          label: 'Author',
+          width: '12%',
+          isSortable: isRuntimeSort,
+        },
+        creator: {
+          label: 'Creators',
+          width: '12%',
+          isSortable: isRuntimeSort,
+        },
+        start_time: {
+          label: 'Start time',
+          width: '8%',
+          isSortable: true,
+        },
+        stop_time: {
+          label: 'Stop time',
+          width: '8%',
+          isSortable: true,
+        },
+        confidence: {
+          label: 'Confidence',
+          isSortable: true,
+          width: '7%',
+        },
+        objectMarking: {
+          label: 'Marking',
+          isSortable: isRuntimeSort,
+          width: '8%',
+        },
+      }
+    : {
+        relationship_type: {
+          label: 'Relationship type',
+          width: '8%',
+          isSortable: true,
+        },
+        entity_type: {
+          label: 'Entity type',
+          width: '10%',
+          isSortable: false,
+        },
+        [isObservables ? 'observable_value' : 'name']: {
+          label: isObservables ? 'Value' : 'Name',
+          width: '20%',
+          isSortable: false,
+        },
+        createdBy: {
+          label: 'Author',
+          width: '10%',
+          isSortable: isRuntimeSort,
+        },
+        creator: {
+          label: 'Creators',
+          width: '10%',
+          isSortable: isRuntimeSort,
+        },
+        start_time: {
+          label: 'Start time',
+          width: '8%',
+          isSortable: true,
+        },
+        stop_time: {
+          label: 'Stop time',
+          width: '8%',
+          isSortable: true,
+        },
+        created_at: {
+          label: 'Platform creation date',
+          width: '8%',
+          isSortable: true,
+        },
+        confidence: {
+          label: 'Confidence',
+          isSortable: true,
+          width: '6%',
+        },
+        objectMarking: {
+          label: 'Marking',
+          isSortable: isRuntimeSort,
+          width: '8%',
+        },
+      };
 
   // Filters due to screen context
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['stix-core-relationship']);
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, [
+    'stix-core-relationship',
+  ]);
   const predefinedFilters = [{ key: 'relationship_type', values: relationshipTypes }];
   if (allDirections) {
     predefinedFilters.push({ key: 'fromOrToId', values: [entityId] });
@@ -190,7 +205,10 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
 
   const paginationOptions = {
     search: searchTerm,
-    orderBy: (sortBy && (sortBy in dataColumns) && dataColumns[sortBy].isSortable) ? sortBy : 'relationship_type',
+    orderBy:
+      sortBy && sortBy in dataColumns && dataColumns[sortBy].isSortable
+        ? sortBy
+        : 'relationship_type',
     orderMode: orderAsc ? 'asc' : 'desc',
     filters: contextFilters,
   };
@@ -212,9 +230,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
 
   useInitCreateRelationshipContext({
     reversed: false,
-    stixCoreObjectTypes: stixCoreObjectTypes.length
-      ? stixCoreObjectTypes
-      : ['Stix-Core-Object'],
+    stixCoreObjectTypes: stixCoreObjectTypes.length ? stixCoreObjectTypes : ['Stix-Core-Object'],
     relationshipTypes,
     handleReverseRelation,
     connectionKey: 'Pagination_stixCoreRelationships',
@@ -274,7 +290,6 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
       >
         <QueryRenderer
           query={
-
             allDirections
               ? entityStixCoreRelationshipsLinesAllQuery
               : isRelationReversed
@@ -283,8 +298,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
           }
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }: { props: unknown }) =>
-
-            (allDirections ? (
+            allDirections ? (
               <EntityStixCoreRelationshipsLinesAll
                 data={props}
                 paginationOptions={paginationOptions}
@@ -327,7 +341,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
                 selectAll={selectAll}
                 isCoverage={isCoverage}
               />
-            ))
+            )
           }
         />
       </ListLines>
@@ -351,7 +365,9 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
             isRelationReversed={reversedRelation}
             handleReverseRelation={handleReverseRelation}
             targetStixDomainObjectTypes={computeTargetStixDomainObjectTypes(stixCoreObjectTypes)}
-            targetStixCyberObservableTypes={computeTargetStixCyberObservableTypes(stixCoreObjectTypes)}
+            targetStixCyberObservableTypes={computeTargetStixCyberObservableTypes(
+              stixCoreObjectTypes,
+            )}
             defaultStartTime={defaultStartTime}
             defaultStopTime={defaultStopTime}
             paginationOptions={paginationOptions}

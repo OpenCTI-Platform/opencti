@@ -1,256 +1,257 @@
 type PirCriterion {
-    filters: String!
-    weight: Int!
+  filters: String!
+  weight: Int!
 }
 
 type PirScore {
-    pir_id: ID!
-    pir_score: Int!
+  pir_id: ID!
+  pir_score: Int!
 }
 
 # Used in StixRefRelationship
 enum PirType {
-    THREAT_LANDSCAPE
-    THREAT_ORIGIN
-    THREAT_CUSTOM
+  THREAT_LANDSCAPE
+  THREAT_ORIGIN
+  THREAT_CUSTOM
 }
 
 type PirDependency {
-    element_id: ID!
-    author_id: ID
+  element_id: ID!
+  author_id: ID
 }
 type PirExplanation {
-    dependencies: [PirDependency!]!
-    criterion: PirCriterion!
+  dependencies: [PirDependency!]!
+  criterion: PirCriterion!
 }
 type PirInformation {
-    pir_score: Int!
-    last_pir_score_date: DateTime!
-    pir_explanation: [PirExplanation!]!
+  pir_score: Int!
+  last_pir_score_date: DateTime!
+  pir_explanation: [PirExplanation!]!
 }
 
 type Pir implements InternalObject & BasicObject {
-    id: ID!
-    entity_type: String!
-    representative: Representative!
-    standard_id: String!
-    parent_types: [String!]!
-    metrics:[Metric]
-    created_at: DateTime!
-    updated_at: DateTime!
-    refreshed_at: DateTime
-    creators: [Creator!]
-    # Pir
-    name: String!
-    pir_type: PirType!
-    description: String
-    pir_rescan_days: Int!
-    pir_criteria: [PirCriterion!]!
-    pir_filters: String!
-    lastEventId: String!
-    authorizedMembers: [MemberAccess!]!
-    currentUserAccessRight: String
-    pirContainers(
-        first: Int
-        after: ID
-        orderBy: ContainersOrdering
-        orderMode: OrderingMode
-        filters: FilterGroup
-        search: String
-    ): ContainerConnection
-    queue_messages: Int!
+  id: ID!
+  entity_type: String!
+  representative: Representative!
+  standard_id: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  refreshed_at: DateTime
+  creators: [Creator!]
+  # Pir
+  name: String!
+  pir_type: PirType!
+  description: String
+  pir_rescan_days: Int!
+  pir_criteria: [PirCriterion!]!
+  pir_filters: String!
+  lastEventId: String!
+  authorizedMembers: [MemberAccess!]!
+  currentUserAccessRight: String
+  pirContainers(
+    first: Int
+    after: ID
+    orderBy: ContainersOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): ContainerConnection
+  queue_messages: Int!
 }
 
 type PirRelationship implements BasicRelationship {
-    # BasicRelationship
-    id: ID! # internal_id
-    standard_id: String!
-    entity_type: String!
-    parent_types: [String!]!
-  metrics:[Metric]
-    fromRole: String
-    toRole: String
-    created_at: DateTime!
-    updated_at: DateTime!
-    refreshed_at: DateTime
-    fromId: String!
-    toId: String!
-    fromType: String!
-    toType: String!
-    # InternalRelationship
-    from: StixDomainObject
-    to: Pir
-    creators: [Creator!]
-    # in-pir relationship
-    pir_explanation: [PirExplanation!]
-    pir_score: Int
+  # BasicRelationship
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  fromRole: String
+  toRole: String
+  created_at: DateTime!
+  updated_at: DateTime!
+  refreshed_at: DateTime
+  fromId: String!
+  toId: String!
+  fromType: String!
+  toType: String!
+  # InternalRelationship
+  from: StixDomainObject
+  to: Pir
+  creators: [Creator!]
+  # in-pir relationship
+  pir_explanation: [PirExplanation!]
+  pir_score: Int
 }
 
 # Ordering
 enum PirOrdering {
-    _score
-    name
-    created_at
-    updated_at
-    creator
+  _score
+  name
+  created_at
+  updated_at
+  creator
 }
 
 enum PirRelationshipOrdering {
-    created_at
-    updated_at
-    pir_score
+  created_at
+  updated_at
+  pir_score
 }
 
 # Relay connections
 type PirConnection {
-    pageInfo: PageInfo!
-    edges: [PirEdge!]!
+  pageInfo: PageInfo!
+  edges: [PirEdge!]!
 }
 type PirEdge {
-    cursor: String!
-    node: Pir!
+  cursor: String!
+  node: Pir!
 }
 
 type PirRelationshipConnection {
-    pageInfo: PageInfo!
-    edges: [PirRelationshipEdge!]!
+  pageInfo: PageInfo!
+  edges: [PirRelationshipEdge!]!
 }
 type PirRelationshipEdge {
-    cursor: String!
-    node: PirRelationship!
+  cursor: String!
+  node: PirRelationship!
 }
 
 # Queries
 type Query {
-    pir(id: ID!): Pir @auth(for: [PIRAPI])
-    pirs(
-        first: Int
-        after: ID
-        orderBy: PirOrdering
-        orderMode: OrderingMode
-        filters: FilterGroup
-        search: String
-    ): PirConnection @auth(for: [PIRAPI])
-    pirRelationships(
-        pirId: ID!
-        first: Int
-        after: ID
-        orderBy: PirRelationshipOrdering
-        orderMode: OrderingMode
-        fromId: [String]
-        fromRole: String
-        fromTypes: [String]
-        startTimeStart: DateTime
-        startTimeStop: DateTime
-        stopTimeStart: DateTime
-        stopTimeStop: DateTime
-        firstSeenStart: DateTime
-        firstSeenStop: DateTime
-        lastSeenStart: DateTime
-        lastSeenStop: DateTime
-        startDate: DateTime
-        endDate: DateTime
-        confidences: [Int]
-        search: String
-        filters: FilterGroup
-        dynamicFrom: FilterGroup
-        stix: Boolean
-    ): PirRelationshipConnection @auth(for: [KNOWLEDGE, PIRAPI])
-    pirRelationshipsDistribution(
-        pirId: ID!
-        field: String!
-        operation: StatsOperation!
-        startDate: DateTime
-        endDate: DateTime
-        dateAttribute: String
-        isTo: Boolean
-        limit: Int
-        order: String
-        fromId: [String]
-        fromTypes: [String]
-        relationship_type: [String]
-        search: String
-        filters: FilterGroup
-        dynamicFrom: FilterGroup
-        aggregateOnConnections: Boolean
-    ): [Distribution] @auth(for: [KNOWLEDGE, PIRAPI])
-    pirRelationshipsMultiTimeSeries(
-        operation: StatsOperation!
-        startDate: DateTime!
-        endDate: DateTime
-        interval: String!
-        onlyInferred: Boolean
-        timeSeriesParameters: [PirRelationshipsTimeSeriesParameters!]!
-        relationship_type: [String!]
-    ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, PIRAPI])
-    pirLogs(
-        pirId: ID!
-        first: Int
-        after: ID
-        orderBy: LogsOrdering
-        orderMode: OrderingMode
-        filters: FilterGroup
-        search: String
-    ): LogConnection @auth(for: [KNOWLEDGE, PIRAPI])
-}
-
-# Mutations inputs
-input PirCriterionInput {
-    weight: Int!
-    filters: FilterGroup!
-}
-
-# Used in StixRefRelationshipAddInput
-input PirDependencyInput {
-    element_id: ID!
-    author_id: ID
-}
-input PirExplanationInput {
-    dependencies: [PirDependencyInput!]!
-    criterion: PirCriterionInput!
-}
-
-input PirAddInput {
-    name: String! @constraint(minLength: 2, format: "not-blank")
-    pir_type: PirType!
-    description: String
-    pir_rescan_days: Int!
-    pir_criteria: [PirCriterionInput!]!
-    pir_filters: FilterGroup!
-    authorized_members: [MemberAccessInput!]
-}
-
-input PirFlagElementInput {
-    relationshipId: ID!
-    sourceId: ID!
-    matchingCriteria: [PirCriterionInput!]!
-    relationshipAuthorId: ID
-}
-
-input PirUnflagElementInput {
-    relationshipId: ID!
-    sourceId: ID!
-}
-
-input PirRelationshipsTimeSeriesParameters {
+  pir(id: ID!): Pir @auth(for: [PIRAPI])
+  pirs(
+    first: Int
+    after: ID
+    orderBy: PirOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): PirConnection @auth(for: [PIRAPI])
+  pirRelationships(
     pirId: ID!
-    field: String!
-    elementWithTargetTypes: [String]
+    first: Int
+    after: ID
+    orderBy: PirRelationshipOrdering
+    orderMode: OrderingMode
     fromId: [String]
+    fromRole: String
     fromTypes: [String]
-    relationship_type: [String]
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    startDate: DateTime
+    endDate: DateTime
     confidences: [Int]
     search: String
     filters: FilterGroup
     dynamicFrom: FilterGroup
+    stix: Boolean
+  ): PirRelationshipConnection @auth(for: [KNOWLEDGE, PIRAPI])
+  pirRelationshipsDistribution(
+    pirId: ID!
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    fromId: [String]
+    fromTypes: [String]
+    relationship_type: [String]
+    search: String
+    filters: FilterGroup
+    dynamicFrom: FilterGroup
+    aggregateOnConnections: Boolean
+  ): [Distribution] @auth(for: [KNOWLEDGE, PIRAPI])
+  pirRelationshipsMultiTimeSeries(
+    operation: StatsOperation!
+    startDate: DateTime!
+    endDate: DateTime
+    interval: String!
+    onlyInferred: Boolean
+    timeSeriesParameters: [PirRelationshipsTimeSeriesParameters!]!
+    relationship_type: [String!]
+  ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, PIRAPI])
+  pirLogs(
+    pirId: ID!
+    first: Int
+    after: ID
+    orderBy: LogsOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): LogConnection @auth(for: [KNOWLEDGE, PIRAPI])
+}
+
+# Mutations inputs
+input PirCriterionInput {
+  weight: Int!
+  filters: FilterGroup!
+}
+
+# Used in StixRefRelationshipAddInput
+input PirDependencyInput {
+  element_id: ID!
+  author_id: ID
+}
+input PirExplanationInput {
+  dependencies: [PirDependencyInput!]!
+  criterion: PirCriterionInput!
+}
+
+input PirAddInput {
+  name: String! @constraint(minLength: 2, format: "not-blank")
+  pir_type: PirType!
+  description: String
+  pir_rescan_days: Int!
+  pir_criteria: [PirCriterionInput!]!
+  pir_filters: FilterGroup!
+  authorized_members: [MemberAccessInput!]
+}
+
+input PirFlagElementInput {
+  relationshipId: ID!
+  sourceId: ID!
+  matchingCriteria: [PirCriterionInput!]!
+  relationshipAuthorId: ID
+}
+
+input PirUnflagElementInput {
+  relationshipId: ID!
+  sourceId: ID!
+}
+
+input PirRelationshipsTimeSeriesParameters {
+  pirId: ID!
+  field: String!
+  elementWithTargetTypes: [String]
+  fromId: [String]
+  fromTypes: [String]
+  relationship_type: [String]
+  confidences: [Int]
+  search: String
+  filters: FilterGroup
+  dynamicFrom: FilterGroup
 }
 
 # Mutations
 type Mutation {
-    pirAdd(input: PirAddInput!): Pir @auth(for: [PIRAPI_PIRUPDATE])
-    pirFieldPatch(id: ID!, input: [EditInput!]!): Pir @auth(for: [PIRAPI_PIRUPDATE])
-    pirEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]!): Pir @auth(for: [PIRAPI_PIRUPDATE])
-    pirDelete(id: ID!): ID @auth(for: [PIRAPI_PIRUPDATE])
-    pirFlagElement(id: ID!, input: PirFlagElementInput!): ID @auth(for: [BYPASS])
-    pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID @auth(for: [BYPASS])
+  pirAdd(input: PirAddInput!): Pir @auth(for: [PIRAPI_PIRUPDATE])
+  pirFieldPatch(id: ID!, input: [EditInput!]!): Pir @auth(for: [PIRAPI_PIRUPDATE])
+  pirEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]!): Pir
+    @auth(for: [PIRAPI_PIRUPDATE])
+  pirDelete(id: ID!): ID @auth(for: [PIRAPI_PIRUPDATE])
+  pirFlagElement(id: ID!, input: PirFlagElementInput!): ID @auth(for: [BYPASS])
+  pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID @auth(for: [BYPASS])
 }

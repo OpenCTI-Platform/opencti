@@ -19,9 +19,7 @@ const styles = () => ({
 });
 
 export const stixObjectOrStixRelationshipStixObjectOrStixRelationshipQuery = graphql`
-  query StixObjectOrStixRelationshipStixObjectOrStixRelationshipQuery(
-    $id: String!
-  ) {
+  query StixObjectOrStixRelationshipStixObjectOrStixRelationshipQuery($id: String!) {
     stixObjectOrStixRelationship(id: $id) {
       ... on StixCoreObject {
         id
@@ -115,52 +113,35 @@ class StixObjectOrStixRelationship extends Component {
                 const fromRestricted = stixObjectOrStixRelationship.from === null;
                 const toRestricted = stixObjectOrStixRelationship.to === null;
                 if (
-                  stixObjectOrStixRelationship.relationship_type
-                  === 'stix-sighting-relationship'
+                  stixObjectOrStixRelationship.relationship_type === 'stix-sighting-relationship'
                 ) {
                   if (!toRestricted) {
-                    redirectLink = `${resolveLink(
-                      stixObjectOrStixRelationship.to.entity_type,
-                    )}/${
+                    redirectLink = `${resolveLink(stixObjectOrStixRelationship.to.entity_type)}/${
                       stixObjectOrStixRelationship.to.id
                     }/knowledge/sightings/${stixObjectOrStixRelationship.id}`;
                   } else {
                     redirectLink = !fromRestricted
-                      ? `${resolveLink(
-                        stixObjectOrStixRelationship.from.entity_type,
-                      )}/${
-                        stixObjectOrStixRelationship.from.id
-                      }/knowledge/sightings/${stixObjectOrStixRelationship.id}`
+                      ? `${resolveLink(stixObjectOrStixRelationship.from.entity_type)}/${
+                          stixObjectOrStixRelationship.from.id
+                        }/knowledge/sightings/${stixObjectOrStixRelationship.id}`
                       : undefined;
                   }
                 } else if (stixObjectOrStixRelationship.relationship_type) {
                   if (stixObjectOrStixRelationship.from?.relationship_type) {
                     redirectLink = !toRestricted
-                      ? `${resolveLink(
-                        stixObjectOrStixRelationship.to.entity_type,
-                      )}/${
-                        stixObjectOrStixRelationship.to.id
-                      }/knowledge/relations/${stixObjectOrStixRelationship.id}`
+                      ? `${resolveLink(stixObjectOrStixRelationship.to.entity_type)}/${stixObjectOrStixRelationship.to.id}/knowledge/relations/${stixObjectOrStixRelationship.id}`
                       : undefined;
                   } else if (!fromRestricted) {
-                    redirectLink = `${resolveLink(
-                      stixObjectOrStixRelationship.from.entity_type,
-                    )}/${
+                    redirectLink = `${resolveLink(stixObjectOrStixRelationship.from.entity_type)}/${
                       stixObjectOrStixRelationship.from.id
                     }/knowledge/relations/${stixObjectOrStixRelationship.id}`;
                   } else {
                     redirectLink = !toRestricted
-                      ? `${resolveLink(
-                        stixObjectOrStixRelationship.to.entity_type,
-                      )}/${
-                        stixObjectOrStixRelationship.to.id
-                      }/knowledge/relations/${stixObjectOrStixRelationship.id}`
+                      ? `${resolveLink(stixObjectOrStixRelationship.to.entity_type)}/${stixObjectOrStixRelationship.to.id}/knowledge/relations/${stixObjectOrStixRelationship.id}`
                       : undefined;
                   }
                 } else {
-                  redirectLink = `${resolveLink(
-                    stixObjectOrStixRelationship.entity_type,
-                  )}/${stixObjectOrStixRelationship.id}`;
+                  redirectLink = `${resolveLink(stixObjectOrStixRelationship.entity_type)}/${stixObjectOrStixRelationship.id}`;
                 }
                 if (redirectLink) {
                   return <Navigate exact from={`/id/${id}`} to={redirectLink} replace={true} />;
@@ -181,8 +162,4 @@ StixObjectOrStixRelationship.propTypes = {
   navigate: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(StixObjectOrStixRelationship);
+export default compose(inject18n, withRouter, withStyles(styles))(StixObjectOrStixRelationship);

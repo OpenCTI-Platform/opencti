@@ -1,20 +1,42 @@
 import * as R from 'ramda';
 import moment from 'moment/moment';
-import { INTERNAL_USERS, isBypassUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from './access';
+import {
+  INTERNAL_USERS,
+  isBypassUser,
+  isUserHasCapability,
+  KNOWLEDGE_ORGANIZATION_RESTRICT,
+} from './access';
 import { logApp } from '../config/conf';
 import { storeFileConverter, uploadToStorage } from '../database/file-storage';
 import path from 'path';
 import { computeDateFromEventId, truncate, utcDate } from './format';
-import { isEmptyField, isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REPLACE } from '../database/utils';
-import { hasSameSourceAlreadyUpdateThisScore, INDICATOR_DEFAULT_SCORE } from '../modules/indicator/indicator-utils';
-import { creators as creatorsAttribute, iAttributes, xOpenctiStixIds } from '../schema/attribute-definition';
+import {
+  isEmptyField,
+  isNotEmptyField,
+  UPDATE_OPERATION_ADD,
+  UPDATE_OPERATION_REPLACE,
+} from '../database/utils';
+import {
+  hasSameSourceAlreadyUpdateThisScore,
+  INDICATOR_DEFAULT_SCORE,
+} from '../modules/indicator/indicator-utils';
+import {
+  creators as creatorsAttribute,
+  iAttributes,
+  xOpenctiStixIds,
+} from '../schema/attribute-definition';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../schema/stixDomainObject';
-import { externalReferences, objectLabel, RELATION_CREATED_BY, RELATION_GRANTED_TO } from '../schema/stixRefRelationship';
+import {
+  externalReferences,
+  objectLabel,
+  RELATION_CREATED_BY,
+  RELATION_GRANTED_TO,
+} from '../schema/stixRefRelationship';
 import { INPUT_MARKINGS } from '../schema/general';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { FunctionalError } from '../config/errors';
@@ -60,20 +82,25 @@ const isOutdatedUpdate = (context, element, attributeKey) => {
   return false;
 };
 
-const buildAttributeUpdate = (isFullSync, attribute, currentData, inputData) => { // upsertOperations
+const buildAttributeUpdate = (isFullSync, attribute, currentData, inputData) => {
+  // upsertOperations
   const inputs = [];
   const fieldKey = attribute.name;
   if (attribute.multiple) {
     const operation = isFullSync ? UPDATE_OPERATION_REPLACE : UPDATE_OPERATION_ADD;
     // Only add input in case of replace or when we really need to add something
-    if (operation === UPDATE_OPERATION_REPLACE || (operation === UPDATE_OPERATION_ADD && isNotEmptyField(inputData))) {
+    if (
+      operation === UPDATE_OPERATION_REPLACE ||
+      (operation === UPDATE_OPERATION_ADD && isNotEmptyField(inputData))
+    ) {
       inputs.push({ key: fieldKey, value: inputData ?? [], operation });
     }
   } else if (isObjectAttribute(fieldKey)) {
     if (isNotEmptyField(inputData)) {
       const mergedDict = R.mergeAll([currentData, inputData]);
       inputs.push({ key: fieldKey, value: [mergedDict] });
-    } else if (isFullSync) { // We only allowed removal for full synchronization
+    } else if (isFullSync) {
+      // We only allowed removal for full synchronization
       inputs.push({ key: fieldKey, value: [inputData] });
     }
   } else {
@@ -82,16 +109,29 @@ const buildAttributeUpdate = (isFullSync, attribute, currentData, inputData) => 
   return inputs;
 };
 
-export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch, confidenceForUpsert) => {
+export const buildUpdatePatchForUpsert = (
+  user,
+  resolvedElement,
+  type,
+  basePatch,
+  confidenceForUpsert,
+) => {
   const updatePatch = { ...basePatch };
   const { confidenceLevelToApply, isConfidenceMatch } = confidenceForUpsert;
   // Handle attributes updates
   if (isNotEmptyField(basePatch.stix_id) || isNotEmptyField(basePatch.x_opencti_stix_ids)) {
     const possibleNewStandardId = generateStandardId(type, basePatch);
     const isStandardWillChange = resolvedElement.standard_id !== possibleNewStandardId;
-    const rejectedIds = isStandardWillChange && isConfidenceMatch ? [resolvedElement.standard_id, possibleNewStandardId] : [resolvedElement.standard_id];
+    const rejectedIds =
+      isStandardWillChange && isConfidenceMatch
+        ? [resolvedElement.standard_id, possibleNewStandardId]
+        : [resolvedElement.standard_id];
     const ids = [...(basePatch.x_opencti_stix_ids || [])];
-    if (isNotEmptyField(basePatch.stix_id) && !rejectedIds.includes(basePatch.stix_id) && !ids.includes(basePatch.stix_id)) {
+    if (
+      isNotEmptyField(basePatch.stix_id) &&
+      !rejectedIds.includes(basePatch.stix_id) &&
+      !ids.includes(basePatch.stix_id)
+    ) {
       ids.push(basePatch.stix_id);
     }
     if (ids.length > 0) {
@@ -105,19 +145,35 @@ export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch
   // Handle "created" upsert
   // Only upsert created if before the existing one
   if (isNotEmptyField(updatePatch.created)) {
-    const { date: alignedCreated } = computeExtendedDateValues(updatePatch.created, resolvedElement.created, ALIGN_OLDEST);
+    const { date: alignedCreated } = computeExtendedDateValues(
+      updatePatch.created,
+      resolvedElement.created,
+      ALIGN_OLDEST,
+    );
     updatePatch.created = alignedCreated;
   }
   // Handle "x_opencti_modified_at" upsert
   // Only upsert modified if after the existing one
   if (isNotEmptyField(updatePatch.x_opencti_modified_at)) {
-    const { date: alignedModified } = computeExtendedDateValues(updatePatch.x_opencti_modified_at, resolvedElement.x_opencti_modified_at, ALIGN_NEWEST);
+    const { date: alignedModified } = computeExtendedDateValues(
+      updatePatch.x_opencti_modified_at,
+      resolvedElement.x_opencti_modified_at,
+      ALIGN_NEWEST,
+    );
     updatePatch.x_opencti_modified_at = alignedModified;
   }
   // Upsert observed data count and times extensions
   if (type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
-    const { date: cFo, updated: isCFoUpdated } = computeExtendedDateValues(updatePatch.first_observed, resolvedElement.first_observed, ALIGN_OLDEST);
-    const { date: cLo, updated: isCLoUpdated } = computeExtendedDateValues(updatePatch.last_observed, resolvedElement.last_observed, ALIGN_NEWEST);
+    const { date: cFo, updated: isCFoUpdated } = computeExtendedDateValues(
+      updatePatch.first_observed,
+      resolvedElement.first_observed,
+      ALIGN_OLDEST,
+    );
+    const { date: cLo, updated: isCLoUpdated } = computeExtendedDateValues(
+      updatePatch.last_observed,
+      resolvedElement.last_observed,
+      ALIGN_NEWEST,
+    );
     updatePatch.first_observed = cFo;
     updatePatch.last_observed = cLo;
     // Only update number_observed if part of the relation dates change
@@ -134,7 +190,10 @@ export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch
       if (isLiveScoreUnchanged) {
         logApp.debug(
           '[OPENCTI][DECAY] on upsert excluded indicator, skip valid_until/revoked update, keep existing values',
-          { elementScore: resolvedElement.x_opencti_score, patchScore: updatePatch.x_opencti_score },
+          {
+            elementScore: resolvedElement.x_opencti_score,
+            patchScore: updatePatch.x_opencti_score,
+          },
         );
         updatePatch.x_opencti_score = resolvedElement.x_opencti_score;
         updatePatch.valid_from = resolvedElement.valid_from;
@@ -144,14 +203,24 @@ export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch
     } else if (resolvedElement.decay_applied_rule) {
       // Do not compute decay again when:
       // - base score does not change (indicator is still at its initial score, decay not started yet)
-      const isScoreInUpsertSameAsBaseScore = updatePatch.decay_base_score === resolvedElement.decay_base_score && updatePatch.decay_base_score === resolvedElement.x_opencti_score;
+      const isScoreInUpsertSameAsBaseScore =
+        updatePatch.decay_base_score === resolvedElement.decay_base_score &&
+        updatePatch.decay_base_score === resolvedElement.x_opencti_score;
       // - same userId has already updated to the same score previously
-      const hasSameScoreChangedBySameSource = hasSameSourceAlreadyUpdateThisScore(user.id, updatePatch.x_opencti_score, resolvedElement.decay_history);
+      const hasSameScoreChangedBySameSource = hasSameSourceAlreadyUpdateThisScore(
+        user.id,
+        updatePatch.x_opencti_score,
+        resolvedElement.decay_history,
+      );
       // - the live score in the upsert is identical to the current live score (e.g. a Playbook re-ingesting
       //   the indicator bundle without any score change — the bundle carries the current decayed score,
       //   not the original base score, so addIndicator incorrectly computes a new decay start from it)
       const isLiveScoreUnchanged = updatePatch.x_opencti_score === resolvedElement.x_opencti_score;
-      if (isScoreInUpsertSameAsBaseScore || hasSameScoreChangedBySameSource || isLiveScoreUnchanged) {
+      if (
+        isScoreInUpsertSameAsBaseScore ||
+        hasSameScoreChangedBySameSource ||
+        isLiveScoreUnchanged
+      ) {
         logApp.debug(
           `[OPENCTI][DECAY] on upsert indicator skip decay, do not change score, keep:${resolvedElement.x_opencti_score}`,
           {
@@ -175,14 +244,11 @@ export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch
         updatePatch.decay_next_reaction_date = resolvedElement.decay_next_reaction_date;
       } else {
         // As base_score has changed, decay will be reset by upsert
-        logApp.debug(
-          '[OPENCTI][DECAY] Decay is restarted',
-          {
-            elementScore: resolvedElement.x_opencti_score,
-            initialPatchScore: basePatch.x_opencti_score,
-            updatePatchScore: updatePatch.x_opencti_score,
-          },
-        );
+        logApp.debug('[OPENCTI][DECAY] Decay is restarted', {
+          elementScore: resolvedElement.x_opencti_score,
+          initialPatchScore: basePatch.x_opencti_score,
+          updatePatchScore: updatePatch.x_opencti_score,
+        });
       }
     }
 
@@ -190,7 +256,10 @@ export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch
     if (resolvedElement.revoked === true && basePatch.revoked === false) {
       if (!updatePatch.x_opencti_score) {
         if (resolvedElement.decay_applied_rule) {
-          updatePatch.x_opencti_score = resolvedElement.decay_base_score > INDICATOR_DEFAULT_SCORE ? resolvedElement.decay_base_score : INDICATOR_DEFAULT_SCORE;
+          updatePatch.x_opencti_score =
+            resolvedElement.decay_base_score > INDICATOR_DEFAULT_SCORE
+              ? resolvedElement.decay_base_score
+              : INDICATOR_DEFAULT_SCORE;
         } else {
           updatePatch.x_opencti_score = INDICATOR_DEFAULT_SCORE;
         }
@@ -199,14 +268,30 @@ export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch
   }
   // Upsert relations with times extensions
   if (isStixCoreRelationship(type)) {
-    const { date: cStartTime } = computeExtendedDateValues(updatePatch.start_time, resolvedElement.start_time, ALIGN_OLDEST);
-    const { date: cStopTime } = computeExtendedDateValues(updatePatch.stop_time, resolvedElement.stop_time, ALIGN_NEWEST);
+    const { date: cStartTime } = computeExtendedDateValues(
+      updatePatch.start_time,
+      resolvedElement.start_time,
+      ALIGN_OLDEST,
+    );
+    const { date: cStopTime } = computeExtendedDateValues(
+      updatePatch.stop_time,
+      resolvedElement.stop_time,
+      ALIGN_NEWEST,
+    );
     updatePatch.start_time = cStartTime;
     updatePatch.stop_time = cStopTime;
   }
   if (isStixSightingRelationship(type)) {
-    const { date: cFs, updated: isCFsUpdated } = computeExtendedDateValues(updatePatch.first_seen, resolvedElement.first_seen, ALIGN_OLDEST);
-    const { date: cLs, updated: isCLsUpdated } = computeExtendedDateValues(updatePatch.last_seen, resolvedElement.last_seen, ALIGN_NEWEST);
+    const { date: cFs, updated: isCFsUpdated } = computeExtendedDateValues(
+      updatePatch.first_seen,
+      resolvedElement.first_seen,
+      ALIGN_OLDEST,
+    );
+    const { date: cLs, updated: isCLsUpdated } = computeExtendedDateValues(
+      updatePatch.last_seen,
+      resolvedElement.last_seen,
+      ALIGN_NEWEST,
+    );
     updatePatch.first_seen = cFs;
     updatePatch.last_seen = cLs;
     if (isCFsUpdated || isCLsUpdated) {
@@ -220,7 +305,13 @@ export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch
   return updatePatch;
 };
 
-const generateFileInputsForUpsert = async (context, user, resolvedElement, updatePatch, confidenceForUpsert) => {
+const generateFileInputsForUpsert = async (
+  context,
+  user,
+  resolvedElement,
+  updatePatch,
+  confidenceForUpsert,
+) => {
   const { isConfidenceMatch } = confidenceForUpsert;
   const inputs = [];
 
@@ -235,18 +326,35 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
       // Use snake_case to match storage API parameter naming
       const file_markings = filesMarkings[i] || updatePatch.objectMarking?.map(({ id }) => id);
       // If the array is shorter than files, reuse the last provided value (backward compat: single value applies to all)
-      const fileNoTriggerImport = noTriggerImportArr[Math.min(i, noTriggerImportArr.length - 1)] ?? false;
+      const fileNoTriggerImport =
+        noTriggerImportArr[Math.min(i, noTriggerImportArr.length - 1)] ?? false;
       const fileEmbedded = embeddedArr[Math.min(i, embeddedArr.length - 1)] ?? false;
-      filesToUpload.push({ file: fileInput, markings: file_markings, noTriggerImport: fileNoTriggerImport, embedded: fileEmbedded });
+      filesToUpload.push({
+        file: fileInput,
+        markings: file_markings,
+        noTriggerImport: fileNoTriggerImport,
+        embedded: fileEmbedded,
+      });
     }
   }
   // Handle single file upload (backward compatibility)
   // Propagate noTriggerImport/embedded from input, handling both scalar and array forms
   if (!isEmptyField(updatePatch.file)) {
-    const file_markings = isNotEmptyField(updatePatch.fileMarkings) ? updatePatch.fileMarkings : updatePatch.objectMarking?.map(({ id }) => id);
-    const singleNoTrigger = Array.isArray(updatePatch.noTriggerImport) ? (updatePatch.noTriggerImport[0] ?? false) : (updatePatch.noTriggerImport ?? false);
-    const singleEmbedded = Array.isArray(updatePatch.embedded) ? (updatePatch.embedded[0] ?? false) : (updatePatch.embedded ?? false);
-    filesToUpload.push({ file: updatePatch.file, markings: file_markings, noTriggerImport: singleNoTrigger, embedded: singleEmbedded });
+    const file_markings = isNotEmptyField(updatePatch.fileMarkings)
+      ? updatePatch.fileMarkings
+      : updatePatch.objectMarking?.map(({ id }) => id);
+    const singleNoTrigger = Array.isArray(updatePatch.noTriggerImport)
+      ? (updatePatch.noTriggerImport[0] ?? false)
+      : (updatePatch.noTriggerImport ?? false);
+    const singleEmbedded = Array.isArray(updatePatch.embedded)
+      ? (updatePatch.embedded[0] ?? false)
+      : (updatePatch.embedded ?? false);
+    filesToUpload.push({
+      file: updatePatch.file,
+      markings: file_markings,
+      noTriggerImport: singleNoTrigger,
+      embedded: singleEmbedded,
+    });
   }
 
   if (filesToUpload.length === 0) {
@@ -264,7 +372,12 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
   const draftContext = getDraftContext(context, user);
 
   for (let i = 0; i < filesToUpload.length; i += 1) {
-    const { file: fileInput, markings: file_markings, noTriggerImport, embedded } = filesToUpload[i];
+    const {
+      file: fileInput,
+      markings: file_markings,
+      noTriggerImport,
+      embedded,
+    } = filesToUpload[i];
     const { filename } = await fileInput;
     // Use embedded prefix for embedded files (same as stixCoreObjectImportPush)
     const prefix = embedded ? 'embedded' : 'import';
@@ -289,15 +402,24 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
     //   Replacing existing data requires sufficient confidence to overwrite
     if (fileAlreadyExistsOnEntity && !isConfidenceMatch) {
       // File exists but confidence is lower - skip replacing this file
-      logApp.info('Skipping file replacement due to insufficient confidence', { filename, entity_id: resolvedElement.internal_id });
+      logApp.info('Skipping file replacement due to insufficient confidence', {
+        filename,
+        entity_id: resolvedElement.internal_id,
+      });
       continue;
     }
 
-    const { upload: uploadedFile, untouched } = await uploadToStorage(context, user, filePath, fileInput, {
-      entity: resolvedElement,
-      file_markings,
-      noTriggerImport,
-    });
+    const { upload: uploadedFile, untouched } = await uploadToStorage(
+      context,
+      user,
+      filePath,
+      fileInput,
+      {
+        entity: resolvedElement,
+        file_markings,
+        noTriggerImport,
+      },
+    );
 
     if (untouched && fileAlreadyExistsOnEntity) {
       const existingMarkings = (existingFile.file_markings ?? []).sort();
@@ -316,11 +438,17 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
     const convertedFile = storeFileConverter(user, uploadedFile);
     // Track whether this is a new file or a replacement for proper history message
     if (fileAlreadyExistsOnEntity) {
-      logApp.info('Replacing existing file on entity', { filename, entity_id: resolvedElement.internal_id });
+      logApp.info('Replacing existing file on entity', {
+        filename,
+        entity_id: resolvedElement.internal_id,
+      });
       replacedFiles.push(convertedFile);
     } else {
       // New file added - this works regardless of confidence level
-      logApp.info('Adding new file to entity', { filename, entity_id: resolvedElement.internal_id });
+      logApp.info('Adding new file to entity', {
+        filename,
+        entity_id: resolvedElement.internal_id,
+      });
       newFiles.push(convertedFile);
     }
   }
@@ -355,8 +483,10 @@ const mergeUpsertOperations = (upsertKey, elementCurrentValue, upsertOperations)
     const { operation: currentUpsertOperation, value: currentUpsertValue } = upsertOperations[i];
     if (currentUpsertOperation === 'remove') {
       // filter values to remove from current values in DB
-      mergedUpsertOperationValue = mergedUpsertOperationValue.filter((e) =>
-        !currentUpsertValue?.includes(e) && (!e?.id || !currentUpsertValue?.some((u) => u?.id === e?.id)),
+      mergedUpsertOperationValue = mergedUpsertOperationValue.filter(
+        (e) =>
+          !currentUpsertValue?.includes(e) &&
+          (!e?.id || !currentUpsertValue?.some((u) => u?.id === e?.id)),
       );
       mergedUpsertOperationOperation = 'replace';
     } else if (currentUpsertOperation === 'replace') {
@@ -365,14 +495,26 @@ const mergeUpsertOperations = (upsertKey, elementCurrentValue, upsertOperations)
       mergedUpsertOperationOperation = 'replace';
     } else if (currentUpsertOperation === 'add') {
       // add upsert operation values to final patch values first
-      pushAll(mergedUpsertOperationValue, (currentUpsertValue ?? []));
-      mergedUpsertOperationOperation = (!mergedUpsertOperationOperation || mergedUpsertOperationOperation === 'add') ? 'add' : 'replace';
+      pushAll(mergedUpsertOperationValue, currentUpsertValue ?? []);
+      mergedUpsertOperationOperation =
+        !mergedUpsertOperationOperation || mergedUpsertOperationOperation === 'add'
+          ? 'add'
+          : 'replace';
     }
   }
-  return { key: upsertKey, operation: mergedUpsertOperationOperation, value: mergedUpsertOperationValue };
+  return {
+    key: upsertKey,
+    operation: mergedUpsertOperationOperation,
+    value: mergedUpsertOperationValue,
+  };
 };
 
-export const mergeUpsertInput = (elementCurrentValue, upsertValue, updatePatchInput, upsertOperation) => {
+export const mergeUpsertInput = (
+  elementCurrentValue,
+  upsertValue,
+  updatePatchInput,
+  upsertOperation,
+) => {
   const finalPatchInput = { ...updatePatchInput };
   // for now we only handle 'add' operations coming from updatePatchInput for multiple attributes
   // we need to first apply the upsertOperation on element then the updatePatchInput
@@ -382,7 +524,11 @@ export const mergeUpsertInput = (elementCurrentValue, upsertValue, updatePatchIn
     let finalPatchValue = [...currentValueArray];
     if (upsertOperation.operation === 'remove') {
       // filter values to remove from current values in DB
-      finalPatchValue = finalPatchValue.filter((e) => !upsertOperation.value?.includes(e) && (!e?.id || !upsertOperation.value?.some((u) => u?.id === e?.id)));
+      finalPatchValue = finalPatchValue.filter(
+        (e) =>
+          !upsertOperation.value?.includes(e) &&
+          (!e?.id || !upsertOperation.value?.some((u) => u?.id === e?.id)),
+      );
       finalPatchInput.operation = 'replace';
     } else if (upsertOperation.operation === 'replace') {
       // replace current values in DB with upsert values
@@ -401,7 +547,10 @@ export const mergeUpsertInput = (elementCurrentValue, upsertValue, updatePatchIn
     let finalDedupedPatchValuesMap = new Map();
     for (let i = 0; i < finalPatchValue.length; i++) {
       const currentPatchValue = finalPatchValue[i];
-      if (!finalDedupedPatchValuesMap.has(currentPatchValue) && !finalDedupedPatchValuesMap.has(currentPatchValue?.id)) {
+      if (
+        !finalDedupedPatchValuesMap.has(currentPatchValue) &&
+        !finalDedupedPatchValuesMap.has(currentPatchValue?.id)
+      ) {
         if (currentPatchValue?.id) {
           finalDedupedPatchValuesMap.set(currentPatchValue.id, currentPatchValue);
         } else {
@@ -423,7 +572,12 @@ export const mergeUpsertInput = (elementCurrentValue, upsertValue, updatePatchIn
  * @param updatePatchInputs : array inputs generated from updatePatch (from element in bundle)
  * @param upsertOperations : array inputs from upsertOperations in bundle
  */
-export const mergeUpsertInputs = (resolvedElement, updatePatch, updatePatchInputs, upsertOperations) => {
+export const mergeUpsertInputs = (
+  resolvedElement,
+  updatePatch,
+  updatePatchInputs,
+  upsertOperations,
+) => {
   // we want only to call this method for remove or replace operations that should happen on arrays
   if (!upsertOperations || upsertOperations.length === 0) {
     return updatePatchInputs;
@@ -446,7 +600,11 @@ export const mergeUpsertInputs = (resolvedElement, updatePatch, updatePatchInput
     const upsertOperationValues = upsertOperationsByKeyMap.get(upsertOperationKey);
     let finalUpsertOperation;
     if (upsertOperationValues.length > 1) {
-      finalUpsertOperation = mergeUpsertOperations(upsertOperationKey, elementCurrentValue, upsertOperationValues);
+      finalUpsertOperation = mergeUpsertOperations(
+        upsertOperationKey,
+        elementCurrentValue,
+        upsertOperationValues,
+      );
     } else {
       finalUpsertOperation = upsertOperationValues[0];
     }
@@ -454,7 +612,12 @@ export const mergeUpsertInputs = (resolvedElement, updatePatch, updatePatchInput
       const updatePatchInput = updatePatchInputsMap.get(upsertOperationKey);
       const elementCurrentValue = resolvedElement[upsertOperationKey];
       const upsertValue = updatePatch[upsertOperationKey];
-      const mergedInput = mergeUpsertInput(elementCurrentValue, upsertValue, updatePatchInput, finalUpsertOperation);
+      const mergedInput = mergeUpsertInput(
+        elementCurrentValue,
+        upsertValue,
+        updatePatchInput,
+        finalUpsertOperation,
+      );
       updatePatchInputsMap.set(upsertOperationKey, mergedInput); // replace updatePatchInput
     } else {
       updatePatchInputsMap.set(upsertOperationKey, finalUpsertOperation); // just add the upsert operation
@@ -463,7 +626,14 @@ export const mergeUpsertInputs = (resolvedElement, updatePatch, updatePatchInput
   return Array.from(updatePatchInputsMap.values());
 };
 
-export const generateAttributesInputsForUpsert = (context, _user, resolvedElement, type, updatePatch, confidenceForUpsert) => {
+export const generateAttributesInputsForUpsert = (
+  context,
+  _user,
+  resolvedElement,
+  type,
+  updatePatch,
+  confidenceForUpsert,
+) => {
   const { isConfidenceMatch } = confidenceForUpsert;
   // -- Upsert attributes
   const inputs = [];
@@ -472,12 +642,17 @@ export const generateAttributesInputsForUpsert = (context, _user, resolvedElemen
     const attribute = attributes[attrIndex];
     const attributeKey = attribute.name;
     const isInputAvailable = attributeKey in updatePatch;
-    if (isInputAvailable) { // The attribute is explicitly available in the patch
+    if (isInputAvailable) {
+      // The attribute is explicitly available in the patch
       const inputData = updatePatch[attributeKey];
       const isOutDatedModification = isOutdatedUpdate(context, resolvedElement, attributeKey);
-      const isStructuralUpsert = attributeKey === xOpenctiStixIds.name || attributeKey === creatorsAttribute.name; // Ids and creators consolidation is always granted
+      const isStructuralUpsert =
+        attributeKey === xOpenctiStixIds.name || attributeKey === creatorsAttribute.name; // Ids and creators consolidation is always granted
       const isFullSync = context.synchronizedUpsert || attribute.upsert_force_replace; // In case of full synchronization or force full upsert, just update the data
-      const isInputWithData = typeof inputData === 'string' ? isNotEmptyField(inputData.trim()) : isNotEmptyField(inputData);
+      const isInputWithData =
+        typeof inputData === 'string'
+          ? isNotEmptyField(inputData.trim())
+          : isNotEmptyField(inputData);
       const isCurrentlyEmpty = isEmptyField(resolvedElement[attributeKey]) && isInputWithData; // If the element current data is empty, we always expect to put the value
       // Field can be upsert if:
       // 1. Confidence is correct
@@ -487,7 +662,10 @@ export const generateAttributesInputsForUpsert = (context, _user, resolvedElemen
       // Upsert will be done if upsert is well-defined but also in full synchro mode or if the current value is empty
       if (!isOutDatedModification) {
         if (isStructuralUpsert || canBeUpsert || isFullSync || isCurrentlyEmpty) {
-          pushAll(inputs, buildAttributeUpdate(isFullSync, attribute, resolvedElement[attributeKey], inputData));
+          pushAll(
+            inputs,
+            buildAttributeUpdate(isFullSync, attribute, resolvedElement[attributeKey], inputData),
+          );
         }
       } else {
         logApp.info('Discarding outdated attribute update mutation', { key: attributeKey });
@@ -497,13 +675,26 @@ export const generateAttributesInputsForUpsert = (context, _user, resolvedElemen
   return inputs;
 };
 
-const generateRefsInputsForUpsert = (context, user, resolvedElement, _type, updatePatch, confidenceForUpsert, validEnterpriseEdition) => {
+const generateRefsInputsForUpsert = (
+  context,
+  user,
+  resolvedElement,
+  _type,
+  updatePatch,
+  confidenceForUpsert,
+  validEnterpriseEdition,
+) => {
   const { isConfidenceMatch, isConfidenceUpper } = confidenceForUpsert;
   const inputs = [];
-  const metaInputFields = schemaRelationsRefDefinition.getRelationsRef(resolvedElement.entity_type).map((ref) => ref.name);
+  const metaInputFields = schemaRelationsRefDefinition
+    .getRelationsRef(resolvedElement.entity_type)
+    .map((ref) => ref.name);
   for (let fieldIndex = 0; fieldIndex < metaInputFields.length; fieldIndex += 1) {
     const inputField = metaInputFields[fieldIndex];
-    const relDef = schemaRelationsRefDefinition.getRelationRef(resolvedElement.entity_type, inputField);
+    const relDef = schemaRelationsRefDefinition.getRelationRef(
+      resolvedElement.entity_type,
+      inputField,
+    );
     const isInputAvailable = inputField in updatePatch;
     if (isInputAvailable) {
       const patchInputData = updatePatch[inputField];
@@ -519,29 +710,48 @@ const generateRefsInputsForUpsert = (context, user, resolvedElement, _type, upda
           const fullPatchInputDataSet = new Set(fullPatchInputData.map((i) => i.internal_id));
           // Specific case for organization restriction, has EE must be activated.
           // If not supported, upsert of organization is not applied
-          const isUserCanManipulateGrantedRefs = isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && validEnterpriseEdition === true;
-          const allowedOperation = relDef.databaseName !== RELATION_GRANTED_TO || (relDef.databaseName === RELATION_GRANTED_TO && isUserCanManipulateGrantedRefs);
-          const inputToCurrentDiff = fullPatchInputData.filter((target) => !currentDataSet.has(target.internal_id));
-          const currentToInputDiff = currentData.filter((current) => !fullPatchInputDataSet.has(current));
+          const isUserCanManipulateGrantedRefs =
+            isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) &&
+            validEnterpriseEdition === true;
+          const allowedOperation =
+            relDef.databaseName !== RELATION_GRANTED_TO ||
+            (relDef.databaseName === RELATION_GRANTED_TO && isUserCanManipulateGrantedRefs);
+          const inputToCurrentDiff = fullPatchInputData.filter(
+            (target) => !currentDataSet.has(target.internal_id),
+          );
+          const currentToInputDiff = currentData.filter(
+            (current) => !fullPatchInputDataSet.has(current),
+          );
           // If expected data is different from current data
-          if (allowedOperation && (inputToCurrentDiff.length + currentToInputDiff.length) > 0) {
+          if (allowedOperation && inputToCurrentDiff.length + currentToInputDiff.length > 0) {
             // In full synchro, just replace everything
             if (isUpsertSynchro) {
-              inputs.push({ key: inputField, value: fullPatchInputData, operation: UPDATE_OPERATION_REPLACE });
+              inputs.push({
+                key: inputField,
+                value: fullPatchInputData,
+                operation: UPDATE_OPERATION_REPLACE,
+              });
             } else {
               const fillEmptyData = isInputWithData && !isCurrentWithData;
-              const hasDataDifferential = isCurrentWithData && isInputWithData && inputToCurrentDiff.length > 0;
-              const isAllowedAddRefWithoutConfidence = relDef.name === objectLabel.name || relDef.name === externalReferences.name;
+              const hasDataDifferential =
+                isCurrentWithData && isInputWithData && inputToCurrentDiff.length > 0;
+              const isAllowedAddRefWithoutConfidence =
+                relDef.name === objectLabel.name || relDef.name === externalReferences.name;
               const isConfidenceAllowed = isConfidenceMatch || isAllowedAddRefWithoutConfidence;
               if ((hasDataDifferential && isConfidenceAllowed) || fillEmptyData) {
                 // If data is provided, different from existing data, and of higher confidence
                 // OR if existing data is empty and data is provided (even if lower confidence, it's better than nothing),
                 // --> apply an add operation
-                inputs.push({ key: inputField, value: inputToCurrentDiff, operation: UPDATE_OPERATION_ADD });
+                inputs.push({
+                  key: inputField,
+                  value: inputToCurrentDiff,
+                  operation: UPDATE_OPERATION_ADD,
+                });
               }
             }
           }
-        } else { // not multiple
+        } else {
+          // not multiple
           // If expected data is different from current data...
           const currentData = resolvedElement[relDef.databaseName];
           const isCurrentEmptyData = isEmptyField(currentData);
@@ -551,8 +761,12 @@ const generateRefsInputsForUpsert = (context, user, resolvedElement, _type, upda
           // OR the field is currently null (auto consolidation)
           // OR the confidence matches
           // To prevent too much flickering on multi sources the created-by will be replaced only for strict upper confidence
-          const isProtectedCreatedBy = relDef.databaseName === RELATION_CREATED_BY && !isCurrentEmptyData && !isConfidenceUpper;
-          const updatable = ((isInputWithData && isCurrentEmptyData) || isConfidenceMatch) && !isProtectedCreatedBy;
+          const isProtectedCreatedBy =
+            relDef.databaseName === RELATION_CREATED_BY &&
+            !isCurrentEmptyData &&
+            !isConfidenceUpper;
+          const updatable =
+            ((isInputWithData && isCurrentEmptyData) || isConfidenceMatch) && !isProtectedCreatedBy;
           if (isInputDifferentFromCurrent && (isUpsertSynchro || updatable)) {
             inputs.push({ key: inputField, value: [patchInputData] });
           }
@@ -565,21 +779,53 @@ const generateRefsInputsForUpsert = (context, user, resolvedElement, _type, upda
   return inputs;
 };
 
-export const generateInputsForUpsert = async (context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition) => {
+export const generateInputsForUpsert = async (
+  context,
+  user,
+  resolvedElement,
+  type,
+  updatePatch,
+  confidenceForUpsert,
+  validEnterpriseEdition,
+) => {
   const inputs = []; // All inputs impacted by modifications (+inner)
   // if file(s) in updatePatch, we need to upload them and update x_opencti_files
   // Files follow the same confidence-based conflict resolution as other fields
-  const fileInputs = await generateFileInputsForUpsert(context, user, resolvedElement, updatePatch, confidenceForUpsert);
+  const fileInputs = await generateFileInputsForUpsert(
+    context,
+    user,
+    resolvedElement,
+    updatePatch,
+    confidenceForUpsert,
+  );
   pushAll(inputs, fileInputs);
   // -- Upsert attributes
-  const attributesInputs = generateAttributesInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert);
+  const attributesInputs = generateAttributesInputsForUpsert(
+    context,
+    user,
+    resolvedElement,
+    type,
+    updatePatch,
+    confidenceForUpsert,
+  );
   pushAll(inputs, attributesInputs);
   // -- Upsert refs
-  const refsInputs = generateRefsInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition);
+  const refsInputs = generateRefsInputsForUpsert(
+    context,
+    user,
+    resolvedElement,
+    type,
+    updatePatch,
+    confidenceForUpsert,
+    validEnterpriseEdition,
+  );
   pushAll(inputs, refsInputs);
   // -- merge inputs with upsertOperations
   if (updatePatch.upsertOperations?.length > 0 && !isBypassUser(user)) {
-    throw FunctionalError('User has insufficient rights to use upsertOperations', { user_id: user.id, element_id: resolvedElement.id });
+    throw FunctionalError('User has insufficient rights to use upsertOperations', {
+      user_id: user.id,
+      element_id: resolvedElement.id,
+    });
   }
   return mergeUpsertInputs(resolvedElement, updatePatch, inputs, updatePatch.upsertOperations);
 };

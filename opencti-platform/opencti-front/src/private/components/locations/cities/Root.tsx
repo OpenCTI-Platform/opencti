@@ -25,7 +25,10 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
 import CityEdition from './CityEdition';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import CityDeletion from './CityDeletion';
 import { PATH_CITY } from '@components/common/routes/paths';
 
@@ -105,7 +108,7 @@ const RootCityComponent = ({ queryRef, cityId }: RootCityComponentProps) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={(
+              element={
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -125,32 +128,31 @@ const RootCityComponent = ({ queryRef, cityId }: RootCityComponentProps) => {
                   ]}
                   data={city}
                 />
-              )}
+              }
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs elements={[
-              { label: t_i18n('Locations') },
-              { label: t_i18n('Cities'), link: '/dashboard/locations/cities' },
-              { label: city.name, current: true },
-            ]}
+            <Breadcrumbs
+              elements={[
+                { label: t_i18n('Locations') },
+                { label: t_i18n('Cities'), link: '/dashboard/locations/cities' },
+                { label: city.name, current: true },
+              ]}
             />
             <StixDomainObjectHeader
               entityType="City"
               disableSharing={true}
               stixDomainObject={city}
-              EditComponent={(
+              EditComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <CityEdition cityId={city.id} />
                 </Security>
-              )}
-              RelateComponent={(
+              }
+              RelateComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <StixCoreRelationshipCreationFromEntityHeader
-                    data={city}
-                  />
+                  <StixCoreRelationshipCreationFromEntityHeader data={city} />
                 </Security>
-              )}
+              }
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <CityDeletion id={city.id} isOpen={isOpen} handleClose={onClose} />
@@ -171,13 +173,12 @@ const RootCityComponent = ({ queryRef, cityId }: RootCityComponentProps) => {
                     <CityKnowledge cityData={city} />
                   </div>
                 ),
-                content: (
-                  <StixCoreObjectContentRoot
-                    stixCoreObject={city}
+                content: <StixCoreObjectContentRoot stixCoreObject={city} />,
+                analyses: (
+                  <StixCoreObjectOrStixCoreRelationshipContainers
+                    stixDomainObjectOrStixCoreRelationship={city}
                   />
                 ),
-                analyses:
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={city} />,
                 sightings: (
                   <EntityStixSightingRelationships
                     entityId={city.id}
@@ -194,8 +195,7 @@ const RootCityComponent = ({ queryRef, cityId }: RootCityComponentProps) => {
                     entity={city}
                   />
                 ),
-                history:
-                  <StixCoreObjectHistory stixCoreObjectId={cityId} />,
+                history: <StixCoreObjectHistory stixCoreObjectId={cityId} />,
               }}
             />
           </div>

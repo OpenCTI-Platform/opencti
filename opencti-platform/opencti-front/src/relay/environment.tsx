@@ -1,9 +1,22 @@
-import { Environment, FetchPolicy, Observable, RecordSource, SelectorStoreUpdater, Store } from 'relay-runtime';
+import {
+  Environment,
+  FetchPolicy,
+  Observable,
+  RecordSource,
+  SelectorStoreUpdater,
+  Store,
+} from 'relay-runtime';
 import type { GraphQLTaggedNode, OperationType } from 'relay-runtime';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import React, { ReactNode } from 'react';
-import { commitLocalUpdate as CLU, commitMutation as CM, fetchQuery as FQ, QueryRenderer as QR, requestSubscription as RS } from 'react-relay';
+import {
+  commitLocalUpdate as CLU,
+  commitMutation as CM,
+  fetchQuery as FQ,
+  QueryRenderer as QR,
+  requestSubscription as RS,
+} from 'react-relay';
 import { urlMiddleware, RelayNetworkLayer } from 'react-relay-network-modern';
 import type { SubscribeFunction } from 'react-relay-network-modern';
 import * as R from 'ramda';
@@ -24,9 +37,9 @@ interface ServiceMessage {
 }
 
 // Service bus
-const MESSENGER$ = new Subject<ServiceMessage[]>().pipe(
-  debounce(() => timer(500)),
-) as Subject<ServiceMessage[]>;
+const MESSENGER$ = new Subject<ServiceMessage[]>().pipe(debounce(() => timer(500))) as Subject<
+  ServiceMessage[]
+>;
 export const MESSAGING$ = {
   messages: MESSENGER$,
   notifyError: (text) => MESSENGER$.next([{ type: 'error', text }]),
@@ -66,7 +79,8 @@ export class ApplicationError extends Error {
 const basePath = window.BASE_PATH ?? '';
 const isEmptyPath = R.isEmpty(basePath);
 const contextPath = isEmptyPath || basePath === '/' ? '' : basePath;
-export const APP_BASE_PATH = isEmptyPath || contextPath.startsWith('/') ? contextPath : `/${contextPath}`;
+export const APP_BASE_PATH =
+  isEmptyPath || contextPath.startsWith('/') ? contextPath : `/${contextPath}`;
 
 // Create Network
 let subscriptionClient;
@@ -81,11 +95,14 @@ const subscribeFn = (request, variables) => {
     });
   }
   return Observable.create((sink) => {
-    return subscriptionClient.subscribe({
-      query: request.text,
-      operationName: request.name,
-      variables,
-    }, sink);
+    return subscriptionClient.subscribe(
+      {
+        query: request.text,
+        operationName: request.name,
+        variables,
+      },
+      sink,
+    );
   });
 };
 const fetchMiddleware = urlMiddleware({
@@ -121,12 +138,7 @@ interface QueryRendererProps {
   fetchPolicy?: FetchPolicy;
 }
 
-export const QueryRenderer = ({
-  variables,
-  query,
-  render,
-  fetchPolicy,
-}: QueryRendererProps) => {
+export const QueryRenderer = ({ variables, query, render, fetchPolicy }: QueryRendererProps) => {
   return (
     <QR
       environment={environment}
@@ -144,8 +156,8 @@ export const QueryRenderer = ({
   );
 };
 
-const buildErrorMessages = (error: RelayError) => (error.res.errors ?? []).map(
-  (e) => ({
+const buildErrorMessages = (error: RelayError) =>
+  (error.res.errors ?? []).map((e) => ({
     type: 'error',
     text: e?.data?.reason ?? e.message,
   }));
@@ -172,7 +184,9 @@ export const relayErrorHandling = (
       (e) => e?.extensions?.code === 'PASSWORD_CHANGE_REQUIRED',
     );
     if (passwordChangeRequired) {
-      const alreadyOnForcePasswordChange = window.location.pathname.startsWith(FORCE_PASSWORD_CHANGE_ROUTE);
+      const alreadyOnForcePasswordChange = window.location.pathname.startsWith(
+        FORCE_PASSWORD_CHANGE_ROUTE,
+      );
       if (!alreadyOnForcePasswordChange) {
         MESSAGING$.redirect.next(FORCE_PASSWORD_CHANGE_ROUTE);
       }
@@ -212,15 +226,16 @@ export const commitMutation = ({
   onCompleted,
   onError,
   setSubmitting,
-}) => CM(environment, {
-  mutation,
-  variables,
-  updater,
-  optimisticUpdater,
-  optimisticResponse,
-  onCompleted,
-  onError: (error) => relayErrorHandling(error, setSubmitting, onError),
-});
+}) =>
+  CM(environment, {
+    mutation,
+    variables,
+    updater,
+    optimisticUpdater,
+    optimisticResponse,
+    onCompleted,
+    onError: (error) => relayErrorHandling(error, setSubmitting, onError),
+  });
 
 export const requestSubscription = (args) => RS(environment, args);
 
@@ -231,34 +246,28 @@ export const fetchQuery = <T extends OperationType>(
 
 export const commitLocalUpdate = (updater: SelectorStoreUpdater) => CLU(environment, updater);
 
-export const handleErrorInForm = (
-  e: Error,
-  setErrors: (e) => void,
-) => {
+export const handleErrorInForm = (e: Error, setErrors: (e) => void) => {
   const error = e as unknown as RelayError;
   const formattedError = R.head(error.res.errors ?? []);
   if (formattedError?.data && formattedError.data.field) {
     setErrors({
-      [formattedError.data.field]:
-      formattedError.data.message || formattedError.data.reason,
+      [formattedError.data.field]: formattedError.data.message || formattedError.data.reason,
     });
   } else {
-    const messages = (error.res.errors ?? []).map(
-      (e) => ({
-        type: 'error',
-        text: e?.data?.reason ?? e.message,
-      }));
+    const messages = (error.res.errors ?? []).map((e) => ({
+      type: 'error',
+      text: e?.data?.reason ?? e.message,
+    }));
     MESSAGING$.messages.next(messages);
   }
 };
 
 export const handleError = (error) => {
   if (error && error.res && error.res.errors) {
-    const messages = (error.res.errors ?? []).map(
-      (e) => ({
-        type: 'error',
-        text: e?.data?.message ?? e.message,
-      }));
+    const messages = (error.res.errors ?? []).map((e) => ({
+      type: 'error',
+      text: e?.data?.message ?? e.message,
+    }));
     MESSAGING$.messages.next(messages);
   }
 };

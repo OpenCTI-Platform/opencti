@@ -141,11 +141,9 @@ const StixSightingRelationshipCreationFromEntity = ({
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [search, setSearch] = useState('');
-  const [commit] = useApiMutation(
-    stixSightingRelationshipCreationFromEntityMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Sighting')} ${t_i18n('successfully created')}` },
-  );
+  const [commit] = useApiMutation(stixSightingRelationshipCreationFromEntityMutation, undefined, {
+    successMessage: `${t_i18n('entity_Sighting')} ${t_i18n('successfully created')}`,
+  });
   const stixDomainObjectsPaginationOptions = {
     search,
     types: stixCoreObjectTypes,
@@ -175,16 +173,18 @@ const StixSightingRelationshipCreationFromEntity = ({
       assoc('last_seen', formatDate(values.last_seen)),
       assoc('createdBy', values.createdBy?.value),
       assoc('objectMarking', pluck('value', values.objectMarking)),
-      assoc(
-        'externalReferences',
-        R.pluck('value', values.externalReferences),
-      ),
+      assoc('externalReferences', R.pluck('value', values.externalReferences)),
     )(values);
     commit({
       variables: { input: finalValues },
       updater: (store) => {
         if (typeof onCreate !== 'function') {
-          insertNode(store, 'Pagination_stixSightingRelationships', paginationOptions, 'stixSightingRelationshipAdd');
+          insertNode(
+            store,
+            'Pagination_stixSightingRelationships',
+            paginationOptions,
+            'stixSightingRelationshipAdd',
+          );
         }
       },
       onCompleted: () => {
@@ -218,15 +218,10 @@ const StixSightingRelationshipCreationFromEntity = ({
         {Array.from(Array(20), (e, i) => (
           <ListItem key={i} divider={true}>
             <ListItemIcon>
-              <Skeleton
-                animation="wave"
-                variant="circular"
-                width={30}
-                height={30}
-              />
+              <Skeleton animation="wave" variant="circular" width={30} height={30} />
             </ListItemIcon>
             <ListItemText
-              primary={(
+              primary={
                 <Skeleton
                   animation="wave"
                   variant="rectangular"
@@ -234,15 +229,10 @@ const StixSightingRelationshipCreationFromEntity = ({
                   height={15}
                   style={{ marginBottom: 10 }}
                 />
-              )}
-              secondary={(
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height={15}
-                />
-              )}
+              }
+              secondary={
+                <Skeleton animation="wave" variant="rectangular" width="90%" height={15} />
+              }
             />
           </ListItem>
         ))}
@@ -258,9 +248,7 @@ const StixSightingRelationshipCreationFromEntity = ({
     return (
       <div>
         <QueryRenderer
-          query={
-            stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery
-          }
+          query={stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery}
           variables={{
             count: 25,
             ...stixDomainObjectsPaginationOptions,
@@ -282,18 +270,13 @@ const StixSightingRelationshipCreationFromEntity = ({
   };
 
   const renderObservableSearchResults = () => {
-    if (
-      !targetStixCyberObservableTypes
-      || targetStixCyberObservableTypes.length === 0
-    ) {
+    if (!targetStixCyberObservableTypes || targetStixCyberObservableTypes.length === 0) {
       return null;
     }
 
     return (
       <QueryRenderer
-        query={
-          stixSightingRelationshipCreationFromEntityStixCyberObservablesLinesQuery
-        }
+        query={stixSightingRelationshipCreationFromEntityStixCyberObservablesLinesQuery}
         variables={{
           search,
           types: targetStixCyberObservableTypes,
@@ -333,21 +316,14 @@ const StixSightingRelationshipCreationFromEntity = ({
     return (
       <Stack gap={2}>
         {search.length === 0 && (
-          <Alert
-            severity="info"
-            variant="outlined"
-            classes={{ message: classes.info }}
-          >
+          <Alert severity="info" variant="outlined" classes={{ message: classes.info }}>
             {t_i18n(
               'This panel shows by default the latest created entities, use the search to find more.',
             )}
           </Alert>
         )}
         <div>
-          <SearchInput
-            keyword={search}
-            onSubmit={handleSearch}
-          />
+          <SearchInput keyword={search} onSubmit={handleSearch} />
         </div>
         {renderSearchResults()}
       </Stack>
@@ -393,9 +369,7 @@ const StixSightingRelationshipCreationFromEntity = ({
   const openElement = () => {
     switch (variant) {
       case 'controlledDial':
-        return (
-          <CreateEntityControlledDial entityType="Sighting" onOpen={handleOpen} />
-        );
+        return <CreateEntityControlledDial entityType="Sighting" onOpen={handleOpen} />;
       case 'inLine':
         return (
           <IconButton
@@ -429,16 +403,18 @@ const StixSightingRelationshipCreationFromEntity = ({
         open={open}
         onClose={handleClose}
         title={t_i18n('Create a sighting')}
-        header={step === 0 && (
-          <StixDomainObjectCreation
-            display={open}
-            inputValue={search}
-            paginationOptions={stixDomainObjectsPaginationOptions}
-            stixDomainObjectTypes={stixCoreObjectTypes}
-            controlledDialStyles={{ float: 'right' }}
-            controlledDialSize="small"
-          />
-        )}
+        header={
+          step === 0 && (
+            <StixDomainObjectCreation
+              display={open}
+              inputValue={search}
+              paginationOptions={stixDomainObjectsPaginationOptions}
+              stixDomainObjectTypes={stixCoreObjectTypes}
+              controlledDialStyles={{ float: 'right' }}
+              controlledDialSize="small"
+            />
+          )
+        }
       >
         <QueryRenderer
           query={stixSightingRelationshipCreationFromEntityQuery}

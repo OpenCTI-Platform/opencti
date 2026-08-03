@@ -86,9 +86,11 @@ describe('Component: TokenList', () => {
     // Confirm revocation
     await user.click(screen.getByText('Revoke'));
 
-    expect(commitMutationMock).toHaveBeenCalledWith(expect.objectContaining({
-      variables: { id: 'token-1' },
-    }));
+    expect(commitMutationMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        variables: { id: 'token-1' },
+      }),
+    );
 
     // Manually trigger success callback since we mocked commitMutation simplistically
     const config = commitMutationMock.mock.calls[0][0];

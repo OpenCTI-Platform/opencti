@@ -43,9 +43,7 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
         selectClassName={config.relativeDate ? EXPORT_KEEP_CLASS : undefined}
         selectSx={{
           '& fieldset': {
-            border: config.relativeDate
-              ? `1px solid ${theme.palette.border.secondary}`
-              : undefined,
+            border: config.relativeDate ? `1px solid ${theme.palette.border.secondary}` : undefined,
           },
         }}
       />
@@ -55,7 +53,9 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
         disableFuture
         disabled={!!config.relativeDate}
         className={config.startDate ? EXPORT_KEEP_CLASS : EXPORT_REMOVE_CLASS}
-        onChange={(value: Date | null, context) => !context.validationError && handleChangeDate('startDate', value)}
+        onChange={(value: Date | null, context) =>
+          !context.validationError && handleChangeDate('startDate', value)
+        }
       />
       <DatePicker
         value={buildDate(config.endDate)}
@@ -63,7 +63,9 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
         disabled={!!config.relativeDate}
         disableFuture
         className={config.endDate ? EXPORT_KEEP_CLASS : EXPORT_REMOVE_CLASS}
-        onChange={(value: Date | null, context) => !context.validationError && handleChangeDate('endDate', value)}
+        onChange={(value: Date | null, context) =>
+          !context.validationError && handleChangeDate('endDate', value)
+        }
       />
     </Stack>
   );

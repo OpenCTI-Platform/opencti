@@ -119,10 +119,7 @@ const StixRelationshipsHorizontalBarsComponent = ({
   parameters,
   onMounted,
 }: StixRelationshipsHorizontalBarsComponentProps) => {
-  const data = usePreloadedQuery(
-    stixRelationshipsHorizontalBarsDistributionQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery(stixRelationshipsHorizontalBarsDistributionQuery, queryRef);
   const { buildWidgetProps } = useDistributionGraphData();
 
   if (!data?.stixRelationshipsDistribution?.length) {
@@ -151,7 +148,8 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixRelationshipsHorizontalBarsDistributionQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { startDate, endDate, dateAttribute, filters, dynamicFrom, dynamicTo } = buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
+  const { startDate, endDate, dateAttribute, filters, dynamicFrom, dynamicTo } =
+    buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
 
   return {
     field: selection.attribute ?? 'entity_type',
@@ -190,7 +188,13 @@ const StixRelationshipsHorizontalBars = ({
 }: StixRelationshipsHorizontalBarsProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsHorizontalBarsDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixRelationshipsHorizontalBarsDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,

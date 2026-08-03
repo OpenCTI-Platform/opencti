@@ -20,11 +20,11 @@ interface StatusTemplateFieldScopedProps {
 }
 
 export const StatusTemplateFieldScopedSearchQuery = graphql`
-  query StatusTemplateFieldScopedSearchQuery($search: String, $scope:StatusScope) {
-      statusTemplatesByStatusScope(search: $search, scope:$scope) {
-        id
-        name
-        color
+  query StatusTemplateFieldScopedSearchQuery($search: String, $scope: StatusScope) {
+    statusTemplatesByStatusScope(search: $search, scope: $scope) {
+      id
+      name
+      color
     }
   }
 `;
@@ -40,19 +40,23 @@ const StatusTemplateFieldScoped: FunctionComponent<StatusTemplateFieldScopedProp
   const { t_i18n } = useFormatter();
   const [statusTemplates, setStatusTemplates] = useState<FieldOption[]>([]);
 
-  const searchStatusTemplates = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const searchStatusTemplates = (event: React.ChangeEvent<HTMLInputElement>) => {
     fetchQuery(StatusTemplateFieldScopedSearchQuery, {
       search: event && event.target.value ? event.target.value : '',
       scope,
     })
       .toPromise()
       .then((data) => {
-        const queryData: StatusTemplateFieldScopedSearchQuery$data = data as unknown as StatusTemplateFieldScopedSearchQuery$data;
-        const fieldData = queryData?.statusTemplatesByStatusScope?.map((statusData) => {
-          return { label: statusData?.name, value: statusData?.id, color: statusData?.color } as FieldOption;
-        }) || [];
+        const queryData: StatusTemplateFieldScopedSearchQuery$data =
+          data as unknown as StatusTemplateFieldScopedSearchQuery$data;
+        const fieldData =
+          queryData?.statusTemplatesByStatusScope?.map((statusData) => {
+            return {
+              label: statusData?.name,
+              value: statusData?.id,
+              color: statusData?.color,
+            } as FieldOption;
+          }) || [];
         setStatusTemplates(fieldData);
       });
   };
@@ -81,7 +85,9 @@ const StatusTemplateFieldScoped: FunctionComponent<StatusTemplateFieldScopedProp
             <div style={{ color: option.color, paddingTop: 4, display: 'inline-block' }}>
               <Label />
             </div>
-            <div style={{ display: 'inline-block', flexGrow: 1, marginLeft: 10 }}>{option.label}</div>
+            <div style={{ display: 'inline-block', flexGrow: 1, marginLeft: 10 }}>
+              {option.label}
+            </div>
           </li>
         )}
       />

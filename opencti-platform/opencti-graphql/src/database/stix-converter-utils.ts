@@ -48,12 +48,14 @@ export const isValidStix = (data: S.StixObject | S2.StixObject): boolean => {
 };
 export const convertObjectReferences = (instance: StoreEntity, isInferred = false) => {
   const objectRefs = instance[INPUT_OBJECTS] ?? [];
-  return objectRefs.filter((r) => {
-    // If related relation not available, it's just a creation, so inferred false
-    if (!r.i_relation) return !isInferred;
-    // If related relation is available, select accordingly
-    return isInferredIndex(r.i_relation._index) === isInferred;
-  }).map((m) => m.standard_id);
+  return objectRefs
+    .filter((r) => {
+      // If related relation not available, it's just a creation, so inferred false
+      if (!r.i_relation) return !isInferred;
+      // If related relation is available, select accordingly
+      return isInferredIndex(r.i_relation._index) === isInferred;
+    })
+    .map((m) => m.standard_id);
 };
 export const checkInstanceCompletion = (instance: StoreRelation) => {
   if (instance.from === undefined || isEmptyField(instance.from)) {

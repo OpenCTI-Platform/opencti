@@ -5,7 +5,10 @@ import Tooltip from '@mui/material/Tooltip';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useHelper from '../../../utils/hooks/useHelper';
@@ -20,7 +23,10 @@ import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import { TrashDeleteOperationLine_node$data } from './__generated__/TrashDeleteOperationLine_node.graphql';
 import DeleteOperationPopover from './DeleteOperationPopover';
 import { EMPTY_VALUE } from '../../../utils/String';
-import { TrashDeleteOperationsLinesPaginationQuery, TrashDeleteOperationsLinesPaginationQuery$variables } from './__generated__/TrashDeleteOperationsLinesPaginationQuery.graphql';
+import {
+  TrashDeleteOperationsLinesPaginationQuery,
+  TrashDeleteOperationsLinesPaginationQuery$variables,
+} from './__generated__/TrashDeleteOperationsLinesPaginationQuery.graphql';
 import { TrashDeleteOperationsLines_data$data } from './__generated__/TrashDeleteOperationsLines_data.graphql';
 
 const DeleteOperationFragment = graphql`
@@ -56,14 +62,14 @@ export const deleteOperationsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...TrashDeleteOperationsLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -115,17 +121,12 @@ const Trash: React.FC = () => {
     openExports: false,
     filters: emptyFilterGroup,
   };
-  const {
-    viewStorage,
-    paginationOptions,
-    helpers,
-  } = usePaginationLocalStorage<TrashDeleteOperationsLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    initialValues,
-  );
-  const {
-    filters,
-  } = viewStorage;
+  const { viewStorage, paginationOptions, helpers } =
+    usePaginationLocalStorage<TrashDeleteOperationsLinesPaginationQuery$variables>(
+      LOCAL_STORAGE_KEY,
+      initialValues,
+    );
+  const { filters } = viewStorage;
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('DeleteOperation', filters);
 
@@ -142,7 +143,9 @@ const Trash: React.FC = () => {
       label: 'Type',
       percentWidth: 12,
       isSortable: false,
-      render: ({ main_entity_type }: TrashDeleteOperationLine_node$data) => <ItemEntityType showIcon entityType={main_entity_type} />,
+      render: ({ main_entity_type }: TrashDeleteOperationLine_node$data) => (
+        <ItemEntityType showIcon entityType={main_entity_type} />
+      ),
     },
     main_entity_name: {
       label: 'Representation',
@@ -181,7 +184,9 @@ const Trash: React.FC = () => {
         {queryRef && (
           <DataTable
             dataColumns={dataColumns}
-            resolvePath={(data: TrashDeleteOperationsLines_data$data) => data.deleteOperations?.edges?.map((n) => n?.node)}
+            resolvePath={(data: TrashDeleteOperationsLines_data$data) =>
+              data.deleteOperations?.edges?.map((n) => n?.node)
+            }
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
             contextFilters={contextFilters}
@@ -210,23 +215,24 @@ const Trash: React.FC = () => {
         <Breadcrumbs elements={[{ label: t_i18n('Trash'), current: true }]} />
         <Tooltip
           sx={{ marginBottom: 2 }}
-          title={(
+          title={
             <>
-              {t_i18n('Entities and relationships manually deleted from the platform will appear in this view, and can be restored.')}
-              <br />
-              {t_i18n('Elements deleted by connectors or during platform synchronization are not put into the trash.')}
-              <br />
-              { isModuleEnable(GARBAGE_COLLECTION_MANAGER) && (
-                t_i18n('An element will persist in the trash for a fixed period of time before being permanently deleted, according to the garbage collection manager settings.')
+              {t_i18n(
+                'Entities and relationships manually deleted from the platform will appear in this view, and can be restored.',
               )}
+              <br />
+              {t_i18n(
+                'Elements deleted by connectors or during platform synchronization are not put into the trash.',
+              )}
+              <br />
+              {isModuleEnable(GARBAGE_COLLECTION_MANAGER) &&
+                t_i18n(
+                  'An element will persist in the trash for a fixed period of time before being permanently deleted, according to the garbage collection manager settings.',
+                )}
             </>
-          )}
+          }
         >
-          <InformationOutline
-            fontSize="small"
-            color="primary"
-            style={{ cursor: 'default' }}
-          />
+          <InformationOutline fontSize="small" color="primary" style={{ cursor: 'default' }} />
         </Tooltip>
       </Box>
       {renderLines()}

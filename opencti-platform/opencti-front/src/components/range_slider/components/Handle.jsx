@@ -12,7 +12,11 @@ const Handle = ({
 
   return (
     <>
-      <div className="react_time_range__handle_wrapper" style={{ left: leftPosition }} {...getHandleProps(id)} />
+      <div
+        className="react_time_range__handle_wrapper"
+        style={{ left: leftPosition }}
+        {...getHandleProps(id)}
+      />
       <div
         role="slider"
         aria-valuemin={min}

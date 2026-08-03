@@ -5,7 +5,10 @@ import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGra
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
-import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
+import {
+  getMainRepresentative,
+  isFieldForIdentifier,
+} from '../../../../utils/defaultRepresentatives';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
@@ -106,10 +109,7 @@ const StixCoreObjectsDistributionListComponent = ({
     let label = n?.label;
     if (isFieldForIdentifier(selection.attribute ?? undefined)) {
       label = getMainRepresentative(n?.entity);
-    } else if (
-      selection.attribute === 'entity_type'
-      && n?.label
-    ) {
+    } else if (selection.attribute === 'entity_type' && n?.label) {
       const translated = `entity_${n.label}`;
       label = translated !== n.label ? translated : n.label;
     }
@@ -123,12 +123,7 @@ const StixCoreObjectsDistributionListComponent = ({
     };
   });
 
-  return (
-    <WidgetDistributionList
-      data={formatted}
-      hasSettingAccess={hasSetAccess}
-    />
-  );
+  return <WidgetDistributionList data={formatted} hasSettingAccess={hasSetAccess} />;
 };
 
 interface StixCoreObjectsDistributionListProps {
@@ -144,13 +139,20 @@ interface StixCoreObjectsDistributionListProps {
 
 const DATA_SELECTION_TYPES = ['Stix-Core-Object'];
 
-const buildQueryVariables = (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig) => {
+const buildQueryVariables = (
+  resolvedDataSelection: WidgetDataSelection[],
+  config: DashboardConfig,
+) => {
   const selection = resolvedDataSelection[0];
-  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(selection, config);
+  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(
+    selection,
+    config,
+  );
   return {
     types: DATA_SELECTION_TYPES,
     field: selection.attribute ?? 'entity_type',
-    operation: 'count' as StixCoreObjectsDistributionListDistributionQuery['variables']['operation'],
+    operation:
+      'count' as StixCoreObjectsDistributionListDistributionQuery['variables']['operation'],
     startDate,
     endDate,
     dateAttribute,
@@ -171,7 +173,13 @@ const StixCoreObjectsDistributionList = ({
 }: StixCoreObjectsDistributionListProps) => {
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsDistributionListDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixCoreObjectsDistributionListDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,

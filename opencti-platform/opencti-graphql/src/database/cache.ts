@@ -1,17 +1,29 @@
 import * as R from 'ramda';
-import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import {
+  ATTR_DB_NAMESPACE,
+  ATTR_DB_OPERATION_NAME,
+  SEMATTRS_DB_NAME,
+  SEMATTRS_DB_OPERATION,
+} from '@opentelemetry/semantic-conventions';
 import type { BasicStoreCommon, BasicStoreIdentifier } from '../types/store';
 import { logApp } from '../config/conf';
 import { DatabaseError, UnsupportedError } from '../config/errors';
 import { telemetry } from '../config/tracing';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { StixId, StixObject } from '../types/stix-2-1-common';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
+import {
+  ENTITY_TYPE_CONNECTOR,
+  ENTITY_TYPE_STATUS,
+  ENTITY_TYPE_STATUS_TEMPLATE,
+} from '../schema/internalObject';
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../modules/dataSharing/streamCollection-types';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
-import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
+import {
+  type BasicStoreEntityPublicDashboard,
+  ENTITY_TYPE_PUBLIC_DASHBOARD,
+} from '../modules/publicDashboard/publicDashboard-types';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
 import { ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
@@ -78,9 +90,14 @@ export const resetCacheForEntity = (entityType: string) => {
   });
 };
 
-const handleCacheForEntity = async (instance: BasicStoreCommon | BasicStoreCommon[], fn: string) => {
+const handleCacheForEntity = async (
+  instance: BasicStoreCommon | BasicStoreCommon[],
+  fn: string,
+) => {
   const instances = Array.isArray(instance) ? instance : [instance];
-  const types = R.uniq(instances.map((i) => [i.entity_type, ...(STORE_ENTITIES_LINKS[i.entity_type] ?? [])]).flat());
+  const types = R.uniq(
+    instances.map((i) => [i.entity_type, ...(STORE_ENTITIES_LINKS[i.entity_type] ?? [])]).flat(),
+  );
   for (let index = 0; index < types.length; index += 1) {
     const type = types[index];
     if (cache[type] && cache[type].values) {
@@ -109,7 +126,10 @@ export const refreshCacheForEntity = async (instance: BasicStoreCommon | BasicSt
   await handleCacheForEntity(instance, 'refresh');
 };
 
-export const refreshLocalCacheForEntity = async (topic: string, instance: BasicStoreCommon | BasicStoreCommon[]) => {
+export const refreshLocalCacheForEntity = async (
+  topic: string,
+  instance: BasicStoreCommon | BasicStoreCommon[],
+) => {
   if (topic.endsWith('EDIT_TOPIC')) {
     await refreshCacheForEntity(instance);
   }
@@ -125,7 +145,9 @@ export const refreshLocalCacheForEntity = async (topic: string, instance: BasicS
 // (map or array according to the data type storage in the cache)
 // use either getEntitiesMapFromCache or getEntitiesListFromCache in export
 const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>(
-  context: AuthContext, user: AuthUser, type: string,
+  context: AuthContext,
+  user: AuthUser,
+  type: string,
 ): Promise<Array<T> | Map<string, T>> => {
   const getEntitiesFromCacheFn = async (): Promise<Array<T> | Map<string, T>> => {
     const fromCache = cache[type];
@@ -158,7 +180,12 @@ const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>
         await fromCache.inProgress;
       } catch (err: any) {
         retries += 1;
-        logApp.error('[CACHE] Error loading cache', { type, attempt: retries, maxRetries: MAX_CACHE_RETRIES, cause: err });
+        logApp.error('[CACHE] Error loading cache', {
+          type,
+          attempt: retries,
+          maxRetries: MAX_CACHE_RETRIES,
+          cause: err,
+        });
         if (retries >= MAX_CACHE_RETRIES) {
           throw DatabaseError(err.message);
         }
@@ -166,19 +193,27 @@ const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>
     }
     return fromCache.values as Promise<Array<T> | Map<string, T>>;
   };
-  return telemetry(context, user, `CACHE ${type}`, {
-    [ATTR_DB_NAMESPACE]: 'cache_engine',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_NAME]: 'cache_engine',
-    [ATTR_DB_OPERATION_NAME]: 'select',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_OPERATION]: 'select',
-  }, getEntitiesFromCacheFn);
+  return telemetry(
+    context,
+    user,
+    `CACHE ${type}`,
+    {
+      [ATTR_DB_NAMESPACE]: 'cache_engine',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_NAME]: 'cache_engine',
+      [ATTR_DB_OPERATION_NAME]: 'select',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_OPERATION]: 'select',
+    },
+    getEntitiesFromCacheFn,
+  );
 };
 
 // get the list of the entities in the cache for a given type
 export const getEntitiesListFromCache = async <T extends BasicStoreIdentifier | StixObject>(
-  context: AuthContext, user: AuthUser, type: string,
+  context: AuthContext,
+  user: AuthUser,
+  type: string,
 ): Promise<Array<T>> => {
   const data = await getEntitiesFromCache(context, user, type);
   if (type === ENTITY_TYPE_RESOLVED_FILTERS) {
@@ -191,7 +226,9 @@ export const getEntitiesListFromCache = async <T extends BasicStoreIdentifier | 
 
 // get a map <id, instance> of the entities in the cache for a given type
 export const getEntitiesMapFromCache = async <T extends BasicStoreIdentifier | StixObject>(
-  context: AuthContext, user: AuthUser, type: string,
+  context: AuthContext,
+  user: AuthUser,
+  type: string,
 ): Promise<Map<string | StixId, T>> => {
   const data = await getEntitiesFromCache(context, user, type);
   // Filters is already a map
@@ -201,7 +238,11 @@ export const getEntitiesMapFromCache = async <T extends BasicStoreIdentifier | S
   return buildStoreEntityMap(data as BasicStoreIdentifier[]); // map of <id, instance> for all the instance ids (internal_id, standard_id, stix ids)
 };
 
-export const getEntityFromCache = async <T extends BasicStoreIdentifier>(context: AuthContext, user: AuthUser, type: string): Promise<T> => {
+export const getEntityFromCache = async <T extends BasicStoreIdentifier>(
+  context: AuthContext,
+  user: AuthUser,
+  type: string,
+): Promise<T> => {
   const data = await getEntitiesListFromCache<T>(context, user, type);
   return data[0];
 };

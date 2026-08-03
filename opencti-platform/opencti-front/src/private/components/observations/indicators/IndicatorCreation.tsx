@@ -25,7 +25,11 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import ConfidenceField from '../../common/form/ConfidenceField';
@@ -36,7 +40,10 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import TypesField from '../TypesField';
-import { IndicatorCreationMutation, IndicatorCreationMutation$variables } from './__generated__/IndicatorCreationMutation.graphql';
+import {
+  IndicatorCreationMutation,
+  IndicatorCreationMutation$variables,
+} from './__generated__/IndicatorCreationMutation.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -95,7 +102,11 @@ interface IndicatorAddInput {
 }
 
 interface IndicatorFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string, response: IndicatorCreationMutation['response']['indicatorAdd']) => void;
+  updater: (
+    store: RecordSourceSelectorProxy,
+    key: string,
+    response: IndicatorCreationMutation['response']['indicatorAdd'],
+  ) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -115,47 +126,53 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const { mandatoryAttributes } = useIsMandatoryAttribute(INDICATOR_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    indicator_types: Yup.array().nullable(),
-    confidence: Yup.number().nullable(),
-    pattern: Yup.string(),
-    pattern_type: Yup.string(),
-    x_opencti_main_observable_type: Yup.string(),
-    x_opencti_reliability: Yup.string()
-      .nullable(),
-    valid_from: Yup.date()
-      .nullable()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    valid_until: Yup.date()
-      .nullable()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .test('is-greater', t_i18n('The valid until date must be greater than the valid from date'), function isGreater(value) {
-        const { valid_from } = this.parent;
-        return !valid_from || !value || value > valid_from;
-      }),
-    x_mitre_platforms: Yup.array().nullable(),
-    x_opencti_score: Yup.number().integer(t_i18n('The value must be an integer'))
-      .nullable()
-      .min(0, t_i18n('The value must be greater than or equal to 0'))
-      .max(100, t_i18n('The value must be less than or equal to 100')),
-    description: Yup.string().nullable(),
-    x_opencti_detection: Yup.boolean().nullable(),
-    createObservables: Yup.boolean().nullable(),
-  }, mandatoryAttributes);
-  const indicatorValidator = useDynamicSchemaCreationValidation(
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      indicator_types: Yup.array().nullable(),
+      confidence: Yup.number().nullable(),
+      pattern: Yup.string(),
+      pattern_type: Yup.string(),
+      x_opencti_main_observable_type: Yup.string(),
+      x_opencti_reliability: Yup.string().nullable(),
+      valid_from: Yup.date()
+        .nullable()
+        .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+      valid_until: Yup.date()
+        .nullable()
+        .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+        .test(
+          'is-greater',
+          t_i18n('The valid until date must be greater than the valid from date'),
+          function isGreater(value) {
+            const { valid_from } = this.parent;
+            return !valid_from || !value || value > valid_from;
+          },
+        ),
+      x_mitre_platforms: Yup.array().nullable(),
+      x_opencti_score: Yup.number()
+        .integer(t_i18n('The value must be an integer'))
+        .nullable()
+        .min(0, t_i18n('The value must be greater than or equal to 0'))
+        .max(100, t_i18n('The value must be less than or equal to 100')),
+      description: Yup.string().nullable(),
+      x_opencti_detection: Yup.boolean().nullable(),
+      createObservables: Yup.boolean().nullable(),
+    },
     mandatoryAttributes,
-    basicShape,
   );
+  const indicatorValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 
-  const [commit] = useApiMutation<IndicatorCreationMutation>(
-    indicatorMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Indicator')} ${t_i18n('successfully created')}` },
-  );
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const [commit] = useApiMutation<IndicatorCreationMutation>(indicatorMutation, undefined, {
+    successMessage: `${t_i18n('entity_Indicator')} ${t_i18n('successfully created')}`,
+  });
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
 
-  const onSubmit: FormikConfig<IndicatorAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmit: FormikConfig<IndicatorAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
     const input: IndicatorCreationMutation$variables['input'] = {
       ...buildCreationFilesInput(values.file ? [values.file] : []),
       name: values.name,
@@ -201,31 +218,28 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
     });
   };
 
-  const initialValues = useDefaultValues(
-    INDICATOR_TYPE,
-    {
-      name: inputValue ?? '',
-      confidence: defaultConfidence,
-      indicator_types: [],
-      pattern: '',
-      pattern_type: '',
-      x_opencti_main_observable_type: '',
-      x_opencti_reliability: undefined,
-      x_mitre_platforms: [],
-      valid_from: null,
-      valid_until: null,
-      description: '',
-      createdBy: defaultCreatedBy,
-      objectMarking: defaultMarkingDefinitions ?? [],
-      killChainPhases: [],
-      objectLabel: [],
-      externalReferences: [],
-      x_opencti_detection: false,
-      createObservables: false,
-      x_opencti_score: undefined,
-      file: undefined,
-    },
-  );
+  const initialValues = useDefaultValues(INDICATOR_TYPE, {
+    name: inputValue ?? '',
+    confidence: defaultConfidence,
+    indicator_types: [],
+    pattern: '',
+    pattern_type: '',
+    x_opencti_main_observable_type: '',
+    x_opencti_reliability: undefined,
+    x_mitre_platforms: [],
+    valid_from: null,
+    valid_until: null,
+    description: '',
+    createdBy: defaultCreatedBy,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    killChainPhases: [],
+    objectLabel: [],
+    externalReferences: [],
+    x_opencti_detection: false,
+    createObservables: false,
+    x_opencti_score: undefined,
+    file: undefined,
+  });
 
   return (
     <Formik<IndicatorAddInput>
@@ -243,27 +257,24 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             variant="standard"
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth={true}
           />
           <OpenVocabField
             label={t_i18n('Indicator types')}
             type="indicator-type-ov"
             name="indicator_types"
-            required={(mandatoryAttributes.includes('indicator_types'))}
+            required={mandatoryAttributes.includes('indicator_types')}
             multiple={true}
             containerStyle={fieldSpacingContainerStyle}
             onChange={(n, v) => setFieldValue(n, v)}
           />
-          <ConfidenceField
-            entityType="Indicator"
-            containerStyle={fieldSpacingContainerStyle}
-          />
+          <ConfidenceField entityType="Indicator" containerStyle={fieldSpacingContainerStyle} />
           <OpenVocabField
             label={t_i18n('Pattern type')}
             type="pattern_type_ov"
             name="pattern_type"
-            required={(mandatoryAttributes.includes('pattern_type'))}
+            required={mandatoryAttributes.includes('pattern_type')}
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}
             multiple={false}
@@ -273,7 +284,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             variant="standard"
             name="pattern"
             label={t_i18n('Pattern')}
-            required={(mandatoryAttributes.includes('pattern'))}
+            required={mandatoryAttributes.includes('pattern')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -283,14 +294,14 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
           <TypesField
             name="x_opencti_main_observable_type"
             label={t_i18n('Main observable type')}
-            required={(mandatoryAttributes.includes('x_opencti_main_observable_type'))}
+            required={mandatoryAttributes.includes('x_opencti_main_observable_type')}
             containerstyle={fieldSpacingContainerStyle}
           />
           <OpenVocabField
             label={t_i18n('Reliability')}
             type="reliability_ov"
             name="x_opencti_reliability"
-            required={(mandatoryAttributes.includes('x_opencti_reliability'))}
+            required={mandatoryAttributes.includes('x_opencti_reliability')}
             containerStyle={fieldSpacingContainerStyle}
             multiple={false}
             onChange={setFieldValue}
@@ -300,7 +311,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             name="valid_from"
             textFieldProps={{
               label: t_i18n('Valid from'),
-              required: (mandatoryAttributes.includes('valid_from')),
+              required: mandatoryAttributes.includes('valid_from'),
               variant: 'standard',
               fullWidth: true,
               style: { ...fieldSpacingContainerStyle },
@@ -311,7 +322,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             name="valid_until"
             textFieldProps={{
               label: t_i18n('Valid until'),
-              required: (mandatoryAttributes.includes('valid_until')),
+              required: mandatoryAttributes.includes('valid_until'),
               variant: 'standard',
               fullWidth: true,
               style: { ...fieldSpacingContainerStyle },
@@ -321,7 +332,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             label={t_i18n('Platforms')}
             type="platforms_ov"
             name="x_mitre_platforms"
-            required={(mandatoryAttributes.includes('x_mitre_platforms'))}
+            required={mandatoryAttributes.includes('x_mitre_platforms')}
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}
             multiple={true}
@@ -331,7 +342,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             variant="standard"
             name="x_opencti_score"
             label={t_i18n('Score')}
-            required={(mandatoryAttributes.includes('x_opencti_score'))}
+            required={mandatoryAttributes.includes('x_opencti_score')}
             type="number"
             fullWidth={true}
             style={fieldSpacingContainerStyle}
@@ -340,7 +351,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -351,30 +362,30 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
           />
           <KillChainPhasesField
             name="killChainPhases"
-            required={(mandatoryAttributes.includes('killChainPhases'))}
+            required={mandatoryAttributes.includes('killChainPhases')}
             style={fieldSpacingContainerStyle}
           />
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ObjectLabelField
             name="objectLabel"
-            required={(mandatoryAttributes.includes('objectLabel'))}
+            required={mandatoryAttributes.includes('objectLabel')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.objectLabel}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
           />
           <ExternalReferencesField
             name="externalReferences"
-            required={(mandatoryAttributes.includes('externalReferences'))}
+            required={mandatoryAttributes.includes('externalReferences')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}
@@ -397,17 +408,10 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             containerstyle={{ marginTop: 10 }}
           />
           <FormButtonContainer>
-            <Button
-              variant="secondary"
-              onClick={handleReset}
-              disabled={isSubmitting}
-            >
+            <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitForm}
-              disabled={isSubmitting}
-            >
+            <Button onClick={submitForm} disabled={isSubmitting}>
               {t_i18n('Create')}
             </Button>
           </FormButtonContainer>
@@ -423,7 +427,11 @@ interface IndicatorCreationProps {
   display?: boolean;
 }
 
-const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginationOptions, contextual, display }) => {
+const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({
+  paginationOptions,
+  contextual,
+  display,
+}) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
@@ -433,12 +441,8 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginati
   const CreateIndicatorControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="Indicator" {...props} />
   );
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_indicators',
-    paginationOptions,
-    'indicatorAdd',
-  );
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_indicators', paginationOptions, 'indicatorAdd');
 
   if (contextual) {
     return (
@@ -452,32 +456,17 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginati
         >
           <Add />
         </Fab>
-        <Dialog
-          open={open}
-          onClose={handleClose}
-          title={t_i18n('Create an indicator')}
-        >
-          <IndicatorCreationForm
-            updater={updater}
-            onCompleted={handleClose}
-            onReset={onReset}
-          />
+        <Dialog open={open} onClose={handleClose} title={t_i18n('Create an indicator')}>
+          <IndicatorCreationForm updater={updater} onCompleted={handleClose} onReset={onReset} />
         </Dialog>
       </div>
     );
   }
 
   return (
-    <Drawer
-      title={t_i18n('Create an indicator')}
-      controlledDial={CreateIndicatorControlledDial}
-    >
+    <Drawer title={t_i18n('Create an indicator')} controlledDial={CreateIndicatorControlledDial}>
       {({ onClose }) => (
-        <IndicatorCreationForm
-          updater={updater}
-          onCompleted={onClose}
-          onReset={onClose}
-        />
+        <IndicatorCreationForm updater={updater} onCompleted={onClose} onReset={onClose} />
       )}
     </Drawer>
   );

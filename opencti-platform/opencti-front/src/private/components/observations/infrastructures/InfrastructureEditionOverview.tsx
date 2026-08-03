@@ -12,14 +12,23 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertKillChainPhases,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { buildDate, formatDate } from '../../../../utils/Time';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { InfrastructureEditionOverview_infrastructure$key } from './__generated__/InfrastructureEditionOverview_infrastructure.graphql';
 import { GenericContext } from '../../common/model/GenericContextModel';
@@ -33,11 +42,7 @@ const infrastructureMutationFieldPatch = graphql`
     $references: [String]
   ) {
     infrastructureEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         ...InfrastructureEditionOverview_infrastructure
         ...Infrastructure_infrastructure
       }
@@ -46,10 +51,7 @@ const infrastructureMutationFieldPatch = graphql`
 `;
 
 export const infrastructureEditionOverviewFocus = graphql`
-  mutation InfrastructureEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation InfrastructureEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     infrastructureEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -151,33 +153,31 @@ interface InfrastructureEditionFormValues {
   confidence: number | null | undefined;
 }
 
-const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEditionOverviewProps> = ({
-  infrastructureData,
-  context,
-  enableReferences,
-  handleClose,
-}) => {
+const InfrastructureEditionOverviewComponent: FunctionComponent<
+  InfrastructureEditionOverviewProps
+> = ({ infrastructureData, context, enableReferences, handleClose }) => {
   const { t_i18n } = useFormatter();
   const infrastructure = useFragment(infrastructureEditionOverviewFragment, infrastructureData);
-  const { mandatoryAttributes } = useIsMandatoryAttribute(
-    INFRASTRUCTURE_TYPE,
+  const { mandatoryAttributes } = useIsMandatoryAttribute(INFRASTRUCTURE_TYPE);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      description: Yup.string().nullable(),
+      infrastructure_types: Yup.array().nullable(),
+      confidence: Yup.number().nullable(),
+      first_seen: Yup.date()
+        .nullable()
+        .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+      last_seen: Yup.date()
+        .nullable()
+        .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+      references: Yup.array(),
+      x_opencti_workflow_id: Yup.object(),
+      killChainPhases: Yup.array().nullable(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
   );
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    description: Yup.string().nullable(),
-    infrastructure_types: Yup.array().nullable(),
-    confidence: Yup.number().nullable(),
-    first_seen: Yup.date()
-      .nullable()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    last_seen: Yup.date()
-      .nullable()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    references: Yup.array(),
-    x_opencti_workflow_id: Yup.object(),
-    killChainPhases: Yup.array().nullable(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
   const infrastructureValidator = useDynamicSchemaEditionValidation(
     mandatoryAttributes,
     basicShape,
@@ -196,7 +196,10 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
     infrastructureValidator,
   );
 
-  const onSubmit: FormikConfig<InfrastructureEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
+  const onSubmit: FormikConfig<InfrastructureEditionFormValues>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
@@ -215,8 +218,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
       variables: {
         id: infrastructure.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {
@@ -226,7 +228,10 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
     });
   };
 
-  const handleSubmitField = (name: string, value: FieldOption | string | string[] | number | number[] | null) => {
+  const handleSubmitField = (
+    name: string,
+    value: FieldOption | string | string[] | number | number[] | null,
+  ) => {
     if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
@@ -268,14 +273,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
       validateOnBlur={true}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <Form>
           <AlertConfidenceForEntity entity={infrastructure} />
           <Field
@@ -283,19 +281,17 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
             variant="standard"
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="name" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="name" />}
           />
           <OpenVocabField
             label={t_i18n('Infrastructure types')}
             type="infrastructure_type_ov"
             name="infrastructure_types"
-            required={(mandatoryAttributes.includes('infrastructure_types'))}
+            required={mandatoryAttributes.includes('infrastructure_types')}
             onSubmit={handleSubmitField}
             onChange={setFieldValue}
             containerStyle={fieldSpacingContainerStyle}
@@ -318,13 +314,11 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
             onChange={editor.changeField}
             textFieldProps={{
               label: t_i18n('First seen'),
-              required: (mandatoryAttributes.includes('first_seen')),
+              required: mandatoryAttributes.includes('first_seen'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
-              helperText: (
-                <SubscriptionFocus context={context} fieldName="first_seen" />
-              ),
+              helperText: <SubscriptionFocus context={context} fieldName="first_seen" />,
             }}
           />
           <Field
@@ -334,32 +328,25 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
             onChange={editor.changeField}
             textFieldProps={{
               label: t_i18n('Last seen'),
-              required: (mandatoryAttributes.includes('last_seen')),
+              required: mandatoryAttributes.includes('last_seen'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
-              helperText: (
-                <SubscriptionFocus context={context} fieldName="last_seen" />
-              ),
+              helperText: <SubscriptionFocus context={context} fieldName="last_seen" />,
             }}
           />
           <KillChainPhasesField
             name="killChainPhases"
-            required={(mandatoryAttributes.includes('killChainPhases'))}
+            required={mandatoryAttributes.includes('killChainPhases')}
             style={fieldSpacingContainerStyle}
-            helpertext={(
-              <SubscriptionFocus
-                context={context}
-                fieldName="killChainPhases"
-              />
-            )}
+            helpertext={<SubscriptionFocus context={context} fieldName="killChainPhases" />}
             onChange={editor.changeKillChainPhases}
           />
           <Field
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -367,9 +354,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             uploadEntityId={infrastructure.id}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
           />
           {infrastructure.workflowEnabled && (
             <StatusField
@@ -379,31 +364,22 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={(
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_workflow_id"
-                />
-              )}
+              helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />}
             />
           )}
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="createdBy" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />

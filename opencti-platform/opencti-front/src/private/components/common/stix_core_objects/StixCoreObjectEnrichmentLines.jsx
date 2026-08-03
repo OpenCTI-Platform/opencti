@@ -4,7 +4,13 @@ import * as R from 'ramda';
 import { createRefetchContainer, graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@common/button/IconButton';
-import { CheckCircleOutlined, DeleteOutlined, ExtensionOutlined, RefreshOutlined, WarningOutlined } from '@mui/icons-material';
+import {
+  CheckCircleOutlined,
+  DeleteOutlined,
+  ExtensionOutlined,
+  RefreshOutlined,
+  WarningOutlined,
+} from '@mui/icons-material';
 import CircularProgress from '@mui/material/CircularProgress';
 import withStyles from '@mui/styles/withStyles';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -52,10 +58,7 @@ const stixCoreObjectEnrichmentLinesAskEnrich = graphql`
 `;
 
 const stixCoreObjectEnrichmentLinesAskJob = graphql`
-  mutation StixCoreObjectEnrichmentLinesAskJobMutation(
-    $fileName: ID!
-    $connectorId: String
-  ) {
+  mutation StixCoreObjectEnrichmentLinesAskJobMutation($fileName: ID!, $connectorId: String) {
     askJobImport(fileName: $fileName, connectorId: $connectorId) {
       id
     }
@@ -88,9 +91,10 @@ const StixCoreObjectEnrichment = ({
 }) => {
   const theme = useTheme();
   const { id } = stixCoreObject;
-  const file = stixCoreObject.importFiles && stixCoreObject.importFiles.edges.length > 0
-    ? stixCoreObject.importFiles.edges[0].node
-    : null;
+  const file =
+    stixCoreObject.importFiles && stixCoreObject.importFiles.edges.length > 0
+      ? stixCoreObject.importFiles.edges[0].node
+      : null;
   const askJob = (connectorId) => {
     commitMutation({
       mutation: stixCoreObjectEnrichmentLinesAskJob,
@@ -125,30 +129,26 @@ const StixCoreObjectEnrichment = ({
       subscription.unsubscribe();
     };
   });
-  const connectors = file && file.metaData
-    ? R.filter(
-        (n) => R.includes(file.metaData.mimetype, n.connector_scope)
-          || n.connector_scope.length === 0,
-        connectorsForImport,
-      )
-    : [];
-  const allConnectors = R.sortBy(R.prop('name'), [
-    ...stixCoreObject.connectors,
-    ...connectors,
-  ]);
+  const connectors =
+    file && file.metaData
+      ? R.filter(
+          (n) =>
+            R.includes(file.metaData.mimetype, n.connector_scope) || n.connector_scope.length === 0,
+          connectorsForImport,
+        )
+      : [];
+  const allConnectors = R.sortBy(R.prop('name'), [...stixCoreObject.connectors, ...connectors]);
   return (
     <List>
       {allConnectors.length > 0 ? (
         allConnectors.map((connector) => {
-          const jobs = connector.connector_type === 'INTERNAL_IMPORT_FILE'
-            ? R.filter(
-                (n) => n.connector.id === connector.id,
-                R.propOr([], 'works', file),
-              )
-            : R.filter(
-                (n) => n.connector && n.connector.id === connector.id,
-                R.propOr([], 'jobs', stixCoreObject),
-              );
+          const jobs =
+            connector.connector_type === 'INTERNAL_IMPORT_FILE'
+              ? R.filter((n) => n.connector.id === connector.id, R.propOr([], 'works', file))
+              : R.filter(
+                  (n) => n.connector && n.connector.id === connector.id,
+                  R.propOr([], 'jobs', stixCoreObject),
+                );
 
           const isRefreshing = R.filter((node) => node.status !== 'complete', jobs).length > 0;
           return (
@@ -156,17 +156,16 @@ const StixCoreObjectEnrichment = ({
               <ListItem
                 divider={true}
                 disablePadding
-                secondaryAction={(
+                secondaryAction={
                   <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
                     <div style={{ right: 0 }}>
-                      <Tooltip
-                        title={t('Refresh the knowledge using this connector')}
-                      >
+                      <Tooltip title={t('Refresh the knowledge using this connector')}>
                         <IconButton
                           disabled={!connector.active || isRefreshing}
-                          onClick={() => (connector.connector_type === 'INTERNAL_IMPORT_FILE'
-                            ? askJob(connector.id)
-                            : askEnrich(connector.id))
+                          onClick={() =>
+                            connector.connector_type === 'INTERNAL_IMPORT_FILE'
+                              ? askJob(connector.id)
+                              : askEnrich(connector.id)
                           }
                         >
                           <RefreshOutlined />
@@ -174,7 +173,7 @@ const StixCoreObjectEnrichment = ({
                       </Tooltip>
                     </div>
                   </Security>
-                )}
+                }
               >
                 <ListItemButton classes={{ root: classes.item }}>
                   <Tooltip
@@ -186,7 +185,9 @@ const StixCoreObjectEnrichment = ({
                   >
                     <ListItemIcon
                       style={{
-                        color: connector.active ? theme.palette.success.main : theme.palette.error.main,
+                        color: connector.active
+                          ? theme.palette.success.main
+                          : theme.palette.error.main,
                       }}
                     >
                       <ExtensionOutlined />
@@ -226,7 +227,7 @@ const StixCoreObjectEnrichment = ({
                         dense={true}
                         divider={true}
                         disablePadding
-                        secondaryAction={(
+                        secondaryAction={
                           <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
                             <div style={{ right: 0 }}>
                               <IconButton
@@ -237,7 +238,7 @@ const StixCoreObjectEnrichment = ({
                               </IconButton>
                             </div>
                           </Security>
-                        )}
+                        }
                       >
                         <ListItemButton classes={{ root: classes.nested }}>
                           <ListItemIcon>
@@ -257,8 +258,8 @@ const StixCoreObjectEnrichment = ({
                                 }}
                               />
                             )}
-                            {((!isFail && work.status === 'wait')
-                              || work.status === 'progress') && (
+                            {((!isFail && work.status === 'wait') ||
+                              work.status === 'progress') && (
                               <CircularProgress
                                 size={20}
                                 thickness={2}
@@ -277,9 +278,7 @@ const StixCoreObjectEnrichment = ({
           );
         })
       ) : (
-        <div className={classes.noResult}>
-          {t('No connectors for this type of entity')}
-        </div>
+        <div className={classes.noResult}>{t('No connectors for this type of entity')}</div>
       )}
     </List>
   );
@@ -358,8 +357,7 @@ const StixCoreObjectEnrichmentLinesFragment = createRefetchContainer(
       }
     `,
     connectorsForImport: graphql`
-      fragment StixCoreObjectEnrichmentLines_connectorsForImport on Connector
-      @relay(plural: true) {
+      fragment StixCoreObjectEnrichmentLines_connectorsForImport on Connector @relay(plural: true) {
         id
         name
         connector_type
@@ -372,7 +370,4 @@ const StixCoreObjectEnrichmentLinesFragment = createRefetchContainer(
   stixCoreObjectEnrichmentLinesQuery,
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreObjectEnrichmentLinesFragment);
+export default R.compose(inject18n, withStyles(styles))(StixCoreObjectEnrichmentLinesFragment);

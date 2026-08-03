@@ -16,7 +16,11 @@ import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { CityEditionOverview_city$key } from './__generated__/CityEditionOverview_city.graphql';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -29,11 +33,7 @@ const cityMutationFieldPatch = graphql`
     $references: [String]
   ) {
     cityEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         ...CityEditionOverview_city
         ...City_city
       }
@@ -52,10 +52,7 @@ export const cityEditionOverviewFocus = graphql`
 `;
 
 const cityMutationRelationAdd = graphql`
-  mutation CityEditionOverviewRelationAddMutation(
-    $id: ID!
-    $input: StixRefRelationshipAddInput!
-  ) {
+  mutation CityEditionOverviewRelationAddMutation($id: ID!, $input: StixRefRelationshipAddInput!) {
     cityEdit(id: $id) {
       relationAdd(input: $input) {
         from {
@@ -141,21 +138,20 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
   const { t_i18n } = useFormatter();
   const city = useFragment(cityEditionOverviewFragment, cityRef);
   const { mandatoryAttributes } = useIsMandatoryAttribute(CITY_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    description: Yup.string().nullable().max(5000, t_i18n('The value is too long')),
-    confidence: Yup.number().nullable(),
-    latitude: Yup.number()
-      .typeError(t_i18n('This field must be a number'))
-      .nullable(),
-    longitude: Yup.number()
-      .typeError(t_i18n('This field must be a number'))
-      .nullable(),
-    references: Yup.array(),
-    x_opencti_workflow_id: Yup.object(),
-    createdBy: Yup.object().nullable(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      description: Yup.string().nullable().max(5000, t_i18n('The value is too long')),
+      confidence: Yup.number().nullable(),
+      latitude: Yup.number().typeError(t_i18n('This field must be a number')).nullable(),
+      longitude: Yup.number().typeError(t_i18n('This field must be a number')).nullable(),
+      references: Yup.array(),
+      x_opencti_workflow_id: Yup.object(),
+      createdBy: Yup.object().nullable(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
+  );
   const cityValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
   const queries = {
     fieldPatch: cityMutationFieldPatch,
@@ -164,10 +160,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
     editionFocus: cityEditionOverviewFocus,
   };
   const editor = useFormEditor(city as GenericData, enableReferences, queries, cityValidator);
-  const onSubmit: FormikConfig<CityEditionFormValues>['onSubmit'] = (
-    values,
-    { setSubmitting },
-  ) => {
+  const onSubmit: FormikConfig<CityEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
@@ -181,8 +174,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
       variables: {
         id: city.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {
@@ -230,14 +222,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
       validateOnBlur={true}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <Form>
           <AlertConfidenceForEntity entity={city} />
           <Field
@@ -245,19 +230,17 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
             variant="standard"
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="name" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="name" />}
           />
           <Field
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -265,9 +248,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             uploadEntityId={city.id}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
           />
           <ConfidenceField
             onFocus={editor.changeFocus}
@@ -284,13 +265,13 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
             name="latitude"
             type="number"
             label={t_i18n('Latitude')}
-            required={(mandatoryAttributes.includes('latitude'))}
+            required={mandatoryAttributes.includes('latitude')}
             fullWidth={true}
             onFocus={editor.changeFocus}
-            onSubmit={(name: string, value: string) => handleSubmitField(name, (value === '' ? null : value))}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="latitude" />
+            onSubmit={(name: string, value: string) =>
+              handleSubmitField(name, value === '' ? null : value)
             }
+            helperText={<SubscriptionFocus context={context} fieldName="latitude" />}
           />
           <Field
             component={TextField}
@@ -299,13 +280,13 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
             name="longitude"
             type="number"
             label={t_i18n('Longitude')}
-            required={(mandatoryAttributes.includes('longitude'))}
+            required={mandatoryAttributes.includes('longitude')}
             fullWidth={true}
             onFocus={editor.changeFocus}
-            onSubmit={(name: string, value: string) => handleSubmitField(name, (value === '' ? null : value))}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="longitude" />
+            onSubmit={(name: string, value: string) =>
+              handleSubmitField(name, value === '' ? null : value)
             }
+            helperText={<SubscriptionFocus context={context} fieldName="longitude" />}
           />
           {city.workflowEnabled && (
             <StatusField
@@ -315,31 +296,22 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={(
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_workflow_id"
-                />
-              )}
+              helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />}
             />
           )}
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="createdBy" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />

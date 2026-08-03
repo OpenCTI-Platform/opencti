@@ -38,11 +38,24 @@ const AuthProviderOrganizationsFields = () => {
       {/* Default organizations */}
       <FieldArray name="organizations_mapping.default_organizations">
         {({ push, remove, form }) => {
-          const entries = (form.values as { organizations_mapping: OrganizationsMappingValues }).organizations_mapping.default_organizations ?? [];
+          const entries =
+            (form.values as { organizations_mapping: OrganizationsMappingValues })
+              .organizations_mapping.default_organizations ?? [];
           return (
             <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
-              <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Default organizations')}</Typography>
+              <Box
+                sx={{
+                  px: 2,
+                  py: 1,
+                  backgroundColor: 'action.hover',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Typography variant="h4" sx={{ m: 0 }}>
+                  {t_i18n('Default organizations')}
+                </Typography>
                 <IconButton
                   color="primary"
                   aria-label={t_i18n('Add')}
@@ -54,7 +67,10 @@ const AuthProviderOrganizationsFields = () => {
               </Box>
               <Box sx={{ px: 2, pb: entries.length > 0 ? 1 : 0 }}>
                 {entries.map((_: string, index: number) => (
-                  <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                  <div
+                    key={index}
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}
+                  >
                     <Field
                       component={TextField}
                       variant="standard"
@@ -81,11 +97,24 @@ const AuthProviderOrganizationsFields = () => {
       {/* Organizations expressions */}
       <FieldArray name="organizations_mapping.organizations_expr">
         {({ push, remove, form }) => {
-          const entries = (form.values as { organizations_mapping: OrganizationsMappingValues }).organizations_mapping.organizations_expr ?? [];
+          const entries =
+            (form.values as { organizations_mapping: OrganizationsMappingValues })
+              .organizations_mapping.organizations_expr ?? [];
           return (
             <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
-              <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Organizations expressions')}</Typography>
+              <Box
+                sx={{
+                  px: 2,
+                  py: 1,
+                  backgroundColor: 'action.hover',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Typography variant="h4" sx={{ m: 0 }}>
+                  {t_i18n('Organizations expressions')}
+                </Typography>
                 <IconButton
                   color="primary"
                   aria-label={t_i18n('Add')}
@@ -97,7 +126,10 @@ const AuthProviderOrganizationsFields = () => {
               </Box>
               <Box sx={{ px: 2, pb: entries.length > 0 ? 1 : 0 }}>
                 {entries.map((_: string, index: number) => (
-                  <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                  <div
+                    key={index}
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}
+                  >
                     <Field
                       component={TextField}
                       variant="standard"
@@ -134,11 +166,24 @@ const AuthProviderOrganizationsFields = () => {
       {/* Organizations mapping (provider -> platform) */}
       <FieldArray name="organizations_mapping.organizations_mapping">
         {({ push, remove, form }) => {
-          const entries = (form.values as { organizations_mapping: OrganizationsMappingValues }).organizations_mapping.organizations_mapping ?? [];
+          const entries =
+            (form.values as { organizations_mapping: OrganizationsMappingValues })
+              .organizations_mapping.organizations_mapping ?? [];
           return (
             <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
-              <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Organizations mapping')}</Typography>
+              <Box
+                sx={{
+                  px: 2,
+                  py: 1,
+                  backgroundColor: 'action.hover',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Typography variant="h4" sx={{ m: 0 }}>
+                  {t_i18n('Organizations mapping')}
+                </Typography>
                 <IconButton
                   color="primary"
                   aria-label={t_i18n('Add')}
@@ -150,7 +195,10 @@ const AuthProviderOrganizationsFields = () => {
               </Box>
               <Box sx={{ px: 2, pb: entries.length > 0 ? 1 : 0 }}>
                 {entries.map((_: MappingEntry, index: number) => (
-                  <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                  <div
+                    key={index}
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}
+                  >
                     <Field
                       component={TextField}
                       variant="standard"

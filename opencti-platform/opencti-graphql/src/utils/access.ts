@@ -1,17 +1,39 @@
 import type { Context, Span, Tracer } from '@opentelemetry/api';
 import { context as telemetryContext, trace } from '@opentelemetry/api';
-import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import {
+  ATTR_DB_NAMESPACE,
+  ATTR_DB_OPERATION_NAME,
+  SEMATTRS_DB_NAME,
+  SEMATTRS_DB_OPERATION,
+} from '@opentelemetry/semantic-conventions';
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { ACCOUNT_STATUS_ACTIVE, isFeatureEnabled } from '../config/conf';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { telemetry } from '../config/tracing';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
-import { extractIdsFromStoreObject, isNotEmptyField, READ_INDEX_INTERNAL_RELATIONSHIPS, REDACTED_INFORMATION, RESTRICTED_INFORMATION } from '../database/utils';
-import { type Creator, type FilterGroup, FilterMode, FilterOperator, type Participant } from '../generated/graphql';
+import {
+  extractIdsFromStoreObject,
+  isNotEmptyField,
+  READ_INDEX_INTERNAL_RELATIONSHIPS,
+  REDACTED_INFORMATION,
+  RESTRICTED_INFORMATION,
+} from '../database/utils';
+import {
+  type Creator,
+  type FilterGroup,
+  FilterMode,
+  FilterOperator,
+  type Participant,
+} from '../generated/graphql';
 import type { BasicStoreEntityDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-types';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
-import { ENTITY_TYPE_GROUP, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
+import {
+  ENTITY_TYPE_GROUP,
+  ENTITY_TYPE_SETTINGS,
+  ENTITY_TYPE_USER,
+  isInternalObject,
+} from '../schema/internalObject';
 import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
@@ -20,20 +42,39 @@ import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import type { UpdateEvent } from '../types/event';
-import { fullEntitiesList, fullRelationsList, pageEntitiesConnection } from '../database/middleware-loader';
+import {
+  fullEntitiesList,
+  fullRelationsList,
+  pageEntitiesConnection,
+} from '../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { isFilterGroupNotEmpty } from './filtering/filtering-utils';
 import type { BasicStoreSettings } from '../types/settings';
 import type { StixObject } from '../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import type { BasicConnection, BasicStoreIdentifier, BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../types/store';
+import type {
+  BasicConnection,
+  BasicStoreIdentifier,
+  BasicStoreCommon,
+  BasicStoreEntity,
+  BasicStoreRelation,
+} from '../types/store';
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
-import { ID_SUBFILTER, INSTANCE_REGARDING_OF, RELATION_INFERRED_SUBFILTER, RELATION_TYPE_SUBFILTER } from './filtering/filtering-constants';
+import {
+  ID_SUBFILTER,
+  INSTANCE_REGARDING_OF,
+  RELATION_INFERRED_SUBFILTER,
+  RELATION_TYPE_SUBFILTER,
+} from './filtering/filtering-constants';
 import { pushAll } from './arrayUtil';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
-export const MEMBERS_ENTITY_TYPES = [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP];
+export const MEMBERS_ENTITY_TYPES = [
+  ENTITY_TYPE_USER,
+  ENTITY_TYPE_IDENTITY_ORGANIZATION,
+  ENTITY_TYPE_GROUP,
+];
 
 export const BYPASS = 'BYPASS';
 export const KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE = 'KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE';
@@ -59,7 +100,6 @@ export const KNOWLEDGE_KNDISSEMINATION = 'KNOWLEDGE_KNDISSEMINATION';
 export const KNOWLEDGE_KNSHAREFILTERS = 'KNOWLEDGE_KNSHAREFILTERS';
 export const VIRTUAL_ORGANIZATION_ADMIN = 'VIRTUAL_ORGANIZATION_ADMIN';
 export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
-export const SETTINGS_SETAUTH = 'SETTINGS_SETAUTH';
 export const SETTINGS_SECURITYACTIVITY = 'SETTINGS_SECURITYACTIVITY';
 export const SETTINGS_SETCUSTOMIZATION = 'SETTINGS_SETCUSTOMIZATION';
 export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
@@ -97,9 +137,18 @@ export const MEMBER_ACCESS_RIGHT_ADMIN = 'admin';
 export const MEMBER_ACCESS_RIGHT_EDIT = 'edit';
 export const MEMBER_ACCESS_RIGHT_USE = 'use';
 export const MEMBER_ACCESS_RIGHT_VIEW = 'view';
-let MEMBER_ACCESS_RIGHTS = [MEMBER_ACCESS_RIGHT_VIEW, MEMBER_ACCESS_RIGHT_EDIT, MEMBER_ACCESS_RIGHT_ADMIN];
+let MEMBER_ACCESS_RIGHTS = [
+  MEMBER_ACCESS_RIGHT_VIEW,
+  MEMBER_ACCESS_RIGHT_EDIT,
+  MEMBER_ACCESS_RIGHT_ADMIN,
+];
 if (isFeatureEnabled('ACCESS_RESTRICTION_CAN_USE')) {
-  MEMBER_ACCESS_RIGHTS = [MEMBER_ACCESS_RIGHT_VIEW, MEMBER_ACCESS_RIGHT_USE, MEMBER_ACCESS_RIGHT_EDIT, MEMBER_ACCESS_RIGHT_ADMIN];
+  MEMBER_ACCESS_RIGHTS = [
+    MEMBER_ACCESS_RIGHT_VIEW,
+    MEMBER_ACCESS_RIGHT_USE,
+    MEMBER_ACCESS_RIGHT_EDIT,
+    MEMBER_ACCESS_RIGHT_ADMIN,
+  ];
 }
 
 type ObjectWithCreators = {
@@ -427,8 +476,8 @@ export const EXPIRATION_MANAGER_USER: AuthUser = {
   id: EXPIRATION_MANAGER_USER_UUID,
   internal_id: EXPIRATION_MANAGER_USER_UUID,
   individual_id: undefined,
-  name: 'EXPIRATION SCHEDULER',
-  user_email: 'EXPIRATION SCHEDULER',
+  name: 'EXPIRATION MANAGER',
+  user_email: 'EXPIRATION MANAGER',
   origin: { user_id: EXPIRATION_MANAGER_USER_UUID, socket: 'internal' },
   roles: [ADMINISTRATOR_ROLE],
   groups: [],
@@ -571,7 +620,11 @@ export const WORKFLOW_MANAGER_USER: AuthUser = {
   restrict_delete: false,
 };
 
-export interface AuthorizedMember { id: string; access_right: string; groups_restriction_ids?: string[] | null }
+export interface AuthorizedMember {
+  id: string;
+  access_right: string;
+  groups_restriction_ids?: string[] | null;
+}
 
 export type TracingContext = {
   getCtx: () => Context | undefined;
@@ -596,7 +649,11 @@ export const enforceEnableFeatureFlag = (flag: string) => {
   }
 };
 
-export const executionContext = (source: string, auth?: AuthUser, draftContext?: string): AuthContext => {
+export const executionContext = (
+  source: string,
+  auth?: AuthUser,
+  draftContext?: string,
+): AuthContext => {
   const tracer = trace.getTracer('instrumentation-opencti', '1.0.0');
   const tracing = createTracingContext(tracer);
   return {
@@ -651,27 +708,49 @@ export const isServiceAccountUser = (user: AuthUser): boolean => {
   return user.user_service_account === true;
 };
 
-export const isUserHasCapability = (user: AuthUser, capability: string, options?: { forceCapabilityInDraft?: boolean }): boolean => {
+export const isUserHasCapability = (
+  user: AuthUser,
+  capability: string,
+  options?: { forceCapabilityInDraft?: boolean },
+): boolean => {
   const isInDraftContext = !!user.draft_context;
-  const isIncludedInCapabilities = (user.capabilities || []).some((s) => capability !== BYPASS && s.name.includes(capability));
-  const isIncludedInDraftCapabilities = (user.capabilitiesInDraft || []).some((s) => s.name.includes(capability));
+  const isIncludedInCapabilities = (user.capabilities || []).some(
+    (s) => capability !== BYPASS && s.name.includes(capability),
+  );
+  const isIncludedInDraftCapabilities = (user.capabilitiesInDraft || []).some((s) =>
+    s.name.includes(capability),
+  );
   const checkCapabilitiesInDraft = !!options?.forceCapabilityInDraft || isInDraftContext;
-  return isBypassUser(user) || isIncludedInCapabilities || (checkCapabilitiesInDraft && isIncludedInDraftCapabilities);
+  return (
+    isBypassUser(user) ||
+    isIncludedInCapabilities ||
+    (checkCapabilitiesInDraft && isIncludedInDraftCapabilities)
+  );
 };
 
-export const isUserHasCapabilities = (user: AuthUser, capabilities: string[] = [], options?: { forceCapabilityInDraft?: boolean }) => {
+export const isUserHasCapabilities = (
+  user: AuthUser,
+  capabilities: string[] = [],
+  options?: { forceCapabilityInDraft?: boolean },
+) => {
   return capabilities.every((capability) => isUserHasCapability(user, capability, options));
 };
 
 export const isOnlyOrgaAdmin = (user: AuthUser) => {
-  return !isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN);
+  return (
+    !isUserHasCapability(user, SETTINGS_SET_ACCESSES) &&
+    isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN)
+  );
 };
 
 /**
  * Construct a filter to restrict users visibility
  * In case the user has not set_access capa and is organization administrator, don't check regardingOf filter rights
  */
-export const buildUserOrganizationRestrictedFiltersOptions = (user: AuthUser, inputFilters?: FilterGroup) => {
+export const buildUserOrganizationRestrictedFiltersOptions = (
+  user: AuthUser,
+  inputFilters?: FilterGroup,
+) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     // If user is not a set access administrator, user can only see directly attached organization users
     const organizationIds = user.administrated_organizations.map((organization) => organization.id);
@@ -702,12 +781,21 @@ export const computeUserMemberAccessIds = (user: AuthUser) => {
 };
 
 // region entity access by user
-export const getExplicitUserAccessRight = (user: AuthUser, element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[] }) => {
+export const getExplicitUserAccessRight = (
+  user: AuthUser,
+  element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[] },
+) => {
   const userMemberAccessIds = computeUserMemberAccessIds(user);
   const userGroupsIds = user.groups.map((group) => group.internal_id);
-  const foundAccessMembers = (element.restricted_members ?? []).filter((u) => (u.id === MEMBER_ACCESS_ALL || userMemberAccessIds.includes(u.id))
-    && (!u.groups_restriction_ids || u.groups_restriction_ids.length === 0 || u.groups_restriction_ids.every((g) => userGroupsIds.includes(g))));
-  if (!foundAccessMembers.length) { // user has no access
+  const foundAccessMembers = (element.restricted_members ?? []).filter(
+    (u) =>
+      (u.id === MEMBER_ACCESS_ALL || userMemberAccessIds.includes(u.id)) &&
+      (!u.groups_restriction_ids ||
+        u.groups_restriction_ids.length === 0 ||
+        u.groups_restriction_ids.every((g) => userGroupsIds.includes(g))),
+  );
+  if (!foundAccessMembers.length) {
+    // user has no access
     return null;
   }
   if (foundAccessMembers.some((m) => m.access_right === MEMBER_ACCESS_RIGHT_ADMIN)) {
@@ -722,7 +810,10 @@ export const getExplicitUserAccessRight = (user: AuthUser, element: { restricted
   return MEMBER_ACCESS_RIGHT_VIEW;
 };
 
-export const getUserAccessRight = (user: AuthUser, element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[] }) => {
+export const getUserAccessRight = (
+  user: AuthUser,
+  element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[] },
+) => {
   // if user is bypass, user has admin access (needed for data management usage)
   if (isBypassUser(user)) {
     return MEMBER_ACCESS_RIGHT_ADMIN;
@@ -733,24 +824,37 @@ export const getUserAccessRight = (user: AuthUser, element: { restricted_members
   }
   // If user have authorities, is an admin
   const userMemberAccessIds = computeUserMemberAccessIds(user);
-  if ((element.authorized_authorities ?? []).some((c: string) => userMemberAccessIds.includes(c) || isUserHasCapability(user, c))) {
+  if (
+    (element.authorized_authorities ?? []).some(
+      (c: string) => userMemberAccessIds.includes(c) || isUserHasCapability(user, c),
+    )
+  ) {
     return MEMBER_ACCESS_RIGHT_ADMIN;
   }
   // Service accounts respect explicit admin rights; otherwise fallback to "edit" to allow read/write access on restricted elements
   const userAccessRight = getExplicitUserAccessRight(user, element);
-  if ((!userAccessRight || userAccessRight != MEMBER_ACCESS_RIGHT_ADMIN) && isServiceAccountUser(user)) {
+  if (
+    (!userAccessRight || userAccessRight != MEMBER_ACCESS_RIGHT_ADMIN) &&
+    isServiceAccountUser(user)
+  ) {
     return MEMBER_ACCESS_RIGHT_EDIT;
   }
 
   return userAccessRight;
 };
 
-export const hasAuthorizedMemberAccess = (user: AuthUser, element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[] }) => {
+export const hasAuthorizedMemberAccess = (
+  user: AuthUser,
+  element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[] },
+) => {
   const userAccessRight = getUserAccessRight(user, element);
   return !!userAccessRight;
 };
 
-export const isUserInAuthorizedMember = (user: AuthUser, element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[] }) => {
+export const isUserInAuthorizedMember = (
+  user: AuthUser,
+  element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[] },
+) => {
   const userAccessRight = getExplicitUserAccessRight(user, element);
   return !!userAccessRight;
 };
@@ -782,9 +886,20 @@ const isEntityOrganizationsAllowed = (
   return true;
 };
 
-export const isOrganizationAllowed = (context: AuthContext, element: BasicStoreCommon, user: AuthUser, hasPlatformOrg: boolean) => {
+export const isOrganizationAllowed = (
+  context: AuthContext,
+  element: BasicStoreCommon,
+  user: AuthUser,
+  hasPlatformOrg: boolean,
+) => {
   const elementOrganizations = element[RELATION_GRANTED_TO] ?? [];
-  return isEntityOrganizationsAllowed(context, element.internal_id, elementOrganizations, user, hasPlatformOrg);
+  return isEntityOrganizationsAllowed(
+    context,
+    element.internal_id,
+    elementOrganizations,
+    user,
+    hasPlatformOrg,
+  );
 };
 
 const isOrganizationUnrestrictedForEntityType = (entityType: string) => {
@@ -832,46 +947,73 @@ export const checkUserFilterStoreElements = (
   }
   // Check restricted elements
   // either allowed by orga sharing or has authorized members access if restricted_members are defined (bypass orga sharing)
-  return isOrganizationAllowed(context, element, user, hasPlatformOrg)
-    || (element.restricted_members && element.restricted_members.length > 0 && hasAuthorizedMemberAccess(user, element));
+  return (
+    isOrganizationAllowed(context, element, user, hasPlatformOrg) ||
+    (element.restricted_members &&
+      element.restricted_members.length > 0 &&
+      hasAuthorizedMemberAccess(user, element))
+  );
 };
 
-export const userFilterStoreElements = async (context: AuthContext, user: AuthUser, elements: Array<BasicStoreCommon>): Promise<BasicStoreCommon[]> => {
+export const userFilterStoreElements = async (
+  context: AuthContext,
+  user: AuthUser,
+  elements: Array<BasicStoreCommon>,
+): Promise<BasicStoreCommon[]> => {
   const userFilterStoreElementsFn = async () => {
     // If user have bypass, grant access to all
     if (isBypassUser(user)) {
       return elements;
     }
     // If not filter by the inner markings
-    const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+    const settings = await getEntityFromCache<BasicStoreSettings>(
+      context,
+      user,
+      ENTITY_TYPE_SETTINGS,
+    );
     const hasPlatformOrg = !!settings.platform_organization;
     const authorizedMarkings = user.allowed_marking.map((a) => a.internal_id);
     return elements.filter((element) => {
-      return checkUserFilterStoreElements(context, user, element, authorizedMarkings, hasPlatformOrg);
+      return checkUserFilterStoreElements(
+        context,
+        user,
+        element,
+        authorizedMarkings,
+        hasPlatformOrg,
+      );
     });
   };
-  return telemetry(context, user, 'FILTERING store filter', {
-    [ATTR_DB_NAMESPACE]: 'search_engine',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_NAME]: 'search_engine',
-    [ATTR_DB_OPERATION_NAME]: 'read',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_OPERATION]: 'read',
-  }, userFilterStoreElementsFn);
+  return telemetry(
+    context,
+    user,
+    'FILTERING store filter',
+    {
+      [ATTR_DB_NAMESPACE]: 'search_engine',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_NAME]: 'search_engine',
+      [ATTR_DB_OPERATION_NAME]: 'read',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_OPERATION]: 'read',
+    },
+    userFilterStoreElementsFn,
+  );
 };
 
-export const isUserCanAccessStoreElement = async (context: AuthContext, user: AuthUser, element: BasicStoreCommon) => {
+export const isUserCanAccessStoreElement = async (
+  context: AuthContext,
+  user: AuthUser,
+  element: BasicStoreCommon,
+) => {
   const elements = await userFilterStoreElements(context, user, [element]);
   return elements.length === 1;
 };
 
-/**
- * Check whether a user can access a STIX element using already-resolved platform settings.
- *
- * This is the synchronous variant intended for batch usage (for example in loops over
- * multiple STIX objects) to avoid refetching settings for each element.
- */
-export const checkUserCanAccessStixElement = (context: AuthContext, user: AuthUser, instance: StixObject, hasPlatformOrg: boolean) => {
+export const checkUserCanAccessStixElement = (
+  context: AuthContext,
+  user: AuthUser,
+  instance: StixObject,
+  hasPlatformOrg: boolean,
+) => {
   // If user have bypass, grant access to all
   if (isBypassUser(user)) {
     return true;
@@ -899,20 +1041,27 @@ export const checkUserCanAccessStixElement = (context: AuthContext, user: AuthUs
   }
   // Check restricted elements
   const elementOrganizations = instance.extensions?.[STIX_EXT_OCTI]?.granted_refs ?? [];
-  const organizationAllowed = isEntityOrganizationsAllowed(context, instance.id, elementOrganizations, user, hasPlatformOrg);
+  const organizationAllowed = isEntityOrganizationsAllowed(
+    context,
+    instance.id,
+    elementOrganizations,
+    user,
+    hasPlatformOrg,
+  );
   // either allowed by organization or authorized members
   return organizationAllowed || (restricted_members.length > 0 && authorizedMemberAllowed);
 };
 
-/**
- * Asynchronous convenience wrapper around checkUserCanAccessStixElement.
- *
- * This variant resolves platform settings from cache before
- * delegating to the synchronous checker. Do not pass this async function directly
- * to Array.filter; resolve results first (for example with Promise.all).
- */
-export const isUserCanAccessStixElement = async (context: AuthContext, user: AuthUser, instance: StixObject) => {
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+export const isUserCanAccessStixElement = async (
+  context: AuthContext,
+  user: AuthUser,
+  instance: StixObject,
+) => {
+  const settings = await getEntityFromCache<BasicStoreSettings>(
+    context,
+    user,
+    ENTITY_TYPE_SETTINGS,
+  );
   const hasPlatformOrg = !!settings.platform_organization;
   return checkUserCanAccessStixElement(context, user, instance, hasPlatformOrg);
 };
@@ -928,7 +1077,10 @@ const checkUserCanAccessMarkings = async (user: AuthUser, markingIds: string[]) 
   return false;
 };
 
-export const isUserCanAccessStreamUpdateEvent = async (user: AuthUser, updateEvent: UpdateEvent) => {
+export const isUserCanAccessStreamUpdateEvent = async (
+  user: AuthUser,
+  updateEvent: UpdateEvent,
+) => {
   const relatedRestrictions = updateEvent.context.related_restrictions;
   if (!relatedRestrictions) {
     return true;
@@ -958,11 +1110,14 @@ const hasUserAccessToOperation = (
   operation: AccessOperation,
 ) => {
   const userAccessRight = getUserAccessRight(user, element);
-  if (!userAccessRight) { // user has no access
+  if (!userAccessRight) {
+    // user has no access
     return false;
   }
   if (operation === 'edit') {
-    return userAccessRight === MEMBER_ACCESS_RIGHT_EDIT || userAccessRight === MEMBER_ACCESS_RIGHT_ADMIN;
+    return (
+      userAccessRight === MEMBER_ACCESS_RIGHT_EDIT || userAccessRight === MEMBER_ACCESS_RIGHT_ADMIN
+    );
   }
   if (operation === 'delete' || operation === 'manage-access') {
     return userAccessRight === MEMBER_ACCESS_RIGHT_ADMIN;
@@ -971,7 +1126,12 @@ const hasUserAccessToOperation = (
 };
 
 // Ensure that user can access the element (operation: edit / delete / manage-access)
-export const validateUserAccessOperation = (user: AuthUser, element: any, operation: AccessOperation, draft?: BasicStoreEntityDraftWorkspace | null) => {
+export const validateUserAccessOperation = (
+  user: AuthUser,
+  element: any,
+  operation: AccessOperation,
+  draft?: BasicStoreEntityDraftWorkspace | null,
+) => {
   // 1. Check draft authorized members permissions
   if (draft && !hasUserAccessToOperation(user, draft, operation)) {
     return false;
@@ -983,16 +1143,18 @@ export const validateUserAccessOperation = (user: AuthUser, element: any, operat
   }
 
   // 3. Specific STIX object management restrictions
-  if (isStixObject(element.entity_type)
-    && operation === 'manage-access'
-    && !isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS)
+  if (
+    isStixObject(element.entity_type) &&
+    operation === 'manage-access' &&
+    !isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS)
   ) {
     return false;
   }
 
   // 4. General access management restrictions
-  if (operation === 'manage-authorities-access'
-    && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)
+  if (
+    operation === 'manage-authorities-access' &&
+    !isUserHasCapability(user, SETTINGS_SET_ACCESSES)
   ) {
     return false;
   }
@@ -1010,16 +1172,31 @@ export const isValidMemberAccessRight = (accessRight: string) => {
   return accessRight && MEMBER_ACCESS_RIGHTS.includes(accessRight);
 };
 
-export const controlUserRestrictDeleteAgainstElement = <T extends ObjectWithCreators>(user: AuthUser, existingElement: T, noThrow = false) => {
-  const hasCreatorIdAttribute = schemaAttributesDefinition.getAttribute(existingElement.entity_type, 'creator_id');
+export const controlUserRestrictDeleteAgainstElement = <T extends ObjectWithCreators>(
+  user: AuthUser,
+  existingElement: T,
+  noThrow = false,
+) => {
+  const hasCreatorIdAttribute = schemaAttributesDefinition.getAttribute(
+    existingElement.entity_type,
+    'creator_id',
+  );
   if (!hasCreatorIdAttribute) {
     return true; // no creator to check, it's ok
   }
-  if (user.restrict_delete && isNotEmptyField(existingElement.creator_id as string[]) && existingElement.creator_id !== user.id && !existingElement.creator_id?.includes(user.id)) {
+  if (
+    user.restrict_delete &&
+    isNotEmptyField(existingElement.creator_id as string[]) &&
+    existingElement.creator_id !== user.id &&
+    !existingElement.creator_id?.includes(user.id)
+  ) {
     if (noThrow) {
       return false;
     }
-    throw FunctionalError('Restricted to delete this element (not the technical creator)', { user_id: user.id, element_id: existingElement.id });
+    throw FunctionalError('Restricted to delete this element (not the technical creator)', {
+      user_id: user.id,
+      element_id: existingElement.id,
+    });
   }
   return true;
 };
@@ -1031,15 +1208,27 @@ export const controlUserRestrictDeleteAgainstElement = <T extends ObjectWithCrea
  * @param markingId
  * @param markingsMap
  */
-export const validateMarking = async (context: AuthContext, user: AuthUser, markingId: string, markingsMap?: Map<string, BasicStoreIdentifier | StixObject>) => {
+export const validateMarking = async (
+  context: AuthContext,
+  user: AuthUser,
+  markingId: string,
+  markingsMap?: Map<string, BasicStoreIdentifier | StixObject>,
+) => {
   if (isBypassUser(user)) {
     return;
   }
-  const markings = markingsMap ?? await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  const userMarking = (user.allowed_marking || []).map((m) => markings.get(m.internal_id)).filter((m) => isNotEmptyField(m)) as BasicStoreCommon[];
+  const markings =
+    markingsMap ??
+    (await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION));
+  const userMarking = (user.allowed_marking || [])
+    .map((m) => markings.get(m.internal_id))
+    .filter((m) => isNotEmptyField(m)) as BasicStoreCommon[];
   const userMarkingIds = userMarking.map((marking) => extractIdsFromStoreObject(marking)).flat();
   if (!userMarkingIds.includes(markingId)) {
-    throw FunctionalError('User trying to create the data has missing markings', { id: markingId, user_markings: userMarkingIds });
+    throw FunctionalError('User trying to create the data has missing markings', {
+      id: markingId,
+      user_markings: userMarkingIds,
+    });
   }
 };
 
@@ -1050,18 +1239,23 @@ export const isUserInPlatformOrganization = (user: AuthUser, settings: BasicStor
   if (user.user_service_account) {
     return true;
   }
-  const userOrganizationIds = (user.organizations ?? []).map((organization) => organization.internal_id);
-  return settings.platform_organization ? userOrganizationIds.includes(settings.platform_organization) : true;
+  const userOrganizationIds = (user.organizations ?? []).map(
+    (organization) => organization.internal_id,
+  );
+  return settings.platform_organization
+    ? userOrganizationIds.includes(settings.platform_organization)
+    : true;
 };
 
-type ParticipantWithOrgIds = Participant & Creator & {
-  representative?: {
-    main: string;
-    secondary: string;
+type ParticipantWithOrgIds = Participant &
+  Creator & {
+    representative?: {
+      main: string;
+      secondary: string;
+    };
+    [RELATION_PARTICIPATE_TO]?: string[];
+    user_service_account?: boolean;
   };
-  [RELATION_PARTICIPATE_TO]?: string[];
-  user_service_account?: boolean;
-};
 
 export enum FilterMembersMode {
   RESTRICT = 'restrict', // remove restricted users
@@ -1077,11 +1271,22 @@ export const filterMembersUsersWithUsersOrgs = async (
   members: ParticipantWithOrgIds[],
   filterMode = FilterMembersMode.RESTRICT,
 ): Promise<ParticipantWithOrgIds[]> => {
-  const userCanViewAllUsers = [SETTINGS_SET_ACCESSES, AUTOMATION_AUTMANAGE, SETTINGS_SETCUSTOMIZATION].some((capa) => isUserHasCapability(user, capa));
-  const platformSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const userCanViewAllUsers = [
+    SETTINGS_SET_ACCESSES,
+    AUTOMATION_AUTMANAGE,
+    SETTINGS_SETCUSTOMIZATION,
+  ].some((capa) => isUserHasCapability(user, capa));
+  const platformSettings = await getEntityFromCache<BasicStoreSettings>(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_SETTINGS,
+  );
 
   // case 1. no orga restriction on user visibility
-  if (userCanViewAllUsers || (!platformSettings.platform_organization && platformSettings.view_all_users)) {
+  if (
+    userCanViewAllUsers ||
+    (!platformSettings.platform_organization && platformSettings.view_all_users)
+  ) {
     return members;
   }
 
@@ -1138,7 +1343,10 @@ interface ListArgs {
   [key: string]: any;
 }
 
-export const buildRegardingOfDirectParticipateToFilters = (ids: string[], filters?: FilterGroup) => {
+export const buildRegardingOfDirectParticipateToFilters = (
+  ids: string[],
+  filters?: FilterGroup,
+) => {
   return {
     mode: FilterMode.And,
     filters: [
@@ -1170,7 +1378,9 @@ export const findMembersPaginatedWithOrgaRestriction = async (
   user: AuthUser,
   args: ListArgs = {},
 ): Promise<BasicConnection<BasicStoreEntity>> => {
-  return fetchMembersWithOrgaRestriction(context, user, args, true) as Promise<BasicConnection<BasicStoreEntity>>;
+  return fetchMembersWithOrgaRestriction(context, user, args, true) as Promise<
+    BasicConnection<BasicStoreEntity>
+  >;
 };
 
 export const findAllMembersWithOrgaRestriction = async (
@@ -1195,15 +1405,29 @@ const fetchMembersWithOrgaRestriction = async (
   const membersFetchFunction = isResultConnection ? pageEntitiesConnection : fullEntitiesList;
   const { entityTypes = null, filters = undefined } = args;
   if (entityTypes && entityTypes.some((t) => !MEMBERS_ENTITY_TYPES.includes(t))) {
-    throw FunctionalError('Members types can only be User, Organization and Group', { entityTypes });
+    throw FunctionalError('Members types can only be User, Organization and Group', {
+      entityTypes,
+    });
   }
   const types = entityTypes || MEMBERS_ENTITY_TYPES;
-  if (types.includes(ENTITY_TYPE_USER)) { // case 1. add organization restriction for users if necessary
-    const userCanViewAllUsers = [SETTINGS_SET_ACCESSES, AUTOMATION_AUTMANAGE, SETTINGS_SETCUSTOMIZATION].some((capa) => isUserHasCapability(user, capa));
-    const platformSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  if (types.includes(ENTITY_TYPE_USER)) {
+    // case 1. add organization restriction for users if necessary
+    const userCanViewAllUsers = [
+      SETTINGS_SET_ACCESSES,
+      AUTOMATION_AUTMANAGE,
+      SETTINGS_SETCUSTOMIZATION,
+    ].some((capa) => isUserHasCapability(user, capa));
+    const platformSettings = await getEntityFromCache<BasicStoreSettings>(
+      context,
+      SYSTEM_USER,
+      ENTITY_TYPE_SETTINGS,
+    );
 
     // case 1.1. no orga restriction on user visibility
-    if (userCanViewAllUsers || (!platformSettings.platform_organization && platformSettings.view_all_users)) {
+    if (
+      userCanViewAllUsers ||
+      (!platformSettings.platform_organization && platformSettings.view_all_users)
+    ) {
       return membersFetchFunction(context, user, types, args);
     }
 
@@ -1220,9 +1444,10 @@ const fetchMembersWithOrgaRestriction = async (
     );
     const userDirectOrganizationsIds = userDirectOrganizationRelations.map((n) => n.toId);
     // construct the filter for the users that are in the user direct organizations
-    const usersWithinUserOrgaFilters = userDirectOrganizationsIds.length > 0
-      ? buildRegardingOfDirectParticipateToFilters(userDirectOrganizationsIds).filters
-      : [];
+    const usersWithinUserOrgaFilters =
+      userDirectOrganizationsIds.length > 0
+        ? buildRegardingOfDirectParticipateToFilters(userDirectOrganizationsIds).filters
+        : [];
 
     // construct the filter on users
     // the users that are visible:
@@ -1231,31 +1456,30 @@ const fetchMembersWithOrgaRestriction = async (
     // OR users that directly participate in an organization the user also participates directly to
     const usersFilterGroup = {
       mode: FilterMode.And,
-      filters: [
-        { key: ['entity_type'], values: [ENTITY_TYPE_USER] },
+      filters: [{ key: ['entity_type'], values: [ENTITY_TYPE_USER] }],
+      filterGroups: [
+        {
+          mode: FilterMode.Or,
+          filters: [
+            { key: [RELATION_PARTICIPATE_TO], values: [], operator: FilterOperator.Nil },
+            { key: ['user_service_account'], values: ['true'] },
+            ...usersWithinUserOrgaFilters,
+          ],
+          filterGroups: [],
+        },
       ],
-      filterGroups: [{
-        mode: FilterMode.Or,
-        filters: [
-          { key: [RELATION_PARTICIPATE_TO], values: [], operator: FilterOperator.Nil },
-          { key: ['user_service_account'], values: ['true'] },
-          ...usersWithinUserOrgaFilters,
-        ],
-        filterGroups: [],
-      }],
     };
 
     // eventually add groups and organizations entity types
     const typesWithoutUser = types.filter((t) => t !== ENTITY_TYPE_USER);
-    const membersFilterGroup = typesWithoutUser.length > 0
-      ? {
-          mode: FilterMode.Or,
-          filters: [
-            { key: ['entity_type'], values: typesWithoutUser },
-          ],
-          filterGroups: [usersFilterGroup],
-        }
-      : usersFilterGroup;
+    const membersFilterGroup =
+      typesWithoutUser.length > 0
+        ? {
+            mode: FilterMode.Or,
+            filters: [{ key: ['entity_type'], values: typesWithoutUser }],
+            filterGroups: [usersFilterGroup],
+          }
+        : usersFilterGroup;
 
     // eventually add input filters
     const finalFilterGroup = filters
@@ -1267,17 +1491,13 @@ const fetchMembersWithOrgaRestriction = async (
       : membersFilterGroup;
 
     // list the members
-    return membersFetchFunction(
-      context,
-      user,
-      types,
-      {
-        ...args,
-        filters: finalFilterGroup,
-        noRegardingOfFilterIdsCheck: true, // don't check regardingOf filter ids to avoid error if a user has not access to an orga id of the filter values
-      },
-    );
-  } else { // case 2. no users to fetch, so no special restriction on user visibility
+    return membersFetchFunction(context, user, types, {
+      ...args,
+      filters: finalFilterGroup,
+      noRegardingOfFilterIdsCheck: true, // don't check regardingOf filter ids to avoid error if a user has not access to an orga id of the filter values
+    });
+  } else {
+    // case 2. no users to fetch, so no special restriction on user visibility
     return membersFetchFunction(context, user, types, args);
   }
 };

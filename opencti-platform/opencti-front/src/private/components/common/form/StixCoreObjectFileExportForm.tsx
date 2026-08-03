@@ -1,11 +1,22 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
-import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '@components/common/files/FileManager';
+import {
+  CONTENT_MAX_MARKINGS_HELPERTEXT,
+  CONTENT_MAX_MARKINGS_TITLE,
+} from '@components/common/files/FileManager';
 import FiligranIcon from '@components/common/FiligranIcon';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
-import { BUILT_IN_FROM_TEMPLATE, BUILT_IN_HTML_TO_PDF } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
-import { AbcOutlined, DataObjectOutlined, HtmlOutlined, NumbersOutlined } from '@mui/icons-material';
+import {
+  BUILT_IN_FROM_TEMPLATE,
+  BUILT_IN_HTML_TO_PDF,
+} from '@components/common/stix_core_objects/StixCoreObjectFileExport';
+import {
+  AbcOutlined,
+  DataObjectOutlined,
+  HtmlOutlined,
+  NumbersOutlined,
+} from '@mui/icons-material';
 import { Stack } from '@mui/material';
 import CardContent from '@mui/material/CardContent';
 import DialogActions from '@mui/material/DialogActions';
@@ -20,7 +31,12 @@ import Typography from '@mui/material/Typography';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import { FileExportOutline, FilePdfBox, InformationOutline, LanguageMarkdownOutline } from 'mdi-material-ui';
+import {
+  FileExportOutline,
+  FilePdfBox,
+  InformationOutline,
+  LanguageMarkdownOutline,
+} from 'mdi-material-ui';
 import React, { useEffect, useState } from 'react';
 import * as Yup from 'yup';
 import AutocompleteField from '../../../../components/AutocompleteField';
@@ -32,7 +48,10 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import useAI from '../../../../utils/hooks/useAI';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { nowUTC } from '../../../../utils/Time';
-import { buildExportFileName, normalizeExportSourceEntityName } from './StixCoreObjectFileExportForm.utils';
+import {
+  buildExportFileName,
+  normalizeExportSourceEntityName,
+} from './StixCoreObjectFileExportForm.utils';
 import FintelDesignField, { FintelDesignFieldOption } from './FintelDesignField';
 
 export type FileOption = Pick<FieldOption, 'label' | 'value'> & {
@@ -121,7 +140,8 @@ const StixCoreObjectFileExportForm = ({
   const { enabled, configured } = useAI();
   const [stepIndex, setStepIndex] = useState(defaultValues?.format ? 1 : 0);
   const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState<string[]>([]);
-  const isBuiltInConnector = (connector?: string) => [BUILT_IN_FROM_TEMPLATE.value, BUILT_IN_HTML_TO_PDF.value].includes(connector ?? '');
+  const isBuiltInConnector = (connector?: string) =>
+    [BUILT_IN_FROM_TEMPLATE.value, BUILT_IN_HTML_TO_PDF.value].includes(connector ?? '');
 
   const handleSelectedContentMaxMarkingsChange = (
     values: FieldOption[] | undefined,
@@ -133,27 +153,36 @@ const StixCoreObjectFileExportForm = ({
     setFieldValue('fileMarkings', nextValues.length > 0 ? nextValues : fallbackFileMarkings);
   };
 
-  const validation = () => Yup.object().shape({
-    connector: Yup.object().required(t_i18n('This field is required')),
-    format: Yup.string().trim().required(t_i18n('This field is required')),
-    type: Yup.string().nullable().when('connector', {
-      is: (val: ConnectorOption | null) => !isBuiltInConnector(val?.value),
-      then: (schema) => schema.required(t_i18n('This field is required')),
-    }),
-    template: Yup.object().nullable().when('connector', {
-      is: (val: ConnectorOption | null) => val?.value === BUILT_IN_FROM_TEMPLATE.value,
-      then: (schema) => schema.required(t_i18n('This field is required')),
-    }),
-    fintelDesigns: Yup.object().nullable(),
-    fileToExport: Yup.object().nullable().when('connector', {
-      is: (val: ConnectorOption | null) => val?.value === BUILT_IN_HTML_TO_PDF.value,
-      then: (schema) => schema.required(t_i18n('This field is required')),
-    }),
-    exportFileName: Yup.string().nullable().when('connector', {
-      is: (val: ConnectorOption | null) => isBuiltInConnector(val?.value),
-      then: (schema) => schema.required(t_i18n('This field is required')),
-    }),
-  });
+  const validation = () =>
+    Yup.object().shape({
+      connector: Yup.object().required(t_i18n('This field is required')),
+      format: Yup.string().trim().required(t_i18n('This field is required')),
+      type: Yup.string()
+        .nullable()
+        .when('connector', {
+          is: (val: ConnectorOption | null) => !isBuiltInConnector(val?.value),
+          then: (schema) => schema.required(t_i18n('This field is required')),
+        }),
+      template: Yup.object()
+        .nullable()
+        .when('connector', {
+          is: (val: ConnectorOption | null) => val?.value === BUILT_IN_FROM_TEMPLATE.value,
+          then: (schema) => schema.required(t_i18n('This field is required')),
+        }),
+      fintelDesigns: Yup.object().nullable(),
+      fileToExport: Yup.object()
+        .nullable()
+        .when('connector', {
+          is: (val: ConnectorOption | null) => val?.value === BUILT_IN_HTML_TO_PDF.value,
+          then: (schema) => schema.required(t_i18n('This field is required')),
+        }),
+      exportFileName: Yup.string()
+        .nullable()
+        .when('connector', {
+          is: (val: ConnectorOption | null) => isBuiltInConnector(val?.value),
+          then: (schema) => schema.required(t_i18n('This field is required')),
+        }),
+    });
   const connectorScopes = Array.from(new Set(connectors.flatMap((c) => c.connectorScope ?? [])));
 
   let selectedDefaultTemplate = defaultTemplate;
@@ -165,7 +194,9 @@ const StixCoreObjectFileExportForm = ({
   if (defaultValues?.format) {
     defaultFormat = defaultValues.format;
   } else if (connectorScopes.length > 0) {
-    defaultFormat = connectorScopes.includes('application/pdf') ? 'application/pdf' : connectorScopes[0];
+    defaultFormat = connectorScopes.includes('application/pdf')
+      ? 'application/pdf'
+      : connectorScopes[0];
   }
   const initialValues: StixCoreObjectFileExportFormInputs = {
     connector: connectors.find((c) => c.value === defaultValues?.connector) ?? null,
@@ -176,9 +207,10 @@ const StixCoreObjectFileExportForm = ({
     exportFileName: null,
     contentMaxMarkings: [],
     fintelDesign: null,
-    fileMarkings: defaultFileToExport?.fileMarkings.map(({ id, name }) => ({ label: name, value: id }))
-      ?? defaultFileMarkings
-      ?? [],
+    fileMarkings:
+      defaultFileToExport?.fileMarkings.map(({ id, name }) => ({ label: name, value: id })) ??
+      defaultFileMarkings ??
+      [],
   };
   const isConnectorValid = (option: ConnectorOption, selectedFormat: string) => {
     if (!selectedFormat) return true;
@@ -212,7 +244,9 @@ const StixCoreObjectFileExportForm = ({
 
         useEffect(() => {
           if (values.format) {
-            const validConnectors = connectors.filter((c) => c.connectorScope?.includes(values.format));
+            const validConnectors = connectors.filter((c) =>
+              c.connectorScope?.includes(values.format),
+            );
             if (validConnectors.length === 1 && !values.connector) {
               setFieldValue('connector', validConnectors[0]);
             }
@@ -236,30 +270,36 @@ const StixCoreObjectFileExportForm = ({
 
         useEffect(() => {
           if (values.template || values.fileToExport) {
-            const selectedEntityName = values.connector?.value === BUILT_IN_HTML_TO_PDF.value
-              ? (values.fileToExport?.value === 'mappableContent'
+            const selectedEntityName =
+              values.connector?.value === BUILT_IN_HTML_TO_PDF.value
+                ? values.fileToExport?.value === 'mappableContent'
                   ? scoName
-                  : normalizeExportSourceEntityName(values.fileToExport?.fileName))
-              : scoName;
-            setFieldValue('exportFileName', buildExportFileName({
-              entityName: selectedEntityName,
-              markings: values.fileMarkings,
-              utcIsoDate: nowUTC(),
-            }));
+                  : normalizeExportSourceEntityName(values.fileToExport?.fileName)
+                : scoName;
+            setFieldValue(
+              'exportFileName',
+              buildExportFileName({
+                entityName: selectedEntityName,
+                markings: values.fileMarkings,
+                utcIsoDate: nowUTC(),
+              }),
+            );
           }
         }, [values.template, values.fileToExport, values.fileMarkings, scoName, setFieldValue]);
 
         useEffect(() => {
-          setSelectedContentMaxMarkingsIds((values.contentMaxMarkings ?? []).map(({ value }) => value));
+          setSelectedContentMaxMarkingsIds(
+            (values.contentMaxMarkings ?? []).map(({ value }) => value),
+          );
         }, [values.contentMaxMarkings]);
 
-        const shouldDisplayFintelDesign = (
-          (values.connector?.value === BUILT_IN_FROM_TEMPLATE.value && values.format === 'application/pdf')
-          || (values.connector?.value === BUILT_IN_HTML_TO_PDF.value && values.fileToExport?.value.startsWith('fromTemplate/'))
-        );
+        const shouldDisplayFintelDesign =
+          (values.connector?.value === BUILT_IN_FROM_TEMPLATE.value &&
+            values.format === 'application/pdf') ||
+          (values.connector?.value === BUILT_IN_HTML_TO_PDF.value &&
+            values.fileToExport?.value.startsWith('fromTemplate/'));
 
         return (
-
           <Dialog
             open={isOpen}
             onClose={() => {
@@ -267,44 +307,38 @@ const StixCoreObjectFileExportForm = ({
               onClose();
             }}
             data-testid="StixCoreObjectFileExportDialog"
-            title={(
+            title={
               <Stack direction="row" alignItems="center" gap={1}>
                 <Typography variant="h2" sx={{ margin: '0px!important' }}>
                   {t_i18n('Generate an export')}
                 </Typography>
-                <Tooltip title={t_i18n('Your max shareable markings will be applied to the content max markings')}>
+                <Tooltip
+                  title={t_i18n(
+                    'Your max shareable markings will be applied to the content max markings',
+                  )}
+                >
                   <InformationOutline fontSize="small" color="primary" />
                 </Tooltip>
               </Stack>
-            )}
+            }
             size="large"
           >
             <Form>
               <Stepper nonLinear activeStep={stepIndex} sx={{ marginY: 3 }}>
                 <Step>
-                  <StepButton
-                    onClick={() => setStepIndex(0)}
-                    disabled={stepIndex === 0}
-                  >
+                  <StepButton onClick={() => setStepIndex(0)} disabled={stepIndex === 0}>
                     <StepLabel>{t_i18n('Format')}</StepLabel>
                   </StepButton>
                 </Step>
                 <Step>
-                  <StepButton
-                    onClick={() => setStepIndex(1)}
-                    disabled={stepIndex <= 1}
-                  >
+                  <StepButton onClick={() => setStepIndex(1)} disabled={stepIndex <= 1}>
                     <StepLabel>{t_i18n('Form')}</StepLabel>
                   </StepButton>
                 </Step>
               </Stepper>
 
               {stepIndex === 0 && (
-                <Grid
-                  container={true}
-                  spacing={3}
-                  style={{ marginTop: 0, marginBottom: 0 }}
-                >
+                <Grid container={true} spacing={3} style={{ marginTop: 0, marginBottom: 0 }}>
                   {connectorScopes.map((scope) => (
                     <Grid key={scope} size={{ xs: 4 }}>
                       <Card
@@ -336,12 +370,16 @@ const StixCoreObjectFileExportForm = ({
                       </Card>
                     </Grid>
                   ))}
-                  {isContainer && (enabled && configured) && (
+                  {isContainer && enabled && configured && (
                     <Grid size={{ xs: 4 }}>
                       <Card
                         aria-label={t_i18n('Ask AI')}
                         variant="outlined"
-                        onClick={() => (isEnterpriseEdition && (enabled && configured) ? selectFormat(setFieldValue, 'ai') : null)}
+                        onClick={() =>
+                          isEnterpriseEdition && enabled && configured
+                            ? selectFormat(setFieldValue, 'ai')
+                            : null
+                        }
                         sx={{
                           textAlign: 'center',
                           height: 150,
@@ -350,13 +388,17 @@ const StixCoreObjectFileExportForm = ({
                           p: 1,
                         }}
                       >
-                        <EETooltip forAi={true} title={t_i18n('Ask AI (multiple formats supported)')}>
-                          <CardContent sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                          }}
+                        <EETooltip
+                          forAi={true}
+                          title={t_i18n('Ask AI (multiple formats supported)')}
+                        >
+                          <CardContent
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                            }}
                           >
                             {renderIcon('ai')}
                             <Typography
@@ -386,7 +428,9 @@ const StixCoreObjectFileExportForm = ({
                     fullWidth={true}
                     style={fieldSpacingContainerStyle}
                     options={connectors}
-                    getOptionDisabled={(option: ConnectorOption) => !isConnectorValid(option, values.format)}
+                    getOptionDisabled={(option: ConnectorOption) =>
+                      !isConnectorValid(option, values.format)
+                    }
                     renderOption={(
                       props: React.HTMLAttributes<HTMLLIElement>,
                       option: FieldOption,
@@ -424,7 +468,9 @@ const StixCoreObjectFileExportForm = ({
                           ) => <li {...props}>{option.label}</li>}
                           textfieldprops={{
                             label: t_i18n('File to export'),
-                            helperText: t_i18n('A FINTEL export will contain extra information like markings and creation date'),
+                            helperText: t_i18n(
+                              'A FINTEL export will contain extra information like markings and creation date',
+                            ),
                           }}
                           optionLength={80}
                         />
@@ -467,11 +513,13 @@ const StixCoreObjectFileExportForm = ({
                         <ObjectMarkingField
                           name="contentMaxMarkings"
                           label={t_i18n(CONTENT_MAX_MARKINGS_TITLE)}
-                          onChange={(_, updatedValues) => handleSelectedContentMaxMarkingsChange(
-                            updatedValues,
-                            setFieldValue,
-                            defaultFileMarkings ?? [],
-                          )}
+                          onChange={(_, updatedValues) =>
+                            handleSelectedContentMaxMarkingsChange(
+                              updatedValues,
+                              setFieldValue,
+                              defaultFileMarkings ?? [],
+                            )
+                          }
                           style={fieldSpacingContainerStyle}
                           setFieldValue={setFieldValue}
                           limitToMaxSharing
@@ -501,10 +549,7 @@ const StixCoreObjectFileExportForm = ({
                 >
                   {t_i18n('Cancel')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting || stepIndex === 0}
-                >
+                <Button onClick={submitForm} disabled={isSubmitting || stepIndex === 0}>
                   {t_i18n('Create')}
                 </Button>
               </DialogActions>

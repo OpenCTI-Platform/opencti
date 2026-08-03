@@ -15,7 +15,10 @@ import Chip from '@mui/material/Chip';
 import { ListItemButton } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import ListItem from '@mui/material/ListItem';
-import { WorkbenchFileLineDeleteMutation, workbenchLineFragment } from '../../../data/import/ImportWorkbenchesContent';
+import {
+  WorkbenchFileLineDeleteMutation,
+  workbenchLineFragment,
+} from '../../../data/import/ImportWorkbenchesContent';
 import FileWork from '../FileWork';
 import { useFormatter } from '../../../../../components/i18n';
 import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../../relay/environment';
@@ -100,9 +103,7 @@ const inlineStyles = {
   },
 };
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nested }) => {
@@ -143,22 +144,21 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
   const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';
   const isOutdated = uploadStatus === 'timeout';
   const file_markings = (file.objectMarking ?? []).map((o) => o.id);
-  const fileMarkings = me.allowed_marking?.filter(({ id }) => (file_markings ?? []).includes(id)) ?? [];
+  const fileMarkings =
+    me.allowed_marking?.filter(({ id }) => (file_markings ?? []).includes(id)) ?? [];
   return (
     <>
       <ListItem
         divider={true}
         dense={dense === true}
         disablePadding
-        secondaryAction={(
+        secondaryAction={
           <>
             {!directDownload && !isFail && (
               <Tooltip title={t_i18n('Download this file')}>
                 <IconButton
                   disabled={isProgress}
-                  href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
-                    file.id,
-                  )}`}
+                  href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(file.id)}`}
                   aria-haspopup="true"
                   color={nested ? 'inherit' : 'primary'}
                   size="small"
@@ -178,7 +178,7 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
               </IconButton>
             </Tooltip>
           </>
-        )}
+        }
       >
         <ListItemButton
           classes={{ root: nested ? classes.itemNested : classes.item }}
@@ -187,12 +187,7 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
           to={`/dashboard/data/import/workbench/${toB64(file.id)}`}
         >
           <ListItemIcon>
-            {isProgress && (
-              <CircularProgress
-                size={20}
-                color={nested ? 'primary' : 'inherit'}
-              />
-            )}
+            {isProgress && <CircularProgress size={20} color={nested ? 'primary' : 'inherit'} />}
             {!isProgress && (isFail || isOutdated) && (
               <WarningOutlined
                 color={nested ? 'primary' : 'inherit'}
@@ -204,7 +199,7 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
             )}
           </ListItemIcon>
           <ListItemText
-            primary={(
+            primary={
               <>
                 <div className={classes.bodyItem} style={inlineStyles.name}>
                   {file.name.replace('.json', '')}
@@ -215,15 +210,19 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
                   </div>
                 </FieldOrEmpty>
                 <div className={classes.bodyItem} style={inlineStyles.labels}>
-                  {file.metaData.labels_text ? file.metaData.labels_text.split(';').map((label, index) => (
-                    <Chip
-                      key={index}
-                      classes={{ root: classes.chipInList }}
-                      color="primary"
-                      variant="outlined"
-                      label={label.trim()}
-                    />
-                  )) : null}
+                  {file.metaData.labels_text
+                    ? file.metaData.labels_text
+                        .split(';')
+                        .map((label, index) => (
+                          <Chip
+                            key={index}
+                            classes={{ root: classes.chipInList }}
+                            color="primary"
+                            variant="outlined"
+                            label={label.trim()}
+                          />
+                        ))
+                    : null}
                 </div>
                 <div className={classes.bodyItem} style={inlineStyles.labels}>
                   <ItemMarkings variant="inList" markingDefinitions={fileMarkings} limit={1} />
@@ -232,7 +231,7 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
                   {nsdt(file.lastModified)}
                 </div>
               </>
-            )}
+            }
           />
         </ListItemButton>
       </ListItem>

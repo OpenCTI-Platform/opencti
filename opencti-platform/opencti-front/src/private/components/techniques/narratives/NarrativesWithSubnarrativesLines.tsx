@@ -5,7 +5,9 @@ import { NarrativesLines_data$key } from '@components/techniques/narratives/__ge
 import * as R from 'ramda';
 import { NarrativesLinesPaginationQuery } from './__generated__/NarrativesLinesPaginationQuery.graphql';
 import { narrativesLinesFragment, narrativesLinesQuery } from './NarrativesLines';
-import NarrativeWithSubnarrativeLine, { NarrativeWithSubnarrativeLineDummy } from './NarrativeWithSubnarrativeLine';
+import NarrativeWithSubnarrativeLine, {
+  NarrativeWithSubnarrativeLineDummy,
+} from './NarrativeWithSubnarrativeLine';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 
 export interface SubNarrativeNode {
@@ -27,9 +29,9 @@ interface NarrativesWithSubnarrativesLinesProps {
   queryRef: PreloadedQuery<NarrativesLinesPaginationQuery>;
 }
 
-const NarrativesWithSubnarrativesLines: FunctionComponent<NarrativesWithSubnarrativesLinesProps> = ({
-  queryRef,
-}) => {
+const NarrativesWithSubnarrativesLines: FunctionComponent<
+  NarrativesWithSubnarrativesLinesProps
+> = ({ queryRef }) => {
   const { data } = usePreloadedPaginationFragment<
     NarrativesLinesPaginationQuery,
     NarrativesLines_data$key
@@ -40,31 +42,33 @@ const NarrativesWithSubnarrativesLines: FunctionComponent<NarrativesWithSubnarra
     nodePath: ['narratives', 'pageInfo', 'globalCount'],
   });
 
-  const allNarratives = ((data?.narratives?.edges ?? []).map((nnode) => nnode?.node));
+  const allNarratives = (data?.narratives?.edges ?? []).map((nnode) => nnode?.node);
 
   const narratives = allNarratives.filter((n) => !n.isSubNarrative);
 
   const subNarrativesOnly = allNarratives
     .filter((n) => n.isSubNarrative)
     .filter((n) => n.parentNarratives)
-    .filter(({ parentNarratives }) => (parentNarratives?.edges ?? []).some(({ node }) => !narratives.some(({ id }) => id === node.id)));
+    .filter(({ parentNarratives }) =>
+      (parentNarratives?.edges ?? []).some(
+        ({ node }) => !narratives.some(({ id }) => id === node.id),
+      ),
+    );
 
-  const parentOnlyNarratives = R.uniq(subNarrativesOnly.flatMap(({ parentNarratives }) => parentNarratives?.edges?.map(({ node }) => node)));
+  const parentOnlyNarratives = R.uniq(
+    subNarrativesOnly.flatMap(({ parentNarratives }) =>
+      parentNarratives?.edges?.map(({ node }) => node),
+    ),
+  );
 
   return (
-    <List
-      component="nav"
-      aria-labelledby="nested-list-subheader"
-    >
+    <List component="nav" aria-labelledby="nested-list-subheader">
       {data
-        ? ([...narratives, ...parentOnlyNarratives] as unknown as SubNarrativeNode[]).map((narrative) => {
-            return (
-              <NarrativeWithSubnarrativeLine
-                key={narrative.id}
-                node={narrative}
-              />
-            );
-          })
+        ? ([...narratives, ...parentOnlyNarratives] as unknown as SubNarrativeNode[]).map(
+            (narrative) => {
+              return <NarrativeWithSubnarrativeLine key={narrative.id} node={narrative} />;
+            },
+          )
         : Array.from(Array(20), (e, i) => <NarrativeWithSubnarrativeLineDummy key={i} />)}
     </List>
   );

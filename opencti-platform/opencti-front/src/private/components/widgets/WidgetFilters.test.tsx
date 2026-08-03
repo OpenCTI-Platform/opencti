@@ -22,10 +22,13 @@ vi.mock('../../../utils/filters/useFiltersState', async () => {
   return {
     default: (initialFilters: unknown) => {
       const [state, setState] = ReactLib.useState(initialFilters ?? emptyGroup);
-      return [state, {
-        handleAddFilterWithEmptyValue: vi.fn(),
-        handleClearAllFilters: () => setState(emptyGroup),
-      }];
+      return [
+        state,
+        {
+          handleAddFilterWithEmptyValue: vi.fn(),
+          handleClearAllFilters: () => setState(emptyGroup),
+        },
+      ];
     },
   };
 });
@@ -63,10 +66,7 @@ vi.mock('../../../relay/environment', () => ({
   fetchQuery: vi.fn(() => ({
     toPromise: async () => ({
       savedFilters: {
-        edges: [
-          { node: { scope: 'entities' } },
-          { node: { scope: 'relationships' } },
-        ],
+        edges: [{ node: { scope: 'entities' } }, { node: { scope: 'relationships' } }],
       },
     }),
   })),
@@ -85,14 +85,20 @@ vi.mock('../../../utils/filters/filtersUtils', async (importOriginal) => {
   return {
     ...actual,
     isFilterGroupNotEmpty: () => false,
-    isDraftWorkspaceFilterGroup: (filters: import('src/utils/filters/filtersHelpers-types').FilterGroup | null | undefined) => {
+    isDraftWorkspaceFilterGroup: (
+      filters: import('src/utils/filters/filtersHelpers-types').FilterGroup | null | undefined,
+    ) => {
       if (!filters) return false;
-      const entityTypeFilter = filters.filters?.find((f: import('src/utils/filters/filtersHelpers-types').Filter) => f.key === 'entity_type');
+      const entityTypeFilter = filters.filters?.find(
+        (f: import('src/utils/filters/filtersHelpers-types').Filter) => f.key === 'entity_type',
+      );
       if (!entityTypeFilter || entityTypeFilter.values.length === 0) return false;
-      return entityTypeFilter.values.every((v: import('src/utils/filters/filtersHelpers-types').FilterValue) => {
-        if (typeof v === 'string') return v === 'DraftWorkspace';
-        return (v?.value ?? (v as { id?: string })?.id) === 'DraftWorkspace';
-      });
+      return entityTypeFilter.values.every(
+        (v: import('src/utils/filters/filtersHelpers-types').FilterValue) => {
+          if (typeof v === 'string') return v === 'DraftWorkspace';
+          return (v?.value ?? (v as { id?: string })?.id) === 'DraftWorkspace';
+        },
+      );
     },
     useAvailableFilterKeysForEntityTypes: (entityTypes: string[]) => {
       if (entityTypes.includes('DraftWorkspace')) {
@@ -197,9 +203,21 @@ describe('WidgetFilters', () => {
     });
 
     const savedModeCalls = setDataSelection.mock.calls.map((call) => call[0]);
-    expect(savedModeCalls.some((call) => call.filters_id === 'saved-filter-id' && call.filters === undefined)).toBe(true);
-    expect(savedModeCalls.some((call) => call.dynamicFrom_id === 'saved-filter-id' && call.dynamicFrom === undefined)).toBe(true);
-    expect(savedModeCalls.some((call) => call.dynamicTo_id === 'saved-filter-id' && call.dynamicTo === undefined)).toBe(true);
+    expect(
+      savedModeCalls.some(
+        (call) => call.filters_id === 'saved-filter-id' && call.filters === undefined,
+      ),
+    ).toBe(true);
+    expect(
+      savedModeCalls.some(
+        (call) => call.dynamicFrom_id === 'saved-filter-id' && call.dynamicFrom === undefined,
+      ),
+    ).toBe(true);
+    expect(
+      savedModeCalls.some(
+        (call) => call.dynamicTo_id === 'saved-filter-id' && call.dynamicTo === undefined,
+      ),
+    ).toBe(true);
 
     let savedDeselectButtons = queryAllByTestId('saved-deselect');
     while (savedDeselectButtons.length > 0) {
@@ -208,9 +226,27 @@ describe('WidgetFilters', () => {
     }
 
     const restoredCustomCalls = setDataSelection.mock.calls.map((call) => call[0]);
-    expect(restoredCustomCalls.some((call) => call.filters_id === null && JSON.stringify(call.filters) === JSON.stringify(baseDataSelection.filters))).toBe(true);
-    expect(restoredCustomCalls.some((call) => call.dynamicFrom_id === null && JSON.stringify(call.dynamicFrom) === JSON.stringify(baseDataSelection.dynamicFrom))).toBe(true);
-    expect(restoredCustomCalls.some((call) => call.dynamicTo_id === null && JSON.stringify(call.dynamicTo) === JSON.stringify(baseDataSelection.dynamicTo))).toBe(true);
+    expect(
+      restoredCustomCalls.some(
+        (call) =>
+          call.filters_id === null &&
+          JSON.stringify(call.filters) === JSON.stringify(baseDataSelection.filters),
+      ),
+    ).toBe(true);
+    expect(
+      restoredCustomCalls.some(
+        (call) =>
+          call.dynamicFrom_id === null &&
+          JSON.stringify(call.dynamicFrom) === JSON.stringify(baseDataSelection.dynamicFrom),
+      ),
+    ).toBe(true);
+    expect(
+      restoredCustomCalls.some(
+        (call) =>
+          call.dynamicTo_id === null &&
+          JSON.stringify(call.dynamicTo) === JSON.stringify(baseDataSelection.dynamicTo),
+      ),
+    ).toBe(true);
   });
 
   it('clears the saved filter id without leaving saved mode', () => {

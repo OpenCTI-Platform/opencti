@@ -48,29 +48,35 @@ const ChangesTable: FunctionComponent<ChangesTableProps> = ({ changes, variant =
       >
         <TableHead>
           <TableRow>
-            <TableCell sx={{ fontSize: 12, fontWeight: 'bold' }}>{t_i18n('Field').toUpperCase()}</TableCell>
-            <TableCell width="40%" sx={{ fontSize: 12, fontWeight: 'bold' }}>{t_i18n('Removed').toUpperCase()}</TableCell>
-            <TableCell width="40%" sx={{ fontSize: 12, fontWeight: 'bold' }}>{t_i18n('Added').toUpperCase()}</TableCell>
+            <TableCell sx={{ fontSize: 12, fontWeight: 'bold' }}>
+              {t_i18n('Field').toUpperCase()}
+            </TableCell>
+            <TableCell width="40%" sx={{ fontSize: 12, fontWeight: 'bold' }}>
+              {t_i18n('Removed').toUpperCase()}
+            </TableCell>
+            <TableCell width="40%" sx={{ fontSize: 12, fontWeight: 'bold' }}>
+              {t_i18n('Added').toUpperCase()}
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {changes && changes.length > 0
-            ? changes.map((row) => (
-                <TableRow key={row?.field} hover={false}>
-                  <TableCell component="th" scope="row" sx={{ fontWeight: 'bold', padding: '14px' }}>
-                    {row?.field}
-                  </TableCell>
-                  <TableCell>{renderChangeValues(row?.removed)}</TableCell>
-                  <TableCell>{renderChangeValues(row?.added)}</TableCell>
-                </TableRow>
-              ))
-            : (
-                <TableRow>
-                  <TableCell align="center" colSpan={3} sx={{ height: 50 }}>
-                    {t_i18n('No detail available for this event')}
-                  </TableCell>
-                </TableRow>
-              )}
+          {changes && changes.length > 0 ? (
+            changes.map((row) => (
+              <TableRow key={row?.field} hover={false}>
+                <TableCell component="th" scope="row" sx={{ fontWeight: 'bold', padding: '14px' }}>
+                  {row?.field}
+                </TableCell>
+                <TableCell>{renderChangeValues(row?.removed)}</TableCell>
+                <TableCell>{renderChangeValues(row?.added)}</TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell align="center" colSpan={3} sx={{ height: 50 }}>
+                {t_i18n('No detail available for this event')}
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
     </TableContainer>

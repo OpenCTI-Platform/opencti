@@ -34,12 +34,16 @@ describe('useDraftCommentPopup', () => {
   });
 
   it('does not show the popup when comment is empty', () => {
-    const { result } = renderHook(() => useDraftCommentPopup(DRAFT_ID, { comment: '', timestamp: ENTRY.timestamp }));
+    const { result } = renderHook(() =>
+      useDraftCommentPopup(DRAFT_ID, { comment: '', timestamp: ENTRY.timestamp }),
+    );
     expect(result.current.showCommentPopup).toBe(false);
   });
 
   it('does not show the popup when comment is null', () => {
-    const { result } = renderHook(() => useDraftCommentPopup(DRAFT_ID, { comment: null, timestamp: ENTRY.timestamp }));
+    const { result } = renderHook(() =>
+      useDraftCommentPopup(DRAFT_ID, { comment: null, timestamp: ENTRY.timestamp }),
+    );
     expect(result.current.showCommentPopup).toBe(false);
   });
 

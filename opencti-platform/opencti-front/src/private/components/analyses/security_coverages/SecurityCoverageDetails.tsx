@@ -30,7 +30,7 @@ const securityCoverageDetailsFragment = graphql`
       id
       entity_type
       representative {
-          main
+        main
       }
     }
     ...SecurityCoverageSecurityPlatforms_securityCoverage
@@ -54,33 +54,20 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
       <Card title={t_i18n('Entity details')}>
         <Grid container={true} spacing={2}>
           <Grid item xs={12}>
-            <Label>
-              {t_i18n('Description')}
-            </Label>
+            <Label>{t_i18n('Description')}</Label>
             <ExpandableMarkdown source={data.description} limit={300} />
           </Grid>
           <Grid item xs={12}>
-            <Label>
-              {t_i18n('Name')}
-            </Label>
+            <Label>{t_i18n('Name')}</Label>
             {data.name || EMPTY_VALUE}
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Covered entity')}
-            </Label>
+            <Label>{t_i18n('Covered entity')}</Label>
             <List style={{ marginTop: -10 }}>
               <FieldOrEmpty source={data.objectCovered}>
                 {data.objectCovered && (
-                  <ListItem
-                    dense={true}
-                    divider={true}
-                    disablePadding={true}
-                  >
-                    <ListItemButton
-                      component={Link}
-                      to={`/dashboard/id/${data.objectCovered.id}`}
-                    >
+                  <ListItem dense={true} divider={true} disablePadding={true}>
+                    <ListItemButton component={Link} to={`/dashboard/id/${data.objectCovered.id}`}>
                       <ListItemIcon>
                         <ItemIcon type={data.objectCovered.entity_type} />
                       </ListItemIcon>

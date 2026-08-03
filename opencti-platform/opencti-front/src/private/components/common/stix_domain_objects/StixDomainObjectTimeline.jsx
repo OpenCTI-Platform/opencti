@@ -18,37 +18,33 @@ import ItemIcon from '../../../../components/ItemIcon';
 import inject18n, { isDateStringNone } from '../../../../components/i18n';
 import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
 import { truncate } from '../../../../utils/String';
-import { getSecondaryRepresentative, getMainRepresentative } from '../../../../utils/defaultRepresentatives';
+import {
+  getSecondaryRepresentative,
+  getMainRepresentative,
+} from '../../../../utils/defaultRepresentatives';
 import { itemColor } from '../../../../utils/Colors';
 import Card from '../../../../components/common/card/Card';
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 class StixDomainObjectTimelineComponent extends Component {
   render() {
-    const {
-      fldt,
-      theme,
-      data,
-      stixDomainObjectId,
-      entityLink,
-      timeField,
-      t,
-    } = this.props;
+    const { fldt, theme, data, stixDomainObjectId, entityLink, timeField, t } = this.props;
     const stixRelationships = pipe(
       map((n) => n.node),
-      map((n) => (n.from && n.from.id === stixDomainObjectId
-        ? assoc('targetEntity', n.to, n)
-        : assoc('targetEntity', n.from, n))),
+      map((n) =>
+        n.from && n.from.id === stixDomainObjectId
+          ? assoc('targetEntity', n.to, n)
+          : assoc('targetEntity', n.from, n),
+      ),
     )(data.stixRelationships.edges);
 
     const getDate = (relationship) => {
-      const dateList = timeField === 'technical'
-        ? [relationship.created, relationship.created_at]
-        : [relationship.start_time, relationship.first_seen, relationship.created_at];
+      const dateList =
+        timeField === 'technical'
+          ? [relationship.created, relationship.created_at]
+          : [relationship.start_time, relationship.first_seen, relationship.created_at];
 
       const usableDate = dateList.find((date) => date && !isDateStringNone(date));
       return fldt(usableDate);
@@ -60,22 +56,15 @@ class StixDomainObjectTimelineComponent extends Component {
           <Timeline position="alternate">
             {stixRelationships.map((stixRelationship) => {
               let link = null;
-              if (
-                stixRelationship.parent_types.includes('stix-core-relationship')
-              ) {
+              if (stixRelationship.parent_types.includes('stix-core-relationship')) {
                 link = `${entityLink}/relations/${stixRelationship.id}`;
-              } else if (
-                stixRelationship.entity_type === 'stix-sighting-relationship'
-              ) {
+              } else if (stixRelationship.entity_type === 'stix-sighting-relationship') {
                 link = `${entityLink}/sightings/${stixRelationship.id}`;
               }
               const restricted = stixRelationship.targetEntity === null;
               return (
                 <TimelineItem key={stixRelationship.id}>
-                  <TimelineOppositeContent
-                    sx={{ paddingTop: '18px' }}
-                    color="text.secondary"
-                  >
+                  <TimelineOppositeContent sx={{ paddingTop: '18px' }} color="text.secondary">
                     {getDate(stixRelationship)}
                   </TimelineOppositeContent>
                   <TimelineSeparator>
@@ -91,9 +80,7 @@ class StixDomainObjectTimelineComponent extends Component {
                           <TimelineDot
                             sx={{
                               borderColor: !restricted
-                                ? itemColor(
-                                    stixRelationship.targetEntity.entity_type,
-                                  )
+                                ? itemColor(stixRelationship.targetEntity.entity_type)
                                 : theme.palette.primary.main,
                             }}
                             variant="outlined"
@@ -119,9 +106,7 @@ class StixDomainObjectTimelineComponent extends Component {
                         <TimelineDot
                           sx={{
                             borderColor: !restricted
-                              ? itemColor(
-                                  stixRelationship.targetEntity.entity_type,
-                                )
+                              ? itemColor(stixRelationship.targetEntity.entity_type)
                               : theme.palette.primary.main,
                           }}
                           variant="outlined"
@@ -142,23 +127,16 @@ class StixDomainObjectTimelineComponent extends Component {
                     <Card>
                       <Typography variant="h2">
                         {!restricted
-                          ? truncate(
-                              getMainRepresentative(stixRelationship.targetEntity),
-                              50,
-                            )
+                          ? truncate(getMainRepresentative(stixRelationship.targetEntity), 50)
                           : t('Restricted')}
                       </Typography>
                       <span style={{ color: '#a8a8a8' }}>
                         {truncate(
-
-                          stixRelationship.description
-                          && stixRelationship.description.length > 0
+                          stixRelationship.description && stixRelationship.description.length > 0
                             ? stixRelationship.description
                             : !restricted
-                                ? getSecondaryRepresentative(
-                                    stixRelationship.targetEntity,
-                                  )
-                                : t('Restricted'),
+                              ? getSecondaryRepresentative(stixRelationship.targetEntity)
+                              : t('Restricted'),
                           100,
                         )}
                       </span>
@@ -581,7 +559,4 @@ const StixDomainObjectTimeline = createRefetchContainer(
   stixDomainObjectThreatKnowledgeStixRelationshipsQuery,
 );
 
-export default compose(
-  inject18n,
-  withTheme,
-)(StixDomainObjectTimeline);
+export default compose(inject18n, withTheme)(StixDomainObjectTimeline);

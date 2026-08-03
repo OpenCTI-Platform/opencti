@@ -6,7 +6,9 @@ import { OctiGraphPositions } from '../../../../components/graph/graph.types';
 import { serializeObjectB64 } from '../../../../utils/object';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { GraphContainerCorrelationObjectsQuery } from '../../../../components/graph/__generated__/GraphContainerCorrelationObjectsQuery.graphql';
-import GraphContainerCorrelation, { graphContainerCorrelationObjectsQuery } from '../../../../components/graph/GraphContainerCorrelation';
+import GraphContainerCorrelation, {
+  graphContainerCorrelationObjectsQuery,
+} from '../../../../components/graph/GraphContainerCorrelation';
 import Loader from '../../../../components/Loader';
 
 export const incidentKnowledgeCorrelationQuery = graphql`
@@ -22,10 +24,7 @@ interface IncidentKnowledgeCorrelationProps {
   id: string;
 }
 
-const IncidentKnowledgeCorrelation = ({
-  data,
-  id,
-}: IncidentKnowledgeCorrelationProps) => {
+const IncidentKnowledgeCorrelation = ({ data, id }: IncidentKnowledgeCorrelationProps) => {
   const PAGE_SIZE = 500;
   const queryObjectsRef = useQueryLoading<GraphContainerCorrelationObjectsQuery>(
     graphContainerCorrelationObjectsQuery,
@@ -38,10 +37,12 @@ const IncidentKnowledgeCorrelation = ({
     commitEditPositions({
       variables: {
         id,
-        input: [{
-          key: 'x_opencti_graph_data',
-          value: [serializeObjectB64(positions)],
-        }],
+        input: [
+          {
+            key: 'x_opencti_graph_data',
+            value: [serializeObjectB64(positions)],
+          },
+        ],
       },
     });
   };

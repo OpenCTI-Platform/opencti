@@ -60,8 +60,14 @@ const notificationDataSchema = z.object({
   revoked: z.boolean().optional().catch(undefined),
   content_field: z.string().optional().catch(undefined),
   published: z.string().optional().catch(undefined),
-  labels: z.union([z.string(), z.array(z.string())]).optional().catch(undefined),
-  report_types: z.union([z.string(), z.array(z.string())]).optional().catch(undefined),
+  labels: z
+    .union([z.string(), z.array(z.string())])
+    .optional()
+    .catch(undefined),
+  report_types: z
+    .union([z.string(), z.array(z.string())])
+    .optional()
+    .catch(undefined),
 });
 
 // Export inferred types
@@ -70,10 +76,12 @@ export type SanitizedSettings = z.infer<typeof settingsSchema>;
 export type SanitizedNotificationData = z.infer<typeof notificationDataSchema>;
 
 export const sanitizeUser = (user: unknown): SanitizedUser => userSchema.parse(user);
-export const sanitizeSettings = (settings: unknown): SanitizedSettings => settingsSchema.parse(settings);
+export const sanitizeSettings = (settings: unknown): SanitizedSettings =>
+  settingsSchema.parse(settings);
 
 /**
  * Sanitizes notification data: remove all data that don't match the expected schema (eg unknown data or data type mismatch)
  * @param data - The template data to sanitize
  */
-export const sanitizeNotificationData = (data: unknown): SanitizedNotificationData => notificationDataSchema.parse(data);
+export const sanitizeNotificationData = (data: unknown): SanitizedNotificationData =>
+  notificationDataSchema.parse(data);

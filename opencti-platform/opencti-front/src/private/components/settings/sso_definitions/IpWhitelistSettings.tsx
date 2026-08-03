@@ -79,7 +79,10 @@ const IpWhitelistSettingsContent = () => {
       t_i18n('One or more entries are not valid IP addresses or CIDR ranges'),
       (value) => {
         if (!value) return true;
-        const lines = value.split('\n').map((l) => l.trim()).filter((l) => l.length > 0);
+        const lines = value
+          .split('\n')
+          .map((l) => l.trim())
+          .filter((l) => l.length > 0);
         return lines.every((line) => isValidIpOrCidr(line));
       },
     ),
@@ -90,14 +93,26 @@ const IpWhitelistSettingsContent = () => {
 
   const [commitField] = useApiMutation(ipWhitelistSettingsMutation);
 
-  const [localExclusions, setLocalExclusions] = useState<Array<{ id: string; name: string; entity_type: string }>>(
-    (settings.platform_ip_whitelist_exclusions ?? []).map((e) => ({ id: e.id, name: e.name, entity_type: e.entity_type })),
+  const [localExclusions, setLocalExclusions] = useState<
+    Array<{ id: string; name: string; entity_type: string }>
+  >(
+    (settings.platform_ip_whitelist_exclusions ?? []).map((e) => ({
+      id: e.id,
+      name: e.name,
+      entity_type: e.entity_type,
+    })),
   );
   const [exclusionsDirty, setExclusionsDirty] = useState(false);
-  const [pendingRemoveExclusion, setPendingRemoveExclusion] = useState<{ id: string; name: string; reason?: 'self' | 'service_account_group' } | null>(null);
+  const [pendingRemoveExclusion, setPendingRemoveExclusion] = useState<{
+    id: string;
+    name: string;
+    reason?: 'self' | 'service_account_group';
+  } | null>(null);
   const [serviceAccountGroupId, setServiceAccountGroupId] = useState<string | null>(null);
 
-  const updateLocalExclusions = (newExclusions: Array<{ id: string; name: string; entity_type: string }>) => {
+  const updateLocalExclusions = (
+    newExclusions: Array<{ id: string; name: string; entity_type: string }>,
+  ) => {
     setLocalExclusions(newExclusions);
     setExclusionsDirty(true);
   };
@@ -110,13 +125,16 @@ const IpWhitelistSettingsContent = () => {
         filters: [{ key: ['auto_integration_assignation'], values: ['global'] }],
         filterGroups: [],
       },
-    }).toPromise().then((rawData) => {
-      const data = rawData as GroupSetDefaultGroupForIngestionUsersQuery$data | undefined;
-      const group = data?.groups?.edges?.[0]?.node;
-      if (group) {
-        setServiceAccountGroupId(group.id);
-      }
-    }).catch(() => {});
+    })
+      .toPromise()
+      .then((rawData) => {
+        const data = rawData as GroupSetDefaultGroupForIngestionUsersQuery$data | undefined;
+        const group = data?.groups?.edges?.[0]?.node;
+        if (group) {
+          setServiceAccountGroupId(group.id);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const initialValues = {
@@ -146,7 +164,10 @@ const IpWhitelistSettingsContent = () => {
                   // Validate: if enabled, IP list must not be empty
                   if (isEnabled && lines.length === 0) {
                     setFieldTouched('platform_ip_whitelist', true, false);
-                    setFieldError('platform_ip_whitelist', t_i18n('At least one IP address is required when allow list is enabled'));
+                    setFieldError(
+                      'platform_ip_whitelist',
+                      t_i18n('At least one IP address is required when allow list is enabled'),
+                    );
                     return;
                   }
                   // Validate: block save if IP format errors exist
@@ -163,7 +184,10 @@ const IpWhitelistSettingsContent = () => {
                   commitField({
                     variables: {
                       id: settings.id,
-                      input: { key: 'platform_ip_whitelist_enabled', value: values.platform_ip_whitelist_enabled ? 'true' : 'false' },
+                      input: {
+                        key: 'platform_ip_whitelist_enabled',
+                        value: values.platform_ip_whitelist_enabled ? 'true' : 'false',
+                      },
                     },
                   });
                   if (values.platform_ip_whitelist_enabled) {
@@ -199,7 +223,13 @@ const IpWhitelistSettingsContent = () => {
 
                 return (
                   <Form>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
                       <Field
                         component={SwitchField}
                         type="checkbox"
@@ -214,31 +244,45 @@ const IpWhitelistSettingsContent = () => {
                             }
                             // Add admin user
                             if (!newExclusions.some((e) => e.id === OPENCTI_ADMIN_UUID)) {
-                              newExclusions.push({ id: OPENCTI_ADMIN_UUID, name: 'admin', entity_type: 'User' });
+                              newExclusions.push({
+                                id: OPENCTI_ADMIN_UUID,
+                                name: 'admin',
+                                entity_type: 'User',
+                              });
                             }
                             // Fetch and add default group for service accounts
                             fetchQuery(groupSetDefaultGroupForIngestionUsersQuery, {
                               filters: {
                                 mode: 'and',
-                                filters: [{ key: ['auto_integration_assignation'], values: ['global'] }],
+                                filters: [
+                                  { key: ['auto_integration_assignation'], values: ['global'] },
+                                ],
                                 filterGroups: [],
                               },
-                            }).toPromise().then((rawResult) => {
-                              const result = rawResult as GroupSetDefaultGroupForIngestionUsersQuery$data | undefined;
-                              const group = result?.groups?.edges?.[0]?.node;
-                              if (group) {
-                                setServiceAccountGroupId(group.id);
-                                if (!newExclusions.some((e) => e.id === group.id)) {
-                                  updateLocalExclusions([...newExclusions, { id: group.id, name: group.name, entity_type: 'Group' }]);
+                            })
+                              .toPromise()
+                              .then((rawResult) => {
+                                const result = rawResult as
+                                  | GroupSetDefaultGroupForIngestionUsersQuery$data
+                                  | undefined;
+                                const group = result?.groups?.edges?.[0]?.node;
+                                if (group) {
+                                  setServiceAccountGroupId(group.id);
+                                  if (!newExclusions.some((e) => e.id === group.id)) {
+                                    updateLocalExclusions([
+                                      ...newExclusions,
+                                      { id: group.id, name: group.name, entity_type: 'Group' },
+                                    ]);
+                                  } else {
+                                    updateLocalExclusions(newExclusions);
+                                  }
                                 } else {
                                   updateLocalExclusions(newExclusions);
                                 }
-                              } else {
+                              })
+                              .catch(() => {
                                 updateLocalExclusions(newExclusions);
-                              }
-                            }).catch(() => {
-                              updateLocalExclusions(newExclusions);
-                            });
+                              });
                           }
                         }}
                       />
@@ -250,8 +294,10 @@ const IpWhitelistSettingsContent = () => {
                     {isEnabled && (
                       <>
                         <Alert severity="info" variant="outlined" style={{ marginTop: 20 }}>
-                          {t_i18n('Users logging in from an IP not in the allow list will be rejected.')}
-                          {' '}{t_i18n('Excluded users, groups, or organizations bypass the IP check.')}
+                          {t_i18n(
+                            'Users logging in from an IP not in the allow list will be rejected.',
+                          )}{' '}
+                          {t_i18n('Excluded users, groups, or organizations bypass the IP check.')}
                         </Alert>
                         <Field
                           component={TextField}
@@ -285,7 +331,10 @@ const IpWhitelistSettingsContent = () => {
                                       const label = last?.label ?? val;
                                       const type = last?.type ?? 'User';
                                       if (val && !localExclusions.some((e) => e.id === val)) {
-                                        updateLocalExclusions([...localExclusions, { id: val, name: label, entity_type: type }]);
+                                        updateLocalExclusions([
+                                          ...localExclusions,
+                                          { id: val, name: label, entity_type: type },
+                                        ]);
                                       }
                                       // Clear the picker
                                       setExclusionFieldValue('exclusion_member', []);
@@ -303,11 +352,21 @@ const IpWhitelistSettingsContent = () => {
                                 label={`${member.name} (${member.entity_type})`}
                                 onDelete={() => {
                                   if (member.id === me.id) {
-                                    setPendingRemoveExclusion({ id: member.id, name: member.name, reason: 'self' });
+                                    setPendingRemoveExclusion({
+                                      id: member.id,
+                                      name: member.name,
+                                      reason: 'self',
+                                    });
                                   } else if (member.id === serviceAccountGroupId) {
-                                    setPendingRemoveExclusion({ id: member.id, name: member.name, reason: 'service_account_group' });
+                                    setPendingRemoveExclusion({
+                                      id: member.id,
+                                      name: member.name,
+                                      reason: 'service_account_group',
+                                    });
                                   } else {
-                                    updateLocalExclusions(localExclusions.filter((e) => e.id !== member.id));
+                                    updateLocalExclusions(
+                                      localExclusions.filter((e) => e.id !== member.id),
+                                    );
                                   }
                                 }}
                               />
@@ -329,25 +388,32 @@ const IpWhitelistSettingsContent = () => {
         title={t_i18n('Remove exclusion')}
       >
         <Alert severity="warning" variant="outlined" style={{ marginBottom: 20 }}>
-          {t_i18n('You are about to remove')} <strong>{pendingRemoveExclusion?.name}</strong> {t_i18n('from the IP allow list exclusion list.')}
-          <br /><br />
-          {pendingRemoveExclusion?.reason === 'self'
-            && t_i18n('This is your own account. If your IP is not in the allow list, you will be locked out of the platform after saving.')
-          }
-          {pendingRemoveExclusion?.reason === 'service_account_group'
-            && t_i18n('This group is currently configured as the default group for service accounts (connectors, ingestion). Removing it may block automated integrations from accessing the platform.')
-          }
+          {t_i18n('You are about to remove')} <strong>{pendingRemoveExclusion?.name}</strong>{' '}
+          {t_i18n('from the IP allow list exclusion list.')}
+          <br />
+          <br />
+          {pendingRemoveExclusion?.reason === 'self' &&
+            t_i18n(
+              'This is your own account. If your IP is not in the allow list, you will be locked out of the platform after saving.',
+            )}
+          {pendingRemoveExclusion?.reason === 'service_account_group' &&
+            t_i18n(
+              'This group is currently configured as the default group for service accounts (connectors, ingestion). Removing it may block automated integrations from accessing the platform.',
+            )}
         </Alert>
         <DialogActions>
           <Button variant="secondary" onClick={() => setPendingRemoveExclusion(null)}>
             {t_i18n('Cancel')}
           </Button>
-          <Button onClick={() => {
-            if (pendingRemoveExclusion) {
-              updateLocalExclusions(localExclusions.filter((e) => e.id !== pendingRemoveExclusion.id));
-            }
-            setPendingRemoveExclusion(null);
-          }}
+          <Button
+            onClick={() => {
+              if (pendingRemoveExclusion) {
+                updateLocalExclusions(
+                  localExclusions.filter((e) => e.id !== pendingRemoveExclusion.id),
+                );
+              }
+              setPendingRemoveExclusion(null);
+            }}
           >
             {t_i18n('Confirm removal')}
           </Button>

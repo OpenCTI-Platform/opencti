@@ -31,38 +31,23 @@ const Root = () => {
           path="/"
           element={<Navigate to={`/dashboard/threats/${redirect}`} replace={true} />}
         />
-        <Route
-          path="/threat_actors_group"
-          element={boundaryWrapper(ThreatActorsGroup)}
-        />
+        <Route path="/threat_actors_group" element={boundaryWrapper(ThreatActorsGroup)} />
         <Route
           path="/threat_actors_group/:threatActorGroupId/*"
           element={boundaryWrapper(RootThreatActorGroup)}
         />
-        <Route
-          path="/threat_actors_individual"
-          element={boundaryWrapper(ThreatActorsIndividual)}
-        />
+        <Route path="/threat_actors_individual" element={boundaryWrapper(ThreatActorsIndividual)} />
         <Route
           path="/threat_actors_individual/:threatActorIndividualId/*"
           element={boundaryWrapper(RootThreatActorIndividual)}
         />
-        <Route
-          path="/intrusion_sets"
-          element={boundaryWrapper(IntrusionSets)}
-        />
+        <Route path="/intrusion_sets" element={boundaryWrapper(IntrusionSets)} />
         <Route
           path="/intrusion_sets/:intrusionSetId/*"
           element={boundaryWrapper(RootIntrusionSet)}
         />
-        <Route
-          path="/campaigns"
-          element={boundaryWrapper(Campaigns)}
-        />
-        <Route
-          path="/campaigns/:campaignId/*"
-          element={boundaryWrapper(RootCampaign)}
-        />
+        <Route path="/campaigns" element={boundaryWrapper(Campaigns)} />
+        <Route path="/campaigns/:campaignId/*" element={boundaryWrapper(RootCampaign)} />
       </Routes>
     </Suspense>
   );

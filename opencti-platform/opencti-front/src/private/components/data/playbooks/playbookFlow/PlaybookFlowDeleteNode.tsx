@@ -45,9 +45,7 @@ const PlaybookFlowDeleteNode = ({
       }}
       title={t_i18n('Are you sure?')}
     >
-      <DialogContentText>
-        {t_i18n('Do you want to delete this node?')}
-      </DialogContentText>
+      <DialogContentText>{t_i18n('Do you want to delete this node?')}</DialogContentText>
       <DialogActions>
         <Button
           variant="secondary"
@@ -58,9 +56,7 @@ const PlaybookFlowDeleteNode = ({
         >
           {t_i18n('Cancel')}
         </Button>
-        <Button onClick={deleteNode}>
-          {t_i18n('Confirm')}
-        </Button>
+        <Button onClick={deleteNode}>{t_i18n('Confirm')}</Button>
       </DialogActions>
     </Dialog>
   );

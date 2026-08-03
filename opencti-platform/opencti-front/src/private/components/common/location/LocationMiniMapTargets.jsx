@@ -57,19 +57,20 @@ const LocationMiniMapTargets = ({ center, zoom, cities, countries, title = undef
     return { fillOpacity: 0, color: 'none' };
   };
 
-  const tileServer = theme.palette.mode === 'light'
-    ? settings.platform_map_tile_server_light
-    : settings.platform_map_tile_server_dark;
+  const tileServer =
+    theme.palette.mode === 'light'
+      ? settings.platform_map_tile_server_light
+      : settings.platform_map_tile_server_dark;
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
       <Card padding="none" title={title}>
         <MapContainer
-        // introducing uniqueness in component rendering
-        // it is a bug workaround that prevents the component from rendering
-        //
-        // to be removed when bug is fixed
-        // more info on the bug and its fix: https://github.com/PaulLeCam/react-leaflet/pull/1073
+          // introducing uniqueness in component rendering
+          // it is a bug workaround that prevents the component from rendering
+          //
+          // to be removed when bug is fixed
+          // more info on the bug and its fix: https://github.com/PaulLeCam/react-leaflet/pull/1073
           key={new Date().getTime()}
           center={center}
           zoom={zoom}
@@ -80,9 +81,7 @@ const LocationMiniMapTargets = ({ center, zoom, cities, countries, title = undef
           <GeoJSON data={allCountries} style={getStyle} />
           {locatedCities.map((city) => {
             const position = [city.latitude, city.longitude];
-            return (
-              <Marker key={city.id} position={position} icon={pointerIcon} />
-            );
+            return <Marker key={city.id} position={position} icon={pointerIcon} />;
           })}
         </MapContainer>
       </Card>

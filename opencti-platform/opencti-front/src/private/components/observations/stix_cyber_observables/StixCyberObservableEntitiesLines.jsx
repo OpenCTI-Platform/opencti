@@ -73,20 +73,13 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
   }
 
   render() {
-    const {
-      stixCyberObservableId,
-      t,
-      fsd,
-      paginationOptions,
-      data,
-      classes,
-      displayRelation,
-    } = this.props;
+    const { stixCyberObservableId, t, fsd, paginationOptions, data, classes, displayRelation } =
+      this.props;
     return (
       <>
-        {data
-          && data.stixCoreRelationships
-          && data.stixCoreRelationships.edges.map((stixCoreRelationshipEdge) => {
+        {data &&
+          data.stixCoreRelationships &&
+          data.stixCoreRelationships.edges.map((stixCoreRelationshipEdge) => {
             const { node } = stixCoreRelationshipEdge;
             let restricted = false;
             let targetEntity = null;
@@ -100,8 +93,9 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
             }
             if (targetEntity === null) {
               restricted = true;
-            } else if (targetEntity.entity_type === 'stix_relation'
-              || targetEntity.entity_type === 'stix-relation'
+            } else if (
+              targetEntity.entity_type === 'stix_relation' ||
+              targetEntity.entity_type === 'stix-relation'
             ) {
               const [parentType] = targetEntity.parent_types;
               targetEntityType = parentType;
@@ -113,33 +107,33 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
             const link = !restricted
               ? targetEntity.parent_types.includes('stix-core-relationship')
                 ? `/dashboard/observations/observables/${stixCyberObservableId}/knowledge/relations/${node.id}`
-                : `${resolveLink(targetEntity.entity_type)}/${
-                  targetEntity.id
-                }/knowledge/relations/${node.id}`
+                : `${resolveLink(targetEntity.entity_type)}/${targetEntity.id}/knowledge/relations/${node.id}`
               : null;
             return (
               <ListItem
                 key={node.id}
                 divider={true}
                 disablePadding
-                secondaryAction={node.is_inferred ? (
-                  <Tooltip
-                    title={
-                      t('Inferred knowledge based on the rule ')
-                      + R.head(node.x_opencti_inferences).rule.name
-                    }
-                  >
-                    <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
-                  </Tooltip>
-                ) : (
-                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                    <StixCoreRelationshipPopover
-                      stixCoreRelationshipId={node.id}
-                      paginationOptions={paginationOptions}
-                      disabled={restricted}
-                    />
-                  </Security>
-                )}
+                secondaryAction={
+                  node.is_inferred ? (
+                    <Tooltip
+                      title={
+                        t('Inferred knowledge based on the rule ') +
+                        R.head(node.x_opencti_inferences).rule.name
+                      }
+                    >
+                      <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
+                    </Tooltip>
+                  ) : (
+                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <StixCoreRelationshipPopover
+                        stixCoreRelationshipId={node.id}
+                        paginationOptions={paginationOptions}
+                        disabled={restricted}
+                      />
+                    </Security>
+                  )
+                }
               >
                 <ListItemButton
                   classes={{ root: classes.item }}
@@ -151,22 +145,14 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                     <ItemIcon type={node.entity_type} isReversed={isReversed} />
                   </ListItemIcon>
                   <ListItemText
-                    primary={(
+                    primary={
                       <div>
                         {displayRelation && (
-                          <div
-                            className={classes.bodyItem}
-                            style={{ width: '10%' }}
-                          >
-                            <ItemEntityType
-                              entityType={node.relationship_type}
-                            />
+                          <div className={classes.bodyItem} style={{ width: '10%' }}>
+                            <ItemEntityType entityType={node.relationship_type} />
                           </div>
                         )}
-                        <div
-                          className={classes.bodyItem}
-                          style={{ width: '10%' }}
-                        >
+                        <div className={classes.bodyItem} style={{ width: '10%' }}>
                           <ItemEntityType
                             entityType={targetEntityType}
                             isRestricted={restricted}
@@ -174,48 +160,28 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                             showIcon
                           />
                         </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={{ width: '22%' }}
-                        >
-                          { }
+                        <div className={classes.bodyItem} style={{ width: '22%' }}>
+                          {}
                           {!restricted
-                            ? targetEntity.entity_type === 'stix_relation'
-                            || targetEntity.entity_type === 'stix-relation'
-                              ? `${targetEntity.from.name} ${String.fromCharCode(
-                                8594,
-                              )} ${getMainRepresentative(targetEntity.to)}`
+                            ? targetEntity.entity_type === 'stix_relation' ||
+                              targetEntity.entity_type === 'stix-relation'
+                              ? `${targetEntity.from.name} ${String.fromCharCode(8594)} ${getMainRepresentative(targetEntity.to)}`
                               : getMainRepresentative(targetEntity)
                             : t('Restricted')}
                         </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={{ width: '12%' }}
-                        >
+                        <div className={classes.bodyItem} style={{ width: '12%' }}>
                           {node.createdBy?.name ?? EMPTY_VALUE}
                         </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={{ width: '12%' }}
-                        >
+                        <div className={classes.bodyItem} style={{ width: '12%' }}>
                           {(node.creators ?? []).map((c) => c?.name).join(', ')}
                         </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={{ width: '10%' }}
-                        >
+                        <div className={classes.bodyItem} style={{ width: '10%' }}>
                           {fsd(node.start_time)}
                         </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={{ width: '10%' }}
-                        >
+                        <div className={classes.bodyItem} style={{ width: '10%' }}>
                           {fsd(node.stop_time)}
                         </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={{ width: '12%' }}
-                        >
+                        <div className={classes.bodyItem} style={{ width: '12%' }}>
                           <ItemConfidence
                             confidence={node.confidence}
                             entityType={node.entity_type}
@@ -223,7 +189,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                           />
                         </div>
                       </div>
-                    )}
+                    }
                   />
                 </ListItemButton>
               </ListItem>
@@ -298,10 +264,7 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
-        orderBy: {
-          type: "StixCoreRelationshipsOrdering"
-          defaultValue: start_time
-        }
+        orderBy: { type: "StixCoreRelationshipsOrdering", defaultValue: start_time }
         orderMode: { type: "OrderingMode" }
       ) {
         stixCoreRelationships(
@@ -471,7 +434,8 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                 }
                 ... on StixCoreRelationship {
                   from {
-                    ... on BasicObject { id
+                    ... on BasicObject {
+                      id
                       entity_type
                       parent_types
                     }
@@ -1113,7 +1077,4 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCyberObservableEntitiesLines);
+export default compose(inject18n, withStyles(styles))(StixCyberObservableEntitiesLines);

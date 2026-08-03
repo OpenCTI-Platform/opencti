@@ -7,7 +7,10 @@ import TimelineDot from '@mui/lab/TimelineDot';
 import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineContent from '@mui/lab/TimelineContent';
 import Typography from '@mui/material/Typography';
-import { getSecondaryRepresentative, getMainRepresentative } from '../../utils/defaultRepresentatives';
+import {
+  getSecondaryRepresentative,
+  getMainRepresentative,
+} from '../../utils/defaultRepresentatives';
 import MarkdownDisplay from '../markdownDisplay/MarkdownDisplay';
 import ItemIcon from '../ItemIcon';
 import { itemColor } from '../../utils/Colors';
@@ -40,10 +43,7 @@ const WidgetTimeline = ({ data, dateAttribute = 'created_at' }: WidgetTimelinePr
         {data.map(({ value, link }, index) => {
           return (
             <TimelineItem key={`${value.id}-${index}`}>
-              <TimelineOppositeContent
-                sx={{ paddingTop: '18px' }}
-                color="text.secondary"
-              >
+              <TimelineOppositeContent sx={{ paddingTop: '18px' }} color="text.secondary">
                 <FieldOrEmpty source={value[dateAttribute]}>
                   {fldt(value[dateAttribute])}
                 </FieldOrEmpty>
@@ -72,14 +72,9 @@ const WidgetTimeline = ({ data, dateAttribute = 'created_at' }: WidgetTimelinePr
               </TimelineSeparator>
               <TimelineContent>
                 <Card sx={{ background: theme.palette.designSystem.background.main }}>
-                  <Typography variant="h2">
-                    {getMainRepresentative(value)}
-                  </Typography>
+                  <Typography variant="h2">{getMainRepresentative(value)}</Typography>
                   <div style={{ marginTop: -5, color: '#a8a8a8' }}>
-                    <MarkdownDisplay
-                      content={getSecondaryRepresentative(value)}
-                      limit={150}
-                    />
+                    <MarkdownDisplay content={getSecondaryRepresentative(value)} limit={150} />
                   </div>
                 </Card>
               </TimelineContent>

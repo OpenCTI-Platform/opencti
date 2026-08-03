@@ -35,11 +35,7 @@ class AddSoftwares extends Component {
     };
     return (
       <div>
-        <IconButton
-          color="primary"
-          aria-label="Add"
-          onClick={this.handleOpen.bind(this)}
-        >
+        <IconButton color="primary" aria-label="Add" onClick={this.handleOpen.bind(this)}>
           <Add fontSize="small" />
         </IconButton>
         <Drawer
@@ -47,13 +43,13 @@ class AddSoftwares extends Component {
           onClose={this.handleClose.bind(this)}
           title={t('Add software')}
           subHeader={{
-            left: [(
+            left: [
               <SearchInput
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
                 key="leftInput"
-              />
-            )],
+              />,
+            ],
           }}
         >
           <QueryRenderer

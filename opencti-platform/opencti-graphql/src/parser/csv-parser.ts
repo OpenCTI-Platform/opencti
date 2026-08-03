@@ -11,7 +11,10 @@ const parserOption = (delimiter: string, comment?: string) => ({
   relax_column_count: true,
 });
 
-export const parseReadableToLines = async (input: NodeJS.ReadableStream, maxRecordNumber?: number): Promise<string[]> => {
+export const parseReadableToLines = async (
+  input: NodeJS.ReadableStream,
+  maxRecordNumber?: number,
+): Promise<string[]> => {
   const records: string[] = [];
   const rl = readline.createInterface({ input, crlfDelay: 5000 });
   // Need an async interator to prevent blocking
@@ -25,6 +28,10 @@ export const parseReadableToLines = async (input: NodeJS.ReadableStream, maxReco
   return records;
 };
 
-export const parsingProcess = async (lines: string[], delimiter: string, skipLineChar?: string): Promise<string[][]> => {
+export const parsingProcess = async (
+  lines: string[],
+  delimiter: string,
+  skipLineChar?: string,
+): Promise<string[][]> => {
   return parse(lines.join('\n'), parserOption(delimiter, skipLineChar));
 };

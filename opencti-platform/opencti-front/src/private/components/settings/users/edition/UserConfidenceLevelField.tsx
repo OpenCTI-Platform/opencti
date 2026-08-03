@@ -35,9 +35,9 @@ interface UserConfidenceLevelFieldProps {
   onFocus?: (name: string, value: string) => void;
   editContext?:
     | readonly ({
-      readonly focusOn: string | null | undefined;
-      readonly name: string;
-    } | null)[]
+        readonly focusOn: string | null | undefined;
+        readonly name: string;
+      } | null)[]
     | null;
   containerStyle?: Record<string, string | number>;
   disabled?: boolean;
@@ -78,27 +78,31 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
       variant="outlined"
       sx={{ position: 'relative' }}
     >
-      { user && !!user.effective_confidence_level && (
+      {user && !!user.effective_confidence_level && (
         <Box>
           {t_i18n('Effective Max Confidence Level:')}
           &nbsp;
           <UserConfidenceLevel user={user} />
         </Box>
       )}
-      { user && user.effective_confidence_level === null && (user.groups?.edges ?? []).length > 0 && (
-        <Box
-          sx={{ color: 'error.main' }}
-        >
-          {t_i18n('This user does not inherit a Max Confidence Level from their group. Configure user\'s groups with a Max Confidence Level.')}
-        </Box>
-      )}
-      { user && user.effective_confidence_level === null && (user.groups?.edges ?? []).length === 0 && (
-        <Box
-          sx={{ color: 'error.main' }}
-        >
-          {t_i18n('This user has no Max Confidence Level and does not inherit one from groups. Add a group to this user to resolve the issue.')}
-        </Box>
-      )}
+      {user &&
+        user.effective_confidence_level === null &&
+        (user.groups?.edges ?? []).length > 0 && (
+          <Box sx={{ color: 'error.main' }}>
+            {t_i18n(
+              "This user does not inherit a Max Confidence Level from their group. Configure user's groups with a Max Confidence Level.",
+            )}
+          </Box>
+        )}
+      {user &&
+        user.effective_confidence_level === null &&
+        (user.groups?.edges ?? []).length === 0 && (
+          <Box sx={{ color: 'error.main' }}>
+            {t_i18n(
+              'This user has no Max Confidence Level and does not inherit one from groups. Add a group to this user to resolve the issue.',
+            )}
+          </Box>
+        )}
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         {/* we still use a technical field for this switch to be able to do lazy yup validation ; do NOT submit! */}
         <Field
@@ -112,7 +116,9 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
         />
         <Tooltip
           sx={{ zIndex: 2 }}
-          title={t_i18n('The user\'s Max Confidence Level overrides Max Confidence Level inherited from user\'s groups')}
+          title={t_i18n(
+            "The user's Max Confidence Level overrides Max Confidence Level inherited from user's groups",
+          )}
         >
           <InformationOutline fontSize="small" color="primary" />
         </Tooltip>

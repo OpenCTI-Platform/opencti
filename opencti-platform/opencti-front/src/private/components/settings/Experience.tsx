@@ -7,7 +7,13 @@ import { ExperienceFieldPatchMutation$data } from '@components/settings/__genera
 import getEEWarningMessage from '@components/settings/EEActivation';
 import SupportPackages from '@components/settings/support/SupportPackages';
 import XtmHubSettings from '@components/settings/xtm-hub/XtmHubSettings';
-import { AutoAwesomeOutlined, ManageSearchOutlined, MoreHorizOutlined, PrecisionManufacturingOutlined, RocketLaunchOutlined } from '@mui/icons-material';
+import {
+  AutoAwesomeOutlined,
+  ManageSearchOutlined,
+  MoreHorizOutlined,
+  PrecisionManufacturingOutlined,
+  RocketLaunchOutlined,
+} from '@mui/icons-material';
 import { Stack, Switch } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -27,7 +33,10 @@ import { FieldOption } from '../../../utils/field';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useAuth from '../../../utils/hooks/useAuth';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import useGranted, { SETTINGS_SETPARAMETERS, SETTINGS_SUPPORT } from '../../../utils/hooks/useGranted';
+import useGranted, {
+  SETTINGS_SETPARAMETERS,
+  SETTINGS_SUPPORT,
+} from '../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import DangerZoneButton from '../common/danger_zone/DangerZoneButton';
 import { ExperienceQuery } from './__generated__/ExperienceQuery.graphql';
@@ -97,7 +106,9 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Filigran Experience | Settings'));
   const theme = useTheme<Theme>();
-  const { settings: { filigran_chatbot_ai_cgu_status, platform_ai_enabled } } = useAuth();
+  const {
+    settings: { filigran_chatbot_ai_cgu_status, platform_ai_enabled },
+  } = useAuth();
   const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
   const { xtmOneConfigured } = useChatbot();
   const isGrantedToSupport = useGranted([SETTINGS_SUPPORT]);
@@ -108,14 +119,22 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
   const isEnterpriseEditionByConfig = enterpriseEdition.license_by_configuration;
   const [openEEChanges, setOpenEEChanges] = useState(false);
   const [openValidateTermsOfUse, setOpenValidateTermsOfUse] = useState(false);
-  const experienceValidation = () => Yup.object().shape({
-    enterprise_license: Yup.string().nullable(),
-    filigran_chatbot_ai_cgu_status: Yup.mixed<CGUStatus>().oneOf([CGUStatus.enabled, CGUStatus.disabled, CGUStatus.pending]),
-    platform_ai_enabled: Yup.boolean(),
-  });
+  const experienceValidation = () =>
+    Yup.object().shape({
+      enterprise_license: Yup.string().nullable(),
+      filigran_chatbot_ai_cgu_status: Yup.mixed<CGUStatus>().oneOf([
+        CGUStatus.enabled,
+        CGUStatus.disabled,
+        CGUStatus.pending,
+      ]),
+      platform_ai_enabled: Yup.boolean(),
+    });
   const isLtsPlatform = settings.platform_type === 'LTS';
   const [commitField] = useApiMutation(experienceFieldPatch);
-  const handleSubmitField = (name: string, value: string | string[] | FieldOption | null | boolean) => {
+  const handleSubmitField = (
+    name: string,
+    value: string | string[] | FieldOption | null | boolean,
+  ) => {
     experienceValidation()
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -130,7 +149,10 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
           onCompleted: (response) => {
             const resData = response as ExperienceFieldPatchMutation$data;
             // If platform is LTS but license is no longer valid, need to refresh to force the license.
-            if (isLtsPlatform && !resData.settingsEdit?.fieldPatch?.platform_enterprise_edition.license_validated) {
+            if (
+              isLtsPlatform &&
+              !resData.settingsEdit?.fieldPatch?.platform_enterprise_edition.license_validated
+            ) {
               window.location.reload();
             }
           },
@@ -162,51 +184,63 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
       return <Tag label={t_i18n('Community edition')} labelTextTransform="none" disableTooltip />;
     }
     if (enterpriseEdition.license_expired) {
-      return <Tag label={t_i18n('Expired')} color={theme.palette.error.main} labelTextTransform="none" disableTooltip />;
+      return (
+        <Tag
+          label={t_i18n('Expired')}
+          color={theme.palette.error.main}
+          labelTextTransform="none"
+          disableTooltip
+        />
+      );
     }
-    return <Tag label={t_i18n('Activated')} color={theme.palette.success.main} labelTextTransform="none" disableTooltip />;
+    return (
+      <Tag
+        label={t_i18n('Activated')}
+        color={theme.palette.success.main}
+        labelTextTransform="none"
+        disableTooltip
+      />
+    );
   })();
 
-  const eeActivatedFooter = !isEnterpriseEditionByConfig && isGrantedToParameters
-    ? (
-        <>
-          <DangerZoneButton
-            sensitiveType="ce_ee_toggle"
-            size="default"
-            onClick={() => setOpenEEChanges(true)}
-          >
-            {t_i18n('Disable Enterprise Edition')}
-          </DangerZoneButton>
-          <EnterpriseEditionButton inLine size="default" title="Update license" />
-        </>
-      )
-    : undefined;
-
-  const eeCommunityFooter = isGrantedToParameters
-    ? <EnterpriseEditionButton inLine size="default" title="Try OpenCTI Enterprise Edition" />
-    : (
-        <Button
-          variant="secondary"
-          component="a"
-          href="https://filigran.io/offerings/opencti-enterprise-edition/"
-          target="_blank"
-          rel="noopener noreferrer"
+  const eeActivatedFooter =
+    !isEnterpriseEditionByConfig && isGrantedToParameters ? (
+      <>
+        <DangerZoneButton
+          sensitiveType="ce_ee_toggle"
+          size="default"
+          onClick={() => setOpenEEChanges(true)}
         >
-          {t_i18n('Discover OpenCTI EE')}
-        </Button>
-      );
+          {t_i18n('Disable Enterprise Edition')}
+        </DangerZoneButton>
+        <EnterpriseEditionButton inLine size="default" title="Update license" />
+      </>
+    ) : undefined;
+
+  const eeCommunityFooter = isGrantedToParameters ? (
+    <EnterpriseEditionButton inLine size="default" title="Try OpenCTI Enterprise Edition" />
+  ) : (
+    <Button
+      variant="secondary"
+      component="a"
+      href="https://filigran.io/offerings/opencti-enterprise-edition/"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {t_i18n('Discover OpenCTI EE')}
+    </Button>
+  );
 
   const eeActivatedBody = (
     <div>
       <ExperienceDetailRow label={t_i18n('Organization')}>
-        <ItemBoolean
-          neutralLabel={enterpriseEdition.license_customer}
-          status={null}
-        />
+        <ItemBoolean neutralLabel={enterpriseEdition.license_customer} status={null} />
       </ExperienceDetailRow>
       <ExperienceDetailRow label={t_i18n('Scope')}>
         <ItemBoolean
-          neutralLabel={enterpriseEdition.license_global ? t_i18n('Global') : t_i18n('Current instance')}
+          neutralLabel={
+            enterpriseEdition.license_global ? t_i18n('Global') : t_i18n('Current instance')
+          }
           status={null}
         />
       </ExperienceDetailRow>
@@ -226,27 +260,28 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
         label={t_i18n('License type')}
         divider={isGrantedToParameters || !xtmOneConfigured}
       >
-        <ItemBoolean
-          neutralLabel={enterpriseEdition.license_type}
-          status={null}
-        />
+        <ItemBoolean neutralLabel={enterpriseEdition.license_type} status={null} />
       </ExperienceDetailRow>
       {isGrantedToParameters && (
         <ExperienceDetailRow
           divider={!xtmOneConfigured}
-          label={(
+          label={
             <Stack direction="row" alignItems="center" gap={1}>
               <Typography variant="body2" color="textSecondary">
-                {xtmOneConfigured ? t_i18n('XTM One (Agentic AI)') : t_i18n('Agentic AI (Ariane Assistant)')}
+                {xtmOneConfigured
+                  ? t_i18n('XTM One (Agentic AI)')
+                  : t_i18n('Agentic AI (Ariane Assistant)')}
               </Typography>
               {!xtmOneConfigured && (
                 <Tag
                   label={t_i18n('Preview')}
-                  tooltipTitle={t_i18n('This feature is in preview and will improve over time with user\'s feedback.')}
+                  tooltipTitle={t_i18n(
+                    "This feature is in preview and will improve over time with user's feedback.",
+                  )}
                 />
               )}
             </Stack>
-          )}
+          }
         >
           {filigran_chatbot_ai_cgu_status === CGUStatus.pending ? (
             <Button
@@ -266,28 +301,38 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
             </Box>
           )}
           {openValidateTermsOfUse && (
-            <ValidateTermsOfUseDialog open={openValidateTermsOfUse} onClose={handleValidateTermsOfUse} />
+            <ValidateTermsOfUseDialog
+              open={openValidateTermsOfUse}
+              onClose={handleValidateTermsOfUse}
+            />
           )}
         </ExperienceDetailRow>
       )}
       {!xtmOneConfigured && (
         <ExperienceDetailRow label={t_i18n('Generative AI (AI Insight, NLQ)')} divider={false}>
           <Box sx={{ marginBlock: -0.75 }}>
-            <Switch
-              checked={platform_ai_enabled}
-              onChange={handlePlatformAiEnabledChange}
-            />
+            <Switch checked={platform_ai_enabled} onChange={handlePlatformAiEnabledChange} />
           </Box>
         </ExperienceDetailRow>
       )}
       {!enterpriseEdition.license_expired && enterpriseEdition.license_expiration_prevention && (
-        <Alert severity="warning" variant="outlined" style={{ width: '100%', marginTop: theme.spacing(2) }}>
+        <Alert
+          severity="warning"
+          variant="outlined"
+          style={{ width: '100%', marginTop: theme.spacing(2) }}
+        >
           {t_i18n('Your Enterprise Edition license will expire in less than 3 months.')}
         </Alert>
       )}
       {!enterpriseEdition.license_validated && enterpriseEdition.license_valid_cert && (
-        <Alert severity="error" variant="outlined" style={{ width: '100%', marginTop: theme.spacing(2) }}>
-          {t_i18n('Your Enterprise Edition license is expired. Please contact your Filigran representative.')}
+        <Alert
+          severity="error"
+          variant="outlined"
+          style={{ width: '100%', marginTop: theme.spacing(2) }}
+        >
+          {t_i18n(
+            'Your Enterprise Edition license is expired. Please contact your Filigran representative.',
+          )}
         </Alert>
       )}
     </div>
@@ -299,7 +344,9 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
         {t_i18n('Enable powerful features with OpenCTI Enterprise Edition')}
       </ExperienceHeadline>
       <Typography variant="body2" color="textSecondary">
-        {t_i18n('OpenCTI Enterprise Edition (EE) provides highly demanding organizations with a version that includes additional and powerful features, which require specific investments in research and development.')}
+        {t_i18n(
+          'OpenCTI Enterprise Edition (EE) provides highly demanding organizations with a version that includes additional and powerful features, which require specific investments in research and development.',
+        )}
       </Typography>
       <div
         style={{
@@ -308,17 +355,38 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
           gap: theme.spacing(1.5),
         }}
       >
-        <ExperienceFeatureTile accent={eeAccent} icon={<AutoAwesomeOutlined />} label={t_i18n('Agentic AI capabilities')} />
-        <ExperienceFeatureTile accent={eeAccent} icon={<PrecisionManufacturingOutlined />} label={t_i18n('Playbooks and automation')} />
-        <ExperienceFeatureTile accent={eeAccent} icon={<ManageSearchOutlined />} label={t_i18n('Full text indexing')} />
-        <ExperienceFeatureTile accent={eeAccent} icon={<MoreHorizOutlined />} label={t_i18n('And many more features...')} />
+        <ExperienceFeatureTile
+          accent={eeAccent}
+          icon={<AutoAwesomeOutlined />}
+          label={t_i18n('Agentic AI capabilities')}
+        />
+        <ExperienceFeatureTile
+          accent={eeAccent}
+          icon={<PrecisionManufacturingOutlined />}
+          label={t_i18n('Playbooks and automation')}
+        />
+        <ExperienceFeatureTile
+          accent={eeAccent}
+          icon={<ManageSearchOutlined />}
+          label={t_i18n('Full text indexing')}
+        />
+        <ExperienceFeatureTile
+          accent={eeAccent}
+          icon={<MoreHorizOutlined />}
+          label={t_i18n('And many more features...')}
+        />
       </div>
     </>
   );
 
   return (
     <div style={{ margin: 0, padding: '0 0 50px 0' }} data-testid="experience-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Filigran Experience'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Filigran Experience'), current: true },
+        ]}
+      />
       <Grid container={true} spacing={3} alignItems="stretch" style={{ marginBottom: 23 }}>
         <Grid item xs={6}>
           <ExperienceCard
@@ -344,8 +412,11 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
               style={{ borderColor: theme.palette.dangerZone.main }}
             >
               {t_i18n(getEEWarningMessage(isLtsPlatform))}
-              <br /><br />
-              <strong>{t_i18n('However, your existing data will remain intact and will not be lost.')}</strong>
+              <br />
+              <br />
+              <strong>
+                {t_i18n('However, your existing data will remain intact and will not be lost.')}
+              </strong>
             </Alert>
             <DialogActions>
               <Button

@@ -93,22 +93,20 @@ const groupMutationFieldPatch = graphql`
   }
 `;
 
-const GroupEditionMarkingsComponent = ({
-  group,
-}: {
-  group: GroupEditionMarkings_group$data;
-}) => {
+const GroupEditionMarkingsComponent = ({ group }: { group: GroupEditionMarkings_group$data }) => {
   const classes = useStyles();
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const groupMarkingDefinitions = group.allowed_marking || [];
   const groupDefaultMarkingDefinitions = group.default_marking || [];
   const groupMaxShareableMarkings = group.max_shareable_marking || [];
-  const maxShareableMarkings = [...groupMaxShareableMarkings, ...group.not_shareable_marking_types.map((t) => ({ definition_type: t, id: 'none' }))];
+  const maxShareableMarkings = [
+    ...groupMaxShareableMarkings,
+    ...group.not_shareable_marking_types.map((t) => ({ definition_type: t, id: 'none' })),
+  ];
   // Handle only GLOBAL entity type for now
   const globalDefaultMarking = (
-    groupDefaultMarkingDefinitions.find((e) => e.entity_type === 'GLOBAL')
-      ?.values ?? []
+    groupDefaultMarkingDefinitions.find((e) => e.entity_type === 'GLOBAL')?.values ?? []
   ).filter((v) => groupMarkingDefinitions.map((m) => m.id).includes(v.id));
 
   const [commitAdd] = useApiMutation(groupMutationRelationAdd);
@@ -120,8 +118,8 @@ const GroupEditionMarkingsComponent = ({
     markingDefinitionId: string,
     groupMarkingDefinition:
       | {
-        id?: string;
-      }
+          id?: string;
+        }
       | undefined,
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -209,15 +207,9 @@ const GroupEditionMarkingsComponent = ({
       <QueryRenderer
         query={markingDefinitionsLinesSearchQuery}
         variables={{ search: '' }}
-        render={({
-          props,
-        }: {
-          props: MarkingDefinitionsQuerySearchQuery$data;
-        }) => {
+        render={({ props }: { props: MarkingDefinitionsQuerySearchQuery$data }) => {
           if (props) {
-            const markingDefinitions = (
-              props.markingDefinitions?.edges ?? []
-            ).map((n) => n.node);
+            const markingDefinitions = (props.markingDefinitions?.edges ?? []).map((n) => n.node);
             const markingDefinitionsConverted = markingDefinitions.map(convertMarking);
             const resolvedGroupMarkingDefinitions = retrieveMarking(
               groupMarkingDefinitions,
@@ -231,9 +223,13 @@ const GroupEditionMarkingsComponent = ({
               groupMaxShareableMarkings,
               markingDefinitionsConverted,
             );
-            const proposedShareableMarkings = markingDefinitions
-              .filter((m) => checkIsMarkingAllowed(m, resolvedGroupMarkingDefinitions)
-                || resolvedMaxShareableMarkingDefinitions.some((maxMarking) => maxMarking?.entity.id === m.id));
+            const proposedShareableMarkings = markingDefinitions.filter(
+              (m) =>
+                checkIsMarkingAllowed(m, resolvedGroupMarkingDefinitions) ||
+                resolvedMaxShareableMarkingDefinitions.some(
+                  (maxMarking) => maxMarking?.entity.id === m.id,
+                ),
+            );
             return (
               <>
                 <Typography variant="h2" style={{ marginTop: 20 }}>
@@ -253,17 +249,18 @@ const GroupEditionMarkingsComponent = ({
                       <ListItem
                         key={markingDefinition.id}
                         divider={true}
-                        secondaryAction={(
+                        secondaryAction={
                           <Checkbox
-                            onChange={(event) => handleToggleAllowedMarkings(
-                              markingDefinition.id,
-                              groupMarkingDefinition,
-                              event,
-                            )
+                            onChange={(event) =>
+                              handleToggleAllowedMarkings(
+                                markingDefinition.id,
+                                groupMarkingDefinition,
+                                event,
+                              )
                             }
                             checked={groupMarkingDefinition !== undefined}
                           />
-                        )}
+                        }
                       >
                         <ListItemIcon>
                           <MarkingIcon theme={theme} color={markingDefinition.x_opencti_color} />
@@ -279,19 +276,14 @@ const GroupEditionMarkingsComponent = ({
                     defaultMarkings: resolvedGroupDefaultMarkingDefinitions,
                     shareableMarkings: maxShareableMarkings,
                   }}
-                  onSubmit={() => {
-                  }}
+                  onSubmit={() => {}}
                 >
                   {() => (
                     <Form>
                       <Typography variant="h2" style={{ marginTop: 20 }}>
                         {t_i18n('Default marking definitions')}
                       </Typography>
-                      <Alert
-                        severity="info"
-                        variant="outlined"
-                        style={{ marginBottom: 10 }}
-                      >
+                      <Alert severity="info" variant="outlined" style={{ marginBottom: 10 }}>
                         {t_i18n(
                           'The default marking definitions of a group will be used as default marking when this feature is explicitly enabled in the customization of an entity type.',
                         )}
@@ -317,26 +309,20 @@ const GroupEditionMarkingsComponent = ({
                           option: FieldOption,
                         ) => (
                           <li {...renderProps}>
-                            <div
-                              className={classes.icon}
-                              style={{ color: option.color }}
-                            >
+                            <div className={classes.icon} style={{ color: option.color }}>
                               <MarkingIcon theme={theme} color={option.color} />
                             </div>
                             <div className={classes.text}>{option.label}</div>
                           </li>
                         )}
-                        onChange={(name: string, values: FieldOption[]) => handleToggleDefaultValues(values)
+                        onChange={(name: string, values: FieldOption[]) =>
+                          handleToggleDefaultValues(values)
                         }
                       />
                       <Typography variant="h2" style={{ marginTop: 30 }}>
                         {t_i18n('Maximum shareable marking definitions')}
                       </Typography>
-                      <Alert
-                        severity="info"
-                        variant="outlined"
-                        style={{ marginBottom: 10 }}
-                      >
+                      <Alert severity="info" variant="outlined" style={{ marginBottom: 10 }}>
                         {t_i18n(
                           'The maximum shareable marking definitions of a group are the maximum markings authorized in shared public dashboards and file exports.',
                         )}
@@ -345,7 +331,9 @@ const GroupEditionMarkingsComponent = ({
                         component={MaxShareableMarkingsSelectField}
                         markingDefinitions={proposedShareableMarkings}
                         name="shareableMarkings"
-                        onChange={(type: string, markingId: string) => handleToggleMaxShareableMarkings(type, markingId)}
+                        onChange={(type: string, markingId: string) =>
+                          handleToggleMaxShareableMarkings(type, markingId)
+                        }
                       />
                     </Form>
                   )}
@@ -361,32 +349,29 @@ const GroupEditionMarkingsComponent = ({
   );
 };
 
-const GroupEditionMarkings = createFragmentContainer(
-  GroupEditionMarkingsComponent,
-  {
-    group: graphql`
-      fragment GroupEditionMarkings_group on Group {
+const GroupEditionMarkings = createFragmentContainer(GroupEditionMarkingsComponent, {
+  group: graphql`
+    fragment GroupEditionMarkings_group on Group {
+      id
+      default_assignation
+      allowed_marking {
         id
-        default_assignation
-        allowed_marking {
+      }
+      not_shareable_marking_types
+      max_shareable_marking {
+        id
+        definition
+        definition_type
+        x_opencti_order
+      }
+      default_marking {
+        entity_type
+        values {
           id
-        }
-        not_shareable_marking_types
-        max_shareable_marking {
-          id
-          definition
-          definition_type
-          x_opencti_order
-        }
-        default_marking {
-          entity_type
-          values {
-            id
-          }
         }
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default GroupEditionMarkings;

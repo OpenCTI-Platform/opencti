@@ -83,11 +83,7 @@ const LoginForm = () => {
 
   return (
     <>
-      <Formik
-        initialValues={initialValues}
-        validationSchema={loginValidation}
-        onSubmit={onSubmit}
-      >
+      <Formik initialValues={initialValues} validationSchema={loginValidation} onSubmit={onSubmit}>
         {({ isSubmitting, isValid }) => (
           <Form>
             <Field
@@ -107,23 +103,11 @@ const LoginForm = () => {
               fullWidth={true}
               style={{ marginTop: theme.spacing(2) }}
             />
-            <Stack
-              mt={3}
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-            >
-              <Button
-                variant="tertiary"
-                onClick={goToResetPwd}
-                sx={{ ml: -2 }}
-              >
+            <Stack mt={3} direction="row" alignItems="center" justifyContent="space-between">
+              <Button variant="tertiary" onClick={goToResetPwd} sx={{ ml: -2 }}>
                 {t_i18n('I forgot my password')}
               </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting || !isValid}
-              >
+              <Button type="submit" disabled={isSubmitting || !isValid}>
                 {t_i18n('Sign in')}
               </Button>
             </Stack>

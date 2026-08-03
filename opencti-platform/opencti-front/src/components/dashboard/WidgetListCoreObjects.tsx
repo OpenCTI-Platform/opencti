@@ -22,19 +22,15 @@ const WidgetListCoreObjects = ({
   columns,
 }: WidgetListCoreObjectsProps) => {
   const buildColumns = useMemo((): DataTableProps['dataColumns'] => {
-    const percentWidth = (100) / (columns.length ?? 1);
+    const percentWidth = 100 / (columns.length ?? 1);
 
-    return columns
-      .reduce<Record<string, Partial<DataTableColumn>>>(
-        (acc, { attribute, label }) => {
-          if (!attribute) {
-            return acc;
-          }
-          acc[attribute] = { percentWidth, isSortable: false, ...(label ? { label } : {}) };
-          return acc;
-        },
-        {},
-      );
+    return columns.reduce<Record<string, Partial<DataTableColumn>>>((acc, { attribute, label }) => {
+      if (!attribute) {
+        return acc;
+      }
+      acc[attribute] = { percentWidth, isSortable: false, ...(label ? { label } : {}) };
+      return acc;
+    }, {});
   }, [columns]);
 
   return (

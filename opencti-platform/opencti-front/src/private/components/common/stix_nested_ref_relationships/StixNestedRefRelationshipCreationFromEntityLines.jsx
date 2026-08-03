@@ -3,7 +3,10 @@ import * as PropTypes from 'prop-types';
 import { graphql, createPaginationContainer } from 'react-relay';
 import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import { StixNestedRefRelationshipCreationFromEntityLine, StixNestedRefRelationshipCreationFromEntityLineDummy } from './StixNestedRefRelationshipCreationFromEntityLine';
+import {
+  StixNestedRefRelationshipCreationFromEntityLine,
+  StixNestedRefRelationshipCreationFromEntityLineDummy,
+} from './StixNestedRefRelationshipCreationFromEntityLine';
 import inject18n from '../../../../components/i18n';
 import { setNumberOfElements } from '../../../../utils/Number';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
@@ -116,15 +119,15 @@ export const stixNestedRefRelationshipCreationFromEntityLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...StixNestedRefRelationshipCreationFromEntityLines_data
-    @arguments(
-      search: $search
-      types: $types
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        types: $types
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -133,32 +136,32 @@ const StixNestedRefRelationshipCreationFromEntityLines = createPaginationContain
   {
     data: graphql`
       fragment StixNestedRefRelationshipCreationFromEntityLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          types: { type: "[String]" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "StixCoreObjectsOrdering", defaultValue: created_at }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-          filters: { type: "FilterGroup" }
-        ) {
-          stixCoreObjects(
-            search: $search
-            types: $types
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-          ) @connection(key: "Pagination_stixCoreObjects") {
-            edges {
-              node {
-                id
-                ...StixNestedRefRelationshipCreationFromEntityLine_node
-              }
+      @argumentDefinitions(
+        search: { type: "String" }
+        types: { type: "[String]" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "StixCoreObjectsOrdering", defaultValue: created_at }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "FilterGroup" }
+      ) {
+        stixCoreObjects(
+          search: $search
+          types: $types
+          first: $count
+          after: $cursor
+          orderBy: $orderBy
+          orderMode: $orderMode
+          filters: $filters
+        ) @connection(key: "Pagination_stixCoreObjects") {
+          edges {
+            node {
+              id
+              ...StixNestedRefRelationshipCreationFromEntityLine_node
             }
           }
         }
+      }
     `,
   },
   {

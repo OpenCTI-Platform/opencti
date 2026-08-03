@@ -1,4 +1,12 @@
-import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis, Tooltip, TooltipContentProps } from 'recharts';
+import {
+  ResponsiveContainer,
+  Scatter,
+  ScatterChart,
+  YAxis,
+  ZAxis,
+  Tooltip,
+  TooltipContentProps,
+} from 'recharts';
 import React, { CSSProperties } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { computeTimeRangeValuesDomain, GraphTimeRange } from '../utils/graphTimeRange';
@@ -9,10 +17,7 @@ import TimeRange from '../../range_slider/RangeSlider';
 import { useFormatter } from '../../i18n';
 import useGraphInteractions from '../utils/useGraphInteractions';
 
-const TimeRangeTooltip = ({
-  active,
-  payload,
-}: TooltipContentProps) => {
+const TimeRangeTooltip = ({ active, payload }: TooltipContentProps) => {
   const { fldt } = useFormatter();
   const theme = useTheme<Theme>();
 
@@ -48,18 +53,16 @@ const GraphToolbarTimeRange = () => {
   const { selectedTimeRangeInterval } = graphState;
 
   return (
-    <div style={{
-      position: 'relative',
-      height: 80,
-      marginLeft: theme.spacing(2),
-      marginRight: theme.spacing(2),
-    }}
+    <div
+      style={{
+        position: 'relative',
+        height: 80,
+        marginLeft: theme.spacing(2),
+        marginRight: theme.spacing(2),
+      }}
     >
       <ResponsiveContainer width="100%" height={60}>
-        <ScatterChart
-          height={60}
-          margin={{ top: 32 }}
-        >
+        <ScatterChart height={60} margin={{ top: 32 }}>
           <YAxis
             type="number"
             dataKey="index"
@@ -76,20 +79,18 @@ const GraphToolbarTimeRange = () => {
             domain={computeTimeRangeValuesDomain(timeRange.values)}
           />
           <Tooltip content={TimeRangeTooltip} />
-          <Scatter
-            data={timeRange.values}
-            fill={theme.palette.primary.main}
-          />
+          <Scatter data={timeRange.values} fill={theme.palette.primary.main} />
         </ScatterChart>
       </ResponsiveContainer>
 
-      <div style={{
-        position: 'absolute',
-        top: 30,
-        left: 0,
-        right: 0,
-        bottom: 0,
-      }}
+      <div
+        style={{
+          position: 'absolute',
+          top: 30,
+          left: 0,
+          right: 0,
+          bottom: 0,
+        }}
       >
         <TimeRange
           ticksNumber={15}

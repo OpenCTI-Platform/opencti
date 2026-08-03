@@ -13,11 +13,9 @@ type IngestionCatalogUnverifiedDeploymentPopoverProps = {
   onDeploy: () => void;
 };
 
-const IngestionCatalogUnverifiedDeploymentPopover: React.FC<IngestionCatalogUnverifiedDeploymentPopoverProps> = ({
-  onClose,
-  isOpen,
-  onDeploy,
-}) => {
+const IngestionCatalogUnverifiedDeploymentPopover: React.FC<
+  IngestionCatalogUnverifiedDeploymentPopoverProps
+> = ({ onClose, isOpen, onDeploy }) => {
   const { t_i18n } = useFormatter();
   const [isAcknowledged, setIsAcknowledged] = useState(false);
   useEffect(() => {
@@ -32,21 +30,19 @@ const IngestionCatalogUnverifiedDeploymentPopover: React.FC<IngestionCatalogUnve
       title={t_i18n('Deploy a Community Connector')}
       size="medium"
     >
-      <Typography>{t_i18n('This connector has been developed by the community and is not supported by Filigran.')}</Typography>
-      <Alert
-        severity="info"
-        variant="outlined"
-        icon={false}
-        style={{ marginTop: 20 }}
-      >
+      <Typography>
+        {t_i18n(
+          'This connector has been developed by the community and is not supported by Filigran.',
+        )}
+      </Typography>
+      <Alert severity="info" variant="outlined" icon={false} style={{ marginTop: 20 }}>
         <FormControlLabel
-          control={(
-            <Checkbox
-              onClick={() => setIsAcknowledged((prev) => !prev)}
-              checked={isAcknowledged}
-            />
+          control={
+            <Checkbox onClick={() => setIsAcknowledged((prev) => !prev)} checked={isAcknowledged} />
+          }
+          label={t_i18n(
+            'I acknowledge that this connector is not supported by Filigran and deploy it at my own risk',
           )}
-          label={t_i18n('I acknowledge that this connector is not supported by Filigran and deploy it at my own risk')}
         />
       </Alert>
       <DialogActions>

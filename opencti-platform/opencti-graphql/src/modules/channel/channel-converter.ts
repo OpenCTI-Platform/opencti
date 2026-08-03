@@ -1,6 +1,11 @@
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { buildStixDomain } from '../../database/stix-2-1-converter';
-import { ENTITY_TYPE_CHANNEL, type Stix2Channel, type StixChannel, type StoreEntityChannel } from './channel-types';
+import {
+  ENTITY_TYPE_CHANNEL,
+  type Stix2Channel,
+  type StixChannel,
+  type StoreEntityChannel,
+} from './channel-types';
 import { assertType, cleanObject } from '../../database/stix-converter-utils';
 import { buildStixDomain as buildStixDomain2 } from '../../database/stix-2-0-converter';
 

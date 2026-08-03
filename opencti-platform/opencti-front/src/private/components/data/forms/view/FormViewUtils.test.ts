@@ -209,7 +209,10 @@ describe('formatFormDataForSubmission – mainEntityLookup', () => {
   });
 
   it('should map a single pending entity to mainEntityLookupPending', () => {
-    const pendingInputData = { entityType: 'Report', input: { name: 'New Report', confidence: 50 } };
+    const pendingInputData = {
+      entityType: 'Report',
+      input: { name: 'New Report', confidence: 50 },
+    };
     const values = {
       name: 'My report',
       mainEntityLookup: {
@@ -233,7 +236,13 @@ describe('formatFormDataForSubmission – mainEntityLookup', () => {
       name: 'My report',
       mainEntityLookup: [
         { value: 'existing-id-1', label: 'Existing 1', type: 'Report' },
-        { value: '__pending__:uuid-1', label: 'Pending 1', type: 'Report', isPendingCreation: true, pendingInputData },
+        {
+          value: '__pending__:uuid-1',
+          label: 'Pending 1',
+          type: 'Report',
+          isPendingCreation: true,
+          pendingInputData,
+        },
         { value: 'existing-id-2', label: 'Existing 2', type: 'Report' },
       ],
     };
@@ -265,8 +274,20 @@ describe('formatFormDataForSubmission – mainEntityLookup', () => {
     const values = {
       name: 'My report',
       mainEntityLookup: [
-        { value: '__pending__:uuid-1', label: 'Pending 1', type: 'Report', isPendingCreation: true, pendingInputData: pendingInputData1 },
-        { value: '__pending__:uuid-2', label: 'Pending 2', type: 'Report', isPendingCreation: true, pendingInputData: pendingInputData2 },
+        {
+          value: '__pending__:uuid-1',
+          label: 'Pending 1',
+          type: 'Report',
+          isPendingCreation: true,
+          pendingInputData: pendingInputData1,
+        },
+        {
+          value: '__pending__:uuid-2',
+          label: 'Pending 2',
+          type: 'Report',
+          isPendingCreation: true,
+          pendingInputData: pendingInputData2,
+        },
       ],
     };
 
@@ -314,7 +335,10 @@ describe('formatFormDataForSubmission – additional_${id}_lookup', () => {
       additional_threat_lookup: { value: 'malware-id-1', label: 'Evil', type: 'Malware' },
     };
 
-    const formatted = formatFormDataForSubmission(values as SubmissionValues, additionalLookupSchema);
+    const formatted = formatFormDataForSubmission(
+      values as SubmissionValues,
+      additionalLookupSchema,
+    );
 
     expect(formatted['additional_threat_lookup']).toBe('malware-id-1');
     expect(formatted).not.toHaveProperty('additional_threat_lookup_pending');
@@ -333,7 +357,10 @@ describe('formatFormDataForSubmission – additional_${id}_lookup', () => {
       },
     };
 
-    const formatted = formatFormDataForSubmission(values as SubmissionValues, additionalLookupSchema);
+    const formatted = formatFormDataForSubmission(
+      values as SubmissionValues,
+      additionalLookupSchema,
+    );
 
     expect(formatted).not.toHaveProperty('additional_threat_lookup');
     expect(formatted['additional_threat_lookup_pending']).toEqual([pendingInputData]);
@@ -345,11 +372,20 @@ describe('formatFormDataForSubmission – additional_${id}_lookup', () => {
       name: 'My report',
       additional_threat_lookup: [
         { value: 'malware-id-1', label: 'Existing', type: 'Malware' },
-        { value: '__pending__:uuid-m', label: 'Pending', type: 'Malware', isPendingCreation: true, pendingInputData },
+        {
+          value: '__pending__:uuid-m',
+          label: 'Pending',
+          type: 'Malware',
+          isPendingCreation: true,
+          pendingInputData,
+        },
       ],
     };
 
-    const formatted = formatFormDataForSubmission(values as SubmissionValues, additionalLookupMultiSchema);
+    const formatted = formatFormDataForSubmission(
+      values as SubmissionValues,
+      additionalLookupMultiSchema,
+    );
 
     expect(formatted['additional_threat_lookup']).toEqual(['malware-id-1']);
     expect(formatted['additional_threat_lookup_pending']).toEqual([pendingInputData]);

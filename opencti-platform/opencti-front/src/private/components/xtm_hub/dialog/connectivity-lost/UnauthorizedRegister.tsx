@@ -18,18 +18,14 @@ const XtmHubDialogConnectivityLostUnauthorizedRegister: React.FC<Props> = ({ ope
       slotProps={{ paper: { elevation: 1 } }}
       aria-labelledby="unauthorized-register-dialog-title"
       aria-describedby="unauthorized-register-dialog-description"
-      title={
-        <span id="unauthorized-register-dialog-title">{t_i18n('Connectivity lost')}</span>
-      }
+      title={<span id="unauthorized-register-dialog-title">{t_i18n('Connectivity lost')}</span>}
     >
       <DialogContentText id="unauthorized-register-dialog-description">
         <p>{t_i18n('XTM Hub Connection Unavailable')}</p>
         <p>{t_i18n('Please contact OpenCTI platform admin')}</p>
       </DialogContentText>
       <DialogActions>
-        <Button onClick={onCancel}>
-          {t_i18n('Cancel')}
-        </Button>
+        <Button onClick={onCancel}>{t_i18n('Cancel')}</Button>
       </DialogActions>
     </Dialog>
   );

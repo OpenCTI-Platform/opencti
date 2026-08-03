@@ -17,10 +17,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 const caseTemplateAddTask = graphql`
-  mutation CaseTemplateEditionAddTaskMutation(
-    $id: ID!
-    $input: StixRefRelationshipAddInput!
-  ) {
+  mutation CaseTemplateEditionAddTaskMutation($id: ID!, $input: StixRefRelationshipAddInput!) {
     caseTemplateRelationAdd(id: $id, input: $input) {
       ...CaseTemplateLine_node
     }
@@ -29,11 +26,7 @@ const caseTemplateAddTask = graphql`
 
 const caseTemplateDeleteTask = graphql`
   mutation CaseTemplateEditionDeleteTaskMutation($id: ID!, $toId: StixRef!) {
-    caseTemplateRelationDelete(
-      id: $id
-      toId: $toId
-      relationship_type: "template-task"
-    ) {
+    caseTemplateRelationDelete(id: $id, toId: $toId, relationship_type: "template-task") {
       id
     }
   }
@@ -63,11 +56,12 @@ interface CaseTemplateEditionProps {
   setOpenPanel: (status: boolean) => void;
 }
 
-const caseTemplateValidation = (t: (name: string | object) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  tasks: Yup.array(),
-});
+const caseTemplateValidation = (t: (name: string | object) => string) =>
+  Yup.object().shape({
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    tasks: Yup.array(),
+  });
 
 const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
   caseTemplate,
@@ -97,7 +91,12 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
       commitAddTask({
         variables: { id: caseTemplate.id, input },
         updater: (store: RecordSourceSelectorProxy) => {
-          insertNode(store, 'Pagination_caseTemplate__taskTemplates', paginationOptions, 'caseTemplateRelationAdd');
+          insertNode(
+            store,
+            'Pagination_caseTemplate__taskTemplates',
+            paginationOptions,
+            'caseTemplateRelationAdd',
+          );
         },
       });
     }
@@ -107,12 +106,13 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
           id: caseTemplate.id,
           toId: removed.value,
         },
-        updater: (store: RecordSourceSelectorProxy) => deleteNode(
-          store,
-          'Pagination_caseTemplate__taskTemplates',
-          paginationOptions,
-          removed.value,
-        ),
+        updater: (store: RecordSourceSelectorProxy) =>
+          deleteNode(
+            store,
+            'Pagination_caseTemplate__taskTemplates',
+            paginationOptions,
+            removed.value,
+          ),
       });
     }
     existingTasks.current = values;
@@ -144,8 +144,7 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
           ...caseTemplate,
           tasks: existingTasks.current,
         }}
-        onSubmit={() => {
-        }}
+        onSubmit={() => {}}
         validationSchema={caseTemplateValidation(t_i18n)}
       >
         {({ values: currentValues, setFieldValue }) => (

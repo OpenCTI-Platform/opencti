@@ -11,7 +11,11 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { noteEditionQuery } from './NoteEdition';
 import NoteEditionContainer from './NoteEditionContainer';
 import Security, { CollaborativeSecurity } from '../../../../utils/Security';
-import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNENRICHMENT,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+  SETTINGS_SETACCESSES,
+} from '../../../../utils/hooks/useGranted';
 import { NoteEditionContainerQuery$data } from './__generated__/NoteEditionContainerQuery.graphql';
 import { deleteNode } from '../../../../utils/store';
 import { StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
@@ -124,21 +128,14 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
 
   return (
     <>
-      <IconButton
-        aria-label={t_i18n('Open menu')}
-        onClick={(e) => setAnchorEl(e.currentTarget)}
-      >
+      <IconButton aria-label={t_i18n('Open menu')} onClick={(e) => setAnchorEl(e.currentTarget)}>
         <MoreVert fontSize="small" color="primary" />
       </IconButton>
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={closeMenu}>
-        <MenuItem onClick={openEditDrawer}>
-          {t_i18n('Update')}
-        </MenuItem>
+        <MenuItem onClick={openEditDrawer}>{t_i18n('Update')}</MenuItem>
         <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-          <MenuItem onClick={openEnrichDrawer}>
-            {t_i18n('Enrichment')}
-          </MenuItem>
+          <MenuItem onClick={openEnrichDrawer}>{t_i18n('Enrichment')}</MenuItem>
         </Security>
         <StixCoreObjectMenuItemUnderEE
           setOpen={openEnrollDrawer}
@@ -146,16 +143,9 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
           needs={[KNOWLEDGE_KNENRICHMENT, SETTINGS_SETACCESSES]}
           matchAll
         />
-        <MenuItem onClick={openRemoveFromEntity}>
-          {t_i18n('Remove from this entity')}
-        </MenuItem>
-        <CollaborativeSecurity
-          data={note}
-          needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
-        >
-          <MenuItem onClick={openDeleteNote}>
-            {t_i18n('Delete')}
-          </MenuItem>
+        <MenuItem onClick={openRemoveFromEntity}>{t_i18n('Remove from this entity')}</MenuItem>
+        <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+          <MenuItem onClick={openDeleteNote}>{t_i18n('Delete')}</MenuItem>
         </CollaborativeSecurity>
       </Menu>
 

@@ -3,7 +3,10 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import ListLines from '../../../components/list_lines/ListLines';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import TriggersLines, { triggersLinesQuery } from './triggers/TriggersLines';
-import { TriggersLinesPaginationQuery, TriggersLinesPaginationQuery$variables } from './triggers/__generated__/TriggersLinesPaginationQuery.graphql';
+import {
+  TriggersLinesPaginationQuery,
+  TriggersLinesPaginationQuery$variables,
+} from './triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import { TriggerLineDummy } from './triggers/TriggerLine';
 import TriggerCreation from './triggers/TriggerCreation';
 import { emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
@@ -17,9 +20,8 @@ const Triggers: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Triggers'));
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<TriggersLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY_TRIGGERS,
-    {
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<TriggersLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY_TRIGGERS, {
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
@@ -31,8 +33,7 @@ const Triggers: FunctionComponent = () => {
         number: 0,
         symbol: '',
       },
-    },
-  );
+    });
   const renderLines = () => {
     const { searchTerm, sortBy, orderAsc, filters, numberOfElements } = viewStorage;
     const dataColumns = {
@@ -85,23 +86,18 @@ const Triggers: FunctionComponent = () => {
         numberOfElements={numberOfElements}
         secondaryAction={true}
         entityTypes={['Trigger']}
-        createButton={(
-          <TriggerCreation paginationOptions={paginationOptions} />
-        )}
+        createButton={<TriggerCreation paginationOptions={paginationOptions} />}
         iconExtension
       >
         {queryRef && (
           <React.Suspense
-            fallback={(
+            fallback={
               <>
                 {Array.from(Array(20).keys()).map((idx) => (
-                  <TriggerLineDummy
-                    key={`TriggerLineDummy-${idx}`}
-                    dataColumns={dataColumns}
-                  />
+                  <TriggerLineDummy key={`TriggerLineDummy-${idx}`} dataColumns={dataColumns} />
                 ))}
               </>
-            )}
+            }
           >
             <TriggersLines
               queryRef={queryRef}

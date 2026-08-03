@@ -29,24 +29,20 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const HiddenTypesChipList = ({
-  hiddenTypes = [],
-}: {
-  hiddenTypes: readonly string[];
-}) => {
+const HiddenTypesChipList = ({ hiddenTypes = [] }: { hiddenTypes: readonly string[] }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const hiddenTypesGlobal = useEntitySettings()
     .filter((entitySetting) => entitySetting.platform_hidden_type === true)
     .map((hiddenType) => hiddenType.target_type);
-  const diff = hiddenTypesGlobal.filter((hiddenTypeGlobal) => !hiddenTypes?.includes(hiddenTypeGlobal));
+  const diff = hiddenTypesGlobal.filter(
+    (hiddenTypeGlobal) => !hiddenTypes?.includes(hiddenTypeGlobal),
+  );
 
   return (
     <>
-      <Label>
-        {t_i18n('Hidden entity types')}
-      </Label>
+      <Label>{t_i18n('Hidden entity types')}</Label>
       <FieldOrEmpty source={hiddenTypesGlobal.concat(hiddenTypes)}>
         {diff.map((hiddenTypeGlobal) => (
           <Chip

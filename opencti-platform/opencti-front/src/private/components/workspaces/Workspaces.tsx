@@ -1,6 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
-import { WorkspacesLinesPaginationQuery, WorkspacesLinesPaginationQuery$variables } from '@components/workspaces/__generated__/WorkspacesLinesPaginationQuery.graphql';
+import {
+  WorkspacesLinesPaginationQuery,
+  WorkspacesLinesPaginationQuery$variables,
+} from '@components/workspaces/__generated__/WorkspacesLinesPaginationQuery.graphql';
 import { WorkspacesLines_data$data } from '@components/workspaces/__generated__/WorkspacesLines_data.graphql';
 import WorkspacePopover from '@components/workspaces/WorkspacePopover';
 import WorkspaceCreation from './WorkspaceCreation';
@@ -8,7 +11,10 @@ import Security from '../../../utils/Security';
 import { EXPLORE, EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -47,14 +53,14 @@ const workspacesLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...WorkspacesLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -95,12 +101,12 @@ interface WorkspacesProps {
   type: string;
 }
 
-const Workspaces: FunctionComponent<WorkspacesProps> = ({
-  type,
-}) => {
+const Workspaces: FunctionComponent<WorkspacesProps> = ({ type }) => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(type === 'dashboard' ? t_i18n('Custom dashboards | Dashboards') : t_i18n('Investigations'));
+  setTitle(
+    type === 'dashboard' ? t_i18n('Custom dashboards | Dashboards') : t_i18n('Investigations'),
+  );
 
   const LOCAL_STORAGE_KEY = `view-${type}-list`;
   const initialStorageValues = {
@@ -120,19 +126,18 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
     initialStorageValues,
   );
 
-  const filters = useBuildEntityTypeBasedFilterContext(
-    'Workspace',
-    {
-      mode: 'and',
-      filters: [{
+  const filters = useBuildEntityTypeBasedFilterContext('Workspace', {
+    mode: 'and',
+    filters: [
+      {
         key: 'type',
         values: [type],
         mode: 'or',
         operator: 'eq',
-      }],
-      filterGroups: viewStorage.filters ? [viewStorage.filters] : [],
-    },
-  );
+      },
+    ],
+    filterGroups: viewStorage.filters ? [viewStorage.filters] : [],
+  });
 
   const workspacePaginationOptions = {
     ...paginationOptions,
@@ -165,19 +170,25 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
       id: 'updated_at',
       percentWidth: type === 'dashboard' ? 16 : 24,
     },
-    ...(type === 'dashboard' ? {
-      isShared: {
-        id: 'isShared',
-      },
-    } : {}),
+    ...(type === 'dashboard'
+      ? {
+          isShared: {
+            id: 'isShared',
+          },
+        }
+      : {}),
   };
 
   return (
     <>
       <Breadcrumbs
-        elements={type === 'dashboard'
-          ? [{ label: t_i18n('Dashboards') }, { label: t_i18n('Custom dashboards'), current: true }]
-          : [{ label: t_i18n('Investigations'), current: true }]
+        elements={
+          type === 'dashboard'
+            ? [
+                { label: t_i18n('Dashboards') },
+                { label: t_i18n('Custom dashboards'), current: true },
+              ]
+            : [{ label: t_i18n('Investigations'), current: true }]
         }
       />
 
@@ -200,21 +211,15 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
           lineFragment={workspaceLineFragment}
           entityTypes={['Workspace']}
           searchContextFinal={{ entityTypes: ['Workspace'] }}
-          createButton={(
+          createButton={
             <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}>
-              <WorkspaceCreation
-                paginationOptions={workspacePaginationOptions}
-                type={type}
-              />
+              <WorkspaceCreation paginationOptions={workspacePaginationOptions} type={type} />
             </Security>
-          )}
+          }
           taskScope={type === 'dashboard' ? 'DASHBOARD' : 'INVESTIGATION'}
           actions={(row) => (
             <Security needs={row.type === 'dashboard' ? [EXPLORE] : [INVESTIGATION_INUPDATE]}>
-              <WorkspacePopover
-                data={row}
-                paginationOptions={workspacePaginationOptions}
-              />
+              <WorkspacePopover data={row} paginationOptions={workspacePaginationOptions} />
             </Security>
           )}
         />

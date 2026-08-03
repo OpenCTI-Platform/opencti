@@ -1,8 +1,17 @@
 import type { FileHandle } from 'fs/promises';
 import pjson from '../../../package.json';
-import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import {
+  fullEntitiesList,
+  pageEntitiesConnection,
+  storeLoadById,
+} from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { ENTITY_TYPE_CUSTOM_VIEW, type BasicStoreEntityCustomView, type CustomViewExport, type StoreEntityCustomView } from './customView-types';
+import {
+  ENTITY_TYPE_CUSTOM_VIEW,
+  type BasicStoreEntityCustomView,
+  type CustomViewExport,
+  type StoreEntityCustomView,
+} from './customView-types';
 import {
   type QueryCustomViewsArgs,
   type CustomViewAddInput,
@@ -23,16 +32,31 @@ import {
 } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../task/task-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
+import {
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+} from '../../schema/general';
 import { schemaTypesDefinition } from '../../schema/schema-types';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../schema/stixCyberObservable';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { FunctionalError } from '../../config/errors';
-import { convertDashboardManifestIds, exportDashboardWidget, importDashboardWidgetConfiguration } from '../dashboard/dashboard-utils';
-import { createInternalObject, deleteInternalObject, editInternalObject } from '../../domain/internalObject';
+import {
+  convertDashboardManifestIds,
+  exportDashboardWidget,
+  importDashboardWidgetConfiguration,
+} from '../dashboard/dashboard-utils';
+import {
+  createInternalObject,
+  deleteInternalObject,
+  editInternalObject,
+} from '../../domain/internalObject';
 import { updateAttribute } from '../../database/middleware';
 import { extractContentFrom } from '../../utils/fileToContent';
-import { addCustomViewCreatedCount, addCustomViewEnabledCount } from '../../manager/telemetryManager';
+import {
+  addCustomViewCreatedCount,
+  addCustomViewEnabledCount,
+} from '../../manager/telemetryManager';
 import { lockResources } from '../../lock/master-lock';
 
 /**
@@ -58,14 +82,14 @@ let entityTypesCandidateToCustomViews: string[] | undefined = undefined;
 const getEntityTypesCandidateToCustomViews = () => {
   if (!entityTypesCandidateToCustomViews) {
     const candidateTypes = [
-      ...schemaTypesDefinition
-        .get(ABSTRACT_STIX_DOMAIN_OBJECT),
+      ...schemaTypesDefinition.get(ABSTRACT_STIX_DOMAIN_OBJECT),
       ABSTRACT_STIX_CORE_RELATIONSHIP,
       ABSTRACT_STIX_CYBER_OBSERVABLE,
       ENTITY_HASHED_OBSERVABLE_ARTIFACT,
     ];
-    entityTypesCandidateToCustomViews = candidateTypes
-      .filter((entityType) => !ENTITY_TYPES_WITHOUT_CUSTOM_VIEWS.includes(entityType));
+    entityTypesCandidateToCustomViews = candidateTypes.filter(
+      (entityType) => !ENTITY_TYPES_WITHOUT_CUSTOM_VIEWS.includes(entityType),
+    );
   }
   return entityTypesCandidateToCustomViews;
 };
@@ -87,17 +111,21 @@ const applyUniqueDefaultCustomViewConstraint = async (
     {
       baseData: true,
       filters: {
-        filters: [{
-          key: ['target_entity_type'],
-          values: [targetEntityType],
-        }, {
-          key: ['default'],
-          values: [true],
-        }, {
-          key: ['id'],
-          values: [newDefaultCustomViewId],
-          operator: FilterOperator.NotEq,
-        }],
+        filters: [
+          {
+            key: ['target_entity_type'],
+            values: [targetEntityType],
+          },
+          {
+            key: ['default'],
+            values: [true],
+          },
+          {
+            key: ['id'],
+            values: [newDefaultCustomViewId],
+            operator: FilterOperator.NotEq,
+          },
+        ],
         filterGroups: [],
         mode: FilterMode.And,
       },
@@ -114,10 +142,12 @@ const applyUniqueDefaultCustomViewConstraint = async (
       user,
       entity.id,
       ENTITY_TYPE_CUSTOM_VIEW,
-      [{
-        key: 'default',
-        value: [false],
-      }],
+      [
+        {
+          key: 'default',
+          value: [false],
+        },
+      ],
     );
   });
   await Promise.all(promises);
@@ -165,7 +195,7 @@ export const findAllCustomViews = async (
       filters: {
         filterGroups: [
           entityTypeFilterGroup,
-          ...paginationOptions.filters ? [paginationOptions.filters] : [],
+          ...(paginationOptions.filters ? [paginationOptions.filters] : []),
         ],
         mode: FilterMode.And,
         filters: [],
@@ -184,10 +214,9 @@ export const addCustomView = async (
   input: CustomViewAddInput,
 ) => {
   if (!isCustomViewsAvailableForEntityType(input.targetEntityType)) {
-    throw FunctionalError(
-      'Custom views cannot be created for given entity type', {
-        entityType: input.targetEntityType,
-      });
+    throw FunctionalError('Custom views cannot be created for given entity type', {
+      entityType: input.targetEntityType,
+    });
   }
   const customViewToCreate = {
     description: input.description,
@@ -206,7 +235,9 @@ export const addCustomView = async (
   // Locking the object list on the entity prevents this race condition.
   // Note: a cleaner long-term approach would be to store the default reference directly on the entity
   // (e.g. a defaultCustomViewId field), which would make this unicity constraint trivial to enforce.
-  const lock = input.default ? await lockResources([`custom-view-default:${input.targetEntityType}`]) : null;
+  const lock = input.default
+    ? await lockResources([`custom-view-default:${input.targetEntityType}`])
+    : null;
   try {
     const element = await createInternalObject<StoreEntityCustomView>(
       context,
@@ -226,8 +257,8 @@ export const addCustomView = async (
       TELEMETRY.customViewEnabled();
     }
     if (element.default) {
-    // Unset the `default` fields for other CustomViews of the same
-    // target_entity_type to enforce uniqueness constraint
+      // Unset the `default` fields for other CustomViews of the same
+      // target_entity_type to enforce uniqueness constraint
       await applyUniqueDefaultCustomViewConstraint(
         context,
         user,
@@ -251,7 +282,12 @@ export const editCustomView = async (
   const defaultFieldValue = input.find((i) => i.key === 'default')?.value?.[0];
   const enabledFieldValue = input.find((i) => i.key === 'enabled')?.value?.[0];
 
-  const existing = await storeLoadById<BasicStoreEntityCustomView>(context, user, customViewId, ENTITY_TYPE_CUSTOM_VIEW);
+  const existing = await storeLoadById<BasicStoreEntityCustomView>(
+    context,
+    user,
+    customViewId,
+    ENTITY_TYPE_CUSTOM_VIEW,
+  );
   const entity_type = existing.target_entity_type;
 
   // The default status is stored on the object itself (customView) rather than on its parent entity.
@@ -261,7 +297,9 @@ export const editCustomView = async (
   // Locking the object list on the entity prevents this race condition.
   // Note: a cleaner long-term approach would be to store the default reference directly on the entity
   // (e.g. a defaultCustomViewId field), which would make this unicity constraint trivial to enforce.
-  const lock = defaultFieldValue ? await lockResources([`custom-view-default:${entity_type}`]) : null;
+  const lock = defaultFieldValue
+    ? await lockResources([`custom-view-default:${entity_type}`])
+    : null;
   try {
     const element = await editInternalObject<StoreEntityCustomView>(
       context,
@@ -270,25 +308,30 @@ export const editCustomView = async (
       ENTITY_TYPE_CUSTOM_VIEW,
       [
         ...input,
-        ...(nameInput ? [{
-          key: 'slug',
-          value: [slugify(nameInput.value[0])],
-        }] : []),
+        ...(nameInput
+          ? [
+              {
+                key: 'slug',
+                value: [slugify(nameInput.value[0])],
+              },
+            ]
+          : []),
       ],
       {
         auditLogEnabled: true,
-        auditLogContextSanitizer: (input) => input.map((entry) => ({
-          ...entry,
-          value: entry.key === 'manifest' ? ['[sanitized]'] : entry.value,
-        })),
+        auditLogContextSanitizer: (input) =>
+          input.map((entry) => ({
+            ...entry,
+            value: entry.key === 'manifest' ? ['[sanitized]'] : entry.value,
+          })),
       },
     );
     if (enabledFieldValue) {
       TELEMETRY.customViewEnabled();
     }
     if (defaultFieldValue) {
-    // Unset the `default` fields for other CustomViews of the same
-    // target_entity_type to enforce uniqueness constraint
+      // Unset the `default` fields for other CustomViews of the same
+      // target_entity_type to enforce uniqueness constraint
       await applyUniqueDefaultCustomViewConstraint(
         context,
         user,
@@ -322,10 +365,11 @@ export const customViewImportWidgetConfiguration = async (
     [{ key: 'manifest', value: [updatedManifest] }],
     {
       auditLogEnabled: true,
-      auditLogContextSanitizer: (input) => input.map((entry) => ({
-        ...entry,
-        value: entry.key === 'manifest' ? ['[sanitized]'] : entry.value,
-      })),
+      auditLogContextSanitizer: (input) =>
+        input.map((entry) => ({
+          ...entry,
+          value: entry.key === 'manifest' ? ['[sanitized]'] : entry.value,
+        })),
     },
   );
 };
@@ -338,7 +382,10 @@ export const exportCustomViewWidget = async (
 ) => {
   const result = await exportDashboardWidget(context, user, customView.manifest, widgetId);
   if (!result.success) {
-    throw FunctionalError('WIDGET_EXPORT_NOT_FOUND', { customView: customView.id, widget: widgetId });
+    throw FunctionalError('WIDGET_EXPORT_NOT_FOUND', {
+      customView: customView.id,
+      widget: widgetId,
+    });
   }
   return result.data;
 };
@@ -349,10 +396,9 @@ export async function duplicateCustomView(
   input: CustomViewDuplicateInput,
 ) {
   if (!isCustomViewsAvailableForEntityType(input.targetEntityType)) {
-    throw FunctionalError(
-      'Custom views cannot be created for given entity type', {
-        entityType: input.targetEntityType,
-      });
+    throw FunctionalError('Custom views cannot be created for given entity type', {
+      entityType: input.targetEntityType,
+    });
   }
   const customViewToCreate = {
     description: input.description,
@@ -418,7 +464,12 @@ export const exportCustomView = async (
   user: AuthUser,
   customView: BasicStoreEntityCustomView,
 ) => {
-  const generatedManifest = await convertDashboardManifestIds(context, user, customView.manifest ?? '', 'internal');
+  const generatedManifest = await convertDashboardManifestIds(
+    context,
+    user,
+    customView.manifest ?? '',
+    'internal',
+  );
   const exportConfigration: CustomViewExport = {
     openCTI_version: pjson.version,
     type: 'custom-view',
@@ -439,16 +490,17 @@ export const importCustomViewConfiguration = async (
 ) => {
   const parsedData: CustomViewExport = await extractContentFrom(file);
   const { manifest } = parsedData.configuration;
-  const inputTargetEntityType = typeof targetEntityType === 'string' ? targetEntityType.trim() : undefined;
-  const resolvedTargetEntityType = inputTargetEntityType || parsedData.configuration.target_entity_type;
+  const inputTargetEntityType =
+    typeof targetEntityType === 'string' ? targetEntityType.trim() : undefined;
+  const resolvedTargetEntityType =
+    inputTargetEntityType || parsedData.configuration.target_entity_type;
   if (!resolvedTargetEntityType) {
     throw FunctionalError('Missing target entity type for custom view import');
   }
   if (!isCustomViewsAvailableForEntityType(resolvedTargetEntityType)) {
-    throw FunctionalError(
-      'Custom views cannot be created for given entity type', {
-        entityType: resolvedTargetEntityType,
-      });
+    throw FunctionalError('Custom views cannot be created for given entity type', {
+      entityType: resolvedTargetEntityType,
+    });
   }
   // Manifest ids must be rewritten for filters
   const generatedManifest = await convertDashboardManifestIds(context, user, manifest, 'stix');

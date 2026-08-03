@@ -22,10 +22,7 @@ import { handleError } from '../../../../../relay/environment';
 import type { Theme } from '../../../../../components/Theme';
 
 export const userMutationFieldPatch = graphql`
-  mutation UserEditionOverviewFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-  ) {
+  mutation UserEditionOverviewFieldPatchMutation($id: ID!, $input: [EditInput]!) {
     userEdit(id: $id) {
       fieldPatch(input: $input) {
         ...UserEditionOverview_user
@@ -56,10 +53,7 @@ const userMutationOrganizationAdd = graphql`
 `;
 
 const userMutationOrganizationDelete = graphql`
-  mutation UserEditionOverviewOrganizationDeleteMutation(
-    $id: ID!
-    $organizationId: ID!
-  ) {
+  mutation UserEditionOverviewOrganizationDeleteMutation($id: ID!, $organizationId: ID!) {
     userEdit(id: $id) {
       organizationDelete(organizationId: $organizationId) {
         ...UserEditionOverview_user
@@ -68,33 +62,38 @@ const userMutationOrganizationDelete = graphql`
   }
 `;
 
-const userValidation = (t: (value: string) => string, userIsOnlyOrganizationAdmin: boolean) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  user_email: Yup.string()
-    .required(t('This field is required'))
-    .email(t('The value must be an email address')),
-  firstname: Yup.string().nullable(),
-  lastname: Yup.string().nullable(),
-  language: Yup.string().nullable(),
-  description: Yup.string().nullable(),
-  account_status: Yup.string(),
-  account_lock_after_date: Yup.date().nullable(),
-  objectOrganization: userIsOnlyOrganizationAdmin ? Yup.array().min(1, t('Minimum one organization')).required(t('This field is required')) : Yup.array(),
-});
+const userValidation = (t: (value: string) => string, userIsOnlyOrganizationAdmin: boolean) =>
+  Yup.object().shape({
+    name: Yup.string().required(t('This field is required')),
+    user_email: Yup.string()
+      .required(t('This field is required'))
+      .email(t('The value must be an email address')),
+    firstname: Yup.string().nullable(),
+    lastname: Yup.string().nullable(),
+    language: Yup.string().nullable(),
+    description: Yup.string().nullable(),
+    account_status: Yup.string(),
+    account_lock_after_date: Yup.date().nullable(),
+    objectOrganization: userIsOnlyOrganizationAdmin
+      ? Yup.array().min(1, t('Minimum one organization')).required(t('This field is required'))
+      : Yup.array(),
+  });
 
 interface UserEditionOverviewComponentProps {
   user: UserEditionOverview_user$data;
   context:
     | readonly ({
-      readonly focusOn: string | null | undefined;
-      readonly name: string;
-    } | null)[]
-    | null | undefined;
+        readonly focusOn: string | null | undefined;
+        readonly name: string;
+      } | null)[]
+    | null
+    | undefined;
 }
 
-const UserEditionOverviewComponent: FunctionComponent<
-  UserEditionOverviewComponentProps
-> = ({ user, context }) => {
+const UserEditionOverviewComponent: FunctionComponent<UserEditionOverviewComponentProps> = ({
+  user,
+  context,
+}) => {
   const { t_i18n } = useFormatter();
   const { me, settings } = useAuth();
   const theme = useTheme<Theme>();
@@ -182,7 +181,7 @@ const UserEditionOverviewComponent: FunctionComponent<
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={userValidation(t_i18n, userIsOnlyOrganizationAdmin)}
-      onSubmit={() => { }}
+      onSubmit={() => {}}
     >
       {() => (
         <Form style={{ marginTop: theme.spacing(2) }}>
@@ -195,9 +194,7 @@ const UserEditionOverviewComponent: FunctionComponent<
             fullWidth={true}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="name" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="name" />}
           />
           <Field
             component={TextField}
@@ -209,9 +206,7 @@ const UserEditionOverviewComponent: FunctionComponent<
             style={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="user_email" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="user_email" />}
           />
           <Field
             component={TextField}
@@ -222,9 +217,7 @@ const UserEditionOverviewComponent: FunctionComponent<
             style={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="firstname" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="firstname" />}
           />
           <Field
             component={TextField}
@@ -235,9 +228,7 @@ const UserEditionOverviewComponent: FunctionComponent<
             style={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="lastname" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="lastname" />}
           />
           <Field
             component={MarkdownField}
@@ -249,9 +240,7 @@ const UserEditionOverviewComponent: FunctionComponent<
             style={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
           />
           <Field
             component={SelectField}
@@ -275,11 +264,15 @@ const UserEditionOverviewComponent: FunctionComponent<
           <ObjectOrganizationField
             name="objectOrganization"
             label="Organizations"
-            filters={userIsOnlyOrganizationAdmin ? {
-              mode: 'and',
-              filters: [{ key: 'authorized_authorities', values: [me.id] }],
-              filterGroups: [],
-            } : null}
+            filters={
+              userIsOnlyOrganizationAdmin
+                ? {
+                    mode: 'and',
+                    filters: [{ key: 'authorized_authorities', values: [me.id] }],
+                    filterGroups: [],
+                  }
+                : null
+            }
             onChange={handleChangeObjectOrganization}
             style={fieldSpacingContainerStyle}
             outlined={false}
@@ -295,7 +288,11 @@ const UserEditionOverviewComponent: FunctionComponent<
             onChange={handleSubmitField}
           >
             {settings.platform_user_statuses.map((s) => {
-              return <MenuItem key={s.status} value={s.status}>{t_i18n(s.status)}</MenuItem>;
+              return (
+                <MenuItem key={s.status} value={s.status}>
+                  {t_i18n(s.status)}
+                </MenuItem>
+              );
             })}
           </Field>
           <FormHelperText>
@@ -319,64 +316,69 @@ const UserEditionOverviewComponent: FunctionComponent<
   );
 };
 
-const UserEditionOverview = createFragmentContainer(
-  UserEditionOverviewComponent,
-  {
-    user: graphql`
-      fragment UserEditionOverview_user on User
-      @argumentDefinitions(
-        groupsOrderBy: { type: "GroupsOrdering", defaultValue: name }
-        groupsOrderMode: { type: "OrderingMode", defaultValue: asc }
-        organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
-        organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
-        organizationsCount: { type: "Int", defaultValue: 500 }
-        rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
-        rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
-      ) {
+const UserEditionOverview = createFragmentContainer(UserEditionOverviewComponent, {
+  user: graphql`
+    fragment UserEditionOverview_user on User
+    @argumentDefinitions(
+      groupsOrderBy: { type: "GroupsOrdering", defaultValue: name }
+      groupsOrderMode: { type: "OrderingMode", defaultValue: asc }
+      organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
+      organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
+      organizationsCount: { type: "Int", defaultValue: 500 }
+      rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
+      rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
+    ) {
+      id
+      name
+      description
+      external
+      user_email
+      firstname
+      lastname
+      language
+      theme
+      otp_activated
+      password_valid_until
+      account_status
+      account_lock_after_date
+      roles(orderBy: $rolesOrderBy, orderMode: $rolesOrderMode) {
         id
         name
-        description
-        external
-        user_email
-        firstname
-        lastname
-        language
-        theme
-        otp_activated
-        password_valid_until
-        account_status
-        account_lock_after_date
-        roles(orderBy: $rolesOrderBy, orderMode: $rolesOrderMode) {
-          id
-          name
-        }
-        objectAssignedOrganization(first: $organizationsCount, orderBy: $organizationsOrderBy, orderMode: $organizationsOrderMode) {
-          edges {
-            node {
-              id
-              name
-            }
-          }
-        }
-        objectOrganization(first: $organizationsCount, orderBy: $organizationsOrderBy, orderMode: $organizationsOrderMode) {
-          edges {
-            node {
-              id  
-              name
-            }
-          }
-        }
-        groups(orderBy: $groupsOrderBy, orderMode: $groupsOrderMode) {
-          edges {
-            node {
-              id
-              name
-            }
+      }
+      objectAssignedOrganization(
+        first: $organizationsCount
+        orderBy: $organizationsOrderBy
+        orderMode: $organizationsOrderMode
+      ) {
+        edges {
+          node {
+            id
+            name
           }
         }
       }
-    `,
-  },
-);
+      objectOrganization(
+        first: $organizationsCount
+        orderBy: $organizationsOrderBy
+        orderMode: $organizationsOrderMode
+      ) {
+        edges {
+          node {
+            id
+            name
+          }
+        }
+      }
+      groups(orderBy: $groupsOrderBy, orderMode: $groupsOrderMode) {
+        edges {
+          node {
+            id
+            name
+          }
+        }
+      }
+    }
+  `,
+});
 
 export default UserEditionOverview;

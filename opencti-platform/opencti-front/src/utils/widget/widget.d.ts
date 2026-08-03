@@ -4,36 +4,39 @@ import type { FintelTemplateWidget } from '@components/settings/sub_types/fintel
 import { ReactNode } from 'react';
 import { WidgetColumnsLayout } from '@components/widgets/WidgetCustomAttributesColumnsInput';
 
-export type WidgetHost = {
-  kind: 'workspace';
-} | {
-  kind: 'fintelTemplate';
-  fintelWidgets: FintelTemplateWidget[];
-  fintelEntityType: string;
-  fintelEditorValue: string;
-} | {
-  kind: 'custom-view';
-  customViewTargetEntityType: string;
-  customViewTargetEntityId?: string;
-  previewMode?: boolean;
-  missingHostEntityFiller?: ReactNode;
-};
+export type WidgetHost =
+  | {
+      kind: 'workspace';
+    }
+  | {
+      kind: 'fintelTemplate';
+      fintelWidgets: FintelTemplateWidget[];
+      fintelEntityType: string;
+      fintelEditorValue: string;
+    }
+  | {
+      kind: 'custom-view';
+      customViewTargetEntityType: string;
+      customViewTargetEntityId?: string;
+      previewMode?: boolean;
+      missingHostEntityFiller?: ReactNode;
+    };
 
 export type WidgetPerspective = 'audits' | 'entities' | 'relationships' | '%future added value';
 
-export type WidgetColumnAttributeType
-  = | 'date'
-    | 'boolean'
-    | 'markdown'
-    | 'tag'
-    | 'tag_list'
-    | 'text_list'
-    | 'score'
-    | 'cvss_score'
-    | 'open_vocab'
-    | 'open_vocab_list'
-    | 'copy'
-    | 'entity_ref';
+export type WidgetColumnAttributeType =
+  | 'date'
+  | 'boolean'
+  | 'markdown'
+  | 'tag'
+  | 'tag_list'
+  | 'text_list'
+  | 'score'
+  | 'cvss_score'
+  | 'open_vocab'
+  | 'open_vocab_list'
+  | 'copy'
+  | 'entity_ref';
 
 interface WidgetColumn {
   attribute: string | null;

@@ -7,21 +7,28 @@ interface AttackPatternsMatrixShouldCoverIconProps {
   isOverlapping: boolean;
 }
 
-const AttackPatternsMatrixShouldCoverIcon = ({ isOverlapping }: AttackPatternsMatrixShouldCoverIconProps) => {
+const AttackPatternsMatrixShouldCoverIcon = ({
+  isOverlapping,
+}: AttackPatternsMatrixShouldCoverIconProps) => {
   const { t_i18n } = useFormatter();
   return (
     <Tooltip
-      title={isOverlapping ? t_i18n('Security posture should cover the threat') : t_i18n('Security posture does not cover the threat')}
+      title={
+        isOverlapping
+          ? t_i18n('Security posture should cover the threat')
+          : t_i18n('Security posture does not cover the threat')
+      }
       sx={{
         display: 'flex',
         alignItems: 'center',
         height: 19,
       }}
     >
-      {isOverlapping
-        ? <CheckOutlined fontSize="medium" color="success" />
-        : <CloseOutlined fontSize="medium" color="error" />
-      }
+      {isOverlapping ? (
+        <CheckOutlined fontSize="medium" color="success" />
+      ) : (
+        <CloseOutlined fontSize="medium" color="error" />
+      )}
     </Tooltip>
   );
 };

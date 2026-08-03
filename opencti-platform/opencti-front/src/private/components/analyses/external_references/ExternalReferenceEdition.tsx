@@ -19,9 +19,9 @@ interface ExternalReferenceEditionProps {
   externalReferenceId: string;
 }
 
-const ExternalReferenceEdition: FunctionComponent<
-  ExternalReferenceEditionProps
-> = ({ externalReferenceId }) => {
+const ExternalReferenceEdition: FunctionComponent<ExternalReferenceEditionProps> = ({
+  externalReferenceId,
+}) => {
   const handleClose = () => {
     commitMutation({
       mutation: externalReferenceEditionOverviewFocus,
@@ -42,11 +42,7 @@ const ExternalReferenceEdition: FunctionComponent<
     <QueryRenderer
       query={externalReferenceEditionQuery}
       variables={{ id: externalReferenceId }}
-      render={({
-        props,
-      }: {
-        props: ExternalReferenceEditionContainerQuery$data;
-      }) => {
+      render={({ props }: { props: ExternalReferenceEditionContainerQuery$data }) => {
         if (props && props.externalReference) {
           return (
             <ExternalReferenceEditionContainer

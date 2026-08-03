@@ -94,14 +94,26 @@ const connectorResolvers = {
     synchronizers: (_, args, context) => findSyncPaginated(context, context.user, args),
     synchronizerFetch: (_, { input }, context) => fetchRemoteStreams(context, context.user, input),
     // region new managed connectors
-    connectorManager: (_, { managerId }, context) => connectorManager(context, context.user, managerId),
+    connectorManager: (_, { managerId }, context) =>
+      connectorManager(context, context.user, managerId),
     connectorManagers: (_, __, context) => connectorManagers(context, context.user),
-    connectorMigrationAssessment: async (_, { connectorId, containerImage, configuration }, context) => {
-      return assessConnectorMigration(context, context.user, connectorId, containerImage, configuration);
+    connectorMigrationAssessment: async (
+      _,
+      { connectorId, containerImage, configuration },
+      context,
+    ) => {
+      return assessConnectorMigration(
+        context,
+        context.user,
+        connectorId,
+        containerImage,
+        configuration,
+      );
     },
     // endregion
   },
-  Connector: { // For UI display
+  Connector: {
+    // For UI display
     works: (cn, args, context) => worksForConnector(context, context.user, cn.id, args),
     connector_queue_details: (cn) => queueDetails(cn.id),
     connector_priority_group: (cn) => {
@@ -111,21 +123,29 @@ const connectorResolvers = {
     manager_connector_logs: (cn) => redisGetConnectorLogs(cn.id),
     manager_health_metrics: (cn, _, context) => connectorGetHealth(context, context.user, cn.id),
     manager_connector_uptime: (cn, _, context) => connectorGetUptime(context, context.user, cn.id),
-    manager_contract_hash: (cn, _, context) => computeManagerContractHash(context, context.user, cn),
-    manager_contract_definition: (cn, _, context) => computeManagerConnectorContract(context, context.user, cn),
-    manager_contract_configuration: (cn, _, context) => computeManagerConnectorConfiguration(context, context.user, cn),
+    manager_contract_hash: (cn, _, context) =>
+      computeManagerContractHash(context, context.user, cn),
+    manager_contract_definition: (cn, _, context) =>
+      computeManagerConnectorContract(context, context.user, cn),
+    manager_contract_configuration: (cn, _, context) =>
+      computeManagerConnectorConfiguration(context, context.user, cn),
     manager_contract_image: (cn) => computeManagerConnectorImage(cn),
-    manager_contract_excerpt: (cn, _, context) => computeManagerConnectorExcerpt(context, context.user, cn),
+    manager_contract_excerpt: (cn, _, context) =>
+      computeManagerConnectorExcerpt(context, context.user, cn),
     jwks: () => getConnectorJwks(),
   },
-  ManagedConnector: { // For composer
+  ManagedConnector: {
+    // For composer
     manager_connector_logs: (cn) => redisGetConnectorLogs(cn.id),
     manager_health_metrics: (cn, _, context) => connectorGetHealth(context, context.user, cn.id),
     manager_connector_uptime: (cn, _, context) => connectorGetUptime(context, context.user, cn.id),
-    manager_contract_hash: (cn, _, context) => computeManagerContractHash(context, context.user, cn),
+    manager_contract_hash: (cn, _, context) =>
+      computeManagerContractHash(context, context.user, cn),
     manager_contract_configuration: (cn, _, context) => {
       // Configuration for composer must contain encrypted authentication information
-      return computeManagerConnectorConfiguration(context, context.user, cn, { withEncrypted: true });
+      return computeManagerConnectorConfiguration(context, context.user, cn, {
+        withEncrypted: true,
+      });
     },
     manager_contract_image: (cn) => computeManagerConnectorImage(cn),
     connector_user: (cn, _, context) => connectorUser(context, context.user, cn.connector_user_id),
@@ -141,7 +161,8 @@ const connectorResolvers = {
   },
   Synchronizer: {
     user: (sync, _, context) => loadCreator(context, context.user, sync.user_id),
-    queue_messages: async (sync, _, context) => getConnectorQueueSize(context, context.user, sync.id),
+    queue_messages: async (sync, _, context) =>
+      getConnectorQueueSize(context, context.user, sync.id),
     toConfigurationExport: (synchronizer) => synchronizerExport(synchronizer),
     consumer_metrics: (sync) => readSyncConsumerMetrics(sync.id),
   },
@@ -149,8 +170,10 @@ const connectorResolvers = {
     deleteConnector: (_, { id }, context) => connectorDelete(context, context.user, id),
     registerConnector: (_, { input }, context) => registerConnector(context, context.user, input),
     resetStateConnector: (_, { id }, context) => resetStateConnector(context, context.user, id),
-    pingConnector: (_, { id, state, connectorInfo }, context) => pingConnector(context, context.user, id, state, connectorInfo),
-    updateConnectorTrigger: (_, { id, input }, context) => connectorTriggerUpdate(context, context.user, id, input),
+    pingConnector: (_, { id, state, connectorInfo }, context) =>
+      pingConnector(context, context.user, id, state, connectorInfo),
+    updateConnectorTrigger: (_, { id, input }, context) =>
+      connectorTriggerUpdate(context, context.user, id, input),
     // region new managed connectors
     managedConnectorAdd: (_, { input }, context) => {
       return managedConnectorAdd(context, context.user, input);
@@ -189,27 +212,40 @@ const connectorResolvers = {
       delete: () => deleteWork(context, context.user, id),
       ping: () => pingWork(context, context.user, id),
       reportExpectation: ({ error }) => reportExpectation(context, context.user, id, error),
-      addExpectations: ({ expectations }) => updateExpectationsNumber(context, context.user, id, expectations),
-      addDraftContext: ({ draftContext }) => addDraftContext(context, context.user, id, draftContext),
+      addExpectations: ({ expectations }) =>
+        updateExpectationsNumber(context, context.user, id, expectations),
+      addDraftContext: ({ draftContext }) =>
+        addDraftContext(context, context.user, id, draftContext),
       toReceived: ({ message }) => updateReceivedTime(context, context.user, id, message),
-      toProcessed: ({ message, inError }) => updateProcessedTime(context, context.user, id, message, inError),
+      toProcessed: ({ message, inError }) =>
+        updateProcessedTime(context, context.user, id, message, inError),
     }),
-    workDelete: (_, { connectorId }, context) => deleteWorkForConnector(context, context.user, connectorId),
+    workDelete: (_, { connectorId }, context) =>
+      deleteWorkForConnector(context, context.user, connectorId),
     // Sync part
     synchronizerAdd: (_, { input }, context) => registerSync(context, context.user, input),
-    synchronizerAddAutoUser: (_, { id, input }, context) => synchronizerAddAutoUser(context, context.user, id, input),
+    synchronizerAddAutoUser: (_, { id, input }, context) =>
+      synchronizerAddAutoUser(context, context.user, id, input),
     synchronizerEdit: (_, { id }, context) => ({
       delete: () => syncDelete(context, context.user, id),
       fieldPatch: ({ input }) => syncEditField(context, context.user, id, input),
       contextPatch: ({ input }) => syncEditContext(context, context.user, id, input),
       contextClean: () => syncCleanContext(context, context.user, id),
     }),
-    synchronizerStart: (_, { id }, context) => patchSync(context, context.user, id, { running: true }),
-    synchronizerStop: (_, { id }, context) => patchSync(context, context.user, id, { running: false }),
+    synchronizerStart: (_, { id }, context) =>
+      patchSync(context, context.user, id, { running: true }),
+    synchronizerStop: (_, { id }, context) =>
+      patchSync(context, context.user, id, { running: false }),
     synchronizerTest: (_, { input }, context) => testSync(context, context.user, input),
 
     connectorMigrateToManaged: (_, { input }, context) => {
-      const { connectorId, containerImage, configuration, resetConnectorState, convertUserToServiceAccount } = input;
+      const {
+        connectorId,
+        containerImage,
+        configuration,
+        resetConnectorState,
+        convertUserToServiceAccount,
+      } = input;
       return migrateConnectorToManaged(
         context,
         context.user,

@@ -1,5 +1,11 @@
 import type { StixId } from './stix';
-import type { StixRelationshipObject, StixOpenctiExtension, StixDate, StixKillChainPhase, StixCoverage } from './stix-2-1-common';
+import type {
+  StixRelationshipObject,
+  StixOpenctiExtension,
+  StixDate,
+  StixKillChainPhase,
+  StixCoverage,
+} from './stix-2-1-common';
 import { STIX_EXT_OCTI } from './stix-2-1-extensions';
 
 // Relationship Specific Properties

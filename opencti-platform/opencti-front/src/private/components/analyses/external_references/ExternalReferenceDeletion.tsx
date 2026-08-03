@@ -24,20 +24,23 @@ interface ExternalReferenceDeletionProps {
   isExternalReferenceAttachment?: boolean;
 }
 
-const ExternalReferenceDeletion: FunctionComponent<
-  ExternalReferenceDeletionProps
-> = ({ id, objectId, isOpen, handleClose, handleRemove, isExternalReferenceAttachment }) => {
+const ExternalReferenceDeletion: FunctionComponent<ExternalReferenceDeletionProps> = ({
+  id,
+  objectId,
+  isOpen,
+  handleClose,
+  handleRemove,
+  isExternalReferenceAttachment,
+}) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
     values: { entity_type: t_i18n('entity_External-Reference') },
   });
-  const [commit] = useApiMutation(
-    externalReferenceDeletionDeleteMutation,
-    undefined,
-    { successMessage: deleteSuccessMessage },
-  );
+  const [commit] = useApiMutation(externalReferenceDeletionDeleteMutation, undefined, {
+    successMessage: deleteSuccessMessage,
+  });
   const deletion = useDeletion({});
   const { setDeleting, handleCloseDelete } = deletion;
   const submitDelete = () => {
@@ -48,13 +51,7 @@ const ExternalReferenceDeletion: FunctionComponent<
       },
       updater: (store) => {
         if (handleRemove && objectId) {
-          deleteNodeFromId(
-            store,
-            objectId,
-            'Pagination_externalReferences',
-            undefined,
-            id,
-          );
+          deleteNodeFromId(store, objectId, 'Pagination_externalReferences', undefined, id);
         }
       },
       onCompleted: () => {
@@ -74,9 +71,15 @@ const ExternalReferenceDeletion: FunctionComponent<
       isOpen={isOpen}
       onClose={handleClose}
       message={t_i18n('Do you want to delete this external reference?')}
-      warning={isExternalReferenceAttachment
-        ? { message: t_i18n('This external reference is linked to a file. If you delete it, the file will be deleted as well.') }
-        : undefined}
+      warning={
+        isExternalReferenceAttachment
+          ? {
+              message: t_i18n(
+                'This external reference is linked to a file. If you delete it, the file will be deleted as well.',
+              ),
+            }
+          : undefined
+      }
     />
   );
 };

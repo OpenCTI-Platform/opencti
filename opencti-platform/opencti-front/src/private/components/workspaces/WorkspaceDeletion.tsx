@@ -24,11 +24,9 @@ const WorkspaceDeletion = ({
     values: { entity_type: t_i18n('entity_Workspace') },
   });
 
-  const [commit] = useApiMutation(
-    WorkspacePopoverDeletionMutation,
-    undefined,
-    { successMessage: deleteSuccessMessage },
-  );
+  const [commit] = useApiMutation(WorkspacePopoverDeletionMutation, undefined, {
+    successMessage: deleteSuccessMessage,
+  });
 
   const deletion = useDeletion({ handleClose });
   const { setDeleting } = deletion;
@@ -56,9 +54,11 @@ const WorkspaceDeletion = ({
       submitDelete={submitDelete}
       isOpen={isOpen}
       onClose={handleClose}
-      message={workspaceType === 'investigation'
-        ? t_i18n('Do you want to delete this investigation?')
-        : t_i18n('Do you want to delete this dashboard?')}
+      message={
+        workspaceType === 'investigation'
+          ? t_i18n('Do you want to delete this investigation?')
+          : t_i18n('Do you want to delete this dashboard?')
+      }
     />
   );
 };

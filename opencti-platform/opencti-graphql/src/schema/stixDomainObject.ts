@@ -80,8 +80,9 @@ const STIX_DOMAIN_OBJECT_CONTAINERS: Array<string> = [
 ];
 
 schemaTypesDefinition.register(ENTITY_TYPE_CONTAINER, STIX_DOMAIN_OBJECT_CONTAINERS);
-export const isStixDomainObjectContainer = (type: string): boolean => schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_CONTAINER)
-  || type === ENTITY_TYPE_CONTAINER;
+export const isStixDomainObjectContainer = (type: string): boolean =>
+  schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_CONTAINER) ||
+  type === ENTITY_TYPE_CONTAINER;
 
 const STIX_DOMAIN_OBJECT_SHAREABLE_CONTAINERS: Array<string> = [
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
@@ -101,7 +102,10 @@ const STIX_DOMAIN_OBJECT_IDENTITIES: Array<string> = [
 ];
 schemaTypesDefinition.register(ENTITY_TYPE_IDENTITY, STIX_DOMAIN_OBJECT_IDENTITIES);
 export const isStixDomainObjectIdentity = (type: string): boolean => {
-  return schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_IDENTITY) || type === ENTITY_TYPE_IDENTITY;
+  return (
+    schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_IDENTITY) ||
+    type === ENTITY_TYPE_IDENTITY
+  );
 };
 
 const STIX_DOMAIN_OBJECT_LOCATIONS: Array<string> = [
@@ -111,16 +115,18 @@ const STIX_DOMAIN_OBJECT_LOCATIONS: Array<string> = [
   ENTITY_TYPE_LOCATION_POSITION,
 ];
 schemaTypesDefinition.register(ENTITY_TYPE_LOCATION, STIX_DOMAIN_OBJECT_LOCATIONS);
-export const isStixDomainObjectLocation = (type: string): boolean => schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_LOCATION)
-  || type === ENTITY_TYPE_LOCATION;
+export const isStixDomainObjectLocation = (type: string): boolean =>
+  schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_LOCATION) ||
+  type === ENTITY_TYPE_LOCATION;
 
 const STIX_DOMAIN_OBJECT_THREAT_ACTORS: Array<string> = [
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL,
 ];
 schemaTypesDefinition.register(ENTITY_TYPE_THREAT_ACTOR, STIX_DOMAIN_OBJECT_THREAT_ACTORS);
-export const isStixDomainObjectThreatActor = (type: string): boolean => schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_THREAT_ACTOR)
-  || type === ENTITY_TYPE_THREAT_ACTOR;
+export const isStixDomainObjectThreatActor = (type: string): boolean =>
+  schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_THREAT_ACTOR) ||
+  type === ENTITY_TYPE_THREAT_ACTOR;
 
 export const STIX_DOMAIN_OBJECTS: Array<string> = [
   ENTITY_TYPE_ATTACK_PATTERN,
@@ -149,16 +155,19 @@ export const STIX_DOMAIN_OBJECTS: Array<string> = [
 schemaTypesDefinition.register(ABSTRACT_STIX_DOMAIN_OBJECT, STIX_DOMAIN_OBJECTS);
 
 export const isStixDomainObject = (type: string): boolean => {
-  return schemaTypesDefinition.isTypeIncludedIn(type, ABSTRACT_STIX_DOMAIN_OBJECT)
-    || isStixDomainObjectIdentity(type)
-    || isStixDomainObjectLocation(type)
-    || isStixDomainObjectContainer(type)
-    || isStixDomainObjectThreatActor(type)
-    || type === ABSTRACT_STIX_DOMAIN_OBJECT;
+  return (
+    schemaTypesDefinition.isTypeIncludedIn(type, ABSTRACT_STIX_DOMAIN_OBJECT) ||
+    isStixDomainObjectIdentity(type) ||
+    isStixDomainObjectLocation(type) ||
+    isStixDomainObjectContainer(type) ||
+    isStixDomainObjectThreatActor(type) ||
+    type === ABSTRACT_STIX_DOMAIN_OBJECT
+  );
 };
 
-export const isStixDomainObjectCase = (type: string): boolean => schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_CONTAINER_CASE)
-  || type === ENTITY_TYPE_CONTAINER_CASE;
+export const isStixDomainObjectCase = (type: string): boolean =>
+  schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_CONTAINER_CASE) ||
+  type === ENTITY_TYPE_CONTAINER_CASE;
 
 const STIX_DOMAIN_OBJECT_ALIASED: Array<string> = [
   ENTITY_TYPE_COURSE_OF_ACTION,
@@ -176,12 +185,22 @@ export const registerStixDomainAliased = (type: string) => {
   STIX_DOMAIN_OBJECT_ALIASED.push(type);
 };
 export const isStixObjectAliased = (type: string): boolean => {
-  return STIX_DOMAIN_OBJECT_ALIASED.includes(type) || (isStixDomainObjectIdentity(type) && type !== ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM) || isStixDomainObjectLocation(type);
+  return (
+    STIX_DOMAIN_OBJECT_ALIASED.includes(type) ||
+    (isStixDomainObjectIdentity(type) && type !== ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM) ||
+    isStixDomainObjectLocation(type)
+  );
 };
 
 export const resolveAliasesField = (type: string): AttributeDefinition => {
   // eslint-disable-next-line max-len
-  if (type === ENTITY_TYPE_COURSE_OF_ACTION || type === ENTITY_TYPE_VULNERABILITY || type === ENTITY_TYPE_CONTAINER_GROUPING || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type)) {
+  if (
+    type === ENTITY_TYPE_COURSE_OF_ACTION ||
+    type === ENTITY_TYPE_VULNERABILITY ||
+    type === ENTITY_TYPE_CONTAINER_GROUPING ||
+    isStixDomainObjectIdentity(type) ||
+    isStixDomainObjectLocation(type)
+  ) {
     return xOpenctiAliases;
   }
   return aliases;

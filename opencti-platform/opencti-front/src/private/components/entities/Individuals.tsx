@@ -1,5 +1,8 @@
 import React from 'react';
-import { IndividualsLinesPaginationQuery, IndividualsLinesPaginationQuery$variables } from '@components/entities/individuals/__generated__/IndividualsLinesPaginationQuery.graphql';
+import {
+  IndividualsLinesPaginationQuery,
+  IndividualsLinesPaginationQuery$variables,
+} from '@components/entities/individuals/__generated__/IndividualsLinesPaginationQuery.graphql';
 import { IndividualLineDummy } from '@components/entities/individuals/IndividualLine';
 import ListLines from '../../../components/list_lines/ListLines';
 import IndividualsLines, { individualsLinesQuery } from './individuals/IndividualsLines';
@@ -19,25 +22,16 @@ const Individuals = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Individuals | Entities'));
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<IndividualsLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    {
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<IndividualsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
       openExports: false,
       filters: emptyFilterGroup,
-    },
-  );
+    });
   const renderLines = () => {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-    } = viewStorage;
+    const { sortBy, orderAsc, searchTerm, filters, openExports, numberOfElements } = viewStorage;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -83,27 +77,24 @@ const Individuals = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        createButton={(
+        createButton={
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <IndividualCreation paginationOptions={paginationOptions} />
           </Security>
-        )}
+        }
         iconExtension
       >
         {queryRef && (
           <React.Suspense
-            fallback={(
+            fallback={
               <>
                 {Array(20)
                   .fill(0)
                   .map((_, idx) => (
-                    <IndividualLineDummy
-                      key={idx}
-                      dataColumns={dataColumns}
-                    />
+                    <IndividualLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            )}
+            }
           >
             <IndividualsLines
               queryRef={queryRef}
@@ -120,7 +111,9 @@ const Individuals = () => {
 
   return (
     <div data-testid="individual-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Individuals'), current: true }]} />
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Individuals'), current: true }]}
+      />
       {renderLines()}
     </div>
   );

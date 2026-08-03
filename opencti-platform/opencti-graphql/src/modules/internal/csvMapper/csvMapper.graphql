@@ -67,7 +67,7 @@ type CsvMapper implements InternalObject & BasicObject {
   representative: Representative!
   standard_id: String! @auth
   parent_types: [String!]! @auth
-  metrics:[Metric] @auth
+  metrics: [Metric] @auth
   # CsvMapper
   name: String! @auth
   has_header: Boolean! @auth
@@ -144,9 +144,7 @@ type Query {
     search: String
   ): CsvMapperConnection @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
   csvMapperSchemaAttributes: [CsvMapperSchemaAttributes!]! @auth(for: [KNOWLEDGE, CSVMAPPERS])
-  csvMapperAddInputFromImport(
-    file: Upload!
-  ): CsvMapperAddInputFromImport! @auth(for: [CSVMAPPERS])
+  csvMapperAddInputFromImport(file: Upload!): CsvMapperAddInputFromImport! @auth(for: [CSVMAPPERS])
 }
 
 # Mutations

@@ -17,8 +17,7 @@ import { Theme } from '../../../../../../components/Theme';
 
 export type RepresentationAttributeForm = CsvMapperRepresentationAttributeFormData | undefined;
 
-interface CsvMapperRepresentationAttributeFormProps
-  extends FieldProps<RepresentationAttributeForm> {
+interface CsvMapperRepresentationAttributeFormProps extends FieldProps<RepresentationAttributeForm> {
   schemaAttribute: SchemaAttribute;
   label: string;
   handleErrors: (key: string, value: string | null) => void;
@@ -128,22 +127,19 @@ const CsvMapperRepresentationAttributeForm: FunctionComponent<
         />
       </div>
       <div>
-        {
-          (schemaAttribute.type === 'date' || schemaAttribute.multiple || schemaAttribute.editDefault)
-          && (
-            <CsvMapperRepresentationDialogOption configuration={value}>
-              <CsvMapperRepresentationAttributeOptions
-                schemaAttribute={schemaAttribute}
-                attributeName={name}
-                form={form}
-              />
-            </CsvMapperRepresentationDialogOption>
-          )
-        }
+        {(schemaAttribute.type === 'date' ||
+          schemaAttribute.multiple ||
+          schemaAttribute.editDefault) && (
+          <CsvMapperRepresentationDialogOption configuration={value}>
+            <CsvMapperRepresentationAttributeOptions
+              schemaAttribute={schemaAttribute}
+              attributeName={name}
+              form={form}
+            />
+          </CsvMapperRepresentationDialogOption>
+        )}
       </div>
-      <CsvMapperRepresentionAttributeSelectedConfigurations
-        configuration={value}
-      />
+      <CsvMapperRepresentionAttributeSelectedConfigurations configuration={value} />
     </div>
   );
 };

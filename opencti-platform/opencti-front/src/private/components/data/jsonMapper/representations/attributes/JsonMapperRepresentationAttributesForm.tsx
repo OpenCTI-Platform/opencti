@@ -5,9 +5,7 @@ import { getAttributeLabel } from '@components/data/jsonMapper/representations/a
 import { Field } from 'formik';
 import JsonMapperRepresentationAttributeRefForm from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationAttributeRefForm';
 import { JsonMapperRepresentationFormData } from '@components/data/jsonMapper/representations/Representation';
-import {
-  JsonMapperRepresentationAttributesForm_allSchemaAttributes$key,
-} from '@components/data/jsonMapper/representations/attributes/__generated__/JsonMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
+import { JsonMapperRepresentationAttributesForm_allSchemaAttributes$key } from '@components/data/jsonMapper/representations/attributes/__generated__/JsonMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import { useJsonMappersData } from '../../jsonMappers.data';
@@ -97,27 +95,32 @@ const JsonMapperRepresentationAttributesForm: FunctionComponent<
     return null;
   }
 
-  const entitySchemaAttributes = data?.csvMapperSchemaAttributes?.find(
-    (schema) => schema.name === representation.target?.entity_type,
-  )?.attributes ?? [];
+  const entitySchemaAttributes =
+    data?.csvMapperSchemaAttributes?.find(
+      (schema) => schema.name === representation.target?.entity_type,
+    )?.attributes ?? [];
 
-  const mutableSchemaAttributes: SchemaAttribute[] = entitySchemaAttributes.map((schema) => {
-    if (schema.name === 'hashes') {
-      return (schema.mappings ?? []).map((mapping) => ({
-        ...mapping,
-        defaultValues: null,
-      }));
-    }
-    return [{
-      type: schema.type,
-      name: schema.name,
-      label: schema.label,
-      mandatory: schema.mandatory,
-      multiple: schema.multiple,
-      editDefault: schema.editDefault,
-      defaultValues: schema.defaultValues ? [...schema.defaultValues] : null,
-    }];
-  }).flat();
+  const mutableSchemaAttributes: SchemaAttribute[] = entitySchemaAttributes
+    .map((schema) => {
+      if (schema.name === 'hashes') {
+        return (schema.mappings ?? []).map((mapping) => ({
+          ...mapping,
+          defaultValues: null,
+        }));
+      }
+      return [
+        {
+          type: schema.type,
+          name: schema.name,
+          label: schema.label,
+          mandatory: schema.mandatory,
+          multiple: schema.multiple,
+          editDefault: schema.editDefault,
+          defaultValues: schema.defaultValues ? [...schema.defaultValues] : null,
+        },
+      ];
+    })
+    .flat();
 
   return (
     <>
@@ -135,16 +138,17 @@ const JsonMapperRepresentationAttributesForm: FunctionComponent<
               variant="standard"
               style={{ width: '100%' }}
               onChange={(_event: React.SyntheticEvent, newValue: string) => {
-                handleErrors('target.path', isEmptyField(newValue) ? 'This field is required' : null);
+                handleErrors(
+                  'target.path',
+                  isEmptyField(newValue) ? 'This field is required' : null,
+                );
               }}
             />
           </div>
           <div />
-          { representationType === 'entity' && (
+          {representationType === 'entity' && (
             <>
-              <div>
-                Identifier
-              </div>
+              <div>Identifier</div>
               <div>
                 <Field
                   component={TextField}

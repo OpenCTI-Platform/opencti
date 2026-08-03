@@ -28,12 +28,8 @@ class AddAttackPatterns extends Component {
   }
 
   render() {
-    const {
-      t,
-      courseOfAction,
-      courseOfActionAttackPatterns,
-      courseOfActionPaginationOptions,
-    } = this.props;
+    const { t, courseOfAction, courseOfActionAttackPatterns, courseOfActionPaginationOptions } =
+      this.props;
     return (
       <div>
         <IconButton
@@ -48,13 +44,13 @@ class AddAttackPatterns extends Component {
           onClose={this.handleClose.bind(this)}
           title={t('Add attack patterns')}
           subHeader={{
-            left: [(
+            left: [
               <SearchInput
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
                 key="searchInput"
-              />
-            )],
+              />,
+            ],
           }}
         >
           <QueryRenderer
@@ -68,9 +64,7 @@ class AddAttackPatterns extends Component {
                 <AddAttackPatternsLines
                   courseOfAction={courseOfAction}
                   courseOfActionAttackPatterns={courseOfActionAttackPatterns}
-                  courseOfActionPaginationOptions={
-                    courseOfActionPaginationOptions
-                  }
+                  courseOfActionPaginationOptions={courseOfActionPaginationOptions}
                   data={props}
                 />
               );

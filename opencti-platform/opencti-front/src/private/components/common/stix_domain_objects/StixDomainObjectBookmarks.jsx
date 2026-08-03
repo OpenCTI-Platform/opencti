@@ -6,7 +6,10 @@ import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
-import { StixDomainObjectBookmark, StixDomainObjectBookmarkDummy } from './StixDomainObjectBookmark';
+import {
+  StixDomainObjectBookmark,
+  StixDomainObjectBookmarkDummy,
+} from './StixDomainObjectBookmark';
 import inject18n from '../../../../components/i18n';
 import ListCardsContent from '../../../../components/list_cards/ListCardsContent';
 
@@ -44,7 +47,9 @@ class StixDomainObjectBookmarksComponent extends Component {
             {t('Favorite entities')}
           </Typography>
           <Tooltip
-            title={t('Only the first 8 favorite entities are displayed here. You can use custom dashboard favorite widget to have them all in your dashboard(s)')}
+            title={t(
+              'Only the first 8 favorite entities are displayed here. You can use custom dashboard favorite widget to have them all in your dashboard(s)',
+            )}
           >
             <InformationOutline
               fontSize="small"
@@ -84,8 +89,7 @@ export const stixDomainObjectBookmarksQuery = graphql`
 export const stixDomainobjectBookmarksFragment = graphql`
   fragment StixDomainObjectBookmarks_bookmarks on Query
   @argumentDefinitions(types: { type: "[String]" }) {
-    bookmarks(types: $types, first: 200)
-      @connection(key: "Pagination_bookmarks") {
+    bookmarks(types: $types, first: 200) @connection(key: "Pagination_bookmarks") {
       edges {
         node {
           id
@@ -122,7 +126,4 @@ const StixDomainObjectBookmarksFragment = createPaginationContainer(
   },
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(StixDomainObjectBookmarksFragment);
+export default R.compose(inject18n, withStyles(styles))(StixDomainObjectBookmarksFragment);

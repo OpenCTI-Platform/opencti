@@ -24,7 +24,10 @@ import { isPathOverview } from '../../../../utils/tabUtils';
 import { RootIntrusionSetQuery } from './__generated__/RootIntrusionSetQuery.graphql';
 import { RootIntrusionSetSubscription } from './__generated__/RootIntrusionSetSubscription.graphql';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import IntrusionSetEdition from './IntrusionSetEdition';
 import IntrusionSetDeletion from './IntrusionSetDeletion';
 import StixCoreRelationshipCreationFromEntityHeader from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
@@ -98,18 +101,18 @@ type RootIntrusionSetProps = {
 };
 
 const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootIntrusionSetSubscription>>(() => ({
-    subscription,
-    variables: { id: intrusionSetId },
-  }), [intrusionSetId]);
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootIntrusionSetSubscription>>(
+    () => ({
+      subscription,
+      variables: { id: intrusionSetId },
+    }),
+    [intrusionSetId],
+  );
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootIntrusionSetSubscription>(subConfig);
-  const {
-    intrusionSet,
-    connectorsForExport,
-    connectorsForImport,
-  } = usePreloadedQuery<RootIntrusionSetQuery>(intrusionSetQuery, queryRef);
+  const { intrusionSet, connectorsForExport, connectorsForImport } =
+    usePreloadedQuery<RootIntrusionSetQuery>(intrusionSetQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
   const basePath = PATH_INTRUSION_SET(intrusionSetId);
   const isOverview = isPathOverview(location.pathname, basePath);
@@ -122,7 +125,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
           <Routes>
             <Route
               path="/knowledge/*"
-              element={(
+              element={
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -145,34 +148,37 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
                   data={intrusionSet}
                   attribution={['Threat-Actor-Individual', 'Threat-Actor-Group']}
                 />
-              )}
+              }
             />
           </Routes>
           <div style={{ paddingRight }} data-testid="intrusionSet-details-page">
-            <Breadcrumbs elements={[
-              { label: t_i18n('Threats') },
-              { label: t_i18n('Intrusion sets'), link: PATH_INTRUSION_SETS },
-              { label: intrusionSet.name, current: true },
-            ]}
+            <Breadcrumbs
+              elements={[
+                { label: t_i18n('Threats') },
+                { label: t_i18n('Intrusion sets'), link: PATH_INTRUSION_SETS },
+                { label: intrusionSet.name, current: true },
+              ]}
             />
             <StixDomainObjectHeader
               entityType="Intrusion-Set"
               stixDomainObject={intrusionSet}
-              EditComponent={(
+              EditComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <IntrusionSetEdition intrusionSetId={intrusionSet.id} />
                 </Security>
-              )}
-              RelateComponent={(
+              }
+              RelateComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <StixCoreRelationshipCreationFromEntityHeader
-                    data={intrusionSet}
-                  />
+                  <StixCoreRelationshipCreationFromEntityHeader data={intrusionSet} />
                 </Security>
-              )}
+              }
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                  <IntrusionSetDeletion id={intrusionSet.id} isOpen={isOpen} handleClose={onClose} />
+                  <IntrusionSetDeletion
+                    id={intrusionSet.id}
+                    isOpen={isOpen}
+                    handleClose={onClose}
+                  />
                 </Security>
               )}
               enableEnricher={true}
@@ -184,20 +190,18 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
               entity={intrusionSet}
               basePath={basePath}
               pages={{
-                overview:
-                  <IntrusionSet intrusionSetData={intrusionSet} />,
+                overview: <IntrusionSet intrusionSetData={intrusionSet} />,
                 knowledge: (
                   <div key={forceUpdate}>
                     <IntrusionSetKnowledge intrusionSetData={intrusionSet} />
                   </div>
                 ),
-                content: (
-                  <StixCoreObjectContentRoot
-                    stixCoreObject={intrusionSet}
+                content: <StixCoreObjectContentRoot stixCoreObject={intrusionSet} />,
+                analyses: (
+                  <StixCoreObjectOrStixCoreRelationshipContainers
+                    stixDomainObjectOrStixCoreRelationship={intrusionSet}
                   />
                 ),
-                analyses:
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={intrusionSet} />,
                 files: (
                   <FileManager
                     id={intrusionSetId}
@@ -206,15 +210,19 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
                     entity={intrusionSet}
                   />
                 ),
-                history:
-                  <StixCoreObjectHistory stixCoreObjectId={intrusionSetId} />,
+                history: <StixCoreObjectHistory stixCoreObjectId={intrusionSetId} />,
               }}
-              extraActions={isOverview && (
-                <>
-                  <AIInsights id={intrusionSet.id} />
-                  <StixCoreObjectSecurityCoverage id={intrusionSet.id} coverage={intrusionSet.securityCoverage} />
-                </>
-              )}
+              extraActions={
+                isOverview && (
+                  <>
+                    <AIInsights id={intrusionSet.id} />
+                    <StixCoreObjectSecurityCoverage
+                      id={intrusionSet.id}
+                      coverage={intrusionSet.securityCoverage}
+                    />
+                  </>
+                )
+              }
             />
           </div>
         </>

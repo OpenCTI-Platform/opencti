@@ -15,7 +15,10 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import RichTextField from '../../../../components/fields/RichTextField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
-import { useIsEnforceReference, useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useIsEnforceReference,
+  useSchemaEditionValidation,
+} from '../../../../utils/hooks/useEntitySettings';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import { emptyFilled } from '../../../../utils/String';
@@ -25,28 +28,30 @@ import type { Theme } from '../../../../components/Theme';
 import { MESSAGING$ } from '../../../../relay/environment';
 import Card from '../../../../components/common/card/Card';
 
-const useStyles = makeStyles<Theme>(() => createStyles({
-  documentContainer: {
-    margin: 0,
-    overflow: 'scroll',
-    minWidth: 'calc(100vw - 455px)',
-    minHeight: 'calc(100vh - 260px)',
-    width: 'calc(100vw - 455px)',
-    height: 'calc(100vh - 260px)',
-    maxWidth: 'calc(100vw - 455px)',
-    maxHeight: 'calc(100vh - 260px)',
-  },
-  documentContainerNavOpen: {
-    margin: 0,
-    overflow: 'scroll',
-    minWidth: 'calc(100vw - 580px)',
-    minHeight: 'calc(100vh - 260px)',
-    width: 'calc(100vw - 580px)',
-    height: 'calc(100vh - 260px)',
-    maxWidth: 'calc(100vw - 580px)',
-    maxHeight: 'calc(100vh - 260px)',
-  },
-}));
+const useStyles = makeStyles<Theme>(() =>
+  createStyles({
+    documentContainer: {
+      margin: 0,
+      overflow: 'scroll',
+      minWidth: 'calc(100vw - 455px)',
+      minHeight: 'calc(100vh - 260px)',
+      width: 'calc(100vw - 455px)',
+      height: 'calc(100vh - 260px)',
+      maxWidth: 'calc(100vw - 455px)',
+      maxHeight: 'calc(100vh - 260px)',
+    },
+    documentContainerNavOpen: {
+      margin: 0,
+      overflow: 'scroll',
+      minWidth: 'calc(100vw - 580px)',
+      minHeight: 'calc(100vh - 260px)',
+      width: 'calc(100vw - 580px)',
+      height: 'calc(100vh - 260px)',
+      maxWidth: 'calc(100vw - 580px)',
+      maxHeight: 'calc(100vh - 260px)',
+    },
+  }),
+);
 
 export const stixCoreObjectMappableContentFieldPatchMutation = graphql`
   mutation StixCoreObjectMappableContentFieldPatchMutation(
@@ -98,9 +103,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
     // Reset local draft only when switching to another object.
     setDraftContent(containerData.contentField || '');
   }, [containerData.id]);
-  const [navOpen, setNavOpen] = useState(
-    localStorage.getItem('navOpen') === 'true',
-  );
+  const [navOpen, setNavOpen] = useState(localStorage.getItem('navOpen') === 'true');
   useEffect(() => {
     const sub = MESSAGING$.toggleNav.subscribe({
       next: () => setNavOpen(localStorage.getItem('navOpen') === 'true'),
@@ -121,7 +124,9 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
   const editorAdjustedHeight = 580;
   const enrichedEditorHeight = innerHeight - editorAdjustedHeight;
 
-  const [commit] = useApiMutation<StixCoreObjectMappableContentFieldPatchMutation>(stixCoreObjectMappableContentFieldPatchMutation);
+  const [commit] = useApiMutation<StixCoreObjectMappableContentFieldPatchMutation>(
+    stixCoreObjectMappableContentFieldPatchMutation,
+  );
 
   const handleChangeSelectedTab = (mode: string) => {
     if (editionMode) {
@@ -131,10 +136,16 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
 
   // onSubmit will be called when a submit button is called, thus only
   // when enforced references option is set (i.e enableReferences==true)
-  const onSubmit: FormikConfig<StixCoreObjectMappableContentValues>['onSubmit'] = (values, { setSubmitting }) => {
+  const onSubmit: FormikConfig<StixCoreObjectMappableContentValues>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
     const commitReferences = (values.references ?? []).map(({ value }) => value);
     const { id } = containerData;
-    const inputValues = [{ key: 'content', value: [values.content] }, { key: 'description', value: [values.description] }];
+    const inputValues = [
+      { key: 'content', value: [values.content] },
+      { key: 'description', value: [values.description] },
+    ];
     // Currently, only containers have a content available, so this mutation targets SDOs only. If content is added to all Stix Core Objects,
     // this mutation will need to be updated to a stixCoreObjectEdit instead of a stixDomainObjectEdit
 
@@ -151,10 +162,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
     });
   };
 
-  const handleSubmitField = (
-    name: string,
-    value: string,
-  ) => {
+  const handleSubmitField = (name: string, value: string) => {
     if (!editionMode) return;
 
     const { id } = containerData;
@@ -162,7 +170,8 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
     // with enforced references option for this entity, submit is done at the
     // end with a button in <CommitMessage />
     if (!enableReferences) {
-      validator.validateAt(name, { [name]: value })
+      validator
+        .validateAt(name, { [name]: value })
         .then(() => {
           commit({
             variables: {
@@ -222,13 +231,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
 
   if (currentMode === 'content') {
     return (
-      <div
-        className={
-          navOpen
-            ? classes.documentContainerNavOpen
-            : classes.documentContainer
-        }
-      >
+      <div className={navOpen ? classes.documentContainerNavOpen : classes.documentContainer}>
         {isNotEmptyField(description) && (
           <>
             <Typography variant="h3" gutterBottom={true}>
@@ -244,7 +247,11 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
         )}
         {isNotEmptyField(draftContent || contentField) && (
           <>
-            <Typography variant="h3" gutterBottom={true} style={{ marginTop: isNotEmptyField(description) ? 20 : 0 }}>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              style={{ marginTop: isNotEmptyField(description) ? 20 : 0 }}
+            >
               {t_i18n('Content')}
             </Typography>
             <HtmlDisplay content={draftContent || contentField || null} />
@@ -261,14 +268,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
         validationSchema={validator}
         onSubmit={onSubmit}
       >
-        {({
-          submitForm,
-          isSubmitting,
-          setFieldValue,
-          values,
-          isValid,
-          dirty,
-        }) => (
+        {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
           <Form style={{ margin: 0 }}>
             <Field
               component={MarkdownField}
@@ -281,12 +281,9 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
               onSelect={handleTextSelection}
               disabled={!editionMode}
               askAi={askAi}
-              helperText={(
-                <SubscriptionFocus
-                  context={containerData.editContext}
-                  fieldName="description"
-                />
-              )}
+              helperText={
+                <SubscriptionFocus context={containerData.editContext} fieldName="description" />
+              }
               controlledSelectedTab={selectedTab}
               controlledSetSelectTab={handleChangeSelectedTab}
               height={400}
@@ -308,12 +305,9 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
                 minHeight: enrichedEditorHeight,
                 height: enrichedEditorHeight,
               }}
-              helperText={(
-                <SubscriptionFocus
-                  context={containerData.editContext}
-                  fieldName="content"
-                />
-              )}
+              helperText={
+                <SubscriptionFocus context={containerData.editContext} fieldName="content" />
+              }
             />
             {editionMode && enableReferences && (
               <CommitMessage

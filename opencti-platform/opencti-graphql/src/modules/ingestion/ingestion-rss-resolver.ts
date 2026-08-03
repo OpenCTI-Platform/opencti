@@ -22,11 +22,22 @@ const ingestionRssResolvers: Resolvers = {
     ingestionRssAddInputFromImport: (_, { file }) => rssFeedAddInputFromImport(file),
   },
   IngestionRss: {
-    defaultCreatedBy: (ingestionRss, _, context) => context.batch.idsBatchLoader.load({ id: ingestionRss.created_by_ref, type: ENTITY_TYPE_IDENTITY }),
+    defaultCreatedBy: (ingestionRss, _, context) =>
+      context.batch.idsBatchLoader.load({
+        id: ingestionRss.created_by_ref,
+        type: ENTITY_TYPE_IDENTITY,
+      }),
     // eslint-disable-next-line max-len
-    defaultMarkingDefinitions: (ingestionRss, _, context) => storeLoadByIds<BasicStoreEntityMarkingDefinition>(context, context.user, ingestionRss.object_marking_refs ?? [], ENTITY_TYPE_MARKING_DEFINITION),
+    defaultMarkingDefinitions: (ingestionRss, _, context) =>
+      storeLoadByIds<BasicStoreEntityMarkingDefinition>(
+        context,
+        context.user,
+        ingestionRss.object_marking_refs ?? [],
+        ENTITY_TYPE_MARKING_DEFINITION,
+      ),
     user: (ingestionRss, _, context) => loadCreator(context, context.user, ingestionRss.user_id),
-    toConfigurationExport: (ingestionRss, _, context) => rssFeedExport(context, context.user, ingestionRss),
+    toConfigurationExport: (ingestionRss, _, context) =>
+      rssFeedExport(context, context.user, ingestionRss),
   },
   Mutation: {
     ingestionRssAdd: (_, { input }, context) => {

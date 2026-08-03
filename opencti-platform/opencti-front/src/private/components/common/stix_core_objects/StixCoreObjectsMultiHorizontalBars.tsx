@@ -5,15 +5,16 @@ import Chart from '../charts/Chart';
 import { useFormatter } from '../../../../components/i18n';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
-import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
+import {
+  getMainRepresentative,
+  isFieldForIdentifier,
+} from '../../../../utils/defaultRepresentatives';
 import { itemColor } from '../../../../utils/Colors';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
-import {
-  StixCoreObjectsMultiHorizontalBarsDistributionQuery,
-} from '@components/common/stix_core_objects/__generated__/StixCoreObjectsMultiHorizontalBarsDistributionQuery.graphql';
+import { StixCoreObjectsMultiHorizontalBarsDistributionQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsMultiHorizontalBarsDistributionQuery.graphql';
 import { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { ReactNode } from 'react';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -415,26 +416,28 @@ const StixCoreObjectsMultiHorizontalBarsComponent = ({
         : itemColor(n.label);
 
       if (n.entity?.color) {
-        color = theme.palette.mode === 'light' && n.entity.color === '#ffffff'
-          ? '#000000'
-          : n.entity.color;
+        color =
+          theme.palette.mode === 'light' && n.entity.color === '#ffffff'
+            ? '#000000'
+            : n.entity.color;
       }
 
       if (n.entity?.x_opencti_color) {
-        color = theme.palette.mode === 'light' && n.entity.x_opencti_color === '#ffffff'
-          ? '#000000'
-          : n.entity.x_opencti_color;
+        color =
+          theme.palette.mode === 'light' && n.entity.x_opencti_color === '#ffffff'
+            ? '#000000'
+            : n.entity.x_opencti_color;
       }
 
       if (n.entity?.template?.color) {
-        color = theme.palette.mode === 'light' && n.entity.template.color === '#ffffff'
-          ? '#000000'
-          : n.entity.template.color;
+        color =
+          theme.palette.mode === 'light' && n.entity.template.color === '#ffffff'
+            ? '#000000'
+            : n.entity.template.color;
       }
 
       return {
-        x:
-        selection.attribute?.endsWith('_id')
+        x: selection.attribute?.endsWith('_id')
           ? getMainRepresentative(n.entity, t_i18n('Restricted'))
           : selection.attribute === 'entity_type'
             ? t_i18n(`entity_${n.label}`)
@@ -446,15 +449,17 @@ const StixCoreObjectsMultiHorizontalBarsComponent = ({
 
   return (
     <Chart
-      options={horizontalBarsChartOptions(
-        theme,
-        true,
-        simpleNumberFormat,
-        undefined,
-        parameters.distributed,
-        navigate,
-        undefined,
-      ) as ApexOptions}
+      options={
+        horizontalBarsChartOptions(
+          theme,
+          true,
+          simpleNumberFormat,
+          undefined,
+          parameters.distributed,
+          navigate,
+          undefined,
+        ) as ApexOptions
+      }
       series={[
         {
           name: selection.label ?? t_i18n('Number of entities'),
@@ -491,7 +496,10 @@ const buildQueryVariables = (
   const selection = resolvedDataSelection[0];
   const subSelection = resolvedDataSelection[1];
 
-  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(selection, config);
+  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(
+    selection,
+    config,
+  );
 
   const { dateAttribute: subDateAttribute, filters: subFilters } = computeWidgetFiltersForSelection(
     subSelection,
@@ -529,7 +537,13 @@ const stixCoreObjectsMultiHorizontalBars = ({
   host,
 }: StixCoreObjectsMultiHorizontalBarsProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiHorizontalBarsDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixCoreObjectsMultiHorizontalBarsDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,

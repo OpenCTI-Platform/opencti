@@ -39,16 +39,11 @@ const PlaybookPopoverToggleDialog = ({
   };
 
   return (
-    <Dialog
-      open={showDialog}
-      onClose={close}
-      title={t_i18n('Are you sure?')}
-    >
+    <Dialog open={showDialog} onClose={close} title={t_i18n('Are you sure?')}>
       <DialogContentText>
         {!playbookRunning
           ? t_i18n('Do you want to start this playbook?')
-          : t_i18n('Do you want to stop this playbook?')
-        }
+          : t_i18n('Do you want to stop this playbook?')}
       </DialogContentText>
       <DialogActions>
         <Button variant="secondary" onClick={close} disabled={commiting}>

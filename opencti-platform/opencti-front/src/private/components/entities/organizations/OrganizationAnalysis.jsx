@@ -32,18 +32,15 @@ OrganizationAnalysisComponent.propTypes = {
   viewAs: PropTypes.string,
 };
 
-const OrganizationAnalysis = createFragmentContainer(
-  OrganizationAnalysisComponent,
-  {
-    organization: graphql`
-      fragment OrganizationAnalysis_organization on Organization {
-        id
-        name
-        x_opencti_aliases
-        x_opencti_graph_data
-      }
-    `,
-  },
-);
+const OrganizationAnalysis = createFragmentContainer(OrganizationAnalysisComponent, {
+  organization: graphql`
+    fragment OrganizationAnalysis_organization on Organization {
+      id
+      name
+      x_opencti_aliases
+      x_opencti_graph_data
+    }
+  `,
+});
 
 export default OrganizationAnalysis;

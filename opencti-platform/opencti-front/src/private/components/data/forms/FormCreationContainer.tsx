@@ -1,4 +1,10 @@
-import { PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader, graphql } from 'react-relay';
+import {
+  PreloadedQuery,
+  useFragment,
+  usePreloadedQuery,
+  useQueryLoader,
+  graphql,
+} from 'react-relay';
 import React, { FunctionComponent, useRef } from 'react';
 import { useTheme } from '@mui/styles';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -6,7 +12,10 @@ import { FileUploadOutlined } from '@mui/icons-material';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { FormEditionContainerQuery } from './__generated__/FormEditionContainerQuery.graphql';
 import { formEditionContainerQuery } from './FormEditionContainer';
-import { FormEditionFragment_form$data, FormEditionFragment_form$key } from './__generated__/FormEditionFragment_form.graphql';
+import {
+  FormEditionFragment_form$data,
+  FormEditionFragment_form$key,
+} from './__generated__/FormEditionFragment_form.graphql';
 import { FormLinesPaginationQuery$variables } from './__generated__/FormLinesPaginationQuery.graphql';
 import FormCreation, { formCreationQuery } from './FormCreation';
 import { FormCreationQuery } from './__generated__/FormCreationQuery.graphql';
@@ -56,7 +65,8 @@ const CreateFormControlledDial = (props: CreateFormControlledDialProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [commitImportMutation] = useApiMutation<FormCreationContainerImportMutation>(formImportMutation);
+  const [commitImportMutation] =
+    useApiMutation<FormCreationContainerImportMutation>(formImportMutation);
 
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const importedFile = event.target.files?.[0];
@@ -65,12 +75,7 @@ const CreateFormControlledDial = (props: CreateFormControlledDialProps) => {
         variables: { file: importedFile },
         updater: (store) => {
           if (paginationOptions) {
-            insertNode(
-              store,
-              'Pagination_forms',
-              paginationOptions,
-              'formImport',
-            );
+            insertNode(store, 'Pagination_forms', paginationOptions, 'formImport');
           }
         },
         onCompleted: () => {
@@ -119,26 +124,32 @@ export const FormCreationContainer: FunctionComponent<FormCreationContainerProps
   triggerButton = true,
 }) => {
   // Load the formCreationQuery for entity settings
-  const [creationQueryRef, loadCreationQuery] = useQueryLoader<FormCreationQuery>(formCreationQuery);
+  const [creationQueryRef, loadCreationQuery] =
+    useQueryLoader<FormCreationQuery>(formCreationQuery);
 
   React.useEffect(() => {
     loadCreationQuery({}, { fetchPolicy: 'store-and-network' });
   }, []);
 
   // Get the form data for duplication if queryRef is provided
-  const form = queryRef
-    ? usePreloadedQuery(formEditionContainerQuery, queryRef).form
+  const form = queryRef ? usePreloadedQuery(formEditionContainerQuery, queryRef).form : null;
+  const formDataRef = form
+    ? useFragment<FormEditionFragment_form$key>(formEditionFragment, form)
     : null;
-  const formDataRef = form ? useFragment<FormEditionFragment_form$key>(formEditionFragment, form) : null;
 
-  const duplicateFormData = formDataRef ? {
-    ...formDataRef,
-    name: `${formDataRef.name} - copy`,
-  } as FormEditionFragment_form$data : undefined;
+  const duplicateFormData = formDataRef
+    ? ({
+        ...formDataRef,
+        name: `${formDataRef.name} - copy`,
+      } as FormEditionFragment_form$data)
+    : undefined;
 
-  const createFormButton = React.useCallback((props: DrawerControlledDialProps) => (
-    <CreateFormControlledDial {...props} paginationOptions={paginationOptions} />
-  ), [paginationOptions]);
+  const createFormButton = React.useCallback(
+    (props: DrawerControlledDialProps) => (
+      <CreateFormControlledDial {...props} paginationOptions={paginationOptions} />
+    ),
+    [paginationOptions],
+  );
 
   return (
     <Drawer

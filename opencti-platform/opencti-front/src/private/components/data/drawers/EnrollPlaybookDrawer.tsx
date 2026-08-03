@@ -22,19 +22,33 @@ interface Props {
   excludedIds?: string[];
 }
 
-const EnrollPlaybookDrawer = ({ open, onClose, onLaunch, entityIds, isSelectAll, filters, search, excludedIds }: Props) => {
+const EnrollPlaybookDrawer = ({
+  open,
+  onClose,
+  onLaunch,
+  entityIds,
+  isSelectAll,
+  filters,
+  search,
+  excludedIds,
+}: Props) => {
   const { t_i18n } = useFormatter();
-  const { playbooks, loading } = useEnrollPlaybooks({ open, entityIds, isSelectAll, filters, search, excludedIds });
+  const { playbooks, loading } = useEnrollPlaybooks({
+    open,
+    entityIds,
+    isSelectAll,
+    filters,
+    search,
+    excludedIds,
+  });
 
   return (
-    <Drawer
-      title={t_i18n('Enroll in playbook')}
-      open={open}
-      onClose={onClose}
-    >
+    <Drawer title={t_i18n('Enroll in playbook')} open={open} onClose={onClose}>
       <>
         <Alert severity="info" variant="outlined">
-          {t_i18n('Listing playbooks with entry points manual or live trigger (events) and matching filters. Only the first 5000 entities have been checked for compatibility, any incompatible entities will not be processed by the selected playbook.')}
+          {t_i18n(
+            'Listing playbooks with entry points manual or live trigger (events) and matching filters. Only the first 5000 entities have been checked for compatibility, any incompatible entities will not be processed by the selected playbook.',
+          )}
         </Alert>
         {loading ? (
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: 20 }}>
@@ -47,29 +61,26 @@ const EnrollPlaybookDrawer = ({ open, onClose, onLaunch, entityIds, isSelectAll,
                 <ListItem
                   key={playbook.value}
                   divider
-                  secondaryAction={(
+                  secondaryAction={
                     <Security needs={[AUTOMATION]}>
                       <Tooltip title={t_i18n('Enroll in this playbook')}>
-                        <IconButton
-                          onClick={() => onLaunch(playbook.value, playbook.label)}
-                        >
+                        <IconButton onClick={() => onLaunch(playbook.value, playbook.label)}>
                           <PlayCircleOutlined />
                         </IconButton>
                       </Tooltip>
                     </Security>
-                  )}
+                  }
                 >
                   <ListItemIcon>
                     <ItemIcon type="Playbook" />
                   </ListItemIcon>
-                  <ListItemText
-                    primary={playbook.label}
-                    secondary={playbook.description ?? ''}
-                  />
+                  <ListItemText primary={playbook.label} secondary={playbook.description ?? ''} />
                 </ListItem>
               ))
             ) : (
-              <div style={{ color: 'text.primary', fontSize: 15, textAlign: 'center', marginTop: 20 }}>
+              <div
+                style={{ color: 'text.primary', fontSize: 15, textAlign: 'center', marginTop: 20 }}
+              >
                 {t_i18n('No playbook available')}
               </div>
             )}

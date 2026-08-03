@@ -1,10 +1,15 @@
 import { v4 as uuid } from 'uuid';
 import { CsvMapperRepresentationType } from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerFragment_csvMapper.graphql';
-import { CsvMapperRepresentation, CsvMapperRepresentationEdit, CsvMapperRepresentationFormData } from '@components/data/csvMapper/representations/Representation';
-import { csvMapperAttributeToFormData, formDataToCsvMapperAttribute } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
 import {
-  CsvMapperRepresentationAttributesForm_allSchemaAttributes$data,
-} from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
+  CsvMapperRepresentation,
+  CsvMapperRepresentationEdit,
+  CsvMapperRepresentationFormData,
+} from '@components/data/csvMapper/representations/Representation';
+import {
+  csvMapperAttributeToFormData,
+  formDataToCsvMapperAttribute,
+} from '@components/data/csvMapper/representations/attributes/AttributeUtils';
+import { CsvMapperRepresentationAttributesForm_allSchemaAttributes$data } from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
 import { isEmptyField } from '../../../../../utils/utils';
 import { useComputeDefaultValues } from '../../../../../utils/hooks/useDefaultValues';
 
@@ -52,19 +57,21 @@ export const csvMapperRepresentationToFormData = (
   schemaAttributes: CsvMapperRepresentationAttributesForm_allSchemaAttributes$data['csvMapperSchemaAttributes'],
   computeDefaultValues: ReturnType<typeof useComputeDefaultValues>,
 ): CsvMapperRepresentationFormData => {
-  const entitySchemaAttributes = schemaAttributes.find(
-    (schema) => schema.name === representation.target.entity_type,
-  )?.attributes ?? [];
+  const entitySchemaAttributes =
+    schemaAttributes.find((schema) => schema.name === representation.target.entity_type)
+      ?.attributes ?? [];
   return {
     id: representation.id,
     type: representation.type,
     target_type: representation.target.entity_type,
-    column_based: representation.target.column_based?.column_reference ? {
-      enabled: true,
-      column_reference: representation.target.column_based.column_reference,
-      operator: representation.target.column_based.operator,
-      value: representation.target.column_based.value,
-    } : undefined,
+    column_based: representation.target.column_based?.column_reference
+      ? {
+          enabled: true,
+          column_reference: representation.target.column_based.column_reference,
+          operator: representation.target.column_based.operator,
+          value: representation.target.column_based.value,
+        }
+      : undefined,
     attributes: representation.attributes.reduce((acc, attribute) => {
       const schemaAttribute = entitySchemaAttributes.find((attr) => attr.name === attribute.key);
       return {
@@ -94,19 +101,19 @@ export const formDataToCsvMapperRepresentation = (
     type: data.type as CsvMapperRepresentationType,
     target: {
       entity_type: data.target_type ?? '',
-      column_based: data.column_based?.enabled ? {
-        column_reference: data.column_based.column_reference,
-        operator: data.column_based.operator,
-        value: data.column_based.value,
-      } : null,
+      column_based: data.column_based?.enabled
+        ? {
+            column_reference: data.column_based.column_reference,
+            operator: data.column_based.operator,
+            value: data.column_based.value,
+          }
+        : null,
     },
-    attributes: (Object.entries(data.attributes)).flatMap(([name, attribute]) => {
+    attributes: Object.entries(data.attributes).flatMap(([name, attribute]) => {
       const mapperAttribute = formDataToCsvMapperAttribute(attribute, name);
-      return (
-        isEmptyField(mapperAttribute.column)
-        && isEmptyField(mapperAttribute.based_on)
-        && isEmptyField(mapperAttribute.default_values)
-      )
+      return isEmptyField(mapperAttribute.column) &&
+        isEmptyField(mapperAttribute.based_on) &&
+        isEmptyField(mapperAttribute.default_values)
         ? []
         : mapperAttribute;
     }),

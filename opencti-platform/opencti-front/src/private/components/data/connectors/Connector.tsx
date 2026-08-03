@@ -25,7 +25,7 @@ import ItemCopy from '../../../../components/ItemCopy';
 import ItemIcon from '../../../../components/ItemIcon';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { Theme } from '../../../../components/Theme';
-import { MESSAGING$, QueryRenderer } from '../../../../relay/environment';
+import { fetchQuery, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { IngestionConnector, IngestionTypedProperty } from '@components/integrations/catalog/types';
 import {
   computeConnectorStatus,
@@ -34,28 +34,51 @@ import {
   useGetConnectorAvailableFilterKeys,
   useGetConnectorFilterEntityTypes,
 } from '../../../../utils/Connector';
-import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import {
+  deserializeFilterGroupForFrontend,
+  isFilterGroupNotEmpty,
+  serializeFilterGroupForBackend,
+} from '../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useGranted, { MODULES_MODMANAGE, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
+import useGranted, {
+  MODULES_MODMANAGE,
+  SETTINGS_SETACCESSES,
+} from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { FIVE_SECONDS, formatUptime } from '../../../../utils/Time';
 import Filters from '../../common/lists/Filters';
 import { Connector_connector$data } from './__generated__/Connector_connector.graphql';
 import { ConnectorUpdateStatusMutation } from './__generated__/ConnectorUpdateStatusMutation.graphql';
-import { ConnectorUpdateTriggerMutation, EditInput } from './__generated__/ConnectorUpdateTriggerMutation.graphql';
-import { ConnectorWorksQuery$data, ConnectorWorksQuery$variables } from './__generated__/ConnectorWorksQuery.graphql';
+import { ConnectorTaxiiIngestionLookupQuery } from './__generated__/ConnectorTaxiiIngestionLookupQuery.graphql';
+import {
+  ConnectorUpdateTriggerMutation,
+  EditInput,
+} from './__generated__/ConnectorUpdateTriggerMutation.graphql';
+import {
+  ConnectorWorksQuery$data,
+  ConnectorWorksQuery$variables,
+} from './__generated__/ConnectorWorksQuery.graphql';
 import Card from '../../../../components/common/card/Card';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 import Label from '../../../../components/common/label/Label';
 import Tag from '../../../../components/common/tag/Tag';
 import ConnectorWorks, { connectorWorksQuery } from './ConnectorWorks';
+import IngestionTaxiiLogsDrawer from '../ingestionTaxii/IngestionTaxiiLogsDrawer';
 import { graphql } from 'relay-runtime';
 import { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
 import { ListItemButton, Stack, Typography } from '@mui/material';
 import { createRefetchContainer, RelayRefetchProp } from 'react-relay';
-import { getDeprecatedDescriptorsForEdition, shouldShowDeprecatedAlert } from '@components/integrations/catalog/utils/deprecatedFields';
-import { getConnectorMetadata, getConnectorTypeIcon, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
+import {
+  getDeprecatedDescriptorsForEdition,
+  shouldShowDeprecatedAlert,
+} from '@components/integrations/catalog/utils/deprecatedFields';
+import {
+  getConnectorMetadata,
+  getConnectorTypeIcon,
+  IngestionConnectorType,
+} from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -101,6 +124,19 @@ const updateRequestedStatus = graphql`
   }
 `;
 
+const connectorTaxiiIngestionLookupQuery = graphql`
+  query ConnectorTaxiiIngestionLookupQuery($search: String!) {
+    ingestionTaxiis(first: 25, search: $search) {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
 // Component for ConnectorWorks sections
 interface ConnectorWorksSectionProps {
   connectorId: string;
@@ -108,7 +144,9 @@ interface ConnectorWorksSectionProps {
 
 // Exported: also used by the built-in feed detail page, through the feed's
 // technical queue connector id.
-export const ConnectorWorksSection: FunctionComponent<ConnectorWorksSectionProps> = ({ connectorId }) => {
+export const ConnectorWorksSection: FunctionComponent<ConnectorWorksSectionProps> = ({
+  connectorId,
+}) => {
   const optionsInProgress: ConnectorWorksQuery$variables = {
     count: 50,
     orderMode: 'asc',
@@ -191,11 +229,7 @@ const DeprecatedConfigurationAlert: FunctionComponent<DeprecatedConfigurationAle
         sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}
       >
         <span>{message}</span>
-        <Button
-          variant="secondary"
-          size="small"
-          onClick={onAction}
-        >
+        <Button variant="secondary" size="small" onClick={onAction}>
           {actionLabel}
         </Button>
       </Stack>
@@ -211,16 +245,13 @@ interface ConnectorComponentProps {
 const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connector, relay }) => {
   const { t_i18n, nsdt } = useFormatter();
   const theme = useTheme<Theme>();
+  const { isFeatureEnable } = useHelper();
+  const canManageModules = useGranted([MODULES_MODMANAGE]);
 
   const handleRefreshData = useCallback(() => {
     // Need to force refetch with network-only to bypass cache
     // to prevent merging data when create/edit connector and fetch connector data
-    relay.refetch(
-      { id: connector.id },
-      null,
-      null,
-      { force: true },
-    );
+    relay.refetch({ id: connector.id }, null, null, { force: true });
   }, [connector.id, relay]);
 
   // Helper function to create connector configuration
@@ -247,10 +278,50 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   const [filters, helpers] = useFiltersState(connectorFilters);
   const [tabValue, setTabValue] = useState(0);
   const [editionOpen, setEditionOpen] = useState(false);
+  const [displayIngestionLogs, setDisplayIngestionLogs] = useState(false);
+  const [taxiiIngestionId, setTaxiiIngestionId] = useState<string | null>(null);
+
+  const isIngestionFeedLogsEnabled = isFeatureEnable('INGESTION_FEED_LOGS');
+  const isTaxiiFeed = Boolean(
+    connector.manager_contract_excerpt?.slug?.toLowerCase().includes('taxii') ||
+    connector.manager_contract_excerpt?.title?.toLowerCase().includes('taxii') ||
+    connector.title?.toLowerCase().includes('taxii'),
+  );
+  const canShowTaxiiLogsButton = isIngestionFeedLogsEnabled && isTaxiiFeed && canManageModules;
+  const normalizedFeedName = (connector.title || connector.name || '')
+    .replace(/^\[FEED\s*-\s*TAXII\]\s*/i, '')
+    .trim();
+
+  const handleOpenIngestionLogs = async () => {
+    if (taxiiIngestionId) {
+      setDisplayIngestionLogs(true);
+      return;
+    }
+    try {
+      const data = (await fetchQuery(connectorTaxiiIngestionLookupQuery, {
+        search: normalizedFeedName || connector.title || connector.name,
+      }).toPromise()) as ConnectorTaxiiIngestionLookupQuery['response'] | null;
+      const edges = data?.ingestionTaxiis?.edges ?? [];
+      const exactMatch = edges.find(
+        (edge) => edge?.node?.name?.toLowerCase() === normalizedFeedName.toLowerCase(),
+      );
+      const ingestionId = exactMatch?.node?.id ?? null;
+      if (!ingestionId) {
+        MESSAGING$.notifyError(t_i18n('No TAXII feed found for this connector.'));
+        return;
+      }
+      setTaxiiIngestionId(ingestionId);
+      setDisplayIngestionLogs(true);
+    } catch {
+      MESSAGING$.notifyError(t_i18n('Failed to load TAXII feed logs.'));
+    }
+  };
 
   // API mutations - defined early to avoid use-before-define errors
   const [commitUpdateStatus] = useApiMutation<ConnectorUpdateStatusMutation>(updateRequestedStatus);
-  const [commitUpdateConnectorTrigger] = useApiMutation<ConnectorUpdateTriggerMutation>(connectorUpdateTriggerMutation);
+  const [commitUpdateConnectorTrigger] = useApiMutation<ConnectorUpdateTriggerMutation>(
+    connectorUpdateTriggerMutation,
+  );
 
   useEffect(() => {
     const subscription = interval$.subscribe(() => {
@@ -273,7 +344,10 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
       return; // do nothing, nothing has changed
     }
     const jsonFilters = serializeFilterGroupForBackend(filters);
-    if (!isFilterGroupNotEmpty(deserializeFilterGroupForFrontend(jsonFilters)) && !connector.connector_trigger_filters) {
+    if (
+      !isFilterGroupNotEmpty(deserializeFilterGroupForFrontend(jsonFilters)) &&
+      !connector.connector_trigger_filters
+    ) {
       return; // do nothing, nothing has changed
     }
     if (connectorFiltersEnabled && connector.connector_trigger_filters !== jsonFilters) {
@@ -289,13 +363,21 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   const filtersSearchContext = { entityTypes: connectorFiltersScope, connectorsScope: true };
 
   const userHasSettingsCapability = useGranted([SETTINGS_SETACCESSES]);
-  const connectorStateConverted = connector.connector_state ? JSON.parse(connector.connector_state) : null;
-  const checkLastRunExistingInState = connectorStateConverted && Object.prototype.hasOwnProperty.call(connectorStateConverted, 'last_run');
-  const checkLastRunIsNumber = checkLastRunExistingInState && Number.isFinite(connectorStateConverted.last_run);
-  const lastRunConverted = checkLastRunIsNumber && new Date(connectorStateConverted.last_run * 1000);
+  const connectorStateConverted = connector.connector_state
+    ? JSON.parse(connector.connector_state)
+    : null;
+  const checkLastRunExistingInState =
+    connectorStateConverted &&
+    Object.prototype.hasOwnProperty.call(connectorStateConverted, 'last_run');
+  const checkLastRunIsNumber =
+    checkLastRunExistingInState && Number.isFinite(connectorStateConverted.last_run);
+  const lastRunConverted =
+    checkLastRunIsNumber && new Date(connectorStateConverted.last_run * 1000);
 
   const isBuffering = () => {
-    return connector.connector_info ? connector.connector_info.queue_messages_size > connector.connector_info.queue_threshold : false;
+    return connector.connector_info
+      ? connector.connector_info.queue_messages_size > connector.connector_info.queue_threshold
+      : false;
   };
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -303,344 +385,310 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   };
 
   // Component for Overview content (without ConnectorWorks)
-  const connectorOverviewContent = useMemo(() => (
-    <>
-      <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
-        <Grid item xs={6}>
-          <Card title={t_i18n('Basic information')}>
-            <Grid container={true} spacing={2}>
-              <Grid item xs={6}>
-                <Label>
-                  {t_i18n('Type')}
-                </Label>
-                <Tag
-                  key={connector.connector_type}
-                  label={connector.connector_type ?? ''}
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <Label>
-                  {t_i18n('Last update')}
-                </Label>
-                {nsdt(connector.updated_at)}
-              </Grid>
-              <Grid item xs={6}>
-                <Label>
-                  {t_i18n('Only contextual')}
-                </Label>
-                <ItemBoolean
-                  status={connectorOnlyContextualStatus.status}
-                  label={connectorOnlyContextualStatus.label}
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <Label>
-                  {t_i18n('Automatic trigger')}
-                </Label>
-                <ItemBoolean
-                  status={connectorTriggerStatus.status}
-                  label={connectorTriggerStatus.label}
-                />
-              </Grid>
-              <Grid item xs={connectorFiltersEnabled ? 6 : 12}>
-                <Label>
-                  {t_i18n('Scope')}
-                </Label>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                  {connector.connector_scope?.map((scope) => (
-                    <Tag
-                      key={scope}
-                      label={scope}
-                    />
-                  ))}
-                </Box>
-              </Grid>
-              {connectorFiltersEnabled && (
+  const connectorOverviewContent = useMemo(
+    () => (
+      <>
+        <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
+          <Grid item xs={6}>
+            <Card title={t_i18n('Basic information')}>
+              <Grid container={true} spacing={2}>
                 <Grid item xs={6}>
-                  <Label action={(
-                    <Tooltip
-                      title={t_i18n('Trigger filters can be used to trigger automatically this connector on entities matching the filters and scope.')}
-                    >
-                      <InformationOutline fontSize="small" color="primary" />
-                    </Tooltip>
-                  )}
-                  >
-                    {t_i18n('Trigger filters')}
-                  </Label>
-                  <Box sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: theme.spacing(1),
-                    marginBottom: theme.spacing(1),
-                  }}
-                  >
-                    <Filters
-                      availableFilterKeys={connectorAvailableFilterKeys}
-                      helpers={helpers}
-                      searchContext={filtersSearchContext}
-                    />
+                  <Label>{t_i18n('Type')}</Label>
+                  <Tag key={connector.connector_type} label={connector.connector_type ?? ''} />
+                </Grid>
+                <Grid item xs={6}>
+                  <Label>{t_i18n('Last update')}</Label>
+                  {nsdt(connector.updated_at)}
+                </Grid>
+                <Grid item xs={6}>
+                  <Label>{t_i18n('Only contextual')}</Label>
+                  <ItemBoolean
+                    status={connectorOnlyContextualStatus.status}
+                    label={connectorOnlyContextualStatus.label}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <Label>{t_i18n('Automatic trigger')}</Label>
+                  <ItemBoolean
+                    status={connectorTriggerStatus.status}
+                    label={connectorTriggerStatus.label}
+                  />
+                </Grid>
+                <Grid item xs={connectorFiltersEnabled ? 6 : 12}>
+                  <Label>{t_i18n('Scope')}</Label>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {connector.connector_scope?.map((scope) => (
+                      <Tag key={scope} label={scope} />
+                    ))}
                   </Box>
-                  {filters && (
-                    <Box sx={{ overflow: 'hidden' }} key="filter-icon-button-container">
-                      <FilterIconButton
-                        key="connector-filter-icon-button"
-                        filters={filters}
+                </Grid>
+                {connectorFiltersEnabled && (
+                  <Grid item xs={6}>
+                    <Label
+                      action={
+                        <Tooltip
+                          title={t_i18n(
+                            'Trigger filters can be used to trigger automatically this connector on entities matching the filters and scope.',
+                          )}
+                        >
+                          <InformationOutline fontSize="small" color="primary" />
+                        </Tooltip>
+                      }
+                    >
+                      {t_i18n('Trigger filters')}
+                    </Label>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: theme.spacing(1),
+                        marginBottom: theme.spacing(1),
+                      }}
+                    >
+                      <Filters
+                        availableFilterKeys={connectorAvailableFilterKeys}
                         helpers={helpers}
                         searchContext={filtersSearchContext}
-                        entityTypes={connectorFiltersScope}
                       />
                     </Box>
-                  )}
-                </Grid>
-              )}
-              <Security needs={[SETTINGS_SETACCESSES]}>
-                <>
-                  <Grid item xs={6}>
-                    <Label>
-                      {t_i18n('Associated user')}
-                    </Label>
-                    {connector.connector_user ? (
-                      <ListItemButton
-                        key={connector.connector_user.id}
-                        dense={true}
-                        divider={true}
-                        component={Link}
-                        to={`/dashboard/settings/accesses/users/${connector.connector_user.id}`}
-                      >
-                        <ListItemIcon>
-                          <ItemIcon type="user" color={theme.palette.primary.main} />
-                        </ListItemIcon>
-                        <ListItemText primary={connector.connector_user.name} />
-                      </ListItemButton>
-                    ) : (
-                      <FieldOrEmpty source={connector.connector_user}>{null}</FieldOrEmpty>
+                    {filters && (
+                      <Box sx={{ overflow: 'hidden' }} key="filter-icon-button-container">
+                        <FilterIconButton
+                          key="connector-filter-icon-button"
+                          filters={filters}
+                          helpers={helpers}
+                          searchContext={filtersSearchContext}
+                          entityTypes={connectorFiltersScope}
+                        />
+                      </Box>
                     )}
                   </Grid>
-                  <Grid item xs={6}>
-                    <Label>
-                      {t_i18n('Max confidence level')}
-                    </Label>
-                    {connector.connector_user ? (
-                      <FieldOrEmpty source={connector.connector_user?.effective_confidence_level?.max_confidence}>
-                        {connector.connector_user.effective_confidence_level?.max_confidence}
-                      </FieldOrEmpty>
-                    ) : (
-                      <FieldOrEmpty source={connector.connector_user}>{null}</FieldOrEmpty>
-                    )}
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Label>
-                      {t_i18n("User's roles")}
-                    </Label>
-                    {connector.connector_user ? (
-                      <FieldOrEmpty source={connector.connector_user.roles ?? []}>
-                        <List sx={{ py: 0 }}>
-                          {(connector.connector_user.roles ?? []).map((role) => (userHasSettingsCapability ? (
-                            <ListItemButton
-                              key={role?.id}
-                              dense={true}
-                              divider={true}
-                              component={Link}
-                              to={`/dashboard/settings/accesses/roles/${role?.id}`}
-                            >
-                              <ListItemIcon>
-                                <ItemIcon type="Role" />
-                              </ListItemIcon>
-                              <ListItemText primary={role?.name} />
-                            </ListItemButton>
-                          ) : (
-                            <ListItem key={role?.id} dense={true} divider={true}>
-                              <ListItemIcon>
-                                <ItemIcon type="Role" />
-                              </ListItemIcon>
-                              <ListItemText primary={role?.name} />
-                            </ListItem>
-                          )))}
-                        </List>
-                      </FieldOrEmpty>
-                    ) : (
-                      <FieldOrEmpty source={connector.connector_user}>{null}</FieldOrEmpty>
-                    )}
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Label>
-                      {t_i18n("User's groups")}
-                    </Label>
-                    {connector.connector_user ? (
-                      <FieldOrEmpty source={connector.connector_user.groups?.edges}>
-                        <List sx={{ py: 0 }}>
-                          {(connector.connector_user.groups?.edges ?? []).map((groupEdge) => (userHasSettingsCapability ? (
-                            <ListItemButton
-                              key={groupEdge?.node.id}
-                              dense={true}
-                              divider={true}
-                              component={Link}
-                              to={`/dashboard/settings/accesses/groups/${groupEdge?.node.id}`}
-                            >
-                              <ListItemIcon>
-                                <ItemIcon type="Group" />
-                              </ListItemIcon>
-                              <ListItemText primary={groupEdge?.node.name} />
-                            </ListItemButton>
-                          ) : (
-                            <ListItem
-                              key={groupEdge?.node.id}
-                              dense={true}
-                              divider={true}
-                            >
-                              <ListItemIcon>
-                                <ItemIcon type="Group" />
-                              </ListItemIcon>
-                              <ListItemText primary={groupEdge?.node.name} />
-                            </ListItem>
-                          )))}
-                        </List>
-                      </FieldOrEmpty>
-                    ) : (
-                      <FieldOrEmpty source={connector.connector_user}>{null}</FieldOrEmpty>
-                    )}
-                  </Grid>
-
-                  <Grid item xs={6}>
-                    <Label>
-                      {t_i18n("User's organizations")}
-                    </Label>
-                    {connector.connector_user ? (
-                      <FieldOrEmpty source={connector.connector_user.objectOrganization?.edges}>
-                        <List sx={{ py: 0 }}>
-                          {connector.connector_user.objectOrganization?.edges.map((organizationEdge) => (
-                            <ListItemButton
-                              key={organizationEdge.node.id}
-                              dense={true}
-                              divider={true}
-                              component={Link}
-                              to={`/dashboard/settings/accesses/organizations/${organizationEdge.node.id}`}
-                            >
-                              <ListItemIcon>
-                                <ItemIcon
-                                  type="Organization"
-                                  color={theme.palette.primary.main}
-                                />
-                              </ListItemIcon>
-                              <ListItemText primary={organizationEdge.node.name} />
-                            </ListItemButton>
-                          ))}
-                        </List>
-                      </FieldOrEmpty>
-                    ) : (
-                      <FieldOrEmpty source={connector.connector_user}>{null}</FieldOrEmpty>
-                    )}
-                  </Grid>
-                </>
-              </Security>
-            </Grid>
-          </Card>
-        </Grid>
-        <Grid item xs={6}>
-          <Card title={t_i18n('Details')}>
-            <Grid container={true} spacing={2}>
-              {connector.connector_info?.buffering && (
-                <Grid item xs={12}>
-                  <Box sx={{ display: 'flex', alignItems: 'stretch', gap: 1 }}>
-                    <Alert
-                      severity="warning"
-                      icon={<UpdateIcon color="warning" />}
-                      style={{ alignItems: 'center', marginBottom: 0, flex: 1 }}
-                    >
-                      <div>
-                        <strong>{t_i18n('Buffering: ')}</strong>
-                        {t_i18n('Server ingestion is not accepting new work, waiting for current messages in ingestion to be processed until message count go back under threshold')}
-                      </div>
-                    </Alert>
-                  </Box>
-                </Grid>
-              )}
-
-              <Grid item={true} xs={12}>
-                <Label>
-                  {t_i18n('State')}
-                </Label>
-                <FieldOrEmpty source={connector.connector_state}>
-                  <pre>
-                    <ItemCopy
-                      content={connector.connector_state || ''}
-                      limit={200}
-                    />
-                  </pre>
-                </FieldOrEmpty>
-              </Grid>
-
-              <Grid item xs={6}>
-                {!connector.connector_info && (
-                  connector.connector_state
-                  && connectorStateConverted !== null
-                  && checkLastRunExistingInState && checkLastRunIsNumber ? (
-                        <>
-                          <Label>
-                            {t_i18n('Last run (from State)')}
-                          </Label>
-                          <Typography variant="body1" gutterBottom={true}>
-                            {nsdt(lastRunConverted)}
-                          </Typography>
-                        </>
+                )}
+                <Security needs={[SETTINGS_SETACCESSES]}>
+                  <>
+                    <Grid item xs={6}>
+                      <Label>{t_i18n('Associated user')}</Label>
+                      {connector.connector_user ? (
+                        <ListItemButton
+                          key={connector.connector_user.id}
+                          dense={true}
+                          divider={true}
+                          component={Link}
+                          to={`/dashboard/settings/accesses/users/${connector.connector_user.id}`}
+                        >
+                          <ListItemIcon>
+                            <ItemIcon type="user" color={theme.palette.primary.main} />
+                          </ListItemIcon>
+                          <ListItemText primary={connector.connector_user.name} />
+                        </ListItemButton>
                       ) : (
-                        <>
-                          <Label>
-                            {t_i18n('Last run')}
-                          </Label>
-                          <Typography variant="body1" gutterBottom={true}>
-                            {t_i18n('Not provided')}
-                          </Typography>
-                        </>
-                      )
-                )}
-                {connector.connector_info && (
-                  connector.connector_info.last_run_datetime ? (
-                    <>
-                      <Label>
-                        {t_i18n('Last run')}
-                      </Label>
-                      <Typography variant="body1" gutterBottom={true}>
-                        {nsdt(connector.connector_info?.last_run_datetime)}
-                      </Typography>
-                    </>
-                  ) : (connector.connector_state
-                    && connectorStateConverted !== null
-                    && checkLastRunExistingInState && checkLastRunIsNumber ? (
-                        <>
-                          <Label>
-                            {t_i18n('Last run (from State)')}
-                          </Label>
-                          <Typography variant="body1" gutterBottom={true}>
-                            {nsdt(lastRunConverted)}
-                          </Typography>
-                        </>
-                      )
-                    : (
-                        <>
-                          <Label>
-                            {t_i18n('Last run')}
-                          </Label>
-                          <Typography variant="body1" gutterBottom={true}>
-                            {t_i18n('Not provided')}
-                          </Typography>
-                        </>
-                      )
-                  )
-                )}
-              </Grid>
-              <Grid item xs={6}>
-                <Label>
-                  {t_i18n('Next run')}
-                </Label>
-                {connector.connector_info && (
+                        <FieldOrEmpty source={connector.connector_user}>{null}</FieldOrEmpty>
+                      )}
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Label>{t_i18n('Max confidence level')}</Label>
+                      {connector.connector_user ? (
+                        <FieldOrEmpty
+                          source={
+                            connector.connector_user?.effective_confidence_level?.max_confidence
+                          }
+                        >
+                          {connector.connector_user.effective_confidence_level?.max_confidence}
+                        </FieldOrEmpty>
+                      ) : (
+                        <FieldOrEmpty source={connector.connector_user}>{null}</FieldOrEmpty>
+                      )}
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Label>{t_i18n("User's roles")}</Label>
+                      {connector.connector_user ? (
+                        <FieldOrEmpty source={connector.connector_user.roles ?? []}>
+                          <List sx={{ py: 0 }}>
+                            {(connector.connector_user.roles ?? []).map((role) =>
+                              userHasSettingsCapability ? (
+                                <ListItemButton
+                                  key={role?.id}
+                                  dense={true}
+                                  divider={true}
+                                  component={Link}
+                                  to={`/dashboard/settings/accesses/roles/${role?.id}`}
+                                >
+                                  <ListItemIcon>
+                                    <ItemIcon type="Role" />
+                                  </ListItemIcon>
+                                  <ListItemText primary={role?.name} />
+                                </ListItemButton>
+                              ) : (
+                                <ListItem key={role?.id} dense={true} divider={true}>
+                                  <ListItemIcon>
+                                    <ItemIcon type="Role" />
+                                  </ListItemIcon>
+                                  <ListItemText primary={role?.name} />
+                                </ListItem>
+                              ),
+                            )}
+                          </List>
+                        </FieldOrEmpty>
+                      ) : (
+                        <FieldOrEmpty source={connector.connector_user}>{null}</FieldOrEmpty>
+                      )}
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Label>{t_i18n("User's groups")}</Label>
+                      {connector.connector_user ? (
+                        <FieldOrEmpty source={connector.connector_user.groups?.edges}>
+                          <List sx={{ py: 0 }}>
+                            {(connector.connector_user.groups?.edges ?? []).map((groupEdge) =>
+                              userHasSettingsCapability ? (
+                                <ListItemButton
+                                  key={groupEdge?.node.id}
+                                  dense={true}
+                                  divider={true}
+                                  component={Link}
+                                  to={`/dashboard/settings/accesses/groups/${groupEdge?.node.id}`}
+                                >
+                                  <ListItemIcon>
+                                    <ItemIcon type="Group" />
+                                  </ListItemIcon>
+                                  <ListItemText primary={groupEdge?.node.name} />
+                                </ListItemButton>
+                              ) : (
+                                <ListItem key={groupEdge?.node.id} dense={true} divider={true}>
+                                  <ListItemIcon>
+                                    <ItemIcon type="Group" />
+                                  </ListItemIcon>
+                                  <ListItemText primary={groupEdge?.node.name} />
+                                </ListItem>
+                              ),
+                            )}
+                          </List>
+                        </FieldOrEmpty>
+                      ) : (
+                        <FieldOrEmpty source={connector.connector_user}>{null}</FieldOrEmpty>
+                      )}
+                    </Grid>
 
-                  connector.connector_info.run_and_terminate ? (
-                    <Typography variant="body1" gutterBottom={true}>
-                      {t_i18n('External schedule')}
-                    </Typography>
-                  ) : (
-                    connector.connector_info.next_run_datetime !== null ? (
+                    <Grid item xs={6}>
+                      <Label>{t_i18n("User's organizations")}</Label>
+                      {connector.connector_user ? (
+                        <FieldOrEmpty source={connector.connector_user.objectOrganization?.edges}>
+                          <List sx={{ py: 0 }}>
+                            {connector.connector_user.objectOrganization?.edges.map(
+                              (organizationEdge) => (
+                                <ListItemButton
+                                  key={organizationEdge.node.id}
+                                  dense={true}
+                                  divider={true}
+                                  component={Link}
+                                  to={`/dashboard/settings/accesses/organizations/${organizationEdge.node.id}`}
+                                >
+                                  <ListItemIcon>
+                                    <ItemIcon
+                                      type="Organization"
+                                      color={theme.palette.primary.main}
+                                    />
+                                  </ListItemIcon>
+                                  <ListItemText primary={organizationEdge.node.name} />
+                                </ListItemButton>
+                              ),
+                            )}
+                          </List>
+                        </FieldOrEmpty>
+                      ) : (
+                        <FieldOrEmpty source={connector.connector_user}>{null}</FieldOrEmpty>
+                      )}
+                    </Grid>
+                  </>
+                </Security>
+              </Grid>
+            </Card>
+          </Grid>
+          <Grid item xs={6}>
+            <Card title={t_i18n('Details')}>
+              <Grid container={true} spacing={2}>
+                {connector.connector_info?.buffering && (
+                  <Grid item xs={12}>
+                    <Box sx={{ display: 'flex', alignItems: 'stretch', gap: 1 }}>
+                      <Alert
+                        severity="warning"
+                        icon={<UpdateIcon color="warning" />}
+                        style={{ alignItems: 'center', marginBottom: 0, flex: 1 }}
+                      >
+                        <div>
+                          <strong>{t_i18n('Buffering: ')}</strong>
+                          {t_i18n(
+                            'Server ingestion is not accepting new work, waiting for current messages in ingestion to be processed until message count go back under threshold',
+                          )}
+                        </div>
+                      </Alert>
+                    </Box>
+                  </Grid>
+                )}
+
+                <Grid item={true} xs={12}>
+                  <Label>{t_i18n('State')}</Label>
+                  <FieldOrEmpty source={connector.connector_state}>
+                    <pre>
+                      <ItemCopy content={connector.connector_state || ''} limit={200} />
+                    </pre>
+                  </FieldOrEmpty>
+                </Grid>
+
+                <Grid item xs={6}>
+                  {!connector.connector_info &&
+                    (connector.connector_state &&
+                    connectorStateConverted !== null &&
+                    checkLastRunExistingInState &&
+                    checkLastRunIsNumber ? (
+                      <>
+                        <Label>{t_i18n('Last run (from State)')}</Label>
+                        <Typography variant="body1" gutterBottom={true}>
+                          {nsdt(lastRunConverted)}
+                        </Typography>
+                      </>
+                    ) : (
+                      <>
+                        <Label>{t_i18n('Last run')}</Label>
+                        <Typography variant="body1" gutterBottom={true}>
+                          {t_i18n('Not provided')}
+                        </Typography>
+                      </>
+                    ))}
+                  {connector.connector_info &&
+                    (connector.connector_info.last_run_datetime ? (
+                      <>
+                        <Label>{t_i18n('Last run')}</Label>
+                        <Typography variant="body1" gutterBottom={true}>
+                          {nsdt(connector.connector_info?.last_run_datetime)}
+                        </Typography>
+                      </>
+                    ) : connector.connector_state &&
+                      connectorStateConverted !== null &&
+                      checkLastRunExistingInState &&
+                      checkLastRunIsNumber ? (
+                      <>
+                        <Label>{t_i18n('Last run (from State)')}</Label>
+                        <Typography variant="body1" gutterBottom={true}>
+                          {nsdt(lastRunConverted)}
+                        </Typography>
+                      </>
+                    ) : (
+                      <>
+                        <Label>{t_i18n('Last run')}</Label>
+                        <Typography variant="body1" gutterBottom={true}>
+                          {t_i18n('Not provided')}
+                        </Typography>
+                      </>
+                    ))}
+                </Grid>
+                <Grid item xs={6}>
+                  <Label>{t_i18n('Next run')}</Label>
+                  {connector.connector_info &&
+                    (connector.connector_info.run_and_terminate ? (
+                      <Typography variant="body1" gutterBottom={true}>
+                        {t_i18n('External schedule')}
+                      </Typography>
+                    ) : connector.connector_info.next_run_datetime !== null ? (
                       <Typography variant="body1" gutterBottom={true}>
                         {nsdt(connector.connector_info?.next_run_datetime)}
                       </Typography>
@@ -648,74 +696,90 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                       <Typography variant="body1" gutterBottom={true}>
                         {t_i18n('Not provided')}
                       </Typography>
-                    )
-                  )
-                )}
-                {!connector.connector_info && (
-                  <Typography variant="body1" gutterBottom={true}>
-                    {t_i18n('Not provided')}
-                  </Typography>
-                )}
-              </Grid>
-
-              {connector.is_managed && (
-                <Grid item xs={6}>
-                  <Label>{t_i18n('Instance name')}</Label>
-                  <Typography component="div" variant="body1">{connector.name}</Typography>
+                    ))}
+                  {!connector.connector_info && (
+                    <Typography variant="body1" gutterBottom={true}>
+                      {t_i18n('Not provided')}
+                    </Typography>
+                  )}
                 </Grid>
-              )}
 
-              <Grid item xs={6}>
-                <Label>
-                  {t_i18n('Server capacity')}
-                </Label>
-                {connector.connector_info && (connector.connector_info.queue_messages_size !== 0
-                  || connector.connector_info.last_run_datetime) ? (
-                      <FieldOrEmpty source={connector.connector_info?.queue_messages_size}>
-                        <span style={isBuffering() ? { color: theme.palette.dangerZone.main } : {}}>{connector.connector_info?.queue_messages_size.toFixed(2)}</span>
-                        <span> / {connector.connector_info?.queue_threshold} Mo</span>
-                      </FieldOrEmpty>
-                    ) : (
+                {connector.is_managed && (
+                  <Grid item xs={6}>
+                    <Label>{t_i18n('Instance name')}</Label>
+                    <Typography component="div" variant="body1">
+                      {connector.name}
+                    </Typography>
+                  </Grid>
+                )}
+
+                <Grid item xs={6}>
+                  <Label>{t_i18n('Server capacity')}</Label>
+                  {connector.connector_info &&
+                  (connector.connector_info.queue_messages_size !== 0 ||
+                    connector.connector_info.last_run_datetime) ? (
+                    <FieldOrEmpty source={connector.connector_info?.queue_messages_size}>
+                      <span style={isBuffering() ? { color: theme.palette.dangerZone.main } : {}}>
+                        {connector.connector_info?.queue_messages_size.toFixed(2)}
+                      </span>
+                      <span> / {connector.connector_info?.queue_threshold} Mo</span>
+                    </FieldOrEmpty>
+                  ) : (
+                    <Typography variant="body1" gutterBottom={true}>
+                      {t_i18n('Not provided')}
+                    </Typography>
+                  )}
+                </Grid>
+                {canShowTaxiiLogsButton && (
+                  <Grid item xs={12}>
+                    <Button
+                      variant="secondary"
+                      size="small"
+                      color="primary"
+                      onClick={handleOpenIngestionLogs}
+                    >
+                      {t_i18n('View logs')}
+                    </Button>
+                  </Grid>
+                )}
+                {connector.is_managed &&
+                  connector.manager_current_status === 'started' &&
+                  connector.manager_connector_uptime != null && (
+                    <Grid item xs={6}>
+                      <Label>{t_i18n('Uptime')}</Label>
                       <Typography variant="body1" gutterBottom={true}>
-                        {t_i18n('Not provided')}
+                        {formatUptime(connector.manager_connector_uptime, t_i18n)}
                       </Typography>
-                    )
-                }
+                    </Grid>
+                  )}
               </Grid>
-              {connector.is_managed && connector.manager_current_status === 'started' && connector.manager_connector_uptime != null && (
-                <Grid item xs={6}>
-                  <Label>
-                    {t_i18n('Uptime')}
-                  </Label>
-                  <Typography variant="body1" gutterBottom={true}>
-                    {formatUptime(connector.manager_connector_uptime, t_i18n)}
-                  </Typography>
-                </Grid>
-              )}
-            </Grid>
-          </Card>
+            </Card>
+          </Grid>
         </Grid>
-      </Grid>
-    </>
-  ), [
-    connector,
-    connectorFiltersEnabled,
-    connectorOnlyContextualStatus,
-    connectorTriggerStatus,
-    connectorAvailableFilterKeys,
-    connectorFiltersScope,
-    filters,
-    helpers,
-    filtersSearchContext,
-    userHasSettingsCapability,
-    connectorStateConverted,
-    checkLastRunExistingInState,
-    checkLastRunIsNumber,
-    lastRunConverted,
-    theme,
-    t_i18n,
-    nsdt,
-  ]);
+      </>
+    ),
+    [
+      connector,
+      connectorFiltersEnabled,
+      connectorOnlyContextualStatus,
+      connectorTriggerStatus,
+      connectorAvailableFilterKeys,
+      connectorFiltersScope,
+      filters,
+      helpers,
+      filtersSearchContext,
+      userHasSettingsCapability,
+      connectorStateConverted,
+      checkLastRunExistingInState,
+      checkLastRunIsNumber,
+      lastRunConverted,
+      canShowTaxiiLogsButton,
+      handleOpenIngestionLogs,
+      theme,
+      t_i18n,
+      nsdt,
+    ],
+  );
 
   const connectorLogsContent = useMemo(() => {
     // calculating the full viewport height minus some space for elements above
@@ -779,7 +843,9 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
 
     try {
       const contract = JSON.parse(connector.manager_contract_definition) as IngestionConnector;
-      const properties = contract?.config_schema?.properties as Record<string, IngestionTypedProperty> | undefined;
+      const properties = contract?.config_schema?.properties as
+        | Record<string, IngestionTypedProperty>
+        | undefined;
       if (!properties) {
         return false;
       }
@@ -806,7 +872,11 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     } catch {
       return false;
     }
-  }, [connector.is_managed, connector.manager_contract_definition, connector.manager_contract_configuration]);
+  }, [
+    connector.is_managed,
+    connector.manager_contract_definition,
+    connector.manager_contract_configuration,
+  ]);
 
   const TypeIcon = getConnectorTypeIcon(connector.connector_type ?? '');
   const typeLabel = connector.connector_type
@@ -871,7 +941,9 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     <>
       <DeprecatedConfigurationAlert
         open={hasDeprecatedConfiguredFields}
-        message={t_i18n('This connector has deprecated configuration fields still set. Open the configuration to review and remove them.')}
+        message={t_i18n(
+          'This connector has deprecated configuration fields still set. Open the configuration to review and remove them.',
+        )}
         actionLabel={t_i18n('Edit configuration')}
         onAction={() => setEditionOpen(true)}
       />
@@ -962,12 +1034,13 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
             </TitleMainEntity>
           </Box>
         </Stack>
-        <div style={{
-          float: 'right',
-          display: 'flex',
-          alignItems: 'center',
-          gap: theme.spacing(1),
-        }}
+        <div
+          style={{
+            float: 'right',
+            display: 'flex',
+            alignItems: 'center',
+            gap: theme.spacing(1),
+          }}
         >
           <Security needs={[MODULES_MODMANAGE]}>
             <>
@@ -980,14 +1053,19 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 <Button
                   disabled={computeConnectorStatus(connector).processing}
                   color={connector.manager_current_status === 'started' ? 'error' : 'primary'}
-                  onClick={() => commitUpdateStatus({
-                    variables: {
-                      input: {
-                        id: connector.id,
-                        status: connector.manager_current_status === 'started' ? 'stopping' : 'starting',
+                  onClick={() =>
+                    commitUpdateStatus({
+                      variables: {
+                        input: {
+                          id: connector.id,
+                          status:
+                            connector.manager_current_status === 'started'
+                              ? 'stopping'
+                              : 'starting',
+                        },
                       },
-                    },
-                  })}
+                    })
+                  }
                 >
                   {t_i18n(connector.manager_current_status === 'started' ? 'Stop' : 'Start')}
                 </Button>
@@ -1015,6 +1093,14 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
         {tabValue === 1 && <ConnectorWorksSection connectorId={connector.id} />}
         {tabValue === 2 && connector.is_managed && connectorLogsContent}
       </Box>
+      {canShowTaxiiLogsButton && (
+        <IngestionTaxiiLogsDrawer
+          isOpen={displayIngestionLogs}
+          onClose={() => setDisplayIngestionLogs(false)}
+          feedId={taxiiIngestionId}
+          feedName={normalizedFeedName || managedConnectorDisplayName}
+        />
+      )}
 
       {connector.is_managed && connector.manager_contract_definition && (
         <ManagedConnectorEdition
@@ -1060,9 +1146,9 @@ const Connector = createRefetchContainer(
           value
         }
         manager_contract_excerpt {
-            title
-            slug
-            logo
+          title
+          slug
+          logo
         }
         manager_contract_definition
         manager_current_status

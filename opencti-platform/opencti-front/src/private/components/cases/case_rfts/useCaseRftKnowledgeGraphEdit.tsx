@@ -10,11 +10,7 @@ const caseRftKnowledgeGraphEdit = graphql`
     $references: [String]
   ) {
     stixDomainObjectEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         id
       }
     }
@@ -22,9 +18,7 @@ const caseRftKnowledgeGraphEdit = graphql`
 `;
 
 const useCaseRftKnowledgeGraphEdit = () => {
-  return useApiMutation<useCaseRftKnowledgeGraphEditMutation>(
-    caseRftKnowledgeGraphEdit,
-  );
+  return useApiMutation<useCaseRftKnowledgeGraphEditMutation>(caseRftKnowledgeGraphEdit);
 };
 
 export default useCaseRftKnowledgeGraphEdit;

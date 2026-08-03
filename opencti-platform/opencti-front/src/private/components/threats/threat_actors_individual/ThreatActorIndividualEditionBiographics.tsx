@@ -22,10 +22,7 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const threatActorIndividualEditionBiographicsFocus = graphql`
-  mutation ThreatActorIndividualEditionBiographicsFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation ThreatActorIndividualEditionBiographicsFocusMutation($id: ID!, $input: EditContext!) {
     threatActorIndividualContextPatch(id: $id, input: $input) {
       id
     }
@@ -92,23 +89,21 @@ const ThreatActorIndividualEditionBiographicsComponent: React.FunctionComponent<
   );
 
   const basicShape = {
-    eye_color: Yup.string()
-      .nullable()
-      .typeError(t_i18n('The value must be a string')),
-    hair_color: Yup.string()
-      .nullable()
-      .typeError(t_i18n('The value must be a string')),
+    eye_color: Yup.string().nullable().typeError(t_i18n('The value must be a string')),
+    hair_color: Yup.string().nullable().typeError(t_i18n('The value must be a string')),
     weight: Yup.array().of(
       Yup.object().shape({
         measure: Yup.number().required(t_i18n('This field is required')),
-        date_seen: Yup.date().required(t_i18n('This field is required'))
+        date_seen: Yup.date()
+          .required(t_i18n('This field is required'))
           .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
       }),
     ),
     height: Yup.array().of(
       Yup.object().shape({
         measure: Yup.number().required(t_i18n('This field is required')),
-        date_seen: Yup.date().required(t_i18n('This field is required'))
+        date_seen: Yup.date()
+          .required(t_i18n('This field is required'))
           .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
       }),
     ),
@@ -131,16 +126,17 @@ const ThreatActorIndividualEditionBiographicsComponent: React.FunctionComponent<
     threatActorIndividualValidator,
   );
 
-  const handleChangeFocus = (name: string) => commitMutation({
-    ...defaultCommitMutation,
-    mutation: threatActorIndividualEditionBiographicsFocus,
-    variables: {
-      id: threatActorIndividual.id,
-      input: {
-        focusOn: name,
+  const handleChangeFocus = (name: string) =>
+    commitMutation({
+      ...defaultCommitMutation,
+      mutation: threatActorIndividualEditionBiographicsFocus,
+      variables: {
+        id: threatActorIndividual.id,
+        input: {
+          focusOn: name,
+        },
       },
-    },
-  });
+    });
   const handleSubmitField = (name: string, value: string | string[]) => {
     threatActorIndividualValidator
       .validateAt(name, { [name]: value })
@@ -170,14 +166,7 @@ const ThreatActorIndividualEditionBiographicsComponent: React.FunctionComponent<
         validationSchema={threatActorIndividualValidator}
         onSubmit={() => {}}
       >
-        {({
-          submitForm,
-          isSubmitting,
-          setFieldValue,
-          values,
-          isValid,
-          dirty,
-        }) => (
+        {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
           <div>
             <Form>
               <AlertConfidenceForEntity entity={threatActorIndividual} />

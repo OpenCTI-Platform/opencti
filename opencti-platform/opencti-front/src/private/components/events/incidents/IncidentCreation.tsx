@@ -17,7 +17,11 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import { isEmptyField } from '../../../../utils/utils';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -29,7 +33,10 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { IncidentCreationMutation, IncidentCreationMutation$data } from './__generated__/IncidentCreationMutation.graphql';
+import {
+  IncidentCreationMutation,
+  IncidentCreationMutation$data,
+} from './__generated__/IncidentCreationMutation.graphql';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 
 const IncidentMutation = graphql`
@@ -66,7 +73,11 @@ interface IncidentAddInput {
 }
 
 interface IncidentCreationProps {
-  updater: (store: RecordSourceSelectorProxy, key: string, response: IncidentCreationMutation['response']['incidentAdd']) => void;
+  updater: (
+    store: RecordSourceSelectorProxy,
+    key: string,
+    response: IncidentCreationMutation['response']['incidentAdd'],
+  ) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: FieldOption;
@@ -87,32 +98,29 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
-  const [commit] = useApiMutation<IncidentCreationMutation>(
-    IncidentMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Incident')} ${t_i18n('successfully created')}` },
-  );
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const [commit] = useApiMutation<IncidentCreationMutation>(IncidentMutation, undefined, {
+    successMessage: `${t_i18n('entity_Incident')} ${t_i18n('successfully created')}`,
+  });
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
   const { mandatoryAttributes } = useIsMandatoryAttribute(INCIDENT_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    confidence: Yup.number().nullable(),
-    incident_type: Yup.string().nullable(),
-    severity: Yup.string().nullable(),
-    source: Yup.string().nullable(),
-    description: Yup.string().nullable(),
-  }, mandatoryAttributes);
-  const incidentValidator = useDynamicSchemaCreationValidation(
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      confidence: Yup.number().nullable(),
+      incident_type: Yup.string().nullable(),
+      severity: Yup.string().nullable(),
+      source: Yup.string().nullable(),
+      description: Yup.string().nullable(),
+    },
     mandatoryAttributes,
-    basicShape,
   );
+  const incidentValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
   const onSubmit: FormikConfig<IncidentAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
-    const cleanedValues = isEmptyField(values.severity)
-      ? R.dissoc('severity', values)
-      : values;
+    const cleanedValues = isEmptyField(values.severity) ? R.dissoc('severity', values) : values;
     const input = {
       ...buildCreationFilesInput(values.file ? [values.file] : []),
       ...cleanedValues,
@@ -120,13 +128,9 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
       createdBy: cleanedValues.createdBy?.value,
       objectMarking: cleanedValues.objectMarking.map((v) => v.value),
       objectAssignee: cleanedValues.objectAssignee.map(({ value }) => value),
-      objectParticipant: cleanedValues.objectParticipant.map(
-        ({ value }) => value,
-      ),
+      objectParticipant: cleanedValues.objectParticipant.map(({ value }) => value),
       objectLabel: cleanedValues.objectLabel.map(({ value }) => value),
-      externalReferences: cleanedValues.externalReferences.map(
-        ({ value }) => value,
-      ),
+      externalReferences: cleanedValues.externalReferences.map(({ value }) => value),
     };
     commit({
       variables: {
@@ -182,19 +186,16 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
             variant="standard"
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth={true}
             detectDuplicate={['Incident']}
           />
-          <ConfidenceField
-            entityType="Incident"
-            containerStyle={fieldSpacingContainerStyle}
-          />
+          <ConfidenceField entityType="Incident" containerStyle={fieldSpacingContainerStyle} />
           <OpenVocabField
             label={t_i18n('Incident type')}
             type="incident-type-ov"
             name="incident_type"
-            required={(mandatoryAttributes.includes('incident_type'))}
+            required={mandatoryAttributes.includes('incident_type')}
             containerStyle={fieldSpacingContainerStyle}
             multiple={false}
             onChange={setFieldValue}
@@ -203,7 +204,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
             label={t_i18n('Severity')}
             type="incident-severity-ov"
             name="severity"
-            required={(mandatoryAttributes.includes('severity'))}
+            required={mandatoryAttributes.includes('severity')}
             containerStyle={fieldSpacingContainerStyle}
             multiple={false}
             onChange={setFieldValue}
@@ -212,7 +213,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -226,59 +227,52 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
             variant="standard"
             name="source"
             label={t_i18n('Source')}
-            required={(mandatoryAttributes.includes('source'))}
+            required={mandatoryAttributes.includes('source')}
             fullWidth={true}
             style={fieldSpacingContainerStyle}
           />
           <ObjectAssigneeField
             name="objectAssignee"
-            required={(mandatoryAttributes.includes('objectAssignee'))}
+            required={mandatoryAttributes.includes('objectAssignee')}
             style={fieldSpacingContainerStyle}
           />
           <ObjectParticipantField
             name="objectParticipant"
-            required={(mandatoryAttributes.includes('objectParticipant'))}
+            required={mandatoryAttributes.includes('objectParticipant')}
             style={fieldSpacingContainerStyle}
           />
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ObjectLabelField
             name="objectLabel"
-            required={(mandatoryAttributes.includes('objectLabel'))}
+            required={mandatoryAttributes.includes('objectLabel')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.objectLabel}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"
-            required={(mandatoryAttributes.includes('externalReferences'))}
+            required={mandatoryAttributes.includes('externalReferences')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
           <FormButtonContainer>
-            <Button
-              variant="secondary"
-              onClick={handleReset}
-              disabled={isSubmitting}
-            >
+            <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitForm}
-              disabled={isSubmitting}
-            >
+            <Button onClick={submitForm} disabled={isSubmitting}>
               {t_i18n('Create')}
             </Button>
           </FormButtonContainer>
@@ -294,21 +288,15 @@ const IncidentCreation = ({
   paginationOptions: IncidentsLinesQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_incidents', paginationOptions, 'incidentAdd');
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_incidents', paginationOptions, 'incidentAdd');
   const CreateIncidentControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="Incident" {...props} />
   );
   return (
-    <Drawer
-      title={t_i18n('Create an incident')}
-      controlledDial={CreateIncidentControlledDial}
-    >
+    <Drawer title={t_i18n('Create an incident')} controlledDial={CreateIncidentControlledDial}>
       {({ onClose }) => (
-        <IncidentCreationForm
-          updater={updater}
-          onCompleted={onClose}
-          onReset={onClose}
-        />
+        <IncidentCreationForm updater={updater} onCompleted={onClose} onReset={onClose} />
       )}
     </Drawer>
   );

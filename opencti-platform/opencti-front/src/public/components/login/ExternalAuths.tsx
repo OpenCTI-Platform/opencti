@@ -22,14 +22,8 @@ interface ExternalAuthsProps {
   data: ExternalAuthsFragment$key;
 }
 
-const ExternalAuths = ({
-  consentValue,
-  data,
-}: ExternalAuthsProps) => {
-  const {
-    platform_providers,
-    platform_consent_message,
-  } = useFragment(fragment, data);
+const ExternalAuths = ({ consentValue, data }: ExternalAuthsProps) => {
+  const { platform_providers, platform_consent_message } = useFragment(fragment, data);
 
   const hasConsentMessage = isNotEmptyField(platform_consent_message);
   const authSSOs = platform_providers.filter((p) => p.type === 'SSO');
@@ -39,18 +33,9 @@ const ExternalAuths = ({
   if (hasConsentMessage && !consentValue) return null;
 
   return (
-    <Stack
-      mt={3}
-      direction="row"
-      justifyContent="center"
-      flexWrap="wrap"
-      gap={1}
-    >
+    <Stack mt={3} direction="row" justifyContent="center" flexWrap="wrap" gap={1}>
       {authSSOs?.map((value, index) => (
-        <ExternalAuthButton
-          key={index}
-          auth={value}
-        />
+        <ExternalAuthButton key={index} auth={value} />
       ))}
     </Stack>
   );

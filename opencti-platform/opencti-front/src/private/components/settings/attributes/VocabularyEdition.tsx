@@ -37,12 +37,13 @@ const vocabularyMutationUpdate = graphql`
   }
 `;
 
-const attributeValidation = (t: (s: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  order: Yup.number().nullable().integer(t('The value must be a number')),
-  is_hidden: Yup.boolean().nullable(),
-});
+const attributeValidation = (t: (s: string) => string) =>
+  Yup.object().shape({
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    order: Yup.number().nullable().integer(t('The value must be a number')),
+    is_hidden: Yup.boolean().nullable(),
+  });
 
 interface VocabularyEditionFormikValues {
   name: string;
@@ -144,10 +145,7 @@ const VocabularyEdition = ({
               value: n,
               label: n,
             }))}
-            renderOption={(
-              props: Record<string, unknown>,
-              option: FieldOption,
-            ) => (
+            renderOption={(props: Record<string, unknown>, option: FieldOption) => (
               <li {...props}>
                 <div className={classes.text}>{option.label}</div>
               </li>

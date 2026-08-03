@@ -8,15 +8,30 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
-import { StixDomainObjectBookmarksListQuery, StixDomainObjectsOrdering } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectBookmarksListQuery.graphql';
+import {
+  StixDomainObjectBookmarksListQuery,
+  StixDomainObjectsOrdering,
+} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectBookmarksListQuery.graphql';
 import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import React, { Suspense } from 'react';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { OrderingMode } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsListQuery.graphql';
 
 const stixDomainObjectBookmarksListQuery = graphql`
-  query StixDomainObjectBookmarksListQuery($types: [String], $first: Int, $filters: FilterGroup, $orderBy: StixDomainObjectsOrdering, $orderMode: OrderingMode) {
-    bookmarks(types: $types, first: $first, filters: $filters, orderBy: $orderBy, orderMode: $orderMode) {
+  query StixDomainObjectBookmarksListQuery(
+    $types: [String]
+    $first: Int
+    $filters: FilterGroup
+    $orderBy: StixDomainObjectsOrdering
+    $orderMode: OrderingMode
+  ) {
+    bookmarks(
+      types: $types
+      first: $first
+      filters: $filters
+      orderBy: $orderBy
+      orderMode: $orderMode
+    ) {
       edges {
         node {
           id
@@ -177,9 +192,7 @@ const StixDomainObjectBookmarksListComponent = ({
 }: StixDomainObjectBookmarksListComponentProps) => {
   const data = usePreloadedQuery(stixDomainObjectBookmarksListQuery, queryRef);
   const edges = data?.bookmarks?.edges ?? [];
-  return edges.length === 0
-    ? <WidgetNoData />
-    : <WidgetBookmarks bookmarks={edges} />;
+  return edges.length === 0 ? <WidgetNoData /> : <WidgetBookmarks bookmarks={edges} />;
 };
 
 interface StixDomainObjectBookmarksListProps {
@@ -196,9 +209,9 @@ interface StixDomainObjectBookmarksListProps {
 
 const buildQueryVariables = (resolvedDataSelection: WidgetDataSelection[]) => {
   const selection = resolvedDataSelection[0];
-  const orderBy = (selection.sort_by && selection.sort_by.length > 0
-    ? selection.sort_by
-    : 'created_at') as StixDomainObjectsOrdering | null | undefined;
+  const orderBy = (
+    selection.sort_by && selection.sort_by.length > 0 ? selection.sort_by : 'created_at'
+  ) as StixDomainObjectsOrdering | null | undefined;
   const orderMode = (selection.sort_mode ?? 'asc') as OrderingMode;
   return {
     first: selection.number ?? 10,
@@ -221,20 +234,16 @@ const StixDomainObjectBookmarksList = ({
 }: StixDomainObjectBookmarksListProps) => {
   const { t_i18n } = useFormatter();
 
-  const {
-    isMissingHostEntity,
-    isMissingSavedFilters,
-    isPreviewMode,
-    queryRef,
-  } = useDashboardViz<StixDomainObjectBookmarksListQuery>({
-    perspective: 'entities',
-    dataSelection,
-    host,
-    refreshRate,
-    query: stixDomainObjectBookmarksListQuery,
-    buildQueryVariables,
-    config,
-  });
+  const { isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } =
+    useDashboardViz<StixDomainObjectBookmarksListQuery>({
+      perspective: 'entities',
+      dataSelection,
+      host,
+      refreshRate,
+      query: stixDomainObjectBookmarksListQuery,
+      buildQueryVariables,
+      config,
+    });
 
   const renderContent = () => {
     if (isMissingHostEntity) {
@@ -249,9 +258,7 @@ const StixDomainObjectBookmarksList = ({
 
     return (
       <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <StixDomainObjectBookmarksListComponent
-          queryRef={queryRef}
-        />
+        <StixDomainObjectBookmarksListComponent queryRef={queryRef} />
       </Suspense>
     );
   };
@@ -264,9 +271,7 @@ const StixDomainObjectBookmarksList = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      <div style={{ height: '100%' }}>
-        {renderContent()}
-      </div>
+      <div style={{ height: '100%' }}>{renderContent()}</div>
     </WidgetContainer>
   );
 };

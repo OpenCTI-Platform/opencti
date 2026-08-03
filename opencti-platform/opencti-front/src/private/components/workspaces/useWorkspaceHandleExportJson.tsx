@@ -10,11 +10,11 @@ interface workspaceToExport {
 }
 
 const WorkspaceExportHandlerQuery = graphql`
-    query workspaceExportHandlerQuery($id: String!) {
-        workspace(id: $id) {
-            toConfigurationExport
-        }
+  query workspaceExportHandlerQuery($id: String!) {
+    workspace(id: $id) {
+      toConfigurationExport
     }
+  }
 `;
 
 const useWorkspaceHandleExportJson = () => {

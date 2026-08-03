@@ -56,12 +56,15 @@ const ThemeLight = (
       text: { primary: '#881106' },
     },
     success: { main: '#1CA55E', dark: '#0D7E39' },
-    primary: { main: primary || THEME_LIGHT_DEFAULT_PRIMARY, light: primary ? alpha(primary, 0.08) : '#7587FF' },
+    primary: {
+      main: primary || THEME_LIGHT_DEFAULT_PRIMARY,
+      light: primary ? alpha(primary, 0.08) : '#7587FF',
+    },
     secondary: { main: secondary || THEME_LIGHT_DEFAULT_SECONDARY },
     gradient: { main: '#00BD94' },
     border: {
       lightBackground: hexToRGB('#000000', 0.15),
-      primary: hexToRGB((primary || THEME_LIGHT_DEFAULT_PRIMARY), 0.3),
+      primary: hexToRGB(primary || THEME_LIGHT_DEFAULT_PRIMARY, 0.3),
       secondary: '#C2C2C2',
       pagination: hexToRGB('#000000', 0.5),
       paper: hexToRGB('#000000', 0.12),
@@ -94,12 +97,8 @@ const ThemeLight = (
       accent: accent || THEME_LIGHT_DEFAULT_ACCENT,
       shadow: alpha('#000000', 0.15),
       // the only way for now to know if we should apply the paper color or not
-      secondary: paper === THEME_LIGHT_DEFAULT_PAPER
-        ? '#FFFFFF'
-        : (paper ?? '#FFFFFF'),
-      drawer: nav === THEME_LIGHT_DEFAULT_PAPER
-        ? '#FFFFFF'
-        : (darken(nav ?? '#FFFFFF', 0.5)),
+      secondary: paper === THEME_LIGHT_DEFAULT_PAPER ? '#FFFFFF' : (paper ?? '#FFFFFF'),
+      drawer: nav === THEME_LIGHT_DEFAULT_PAPER ? '#FFFFFF' : darken(nav ?? '#FFFFFF', 0.5),
       disabled: '#DFDFDF',
       gradient: {
         start: background || THEME_LIGHT_DEFAULT_BACKGROUND,
@@ -384,9 +383,7 @@ const ThemeLight = (
       styleOverrides: {
         paper: {
           backgroundImage: 'none',
-          backgroundColor: paper === THEME_LIGHT_DEFAULT_PAPER
-            ? '#FFFFFF'
-            : (paper ?? '#FFFFFF'),
+          backgroundColor: paper === THEME_LIGHT_DEFAULT_PAPER ? '#FFFFFF' : (paper ?? '#FFFFFF'),
           borderRadius: 4,
         },
       },
@@ -494,9 +491,7 @@ const ThemeLight = (
           },
         },
         outlined: {
-          backgroundColor: paper === THEME_LIGHT_DEFAULT_PAPER
-            ? '#FFFFFF'
-            : (paper ?? '#FFFFFF'),
+          backgroundColor: paper === THEME_LIGHT_DEFAULT_PAPER ? '#FFFFFF' : (paper ?? '#FFFFFF'),
         },
       },
     },
@@ -532,8 +527,7 @@ const ThemeLight = (
             animation: 'autofill 0s forwards',
             WebkitTextFillColor: '#000000 !important',
             caretColor: 'transparent !important',
-            WebkitBoxShadow:
-                '0 0 0 1000px rgba(4, 8, 17, 0.88) inset !important',
+            WebkitBoxShadow: '0 0 0 1000px rgba(4, 8, 17, 0.88) inset !important',
             borderTopLeftRadius: 'inherit',
             borderTopRightRadius: 'inherit',
           },
@@ -710,9 +704,7 @@ const ThemeLight = (
           },
           '& .MuiOutlinedInput-root': {
             // the only way for now to know if we should apply the paper color or not
-            backgroundColor: paper === THEME_LIGHT_DEFAULT_PAPER
-              ? '#FFFFFF'
-              : (paper ?? '#FFFFFF'),
+            backgroundColor: paper === THEME_LIGHT_DEFAULT_PAPER ? '#FFFFFF' : (paper ?? '#FFFFFF'),
             '& fieldset': {
               borderColor: 'transparent',
             },

@@ -30,10 +30,7 @@ interface NotifierConnectorFieldProps {
   style?: { marginTop: number };
   helpertext?: string;
   disabled?: boolean;
-  onChange?: (
-    name: string,
-    value: { label: string; value: string; schema: string },
-  ) => void;
+  onChange?: (name: string, value: { label: string; value: string; schema: string }) => void;
   required?: boolean;
 }
 
@@ -48,9 +45,14 @@ const NotifierConnectorFieldQuery = graphql`
   }
 `;
 
-const NotifierConnectorField: FunctionComponent<
-  NotifierConnectorFieldProps
-> = ({ name, style, onChange, disabled, helpertext, required = false }) => {
+const NotifierConnectorField: FunctionComponent<NotifierConnectorFieldProps> = ({
+  name,
+  style,
+  onChange,
+  disabled,
+  helpertext,
+  required = false,
+}) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
 
@@ -58,17 +60,14 @@ const NotifierConnectorField: FunctionComponent<
     { label: string | undefined; value: string | undefined }[]
   >([]);
 
-  const searchNotifierConnectors = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const searchNotifierConnectors = (event: React.ChangeEvent<HTMLInputElement>) => {
     fetchQuery(NotifierConnectorFieldQuery, {
       search: event && event.target.value ? event.target.value : '',
     })
       .toPromise()
       .then((data) => {
         const notifierConnectors = (
-          (data as NotifierConnectorFieldSearchQuery$data)
-            ?.connectorsForNotification ?? []
+          (data as NotifierConnectorFieldSearchQuery$data)?.connectorsForNotification ?? []
         ).map((n) => ({
           label: n?.name,
           value: n?.id,
@@ -98,10 +97,7 @@ const NotifierConnectorField: FunctionComponent<
         noOptionsText={t_i18n('No available options')}
         options={connectors}
         onInputChange={searchNotifierConnectors}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: { label: string },
-        ) => (
+        renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: { label: string }) => (
           <li {...props}>
             <div className={classes.icon}>
               <ItemIcon type="Notifier" />

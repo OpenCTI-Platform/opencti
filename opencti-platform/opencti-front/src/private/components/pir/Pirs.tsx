@@ -23,7 +23,10 @@ import PirCreation from './pir_form/PirCreation';
 import PirCriteriaDisplay from './PirCriteriaDisplay';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
@@ -59,12 +62,12 @@ const pirFragment = graphql`
 const pirsFragment = graphql`
   fragment Pirs_PirsFragment on Query
   @argumentDefinitions(
-      search: { type: "String" }
-      count: { type: "Int", defaultValue: 25 }
-      cursor: { type: "ID" }
-      orderBy: { type: "PirOrdering", defaultValue: name }
-      orderMode: { type: "OrderingMode", defaultValue: asc }
-      filters: { type: "FilterGroup" }
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "PirOrdering", defaultValue: name }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "PirsRefetchQuery") {
     pirs(
@@ -100,14 +103,14 @@ const pirsListQuery = graphql`
     $filters: FilterGroup
   ) {
     ...Pirs_PirsFragment
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -127,24 +130,16 @@ const Pirs = () => {
     filters: emptyFilterGroup,
   };
 
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<PirsListQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    initialValues,
-  );
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<PirsListQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext(
-    'Pir',
-    viewStorage.filters,
-  );
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Pir', viewStorage.filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
   } as unknown as PirsListQuery$variables;
 
-  const queryRef = useQueryLoading<PirsListQuery>(
-    pirsListQuery,
-    queryPaginationOptions,
-  );
+  const queryRef = useQueryLoading<PirsListQuery>(pirsListQuery, queryPaginationOptions);
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
@@ -212,11 +207,11 @@ const Pirs = () => {
           lineFragment={pirFragment}
           entityTypes={['Pir']}
           searchContextFinal={{ entityTypes: ['Pir'] }}
-          createButton={(
+          createButton={
             <Security needs={[PIRAPI_PIRUPDATE]}>
               <PirCreation paginationOptions={queryPaginationOptions} />
             </Security>
-          )}
+          }
         />
       )}
     </>

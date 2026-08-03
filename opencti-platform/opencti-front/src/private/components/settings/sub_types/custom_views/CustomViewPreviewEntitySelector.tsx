@@ -53,7 +53,8 @@ const fetchOptions = async (type: string, search: string = '') => {
     type: type,
   }).toPromise();
   const typedData = data as CustomViewPreviewEntitySelectorQuery$data;
-  const options = (typedData.stixCoreObjects?.edges ?? []).map((edge) => edge.node)
+  const options = (typedData.stixCoreObjects?.edges ?? [])
+    .map((edge) => edge.node)
     .map((node) => ({
       label: node.representative.main,
       value: node.id,
@@ -87,10 +88,7 @@ const CustomViewPreviewEntitySelector: FunctionComponent<CustomViewPreviewEntity
     });
   };
 
-  const handleChange = (
-    _event: SyntheticEvent,
-    value: PreviewEntityOption | null,
-  ) => {
+  const handleChange = (_event: SyntheticEvent, value: PreviewEntityOption | null) => {
     if (!value) {
       setValue(null);
       onPreviewEntityChange(null);
@@ -118,23 +116,30 @@ const CustomViewPreviewEntitySelector: FunctionComponent<CustomViewPreviewEntity
         onInputChange={searchStixCoreObjects}
         onChange={handleChange}
         onFocus={searchStixCoreObjects}
-        renderOption={(innerProps: React.HTMLAttributes<HTMLLIElement>, option: PreviewEntityOption) => {
+        renderOption={(
+          innerProps: React.HTMLAttributes<HTMLLIElement>,
+          option: PreviewEntityOption,
+        ) => {
           return (
             <li {...innerProps} key={option.value}>
               <div style={{ paddingTop: 4, display: 'inline-block' }}>
                 <ItemIcon type={option.entityType} />
               </div>
-              <div style={{
-                display: 'inline-block',
-                flexGrow: 1,
-                marginLeft: 10,
-              }}
-              >{option.label}
+              <div
+                style={{
+                  display: 'inline-block',
+                  flexGrow: 1,
+                  marginLeft: 10,
+                }}
+              >
+                {option.label}
               </div>
             </li>
           );
         }}
-        isOptionEqualToValue={(option: PreviewEntityOption, value: PreviewEntityOption) => option.value === value.value}
+        isOptionEqualToValue={(option: PreviewEntityOption, value: PreviewEntityOption) =>
+          option.value === value.value
+        }
       />
     </div>
   );

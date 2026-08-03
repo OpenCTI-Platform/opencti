@@ -1,6 +1,9 @@
 import React from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { BuiltInIntegrationImport, ImportableBuiltInKind } from '@components/integrations/available/BuiltInIntegrationImport';
+import {
+  BuiltInIntegrationImport,
+  ImportableBuiltInKind,
+} from '@components/integrations/available/BuiltInIntegrationImport';
 import Loader from '../../../components/Loader';
 
 // Deep-link route segment -> built-in feed kind.

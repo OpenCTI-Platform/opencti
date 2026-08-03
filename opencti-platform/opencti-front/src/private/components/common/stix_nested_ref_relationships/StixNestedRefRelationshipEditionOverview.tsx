@@ -1,9 +1,5 @@
-import {
-  StixNestedRefRelationshipEditionOverview_stixRefRelationship$key,
-} from '@components/common/stix_nested_ref_relationships/__generated__/StixNestedRefRelationshipEditionOverview_stixRefRelationship.graphql';
-import {
-  StixNestedRefRelationshipEditionOverviewQuery,
-} from '@components/common/stix_nested_ref_relationships/__generated__/StixNestedRefRelationshipEditionOverviewQuery.graphql';
+import { StixNestedRefRelationshipEditionOverview_stixRefRelationship$key } from '@components/common/stix_nested_ref_relationships/__generated__/StixNestedRefRelationshipEditionOverview_stixRefRelationship.graphql';
+import { StixNestedRefRelationshipEditionOverviewQuery } from '@components/common/stix_nested_ref_relationships/__generated__/StixNestedRefRelationshipEditionOverviewQuery.graphql';
 import { Field, Form, Formik } from 'formik';
 import { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
@@ -46,10 +42,7 @@ const stixNestedRefRelationshipMutationFieldPatch = graphql`
 `;
 
 export const stixRefRelationshipEditionFocus = graphql`
-  mutation StixNestedRefRelationshipEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation StixNestedRefRelationshipEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     stixRefRelationshipEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -70,37 +63,38 @@ interface StixNestedRefRelationshipEditionOverviewProps {
   queryRef: PreloadedQuery<StixNestedRefRelationshipEditionOverviewQuery>;
 }
 
-const StixNestedRefRelationshipEditionOverview: FunctionComponent<StixNestedRefRelationshipEditionOverviewProps> = ({
-  queryRef,
-}) => {
+const StixNestedRefRelationshipEditionOverview: FunctionComponent<
+  StixNestedRefRelationshipEditionOverviewProps
+> = ({ queryRef }) => {
   const { t_i18n } = useFormatter();
   const { stixRefRelationship } = usePreloadedQuery<StixNestedRefRelationshipEditionOverviewQuery>(
     stixNestedRefRelationshipEditionQuery,
     queryRef,
   );
-  const stixRefRelationshipData = useFragment<StixNestedRefRelationshipEditionOverview_stixRefRelationship$key>(
-    StixNestedRefRelationshipEditionFragment,
-    stixRefRelationship,
-  );
-  if (!stixRefRelationshipData) {
-    return (
-      <div> &nbsp; </div>
+  const stixRefRelationshipData =
+    useFragment<StixNestedRefRelationshipEditionOverview_stixRefRelationship$key>(
+      StixNestedRefRelationshipEditionFragment,
+      stixRefRelationship,
     );
+  if (!stixRefRelationshipData) {
+    return <div> &nbsp; </div>;
   }
   const [commitChangeFocus] = useApiMutation(stixRefRelationshipEditionFocus);
   const [commitSubmitField] = useApiMutation(stixNestedRefRelationshipMutationFieldPatch);
 
   const basicShape = {
-    start_time: Yup.date().nullable()
+    start_time: Yup.date()
+      .nullable()
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    stop_time: Yup.date().nullable()
+    stop_time: Yup.date()
+      .nullable()
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .min(
-        Yup.ref('start_time'),
-        "The end date can't be before the start date",
-      ),
+      .min(Yup.ref('start_time'), "The end date can't be before the start date"),
   };
-  const stixNestedRefRelationshipValidator = useSchemaEditionValidation('stix-ref-relationship', basicShape);
+  const stixNestedRefRelationshipValidator = useSchemaEditionValidation(
+    'stix-ref-relationship',
+    basicShape,
+  );
 
   const handleChangeFocus = (name: string) => {
     commitChangeFocus({
@@ -144,12 +138,7 @@ const StixNestedRefRelationshipEditionOverview: FunctionComponent<StixNestedRefR
               label: t_i18n('Start time'),
               variant: 'standard',
               fullWidth: true,
-              helperText: (
-                <SubscriptionFocus
-                  context={editContext}
-                  fieldName="start_time"
-                />
-              ),
+              helperText: <SubscriptionFocus context={editContext} fieldName="start_time" />,
             }}
           />
           <Field
@@ -162,12 +151,7 @@ const StixNestedRefRelationshipEditionOverview: FunctionComponent<StixNestedRefR
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
-              helperText: (
-                <SubscriptionFocus
-                  context={editContext}
-                  fieldName="stop_time"
-                />
-              ),
+              helperText: <SubscriptionFocus context={editContext} fieldName="stop_time" />,
             }}
           />
         </Form>

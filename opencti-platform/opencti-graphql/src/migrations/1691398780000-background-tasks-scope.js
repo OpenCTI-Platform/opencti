@@ -16,9 +16,10 @@ export const up = async (next) => {
         scope: 'USER',
         authorized_authorities: [SETTINGS_SET_ACCESSES],
       },
-      source: 'ctx._source.scope = params.scope;'
-        + ' ctx._source.authorized_authorities = params.authorized_authorities;'
-        + ' ctx._source.restricted_members = [["id":ctx._source.initiator_id, "access_right": "admin"]];',
+      source:
+        'ctx._source.scope = params.scope;' +
+        ' ctx._source.authorized_authorities = params.authorized_authorities;' +
+        ' ctx._source.restricted_members = [["id":ctx._source.initiator_id, "access_right": "admin"]];',
     },
     query: {
       bool: {
@@ -45,9 +46,10 @@ export const up = async (next) => {
         scope: 'KNOWLEDGE',
         authorized_authorities: ['KNOWLEDGE_KNUPDATE'],
       },
-      source: 'ctx._source.scope = params.scope;'
-        + ' ctx._source.authorized_authorities = params.authorized_authorities;'
-        + ' ctx._source.restricted_members = [["id":ctx._source.initiator_id, "access_right": "admin"]];',
+      source:
+        'ctx._source.scope = params.scope;' +
+        ' ctx._source.authorized_authorities = params.authorized_authorities;' +
+        ' ctx._source.restricted_members = [["id":ctx._source.initiator_id, "access_right": "admin"]];',
     },
     query: {
       bool: {
@@ -55,9 +57,7 @@ export const up = async (next) => {
           { term: { 'entity_type.keyword': { value: 'BackgroundTask' } } },
           { term: { 'type.keyword': { value: 'QUERY' } } },
         ],
-        must_not: [
-          { match: { task_filters: '*Notification*' } },
-        ],
+        must_not: [{ match: { task_filters: '*Notification*' } }],
       },
     },
   };
@@ -79,9 +79,10 @@ export const up = async (next) => {
         scope: 'USER',
         authorized_authorities: [SETTINGS_SET_ACCESSES],
       },
-      source: 'ctx._source.scope = params.scope;'
-        + ' ctx._source.authorized_authorities = params.authorized_authorities;'
-        + ' ctx._source.restricted_members = [["id":ctx._source.initiator_id, "access_right": "admin"]];',
+      source:
+        'ctx._source.scope = params.scope;' +
+        ' ctx._source.authorized_authorities = params.authorized_authorities;' +
+        ' ctx._source.restricted_members = [["id":ctx._source.initiator_id, "access_right": "admin"]];',
     },
     query: {
       bool: {
@@ -108,9 +109,10 @@ export const up = async (next) => {
         scope: 'KNOWLEDGE',
         authorized_authorities: ['KNOWLEDGE_KNUPDATE'],
       },
-      source: 'ctx._source.scope = params.scope;'
-        + ' ctx._source.authorized_authorities = params.authorized_authorities;'
-        + ' ctx._source.restricted_members = ctx._source.restricted_members = [["id":ctx._source.initiator_id, "access_right": "admin"]];',
+      source:
+        'ctx._source.scope = params.scope;' +
+        ' ctx._source.authorized_authorities = params.authorized_authorities;' +
+        ' ctx._source.restricted_members = ctx._source.restricted_members = [["id":ctx._source.initiator_id, "access_right": "admin"]];',
     },
     query: {
       bool: {
@@ -118,9 +120,7 @@ export const up = async (next) => {
           { term: { 'entity_type.keyword': { value: 'BackgroundTask' } } },
           { term: { 'type.keyword': { value: 'LIST' } } },
         ],
-        must_not: [
-          { term: { 'actions.context.field.keyword': { value: 'is_read' } } },
-        ],
+        must_not: [{ term: { 'actions.context.field.keyword': { value: 'is_read' } } }],
       },
     },
   };

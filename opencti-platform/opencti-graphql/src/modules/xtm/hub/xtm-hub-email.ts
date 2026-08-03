@@ -1,7 +1,11 @@
 import conf, { getBaseUrl, logApp } from '../../../config/conf';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { findUserWithCapabilities } from '../../../domain/user';
-import { BYPASS, HUB_REGISTRATION_MANAGER_USER, SETTINGS_SETMANAGEXTMHUB } from '../../../utils/access';
+import {
+  BYPASS,
+  HUB_REGISTRATION_MANAGER_USER,
+  SETTINGS_SETMANAGEXTMHUB,
+} from '../../../utils/access';
 import type { BasicStoreSettings } from '../../../types/settings';
 import { OCTI_EMAIL_TEMPLATE } from '../../../utils/emailTemplates/octiEmailTemplate';
 import type { SendMailArgs } from '../../../types/smtp';
@@ -23,19 +27,31 @@ const EMAIL_BODY = `
 `;
 
 const loadAdministratorsList = async (context: AuthContext) => {
-  const administrators = (await findUserWithCapabilities(context, HUB_REGISTRATION_MANAGER_USER, [BYPASS, SETTINGS_SETMANAGEXTMHUB])) as AuthUser[];
+  const administrators = (await findUserWithCapabilities(context, HUB_REGISTRATION_MANAGER_USER, [
+    BYPASS,
+    SETTINGS_SETMANAGEXTMHUB,
+  ])) as AuthUser[];
   if (administrators.length > MAX_EMAIL_LIST_SIZE) {
-    logApp.warn(`Administrators list too large, loading only ${MAX_EMAIL_LIST_SIZE} first administrators.`);
+    logApp.warn(
+      `Administrators list too large, loading only ${MAX_EMAIL_LIST_SIZE} first administrators.`,
+    );
     return administrators.slice(0, MAX_EMAIL_LIST_SIZE);
   }
 
   return administrators;
 };
 
-export const sendAdministratorsLostConnectivityEmail = async (context: AuthContext, settings: BasicStoreSettings) => {
+export const sendAdministratorsLostConnectivityEmail = async (
+  context: AuthContext,
+  settings: BasicStoreSettings,
+) => {
   const administrators = await loadAdministratorsList(context);
-  const subject = 'Action Required: Re-register OpenCTI Platform Due to Lost Connectivity with XTM Hub';
-  const html = await safeRender(OCTI_EMAIL_TEMPLATE, { settings: sanitizeSettings(settings), body: EMAIL_BODY });
+  const subject =
+    'Action Required: Re-register OpenCTI Platform Due to Lost Connectivity with XTM Hub';
+  const html = await safeRender(OCTI_EMAIL_TEMPLATE, {
+    settings: sanitizeSettings(settings),
+    body: EMAIL_BODY,
+  });
 
   const sendMailArgs: SendMailArgs = {
     from: await smtpComputeFrom(),

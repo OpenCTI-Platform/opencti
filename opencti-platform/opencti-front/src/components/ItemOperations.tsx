@@ -41,9 +41,7 @@ const ItemOperations: FunctionComponent<ItemOperationsProps> = ({ draftOperation
           : operationStylesDark.lightYellow;
       case 'delete':
       case 'delete_linked':
-        return theme.palette.mode === 'light'
-          ? operationStylesLight.red
-          : operationStylesDark.red;
+        return theme.palette.mode === 'light' ? operationStylesLight.red : operationStylesDark.red;
       default:
         return undefined;
     }
@@ -56,7 +54,9 @@ const ItemOperations: FunctionComponent<ItemOperationsProps> = ({ draftOperation
       case 'update':
         return t_i18n('existed in main knowledge, modified in the draft');
       case 'update_linked':
-        return t_i18n('impacted by a modification to a linked entity (relation, added in container...)');
+        return t_i18n(
+          'impacted by a modification to a linked entity (relation, added in container...)',
+        );
       case 'delete':
         return t_i18n('existed in main knowledge base, deleted in draft');
       case 'delete_linked':
@@ -66,13 +66,7 @@ const ItemOperations: FunctionComponent<ItemOperationsProps> = ({ draftOperation
     }
   };
 
-  return (
-    <Tag
-      tooltipTitle={getChipTitle()}
-      label={draftOperation}
-      color={getChipColor()}
-    />
-  );
+  return <Tag tooltipTitle={getChipTitle()} label={draftOperation} color={getChipColor()} />;
 };
 
 export default ItemOperations;

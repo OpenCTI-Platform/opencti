@@ -16,7 +16,11 @@ import { buildDate, parse } from '../../../../utils/Time';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
@@ -28,11 +32,7 @@ export const observedDataMutationFieldPatch = graphql`
     $references: [String]
   ) {
     observedDataEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         ...ObservedDataEditionOverview_observedData
       }
     }
@@ -40,10 +40,7 @@ export const observedDataMutationFieldPatch = graphql`
 `;
 
 export const observedDataEditionOverviewFocus = graphql`
-  mutation ObservedDataEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation ObservedDataEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     observedDataEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -87,16 +84,21 @@ const ObservedDataEditionOverviewComponent = (props) => {
   const { observedData, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
   const { mandatoryAttributes } = useIsMandatoryAttribute(OBSERVED_DATA_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    first_observed: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    last_observed: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    number_observed: Yup.number(),
-    confidence: Yup.number(),
-    references: Yup.array(),
-    x_opencti_workflow_id: Yup.object(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      first_observed: Yup.date().typeError(
+        t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'),
+      ),
+      last_observed: Yup.date().typeError(
+        t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'),
+      ),
+      number_observed: Yup.number(),
+      confidence: Yup.number(),
+      references: Yup.array(),
+      x_opencti_workflow_id: Yup.object(),
+    },
+    mandatoryAttributes,
+  );
   const observedDataValidator = useDynamicSchemaCreationValidation(
     mandatoryAttributes,
     basicShape,
@@ -109,12 +111,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
     relationDelete: observedDataMutationRelationDelete,
     editionFocus: observedDataEditionOverviewFocus,
   };
-  const editor = useFormEditor(
-    observedData,
-    enableReferences,
-    queries,
-    observedDataValidator,
-  );
+  const editor = useFormEditor(observedData, enableReferences, queries, observedDataValidator);
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -134,8 +131,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
       variables: {
         id: observedData.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       onCompleted: () => {
@@ -196,14 +192,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
       validateOnBlur={true}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <div>
           <Form>
             <AlertConfidenceForEntity entity={observedData} />
@@ -214,15 +203,10 @@ const ObservedDataEditionOverviewComponent = (props) => {
               onSubmit={handleSubmitField}
               textFieldProps={{
                 label: t_i18n('First observed'),
-                required: (mandatoryAttributes.includes('first_observed')),
+                required: mandatoryAttributes.includes('first_observed'),
                 variant: 'standard',
                 fullWidth: true,
-                helperText: (
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="first_observed"
-                  />
-                ),
+                helperText: <SubscriptionFocus context={context} fieldName="first_observed" />,
               }}
             />
             <Field
@@ -232,16 +216,11 @@ const ObservedDataEditionOverviewComponent = (props) => {
               onSubmit={handleSubmitField}
               textFieldProps={{
                 label: t_i18n('Last observed'),
-                required: (mandatoryAttributes.includes('last_observed')),
+                required: mandatoryAttributes.includes('last_observed'),
                 variant: 'standard',
                 fullWidth: true,
                 style: { marginTop: 20 },
-                helperText: (
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="last_observed"
-                  />
-                ),
+                helperText: <SubscriptionFocus context={context} fieldName="last_observed" />,
               }}
             />
             <Field
@@ -249,17 +228,12 @@ const ObservedDataEditionOverviewComponent = (props) => {
               variant="standard"
               name="number_observed"
               label={t_i18n('Number observed')}
-              required={(mandatoryAttributes.includes('number_observed'))}
+              required={mandatoryAttributes.includes('number_observed')}
               fullWidth={true}
               style={{ marginTop: 20 }}
               onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
-              helperText={(
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="number_observed"
-                />
-              )}
+              helperText={<SubscriptionFocus context={context} fieldName="number_observed" />}
             />
             <ConfidenceField
               onFocus={editor.changeFocus}
@@ -277,34 +251,24 @@ const ObservedDataEditionOverviewComponent = (props) => {
                 onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
-                helpertext={(
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="x_opencti_workflow_id"
-                  />
-                )}
+                helpertext={
+                  <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
+                }
               />
             )}
             <CreatedByField
               name="createdBy"
-              required={(mandatoryAttributes.includes('createdBy'))}
+              required={mandatoryAttributes.includes('createdBy')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
-              helpertext={
-                <SubscriptionFocus context={context} fieldName="createdBy" />
-              }
+              helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
               onChange={editor.changeCreated}
             />
             <ObjectMarkingField
               name="objectMarking"
-              required={(mandatoryAttributes.includes('objectMarking'))}
+              required={mandatoryAttributes.includes('objectMarking')}
               style={fieldSpacingContainerStyle}
-              helpertext={(
-                <SubscriptionFocus
-                  context={context}
-                  fieldname="objectMarking"
-                />
-              )}
+              helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
               setFieldValue={setFieldValue}
               onChange={editor.changeMarking}
             />

@@ -23,42 +23,49 @@ const cellContainerStyle = (theme: Theme) => ({
 
 const DataTableLineDummy = () => {
   const theme = useTheme<Theme>();
-  const { columns, tableWidthState: [tableWidth] } = useDataTableContext();
+  const {
+    columns,
+    tableWidthState: [tableWidth],
+  } = useDataTableContext();
   return (
     <div style={{ display: 'flex' }}>
-      {columns.filter((c) => c.visible).map((column) => (
-        <div
-          key={column.id}
-          style={{
-            paddingLeft: theme.spacing(0.5),
-            paddingRight: theme.spacing(1),
-            flex: '0 0 auto',
-            width: column.percentWidth
-              ? Math.round(tableWidth * (column.percentWidth / 100))
-              : SELECT_COLUMN_SIZE,
-          }}
-        >
-          <Skeleton variant="text" height={35} />
-        </div>
-      ))}
+      {columns
+        .filter((c) => c.visible)
+        .map((column) => (
+          <div
+            key={column.id}
+            style={{
+              paddingLeft: theme.spacing(0.5),
+              paddingRight: theme.spacing(1),
+              flex: '0 0 auto',
+              width: column.percentWidth
+                ? Math.round(tableWidth * (column.percentWidth / 100))
+                : SELECT_COLUMN_SIZE,
+            }}
+          >
+            <Skeleton variant="text" height={35} />
+          </div>
+        ))}
     </div>
   );
 };
 
 export const DataTableLinesDummy = ({ number = 10 }: { number?: number }) => (
   <>
-    {Array(Math.min(number, 25)).fill(0).map((_, idx) => (
-      <DataTableLineDummy key={idx} />
-    ))}
+    {Array(Math.min(number, 25))
+      .fill(0)
+      .map((_, idx) => (
+        <DataTableLineDummy key={idx} />
+      ))}
   </>
 );
 
-const DataTableCell = ({
-  cell,
-  data,
-}: DataTableCellProps) => {
+const DataTableCell = ({ cell, data }: DataTableCellProps) => {
   const theme = useTheme<Theme>();
-  const { useDataCellHelpers, tableWidthState: [tableWidth] } = useDataTableContext();
+  const {
+    useDataCellHelpers,
+    tableWidthState: [tableWidth],
+  } = useDataTableContext();
   const helpers = useDataCellHelpers(cell);
 
   const cellStyle: CSSProperties = {
@@ -79,18 +86,12 @@ const DataTableCell = ({
         width: Math.round(tableWidth * (cell.percentWidth / 100)),
       }}
     >
-      <div style={cellStyle}>
-        {cell.render?.(data, helpers) ?? (<div>-</div>)}
-      </div>
+      <div style={cellStyle}>{cell.render?.(data, helpers) ?? <div>-</div>}</div>
     </div>
   );
 };
 
-const DataTableLine = ({
-  row,
-  index,
-  onToggleShiftEntity,
-}: DataTableLineProps) => {
+const DataTableLine = ({ row, index, onToggleShiftEntity }: DataTableLineProps) => {
   const navigate = useNavigate();
   const theme = useTheme<Theme>();
 
@@ -110,12 +111,7 @@ const DataTableLine = ({
     endsWithAction,
     endsWithNavigate,
     actionsColumnWidth,
-    useDataTableToggle: {
-      selectAll,
-      deSelectedElements,
-      selectedElements,
-      onToggleEntity,
-    },
+    useDataTableToggle: { selectAll, deSelectedElements, selectedElements, onToggleEntity },
     useDataTablePaginationLocalStorage: {
       viewStorage: { redirectionMode },
     },
@@ -180,21 +176,25 @@ const DataTableLine = ({
   );
 
   return (
-    <Box sx={{
-      '&:hover > a': {
-        backgroundColor: theme.palette.mode === 'dark'
-          ? 'rgba(255, 255, 255, .1)'
-          : 'rgba(0, 0, 0, .1)',
-      },
-    }}
+    <Box
+      sx={{
+        '&:hover > a': {
+          backgroundColor:
+            theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .1)' : 'rgba(0, 0, 0, .1)',
+        },
+      }}
     >
       <a
         style={linkStyle}
         href={navigable ? link : undefined}
         // We need both to handle accessibility and widget.
-        onClick={variant !== DataTableVariant.widget
-          ? handleRowClick
-          : (variant === DataTableVariant.widget ? handleNavigate : undefined)}
+        onClick={
+          variant !== DataTableVariant.widget
+            ? handleRowClick
+            : variant === DataTableVariant.widget
+              ? handleNavigate
+              : undefined
+        }
         data-testid={getMainRepresentative(data)}
       >
         {(startsWithAction || startsWithIcon) && (
@@ -217,27 +217,23 @@ const DataTableLine = ({
                   },
                 }}
                 checked={
-                  (selectAll
-                    && !((data.id || 'id') in (deSelectedElements || {})))
-                  || (data.id || 'id') in (selectedElements || {})
+                  (selectAll && !((data.id || 'id') in (deSelectedElements || {}))) ||
+                  (data.id || 'id') in (selectedElements || {})
                 }
               />
             )}
-            {(startsWithIcon && icon) && (
-              <div style={{ display: 'flex', paddingLeft: 10 }}>
-                {icon(data)}
-              </div>
+            {startsWithIcon && icon && (
+              <div style={{ display: 'flex', paddingLeft: 10 }}>{icon(data)}</div>
             )}
           </div>
         )}
 
-        {columns.filter((c) => c.visible).slice(columnsOffset, (actions || disableNavigation) ? undefined : -1).map((column) => (
-          <DataTableCell
-            key={column.id}
-            cell={column}
-            data={data}
-          />
-        ))}
+        {columns
+          .filter((c) => c.visible)
+          .slice(columnsOffset, actions || disableNavigation ? undefined : -1)
+          .map((column) => (
+            <DataTableCell key={column.id} cell={column} data={data} />
+          ))}
 
         {endsWithAction && (
           <div
@@ -250,7 +246,10 @@ const DataTableLine = ({
           >
             {actions && actions(data)}
             {endsWithNavigate && (
-              <IconButton aria-label={t_i18n('Open link')} onClick={() => (link ? navigate(link) : undefined)}>
+              <IconButton
+                aria-label={t_i18n('Open link')}
+                onClick={() => (link ? navigate(link) : undefined)}
+              >
                 <KeyboardArrowRightOutlined />
               </IconButton>
             )}

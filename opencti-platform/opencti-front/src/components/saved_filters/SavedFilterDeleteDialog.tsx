@@ -23,23 +23,22 @@ type SavedFilterDeleteDialogProps = {
   shouldResetFilters: boolean;
 };
 
-const SavedFilterDeleteDialog = ({ savedFilterToDelete, onClose, onReset, shouldResetFilters }: SavedFilterDeleteDialogProps) => {
+const SavedFilterDeleteDialog = ({
+  savedFilterToDelete,
+  onClose,
+  onReset,
+  shouldResetFilters,
+}: SavedFilterDeleteDialogProps) => {
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
 
   const {
-    useDataTablePaginationLocalStorage: {
-      localStorageKey,
-    },
+    useDataTablePaginationLocalStorage: { localStorageKey },
   } = useDataTableContext();
 
-  const [commit] = useApiMutation(
-    savedFilterDeleteDialogMutation,
-    undefined,
-    {
-      successMessage: t_i18n('Saved filter successfully removed'),
-    },
-  );
+  const [commit] = useApiMutation(savedFilterDeleteDialogMutation, undefined, {
+    successMessage: t_i18n('Saved filter successfully removed'),
+  });
 
   const handleSubmitDeleteFilter = () => {
     commit({
@@ -61,12 +60,16 @@ const SavedFilterDeleteDialog = ({ savedFilterToDelete, onClose, onReset, should
   };
 
   // Count shared members (exclude the user wanting to delete the filter)
-  const sharedMembersCount = (savedFilterToDelete.authorizedMembers ?? [])
-    .filter((m) => m.member_id !== me.id).length;
+  const sharedMembersCount = (savedFilterToDelete.authorizedMembers ?? []).filter(
+    (m) => m.member_id !== me.id,
+  ).length;
 
-  const message = sharedMembersCount > 0
-    ? t_i18n('This saved filter is shared with other members. Are you sure you want to delete it?')
-    : t_i18n('Do you want to delete this saved filter?');
+  const message =
+    sharedMembersCount > 0
+      ? t_i18n(
+          'This saved filter is shared with other members. Are you sure you want to delete it?',
+        )
+      : t_i18n('Do you want to delete this saved filter?');
 
   const deletion = useDeletion({});
 

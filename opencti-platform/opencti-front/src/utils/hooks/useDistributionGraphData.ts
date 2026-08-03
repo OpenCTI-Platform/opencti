@@ -36,33 +36,38 @@ const useDistributionGraphData = () => {
       ? itemColor(n.entity?.entity_type)
       : itemColor(n.label);
     if (n.entity?.color) {
-      color = theme.palette.mode === 'light' && n.entity.color === '#ffffff'
-        ? '#000000'
-        : n.entity.color;
+      color =
+        theme.palette.mode === 'light' && n.entity.color === '#ffffff' ? '#000000' : n.entity.color;
     }
     if (n.entity?.x_opencti_color) {
-      color = theme.palette.mode === 'light'
-        && n.entity.x_opencti_color === '#ffffff'
-        ? '#000000'
-        : n.entity.x_opencti_color;
+      color =
+        theme.palette.mode === 'light' && n.entity.x_opencti_color === '#ffffff'
+          ? '#000000'
+          : n.entity.x_opencti_color;
     }
     if (n.entity?.template?.color) {
-      color = theme.palette.mode === 'light'
-        && n.entity.template.color === '#ffffff'
-        ? '#000000'
-        : n.entity.template.color;
+      color =
+        theme.palette.mode === 'light' && n.entity.template.color === '#ffffff'
+          ? '#000000'
+          : n.entity.template.color;
     }
 
     return color;
   };
 
-  const buildDistributionGraphData = (distributionData: DistributionQueryData, selection: Selection) => {
+  const buildDistributionGraphData = (
+    distributionData: DistributionQueryData,
+    selection: Selection,
+  ) => {
     return distributionData.map((n) => {
       if (!n) return { x: 'Unknown', y: 'Unknown' };
       let { label } = n;
       if (isFieldForIdentifier(selection.attribute ?? undefined)) {
         label = getMainRepresentative(n.entity) || n.label;
-      } else if (selection.attribute === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`) {
+      } else if (
+        selection.attribute === 'entity_type' &&
+        t_i18n(`entity_${n.label}`) !== `entity_${n.label}`
+      ) {
         label = t_i18n(`entity_${n.label}`);
       }
       return {
@@ -90,12 +95,18 @@ const useDistributionGraphData = () => {
    * @param selection
    * @param defaultGraphLabel
    */
-  const buildWidgetProps = (distributionData: DistributionQueryData, selection: Selection, defaultGraphLabel: string) => {
+  const buildWidgetProps = (
+    distributionData: DistributionQueryData,
+    selection: Selection,
+    defaultGraphLabel: string,
+  ) => {
     return {
-      series: [{
-        name: selection.label || t_i18n(defaultGraphLabel),
-        data: buildDistributionGraphData(distributionData, selection),
-      }],
+      series: [
+        {
+          name: selection.label || t_i18n(defaultGraphLabel),
+          data: buildDistributionGraphData(distributionData, selection),
+        },
+      ],
       redirectionUtils: buildDistributionRedirectionUtils(distributionData),
     };
   };
@@ -138,9 +149,9 @@ const useDistributionGraphData = () => {
 
   const buildWidgetColorsOptions = (distributionData: DistributionQueryData, groupBy: string) => {
     if (
-      !distributionData.at(0)?.entity?.color
-      && !distributionData.at(0)?.entity?.x_opencti_color
-      && !distributionData.at(0)?.entity?.template?.color
+      !distributionData.at(0)?.entity?.color &&
+      !distributionData.at(0)?.entity?.x_opencti_color &&
+      !distributionData.at(0)?.entity?.template?.color
     ) {
       return [];
     }

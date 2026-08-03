@@ -2,11 +2,14 @@ import { filter, includes } from 'ramda';
 import { FunctionComponent, ReactElement } from 'react';
 import { RootMe_data$data } from '../private/__generated__/RootMe_data.graphql';
 import useAuth from './hooks/useAuth';
-import useGranted, { BYPASS, KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from './hooks/useGranted';
+import useGranted, {
+  BYPASS,
+  KNOWLEDGE_KNPARTICIPATE,
+  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+} from './hooks/useGranted';
 
 export const CAPABILITY_INFORMATION = {
-  [KNOWLEDGE_KNUPDATE_KNORGARESTRICT]:
-    'Granted only if user is a member of platform organization',
+  [KNOWLEDGE_KNUPDATE_KNORGARESTRICT]: 'Granted only if user is a member of platform organization',
 };
 
 interface SecurityProps {
@@ -23,11 +26,7 @@ interface DataSecurityProps extends SecurityProps {
 }
 
 // DEPECRATED
-export const granted = (
-  me: RootMe_data$data,
-  capabilities: string[],
-  matchAll = false,
-) => {
+export const granted = (me: RootMe_data$data, capabilities: string[], matchAll = false) => {
   const userCapabilities = (me?.capabilities ?? []).map((c) => c.name);
   if (userCapabilities.includes(BYPASS)) {
     return true;
@@ -35,10 +34,7 @@ export const granted = (
   let numberOfAvailableCapabilities = 0;
   for (let index = 0; index < capabilities.length; index += 1) {
     const checkCapability = capabilities[index];
-    const matchingCapabilities = filter(
-      (r) => includes(checkCapability, r),
-      userCapabilities,
-    );
+    const matchingCapabilities = filter((r) => includes(checkCapability, r), userCapabilities);
     if (matchingCapabilities.length > 0) {
       numberOfAvailableCapabilities += 1;
     }
@@ -74,9 +70,7 @@ export const CollaborativeSecurity: FunctionComponent<DataSecurityProps> = ({
   if (haveCapability) {
     return children;
   }
-  const isCreator = data.createdBy?.id
-    ? data.createdBy?.id === me.individual_id
-    : false;
+  const isCreator = data.createdBy?.id ? data.createdBy?.id === me.individual_id : false;
   if (canParticipate && isCreator) {
     return children;
   }

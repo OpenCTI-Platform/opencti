@@ -17,15 +17,15 @@ export type Filter = {
   mode?: string;
 };
 
-export type HandleOperatorFilter = (
-  id: string,
-  op: string,
-) => void;
+export type HandleOperatorFilter = (id: string, op: string) => void;
 
 export interface handleFilterHelpers {
   handleSwitchGlobalMode: () => void;
   handleSwitchLocalMode: (filter: Filter) => void;
-  handleRemoveRepresentationFilter: (id: string, valueId: string | Filter | undefined | null) => void;
+  handleRemoveRepresentationFilter: (
+    id: string,
+    valueId: string | Filter | undefined | null,
+  ) => void;
   handleRemoveFilterById: (id: string) => void;
   handleChangeOperatorFilters: HandleOperatorFilter;
   handleAddSingleValueFilter: (id: string, valueId?: string) => void;
@@ -33,6 +33,10 @@ export interface handleFilterHelpers {
   handleAddFilterWithEmptyValue: (filter: Filter) => void;
   handleClearAllFilters: (filters?: Filter[]) => void;
   getLatestAddFilterId: () => string | undefined;
-  handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => void;
+  handleChangeRepresentationFilter: (
+    id: string,
+    oldValue: FilterValue,
+    newValue: FilterValue,
+  ) => void;
   handleReplaceFilterValues: (id: string, values: string[] | FilterGroup[]) => void;
 }

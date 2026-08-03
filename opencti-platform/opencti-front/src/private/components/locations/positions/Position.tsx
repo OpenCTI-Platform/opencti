@@ -29,47 +29,34 @@ interface PositionComponentProps {
   position: Position_position$data;
 }
 
-const PositionComponent: FunctionComponent<PositionComponentProps> = ({
-  position,
-}) => {
+const PositionComponent: FunctionComponent<PositionComponentProps> = ({ position }) => {
   useInitCreateRelationshipContext();
 
   const classes = useStyles();
-  const queryRef = useQueryLoading<PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery>(
-    positionDetailsLocationRelationshipsLinesQuery,
-    {
-      count: 20,
-      fromOrToId: [position.id],
-      relationship_type: ['located-at'],
-    },
-  );
+  const queryRef =
+    useQueryLoading<PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery>(
+      positionDetailsLocationRelationshipsLinesQuery,
+      {
+        count: 20,
+        fromOrToId: [position.id],
+        relationship_type: ['located-at'],
+      },
+    );
   return (
     <div data-testid="position-details-page">
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-      >
+      <Grid container={true} spacing={3} classes={{ container: classes.gridContainer }}>
         <Grid item xs={4}>
           {queryRef && (
-            <React.Suspense
-              fallback={<Loader variant={LoaderVariant.inElement} />}
-            >
+            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
               <PositionDetails position={position} queryRef={queryRef} />
             </React.Suspense>
           )}
         </Grid>
         <Grid item xs={4}>
-          <LocationMiniMap
-            center={getValidatedCenter(position)}
-            position={position}
-            zoom={8}
-          />
+          <LocationMiniMap center={getValidatedCenter(position)} position={position} zoom={8} />
         </Grid>
         <Grid item xs={4}>
-          <StixDomainObjectOverview
-            stixDomainObject={position}
-          />
+          <StixDomainObjectOverview stixDomainObject={position} />
         </Grid>
         <Grid item xs={6}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships

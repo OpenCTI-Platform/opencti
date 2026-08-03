@@ -13,7 +13,11 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
+import {
+  clearIntervalAsync,
+  setIntervalAsync,
+  type SetIntervalAsyncTimer,
+} from 'set-interval-async/fixed';
 import { Promise as BluePromise } from 'bluebird';
 import * as R from 'ramda';
 import type { BasicStoreSettings } from '../types/settings';
@@ -34,7 +38,10 @@ import { generateFileIndexId } from '../schema/identifier';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import type { SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import { getManagerConfigurationFromCache, updateManagerConfigurationLastRun } from '../modules/managerConfiguration/managerConfiguration-domain';
+import {
+  getManagerConfigurationFromCache,
+  updateManagerConfigurationLastRun,
+} from '../modules/managerConfiguration/managerConfiguration-domain';
 import { allFilesForPaths, getIndexFromDate } from '../modules/internal/document/document-domain';
 import { buildOptionsFromFileManager } from '../domain/file';
 import { internalLoadById } from '../database/middleware-loader';
@@ -81,7 +88,11 @@ export const indexImportedFiles = async (context: AuthContext, indexFromDate: st
   const filesBulk = R.splitEvery(20, allFiles);
   for (let index = 0; index < filesBulk.length; index += 1) {
     try {
-      const managerConfiguration = await getManagerConfigurationFromCache(context, SYSTEM_USER, 'FILE_INDEX_MANAGER');
+      const managerConfiguration = await getManagerConfigurationFromCache(
+        context,
+        SYSTEM_USER,
+        'FILE_INDEX_MANAGER',
+      );
       if (managerConfiguration?.manager_running) {
         const filesToLoad: FileToIndexObject[] = filesBulk[index].map((file) => {
           const internalId = generateFileIndexId(file.id);
@@ -94,8 +105,14 @@ export const indexImportedFiles = async (context: AuthContext, indexFromDate: st
             uploaded_at: file.lastModified,
           };
         });
-        const filesToIndex = await BluePromise.map(filesToLoad, loadFilesToIndex, { concurrency: 5 })
-          .catch((error) => logApp.error('[OPENCTI-MODULE] Index manager indexing error', { cause: error, manager: 'FILE_INDEX_MANAGER' }));
+        const filesToIndex = await BluePromise.map(filesToLoad, loadFilesToIndex, {
+          concurrency: 5,
+        }).catch((error) =>
+          logApp.error('[OPENCTI-MODULE] Index manager indexing error', {
+            cause: error,
+            manager: 'FILE_INDEX_MANAGER',
+          }),
+        );
 
         // index all files one by one
         await elIndexFiles(context, SYSTEM_USER, filesToIndex);
@@ -103,7 +120,10 @@ export const indexImportedFiles = async (context: AuthContext, indexFromDate: st
       }
     } catch (e) {
       // if one file processing raise an exception, we log and skip the bulk.
-      logApp.error('[OPENCTI-MODULE] File index manager handling error', { cause: e, manager: 'FILE_INDEX_MANAGER' });
+      logApp.error('[OPENCTI-MODULE] File index manager handling error', {
+        cause: e,
+        manager: 'FILE_INDEX_MANAGER',
+      });
     }
   }
 };
@@ -122,18 +142,28 @@ const handleStreamEvents = async (streamEvents: Array<SseEvent<StreamDataEvent>>
         const entityType = stix.extensions[STIX_EXT_OCTI].type;
         const stixFiles = stix.extensions[STIX_EXT_OCTI].files;
         // test if markings or organization sharing have been updated
-        const isDataRestrictionsUpdate = updateEvent.context?.patch && updateEvent.context.patch
-          .map((op) => op.path && (op.path.includes('granted_refs') || op.path.includes('object_marking_refs')));
+        const isDataRestrictionsUpdate =
+          updateEvent.context?.patch &&
+          updateEvent.context.patch.map(
+            (op) =>
+              op.path &&
+              (op.path.includes('granted_refs') || op.path.includes('object_marking_refs')),
+          );
         if (stixFiles?.length > 0 && isDataRestrictionsUpdate) {
           // update all indexed files for this entity
-          const entity = await internalLoadById(context, SYSTEM_USER, entityId, { type: entityType });
+          const entity = await internalLoadById(context, SYSTEM_USER, entityId, {
+            type: entityType,
+          });
           await elUpdateFilesWithEntityRestrictions(entity);
         }
       }
       await redisSetManagerEventState(FILE_INDEX_MANAGER_NAME, event.id);
     }
   } catch (e) {
-    logApp.error('[OPENCTI-MODULE] File index manager handling error', { cause: e, manager: 'FILE_INDEX_MANAGER' });
+    logApp.error('[OPENCTI-MODULE] File index manager handling error', {
+      cause: e,
+      manager: 'FILE_INDEX_MANAGER',
+    });
   }
 };
 
@@ -147,7 +177,11 @@ const initFileIndexManager = () => {
   const waitTimer = new InterruptibleTimer();
   const fileIndexHandler = async () => {
     const context = executionContext(FILE_INDEX_MANAGER_NAME);
-    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    const settings = await getEntityFromCache<BasicStoreSettings>(
+      context,
+      SYSTEM_USER,
+      ENTITY_TYPE_SETTINGS,
+    );
     if (isEnterpriseEditionFromSettings(settings)) {
       let lock;
       try {
@@ -155,20 +189,33 @@ const initFileIndexManager = () => {
         lock = await lockResources([FILE_INDEX_MANAGER_KEY], { retryCount: 0 });
         running = true;
         logApp.debug('[OPENCTI-MODULE] Running file index manager');
-        const managerConfiguration = await getManagerConfigurationFromCache(context, SYSTEM_USER, 'FILE_INDEX_MANAGER');
+        const managerConfiguration = await getManagerConfigurationFromCache(
+          context,
+          SYSTEM_USER,
+          'FILE_INDEX_MANAGER',
+        );
         if (managerConfiguration?.manager_running) {
           const indexFromDate = await getIndexFromDate(context);
-          await updateManagerConfigurationLastRun(context, SYSTEM_USER, managerConfiguration.id, { last_run_start_date: new Date() });
+          await updateManagerConfigurationLastRun(context, SYSTEM_USER, managerConfiguration.id, {
+            last_run_start_date: new Date(),
+          });
           logApp.debug('[OPENCTI-MODULE] Index imported files since', { indexFromDate });
           await indexImportedFiles(context, indexFromDate);
-          await updateManagerConfigurationLastRun(context, SYSTEM_USER, managerConfiguration.id, { last_run_end_date: new Date() });
+          await updateManagerConfigurationLastRun(context, SYSTEM_USER, managerConfiguration.id, {
+            last_run_end_date: new Date(),
+          });
           logApp.debug('[OPENCTI-MODULE] End of file index manager processing');
         }
       } catch (e: any) {
         if (e.name === TYPE_LOCK_ERROR) {
-          logApp.debug('[OPENCTI-MODULE] File index manager handler already started by another API');
+          logApp.debug(
+            '[OPENCTI-MODULE] File index manager handler already started by another API',
+          );
         } else {
-          logApp.error('[OPENCTI-MODULE] File index manager handling error', { cause: e, manager: 'FILE_INDEX_MANAGER' });
+          logApp.error('[OPENCTI-MODULE] File index manager handling error', {
+            cause: e,
+            manager: 'FILE_INDEX_MANAGER',
+          });
         }
       } finally {
         running = false;
@@ -178,7 +225,11 @@ const initFileIndexManager = () => {
   };
   const fileIndexStreamHandler = async () => {
     const context = executionContext(FILE_INDEX_MANAGER_NAME);
-    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    const settings = await getEntityFromCache<BasicStoreSettings>(
+      context,
+      SYSTEM_USER,
+      ENTITY_TYPE_SETTINGS,
+    );
     if (isEnterpriseEditionFromSettings(settings)) {
       let lock;
       try {
@@ -186,7 +237,9 @@ const initFileIndexManager = () => {
         lock = await lockResources([FILE_INDEX_MANAGER_STREAM_KEY], { retryCount: 0 });
         running = true;
         logApp.info('[OPENCTI-MODULE] Running file index manager stream handler');
-        streamProcessor = createStreamProcessor('File index manager', handleStreamEvents, { bufferTime: 5000 });
+        streamProcessor = createStreamProcessor('File index manager', handleStreamEvents, {
+          bufferTime: 5000,
+        });
         const lastEventState = await redisGetManagerEventState(FILE_INDEX_MANAGER_NAME);
         await streamProcessor.start(lastEventState ?? 'live');
         while (!shutdown && streamProcessor.running()) {
@@ -196,9 +249,14 @@ const initFileIndexManager = () => {
         logApp.info('[OPENCTI-MODULE] End of file index manager stream handler');
       } catch (e: any) {
         if (e.name === TYPE_LOCK_ERROR) {
-          logApp.debug('[OPENCTI-MODULE] File index manager stream handler already started by another API');
+          logApp.debug(
+            '[OPENCTI-MODULE] File index manager stream handler already started by another API',
+          );
         } else {
-          logApp.error('[OPENCTI-MODULE] File index manager handling error', { cause: e, manager: 'FILE_INDEX_MANAGER' });
+          logApp.error('[OPENCTI-MODULE] File index manager handling error', {
+            cause: e,
+            manager: 'FILE_INDEX_MANAGER',
+          });
         }
       } finally {
         if (streamProcessor) await streamProcessor.shutdown();

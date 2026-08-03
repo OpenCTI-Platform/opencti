@@ -15,9 +15,7 @@ const ItemAccountStatus: FunctionComponent<ItemAccountStatusProps> = ({
 }) => {
   const theme = useTheme<Theme>();
 
-  const computeAccountStatusColor = (
-    account_status: string | undefined | null,
-  ) => {
+  const computeAccountStatusColor = (account_status: string | undefined | null) => {
     switch (account_status) {
       case 'Active':
         return theme.palette.severity.low;
@@ -35,12 +33,7 @@ const ItemAccountStatus: FunctionComponent<ItemAccountStatusProps> = ({
   };
 
   const color = computeAccountStatusColor(account_status);
-  return (
-    <Tag
-      label={label}
-      color={color}
-    />
-  );
+  return <Tag label={label} color={color} />;
 };
 
 export default ItemAccountStatus;

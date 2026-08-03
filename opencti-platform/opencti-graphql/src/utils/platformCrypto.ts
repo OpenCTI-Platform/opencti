@@ -36,28 +36,24 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
     }
 
     const fullDerivationPath = `${derivationPath.join(':')}::v${derivationPathVersion}`;
-    const out = await hkdfAsync('sha256', seed, zeroBuffer, Buffer.from(fullDerivationPath), length);
+    const out = await hkdfAsync(
+      'sha256',
+      seed,
+      zeroBuffer,
+      Buffer.from(fullDerivationPath),
+      length,
+    );
     return Buffer.from(out);
   };
 
   const kidLength = 8;
-  const deriveKid = async (
-    derivationPath: string[],
-    version: number,
-  ): Promise<Buffer> => {
+  const deriveKid = async (derivationPath: string[], version: number): Promise<Buffer> => {
     const material = await deriveBytes(derivationPath, version, 32);
 
-    return crypto
-      .createHash('sha256')
-      .update(material)
-      .digest()
-      .subarray(0, kidLength);
+    return crypto.createHash('sha256').update(material).digest().subarray(0, kidLength);
   };
 
-  const deriveAesKey = async (
-    derivationPath: string[],
-    derivationPathVersion: number,
-  ) => {
+  const deriveAesKey = async (derivationPath: string[], derivationPathVersion: number) => {
     const encodingVersion = 0x01;
     const ivLength = 12;
     const authTagLength = 16;
@@ -65,7 +61,11 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
 
     const bits = 256;
     const algo = `aes-${bits}-gcm` as const;
-    const key = await deriveBytes([...derivationPath, algo, 'key'], derivationPathVersion, bits / 8);
+    const key = await deriveBytes(
+      [...derivationPath, algo, 'key'],
+      derivationPathVersion,
+      bits / 8,
+    );
     const kid = await deriveKid([...derivationPath, algo, 'kid'], derivationPathVersion);
 
     const encrypt = async (data: Buffer, aad?: Buffer | undefined) => {
@@ -75,10 +75,7 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
         cipher.setAAD(aad);
       }
 
-      const encryptedData = Buffer.concat([
-        cipher.update(data),
-        cipher.final(),
-      ]);
+      const encryptedData = Buffer.concat([cipher.update(data), cipher.final()]);
       const authTag = cipher.getAuthTag();
 
       // kid needs to be stored with encrypted data to allow multiple keys usage (e.g. key rotation)
@@ -88,7 +85,10 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
     const decrypt = async (data: Buffer, aad?: Buffer | undefined) => {
       const receivedLength = data.length;
       if (data.length < minLength) {
-        throw UnsupportedError('Unsupported encrypted data', { expectedMinimumLength: minLength, receivedLength });
+        throw UnsupportedError('Unsupported encrypted data', {
+          expectedMinimumLength: minLength,
+          receivedLength,
+        });
       }
 
       let i = 0;
@@ -130,10 +130,7 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
     };
   };
 
-  const deriveEd25519KeyPair = async (
-    derivationPath: string[],
-    version: number,
-  ) => {
+  const deriveEd25519KeyPair = async (derivationPath: string[], version: number) => {
     const seed32 = await deriveBytes([...derivationPath, 'ed25519', 'seed'], version, 32);
     const kid = await deriveKid([...derivationPath, 'ed25519', 'kid'], version);
     const publicKey = await ed25519.getPublicKeyAsync(seed32);
@@ -150,7 +147,10 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
     const verify = async (data: Buffer, signature: Buffer) => {
       const receivedLength = signature.length;
       if (signature.length < minLength) {
-        throw UnsupportedError('Invalid signature format', { expectedMinimumLength: minLength, receivedLength });
+        throw UnsupportedError('Invalid signature format', {
+          expectedMinimumLength: minLength,
+          receivedLength,
+        });
       }
 
       let i = 0;
@@ -191,13 +191,18 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
 
     const getVerifyKey: JWTVerifyGetKey = async (header) => {
       if (header.kid !== jwk.kid) {
-        throw UnsupportedError('JWT kid is unknown', { expectedKid: jwk.kid, receivedKid: header.kid });
+        throw UnsupportedError('JWT kid is unknown', {
+          expectedKid: jwk.kid,
+          receivedKid: header.kid,
+        });
       }
       return publicJWK;
     };
 
     const signJwt = async (jwt: SignJWT) => {
-      return await jwt.setProtectedHeader({ kid: jwk.kid, alg: jwk.alg, typ: 'JWT' }).sign(privateJWK);
+      return await jwt
+        .setProtectedHeader({ kid: jwk.kid, alg: jwk.alg, typ: 'JWT' })
+        .sign(privateJWK);
     };
 
     const verifyJwt = async (token: string | Uint8Array, options: JWTVerifyOptions = {}) => {
@@ -209,9 +214,7 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
         [toHex(kid)]: publicJWK,
       },
       jwks: {
-        keys: [
-          jwk,
-        ],
+        keys: [jwk],
       },
       sign,
       verify,
@@ -220,10 +223,7 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
     };
   };
 
-  const deriveHmac = async (
-    derivationPath: string[],
-    version: number,
-  ) => {
+  const deriveHmac = async (derivationPath: string[], version: number) => {
     const bits = 256;
     const hashAlgo = `sha${bits}` as const;
     const key = await deriveBytes([...derivationPath, `hmac-${hashAlgo}`], version, 32);
@@ -247,7 +247,10 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
 // best effort to handle safely the environment variable containing the encryption key, remove it from env after reading so it cannot be leaked to spawned processes
 // buffer will be cleaned when read
 const encryptionKeyConfName = 'app:encryption_key';
-const encryptionKeyEnvBuffer = Buffer.from(nconf.get(encryptionKeyConfName) ?? nconf.get('app:crypto:master_seed') ?? '', 'base64');
+const encryptionKeyEnvBuffer = Buffer.from(
+  nconf.get(encryptionKeyConfName) ?? nconf.get('app:crypto:master_seed') ?? '',
+  'base64',
+);
 delete process.env[confNameToEnvName(encryptionKeyConfName)];
 
 const createPlatformCrypto = async () => {
@@ -255,7 +258,10 @@ const createPlatformCrypto = async () => {
   const encryptionKey = value ? Buffer.from(value, 'base64') : encryptionKeyEnvBuffer;
 
   if (encryptionKey.length < 32) {
-    throw ConfigurationError(`${encryptionKeyConfName} configuration is missing or invalid, please provide at least 32 bytes of base64-encoded data by using 'openssl rand -base64 32' command`, { keyLength: encryptionKey.length });
+    throw ConfigurationError(
+      `${encryptionKeyConfName} configuration is missing or invalid, please provide at least 32 bytes of base64-encoded data by using 'openssl rand -base64 32' command`,
+      { keyLength: encryptionKey.length },
+    );
   }
 
   const promise = createCryptoKeyFactory(Buffer.from(encryptionKey)); // send a private copy of the encryptionKey

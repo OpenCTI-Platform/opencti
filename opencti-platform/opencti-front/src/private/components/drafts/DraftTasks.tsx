@@ -1,6 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
-import { DraftTasksQuery, DraftTasksQuery$variables } from '@components/drafts/__generated__/DraftTasksQuery.graphql';
+import {
+  DraftTasksQuery,
+  DraftTasksQuery$variables,
+} from '@components/drafts/__generated__/DraftTasksQuery.graphql';
 import { DraftTasksLines_data$data } from '@components/drafts/__generated__/DraftTasksLines_data.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
@@ -49,14 +52,13 @@ const draftTasksLinesFragment = graphql`
   )
   @refetchable(queryName: "DraftTasksRefetchQuery") {
     backgroundTasks(
-      first: $count,
-      after: $cursor,
-      orderBy: $orderBy,
-      orderMode: $orderMode,
-      search: $search,
-      filters: $filters,
-    )
-    @connection(key: "Pagination_global_backgroundTasks") {
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      search: $search
+      filters: $filters
+    ) @connection(key: "Pagination_global_backgroundTasks") {
       edges {
         node {
           id
@@ -72,22 +74,22 @@ const draftTasksLinesFragment = graphql`
 
 export const draftTasksQuery = graphql`
   query DraftTasksQuery(
-    $count: Int,
-    $cursor: ID,
-    $orderBy: BackgroundTasksOrdering,
-    $orderMode: OrderingMode,
-    $search: String,
-    $filters: FilterGroup,
+    $count: Int
+    $cursor: ID
+    $orderBy: BackgroundTasksOrdering
+    $orderMode: OrderingMode
+    $search: String
+    $filters: FilterGroup
   ) {
     ...DraftTasksLines_data
-    @arguments(
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      search: $search
-      filters: $filters
-    )
+      @arguments(
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        search: $search
+        filters: $filters
+      )
   }
 `;
 
@@ -107,9 +109,15 @@ const DraftTasks: FunctionComponent<DraftTasksProps> = ({ draftId }) => {
     orderAsc: false,
   };
 
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<DraftTasksQuery$variables>(LOCAL_STORAGE_KEY, initialValues, true);
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<DraftTasksQuery$variables>(LOCAL_STORAGE_KEY, initialValues, true);
   const { filters } = viewStorage;
-  const currentDraftFilter = { key: 'draft_context', values: [draftId], operator: 'eq', mode: 'or' };
+  const currentDraftFilter = {
+    key: 'draft_context',
+    values: [draftId],
+    operator: 'eq',
+    mode: 'or',
+  };
   const finalFilters = { ...filters, filters: [...(filters?.filters ?? []), currentDraftFilter] };
   const queryPaginationOptions = {
     ...paginationOptions,
@@ -160,7 +168,9 @@ const DraftTasks: FunctionComponent<DraftTasksProps> = ({ draftId }) => {
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: DraftTasksLines_data$data) => data.backgroundTasks?.edges?.map((n) => n?.node)}
+          resolvePath={(data: DraftTasksLines_data$data) =>
+            data.backgroundTasks?.edges?.map((n) => n?.node)
+          }
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           preloadedPaginationProps={preloadedPaginationProps}

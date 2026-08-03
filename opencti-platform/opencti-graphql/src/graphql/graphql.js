@@ -5,7 +5,15 @@ import { createValidation as createAliasBatch } from 'graphql-no-alias';
 import { GraphQLError } from 'graphql';
 import { createApollo4QueryValidationPlugin } from 'graphql-constraint-directive/apollo4';
 import createSchema from './schema';
-import conf, { DEV_MODE, ENABLED_METRICS, ENABLED_TRACING, GRAPHQL_ARMOR_DISABLED, logApp, PLAYGROUND_ENABLED, PLAYGROUND_INTROSPECTION_DISABLED } from '../config/conf';
+import conf, {
+  DEV_MODE,
+  ENABLED_METRICS,
+  ENABLED_TRACING,
+  GRAPHQL_ARMOR_DISABLED,
+  logApp,
+  PLAYGROUND_ENABLED,
+  PLAYGROUND_INTROSPECTION_DISABLED,
+} from '../config/conf';
 import { AuthRequired, muteError, ResourceNotFoundError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import telemetryPlugin from './telemetryPlugin';
@@ -43,22 +51,28 @@ const createApolloServer = () => {
   // Still disable by default for now as required more testing
   if (!GRAPHQL_ARMOR_DISABLED) {
     const armor = new ApolloArmor({
-      blockFieldSuggestion: { // It will prevent suggesting fields in case of an erroneous request.
+      blockFieldSuggestion: {
+        // It will prevent suggesting fields in case of an erroneous request.
         enabled: conf.get('app:graphql:armor_protection:block_field_suggestion') ?? true,
       },
-      costLimit: { // Limit the complexity of a GraphQL document.
+      costLimit: {
+        // Limit the complexity of a GraphQL document.
         maxCost: conf.get('app:graphql:armor_protection:cost_limit') ?? 50000000,
       },
-      maxDepth: { // maxDepth: Limit the depth of a document.
+      maxDepth: {
+        // maxDepth: Limit the depth of a document.
         n: conf.get('app:graphql:armor_protection:max_depth') ?? 20,
       },
-      maxDirectives: { // Limit the number of directives in a document.
+      maxDirectives: {
+        // Limit the number of directives in a document.
         n: conf.get('app:graphql:armor_protection:max_directives') ?? 20,
       },
-      maxTokens: { // Limit the number of GraphQL tokens in a document.
+      maxTokens: {
+        // Limit the number of GraphQL tokens in a document.
         n: conf.get('app:graphql:armor_protection:max_tokens') ?? 100000,
       },
-      maxAliases: { // Limit the number of aliases in a document.
+      maxAliases: {
+        // Limit the number of aliases in a document.
         enabled: false, // Handled by graphql-no-alias
       },
     });
@@ -73,7 +87,8 @@ const createApolloServer = () => {
         didResolveOperation: ({ contextValue, request }) => {
           const isIntrospectionRequest = request.query?.includes('__schema');
           if (isIntrospectionRequest) {
-            const isIntrospectionDisabled = !PLAYGROUND_ENABLED || PLAYGROUND_INTROSPECTION_DISABLED;
+            const isIntrospectionDisabled =
+              !PLAYGROUND_ENABLED || PLAYGROUND_INTROSPECTION_DISABLED;
             if (isIntrospectionDisabled) {
               throw muteError(ResourceNotFoundError('GraphQL introspection not authorized!'));
             }

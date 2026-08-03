@@ -35,46 +35,19 @@ const Root = () => {
           path="/"
           element={<Navigate to={`/dashboard/locations/${redirect}`} replace={true} />}
         />
-        <Route
-          path="/regions"
-          element={boundaryWrapper(Regions)}
-        />
-        <Route
-          path="/regions/:regionId/*"
-          element={boundaryWrapper(RootRegion)}
-        />
-        <Route
-          path="/countries"
-          element={boundaryWrapper(Countries)}
-        />
-        <Route
-          path="/countries/:countryId/*"
-          element={boundaryWrapper(RootCountry)}
-        />
-        <Route
-          path="/administrative_areas"
-          element={boundaryWrapper(AdministrativeAreas)}
-        />
+        <Route path="/regions" element={boundaryWrapper(Regions)} />
+        <Route path="/regions/:regionId/*" element={boundaryWrapper(RootRegion)} />
+        <Route path="/countries" element={boundaryWrapper(Countries)} />
+        <Route path="/countries/:countryId/*" element={boundaryWrapper(RootCountry)} />
+        <Route path="/administrative_areas" element={boundaryWrapper(AdministrativeAreas)} />
         <Route
           path="/administrative_areas/:administrativeAreaId/*"
           element={boundaryWrapper(RootAdministrativeArea)}
         />
-        <Route
-          path="/cities"
-          element={boundaryWrapper(Cities)}
-        />
-        <Route
-          path="/cities/:cityId/*"
-          element={boundaryWrapper(RootCity)}
-        />
-        <Route
-          path="/positions"
-          element={boundaryWrapper(Positions)}
-        />
-        <Route
-          path="/positions/:positionId/*"
-          element={boundaryWrapper(RootPosition)}
-        />
+        <Route path="/cities" element={boundaryWrapper(Cities)} />
+        <Route path="/cities/:cityId/*" element={boundaryWrapper(RootCity)} />
+        <Route path="/positions" element={boundaryWrapper(Positions)} />
+        <Route path="/positions/:positionId/*" element={boundaryWrapper(RootPosition)} />
       </Routes>
     </Suspense>
   );

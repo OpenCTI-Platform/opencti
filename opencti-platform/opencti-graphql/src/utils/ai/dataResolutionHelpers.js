@@ -1,5 +1,9 @@
 import * as R from 'ramda';
-import { distributionRelations, timeSeriesEntities, timeSeriesRelations } from '../../database/middleware';
+import {
+  distributionRelations,
+  timeSeriesEntities,
+  timeSeriesRelations,
+} from '../../database/middleware';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
@@ -9,7 +13,10 @@ import {
   ENTITY_TYPE_IDENTITY,
   ENTITY_TYPE_LOCATION,
 } from '../../schema/general';
-import { extractEntityRepresentativeName, extractRepresentativeDescription } from '../../database/entity-representative';
+import {
+  extractEntityRepresentativeName,
+  extractRepresentativeDescription,
+} from '../../database/entity-representative';
 import { fullEntitiesThroughRelationsToList } from '../../database/middleware-loader';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import {
@@ -31,7 +38,13 @@ import { elPaginate } from '../../database/engine';
 import { ENTITY_TYPE_HISTORY } from '../../schema/internalObject';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_INDICATOR } from '../../modules/indicator/indicator-types';
-import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE, ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_CAMPAIGN,
+  ENTITY_TYPE_INCIDENT,
+  ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_MALWARE,
+  ENTITY_TYPE_THREAT_ACTOR_GROUP,
+} from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../../modules/threatActorIndividual/threatActorIndividual-types';
 import { INSTANCE_REGARDING_OF } from '../filtering/filtering-constants';
 
@@ -43,7 +56,8 @@ export const systemPrompt = `
 `;
 
 export const getContainersStats = async (context, user, id, startDate, endDate) => {
-  const filters = { mode: 'and',
+  const filters = {
+    mode: 'and',
     filters: [
       { key: 'entity_type', values: [ENTITY_TYPE_CONTAINER] },
       { key: 'objects', values: [id] },
@@ -60,10 +74,12 @@ export const getContainersStats = async (context, user, id, startDate, endDate) 
 };
 
 export const getIndicatorsStats = async (context, user, id, startDate, endDate) => {
-  const filters = { mode: 'and',
+  const filters = {
+    mode: 'and',
     filters: [
       { key: 'entity_type', values: [ENTITY_TYPE_INDICATOR] },
-      { key: INSTANCE_REGARDING_OF,
+      {
+        key: INSTANCE_REGARDING_OF,
         values: [
           { key: 'relationship_type', values: [RELATION_INDICATES] },
           { key: 'id', values: [id] },
@@ -121,7 +137,10 @@ export const getTopThreats = async (context, user, id, types, startDate, endDate
     startDate,
     endDate,
   });
-  return distribution.map((n) => ({ label: extractEntityRepresentativeName(n.entity), value: n.value }));
+  return distribution.map((n) => ({
+    label: extractEntityRepresentativeName(n.entity),
+    value: n.value,
+  }));
 };
 
 export const getTopVictims = async (context, user, id, types, startDate, endDate) => {
@@ -145,7 +164,10 @@ export const getTopVictims = async (context, user, id, types, startDate, endDate
     startDate,
     endDate,
   });
-  return distribution.map((n) => ({ label: extractEntityRepresentativeName(n.entity), value: n.value }));
+  return distribution.map((n) => ({
+    label: extractEntityRepresentativeName(n.entity),
+    value: n.value,
+  }));
 };
 
 export const getTargetingStats = async (context, user, id, startDate, endDate) => {
@@ -153,7 +175,8 @@ export const getTargetingStats = async (context, user, id, startDate, endDate) =
     mode: 'and',
     filters: [
       { key: 'relationship_type', values: [RELATION_TARGETS] },
-      { key: 'fromTypes',
+      {
+        key: 'fromTypes',
         values: [
           ENTITY_TYPE_THREAT_ACTOR_GROUP,
           ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL,
@@ -162,7 +185,8 @@ export const getTargetingStats = async (context, user, id, startDate, endDate) =
           ENTITY_TYPE_CAMPAIGN,
           ENTITY_TYPE_INCIDENT,
           ENTITY_TYPE_MALWARE,
-        ] },
+        ],
+      },
       { key: 'toId', values: [id] },
     ],
     filterGroups: [],
@@ -184,25 +208,37 @@ export const getHistory = (context, user, id) => {
       { key: 'context_data.id', values: [id] },
       {
         key: 'event_type',
-        values: [
-          'mutation',
-          'create',
-          'update',
-          'delete',
-          'merge',
-        ],
+        values: ['mutation', 'create', 'update', 'delete', 'merge'],
       },
     ],
   };
-  const args = { types: [ENTITY_TYPE_HISTORY], filters, first: 200, orderBy: 'timestamp', orderMode: 'desc', connectionFormat: false };
+  const args = {
+    types: [ENTITY_TYPE_HISTORY],
+    filters,
+    first: 200,
+    orderBy: 'timestamp',
+    orderMode: 'desc',
+    connectionFormat: false,
+  };
   return elPaginate(context, user, READ_INDEX_HISTORY, args);
 };
 
 export const getContainerKnowledge = async (context, user, id) => {
-  const elements = await fullEntitiesThroughRelationsToList(context, user, id, RELATION_OBJECT, [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP]);
+  const elements = await fullEntitiesThroughRelationsToList(context, user, id, RELATION_OBJECT, [
+    ABSTRACT_STIX_CORE_OBJECT,
+    ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ]);
   // generate mappings
-  const relationships = R.take(RESOLUTION_LIMIT, elements.filter((n) => n.parent_types.includes(ABSTRACT_STIX_CORE_RELATIONSHIP)));
-  const entities = R.take(RESOLUTION_LIMIT, elements.filter((n) => !isStixCyberObservable(n.entity_type) && n.entity_type !== ENTITY_TYPE_INDICATOR));
+  const relationships = R.take(
+    RESOLUTION_LIMIT,
+    elements.filter((n) => n.parent_types.includes(ABSTRACT_STIX_CORE_RELATIONSHIP)),
+  );
+  const entities = R.take(
+    RESOLUTION_LIMIT,
+    elements.filter(
+      (n) => !isStixCyberObservable(n.entity_type) && n.entity_type !== ENTITY_TYPE_INDICATOR,
+    ),
+  );
   const indexedEntities = R.indexBy(R.prop('id'), entities);
 
   // generate entities involved
@@ -224,25 +260,30 @@ export const getContainerKnowledge = async (context, user, id) => {
     RELATION_LOCATED_AT,
     RELATION_HAS,
   ];
-  const relationshipsSentences = relationships.filter((n) => meaningfulRelationships.includes(n.relationship_type)).map((n) => {
-    const from = indexedEntities[n.fromId];
-    const to = indexedEntities[n.toId];
-    if (isNotEmptyField(from) && isNotEmptyField(to)) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
-      const startTime = n.start_time === FROM_START_STR ? 'unknown date' : n.start_time;
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
-      const stopTime = n.stop_time === UNTIL_END_STR ? 'unknown date' : n.stop_time;
-      return `
+  const relationshipsSentences = relationships
+    .filter((n) => meaningfulRelationships.includes(n.relationship_type))
+    .map((n) => {
+      const from = indexedEntities[n.fromId];
+      const to = indexedEntities[n.toId];
+      if (isNotEmptyField(from) && isNotEmptyField(to)) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        const startTime = n.start_time === FROM_START_STR ? 'unknown date' : n.start_time;
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        const stopTime = n.stop_time === UNTIL_END_STR ? 'unknown date' : n.stop_time;
+        return `
         -------------------
       - The ${from} ${extractEntityRepresentativeName(from)} ${n.relationship_type} the ${to.entity_type} ${extractEntityRepresentativeName(to)} from ${startTime} to ${stopTime} (${n.description}).
         -------------------
       `;
-    }
-    return '';
-  });
-  return { relationshipsSentences: relationshipsSentences.join(''), entitiesInvolved: entitiesInvolved.join('') };
+      }
+      return '';
+    });
+  return {
+    relationshipsSentences: relationshipsSentences.join(''),
+    entitiesInvolved: entitiesInvolved.join(''),
+  };
 };
 
 export const resolveFiles = async (context, user, stixCoreObject) => {
@@ -252,7 +293,13 @@ export const resolveFiles = async (context, user, stixCoreObject) => {
     entity_id: stixCoreObject.id,
     entity_type: stixCoreObject.entity_type,
   };
-  const importFiles = await paginatedForPathWithEnrichment(context, user, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, opts);
+  const importFiles = await paginatedForPathWithEnrichment(
+    context,
+    user,
+    `import/${stixCoreObject.entity_type}/${stixCoreObject.id}`,
+    stixCoreObject.id,
+    opts,
+  );
   const fileIds = importFiles.edges.map((n) => n.node.id);
   if (fileIds.length === 0) {
     return [];

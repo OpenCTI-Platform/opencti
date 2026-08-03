@@ -20,24 +20,25 @@ import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import stopEvent from '../../../utils/domEvent';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../utils/hooks/useDeletion';
-import useGranted, { KNOWLEDGE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 import { deleteNode } from '../../../utils/store';
 import useSwitchDraft from './useSwitchDraft';
 
 const draftPopoverDeleteMutation = graphql`
-    mutation DraftPopoverDeleteMutation($id: ID!) {
-        draftWorkspaceDelete(id: $id)
-    }
+  mutation DraftPopoverDeleteMutation($id: ID!) {
+    draftWorkspaceDelete(id: $id)
+  }
 `;
 
 interface DraftPopoverProps {
   draftId: string;
   draftLocked: boolean;
   paginationOptions: DraftsLinesPaginationQuery$variables;
-  updater?: (
-    store: RecordSourceSelectorProxy,
-  ) => void;
+  updater?: (store: RecordSourceSelectorProxy) => void;
   currentUserAccessRight?: string;
 }
 
@@ -141,13 +142,16 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
         >
           <MoreVert fontSize="small" />
         </IconButton>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleClose}
-        >
-          <MenuItem onClick={handleOpenDelete} disabled={!isGrantedDelete || !currentAccessRight.canEdit}>{t_i18n('Delete')}</MenuItem>
-          <MenuItem onClick={handleOpenSwitch} disabled={draftLocked}>{t_i18n('Switch to Draft')}</MenuItem>
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+          <MenuItem
+            onClick={handleOpenDelete}
+            disabled={!isGrantedDelete || !currentAccessRight.canEdit}
+          >
+            {t_i18n('Delete')}
+          </MenuItem>
+          <MenuItem onClick={handleOpenSwitch} disabled={draftLocked}>
+            {t_i18n('Switch to Draft')}
+          </MenuItem>
         </Menu>
         <DeleteDialog
           deletion={deletion}
@@ -160,20 +164,22 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
           title={t_i18n('Switch to Draft Mode')}
           size="small"
         >
-          <DialogContentText>{t_i18n('You are about to switch to Draft mode. All your OpenCTI platform will be in draft. The selected Draft will be the draft by default.')}</DialogContentText>
+          <DialogContentText>
+            {t_i18n(
+              'You are about to switch to Draft mode. All your OpenCTI platform will be in draft. The selected Draft will be the draft by default.',
+            )}
+          </DialogContentText>
           <DialogActions>
-            <Button variant="secondary" onClick={handleCloseSwitch}>{t_i18n('Cancel')}</Button>
-            <Button
-              onClick={submitToDraft}
-              disabled={switchToDraft}
-            >
+            <Button variant="secondary" onClick={handleCloseSwitch}>
+              {t_i18n('Cancel')}
+            </Button>
+            <Button onClick={submitToDraft} disabled={switchToDraft}>
               {t_i18n('Switch to Draft')}
             </Button>
           </DialogActions>
         </Dialog>
       </div>
     </Security>
-
   );
 };
 

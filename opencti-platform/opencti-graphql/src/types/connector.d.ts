@@ -20,7 +20,8 @@ export interface BasicStoreEntityConnector extends StoreEntity {
   connector_state: string;
   connector_state_reset: boolean;
   connector_trigger_filters: string;
-  connector_user_id; string;
+  connector_user_id;
+  string;
   connector_info: ConnectorInfo;
   playbook_compatible: boolean;
   xtm_one_intent: string | null;

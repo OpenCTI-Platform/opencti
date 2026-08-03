@@ -34,7 +34,13 @@ const revokedInstances = async (context) => {
           patch.x_opencti_score = 0;
         }
       }
-      await patchAttribute(context, EXPIRATION_MANAGER_USER, element.id, element.entity_type, patch);
+      await patchAttribute(
+        context,
+        EXPIRATION_MANAGER_USER,
+        element.id,
+        element.entity_type,
+        patch,
+      );
     };
     await Promise.map(elements, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
   };
@@ -87,7 +93,10 @@ const expireHandler = async () => {
     if (e.name === TYPE_LOCK_ERROR) {
       logApp.debug('[OPENCTI-MODULE] Expiration manager already started by another API');
     } else {
-      logApp.error('[OPENCTI-MODULE] Expiration manager handling error', { cause: e, manager: 'EXPIRATION_SCHEDULER' });
+      logApp.error('[OPENCTI-MODULE] Expiration manager handling error', {
+        cause: e,
+        manager: 'EXPIRATION_SCHEDULER',
+      });
     }
   } finally {
     running = false;

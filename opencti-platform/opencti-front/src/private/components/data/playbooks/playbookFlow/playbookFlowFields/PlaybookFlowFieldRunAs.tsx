@@ -82,12 +82,9 @@ const PlaybookFlowFieldRunAs: FunctionComponent<PlaybookFlowFieldRunAsProps> = (
         // Always offer the current user, only hiding it when it does not
         // match the current search input.
         const lowerSearch = search.toLowerCase();
-        const selfMatchesSearch = !lowerSearch
-          || currentUserOption.label.toLowerCase().includes(lowerSearch);
-        const merged = [
-          ...(selfMatchesSearch ? [currentUserOption] : []),
-          ...serviceAccounts,
-        ];
+        const selfMatchesSearch =
+          !lowerSearch || currentUserOption.label.toLowerCase().includes(lowerSearch);
+        const merged = [...(selfMatchesSearch ? [currentUserOption] : []), ...serviceAccounts];
         const uniqueOptions = merged.filter(
           (item, index) => merged.findIndex((e) => e.value === item.value) === index,
         );
@@ -112,10 +109,7 @@ const PlaybookFlowFieldRunAs: FunctionComponent<PlaybookFlowFieldRunAsProps> = (
         options={options}
         groupBy={(option: OptionRunAs) => option.type}
         onInputChange={searchRunAs}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: OptionRunAs,
-        ) => (
+        renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: OptionRunAs) => (
           <li {...props}>
             <Box sx={{ paddingTop: '4px', display: 'inline-block', color: 'primary.main' }}>
               <ItemIcon type={option.type} />

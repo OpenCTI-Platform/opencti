@@ -14,10 +14,7 @@ import { isOnlyOrganizationAdmin } from '../../../../../utils/hooks/useGranted';
 import { useFormatter } from '../../../../../components/i18n';
 
 const userMutationRelationAdd = graphql`
-  mutation UserEditionGroupsRelationAddMutation(
-    $id: ID!
-    $input: InternalRelationshipAddInput!
-  ) {
+  mutation UserEditionGroupsRelationAddMutation($id: ID!, $input: InternalRelationshipAddInput!) {
     userEdit(id: $id) {
       relationAdd(input: $input) {
         from {
@@ -83,35 +80,33 @@ const UserEditionGroupsComponent = ({ user }) => {
             <ListItem
               key={group.id}
               divider={true}
-              secondaryAction={(
+              secondaryAction={
                 <Checkbox
-                  onChange={(event) => handleToggle(
-                    group.id,
-                    userGroup,
-                    event,
-                  )}
+                  onChange={(event) => handleToggle(group.id, userGroup, event)}
                   checked={userGroup !== undefined}
                 />
-              )}
+              }
             >
               <ListItemIcon color="primary">
                 <GroupOutlined />
               </ListItemIcon>
               <ListItemText
-                primary={(
+                primary={
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     {group.name}
                     {group.group_confidence_level === null ? (
-                      <Tooltip
-                        title={t_i18n('This group has no Max Confidence Level defined.')}
-                      >
-                        <ReportGmailerrorred fontSize="small" color="error" style={{ marginLeft: 5 }} />
+                      <Tooltip title={t_i18n('This group has no Max Confidence Level defined.')}>
+                        <ReportGmailerrorred
+                          fontSize="small"
+                          color="error"
+                          style={{ marginLeft: 5 }}
+                        />
                       </Tooltip>
                     ) : (
                       ` (${t_i18n('Max Confidence Level:')} ${group.group_confidence_level.max_confidence})`
                     )}
                   </div>
-                )}
+                }
                 secondary={group.description ?? ''}
               />
             </ListItem>
@@ -161,7 +156,11 @@ const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
       rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
     ) {
       id
-      objectOrganization(orderBy: $organizationsOrderBy, orderMode: $organizationsOrderMode, first: $organizationsCount) {
+      objectOrganization(
+        orderBy: $organizationsOrderBy
+        orderMode: $organizationsOrderMode
+        first: $organizationsCount
+      ) {
         edges {
           node {
             id
@@ -169,7 +168,7 @@ const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
             grantable_groups {
               id
               name
-              group_confidence_level{
+              group_confidence_level {
                 max_confidence
               }
             }
@@ -194,8 +193,16 @@ const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
         source {
           type
           object {
-            ... on User { entity_type id name }
-            ... on Group { entity_type id name }
+            ... on User {
+              entity_type
+              id
+              name
+            }
+            ... on Group {
+              entity_type
+              id
+              name
+            }
           }
         }
       }

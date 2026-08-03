@@ -1,11 +1,17 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
-import { FeedbacksLinesPaginationQuery, FeedbacksLinesPaginationQuery$variables } from '@components/cases/__generated__/FeedbacksLinesPaginationQuery.graphql';
+import {
+  FeedbacksLinesPaginationQuery,
+  FeedbacksLinesPaginationQuery$variables,
+} from '@components/cases/__generated__/FeedbacksLinesPaginationQuery.graphql';
 import { FeedbacksLines_data$data } from '@components/cases/__generated__/FeedbacksLines_data.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../utils/hooks/useAuth';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import {
+  useBuildEntityTypeBasedFilterContext,
+  emptyFilterGroup,
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -75,14 +81,14 @@ const feedbacksLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...FeedbacksLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -137,14 +143,16 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
     openExports: false,
     filters: emptyFilterGroup,
   };
-  const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<FeedbacksLinesPaginationQuery$variables>(
+  const {
+    viewStorage,
+    helpers: storageHelpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<FeedbacksLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_FEEDBACK,
     initialValues,
   );
 
-  const {
-    filters,
-  } = viewStorage;
+  const { filters } = viewStorage;
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {},
@@ -185,11 +193,15 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
 
   return (
     <span data-testid="feedback-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Feedbacks'), current: true }]} />
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Feedbacks'), current: true }]}
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: FeedbacksLines_data$data) => data.feedbacks?.edges?.map((n) => n?.node)}
+          resolvePath={(data: FeedbacksLines_data$data) =>
+            data.feedbacks?.edges?.map((n) => n?.node)
+          }
           storageKey={LOCAL_STORAGE_KEY_FEEDBACK}
           initialValues={initialValues}
           contextFilters={contextFilters}

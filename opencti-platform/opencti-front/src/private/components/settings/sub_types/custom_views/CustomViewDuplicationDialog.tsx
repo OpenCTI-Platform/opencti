@@ -11,7 +11,10 @@ import stopEvent from '../../../../../utils/domEvent';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { useCustomViewsData } from '../../../custom_views/useCustomViewsData';
 import { CustomViewDuplicationDialog_DuplicateMutation } from './__generated__/CustomViewDuplicationDialog_DuplicateMutation.graphql';
-import { CustomViewDuplicationDialog_Fragment$data, CustomViewDuplicationDialog_Fragment$key } from './__generated__/CustomViewDuplicationDialog_Fragment.graphql';
+import {
+  CustomViewDuplicationDialog_Fragment$data,
+  CustomViewDuplicationDialog_Fragment$key,
+} from './__generated__/CustomViewDuplicationDialog_Fragment.graphql';
 
 const customViewDuplicationFragment = graphql`
   fragment CustomViewDuplicationDialog_Fragment on CustomView {
@@ -31,18 +34,14 @@ interface CustomViewDuplicationDialogProps {
 }
 
 const duplicateMutation = graphql`
-  mutation CustomViewDuplicationDialog_DuplicateMutation(
-    $input: CustomViewDuplicateInput!
-  ) {
+  mutation CustomViewDuplicationDialog_DuplicateMutation($input: CustomViewDuplicateInput!) {
     customViewDuplicate(input: $input) {
       id
       targetEntityType
     }
   }
 `;
-const CustomViewDuplicationDialog: FunctionComponent<
-  CustomViewDuplicationDialogProps
-> = ({
+const CustomViewDuplicationDialog: FunctionComponent<CustomViewDuplicationDialogProps> = ({
   data,
   duplicating,
   setDuplicating,
@@ -58,9 +57,8 @@ const CustomViewDuplicationDialog: FunctionComponent<
     [t_i18n, customView.name],
   );
   const [newName, setNewName] = useState(duplicatedCustomViewInitialName);
-  const [commitDuplicateCustomView] = useApiMutation<CustomViewDuplicationDialog_DuplicateMutation>(
-    duplicateMutation,
-  );
+  const [commitDuplicateCustomView] =
+    useApiMutation<CustomViewDuplicationDialog_DuplicateMutation>(duplicateMutation);
   const submitDashboardDuplication = (
     e: UIEvent,
     sourceCustomView: CustomViewDuplicationDialog_Fragment$data,
@@ -127,7 +125,9 @@ const CustomViewDuplicationDialog: FunctionComponent<
         }}
       />
       <DialogActions>
-        <Button variant="secondary" onClick={() => handleCloseDuplicate()}>{t_i18n('Cancel')}</Button>
+        <Button variant="secondary" onClick={() => handleCloseDuplicate()}>
+          {t_i18n('Cancel')}
+        </Button>
         <Button
           onClick={(e) => handleSubmitDuplicate(e, newName)}
           disabled={duplicating || !newName}

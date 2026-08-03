@@ -13,29 +13,22 @@ interface SecurityPlatformDetailsComponentProps {
   securityPlatform: SecurityPlatformDetails_securityPlatform$data;
 }
 
-const SecurityPlatformDetailsComponent: FunctionComponent<SecurityPlatformDetailsComponentProps> = ({ securityPlatform }) => {
+const SecurityPlatformDetailsComponent: FunctionComponent<
+  SecurityPlatformDetailsComponentProps
+> = ({ securityPlatform }) => {
   const { t_i18n } = useFormatter();
   return (
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
           <Grid item xs={12}>
-            <Label>
-              {t_i18n('Description')}
-            </Label>
-            <ExpandableMarkdown
-              source={securityPlatform.description}
-              limit={400}
-            />
+            <Label>{t_i18n('Description')}</Label>
+            <ExpandableMarkdown source={securityPlatform.description} limit={400} />
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Security platform type')}
-            </Label>
+            <Label>{t_i18n('Security platform type')}</Label>
             <FieldOrEmpty source={securityPlatform.security_platform_type}>
-              <Tag
-                label={securityPlatform.security_platform_type}
-              />
+              <Tag label={securityPlatform.security_platform_type} />
             </FieldOrEmpty>
           </Grid>
         </Grid>
@@ -44,22 +37,19 @@ const SecurityPlatformDetailsComponent: FunctionComponent<SecurityPlatformDetail
   );
 };
 
-const SecurityPlatformDetails = createFragmentContainer(
-  SecurityPlatformDetailsComponent,
-  {
-    securityPlatform: graphql`
-      fragment SecurityPlatformDetails_securityPlatform on SecurityPlatform {
+const SecurityPlatformDetails = createFragmentContainer(SecurityPlatformDetailsComponent, {
+  securityPlatform: graphql`
+    fragment SecurityPlatformDetails_securityPlatform on SecurityPlatform {
+      id
+      description
+      security_platform_type
+      objectLabel {
         id
-        description
-        security_platform_type
-        objectLabel {
-          id
-          value
-          color
-        }
+        value
+        color
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default SecurityPlatformDetails;

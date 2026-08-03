@@ -69,29 +69,15 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
   const isDemo = settings?.platform_demo ?? false;
   const registrationHubUrl = settings?.platform_xtmhub_url ?? 'https://hub.filigran.io/app';
   const registrationPlatformTitle = settings?.platform_title ?? 'OpenCTI Platform';
-  const [processStep, setProcessStep] = useState<ProcessSteps>(
-    ProcessSteps.INSTRUCTIONS,
-  );
-  const [operationType, setOperationType] = useState<OperationType | null>(
-    null,
-  );
-  const [commitRegistration] = useApiMutation(
-    xtmHubTabSettingsFieldPatchMutation,
-    undefined,
-    {
-      successMessage: t_i18n('Your OpenCTI product is successfully connected'),
-    },
-  );
+  const [processStep, setProcessStep] = useState<ProcessSteps>(ProcessSteps.INSTRUCTIONS);
+  const [operationType, setOperationType] = useState<OperationType | null>(null);
+  const [commitRegistration] = useApiMutation(xtmHubTabSettingsFieldPatchMutation, undefined, {
+    successMessage: t_i18n('Your OpenCTI product is successfully connected'),
+  });
 
-  const [commitUnregistration] = useApiMutation(
-    xtmHubTabSettingsFieldPatchMutation,
-    undefined,
-    {
-      successMessage: t_i18n(
-        'Your OpenCTI product is successfully disconnected',
-      ),
-    },
-  );
+  const [commitUnregistration] = useApiMutation(xtmHubTabSettingsFieldPatchMutation, undefined, {
+    successMessage: t_i18n('Your OpenCTI product is successfully disconnected'),
+  });
 
   const isRegistered = registrationStatus === 'registered';
 
@@ -102,9 +88,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
     platform_contract: isEnterpriseEdition ? 'EE' : 'CE',
     platform_version: about?.version ?? '',
   };
-  const queryParamsOCTIInformations = new URLSearchParams(
-    OCTIInformations,
-  ).toString();
+  const queryParamsOCTIInformations = new URLSearchParams(OCTIInformations).toString();
 
   const registrationUrl = `${registrationHubUrl}/redirect/register-opencti?${queryParamsOCTIInformations}`;
   const unregistrationUrl = `${registrationHubUrl}/redirect/unregister-opencti?platform_id=${settings?.id ?? ''}`;
@@ -241,9 +225,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
   };
 
   const handleOpenDialog = () => {
-    setOperationType(
-      isRegistered ? OperationType.UNREGISTER : OperationType.REGISTER,
-    );
+    setOperationType(isRegistered ? OperationType.UNREGISTER : OperationType.REGISTER);
     setIsDialogOpen(true);
   };
 
@@ -271,9 +253,12 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
         canceledMessage: t_i18n('You have canceled the connection process'),
         loaderButtonText: t_i18n('Continue to connect'),
         confirmationTitle: t_i18n('Close connection process?'),
-        confirmationMessage: t_i18n('The connection process is still in progress. Closing this dialog will terminate the connection. Are you sure you want to close?'),
+        confirmationMessage: t_i18n(
+          'The connection process is still in progress. Closing this dialog will terminate the connection. Are you sure you want to close?',
+        ),
         continueButtonText: t_i18n('Continue connection'),
-        instructionKey: 'You will be redirected to a new tab to complete the connection. Please complete all required steps. Your current session will remain active during the process.',
+        instructionKey:
+          'You will be redirected to a new tab to complete the connection. Please complete all required steps. Your current session will remain active during the process.',
       },
       unregister: {
         dialogTitle: t_i18n('Disconnect your product from XTM Hub'),
@@ -281,9 +266,12 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
         canceledMessage: t_i18n('You have canceled the disconnection process'),
         loaderButtonText: t_i18n('Continue to disconnect'),
         confirmationTitle: t_i18n('Close disconnection process?'),
-        confirmationMessage: t_i18n('The disconnection process is still in progress. Closing this dialog will terminate the disconnection. Are you sure you want to close?'),
+        confirmationMessage: t_i18n(
+          'The disconnection process is still in progress. Closing this dialog will terminate the disconnection. Are you sure you want to close?',
+        ),
         continueButtonText: t_i18n('Continue disconnection'),
-        instructionKey: 'You will be redirected to a new tab to complete the disconnection. Please complete all required steps. Your current session will remain active during the process.',
+        instructionKey:
+          'You will be redirected to a new tab to complete the disconnection. Please complete all required steps. Your current session will remain active during the process.',
       },
     };
 
@@ -303,12 +291,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
       ],
       [
         ProcessSteps.WAITING_HUB,
-        () => (
-          <ProcessLoader
-            onFocusTab={focusTab}
-            buttonText={config.loaderButtonText}
-          />
-        ),
+        () => <ProcessLoader onFocusTab={focusTab} buttonText={config.loaderButtonText} />,
       ],
       [ProcessSteps.ERROR, () => <div>{config.errorMessage}</div>],
       [ProcessSteps.CANCELED, () => <div>{config.canceledMessage}</div>],
@@ -334,7 +317,9 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
     }
     return (
       <>
-        {renderTrigger ? renderTrigger(handleOpenDialog) : (
+        {renderTrigger ? (
+          renderTrigger(handleOpenDialog)
+        ) : (
           <div style={{ float: 'right', marginTop: theme.spacing(-2), position: 'relative' }}>
             <Button
               variant="secondary"
@@ -346,11 +331,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
             </Button>
           </div>
         )}
-        <ProcessDialog
-          open={isDialogOpen}
-          title={config.dialogTitle}
-          onClose={handleAttemptClose}
-        >
+        <ProcessDialog open={isDialogOpen} title={config.dialogTitle} onClose={handleAttemptClose}>
           {renderDialogContent()}
         </ProcessDialog>
         <ConfirmationDialog
@@ -368,7 +349,9 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
 
   return (
     <>
-      {renderTrigger ? renderTrigger(handleOpenDialog) : (
+      {renderTrigger ? (
+        renderTrigger(handleOpenDialog)
+      ) : (
         <div style={{ float: 'right', marginTop: theme.spacing(-2), position: 'relative' }}>
           <Button
             gradient
@@ -385,11 +368,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
         onClose={handleCancelAutoRegistration}
         aria-labelledby="xtm-hub-auto-registration-title"
         aria-describedby="xtm-hub-auto-registration-description"
-        title={(
-          <span id="xtm-hub-auto-registration-title">
-            {t_i18n('Authorize connection')}
-          </span>
-        )}
+        title={<span id="xtm-hub-auto-registration-title">{t_i18n('Authorize connection')}</span>}
       >
         <DialogContentText id="xtm-hub-auto-registration-description">
           {t_i18n('Allow OpenCTI to connect with XTM Hub')}
@@ -403,11 +382,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
           </Button>
         </DialogActions>
       </Dialog>
-      <ProcessDialog
-        open={isDialogOpen}
-        title={config.dialogTitle}
-        onClose={handleAttemptClose}
-      >
+      <ProcessDialog open={isDialogOpen} title={config.dialogTitle} onClose={handleAttemptClose}>
         {renderDialogContent()}
       </ProcessDialog>
       <ConfirmationDialog

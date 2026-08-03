@@ -37,7 +37,8 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
             setSelectedStrategy('LDAP');
             break;
           }
-          default: setSelectedStrategy('');
+          default:
+            setSelectedStrategy('');
         }
       }}
       {...props}
@@ -46,18 +47,19 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
 
   const getTitle = () => {
     switch (selectedStrategy) {
-      case 'OIDC': return t_i18n('Create OIDC Authentication');
-      case 'SAML': return t_i18n('Create SAML Authentication');
-      case 'LDAP': return t_i18n('Create LDAP Authentication');
-      default: return t_i18n('Create Authentication');
+      case 'OIDC':
+        return t_i18n('Create OIDC Authentication');
+      case 'SAML':
+        return t_i18n('Create SAML Authentication');
+      case 'LDAP':
+        return t_i18n('Create LDAP Authentication');
+      default:
+        return t_i18n('Create Authentication');
     }
   };
 
   return (
-    <Drawer
-      title={getTitle()}
-      controlledDial={CreateSSODefinitionControlledDial}
-    >
+    <Drawer title={getTitle()} controlledDial={CreateSSODefinitionControlledDial}>
       {({ onClose }) => {
         const handleCompleted = () => {
           onClose();

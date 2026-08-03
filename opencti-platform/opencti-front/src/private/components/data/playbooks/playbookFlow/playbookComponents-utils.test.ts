@@ -1,10 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { computeInitialComponentConfigValues, groupAndSortPlaybookComponents, NodeData } from './playbookComponents-utils';
-import { PlaybookBundleElementsToApply, type PlaybookComponent, type PlaybookComponentConfigSchema, type PlaybookConfig } from '../types/playbook-types';
+import {
+  computeInitialComponentConfigValues,
+  groupAndSortPlaybookComponents,
+  NodeData,
+} from './playbookComponents-utils';
+import {
+  PlaybookBundleElementsToApply,
+  type PlaybookComponent,
+  type PlaybookComponentConfigSchema,
+  type PlaybookConfig,
+} from '../types/playbook-types';
 
 describe('playbookComponents-utils', () => {
   describe('groupAndSortPlaybookComponents', () => {
-    const playbook = (overrides: Partial<PlaybookComponent> & { id: string; name: string }): PlaybookComponent => ({
+    const playbook = (
+      overrides: Partial<PlaybookComponent> & { id: string; name: string },
+    ): PlaybookComponent => ({
       description: '',
       icon: '',
       category: 'start_playbook',
@@ -20,8 +31,18 @@ describe('playbookComponents-utils', () => {
 
     it('filters by is_entry_point — returns only entry-point playbooks when isEntryPoint=true', () => {
       const playbooks = [
-        playbook({ id: 'PLAYBOOK_INTERNAL_MANUAL_TRIGGER', name: 'Manual Trigger', category: 'start_playbook', is_entry_point: true }),
-        playbook({ id: 'PLAYBOOK_LOGGER_COMPONENT', name: 'Log data', category: 'transform_and_enrich', is_entry_point: false }),
+        playbook({
+          id: 'PLAYBOOK_INTERNAL_MANUAL_TRIGGER',
+          name: 'Manual Trigger',
+          category: 'start_playbook',
+          is_entry_point: true,
+        }),
+        playbook({
+          id: 'PLAYBOOK_LOGGER_COMPONENT',
+          name: 'Log data',
+          category: 'transform_and_enrich',
+          is_entry_point: false,
+        }),
       ];
       const result = groupAndSortPlaybookComponents(playbooks, true);
       expect(result).toHaveLength(1);
@@ -32,8 +53,18 @@ describe('playbookComponents-utils', () => {
 
     it('filters by is_entry_point — returns only non-entry-point playbooks when isEntryPoint=false', () => {
       const playbooks = [
-        playbook({ id: 'PLAYBOOK_INTERNAL_MANUAL_TRIGGER', name: 'Manual Trigger', category: 'start_playbook', is_entry_point: true }),
-        playbook({ id: 'PLAYBOOK_LOGGER_COMPONENT', name: 'Log data', category: 'transform_and_enrich', is_entry_point: false }),
+        playbook({
+          id: 'PLAYBOOK_INTERNAL_MANUAL_TRIGGER',
+          name: 'Manual Trigger',
+          category: 'start_playbook',
+          is_entry_point: true,
+        }),
+        playbook({
+          id: 'PLAYBOOK_LOGGER_COMPONENT',
+          name: 'Log data',
+          category: 'transform_and_enrich',
+          is_entry_point: false,
+        }),
       ];
       const result = groupAndSortPlaybookComponents(playbooks, false);
       expect(result).toHaveLength(1);
@@ -43,9 +74,24 @@ describe('playbookComponents-utils', () => {
 
     it('sorts components alphabetically within a group', () => {
       const playbooks = [
-        playbook({ id: 'PLAYBOOK_REDUCING_COMPONENT', name: 'Reduce knowledge', category: 'transform_and_enrich', is_entry_point: false }),
-        playbook({ id: 'PLAYBOOK_RULE_COMPONENT', name: 'Apply predefined rule', category: 'transform_and_enrich', is_entry_point: false }),
-        playbook({ id: 'PLAYBOOK_LOGGER_COMPONENT', name: 'Log data in standard output', category: 'transform_and_enrich', is_entry_point: false }),
+        playbook({
+          id: 'PLAYBOOK_REDUCING_COMPONENT',
+          name: 'Reduce knowledge',
+          category: 'transform_and_enrich',
+          is_entry_point: false,
+        }),
+        playbook({
+          id: 'PLAYBOOK_RULE_COMPONENT',
+          name: 'Apply predefined rule',
+          category: 'transform_and_enrich',
+          is_entry_point: false,
+        }),
+        playbook({
+          id: 'PLAYBOOK_LOGGER_COMPONENT',
+          name: 'Log data in standard output',
+          category: 'transform_and_enrich',
+          is_entry_point: false,
+        }),
       ];
       const result = groupAndSortPlaybookComponents(playbooks, false);
       expect(result[0].items[0].name).toContain('Apply predefined rule');
@@ -55,9 +101,24 @@ describe('playbookComponents-utils', () => {
 
     it('respects PLAYBOOK_CATEGORY_ORDER group sequence regardless of input order', () => {
       const playbooks = [
-        playbook({ id: 'PLAYBOOK_NOTIFIER_COMPONENT', name: 'Send to notifier', category: 'end_playbook', is_entry_point: false }),
-        playbook({ id: 'PLAYBOOK_SHARING_COMPONENT', name: 'Share with organizations', category: 'share_and_access', is_entry_point: false }),
-        playbook({ id: 'PLAYBOOK_LOGGER_COMPONENT', name: 'Log data', category: 'transform_and_enrich', is_entry_point: false }),
+        playbook({
+          id: 'PLAYBOOK_NOTIFIER_COMPONENT',
+          name: 'Send to notifier',
+          category: 'end_playbook',
+          is_entry_point: false,
+        }),
+        playbook({
+          id: 'PLAYBOOK_SHARING_COMPONENT',
+          name: 'Share with organizations',
+          category: 'share_and_access',
+          is_entry_point: false,
+        }),
+        playbook({
+          id: 'PLAYBOOK_LOGGER_COMPONENT',
+          name: 'Log data',
+          category: 'transform_and_enrich',
+          is_entry_point: false,
+        }),
       ];
       const result = groupAndSortPlaybookComponents(playbooks, false);
       const categories = result.map((g) => g.category);
@@ -66,7 +127,12 @@ describe('playbookComponents-utils', () => {
 
     it('omits groups that have no matching components', () => {
       const playbooks = [
-        playbook({ id: 'PLAYBOOK_LOGGER_COMPONENT', name: 'Log data', category: 'transform_and_enrich', is_entry_point: false }),
+        playbook({
+          id: 'PLAYBOOK_LOGGER_COMPONENT',
+          name: 'Log data',
+          category: 'transform_and_enrich',
+          is_entry_point: false,
+        }),
       ];
       const result = groupAndSortPlaybookComponents(playbooks, false);
       expect(result).toHaveLength(1);
@@ -75,7 +141,12 @@ describe('playbookComponents-utils', () => {
 
     it('handles a single component correctly', () => {
       const playbooks = [
-        playbook({ id: 'PLAYBOOK_INGESTION_COMPONENT', name: 'Send for ingestion', category: 'end_playbook', is_entry_point: false }),
+        playbook({
+          id: 'PLAYBOOK_INGESTION_COMPONENT',
+          name: 'Send for ingestion',
+          category: 'end_playbook',
+          is_entry_point: false,
+        }),
       ];
       const result = groupAndSortPlaybookComponents(playbooks, false);
       expect(result).toHaveLength(1);
@@ -85,8 +156,14 @@ describe('playbookComponents-utils', () => {
   });
 
   describe('computeInitialComponentConfigValues', () => {
-    const COMPONENT_A = { id: 'PLAYBOOK_COMPONENT_A', name: 'Component A' } as unknown as PlaybookComponent;
-    const COMPONENT_B = { id: 'PLAYBOOK_COMPONENT_B', name: 'Component B' } as unknown as PlaybookComponent;
+    const COMPONENT_A = {
+      id: 'PLAYBOOK_COMPONENT_A',
+      name: 'Component A',
+    } as unknown as PlaybookComponent;
+    const COMPONENT_B = {
+      id: 'PLAYBOOK_COMPONENT_B',
+      name: 'Component B',
+    } as unknown as PlaybookComponent;
 
     const schemaA = {
       type: 'object',
@@ -116,7 +193,7 @@ describe('playbookComponents-utils', () => {
 
       expect(result.name).toBe('Component B');
       expect(result.description).toBe('');
-      expect((result).wrap_in_container).toBe(true);
+      expect(result.wrap_in_container).toBe(true);
     });
 
     it('uses schema defaults when action is replace', () => {
@@ -133,10 +210,10 @@ describe('playbookComponents-utils', () => {
       // Should use default props of component B
       expect(result.name).toBe('Component B');
       expect(result.description).toBe('');
-      expect((result).wrap_in_container).toBe(true);
+      expect(result.wrap_in_container).toBe(true);
       // Should not contain props of component A
-      expect((result).filters).toBeUndefined();
-      expect((result).triggerTime).toBeUndefined();
+      expect(result.filters).toBeUndefined();
+      expect(result.triggerTime).toBeUndefined();
     });
 
     it('keeps existing config when action is config (editing same component)', () => {
@@ -145,14 +222,18 @@ describe('playbookComponents-utils', () => {
       const result = computeInitialComponentConfigValues({
         action: 'config',
         currentConfig: existingConfig,
-        nodeData: { name: 'My node', description: 'desc', component: COMPONENT_A } as unknown as NodeData,
+        nodeData: {
+          name: 'My node',
+          description: 'desc',
+          component: COMPONENT_A,
+        } as unknown as NodeData,
         configurationSchema: schemaA,
         selectedComponent: COMPONENT_A,
       });
 
       expect(result.name).toBe('My node');
       expect(result.description).toBe('desc');
-      expect((result).filters).toBe('{"mode":"and","filters":[{"key":"type"}]}');
+      expect(result.filters).toBe('{"mode":"and","filters":[{"key":"type"}]}');
     });
 
     it('does not leak old config properties into new component on replace', () => {
@@ -173,12 +254,12 @@ describe('playbookComponents-utils', () => {
       });
 
       // Only props from new schema should be there
-      expect((result).wrap_in_container).toBe(true); // default from schema B
-      expect((result).triggerTime).toBeUndefined();
-      expect((result).newContainer).toBeUndefined();
-      expect((result).actions).toBeUndefined();
-      expect((result).applyToElements).toBeUndefined();
-      expect((result).filters).toBeUndefined();
+      expect(result.wrap_in_container).toBe(true); // default from schema B
+      expect(result.triggerTime).toBeUndefined();
+      expect(result.newContainer).toBeUndefined();
+      expect(result.actions).toBeUndefined();
+      expect(result.applyToElements).toBeUndefined();
+      expect(result.filters).toBeUndefined();
     });
   });
 });

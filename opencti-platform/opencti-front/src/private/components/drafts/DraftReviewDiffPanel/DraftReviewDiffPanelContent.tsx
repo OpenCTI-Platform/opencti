@@ -13,7 +13,11 @@ import { ErrorBoundary } from '../../Error';
 import { DraftEntitySelection } from '../DraftReviewEntityList';
 import { DraftReviewDiffPanelContentQuery } from './__generated__/DraftReviewDiffPanelContentQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { buildFieldLabelMap, parseUpdatesPatch, RenderChangeValuesFn } from './draftReviewDiffPanelUtils';
+import {
+  buildFieldLabelMap,
+  parseUpdatesPatch,
+  RenderChangeValuesFn,
+} from './draftReviewDiffPanelUtils';
 import ContainerObjectsTab from './ContainerObjectsTab';
 import EntityRelationsTab from './EntityRelationsTab';
 import EntityContainerRefsTab from './EntityContainerRefsTab';
@@ -39,11 +43,9 @@ interface DraftReviewDiffPanelContentComponentProps {
   entity: DraftEntitySelection;
 }
 
-const DraftReviewDiffPanelContentComponent: FunctionComponent<DraftReviewDiffPanelContentComponentProps> = ({
-  queryRef,
-  draftId,
-  entity,
-}) => {
+const DraftReviewDiffPanelContentComponent: FunctionComponent<
+  DraftReviewDiffPanelContentComponentProps
+> = ({ queryRef, draftId, entity }) => {
   const { t_i18n } = useFormatter();
   const entityId = entity.id;
 
@@ -58,7 +60,15 @@ const DraftReviewDiffPanelContentComponent: FunctionComponent<DraftReviewDiffPan
     const link = resolveLink(entity.entity_type);
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, gap: 1 }}>
-        <Typography sx={{ fontFamily: 'Geologica, sans-serif', fontSize: 14, fontWeight: 600, color: 'text.primary', letterSpacing: '0.0075em' }}>
+        <Typography
+          sx={{
+            fontFamily: 'Geologica, sans-serif',
+            fontSize: 14,
+            fontWeight: 600,
+            color: 'text.primary',
+            letterSpacing: '0.0075em',
+          }}
+        >
           {entity.representative_main}
         </Typography>
         {link && (
@@ -69,7 +79,13 @@ const DraftReviewDiffPanelContentComponent: FunctionComponent<DraftReviewDiffPan
             target="_blank"
             rel="noopener noreferrer"
             size="small"
-            sx={{ width: 26, height: 26, borderRadius: '4px', color: 'primary.main', backgroundColor: 'action.hover' }}
+            sx={{
+              width: 26,
+              height: 26,
+              borderRadius: '4px',
+              color: 'primary.main',
+              backgroundColor: 'action.hover',
+            }}
           >
             <LaunchIcon sx={{ fontSize: 18 }} />
           </IconButton>
@@ -83,13 +99,44 @@ const DraftReviewDiffPanelContentComponent: FunctionComponent<DraftReviewDiffPan
       <Typography variant="h3" sx={{ fontWeight: 800 }}>
         {t_i18n('Attributes')}
       </Typography>
-      <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '7px', width: '100%', mb: '8px' }}>
-        <Box sx={{ flex: 1, backgroundColor: 'background.default', borderLeft: '1px solid', borderLeftColor: 'error.main', borderRadius: '4px', py: '6px', display: 'flex', justifyContent: 'center' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: '7px',
+          width: '100%',
+          mb: '8px',
+        }}
+      >
+        <Box
+          sx={{
+            flex: 1,
+            backgroundColor: 'background.default',
+            borderLeft: '1px solid',
+            borderLeftColor: 'error.main',
+            borderRadius: '4px',
+            py: '6px',
+            display: 'flex',
+            justifyContent: 'center',
+          }}
+        >
           <Typography sx={{ color: 'error.main', fontSize: 10, letterSpacing: '0.0075em' }}>
             {t_i18n('Original Value')}
           </Typography>
         </Box>
-        <Box sx={{ flex: 1, backgroundColor: 'background.default', borderLeft: '2px solid', borderLeftColor: 'success.main', borderRadius: '4px', py: '6px', display: 'flex', justifyContent: 'center' }}>
+        <Box
+          sx={{
+            flex: 1,
+            backgroundColor: 'background.default',
+            borderLeft: '2px solid',
+            borderLeftColor: 'success.main',
+            borderRadius: '4px',
+            py: '6px',
+            display: 'flex',
+            justifyContent: 'center',
+          }}
+        >
           <Typography sx={{ color: 'success.main', fontSize: 10, letterSpacing: '0.0075em' }}>
             {t_i18n('New value')}
           </Typography>
@@ -101,7 +148,13 @@ const DraftReviewDiffPanelContentComponent: FunctionComponent<DraftReviewDiffPan
   const renderChangeValues: RenderChangeValuesFn = (values, isRemoved = false, idLabelMap = {}) => {
     if (!values || values.length === 0) {
       return (
-        <Typography sx={{ color: isRemoved ? 'text.secondary' : 'text.primary', fontSize: 14, letterSpacing: '0.0075em' }}>
+        <Typography
+          sx={{
+            color: isRemoved ? 'text.secondary' : 'text.primary',
+            fontSize: 14,
+            letterSpacing: '0.0075em',
+          }}
+        >
           -
         </Typography>
       );
@@ -109,8 +162,21 @@ const DraftReviewDiffPanelContentComponent: FunctionComponent<DraftReviewDiffPan
     return values.map((s, i) => {
       const displayValue = idLabelMap[s] ?? s;
       return (
-        <Box key={`${s}-${i}`} sx={{ mb: i < values.length - 1 ? 1 : 0, color: isRemoved ? 'text.secondary' : 'text.primary' }}>
-          <Typography sx={{ fontSize: 14, color: isRemoved ? 'text.secondary' : 'text.primary', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+        <Box
+          key={`${s}-${i}`}
+          sx={{
+            mb: i < values.length - 1 ? 1 : 0,
+            color: isRemoved ? 'text.secondary' : 'text.primary',
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: 14,
+              color: isRemoved ? 'text.secondary' : 'text.primary',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+            }}
+          >
             {displayValue}
           </Typography>
         </Box>
@@ -209,7 +275,10 @@ interface DraftReviewDiffPanelContentProps {
   entity: DraftEntitySelection;
 }
 
-const DraftReviewDiffPanelContent: FunctionComponent<DraftReviewDiffPanelContentProps> = ({ draftId, entity }) => {
+const DraftReviewDiffPanelContent: FunctionComponent<DraftReviewDiffPanelContentProps> = ({
+  draftId,
+  entity,
+}) => {
   const queryRef = useQueryLoading<DraftReviewDiffPanelContentQuery>(
     draftReviewDiffPanelContentQuery,
     { entityType: entity.entity_type },
@@ -217,7 +286,11 @@ const DraftReviewDiffPanelContent: FunctionComponent<DraftReviewDiffPanelContent
   return (
     <Suspense fallback={<Loader />}>
       {queryRef && (
-        <DraftReviewDiffPanelContentComponent queryRef={queryRef} draftId={draftId} entity={entity} />
+        <DraftReviewDiffPanelContentComponent
+          queryRef={queryRef}
+          draftId={draftId}
+          entity={entity}
+        />
       )}
     </Suspense>
   );

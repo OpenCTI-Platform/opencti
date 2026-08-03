@@ -29,12 +29,7 @@ export const containersObjectsQuery = graphql`
 
 const containersObjectsFragment = graphql`
   fragment StixCoreObjectOrStixCoreRelationshipContainersGraph_fragment on Query {
-    containersObjectsOfObject(
-      id: $id
-      types: $types
-      filters: $filters
-      search: $search
-    ) {
+    containersObjectsOfObject(id: $id, types: $types, filters: $filters, search: $search) {
       pageInfo {
         endCursor
         hasNextPage
@@ -264,10 +259,12 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraphComponent = ({
     commitEditPositions({
       variables: {
         id,
-        input: [{
-          key: 'x_opencti_graph_data',
-          value: [serializeObjectB64(positions)],
-        }],
+        input: [
+          {
+            key: 'x_opencti_graph_data',
+            value: [serializeObjectB64(positions)],
+          },
+        ],
       },
     });
   };
@@ -278,7 +275,14 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraphComponent = ({
   const titleHeight = 44;
   const tabsHeight = 72;
   const filtersHeight = 48;
-  const totalHeight = bannerHeight + headerHeight + paddingHeight + titleHeight + tabsHeight + breadcrumbHeight + filtersHeight;
+  const totalHeight =
+    bannerHeight +
+    headerHeight +
+    paddingHeight +
+    titleHeight +
+    tabsHeight +
+    breadcrumbHeight +
+    filtersHeight;
   const graphContainerStyle: CSSProperties = {
     margin: `-${theme.spacing(3)}`,
     marginTop: 0,
@@ -333,9 +337,7 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraph = ({
       >
         {`${t_i18n('Limitations applied, number of fully loaded containers: ')} ${containersObjectsOfObject?.pageInfo.globalCount}. ${t_i18n('Open this entity in an investigation to be able to see all objects.')}`}
       </Alert>
-      <StixCoreObjectOrStixCoreRelationshipContainersGraphComponent
-        id={id}
-      />
+      <StixCoreObjectOrStixCoreRelationshipContainersGraphComponent id={id} />
     </GraphProvider>
   );
 };

@@ -1,6 +1,10 @@
 import { assoc } from 'ramda';
 import { createEntity } from '../database/middleware';
-import { pageEntitiesConnection, pageRegardingEntitiesConnection, storeLoadById } from '../database/middleware-loader';
+import {
+  pageEntitiesConnection,
+  pageRegardingEntitiesConnection,
+  storeLoadById,
+} from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_IDENTITY_SYSTEM } from '../schema/stixDomainObject';
@@ -27,5 +31,13 @@ export const addSystem = async (context, user, system) => {
 };
 
 export const belongsToOrganizationsPaginated = async (context, user, stixCoreObjectId, opts) => {
-  return pageRegardingEntitiesConnection(context, user, stixCoreObjectId, RELATION_BELONGS_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, opts);
+  return pageRegardingEntitiesConnection(
+    context,
+    user,
+    stixCoreObjectId,
+    RELATION_BELONGS_TO,
+    ENTITY_TYPE_IDENTITY_ORGANIZATION,
+    false,
+    opts,
+  );
 };

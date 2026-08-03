@@ -8,7 +8,10 @@ import { APP_BASE_PATH } from '../../../../../relay/environment';
  * Falls back to a UUID v4 if the resulting slug is empty (e.g. fully non-Latin name).
  */
 export const generatePublicDashboardUriKey = (name: string): string => {
-  const slug = name.replace(/[^a-zA-Z0-9\s-]+/g, '').replace(/\s+/g, '-').toLowerCase();
+  const slug = name
+    .replace(/[^a-zA-Z0-9\s-]+/g, '')
+    .replace(/\s+/g, '-')
+    .toLowerCase();
   return slug || uuidv4();
 };
 

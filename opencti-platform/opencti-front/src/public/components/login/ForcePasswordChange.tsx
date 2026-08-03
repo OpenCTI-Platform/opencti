@@ -37,15 +37,11 @@ const ForcePasswordChange = ({ policies }: ForcePasswordChangeProps) => {
     <ForcePasswordChangeForm
       onSuccess={handleSuccess}
       submitLabel={t_i18n('Update')}
-      secondaryAction={(
-        <Button
-          variant="tertiary"
-          onClick={backToLogin}
-          sx={{ ml: -2 }}
-        >
+      secondaryAction={
+        <Button variant="tertiary" onClick={backToLogin} sx={{ ml: -2 }}>
           {t_i18n('Back to login')}
         </Button>
-      )}
+      }
       renderPolicies={policiesRenderer}
     />
   );

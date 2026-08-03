@@ -1,7 +1,4 @@
-export const normalizeMarkdownImageUrl = (
-  resolvedUrl: string,
-  appBasePath: string,
-): string => {
+export const normalizeMarkdownImageUrl = (resolvedUrl: string, appBasePath: string): string => {
   let normalized = resolvedUrl;
   const normalizedBasePath = appBasePath === '/' ? '' : appBasePath;
 
@@ -12,9 +9,9 @@ export const normalizeMarkdownImageUrl = (
   }
 
   if (
-    normalizedBasePath
-    && normalized.startsWith('/storage/')
-    && !normalized.startsWith(`${normalizedBasePath}/storage/`)
+    normalizedBasePath &&
+    normalized.startsWith('/storage/') &&
+    !normalized.startsWith(`${normalizedBasePath}/storage/`)
   ) {
     normalized = `${normalizedBasePath}${normalized}`;
   }
@@ -22,10 +19,7 @@ export const normalizeMarkdownImageUrl = (
   return normalized;
 };
 
-const resolveContextualEmbeddedImageUrl = (
-  url: string,
-  currentPathname: string,
-): string => {
+const resolveContextualEmbeddedImageUrl = (url: string, currentPathname: string): string => {
   const normalizedUrl = url.startsWith('/') ? url.slice(1) : url;
   if (!normalizedUrl.startsWith('embedded/')) {
     return url;
@@ -92,7 +86,7 @@ export const normalizeEmbeddedImageDestinations = (markdown: string | null | und
     let titleSuffix = '';
 
     const trailingQuote = destination[destination.length - 1];
-    if (trailingQuote === '"' || trailingQuote === '\'') {
+    if (trailingQuote === '"' || trailingQuote === "'") {
       const openingQuote = destination.lastIndexOf(trailingQuote, destination.length - 2);
       if (openingQuote > 0 && /\s/.test(destination[openingQuote - 1])) {
         const titleContent = destination.slice(openingQuote + 1, destination.length - 1);

@@ -10,18 +10,15 @@ const groupHiddenTypesFragment = graphql`
   }
 `;
 
-const GroupHiddenTypesChipList = ({
-  groupData,
-}: {
-  groupData: Group_group$data;
-}) => {
-  const group = useFragment(groupHiddenTypesFragment, groupData as unknown as GroupHiddenTypesChipList_group$key);
+const GroupHiddenTypesChipList = ({ groupData }: { groupData: Group_group$data }) => {
+  const group = useFragment(
+    groupHiddenTypesFragment,
+    groupData as unknown as GroupHiddenTypesChipList_group$key,
+  );
 
   const hiddenTypesGroup = group?.default_hidden_types ?? [];
 
-  return (
-    <HiddenTypesChipList hiddenTypes={hiddenTypesGroup} />
-  );
+  return <HiddenTypesChipList hiddenTypes={hiddenTypesGroup} />;
 };
 
 export default GroupHiddenTypesChipList;

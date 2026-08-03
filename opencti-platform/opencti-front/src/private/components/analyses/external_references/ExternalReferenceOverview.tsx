@@ -22,30 +22,17 @@ const ExternalReferenceOverviewComponent: FunctionComponent<
       <Card title={t_i18n('Overview')}>
         <Grid container={true} spacing={3}>
           <Grid item xs={12}>
-            <Label>
-              {t_i18n('Description')}
-            </Label>
-            <ExpandableMarkdown
-              source={externalReference.description}
-              limit={400}
-            />
+            <Label>{t_i18n('Description')}</Label>
+            <ExpandableMarkdown source={externalReference.description} limit={400} />
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Source name')}
-            </Label>
+            <Label>{t_i18n('Source name')}</Label>
             {truncate(externalReference.source_name, 40)}
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Original creation date')}
-            </Label>
+            <Label>{t_i18n('Original creation date')}</Label>
             {fldt(externalReference.created)}
-            <Label
-              sx={{ marginTop: 2 }}
-            >
-              {t_i18n('Modification date')}
-            </Label>
+            <Label sx={{ marginTop: 2 }}>{t_i18n('Modification date')}</Label>
             {fldt(externalReference.modified)}
           </Grid>
         </Grid>
@@ -54,20 +41,17 @@ const ExternalReferenceOverviewComponent: FunctionComponent<
   );
 };
 
-const ExternalReferenceOverview = createFragmentContainer(
-  ExternalReferenceOverviewComponent,
-  {
-    externalReference: graphql`
-      fragment ExternalReferenceOverview_externalReference on ExternalReference {
-        id
-        source_name
-        description
-        url
-        created
-        modified
-      }
-    `,
-  },
-);
+const ExternalReferenceOverview = createFragmentContainer(ExternalReferenceOverviewComponent, {
+  externalReference: graphql`
+    fragment ExternalReferenceOverview_externalReference on ExternalReference {
+      id
+      source_name
+      description
+      url
+      created
+      modified
+    }
+  `,
+});
 
 export default ExternalReferenceOverview;

@@ -11,11 +11,7 @@ export const addLocationsThreatActorMutationRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    stixCoreRelationshipDelete(
-      fromId: $fromId
-      toId: $toId
-      relationship_type: $relationship_type
-    )
+    stixCoreRelationshipDelete(fromId: $fromId, toId: $toId, relationship_type: $relationship_type)
   }
 `;
 
@@ -41,11 +37,7 @@ AddLocationsThreatActorIndividualLinesContainer.propTypes = {
 };
 
 export const addLocationsThreatActorIndividualLinesQuery = graphql`
-  query AddLocationsThreatActorIndividualLinesQuery(
-    $search: String
-    $count: Int!
-    $cursor: ID
-  ) {
+  query AddLocationsThreatActorIndividualLinesQuery($search: String, $count: Int!, $cursor: ID) {
     ...AddLocationsThreatActorIndividualLines_data
       @arguments(search: $search, count: $count, cursor: $cursor)
   }

@@ -1,12 +1,17 @@
 import type { FilterGroup } from '../../../generated/graphql';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema/internalObject';
-import type { BasicStoreIdentifier, BasicWorkflowStatus, BasicWorkflowTemplateEntity } from '../../../types/store';
+import type {
+  BasicStoreIdentifier,
+  BasicWorkflowStatus,
+  BasicWorkflowTemplateEntity,
+} from '../../../types/store';
 
-export const isEntityStatus
-  = (entity: BasicStoreIdentifier): entity is BasicWorkflowStatus => entity.entity_type === ENTITY_TYPE_STATUS;
+export const isEntityStatus = (entity: BasicStoreIdentifier): entity is BasicWorkflowStatus =>
+  entity.entity_type === ENTITY_TYPE_STATUS;
 
-export const isEntityStatusTemplate
-  = (entity: BasicStoreIdentifier): entity is BasicWorkflowTemplateEntity => entity.entity_type === ENTITY_TYPE_STATUS_TEMPLATE;
+export const isEntityStatusTemplate = (
+  entity: BasicStoreIdentifier,
+): entity is BasicWorkflowTemplateEntity => entity.entity_type === ENTITY_TYPE_STATUS_TEMPLATE;
 
 export const ENTITY_TYPE_WORKFLOW_DEFINITION = 'WorkflowDefinition';
 export const ENTITY_TYPE_WORKFLOW_INSTANCE = 'WorkflowInstance';
@@ -108,10 +113,7 @@ export interface StateDefinition<TContext extends Context = Context> {
  */
 export interface MachineDefinition<TContext extends Context = Context> {
   getInitialState(): State;
-  getTransition(
-    currentState: State,
-    event: Event
-  ): Transition<TContext> | undefined;
+  getTransition(currentState: State, event: Event): Transition<TContext> | undefined;
   getTransitions(currentState: State): Transition<TContext>[];
   getStateDefinition(state: State): StateDefinition<TContext> | undefined;
 }

@@ -33,12 +33,7 @@ import Card from '../../../../../components/common/card/Card';
 
 const pirThreatMapFragment = graphql`
   fragment PirThreatMapFragment on Query {
-    stixDomainObjects(
-      orderBy: refreshed_at
-      orderMode: desc
-      pirId: $pirId
-      filters: $filters
-    ) {
+    stixDomainObjects(orderBy: refreshed_at, orderMode: desc, pirId: $pirId, filters: $filters) {
       edges {
         node {
           id
@@ -69,9 +64,11 @@ const PirThreatMap = ({ data }: PirThreatMapProps) => {
 
   const { stixDomainObjects } = useFragment<PirThreatMapFragment$key>(pirThreatMapFragment, data);
 
-  const entityTypes = uniqueArray(getNodes(stixDomainObjects).flatMap((d) => {
-    return d?.entity_type ? d.entity_type : [];
-  }));
+  const entityTypes = uniqueArray(
+    getNodes(stixDomainObjects).flatMap((d) => {
+      return d?.entity_type ? d.entity_type : [];
+    }),
+  );
   const [filteredEntityTypes, setFilteredEntityTypes] = useState(entityTypes);
 
   const series = useBuildScatterData({
@@ -132,7 +129,8 @@ const PirThreatMap = ({ data }: PirThreatMapProps) => {
                 // Called when mouse hover a node on map.
                 dataPointMouseEnter: (e, _, opts) => {
                   const apexSeries = opts.w.config.series[opts.seriesIndex];
-                  const item = apexSeries.data[opts.dataPointIndex].meta.group as PirThreatMapMarker[];
+                  const item = apexSeries.data[opts.dataPointIndex].meta
+                    .group as PirThreatMapMarker[];
                   setTooltipData(item);
                   setTooltipPos({ x: e.offsetX, y: e.offsetY });
                 },
@@ -153,10 +151,7 @@ const PirThreatMap = ({ data }: PirThreatMapProps) => {
             <span>{t_i18n('Most relevant - 100')}</span>
           </div>
         </div>
-        <PirThreatMapLegend
-          entityTypes={entityTypes}
-          onFilter={setFilteredEntityTypes}
-        />
+        <PirThreatMapLegend entityTypes={entityTypes} onFilter={setFilteredEntityTypes} />
         <PirThreatMapTooltip
           data={tooltipData}
           x={tooltipPos.x}

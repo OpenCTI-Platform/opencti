@@ -2,7 +2,12 @@ import React, { FunctionComponent, useEffect, useRef } from 'react';
 import Filters from '@components/common/lists/Filters';
 import Box from '@mui/material/Box';
 import { Filter, FilterGroup, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
-import { emptyFilterGroup, isFilterGroupNotEmpty, sanitizeFiltersStructure, useAvailableFilterKeysForEntityTypes } from '../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  isFilterGroupNotEmpty,
+  sanitizeFiltersStructure,
+  useAvailableFilterKeysForEntityTypes,
+} from '../../utils/filters/filtersUtils';
 import useFiltersState from '../../utils/filters/useFiltersState';
 
 import FilterIconButton from '../FilterIconButton';
@@ -55,13 +60,14 @@ const FilterFiltersInput: FunctionComponent<BasicFilterInputProps> = ({
   }, [filters]);
   return (
     <>
-      <Box sx={{
-        paddingTop: 1,
-        display: 'flex',
-        alignItems: 'center',
-        gap: theme.spacing(1),
-        marginBottom: theme.spacing(1),
-      }}
+      <Box
+        sx={{
+          paddingTop: 1,
+          display: 'flex',
+          alignItems: 'center',
+          gap: theme.spacing(1),
+          marginBottom: theme.spacing(1),
+        }}
       >
         <Filters
           availableFilterKeys={availableFilterKeys}

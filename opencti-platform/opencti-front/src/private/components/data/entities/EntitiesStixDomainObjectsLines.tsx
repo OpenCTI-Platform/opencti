@@ -7,7 +7,10 @@ import {
 import { EntitiesStixDomainObjectsLines_data$key } from '@components/data/entities/__generated__/EntitiesStixDomainObjectsLines_data.graphql';
 import { EntitiesStixDomainObjectLine_node$data } from '@components/data/entities/__generated__/EntitiesStixDomainObjectLine_node.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { EntitiesStixDomainObjectLine, EntitiesStixDomainObjectLineDummy } from './EntitiesStixDomainObjectLine';
+import {
+  EntitiesStixDomainObjectLine,
+  EntitiesStixDomainObjectLineDummy,
+} from './EntitiesStixDomainObjectLine';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import { DataColumns } from '../../../../components/list_lines';
@@ -41,15 +44,15 @@ export const entitiesStixDomainObjectsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...EntitiesStixDomainObjectsLines_data
-    @arguments(
-      types: $types
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        types: $types
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -134,9 +137,7 @@ const EntitiesStixDomainObjectsLines: FunctionComponent<EntitiesStixDomainObject
       hasMore={hasMore}
       isLoading={isLoadingMore}
       dataList={data?.stixDomainObjects?.edges ?? []}
-      globalCount={
-        data?.stixDomainObjects?.pageInfo?.globalCount ?? nbOfRowsToLoad
-      }
+      globalCount={data?.stixDomainObjects?.pageInfo?.globalCount ?? nbOfRowsToLoad}
       LineComponent={EntitiesStixDomainObjectLine}
       DummyLineComponent={EntitiesStixDomainObjectLineDummy}
       dataColumns={dataColumns}

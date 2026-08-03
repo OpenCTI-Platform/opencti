@@ -61,8 +61,18 @@ export const workflowStatusFragment = graphql`
 `;
 
 export const workflowStatusTriggerMutation = graphql`
-  mutation WorkflowStatusTriggerMutation($entityId: String!, $eventName: String!, $comment: String, $runtimeParams: JSON) {
-    triggerWorkflowEvent(entityId: $entityId, eventName: $eventName, comment: $comment, runtimeParams: $runtimeParams) {
+  mutation WorkflowStatusTriggerMutation(
+    $entityId: String!
+    $eventName: String!
+    $comment: String
+    $runtimeParams: JSON
+  ) {
+    triggerWorkflowEvent(
+      entityId: $entityId
+      eventName: $eventName
+      comment: $comment
+      runtimeParams: $runtimeParams
+    ) {
       success
       reason
       newState

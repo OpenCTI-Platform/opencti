@@ -1,5 +1,11 @@
 import * as R from 'ramda';
-import { createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute } from '../database/middleware';
+import {
+  createRelation,
+  deleteElementById,
+  deleteRelationsByFromAndTo,
+  patchAttribute,
+  updateAttribute,
+} from '../database/middleware';
 import {
   fullEntitiesThroughRelationsFromList,
   fullEntitiesThroughRelationsToList,
@@ -11,7 +17,12 @@ import {
 import { BUS_TOPICS, logApp } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../schema/internalObject';
-import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_HAS_ROLE, RELATION_MEMBER_OF } from '../schema/internalRelationship';
+import {
+  isInternalRelationship,
+  RELATION_ACCESSES_TO,
+  RELATION_HAS_ROLE,
+  RELATION_MEMBER_OF,
+} from '../schema/internalRelationship';
 import { FunctionalError } from '../config/errors';
 import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -29,7 +40,13 @@ export const GROUP_DEFAULT = 'Default';
  */
 const groupUsersCacheRefresh = async (context, user, groupId) => {
   try {
-    const members = await fullEntitiesThroughRelationsFromList(context, user, groupId, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
+    const members = await fullEntitiesThroughRelationsFromList(
+      context,
+      user,
+      groupId,
+      RELATION_MEMBER_OF,
+      ENTITY_TYPE_USER,
+    );
     await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, members, user);
   } catch (err) {
     logApp.warn(
@@ -45,7 +62,9 @@ export const findById = (context, user, groupId) => {
 
 export const findGroupPaginated = async (context, user, args) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    const groupsIds = R.uniq((user.administrated_organizations ?? []).map((orga) => (orga.grantable_groups ?? [])).flat());
+    const groupsIds = R.uniq(
+      (user.administrated_organizations ?? []).map((orga) => orga.grantable_groups ?? []).flat(),
+    );
     return pageEntitiesConnection(context, user, [ENTITY_TYPE_GROUP], { ...args, ids: groupsIds });
   }
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_GROUP], args);
@@ -58,9 +77,7 @@ export const findDefaultIngestionGroups = async (context, user) => {
       filters: [
         {
           key: ['auto_integration_assignation'],
-          values: [
-            'global',
-          ],
+          values: ['global'],
         },
       ],
       filterGroups: [],
@@ -69,16 +86,27 @@ export const findDefaultIngestionGroups = async (context, user) => {
 };
 
 export const groupAllowedMarkings = async (context, user, groupId) => {
-  return fullEntitiesThroughRelationsToList(context, user, groupId, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
+  return fullEntitiesThroughRelationsToList(
+    context,
+    user,
+    groupId,
+    RELATION_ACCESSES_TO,
+    ENTITY_TYPE_MARKING_DEFINITION,
+  );
 };
 
-export const groupNotShareableMarkingTypes = (group) => group.max_shareable_markings?.filter(({ value }) => value === 'none')
-  .map(({ type }) => type) ?? [];
+export const groupNotShareableMarkingTypes = (group) =>
+  group.max_shareable_markings?.filter(({ value }) => value === 'none').map(({ type }) => type) ??
+  [];
 
 export const groupMaxShareableMarkings = async (context, group) => {
   const groupMaxShareableMarkingsResult = [];
   if (group.max_shareable_markings) {
-    const markings = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+    const markings = await getEntitiesMapFromCache(
+      context,
+      SYSTEM_USER,
+      ENTITY_TYPE_MARKING_DEFINITION,
+    );
 
     for (let i = 0; i < group.max_shareable_markings.length; i += 1) {
       const currentGroupMaxMarkingId = group.max_shareable_markings[i].value;
@@ -105,49 +133,74 @@ export const defaultMarkingDefinitions = async (context, group) => {
 
 export const mergeDefaultMarking = async (defaultMarkings) => {
   const results = [];
-  defaultMarkings.filter((d) => !!d.entity_type).forEach((d) => {
-    const existing = results.find((r) => r.entity_type === d.entity_type);
-    if (existing) {
-      existing.values = [...(d.values ?? []), ...existing.values];
-    } else {
-      results.push(d);
-    }
-  });
+  defaultMarkings
+    .filter((d) => !!d.entity_type)
+    .forEach((d) => {
+      const existing = results.find((r) => r.entity_type === d.entity_type);
+      if (existing) {
+        existing.values = [...(d.values ?? []), ...existing.values];
+      } else {
+        results.push(d);
+      }
+    });
 
   return results;
 };
 
 export const defaultMarkingDefinitionsFromGroups = async (context, userGroups) => {
-  const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const markingsMap = await getEntitiesMapFromCache(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_MARKING_DEFINITION,
+  );
   // Retrieve default marking by groups
-  const defaultMarkingsFlat = userGroups.map((group) => {
-    const defaultMarking = group.default_marking ?? [];
-    return defaultMarking.map((entry) => {
-      return {
-        entity_type: entry.entity_type,
-        values: entry.values?.map((d) => markingsMap.get(d)),
-      };
-    });
-  }).flat();
+  const defaultMarkingsFlat = userGroups
+    .map((group) => {
+      const defaultMarking = group.default_marking ?? [];
+      return defaultMarking.map((entry) => {
+        return {
+          entity_type: entry.entity_type,
+          values: entry.values?.map((d) => markingsMap.get(d)),
+        };
+      });
+    })
+    .flat();
   // Merge default marking by group
-  return mergeDefaultMarking(defaultMarkingsFlat)
-    .then((defaultMarkings) => {
-      // Clean default marking by entity type
-      return Promise.all(defaultMarkings.map(async (d) => {
+  return mergeDefaultMarking(defaultMarkingsFlat).then((defaultMarkings) => {
+    // Clean default marking by entity type
+    return Promise.all(
+      defaultMarkings.map(async (d) => {
         return {
           entity_type: d.entity_type,
           values: await cleanMarkings(context, d.values),
         };
-      }));
-    });
+      }),
+    );
+  });
 };
 
 export const rolesPaginated = async (context, user, groupId, args) => {
-  return pageRegardingEntitiesConnection(context, user, groupId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, false, args);
+  return pageRegardingEntitiesConnection(
+    context,
+    user,
+    groupId,
+    RELATION_HAS_ROLE,
+    ENTITY_TYPE_ROLE,
+    false,
+    args,
+  );
 };
 
 export const membersPaginated = async (context, user, groupId, args) => {
-  return pageRegardingEntitiesConnection(context, user, groupId, RELATION_MEMBER_OF, ENTITY_TYPE_USER, true, args);
+  return pageRegardingEntitiesConnection(
+    context,
+    user,
+    groupId,
+    RELATION_MEMBER_OF,
+    ENTITY_TYPE_USER,
+    true,
+    args,
+  );
 };
 
 export const groupDelete = async (context, user, groupId) => {
@@ -189,7 +242,9 @@ export const groupAddRelation = async (context, user, groupId, input) => {
     throw FunctionalError('Cannot add the relation, Group cannot be found.', { groupId });
   }
   if (!isInternalRelationship(input.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method, got ${input.relationship_type}.`);
+    throw FunctionalError(
+      `Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method, got ${input.relationship_type}.`,
+    );
   }
   let finalInput;
   if (input.fromId) {
@@ -208,7 +263,9 @@ export const groupAddRelation = async (context, user, groupId, input) => {
       message: `adds ${group.entity_type} \`${extractEntityRepresentativeName(group)}\` for user \`${created.user_email}\``,
       context_data: { id: created.id, entity_type: ENTITY_TYPE_USER, input: finalInput },
     });
-    return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, created, user).then(() => createdRelation);
+    return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, created, user).then(
+      () => createdRelation,
+    );
   }
   await publishUserAction({
     user,
@@ -222,20 +279,43 @@ export const groupAddRelation = async (context, user, groupId, input) => {
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user).then(() => createdRelation);
 };
 
-export const groupDeleteRelation = async (context, user, groupId, fromId, toId, relationshipType) => {
+export const groupDeleteRelation = async (
+  context,
+  user,
+  groupId,
+  fromId,
+  toId,
+  relationshipType,
+) => {
   const group = await storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP);
   if (!group) {
     throw FunctionalError('Cannot delete the relation, Group cannot be found.', { groupId });
   }
   if (!isInternalRelationship(relationshipType)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method, got ${input.relationship_type}.`);
+    throw FunctionalError(
+      `Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method, got ${input.relationship_type}.`,
+    );
   }
   let target;
   if (fromId) {
-    const deleted = await deleteRelationsByFromAndTo(context, user, fromId, groupId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
+    const deleted = await deleteRelationsByFromAndTo(
+      context,
+      user,
+      fromId,
+      groupId,
+      relationshipType,
+      ABSTRACT_INTERNAL_RELATIONSHIP,
+    );
     target = deleted.from;
   } else if (toId) {
-    const deleted = await deleteRelationsByFromAndTo(context, user, groupId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
+    const deleted = await deleteRelationsByFromAndTo(
+      context,
+      user,
+      groupId,
+      toId,
+      relationshipType,
+      ABSTRACT_INTERNAL_RELATIONSHIP,
+    );
     target = deleted.to;
   }
   const input = { fromId, toId, relationship_type: relationshipType };

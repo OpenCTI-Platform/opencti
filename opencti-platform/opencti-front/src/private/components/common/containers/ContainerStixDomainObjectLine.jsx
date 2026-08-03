@@ -94,46 +94,41 @@ const ContainerStixDomainObjectLineComponent = (props) => {
     <ListItem
       divider={true}
       disablePadding
-      secondaryAction={isOnlyThroughInference ? (
-        <Tooltip title={t_i18n('Inferred knowledge')}>
-          <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
-        </Tooltip>
-      ) : (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ContainerStixCoreObjectPopover
-            containerId={containerId}
-            toId={node.id}
-            toStandardId={node.standard_id}
-            relationshipType="object"
-            paginationKey="Pagination_objects"
-            paginationOptions={paginationOptions}
-            enableReferences={enableReferences}
-          />
-        </Security>
-      )}
+      secondaryAction={
+        isOnlyThroughInference ? (
+          <Tooltip title={t_i18n('Inferred knowledge')}>
+            <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
+          </Tooltip>
+        ) : (
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <ContainerStixCoreObjectPopover
+              containerId={containerId}
+              toId={node.id}
+              toStandardId={node.standard_id}
+              relationshipType="object"
+              paginationKey="Pagination_objects"
+              paginationOptions={paginationOptions}
+              enableReferences={enableReferences}
+            />
+          </Security>
+        )
+      }
     >
-      <ListItemButton
-        component={Link}
-        classes={{ root: classes.item }}
-        to={link}
-      >
+      <ListItemButton component={Link} classes={{ root: classes.item }} to={link}>
         <ListItemIcon
           classes={{ root: classes.itemIcon }}
           style={{ minWidth: 40 }}
-          onClick={(event) => !isOnlyThroughInference
-            && (event.shiftKey
-              ? onToggleShiftEntity(index, node, event)
-              : onToggleEntity(node, event))
+          onClick={(event) =>
+            !isOnlyThroughInference &&
+            (event.shiftKey ? onToggleShiftEntity(index, node, event) : onToggleEntity(node, event))
           }
         >
           <Checkbox
             edge="start"
             disabled={isOnlyThroughInference}
             checked={
-              (selectAll
-                && !isOnlyThroughInference
-                && !(node.id in (deSelectedElements || {})))
-              || node.id in (selectedElements || {})
+              (selectAll && !isOnlyThroughInference && !(node.id in (deSelectedElements || {}))) ||
+              node.id in (selectedElements || {})
             }
             disableRipple={true}
           />
@@ -142,72 +137,44 @@ const ContainerStixDomainObjectLineComponent = (props) => {
           <ItemIcon type={node.entity_type} />
         </ListItemIcon>
         <ListItemText
-          primary={(
+          primary={
             <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.entity_type.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.entity_type.width }}>
                 <ItemEntityType entityType={node.entity_type} />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
                 {node.x_mitre_id
                   ? `[${node.x_mitre_id}] ${node.name}`
                   : getMainRepresentative(node)}
-                {node.draftVersion && (<DraftChip />)}
+                {node.draftVersion && <DraftChip />}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.objectLabel.width }}
-              >
-                <StixCoreObjectLabels
-                  variant="inList"
-                  labels={node.objectLabel}
-                />
+              <div className={classes.bodyItem} style={{ width: dataColumns.objectLabel.width }}>
+                <StixCoreObjectLabels variant="inList" labels={node.objectLabel} />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.createdBy.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.createdBy.width }}>
                 {node.createdBy?.name ?? EMPTY_VALUE}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created_at.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.created_at.width }}>
                 {fd(node.created_at)}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.analyses.width }}
-              >
-                {[
-                  'Note',
-                  'Opinion',
-                  'Course-Of-Action',
-                  'Data-Component',
-                  'Data-Source',
-                ].includes(node.entity_type) ? (
-                      <Chip
-                        classes={{ root: classes.chipNoLink }}
-                        label={n(node.containersNumber.total)}
-                      />
-                    ) : (
-                      <Chip
-                        classes={{ root: classes.chip }}
-                        label={n(node.containersNumber.total)}
-                        component={Link}
-                        to={linkAnalyses}
-                      />
-                    )}
+              <div className={classes.bodyItem} style={{ width: dataColumns.analyses.width }}>
+                {['Note', 'Opinion', 'Course-Of-Action', 'Data-Component', 'Data-Source'].includes(
+                  node.entity_type,
+                ) ? (
+                  <Chip
+                    classes={{ root: classes.chipNoLink }}
+                    label={n(node.containersNumber.total)}
+                  />
+                ) : (
+                  <Chip
+                    classes={{ root: classes.chip }}
+                    label={n(node.containersNumber.total)}
+                    component={Link}
+                    to={linkAnalyses}
+                  />
+                )}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.objectMarking.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.objectMarking.width }}>
                 <ItemMarkings
                   variant="inList"
                   markingDefinitions={node.objectMarking ?? []}
@@ -215,7 +182,7 @@ const ContainerStixDomainObjectLineComponent = (props) => {
                 />
               </div>
             </div>
-          )}
+          }
         />
       </ListItemButton>
     </ListItem>
@@ -375,7 +342,7 @@ export const ContainerStixDomainObjectLineDummy = (props) => {
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={(
+      secondaryAction={
         <IconButton
           disabled={true}
           aria-label={t_i18n('Open menu')}
@@ -384,99 +351,40 @@ export const ContainerStixDomainObjectLineDummy = (props) => {
         >
           <MoreVert />
         </IconButton>
-      )}
+      }
     >
-      <ListItemIcon
-        classes={{ root: classes.itemIconDisabled }}
-        style={{ minWidth: 40 }}
-      >
+      <ListItemIcon classes={{ root: classes.itemIconDisabled }} style={{ minWidth: 40 }}>
         <Checkbox edge="start" disabled={true} disableRipple={true} />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.entity_type.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.entity_type.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectLabel.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.objectLabel.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.createdBy.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.createdBy.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.created_at.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.created_at.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.analyses.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.analyses.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectMarking.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width={100}
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.objectMarking.width }}>
+              <Skeleton animation="wave" variant="rectangular" width={100} height="100%" />
             </div>
           </div>
-        )}
+        }
       />
     </ListItem>
   );

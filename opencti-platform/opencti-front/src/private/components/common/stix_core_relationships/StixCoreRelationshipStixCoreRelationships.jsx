@@ -8,7 +8,9 @@ import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixCoreRelationshipStixCoreRelationshipsLines, { stixCoreRelationshipStixCoreRelationshipsLinesQuery } from './StixCoreRelationshipStixCoreRelationshipsLines';
+import StixCoreRelationshipStixCoreRelationshipsLines, {
+  stixCoreRelationshipStixCoreRelationshipsLinesQuery,
+} from './StixCoreRelationshipStixCoreRelationshipsLines';
 import Card from '../../../../components/common/card/Card';
 
 class StixCoreRelationshipStixCoreRelationships extends Component {
@@ -41,15 +43,10 @@ class StixCoreRelationshipStixCoreRelationships extends Component {
                   {Array.from(Array(5), (e, i) => (
                     <ListItem key={i} divider={true}>
                       <ListItemIcon>
-                        <Skeleton
-                          animation="wave"
-                          variant="circular"
-                          width={30}
-                          height={30}
-                        />
+                        <Skeleton animation="wave" variant="circular" width={30} height={30} />
                       </ListItemIcon>
                       <ListItemText
-                        primary={(
+                        primary={
                           <Skeleton
                             animation="wave"
                             variant="rectangular"
@@ -57,15 +54,15 @@ class StixCoreRelationshipStixCoreRelationships extends Component {
                             height={15}
                             style={{ marginBottom: 10 }}
                           />
-                        )}
-                        secondary={(
+                        }
+                        secondary={
                           <Skeleton
                             animation="wave"
                             variant="rectangular"
                             width="90%"
                             height={15}
                           />
-                        )}
+                        }
                       />
                     </ListItem>
                   ))}
@@ -88,6 +85,4 @@ StixCoreRelationshipStixCoreRelationships.propTypes = {
   fld: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-)(StixCoreRelationshipStixCoreRelationships);
+export default compose(inject18n)(StixCoreRelationshipStixCoreRelationships);

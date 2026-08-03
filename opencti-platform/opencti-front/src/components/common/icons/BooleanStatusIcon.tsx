@@ -11,9 +11,11 @@ interface BooleanStatusIconProps {
 const BooleanStatusIcon: React.FC<BooleanStatusIconProps> = ({ status }) => {
   const theme = useTheme<Theme>();
 
-  return (status ?? false)
-    ? <CheckIcon sx={{ color: theme.palette.designSystem.tertiary.green[600] }} />
-    : <CloseIcon sx={{ color: theme.palette.designSystem.tertiary.red[700] }} />;
+  return (status ?? false) ? (
+    <CheckIcon sx={{ color: theme.palette.designSystem.tertiary.green[600] }} />
+  ) : (
+    <CloseIcon sx={{ color: theme.palette.designSystem.tertiary.red[700] }} />
+  );
 };
 
 export default BooleanStatusIcon;

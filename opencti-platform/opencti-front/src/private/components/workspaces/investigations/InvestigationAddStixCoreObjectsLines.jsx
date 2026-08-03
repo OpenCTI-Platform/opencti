@@ -5,7 +5,10 @@ import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import * as R from 'ramda';
 import { useInvestigationState } from './utils/useInvestigationState';
-import { InvestigationAddStixCoreObjecstLineDummy, InvestigationAddStixCoreObjectsLine } from './InvestigationAddStixCoreObjectsLine';
+import {
+  InvestigationAddStixCoreObjecstLineDummy,
+  InvestigationAddStixCoreObjectsLine,
+} from './InvestigationAddStixCoreObjectsLine';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
@@ -47,7 +50,10 @@ const styles = (theme) => ({
 const nbOfRowsToLoad = 50;
 
 const investigationAddStixCoreObjectsLinesRelationAddMutation = graphql`
-  mutation InvestigationAddStixCoreObjectsLinesRelationAddMutation($id: ID!, $input: [EditInput!]!) {
+  mutation InvestigationAddStixCoreObjectsLinesRelationAddMutation(
+    $id: ID!
+    $input: [EditInput!]!
+  ) {
     workspaceFieldPatch(id: $id, input: $input) {
       id
     }
@@ -55,7 +61,10 @@ const investigationAddStixCoreObjectsLinesRelationAddMutation = graphql`
 `;
 
 const investigationAddStixCoreObjectsLinesRelationDeleteMutation = graphql`
-  mutation InvestigationAddStixCoreObjectsLinesRelationDeleteMutation($id: ID!, $input: [EditInput!]!) {
+  mutation InvestigationAddStixCoreObjectsLinesRelationDeleteMutation(
+    $id: ID!
+    $input: [EditInput!]!
+  ) {
     workspaceFieldPatch(id: $id, input: $input) {
       id
     }
@@ -77,10 +86,12 @@ const InvestigationAddStixCoreObjectsLinesInvestigation = (props) => {
 
   const { addInvestigationOpInStack } = useInvestigationState(workspaceId);
 
-  const [addedStixCoreObjects, setAddedStixCoreObjects] = useState(R.indexBy(
-    R.prop('id'),
-    (workspaceStixCoreObjects || []).map((n) => n.node),
-  ));
+  const [addedStixCoreObjects, setAddedStixCoreObjects] = useState(
+    R.indexBy(
+      R.prop('id'),
+      (workspaceStixCoreObjects || []).map((n) => n.node),
+    ),
+  );
 
   useEffect(() => {
     const numberOfElements = workspaceStixCoreObjects?.length ?? 0;
@@ -106,10 +117,7 @@ const InvestigationAddStixCoreObjectsLinesInvestigation = (props) => {
           },
         },
         onCompleted: () => {
-          setAddedStixCoreObjects(R.dissoc(
-            stixCoreObject.id,
-            addedStixCoreObjects,
-          ));
+          setAddedStixCoreObjects(R.dissoc(stixCoreObject.id, addedStixCoreObjects));
           if (typeof onDelete === 'function') {
             onDelete(stixCoreObject);
           }
@@ -192,15 +200,15 @@ export const investigationAddStixCoreObjectsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...InvestigationAddStixCoreObjectsLines_data
-    @arguments(
-      types: $types
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        types: $types
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -218,15 +226,15 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
         orderMode: { type: "OrderingMode", defaultValue: asc }
         filters: { type: "FilterGroup" }
       ) {
-      stixCoreObjects(
-        types: $types
-        search: $search
-        first: $count
-        after: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-      ) @connection(key: "Pagination_stixCoreObjects") {
+        stixCoreObjects(
+          types: $types
+          search: $search
+          first: $count
+          after: $cursor
+          orderBy: $orderBy
+          orderMode: $orderMode
+          filters: $filters
+        ) @connection(key: "Pagination_stixCoreObjects") {
           edges {
             node {
               id
@@ -290,7 +298,4 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(InvestigationAddStixCoreObjectsLines);
+export default compose(inject18n, withStyles(styles))(InvestigationAddStixCoreObjectsLines);

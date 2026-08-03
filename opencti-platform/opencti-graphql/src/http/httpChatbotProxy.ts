@@ -7,7 +7,10 @@ import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getEntityFromCache } from '../database/cache';
 import { CguStatus } from '../generated/graphql';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { getEnterpriseEditionActivePem, getEnterpriseEditionInfo } from '../modules/settings/licensing';
+import {
+  getEnterpriseEditionActivePem,
+  getEnterpriseEditionInfo,
+} from '../modules/settings/licensing';
 import { getChatbotUrl, logApp, PLATFORM_VERSION } from '../config/conf';
 import type { BasicStoreSettings } from '../types/settings';
 import { setCookieError } from './httpUtils';
@@ -17,7 +20,11 @@ import type { AuthContext } from '../types/user';
 import { getHttpClient, getResponseError } from '../utils/http-client';
 import { redisGetXtmAgentResponse, redisSetXtmAgentResponse } from '../database/redis';
 import { checkDraftInContext } from './httpServer-draft';
-import { addAiInsightRequestCount, addChatbotMessageCount, addXtmAgentCallCount } from '../manager/telemetryManager';
+import {
+  addAiInsightRequestCount,
+  addChatbotMessageCount,
+  addXtmAgentCallCount,
+} from '../manager/telemetryManager';
 
 const XTM_ONE_URL = nconf.get('xtm:xtm_one_url');
 export const XTM_ONE_CHATBOT_URL = `${XTM_ONE_URL}/chatbot`;
@@ -42,9 +49,10 @@ const MULTIPART_XTM_TIMEOUT = 10 * 60 * 1000; // 10 minutes.
 // silently turning caching off.
 const AI_AGENTS_REFRESH_TIMEOUT_DEFAULT_MINUTES = 1440;
 const parsedAgentsRefreshTimeoutMinutes = Number(nconf.get('ai:agents_refresh_timeout'));
-const AI_AGENTS_REFRESH_TIMEOUT_MINUTES = Number.isFinite(parsedAgentsRefreshTimeoutMinutes) && parsedAgentsRefreshTimeoutMinutes >= 0
-  ? parsedAgentsRefreshTimeoutMinutes
-  : AI_AGENTS_REFRESH_TIMEOUT_DEFAULT_MINUTES;
+const AI_AGENTS_REFRESH_TIMEOUT_MINUTES =
+  Number.isFinite(parsedAgentsRefreshTimeoutMinutes) && parsedAgentsRefreshTimeoutMinutes >= 0
+    ? parsedAgentsRefreshTimeoutMinutes
+    : AI_AGENTS_REFRESH_TIMEOUT_DEFAULT_MINUTES;
 const AI_AGENTS_REFRESH_TIMEOUT_SECONDS = Math.floor(AI_AGENTS_REFRESH_TIMEOUT_MINUTES * 60);
 
 // Strict UUID shape check for path parameters forwarded to XTM One
@@ -64,7 +72,13 @@ const getXtmClient = (responseType: 'json' | 'stream', headers?: Record<string, 
 // ── Multipart parsing helper ────────────────────────────────────────────
 
 interface ParsedMultipart {
-  files: { fieldname: string; filename: string; encoding: string; mimetype: string; data: Buffer }[];
+  files: {
+    fieldname: string;
+    filename: string;
+    encoding: string;
+    mimetype: string;
+    data: Buffer;
+  }[];
   fields: Record<string, string>;
 }
 
@@ -74,15 +88,28 @@ const parseMultipart = (req: Express.Request): Promise<ParsedMultipart> => {
     const files: ParsedMultipart['files'] = [];
     const fields: Record<string, string> = {};
     let truncated = false;
-    busboy.on('file', (fieldname: string, stream: NodeJS.ReadableStream & { truncated?: boolean }, info: { filename: string; encoding: string; mimeType: string }) => {
-      const chunks: Buffer[] = [];
-      stream.on('data', (chunk: Buffer) => chunks.push(chunk));
-      stream.on('limit', () => truncated = true);
-      stream.on('end', () => {
-        files.push({ fieldname, filename: info.filename, encoding: info.encoding, mimetype: info.mimeType, data: Buffer.concat(chunks) });
-      });
-    });
-    busboy.on('field', (name: string, value: string) => fields[name] = value);
+    busboy.on(
+      'file',
+      (
+        fieldname: string,
+        stream: NodeJS.ReadableStream & { truncated?: boolean },
+        info: { filename: string; encoding: string; mimeType: string },
+      ) => {
+        const chunks: Buffer[] = [];
+        stream.on('data', (chunk: Buffer) => chunks.push(chunk));
+        stream.on('limit', () => (truncated = true));
+        stream.on('end', () => {
+          files.push({
+            fieldname,
+            filename: info.filename,
+            encoding: info.encoding,
+            mimetype: info.mimeType,
+            data: Buffer.concat(chunks),
+          });
+        });
+      },
+    );
+    busboy.on('field', (name: string, value: string) => (fields[name] = value));
     busboy.on('finish', () => {
       if (truncated) {
         reject(new Error('File exceeds maximum size limit'));
@@ -96,7 +123,10 @@ const parseMultipart = (req: Express.Request): Promise<ParsedMultipart> => {
 };
 
 // ── Helpers ─────────────────────────────────────────────────────────────
-const generateBasicHeaders = async (req: Express.Request, context: AuthContext): Promise<Record<string, string>> => {
+const generateBasicHeaders = async (
+  req: Express.Request,
+  context: AuthContext,
+): Promise<Record<string, string>> => {
   if (!context?.user) return {};
   const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
   return {
@@ -105,7 +135,7 @@ const generateBasicHeaders = async (req: Express.Request, context: AuthContext):
     'X-Platform-URL': getChatbotUrl(req),
     'X-Platform-Product': 'opencti',
     'X-Platform-Version': PLATFORM_VERSION,
-    'opencti-draft-id': req.headers['opencti-draft-id'] as string || '',
+    'opencti-draft-id': (req.headers['opencti-draft-id'] as string) || '',
   };
 };
 
@@ -123,14 +153,22 @@ const authenticateAndVerify = async (req: Express.Request, res: Express.Response
     return null;
   }
 
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, context.user, ENTITY_TYPE_SETTINGS);
-  const isChatbotCGUAccepted: boolean = settings.filigran_chatbot_ai_cgu_status === CguStatus.Enabled;
+  const settings = await getEntityFromCache<BasicStoreSettings>(
+    context,
+    context.user,
+    ENTITY_TYPE_SETTINGS,
+  );
+  const isChatbotCGUAccepted: boolean =
+    settings.filigran_chatbot_ai_cgu_status === CguStatus.Enabled;
   const { pem } = getEnterpriseEditionActivePem(settings);
   const licenseInfo = getEnterpriseEditionInfo(settings);
   const isLicenseValidated = pem !== undefined && licenseInfo.license_validated;
 
   if (!isChatbotCGUAccepted || !isLicenseValidated) {
-    logApp.info('Chatbot not enabled', { cguStatus: settings.filigran_chatbot_ai_cgu_status, isLicenseValidated });
+    logApp.info('Chatbot not enabled', {
+      cguStatus: settings.filigran_chatbot_ai_cgu_status,
+      isLicenseValidated,
+    });
     res.status(400).json({ error: 'Chatbot is not enabled' });
     return null;
   }
@@ -166,13 +204,12 @@ export const getChatbotAgents = async (req: Express.Request, res: Express.Respon
 
     const intent = (req.query.intent as string) || 'global.assistant';
     const rawAgents = await xtmOneClient.listAgentsForIntent(context, intent);
-    const agents = (rawAgents ?? [])
-      .map((a) => ({
-        id: a.agent_id,
-        name: a.agent_name,
-        slug: a.agent_slug,
-        description: a.agent_description,
-      }));
+    const agents = (rawAgents ?? []).map((a) => ({
+      id: a.agent_id,
+      name: a.agent_name,
+      slug: a.agent_slug,
+      description: a.agent_description,
+    }));
 
     res.json(agents);
   } catch (e: unknown) {
@@ -401,9 +438,8 @@ export const postChatbotMessage = async (req: Express.Request, res: Express.Resp
       res.setHeader('Connection', 'keep-alive');
       res.status(200);
 
-      const errorContent = code === 429
-        ? `⚠️ **Quota exceeded** — ${detail}`
-        : `⚠️ **Error** — ${detail}`;
+      const errorContent =
+        code === 429 ? `⚠️ **Quota exceeded** — ${detail}` : `⚠️ **Error** — ${detail}`;
 
       res.write(`data: ${JSON.stringify({ type: 'error', content: errorContent, code })}\n\n`);
       res.end();
@@ -441,7 +477,11 @@ export const postChatbotUpload = async (req: Express.Request, res: Express.Respo
       const uploadRes = await httpClient.post(
         `/api/v1/chat/conversations/${conversationId}/upload?create_message=false`,
         form,
-        { timeout: MULTIPART_XTM_TIMEOUT, maxContentLength: Infinity, maxBodyLength: Infinity },
+        {
+          timeout: MULTIPART_XTM_TIMEOUT,
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity,
+        },
       );
       if (uploadRes.data?.file_id) {
         fileIds.push(uploadRes.data.file_id);
@@ -501,7 +541,9 @@ export const getChatbotFileDownload = async (req: Express.Request, res: Express.
     try {
       await checkDraftInContext(context);
     } catch (draftErr: unknown) {
-      logApp.warn('Chatbot file download rejected due to invalid draft context', { cause: draftErr });
+      logApp.warn('Chatbot file download rejected due to invalid draft context', {
+        cause: draftErr,
+      });
       res.status(400).json({ error: (draftErr as Error)?.message || 'Invalid draft context' });
       return;
     }
@@ -529,7 +571,13 @@ export const getChatbotFileDownload = async (req: Express.Request, res: Express.
     // right name and type. `content-disposition` is built CRLF-safe by XTM One.
     // `content-encoding` MUST be forwarded because `decompress: false` leaves a
     // gzip/br payload compressed — the browser needs the header to decode it.
-    const forwardHeaders = ['content-type', 'content-disposition', 'content-length', 'content-encoding', 'cache-control'];
+    const forwardHeaders = [
+      'content-type',
+      'content-disposition',
+      'content-length',
+      'content-encoding',
+      'cache-control',
+    ];
     Object.entries(response.headers).forEach(([key, value]) => {
       if (forwardHeaders.includes(key.toLowerCase()) && value) {
         res.setHeader(key, value as string);
@@ -609,15 +657,24 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
       const agentSlug = fields.agent_slug;
       const messageContent = fields.content;
       if (!agentSlug || !messageContent || files.length === 0) {
-        res.status(400).json({ error: 'agent_slug, content fields and at least one file are required' });
+        res
+          .status(400)
+          .json({ error: 'agent_slug, content fields and at least one file are required' });
         return;
       }
       const authHeaders = await generateBasicHeaders(req, context);
-      const jsonClient = getXtmClient('json', { ...authHeaders, 'Content-Type': 'application/json' });
-      // 2. Create a session with the agent
-      const sessionRes = await jsonClient.post('/api/v1/platform/chat/sessions', { agent_slug: agentSlug }, {
-        timeout: DEFAULT_XTM_TIMEOUT,
+      const jsonClient = getXtmClient('json', {
+        ...authHeaders,
+        'Content-Type': 'application/json',
       });
+      // 2. Create a session with the agent
+      const sessionRes = await jsonClient.post(
+        '/api/v1/platform/chat/sessions',
+        { agent_slug: agentSlug },
+        {
+          timeout: DEFAULT_XTM_TIMEOUT,
+        },
+      );
       const conversationId = sessionRes.data?.conversation_id;
       if (!conversationId) {
         res.status(502).json({ error: 'Failed to create XTM One session' });
@@ -632,7 +689,11 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
         const uploadRes = await uploadClient.post(
           `/api/v1/chat/conversations/${conversationId}/upload?create_message=false`,
           form,
-          { timeout: MULTIPART_XTM_TIMEOUT, maxContentLength: Infinity, maxBodyLength: Infinity },
+          {
+            timeout: MULTIPART_XTM_TIMEOUT,
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity,
+          },
         );
         if (uploadRes.data?.file_id) {
           fileIds.push(uploadRes.data.file_id);
@@ -659,9 +720,13 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
       }
       const headers = await generateBasicHeaders(req, context);
       const httpClient = getXtmClient('json', headers);
-      const response = await httpClient.post('/api/v1/platform/chat/messages', { agent_slug, content, stream: false }, {
-        timeout: DEFAULT_XTM_TIMEOUT,
-      });
+      const response = await httpClient.post(
+        '/api/v1/platform/chat/messages',
+        { agent_slug, content, stream: false },
+        {
+          timeout: DEFAULT_XTM_TIMEOUT,
+        },
+      );
       // XTM One returns { message_id, content } for non-streaming requests
       res.json({ content: response.data?.content ?? '', status: 'success' });
     }
@@ -673,7 +738,10 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
     } else {
       const httpErr = getResponseError(e);
       if (httpErr) {
-        logApp.error('XTM One error response', { status: httpErr.status, data: JSON.stringify(httpErr.data) });
+        logApp.error('XTM One error response', {
+          status: httpErr.status,
+          data: JSON.stringify(httpErr.data),
+        });
         const detail = httpErr.data?.detail ?? httpErr.data?.message ?? message;
         setCookieError(res, message);
         res.status(200).json({ content: '', status: 'error', error: detail, code: httpErr.status });
@@ -788,12 +856,14 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
         // Telemetry: AI Insight served from cache.
         addAiInsightRequestCount('hit');
         writeAgentStreamHeaders(res);
-        res.write(`data: ${JSON.stringify({
-          type: 'done',
-          content: cached.content,
-          cached: true,
-          generated_at: cached.cached_at,
-        })}\n\n`);
+        res.write(
+          `data: ${JSON.stringify({
+            type: 'done',
+            content: cached.content,
+            cached: true,
+            generated_at: cached.cached_at,
+          })}\n\n`,
+        );
         res.end();
         return;
       }
@@ -813,14 +883,18 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
     // cached under the draft key (and vice-versa on the next cache hit).
     headers['opencti-draft-id'] = draftId;
     const httpClient = getXtmClient('stream', headers);
-    const response = await httpClient.post('/api/v1/platform/chat/messages', {
-      agent_slug,
-      content,
-      stream: true,
-    }, {
-      decompress: false,
-      timeout: 0,
-    });
+    const response = await httpClient.post(
+      '/api/v1/platform/chat/messages',
+      {
+        agent_slug,
+        content,
+        stream: true,
+      },
+      {
+        decompress: false,
+        timeout: 0,
+      },
+    );
 
     // Only set SSE response headers now that we know the upstream stream is
     // open. Setting them earlier would leak `Content-Type: text/event-stream`
@@ -903,7 +977,9 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache, no-transform');
       res.status(200);
-      res.write(`data: ${JSON.stringify({ type: 'error', content: `⚠️ **Error** — ${detail}` })}\n\n`);
+      res.write(
+        `data: ${JSON.stringify({ type: 'error', content: `⚠️ **Error** — ${detail}` })}\n\n`,
+      );
       res.end();
     } else {
       const userMessage = 'XTM One is unreachable';
@@ -925,8 +1001,13 @@ export const getLegacyChatbotProxy = async (req: Express.Request, res: Express.R
       return;
     }
 
-    const settings = await getEntityFromCache<BasicStoreSettings>(context, context.user, ENTITY_TYPE_SETTINGS);
-    const isChatbotCGUAccepted: boolean = settings.filigran_chatbot_ai_cgu_status === CguStatus.Enabled;
+    const settings = await getEntityFromCache<BasicStoreSettings>(
+      context,
+      context.user,
+      ENTITY_TYPE_SETTINGS,
+    );
+    const isChatbotCGUAccepted: boolean =
+      settings.filigran_chatbot_ai_cgu_status === CguStatus.Enabled;
     const { pem } = getEnterpriseEditionActivePem(settings);
     const licenseInfo = getEnterpriseEditionInfo(settings);
     const isLicenseValidated = pem !== undefined && licenseInfo.license_validated;

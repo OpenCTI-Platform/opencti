@@ -15,18 +15,22 @@ const DeployCustomDashboard = () => {
   const { serviceInstanceId, fileId } = useParams();
   const { t_i18n } = useFormatter();
 
-  const [commitImportMutation] = useApiMutation<WorkspaceCreationImportMutation>(importMutation, undefined, {
-    errorMessageMap: {
-      FORBIDDEN_ACCESS: t_i18n('You are not allowed to do this because you do not have the rights to create dashboards.'),
+  const [commitImportMutation] = useApiMutation<WorkspaceCreationImportMutation>(
+    importMutation,
+    undefined,
+    {
+      errorMessageMap: {
+        FORBIDDEN_ACCESS: t_i18n(
+          'You are not allowed to do this because you do not have the rights to create dashboards.',
+        ),
+      },
     },
-  });
+  );
   const sendImportToBack = (importedFile: File) => {
     commitImportMutation({
       variables: { file: importedFile },
       onCompleted: (data) => {
-        navigate(
-          `${resolveLink('Dashboard')}/${data.workspaceConfigurationImport}`,
-        );
+        navigate(`${resolveLink('Dashboard')}/${data.workspaceConfigurationImport}`);
         MESSAGING$.notifySuccess('Dashboard successfully imported');
       },
       onError: () => {
@@ -38,7 +42,9 @@ const DeployCustomDashboard = () => {
 
   const onDownloadError = () => {
     navigate('/dashboard');
-    MESSAGING$.notifyError(t_i18n('An error occurred while importing dashboard. You have been redirected to home page.'));
+    MESSAGING$.notifyError(
+      t_i18n('An error occurred while importing dashboard. You have been redirected to home page.'),
+    );
   };
 
   const { dialogConnectivityLostStatus } = useXtmHubDownloadDocument({

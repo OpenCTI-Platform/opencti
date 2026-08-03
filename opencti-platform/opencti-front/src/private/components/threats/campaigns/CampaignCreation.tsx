@@ -15,10 +15,17 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import { CampaignCreationMutation, CampaignCreationMutation$variables } from './__generated__/CampaignCreationMutation.graphql';
+import {
+  CampaignCreationMutation,
+  CampaignCreationMutation$variables,
+} from './__generated__/CampaignCreationMutation.graphql';
 import { CampaignsCardsPaginationQuery$variables } from './__generated__/CampaignsCardsPaginationQuery.graphql';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -63,7 +70,11 @@ interface CampaignAddInput {
 }
 
 interface CampaignFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string, response: CampaignCreationMutation['response']['campaignAdd']) => void;
+  updater: (
+    store: RecordSourceSelectorProxy,
+    key: string,
+    response: CampaignCreationMutation['response']['campaignAdd'],
+  ) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -89,36 +100,30 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(CAMPAIGN_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    confidence: Yup.number().nullable(),
-    description: Yup.string().nullable(),
-  }, mandatoryAttributes);
-  const validator = useDynamicSchemaCreationValidation(
-    mandatoryAttributes,
-    basicShape,
-  );
-
-  const [commit] = useApiMutation<CampaignCreationMutation>(
-    campaignMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Campaign')} ${t_i18n('successfully created')}` },
-  );
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
-  const {
-    bulkCommit,
-    bulkCount,
-    bulkCurrentCount,
-    BulkResult,
-    resetBulk,
-  } = useBulkCommit<CampaignCreationMutation>({
-    commit,
-    relayUpdater: (store, response) => {
-      if (updater) {
-        updater(store, 'campaignAdd', response?.campaignAdd);
-      }
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      confidence: Yup.number().nullable(),
+      description: Yup.string().nullable(),
     },
+    mandatoryAttributes,
+  );
+  const validator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
+
+  const [commit] = useApiMutation<CampaignCreationMutation>(campaignMutation, undefined, {
+    successMessage: `${t_i18n('entity_Campaign')} ${t_i18n('successfully created')}`,
   });
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
+  const { bulkCommit, bulkCount, bulkCurrentCount, BulkResult, resetBulk } =
+    useBulkCommit<CampaignCreationMutation>({
+      commit,
+      relayUpdater: (store, response) => {
+        if (updater) {
+          updater(store, 'campaignAdd', response?.campaignAdd);
+        }
+      },
+    });
 
   useEffect(() => {
     if (bulkCount > 1) {
@@ -214,17 +219,9 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
               required={mandatoryAttributes.includes('name')}
               fullWidth={true}
               askAi={true}
-              detectDuplicate={[
-                'Threat-Actor',
-                'Intrusion-Set',
-                'Campaign',
-                'Malware',
-              ]}
+              detectDuplicate={['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Malware']}
             />
-            <ConfidenceField
-              entityType="Campaign"
-              containerStyle={fieldSpacingContainerStyle}
-            />
+            <ConfidenceField entityType="Campaign" containerStyle={fieldSpacingContainerStyle} />
             <Field
               component={MarkdownField}
               name="description"
@@ -270,23 +267,17 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
               name="file"
               setFieldValue={setFieldValue}
               disabled={splitMultilines(values.name).length > 1}
-              noFileSelectedLabel={splitMultilines(values.name).length > 1
-                ? t_i18n('File upload not allowed in bulk creation')
-                : undefined
+              noFileSelectedLabel={
+                splitMultilines(values.name).length > 1
+                  ? t_i18n('File upload not allowed in bulk creation')
+                  : undefined
               }
             />
             <FormButtonContainer>
-              <Button
-                variant="secondary"
-                onClick={handleReset}
-                disabled={isSubmitting}
-              >
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>
@@ -304,7 +295,8 @@ const CampaignCreation = ({
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_campaigns', paginationOptions, 'campaignAdd');
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_campaigns', paginationOptions, 'campaignAdd');
 
   const CreateCampaignControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="Campaign" {...props} />

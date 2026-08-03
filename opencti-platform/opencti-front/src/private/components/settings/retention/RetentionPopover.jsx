@@ -23,9 +23,7 @@ const styles = () => ({
   },
 });
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 const retentionPopoverDeletionMutation = graphql`
@@ -157,16 +155,12 @@ class RetentionPopover extends Component {
                     open={Boolean(this.state.anchorEl)}
                     onClose={this.handleClose.bind(this)}
                   >
-                    <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
-                      {t('Update')}
-                    </MenuItem>
+                    <MenuItem onClick={this.handleOpenUpdate.bind(this)}>{t('Update')}</MenuItem>
                     <MenuItem onClick={() => this.submitToggleActive(retentionRule?.active)}>
                       {retentionRule?.active ? t('Deactivate') : t('Activate')}
                     </MenuItem>
                     {!isTechnicalRule && (
-                      <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-                        {t('Delete')}
-                      </MenuItem>
+                      <MenuItem onClick={this.handleOpenDelete.bind(this)}>{t('Delete')}</MenuItem>
                     )}
                   </Menu>
                   <RetentionEdition
@@ -183,9 +177,7 @@ class RetentionPopover extends Component {
                 open={Boolean(this.state.anchorEl)}
                 onClose={this.handleClose.bind(this)}
               >
-                <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
-                  {t('Update')}
-                </MenuItem>
+                <MenuItem onClick={this.handleOpenUpdate.bind(this)}>{t('Update')}</MenuItem>
               </Menu>
             );
           }}
@@ -195,9 +187,7 @@ class RetentionPopover extends Component {
           onClose={this.handleCloseDelete.bind(this)}
           title={t('Are you sure?')}
         >
-          <DialogContentText>
-            {t('Do you want to delete this retention policy?')}
-          </DialogContentText>
+          <DialogContentText>{t('Do you want to delete this retention policy?')}</DialogContentText>
           <DialogActions>
             <Button
               variant="secondary"
@@ -206,10 +196,7 @@ class RetentionPopover extends Component {
             >
               {t('Cancel')}
             </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
+            <Button onClick={this.submitDelete.bind(this)} disabled={this.state.deleting}>
               {t('Confirm')}
             </Button>
           </DialogActions>

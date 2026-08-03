@@ -17,7 +17,10 @@ import { MESSAGING$ } from '../../../relay/environment';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { deleteNode } from '../../../utils/store';
 import { DeleteOperationPopoverConfirmMutation } from './__generated__/DeleteOperationPopoverConfirmMutation.graphql';
-import { DeleteOperationPopoverRestoreMutation, DeleteOperationPopoverRestoreMutation$data } from './__generated__/DeleteOperationPopoverRestoreMutation.graphql';
+import {
+  DeleteOperationPopoverRestoreMutation,
+  DeleteOperationPopoverRestoreMutation$data,
+} from './__generated__/DeleteOperationPopoverRestoreMutation.graphql';
 
 const deleteOperationPopoverConfirmMutation = graphql`
   mutation DeleteOperationPopoverConfirmMutation($id: ID!) {
@@ -38,7 +41,12 @@ interface DeleteOperationPopoverProps {
   paginationOptions: TrashDeleteOperationsLinesPaginationQuery$variables;
 }
 
-const DeleteOperationPopover: React.FC<DeleteOperationPopoverProps> = ({ mainEntityId, deletedCount, disabled, paginationOptions }) => {
+const DeleteOperationPopover: React.FC<DeleteOperationPopoverProps> = ({
+  mainEntityId,
+  deletedCount,
+  disabled,
+  paginationOptions,
+}) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [deleting, setDeleting] = useState<boolean>(false);
@@ -46,8 +54,12 @@ const DeleteOperationPopover: React.FC<DeleteOperationPopoverProps> = ({ mainEnt
   const [displayConfirm, setDisplayConfirm] = useState<boolean>(false);
   const [confirmOperation, setConfirmOperation] = useState<string>('');
 
-  const [commitConfirm] = useApiMutation<DeleteOperationPopoverConfirmMutation>(deleteOperationPopoverConfirmMutation);
-  const [commitRestore] = useApiMutation<DeleteOperationPopoverRestoreMutation>(deleteOperationPopoverRestoreMutation);
+  const [commitConfirm] = useApiMutation<DeleteOperationPopoverConfirmMutation>(
+    deleteOperationPopoverConfirmMutation,
+  );
+  const [commitRestore] = useApiMutation<DeleteOperationPopoverRestoreMutation>(
+    deleteOperationPopoverRestoreMutation,
+  );
 
   const handleOpen = (event: React.SyntheticEvent) => {
     setAnchorEl(event.currentTarget);
@@ -83,7 +95,11 @@ const DeleteOperationPopover: React.FC<DeleteOperationPopoverProps> = ({ mainEnt
       },
       onCompleted: (response: DeleteOperationPopoverRestoreMutation$data) => {
         const elementId = response.deleteOperationRestore;
-        MESSAGING$.notifySuccess(<span><Link to={`/dashboard/id/${elementId}`}>{t_i18n('Object successfully restored')}</Link></span>);
+        MESSAGING$.notifySuccess(
+          <span>
+            <Link to={`/dashboard/id/${elementId}`}>{t_i18n('Object successfully restored')}</Link>
+          </span>,
+        );
         setRestoring(false);
         handleClose();
       },
@@ -142,25 +158,28 @@ const DeleteOperationPopover: React.FC<DeleteOperationPopoverProps> = ({ mainEnt
       </IconButton>
       <Menu anchorEl={anchorEl} open={!!anchorEl} onClose={handleClose}>
         <MenuItem onClick={handleOpenRestore}>{t_i18n('Restore')}</MenuItem>
-        <MenuItem color="secondary" onClick={handleOpenDelete}>{t_i18n('Delete permanently')}</MenuItem>
+        <MenuItem color="secondary" onClick={handleOpenDelete}>
+          {t_i18n('Delete permanently')}
+        </MenuItem>
       </Menu>
 
-      <Dialog
-        open={displayConfirm}
-        onClose={handleCloseConfirm}
-        title={t_i18n('Are you sure?')}
-      >
+      <Dialog open={displayConfirm} onClose={handleCloseConfirm} title={t_i18n('Are you sure?')}>
         <DialogContentText>
           {confirmOperation === 'delete' && (
             <Alert severity="warning" variant="outlined">
-              {t_i18n('', { id: 'The main object and the ... relationships/references linked to it will be deleted permanently.', values: { count: deletedCount - 1 } })}
+              {t_i18n('', {
+                id: 'The main object and the ... relationships/references linked to it will be deleted permanently.',
+                values: { count: deletedCount - 1 },
+              })}
               <br />
               {t_i18n('This operation cannot be undone.')}
             </Alert>
           )}
-          {confirmOperation === 'restore' && (
-            t_i18n('', { id: 'The main object and the ... relationships/references linked to it will be restored.', values: { count: deletedCount - 1 } })
-          )}
+          {confirmOperation === 'restore' &&
+            t_i18n('', {
+              id: 'The main object and the ... relationships/references linked to it will be restored.',
+              values: { count: deletedCount - 1 },
+            })}
         </DialogContentText>
         <DialogActions>
           <Button variant="secondary" onClick={handleCloseConfirm} disabled={deleting || restoring}>

@@ -4,7 +4,10 @@ import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
-import { attackPatternMutationRelationAdd, attackPatternMutationRelationDelete } from './AttackPatternEditionOverview';
+import {
+  attackPatternMutationRelationAdd,
+  attackPatternMutationRelationDelete,
+} from './AttackPatternEditionOverview';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
@@ -24,11 +27,7 @@ const attackPatternMutationFieldPatch = graphql`
     $references: [String]
   ) {
     attackPatternEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         ...AttackPatternEditionDetails_attackPattern
         ...AttackPattern_attackPattern
       }
@@ -37,10 +36,7 @@ const attackPatternMutationFieldPatch = graphql`
 `;
 
 export const attackPatternEditionDetailsFocus = graphql`
-  mutation AttackPatternEditionDetailsFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation AttackPatternEditionDetailsFocusMutation($id: ID!, $input: EditContext!) {
     attackPatternEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -60,7 +56,10 @@ const AttackPatternEditionDetailsComponent = (props) => {
     x_mitre_detection: Yup.string().nullable(),
   };
 
-  const attackPatternEditionDetailsValidator = useSchemaEditionValidation('Attack-Pattern', basicShape);
+  const attackPatternEditionDetailsValidator = useSchemaEditionValidation(
+    'Attack-Pattern',
+    basicShape,
+  );
 
   const queries = {
     fieldPatch: attackPatternMutationFieldPatch,
@@ -92,8 +91,7 @@ const AttackPatternEditionDetailsComponent = (props) => {
       variables: {
         id: attackPattern.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       setSubmitting,
@@ -121,23 +119,13 @@ const AttackPatternEditionDetailsComponent = (props) => {
   };
 
   const initialValues = R.pipe(
-    R.assoc(
-      'x_mitre_platforms',
-      R.propOr([], 'x_mitre_platforms', attackPattern),
-    ),
+    R.assoc('x_mitre_platforms', R.propOr([], 'x_mitre_platforms', attackPattern)),
     R.assoc(
       'x_mitre_permissions_required',
       R.propOr([], 'x_mitre_permissions_required', attackPattern),
     ),
-    R.assoc(
-      'x_mitre_detection',
-      R.propOr('', 'x_mitre_detection', attackPattern),
-    ),
-    R.pick([
-      'x_mitre_platforms',
-      'x_mitre_permissions_required',
-      'x_mitre_detection',
-    ]),
+    R.assoc('x_mitre_detection', R.propOr('', 'x_mitre_detection', attackPattern)),
+    R.pick(['x_mitre_platforms', 'x_mitre_permissions_required', 'x_mitre_detection']),
   )(attackPattern);
 
   return (
@@ -147,14 +135,7 @@ const AttackPatternEditionDetailsComponent = (props) => {
       validationSchema={attackPatternEditionDetailsValidator}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <Form style={{ marginTop: theme.spacing(2) }}>
           <AlertConfidenceForEntity entity={attackPattern} />
           <OpenVocabField
@@ -189,12 +170,7 @@ const AttackPatternEditionDetailsComponent = (props) => {
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={(
-              <SubscriptionFocus
-                context={context}
-                fieldName="x_mitre_detection"
-              />
-            )}
+            helperText={<SubscriptionFocus context={context} fieldName="x_mitre_detection" />}
           />
           {enableReferences && (
             <CommitMessage

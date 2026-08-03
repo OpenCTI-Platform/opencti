@@ -13,7 +13,9 @@ import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import Drawer from '../../common/drawer/Drawer';
 import StixCyberObservableCreation from '../stix_cyber_observables/StixCyberObservableCreation';
-import IndicatorAddObservablesLines, { indicatorAddObservablesLinesQuery } from './IndicatorAddObservablesLines';
+import IndicatorAddObservablesLines, {
+  indicatorAddObservablesLinesQuery,
+} from './IndicatorAddObservablesLines';
 
 class IndicatorAddObservables extends Component {
   constructor(props) {
@@ -42,11 +44,7 @@ class IndicatorAddObservables extends Component {
     };
     return (
       <>
-        <IconButton
-          color="primary"
-          aria-label="Add"
-          onClick={this.handleOpen.bind(this)}
-        >
+        <IconButton color="primary" aria-label="Add" onClick={this.handleOpen.bind(this)}>
           <Add fontSize="small" />
         </IconButton>
         <Drawer
@@ -54,13 +52,13 @@ class IndicatorAddObservables extends Component {
           onClose={this.handleClose.bind(this)}
           title={t('Add observables')}
           subHeader={{
-            left: [(
+            left: [
               <SearchInput
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
                 key="searchInput"
-              />
-            )],
+              />,
+            ],
           }}
         >
           <QueryRenderer
@@ -86,15 +84,10 @@ class IndicatorAddObservables extends Component {
                   {Array.from(Array(20), (e, i) => (
                     <ListItem key={i} divider={true}>
                       <ListItemIcon>
-                        <Skeleton
-                          animation="wave"
-                          variant="circular"
-                          width={30}
-                          height={30}
-                        />
+                        <Skeleton animation="wave" variant="circular" width={30} height={30} />
                       </ListItemIcon>
                       <ListItemText
-                        primary={(
+                        primary={
                           <Skeleton
                             animation="wave"
                             variant="rectangular"
@@ -102,15 +95,15 @@ class IndicatorAddObservables extends Component {
                             height={15}
                             style={{ marginBottom: 10 }}
                           />
-                        )}
-                        secondary={(
+                        }
+                        secondary={
                           <Skeleton
                             animation="wave"
                             variant="rectangular"
                             width="90%"
                             height={15}
                           />
-                        )}
+                        }
                       />
                     </ListItem>
                   ))}

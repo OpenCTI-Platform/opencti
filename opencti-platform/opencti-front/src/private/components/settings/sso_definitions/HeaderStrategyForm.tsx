@@ -182,7 +182,9 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
     description: headerAuth?.description ?? '',
     button_label_override: headerAuth?.button_label_override ?? '',
     logout_uri: headerAuth?.logout_uri ?? '',
-    headers_audit: (headerAuth?.headers_audit ?? []).filter((s): s is string => s !== null && s !== undefined),
+    headers_audit: (headerAuth?.headers_audit ?? []).filter(
+      (s): s is string => s !== null && s !== undefined,
+    ),
     user_info_mapping: {
       email_expr: uim?.email_expr ?? '',
       name_expr: uim?.name_expr ?? '',
@@ -193,7 +195,10 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
       default_groups: [...(gm?.default_groups ?? [])],
       groups_expr: [...(gm?.groups_expr ?? [])],
       group_splitter: gm?.group_splitter ?? '',
-      groups_mapping: (gm?.groups_mapping ?? []).map((m) => ({ provider: m.provider, platform: m.platform })),
+      groups_mapping: (gm?.groups_mapping ?? []).map((m) => ({
+        provider: m.provider,
+        platform: m.platform,
+      })),
       auto_create_groups: gm?.auto_create_groups ?? false,
       prevent_default_groups: gm?.prevent_default_groups ?? false,
       extend_platform_groups: gm?.extend_platform_groups ?? false,
@@ -202,7 +207,10 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
       default_organizations: [...(om?.default_organizations ?? [])],
       organizations_expr: [...(om?.organizations_expr ?? [])],
       organizations_splitter: om?.organizations_splitter ?? '',
-      organizations_mapping: (om?.organizations_mapping ?? []).map((m) => ({ provider: m.provider, platform: m.platform })),
+      organizations_mapping: (om?.organizations_mapping ?? []).map((m) => ({
+        provider: m.provider,
+        platform: m.platform,
+      })),
       auto_create_organizations: om?.auto_create_organizations ?? false,
     },
   };
@@ -241,7 +249,9 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
             extend_platform_groups: values.groups_mapping.extend_platform_groups,
           },
           organizations_mapping: {
-            default_organizations: filterStringArray(values.organizations_mapping.default_organizations),
+            default_organizations: filterStringArray(
+              values.organizations_mapping.default_organizations,
+            ),
             organizations_expr: filterStringArray(values.organizations_mapping.organizations_expr),
             organizations_splitter: values.organizations_mapping.organizations_splitter || null,
             organizations_mapping: values.organizations_mapping.organizations_mapping
@@ -314,8 +324,19 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
                   const entries = (form.values as HeaderStrategyFormValues).headers_audit;
                   return (
                     <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
-                      <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Headers audit')}</Typography>
+                      <Box
+                        sx={{
+                          px: 2,
+                          py: 1,
+                          backgroundColor: 'action.hover',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                        }}
+                      >
+                        <Typography variant="h4" sx={{ m: 0 }}>
+                          {t_i18n('Headers audit')}
+                        </Typography>
                         <IconButton
                           color="primary"
                           aria-label={t_i18n('Add')}
@@ -365,14 +386,10 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
           )}
 
           {/* Tab 1: Groups */}
-          {currentTab === 1 && (
-            <AuthProviderGroupsFields />
-          )}
+          {currentTab === 1 && <AuthProviderGroupsFields />}
 
           {/* Tab 2: Organizations */}
-          {currentTab === 2 && (
-            <AuthProviderOrganizationsFields />
-          )}
+          {currentTab === 2 && <AuthProviderOrganizationsFields />}
 
           {/* Shared Cancel / Update buttons */}
           <div style={{ marginTop: 20, textAlign: 'right' }}>

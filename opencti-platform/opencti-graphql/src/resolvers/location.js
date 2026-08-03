@@ -29,11 +29,13 @@ const locationResolvers = {
   Mutation: {
     locationEdit: (_, { id }, context) => ({
       delete: () => stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_LOCATION),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      fieldPatch: ({ input, commitMessage, references }) =>
+        stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
     locationAdd: (_, { input }, context) => addLocation(context, context.user, input),
   },

@@ -1,6 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import Grid from '@mui/material/Grid';
-import { AccountCircleOutlined, AdminPanelSettingsOutlined, ManageAccountsOutlined, PersonOutlined } from '@mui/icons-material';
+import {
+  AccountCircleOutlined,
+  AdminPanelSettingsOutlined,
+  ManageAccountsOutlined,
+  PersonOutlined,
+} from '@mui/icons-material';
 import SettingsOrganizationUserCreation from '@components/settings/users/SettingsOrganizationUserCreation';
 import { SettingsOrganization_organization$data } from '@components/settings/organizations/__generated__/SettingsOrganization_organization.graphql';
 import { graphql } from 'react-relay';
@@ -16,7 +21,10 @@ import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../../components/dataGrid/DataTable';
-import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  SETTINGS_SETACCESSES,
+  VIRTUAL_ORGANIZATION_ADMIN,
+} from '../../../../utils/hooks/useGranted';
 import Card from '../../../../components/common/card/Card';
 
 export const settingsOrganizationUsersQuery = graphql`
@@ -30,15 +38,15 @@ export const settingsOrganizationUsersQuery = graphql`
     $filters: FilterGroup
   ) {
     ...SettingsOrganizationUsersLines_data
-    @arguments(
-      id: $id
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        id: $id
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -109,7 +117,9 @@ interface MembersListContainerProps {
   organization: SettingsOrganization_organization$data;
 }
 
-const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = ({ organization }) => {
+const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = ({
+  organization,
+}) => {
   const { t_i18n, fd } = useFormatter();
   const LOCAL_STORAGE_KEY = `organization-${organization.id}-users`;
 
@@ -125,13 +135,11 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
     filters: emptyFilterGroup,
   };
 
-  const {
-    helpers,
-    paginationOptions,
-  } = usePaginationLocalStorage<SettingsOrganizationUsersPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    initialValues,
-  );
+  const { helpers, paginationOptions } =
+    usePaginationLocalStorage<SettingsOrganizationUsersPaginationQuery$variables>(
+      LOCAL_STORAGE_KEY,
+      initialValues,
+    );
 
   const organizationId = organization.id;
   const contextFilters = {
@@ -211,18 +219,22 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
     <Grid item xs={12} style={{ marginTop: 0 }}>
       <Card
         title={t_i18n('Users')}
-        action={(
+        action={
           <SettingsOrganizationUserCreation
             paginationOptions={queryPaginationOptions}
             organization={organization}
             variant="standard"
           />
-        )}
+        }
       >
         {queryRef && (
           <DataTable
             dataColumns={dataColumns}
-            resolvePath={(data) => data.organization?.members?.edges?.map(({ node }: { node: SettingsOrganizationUsersLine_node$data }) => node)}
+            resolvePath={(data) =>
+              data.organization?.members?.edges?.map(
+                ({ node }: { node: SettingsOrganizationUsersLine_node$data }) => node,
+              )
+            }
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
             contextFilters={contextFilters}

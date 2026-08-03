@@ -8,9 +8,16 @@ import { SubTypeWorkflowQuery$data } from '../../__generated__/SubTypeWorkflowQu
 import { SubTypeWorkflowDependenciesQuery$data } from '../../__generated__/SubTypeWorkflowDependenciesQuery.graphql';
 import { Action, CommentMode, CommentModeType, WorkflowNodeType } from '../utils';
 
-type ReadOnlyAction = NonNullable<NonNullable<SubTypeWorkflowQuery$data['workflowDefinition']>['states'][0]['onEnter']>[0]
-  | NonNullable<NonNullable<SubTypeWorkflowQuery$data['workflowDefinition']>['states'][0]['onExit']>[0]
-  | NonNullable<NonNullable<SubTypeWorkflowQuery$data['workflowDefinition']>['transitions'][0]['asyncActions']>[0];
+type ReadOnlyAction =
+  | NonNullable<
+      NonNullable<SubTypeWorkflowQuery$data['workflowDefinition']>['states'][0]['onEnter']
+    >[0]
+  | NonNullable<
+      NonNullable<SubTypeWorkflowQuery$data['workflowDefinition']>['states'][0]['onExit']
+    >[0]
+  | NonNullable<
+      NonNullable<SubTypeWorkflowQuery$data['workflowDefinition']>['transitions'][0]['asyncActions']
+    >[0];
 
 type StatusTemplate = { [key: string]: { color: string; id: string; name: string } };
 
@@ -18,9 +25,7 @@ export const convertEdgesToObject = <T extends { id: string }>(
   connection: Connection<T | null | undefined>,
 ): Record<string, T> => {
   if (!connection) return {};
-  return Object.fromEntries(
-    getNodes(connection).map((node) => [node.id, node as T]),
-  );
+  return Object.fromEntries(getNodes(connection).map((node) => [node.id, node as T]));
 };
 
 export const useWorkflowInitialElements = (
@@ -51,7 +56,16 @@ export const useWorkflowInitialElements = (
 
       return actions.map((action) => {
         if (action.type === 'updateAuthorizedMembers') {
-          const rawMembers = (action?.params as { authorized_members?: { id: string; access_right: string; groups_restriction_ids?: string[] }[] })?.authorized_members ?? [];
+          const rawMembers =
+            (
+              action?.params as {
+                authorized_members?: {
+                  id: string;
+                  access_right: string;
+                  groups_restriction_ids?: string[];
+                }[];
+              }
+            )?.authorized_members ?? [];
           return {
             ...action,
             params: {
@@ -72,12 +86,19 @@ export const useWorkflowInitialElements = (
         }
         if (action.type === 'asyncBulkAction') {
           // Reverse-map backend asyncBulkAction → frontend shareWithOrganizations / unshareFromOrganizations
-          const innerType = (action?.params as { actions?: { type?: string; context?: { values?: string[] } }[] })?.actions?.[0]?.type;
-          const orgIds: string[] = (action?.params as { actions?: { type?: string; context?: { values?: string[] } }[] })?.actions?.[0]?.context?.values ?? [];
-          const frontendType = innerType === 'UNSHARE' ? 'unshareFromOrganizations' : 'shareWithOrganizations';
+          const innerType = (
+            action?.params as { actions?: { type?: string; context?: { values?: string[] } }[] }
+          )?.actions?.[0]?.type;
+          const orgIds: string[] =
+            (action?.params as { actions?: { type?: string; context?: { values?: string[] } }[] })
+              ?.actions?.[0]?.context?.values ?? [];
+          const frontendType =
+            innerType === 'UNSHARE' ? 'unshareFromOrganizations' : 'shareWithOrganizations';
           return {
             type: frontendType,
-            params: { organizations: orgIds.map((id) => ({ value: id, label: members[id]?.name ?? id })) },
+            params: {
+              organizations: orgIds.map((id) => ({ value: id, label: members[id]?.name ?? id })),
+            },
           } as Action;
         }
         return { ...action } as Action;
@@ -85,20 +106,22 @@ export const useWorkflowInitialElements = (
     };
 
     // 1. Map states to nodes
-    const stateNodes: Node[] = workflowDefinition.states
-      .map(({ statusId, onEnter = [], onExit = [] }) => ({
+    const stateNodes: Node[] = workflowDefinition.states.map(
+      ({ statusId, onEnter = [], onExit = [] }) => ({
         id: statusId,
         type: WorkflowNodeType.status,
         data: {
           onEnter: parseActions(onEnter),
           onExit: parseActions(onExit),
-          statusTemplate: statusTemplates[statusId] },
+          statusTemplate: statusTemplates[statusId],
+        },
         position: { x: 0, y: 0 },
-      }));
+      }),
+    );
 
     // 2. Map transitions to transition nodes
-    const transitionNodes: Node[] = workflowDefinition.transitions
-      .map(({ from, to, event, conditions = {}, comment, asyncActions = [], syncActions = [] }) => {
+    const transitionNodes: Node[] = workflowDefinition.transitions.map(
+      ({ from, to, event, conditions = {}, comment, asyncActions = [], syncActions = [] }) => {
         const fromIds = (Array.isArray(from) ? from : [from]).join(',');
         return {
           id: `${WorkflowNodeType.transition}-${fromIds}-${event}-${to ?? '_unlinked'}`,
@@ -112,11 +135,14 @@ export const useWorkflowInitialElements = (
           },
           position: { x: 0, y: 0 },
         };
-      });
+      },
+    );
 
     // 3. Map transitions to edges
     const transitionEdges: Edge[] = workflowDefinition.transitions.flatMap((transition) => {
-      const fromArray: string[] = Array.isArray(transition.from) ? [...transition.from] : [transition.from];
+      const fromArray: string[] = Array.isArray(transition.from)
+        ? [...transition.from]
+        : [transition.from];
       const fromIds = fromArray.join(',');
       const transitionId = `${WorkflowNodeType.transition}-${fromIds}-${transition.event}-${transition.to ?? '_unlinked'}`;
       return [
@@ -126,13 +152,17 @@ export const useWorkflowInitialElements = (
           source: fromState,
           target: transitionId,
         })),
-        ...(transition.to != null ? [{
-          id: `e-${transitionId}->${transition.to}`,
-          type: WorkflowNodeType.transition,
-          source: transitionId,
-          target: transition.to,
-          markerEnd: { type: MarkerType.ArrowClosed, color: theme.palette.chip?.main },
-        }] : []),
+        ...(transition.to != null
+          ? [
+              {
+                id: `e-${transitionId}->${transition.to}`,
+                type: WorkflowNodeType.transition,
+                source: transitionId,
+                target: transition.to,
+                markerEnd: { type: MarkerType.ArrowClosed, color: theme.palette.chip?.main },
+              },
+            ]
+          : []),
       ];
     });
 

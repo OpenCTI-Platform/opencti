@@ -24,13 +24,8 @@ const CampaignKnowledgeFragment = graphql`
   }
 `;
 
-const CampaignKnowledgeComponent = ({
-  campaignData,
-}) => {
-  const campaign = useFragment(
-    CampaignKnowledgeFragment,
-    campaignData,
-  );
+const CampaignKnowledgeComponent = ({ campaignData }) => {
+  const campaign = useFragment(CampaignKnowledgeFragment, campaignData);
   const location = useLocation();
   const link = `/dashboard/threats/campaigns/${campaign.id}/knowledge`;
   const { schema } = useAuth();
@@ -40,35 +35,25 @@ const CampaignKnowledgeComponent = ({
       <Routes>
         <Route
           path="/relations/:relationId"
-          element={(
-            <StixCoreRelationship
-              entityId={campaign.id}
-              paddingRight={true}
-            />
-          )}
+          element={<StixCoreRelationship entityId={campaign.id} paddingRight={true} />}
         />
         <Route
           path="/sightings/:sightingId"
-          element={(
-            <StixSightingRelationship
-              entityId={campaign.id}
-              paddingRight={true}
-            />
-          )}
+          element={<StixSightingRelationship entityId={campaign.id} paddingRight={true} />}
         />
         <Route
           path="/overview"
-          element={(
+          element={
             <StixDomainObjectThreatKnowledge
               stixDomainObjectId={campaign.id}
               stixDomainObjectName={campaign.name}
               stixDomainObjectType="Campaign"
             />
-          )}
+          }
         />
         <Route
           path="/all"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={campaign.id}
@@ -78,11 +63,11 @@ const CampaignKnowledgeComponent = ({
               defaultStopTime={campaign.stopTime}
               allDirections
             />
-          )}
+          }
         />
         <Route
           path="/related"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={campaign.id}
@@ -108,11 +93,11 @@ const CampaignKnowledgeComponent = ({
               defaultStopTime={campaign.last_seen}
               allDirections={true}
             />
-          )}
+          }
         />
         <Route
           path="/attribution"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={campaign.id}
@@ -123,33 +108,33 @@ const CampaignKnowledgeComponent = ({
               defaultStopTime={campaign.last_seen}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route
           path="/victimology"
-          element={(
+          element={
             <StixDomainObjectVictimology
               stixDomainObjectId={campaign.id}
               entityLink={link}
               defaultStartTime={campaign.first_seen}
               defaultStopTime={campaign.last_seen}
             />
-          )}
+          }
         />
         <Route
           path="/attack_patterns"
-          element={(
+          element={
             <StixDomainObjectAttackPatterns
               stixDomainObjectId={campaign.id}
               defaultStartTime={campaign.first_seen}
               defaultStopTime={campaign.last_seen}
               entityType={campaign.entity_type}
             />
-          )}
+          }
         />
         <Route
           path="/malwares"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={campaign.id}
@@ -160,11 +145,11 @@ const CampaignKnowledgeComponent = ({
               defaultStopTime={campaign.last_seen}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route
           path="/tools"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={campaign.id}
@@ -175,11 +160,11 @@ const CampaignKnowledgeComponent = ({
               defaultStopTime={campaign.last_seen}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route
           path="/channels"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={campaign.id}
@@ -190,11 +175,11 @@ const CampaignKnowledgeComponent = ({
               defaultStopTime={campaign.last_seen}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route
           path="/narratives"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={campaign.id}
@@ -205,11 +190,11 @@ const CampaignKnowledgeComponent = ({
               defaultStopTime={campaign.last_seen}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route
           path="/vulnerabilities"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={campaign.id}
@@ -220,11 +205,11 @@ const CampaignKnowledgeComponent = ({
               defaultStopTime={campaign.last_seen}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route
           path="/incidents"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={campaign.id}
@@ -235,22 +220,22 @@ const CampaignKnowledgeComponent = ({
               defaultStopTime={campaign.last_seen}
               isRelationReversed={true}
             />
-          )}
+          }
         />
         <Route
           path="/indicators"
-          element={(
+          element={
             <EntityStixCoreRelationshipsIndicators
               entityId={campaign.id}
               entityLink={link}
               defaultStartTime={campaign.first_seen}
               defaultStopTime={campaign.last_seen}
             />
-          )}
+          }
         />
         <Route
           path="/observables"
-          element={(
+          element={
             <EntityStixCoreRelationshipsStixCyberObservable
               entityId={campaign.id}
               entityLink={link}
@@ -259,11 +244,11 @@ const CampaignKnowledgeComponent = ({
               isRelationReversed={true}
               relationshipTypes={['related-to']}
             />
-          )}
+          }
         />
         <Route
           path="/infrastructures"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={campaign.id}
@@ -274,11 +259,11 @@ const CampaignKnowledgeComponent = ({
               defaultStopTime={campaign.last_seen}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route
           path="/sightings"
-          element={(
+          element={
             <EntityStixSightingRelationships
               entityId={campaign.id}
               entityLink={link}
@@ -296,7 +281,7 @@ const CampaignKnowledgeComponent = ({
               defaultStartTime={campaign.first_seen}
               defaultStopTime={campaign.last_seen}
             />
-          )}
+          }
         />
         <Route index element={<Navigate replace={true} to="overview" />} />
       </Routes>

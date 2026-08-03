@@ -45,10 +45,7 @@ const containerHeaderSharedQuery = graphql`
 `;
 
 const containerHeaderSharedQueryGroupDeleteMutation = graphql`
-  mutation StixCoreRelationshipSharingGroupDeleteMutation(
-    $id: ID!
-    $organizationId: [ID!]!
-  ) {
+  mutation StixCoreRelationshipSharingGroupDeleteMutation($id: ID!, $organizationId: [ID!]!) {
     stixCoreRelationshipEdit(id: $id) {
       restrictionOrganizationDelete(organizationId: $organizationId) {
         id
@@ -62,10 +59,7 @@ const containerHeaderSharedQueryGroupDeleteMutation = graphql`
 `;
 
 const containerHeaderSharedGroupAddMutation = graphql`
-  mutation StixCoreRelationshipSharingGroupAddMutation(
-    $id: ID!
-    $organizationId: [ID!]!
-  ) {
+  mutation StixCoreRelationshipSharingGroupAddMutation($id: ID!, $organizationId: [ID!]!) {
     stixCoreRelationshipEdit(id: $id) {
       restrictionOrganizationAdd(organizationId: $organizationId) {
         id
@@ -78,17 +72,15 @@ const containerHeaderSharedGroupAddMutation = graphql`
   }
 `;
 
-const StixCoreRelationshipSharing: FunctionComponent<
-  ContainerHeaderSharedProps
-> = ({ elementId }) => {
+const StixCoreRelationshipSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
+  elementId,
+}) => {
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
   const disabledInDraft = !!draftContext;
   const [displaySharing, setDisplaySharing] = useState(false);
   const isEnterpriseEdition = useEnterpriseEdition();
-  const userIsOrganizationEditor = useGranted([
-    KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-  ]);
+  const userIsOrganizationEditor = useGranted([KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
   if (!userIsOrganizationEditor) {
     return <div style={{ marginTop: -20 }} />;
   }
@@ -128,27 +120,35 @@ const StixCoreRelationshipSharing: FunctionComponent<
       });
     }
   };
-  const render = ({
-    stixCoreRelationship,
-  }: StixCoreRelationshipSharingQuery$data) => {
+  const render = ({ stixCoreRelationship }: StixCoreRelationshipSharingQuery$data) => {
     const edges = stixCoreRelationship?.objectOrganization ?? [];
     return (
       <React.Fragment>
-        <Label action={(
-          <>
-            <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Share with an organization')}>
-              <IconButton
-                color="primary"
-                aria-label="Label"
-                onClick={isEnterpriseEdition && !disabledInDraft ? handleOpenSharing : () => {}}
-                size="small"
+        <Label
+          action={
+            <>
+              <EETooltip
+                title={
+                  disabledInDraft
+                    ? t_i18n('Not available in draft')
+                    : t_i18n('Share with an organization')
+                }
               >
-                <BankPlus fontSize="small" color={isEnterpriseEdition && !disabledInDraft ? 'primary' : 'disabled'} />
-              </IconButton>
-            </EETooltip>
-            {!isEnterpriseEdition && <EEChip />}
-          </>
-        )}
+                <IconButton
+                  color="primary"
+                  aria-label="Label"
+                  onClick={isEnterpriseEdition && !disabledInDraft ? handleOpenSharing : () => {}}
+                  size="small"
+                >
+                  <BankPlus
+                    fontSize="small"
+                    color={isEnterpriseEdition && !disabledInDraft ? 'primary' : 'disabled'}
+                  />
+                </IconButton>
+              </EETooltip>
+              {!isEnterpriseEdition && <EEChip />}
+            </>
+          }
         >
           {t_i18n('Organizations sharing')}
         </Label>
@@ -184,10 +184,7 @@ const StixCoreRelationshipSharing: FunctionComponent<
                 <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Close')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
+                <Button onClick={submitForm} disabled={isSubmitting}>
                   {t_i18n('Share')}
                 </Button>
               </DialogActions>

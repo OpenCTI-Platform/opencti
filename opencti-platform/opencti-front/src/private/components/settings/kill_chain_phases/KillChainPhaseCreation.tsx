@@ -21,20 +21,13 @@ const killChainPhaseMutation = graphql`
   }
 `;
 
-const CreateKillChainPhaseControlledDial = (
-  props: DrawerControlledDialProps,
-) => (
-  <CreateEntityControlledDial
-    entityType="Kill-Chain-Phase"
-    {...props}
-  />
+const CreateKillChainPhaseControlledDial = (props: DrawerControlledDialProps) => (
+  <CreateEntityControlledDial entityType="Kill-Chain-Phase" {...props} />
 );
 interface KillChainPhaseCreationProps {
   paginationOptions: PaginationOptions;
 }
-const KillChainPhaseCreation: FunctionComponent<
-  KillChainPhaseCreationProps
-> = ({
+const KillChainPhaseCreation: FunctionComponent<KillChainPhaseCreationProps> = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
@@ -49,7 +42,10 @@ const KillChainPhaseCreation: FunctionComponent<
   };
   const onSubmit = (
     values: typeof initialValues,
-    { setSubmitting, resetForm }: {
+    {
+      setSubmitting,
+      resetForm,
+    }: {
       setSubmitting: (flag: boolean) => void;
       resetForm: () => void;
     },
@@ -63,12 +59,7 @@ const KillChainPhaseCreation: FunctionComponent<
       mutation: killChainPhaseMutation,
       variables: { input: finalValues },
       updater: (store: RecordSourceSelectorProxy) => {
-        insertNode(
-          store,
-          'Pagination_killChainPhases',
-          paginationOptions,
-          'killChainPhaseAdd',
-        );
+        insertNode(store, 'Pagination_killChainPhases', paginationOptions, 'killChainPhaseAdd');
       },
       setSubmitting,
       onCompleted: () => {
@@ -116,17 +107,10 @@ const KillChainPhaseCreation: FunctionComponent<
                 style={{ marginTop: 20 }}
               />
               <FormButtonContainer>
-                <Button
-                  variant="secondary"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                >
+                <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
+                <Button onClick={submitForm} disabled={isSubmitting}>
                   {t_i18n('Create')}
                 </Button>
               </FormButtonContainer>

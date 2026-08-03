@@ -64,30 +64,23 @@ const JsonMapperLine: FunctionComponent<JsonMapperLineProps> = ({
       key={jsonMapper.id}
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={(
-        <JsonMapperPopover
-          jsonMapperId={jsonMapper.id}
-          paginationOptions={paginationOptions}
-        />
-      )}
+      secondaryAction={
+        <JsonMapperPopover jsonMapperId={jsonMapper.id} paginationOptions={paginationOptions} />
+      }
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <TableViewIcon />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
-                key={value.label}
-                className={classes.bodyItem}
-                style={{ width: value.width }}
-              >
+              <div key={value.label} className={classes.bodyItem} style={{ width: value.width }}>
                 {value.render?.(jsonMapper)}
               </div>
             ))}
           </div>
-        )}
+        }
       />
     </ListItem>
   );

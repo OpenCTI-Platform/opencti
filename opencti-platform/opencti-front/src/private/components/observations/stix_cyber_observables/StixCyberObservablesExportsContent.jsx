@@ -15,9 +15,7 @@ import StixCyberObservablesExportCreation from './StixCyberObservablesExportCrea
 
 const interval$ = interval(FIVE_SECONDS);
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
@@ -67,15 +65,18 @@ class StixCyberObservablesExportsContentComponent extends Component {
       <div>
         <List>
           {stixCyberObservablesExportFiles.length > 0 ? (
-            stixCyberObservablesExportFiles.map((file) => file?.node && (
-              <FileLine
-                key={file.node.id}
-                file={file.node}
-                dense={true}
-                disableImport={true}
-                directDownload={true}
-              />
-            ))
+            stixCyberObservablesExportFiles.map(
+              (file) =>
+                file?.node && (
+                  <FileLine
+                    key={file.node.id}
+                    file={file.node}
+                    dense={true}
+                    disableImport={true}
+                    directDownload={true}
+                  />
+                ),
+            )
           ) : (
             <div style={{ display: 'table', height: '100%', width: '100%' }}>
               <span
@@ -95,7 +96,9 @@ class StixCyberObservablesExportsContentComponent extends Component {
             data={data}
             paginationOptions={paginationOptions}
             exportContext={exportContext}
-            onExportAsk={() => this.props.relay.refetch({ count: 25, exportContext: this.props.exportContext })}
+            onExportAsk={() =>
+              this.props.relay.refetch({ count: 25, exportContext: this.props.exportContext })
+            }
           />
         </Security>
       </div>
@@ -104,8 +107,12 @@ class StixCyberObservablesExportsContentComponent extends Component {
 }
 
 export const stixCyberObservablesExportsContentQuery = graphql`
-  query StixCyberObservablesExportsContentRefetchQuery($count: Int!, $exportContext: ExportContext!) {
-    ...StixCyberObservablesExportsContent_data @arguments(count: $count, exportContext: $exportContext)
+  query StixCyberObservablesExportsContentRefetchQuery(
+    $count: Int!
+    $exportContext: ExportContext!
+  ) {
+    ...StixCyberObservablesExportsContent_data
+      @arguments(count: $count, exportContext: $exportContext)
   }
 `;
 
@@ -143,7 +150,4 @@ StixCyberObservablesExportsContent.propTypes = {
   exportContext: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCyberObservablesExportsContent);
+export default compose(inject18n, withStyles(styles))(StixCyberObservablesExportsContent);

@@ -7,14 +7,22 @@ import type { AuthContext, AuthUser } from '../../types/user';
  * Flatten custom_field_values array into a flat object for STIX export.
  * Each custom field becomes a property like x_opencti_cf_score: 5 inside the STIX extension.
  */
-export const flattenCustomFieldValuesForStix = (customFieldValues?: CustomFieldValue[]): Record<string, any> => {
+export const flattenCustomFieldValuesForStix = (
+  customFieldValues?: CustomFieldValue[],
+): Record<string, any> => {
   if (!customFieldValues || customFieldValues.length === 0) {
     return {};
   }
   const result: Record<string, any> = {};
   for (const cfv of customFieldValues) {
     // Extract the actual value based on whichever field is set (select_values is the array channel for multi_select)
-    const value = cfv.select_values ?? cfv.int_value ?? cfv.string_value ?? cfv.boolean_value ?? cfv.date_value ?? cfv.select_value;
+    const value =
+      cfv.select_values ??
+      cfv.int_value ??
+      cfv.string_value ??
+      cfv.boolean_value ??
+      cfv.date_value ??
+      cfv.select_value;
     if (value !== undefined && value !== null) {
       result[cfv.field_name] = value;
     }
@@ -71,7 +79,9 @@ export const unflattenStixToCustomFieldValues = async (
         cfValue.select_value = String(value);
         break;
       case 'select_values':
-        cfValue.select_values = Array.isArray(value) ? value.map((v) => String(v)) : [String(value)];
+        cfValue.select_values = Array.isArray(value)
+          ? value.map((v) => String(v))
+          : [String(value)];
         break;
       default:
         cfValue.string_value = String(value);

@@ -11,11 +11,7 @@ export const addSubAttackPatternsMutationRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    stixCoreRelationshipDelete(
-      fromId: $fromId
-      toId: $toId
-      relationship_type: $relationship_type
-    )
+    stixCoreRelationshipDelete(fromId: $fromId, toId: $toId, relationship_type: $relationship_type)
   }
 `;
 
@@ -42,13 +38,8 @@ AddSubAttackPatternsLinesContainer.propTypes = {
 };
 
 export const addSubAttackPatternsLinesQuery = graphql`
-  query AddSubAttackPatternsLinesQuery(
-    $search: String
-    $count: Int!
-    $cursor: ID
-  ) {
-    ...AddSubAttackPatternsLines_data
-      @arguments(search: $search, count: $count, cursor: $cursor)
+  query AddSubAttackPatternsLinesQuery($search: String, $count: Int!, $cursor: ID) {
+    ...AddSubAttackPatternsLines_data @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 

@@ -1,7 +1,17 @@
 import { getBaseUrl, getPlatformHttpProxyAgent } from '../../config/conf';
 import type { Request } from 'express';
-import { allowInsecureRequests, buildEndSessionUrl, customFetch, discovery as oidcDiscovery, fetchUserInfo } from 'openid-client';
-import type { AuthenticateOptions, StrategyOptionsWithRequest, VerifyFunctionWithRequest } from 'openid-client/passport';
+import {
+  allowInsecureRequests,
+  buildEndSessionUrl,
+  customFetch,
+  discovery as oidcDiscovery,
+  fetchUserInfo,
+} from 'openid-client';
+import type {
+  AuthenticateOptions,
+  StrategyOptionsWithRequest,
+  VerifyFunctionWithRequest,
+} from 'openid-client/passport';
 import { Strategy as OpenIDStrategy } from 'openid-client/passport';
 import type { AuthenticateCallback } from 'passport';
 import * as R from 'ramda';
@@ -21,7 +31,11 @@ const buildProxiedFetch = (issuerUrl: URL): typeof fetch => {
   return (url, options) => fetch(url, { ...options, dispatcher });
 };
 
-export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger, meta: ProviderMeta, conf: OidcStoreConfiguration) => {
+export const createOpenIdStrategy = async (
+  logger: AuthenticationProviderLogger,
+  meta: ProviderMeta,
+  conf: OidcStoreConfiguration,
+) => {
   const secretsProvider = await retrieveSecrets(conf);
   const client_secret = await secretsProvider.mandatory('client_secret');
   const callbackURL = conf.callback_url || `${getBaseUrl()}/auth/${meta.identifier}/callback`;
@@ -64,7 +78,11 @@ export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger,
     return undefined;
   };
 
-  const verify: VerifyFunctionWithRequest = async (req: Request, tokens, verified: AuthenticateCallback) => {
+  const verify: VerifyFunctionWithRequest = async (
+    req: Request,
+    tokens,
+    verified: AuthenticateCallback,
+  ) => {
     logger.info('Successfully logged on IdP', {
       tokens: {
         access_token: tryJwtDecode(tokens.access_token),
@@ -77,7 +95,10 @@ export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger,
     const sessionNonce = req.session?.nonce;
     const state = decodeOidcState(req.query?.state as string);
     if (sessionNonce !== state?.nonce) {
-      logger.info('Nonce mismatch in OIDC state parameter', { sessionNonce, stateNonce: state?.nonce });
+      logger.info('Nonce mismatch in OIDC state parameter', {
+        sessionNonce,
+        stateNonce: state?.nonce,
+      });
       return verified(new Error('Invalid state parameter'));
     }
 
@@ -89,7 +110,8 @@ export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger,
       });
 
       const context = {
-        tokens: (name: string) => typeof tokens[name] === 'string' ? jwtDecode(tokens[name]) : undefined,
+        tokens: (name: string) =>
+          typeof tokens[name] === 'string' ? jwtDecode(tokens[name]) : undefined,
         user_info,
       };
 

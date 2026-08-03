@@ -90,11 +90,7 @@ const normalizeBySchemaType = (value: unknown, property: IngestionTypedProperty)
  * Compares two values after schema-aware normalization to avoid false positives
  * caused by string/typed representation differences.
  */
-const areEquivalent = (
-  left: unknown,
-  right: unknown,
-  property: IngestionTypedProperty,
-) => {
+const areEquivalent = (left: unknown, right: unknown, property: IngestionTypedProperty) => {
   const normalizedLeft = normalizeBySchemaType(left, property);
   const normalizedRight = normalizeBySchemaType(right, property);
   return JSON.stringify(normalizedLeft) === JSON.stringify(normalizedRight);
@@ -143,7 +139,8 @@ export const getDeprecatedDescriptorsForEdition = (
 };
 
 /** Returns true when at least one deprecated descriptor should trigger an alert. */
-export const shouldShowDeprecatedAlert = (descriptors: DeprecatedFieldDescriptor[]) => descriptors.length > 0;
+export const shouldShowDeprecatedAlert = (descriptors: DeprecatedFieldDescriptor[]) =>
+  descriptors.length > 0;
 
 /**
  * Filters edition payload values by keeping all non-deprecated fields and only
@@ -154,9 +151,7 @@ export const filterValuesForEditionPayload = (
   properties: Record<string, IngestionTypedProperty>,
 ) => {
   const deprecatedDescriptors = getDeprecatedDescriptorsForEdition(properties, values);
-  const keepDeprecatedKeys = new Set(
-    deprecatedDescriptors.map((descriptor) => descriptor.key),
-  );
+  const keepDeprecatedKeys = new Set(deprecatedDescriptors.map((descriptor) => descriptor.key));
 
   return Object.fromEntries(
     Object.entries(values).filter(([key]) => {
@@ -228,7 +223,8 @@ export const computeDeprecatedEditionVisibility = (
   });
 
   return {
-    showDeprecatedAlert: shouldShowDeprecatedAlert(deprecatedDescriptors) || clearedDeprecatedKeys.length > 0,
+    showDeprecatedAlert:
+      shouldShowDeprecatedAlert(deprecatedDescriptors) || clearedDeprecatedKeys.length > 0,
     visibleDeprecatedProperties,
   };
 };

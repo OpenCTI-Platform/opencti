@@ -5,7 +5,9 @@ import DraftsDistributionList from './DraftsDistributionList';
 import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
 
 vi.mock('../../../../components/dashboard/WidgetContainer', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <div data-testid="widget-container">{children}</div>,
+  default: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="widget-container">{children}</div>
+  ),
 }));
 
 vi.mock('../../../../components/dashboard/WidgetNoData', () => ({
@@ -18,11 +20,13 @@ vi.mock('../../../../components/dashboard/WidgetDistributionList', () => ({
 
 vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
   default: () => ({
-    resolvedDataSelection: [{
-      filters: emptyFilterGroup,
-      attribute: 'entity_type',
-      date_attribute: 'created_at',
-    }],
+    resolvedDataSelection: [
+      {
+        filters: emptyFilterGroup,
+        attribute: 'entity_type',
+        date_attribute: 'created_at',
+      },
+    ],
     isMissingHostEntity: false,
     isMissingSavedFilters: false,
     isPreviewMode: false,
@@ -31,9 +35,8 @@ vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
 }));
 
 vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
-  default: ({ children, queryRef }: { children: React.ReactNode; queryRef: unknown }) => (
-    queryRef ? <>{children}</> : <div data-testid="loader" />
-  ),
+  default: ({ children, queryRef }: { children: React.ReactNode; queryRef: unknown }) =>
+    queryRef ? <>{children}</> : <div data-testid="loader" />,
 }));
 
 vi.mock('../../../../components/dashboard/dashboardVizUtils', () => ({
@@ -48,11 +51,13 @@ vi.mock('../../../../utils/hooks/useGranted', () => ({
 describe('DraftsDistributionList', () => {
   const minimalProps = {
     config: { relativeDate: null, startDate: null, endDate: null },
-    dataSelection: [{
-      filters: emptyFilterGroup,
-      attribute: 'entity_type',
-      date_attribute: 'created_at',
-    }],
+    dataSelection: [
+      {
+        filters: emptyFilterGroup,
+        attribute: 'entity_type',
+        date_attribute: 'created_at',
+      },
+    ],
     parameters: {},
   };
 

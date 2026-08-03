@@ -58,10 +58,7 @@ interface CaseTemplateLineProps {
   dataColumns: DataColumns;
 }
 
-const CaseTemplateLine: FunctionComponent<CaseTemplateLineProps> = ({
-  node,
-  dataColumns,
-}) => {
+const CaseTemplateLine: FunctionComponent<CaseTemplateLineProps> = ({ node, dataColumns }) => {
   const classes = useStyles();
 
   const data = useFragment(CaseTemplateLineFragment, node);
@@ -77,19 +74,15 @@ const CaseTemplateLine: FunctionComponent<CaseTemplateLineProps> = ({
         <ItemIcon type="Case-Template" />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <>
             {Object.values(dataColumns).map((value) => (
-              <div
-                key={value.label}
-                className={classes.bodyItem}
-                style={{ width: value.width }}
-              >
+              <div key={value.label} className={classes.bodyItem} style={{ width: value.width }}>
                 {value.render?.(data)}
               </div>
             ))}
           </>
-        )}
+        }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />

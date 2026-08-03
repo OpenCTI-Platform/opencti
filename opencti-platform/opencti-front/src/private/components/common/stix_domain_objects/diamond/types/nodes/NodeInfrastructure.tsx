@@ -13,22 +13,36 @@ const NodeInfrastructure = ({ data }: NodeProps) => {
 
   const { stixDomainObject, entityLink } = data;
 
-  const usedIPs = R.uniq((stixDomainObject.relatedIPs?.edges ?? [])
-    .map((n: { node: { from: { representative: { main: string } } } }) => n?.node?.from?.representative?.main))
-    .join(', ');
+  const usedIPs = R.uniq(
+    (stixDomainObject.relatedIPs?.edges ?? []).map(
+      (n: { node: { from: { representative: { main: string } } } }) =>
+        n?.node?.from?.representative?.main,
+    ),
+  ).join(', ');
 
-  const usedDomains = R.uniq((stixDomainObject.relatedDomains?.edges ?? [])
-    .map((n: { node: { from: { representative: { main: string } } } }) => n?.node?.from?.representative?.main))
-    .join(', ');
+  const usedDomains = R.uniq(
+    (stixDomainObject.relatedDomains?.edges ?? []).map(
+      (n: { node: { from: { representative: { main: string } } } }) =>
+        n?.node?.from?.representative?.main,
+    ),
+  ).join(', ');
 
-  const usedInfrastructures = R.uniq((stixDomainObject.infrastructuresUsed?.edges ?? [])
-    .map((n: { node: { to: { name: string } } }) => n?.node?.to?.name))
-    .join(', ');
+  const usedInfrastructures = R.uniq(
+    (stixDomainObject.infrastructuresUsed?.edges ?? []).map(
+      (n: { node: { to: { name: string } } }) => n?.node?.to?.name,
+    ),
+  ).join(', ');
 
-  const generatedFilters = getFilterFromEntityTypeAndNodeType(stixDomainObject.entity_type, DiamondNodeEnum.infrastructure);
+  const generatedFilters = getFilterFromEntityTypeAndNodeType(
+    stixDomainObject.entity_type,
+    DiamondNodeEnum.infrastructure,
+  );
 
   return (
-    <NodeContainer link={`${entityLink}/all?filters=${generatedFilters}&view=entities`} position={Position.Left}>
+    <NodeContainer
+      link={`${entityLink}/all?filters=${generatedFilters}&view=entities`}
+      position={Position.Left}
+    >
       <>
         <Typography variant="h3" gutterBottom>
           {t_i18n('Last used IP addresses')}

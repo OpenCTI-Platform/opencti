@@ -28,18 +28,10 @@ function GraphToolbarOptionsList<T>({
   isOptionSelected = () => false,
 }: GraphToolbarOptionsListProps<T>) {
   return (
-    <Popover
-      open={!!anchorEl}
-      anchorEl={anchorEl}
-      onClose={onClose}
-    >
+    <Popover open={!!anchorEl} anchorEl={anchorEl} onClose={onClose}>
       <List>
         {options.map((option) => (
-          <ListItemButton
-            dense
-            key={getOptionKey(option)}
-            onClick={() => onSelect(option)}
-          >
+          <ListItemButton dense key={getOptionKey(option)} onClick={() => onSelect(option)}>
             {isMultiple && (
               <ListItemIcon sx={{ minWidth: 0 }}>
                 <Checkbox

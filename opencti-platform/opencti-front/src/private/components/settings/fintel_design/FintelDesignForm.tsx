@@ -37,7 +37,10 @@ export type FintelDesignFormValues = {
   textColor?: string | null | undefined;
 };
 
-const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onFileUploaded, fintelDesign }) => {
+const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({
+  onFileUploaded,
+  fintelDesign,
+}) => {
   const { t_i18n } = useFormatter();
 
   const initialValues: FintelDesignFormValues = {
@@ -47,26 +50,26 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onFileUplo
     textColor: fintelDesign.textColor,
   };
 
-  const fintelDesignValidation = () => Yup.object().shape({
-    gradiantFromColor: Yup.string().matches(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, t_i18n('Invalid hexa color code')).nullable(),
-    gradiantToColor: Yup.string().matches(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, t_i18n('Invalid hexa color code')).nullable(),
-    textColor: Yup.string().nullable(),
-    file: Yup.mixed()
-      .test(
-        'fileFormat',
-        'Unsupported file format',
-        (value: unknown) => {
-          if (!value) {
-            return true; // File is not required
-          }
-          if (!(value instanceof File)) {
-            return false; // typecheck
-          }
-          const allowedFormats = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'];
-          return allowedFormats.includes(value?.type);
-        },
-      ),
-  });
+  const fintelDesignValidation = () =>
+    Yup.object().shape({
+      gradiantFromColor: Yup.string()
+        .matches(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, t_i18n('Invalid hexa color code'))
+        .nullable(),
+      gradiantToColor: Yup.string()
+        .matches(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, t_i18n('Invalid hexa color code'))
+        .nullable(),
+      textColor: Yup.string().nullable(),
+      file: Yup.mixed().test('fileFormat', 'Unsupported file format', (value: unknown) => {
+        if (!value) {
+          return true; // File is not required
+        }
+        if (!(value instanceof File)) {
+          return false; // typecheck
+        }
+        const allowedFormats = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'];
+        return allowedFormats.includes(value?.type);
+      }),
+    });
 
   const [commitFieldPatch] = useApiMutation(fintelDesignFormFieldPatchMutation);
   const [commitFileUpload] = useApiMutation(fintelDesignFormFileUploadMutation);

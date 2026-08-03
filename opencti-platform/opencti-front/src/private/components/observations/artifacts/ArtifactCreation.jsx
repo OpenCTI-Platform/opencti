@@ -75,32 +75,29 @@ const artifactDescriptionPatchMutation = graphql`
   }
 `;
 
-const artifactValidation = (t) => Yup.object().shape({
-  file: Yup.mixed().nullable(),
-  url: Yup.string().url(t('The value must be an URL')).nullable(),
-  x_opencti_description: Yup.string().nullable(),
-}).test('file-or-url', t('A file or a URL must be provided'), function (values) {
-  if (!values.file && !values.url) {
-    return this.createError({ path: 'file', message: t('A file or a URL must be provided') });
-  }
-  return true;
-});
+const artifactValidation = (t) =>
+  Yup.object()
+    .shape({
+      file: Yup.mixed().nullable(),
+      url: Yup.string().url(t('The value must be an URL')).nullable(),
+      x_opencti_description: Yup.string().nullable(),
+    })
+    .test('file-or-url', t('A file or a URL must be provided'), function (values) {
+      if (!values.file && !values.url) {
+        return this.createError({ path: 'file', message: t('A file or a URL must be provided') });
+      }
+      return true;
+    });
 
-const ArtifactCreation = ({
-  paginationOptions,
-}) => {
+const ArtifactCreation = ({ paginationOptions }) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
-  const [commit] = useApiMutation(
-    artifactMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Artifact')} ${t_i18n('successfully created')}` },
-  );
-  const [commitObservable] = useApiMutation(
-    artifactAddObservableMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Artifact')} ${t_i18n('successfully created')}` },
-  );
+  const [commit] = useApiMutation(artifactMutation, undefined, {
+    successMessage: `${t_i18n('entity_Artifact')} ${t_i18n('successfully created')}`,
+  });
+  const [commitObservable] = useApiMutation(artifactAddObservableMutation, undefined, {
+    successMessage: `${t_i18n('entity_Artifact')} ${t_i18n('successfully created')}`,
+  });
   const [commitDescriptionPatch] = useApiMutation(artifactDescriptionPatchMutation);
   const markdownControllerRef = useRef(null);
 
@@ -129,12 +126,8 @@ const ArtifactCreation = ({
           file: values.file,
           ...adaptedValues,
         },
-        updater: (store) => insertNode(
-          store,
-          'Pagination_stixCyberObservables',
-          paginationOptions,
-          'artifactImport',
-        ),
+        updater: (store) =>
+          insertNode(store, 'Pagination_stixCyberObservables', paginationOptions, 'artifactImport'),
         onError: (error) => {
           handleErrorInForm(error, setErrors);
           setSubmitting(false);
@@ -142,11 +135,16 @@ const ArtifactCreation = ({
         onCompleted: async (response) => {
           try {
             const artifactId = response?.artifactImport?.id;
-            const hasPendingMarkdownImages = (markdownControllerRef.current?.getPendingImageFiles().length ?? 0) > 0;
+            const hasPendingMarkdownImages =
+              (markdownControllerRef.current?.getPendingImageFiles().length ?? 0) > 0;
 
             if (artifactId && hasPendingMarkdownImages) {
-              const finalizedDescription = await markdownControllerRef.current?.persistTempImages(artifactId);
-              if (typeof finalizedDescription === 'string' && finalizedDescription !== values.x_opencti_description) {
+              const finalizedDescription =
+                await markdownControllerRef.current?.persistTempImages(artifactId);
+              if (
+                typeof finalizedDescription === 'string' &&
+                finalizedDescription !== values.x_opencti_description
+              ) {
                 await new Promise((resolve, reject) => {
                   commitDescriptionPatch({
                     variables: {
@@ -177,12 +175,13 @@ const ArtifactCreation = ({
           objectLabel: adaptedValues.objectLabel,
           Artifact: { url: values.url },
         },
-        updater: (store) => insertNode(
-          store,
-          'Pagination_stixCyberObservables',
-          paginationOptions,
-          'stixCyberObservableAdd',
-        ),
+        updater: (store) =>
+          insertNode(
+            store,
+            'Pagination_stixCyberObservables',
+            paginationOptions,
+            'stixCyberObservableAdd',
+          ),
         onError: (error) => {
           handleErrorInForm(error, setErrors);
           setSubmitting(false);
@@ -202,15 +201,8 @@ const ArtifactCreation = ({
 
   return (
     <>
-      <CreateEntityControlledDial
-        entityType="Artifact"
-        onOpen={handleOpen}
-      />
-      <Drawer
-        title={t_i18n('Create an artifact')}
-        open={open}
-        onClose={handleClose}
-      >
+      <CreateEntityControlledDial entityType="Artifact" onOpen={handleOpen} />
+      <Drawer title={t_i18n('Create an artifact')} open={open} onClose={handleClose}>
         <Formik
           initialValues={{
             x_opencti_description: '',
@@ -224,20 +216,9 @@ const ArtifactCreation = ({
           onSubmit={onSubmit}
           onReset={onReset}
         >
-          {({
-            submitForm,
-            handleReset,
-            isSubmitting,
-            setFieldValue,
-            values,
-            errors,
-          }) => (
+          {({ submitForm, handleReset, isSubmitting, setFieldValue, values, errors }) => (
             <Form>
-              <CustomFileUploader
-                setFieldValue={setFieldValue}
-                formikErrors={errors}
-                noMargin
-              />
+              <CustomFileUploader setFieldValue={setFieldValue} formikErrors={errors} noMargin />
               <Field
                 component={TextField}
                 variant="standard"
@@ -271,22 +252,12 @@ const ArtifactCreation = ({
                 setFieldValue={setFieldValue}
                 values={values.objectLabel}
               />
-              <ObjectMarkingField
-                name="objectMarking"
-                style={fieldSpacingContainerStyle}
-              />
+              <ObjectMarkingField name="objectMarking" style={fieldSpacingContainerStyle} />
               <FormButtonContainer>
-                <Button
-                  variant="secondary"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                >
+                <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
+                <Button onClick={submitForm} disabled={isSubmitting}>
                   {t_i18n('Create')}
                 </Button>
               </FormButtonContainer>

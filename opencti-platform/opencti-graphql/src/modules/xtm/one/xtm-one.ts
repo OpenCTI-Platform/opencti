@@ -4,7 +4,10 @@ import type { BasicStoreSettings } from '../../../types/settings';
 import { getEntityFromCache } from '../../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../../schema/internalObject';
 import { decodeLicensePem, getEnterpriseEditionActivePem } from '../../settings/licensing';
-import { redisGetXtmRegistrationResult, redisSetXtmRegistrationResult } from '../../../database/redis';
+import {
+  redisGetXtmRegistrationResult,
+  redisSetXtmRegistrationResult,
+} from '../../../database/redis';
 import xtmOneClient from './xtm-one-client';
 import type { XtmOneRegistrationResponse } from './xtm-one-client';
 
@@ -12,7 +15,7 @@ export const XTM_ONE_SCHEDULE_TIME = 5 * 60 * 1000; // 5 minutes
 const XTM_REGISTRATION_RESULT_TTL = Math.ceil((XTM_ONE_SCHEDULE_TIME * 2) / 1000); // 2× schedule, in seconds
 
 export const getXtmRegistrationResult = async (): Promise<XtmOneRegistrationResponse | null> => {
-  return await redisGetXtmRegistrationResult() as Promise<XtmOneRegistrationResponse | null>;
+  return (await redisGetXtmRegistrationResult()) as Promise<XtmOneRegistrationResponse | null>;
 };
 
 export const getXtmOneRegistrationVersion = async (): Promise<string> => {
@@ -35,7 +38,11 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
     return;
   }
 
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+  const settings = await getEntityFromCache<BasicStoreSettings>(
+    context,
+    user,
+    ENTITY_TYPE_SETTINGS,
+  );
   if (!settings) {
     logApp.warn('[XTM One] Cannot register: settings not available');
     return;
@@ -70,21 +77,48 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
       { name: 'global.change_tone', description: 'Change the tone of content' },
       { name: 'global.summarize', description: 'Summarize content' },
       { name: 'global.explain', description: 'Explain content in simple terms' },
-      { name: 'cti.container_summary', description: 'Summarize an OpenCTI container (report, grouping, case)' },
-      { name: 'cti.containers_digest', description: 'Summarize containers related to an OpenCTI entity' },
+      {
+        name: 'cti.container_summary',
+        description: 'Summarize an OpenCTI container (report, grouping, case)',
+      },
+      {
+        name: 'cti.containers_digest',
+        description: 'Summarize containers related to an OpenCTI entity',
+      },
       { name: 'cti.entity_activity', description: 'Analyse activity trends of an OpenCTI entity' },
       { name: 'cti.entity_forecast', description: 'Forecast future activity of an OpenCTI entity' },
-      { name: 'cti.entity_history', description: 'Summarize internal history of an OpenCTI entity' },
-      { name: 'cti.nlq_search', description: 'Generate an OpenCTI filter from a natural language query' },
-      { name: 'cti.stix_harvester', description: 'Extract cyber threat intelligence from documents into STIX 2.1 bundles' },
-      { name: 'cti.stix_transformer', description: 'Transform a STIX 2.1 bundle (enrich, filter, rewrite, normalize) and return a valid STIX 2.1 bundle' },
-      { name: 'cti.stix_consumer', description: 'Consume a STIX 2.1 bundle as the final step of an OpenCTI playbook (summarize, alert, post, dispatch)' },
+      {
+        name: 'cti.entity_history',
+        description: 'Summarize internal history of an OpenCTI entity',
+      },
+      {
+        name: 'cti.nlq_search',
+        description: 'Generate an OpenCTI filter from a natural language query',
+      },
+      {
+        name: 'cti.stix_harvester',
+        description: 'Extract cyber threat intelligence from documents into STIX 2.1 bundles',
+      },
+      {
+        name: 'cti.stix_transformer',
+        description:
+          'Transform a STIX 2.1 bundle (enrich, filter, rewrite, normalize) and return a valid STIX 2.1 bundle',
+      },
+      {
+        name: 'cti.stix_consumer',
+        description:
+          'Consume a STIX 2.1 bundle as the final step of an OpenCTI playbook (summarize, alert, post, dispatch)',
+      },
     ],
   });
 
   if (result) {
     await redisSetXtmRegistrationResult(result, XTM_REGISTRATION_RESULT_TTL);
-    logApp.info('[XTM One] Registration successful', { status: result.status, ee_enabled: result.ee_enabled, version: result.version });
+    logApp.info('[XTM One] Registration successful', {
+      status: result.status,
+      ee_enabled: result.ee_enabled,
+      version: result.version,
+    });
   } else {
     logApp.warn('[XTM One] Registration failed, will retry on next tick');
   }

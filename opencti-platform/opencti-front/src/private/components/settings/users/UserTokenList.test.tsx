@@ -55,12 +55,14 @@ describe('Component: UserTokenList', () => {
     await user.click(screen.getByText('Revoke'));
 
     // Check mutation variables
-    expect(commitMutationMock).toHaveBeenCalledWith(expect.objectContaining({
-      variables: {
-        userId: 'target-user-id',
-        id: 'token-1',
-      },
-    }));
+    expect(commitMutationMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        variables: {
+          userId: 'target-user-id',
+          id: 'token-1',
+        },
+      }),
+    );
 
     // Success callback
     const config = commitMutationMock.mock.calls[0][0];
@@ -76,13 +78,7 @@ describe('Component: UserTokenList', () => {
   });
 
   it('should open creation drawer when openDrawer prop is true', () => {
-    testRender(
-      <UserTokenList
-        node={mockNode}
-        openDrawer={true}
-        onCloseDrawer={() => {}}
-      />,
-    );
+    testRender(<UserTokenList node={mockNode} openDrawer={true} onCloseDrawer={() => {}} />);
 
     expect(screen.getByText('Generate a new token')).toBeInTheDocument();
   });

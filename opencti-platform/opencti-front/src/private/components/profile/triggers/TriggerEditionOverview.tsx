@@ -15,7 +15,13 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import SelectField from '../../../../components/fields/SelectField';
 import TextField from '../../../../components/TextField';
 import TimePickerField from '../../../../components/TimePickerField';
-import { convertEventTypes, convertNotifiers, convertTriggers, filterEventTypesOptions, instanceEventTypesOptions } from '../../../../utils/edition';
+import {
+  convertEventTypes,
+  convertNotifiers,
+  convertTriggers,
+  filterEventTypesOptions,
+  instanceEventTypesOptions,
+} from '../../../../utils/edition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import {
   deserializeFilterGroupForFrontend,
@@ -38,10 +44,7 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import { useTheme } from '@mui/material/styles';
 
 export const triggerMutationFieldPatch = graphql`
-  mutation TriggerEditionOverviewFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput!]!
-  ) {
+  mutation TriggerEditionOverviewFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
     triggerKnowledgeFieldPatch(id: $id, input: $input) {
       ...TriggerEditionOverview_trigger
     }
@@ -93,19 +96,31 @@ interface TriggerEditionFormValues {
   period: string;
 }
 
-const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = ({ data, handleClose, paginationOptions }) => {
+const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = ({
+  data,
+  handleClose,
+  paginationOptions,
+}) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const defaultInstanceTriggerFilters = {
     ...emptyFilterGroup,
-    filters: [getDefaultFilterObject('connectedToId', useFilterDefinition('connectedToId', ['Instance']))],
+    filters: [
+      getDefaultFilterObject('connectedToId', useFilterDefinition('connectedToId', ['Instance'])),
+    ],
   };
   const trigger = useFragment(triggerEditionOverviewFragment, data);
   const [commitFieldPatch] = useApiMutation(triggerMutationFieldPatch);
-  const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger.filters) ?? undefined);
-  const [instanceTriggerFilters, instanceTriggerFiltersHelpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger.filters)
-    ?? defaultInstanceTriggerFilters, defaultInstanceTriggerFilters);
-  const [instanceTrigger, setInstanceTrigger] = useState<boolean>(trigger.instance_trigger ?? false);
+  const [filters, helpers] = useFiltersState(
+    deserializeFilterGroupForFrontend(trigger.filters) ?? undefined,
+  );
+  const [instanceTriggerFilters, instanceTriggerFiltersHelpers] = useFiltersState(
+    deserializeFilterGroupForFrontend(trigger.filters) ?? defaultInstanceTriggerFilters,
+    defaultInstanceTriggerFilters,
+  );
+  const [instanceTrigger, setInstanceTrigger] = useState<boolean>(
+    trigger.instance_trigger ?? false,
+  );
   const eventTypesOptions: { value: TriggerEventType; label: string }[] = [
     { value: 'create', label: t_i18n('Creation') },
     { value: 'update', label: t_i18n('Modification') },
@@ -118,7 +133,9 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
         id: trigger.id,
         input: {
           key: 'filters',
-          value: instanceTrigger ? serializeFilterGroupForBackend(instanceTriggerFilters) : serializeFilterGroupForBackend(filters),
+          value: instanceTrigger
+            ? serializeFilterGroupForBackend(instanceTriggerFilters)
+            : serializeFilterGroupForBackend(filters),
         },
       },
     });
@@ -140,55 +157,56 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
     });
   };
 
-  const triggerValidation = () => Yup.object().shape({
-    name: Yup.string().required(t_i18n('This field is required')),
-    description: Yup.string().nullable(),
-    event_types:
-      trigger.trigger_type === 'live'
-        ? Yup.array()
-            .min(1, t_i18n('Minimum one event type'))
-            .required(t_i18n('This field is required'))
-        : Yup.array().nullable(),
-    notifiers:
-      trigger.trigger_type === 'digest'
-        ? Yup.array()
-            .min(1, t_i18n('Minimum one notifier'))
-            .required(t_i18n('This field is required'))
-        : Yup.array().nullable(),
-    period:
-      trigger.trigger_type === 'digest'
-        ? Yup.string().required(t_i18n('This field is required'))
-        : Yup.string().nullable(),
-    day: Yup.string().nullable(),
-    time: Yup.string().nullable(),
-    trigger_ids:
-      trigger.trigger_type === 'digest'
-        ? Yup.array()
-            .min(1, t_i18n('Minimum one trigger'))
-            .required(t_i18n('This field is required'))
-        : Yup.array().nullable(),
-  });
+  const triggerValidation = () =>
+    Yup.object().shape({
+      name: Yup.string().required(t_i18n('This field is required')),
+      description: Yup.string().nullable(),
+      event_types:
+        trigger.trigger_type === 'live'
+          ? Yup.array()
+              .min(1, t_i18n('Minimum one event type'))
+              .required(t_i18n('This field is required'))
+          : Yup.array().nullable(),
+      notifiers:
+        trigger.trigger_type === 'digest'
+          ? Yup.array()
+              .min(1, t_i18n('Minimum one notifier'))
+              .required(t_i18n('This field is required'))
+          : Yup.array().nullable(),
+      period:
+        trigger.trigger_type === 'digest'
+          ? Yup.string().required(t_i18n('This field is required'))
+          : Yup.string().nullable(),
+      day: Yup.string().nullable(),
+      time: Yup.string().nullable(),
+      trigger_ids:
+        trigger.trigger_type === 'digest'
+          ? Yup.array()
+              .min(1, t_i18n('Minimum one trigger'))
+              .required(t_i18n('This field is required'))
+          : Yup.array().nullable(),
+    });
 
-  const handleSubmitTriggers = (name: string, value: { value: string }[]) => triggerValidation()
-    .validateAt(name, { [name]: value })
-    .then(() => {
-      commitFieldPatch({
-        variables: {
-          id: trigger.id,
-          input: { key: name, value: value?.map(({ value: v }) => v) ?? '' },
-        },
-      });
-    })
-    .catch(() => false);
+  const handleSubmitTriggers = (name: string, value: { value: string }[]) =>
+    triggerValidation()
+      .validateAt(name, { [name]: value })
+      .then(() => {
+        commitFieldPatch({
+          variables: {
+            id: trigger.id,
+            input: { key: name, value: value?.map(({ value: v }) => v) ?? '' },
+          },
+        });
+      })
+      .catch(() => false);
 
   const handleSubmitDay = (_: string, value: string) => {
     const day = value && value.length > 0 ? value : '1';
     const currentTime = trigger.trigger_time?.split('-') ?? [
       `${parse(dayStartDate()).utc().format('HH:mm:00.000')}Z`,
     ];
-    const newTime = currentTime.length > 1
-      ? `${day}-${currentTime[1]}`
-      : `${day}-${currentTime[0]}`;
+    const newTime =
+      currentTime.length > 1 ? `${day}-${currentTime[1]}` : `${day}-${currentTime[0]}`;
     return commitFieldPatch({
       variables: {
         id: trigger.id,
@@ -198,15 +216,15 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
   };
 
   const handleSubmitTime = (_: string, value: string) => {
-    const time = value && value.length > 0
-      ? `${parse(value).utc().format('HH:mm:00.000')}Z`
-      : `${parse(dayStartDate()).utc().format('HH:mm:00.000')}Z`;
+    const time =
+      value && value.length > 0
+        ? `${parse(value).utc().format('HH:mm:00.000')}Z`
+        : `${parse(dayStartDate()).utc().format('HH:mm:00.000')}Z`;
     const currentTime = trigger.trigger_time?.split('-') ?? [
       `${parse(dayStartDate()).utc().format('HH:mm:00.000')}Z`,
     ];
-    const newTime = currentTime.length > 1 && trigger.period !== 'hour'
-      ? `${currentTime[0]}-${time}`
-      : time;
+    const newTime =
+      currentTime.length > 1 && trigger.period !== 'hour' ? `${currentTime[0]}-${time}` : time;
     return commitFieldPatch({
       variables: {
         id: trigger.id,
@@ -250,10 +268,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
     });
   };
 
-  const handleSubmitField = (
-    name: string,
-    value: FieldOption | string | string[],
-  ) => {
+  const handleSubmitField = (name: string, value: FieldOption | string | string[]) => {
     return triggerValidation()
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -279,10 +294,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
   };
 
   const onChangeInstanceTrigger = (
-    setFieldValue: (
-      key: string,
-      value: { value: string; label: string }[],
-    ) => void,
+    setFieldValue: (key: string, value: { value: string; label: string }[]) => void,
   ) => {
     const newInstanceTriggerValue = !instanceTrigger;
     setFieldValue(
@@ -305,9 +317,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
     });
   };
 
-  const currentTime = trigger.trigger_time?.split('-') ?? [
-    dayStartDate().toISOString(),
-  ];
+  const currentTime = trigger.trigger_time?.split('-') ?? [dayStartDate().toISOString()];
 
   const initialValues = {
     name: trigger.name,
@@ -360,17 +370,13 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
                 label: t_i18n('Triggering on'),
               }}
               options={
-                trigger.instance_trigger
-                  ? instanceEventTypesOptions
-                  : filterEventTypesOptions
+                trigger.instance_trigger ? instanceEventTypesOptions : filterEventTypesOptions
               }
-              onChange={(
-                name: string,
-                value: { value: string; label: string }[],
-              ) => handleSubmitField(
-                name,
-                value.map((n) => n.value),
-              )
+              onChange={(name: string, value: { value: string; label: string }[]) =>
+                handleSubmitField(
+                  name,
+                  value.map((n) => n.value),
+                )
               }
               renderOption={(
                 props: React.HTMLAttributes<HTMLLIElement>,
@@ -378,9 +384,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               ) => (
                 <MenuItem value={option.value} {...props}>
                   <Checkbox
-                    checked={values.event_types
-                      .map((n) => n.value)
-                      .includes(option.value)}
+                    checked={values.event_types.map((n) => n.value).includes(option.value)}
                   />
                   <ListItemText primary={option.label} />
                 </MenuItem>
@@ -465,10 +469,11 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
           )}
           <NotifierField
             name="notifiers"
-            onChange={(name, options) => handleSubmitField(
-              name,
-              options.map(({ value }) => value),
-            )
+            onChange={(name, options) =>
+              handleSubmitField(
+                name,
+                options.map(({ value }) => value),
+              )
             }
           />
           <Field
@@ -483,47 +488,49 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
           />
           {trigger.trigger_type === 'live' && (
             <span>
-              <Box sx={{
-                marginTop: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: theme.spacing(1),
-                marginBottom: theme.spacing(1),
-              }}
+              <Box
+                sx={{
+                  marginTop: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: theme.spacing(1),
+                  marginBottom: theme.spacing(1),
+                }}
               >
-                {!instanceTrigger
-                  && (
-                    <Filters
-                      availableFilterKeys={stixFilters}
-                      helpers={helpers}
-                      searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] }}
-                    />
-                  )
-                }
+                {!instanceTrigger && (
+                  <Filters
+                    availableFilterKeys={stixFilters}
+                    helpers={helpers}
+                    searchContext={{
+                      entityTypes: ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'],
+                    }}
+                  />
+                )}
               </Box>
 
-              {instanceTrigger
-                ? (
-                    <FilterIconButton
-                      filters={instanceTriggerFilters}
-                      helpers={{
-                        ...instanceTriggerFiltersHelpers,
-                        handleSwitchLocalMode: () => undefined, // connectedToId filter can only have the 'or' local mode
-                      }}
-                      redirection
-                      entityTypes={['Instance']}
-                      filtersRestrictions={{ preventLocalModeSwitchingFor: ['connectedToId'], preventRemoveFor: ['connectedToId'] }}
-                    />
-                  ) : (
-                    <FilterIconButton
-                      filters={filters}
-                      helpers={helpers}
-                      redirection
-                      searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
-                      entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
-                    />
-                  )
-              }
+              {instanceTrigger ? (
+                <FilterIconButton
+                  filters={instanceTriggerFilters}
+                  helpers={{
+                    ...instanceTriggerFiltersHelpers,
+                    handleSwitchLocalMode: () => undefined, // connectedToId filter can only have the 'or' local mode
+                  }}
+                  redirection
+                  entityTypes={['Instance']}
+                  filtersRestrictions={{
+                    preventLocalModeSwitchingFor: ['connectedToId'],
+                    preventRemoveFor: ['connectedToId'],
+                  }}
+                />
+              ) : (
+                <FilterIconButton
+                  filters={filters}
+                  helpers={helpers}
+                  redirection
+                  searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                  entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
+                />
+              )}
             </span>
           )}
         </Form>

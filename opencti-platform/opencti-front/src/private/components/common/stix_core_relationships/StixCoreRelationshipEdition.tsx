@@ -5,7 +5,9 @@ import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Drawer from '../drawer/Drawer';
-import StixCoreRelationshipEditionOverview, { stixCoreRelationshipEditionOverviewQuery } from './StixCoreRelationshipEditionOverview';
+import StixCoreRelationshipEditionOverview, {
+  stixCoreRelationshipEditionOverviewQuery,
+} from './StixCoreRelationshipEditionOverview';
 import { StixCoreRelationshipEditionContextQuery } from './__generated__/StixCoreRelationshipEditionContextQuery.graphql';
 
 export const stixCoreRelationshipEditionDeleteMutation = graphql`
@@ -37,9 +39,7 @@ type StixCoreRelationshipEditionContainerProps = {
 };
 
 const StixCoreRelationshipEditionContainer = (props: StixCoreRelationshipEditionContainerProps) => {
-  const {
-    stixCoreRelationshipId,
-  } = props;
+  const { stixCoreRelationshipId } = props;
 
   const contextQueryRef = useQueryLoading<StixCoreRelationshipEditionContextQuery>(
     stixCoreRelationshipEditionContextQuery,
@@ -50,10 +50,7 @@ const StixCoreRelationshipEditionContainer = (props: StixCoreRelationshipEdition
 
   return (
     <Suspense>
-      <StixCoreRelationshipEditionContainerContent
-        {...props}
-        contextQueryRef={contextQueryRef}
-      />
+      <StixCoreRelationshipEditionContainerContent {...props} contextQueryRef={contextQueryRef} />
     </Suspense>
   );
 };
@@ -71,10 +68,7 @@ const StixCoreRelationshipEditionContainerContent = ({
 }) => {
   const { t_i18n } = useFormatter();
 
-  const contextData = usePreloadedQuery(
-    stixCoreRelationshipEditionContextQuery,
-    contextQueryRef,
-  );
+  const contextData = usePreloadedQuery(stixCoreRelationshipEditionContextQuery, contextQueryRef);
 
   const editContext = contextData?.stixCoreRelationship?.editContext;
 

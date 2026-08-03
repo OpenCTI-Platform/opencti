@@ -23,7 +23,10 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import AttackPatternEdition from './AttackPatternEdition';
 import AttackPatternDeletion from './AttackPatternDeletion';
 import { PATH_ATTACK_PATTERN, PATH_ATTACK_PATTERNS } from '@components/common/routes/paths';
@@ -83,20 +86,22 @@ type RootAttackPatternProps = {
 };
 
 const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootAttackPatternSubscription>>(() => ({
-    subscription,
-    variables: { id: attackPatternId },
-  }), [attackPatternId]);
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootAttackPatternSubscription>>(
+    () => ({
+      subscription,
+      variables: { id: attackPatternId },
+    }),
+    [attackPatternId],
+  );
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootAttackPatternSubscription>(subConfig);
 
-  const {
-    attackPattern,
-    connectorsForExport,
-    connectorsForImport,
-  } = usePreloadedQuery(attackPatternQuery, queryRef);
+  const { attackPattern, connectorsForExport, connectorsForImport } = usePreloadedQuery(
+    attackPatternQuery,
+    queryRef,
+  );
 
   const { forceUpdate } = useForceUpdate();
 
@@ -110,7 +115,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
           <Routes>
             <Route
               path="/knowledge/*"
-              element={(
+              element={
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={`${basePath}/knowledge`}
                   availableSections={[
@@ -127,34 +132,37 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
                   ]}
                   data={attackPattern}
                 />
-              )}
+              }
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs elements={[
-              { label: t_i18n('Techniques') },
-              { label: t_i18n('Attack patterns'), link: PATH_ATTACK_PATTERNS },
-              { label: attackPattern.name, current: true },
-            ]}
+            <Breadcrumbs
+              elements={[
+                { label: t_i18n('Techniques') },
+                { label: t_i18n('Attack patterns'), link: PATH_ATTACK_PATTERNS },
+                { label: attackPattern.name, current: true },
+              ]}
             />
             <StixDomainObjectHeader
               entityType="Attack-Pattern"
               stixDomainObject={attackPattern}
-              EditComponent={(
+              EditComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <AttackPatternEdition attackPatternId={attackPattern.id} />
                 </Security>
-              )}
-              RelateComponent={(
+              }
+              RelateComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <StixCoreRelationshipCreationFromEntityHeader
-                    data={attackPattern}
-                  />
+                  <StixCoreRelationshipCreationFromEntityHeader data={attackPattern} />
                 </Security>
-              )}
+              }
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                  <AttackPatternDeletion id={attackPattern.id} isOpen={isOpen} handleClose={onClose} />
+                  <AttackPatternDeletion
+                    id={attackPattern.id}
+                    isOpen={isOpen}
+                    handleClose={onClose}
+                  />
                 </Security>
               )}
               redirectToContent={true}
@@ -164,20 +172,18 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
               entity={attackPattern}
               basePath={basePath}
               pages={{
-                overview:
-                  <AttackPattern attackPatternData={attackPattern} />,
+                overview: <AttackPattern attackPatternData={attackPattern} />,
                 knowledge: (
                   <div key={forceUpdate}>
                     <AttackPatternKnowledge attackPatternData={attackPattern} />
                   </div>
                 ),
-                content: (
-                  <StixCoreObjectContentRoot
-                    stixCoreObject={attackPattern}
+                content: <StixCoreObjectContentRoot stixCoreObject={attackPattern} />,
+                analyses: (
+                  <StixCoreObjectOrStixCoreRelationshipContainers
+                    stixDomainObjectOrStixCoreRelationship={attackPattern}
                   />
                 ),
-                analyses:
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={attackPattern} />,
                 files: (
                   <FileManager
                     id={attackPatternId}
@@ -186,8 +192,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
                     entity={attackPattern}
                   />
                 ),
-                history:
-                  <StixCoreObjectHistory stixCoreObjectId={attackPatternId} />,
+                history: <StixCoreObjectHistory stixCoreObjectId={attackPatternId} />,
               }}
             />
           </div>

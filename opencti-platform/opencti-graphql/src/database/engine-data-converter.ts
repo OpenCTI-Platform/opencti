@@ -35,12 +35,22 @@ const elMergeRelation = (
   to.target_ref = `${convertTypeToStixType(to.toType as string)}--temporary`;
   return R.mergeAll([concept, from, to]);
 };
-export const elRebuildRelation = (concept: { internal_id: string; base_type: string; entity_type: string }) => {
+export const elRebuildRelation = (concept: {
+  internal_id: string;
+  base_type: string;
+  entity_type: string;
+}) => {
   if (concept.base_type === BASE_TYPE_RELATION) {
     const { connections } = concept as BasicStoreRelation;
     const entityType = concept.entity_type;
-    const fromConnection = R.find((connection) => connection.role === `${entityType}_from`, connections);
-    const toConnection = R.find((connection) => connection.role === `${entityType}_to`, connections);
+    const fromConnection = R.find(
+      (connection) => connection.role === `${entityType}_from`,
+      connections,
+    );
+    const toConnection = R.find(
+      (connection) => connection.role === `${entityType}_to`,
+      connections,
+    );
     const relation = elMergeRelation(concept as BasicStoreRelation, fromConnection, toConnection);
     relation.relationship_type = relation.entity_type;
     return R.dissoc('connections', relation);
@@ -95,7 +105,10 @@ const elDataConverter = <T>(esHit: any): T => {
       const ruleDefinitions: any = Object.values(val);
       for (let rIndex = 0; rIndex < ruleDefinitions.length; rIndex += 1) {
         const { inferred, explanation } = ruleDefinitions[rIndex];
-        const attributes = R.toPairs(inferred).map((s) => ({ field: R.head(s), value: String(R.last(s)) }));
+        const attributes = R.toPairs(inferred).map((s) => ({
+          field: R.head(s),
+          value: String(R.last(s)),
+        }));
         ruleInferences.push({ rule, explanation, attributes });
       }
       data[key] = val;
@@ -146,4 +159,5 @@ export const elConvertHitsToMap = async <T extends BasicStoreBase>(
   return convertedHitsMap;
 };
 
-export const elConvertHits = async <T extends BasicStoreBase>(data: any): Promise<T[]> => asyncMap<any, T>(data, (hit) => elDataConverter<T>(hit));
+export const elConvertHits = async <T extends BasicStoreBase>(data: any): Promise<T[]> =>
+  asyncMap<any, T>(data, (hit) => elDataConverter<T>(hit));

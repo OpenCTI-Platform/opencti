@@ -75,10 +75,11 @@ const FilesNativeField: FunctionComponent<FilesFieldProps> = ({
   helperText,
 }) => {
   const classes = useStyles();
-  const [files, setFiles] = useState<{
-    label: string;
-    value: string;
-  }[]
+  const [files, setFiles] = useState<
+    {
+      label: string;
+      value: string;
+    }[]
   >([]);
   const searchFiles = () => {
     fetchQuery(filesNativeFieldQuery, { id: stixCoreObjectId })
@@ -92,16 +93,16 @@ const FilesNativeField: FunctionComponent<FilesFieldProps> = ({
         }));
         const externalReferencesFiles = (
           (data as FilesNativeFieldQuery$data)?.stixCoreObject?.externalReferences?.edges ?? []
-        ).flatMap(({ node }) => node?.importFiles?.edges ?? []).map((n) => ({
-          label: n?.node.name ?? '',
-          value: n?.node.id ?? '',
-        }));
+        )
+          .flatMap(({ node }) => node?.importFiles?.edges ?? [])
+          .map((n) => ({
+            label: n?.node.name ?? '',
+            value: n?.node.id ?? '',
+          }));
         const allFiles = [...importFiles, ...externalReferencesFiles];
         // Keep only the unique list of options
         const uniqFiles = allFiles.filter((item, index) => {
-          return (
-            allFiles.findIndex((e) => e.value === item.value) === index
-          );
+          return allFiles.findIndex((e) => e.value === item.value) === index;
         });
         setFiles(uniqFiles);
       });

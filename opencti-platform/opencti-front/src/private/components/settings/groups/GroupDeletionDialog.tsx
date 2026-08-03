@@ -33,11 +33,9 @@ const GroupDeletionDialog: FunctionComponent<GroupDeletionDialogProps> = ({
     id: '... successfully deleted',
     values: { entity_type: t_i18n('Group') },
   });
-  const [commitDeleteMutation] = useApiMutation(
-    groupDeletionMutation,
-    undefined,
-    { successMessage: deleteSuccessMessage },
-  );
+  const [commitDeleteMutation] = useApiMutation(groupDeletionMutation, undefined, {
+    successMessage: deleteSuccessMessage,
+  });
 
   const submitDelete = () => {
     setDeleting(true);
@@ -51,14 +49,8 @@ const GroupDeletionDialog: FunctionComponent<GroupDeletionDialogProps> = ({
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClose}
-      title={t_i18n('Are you sure?')}
-    >
-      <DialogContentText>
-        {t_i18n('Do you want to delete this group?')}
-      </DialogContentText>
+    <Dialog open={isOpen} onClose={handleClose} title={t_i18n('Are you sure?')}>
+      <DialogContentText>{t_i18n('Do you want to delete this group?')}</DialogContentText>
       <DialogActions>
         <Button variant="secondary" onClick={handleClose} disabled={deleting}>
           {t_i18n('Cancel')}

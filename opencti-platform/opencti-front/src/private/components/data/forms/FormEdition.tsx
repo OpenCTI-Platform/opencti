@@ -1,5 +1,11 @@
 import React, { FunctionComponent, useState, useMemo } from 'react';
-import { graphql, useFragment, useQueryLoader, usePreloadedQuery, PreloadedQuery } from 'react-relay';
+import {
+  graphql,
+  useFragment,
+  useQueryLoader,
+  usePreloadedQuery,
+  PreloadedQuery,
+} from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import Button from '@common/button/Button';
 import { FormEditionFragment_form$key } from '@components/data/forms/__generated__/FormEditionFragment_form.graphql';
@@ -13,7 +19,10 @@ import type { Theme } from '../../../../components/Theme';
 import FormSchemaEditor from './FormSchemaEditor';
 import { formCreationQuery } from './FormCreation';
 import type { FormBuilderData, FormFieldAttribute } from './Form.d';
-import { convertFormBuilderDataToSchema, normalizeDraftAuthorizedMembersDefaults } from './FormUtils';
+import {
+  convertFormBuilderDataToSchema,
+  normalizeDraftAuthorizedMembersDefaults,
+} from './FormUtils';
 import Loader from '../../../../components/Loader';
 import { useTheme } from '@mui/styles';
 
@@ -128,7 +137,9 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
               authorizedMembers: schema.draftDefaults.authorizedMembers
                 ? {
                     ...schema.draftDefaults.authorizedMembers,
-                    defaults: normalizeDraftAuthorizedMembersDefaults(schema.draftDefaults.authorizedMembers.defaults || []),
+                    defaults: normalizeDraftAuthorizedMembersDefaults(
+                      schema.draftDefaults.authorizedMembers.defaults || [],
+                    ),
                   }
                 : undefined,
             }
@@ -162,8 +173,13 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
     if (!formBuilderData) return;
 
     // Validate that mainEntityParseFieldMapping is set when fieldMode is parsed
-    if (formBuilderData.mainEntityFieldMode === 'parsed' && !formBuilderData.mainEntityParseFieldMapping) {
-      setValidationError(t_i18n('Map parsed values to attribute is required when using parsed mode'));
+    if (
+      formBuilderData.mainEntityFieldMode === 'parsed' &&
+      !formBuilderData.mainEntityParseFieldMapping
+    ) {
+      setValidationError(
+        t_i18n('Map parsed values to attribute is required when using parsed mode'),
+      );
       return;
     }
 
@@ -172,7 +188,9 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
       .filter((entity) => entity.fieldMode === 'parsed' && !entity.parseFieldMapping)
       .map((entity) => entity.label);
     if (missingMappings.length > 0) {
-      setValidationError(t_i18n('Map parsed values to attribute is required for: ') + missingMappings.join(', '));
+      setValidationError(
+        t_i18n('Map parsed values to attribute is required for: ') + missingMappings.join(', '),
+      );
       return;
     }
 
@@ -251,12 +269,7 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
           onChange={handleDescriptionChange}
         />
         <FormControlLabel
-          control={(
-            <Switch
-              checked={formActive}
-              onChange={handleActiveChange}
-            />
-          )}
+          control={<Switch checked={formActive} onChange={handleActiveChange} />}
           label={t_i18n('Active')}
           style={{ marginTop: 20 }}
         />
@@ -302,10 +315,7 @@ interface FormEditionProps {
   handleClose: () => void;
 }
 
-const FormEdition: FunctionComponent<FormEditionProps> = ({
-  form: formRef,
-  handleClose,
-}) => {
+const FormEdition: FunctionComponent<FormEditionProps> = ({ form: formRef, handleClose }) => {
   const form = useFragment(formEditionFragment, formRef);
   const [queryRef, loadQuery] = useQueryLoader<FormCreationQuery>(formCreationQuery);
 
@@ -319,11 +329,7 @@ const FormEdition: FunctionComponent<FormEditionProps> = ({
 
   return (
     <React.Suspense fallback={<Loader />}>
-      <FormEditionInner
-        form={form}
-        handleClose={handleClose}
-        queryRef={queryRef}
-      />
+      <FormEditionInner form={form} handleClose={handleClose} queryRef={queryRef} />
     </React.Suspense>
   );
 };

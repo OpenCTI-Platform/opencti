@@ -3,7 +3,10 @@ import { useParams } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { ShortTextOutlined } from '@mui/icons-material';
 import VocabularyPopover from '@components/settings/attributes/VocabularyPopover';
-import { VocabulariesLinesPaginationQuery, VocabulariesLinesPaginationQuery$variables } from '@components/settings/__generated__/VocabulariesLinesPaginationQuery.graphql';
+import {
+  VocabulariesLinesPaginationQuery,
+  VocabulariesLinesPaginationQuery$variables,
+} from '@components/settings/__generated__/VocabulariesLinesPaginationQuery.graphql';
 import { useTheme } from '@mui/material';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -29,14 +32,14 @@ export const vocabulariesQuery = graphql`
     $category: VocabularyCategory
   ) {
     ...VocabulariesLines_data
-    @arguments(
-      search: $search
-      count: $count
-      orderMode: $orderMode
-      orderBy: $orderBy
-      filters: $filters
-      category: $category
-    )
+      @arguments(
+        search: $search
+        count: $count
+        orderMode: $orderMode
+        orderBy: $orderBy
+        filters: $filters
+        category: $category
+      )
   }
 `;
 
@@ -94,14 +97,11 @@ const Vocabularies = () => {
     category,
   };
 
-  const {
-    viewStorage,
-    paginationOptions,
-    helpers,
-  } = usePaginationLocalStorage<VocabulariesLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    initialValues,
-  );
+  const { viewStorage, paginationOptions, helpers } =
+    usePaginationLocalStorage<VocabulariesLinesPaginationQuery$variables>(
+      LOCAL_STORAGE_KEY,
+      initialValues,
+    );
 
   const { filters } = viewStorage;
   const contextFilters: FilterGroup = {
@@ -166,16 +166,22 @@ const Vocabularies = () => {
 
   return (
     <div style={{ marginRight: 200 }}>
-      <Breadcrumbs elements={[
-        { label: t_i18n('Settings') },
-        { label: t_i18n('Taxonomies') },
-        { label: t_i18n('Vocabularies'), link: '/dashboard/settings/vocabularies/fields' },
-        { label: category, current: true }]}
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Taxonomies') },
+          { label: t_i18n('Vocabularies'), link: '/dashboard/settings/vocabularies/fields' },
+          { label: category, current: true },
+        ]}
       />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data) => data.vocabularies?.edges?.map(({ node }: { node: useVocabularyCategory_Vocabularynode$data }) => node)}
+          resolvePath={(data) =>
+            data.vocabularies?.edges?.map(
+              ({ node }: { node: useVocabularyCategory_Vocabularynode$data }) => node,
+            )
+          }
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           contextFilters={contextFilters}
@@ -183,15 +189,14 @@ const Vocabularies = () => {
           disableNavigation
           taskScope="SETTINGS"
           preloadedPaginationProps={preloadedPaginationProps}
-          actions={(vocab) => <VocabularyPopover vocab={vocab} paginationOptions={queryPaginationOptions} />}
+          actions={(vocab) => (
+            <VocabularyPopover vocab={vocab} paginationOptions={queryPaginationOptions} />
+          )}
           searchContextFinal={{ entityTypes: ['Vocabulary'] }}
           icon={() => <ShortTextOutlined sx={{ color: theme.palette.primary.main }} />}
-          createButton={(
-            <VocabularyCreation
-              category={category}
-              paginationOptions={queryPaginationOptions}
-            />
-          )}
+          createButton={
+            <VocabularyCreation category={category} paginationOptions={queryPaginationOptions} />
+          }
         />
       )}
     </div>

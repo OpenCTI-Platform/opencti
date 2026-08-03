@@ -41,12 +41,16 @@ const ImportActionsPopover = ({
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [openWorks, setOpenWorks] = useState(false);
   const isWorkbench = paginationKey === 'Pagination_global_pendingFiles';
-  const [commitDeletion] = useApiMutation<ImportActionsPopoverDeleteMutation>(importActionsPopoverDeleteMutation, undefined, {
-    successMessage: t_i18n('', {
-      id: '... successfully deleted',
-      values: { entity_type: isWorkbench ? t_i18n('Workbench') : t_i18n('File') },
-    }),
-  });
+  const [commitDeletion] = useApiMutation<ImportActionsPopoverDeleteMutation>(
+    importActionsPopoverDeleteMutation,
+    undefined,
+    {
+      successMessage: t_i18n('', {
+        id: '... successfully deleted',
+        values: { entity_type: isWorkbench ? t_i18n('Workbench') : t_i18n('File') },
+      }),
+    },
+  );
 
   const handleOpen = (event: UIEvent) => {
     stopEvent(event);
@@ -95,11 +99,7 @@ const ImportActionsPopover = ({
           <ProgressUpload fontSize="small" />
         </IconButton>
       </Tooltip>
-      <IconButton
-        aria-label={t_i18n('Open menu')}
-        onClick={handleOpen}
-        color="primary"
-      >
+      <IconButton aria-label={t_i18n('Open menu')} onClick={handleOpen} color="primary">
         <MoreVert fontSize="small" />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
@@ -119,9 +119,15 @@ const ImportActionsPopover = ({
       <DeleteDialog
         deletion={deletion}
         submitDelete={submitDelete}
-        message={isWorkbench ? t_i18n('Do you want to delete this workbench?') : t_i18n('Do you want to delete this file?')}
+        message={
+          isWorkbench
+            ? t_i18n('Do you want to delete this workbench?')
+            : t_i18n('Do you want to delete this file?')
+        }
       />
-      {openWorks && (<ImportWorksDrawer open={openWorks} onClose={() => setOpenWorks(false)} file={file} />)}
+      {openWorks && (
+        <ImportWorksDrawer open={openWorks} onClose={() => setOpenWorks(false)} file={file} />
+      )}
     </div>
   );
 };

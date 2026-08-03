@@ -77,7 +77,6 @@ export const RelatedContainersFragment = graphql`
             id
             name
           }
-
         }
         ... on CaseRfi {
           name
@@ -88,7 +87,6 @@ export const RelatedContainersFragment = graphql`
             id
             name
           }
-
         }
         ... on CaseRft {
           name
@@ -99,14 +97,15 @@ export const RelatedContainersFragment = graphql`
             id
             name
           }
-
         }
       }
     }
   }
 `;
 
-export type RelatedContainerNode = NonNullable<NonNullable<RelatedContainersFragment_container_connection$data['edges']>[number]>['node'];
+export type RelatedContainerNode = NonNullable<
+  NonNullable<RelatedContainersFragment_container_connection$data['edges']>[number]
+>['node'];
 
 interface RelatedContainersProps {
   relatedContainers: RelatedContainersFragment_container_connection$key | null | undefined;
@@ -121,13 +120,12 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const [selectedContainer, setSelectedContainer] = useState<RelatedContainerNode | undefined>();
-  const relatedContainers = useFragment(
-    RelatedContainersFragment,
-    relatedContainersKey,
-  );
+  const relatedContainers = useFragment(RelatedContainersFragment, relatedContainersKey);
   const [ref, setRef] = useState<HTMLDivElement | undefined>();
 
-  const containers = (relatedContainers?.edges ?? []).filter((edge) => edge?.node.id !== containerId).map((edge) => edge?.node);
+  const containers = (relatedContainers?.edges ?? [])
+    .filter((edge) => edge?.node.id !== containerId)
+    .map((edge) => edge?.node);
   const containersGlobalCount = containers.length ?? 0;
 
   const handleOpenDetails = (container?: RelatedContainerNode) => {
@@ -138,27 +136,32 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
   };
 
   // Data table min height, setting 50px for empty containers, 50px per container up to 3, and capping at 150px.
-  const calcMinHeight = useMemo(() => Math.max(Math.min(containersGlobalCount * 50, 150), 50), [containersGlobalCount]);
+  const calcMinHeight = useMemo(
+    () => Math.max(Math.min(containersGlobalCount * 50, 150), 50),
+    [containersGlobalCount],
+  );
 
   return (
-    <Box sx={{
-      marginTop: 2,
-      flex: 1,
-      display: 'flex',
-      flexFlow: 'column',
-    }}
+    <Box
+      sx={{
+        marginTop: 2,
+        flex: 1,
+        display: 'flex',
+        flexFlow: 'column',
+      }}
     >
-      <Label action={(
-        <Tooltip title={t_i18n('Display the correlation graph')} placement="top">
-          <IconButton
-            color="primary"
-            component={Link}
-            to={`${resolveLink(entityType)}/${containerId}/knowledge/correlation`}
-          >
-            <VectorLink fontSize="small" />
-          </IconButton>
-        </Tooltip>
-      )}
+      <Label
+        action={
+          <Tooltip title={t_i18n('Display the correlation graph')} placement="top">
+            <IconButton
+              color="primary"
+              component={Link}
+              to={`${resolveLink(entityType)}/${containerId}/knowledge/correlation`}
+            >
+              <VectorLink fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        }
       >
         {t_i18n('Correlated containers')}
       </Label>
@@ -198,16 +201,15 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
             )}
           />
         ) : (
-          <div style={{
-            display: 'flex',
-            height: '100%',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
+          <div
+            style={{
+              display: 'flex',
+              height: '100%',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
           >
-            <span>
-              {t_i18n('No correlated containers has been found.')}
-            </span>
+            <span>{t_i18n('No correlated containers has been found.')}</span>
           </div>
         )}
       </div>
@@ -215,7 +217,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
         title={selectedContainer?.name ?? EMPTY_VALUE}
         open={!!selectedContainer}
         onClose={() => setSelectedContainer(undefined)}
-        header={(
+        header={
           <Tooltip title={t_i18n('Go to container')}>
             <IconButton
               size="default"
@@ -225,7 +227,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
               <NorthEastOutlined />
             </IconButton>
           </Tooltip>
-        )}
+        }
       >
         <>
           {selectedContainer && (

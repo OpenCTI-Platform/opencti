@@ -17,13 +17,20 @@ import React, { FunctionComponent, ReactNode, useCallback } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { AuditsDistributionListDistributionQuery } from '@components/common/audits/__generated__/AuditsDistributionListDistributionQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
+import {
+  getMainRepresentative,
+  isFieldForIdentifier,
+} from '../../../../utils/defaultRepresentatives';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import type {
+  WidgetDataSelection,
+  WidgetHost,
+  WidgetParameters,
+} from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import AuditsWidgetRenderContent from '../../../../components/dashboard/AuditsWidgetRenderContent';
@@ -126,7 +133,10 @@ const AuditsDistributionListComponent: FunctionComponent<AuditsDistributionListC
         label = getMainRepresentative(n.entity ?? undefined) || n.label;
         id = n.entity?.id;
         type = n.entity?.entity_type ?? n.label;
-      } else if (selection.attribute === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`) {
+      } else if (
+        selection.attribute === 'entity_type' &&
+        t_i18n(`entity_${n.label}`) !== `entity_${n.label}`
+      ) {
         label = t_i18n(`entity_${n.label}`);
       }
       return {
@@ -168,24 +178,33 @@ const AuditsDistributionList: FunctionComponent<AuditsDistributionListProps> = (
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
 
-  const buildQueryVariables = useCallback((resolvedDataSelection: WidgetDataSelection[]) => {
-    const selection = resolvedDataSelection[0];
-    return {
-      types: ['History', 'Activity'],
-      field: selection.attribute as string,
-      operation: 'count' as const,
-      startDate: startDate ?? undefined,
-      endDate: endDate ?? undefined,
-      dateAttribute:
-        selection.date_attribute && selection.date_attribute.length > 0
-          ? selection.date_attribute
-          : 'timestamp',
-      filters: normalizeFilterGroupForBackend(selection.filters),
-      limit: selection.number ?? 10,
-    };
-  }, [startDate, endDate]);
+  const buildQueryVariables = useCallback(
+    (resolvedDataSelection: WidgetDataSelection[]) => {
+      const selection = resolvedDataSelection[0];
+      return {
+        types: ['History', 'Activity'],
+        field: selection.attribute as string,
+        operation: 'count' as const,
+        startDate: startDate ?? undefined,
+        endDate: endDate ?? undefined,
+        dateAttribute:
+          selection.date_attribute && selection.date_attribute.length > 0
+            ? selection.date_attribute
+            : 'timestamp',
+        filters: normalizeFilterGroupForBackend(selection.filters),
+        limit: selection.number ?? 10,
+      };
+    },
+    [startDate, endDate],
+  );
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsDistributionListDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<AuditsDistributionListDistributionQuery>({
     perspective: 'audits',
     dataSelection,
     host,

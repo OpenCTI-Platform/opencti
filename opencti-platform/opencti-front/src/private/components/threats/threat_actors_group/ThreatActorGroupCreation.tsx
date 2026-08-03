@@ -16,11 +16,18 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import { ThreatActorsGroupCardsPaginationQuery$variables } from './__generated__/ThreatActorsGroupCardsPaginationQuery.graphql';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import { ThreatActorGroupCreationMutation, ThreatActorGroupCreationMutation$variables } from './__generated__/ThreatActorGroupCreationMutation.graphql';
+import {
+  ThreatActorGroupCreationMutation,
+  ThreatActorGroupCreationMutation$variables,
+} from './__generated__/ThreatActorGroupCreationMutation.graphql';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
@@ -65,7 +72,11 @@ interface ThreatActorGroupAddInput {
 }
 
 interface ThreatActorGroupFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string, response: ThreatActorGroupCreationMutation['response']['threatActorGroupAdd']) => void;
+  updater: (
+    store: RecordSourceSelectorProxy,
+    key: string,
+    response: ThreatActorGroupCreationMutation['response']['threatActorGroupAdd'],
+  ) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -76,9 +87,7 @@ interface ThreatActorGroupFormProps {
   onBulkModalClose: () => void;
 }
 
-export const ThreatActorGroupCreationForm: FunctionComponent<
-  ThreatActorGroupFormProps
-> = ({
+export const ThreatActorGroupCreationForm: FunctionComponent<ThreatActorGroupFormProps> = ({
   updater,
   onReset,
   onCompleted,
@@ -92,15 +101,16 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
-  const { mandatoryAttributes } = useIsMandatoryAttribute(
-    THREAT_ACTOR_GROUP_TYPE,
+  const { mandatoryAttributes } = useIsMandatoryAttribute(THREAT_ACTOR_GROUP_TYPE);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string(),
+      threat_actor_types: Yup.array().nullable(),
+      confidence: Yup.number().nullable(),
+      description: Yup.string().nullable(),
+    },
+    mandatoryAttributes,
   );
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string(),
-    threat_actor_types: Yup.array().nullable(),
-    confidence: Yup.number().nullable(),
-    description: Yup.string().nullable(),
-  }, mandatoryAttributes);
   const threatActorGroupValidator = useDynamicSchemaCreationValidation(
     mandatoryAttributes,
     basicShape,
@@ -109,23 +119,21 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
   const [commit] = useApiMutation<ThreatActorGroupCreationMutation>(
     ThreatActorGroupMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Threat-Actor-Group')} ${t_i18n('successfully created')}` },
-  );
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
-  const {
-    bulkCommit,
-    bulkCount,
-    bulkCurrentCount,
-    BulkResult,
-    resetBulk,
-  } = useBulkCommit<ThreatActorGroupCreationMutation>({
-    commit,
-    relayUpdater: (store, response) => {
-      if (updater) {
-        updater(store, 'threatActorGroupAdd', response?.threatActorGroupAdd);
-      }
+    {
+      successMessage: `${t_i18n('entity_Threat-Actor-Group')} ${t_i18n('successfully created')}`,
     },
-  });
+  );
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
+  const { bulkCommit, bulkCount, bulkCurrentCount, BulkResult, resetBulk } =
+    useBulkCommit<ThreatActorGroupCreationMutation>({
+      commit,
+      relayUpdater: (store, response) => {
+        if (updater) {
+          updater(store, 'threatActorGroupAdd', response?.threatActorGroupAdd);
+        }
+      },
+    });
 
   useEffect(() => {
     if (bulkCount > 1) {
@@ -220,21 +228,16 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
               component={BulkTextField}
               name="name"
               label={t_i18n('Name')}
-              required={(mandatoryAttributes.includes('name'))}
+              required={mandatoryAttributes.includes('name')}
               fullWidth={true}
               askAi={true}
-              detectDuplicate={[
-                'Threat-Actor',
-                'Intrusion-Set',
-                'Campaign',
-                'Malware',
-              ]}
+              detectDuplicate={['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Malware']}
             />
             <OpenVocabField
               type="threat-actor-group-type-ov"
               name="threat_actor_types"
               label={t_i18n('Threat actor types')}
-              required={(mandatoryAttributes.includes('threat_actor_types'))}
+              required={mandatoryAttributes.includes('threat_actor_types')}
               multiple={true}
               containerStyle={fieldSpacingContainerStyle}
               onChange={setFieldValue}
@@ -247,7 +250,7 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
-              required={(mandatoryAttributes.includes('description'))}
+              required={mandatoryAttributes.includes('description')}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -259,26 +262,26 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
             />
             <CreatedByField
               name="createdBy"
-              required={(mandatoryAttributes.includes('createdBy'))}
+              required={mandatoryAttributes.includes('createdBy')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
-              required={(mandatoryAttributes.includes('objectLabel'))}
+              required={mandatoryAttributes.includes('objectLabel')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
-              required={(mandatoryAttributes.includes('objectMarking'))}
+              required={mandatoryAttributes.includes('objectMarking')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ExternalReferencesField
               name="externalReferences"
-              required={(mandatoryAttributes.includes('externalReferences'))}
+              required={mandatoryAttributes.includes('externalReferences')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
@@ -288,23 +291,17 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
               name="file"
               setFieldValue={setFieldValue}
               disabled={splitMultilines(values.name).length > 1}
-              noFileSelectedLabel={splitMultilines(values.name).length > 1
-                ? t_i18n('File upload not allowed in bulk creation')
-                : undefined
+              noFileSelectedLabel={
+                splitMultilines(values.name).length > 1
+                  ? t_i18n('File upload not allowed in bulk creation')
+                  : undefined
               }
             />
             <FormButtonContainer>
-              <Button
-                variant="secondary"
-                onClick={handleReset}
-                disabled={isSubmitting}
-              >
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>
@@ -323,12 +320,8 @@ const ThreatActorGroupCreation = ({
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
 
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_threatActorsGroup',
-    paginationOptions,
-    'threatActorGroupAdd',
-  );
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_threatActorsGroup', paginationOptions, 'threatActorGroupAdd');
 
   const CreateThreatActorGroupControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="Threat-Actor-Group" {...props} />

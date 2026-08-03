@@ -17,16 +17,21 @@ const toolResolvers = {
     tools: (_, args, context) => findToolPaginated(context, context.user, args),
   },
   Tool: {
-    killChainPhases: (tool, _, context) => loadThroughDenormalized(context, context.user, tool, INPUT_KILLCHAIN, { sortBy: 'phase_name' }),
+    killChainPhases: (tool, _, context) =>
+      loadThroughDenormalized(context, context.user, tool, INPUT_KILLCHAIN, {
+        sortBy: 'phase_name',
+      }),
   },
   Mutation: {
     toolEdit: (_, { id }, context) => ({
       delete: () => stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_TOOL),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      fieldPatch: ({ input, commitMessage, references }) =>
+        stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
     toolAdd: (_, { input }, context) => addTool(context, context.user, input),
   },

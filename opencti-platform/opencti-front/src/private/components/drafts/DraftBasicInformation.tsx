@@ -24,10 +24,7 @@ import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 
 const draftEditMutation = graphql`
-  mutation DraftBasicInformationMutation(
-    $id: ID!
-    $input: [EditInput!]!
-  ) {
+  mutation DraftBasicInformationMutation($id: ID!, $input: [EditInput!]!) {
     draftWorkspaceFieldPatch(id: $id, input: $input) {
       ...DraftRootFragment
     }
@@ -90,8 +87,12 @@ const DraftBasicInformation: FunctionComponent<DraftBasicInformationProps> = ({ 
     });
   };
 
-  const assigneeInitialValues: Pick<DraftFormValuesByKey, 'objectAssignee'> = { objectAssignee: [] };
-  const participantInitialValues: Pick<DraftFormValuesByKey, 'objectParticipant'> = { objectParticipant: [] };
+  const assigneeInitialValues: Pick<DraftFormValuesByKey, 'objectAssignee'> = {
+    objectAssignee: [],
+  };
+  const participantInitialValues: Pick<DraftFormValuesByKey, 'objectParticipant'> = {
+    objectParticipant: [],
+  };
 
   return (
     <>
@@ -99,25 +100,26 @@ const DraftBasicInformation: FunctionComponent<DraftBasicInformationProps> = ({ 
         <Card title={t_i18n('Basic information')}>
           <Grid container={true} spacing={3}>
             <Grid item xs={6}>
-
               <Label>{t_i18n('Author')}</Label>
               <ItemAuthor createdBy={draft.createdBy} />
 
               <Label
                 sx={{ marginTop: 2 }}
-                action={currentAccessRight.canEdit && (
-                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                    <IconButton
-                      variant="tertiary"
-                      size="small"
-                      aria-label={t_i18n('Add new assignees')}
-                      title={t_i18n('Add new assignees')}
-                      onClick={handleToggleAddAssignee}
-                    >
-                      <Add fontSize="small" />
-                    </IconButton>
-                  </Security>
-                )}
+                action={
+                  currentAccessRight.canEdit && (
+                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <IconButton
+                        variant="tertiary"
+                        size="small"
+                        aria-label={t_i18n('Add new assignees')}
+                        title={t_i18n('Add new assignees')}
+                        onClick={handleToggleAddAssignee}
+                      >
+                        <Add fontSize="small" />
+                      </IconButton>
+                    </Security>
+                  )
+                }
               >
                 {t_i18n('Assignees')}
               </Label>
@@ -129,7 +131,7 @@ const DraftBasicInformation: FunctionComponent<DraftBasicInformationProps> = ({ 
 
               <Label
                 sx={{ marginTop: 2 }}
-                action={(
+                action={
                   <Security needs={[KNOWLEDGE_KNUPDATE]}>
                     <IconButton
                       variant="tertiary"
@@ -141,7 +143,7 @@ const DraftBasicInformation: FunctionComponent<DraftBasicInformationProps> = ({ 
                       <Add fontSize="small" />
                     </IconButton>
                   </Security>
-                )}
+                }
               >
                 {t_i18n('Participants')}
               </Label>
@@ -150,7 +152,6 @@ const DraftBasicInformation: FunctionComponent<DraftBasicInformationProps> = ({ 
                 stixDomainObjectId={draft.id}
                 removeMutation={draftEditMutation}
               />
-
             </Grid>
           </Grid>
         </Card>
@@ -167,22 +168,12 @@ const DraftBasicInformation: FunctionComponent<DraftBasicInformationProps> = ({ 
             onClose={handleToggleAddAssignee}
             title={t_i18n('Add new assignees')}
           >
-            <ObjectAssigneeField
-              name="objectAssignee"
-              style={fieldSpacingContainerStyle}
-            />
+            <ObjectAssigneeField name="objectAssignee" style={fieldSpacingContainerStyle} />
             <DialogActions>
-              <Button
-                variant="secondary"
-                onClick={handleReset}
-              >
+              <Button variant="secondary" onClick={handleReset}>
                 {t_i18n('Close')}
               </Button>
-              <Button
-                onClick={submitForm}
-              >
-                {t_i18n('Add')}
-              </Button>
+              <Button onClick={submitForm}>{t_i18n('Add')}</Button>
             </DialogActions>
           </Dialog>
         )}
@@ -199,22 +190,12 @@ const DraftBasicInformation: FunctionComponent<DraftBasicInformationProps> = ({ 
             onClose={handleToggleAddParticipant}
             title={t_i18n('Add new participants')}
           >
-            <ObjectParticipantField
-              name="objectParticipant"
-              style={fieldSpacingContainerStyle}
-            />
+            <ObjectParticipantField name="objectParticipant" style={fieldSpacingContainerStyle} />
             <DialogActions>
-              <Button
-                variant="secondary"
-                onClick={handleToggleAddParticipant}
-              >
+              <Button variant="secondary" onClick={handleToggleAddParticipant}>
                 {t_i18n('Close')}
               </Button>
-              <Button
-                onClick={submitForm}
-              >
-                {t_i18n('Add')}
-              </Button>
+              <Button onClick={submitForm}>{t_i18n('Add')}</Button>
             </DialogActions>
           </Dialog>
         )}

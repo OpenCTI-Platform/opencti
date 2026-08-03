@@ -11,7 +11,11 @@ import { useTheme } from '@mui/styles';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+  useGetDefaultFilterObject,
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -163,18 +167,18 @@ const relationshipsStixCoreRelationshipsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...RelationshipsStixCoreRelationshipsLines_data
-    @arguments(
-      search: $search
-      fromId: $fromId
-      toId: $toId
-      fromTypes: $fromTypes
-      toTypes: $toTypes
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        fromId: $fromId
+        toId: $toId
+        fromTypes: $fromTypes
+        toTypes: $toTypes
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -188,12 +192,9 @@ export const relationshipsStixCoreRelationshipsLinesFragment = graphql`
     toTypes: { type: "[String]" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
-    orderBy: {
-      type: "StixCoreRelationshipsOrdering"
-      defaultValue: created
-    }
+    orderBy: { type: "StixCoreRelationshipsOrdering", defaultValue: created }
     orderMode: { type: "OrderingMode", defaultValue: desc }
-    filters: { type: "FilterGroup" },
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "RelationshipsStixCoreRelationshipsLinesRefetchQuery") {
     stixCoreRelationships(
@@ -269,9 +270,7 @@ const Relationships = () => {
     LOCAL_STORAGE_KEY,
     initialValues,
   );
-  const {
-    filters,
-  } = viewStorage;
+  const { filters } = viewStorage;
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('stix-core-relationship', filters);
   const queryPaginationOptions = {
@@ -293,12 +292,12 @@ const Relationships = () => {
       render: ({ is_inferred, entity_type, draftVersion }) => {
         if (is_inferred) {
           const inferredColor = draftVersion ? getDraftModeColor(theme) : itemColor(entity_type);
-          return (<AutoFix style={{ color: inferredColor }} />);
+          return <AutoFix style={{ color: inferredColor }} />;
         }
         if (draftVersion) {
-          return (<ItemIcon type={entity_type} color={getDraftModeColor(theme)} />);
+          return <ItemIcon type={entity_type} color={getDraftModeColor(theme)} />;
         }
-        return (<ItemIcon type={entity_type} />);
+        return <ItemIcon type={entity_type} />;
       },
     },
     fromType: {},
@@ -322,11 +321,15 @@ const Relationships = () => {
 
   return (
     <div data-testid="data-relationships-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Relationships'), current: true }]} />
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Data') }, { label: t_i18n('Relationships'), current: true }]}
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: RelationshipsStixCoreRelationshipsLines_data$data) => data.stixCoreRelationships?.edges?.map((n) => n.node)}
+          resolvePath={(data: RelationshipsStixCoreRelationshipsLines_data$data) =>
+            data.stixCoreRelationships?.edges?.map((n) => n.node)
+          }
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           contextFilters={contextFilters}

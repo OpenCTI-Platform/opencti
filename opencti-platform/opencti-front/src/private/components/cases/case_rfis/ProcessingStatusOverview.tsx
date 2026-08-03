@@ -4,7 +4,10 @@ import Typography from '@mui/material/Typography';
 import Button from '@common/button/Button';
 import Divider from '@mui/material/Divider';
 import React from 'react';
-import { declineRequestAccessMutation, validateRequestAccessMutation } from '@components/cases/CaseUtils';
+import {
+  declineRequestAccessMutation,
+  validateRequestAccessMutation,
+} from '@components/cases/CaseUtils';
 import ItemStatus from '../../../../components/ItemStatus';
 import { useFormatter } from '../../../../components/i18n';
 import { CaseRfi_caseRfi$data } from './__generated__/CaseRfi_caseRfi.graphql';
@@ -66,40 +69,29 @@ const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) =
   };
 
   const userCanAction = data.requestAccessConfiguration?.isUserCanAction;
-  const disabledTooltip = draftContext ? t_i18n('Not available in draft') : t_i18n('You need to be able to edit the RFI and share knowledge');
+  const disabledTooltip = draftContext
+    ? t_i18n('Not available in draft')
+    : t_i18n('You need to be able to edit the RFI and share knowledge');
   return (
     <Grid item xs={12} style={{ marginBottom: 20 }}>
-      <Typography
-        variant="h3"
-        gutterBottom={true}
-        style={{ marginTop: 0 }}
-      >
+      <Typography variant="h3" gutterBottom={true} style={{ marginTop: 0 }}>
         {t_i18n('Processing status')}
       </Typography>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
       >
-        <ItemStatus
-          status={data.status}
-          disabled={!data.workflowEnabled && !requestAccessData}
-        />
+        <ItemStatus status={data.status} disabled={!data.workflowEnabled && !requestAccessData} />
         {!userCanAction && (
           <Tooltip title={disabledTooltip}>
             <div>
-              <Button
-                disabled
-                style={{ marginRight: 10 }}
-              >
+              <Button disabled style={{ marginRight: 10 }}>
                 {t_i18n('Validate')}
               </Button>
-              <Button
-                disabled
-              >
-                {t_i18n('Decline')}
-              </Button>
+              <Button disabled>{t_i18n('Decline')}</Button>
             </div>
           </Tooltip>
         )}
@@ -107,7 +99,11 @@ const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) =
           <div>
             <Button
               variant="secondary"
-              style={{ marginRight: 10, color: approvedButtonColor, borderColor: approvedButtonColor }}
+              style={{
+                marginRight: 10,
+                color: approvedButtonColor,
+                borderColor: approvedButtonColor,
+              }}
               onClick={onSubmitValidateRequestAccess}
             >
               {t_i18n('Validate')}

@@ -1,8 +1,17 @@
 import { buildStixDomain } from '../../../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 import { INPUT_OBJECTS } from '../../../schema/general';
-import { ENTITY_TYPE_CONTAINER_CASE_RFI, type Stix2CaseRfi, type StixCaseRfi, type StoreEntityCaseRfi } from './case-rfi-types';
-import { assertType, cleanObject, convertObjectReferences } from '../../../database/stix-converter-utils';
+import {
+  ENTITY_TYPE_CONTAINER_CASE_RFI,
+  type Stix2CaseRfi,
+  type StixCaseRfi,
+  type StoreEntityCaseRfi,
+} from './case-rfi-types';
+import {
+  assertType,
+  cleanObject,
+  convertObjectReferences,
+} from '../../../database/stix-converter-utils';
 import { buildStixDomain as buildStixDomain2 } from '../../../database/stix-2-0-converter';
 
 export const convertCaseRfiToStix_2_1 = (instance: StoreEntityCaseRfi): StixCaseRfi => {

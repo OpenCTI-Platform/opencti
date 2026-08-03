@@ -4,7 +4,8 @@ import { PropsWithSx } from '../../../utils/props';
 
 type TitleMainEntityProps = {
   preserveCase?: boolean;
-} & PropsWithChildren & PropsWithSx;
+} & PropsWithChildren &
+  PropsWithSx;
 
 const TitleMainEntity = ({ children, sx, preserveCase = false }: TitleMainEntityProps) => {
   return (

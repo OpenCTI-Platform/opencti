@@ -51,7 +51,12 @@ export const containerStixCoreObjectPopoverRemoveMutation = graphql`
     $references: [String]
   ) {
     containerEdit(id: $id) {
-      relationDelete(toId: $toId, relationship_type: $relationship_type, commitMessage: $commitMessage, references: $references) {
+      relationDelete(
+        toId: $toId
+        relationship_type: $relationship_type
+        commitMessage: $commitMessage
+        references: $references
+      ) {
         id
       }
     }
@@ -270,11 +275,13 @@ class ContainerStixCoreObjectPopover extends Component {
     const { displayRemove, displayDeleteMapping } = this.state;
     const references = (values.references || []).map((ref) => ref.value);
     if (displayRemove) this.submitRemove(values.message, references, setSubmitting, resetForm);
-    else if (displayDeleteMapping) this.submitDeleteMapping(values.message, references, setSubmitting, resetForm);
+    else if (displayDeleteMapping)
+      this.submitDeleteMapping(values.message, references, setSubmitting, resetForm);
   }
 
   render() {
-    const { classes, t, theme, contentMappingData, mapping, containerId, enableReferences } = this.props;
+    const { classes, t, theme, contentMappingData, mapping, containerId, enableReferences } =
+      this.props;
     const { referenceDialogOpened } = this.state;
     return (
       <div className={classes.container}>
@@ -297,9 +304,7 @@ class ContainerStixCoreObjectPopover extends Component {
               {t('Delete mapping')}
             </MenuItem>
           )}
-          <MenuItem onClick={this.handleOpenRemove.bind(this)}>
-            {t('Remove')}
-          </MenuItem>
+          <MenuItem onClick={this.handleOpenRemove.bind(this)}>{t('Remove')}</MenuItem>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
             <MenuItem
               onClick={this.handleOpenDelete.bind(this)}
@@ -351,10 +356,7 @@ class ContainerStixCoreObjectPopover extends Component {
             >
               {t('Cancel')}
             </Button>
-            <Button
-              onClick={this.handleSubmitRemove.bind(this)}
-              disabled={this.state.removing}
-            >
+            <Button onClick={this.handleSubmitRemove.bind(this)} disabled={this.state.removing}>
               {t('Confirm')}
             </Button>
           </DialogActions>
@@ -364,12 +366,7 @@ class ContainerStixCoreObjectPopover extends Component {
             initialValues={{ message: '', references: [] }}
             onSubmit={this.submitReference.bind(this)}
           >
-            {({
-              submitForm,
-              isSubmitting,
-              setFieldValue,
-              values,
-            }) => (
+            {({ submitForm, isSubmitting, setFieldValue, values }) => (
               <Form>
                 <CommitMessage
                   handleClose={this.closeReferencesPopup.bind(this)}
@@ -407,10 +404,7 @@ class ContainerStixCoreObjectPopover extends Component {
             >
               {t('Cancel')}
             </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
+            <Button onClick={this.submitDelete.bind(this)} disabled={this.state.deleting}>
               {t('Confirm')}
             </Button>
           </DialogActions>
@@ -436,8 +430,4 @@ ContainerStixCoreObjectPopover.propTypes = {
   enableReferences: PropTypes.bool,
 };
 
-export default compose(
-  inject18n,
-  withTheme,
-  withStyles(styles),
-)(ContainerStixCoreObjectPopover);
+export default compose(inject18n, withTheme, withStyles(styles))(ContainerStixCoreObjectPopover);

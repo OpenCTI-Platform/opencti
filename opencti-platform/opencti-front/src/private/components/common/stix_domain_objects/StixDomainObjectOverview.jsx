@@ -88,7 +88,9 @@ const StixDomainObjectOverview = ({
   };
 
   const onSubmitParticipant = (values, { setSubmitting, resetForm }) => {
-    const currentParticipantsIds = stixDomainObject.objectParticipant.map((participant) => participant.id);
+    const currentParticipantsIds = stixDomainObject.objectParticipant.map(
+      (participant) => participant.id,
+    );
     const valuesIds = values.objectParticipant.map((participant) => participant.value);
     const allIds = [...new Set([...currentParticipantsIds, ...valuesIds])]; // 'new Set' to merge without duplicates
     commitMutation({
@@ -137,33 +139,25 @@ const StixDomainObjectOverview = ({
     <>
       <Card title={t_i18n('Basic information')}>
         <Grid container={false} spacing={3}>
-          {isRequestAccessRFI && (
-            <ProcessingStatusOverview data={stixDomainObject} />
-          )}
+          {isRequestAccessRFI && <ProcessingStatusOverview data={stixDomainObject} />}
         </Grid>
         <Grid container={true} spacing={3}>
           <Grid item xs={6}>
             {stixDomainObject.objectMarking && (
               <>
                 <Label>{t_i18n('Marking')}</Label>
-                <ItemMarkings
-                  markingDefinitions={stixDomainObject.objectMarking ?? []}
-                />
+                <ItemMarkings markingDefinitions={stixDomainObject.objectMarking ?? []} />
               </>
             )}
             <div>
-              <Label sx={{
-                mt:
-                    withPattern
-                    || (!withoutMarking && stixDomainObject.objectMarking)
-                      ? 2
-                      : 0,
-              }}
-              >{t_i18n('Author')}
+              <Label
+                sx={{
+                  mt: withPattern || (!withoutMarking && stixDomainObject.objectMarking) ? 2 : 0,
+                }}
+              >
+                {t_i18n('Author')}
               </Label>
-              <ItemAuthor
-                createdBy={stixDomainObject.createdBy ?? null}
-              />
+              <ItemAuthor createdBy={stixDomainObject.createdBy ?? null} />
             </div>
             {(displayConfidence || displayReliability) && (
               <Grid container={true} columnSpacing={1}>
@@ -172,10 +166,7 @@ const StixDomainObjectOverview = ({
                     <Label sx={{ mt: 2 }}>
                       {t_i18n('Reliability')}
                       {isReliabilityOfSource && (
-                        <span style={{ fontStyle: 'italic' }}>
-                          {' '}
-                          ({t_i18n('of author')})
-                        </span>
+                        <span style={{ fontStyle: 'italic' }}> ({t_i18n('of author')})</span>
                       )}
                     </Label>
                     <ItemOpenVocab
@@ -187,9 +178,7 @@ const StixDomainObjectOverview = ({
                 )}
                 {displayConfidence && (
                   <Grid item xs={6}>
-                    <Label sx={{ marginTop: 2 }}>
-                      {t_i18n('Confidence level')}
-                    </Label>
+                    <Label sx={{ marginTop: 2 }}>{t_i18n('Confidence level')}</Label>
                     <ItemConfidence
                       confidence={stixDomainObject.confidence}
                       entityType={stixDomainObject.entity_type}
@@ -199,29 +188,21 @@ const StixDomainObjectOverview = ({
               </Grid>
             )}
             {displayOpinions && <StixCoreObjectOpinions stixCoreObjectId={stixDomainObject.id} />}
-            <Label sx={{ marginTop: 2 }}>
-              {t_i18n('Original creation date')}
-            </Label>
+            <Label sx={{ marginTop: 2 }}>{t_i18n('Original creation date')}</Label>
             {fldt(stixDomainObject.created)}
-            <Label sx={{ marginTop: 2 }}>
-              {t_i18n('Modification date')}
-            </Label>
+            <Label sx={{ marginTop: 2 }}>{t_i18n('Modification date')}</Label>
             {fldt(stixDomainObject.modified)}
           </Grid>
           <Grid item xs={6}>
             {withPattern && (
               <>
-                <Label>
-                  {t_i18n('Pattern type')}
-                </Label>
+                <Label>{t_i18n('Pattern type')}</Label>
                 <ItemPatternType label={stixDomainObject.pattern_type} />
               </>
             )}
             {!isRequestAccessRFI && (
               <>
-                <Label sx={{ marginTop: withPattern ? 2 : 0 }}>
-                  {t_i18n('Processing status')}
-                </Label>
+                <Label sx={{ marginTop: withPattern ? 2 : 0 }}>{t_i18n('Processing status')}</Label>
                 <ItemStatus
                   status={stixDomainObject.status}
                   disabled={!stixDomainObject.workflowEnabled}
@@ -232,7 +213,7 @@ const StixDomainObjectOverview = ({
               <div data-testid="sdo-overview-assignees">
                 <Label
                   sx={{ marginTop: 2 }}
-                  action={(
+                  action={
                     <Security needs={[KNOWLEDGE_KNUPDATE]}>
                       <IconButton
                         variant="tertiary"
@@ -244,7 +225,7 @@ const StixDomainObjectOverview = ({
                         <Add fontSize="small" />
                       </IconButton>
                     </Security>
-                  )}
+                  }
                 >
                   {t_i18n('Assignees')}
                 </Label>
@@ -258,7 +239,7 @@ const StixDomainObjectOverview = ({
               <div data-testid="sdo-overview-participants">
                 <Label
                   sx={{ marginTop: 2 }}
-                  action={(
+                  action={
                     <Security needs={[KNOWLEDGE_KNUPDATE]}>
                       <IconButton
                         variant="tertiary"
@@ -270,7 +251,7 @@ const StixDomainObjectOverview = ({
                         <Add fontSize="small" />
                       </IconButton>
                     </Security>
-                  )}
+                  }
                 >
                   {t_i18n('Participants')}
                 </Label>
@@ -280,9 +261,7 @@ const StixDomainObjectOverview = ({
                 />
               </div>
             )}
-            <Label sx={{ marginTop: 2 }}>
-              {t_i18n('Revoked')}
-            </Label>
+            <Label sx={{ marginTop: 2 }}>{t_i18n('Revoked')}</Label>
             <ItemBoolean
               status={stixDomainObject.revoked}
               label={stixDomainObject.revoked ? t_i18n('Yes') : t_i18n('No')}
@@ -294,20 +273,16 @@ const StixDomainObjectOverview = ({
               sx={{ marginTop: 2 }}
               entity_type={stixDomainObject.entity_type}
             />
-            <Label sx={{ marginTop: 2 }}>
-              {t_i18n('Platform creation date')}
-            </Label>
+            <Label sx={{ marginTop: 2 }}>{t_i18n('Platform creation date')}</Label>
             {fldt(stixDomainObject.created_at)}
             <div>
-              <Label sx={{ marginTop: 2 }}>
-                {t_i18n('Creators')}
-              </Label>
+              <Label sx={{ marginTop: 2 }}>{t_i18n('Creators')}</Label>
               <ItemCreators creators={stixDomainObject.creators ?? []} />
             </div>
             <div style={{ marginTop: 20 }}>
               <Label
                 sx={{ marginTop: 2 }}
-                action={(
+                action={
                   <>
                     <Tooltip
                       title={t_i18n(
@@ -331,20 +306,21 @@ const StixDomainObjectOverview = ({
                       </IconButton>
                     </Security>
                   </>
-                )}
+                }
               >
                 {t_i18n('Standard STIX ID')}
               </Label>
-              <div style={{
-                padding: '5px 5px 5px 10px',
-                fontFamily: 'Consolas, monaco, monospace',
-                fontSize: 11,
-                backgroundColor:
-                  theme.palette.mode === 'light'
-                    ? 'rgba(0, 0, 0, 0.02)'
-                    : 'rgba(255, 255, 255, 0.02)',
-                lineHeight: '18px',
-              }}
+              <div
+                style={{
+                  padding: '5px 5px 5px 10px',
+                  fontFamily: 'Consolas, monaco, monospace',
+                  fontSize: 11,
+                  backgroundColor:
+                    theme.palette.mode === 'light'
+                      ? 'rgba(0, 0, 0, 0.02)'
+                      : 'rgba(255, 255, 255, 0.02)',
+                  lineHeight: '18px',
+                }}
               >
                 <ItemCopy content={stixDomainObject.standard_id} />
               </div>
@@ -352,39 +328,28 @@ const StixDomainObjectOverview = ({
           </Grid>
         </Grid>
       </Card>
-      <Dialog
-        open={openStixIds}
-        onClose={handleToggleOpenStixIds}
-        title={t_i18n('Other STIX IDs')}
-      >
+      <Dialog open={openStixIds} onClose={handleToggleOpenStixIds} title={t_i18n('Other STIX IDs')}>
         <List>
           {stixIds.map(
-            (stixId) => stixId.length > 0 && (
-              <ListItem
-                key={stixId}
-                disableGutters={true}
-                dense={true}
-                secondaryAction={(
-                  <IconButton
-                    edge="end"
-                    aria-label="delete"
-                    onClick={() => deleteStixId(stixId)}
-                  >
-                    <Delete />
-                  </IconButton>
-                )}
-              >
-                <ListItemText primary={stixId} />
-              </ListItem>
-            ),
+            (stixId) =>
+              stixId.length > 0 && (
+                <ListItem
+                  key={stixId}
+                  disableGutters={true}
+                  dense={true}
+                  secondaryAction={
+                    <IconButton edge="end" aria-label="delete" onClick={() => deleteStixId(stixId)}>
+                      <Delete />
+                    </IconButton>
+                  }
+                >
+                  <ListItemText primary={stixId} />
+                </ListItem>
+              ),
           )}
         </List>
         <DialogActions>
-          <Button
-            onClick={handleToggleOpenStixIds}
-          >
-            {t_i18n('Close')}
-          </Button>
+          <Button onClick={handleToggleOpenStixIds}>{t_i18n('Close')}</Button>
         </DialogActions>
       </Dialog>
       <Formik
@@ -398,22 +363,12 @@ const StixDomainObjectOverview = ({
             onClose={handleToggleAddAssignee}
             title={t_i18n('Add new assignees')}
           >
-            <ObjectAssigneeField
-              name="objectAssignee"
-              style={fieldSpacingContainerStyle}
-            />
+            <ObjectAssigneeField name="objectAssignee" style={fieldSpacingContainerStyle} />
             <DialogActions>
-              <Button
-                variant="secondary"
-                onClick={handleReset}
-              >
+              <Button variant="secondary" onClick={handleReset}>
                 {t_i18n('Close')}
               </Button>
-              <Button
-                onClick={submitForm}
-              >
-                {t_i18n('Add')}
-              </Button>
+              <Button onClick={submitForm}>{t_i18n('Add')}</Button>
             </DialogActions>
           </Dialog>
         )}
@@ -429,22 +384,12 @@ const StixDomainObjectOverview = ({
             onClose={handleToggleAddParticipant}
             title={t_i18n('Add new participants')}
           >
-            <ObjectParticipantField
-              name="objectParticipant"
-              style={fieldSpacingContainerStyle}
-            />
+            <ObjectParticipantField name="objectParticipant" style={fieldSpacingContainerStyle} />
             <DialogActions>
-              <Button
-                variant="secondary"
-                onClick={handleToggleAddParticipant}
-              >
+              <Button variant="secondary" onClick={handleToggleAddParticipant}>
                 {t_i18n('Close')}
               </Button>
-              <Button
-                onClick={submitForm}
-              >
-                {t_i18n('Add')}
-              </Button>
+              <Button onClick={submitForm}>{t_i18n('Add')}</Button>
             </DialogActions>
           </Dialog>
         )}

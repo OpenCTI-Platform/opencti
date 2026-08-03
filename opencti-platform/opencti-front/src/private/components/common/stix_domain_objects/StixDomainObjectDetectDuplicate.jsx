@@ -71,13 +71,7 @@ class StixDomainObjectDetectDuplicate extends Component {
     const { potentialDuplicates } = this.state;
     const { t, classes, value } = this.props;
     return (
-      <span
-        className={
-          potentialDuplicates.length > 0
-            ? classes.duplicates
-            : classes.noDuplicate
-        }
-      >
+      <span className={potentialDuplicates.length > 0 ? classes.duplicates : classes.noDuplicate}>
         {value && potentialDuplicates.length === 0
           ? t('No potential duplicate entities has been found.')
           : ''}
@@ -114,7 +108,7 @@ class StixDomainObjectDetectDuplicate extends Component {
                   key={element.node.id}
                   dense={true}
                   divider={true}
-                  secondaryAction={(
+                  secondaryAction={
                     <IconButton
                       aria-label={t('Go to')}
                       component={Link}
@@ -122,7 +116,7 @@ class StixDomainObjectDetectDuplicate extends Component {
                     >
                       <VisibilityOutlined />
                     </IconButton>
-                  )}
+                  }
                 >
                   <ListItemIcon>
                     <ItemIcon type={element.node.entity_type} />
@@ -157,7 +151,4 @@ StixDomainObjectDetectDuplicate.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixDomainObjectDetectDuplicate);
+export default compose(inject18n, withStyles(styles))(StixDomainObjectDetectDuplicate);

@@ -3,7 +3,8 @@ import { parseEmailList } from './email';
 
 describe('Function: parseEmailList', () => {
   it('should return matching emails from outlook-like input ("Recipient name" <email@address>)', () => {
-    const input = '"Alice Doe" <alice.doe@example.com>; "Bob Doe" <bob.doe@example.com>;"Candice Doe" <candice.doe@example.com>';
+    const input =
+      '"Alice Doe" <alice.doe@example.com>; "Bob Doe" <bob.doe@example.com>;"Candice Doe" <candice.doe@example.com>';
     expect(parseEmailList(input)).toEqual([
       'alice.doe@example.com',
       'bob.doe@example.com',

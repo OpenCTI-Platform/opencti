@@ -19,15 +19,11 @@ class EventDetailsComponent extends Component {
         <Card title={t('Details')}>
           <Grid container={true} spacing={2}>
             <Grid item xs={12}>
-              <Label>
-                {t('Description')}
-              </Label>
+              <Label>{t('Description')}</Label>
               <ExpandableMarkdown source={event.description} limit={400} />
             </Grid>
             <Grid item xs={6}>
-              <Label>
-                {t('Event types')}
-              </Label>
+              <Label>{t('Event types')}</Label>
               <FieldOrEmpty source={event.event_types}>
                 <Stack direction="row" gap={1} flexWrap="wrap">
                   {event.event_types?.map((eventType) => (
@@ -37,15 +33,9 @@ class EventDetailsComponent extends Component {
               </FieldOrEmpty>
             </Grid>
             <Grid item xs={6}>
-              <Label>
-                {t('Start date')}
-              </Label>
+              <Label>{t('Start date')}</Label>
               {fldt(event.start_time)}
-              <Label
-                sx={{ marginTop: 2 }}
-              >
-                {t('End date')}
-              </Label>
+              <Label sx={{ marginTop: 2 }}>{t('End date')}</Label>
               {fldt(event.stop_time)}
             </Grid>
           </Grid>

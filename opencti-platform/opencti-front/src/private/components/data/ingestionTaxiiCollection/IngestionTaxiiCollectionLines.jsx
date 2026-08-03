@@ -4,7 +4,10 @@ import { graphql, createPaginationContainer } from 'react-relay';
 import { pathOr } from 'ramda';
 import { interval } from 'rxjs';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { IngestionTaxiiCollectionLineLineComponent, IngestionTaxiiCollectionLineDummy } from './IngestionTaxiiCollectionLine';
+import {
+  IngestionTaxiiCollectionLineLineComponent,
+  IngestionTaxiiCollectionLineDummy,
+} from './IngestionTaxiiCollectionLine';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 
 const nbOfRowsToLoad = 50;

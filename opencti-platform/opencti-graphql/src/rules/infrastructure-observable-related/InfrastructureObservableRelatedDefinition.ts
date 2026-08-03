@@ -5,7 +5,8 @@ import type { RuleDefinition } from '../../types/rules';
 
 const id = 'infrastructure_observable_related';
 const name = 'Observable related to entity via infrastructure';
-const description = 'If an entity uses an infrastructure and the infrastructure consists of an observable, then the observable is related to the entity.';
+const description =
+  'If an entity uses an infrastructure and the infrastructure consists of an observable, then the observable is related to the entity.';
 const category = 'Correlation';
 const display = {
   if: [

@@ -76,20 +76,20 @@ type RootStixCyberObservableProps = {
 };
 
 const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObservableProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootStixCyberObservableSubscription>>(() => ({
-    subscription,
-    variables: { id: observableId },
-  }), [observableId]);
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootStixCyberObservableSubscription>>(
+    () => ({
+      subscription,
+      variables: { id: observableId },
+    }),
+    [observableId],
+  );
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootStixCyberObservableSubscription>(subConfig);
 
-  const {
-    stixCyberObservable,
-    connectorsForExport,
-    connectorsForImport,
-  } = usePreloadedQuery<RootStixCyberObservableQuery>(stixCyberObservableQuery, queryRef);
+  const { stixCyberObservable, connectorsForExport, connectorsForImport } =
+    usePreloadedQuery<RootStixCyberObservableQuery>(stixCyberObservableQuery, queryRef);
 
   const { forceUpdate } = useForceUpdate();
 
@@ -101,18 +101,23 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
     <>
       {stixCyberObservable ? (
         <div style={{ paddingRight }}>
-          <Breadcrumbs elements={[
-            { label: t_i18n('Observations') },
-            { label: t_i18n('Observables'), link: PATH_OBSERVABLES },
-            { label: stixCyberObservable.observable_value, current: true },
-          ]}
+          <Breadcrumbs
+            elements={[
+              { label: t_i18n('Observations') },
+              { label: t_i18n('Observables'), link: PATH_OBSERVABLES },
+              { label: stixCyberObservable.observable_value, current: true },
+            ]}
           />
           <StixCyberObservableHeader
             stixCyberObservable={stixCyberObservable}
             enableEnrollPlaybook={true}
             DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
               <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                <StixCyberObservableDeletion id={stixCyberObservable.id} isOpen={isOpen} handleClose={onClose} />
+                <StixCyberObservableDeletion
+                  id={stixCyberObservable.id}
+                  isOpen={isOpen}
+                  handleClose={onClose}
+                />
               </Security>
             )}
           />
@@ -120,28 +125,16 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
             entity={stixCyberObservable}
             basePath={basePath}
             pages={{
-              overview: (
-                <StixCyberObservable
-                  stixCyberObservableData={stixCyberObservable}
-                />
-              ),
+              overview: <StixCyberObservable stixCyberObservableData={stixCyberObservable} />,
               knowledge: (
                 <div key={forceUpdate}>
-                  <StixCyberObservableKnowledge
-                    stixCyberObservable={stixCyberObservable}
-                  />
+                  <StixCyberObservableKnowledge stixCyberObservable={stixCyberObservable} />
                 </div>
               ),
-              content: (
-                <StixCoreObjectContentRoot
-                  stixCoreObject={stixCyberObservable}
-                />
-              ),
+              content: <StixCoreObjectContentRoot stixCoreObject={stixCyberObservable} />,
               analyses: (
                 <StixCoreObjectOrStixCoreRelationshipContainers
-                  stixDomainObjectOrStixCoreRelationship={
-                    stixCyberObservable
-                  }
+                  stixDomainObjectOrStixCoreRelationship={stixCyberObservable}
                 />
               ),
               sightings: (
@@ -170,11 +163,7 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
                   entity={stixCyberObservable}
                 />
               ),
-              history: (
-                <StixCoreObjectHistory
-                  stixCoreObjectId={observableId}
-                />
-              ),
+              history: <StixCoreObjectHistory stixCoreObjectId={observableId} />,
             }}
           />
         </div>
@@ -187,7 +176,9 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
 
 const Root = () => {
   const { observableId } = useParams() as { observableId: string };
-  const queryRef = useQueryLoading<RootStixCyberObservableQuery>(stixCyberObservableQuery, { id: observableId });
+  const queryRef = useQueryLoading<RootStixCyberObservableQuery>(stixCyberObservableQuery, {
+    id: observableId,
+  });
 
   return (
     <>

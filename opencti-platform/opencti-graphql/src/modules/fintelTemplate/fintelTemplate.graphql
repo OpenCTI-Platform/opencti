@@ -9,7 +9,7 @@ type FintelTemplate implements BasicObject & InternalObject {
   entity_type: String!
   representative: Representative!
   parent_types: [String!]!
-  metrics:[Metric]
+  metrics: [Metric]
   ## Fintel
   name: String!
   settings_types: [String!]!
@@ -60,8 +60,11 @@ type Query {
 
 # Mutations
 type Mutation {
-  fintelTemplateAdd(input: FintelTemplateAddInput!): FintelTemplate @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  fintelTemplateAdd(input: FintelTemplateAddInput!): FintelTemplate
+    @auth(for: [SETTINGS_SETCUSTOMIZATION])
   fintelTemplateDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  fintelTemplateFieldPatch(id: ID!, input: [EditInput!]!): FintelTemplate @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  fintelTemplateConfigurationImport(file: Upload!): FintelTemplate @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  fintelTemplateFieldPatch(id: ID!, input: [EditInput!]!): FintelTemplate
+    @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  fintelTemplateConfigurationImport(file: Upload!): FintelTemplate
+    @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }

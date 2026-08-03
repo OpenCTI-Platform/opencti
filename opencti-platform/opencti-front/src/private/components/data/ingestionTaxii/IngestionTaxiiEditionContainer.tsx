@@ -45,8 +45,7 @@ const IngestionTaxiiEditionContainer: FunctionComponent<IngestionTaxiiEditionCon
           enableReferences={useIsEnforceReference('IngestionTaxii')}
           handleClose={onClose}
         />
-      )
-      }
+      )}
     </Drawer>
   );
 };

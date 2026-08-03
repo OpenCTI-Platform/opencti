@@ -17,15 +17,11 @@ class CampaignDetailsComponent extends Component {
         <Card title={t('Details')}>
           <Grid container={true} spacing={3}>
             <Grid item xs={12}>
-              <Label>
-                {t('Description')}
-              </Label>
+              <Label>{t('Description')}</Label>
               <ExpandableMarkdown source={campaign.description} limit={400} />
             </Grid>
             <Grid item xs={6}>
-              <Label>
-                {t('Objective')}
-              </Label>
+              <Label>{t('Objective')}</Label>
               <MarkdownDisplay
                 content={campaign.objective}
                 remarkGfmPlugin={true}
@@ -33,15 +29,9 @@ class CampaignDetailsComponent extends Component {
               />
             </Grid>
             <Grid item xs={6}>
-              <Label>
-                {t('First seen')}
-              </Label>
+              <Label>{t('First seen')}</Label>
               {fldt(campaign.first_seen)}
-              <Label
-                sx={{ marginTop: 2 }}
-              >
-                {t('Last seen')}
-              </Label>
+              <Label sx={{ marginTop: 2 }}>{t('Last seen')}</Label>
               {fldt(campaign.last_seen)}
             </Grid>
           </Grid>

@@ -6,7 +6,9 @@ import * as Yup from 'yup';
 import { IconButton, Typography } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import { FormikHelpers } from 'formik/dist/types';
-import JsonMapperRepresentationForm, { RepresentationFormEntityOption } from '@components/data/jsonMapper/representations/JsonMapperRepresentationForm';
+import JsonMapperRepresentationForm, {
+  RepresentationFormEntityOption,
+} from '@components/data/jsonMapper/representations/JsonMapperRepresentationForm';
 import { JsonMapperFormData } from '@components/data/jsonMapper/JsonMapper';
 import classNames from 'classnames';
 import { JsonMapperProvider } from '@components/data/jsonMapper/JsonMapperContext';
@@ -17,9 +19,7 @@ import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { representationInitialization } from './representations/RepresentationUtils';
-import {
-  JsonMapperRepresentationAttributesForm_allSchemaAttributes$data,
-} from './representations/attributes/__generated__/JsonMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
+import { JsonMapperRepresentationAttributesForm_allSchemaAttributes$data } from './representations/attributes/__generated__/JsonMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -38,21 +38,24 @@ const useStyles = makeStyles<Theme>(() => ({
   },
 }));
 
-const jsonMapperValidation = (t_i18n: (s: string) => string) => Yup.object().shape({
-  name: Yup.string().trim().required(t_i18n('This field is required')),
-});
+const jsonMapperValidation = (t_i18n: (s: string) => string) =>
+  Yup.object().shape({
+    name: Yup.string().trim().required(t_i18n('This field is required')),
+  });
 
 interface JsonMapperFormProps {
   jsonMapper: JsonMapperFormData;
-  onSubmit: (
-    values: JsonMapperFormData,
-    formikHelpers: FormikHelpers<JsonMapperFormData>,
-  ) => void;
+  onSubmit: (values: JsonMapperFormData, formikHelpers: FormikHelpers<JsonMapperFormData>) => void;
   isDuplicated?: boolean;
   attributes: JsonMapperRepresentationAttributesForm_allSchemaAttributes$data['csvMapperSchemaAttributes'];
 }
 
-const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, onSubmit, isDuplicated, attributes }) => {
+const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({
+  jsonMapper,
+  onSubmit,
+  isDuplicated,
+  attributes,
+}) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
 
@@ -96,7 +99,8 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
         ...scr,
         value: scr.id,
         type: 'entity_Stix-Core-Relationship',
-      })).concat({
+      }))
+      .concat({
         id: 'stix-sighting-relationship',
         label: 'stix-sighting-relationship',
         value: 'stix-sighting-relationship',
@@ -142,8 +146,9 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
   // -- ERRORS --
   // on edit mode, jsonMapper.errors might be set; on create mode backend validation is not done yet so error is null
   const [hasError, setHasError] = useState<boolean>(
-    !!jsonMapper.errors?.length
-    || (jsonMapper.entity_representations.length === 0 && jsonMapper.relationship_representations.length === 0),
+    !!jsonMapper.errors?.length ||
+      (jsonMapper.entity_representations.length === 0 &&
+        jsonMapper.relationship_representations.length === 0),
   );
   let errors: Map<string, string> = new Map();
   const handleRepresentationErrors = (key: string, value: boolean) => {
@@ -185,10 +190,7 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
                 render={(arrayHelpers) => (
                   <>
                     {values.entity_representations.map((_, idx) => (
-                      <div
-                        key={`entity-${idx}`}
-                        className={classes.representationContainer}
-                      >
+                      <div key={`entity-${idx}`} className={classes.representationContainer}>
                         <Field
                           component={JsonMapperRepresentationForm}
                           name={`entity_representations[${idx}]`}
@@ -222,10 +224,7 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
                 render={(arrayHelpers) => (
                   <>
                     {values.relationship_representations.map((_, idx) => (
-                      <div
-                        key={`relationship-${idx}`}
-                        className={classes.representationContainer}
-                      >
+                      <div key={`relationship-${idx}`} className={classes.representationContainer}>
                         <Field
                           component={JsonMapperRepresentationForm}
                           name={`relationship_representations[${idx}]`}
@@ -243,18 +242,10 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
               />
 
               <FormButtonContainer>
-                <Button
-                  color="primary"
-                  onClick={() => setOpen(true)}
-                  disabled={hasError}
-                >
+                <Button color="primary" onClick={() => setOpen(true)} disabled={hasError}>
                   {t_i18n('Test')}
                 </Button>
-                <Button
-                  color="secondary"
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
+                <Button color="secondary" onClick={submitForm} disabled={isSubmitting}>
                   {getButtonText()}
                 </Button>
               </FormButtonContainer>

@@ -2,7 +2,11 @@ import React, { FunctionComponent } from 'react';
 import Tooltip from '@mui/material/Tooltip';
 import ToggleButton from '@mui/material/ToggleButton';
 import { Link } from 'react-router-dom';
-import { DifferenceOutlined, DriveFileRenameOutlineOutlined, NewspaperOutlined } from '@mui/icons-material';
+import {
+  DifferenceOutlined,
+  DriveFileRenameOutlineOutlined,
+  NewspaperOutlined,
+} from '@mui/icons-material';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
@@ -24,10 +28,11 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
   const draftContext = useDraftContext();
 
   return (
-    <div style={{
-      margin: '-70px 0 0 0',
-      float: 'right',
-    }}
+    <div
+      style={{
+        margin: '-70px 0 0 0',
+        float: 'right',
+      }}
     >
       <ToggleButtonGroup size="small" color="primary" exclusive={true}>
         {modes.includes('content') && (
@@ -38,9 +43,7 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
               selected={currentMode === 'content'}
               value="content"
             >
-              <NewspaperOutlined
-                fontSize="small"
-              />
+              <NewspaperOutlined fontSize="small" />
             </ToggleButton>
           </Tooltip>
         )}
@@ -53,9 +56,7 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
               value="editor"
               disabled={disableEditor}
             >
-              <DriveFileRenameOutlineOutlined
-                fontSize="small"
-              />
+              <DriveFileRenameOutlineOutlined fontSize="small" />
             </ToggleButton>
           </Tooltip>
         )}
@@ -68,9 +69,7 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
               value="mapping"
               disabled={disableMapping || !!draftContext}
             >
-              <DifferenceOutlined
-                fontSize="small"
-              />
+              <DifferenceOutlined fontSize="small" />
             </ToggleButton>
           </Tooltip>
         )}

@@ -15,15 +15,15 @@ interface StixCoreObjectFormSelectorProps {
   handleClose: () => void;
 }
 
-const StixCoreObjectFormSelector: FunctionComponent<StixCoreObjectFormSelectorProps> = ({ data, open, handleClose }) => {
+const StixCoreObjectFormSelector: FunctionComponent<StixCoreObjectFormSelectorProps> = ({
+  data,
+  open,
+  handleClose,
+}) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   return (
-    <Drawer
-      open={open}
-      onClose={handleClose}
-      title={t_i18n('Select a form')}
-    >
+    <Drawer open={open} onClose={handleClose} title={t_i18n('Select a form')}>
       {({ onClose }) => {
         const handleFormSelect = (formId: string) => {
           navigate(`/dashboard/integrations/feeds/form/${formId}`);

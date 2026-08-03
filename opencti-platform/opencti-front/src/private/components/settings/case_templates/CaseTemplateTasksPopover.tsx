@@ -88,12 +88,8 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
       variables: {
         id: task.id,
       },
-      updater: (store: RecordSourceSelectorProxy) => deleteNode(
-        store,
-        'Pagination_caseTemplate__taskTemplates',
-        paginationOptions,
-        task.id,
-      ),
+      updater: (store: RecordSourceSelectorProxy) =>
+        deleteNode(store, 'Pagination_caseTemplate__taskTemplates', paginationOptions, task.id),
       onCompleted: () => {
         setDeleting(false);
         handleCloseDelete();
@@ -119,12 +115,8 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
         id: caseTemplateId,
         toId: task.id,
       },
-      updater: (store: RecordSourceSelectorProxy) => deleteNode(
-        store,
-        'Pagination_caseTemplate__taskTemplates',
-        paginationOptions,
-        task.id,
-      ),
+      updater: (store: RecordSourceSelectorProxy) =>
+        deleteNode(store, 'Pagination_caseTemplate__taskTemplates', paginationOptions, task.id),
       onCompleted: () => {
         setUnlinking(false);
         handleCloseUnlink();
@@ -134,7 +126,12 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
 
   return (
     <div className={classes.container}>
-      <IconButton aria-label={t_i18n('Open menu')} onClick={handleOpen} aria-haspopup="true" color="primary">
+      <IconButton
+        aria-label={t_i18n('Open menu')}
+        onClick={handleOpen}
+        aria-haspopup="true"
+        color="primary"
+      >
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
@@ -149,11 +146,7 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
       >
         <CaseTemplateTasksEdition task={task} />
       </Drawer>
-      <Dialog
-        open={displayUnlink}
-        onClose={handleCloseUnlink}
-        title={t_i18n('Are you sure?')}
-      >
+      <Dialog open={displayUnlink} onClose={handleCloseUnlink} title={t_i18n('Are you sure?')}>
         <DialogContentText>
           {t_i18n('Do you want to unlink this task template ?')}
         </DialogContentText>

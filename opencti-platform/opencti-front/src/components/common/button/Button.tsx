@@ -79,10 +79,14 @@ const Button: React.FC<CustomButtonProps> = ({
     if (intent !== 'default') return intent;
 
     switch (variant) {
-      case 'secondary': return 'secondary';
-      case 'primary': return 'primary';
-      case 'tertiary': return 'default';
-      default: return 'default';
+      case 'secondary':
+        return 'secondary';
+      case 'primary':
+        return 'primary';
+      case 'tertiary':
+        return 'default';
+      default:
+        return 'default';
     }
   };
 
@@ -145,23 +149,14 @@ const Button: React.FC<CustomButtonProps> = ({
   ];
 
   // Wrap content for gradient
-  const content = isGradient && children ? (
-    <span className="button-content">{children}</span>
-  ) : (
-    children
-  );
+  const content =
+    isGradient && children ? <span className="button-content">{children}</span> : children;
 
-  const wrappedStartIcon = isGradient && startIcon ? (
-    <span className="button-content">{startIcon}</span>
-  ) : (
-    startIcon
-  );
+  const wrappedStartIcon =
+    isGradient && startIcon ? <span className="button-content">{startIcon}</span> : startIcon;
 
-  const wrappedEndIcon = isGradient && endIcon ? (
-    <span className="button-content">{endIcon}</span>
-  ) : (
-    endIcon
-  );
+  const wrappedEndIcon =
+    isGradient && endIcon ? <span className="button-content">{endIcon}</span> : endIcon;
 
   return (
     <MuiButton

@@ -25,40 +25,35 @@ const EntitySettingVisibility = ({
   return (
     <>
       <div>
-        <Label action={(
-          <Tooltip
-            title={!entitySetting.availableSettings.includes('platform_hidden_type')
-              ? t_i18n('This configuration is not available for this entity type')
-              : t_i18n('This configuration hides a specific entity type across the entire platform.')
-            }
-          >
-            <InformationOutline
-              fontSize="small"
-              color="primary"
-            />
-          </Tooltip>
-        )}
+        <Label
+          action={
+            <Tooltip
+              title={
+                !entitySetting.availableSettings.includes('platform_hidden_type')
+                  ? t_i18n('This configuration is not available for this entity type')
+                  : t_i18n(
+                      'This configuration hides a specific entity type across the entire platform.',
+                    )
+              }
+            >
+              <InformationOutline fontSize="small" color="primary" />
+            </Tooltip>
+          }
         >
           {t_i18n('Hidden in interface')}
         </Label>
 
         <FormGroup>
           <FormControlLabel
-            control={(
+            control={
               <Switch
-                disabled={
-                  !entitySetting.availableSettings.includes(
-                    'platform_hidden_type',
-                  )
-                }
+                disabled={!entitySetting.availableSettings.includes('platform_hidden_type')}
                 checked={entitySetting.platform_hidden_type ?? false}
-                onChange={() => handleSubmitField(
-                  'platform_hidden_type',
-                  !entitySetting.platform_hidden_type,
-                )
+                onChange={() =>
+                  handleSubmitField('platform_hidden_type', !entitySetting.platform_hidden_type)
                 }
               />
-            )}
+            }
             label={t_i18n('Hide in the platform')}
           />
         </FormGroup>
@@ -66,7 +61,9 @@ const EntitySettingVisibility = ({
       <Security needs={[SETTINGS_SETACCESSES]}>
         <>
           <GroupEntitySettingHiddenTypesList targetType={entitySetting.target_type} />
-          <SettingsOrganizationEntitySettingHiddenTypesList targetType={entitySetting.target_type} />
+          <SettingsOrganizationEntitySettingHiddenTypesList
+            targetType={entitySetting.target_type}
+          />
         </>
       </Security>
     </>

@@ -1,9 +1,17 @@
-import type { StixDate, StixDomainObject, StixMitreExtension, StixOpenctiExtension } from '../../types/stix-2-1-common';
+import type {
+  StixDate,
+  StixDomainObject,
+  StixMitreExtension,
+  StixOpenctiExtension,
+} from '../../types/stix-2-1-common';
 import type { StixKillChainPhase } from '../../types/stix-2-1-smo';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { DecayHistory } from '../decayRule/decayRule-domain';
-import type { StixDomainObject as StixDomainObject2, StixDate as StixDate2 } from '../../types/stix-2-0-common';
+import type {
+  StixDomainObject as StixDomainObject2,
+  StixDate as StixDate2,
+} from '../../types/stix-2-0-common';
 import type { StixInternalKillChainPhase } from '../../types/stix-2-0-smo';
 
 export const ENTITY_TYPE_INDICATOR = 'Indicator';

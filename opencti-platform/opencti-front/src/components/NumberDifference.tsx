@@ -33,22 +33,19 @@ const NumberDifference = ({ value, description }: ItemNumberDifferenceProps) => 
   if (value === 0) Icon = ArrowForward;
 
   return (
-    <div style={{
-      ...color,
-      fontSize: 12,
-      display: 'flex',
-      alignItems: 'center',
-      gap: theme.spacing(0.25),
-      whiteSpace: 'nowrap',
-    }}
+    <div
+      style={{
+        ...color,
+        fontSize: 12,
+        display: 'flex',
+        alignItems: 'center',
+        gap: theme.spacing(0.25),
+        whiteSpace: 'nowrap',
+      }}
     >
       <Icon color="inherit" style={{ fontSize: 13 }} />
       <span>{value}</span>
-      {description && (
-        <span>
-          ({t_i18n(description)})
-        </span>
-      )}
+      {description && <span>({t_i18n(description)})</span>}
     </div>
   );
 };

@@ -33,11 +33,9 @@ const FintelDesignDeletion = ({
     values: { entity_type: t_i18n('entity_FintelDesign') },
   });
 
-  const [commitDelete] = useApiMutation(
-    fintelDesignDeletionMutation,
-    undefined,
-    { successMessage: deleteSuccessMessage },
-  );
+  const [commitDelete] = useApiMutation(fintelDesignDeletionMutation, undefined, {
+    successMessage: deleteSuccessMessage,
+  });
 
   // delete
   const deletion = useDeletion({});
@@ -49,12 +47,8 @@ const FintelDesignDeletion = ({
         id,
       },
       updater: paginationOptions
-        ? (store: RecordSourceSelectorProxy) => deleteNode(
-            store,
-            'Pagination_fintelDesigns',
-            paginationOptions,
-            id,
-          )
+        ? (store: RecordSourceSelectorProxy) =>
+            deleteNode(store, 'Pagination_fintelDesigns', paginationOptions, id)
         : undefined,
       onCompleted: () => {
         setDeleting(false);

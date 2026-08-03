@@ -56,7 +56,7 @@ const localConsumers = new Map<string, LocalConsumerTracking>();
 // -- Sliding window helpers --
 
 const pruneOldBuckets = (buckets: RateBucket[], now_ms: number): RateBucket[] => {
-  const cutoff = now_ms - (SLIDING_WINDOW_SIZE * 1000);
+  const cutoff = now_ms - SLIDING_WINDOW_SIZE * 1000;
   return buckets.filter((b) => b.timestamp >= cutoff);
 };
 
@@ -99,7 +99,12 @@ const collectionSetKey = (collectionId: string) => `${COLLECTION_SET_PREFIX}${co
  * Register a new consumer. Writes to Redis + creates local tracking entry.
  * Called when an SSE connection is established.
  */
-export const registerConsumer = async (connectionId: string, collectionId: string, userId: string, userEmail: string): Promise<void> => {
+export const registerConsumer = async (
+  connectionId: string,
+  collectionId: string,
+  userId: string,
+  userEmail: string,
+): Promise<void> => {
   const now_ms = Date.now();
   const connectedAt = new Date(now_ms).toISOString();
 
@@ -165,7 +170,11 @@ export const unregisterConsumer = async (connectionId: string): Promise<void> =>
  * Track events delivered to a consumer (after filtering).
  * Synchronous, in-memory only -- hot path.
  */
-export const trackEventDelivered = async (connectionId: string, count: number, lastEventId: string): Promise<void> => {
+export const trackEventDelivered = async (
+  connectionId: string,
+  count: number,
+  lastEventId: string,
+): Promise<void> => {
   const consumer = localConsumers.get(connectionId);
   if (consumer) {
     const now_ms = Date.now();
@@ -179,7 +188,11 @@ export const trackEventDelivered = async (connectionId: string, count: number, l
  * Track events processed from Redis stream (before filtering).
  * Synchronous, in-memory only -- hot path.
  */
-export const trackEventsProcessed = async (connectionId: string, count: number, lastEventId: string): Promise<void> => {
+export const trackEventsProcessed = async (
+  connectionId: string,
+  count: number,
+  lastEventId: string,
+): Promise<void> => {
   const consumer = localConsumers.get(connectionId);
   if (consumer) {
     const now_ms = Date.now();
@@ -193,7 +206,11 @@ export const trackEventsProcessed = async (connectionId: string, count: number, 
  * Track missing resolution / dependency events sent to a consumer.
  * Synchronous, in-memory only -- hot path.
  */
-export const trackMissingResolution = async (connectionId: string, count: number, lastEventId: string): Promise<void> => {
+export const trackMissingResolution = async (
+  connectionId: string,
+  count: number,
+  lastEventId: string,
+): Promise<void> => {
   const consumer = localConsumers.get(connectionId);
   if (consumer) {
     const now_ms = Date.now();
@@ -252,7 +269,9 @@ export interface ConsumerMetricsSnapshot {
  * Synchronous, no Redis call — safe to call from the heartbeat hot path.
  * Returns undefined if the consumer is not tracked locally.
  */
-export const getLocalConsumerMetrics = (connectionId: string): ConsumerMetricsSnapshot | undefined => {
+export const getLocalConsumerMetrics = (
+  connectionId: string,
+): ConsumerMetricsSnapshot | undefined => {
   const consumer = localConsumers.get(connectionId);
   return {
     deliveryRate: consumer ? Math.round(computeRate(consumer.recentDeliveries) * 100) / 100 : 0,
@@ -266,7 +285,9 @@ export const getLocalConsumerMetrics = (connectionId: string): ConsumerMetricsSn
  * Reads from the sorted set + individual hashes.
  * Works across all instances.
  */
-export const getConsumersForCollection = async (collectionId: string): Promise<RedisConsumerData[]> => {
+export const getConsumersForCollection = async (
+  collectionId: string,
+): Promise<RedisConsumerData[]> => {
   const client = getClientBase();
   const setKey = collectionSetKey(collectionId);
   const now_ms = Date.now();
@@ -292,7 +313,8 @@ export const getConsumersForCollection = async (collectionId: string): Promise<R
       const [err, data] = pipelineResults[i];
       if (!err && data && typeof data === 'object' && Object.keys(data as object).length > 0) {
         const hash = data as Record<string, string>;
-        if (hash.userId && hash.connectedAt) { // only push if we have a userId and connectedAt (indicates a valid and still ongoing consumer)
+        if (hash.userId && hash.connectedAt) {
+          // only push if we have a userId and connectedAt (indicates a valid and still ongoing consumer)
           results.push({
             connectionId: hash.connectionId || connectionIds[i],
             collectionId: hash.collectionId || collectionId,

@@ -1,6 +1,9 @@
 import React, { useEffect } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { SearchBulkUnknownEntitiesQuery, SearchBulkUnknownEntitiesQuery$variables } from '@components/__generated__/SearchBulkUnknownEntitiesQuery.graphql';
+import {
+  SearchBulkUnknownEntitiesQuery,
+  SearchBulkUnknownEntitiesQuery$variables,
+} from '@components/__generated__/SearchBulkUnknownEntitiesQuery.graphql';
 import DataTableWithoutFragment from '../../components/dataGrid/DataTableWithoutFragment';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
@@ -15,11 +18,7 @@ const searchBulkUnknownEntitiesQuery = graphql`
     $orderBy: UnknownStixCoreObjectsOrdering
     $orderMode: OrderingMode
   ) {
-    unknownStixCoreObjects(
-      values: $values
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+    unknownStixCoreObjects(values: $values, orderBy: $orderBy, orderMode: $orderMode)
   }
 `;
 
@@ -29,7 +28,11 @@ interface SearchBulkUnknownEntitiesContentProps {
   isDisplayed: boolean;
 }
 
-const SearchBulkUnknownEntitiesContent = ({ queryRef, setNumberOfEntities, isDisplayed }: SearchBulkUnknownEntitiesContentProps) => {
+const SearchBulkUnknownEntitiesContent = ({
+  queryRef,
+  setNumberOfEntities,
+  isDisplayed,
+}: SearchBulkUnknownEntitiesContentProps) => {
   const data = usePreloadedQuery(searchBulkUnknownEntitiesQuery, queryRef);
   const unknownValues = data.unknownStixCoreObjects;
   useEffect(() => {
@@ -53,18 +56,17 @@ const SearchBulkUnknownEntitiesContent = ({ queryRef, setNumberOfEntities, isDis
   };
   return (
     <>
-      {isDisplayed
-        && (
-          <DataTableWithoutFragment
-            data={unknownEntities}
-            globalCount={unknownEntities.length}
-            dataColumns={dataColumns}
-            storageKey={UNKNOWN_ENTITIES_LOCAL_STORAGE_KEY}
-            taskScope="UNKNOWN_ENTITIES"
-            disableNavigation
-            selectOnLineClick
-          />
-        )}
+      {isDisplayed && (
+        <DataTableWithoutFragment
+          data={unknownEntities}
+          globalCount={unknownEntities.length}
+          dataColumns={dataColumns}
+          storageKey={UNKNOWN_ENTITIES_LOCAL_STORAGE_KEY}
+          taskScope="UNKNOWN_ENTITIES"
+          disableNavigation
+          selectOnLineClick
+        />
+      )}
     </>
   );
 };
@@ -75,7 +77,11 @@ interface SearchBulkUnknownEntitiesProps {
   isDisplayed: boolean;
 }
 
-const SearchBulkUnknownEntities = ({ values, setNumberOfEntities, isDisplayed }: SearchBulkUnknownEntitiesProps) => {
+const SearchBulkUnknownEntities = ({
+  values,
+  setNumberOfEntities,
+  isDisplayed,
+}: SearchBulkUnknownEntitiesProps) => {
   const initialValues = {
     sortBy: 'value',
     orderAsc: true,
@@ -90,7 +96,10 @@ const SearchBulkUnknownEntities = ({ values, setNumberOfEntities, isDisplayed }:
     values,
   } as unknown as SearchBulkUnknownEntitiesQuery$variables;
 
-  const queryRef = useQueryLoading<SearchBulkUnknownEntitiesQuery>(searchBulkUnknownEntitiesQuery, queryPaginationOptions);
+  const queryRef = useQueryLoading<SearchBulkUnknownEntitiesQuery>(
+    searchBulkUnknownEntitiesQuery,
+    queryPaginationOptions,
+  );
 
   return (
     <>

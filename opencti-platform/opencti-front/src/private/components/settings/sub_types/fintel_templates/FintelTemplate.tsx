@@ -7,7 +7,9 @@ import FintelTemplateContentEditor from './FintelTemplateContentEditor';
 import FintelTemplateTabs from './FintelTemplateTabs';
 import FintelTemplateHeader from './FintelTemplateHeader';
 import { FintelTemplateQuery } from './__generated__/FintelTemplateQuery.graphql';
-import FintelTemplateWidgetsSidebar, { FINTEL_TEMPLATE_SIDEBAR_WIDTH } from './FintelTemplateWidgetsSidebar';
+import FintelTemplateWidgetsSidebar, {
+  FINTEL_TEMPLATE_SIDEBAR_WIDTH,
+} from './FintelTemplateWidgetsSidebar';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../../components/Loader';
@@ -47,9 +49,9 @@ const FintelTemplateComponent = ({ queryRef }: FintelTemplateProps) => {
   const { fintelTemplate, entitySettingByType } = usePreloadedQuery(fintelTemplateQuery, queryRef);
   if (!fintelTemplate || !entitySettingByType) return <ErrorNotFound />;
 
-  const currentDefaultName = entitySettingByType.fintelTemplates?.edges
-    .find(({ node }) => node.default && node.id !== templateId)
-    ?.node.name;
+  const currentDefaultName = entitySettingByType.fintelTemplates?.edges.find(
+    ({ node }) => node.default && node.id !== templateId,
+  )?.node.name;
 
   return (
     <FintelTemplateProvider>
@@ -68,10 +70,7 @@ const FintelTemplateComponent = ({ queryRef }: FintelTemplateProps) => {
               </div>
               <Security needs={[KNOWLEDGE]}>
                 <div role="tabpanel" hidden={index !== 1}>
-                  <FintelTemplatePreview
-                    isTabActive={index === 1}
-                    data={fintelTemplate}
-                  />
+                  <FintelTemplatePreview isTabActive={index === 1} data={fintelTemplate} />
                 </div>
               </Security>
             </>
@@ -88,13 +87,10 @@ const FintelTemplate = () => {
   const { templateId, subTypeId } = useParams<{ templateId?: string; subTypeId?: string }>();
   if (!templateId || !subTypeId) return <ErrorNotFound />;
 
-  const templateRef = useQueryLoading<FintelTemplateQuery>(
-    fintelTemplateQuery,
-    {
-      id: templateId,
-      targetType: subTypeId,
-    },
-  );
+  const templateRef = useQueryLoading<FintelTemplateQuery>(fintelTemplateQuery, {
+    id: templateId,
+    targetType: subTypeId,
+  });
 
   return (
     <Suspense fallback={<Loader />}>

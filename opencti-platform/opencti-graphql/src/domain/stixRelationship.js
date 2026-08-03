@@ -1,10 +1,22 @@
 import * as R from 'ramda';
 import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
-import { deleteElementById, distributionRelations, timeSeriesRelations } from '../database/middleware';
+import {
+  deleteElementById,
+  distributionRelations,
+  timeSeriesRelations,
+} from '../database/middleware';
 import { ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
-import { buildRelationsFilter, pageRelationsConnection, storeLoadById } from '../database/middleware-loader';
-import { isEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
+import {
+  buildRelationsFilter,
+  pageRelationsConnection,
+  storeLoadById,
+} from '../database/middleware-loader';
+import {
+  isEmptyField,
+  READ_INDEX_INFERRED_RELATIONSHIPS,
+  READ_RELATIONSHIPS_INDICES,
+} from '../database/utils';
 import { elCount } from '../database/engine';
 import { STIX_SPEC_VERSION, stixCoreRelationshipsMapping } from '../database/stix';
 import { UnsupportedError } from '../config/errors';
@@ -21,7 +33,12 @@ export const findStixRelationPaginated = async (context, user, args) => {
     relationshipTypesInput = relationshipTypesInput ? [relationshipTypesInput] : [];
   }
   const relationshipTypes = buildRelationshipTypes(relationshipTypesInput);
-  return pageRelationsConnection(context, user, relationshipTypes, R.dissoc('relationship_type', fullArgs));
+  return pageRelationsConnection(
+    context,
+    user,
+    relationshipTypes,
+    R.dissoc('relationship_type', fullArgs),
+  );
 };
 
 export const findById = (context, user, stixRelationshipId) => {
@@ -41,8 +58,14 @@ const buildRelationshipTypes = (relationshipTypes) => {
   const isValidRelationshipTypes = relationshipTypes.every((type) => isStixRelationship(type));
 
   if (!isValidRelationshipTypes) {
-    const options = { types: relationshipTypes, extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT } };
-    throw new GraphQLError('Invalid argument: relationship_type is not a stix-relationship', options);
+    const options = {
+      types: relationshipTypes,
+      extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT },
+    };
+    throw new GraphQLError(
+      'Invalid argument: relationship_type is not a stix-relationship',
+      options,
+    );
   }
   return relationshipTypes;
 };
@@ -59,7 +82,9 @@ export const stixRelationshipsNumber = async (context, user, args) => {
   const filters = addDynamicFromAndToToFilters(args);
   const fullArgs = { ...args, relationship_type, filters };
   const numberArgs = buildRelationsFilter(relationship_type, fullArgs);
-  const indices = args.onlyInferred ? [READ_INDEX_INFERRED_RELATIONSHIPS] : [READ_RELATIONSHIPS_INDICES];
+  const indices = args.onlyInferred
+    ? [READ_INDEX_INFERRED_RELATIONSHIPS]
+    : [READ_RELATIONSHIPS_INDICES];
   return {
     count: elCount(context, user, indices, numberArgs),
     total: elCount(context, user, indices, R.dissoc('endDate', numberArgs)),
@@ -75,11 +100,15 @@ export const stixRelationshipsMultiTimeSeries = async (context, user, args) => {
   if (!args.timeSeriesParameters) {
     return [];
   }
-  return Promise.all(args.timeSeriesParameters.map(async (timeSeriesParameter) => {
-    const filters = addDynamicFromAndToToFilters(timeSeriesParameter);
-    const fullArgs = { ...timeSeriesParameter, filters };
-    return { data: timeSeriesRelations(context, user, { ...args, relationship_type, ...fullArgs }) };
-  }));
+  return Promise.all(
+    args.timeSeriesParameters.map(async (timeSeriesParameter) => {
+      const filters = addDynamicFromAndToToFilters(timeSeriesParameter);
+      const fullArgs = { ...timeSeriesParameter, filters };
+      return {
+        data: timeSeriesRelations(context, user, { ...args, relationship_type, ...fullArgs }),
+      };
+    }),
+  );
 };
 // endregion
 
@@ -94,12 +123,14 @@ export const schemaTypesMapping = (mapping) => {
     pushAll(flatEntries, generatedEntries);
   });
 
-  return mergeEntries(flatEntries.map(([key, values]) => {
-    return {
-      key,
-      values: values.map((def) => def.name),
-    };
-  }));
+  return mergeEntries(
+    flatEntries.map(([key, values]) => {
+      return {
+        key,
+        values: values.map((def) => def.name),
+      };
+    }),
+  );
 };
 export const schemaRelationsTypesMapping = () => {
   return schemaTypesMapping(stixCoreRelationshipsMapping);
@@ -155,16 +186,17 @@ const flattenEntries = (fromType, toType, values) => {
   return entries;
 };
 
-const mergeEntries = (entries) => entries.reduce((result, currentItem) => {
-  const existingItem = result.find((item) => item.key === currentItem.key);
-  if (existingItem) {
-    currentItem.values.forEach((value) => {
-      if (!existingItem.values.includes(value)) {
-        existingItem.values.push(value);
-      }
-    });
-  } else {
-    result.push({ ...currentItem });
-  }
-  return result;
-}, []);
+const mergeEntries = (entries) =>
+  entries.reduce((result, currentItem) => {
+    const existingItem = result.find((item) => item.key === currentItem.key);
+    if (existingItem) {
+      currentItem.values.forEach((value) => {
+        if (!existingItem.values.includes(value)) {
+          existingItem.values.push(value);
+        }
+      });
+    } else {
+      result.push({ ...currentItem });
+    }
+    return result;
+  }, []);

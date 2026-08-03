@@ -1,4 +1,8 @@
-import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
+import {
+  clearIntervalAsync,
+  setIntervalAsync,
+  type SetIntervalAsyncTimer,
+} from 'set-interval-async/fixed';
 import { logApp, PLATFORM_INSTANCE_ID } from '../config/conf';
 import historyManager from './historyManager';
 import ruleEngine from './ruleManager';
@@ -25,7 +29,11 @@ const initClusterManager = () => {
   let scheduler: SetIntervalAsyncTimer<[]>;
   const clusterHandler = async (platformId: string) => {
     const context = executionContext('cluster_manager');
-    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    const settings = await getEntityFromCache<BasicStoreSettings>(
+      context,
+      SYSTEM_USER,
+      ENTITY_TYPE_SETTINGS,
+    );
     // TODO migrate managers modules
     const managers = [
       ruleEngine.status(),
@@ -59,7 +67,9 @@ const initClusterManager = () => {
       if (scheduler) {
         await clearIntervalAsync(scheduler);
       }
-      logApp.info(`[OPENCTI-MODULE] Cluster manager stopped in ${new Date().getTime() - startTime} ms`);
+      logApp.info(
+        `[OPENCTI-MODULE] Cluster manager stopped in ${new Date().getTime() - startTime} ms`,
+      );
       return true;
     },
   };

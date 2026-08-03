@@ -29,10 +29,7 @@ import { dateFormat } from '../Time';
  * @param checkOrientation True if check content to determine PDF orientation.
  * @returns PDF ready to be downloaded.
  */
-const generatePdf = (
-  pdfMakeObject: TDocumentDefinitions,
-  checkOrientation = false,
-) => {
+const generatePdf = (pdfMakeObject: TDocumentDefinitions, checkOrientation = false) => {
   const docDefinition = { ...pdfMakeObject };
   if (checkOrientation) {
     docDefinition.pageOrientation = determineOrientation();
@@ -49,10 +46,7 @@ const generatePdf = (
  * @param content The content of the file.
  * @returns PDF object ready to be downloaded.
  */
-export const htmlToPdf = (
-  fileName: string,
-  content: string,
-) => {
+export const htmlToPdf = (fileName: string, content: string) => {
   let htmlData = removeUnnecessaryHtml(content);
   htmlData = setImagesWidth(htmlData);
 
@@ -91,10 +85,7 @@ export const htmlToPdf = (
 /**
  * Part to handle the embedded images of a file
  */
-const normalizeEntityBaseUrl = (url: string) =>
-  url
-    .replace(/\/content\/?$/, '')
-    .replace(/\/$/, '');
+const normalizeEntityBaseUrl = (url: string) => url.replace(/\/content\/?$/, '').replace(/\/$/, '');
 
 const entityBaseUrl = `${window.location.origin}${window.location.pathname}`.replace(/\/$/, '');
 const resolvedEntityBaseUrl = normalizeEntityBaseUrl(entityBaseUrl);
@@ -171,9 +162,7 @@ export const htmlToPdfReport = async (
   let isLogoSvg = false;
 
   if (fintelDesign?.file_id) {
-    const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(
-      fintelDesign?.file_id,
-    )}`;
+    const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(fintelDesign?.file_id)}`;
     const { isSvg, content: svgContent } = await isImageFromUrlSvg(url);
     isLogoSvg = isSvg;
     if (!isLogoSvg) logo = await getBase64ImageFromURL(url);
@@ -205,17 +194,12 @@ export const htmlToPdfReport = async (
     },
   }) as unknown as TDocumentDefinitions; // Because wrong type when using imagesByReference: true.
 
-  const resolvedImages = entityBaseUrl && pdfMakeObject.images
-    ? await resolvePdfMakeEmbeddedImages(
-        pdfMakeObject.images,
-        resolvedEntityBaseUrl,
-      )
-    : pdfMakeObject.images;
+  const resolvedImages =
+    entityBaseUrl && pdfMakeObject.images
+      ? await resolvePdfMakeEmbeddedImages(pdfMakeObject.images, resolvedEntityBaseUrl)
+      : pdfMakeObject.images;
 
-  const normalizedImages = normalizePdfMakeImageReferences(
-    resolvedImages,
-    resolvedEntityBaseUrl,
-  );
+  const normalizedImages = normalizePdfMakeImageReferences(resolvedImages, resolvedEntityBaseUrl);
 
   const linearGradiant = [
     fintelDesign?.gradiantFromColor || DARK,
@@ -241,9 +225,7 @@ export const htmlToPdfReport = async (
     content: [
       {
         columns: [
-          isLogoSvg
-            ? { svg: logo, width: 133 }
-            : { image: logo, width: 133 },
+          isLogoSvg ? { svg: logo, width: 133 } : { image: logo, width: 133 },
           {
             text: dateFormat(new Date()) ?? '',
             alignment: 'right',
@@ -268,19 +250,20 @@ export const htmlToPdfReport = async (
       {
         pageBreak: 'before',
         absolutePosition: { x: 0, y: 0 },
-        canvas: [{
-          type: 'rect',
-          x: 0,
-          y: 0,
-          w: 600,
-          h: 850,
-          linearGradient: linearGradiant,
-        }],
+        canvas: [
+          {
+            type: 'rect',
+            x: 0,
+            y: 0,
+            w: 600,
+            h: 850,
+            linearGradient: linearGradiant,
+          },
+        ],
       },
       ...(isLogoSvg
         ? [{ svg: logo, width: 133, alignment: 'center', margin: [0, 380, 0, 0] }]
-        : [{ image: logo, width: 133, alignment: 'center', margin: [0, 380, 0, 0] }]
-      ),
+        : [{ image: logo, width: 133, alignment: 'center', margin: [0, 380, 0, 0] }]),
     ] as Content[],
     background: pdfBackground(linearGradiant),
     header: pdfHeader(linearGradiant),

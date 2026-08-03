@@ -1,5 +1,12 @@
 import Button from '@common/button/Button';
-import { ArrowDropDown, ArrowDropUp, FileDownloadOutlined, LibraryBooksOutlined, SettingsOutlined, ViewModuleOutlined } from '@mui/icons-material';
+import {
+  ArrowDropDown,
+  ArrowDropUp,
+  FileDownloadOutlined,
+  LibraryBooksOutlined,
+  SettingsOutlined,
+  ViewModuleOutlined,
+} from '@mui/icons-material';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
@@ -18,7 +25,13 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Tooltip from '@mui/material/Tooltip';
 import withStyles from '@mui/styles/withStyles';
 import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
-import { FileDelimitedOutline, FormatListGroup, Group, RelationManyToMany, VectorPolygon } from 'mdi-material-ui';
+import {
+  FileDelimitedOutline,
+  FormatListGroup,
+  Group,
+  RelationManyToMany,
+  VectorPolygon,
+} from 'mdi-material-ui';
 import * as PropTypes from 'prop-types';
 import { compose, toPairs, uniq } from 'ramda';
 import { Component } from 'react';
@@ -135,7 +148,7 @@ class ListLines extends Component {
   renderHeaderElement(field, label, width, isSortable) {
     const { classes, t, sortBy, orderAsc } = this.props;
     if (isSortable) {
-      const orderComponent = orderAsc ? (<ArrowDropDown />) : (<ArrowDropUp />);
+      const orderComponent = orderAsc ? <ArrowDropDown /> : <ArrowDropUp />;
       return (
         <div
           key={field}
@@ -149,11 +162,7 @@ class ListLines extends Component {
       );
     }
     return (
-      <div
-        className={classes.headerItem}
-        style={{ width }}
-        key={field}
-      >
+      <div className={classes.headerItem} style={{ width }} key={field}>
         <div className={classes.headerItemText}>{t(label)}</div>
       </div>
     );
@@ -210,11 +219,10 @@ class ListLines extends Component {
       additionalFilterKeys,
       createButton,
     } = this.props;
-    const exportDisabled = numberOfElements
-      && ((selectedIds.length > export_max_size
-        && numberOfElements.number > export_max_size)
-      || (selectedIds.length === 0
-        && numberOfElements.number > export_max_size));
+    const exportDisabled =
+      numberOfElements &&
+      ((selectedIds.length > export_max_size && numberOfElements.number > export_max_size) ||
+        (selectedIds.length === 0 && numberOfElements.number > export_max_size));
     const searchContextFinal = {
       ...(searchContext ?? {}),
       entityTypes: entityTypes ?? [],
@@ -223,13 +231,8 @@ class ListLines extends Component {
       <div className={noPadding ? classes.containerNoPadding : classes.container}>
         {!inline && (
           <div
-            className={
-              parametersWithPadding
-                ? classes.parametersWithPadding
-                : classes.parameters
-            }
+            className={parametersWithPadding ? classes.parametersWithPadding : classes.parameters}
           >
-
             {typeof handleSearch === 'function' && (
               <SearchInput
                 variant={searchVariant || 'small'}
@@ -239,25 +242,27 @@ class ListLines extends Component {
             )}
 
             {extraFields}
-            {handleAddFilter && handleRemoveFilter && availableFilterKeys && availableFilterKeys.length > 0 && (
-              <Filters
-                helpers={helpers}
-                searchContext={searchContextFinal}
-                availableFilterKeys={availableFilterKeys}
-                handleAddFilter={handleAddFilter}
-                handleSwitchFilter={handleSwitchFilter}
-                handleRemoveFilter={handleRemoveFilter}
-                handleSwitchGlobalMode={handleSwitchGlobalMode}
-                handleSwitchLocalMode={handleSwitchLocalMode}
-                availableEntityTypes={availableEntityTypes}
-                availableRelationshipTypes={availableRelationshipTypes}
-                availableRelationFilterTypes={availableRelationFilterTypes}
-              />
-            )}
+            {handleAddFilter &&
+              handleRemoveFilter &&
+              availableFilterKeys &&
+              availableFilterKeys.length > 0 && (
+                <Filters
+                  helpers={helpers}
+                  searchContext={searchContextFinal}
+                  availableFilterKeys={availableFilterKeys}
+                  handleAddFilter={handleAddFilter}
+                  handleSwitchFilter={handleSwitchFilter}
+                  handleRemoveFilter={handleRemoveFilter}
+                  handleSwitchGlobalMode={handleSwitchGlobalMode}
+                  handleSwitchLocalMode={handleSwitchLocalMode}
+                  availableEntityTypes={availableEntityTypes}
+                  availableRelationshipTypes={availableRelationshipTypes}
+                  availableRelationFilterTypes={availableRelationFilterTypes}
+                />
+              )}
             <div className={classes.filler} />
 
             <div className={classes.views} style={{ display: 'flex', gap: 8 }}>
-
               {numberOfElements && (
                 <div
                   style={
@@ -270,13 +275,17 @@ class ListLines extends Component {
                   {t('entitie(s)')}
                 </div>
               )}
-              {(typeof handleChangeView === 'function'
-                || typeof handleToggleExports === 'function'
-                || typeof handleExportCsv === 'function') && (
+              {(typeof handleChangeView === 'function' ||
+                typeof handleToggleExports === 'function' ||
+                typeof handleExportCsv === 'function') && (
                 <ToggleButtonGroup
                   size="small"
                   color="primary"
-                  value={(!enableEntitiesView && currentView === 'entities') ? 'relationships' : currentView || 'lines'}
+                  value={
+                    !enableEntitiesView && currentView === 'entities'
+                      ? 'relationships'
+                      : currentView || 'lines'
+                  }
                   exclusive={true}
                   onChange={(_, value) => {
                     if (value && value === 'export') {
@@ -295,36 +304,33 @@ class ListLines extends Component {
                       </Tooltip>
                     </ToggleButton>
                   )}
-                  {typeof handleChangeView === 'function'
-                    && enableEntitiesView && (
+                  {typeof handleChangeView === 'function' && enableEntitiesView && (
                     <ToggleButton value="entities" aria-label="entities">
                       <Tooltip title={t('Entities view')}>
-                        <LibraryBooksOutlined
-                          fontSize="small"
-                        />
+                        <LibraryBooksOutlined fontSize="small" />
                       </Tooltip>
                     </ToggleButton>
                   )}
-                  {(enableEntitiesView || (!enableEntitiesView && currentView === 'entities') || currentView === 'relationships') && (
+                  {(enableEntitiesView ||
+                    (!enableEntitiesView && currentView === 'entities') ||
+                    currentView === 'relationships') && (
                     <Tooltip title={t('Relationships view')}>
-                      <ToggleButton
-                        value="relationships"
-                        aria-label="relationships"
-                      >
-                        <RelationManyToMany
-                          fontSize="small"
-                        />
+                      <ToggleButton value="relationships" aria-label="relationships">
+                        <RelationManyToMany fontSize="small" />
                       </ToggleButton>
                     </Tooltip>
                   )}
 
-                  {typeof handleChangeView === 'function' && !enableEntitiesView && currentView !== 'relationships' && currentView !== 'entities' && (
-                    <Tooltip title={t('Lines view')}>
-                      <ToggleButton value="lines" aria-label="lines">
-                        <FiligranIcon icon={ListViewIcon} size="small" />
-                      </ToggleButton>
-                    </Tooltip>
-                  )}
+                  {typeof handleChangeView === 'function' &&
+                    !enableEntitiesView &&
+                    currentView !== 'relationships' &&
+                    currentView !== 'entities' && (
+                      <Tooltip title={t('Lines view')}>
+                        <ToggleButton value="lines" aria-label="lines">
+                          <FiligranIcon icon={ListViewIcon} size="small" />
+                        </ToggleButton>
+                      </Tooltip>
+                    )}
                   {typeof handleChangeView === 'function' && enableGraph && (
                     <Tooltip title={t('Graph view')}>
                       <ToggleButton value="graph" aria-label="graph">
@@ -332,23 +338,17 @@ class ListLines extends Component {
                       </ToggleButton>
                     </Tooltip>
                   )}
-                  {typeof handleChangeView === 'function'
-                    && enableNestedView && (
+                  {typeof handleChangeView === 'function' && enableNestedView && (
                     <Tooltip title={t('Nested view')}>
                       <ToggleButton value="nested" aria-label="nested">
                         <FormatListGroup fontSize="small" />
                       </ToggleButton>
                     </Tooltip>
                   )}
-                  {typeof handleChangeView === 'function'
-                    && enableContextualView && (
+                  {typeof handleChangeView === 'function' && enableContextualView && (
                     <ToggleButton value="contextual" aria-label="contextual">
-                      <Tooltip
-                        title={t('Knowledge from related containers view')}
-                      >
-                        <Group
-                          fontSize="small"
-                        />
+                      <Tooltip title={t('Knowledge from related containers view')}>
+                        <Group fontSize="small" />
                       </Tooltip>
                     </ToggleButton>
                   )}
@@ -361,22 +361,15 @@ class ListLines extends Component {
                   )}
                   {handleSwitchRedirectionMode && (
                     <Tooltip title={t('List settings')}>
-                      <ToggleButton
-                        size="small"
-                        value="settings"
-                        aria-label="settings"
-                      >
+                      <ToggleButton size="small" value="settings" aria-label="settings">
                         <SettingsOutlined fontSize="small" />
                       </ToggleButton>
                     </Tooltip>
                   )}
-                  {typeof handleToggleExports === 'function'
-                    && !exportDisabled && (
+                  {typeof handleToggleExports === 'function' && !exportDisabled && (
                     <Tooltip title={t('Open export panel')}>
                       <ToggleButton value="export" aria-label="export">
-                        <FileDownloadOutlined
-                          fontSize="small"
-                        />
+                        <FileDownloadOutlined fontSize="small" />
                       </ToggleButton>
                     </Tooltip>
                   )}
@@ -387,20 +380,13 @@ class ListLines extends Component {
                         onClick={() => handleExportCsv()}
                         aria-label="export"
                       >
-                        <FileDelimitedOutline
-                          fontSize="small"
-                        />
+                        <FileDelimitedOutline fontSize="small" />
                       </ToggleButton>
                     </Tooltip>
                   )}
-                  {typeof handleToggleExports === 'function'
-                    && exportDisabled && (
+                  {typeof handleToggleExports === 'function' && exportDisabled && (
                     <Tooltip
-                      title={`${
-                        t(
-                          'Export is disabled because too many entities are targeted (maximum number of entities is: ',
-                        ) + export_max_size
-                      })`}
+                      title={`${t('Export is disabled because too many entities are targeted (maximum number of entities is: ') + export_max_size})`}
                     >
                       <span>
                         <ToggleButton
@@ -457,9 +443,7 @@ class ListLines extends Component {
                 classes={{ root: classes.item }}
                 divider={false}
                 style={{ paddingTop: 0 }}
-                secondaryAction={secondaryAction && (
-                  <> &nbsp; </>
-                )}
+                secondaryAction={secondaryAction && <> &nbsp; </>}
               >
                 {handleToggleSelectAll && (
                   <ListItemIcon
@@ -472,83 +456,83 @@ class ListLines extends Component {
                       checked={selectAll}
                       disableRipple={true}
                       onChange={
-                        typeof handleToggleSelectAll === 'function'
-                        && handleToggleSelectAll.bind(this)
+                        typeof handleToggleSelectAll === 'function' &&
+                        handleToggleSelectAll.bind(this)
                       }
                       disabled={typeof handleToggleSelectAll !== 'function'}
                     />
                   </ListItemIcon>
                 )}
-                {checkboxExtension && (
-                  <span style={{ width: '56px' }}>
-                  </span>
-                )}
-                {iconExtension && (
-                  <span style={{ width: '56px' }}>
-                  </span>
-                )}
+                {checkboxExtension && <span style={{ width: '56px' }}></span>}
+                {iconExtension && <span style={{ width: '56px' }}></span>}
                 <ListItemText
-                  primary={(
+                  primary={
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      {toPairs(dataColumns).map((dataColumn) => this.renderHeaderElement(
-                        dataColumn[0],
-                        dataColumn[1].label,
-                        dataColumn[1].width,
-                        dataColumn[1].isSortable,
-                      ))}
+                      {toPairs(dataColumns).map((dataColumn) =>
+                        this.renderHeaderElement(
+                          dataColumn[0],
+                          dataColumn[1].label,
+                          dataColumn[1].width,
+                          dataColumn[1].isSortable,
+                        ),
+                      )}
                     </Box>
-                  )}
+                  }
                 />
               </ListItem>
             )}
             {children}
           </List>
-          {typeof handleToggleExports === 'function' && exportContext
-            && exportContext.entity_type !== 'Stix-Core-Object'
-            && exportContext.entity_type !== 'Stix-Cyber-Observable'
-            && exportContext.entity_type !== 'stix-core-relationship' && (
-            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-              <StixDomainObjectsExports
-                open={openExports}
-                handleToggle={handleToggleExports.bind(this)}
-                paginationOptions={paginationOptions}
-                exportContext={exportContext}
-              />
-            </Security>
-          )}
-          {typeof handleToggleExports === 'function' && exportContext
-            && exportContext.entity_type === 'stix-core-relationship' && (
-            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-              <StixCoreRelationshipsExports
-                open={openExports}
-                handleToggle={handleToggleExports.bind(this)}
-                paginationOptions={paginationOptions}
-                exportContext={exportContext}
-              />
-            </Security>
-          )}
-          {typeof handleToggleExports === 'function' && exportContext
-            && exportContext.entity_type === 'Stix-Core-Object' && (
-            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-              <StixCoreObjectsExports
-                open={openExports}
-                handleToggle={handleToggleExports.bind(this)}
-                paginationOptions={paginationOptions}
-                exportContext={exportContext}
-              />
-            </Security>
-          )}
-          {typeof handleToggleExports === 'function' && exportContext
-            && exportContext.entity_type === 'Stix-Cyber-Observable' && (
-            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-              <StixCyberObservablesExports
-                open={openExports}
-                handleToggle={handleToggleExports.bind(this)}
-                paginationOptions={paginationOptions}
-                exportContext={exportContext}
-              />
-            </Security>
-          )}
+          {typeof handleToggleExports === 'function' &&
+            exportContext &&
+            exportContext.entity_type !== 'Stix-Core-Object' &&
+            exportContext.entity_type !== 'Stix-Cyber-Observable' &&
+            exportContext.entity_type !== 'stix-core-relationship' && (
+              <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+                <StixDomainObjectsExports
+                  open={openExports}
+                  handleToggle={handleToggleExports.bind(this)}
+                  paginationOptions={paginationOptions}
+                  exportContext={exportContext}
+                />
+              </Security>
+            )}
+          {typeof handleToggleExports === 'function' &&
+            exportContext &&
+            exportContext.entity_type === 'stix-core-relationship' && (
+              <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+                <StixCoreRelationshipsExports
+                  open={openExports}
+                  handleToggle={handleToggleExports.bind(this)}
+                  paginationOptions={paginationOptions}
+                  exportContext={exportContext}
+                />
+              </Security>
+            )}
+          {typeof handleToggleExports === 'function' &&
+            exportContext &&
+            exportContext.entity_type === 'Stix-Core-Object' && (
+              <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+                <StixCoreObjectsExports
+                  open={openExports}
+                  handleToggle={handleToggleExports.bind(this)}
+                  paginationOptions={paginationOptions}
+                  exportContext={exportContext}
+                />
+              </Security>
+            )}
+          {typeof handleToggleExports === 'function' &&
+            exportContext &&
+            exportContext.entity_type === 'Stix-Cyber-Observable' && (
+              <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+                <StixCyberObservablesExports
+                  open={openExports}
+                  handleToggle={handleToggleExports.bind(this)}
+                  paginationOptions={paginationOptions}
+                  exportContext={exportContext}
+                />
+              </Security>
+            )}
           {handleSwitchRedirectionMode && (
             <Dialog
               open={this.state.openSettings}
@@ -557,31 +541,20 @@ class ListLines extends Component {
               title={t('List settings')}
             >
               <FormControl style={{ width: '100%' }}>
-                <InputLabel id="redirectionMode">
-                  {t('Redirection mode')}
-                </InputLabel>
+                <InputLabel id="redirectionMode">{t('Redirection mode')}</InputLabel>
                 <Select
                   value={redirectionMode}
-                  onChange={(event) => handleSwitchRedirectionMode(event.target.value)
-                  }
+                  onChange={(event) => handleSwitchRedirectionMode(event.target.value)}
                   fullWidth={true}
                 >
-                  <MenuItem value="overview">
-                    {t('Redirecting to the Overview section')}
-                  </MenuItem>
-                  <MenuItem value="knowledge">
-                    {t('Redirecting to the Knowledge section')}
-                  </MenuItem>
-                  <MenuItem value="content">
-                    {t('Redirecting to the Content section')}
-                  </MenuItem>
+                  <MenuItem value="overview">{t('Redirecting to the Overview section')}</MenuItem>
+                  <MenuItem value="knowledge">{t('Redirecting to the Knowledge section')}</MenuItem>
+                  <MenuItem value="content">{t('Redirecting to the Content section')}</MenuItem>
                 </Select>
               </FormControl>
 
               <DialogActions>
-                <Button onClick={this.handleCloseSettings.bind(this)}>
-                  {t('Close')}
-                </Button>
+                <Button onClick={this.handleCloseSettings.bind(this)}>{t('Close')}</Button>
               </DialogActions>
             </Dialog>
           )}
@@ -592,7 +565,9 @@ class ListLines extends Component {
 
   render() {
     const { disableExport, exportContext, additionalFilterKeys } = this.props;
-    const entityTypes = this.props.entityTypes ?? (exportContext?.entity_type ? [exportContext?.entity_type] : undefined);
+    const entityTypes =
+      this.props.entityTypes ??
+      (exportContext?.entity_type ? [exportContext?.entity_type] : undefined);
     return (
       <UserContext.Consumer>
         {({ schema }) => {
@@ -605,7 +580,8 @@ class ListLines extends Component {
             });
             availableFilterKeys = uniq(Array.from(filterKeysMap.keys())); // keys of the entity type if availableFilterKeys is not specified
           }
-          if (additionalFilterKeys && additionalFilterKeys.filterKeys) availableFilterKeys = uniq(availableFilterKeys.concat(additionalFilterKeys.filterKeys));
+          if (additionalFilterKeys && additionalFilterKeys.filterKeys)
+            availableFilterKeys = uniq(availableFilterKeys.concat(additionalFilterKeys.filterKeys));
           if (disableExport) {
             return this.renderContent(availableFilterKeys, entityTypes);
           }

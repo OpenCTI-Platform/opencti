@@ -50,18 +50,18 @@ interface IngestionTaxiiLineProps {
 }
 
 const ingestionTaxiiLineFragment = graphql`
-    fragment IngestionTaxiiLine_node on IngestionTaxii {
-        id
-        name
-        description
-        uri
-        version
-        ingestion_running
-        added_after_start
-        current_state_cursor
-        last_execution_date
-        confidence_to_score
-    }
+  fragment IngestionTaxiiLine_node on IngestionTaxii {
+    id
+    name
+    description
+    uri
+    version
+    ingestion_running
+    added_after_start
+    current_state_cursor
+    last_execution_date
+    confidence_to_score
+  }
 `;
 
 export const IngestionTaxiiLineLineComponent: FunctionComponent<IngestionTaxiiLineProps> = ({
@@ -72,12 +72,14 @@ export const IngestionTaxiiLineLineComponent: FunctionComponent<IngestionTaxiiLi
   const { t_i18n, fldt } = useFormatter();
   const classes = useStyles();
   const data = useFragment(ingestionTaxiiLineFragment, node);
-  const [stateValue, setStateValue] = useState(data.current_state_cursor ? data.current_state_cursor : EMPTY_VALUE);
+  const [stateValue, setStateValue] = useState(
+    data.current_state_cursor ? data.current_state_cursor : EMPTY_VALUE,
+  );
   return (
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={(
+      secondaryAction={
         <Security needs={[INGESTION_SETINGESTIONS]}>
           <IngestionTaxiiPopover
             ingestionTaxiiId={data.id}
@@ -86,24 +88,18 @@ export const IngestionTaxiiLineLineComponent: FunctionComponent<IngestionTaxiiLi
             setStateValue={setStateValue}
           />
         </Security>
-      )}
+      }
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <AccessPoint />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
               {data.name}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.uri.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.uri.width }}>
               {data.uri}
             </div>
             <div
@@ -134,7 +130,7 @@ export const IngestionTaxiiLineLineComponent: FunctionComponent<IngestionTaxiiLi
               <ItemCopy content={stateValue} variant="inLine" />
             </div>
           </div>
-        )}
+        }
       />
     </ListItem>
   );
@@ -149,84 +145,43 @@ export const IngestionTaxiiLineDummy = ({ dataColumns }: { dataColumns: DataColu
       secondaryAction={<MoreVert classes={classes.itemIconDisabled} />}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <Skeleton
-          animation="wave"
-          variant="circular"
-          width={30}
-          height={30}
-        />
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.uri.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.uri.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.ingestion_running.width }}
             >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.last_execution_date.width }}
             >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.added_after_start.width }}
             >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width={100}
-                height="100%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width={100} height="100%" />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.current_state_cursor.width }}
             >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width={100}
-                height="100%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width={100} height="100%" />
             </div>
           </div>
-        )}
+        }
       />
     </ListItem>
   );

@@ -24,7 +24,11 @@ import { isUserCanAccessStoreElement, isUserHasCapabilities, PIRAPI } from '../.
  * Helper function to check a user has access to a pir
  * and return the pir
  */
-export const getPirWithAccessCheck = async (context: AuthContext, user: AuthUser, pirId?: string | null) => {
+export const getPirWithAccessCheck = async (
+  context: AuthContext,
+  user: AuthUser,
+  pirId?: string | null,
+) => {
   // check EE
   await checkEnterpriseEdition(context);
   // check capabilities

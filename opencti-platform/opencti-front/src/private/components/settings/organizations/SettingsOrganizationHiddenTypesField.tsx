@@ -5,10 +5,7 @@ import { SettingsOrganizationHiddenTypesField_organization$key } from './__gener
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const settingsOrganizationHiddenTypesFieldPatch = graphql`
-  mutation SettingsOrganizationHiddenTypesFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput!]!
-  ) {
+  mutation SettingsOrganizationHiddenTypesFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
     organizationFieldPatch(id: $id, input: $input) {
       ...SettingsOrganizationHiddenTypesField_organization
     }
@@ -27,13 +24,17 @@ const SettingsOrganizationHiddenTypesField = ({
 }: {
   organizationData: SettingsOrganizationHiddenTypesField_organization$key;
 }) => {
-  const organization = useFragment<SettingsOrganizationHiddenTypesField_organization$key>(settingsOrganizationHiddenTypesFieldFragment, organizationData);
+  const organization = useFragment<SettingsOrganizationHiddenTypesField_organization$key>(
+    settingsOrganizationHiddenTypesFieldFragment,
+    organizationData,
+  );
   const [commit] = useApiMutation(settingsOrganizationHiddenTypesFieldPatch);
 
   const handleChange = (newValues: string[]) => {
     commit({
       variables: {
-        id: organization?.id, input: { key: 'default_hidden_types', value: newValues },
+        id: organization?.id,
+        input: { key: 'default_hidden_types', value: newValues },
       },
     });
   };

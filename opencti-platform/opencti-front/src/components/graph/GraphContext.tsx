@@ -1,4 +1,15 @@
-import React, { ReactNode, useContext, createContext, useState, useEffect, useMemo, Dispatch, SetStateAction, MutableRefObject, useRef } from 'react';
+import React, {
+  ReactNode,
+  useContext,
+  createContext,
+  useState,
+  useEffect,
+  useMemo,
+  Dispatch,
+  SetStateAction,
+  MutableRefObject,
+  useRef,
+} from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import * as graph2d from 'react-force-graph-2d';
 import * as graph3d from 'react-force-graph-3d';
@@ -6,13 +17,23 @@ import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../util
 import { GraphNode, GraphLink, LibGraphProps, GraphState, OctiGraphPositions } from './graph.types';
 import { useFormatter } from '../i18n';
 import useGraphParser, { ObjectToParse } from './utils/useGraphParser';
-import { computeTimeRangeInterval, computeTimeRangeValues, GraphTimeRange } from './utils/graphTimeRange';
+import {
+  computeTimeRangeInterval,
+  computeTimeRangeValues,
+  GraphTimeRange,
+} from './utils/graphTimeRange';
 import { graphStateToLocalStorage } from './utils/graphUtils';
 
 type Setter<T> = Dispatch<SetStateAction<T>>;
 
-export type GraphRef2D = graph2d.ForceGraphMethods<graph2d.NodeObject<GraphNode>, graph2d.LinkObject<GraphNode, GraphLink>>;
-type GraphRef3D = graph3d.ForceGraphMethods<graph3d.NodeObject<GraphNode>, graph3d.LinkObject<GraphNode, GraphLink>>;
+export type GraphRef2D = graph2d.ForceGraphMethods<
+  graph2d.NodeObject<GraphNode>,
+  graph2d.LinkObject<GraphNode, GraphLink>
+>;
+type GraphRef3D = graph3d.ForceGraphMethods<
+  graph3d.NodeObject<GraphNode>,
+  graph3d.LinkObject<GraphNode, GraphLink>
+>;
 
 interface GraphContextValue {
   // --- DOM references
@@ -118,15 +139,19 @@ export const GraphProvider = ({
 
   const [graphData, setGraphData] = useState<LibGraphProps['graphData']>();
   useEffect(() => {
-    const filteredObjects = context === 'correlation' && graphState.correlationMode === 'observables'
-      ? objects.filter((o) => (
-          o.entity_type === 'Indicator' || o.parent_types.includes('Stix-Cyber-Observable')
-        ))
-      : objects;
+    const filteredObjects =
+      context === 'correlation' && graphState.correlationMode === 'observables'
+        ? objects.filter(
+            (o) =>
+              o.entity_type === 'Indicator' || o.parent_types.includes('Stix-Cyber-Observable'),
+          )
+        : objects;
     // Rebuild graph data when input data has changed.
-    setGraphData(context === 'correlation'
-      ? buildCorrelationData(filteredObjects, rawPositions)
-      : buildGraphData(filteredObjects, rawPositions));
+    setGraphData(
+      context === 'correlation'
+        ? buildCorrelationData(filteredObjects, rawPositions)
+        : buildGraphData(filteredObjects, rawPositions),
+    );
   }, [objects, graphState.correlationMode]);
 
   // Dynamically compute time range values
@@ -169,33 +194,28 @@ export const GraphProvider = ({
       .filter((v, i, a) => a.findIndex((item) => JSON.stringify(item) === JSON.stringify(v)) === i);
   }, [graphData]);
 
-  const value = useMemo<GraphContextValue>(() => ({
-    graphRef2D,
-    graphRef3D,
-    graphData,
-    stixCoreObjectTypes,
-    markingDefinitions,
-    creators,
-    graphState,
-    timeRange,
-    context,
-    rawPositions,
-    rawObjects,
-    setRawObjects,
-    setRawPositions,
-    setGraphData,
-    setGraphState,
-  }), [
-    graphData,
-    graphState,
-    rawPositions,
-  ]);
-
-  return (
-    <GraphContext.Provider value={value}>
-      {children}
-    </GraphContext.Provider>
+  const value = useMemo<GraphContextValue>(
+    () => ({
+      graphRef2D,
+      graphRef3D,
+      graphData,
+      stixCoreObjectTypes,
+      markingDefinitions,
+      creators,
+      graphState,
+      timeRange,
+      context,
+      rawPositions,
+      rawObjects,
+      setRawObjects,
+      setRawPositions,
+      setGraphData,
+      setGraphState,
+    }),
+    [graphData, graphState, rawPositions],
   );
+
+  return <GraphContext.Provider value={value}>{children}</GraphContext.Provider>;
 };
 
 export const useGraphContext = () => {

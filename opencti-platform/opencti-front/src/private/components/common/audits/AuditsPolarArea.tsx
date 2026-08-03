@@ -21,7 +21,11 @@ import { useFormatter } from '../../../../components/i18n';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import type {
+  WidgetDataSelection,
+  WidgetHost,
+  WidgetParameters,
+} from '../../../../utils/widget/widget';
 import { OpenCTIChartProps } from '../charts/Chart';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -92,15 +96,9 @@ const AuditsPolarAreaComponent = ({
   queryRef,
   onMounted,
 }: AuditsPolarAreaComponentProps) => {
-  const { auditsDistribution } = usePreloadedQuery(
-    auditsPolarAreaDistributionQuery,
-    queryRef,
-  );
+  const { auditsDistribution } = usePreloadedQuery(auditsPolarAreaDistributionQuery, queryRef);
 
-  if (
-    auditsDistribution
-    && auditsDistribution.length > 0
-  ) {
+  if (auditsDistribution && auditsDistribution.length > 0) {
     const attributeField = dataSelection[0].attribute || 'entity_type';
     return (
       <WidgetPolarArea
@@ -141,24 +139,33 @@ const AuditsPolarArea = ({
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
 
-  const buildQueryVariables = useCallback((resolvedSelection: WidgetDataSelection[]): AuditsPolarAreaDistributionQuery['variables'] => {
-    const selection = resolvedSelection[0];
-    return {
-      types: ['History', 'Activity'],
-      field: (selection.attribute || 'entity_type') as string,
-      operation: 'count',
-      startDate: startDate ?? undefined,
-      endDate: endDate ?? undefined,
-      dateAttribute:
-        selection.date_attribute && selection.date_attribute.length > 0
-          ? selection.date_attribute
-          : 'timestamp',
-      filters: normalizeFilterGroupForBackend(selection.filters),
-      limit: selection.number ?? 10,
-    };
-  }, [startDate, endDate]);
+  const buildQueryVariables = useCallback(
+    (resolvedSelection: WidgetDataSelection[]): AuditsPolarAreaDistributionQuery['variables'] => {
+      const selection = resolvedSelection[0];
+      return {
+        types: ['History', 'Activity'],
+        field: (selection.attribute || 'entity_type') as string,
+        operation: 'count',
+        startDate: startDate ?? undefined,
+        endDate: endDate ?? undefined,
+        dateAttribute:
+          selection.date_attribute && selection.date_attribute.length > 0
+            ? selection.date_attribute
+            : 'timestamp',
+        filters: normalizeFilterGroupForBackend(selection.filters),
+        limit: selection.number ?? 10,
+      };
+    },
+    [startDate, endDate],
+  );
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsPolarAreaDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<AuditsPolarAreaDistributionQuery>({
     perspective: 'audits',
     dataSelection,
     host,

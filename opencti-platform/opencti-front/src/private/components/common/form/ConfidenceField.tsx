@@ -87,7 +87,9 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
     >
       {Slider}
     </Alert>
-  ) : Slider;
+  ) : (
+    Slider
+  );
 };
 
 export default ConfidenceField;

@@ -107,20 +107,14 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
     const file = inputElement.files?.[0];
     const fileSize = file?.size || 0;
 
-    const newFileName = eventTargetValue.substring(
-      eventTargetValue.lastIndexOf('\\') + 1,
-    );
+    const newFileName = eventTargetValue.substring(eventTargetValue.lastIndexOf('\\') + 1);
     setFileNameForDisplay(truncate(newFileName, 60));
     setErrorText('');
 
     // check the file type; user might still provide something bypassing 'accept'
     // this will work only if accept is using MIME types only
     const acceptedList = splitAndTrim(acceptMimeTypes);
-    if (
-      acceptedList.length > 0
-      && !!file?.type
-      && !acceptedList.includes(file?.type)
-    ) {
+    if (acceptedList.length > 0 && !!file?.type && !acceptedList.includes(file?.type)) {
       setErrorText(`${t_i18n('This file is not in the specified format')} : ${acceptMimeTypes}`);
       return;
     }
@@ -135,9 +129,7 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
     onChange?.('file', inputElement.files?.[0]);
 
     if (isEmbeddedInExternalReferenceCreation) {
-      const externalIdValue = (
-        document.getElementById('external_id') as HTMLInputElement
-      ).value;
+      const externalIdValue = (document.getElementById('external_id') as HTMLInputElement).value;
       if (!externalIdValue) {
         await setFieldValue('external_id', truncate(newFileName, 60));
       }
@@ -148,7 +140,11 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
 
   return (
     <div className={classes.div} style={noMargin ? { margin: 0 } : {}}>
-      <InputLabel shrink={true} variant="standard" className={classNames({ [classes.error]: !!errorText })}>
+      <InputLabel
+        shrink={true}
+        variant="standard"
+        className={classNames({ [classes.error]: !!errorText })}
+      >
         {label ? t_i18n(label) : t_i18n('Associated file')} {required && '*'}
       </InputLabel>
       <Box

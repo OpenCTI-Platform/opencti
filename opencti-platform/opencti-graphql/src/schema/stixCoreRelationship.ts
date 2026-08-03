@@ -130,8 +130,9 @@ export const STIX_CORE_RELATIONSHIPS = [
 ];
 
 schemaTypesDefinition.register(ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_CORE_RELATIONSHIPS);
-export const isStixCoreRelationship = (type: string): boolean => schemaTypesDefinition.isTypeIncludedIn(type, ABSTRACT_STIX_CORE_RELATIONSHIP)
-  || type === ABSTRACT_STIX_CORE_RELATIONSHIP;
+export const isStixCoreRelationship = (type: string): boolean =>
+  schemaTypesDefinition.isTypeIncludedIn(type, ABSTRACT_STIX_CORE_RELATIONSHIP) ||
+  type === ABSTRACT_STIX_CORE_RELATIONSHIP;
 
 export const stixCoreRelationshipOptions = {
   StixCoreRelationshipsOrdering: {},

@@ -15,13 +15,14 @@ const SettingsOrganizationHiddenTypesChipList = ({
 }: {
   organizationData: SettingsOrganization_organization$data;
 }) => {
-  const organization = useFragment(settingsOrganizationHiddenTypesChipListFragment, organizationData as unknown as SettingsOrganizationHiddenTypesChipList_organization$key);
+  const organization = useFragment(
+    settingsOrganizationHiddenTypesChipListFragment,
+    organizationData as unknown as SettingsOrganizationHiddenTypesChipList_organization$key,
+  );
 
   const hiddenTypesOrganization = organization?.default_hidden_types ?? [];
 
-  return (
-    <HiddenTypesChipList hiddenTypes={hiddenTypesOrganization} />
-  );
+  return <HiddenTypesChipList hiddenTypes={hiddenTypesOrganization} />;
 };
 
 export default SettingsOrganizationHiddenTypesChipList;

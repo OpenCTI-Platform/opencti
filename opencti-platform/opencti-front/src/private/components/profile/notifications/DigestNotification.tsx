@@ -17,9 +17,13 @@ interface DigestNotificationProps {
 
 const DigestNotification: FunctionComponent<DigestNotificationProps> = ({ notification }) => {
   const { t_i18n } = useFormatter();
-  const events = notification?.notification_content.map((n) => n.events.map((p) => {
-    return { ...p, title: n.title };
-  })).flat();
+  const events = notification?.notification_content
+    .map((n) =>
+      n.events.map((p) => {
+        return { ...p, title: n.title };
+      }),
+    )
+    .flat();
 
   const dataColumns: DataTableProps['dataColumns'] = {
     operation: {
@@ -42,7 +46,8 @@ const DigestNotification: FunctionComponent<DigestNotificationProps> = ({ notifi
         };
         return (
           <Chip
-            style={{ fontSize: 12,
+            style={{
+              fontSize: 12,
               height: 20,
               float: 'left',
               width: 150,
@@ -81,8 +86,14 @@ const DigestNotification: FunctionComponent<DigestNotificationProps> = ({ notifi
       isLocalStorageEnabled={false}
       globalCount={events ? events.length : 0}
       variant={DataTableVariant.inline}
-      icon={({ operation }) => (iconSelector(operation))}
-      getComputeLink={({ instance_id, entity_type }: { instance_id: string | undefined; entity_type: string | null | undefined }) => {
+      icon={({ operation }) => iconSelector(operation)}
+      getComputeLink={({
+        instance_id,
+        entity_type,
+      }: {
+        instance_id: string | undefined;
+        entity_type: string | null | undefined;
+      }) => {
         if (entity_type === 'DraftWorkspace') {
           return `/dashboard/data/import/draft/${instance_id}`;
         }

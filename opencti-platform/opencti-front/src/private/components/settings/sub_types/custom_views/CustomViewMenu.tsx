@@ -81,7 +81,9 @@ const CustomViewMenu = ({ data }: CustomViewMenuProps) => {
     setAnchorEl(null);
   };
   const handleDeleted = () => {
-    navigate(`/dashboard/settings/customization/entity_types/${customView.targetEntityType}/custom-views`);
+    navigate(
+      `/dashboard/settings/customization/entity_types/${customView.targetEntityType}/custom-views`,
+    );
   };
 
   const doSetDefault = () => {
@@ -98,7 +100,9 @@ const CustomViewMenu = ({ data }: CustomViewMenuProps) => {
     fetchQuery(customViewCurrentDefaultQuery, { entityType: customView.targetEntityType })
       .toPromise()
       .then((result: unknown) => {
-        const queryData = result as { customViews?: { edges: { node: { id: string; name: string; default: boolean } }[] } };
+        const queryData = result as {
+          customViews?: { edges: { node: { id: string; name: string; default: boolean } }[] };
+        };
         const existingDefault = queryData.customViews?.edges
           .map((e) => e.node)
           .find((n) => n.default && n.id !== customView.id);
@@ -122,13 +126,8 @@ const CustomViewMenu = ({ data }: CustomViewMenuProps) => {
     });
   };
 
-  const {
-    displayDuplicate,
-    duplicating,
-    setDuplicating,
-    handleDuplication,
-    handleCloseDuplicate,
-  } = useDuplicate(handleClose);
+  const { displayDuplicate, duplicating, setDuplicating, handleDuplication, handleCloseDuplicate } =
+    useDuplicate(handleClose);
   const deletion = useDeletion({ handleClose });
   const handleOpenDelete = (e: UIEvent) => {
     setAnchorEl(null);
@@ -170,17 +169,14 @@ const CustomViewMenu = ({ data }: CustomViewMenuProps) => {
         }}
       >
         <MenuItem onClick={handleDuplication}>{t_i18n('Duplicate the custom view')}</MenuItem>
-        {customView.default
-          ? <MenuItem onClick={onRemoveDefault}>{t_i18n('Remove default')}</MenuItem>
-          : <MenuItem onClick={onSetAsDefault}>{t_i18n('Set as default')}</MenuItem>
-        }
+        {customView.default ? (
+          <MenuItem onClick={onRemoveDefault}>{t_i18n('Remove default')}</MenuItem>
+        ) : (
+          <MenuItem onClick={onSetAsDefault}>{t_i18n('Set as default')}</MenuItem>
+        )}
         <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
-      <CustomViewDeletionDialog
-        id={customView.id}
-        deletion={deletion}
-        onDeleted={handleDeleted}
-      />
+      <CustomViewDeletionDialog id={customView.id} deletion={deletion} onDeleted={handleDeleted} />
       <CustomViewDuplicationDialog
         data={customView}
         displayDuplicate={displayDuplicate}

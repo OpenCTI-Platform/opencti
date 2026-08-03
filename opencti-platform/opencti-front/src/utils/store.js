@@ -38,9 +38,7 @@ export const insertNode = (
     // Build the payload to add
     let payload;
     if (linkedRecord && input && relKey) {
-      const result = store
-        .getRootField(rootField)
-        .getLinkedRecord(linkedRecord, input);
+      const result = store.getRootField(rootField).getLinkedRecord(linkedRecord, input);
       payload = result.getLinkedRecord(relKey);
     } else if (relKey) {
       const result = store.getRootField(rootField);

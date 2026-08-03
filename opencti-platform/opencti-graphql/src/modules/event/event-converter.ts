@@ -1,6 +1,11 @@
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { buildStixDomain } from '../../database/stix-2-1-converter';
-import { ENTITY_TYPE_EVENT, type Stix2Event, type StixEvent, type StoreEntityEvent } from './event-types';
+import {
+  ENTITY_TYPE_EVENT,
+  type Stix2Event,
+  type StixEvent,
+  type StoreEntityEvent,
+} from './event-types';
 import { assertType, cleanObject, convertToStixDate } from '../../database/stix-converter-utils';
 import { buildStixDomain as buildStixDomain2 } from '../../database/stix-2-0-converter';
 import type { StoreEntity } from '../../types/store';

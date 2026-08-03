@@ -7,7 +7,9 @@ import Button from '@common/button/Button';
 import { useTheme } from '@mui/styles';
 import { FintelDesign_fintelDesign$key } from '@components/settings/fintel_design/__generated__/FintelDesign_fintelDesign.graphql';
 import FintelDesignForm from '@components/settings/fintel_design/FintelDesignForm';
-import FintelDesignFormDrawer, { FintelDesignEditData } from '@components/settings/fintel_design/FintelDesignFormDrawer';
+import FintelDesignFormDrawer, {
+  FintelDesignEditData,
+} from '@components/settings/fintel_design/FintelDesignFormDrawer';
 import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
@@ -60,9 +62,7 @@ interface FintelDesignComponentProps {
   queryRef: PreloadedQuery<FintelDesignQuery>;
 }
 
-const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
-  queryRef,
-}) => {
+const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({ queryRef }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
@@ -85,8 +85,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
 
   const currentDefaultName = queryResult.fintelDesigns?.edges
     ?.map((edge) => edge?.node)
-    .find((node) => node?.default && node.id !== fintelDesign.id)
-    ?.name;
+    .find((node) => node?.default && node.id !== fintelDesign.id)?.name;
 
   const buildPreview = async () => {
     const template = {
@@ -113,20 +112,23 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
           elements={[
             { label: t_i18n('Settings') },
             { label: t_i18n('Customization') },
-            { label: t_i18n('Fintel design'), link: '/dashboard/settings/customization/fintel_designs' },
+            {
+              label: t_i18n('Fintel design'),
+              link: '/dashboard/settings/customization/fintel_designs',
+            },
             { label: `${fintelDesign.name}`, current: true },
           ]}
         />
         <Stack direction="row" mb={3} alignItems="center">
-          <Stack direction="row" alignItems="center" spacing={1} sx={{ flex: 1, minWidth: 0, mr: 1 }}>
-            <TitleMainEntity>
-              {fintelDesign.name}
-            </TitleMainEntity>
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1}
+            sx={{ flex: 1, minWidth: 0, mr: 1 }}
+          >
+            <TitleMainEntity>{fintelDesign.name}</TitleMainEntity>
             {fintelDesign.default && (
-              <Tag
-                color={theme.palette.success.main}
-                label={t_i18n('Default')}
-              />
+              <Tag color={theme.palette.success.main} label={t_i18n('Default')} />
             )}
           </Stack>
           <Stack direction="row" alignItems="center" spacing={1}>
@@ -148,34 +150,26 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
             onDeleteComplete={() => navigate('/dashboard/settings/customization/fintel_designs')}
           />
           <FintelDesignFormDrawer
-            fintelDesign={{
-              id: fintelDesign.id,
-              name: fintelDesign.name,
-              description: fintelDesign.description ?? null,
-              default: !!fintelDesign.default,
-            } satisfies FintelDesignEditData}
+            fintelDesign={
+              {
+                id: fintelDesign.id,
+                name: fintelDesign.name,
+                description: fintelDesign.description ?? null,
+                default: !!fintelDesign.default,
+              } satisfies FintelDesignEditData
+            }
             isOpen={isEditing}
             onClose={() => setIsEditing(false)}
           />
         </Stack>
-        <Grid
-          container
-          spacing={3}
-        >
+        <Grid container spacing={3}>
           <Grid size={{ xs: 4 }}>
             <Card title={t_i18n('Configuration')}>
-              <FintelDesignForm
-                fintelDesign={fintelDesign}
-                onFileUploaded={buildPreview}
-              />
+              <FintelDesignForm fintelDesign={fintelDesign} onFileUploaded={buildPreview} />
             </Card>
           </Grid>
           <Grid size={{ xs: 8 }} sx={{ height: 'calc(100vh - 250px)' }}>
-            <Card title={t_i18n('Preview')}>
-              {pdf && (
-                <PdfViewer pdf={pdf} />
-              )}
-            </Card>
+            <Card title={t_i18n('Preview')}>{pdf && <PdfViewer pdf={pdf} />}</Card>
           </Grid>
         </Grid>
       </PageContainer>
@@ -186,10 +180,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
 const FintelDesign = () => {
   const { fintelDesignId }: { fintelDesignId?: string } = useParams();
   if (!fintelDesignId) return null;
-  const queryRef = useQueryLoading<FintelDesignQuery>(
-    fintelDesignQuery,
-    { id: fintelDesignId },
-  );
+  const queryRef = useQueryLoading<FintelDesignQuery>(fintelDesignQuery, { id: fintelDesignId });
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
       <FintelDesignComponent queryRef={queryRef} />

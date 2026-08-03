@@ -41,7 +41,12 @@ interface CustomViewEditionHeaderProps {
   host: WidgetHost;
 }
 
-const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget, host }: CustomViewEditionHeaderProps) => {
+const CustomViewEditionHeader = ({
+  data,
+  onCreateWidget,
+  onImportWidget,
+  host,
+}: CustomViewEditionHeaderProps) => {
   const { t_i18n } = useFormatter();
   const { translateEntityType } = useEntityTranslation();
   const [isFormOpen, setFormOpen] = useState(false);
@@ -63,10 +68,12 @@ const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget, host }:
     commitCustomViewMutation({
       variables: {
         id: customView.id,
-        input: [{
-          key: 'enabled',
-          value: [!customView.enabled],
-        }],
+        input: [
+          {
+            key: 'enabled',
+            value: [!customView.enabled],
+          },
+        ],
       },
     });
   };
@@ -78,24 +85,11 @@ const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget, host }:
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
         <TitleMainEntity>{customView.name}</TitleMainEntity>
         <Tag
-          color={
-            customView.enabled
-              ? theme.palette.severity.low
-              : theme.palette.severity.critical
-          }
-          label={
-            customView.enabled
-              ? t_i18n('View is enabled')
-              : t_i18n('View is disabled')
-          }
+          color={customView.enabled ? theme.palette.severity.low : theme.palette.severity.critical}
+          label={customView.enabled ? t_i18n('View is enabled') : t_i18n('View is disabled')}
           labelTextTransform="none"
         />
-        {customView.default && (
-          <Tag
-            color={theme.palette.success.main}
-            label={t_i18n('Default')}
-          />
-        )}
+        {customView.default && <Tag color={theme.palette.success.main} label={t_i18n('Default')} />}
         <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', gap: 1 }}>
           <Tooltip title={customView.enabled ? t_i18n('Disable') : t_i18n('Enable')}>
             <IconButton

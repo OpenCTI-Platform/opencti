@@ -26,7 +26,10 @@ type SavedFilterButtonProps = {
   setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData | undefined) => void;
 };
 
-const SavedFilterButton = ({ currentSavedFilter, setCurrentSavedFilter }: SavedFilterButtonProps) => {
+const SavedFilterButton = ({
+  currentSavedFilter,
+  setCurrentSavedFilter,
+}: SavedFilterButtonProps) => {
   const { t_i18n } = useFormatter();
 
   const [isSavedDialogOpen, setIsSavedDialogOpen] = useState<boolean>(false);
@@ -42,11 +45,9 @@ const SavedFilterButton = ({ currentSavedFilter, setCurrentSavedFilter }: SavedF
   const isEmptyFilters = !filters?.filters.length && !filters?.filterGroups.length;
   const hasSameFilters = currentSavedFilter?.filters === JSON.stringify(filters);
 
-  const [commit] = useApiMutation(
-    savedFilterButtonEditMutation,
-    undefined,
-    { successMessage: 'Saved filter successfully updated' },
-  );
+  const [commit] = useApiMutation(savedFilterButtonEditMutation, undefined, {
+    successMessage: 'Saved filter successfully updated',
+  });
 
   const handleEditSavedFilter = () => {
     if (!currentSavedFilter) return;
@@ -88,22 +89,23 @@ const SavedFilterButton = ({ currentSavedFilter, setCurrentSavedFilter }: SavedF
   );
   const isDisabled = isEmptyFilters || hasSameFilters;
 
-  const isRestrictedStorageKey = localStorageKey.includes('_stixCoreRelationshipCreationFromEntity');
+  const isRestrictedStorageKey = localStorageKey.includes(
+    '_stixCoreRelationshipCreationFromEntity',
+  );
   if (isRestrictedStorageKey) return null;
 
   return (
     <>
-      <Tooltip title={!isDisabled && currentSavedFilter ? t_i18n('Update filter') : t_i18n('Save filter')}>
+      <Tooltip
+        title={!isDisabled && currentSavedFilter ? t_i18n('Update filter') : t_i18n('Save filter')}
+      >
         <IconButton
           color="primary"
           onClick={handleSaveButtonClick}
           size="small"
           disabled={isDisabled}
         >
-          {!hasSameFilters && currentSavedFilter
-            ? renderBadge()
-            : <SaveOutlined />
-          }
+          {!hasSameFilters && currentSavedFilter ? renderBadge() : <SaveOutlined />}
         </IconButton>
       </Tooltip>
 

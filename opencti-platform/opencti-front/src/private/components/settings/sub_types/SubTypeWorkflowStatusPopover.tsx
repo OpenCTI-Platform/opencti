@@ -13,10 +13,7 @@ import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 
 const workflowStatusDeletionMutation = graphql`
-  mutation SubTypeWorkflowStatusPopoverDeletionMutation(
-    $id: ID!
-    $statusId: String!
-  ) {
+  mutation SubTypeWorkflowStatusPopoverDeletionMutation($id: ID!, $statusId: String!) {
     subTypeEdit(id: $id) {
       statusDelete(statusId: $statusId) {
         ...SubTypeWorkflowDrawer_subType
@@ -30,14 +27,14 @@ interface SubTypeStatusPopoverProps {
   statusId: string;
 }
 
-const SubTypeWorkflowStatusPopover: FunctionComponent<
-  SubTypeStatusPopoverProps
-> = ({ subTypeId, statusId }) => {
+const SubTypeWorkflowStatusPopover: FunctionComponent<SubTypeStatusPopoverProps> = ({
+  subTypeId,
+  statusId,
+}) => {
   const { t_i18n } = useFormatter();
-  const queryRef = useQueryLoading<SubTypeWorkflowStatusEditQuery>(
-    statusEditQuery,
-    { id: statusId },
-  );
+  const queryRef = useQueryLoading<SubTypeWorkflowStatusEditQuery>(statusEditQuery, {
+    id: statusId,
+  });
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
@@ -65,7 +62,12 @@ const SubTypeWorkflowStatusPopover: FunctionComponent<
   };
   return (
     <>
-      <IconButton aria-label={t_i18n('Open menu')} onClick={handleOpen} aria-haspopup="true" color="primary">
+      <IconButton
+        aria-label={t_i18n('Open menu')}
+        onClick={handleOpen}
+        aria-haspopup="true"
+        color="primary"
+      >
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>

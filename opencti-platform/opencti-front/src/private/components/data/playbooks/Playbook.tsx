@@ -47,7 +47,10 @@ interface PlaybookProps {
 const Playbook = ({ dataPlaybook, playbookComponentsQueryRef }: PlaybookProps) => {
   const { t_i18n } = useFormatter();
   const playbook = useFragment(playbookFragment, dataPlaybook);
-  const dataPlaybookComponents = usePreloadedQuery(playbookComponentsQuery, playbookComponentsQueryRef);
+  const dataPlaybookComponents = usePreloadedQuery(
+    playbookComponentsQuery,
+    playbookComponentsQueryRef,
+  );
 
   return (
     <>
@@ -62,10 +65,7 @@ const Playbook = ({ dataPlaybook, playbookComponentsQueryRef }: PlaybookProps) =
       <PlaybookHeader playbook={playbook} />
       <ErrorBoundary>
         <ReactFlowProvider>
-          <PlaybookFlow
-            dataPlaybook={playbook}
-            dataPlaybookComponents={dataPlaybookComponents}
-          />
+          <PlaybookFlow dataPlaybook={playbook} dataPlaybookComponents={dataPlaybookComponents} />
         </ReactFlowProvider>
       </ErrorBoundary>
     </>

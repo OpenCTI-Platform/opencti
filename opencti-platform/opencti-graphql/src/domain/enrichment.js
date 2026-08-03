@@ -13,15 +13,26 @@ import { getDraftContext } from '../utils/draftContext';
 import { resolveUserByIdFromCache } from './user';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 
-const publishEventToConnectors = async (context, user, element, targetConnectors, trigger, stixLoaders) => {
+const publishEventToConnectors = async (
+  context,
+  user,
+  element,
+  targetConnectors,
+  trigger,
+  stixLoaders,
+) => {
   const draftContext = getDraftContext(context, user);
   const contextOutOfDraft = { ...context, draft_context: '' };
   const elementStandardId = element.standard_id;
   // Create a work for each connector
-  const workMessage = draftContext ? `Enrichment (${elementStandardId}) in draft ${draftContext}` : `Enrichment (${elementStandardId})`;
+  const workMessage = draftContext
+    ? `Enrichment (${elementStandardId}) in draft ${draftContext}`
+    : `Enrichment (${elementStandardId})`;
   const workList = await Promise.all(
     map((connector) => {
-      return createWork(contextOutOfDraft, user, connector, workMessage, elementStandardId, { draftContext }).then((work) => {
+      return createWork(contextOutOfDraft, user, connector, workMessage, elementStandardId, {
+        draftContext,
+      }).then((work) => {
         return { connector, work };
       });
     }, targetConnectors),
@@ -65,7 +76,9 @@ export const updateEntityAutoEnrichment = async (context, user, element, scope, 
     return null;
   }
   // Get the list of compatible connectors
-  const targetConnectors = await findConnectorsForElementEnrichment(context, user, element, scope, { mode: 'update' });
+  const targetConnectors = await findConnectorsForElementEnrichment(context, user, element, scope, {
+    mode: 'update',
+  });
   return publishEventToConnectors(context, user, element, targetConnectors, 'update', stixLoaders);
 };
 
@@ -77,7 +90,9 @@ export const createEntityAutoEnrichment = async (context, user, element, scope, 
     return null;
   }
   // Get the list of compatible connectors
-  const targetConnectors = await findConnectorsForElementEnrichment(context, user, element, scope, { mode: 'creation' });
+  const targetConnectors = await findConnectorsForElementEnrichment(context, user, element, scope, {
+    mode: 'creation',
+  });
   return publishEventToConnectors(context, user, element, targetConnectors, 'create', stixLoaders);
 };
 
@@ -86,18 +101,30 @@ const findConnectorsForElementEnrichment = async (context, user, element, scope,
   return filterConnectorsForElementEnrichment(context, connectors, element, scope, opts);
 };
 
-export const filterConnectorsForElementEnrichment = async (context, connectors, element, scope, opts = {}) => {
+export const filterConnectorsForElementEnrichment = async (
+  context,
+  connectors,
+  element,
+  scope,
+  opts = {},
+) => {
   const { mode = 'creation' } = opts;
   // first filter active & enrichment connectors only
-  const activeConnectors = connectors.filter((conn) => conn.active === true && conn.connector_type === CONNECTOR_INTERNAL_ENRICHMENT);
+  const activeConnectors = connectors.filter(
+    (conn) => conn.active === true && conn.connector_type === CONNECTOR_INTERNAL_ENRICHMENT,
+  );
   const targetConnectors = [];
   for (let i = 0; i < activeConnectors.length; i += 1) {
     const conn = activeConnectors[i];
-    const scopeMatch = scope ? (conn.connector_scope ?? []).some((s) => s.toLowerCase() === scope.toLowerCase()) : true;
+    const scopeMatch = scope
+      ? (conn.connector_scope ?? []).some((s) => s.toLowerCase() === scope.toLowerCase())
+      : true;
     let hasAccessToElement = false;
     let autoTrigger = false;
     if (mode === 'creation') {
-      autoTrigger = conn.connector_trigger_filters ? await isStixMatchConnectorFilter(context, element, conn.connector_trigger_filters) : conn.auto === true;
+      autoTrigger = conn.connector_trigger_filters
+        ? await isStixMatchConnectorFilter(context, element, conn.connector_trigger_filters)
+        : conn.auto === true;
     } else if (mode === 'update') {
       autoTrigger = conn.auto_update;
     }
@@ -105,7 +132,8 @@ export const filterConnectorsForElementEnrichment = async (context, connectors, 
     // isUserCanAccessStoreElement
     if (conn.connector_user_id) {
       const connectorUser = await resolveUserByIdFromCache(context, conn.connector_user_id);
-      hasAccessToElement = connectorUser && (await isUserCanAccessStoreElement(context, connectorUser, element));
+      hasAccessToElement =
+        connectorUser && (await isUserCanAccessStoreElement(context, connectorUser, element));
     }
     if (scopeMatch && autoTrigger && hasAccessToElement) {
       targetConnectors.push(conn);

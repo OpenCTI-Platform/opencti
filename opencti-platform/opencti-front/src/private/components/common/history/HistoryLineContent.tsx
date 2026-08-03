@@ -47,10 +47,7 @@ interface HistoryLineContentProps {
  * Shared presentational component for history lines.
  * Renders the icon, timestamp, message, external references, and dialogs.
  */
-const HistoryLineContent = ({
-  data,
-  isRelation,
-}: HistoryLineContentProps) => {
+const HistoryLineContent = ({ data, isRelation }: HistoryLineContentProps) => {
   const { t_i18n, nsdt } = useFormatter();
   const [open, setOpen] = useState(false);
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
@@ -75,12 +72,13 @@ const HistoryLineContent = ({
 
   return (
     <ListItem style={{ height: 40, padding: 0 }}>
-      <div style={{
-        float: 'left',
-        width: 30,
-        height: 30,
-        margin: '7px 0 0 0',
-      }}
+      <div
+        style={{
+          float: 'left',
+          width: 30,
+          height: 30,
+          margin: '7px 0 0 0',
+        }}
       >
         <Badge
           color="secondary"
@@ -97,34 +95,41 @@ const HistoryLineContent = ({
           />
         </Badge>
       </div>
-      <div style={{
-        flex: 1,
-        width: 'auto',
-        overflow: 'hidden',
-        height: hasExternalRefs ? 'auto' : 40,
-      }}
+      <div
+        style={{
+          flex: 1,
+          width: 'auto',
+          overflow: 'hidden',
+          height: hasExternalRefs ? 'auto' : 40,
+        }}
       >
         <Paper sx={{ width: '100%', height: '100%', padding: '8px 15px 0 15px', background: 0 }}>
-          <div style={{
-            float: 'right',
-            textAlign: 'right',
-            width: 180,
-            paddingTop: 4,
-            fontSize: 11,
-          }}
+          <div
+            style={{
+              float: 'right',
+              textAlign: 'right',
+              width: 180,
+              paddingTop: 4,
+              fontSize: 11,
+            }}
           >
             {nsdt(data.timestamp)}
           </div>
           <Tooltip
             sx={{ maxWidth: '80%', lineHeight: 2, padding: 10 }}
-            title={<><b>{data.userName}</b> {data.message}</>}
+            title={
+              <>
+                <b>{data.userName}</b> {data.message}
+              </>
+            }
           >
-            <div style={{
-              height: '100%',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
+            <div
+              style={{
+                height: '100%',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
             >
               <MarkdownDisplay
                 content={`\`${data.userName}\` ${data.message ?? ''}`}
@@ -143,8 +148,8 @@ const HistoryLineContent = ({
                 if (externalReference.url && externalReference.url.length > 0) {
                   externalReferenceSecondary = externalReference.url;
                 } else if (
-                  externalReference.description
-                  && externalReference.description.length > 0
+                  externalReference.description &&
+                  externalReference.description.length > 0
                 ) {
                   externalReferenceSecondary = externalReference.description;
                 }
@@ -156,7 +161,7 @@ const HistoryLineContent = ({
                       dense={true}
                       divider={true}
                       disablePadding
-                      secondaryAction={(
+                      secondaryAction={
                         <Tooltip title={t_i18n('Browse the link')}>
                           <IconButton
                             onClick={() => handleOpenExternalLink(externalReference.url!)}
@@ -165,7 +170,7 @@ const HistoryLineContent = ({
                             <OpenInBrowserOutlined />
                           </IconButton>
                         </Tooltip>
-                      )}
+                      }
                     >
                       <ListItemButton
                         component={Link}
@@ -204,20 +209,10 @@ const HistoryLineContent = ({
           )}
         </Paper>
       </div>
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        title={t_i18n('Commit message')}
-      >
-        <MarkdownDisplay
-          content={data.commit ?? ''}
-          remarkGfmPlugin={true}
-          commonmark={true}
-        />
+      <Dialog open={open} onClose={handleClose} title={t_i18n('Commit message')}>
+        <MarkdownDisplay content={data.commit ?? ''} remarkGfmPlugin={true} commonmark={true} />
         <DialogActions>
-          <Button onClick={handleClose}>
-            {t_i18n('Close')}
-          </Button>
+          <Button onClick={handleClose}>{t_i18n('Close')}</Button>
         </DialogActions>
       </Dialog>
       <Dialog
@@ -234,9 +229,7 @@ const HistoryLineContent = ({
           <Button variant="secondary" onClick={handleCloseExternalLink}>
             {t_i18n('Cancel')}
           </Button>
-          <Button onClick={handleBrowseExternalLink}>
-            {t_i18n('Browse the link')}
-          </Button>
+          <Button onClick={handleBrowseExternalLink}>{t_i18n('Browse the link')}</Button>
         </DialogActions>
       </Dialog>
     </ListItem>

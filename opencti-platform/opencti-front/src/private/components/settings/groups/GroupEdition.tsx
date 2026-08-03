@@ -17,7 +17,9 @@ const GroupEdition: FunctionComponent<GroupEditionProps> = ({
   open,
   disabled = false,
 }) => {
-  const groupQueryRef = useQueryLoading<GroupEditionContainerQuery>(groupEditionContainerQuery, { id: groupId });
+  const groupQueryRef = useQueryLoading<GroupEditionContainerQuery>(groupEditionContainerQuery, {
+    id: groupId,
+  });
   return (
     <div>
       {groupQueryRef && (

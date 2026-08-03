@@ -24,7 +24,10 @@ import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import PlaybookCreation from './playbooks/PlaybookCreation';
-import { PlaybooksLinesPaginationQuery, PlaybooksLinesPaginationQuery$variables } from './__generated__/PlaybooksLinesPaginationQuery.graphql';
+import {
+  PlaybooksLinesPaginationQuery,
+  PlaybooksLinesPaginationQuery$variables,
+} from './__generated__/PlaybooksLinesPaginationQuery.graphql';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
@@ -64,14 +67,14 @@ const playbooksLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...PlaybooksLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -127,15 +130,13 @@ const Playbooks: FunctionComponent = () => {
       symbol: '',
     },
   };
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<PlaybooksLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY_PLAYBOOKS,
-    initialValues,
-  );
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<PlaybooksLinesPaginationQuery$variables>(
+      LOCAL_STORAGE_KEY_PLAYBOOKS,
+      initialValues,
+    );
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext(
-    'Playbook',
-    viewStorage.filters,
-  );
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Playbook', viewStorage.filters);
 
   const queryPaginationOptions = {
     ...paginationOptions,
@@ -195,7 +196,10 @@ const Playbooks: FunctionComponent = () => {
     },
   };
   return (
-    <div style={{ paddingRight: '200px', height: '100%', minWidth: 1280 }} data-testid="playbook-page">
+    <div
+      style={{ paddingRight: '200px', height: '100%', minWidth: 1280 }}
+      data-testid="playbook-page"
+    >
       <Breadcrumbs
         elements={[
           { label: t_i18n('Data') },
@@ -203,7 +207,8 @@ const Playbooks: FunctionComponent = () => {
           {
             label: t_i18n('Automation'),
             current: true,
-          }]}
+          },
+        ]}
       />
       <ProcessingMenu />
       {isEnterpriseEdition ? (
@@ -211,7 +216,9 @@ const Playbooks: FunctionComponent = () => {
           {queryRef && (
             <DataTable
               dataColumns={dataColumns}
-              resolvePath={(data: PlaybooksLines_data$data) => data.playbooks?.edges?.map((m) => m?.node)}
+              resolvePath={(data: PlaybooksLines_data$data) =>
+                data.playbooks?.edges?.map((m) => m?.node)
+              }
               storageKey={LOCAL_STORAGE_KEY_PLAYBOOKS}
               initialValues={initialValues}
               contextFilters={contextFilters}
@@ -227,11 +234,11 @@ const Playbooks: FunctionComponent = () => {
                   running={row.playbook_running}
                 />
               )}
-              createButton={(
+              createButton={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <PlaybookCreation />
                 </Security>
-              )}
+              }
               hideSavedFilters
             />
           )}

@@ -8,10 +8,12 @@ export const isFieldForIdentifier = (fieldName?: string) => {
   if (!fieldName) {
     return false;
   }
-  return fieldName === 'id'
-    || fieldName.endsWith('.id')
-    || fieldName.endsWith('_id')
-    || fieldName.endsWith('_ids');
+  return (
+    fieldName === 'id' ||
+    fieldName.endsWith('.id') ||
+    fieldName.endsWith('_id') ||
+    fieldName.endsWith('_ids')
+  );
 };
 
 export const defaultDate = (n: any) => {
@@ -101,44 +103,34 @@ export const getMainRepresentative = (n: any, fallback = 'Unknown') => {
   if (typeof n.definition === 'object') {
     return defaultValueMarking(n);
   }
-  const mainValue: string = n.representative?.main
-    || n.name
-    || n.label
-    || n.observableName
-    || n.observable_value
-    || n.pattern
-    || n.attribute_abstract
-    || n.opinion
-    || n.value
-    || n.definition
-    || n.source_name
-    || n.phase_name
-    || n.result_name
-    || n.country
-    || n.key
-    || n.path
-    || (n.template && n.template.name)
-    || (n.content && truncate(n.content, 30))
-    || (n.hashes
-      && (n.hashes['SHA-512']
-        || n.hashes['SHA-256']
-        || n.hashes['SHA-1']
-        || n.hashes.MD5
-      )
-    )
-    || (n.source_ref_name
-      && n.target_ref_name
-      && `${truncate(n.source_ref_name, 20)} ➡️ ${truncate(
-        n.target_ref_name,
-        20,
-      )}`
-    )
-    || getMainRepresentative((R.head(n.objects?.edges ?? []) as any)?.node)
-    || (n.from
-      && n.to
-      && getRelationshipMainRepresentative(n.from, n.to))
-    || n.main_entity_name
-    || fallback;
+  const mainValue: string =
+    n.representative?.main ||
+    n.name ||
+    n.label ||
+    n.observableName ||
+    n.observable_value ||
+    n.pattern ||
+    n.attribute_abstract ||
+    n.opinion ||
+    n.value ||
+    n.definition ||
+    n.source_name ||
+    n.phase_name ||
+    n.result_name ||
+    n.country ||
+    n.key ||
+    n.path ||
+    (n.template && n.template.name) ||
+    (n.content && truncate(n.content, 30)) ||
+    (n.hashes &&
+      (n.hashes['SHA-512'] || n.hashes['SHA-256'] || n.hashes['SHA-1'] || n.hashes.MD5)) ||
+    (n.source_ref_name &&
+      n.target_ref_name &&
+      `${truncate(n.source_ref_name, 20)} ➡️ ${truncate(n.target_ref_name, 20)}`) ||
+    getMainRepresentative((R.head(n.objects?.edges ?? []) as any)?.node) ||
+    (n.from && n.to && getRelationshipMainRepresentative(n.from, n.to)) ||
+    n.main_entity_name ||
+    fallback;
   return n.x_mitre_id && !n.representative?.main ? `[${n.x_mitre_id}] ${mainValue}` : mainValue;
 };
 
@@ -146,11 +138,11 @@ export const getMainRepresentative = (n: any, fallback = 'Unknown') => {
 export const getSecondaryRepresentative = (n: any) => {
   if (!n) return '';
   return (
-    n.representative?.secondary
-    || n.description
-    || n.x_opencti_description
-    || n.content
-    || n.entity_type
-    || dateFormat(n.created_at)
+    n.representative?.secondary ||
+    n.description ||
+    n.x_opencti_description ||
+    n.content ||
+    n.entity_type ||
+    dateFormat(n.created_at)
   );
 };

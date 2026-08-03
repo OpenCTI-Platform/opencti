@@ -84,11 +84,16 @@ const TransitionNode = ({ data, id }: NodeProps) => {
   const sourcePosition = isBackwardTransition ? Position.Top : Position.Bottom;
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+    <div
+      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+    >
       <Handle
         type="target"
         position={targetPosition}
-        style={{ visibility: hasIncomingEdge ? 'hidden' : 'visible', [isBackwardTransition ? 'bottom' : 'top']: -2 }}
+        style={{
+          visibility: hasIncomingEdge ? 'hidden' : 'visible',
+          [isBackwardTransition ? 'bottom' : 'top']: -2,
+        }}
       />
       <svg width={NODE_SIZE.width} height={NODE_SIZE.height}>
         <g transform={`translate(${strokeWidth}, ${strokeWidth})`}>
@@ -97,36 +102,35 @@ const TransitionNode = ({ data, id }: NodeProps) => {
             fill={theme.palette.background.paper}
             strokeWidth={strokeWidth}
             stroke={
-              theme.palette.mode === 'dark'
-                ? 'rgba(255, 255, 255, 0.12)'
-                : 'rgba(0, 0, 0, 0.12)'
+              theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'
             }
           />
         </g>
         <foreignObject x="0" y="0" width={NODE_SIZE.width} height={NODE_SIZE.height}>
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: '100%',
-            width: '100%',
-            textAlign: 'center',
-            fontSize: 9,
-            color: theme.palette.primary.main,
-            pointerEvents: 'none',
-          }}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              width: '100%',
+              textAlign: 'center',
+              fontSize: 9,
+              color: theme.palette.primary.main,
+              pointerEvents: 'none',
+            }}
           >
             <div style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>
               {snakeCaseToSentenceCase(data.event.replace(/_/g, ' '))}
             </div>
             <ul style={{ margin: 0, padding: 0, listStyleType: 'none' }}>
-              <li>
-                {conditionAndActions}
-              </li>
+              <li>{conditionAndActions}</li>
               {data.comment && data.comment !== CommentMode.disabled && (
                 <li>
-                  {data.comment === CommentMode.required ? t_i18n('comment required') : t_i18n('comment allowed')}
+                  {data.comment === CommentMode.required
+                    ? t_i18n('comment required')
+                    : t_i18n('comment allowed')}
                 </li>
               )}
             </ul>
@@ -136,7 +140,10 @@ const TransitionNode = ({ data, id }: NodeProps) => {
       <Handle
         type="source"
         position={sourcePosition}
-        style={{ visibility: hasOutgoingEdge ? 'hidden' : 'visible', [isBackwardTransition ? 'top' : 'bottom']: -2 }}
+        style={{
+          visibility: hasOutgoingEdge ? 'hidden' : 'visible',
+          [isBackwardTransition ? 'top' : 'bottom']: -2,
+        }}
       />
     </div>
   );

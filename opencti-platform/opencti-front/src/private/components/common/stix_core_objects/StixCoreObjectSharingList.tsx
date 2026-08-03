@@ -37,15 +37,17 @@ interface StixCoreObjectSharingListProps {
   children?: ReactNode;
 }
 
-const StixCoreObjectSharingList = ({ data, disabled, inContainer, children }: StixCoreObjectSharingListProps) => {
+const StixCoreObjectSharingList = ({
+  data,
+  disabled,
+  inContainer,
+  children,
+}: StixCoreObjectSharingListProps) => {
   const { t_i18n } = useFormatter();
   const notifySuccessMessage = (
     <span>
-      {t_i18n(
-        'The background task has been executed. You can monitor it on',
-      )}{' '}
-      <Link to="/dashboard/data/processing/tasks">{t_i18n('the dedicated page')}</Link>
-      .
+      {t_i18n('The background task has been executed. You can monitor it on')}{' '}
+      <Link to="/dashboard/data/processing/tasks">{t_i18n('the dedicated page')}</Link>.
     </span>
   );
   const [deleteOrganization] = useApiMutation<StixCoreObjectSharingListDeleteMutation>(

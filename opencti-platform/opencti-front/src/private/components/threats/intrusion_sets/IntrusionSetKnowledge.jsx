@@ -24,13 +24,8 @@ const IntrusionSetKnowledgeFragment = graphql`
   }
 `;
 
-const IntrusionSetKnowledgeComponent = ({
-  intrusionSetData,
-}) => {
-  const intrusionSet = useFragment(
-    IntrusionSetKnowledgeFragment,
-    intrusionSetData,
-  );
+const IntrusionSetKnowledgeComponent = ({ intrusionSetData }) => {
+  const intrusionSet = useFragment(IntrusionSetKnowledgeFragment, intrusionSetData);
   const location = useLocation();
   const link = `/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`;
   const { schema } = useAuth();
@@ -41,35 +36,25 @@ const IntrusionSetKnowledgeComponent = ({
       <Routes>
         <Route
           path="/relations/:relationId"
-          element={(
-            <StixCoreRelationship
-              entityId={intrusionSet.id}
-              paddingRight={true}
-            />
-          )}
+          element={<StixCoreRelationship entityId={intrusionSet.id} paddingRight={true} />}
         />
         <Route
           path="/sightings/:sightingId"
-          element={(
-            <StixSightingRelationship
-              entityId={intrusionSet.id}
-              paddingRight={true}
-            />
-          )}
+          element={<StixSightingRelationship entityId={intrusionSet.id} paddingRight={true} />}
         />
         <Route
           path="/overview"
-          element={(
+          element={
             <StixDomainObjectThreatKnowledge
               stixDomainObjectId={intrusionSet.id}
               stixDomainObjectName={intrusionSet.name}
               stixDomainObjectType="Intrusion-Set"
             />
-          )}
+          }
         />
         <Route
           path="/all"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={intrusionSet.id}
@@ -79,11 +64,11 @@ const IntrusionSetKnowledgeComponent = ({
               defaultStopTime={intrusionSet.stopTime}
               allDirections
             />
-          )}
+          }
         />
         <Route
           path="/related"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={intrusionSet.id}
@@ -93,11 +78,11 @@ const IntrusionSetKnowledgeComponent = ({
               defaultStopTime={intrusionSet.last_seen}
               allDirections
             />
-          )}
+          }
         />
         <Route
           path="/attribution"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={intrusionSet.id}
@@ -108,22 +93,22 @@ const IntrusionSetKnowledgeComponent = ({
               defaultStopTime={intrusionSet.last_seen}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route
           path="/victimology"
-          element={(
+          element={
             <StixDomainObjectVictimology
               stixDomainObjectId={intrusionSet.id}
               entityLink={link}
               defaultStartTime={intrusionSet.first_seen}
               defaultStopTime={intrusionSet.last_seen}
             />
-          )}
+          }
         />
         <Route
           path="/campaigns"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={intrusionSet.id}
@@ -134,22 +119,22 @@ const IntrusionSetKnowledgeComponent = ({
               defaultStopTime={intrusionSet.last_seen}
               isRelationReversed={true}
             />
-          )}
+          }
         />
         <Route
           path="/attack_patterns"
-          element={(
+          element={
             <StixDomainObjectAttackPatterns
               stixDomainObjectId={intrusionSet.id}
               defaultStartTime={intrusionSet.first_seen}
               defaultStopTime={intrusionSet.last_seen}
               entityType={intrusionSet.entity_type}
             />
-          )}
+          }
         />
         <Route
           path="/malwares"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={intrusionSet.id}
@@ -161,11 +146,11 @@ const IntrusionSetKnowledgeComponent = ({
               isRelationReversed={false}
               allDirections
             />
-          )}
+          }
         />
         <Route
           path="/tools"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={intrusionSet.id}
@@ -176,11 +161,11 @@ const IntrusionSetKnowledgeComponent = ({
               defaultStopTime={intrusionSet.last_seen}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route
           path="/channels"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={intrusionSet.id}
@@ -192,11 +177,11 @@ const IntrusionSetKnowledgeComponent = ({
               isRelationReversed={false}
               allDirections
             />
-          )}
+          }
         />
         <Route
           path="/narratives"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={intrusionSet.id}
@@ -207,11 +192,11 @@ const IntrusionSetKnowledgeComponent = ({
               defaultStopTime={intrusionSet.last_seen}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route
           path="/vulnerabilities"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={intrusionSet.id}
@@ -222,11 +207,11 @@ const IntrusionSetKnowledgeComponent = ({
               defaultStopTime={intrusionSet.last_seen}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route
           path="/incidents"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={intrusionSet.id}
@@ -237,22 +222,22 @@ const IntrusionSetKnowledgeComponent = ({
               defaultStopTime={intrusionSet.last_seen}
               isRelationReversed={true}
             />
-          )}
+          }
         />
         <Route
           path="/indicators"
-          element={(
+          element={
             <EntityStixCoreRelationshipsIndicators
               entityId={intrusionSet.id}
               entityLink={link}
               defaultStartTime={intrusionSet.first_seen}
               defaultStopTime={intrusionSet.last_seen}
             />
-          )}
+          }
         />
         <Route
           path="/observables"
-          element={(
+          element={
             <EntityStixCoreRelationshipsStixCyberObservable
               entityId={intrusionSet.id}
               entityLink={link}
@@ -261,11 +246,11 @@ const IntrusionSetKnowledgeComponent = ({
               isRelationReversed={true}
               relationshipTypes={['related-to']}
             />
-          )}
+          }
         />
         <Route
           path="/infrastructures"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={intrusionSet.id}
@@ -276,11 +261,11 @@ const IntrusionSetKnowledgeComponent = ({
               defaultStopTime={intrusionSet.last_seen}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route
           path="/intrusion_sets"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={intrusionSet.id}
@@ -291,11 +276,11 @@ const IntrusionSetKnowledgeComponent = ({
               defaultStopTime={intrusionSet.last_seen}
               allDirections
             />
-          )}
+          }
         />
         <Route
           path="/sightings"
-          element={(
+          element={
             <EntityStixSightingRelationships
               entityId={intrusionSet.id}
               entityLink={link}
@@ -313,7 +298,7 @@ const IntrusionSetKnowledgeComponent = ({
                 'System',
               ]}
             />
-          )}
+          }
         />
         <Route index element={<Navigate replace={true} to="overview" />} />
       </Routes>

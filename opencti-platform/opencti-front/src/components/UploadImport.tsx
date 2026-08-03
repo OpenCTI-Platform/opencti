@@ -32,41 +32,41 @@ const UploadImport = ({
   const currentAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
   const canDisplayButton = !draftContext || currentAccessRight.canEdit;
 
-  return canDisplayButton && (
-    <>
-      {openImportFilesDialog && (
-        <ImportFilesDialog
-          open={openImportFilesDialog}
-          handleClose={() => {
-            onSuccess?.();
-            setOpenImportFilesDialog(false);
-          }}
-          entityId={entityId}
-        />
-      )}
-      {variant === 'icon' ? (
-        <Tooltip title={title}>
-          <IconButton
-            size={size}
-            aria-haspopup="true"
+  return (
+    canDisplayButton && (
+      <>
+        {openImportFilesDialog && (
+          <ImportFilesDialog
+            open={openImportFilesDialog}
+            handleClose={() => {
+              onSuccess?.();
+              setOpenImportFilesDialog(false);
+            }}
+            entityId={entityId}
+          />
+        )}
+        {variant === 'icon' ? (
+          <Tooltip title={title}>
+            <IconButton
+              size={size}
+              aria-haspopup="true"
+              onClick={() => setOpenImportFilesDialog(true)}
+            >
+              <FileUploadOutlined fontSize={fontSize} />
+            </IconButton>
+          </Tooltip>
+        ) : (
+          <Button
             onClick={() => setOpenImportFilesDialog(true)}
+            size={size}
+            aria-label={title}
+            title={title}
           >
-            <FileUploadOutlined fontSize={fontSize} />
-          </IconButton>
-        </Tooltip>
-      ) : (
-        <Button
-          onClick={() => setOpenImportFilesDialog(true)}
-          size={size}
-          aria-label={title}
-          title={title}
-        >
-          <div style={{ display: 'flex' }}>
-            {title}
-          </div>
-        </Button>
-      )}
-    </>
+            <div style={{ display: 'flex' }}>{title}</div>
+          </Button>
+        )}
+      </>
+    )
   );
 };
 

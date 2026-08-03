@@ -11,11 +11,7 @@ export const addLocationsMutationRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    stixCoreRelationshipDelete(
-      fromId: $fromId
-      toId: $toId
-      relationship_type: $relationship_type
-    )
+    stixCoreRelationshipDelete(fromId: $fromId, toId: $toId, relationship_type: $relationship_type)
   }
 `;
 
@@ -42,8 +38,7 @@ AddLocationsLinesContainer.propTypes = {
 
 export const addLocationsLinesQuery = graphql`
   query AddLocationsLinesQuery($search: String, $count: Int!, $cursor: ID) {
-    ...AddLocationsLines_data
-      @arguments(search: $search, count: $count, cursor: $cursor)
+    ...AddLocationsLines_data @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 

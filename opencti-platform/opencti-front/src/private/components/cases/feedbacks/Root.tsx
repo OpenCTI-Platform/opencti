@@ -6,7 +6,11 @@ import StixCoreRelationship from '@components/common/stix_core_relationships/Sti
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import Security from 'src/utils/Security';
-import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from 'src/utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+  KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
+} from 'src/utils/hooks/useGranted';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -86,9 +90,7 @@ interface RootFeedbackComponentProps {
 }
 
 const RootFeedbackComponent = ({ queryRef, caseId }: RootFeedbackComponentProps) => {
-  const subConfig = useMemo<
-    GraphQLSubscriptionConfig<RootFeedbackSubscription>
-  >(
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootFeedbackSubscription>>(
     () => ({
       subscription,
       variables: { id: caseId },
@@ -96,7 +98,8 @@ const RootFeedbackComponent = ({ queryRef, caseId }: RootFeedbackComponentProps)
     [caseId],
   );
   const location = useLocation();
-  const enableReferences = useIsEnforceReference('Feedback') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
+  const enableReferences =
+    useIsEnforceReference('Feedback') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
 
@@ -113,19 +116,20 @@ const RootFeedbackComponent = ({ queryRef, caseId }: RootFeedbackComponentProps)
   const { canEdit } = useGetCurrentUserAccessRight(feedbackData.currentUserAccessRight);
   return (
     <div style={{ paddingRight }}>
-      <Breadcrumbs elements={[
-        { label: t_i18n('Cases') },
-        { label: t_i18n('Feedbacks'), link: PATH_FEEDBACKS },
-        { label: feedbackData.name, current: true },
-      ]}
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Cases') },
+          { label: t_i18n('Feedbacks'), link: PATH_FEEDBACKS },
+          { label: feedbackData.name, current: true },
+        ]}
       />
       <ContainerHeader
         container={feedbackData}
-        EditComponent={(
+        EditComponent={
           <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
             <FeedbackEdition feedbackId={feedbackData.id} />
           </Security>
-        )}
+        }
         DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
             <FeedbackDeletion id={feedbackData.id} isOpen={isOpen} handleClose={onClose} />
@@ -140,17 +144,8 @@ const RootFeedbackComponent = ({ queryRef, caseId }: RootFeedbackComponentProps)
         entity={feedbackData}
         basePath={basePath}
         pages={{
-          overview: (
-            <Feedback
-              feedbackData={feedbackData}
-              enableReferences={enableReferences}
-            />
-          ),
-          content: (
-            <StixCoreObjectContentRoot
-              stixCoreObject={feedbackData}
-            />
-          ),
+          overview: <Feedback feedbackData={feedbackData} enableReferences={enableReferences} />,
+          content: <StixCoreObjectContentRoot stixCoreObject={feedbackData} />,
           files: (
             <FileManager
               id={caseId}
@@ -159,22 +154,14 @@ const RootFeedbackComponent = ({ queryRef, caseId }: RootFeedbackComponentProps)
               entity={feedbackData}
             />
           ),
-          history: (
-            <StixCoreObjectHistory
-              stixCoreObjectId={caseId}
-            />
-          ),
+          history: <StixCoreObjectHistory stixCoreObjectId={caseId} />,
         }}
-        extraRoutes={(
+        extraRoutes={
           <Route
             path="/knowledge/relations/:relationId"
-            element={(
-              <StixCoreRelationship
-                entityId={feedbackData.id}
-              />
-            )}
+            element={<StixCoreRelationship entityId={feedbackData.id} />}
           />
-        )}
+        }
       />
     </div>
   );

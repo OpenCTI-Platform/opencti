@@ -21,7 +21,11 @@ import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
-import type { CertAuthConfigInput, HeadersAuthConfigInput, LocalAuthConfigInput } from '../generated/graphql';
+import type {
+  CertAuthConfigInput,
+  HeadersAuthConfigInput,
+  LocalAuthConfigInput,
+} from '../generated/graphql';
 import { getEntityFromCache } from '../database/cache';
 import { SYSTEM_USER } from '../utils/access';
 import { clearAllUsersPasswordValidUntil, adjustAllUsersPasswordValidUntil } from './user';
@@ -55,21 +59,46 @@ export const buildAvailableProviders = async (platformSettings: BasicStoreSettin
   return availableProviders;
 };
 
-export const updateLocalAuth = async (context: AuthContext, user: AuthUser, settingsId: string, input: LocalAuthConfigInput) => {
+export const updateLocalAuth = async (
+  context: AuthContext,
+  user: AuthUser,
+  settingsId: string,
+  input: LocalAuthConfigInput,
+) => {
   // Read previous validity days before patching
-  const currentSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const currentSettings = await getEntityFromCache<BasicStoreSettings>(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_SETTINGS,
+  );
   const oldValidityDays = Number(currentSettings.password_policy_validity_days ?? 0);
 
   const patch = {
     local_auth: { enabled: input.enabled },
-    ...(input.password_policy_min_length !== undefined && { password_policy_min_length: input.password_policy_min_length }),
-    ...(input.password_policy_max_length !== undefined && { password_policy_max_length: input.password_policy_max_length }),
-    ...(input.password_policy_min_symbols !== undefined && { password_policy_min_symbols: input.password_policy_min_symbols }),
-    ...(input.password_policy_min_numbers !== undefined && { password_policy_min_numbers: input.password_policy_min_numbers }),
-    ...(input.password_policy_min_words !== undefined && { password_policy_min_words: input.password_policy_min_words }),
-    ...(input.password_policy_min_lowercase !== undefined && { password_policy_min_lowercase: input.password_policy_min_lowercase }),
-    ...(input.password_policy_min_uppercase !== undefined && { password_policy_min_uppercase: input.password_policy_min_uppercase }),
-    ...(input.password_policy_validity_days !== undefined && { password_policy_validity_days: input.password_policy_validity_days }),
+    ...(input.password_policy_min_length !== undefined && {
+      password_policy_min_length: input.password_policy_min_length,
+    }),
+    ...(input.password_policy_max_length !== undefined && {
+      password_policy_max_length: input.password_policy_max_length,
+    }),
+    ...(input.password_policy_min_symbols !== undefined && {
+      password_policy_min_symbols: input.password_policy_min_symbols,
+    }),
+    ...(input.password_policy_min_numbers !== undefined && {
+      password_policy_min_numbers: input.password_policy_min_numbers,
+    }),
+    ...(input.password_policy_min_words !== undefined && {
+      password_policy_min_words: input.password_policy_min_words,
+    }),
+    ...(input.password_policy_min_lowercase !== undefined && {
+      password_policy_min_lowercase: input.password_policy_min_lowercase,
+    }),
+    ...(input.password_policy_min_uppercase !== undefined && {
+      password_policy_min_uppercase: input.password_policy_min_uppercase,
+    }),
+    ...(input.password_policy_validity_days !== undefined && {
+      password_policy_validity_days: input.password_policy_validity_days,
+    }),
   };
   const { element } = await patchAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, patch);
 
@@ -96,7 +125,12 @@ export const updateLocalAuth = async (context: AuthContext, user: AuthUser, sett
   return notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
 };
 
-export const updateCertAuth = async (context: AuthContext, user: AuthUser, settingsId: string, input: CertAuthConfigInput) => {
+export const updateCertAuth = async (
+  context: AuthContext,
+  user: AuthUser,
+  settingsId: string,
+  input: CertAuthConfigInput,
+) => {
   const patch = { cert_auth: input };
   const { element } = await patchAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, patch);
   await publishUserAction({
@@ -110,7 +144,12 @@ export const updateCertAuth = async (context: AuthContext, user: AuthUser, setti
   return notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
 };
 
-export const updateHeaderAuth = async (context: AuthContext, user: AuthUser, settingsId: string, input: HeadersAuthConfigInput) => {
+export const updateHeaderAuth = async (
+  context: AuthContext,
+  user: AuthUser,
+  settingsId: string,
+  input: HeadersAuthConfigInput,
+) => {
   const patch = { headers_auth: input };
   const { element } = await patchAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, patch);
   await publishUserAction({

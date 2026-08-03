@@ -10,9 +10,7 @@ interface ExternalAuthButtonProps {
   };
 }
 
-const ExternalAuthButton = ({
-  auth,
-}: ExternalAuthButtonProps) => {
+const ExternalAuthButton = ({ auth }: ExternalAuthButtonProps) => {
   const { provider, name, button_label_override } = auth;
 
   return (

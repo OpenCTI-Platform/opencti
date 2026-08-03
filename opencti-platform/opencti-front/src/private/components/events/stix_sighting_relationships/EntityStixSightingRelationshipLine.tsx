@@ -14,9 +14,7 @@ import Box from '@mui/material/Box';
 import { AutoFix } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { EntityStixSightingRelationshipLine_node$key } from '@components/events/stix_sighting_relationships/__generated__/EntityStixSightingRelationshipLine_node.graphql';
-import {
-  EntityStixSightingRelationshipsLinesPaginationQuery$variables,
-} from '@components/events/stix_sighting_relationships/__generated__/EntityStixSightingRelationshipsLinesPaginationQuery.graphql';
+import { EntityStixSightingRelationshipsLinesPaginationQuery$variables } from '@components/events/stix_sighting_relationships/__generated__/EntityStixSightingRelationshipsLinesPaginationQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
@@ -70,170 +68,170 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const EntityStixSightingRelationshipLineFragment = graphql`
-    fragment EntityStixSightingRelationshipLine_node on StixSightingRelationship {
+  fragment EntityStixSightingRelationshipLine_node on StixSightingRelationship {
+    id
+    entity_type
+    parent_types
+    x_opencti_negative
+    attribute_count
+    confidence
+    first_seen
+    last_seen
+    description
+    is_inferred
+    x_opencti_inferences {
+      rule {
+        id
+        name
+      }
+    }
+    from {
+      ... on StixObject {
         id
         entity_type
         parent_types
-        x_opencti_negative
-        attribute_count
-        confidence
-        first_seen
-        last_seen
+        created_at
+        updated_at
+      }
+      ... on AttackPattern {
+        name
         description
-        is_inferred
-        x_opencti_inferences {
-            rule {
-                id
-                name
-            }
+        x_mitre_id
+        killChainPhases {
+          id
+          phase_name
+          x_opencti_order
         }
-        from {
-            ... on StixObject {
-                id
-                entity_type
-                parent_types
-                created_at
-                updated_at
-            }
-            ... on AttackPattern {
-                name
-                description
-                x_mitre_id
-                killChainPhases {
-                    id
-                    phase_name
-                    x_opencti_order
-                }
-            }
-            ... on Campaign {
-                name
-                description
-            }
-            ... on CourseOfAction {
-                name
-                description
-            }
-            ... on Individual {
-                name
-                description
-            }
-            ... on Organization {
-                name
-                description
-            }
-            ... on Sector {
-                name
-                description
-            }
-            ... on System {
-                name
-                description
-            }
-            ... on Indicator {
-                name
-                description
-            }
-            ... on Infrastructure {
-                name
-                description
-            }
-            ... on IntrusionSet {
-                name
-                description
-            }
-            ... on Position {
-                name
-                description
-            }
-            ... on City {
-                name
-                description
-            }
-            ... on AdministrativeArea {
-                name
-                description
-            }
-            ... on Country {
-                name
-                description
-            }
-            ... on Region {
-                name
-                description
-            }
-            ... on Malware {
-                name
-                description
-            }
-            ... on ThreatActor {
-                name
-                description
-            }
-            ... on Tool {
-                name
-                description
-            }
-            ... on Vulnerability {
-                name
-                description
-            }
-            ... on Incident {
-                name
-                description
-            }
-            ... on StixCyberObservable {
-                observable_value
-            }
-        }
-        to {
-            ... on StixObject {
-                id
-                entity_type
-                parent_types
-                created_at
-                updated_at
-            }
-            ... on Individual {
-                name
-                description
-            }
-            ... on Organization {
-                name
-                description
-            }
-            ... on Sector {
-                name
-                description
-            }
-            ... on System {
-                name
-                description
-            }
-            ... on Position {
-                name
-                description
-            }
-            ... on City {
-                name
-                description
-            }
-            ... on AdministrativeArea {
-                name
-                description
-            }
-            ... on Country {
-                name
-                description
-            }
-            ... on Region {
-                name
-                description
-            }
-            ... on StixCyberObservable {
-                observable_value
-            }
-        }
+      }
+      ... on Campaign {
+        name
+        description
+      }
+      ... on CourseOfAction {
+        name
+        description
+      }
+      ... on Individual {
+        name
+        description
+      }
+      ... on Organization {
+        name
+        description
+      }
+      ... on Sector {
+        name
+        description
+      }
+      ... on System {
+        name
+        description
+      }
+      ... on Indicator {
+        name
+        description
+      }
+      ... on Infrastructure {
+        name
+        description
+      }
+      ... on IntrusionSet {
+        name
+        description
+      }
+      ... on Position {
+        name
+        description
+      }
+      ... on City {
+        name
+        description
+      }
+      ... on AdministrativeArea {
+        name
+        description
+      }
+      ... on Country {
+        name
+        description
+      }
+      ... on Region {
+        name
+        description
+      }
+      ... on Malware {
+        name
+        description
+      }
+      ... on ThreatActor {
+        name
+        description
+      }
+      ... on Tool {
+        name
+        description
+      }
+      ... on Vulnerability {
+        name
+        description
+      }
+      ... on Incident {
+        name
+        description
+      }
+      ... on StixCyberObservable {
+        observable_value
+      }
     }
+    to {
+      ... on StixObject {
+        id
+        entity_type
+        parent_types
+        created_at
+        updated_at
+      }
+      ... on Individual {
+        name
+        description
+      }
+      ... on Organization {
+        name
+        description
+      }
+      ... on Sector {
+        name
+        description
+      }
+      ... on System {
+        name
+        description
+      }
+      ... on Position {
+        name
+        description
+      }
+      ... on City {
+        name
+        description
+      }
+      ... on AdministrativeArea {
+        name
+        description
+      }
+      ... on Country {
+        name
+        description
+      }
+      ... on Region {
+        name
+        description
+      }
+      ... on StixCyberObservable {
+        observable_value
+      }
+    }
+  }
 `;
 
 interface EntityStixSightingRelationshipLineProps {
@@ -244,14 +242,9 @@ interface EntityStixSightingRelationshipLineProps {
   paginationOptions?: EntityStixSightingRelationshipsLinesPaginationQuery$variables;
 }
 
-export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSightingRelationshipLineProps> = (
-  {
-    dataColumns,
-    node,
-    paginationOptions,
-    isTo,
-  },
-) => {
+export const EntityStixSightingRelationshipLine: FunctionComponent<
+  EntityStixSightingRelationshipLineProps
+> = ({ dataColumns, node, paginationOptions, isTo }) => {
   const classes = useStyles();
   const { t_i18n, nsdt } = useFormatter();
   const data = useFragment<EntityStixSightingRelationshipLine_node$key>(
@@ -265,22 +258,22 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
     <ListItem
       divider={true}
       disablePadding
-      secondaryAction={data.is_inferred ? (
-        <Tooltip
-          title={
-            `${t_i18n('Inferred knowledge based on the rule ')}
-                ${R.head(data.x_opencti_inferences ?? [])?.rule.name ?? ''}`
-          }
-        >
-          <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
-        </Tooltip>
-      ) : (
-        <StixSightingRelationshipPopover
-          stixSightingRelationshipId={data.id}
-          paginationOptions={paginationOptions}
-          disabled={restricted}
-        />
-      )}
+      secondaryAction={
+        data.is_inferred ? (
+          <Tooltip
+            title={`${t_i18n('Inferred knowledge based on the rule ')}
+                ${R.head(data.x_opencti_inferences ?? [])?.rule.name ?? ''}`}
+          >
+            <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
+          </Tooltip>
+        ) : (
+          <StixSightingRelationshipPopover
+            stixSightingRelationshipId={data.id}
+            paginationOptions={paginationOptions}
+            disabled={restricted}
+          />
+        )
+      }
     >
       <ListItemButton
         classes={{ root: classes.item }}
@@ -292,7 +285,7 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
           <ItemIcon type={!restricted ? entity?.entity_type : 'restricted'} />
         </ListItemIcon>
         <ListItemText
-          primary={(
+          primary={
             <div>
               <div
                 className={classes.bodyItem}
@@ -300,14 +293,10 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
               >
                 <Chip
                   classes={{
-                    root: data.x_opencti_negative
-                      ? classes.negative
-                      : classes.positive,
+                    root: data.x_opencti_negative ? classes.negative : classes.positive,
                   }}
                   label={
-                    data.x_opencti_negative
-                      ? t_i18n('False positive')
-                      : t_i18n('True positive')
+                    data.x_opencti_negative ? t_i18n('False positive') : t_i18n('True positive')
                   }
                 />
               </div>
@@ -317,45 +306,23 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
               >
                 {data.attribute_count}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                {!restricted
-                  ? entity?.name || entity?.observable_value
-                  : t_i18n('Restricted')}
+              <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+                {!restricted ? entity?.name || entity?.observable_value : t_i18n('Restricted')}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.entity_type.width }}
-              >
-                {!restricted
-                  ? t_i18n(`entity_${entity?.entity_type}`)
-                  : t_i18n('Restricted')}
+              <div className={classes.bodyItem} style={{ width: dataColumns.entity_type.width }}>
+                {!restricted ? t_i18n(`entity_${entity?.entity_type}`) : t_i18n('Restricted')}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.first_seen.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.first_seen.width }}>
                 {nsdt(data.first_seen)}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.last_seen.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.last_seen.width }}>
                 {nsdt(data.last_seen)}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.confidence.width }}
-              >
-                <ItemConfidence
-                  confidence={data.confidence}
-                  entityType={data.entity_type}
-                />
+              <div className={classes.bodyItem} style={{ width: dataColumns.confidence.width }}>
+                <ItemConfidence confidence={data.confidence} entityType={data.entity_type} />
               </div>
             </div>
-          )}
+          }
         />
       </ListItemButton>
     </ListItem>
@@ -372,97 +339,44 @@ export const EntityStixSightingRelationshipLineDummy = ({
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={(
+      secondaryAction={
         <Box sx={{ root: classes.itemIconDisabled }}>
           <MoreVertOutlined />
         </Box>
-      )}
+      }
     >
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
         <HelpOutlined />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.x_opencti_negative.width }}
             >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.attribute_count.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.attribute_count.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.entity_type.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.entity_type.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.first_seen.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width={140}
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.first_seen.width }}>
+              <Skeleton animation="wave" variant="rectangular" width={140} height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.last_seen.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width={140}
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.last_seen.width }}>
+              <Skeleton animation="wave" variant="rectangular" width={140} height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.confidence.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width={100}
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.confidence.width }}>
+              <Skeleton animation="wave" variant="rectangular" width={100} height="100%" />
             </div>
           </div>
-        )}
+        }
       />
     </ListItem>
   );

@@ -40,11 +40,13 @@ const ThemeDetectDuplicate: FunctionComponent<ThemeDetectDuplicateProps> = ({
         const data = await fetchQuery(themesQuery, {
           filters: {
             mode: 'and',
-            filters: [{
-              key: 'name',
-              values: [themeName],
-              operator: 'search',
-            }],
+            filters: [
+              {
+                key: 'name',
+                values: [themeName],
+                operator: 'search',
+              },
+            ],
             filterGroups: [],
           },
         }).toPromise();

@@ -7,7 +7,10 @@ import { v4 as uuid } from 'uuid';
 import { getDefaultWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
 import useAttributes from '../../../utils/hooks/useAttributes';
 import { useFormatter } from '../../../components/i18n';
-import { indexedVisualizationTypes, WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
+import {
+  indexedVisualizationTypes,
+  WidgetVisualizationTypes,
+} from '../../../utils/widget/widgetUtils';
 import { useWidgetConfigContext } from './WidgetConfigContext';
 import type { WidgetHost, WidgetPerspective } from '../../../utils/widget/widget';
 import { emptyFilterGroup, SELF_ID } from '../../../utils/filters/filtersUtils';
@@ -21,15 +24,14 @@ export const buildInitialFilters = (
   host: WidgetHost,
   perspective: WidgetPerspective,
 ) => {
-  const hostEntityType = host.kind === 'fintelTemplate'
-    ? host.fintelEntityType
-    : host.kind === 'custom-view'
-      ? host.customViewTargetEntityType
-      : null;
+  const hostEntityType =
+    host.kind === 'fintelTemplate'
+      ? host.fintelEntityType
+      : host.kind === 'custom-view'
+        ? host.customViewTargetEntityType
+        : null;
 
-  const isContainer = hostEntityType
-    ? containerTypes.includes(hostEntityType)
-    : false;
+  const isContainer = hostEntityType ? containerTypes.includes(hostEntityType) : false;
 
   let initialFilters = emptyFilterGroup;
   if (['fintelTemplate', 'custom-view'].includes(host.kind)) {
@@ -42,26 +44,27 @@ export const buildInitialFilters = (
         initialFilterKey = 'regardingOf';
         initialFilterValues = [{ key: 'id', values: [SELF_ID] }];
       } else if (perspective === 'relationships') {
-        initialFilterKey = host.kind === 'fintelTemplate'
-          ? 'fromId'
-          : host.kind === 'custom-view'
-            ? 'fromOrToId'
-            : '';
+        initialFilterKey =
+          host.kind === 'fintelTemplate'
+            ? 'fromId'
+            : host.kind === 'custom-view'
+              ? 'fromOrToId'
+              : '';
       } else if (perspective === 'audits') {
-        initialFilterKey = host.kind === 'custom-view'
-          ? 'contextEntityId'
-          : '';
+        initialFilterKey = host.kind === 'custom-view' ? 'contextEntityId' : '';
       }
     }
     initialFilters = {
       mode: 'and',
-      filters: [{
-        id: uuid(),
-        key: initialFilterKey,
-        values: initialFilterValues,
-        operator: 'eq',
-        mode: 'or',
-      }],
+      filters: [
+        {
+          id: uuid(),
+          key: initialFilterKey,
+          values: initialFilterValues,
+          operator: 'eq',
+          mode: 'or',
+        },
+      ],
       filterGroups: [],
     };
   }
@@ -78,9 +81,10 @@ const WidgetCreationPerspective = () => {
 
   const handleSelectPerspective = (perspective: WidgetPerspective) => {
     const initialFilters = buildInitialFilters(containerTypes, host, perspective);
-    const initialColumns = perspective === 'entities' || perspective === 'relationships'
-      ? getDefaultWidgetColumns(perspective, host)
-      : [];
+    const initialColumns =
+      perspective === 'entities' || perspective === 'relationships'
+        ? getDefaultWidgetColumns(perspective, host)
+        : [];
     const newDataSelection = dataSelection.map((n) => ({
       ...n,
       perspective,
@@ -91,8 +95,7 @@ const WidgetCreationPerspective = () => {
       dynamicFrom_id: undefined,
       dynamicTo_id: undefined,
       columns: perspective === n.perspective ? n.columns : initialColumns,
-    }
-    ));
+    }));
     setConfigWidget({
       ...config.widget,
       perspective,
@@ -105,29 +108,25 @@ const WidgetCreationPerspective = () => {
     return indexedVisualizationTypes[type as WidgetVisualizationTypes]?.isEntities ?? false;
   };
   const getCurrentIsAudits = () => {
-    return (host.kind !== 'fintelTemplate' && indexedVisualizationTypes[type as WidgetVisualizationTypes]?.isAudits) ?? false;
+    return (
+      (host.kind !== 'fintelTemplate' &&
+        indexedVisualizationTypes[type as WidgetVisualizationTypes]?.isAudits) ??
+      false
+    );
   };
   const getCurrentIsRelationships = () => {
     return indexedVisualizationTypes[type as WidgetVisualizationTypes]?.isRelationships ?? false;
   };
 
   let xs = 12;
-  if (
-    getCurrentIsEntities()
-    && getCurrentIsRelationships()
-    && getCurrentIsAudits()
-  ) {
+  if (getCurrentIsEntities() && getCurrentIsRelationships() && getCurrentIsAudits()) {
     xs = 4;
   } else if (getCurrentIsEntities() && getCurrentIsRelationships()) {
     xs = 6;
   }
 
   return (
-    <Grid
-      container={true}
-      spacing={3}
-      style={{ marginTop: 20, marginBottom: 20 }}
-    >
+    <Grid container={true} spacing={3} style={{ marginTop: 20, marginBottom: 20 }}>
       {getCurrentIsEntities() && (
         <Grid item xs={xs}>
           <Card
@@ -141,11 +140,7 @@ const WidgetCreationPerspective = () => {
           >
             <CardContent>
               <DatabaseOutline style={{ fontSize: 40 }} color="primary" />
-              <Typography
-                gutterBottom
-                variant="h2"
-                style={{ marginTop: 20 }}
-              >
+              <Typography gutterBottom variant="h2" style={{ marginTop: 20 }}>
                 {t_i18n('Entities')}
               </Typography>
               <br />
@@ -169,18 +164,12 @@ const WidgetCreationPerspective = () => {
           >
             <CardContent>
               <FlaskOutline style={{ fontSize: 40 }} color="primary" />
-              <Typography
-                gutterBottom
-                variant="h2"
-                style={{ marginTop: 20 }}
-              >
+              <Typography gutterBottom variant="h2" style={{ marginTop: 20 }}>
                 {t_i18n('Knowledge graph')}
               </Typography>
               <br />
               <Typography variant="body1">
-                {t_i18n(
-                  'Display specific knowledge using relationships and filters.',
-                )}
+                {t_i18n('Display specific knowledge using relationships and filters.')}
               </Typography>
             </CardContent>
           </Card>
@@ -198,15 +187,8 @@ const WidgetCreationPerspective = () => {
             }}
           >
             <CardContent>
-              <LibraryBooksOutlined
-                style={{ fontSize: 40 }}
-                color="primary"
-              />
-              <Typography
-                gutterBottom
-                variant="h2"
-                style={{ marginTop: 20 }}
-              >
+              <LibraryBooksOutlined style={{ fontSize: 40 }} color="primary" />
+              <Typography gutterBottom variant="h2" style={{ marginTop: 20 }}>
                 {t_i18n('Activity & history')}
               </Typography>
               <br />

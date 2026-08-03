@@ -12,10 +12,14 @@ export const up = async (next) => {
 
   const allIngesters = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_INGESTION_CSV]);
   const mappersUsedIds = allIngesters.map((ingester) => ingester.csv_mapper_id);
-  const mappersUsedAndValid = await elFindByIds(context, SYSTEM_USER, mappersUsedIds, { baseData: true });
+  const mappersUsedAndValid = await elFindByIds(context, SYSTEM_USER, mappersUsedIds, {
+    baseData: true,
+  });
   const mappersUsedAndValidIds = mappersUsedAndValid.map((mapper) => mapper.id);
 
-  const ingestersToDelete = allIngesters.filter((ingester) => !mappersUsedAndValidIds.includes(ingester.csv_mapper_id));
+  const ingestersToDelete = allIngesters.filter(
+    (ingester) => !mappersUsedAndValidIds.includes(ingester.csv_mapper_id),
+  );
 
   if (ingestersToDelete.length === 0) {
     logApp.info(`${message} > no invalid CSV feed detected`);

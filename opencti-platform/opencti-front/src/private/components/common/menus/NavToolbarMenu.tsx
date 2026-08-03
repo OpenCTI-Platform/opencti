@@ -53,10 +53,7 @@ const TruncatedText: FunctionComponent<{ children: React.ReactNode }> = ({ child
   }, [children]);
 
   const content = (
-    <Box
-      sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
-      ref={textRef}
-    >
+    <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }} ref={textRef}>
       {children}
     </Box>
   );
@@ -100,7 +97,13 @@ const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries }
   return (
     <StyledDrawer variant="permanent" anchor="right">
       <ToolbarSpacer />
-      <MenuList component="nav" style={{ marginTop: bannerHeight + settingsMessagesBannerHeight + topBannerHeight, marginBottom: bannerHeight }}>
+      <MenuList
+        component="nav"
+        style={{
+          marginTop: bannerHeight + settingsMessagesBannerHeight + topBannerHeight,
+          marginBottom: bannerHeight,
+        }}
+      >
         {entries.map((entry, idx) => {
           const isSelected = location.pathname.startsWith(entry.path);
           const iconColor = isSelected ? theme.palette.text.light : theme.palette.text.tertiary;
@@ -125,7 +128,8 @@ const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries }
                       fontSize: '16px!important',
                     },
                   }}
-                >{entry.icon}
+                >
+                  {entry.icon}
                 </ListItemIcon>
               )}
               <ListItemText primary={renderLabel(entry)} />

@@ -1,4 +1,7 @@
-import { knowledgeCorrelationStixCoreObjectQuery, knowledgeCorrelationStixCoreRelationshipQuery } from '@components/common/containers/KnowledgeCorrelationQuery';
+import {
+  knowledgeCorrelationStixCoreObjectQuery,
+  knowledgeCorrelationStixCoreRelationshipQuery,
+} from '@components/common/containers/KnowledgeCorrelationQuery';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import { graphql, PreloadedQuery, useFragment } from 'react-relay';
@@ -25,12 +28,7 @@ const graphContainerCorrelationPositionsFragment = graphql`
 
 export const graphContainerCorrelationObjectsQuery = graphql`
   query GraphContainerCorrelationObjectsQuery($id: String!, $count: Int!, $cursor: ID) {
-    ...GraphContainerCorrelationObjects_fragment
-    @arguments(
-      id: $id
-      count: $count
-      cursor: $cursor
-    )
+    ...GraphContainerCorrelationObjects_fragment @arguments(id: $id, count: $count, cursor: $cursor)
   }
 `;
 
@@ -44,7 +42,7 @@ const graphContainerCorrelationObjectsFragment = graphql`
   ) {
     container(id: $id) {
       objects(first: $count, after: $cursor)
-      @connection(key: "Pagination_graphContainerCorrelation_objects") {
+        @connection(key: "Pagination_graphContainerCorrelation_objects") {
         pageInfo {
           endCursor
           hasNextPage
@@ -341,10 +339,7 @@ const GraphContainerCorrelationComponent = ({
   const ref = useRef(null);
   const bannerHeight = useSettingsMessagesBannerHeight();
 
-  const {
-    setLoadingCurrent,
-    setLoadingTotal,
-  } = useGraphInteractions();
+  const { setLoadingCurrent, setLoadingTotal } = useGraphInteractions();
 
   useEffect(() => {
     setLoadingTotal(totalData);
@@ -357,7 +352,14 @@ const GraphContainerCorrelationComponent = ({
   const titleHeight = 44;
   const tabsHeight = 48;
   const toolbarHeight = 54;
-  const totalHeight = bannerHeight + headerHeight + paddingHeight + breadcrumbHeight + titleHeight + tabsHeight + toolbarHeight;
+  const totalHeight =
+    bannerHeight +
+    headerHeight +
+    paddingHeight +
+    breadcrumbHeight +
+    titleHeight +
+    tabsHeight +
+    toolbarHeight;
   const graphContainerStyle: CSSProperties = {
     height: `calc(100vh - ${totalHeight}px)`,
   };
@@ -377,8 +379,10 @@ const GraphContainerCorrelationComponent = ({
 
 const REFETCH_DEBOUNCE_MS = 50;
 
-interface GraphContainerCorrelationProps
-  extends Omit<GraphContainerCorrelationComponentProps, 'currentData' | 'totalData'> {
+interface GraphContainerCorrelationProps extends Omit<
+  GraphContainerCorrelationComponentProps,
+  'currentData' | 'totalData'
+> {
   containerId: string;
   containerType: string;
   dataPositions: GraphContainerCorrelationPositions_fragment$key;
@@ -412,12 +416,9 @@ const GraphContainerCorrelation = ({
   });
 
   // Use debounce to avoid spamming too quickly the backend.
-  const debounceFetchMore = useDebounceCallback(
-    () => {
-      loadMore(pageSize);
-    },
-    REFETCH_DEBOUNCE_MS,
-  );
+  const debounceFetchMore = useDebounceCallback(() => {
+    loadMore(pageSize);
+  }, REFETCH_DEBOUNCE_MS);
   // When finishing fetching a page, get the next if any.
   useEffect(() => {
     if (!isLoadingMore() && hasMore()) {
@@ -435,7 +436,10 @@ const GraphContainerCorrelation = ({
   );
 
   const objects = useMemo(() => (container ? getObjectsToParse(container) : []), [container]);
-  const positions = useMemo(() => deserializeObjectB64(x_opencti_graph_data), [x_opencti_graph_data]);
+  const positions = useMemo(
+    () => deserializeObjectB64(x_opencti_graph_data),
+    [x_opencti_graph_data],
+  );
 
   return (
     <GraphProvider

@@ -9,20 +9,24 @@ export const importCsvConnector = () => {
 
 export const importCsvConnectorRuntime = async (context: AuthContext, user: AuthUser) => {
   const connector = importCsvConnector();
-  const configurations = connector.connector_schema_runtime_fn ? await connector.connector_schema_runtime_fn(context, user) : [];
+  const configurations = connector.connector_schema_runtime_fn
+    ? await connector.connector_schema_runtime_fn(context, user)
+    : [];
   const configurationsFiltered: BasicStoreEntityCsvMapper[] = [];
-  await Promise.all(configurations.map(async (c) => {
-    const mapperErrors = await getCsvMapperErrorMessage(context, user, c);
-    if (mapperErrors === null) {
-      configurationsFiltered.push(c);
-    }
-  }));
-  return ({
+  await Promise.all(
+    configurations.map(async (c) => {
+      const mapperErrors = await getCsvMapperErrorMessage(context, user, c);
+      if (mapperErrors === null) {
+        configurationsFiltered.push(c);
+      }
+    }),
+  );
+  return {
     ...connector,
     configurations: configurationsFiltered.map((c) => ({
       id: c.id,
       name: c.name,
       configuration: JSON.stringify(c),
     })),
-  });
+  };
 };

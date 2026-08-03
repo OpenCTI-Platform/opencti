@@ -6,21 +6,23 @@ import { EmailTemplateProvider } from '@components/settings/email_template/Email
 import EmailTemplateHeader from '@components/settings/email_template/EmailTemplateHeader';
 import EmailTemplateTabs from '@components/settings/email_template/EmailTemplateTabs';
 import EmailTemplateContentEditor from '@components/settings/email_template/EmailTemplateContentEditor';
-import EmailTemplateAttributesSidebar, { EMAIL_TEMPLATE_SIDEBAR_WIDTH } from '@components/settings/email_template/EmailTemplateAttributesSidebar';
+import EmailTemplateAttributesSidebar, {
+  EMAIL_TEMPLATE_SIDEBAR_WIDTH,
+} from '@components/settings/email_template/EmailTemplateAttributesSidebar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
 
 export const emailTemplateQuery = graphql`
-    query EmailTemplateQuery($id: ID!) {
-        emailTemplate(id: $id) {
-            id
-            entity_type
-            ...EmailTemplateTabs_template
-            ...EmailTemplateHeader_template
-            ...EmailTemplateContentEditor_template
-        }
+  query EmailTemplateQuery($id: ID!) {
+    emailTemplate(id: $id) {
+      id
+      entity_type
+      ...EmailTemplateTabs_template
+      ...EmailTemplateHeader_template
+      ...EmailTemplateContentEditor_template
     }
+  }
 `;
 
 interface EmailTemplateProps {
@@ -34,9 +36,7 @@ const EmailTemplateComponent = ({ queryRef }: EmailTemplateProps) => {
   return (
     <EmailTemplateProvider>
       <div style={{ marginRight: EMAIL_TEMPLATE_SIDEBAR_WIDTH }}>
-        <EmailTemplateHeader
-          data={emailTemplate}
-        />
+        <EmailTemplateHeader data={emailTemplate} />
 
         <EmailTemplateTabs data={emailTemplate}>
           {({ index }) => (
@@ -58,12 +58,9 @@ const EmailTemplate = () => {
   const { emailTemplateId } = useParams<{ emailTemplateId?: string }>();
   if (!emailTemplateId) return <ErrorNotFound />;
 
-  const templateRef = useQueryLoading<EmailTemplateQuery>(
-    emailTemplateQuery,
-    {
-      id: emailTemplateId,
-    },
-  );
+  const templateRef = useQueryLoading<EmailTemplateQuery>(emailTemplateQuery, {
+    id: emailTemplateId,
+  });
 
   return (
     <Suspense fallback={<Loader />}>

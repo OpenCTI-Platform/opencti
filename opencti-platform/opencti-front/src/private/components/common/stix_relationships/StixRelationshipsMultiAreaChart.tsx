@@ -50,10 +50,7 @@ const StixRelationshipsMultiAreaChartComponent = ({
   onMounted,
 }: StixRelationshipsMultiAreaChartComponentProps) => {
   const { t_i18n } = useFormatter();
-  const data = usePreloadedQuery(
-    stixRelationshipsMultiAreaChartTimeSeriesQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery(stixRelationshipsMultiAreaChartTimeSeriesQuery, queryRef);
 
   if (!data?.stixRelationshipsMultiTimeSeries) {
     return <WidgetNoData />;
@@ -91,7 +88,10 @@ const buildQueryVariables = (
   parameters?: WidgetParameters,
 ): StixRelationshipsMultiAreaChartTimeSeriesQuery['variables'] => {
   return buildRelationshipMultiWidgetBaseQueryVariables(
-    resolvedDataSelection, config, parameters) as StixRelationshipsMultiAreaChartTimeSeriesQuery['variables'];
+    resolvedDataSelection,
+    config,
+    parameters,
+  ) as StixRelationshipsMultiAreaChartTimeSeriesQuery['variables'];
 };
 
 interface StixRelationshipsMultiAreaChartProps {
@@ -118,7 +118,13 @@ const StixRelationshipsMultiAreaChart = ({
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiAreaChartTimeSeriesQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixRelationshipsMultiAreaChartTimeSeriesQuery>({
     perspective: 'relationships',
     dataSelection,
     host,

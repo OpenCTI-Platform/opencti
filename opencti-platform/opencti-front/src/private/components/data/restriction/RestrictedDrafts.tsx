@@ -1,4 +1,7 @@
-import { DraftsLinesPaginationQuery, DraftsLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftsLinesPaginationQuery.graphql';
+import {
+  DraftsLinesPaginationQuery,
+  DraftsLinesPaginationQuery$variables,
+} from '@components/drafts/__generated__/DraftsLinesPaginationQuery.graphql';
 import { useState } from 'react';
 import { graphql } from 'react-relay';
 import Alert from '../../../../components/Alert';
@@ -8,7 +11,10 @@ import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
 import { useFormatter } from '../../../../components/i18n';
 import { computeValidationProgress } from '../../../../utils/draft/draftUtils';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../../utils/filters/filtersUtils';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -19,127 +25,129 @@ import DraftStatusChip from '@components/common/draft/DraftStatusChip';
 import { RestrictedDraftsLines_data$data } from './__generated__/RestrictedDraftsLines_data.graphql';
 
 export const RestrictedDraftLineFragment = graphql`
-    fragment RestrictedDrafts_node on DraftWorkspace {
+  fragment RestrictedDrafts_node on DraftWorkspace {
+    id
+    entity_type
+    name
+    createdBy {
+      ... on Identity {
         id
-        entity_type
         name
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        creators {
-          id
+        entity_type
+      }
+    }
+    creators {
+      id
+      name
+    }
+    created_at
+    objectAssignee {
+      id
+      name
+      entity_type
+    }
+    objectParticipant {
+      id
+      name
+      entity_type
+    }
+    draft_status
+    workflowInstance {
+      id
+      currentStatus {
+        id
+        template {
           name
-        }
-        created_at
-        objectAssignee {
-          id
-          name
-          entity_type
-        }
-        objectParticipant {
-          id
-          name
-          entity_type
-        }
-        draft_status
-        workflowInstance {
-          id
-          currentStatus {
-            id
-            template {
-              name
-              color
-            }
-          }
-        }
-        validationWork {
-            received_time
-            processed_time
-            completed_time
-            tracking {
-                import_expected_number
-                import_processed_number
-            }
-        }
-        currentUserAccessRight
-        authorizedMembers {
-          id
-          name
-          entity_type
-          access_right
-          member_id
-          groups_restriction {
-            id
-            name
-          }
+          color
         }
       }
+    }
+    validationWork {
+      received_time
+      processed_time
+      completed_time
+      tracking {
+        import_expected_number
+        import_processed_number
+      }
+    }
+    currentUserAccessRight
+    authorizedMembers {
+      id
+      name
+      entity_type
+      access_right
+      member_id
+      groups_restriction {
+        id
+        name
+      }
+    }
+  }
 `;
 
 const restrictedDraftsLinesQuery = graphql`
-    query RestrictedDraftsLinesPaginationQuery(
-        $search: String
-        $count: Int!
-        $cursor: ID
-        $orderBy: DraftWorkspacesOrdering
-        $orderMode: OrderingMode
-        $filters: FilterGroup
-    ) {
-        ...RestrictedDraftsLines_data
-        @arguments(
-            search: $search
-            count: $count
-            cursor: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        )
-    }
+  query RestrictedDraftsLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: DraftWorkspacesOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...RestrictedDraftsLines_data
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
+  }
 `;
 
 const restrictedDraftsLinesFragment = graphql`
-    fragment RestrictedDraftsLines_data on Query
-    @argumentDefinitions(
-        search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: { type: "DraftWorkspacesOrdering", defaultValue: created_at }
-        orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "FilterGroup" }
-    )
-    @refetchable(queryName: "RestrictedDraftsLinesRefetchQuery") {
-        draftWorkspacesRestricted(
-            search: $search
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        ) @connection(key: "Pagination_draftWorkspacesRestricted") {
-            edges {
-                node {
-                    id
-                    ...RestrictedDrafts_node
-                }
-            }
-            pageInfo {
-                endCursor
-                hasNextPage
-                globalCount
-            }
+  fragment RestrictedDraftsLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "DraftWorkspacesOrdering", defaultValue: created_at }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "RestrictedDraftsLinesRefetchQuery") {
+    draftWorkspacesRestricted(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_draftWorkspacesRestricted") {
+      edges {
+        node {
+          id
+          ...RestrictedDrafts_node
         }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
     }
+  }
 `;
 
 const LOCAL_STORAGE_KEY = 'draftWorkspacesRestricted';
 
 const RestrictedDrafts = () => {
   const [ref, setRef] = useState<HTMLDivElement | undefined>(undefined);
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const { t_i18n } = useFormatter();
 
@@ -158,14 +166,19 @@ const RestrictedDrafts = () => {
     viewStorage,
     paginationOptions,
     helpers: storageHelpers,
-  } = usePaginationLocalStorage<DraftsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
-  const {
-    filters,
-  } = viewStorage;
+  } = usePaginationLocalStorage<DraftsLinesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY,
+    initialValues,
+  );
+  const { filters } = viewStorage;
 
   // Compute safeSortBy synchronously to prevent the initial Relay query from using an
   // unsupported orderBy (runtime-only field on OpenSearch) before the effect repairs state.
-  const safeSortBy = useRuntimeSortGuard(isRuntimeSort, viewStorage.sortBy, storageHelpers.handleSort);
+  const safeSortBy = useRuntimeSortGuard(
+    isRuntimeSort,
+    viewStorage.sortBy,
+    storageHelpers.handleSort,
+  );
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('DraftWorkspace', filters);
   const queryPaginationOptions = {
@@ -243,14 +256,18 @@ const RestrictedDrafts = () => {
         noMargin
       />
       <Alert
-        content={t_i18n('This list displays all the drafts that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.')}
+        content={t_i18n(
+          'This list displays all the drafts that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.',
+        )}
       />
       {queryRef && (
         <div style={{ overflow: 'hidden', flex: 1 }} ref={(r) => setRef(r ?? undefined)}>
           <DataTable
             rootRef={ref}
             dataColumns={dataColumns}
-            resolvePath={(data: RestrictedDraftsLines_data$data) => (data.draftWorkspacesRestricted?.edges ?? []).map((n) => n?.node)}
+            resolvePath={(data: RestrictedDraftsLines_data$data) =>
+              (data.draftWorkspacesRestricted?.edges ?? []).map((n) => n?.node)
+            }
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
             contextFilters={contextFilters}

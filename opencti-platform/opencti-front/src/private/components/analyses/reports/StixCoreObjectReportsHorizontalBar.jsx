@@ -20,12 +20,7 @@ const stixCoreObjectReportsHorizontalBarDistributionQuery = graphql`
     $operation: StatsOperation!
     $limit: Int
   ) {
-    reportsDistribution(
-      objectId: $objectId
-      field: $field
-      operation: $operation
-      limit: $limit
-    ) {
+    reportsDistribution(objectId: $objectId, field: $field, operation: $operation, limit: $limit) {
       label
       value
       entity {
@@ -53,11 +48,7 @@ class StixCoreObjectReportsHorizontalBar extends Component {
         query={stixCoreObjectReportsHorizontalBarDistributionQuery}
         variables={reportsDistributionVariables}
         render={({ props }) => {
-          if (
-            props
-            && props.reportsDistribution
-            && props.reportsDistribution.length > 0
-          ) {
+          if (props && props.reportsDistribution && props.reportsDistribution.length > 0) {
             const chartData = props.reportsDistribution.map((n) => ({
               name: getMainRepresentative(n.entity) || n.label,
               data: [n.value],
@@ -122,10 +113,7 @@ class StixCoreObjectReportsHorizontalBar extends Component {
     const { t, title, height } = this.props;
     return (
       <div style={{ height: height || '100%', marginBottom: 24 }}>
-        <Card
-          padding="small"
-          title={title || t('Reports distribution')}
-        >
+        <Card padding="small" title={title || t('Reports distribution')}>
           {this.renderContent()}
         </Card>
       </div>
@@ -141,7 +129,4 @@ StixCoreObjectReportsHorizontalBar.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withTheme,
-)(StixCoreObjectReportsHorizontalBar);
+export default compose(inject18n, withTheme)(StixCoreObjectReportsHorizontalBar);

@@ -15,7 +15,10 @@ import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
 import RetentionPopover from './RetentionPopover';
-import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
+import {
+  deserializeFilterGroupForFrontend,
+  isFilterGroupNotEmpty,
+} from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { DataColumns } from '../../../../components/list_lines';
 import { chipInListBasicStyle } from '../../../../utils/chipStyle';
@@ -49,17 +52,17 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const RetentionLineFragment = graphql`
-    fragment RetentionLine_node on RetentionRule {
-        id
-        name
-        max_retention
-        retention_unit
-        last_execution_date
-        remaining_count
-        filters
-        scope
-        active
-    }
+  fragment RetentionLine_node on RetentionRule {
+    id
+    name
+    max_retention
+    retention_unit
+    last_execution_date
+    remaining_count
+    filters
+    scope
+    active
+  }
 `;
 
 interface RetentionLineProps {
@@ -68,7 +71,11 @@ interface RetentionLineProps {
   paginationOptions: RetentionLinesPaginationQuery$variables;
 }
 
-export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColumns, node, paginationOptions }) => {
+export const RetentionLine: FunctionComponent<RetentionLineProps> = ({
+  dataColumns,
+  node,
+  paginationOptions,
+}) => {
   const classes = useStyles();
   const { nsdt, n, t_i18n } = useFormatter();
   const data = useFragment(RetentionLineFragment, node);
@@ -94,26 +101,20 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={(
-        <RetentionPopover
-          retentionRuleId={data.id}
-          paginationOptions={paginationOptions}
-        />
-      )}
+      secondaryAction={
+        <RetentionPopover retentionRuleId={data.id} paginationOptions={paginationOptions} />
+      }
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <LayersClearOutlined />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
             <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
               {data.name}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.max_retention.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.max_retention.width }}>
               {data.max_retention} {t_i18n(data.retention_unit)}
             </div>
             <div
@@ -122,16 +123,10 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
             >
               {nsdt(data.last_execution_date)}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.remaining_count.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.remaining_count.width }}>
               {n(data.remaining_count)}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.scope.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.scope.width }}>
               <Chip
                 color={scopeColor as 'success' | 'secondary' | 'primary' | 'error' | 'warning'}
                 classes={{ root: classes.chipInList }}
@@ -140,10 +135,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
               />
             </div>
             {dataColumns.active && (
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.active.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.active.width }}>
                 <ItemBoolean
                   status={isActive}
                   label={isActive ? t_i18n('Active') : t_i18n('Inactive')}
@@ -160,8 +152,9 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
             ) : (
               <div className={classes.bodyItem} style={{ width: dataColumns.filters.width }}>
                 <span>{appliedOnContent}</span>
-                {data.scope !== 'knowledge' && data.scope !== 'history' && data.scope !== 'activity'
-                  && (
+                {data.scope !== 'knowledge' &&
+                  data.scope !== 'history' &&
+                  data.scope !== 'activity' && (
                     <Tooltip
                       title={`${t_i18n('Files contained in')} ${t_i18n('Data')}/${t_i18n('Import')}`}
                     >
@@ -171,12 +164,11 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
                         style={{ position: 'absolute', marginLeft: 10 }}
                       />
                     </Tooltip>
-                  )
-                }
+                  )}
               </div>
             )}
           </div>
-        )}
+        }
       />
     </ListItem>
   );
@@ -188,105 +180,47 @@ export const RetentionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={(
+      secondaryAction={
         <Box sx={{ root: classes.itemIconDisabled }}>
           <MoreVert />
         </Box>
-      )}
+      }
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <Skeleton
-          animation="wave"
-          variant="circular"
-          width={30}
-          height={30}
-        />
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.max_retention.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.max_retention.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
 
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.last_execution_date.width }}
             >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="20%"
-                height="100%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width="20%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.remaining_count.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="20%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.remaining_count.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="20%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.scope.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="70%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.scope.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="70%" height="100%" />
             </div>
             {dataColumns.active && (
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.active.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="70%"
-                  height="100%"
-                />
+              <div className={classes.bodyItem} style={{ width: dataColumns.active.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="70%" height="100%" />
               </div>
             )}
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.filters.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="70%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.filters.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="70%" height="100%" />
             </div>
           </div>
-        )}
+        }
       />
     </ListItem>
   );

@@ -20,12 +20,24 @@ export const up = async (next) => {
   for (let i = 0; i < roles.length; i += 1) {
     const roleId = roles[i].id;
     // Relation to token
-    const tokenCapabilityId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: 'APIACCESS_USETOKEN' });
-    const inputToken = { fromId: roleId, toId: tokenCapabilityId, relationship_type: 'has-capability' };
+    const tokenCapabilityId = generateStandardId(ENTITY_TYPE_CAPABILITY, {
+      name: 'APIACCESS_USETOKEN',
+    });
+    const inputToken = {
+      fromId: roleId,
+      toId: tokenCapabilityId,
+      relationship_type: 'has-capability',
+    };
     await createRelation(context, SYSTEM_USER, inputToken);
     // Relation to basic auth
-    const basicCapabilityId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: 'APIACCESS_USEBASICAUTH' });
-    const inputBasic = { fromId: roleId, toId: basicCapabilityId, relationship_type: 'has-capability' };
+    const basicCapabilityId = generateStandardId(ENTITY_TYPE_CAPABILITY, {
+      name: 'APIACCESS_USEBASICAUTH',
+    });
+    const inputBasic = {
+      fromId: roleId,
+      toId: basicCapabilityId,
+      relationship_type: 'has-capability',
+    };
     await createRelation(context, SYSTEM_USER, inputBasic);
   }
 

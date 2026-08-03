@@ -27,13 +27,13 @@ export const coverageEntityInformationMutation = graphql`
 
 export const coverageRelationInformationMutation = graphql`
   mutation CoverageInformationFieldRelationMutation($id: ID!, $input: [EditInput]!) {
-      stixCoreRelationshipEdit(id: $id) {
-          fieldPatch(input: $input) {
-              coverage_information {
-                  coverage_name
-                  coverage_score
-              }
-          }
+    stixCoreRelationshipEdit(id: $id) {
+      fieldPatch(input: $input) {
+        coverage_information {
+          coverage_name
+          coverage_score
+        }
+      }
     }
   }
 `;
@@ -54,10 +54,13 @@ interface CoverageInformationFieldEditProps {
   id: string;
   name: string;
   mode: 'entity' | 'relation';
-  values: ReadonlyArray<{
-    readonly coverage_name: string;
-    readonly coverage_score: number;
-  }> | null | undefined;
+  values:
+    | ReadonlyArray<{
+        readonly coverage_name: string;
+        readonly coverage_score: number;
+      }>
+    | null
+    | undefined;
   containerStyle?: React.CSSProperties;
   editContext?: readonly (GenericContext | null)[] | null;
 }
@@ -106,7 +109,10 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
                       name={`${name}.${index}.coverage_name`}
                       required={true}
                       onChange={(__, value) => {
-                        arrayHelpers.replace(index, { ...values[index], coverage_name: value.toString() });
+                        arrayHelpers.replace(index, {
+                          ...values[index],
+                          coverage_name: value.toString(),
+                        });
                       }}
                       disabledOptions={disabledOptions}
                       containerStyle={{ marginTop: 3, width: '100%' }}
@@ -170,8 +176,8 @@ export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformation
   editContext = [],
 }): ReactElement => {
   const { t_i18n } = useFormatter();
-  const coverageInformationMutation = mode === 'entity'
-    ? coverageEntityInformationMutation : coverageRelationInformationMutation;
+  const coverageInformationMutation =
+    mode === 'entity' ? coverageEntityInformationMutation : coverageRelationInformationMutation;
 
   const disabledOptions = values
     ?.map((v) => v.coverage_name)
@@ -215,7 +221,12 @@ export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformation
                                 id,
                                 input: {
                                   key: 'coverage_information',
-                                  value: [{ coverage_name: value.toString(), coverage_score: values?.[index]?.coverage_score }],
+                                  value: [
+                                    {
+                                      coverage_name: value.toString(),
+                                      coverage_score: values?.[index]?.coverage_score,
+                                    },
+                                  ],
                                   operation: 'add',
                                 },
                               },
@@ -273,12 +284,12 @@ export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformation
                           });
                         }
                       }}
-                      helperText={(
+                      helperText={
                         <SubscriptionFocus
                           context={editContext}
                           fieldName={`${name}.${index}.coverage_score`}
                         />
-                      )}
+                      }
                     />
                   </div>
                   {(values?.length ?? 0) > 0 && (

@@ -4,7 +4,9 @@ import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
 import { polarAreaChartOptions } from '../../utils/Charts';
 import type { Theme } from '../Theme';
-import useDistributionGraphData, { DistributionQueryData } from '../../utils/hooks/useDistributionGraphData';
+import useDistributionGraphData, {
+  DistributionQueryData,
+} from '../../utils/hooks/useDistributionGraphData';
 
 interface WidgetPolarAreaProps {
   data: DistributionQueryData;
@@ -12,11 +14,7 @@ interface WidgetPolarAreaProps {
   onMounted?: OpenCTIChartProps['onMounted'];
 }
 
-const WidgetPolarArea = ({
-  data,
-  groupBy,
-  onMounted,
-}: WidgetPolarAreaProps) => {
+const WidgetPolarArea = ({ data, groupBy, onMounted }: WidgetPolarAreaProps) => {
   const theme = useTheme<Theme>();
   const { buildWidgetLabelsOption, buildWidgetColorsOptions } = useDistributionGraphData();
 
@@ -26,13 +24,7 @@ const WidgetPolarArea = ({
     const labels = buildWidgetLabelsOption(data, groupBy);
     const colors = buildWidgetColorsOptions(data, groupBy);
 
-    return polarAreaChartOptions(
-      theme,
-      labels,
-      undefined,
-      'bottom',
-      colors,
-    ) as ApexOptions;
+    return polarAreaChartOptions(theme, labels, undefined, 'bottom', colors) as ApexOptions;
   }, [data, groupBy, theme]);
 
   return (

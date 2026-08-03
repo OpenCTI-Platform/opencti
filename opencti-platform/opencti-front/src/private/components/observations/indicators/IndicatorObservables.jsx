@@ -19,20 +19,22 @@ const IndicatorObservablesComponent = ({ indicator }) => {
     setDeleted([id, ...deleted]);
   };
 
-  const observables = indicator.observables.edges.filter((e) => !deleted.includes(e.node.id))
+  const observables = indicator.observables.edges
+    .filter((e) => !deleted.includes(e.node.id))
     .map((e) => e.node);
   const observablesGlobalCount = indicator.observables.pageInfo.globalCount;
 
   return (
     <Box sx={{ marginTop: 2, height: 300, display: 'flex', flexFlow: 'column' }}>
-      <Label action={(
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IndicatorAddObservables
-            indicator={indicator}
-            indicatorObservables={indicator.observables.edges}
-          />
-        </Security>
-      )}
+      <Label
+        action={
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <IndicatorAddObservables
+              indicator={indicator}
+              indicatorObservables={indicator.observables.edges}
+            />
+          </Security>
+        }
       >
         {t_i18n('Based on')}
       </Label>
@@ -71,33 +73,30 @@ const IndicatorObservablesComponent = ({ indicator }) => {
   );
 };
 
-const IndicatorObservables = createFragmentContainer(
-  IndicatorObservablesComponent,
-  {
-    indicator: graphql`
-      fragment IndicatorObservables_indicator on Indicator {
-        id
-        name
-        parent_types
-        entity_type
-        observables(first: 100) {
-          edges {
-            node {
-              id
-              entity_type
-              parent_types
-              observable_value
-              created_at
-              updated_at
-            }
-          }
-          pageInfo {
-            globalCount
+const IndicatorObservables = createFragmentContainer(IndicatorObservablesComponent, {
+  indicator: graphql`
+    fragment IndicatorObservables_indicator on Indicator {
+      id
+      name
+      parent_types
+      entity_type
+      observables(first: 100) {
+        edges {
+          node {
+            id
+            entity_type
+            parent_types
+            observable_value
+            created_at
+            updated_at
           }
         }
+        pageInfo {
+          globalCount
+        }
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default IndicatorObservables;

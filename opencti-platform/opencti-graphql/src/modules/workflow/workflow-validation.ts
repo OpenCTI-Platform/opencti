@@ -7,7 +7,10 @@ import { isBasicObject } from '../../schema/stixCoreObject';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ActionDefinitions } from './registry/workflow-actions';
 import type { WorkflowValidationError } from './types/workflow-types';
-import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from './types/workflow-types';
+import {
+  ENTITY_TYPE_WORKFLOW_DEFINITION,
+  ENTITY_TYPE_WORKFLOW_INSTANCE,
+} from './types/workflow-types';
 
 const filterModeValues = Object.values(FilterMode) as [string, ...string[]];
 const filterOperatorValues = Object.values(FilterOperator) as [string, ...string[]];
@@ -25,11 +28,13 @@ export const workflowFilterSchema = z.object({
   mode: z.string().optional(),
 });
 
-export const workflowFilterGroupSchema: z.ZodType<any> = z.lazy(() => z.object({
-  mode: z.string(),
-  filters: z.array(workflowFilterSchema),
-  filterGroups: z.array(workflowFilterGroupSchema),
-}));
+export const workflowFilterGroupSchema: z.ZodType<any> = z.lazy(() =>
+  z.object({
+    mode: z.string(),
+    filters: z.array(workflowFilterSchema),
+    filterGroups: z.array(workflowFilterGroupSchema),
+  }),
+);
 
 export const workflowConditionConfigSchema = z.object({
   filters: workflowFilterGroupSchema.optional(),
@@ -62,7 +67,9 @@ export const workflowDefinitionSchema = z.object({
   transitions: z.array(workflowSerializedTransitionSchema),
 });
 
-export const extractAllStatesFromDefinition = (definition: z.infer<typeof workflowDefinitionSchema>): Set<string> => {
+export const extractAllStatesFromDefinition = (
+  definition: z.infer<typeof workflowDefinitionSchema>,
+): Set<string> => {
   const stateIds = new Set<string>();
 
   if (definition.initialState !== '*') {
@@ -97,7 +104,9 @@ const validateAction = (action: z.infer<typeof workflowActionConfigSchema>, sour
   if (definition.paramsSchema) {
     const result = definition.paramsSchema.safeParse(action.params);
     if (!result.success) {
-      throw ValidationError(`Invalid params for action '${action.type}' in ${source}`, undefined, { errors: result.error.issues });
+      throw ValidationError(`Invalid params for action '${action.type}' in ${source}`, {
+        errors: result.error.issues,
+      });
     }
   }
 };
@@ -136,10 +145,16 @@ export const validateWorkflowDefinitionData = async (
   }
 
   if (id) {
-    const existingWorkflows = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_WORKFLOW_DEFINITION]);
-    const conflict = existingWorkflows.find((workflow) =>
-      workflow.id !== existingWorkflowId
-      && (workflow.id === id || workflow.name === id || (typeof workflow.draft_version?.content === 'string' && workflow.draft_version.content.includes(`"id":"${id}"`))),
+    const existingWorkflows = await fullEntitiesList<any>(context, user, [
+      ENTITY_TYPE_WORKFLOW_DEFINITION,
+    ]);
+    const conflict = existingWorkflows.find(
+      (workflow) =>
+        workflow.id !== existingWorkflowId &&
+        (workflow.id === id ||
+          workflow.name === id ||
+          (typeof workflow.draft_version?.content === 'string' &&
+            workflow.draft_version.content.includes(`"id":"${id}"`))),
     );
     if (conflict) {
       errors.push({
@@ -214,13 +229,22 @@ export const validateWorkflowDefinitionData = async (
             errors.push({ type: 'MISSING_FILTER_KEY', message: 'Filter key is required' });
           }
           if (!filter.values || !Array.isArray(filter.values)) {
-            errors.push({ type: 'INVALID_FILTER_VALUES', message: 'Filter values must be an array' });
+            errors.push({
+              type: 'INVALID_FILTER_VALUES',
+              message: 'Filter values must be an array',
+            });
           }
           if (filter.operator && !filterOperatorValues.includes(filter.operator)) {
-            errors.push({ type: 'INVALID_FILTER_OPERATOR', message: `Invalid filter operator '${filter.operator}'` });
+            errors.push({
+              type: 'INVALID_FILTER_OPERATOR',
+              message: `Invalid filter operator '${filter.operator}'`,
+            });
           }
           if (filter.mode && !filterModeValues.includes(filter.mode)) {
-            errors.push({ type: 'INVALID_FILTER_MODE', message: `Invalid filter mode '${filter.mode}'` });
+            errors.push({
+              type: 'INVALID_FILTER_MODE',
+              message: `Invalid filter mode '${filter.mode}'`,
+            });
           }
         });
         if (group.filterGroups && Array.isArray(group.filterGroups)) {
@@ -240,7 +264,9 @@ export const validateWorkflowDefinitionData = async (
           throw ValidationError(`Side effect (action) type '${action.type}' doesn't exist`);
         }
         if (def.allowedModes && !def.allowedModes.includes('async')) {
-          throw ValidationError(`Action type '${action.type}' is not allowed in asyncActions (must support 'async' mode) in transition ${transition.event}`);
+          throw ValidationError(
+            `Action type '${action.type}' is not allowed in asyncActions (must support 'async' mode) in transition ${transition.event}`,
+          );
         }
         validateAction(action, `transition ${transition.event} (asyncActions)`);
       }
@@ -254,7 +280,9 @@ export const validateWorkflowDefinitionData = async (
           throw ValidationError(`Side effect (action) type '${action.type}' doesn't exist`);
         }
         if (def.allowedModes && !def.allowedModes.includes('sync')) {
-          throw ValidationError(`Action type '${action.type}' is not allowed in syncActions (must support 'sync' mode) in transition ${transition.event}`);
+          throw ValidationError(
+            `Action type '${action.type}' is not allowed in syncActions (must support 'sync' mode) in transition ${transition.event}`,
+          );
         }
         validateAction(action, `transition ${transition.event} (syncActions)`);
         if (action.type === 'validateDraft') {
@@ -290,9 +318,16 @@ export const validateWorkflowDefinitionData = async (
 
   const stateIdsArray = Array.from(stateIdsToCheck);
   if (stateIdsArray.length > 0) {
-    const templates = await storeLoadByIds(context, user, stateIdsArray, ENTITY_TYPE_STATUS_TEMPLATE);
+    const templates = await storeLoadByIds(
+      context,
+      user,
+      stateIdsArray,
+      ENTITY_TYPE_STATUS_TEMPLATE,
+    );
     // storeLoadByIds returns undefined entries for IDs not found — filter them out before mapping
-    const foundIds = new Set(templates.filter((t) => t != null).map((template: any) => template.id));
+    const foundIds = new Set(
+      templates.filter((t) => t != null).map((template: any) => template.id),
+    );
     for (const stateId of stateIdsArray) {
       if (!foundIds.has(stateId)) {
         errors.push({
@@ -304,11 +339,17 @@ export const validateWorkflowDefinitionData = async (
   }
 
   if (existingWorkflowId) {
-    const existingWorkflow = await storeLoadById<any>(context, user, existingWorkflowId, ENTITY_TYPE_WORKFLOW_DEFINITION);
+    const existingWorkflow = await storeLoadById<any>(
+      context,
+      user,
+      existingWorkflowId,
+      ENTITY_TYPE_WORKFLOW_DEFINITION,
+    );
     if (existingWorkflow) {
       let oldDefinitionData;
       try {
-        const rawContent = existingWorkflow.draft_version?.content ?? existingWorkflow.published_version?.content;
+        const rawContent =
+          existingWorkflow.draft_version?.content ?? existingWorkflow.published_version?.content;
         if (rawContent) {
           oldDefinitionData = typeof rawContent === 'string' ? JSON.parse(rawContent) : rawContent;
         } else {
@@ -318,7 +359,9 @@ export const validateWorkflowDefinitionData = async (
         oldDefinitionData = null;
       }
 
-      const oldValidation = oldDefinitionData ? workflowDefinitionSchema.safeParse(oldDefinitionData) : null;
+      const oldValidation = oldDefinitionData
+        ? workflowDefinitionSchema.safeParse(oldDefinitionData)
+        : null;
       if (oldValidation?.success) {
         const oldStates = extractAllStatesFromDefinition(oldValidation.data);
         const newStates = extractAllStatesFromDefinition(validationResult.data);
@@ -333,28 +376,45 @@ export const validateWorkflowDefinitionData = async (
               if (s && s !== '*') statesWithOutgoingTransitions.add(s);
             }
           }
-          const nonEndingRemovedStates = removedStates.filter((s) => statesWithOutgoingTransitions.has(s));
+          const nonEndingRemovedStates = removedStates.filter((s) =>
+            statesWithOutgoingTransitions.has(s),
+          );
 
           if (nonEndingRemovedStates.length > 0) {
             // Note: 'workflow_id' is a reserved special filter key (WORKFLOW_FILTER) in OpenCTI that maps to
             // entity workflow status (x_opencti_workflow_id). We cannot use it as a raw ES filter key.
             // Instead, we filter by currentState in ES and post-filter by workflow_id.
-            const instancesInRemovedStates = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
-              filters: {
-                mode: FilterMode.And,
-                filters: [
-                  { key: ['currentState'], values: nonEndingRemovedStates, operator: FilterOperator.Eq, mode: FilterMode.Or },
-                ],
-                filterGroups: [],
+            const instancesInRemovedStates = await fullEntitiesList<any>(
+              context,
+              user,
+              [ENTITY_TYPE_WORKFLOW_INSTANCE],
+              {
+                filters: {
+                  mode: FilterMode.And,
+                  filters: [
+                    {
+                      key: ['currentState'],
+                      values: nonEndingRemovedStates,
+                      operator: FilterOperator.Eq,
+                      mode: FilterMode.Or,
+                    },
+                  ],
+                  filterGroups: [],
+                },
               },
-            });
-            const conflictingInstances = instancesInRemovedStates.filter((inst: any) => inst.workflow_id === existingWorkflowId);
+            );
+            const conflictingInstances = instancesInRemovedStates.filter(
+              (inst: any) => inst.workflow_id === existingWorkflowId,
+            );
 
             if (conflictingInstances.length > 0) {
               errors.push({
                 type: 'STATE_IN_USE',
                 message: `Cannot remove states ${nonEndingRemovedStates.join(', ')} that are currently in use by workflow instances`,
-                path: conflictingInstances.map((i: any) => ({ id: i.id, entity_type: ENTITY_TYPE_WORKFLOW_INSTANCE })),
+                path: conflictingInstances.map((i: any) => ({
+                  id: i.id,
+                  entity_type: ENTITY_TYPE_WORKFLOW_INSTANCE,
+                })),
               });
             }
           }

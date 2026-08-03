@@ -106,9 +106,7 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
         onAccept={internalOnAccept}
         onChange={internalOnChange}
         views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
-        format={
-          dateTimeFormatsMapWithSeconds[intl.locale] || 'yyyy-MM-dd hh:mm:ss a'
-        }
+        format={dateTimeFormatsMapWithSeconds[intl.locale] || 'yyyy-MM-dd hh:mm:ss a'}
         slotProps={{
           field: { clearable: true, onClear: internalOnClear },
           textField: {

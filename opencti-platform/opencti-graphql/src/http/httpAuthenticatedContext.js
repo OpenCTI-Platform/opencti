@@ -1,6 +1,14 @@
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { authenticateUserFromRequest, userWithOrigin, batchCreator, batchCreators, batchRolesForUsers, batchUserEffectiveConfidenceLevel, batchUserTokens } from '../domain/user';
+import {
+  authenticateUserFromRequest,
+  userWithOrigin,
+  batchCreator,
+  batchCreators,
+  batchRolesForUsers,
+  batchUserEffectiveConfidenceLevel,
+  batchUserTokens,
+} from '../domain/user';
 import { isNotEmptyField } from '../database/utils';
 import { logApp } from '../config/conf';
 import { batchLoader } from '../database/middleware';
@@ -11,7 +19,12 @@ import { batchFileMarkingDefinitions, batchFileWorks } from '../domain/file';
 import { batchGlobalStatusesByType, batchRequestAccessStatusesByType } from '../domain/status';
 import { batchEntitySettingsByType } from '../modules/entitySetting/entitySetting-domain';
 import { batchIsSubAttackPattern } from '../domain/attackPattern';
-import { executionContext, isBypassUser, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
+import {
+  executionContext,
+  isBypassUser,
+  isUserInPlatformOrganization,
+  SYSTEM_USER,
+} from '../utils/access';
 import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
 import { batchContextDataForLog } from '../database/data-changes';
 
@@ -29,11 +42,19 @@ export const computeLoaders = (executeContext, user) => {
     userRolesBatchLoader: batchLoader(batchRolesForUsers, executeContext, user),
     logContextDataBatchLoader: batchLoader(batchContextDataForLog, executeContext, user),
     tokenBatchLoader: batchLoader(batchUserTokens, executeContext, user),
-    userEffectiveConfidenceBatchLoader: batchLoader(batchUserEffectiveConfidenceLevel, executeContext, user),
+    userEffectiveConfidenceBatchLoader: batchLoader(
+      batchUserEffectiveConfidenceLevel,
+      executeContext,
+      user,
+    ),
     fileMarkingsBatchLoader: batchLoader(batchFileMarkingDefinitions, executeContext, user),
     fileWorksBatchLoader: batchLoader(batchFileWorks, executeContext, user),
     globalStatusBatchLoader: batchLoader(batchGlobalStatusesByType, executeContext, user),
-    requestAccessStatusBatchLoader: batchLoader(batchRequestAccessStatusesByType, executeContext, user),
+    requestAccessStatusBatchLoader: batchLoader(
+      batchRequestAccessStatusesByType,
+      executeContext,
+      user,
+    ),
     entitySettingsBatchLoader: batchLoader(batchEntitySettingsByType, executeContext, user),
     isSubAttachPatternBatchLoader: batchLoader(batchIsSubAttackPattern, executeContext, user),
   };
@@ -51,7 +72,7 @@ const createRequestAbortSignal = (req, res) => {
   }
   if (res.once) {
     res.once('close', () => {
-    // `close` is emitted for both success and disconnect; only abort on disconnect.
+      // `close` is emitted for both success and disconnect; only abort on disconnect.
       if (!res.writableEnded) {
         abort();
       }
@@ -81,13 +102,18 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
       }
       executeContext.user = userWithOrigin(req, user);
       // If full sync needs to be done : used only by bypass user (worker)
-      executeContext.synchronizedUpsert = user.origin?.synchronized_upsert === true || (req.headers['synchronized-upsert'] === 'true' && isBypassUser(user));
+      executeContext.synchronizedUpsert =
+        user.origin?.synchronized_upsert === true ||
+        (req.headers['synchronized-upsert'] === 'true' && isBypassUser(user));
       executeContext.user_otp_validated = true;
       executeContext.user_with_session = isNotEmptyField(req.session?.user);
       if (executeContext.user_with_session) {
         executeContext.user_otp_validated = req.session?.user.otp_validated ?? false;
       }
-      executeContext.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
+      executeContext.user_inside_platform_organization = isUserInPlatformOrganization(
+        user,
+        settings,
+      );
       const licenseInfo = getEnterpriseEditionInfo(settings);
       executeContext.blocked_for_lts_validation = IS_LTS_PLATFORM && !licenseInfo.license_validated;
     }

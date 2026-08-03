@@ -1,7 +1,10 @@
 import { isNotEmptyField } from '../database/utils';
 import type { AuthUser } from '../types/user';
 
-export interface InputSettingsData { key: string; value: [unknown] }
+export interface InputSettingsData {
+  key: string;
+  value: [unknown];
+}
 
 const readFirstValue = (item: InputSettingsData | undefined): unknown => {
   if (!item || item.value === undefined || item.value === null) return undefined;

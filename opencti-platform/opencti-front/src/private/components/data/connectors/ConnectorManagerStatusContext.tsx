@@ -20,7 +20,9 @@ interface ConnectorManagerStatusContextValue {
   hasActiveManagers: boolean;
 }
 
-const ConnectorManagerStatusContext = createContext<ConnectorManagerStatusContextValue | null>(null);
+const ConnectorManagerStatusContext = createContext<ConnectorManagerStatusContextValue | null>(
+  null,
+);
 
 interface ConnectorManagerStatusProviderProps {
   children: ReactNode;
@@ -69,7 +71,9 @@ export const useConnectorManagerStatus = (): ConnectorManagerStatusContextValue 
   const context = useContext(ConnectorManagerStatusContext);
 
   if (!context) {
-    throw new Error('useConnectorManagerStatus must be used within a ConnectorManagerStatusProvider');
+    throw new Error(
+      'useConnectorManagerStatus must be used within a ConnectorManagerStatusProvider',
+    );
   }
 
   return context;

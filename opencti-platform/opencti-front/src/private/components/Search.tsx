@@ -9,7 +9,12 @@ import { SearchStixCoreObjectsLines_data$data } from '@components/__generated__/
 import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useAuth from '../../utils/hooks/useAuth';
-import { deserializeFilterGroupForFrontend, emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../utils/filters/filtersUtils';
+import {
+  deserializeFilterGroupForFrontend,
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+  useGetDefaultFilterObject,
+} from '../../utils/filters/filtersUtils';
 import { decodeSearchKeyword } from '../../utils/SearchUtils';
 import DataTable from '../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../utils/hooks/usePreloadedPaginationFragment';
@@ -72,15 +77,15 @@ const searchStixCoreObjectsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...SearchStixCoreObjectsLines_data
-    @arguments(
-      types: $types
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        types: $types
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -158,17 +163,26 @@ const Search = () => {
       filters: useGetDefaultFilterObject(['entity_type'], ['Stix-Core-Object']),
     },
   };
-  const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<SearchStixCoreObjectsLinesPaginationQuery$variables>(
+  const {
+    viewStorage,
+    helpers: storageHelpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<SearchStixCoreObjectsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
   useEffect(() => {
     if (paramsFilters) {
-      storageHelpers.handleSetFilters(deserializeFilterGroupForFrontend(paramsFilters) ?? emptyFilterGroup);
+      storageHelpers.handleSetFilters(
+        deserializeFilterGroupForFrontend(paramsFilters) ?? emptyFilterGroup,
+      );
     }
   }, [paramsFilters]);
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', viewStorage.filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext(
+    'Stix-Core-Object',
+    viewStorage.filters,
+  );
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -234,7 +248,9 @@ const Search = () => {
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: SearchStixCoreObjectsLines_data$data) => data.globalSearch?.edges?.map((n) => n?.node)}
+          resolvePath={(data: SearchStixCoreObjectsLines_data$data) =>
+            data.globalSearch?.edges?.map((n) => n?.node)
+          }
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           contextFilters={contextFilters}

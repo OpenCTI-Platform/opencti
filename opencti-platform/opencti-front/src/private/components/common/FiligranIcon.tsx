@@ -18,13 +18,7 @@ const FiligranIcon = ({ icon, size = 'medium', style }: FiligranIconProps) => {
 
   const iconSize = typeof size === 'string' ? sizeMap[size] : `${size}px`;
 
-  return (
-    <Component
-      width={iconSize}
-      height={iconSize}
-      style={style}
-    />
-  );
+  return <Component width={iconSize} height={iconSize} style={style} />;
 };
 
 export default FiligranIcon;

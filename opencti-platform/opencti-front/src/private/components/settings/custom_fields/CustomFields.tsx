@@ -6,12 +6,18 @@ import CustomFieldCreation from './CustomFieldCreation';
 import CustomFieldPopover from './CustomFieldPopover';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { CustomFieldsLinesPaginationQuery, CustomFieldsLinesPaginationQuery$variables } from './__generated__/CustomFieldsLinesPaginationQuery.graphql';
+import {
+  CustomFieldsLinesPaginationQuery,
+  CustomFieldsLinesPaginationQuery$variables,
+} from './__generated__/CustomFieldsLinesPaginationQuery.graphql';
 import { CustomFieldsLine_node$data } from './__generated__/CustomFieldsLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../../utils/filters/filtersUtils';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../../components/dataGrid/DataTable';
@@ -29,13 +35,13 @@ export const customFieldsQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...CustomFieldsLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 
@@ -94,14 +100,11 @@ const CustomFields = () => {
     filters: emptyFilterGroup,
   };
 
-  const {
-    viewStorage,
-    helpers,
-    paginationOptions,
-  } = usePaginationLocalStorage<CustomFieldsLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    initialValues,
-  );
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<CustomFieldsLinesPaginationQuery$variables>(
+      LOCAL_STORAGE_KEY,
+      initialValues,
+    );
 
   const { filters } = viewStorage;
   const contextFilters = useBuildEntityTypeBasedFilterContext('CustomFieldDefinition', filters);
@@ -135,7 +138,11 @@ const CustomFields = () => {
             getKey={(entityType) => entityType}
             getLabel={(entityType) => t_i18n(`entity_${entityType}`)}
             renderTag={(entityType) => (
-              <Chip key={entityType} label={t_i18n(`entity_${entityType}`)} style={{ marginRight: 5 }} />
+              <Chip
+                key={entityType}
+                label={t_i18n(`entity_${entityType}`)}
+                style={{ marginRight: 5 }}
+              />
             )}
           />
         </FieldOrEmpty>
@@ -145,7 +152,8 @@ const CustomFields = () => {
       id: 'field_type',
       label: 'Type',
       percentWidth: 16,
-      render: (data: CustomFieldsLine_node$data) => defaultRender(getCustomFieldTypeLabel(data.field_type, t_i18n)),
+      render: (data: CustomFieldsLine_node$data) =>
+        defaultRender(getCustomFieldTypeLabel(data.field_type, t_i18n)),
     },
     name: {
       id: 'name',
@@ -164,11 +172,21 @@ const CustomFields = () => {
 
   return (
     <div style={{ marginRight: 200 }} data-testid="custom-fields-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Custom fields'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Taxonomies') },
+          { label: t_i18n('Custom fields'), current: true },
+        ]}
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data) => data.customFieldDefinitions?.edges?.map(({ node }: { node: CustomFieldsLine_node$data }) => node)}
+          resolvePath={(data) =>
+            data.customFieldDefinitions?.edges?.map(
+              ({ node }: { node: CustomFieldsLine_node$data }) => node,
+            )
+          }
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           contextFilters={contextFilters}

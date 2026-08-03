@@ -49,10 +49,7 @@ const SubTypesLines: FunctionComponent<SubTypesLinesProps> = ({
   selectAll,
   onToggleEntity,
 }) => {
-  const data = usePreloadedFragment<
-    SubTypesLinesQuery,
-    SubTypesLines_subTypes$key
-  >({
+  const data = usePreloadedFragment<SubTypesLinesQuery, SubTypesLines_subTypes$key>({
     queryDef: subTypesLinesQuery,
     fragmentDef: subTypesLinesFragment,
     queryRef,
@@ -61,10 +58,8 @@ const SubTypesLines: FunctionComponent<SubTypesLinesProps> = ({
   const filterOnSubType = ({ node }: { node: { label: string } }) => {
     if (keyword) {
       return (
-        node.label.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-        || t_i18n(`entity_${node.label}`)
-          .toLowerCase()
-          .indexOf(keyword.toLowerCase()) !== -1
+        node.label.toLowerCase().indexOf(keyword.toLowerCase()) !== -1 ||
+        t_i18n(`entity_${node.label}`).toLowerCase().indexOf(keyword.toLowerCase()) !== -1
       );
     }
     return true;
@@ -73,13 +68,9 @@ const SubTypesLines: FunctionComponent<SubTypesLinesProps> = ({
     edgeA: { node: { label: string } },
     edgeB: { node: { label: string } },
   ) => {
-    return t_i18n(`entity_${edgeA.node.label}`).localeCompare(
-      t_i18n(`entity_${edgeB.node.label}`),
-    );
+    return t_i18n(`entity_${edgeA.node.label}`).localeCompare(t_i18n(`entity_${edgeB.node.label}`));
   };
-  const subTypes = (data?.subTypes?.edges ?? [])
-    .filter(filterOnSubType)
-    .sort(sortOnSubType);
+  const subTypes = (data?.subTypes?.edges ?? []).filter(filterOnSubType).sort(sortOnSubType);
   React.useEffect(() => {
     setNumberOfElements({
       number: subTypes.length,

@@ -1,4 +1,10 @@
-import type { GradientVariant, ColorDefinition, GradientColor, ButtonSize, ButtonColorKey } from './Button.types';
+import type {
+  GradientVariant,
+  ColorDefinition,
+  GradientColor,
+  ButtonSize,
+  ButtonColorKey,
+} from './Button.types';
 import { ButtonVariant } from './Button';
 import { Theme } from '../../Theme';
 import { hasCustomColor } from '../../../utils/theme';
@@ -47,9 +53,7 @@ export const getColorDefinitions = (theme: Theme): Record<ButtonColorKey, ColorD
       hover: theme.palette.primary.dark ?? '',
       focus: theme.palette.primary.light ?? '',
       text: theme.palette.primary.contrastText ?? '',
-      border: hasCustomBorder
-        ? theme.palette.border.primary
-        : theme.palette.border.main ?? '',
+      border: hasCustomBorder ? theme.palette.border.primary : (theme.palette.border.main ?? ''),
     },
     success: {
       main: theme.palette.success.main ?? '',
@@ -97,7 +101,10 @@ export const getGradientColors = (
   switch (gradientVariant) {
     case 'ai':
       return {
-        start: theme.palette.mode === 'light' ? theme.palette?.ai?.dark || '#3C108C' : theme.palette?.ai?.light || '#D6C2FA',
+        start:
+          theme.palette.mode === 'light'
+            ? theme.palette?.ai?.dark || '#3C108C'
+            : theme.palette?.ai?.light || '#D6C2FA',
         end: theme.palette?.ai?.main || '#B286FF',
       };
     case 'disabled':
@@ -148,10 +155,7 @@ export const createGradientSx = (
   };
 };
 
-export const createTextGradientSx = (
-  gradientColors: GradientColor,
-  gradientAngle: number,
-) => {
+export const createTextGradientSx = (gradientColors: GradientColor, gradientAngle: number) => {
   const gradientStr = `linear-gradient(${gradientAngle}deg, ${gradientColors.start} 0%, ${gradientColors.end} 100%)`;
 
   return {
@@ -168,18 +172,10 @@ export const createTextGradientSx = (
 };
 
 export const getDisabledSx = (theme: Theme, variant?: ButtonVariant) => {
-  const color = variant === 'primary'
-    ? theme.palette.text.primary
-    : theme.palette.text.disabled;
-  const backgroundColor = variant === 'primary'
-    ? theme.palette.background.disabled
-    : 'transparent';
-  const borderColor = variant === 'secondary'
-    ? theme.palette.border.main
-    : undefined;
-  const transition = variant === 'tertiary'
-    ? 'none'
-    : undefined;
+  const color = variant === 'primary' ? theme.palette.text.primary : theme.palette.text.disabled;
+  const backgroundColor = variant === 'primary' ? theme.palette.background.disabled : 'transparent';
+  const borderColor = variant === 'secondary' ? theme.palette.border.main : undefined;
+  const transition = variant === 'tertiary' ? 'none' : undefined;
   return {
     backgroundColor,
     borderColor,

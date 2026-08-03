@@ -2,7 +2,17 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { DeleteOutlined, StorageOutlined } from '@mui/icons-material';
 import { Avatar, DialogActions, IconButton, Tooltip } from '@mui/material';
-import { deepOrange, green, indigo, lightGreen, orange, pink, red, teal, yellow } from '@mui/material/colors';
+import {
+  deepOrange,
+  green,
+  indigo,
+  lightGreen,
+  orange,
+  pink,
+  red,
+  teal,
+  yellow,
+} from '@mui/material/colors';
 import { useTheme } from '@mui/styles';
 import { LinkVariantPlus, LinkVariantRemove, Merge, VectorRadius } from 'mdi-material-ui';
 import { FunctionComponent, useState } from 'react';
@@ -16,14 +26,20 @@ import ItemIcon from '../../../../components/ItemIcon';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import type { Theme } from '../../../../components/Theme';
 import { emptyFilterGroup, GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
-import useGranted, { KNOWLEDGE, SETTINGS_SECURITYACTIVITY } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE,
+  SETTINGS_SECURITYACTIVITY,
+} from '../../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { EMPTY_VALUE } from '../../../../utils/String';
 import { UserHistoryLine_node$data } from './__generated__/UserHistoryLine_node.graphql';
 import { UserHistoryLines_data$data } from './__generated__/UserHistoryLines_data.graphql';
-import { UserHistoryLinesQuery, UserHistoryLinesQuery$variables } from './__generated__/UserHistoryLinesQuery.graphql';
+import {
+  UserHistoryLinesQuery,
+  UserHistoryLinesQuery$variables,
+} from './__generated__/UserHistoryLinesQuery.graphql';
 import { UserHistoryTab_user$key } from './__generated__/UserHistoryTab_user.graphql';
 import { userHistoryLineFragment } from './UserHistoryLine';
 import { userHistoryLinesFragment, userHistoryLinesQuery } from './UserHistoryLines';
@@ -40,9 +56,7 @@ interface UserHistoryTabProps {
   data: UserHistoryTab_user$key;
 }
 
-const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
-  data: userData,
-}) => {
+const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({ data: userData }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const user = useFragment(userFragment, userData);
@@ -110,9 +124,7 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
     filters: [
       {
         key: 'creator_id',
-        values: [
-          user.id,
-        ],
+        values: [user.id],
         operator: 'eq',
         mode: 'or',
         id: uuid(), // because filters in the URL
@@ -120,7 +132,11 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
     ],
   });
 
-  const renderIcon = (eventScope: string | null | undefined, eventMessage: string | undefined, commit: string | null | undefined) => {
+  const renderIcon = (
+    eventScope: string | null | undefined,
+    eventMessage: string | undefined,
+    commit: string | null | undefined,
+  ) => {
     setMessage(eventMessage ?? EMPTY_VALUE);
     if (eventScope === 'create') {
       return (
@@ -158,8 +174,8 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
       );
     }
     if (
-      eventScope === 'update'
-      && (eventMessage?.includes('replaces') || eventMessage?.includes('updates'))
+      eventScope === 'update' &&
+      (eventMessage?.includes('replaces') || eventMessage?.includes('updates'))
     ) {
       return (
         <Avatar
@@ -301,7 +317,9 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: UserHistoryLines_data$data) => data.audits?.edges?.map((n) => n?.node)}
+          resolvePath={(data: UserHistoryLines_data$data) =>
+            data.audits?.edges?.map((n) => n?.node)
+          }
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           lineFragment={userHistoryLineFragment}
@@ -309,7 +327,9 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
           disableNavigation
           disableLineSelection
           removeSelectAll
-          icon={(data: UserHistoryLine_node$data) => renderIcon(data.event_scope, data.context_data?.message, data.context_data?.commit)}
+          icon={(data: UserHistoryLine_node$data) =>
+            renderIcon(data.event_scope, data.context_data?.message, data.context_data?.commit)
+          }
           additionalHeaderToggleButtons={[
             <Tooltip title={t_i18n('View all entities created by user')} key="entities">
               <IconButton
@@ -332,20 +352,10 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
           ]}
         />
       )}
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        title={t_i18n('Commit message')}
-      >
-        <MarkdownDisplay
-          content={message}
-          remarkGfmPlugin={true}
-          commonmark={true}
-        />
+      <Dialog open={open} onClose={handleClose} title={t_i18n('Commit message')}>
+        <MarkdownDisplay content={message} remarkGfmPlugin={true} commonmark={true} />
         <DialogActions>
-          <Button onClick={handleClose}>
-            {t_i18n('Close')}
-          </Button>
+          <Button onClick={handleClose}>{t_i18n('Close')}</Button>
         </DialogActions>
       </Dialog>
     </>

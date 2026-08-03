@@ -20,7 +20,10 @@ import {
 } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 import useSettingsFallbackUrl from '../../../utils/hooks/useSettingsFallbackUrl';
-import { XTM_HUB_AUTO_REGISTER_QUERY_PARAM, XTM_HUB_PERMISSION_REQUIRED_DIALOG_SESSION_STORAGE_KEY } from '../RedirectByPath';
+import {
+  XTM_HUB_AUTO_REGISTER_QUERY_PARAM,
+  XTM_HUB_PERMISSION_REQUIRED_DIALOG_SESSION_STORAGE_KEY,
+} from '../RedirectByPath';
 
 const Security = lazy(() => import('../../../utils/Security'));
 const Settings = lazy(() => import('./Settings'));
@@ -57,71 +60,89 @@ const Root = () => {
         <Routes>
           <Route
             path="/"
-            element={(
+            element={
               <Security
                 needs={[SETTINGS_SETPARAMETERS]}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <Settings />
               </Security>
-            )}
+            }
           />
           <Route
             path="/accesses/*"
-            element={(
+            element={
               <Security
-                needs={[SETTINGS_SETACCESSES, SETTINGS_SETMARKINGS, SETTINGS_SETDISSEMINATION, SETTINGS_SETAUTH, VIRTUAL_ORGANIZATION_ADMIN]}
+                needs={[
+                  SETTINGS_SETACCESSES,
+                  SETTINGS_SETMARKINGS,
+                  SETTINGS_SETDISSEMINATION,
+                  SETTINGS_SETAUTH,
+                  VIRTUAL_ORGANIZATION_ADMIN,
+                ]}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <RootAccesses />
               </Security>
-            )}
+            }
           />
           <Route
             path="/activity/*"
-            element={(
-              <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={fallbackUrl} />}>
+            element={
+              <Security
+                needs={[SETTINGS_SECURITYACTIVITY]}
+                placeholder={<Navigate to={fallbackUrl} />}
+              >
                 <RootActivity />
               </Security>
-            )}
+            }
           />
           <Route
             path="/file_indexing"
-            element={(
+            element={
               <Security needs={[SETTINGS_FILEINDEXING]} placeholder={<Navigate to={fallbackUrl} />}>
                 <FileIndexing />
               </Security>
-            )}
+            }
           />
           <Route
             path="/experience"
-            element={(
+            element={
               <Security
                 needs={[SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]}
                 placeholder={<ExperienceUnauthorizedRedirect fallbackUrl={fallbackUrl} />}
               >
                 <Experience />
               </Security>
-            )}
+            }
           />
           <Route
             path="/customization/*"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+            element={
+              <Security
+                needs={[SETTINGS_SETCUSTOMIZATION]}
+                placeholder={<Navigate to={fallbackUrl} />}
+              >
                 <RootCustomization />
               </Security>
-            )}
+            }
           />
           <Route
             path="/vocabularies/*"
-            element={(
+            element={
               <Security
-                needs={[SETTINGS_SETLABELS, SETTINGS_SETKILLCHAINPHASES, SETTINGS_SETSTATUSTEMPLATES, SETTINGS_SETCASETEMPLATES, SETTINGS_SETVOCABULARIES]}
+                needs={[
+                  SETTINGS_SETLABELS,
+                  SETTINGS_SETKILLCHAINPHASES,
+                  SETTINGS_SETSTATUSTEMPLATES,
+                  SETTINGS_SETCASETEMPLATES,
+                  SETTINGS_SETVOCABULARIES,
+                ]}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <RootVocabularies />
               </Security>
-            )}
+            }
           />
         </Routes>
       </Suspense>

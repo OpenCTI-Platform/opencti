@@ -1,7 +1,13 @@
 import { RELATION_INDICATES } from '../../schema/stixCoreRelationship';
 import type { RuleDefinition } from '../../types/rules';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
-import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE, ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_CAMPAIGN,
+  ENTITY_TYPE_INCIDENT,
+  ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_MALWARE,
+  ENTITY_TYPE_THREAT_ACTOR_GROUP,
+} from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../../schema/general';
 import { ENTITY_TYPE_INDICATOR } from '../../modules/indicator/indicator-types';
 
@@ -39,14 +45,28 @@ const display = {
 };
 
 // For rescan
-const scan = { types: [STIX_SIGHTING_RELATIONSHIP], fromTypes: [ENTITY_TYPE_INDICATOR], toTypes: [ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION] };
+const scan = {
+  types: [STIX_SIGHTING_RELATIONSHIP],
+  fromTypes: [ENTITY_TYPE_INDICATOR],
+  toTypes: [ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION],
+};
 
 // For live
-const filtersSighting = { types: [STIX_SIGHTING_RELATIONSHIP], fromTypes: [ENTITY_TYPE_INDICATOR], toTypes: [ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION] };
+const filtersSighting = {
+  types: [STIX_SIGHTING_RELATIONSHIP],
+  fromTypes: [ENTITY_TYPE_INDICATOR],
+  toTypes: [ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION],
+};
 const filtersIndicates = {
   types: [RELATION_INDICATES],
   fromTypes: [ENTITY_TYPE_INDICATOR],
-  toTypes: [ENTITY_TYPE_MALWARE, ENTITY_TYPE_THREAT_ACTOR_GROUP, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INCIDENT],
+  toTypes: [
+    ENTITY_TYPE_MALWARE,
+    ENTITY_TYPE_THREAT_ACTOR_GROUP,
+    ENTITY_TYPE_INTRUSION_SET,
+    ENTITY_TYPE_CAMPAIGN,
+    ENTITY_TYPE_INCIDENT,
+  ],
 };
 const scopes = [
   { filters: filtersSighting, attributes: [] },

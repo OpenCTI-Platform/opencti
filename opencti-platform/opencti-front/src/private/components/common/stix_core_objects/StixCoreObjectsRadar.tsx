@@ -98,10 +98,7 @@ const StixCoreObjectsRadarComponent = ({
   dataSelection,
 }: StixCoreObjectsRadarComponentProps) => {
   const { t_i18n } = useFormatter();
-  const data = usePreloadedQuery(
-    stixCoreObjectsRadarDistributionQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery(stixCoreObjectsRadarDistributionQuery, queryRef);
   const selection = dataSelection[0];
   const distribution = data?.stixCoreObjectsDistribution ?? [];
 
@@ -137,7 +134,10 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixCoreObjectsRadarDistributionQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(selection, config);
+  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(
+    selection,
+    config,
+  );
 
   return {
     types: DATA_SELECTION_TYPES,
@@ -162,7 +162,13 @@ const StixCoreObjectsRadar = ({
   refreshRate = null,
 }: StixCoreObjectsRadarProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsRadarDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixCoreObjectsRadarDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -187,10 +193,7 @@ const StixCoreObjectsRadar = ({
         queryRef={queryRef}
         host={host}
       >
-        <StixCoreObjectsRadarComponent
-          queryRef={queryRef!}
-          dataSelection={resolvedDataSelection}
-        />
+        <StixCoreObjectsRadarComponent queryRef={queryRef!} dataSelection={resolvedDataSelection} />
       </WidgetRenderContent>
     </WidgetContainer>
   );

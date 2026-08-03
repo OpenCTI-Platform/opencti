@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 import testRender from '../utils/tests/test-render';
-import PasswordPoliciesAlert, { countDigits, countLowercase, countSymbols, countUppercase, countWords } from './PasswordPoliciesAlert';
+import PasswordPoliciesAlert, {
+  countDigits,
+  countLowercase,
+  countSymbols,
+  countUppercase,
+  countWords,
+} from './PasswordPoliciesAlert';
 
 describe('countSymbols', () => {
   it('returns 0 for an empty string', () => expect(countSymbols('')).toBe(0));
@@ -46,7 +52,17 @@ describe('countUppercase', () => {
 describe('PasswordPoliciesAlert', () => {
   it('renders nothing when all policies are zero', () => {
     const { container } = testRender(
-      <PasswordPoliciesAlert policies={{ minLength: 0, maxLength: 0, minSymbols: 0, minNumbers: 0, minWords: 0, minLowercase: 0, minUppercase: 0 }} />,
+      <PasswordPoliciesAlert
+        policies={{
+          minLength: 0,
+          maxLength: 0,
+          minSymbols: 0,
+          minNumbers: 0,
+          minWords: 0,
+          minLowercase: 0,
+          minUppercase: 0,
+        }}
+      />,
     );
     expect(container).toBeEmptyDOMElement();
   });
@@ -71,9 +87,15 @@ describe('PasswordPoliciesAlert', () => {
   it('renders only the active policy lines', () => {
     testRender(<PasswordPoliciesAlert policies={{ minLength: 8, minUppercase: 2 }} />);
     expect(screen.getByText(/Number of chars must be greater or equals to/)).toBeInTheDocument();
-    expect(screen.getByText(/Number of uppercase chars must be greater or equals to/)).toBeInTheDocument();
-    expect(screen.queryByText(/Number of chars must be lower or equals to/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Number of symbols must be greater or equals to/)).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/Number of uppercase chars must be greater or equals to/),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/Number of chars must be lower or equals to/),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/Number of symbols must be greater or equals to/),
+    ).not.toBeInTheDocument();
   });
 
   it('renders the policy value next to each rule', () => {
@@ -84,7 +106,15 @@ describe('PasswordPoliciesAlert', () => {
   it('renders all policy lines when all are set', () => {
     testRender(
       <PasswordPoliciesAlert
-        policies={{ minLength: 8, maxLength: 64, minSymbols: 1, minNumbers: 2, minWords: 3, minLowercase: 1, minUppercase: 1 }}
+        policies={{
+          minLength: 8,
+          maxLength: 64,
+          minSymbols: 1,
+          minNumbers: 2,
+          minWords: 3,
+          minLowercase: 1,
+          minUppercase: 1,
+        }}
       />,
     );
     expect(screen.getByText(/Number of chars must be greater or equals to/)).toBeInTheDocument();
@@ -92,7 +122,11 @@ describe('PasswordPoliciesAlert', () => {
     expect(screen.getByText(/Number of symbols must be greater or equals to/)).toBeInTheDocument();
     expect(screen.getByText(/Number of digits must be greater or equals to/)).toBeInTheDocument();
     expect(screen.getByText(/Number of words/)).toBeInTheDocument();
-    expect(screen.getByText(/Number of lowercase chars must be greater or equals to/)).toBeInTheDocument();
-    expect(screen.getByText(/Number of uppercase chars must be greater or equals to/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Number of lowercase chars must be greater or equals to/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Number of uppercase chars must be greater or equals to/),
+    ).toBeInTheDocument();
   });
 });

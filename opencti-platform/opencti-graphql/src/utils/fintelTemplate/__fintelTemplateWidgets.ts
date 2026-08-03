@@ -6,7 +6,12 @@ export const SELF_ID_VALUE = 'CURRENT ENTITY';
 // hardcoded widgets
 
 export const containerColumns = [
-  { label: 'Creation date', attribute: 'created_at', displayStyle: 'text', variableName: 'creationDate' },
+  {
+    label: 'Creation date',
+    attribute: 'created_at',
+    displayStyle: 'text',
+    variableName: 'creationDate',
+  },
   { label: 'Description', attribute: 'representative.secondary', variableName: 'description' },
   { label: 'Labels', attribute: 'objectLabel.value', variableName: 'labels' },
   { label: 'Markings', attribute: 'objectMarking.definition', variableName: 'markings' },
@@ -14,8 +19,17 @@ export const containerColumns = [
   { label: 'Representative', attribute: 'representative.main', variableName: 'representative' },
   { label: 'Author', attribute: 'createdBy.name', variableName: 'author' },
   { label: 'Confidence level', attribute: 'confidence', variableName: 'confidenceLevel' },
-  { label: 'Reliability (of author)', attribute: 'createdBy.x_opencti_reliability', variableName: 'reliabilityOfAuthor' },
-  { label: 'External references', attribute: 'externalReferences.edges.node.url', displayStyle: 'list', variableName: 'externalReferencesURL' },
+  {
+    label: 'Reliability (of author)',
+    attribute: 'createdBy.x_opencti_reliability',
+    variableName: 'reliabilityOfAuthor',
+  },
+  {
+    label: 'External references',
+    attribute: 'externalReferences.edges.node.url',
+    displayStyle: 'list',
+    variableName: 'externalReferencesURL',
+  },
   { label: 'Content', attribute: 'container_content', variableName: 'container_content' },
 ];
 
@@ -24,15 +38,25 @@ export const widgetReportMultiAttributes: FintelTemplateWidgetAddInput = {
   widget: {
     type: 'attribute',
     perspective: null,
-    dataSelection: [{
-      columns: [
-        ...containerColumns,
-        { label: 'Publication date', attribute: 'published', variableName: 'reportPublicationDate' },
-        { label: 'Reliability (self)', attribute: 'x_opencti_reliability', variableName: 'reliabilitySelf' },
-        { label: 'Report types', attribute: 'report_types', variableName: 'reportTypes' },
-      ],
-      instance_id: SELF_ID,
-    }],
+    dataSelection: [
+      {
+        columns: [
+          ...containerColumns,
+          {
+            label: 'Publication date',
+            attribute: 'published',
+            variableName: 'reportPublicationDate',
+          },
+          {
+            label: 'Reliability (self)',
+            attribute: 'x_opencti_reliability',
+            variableName: 'reliabilitySelf',
+          },
+          { label: 'Report types', attribute: 'report_types', variableName: 'reportTypes' },
+        ],
+        instance_id: SELF_ID,
+      },
+    ],
     parameters: {
       title: 'Attributes of the Report',
       description: 'This is a multi attributes widget.',
@@ -45,13 +69,15 @@ export const widgetGroupingMultiAttributes: FintelTemplateWidgetAddInput = {
   widget: {
     type: 'attribute',
     perspective: null,
-    dataSelection: [{
-      columns: [
-        ...containerColumns,
-        { label: 'Context', attribute: 'context', variableName: 'context' },
-      ],
-      instance_id: SELF_ID,
-    }],
+    dataSelection: [
+      {
+        columns: [
+          ...containerColumns,
+          { label: 'Context', attribute: 'context', variableName: 'context' },
+        ],
+        instance_id: SELF_ID,
+      },
+    ],
     parameters: {
       title: 'Attributes of the grouping',
       description: 'This is a multi attributes widget.',
@@ -64,13 +90,19 @@ export const widgetRFIMultiAttributes: FintelTemplateWidgetAddInput = {
   widget: {
     type: 'attribute',
     perspective: null,
-    dataSelection: [{
-      columns: [
-        ...containerColumns,
-        { label: 'Request for information types', attribute: 'information_types', variableName: 'informationTypes' },
-      ],
-      instance_id: SELF_ID,
-    }],
+    dataSelection: [
+      {
+        columns: [
+          ...containerColumns,
+          {
+            label: 'Request for information types',
+            attribute: 'information_types',
+            variableName: 'informationTypes',
+          },
+        ],
+        instance_id: SELF_ID,
+      },
+    ],
     parameters: {
       title: 'Attributes of the RFI',
       description: 'This is a multi attributes widget.',
@@ -83,13 +115,19 @@ export const widgetRFTMultiAttributes: FintelTemplateWidgetAddInput = {
   widget: {
     type: 'attribute',
     perspective: null,
-    dataSelection: [{
-      columns: [
-        ...containerColumns,
-        { label: 'Request for takedown types', attribute: 'takedown_types', variableName: 'takedownTypes' },
-      ],
-      instance_id: SELF_ID,
-    }],
+    dataSelection: [
+      {
+        columns: [
+          ...containerColumns,
+          {
+            label: 'Request for takedown types',
+            attribute: 'takedown_types',
+            variableName: 'takedownTypes',
+          },
+        ],
+        instance_id: SELF_ID,
+      },
+    ],
     parameters: {
       title: 'Attributes of the RFT',
       description: 'This is a multi attributes widget.',
@@ -102,15 +140,17 @@ export const widgetIncidentResponseMultiAttributes: FintelTemplateWidgetAddInput
   widget: {
     type: 'attribute',
     perspective: null,
-    dataSelection: [{
-      columns: [
-        ...containerColumns,
-        { label: 'Priority', attribute: 'priority', variableName: 'priority' },
-        { label: 'Severity', attribute: 'severity', variableName: 'severity' },
-        { label: 'Incident type', attribute: 'response_types', variableName: 'types' },
-      ],
-      instance_id: SELF_ID,
-    }],
+    dataSelection: [
+      {
+        columns: [
+          ...containerColumns,
+          { label: 'Priority', attribute: 'priority', variableName: 'priority' },
+          { label: 'Severity', attribute: 'severity', variableName: 'severity' },
+          { label: 'Incident type', attribute: 'response_types', variableName: 'types' },
+        ],
+        instance_id: SELF_ID,
+      },
+    ],
     parameters: {
       title: 'Attributes of the Incident Response',
     },
@@ -162,10 +202,12 @@ export const widgetEntityObservables: FintelTemplateWidgetAddInput = {
             {
               key: 'regardingOf',
               operator: 'eq',
-              values: [{
-                key: 'id',
-                values: [SELF_ID],
-              }],
+              values: [
+                {
+                  key: 'id',
+                  values: [SELF_ID],
+                },
+              ],
               mode: 'or',
             },
           ],
@@ -257,10 +299,12 @@ export const widgetEntityIndicators: FintelTemplateWidgetAddInput = {
             {
               key: 'regardingOf',
               operator: 'eq',
-              values: [{
-                key: 'id',
-                values: [SELF_ID],
-              }],
+              values: [
+                {
+                  key: 'id',
+                  values: [SELF_ID],
+                },
+              ],
               mode: 'or',
             },
           ],
@@ -353,10 +397,12 @@ export const widgetEntityAttackPatterns: FintelTemplateWidgetAddInput = {
             {
               key: 'regardingOf',
               operator: 'eq',
-              values: [{
-                key: 'id',
-                values: [SELF_ID],
-              }],
+              values: [
+                {
+                  key: 'id',
+                  values: [SELF_ID],
+                },
+              ],
               mode: 'or',
             },
           ],
@@ -386,7 +432,10 @@ export const widgetThreats: FintelTemplateWidgetAddInput = {
         filters: JSON.stringify({
           mode: 'and',
           filters: [
-            { key: ['entity_type'], values: ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set'] },
+            {
+              key: ['entity_type'],
+              values: ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set'],
+            },
             { key: ['objects'], values: [SELF_ID] },
           ],
           filterGroups: [],

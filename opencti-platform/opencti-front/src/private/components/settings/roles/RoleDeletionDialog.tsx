@@ -34,11 +34,9 @@ const RoleDeletionDialog: FunctionComponent<RoleDeletionDialogProps> = ({
     id: '... successfully deleted',
     values: { entity_type: t_i18n('Role') },
   });
-  const [commit] = useApiMutation(
-    roleDeletionMutation,
-    undefined,
-    { successMessage: deleteSuccessMessage },
-  );
+  const [commit] = useApiMutation(roleDeletionMutation, undefined, {
+    successMessage: deleteSuccessMessage,
+  });
 
   const submitDelete = () => {
     setDeleting(true);
@@ -52,25 +50,13 @@ const RoleDeletionDialog: FunctionComponent<RoleDeletionDialogProps> = ({
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      keepMounted={true}
-      onClose={handleClose}
-      title={t_i18n('Are you sure?')}
-    >
+    <Dialog open={isOpen} keepMounted={true} onClose={handleClose} title={t_i18n('Are you sure?')}>
       <DialogContentText>{t_i18n('Do you want to delete this role?')}</DialogContentText>
       <DialogActions>
-        <Button
-          variant="secondary"
-          onClick={handleClose}
-          disabled={deleting}
-        >
+        <Button variant="secondary" onClick={handleClose} disabled={deleting}>
           {t_i18n('Cancel')}
         </Button>
-        <Button
-          onClick={submitDelete}
-          disabled={deleting}
-        >
+        <Button onClick={submitDelete} disabled={deleting}>
           {t_i18n('Delete')}
         </Button>
       </DialogActions>

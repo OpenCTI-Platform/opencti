@@ -61,10 +61,7 @@ const styles = (theme) => ({
 });
 
 const stixDomainObjectAuthorKnowledgeReportsNumberQuery = graphql`
-  query StixDomainObjectAuthorKnowledgeReportsNumberQuery(
-    $authorId: String
-    $endDate: DateTime
-  ) {
+  query StixDomainObjectAuthorKnowledgeReportsNumberQuery($authorId: String, $endDate: DateTime) {
     reportsNumber(authorId: $authorId, endDate: $endDate) {
       total
       count
@@ -115,46 +112,57 @@ const stixDomainObjectAuthorKnowledgeStixDomainObjectsTimeSeriesQuery = graphql`
 `;
 
 const StixDomainObjectAuthorKnowledge = ({ t, fsd, n, classes, stixDomainObjectId, theme }) => {
-  const fallbackDates = useMemo(() => ({
-    monthAgo: monthsAgo(1),
-    yearAgo: yearsAgo(1),
-    end: now(),
-  }), []);
+  const fallbackDates = useMemo(
+    () => ({
+      monthAgo: monthsAgo(1),
+      yearAgo: yearsAgo(1),
+      end: now(),
+    }),
+    [],
+  );
 
-  const reportsNumberVariables = useMemo(() => ({
-    authorId: stixDomainObjectId,
-    endDate: fallbackDates.monthAgo,
-  }), [stixDomainObjectId, fallbackDates]);
+  const reportsNumberVariables = useMemo(
+    () => ({
+      authorId: stixDomainObjectId,
+      endDate: fallbackDates.monthAgo,
+    }),
+    [stixDomainObjectId, fallbackDates],
+  );
 
-  const stixCoreRelationshipsObservablesVariables = useMemo(() => ({
-    authorId: stixDomainObjectId,
-    toTypes: ['Stix-Cyber-Observable'],
-    endDate: fallbackDates.monthAgo,
-  }), [stixDomainObjectId, fallbackDates]);
+  const stixCoreRelationshipsObservablesVariables = useMemo(
+    () => ({
+      authorId: stixDomainObjectId,
+      toTypes: ['Stix-Cyber-Observable'],
+      endDate: fallbackDates.monthAgo,
+    }),
+    [stixDomainObjectId, fallbackDates],
+  );
 
-  const stixCoreRelationshipsRelationsVariables = useMemo(() => ({
-    authorId: stixDomainObjectId,
-    endDate: fallbackDates.monthAgo,
-  }), [stixDomainObjectId, fallbackDates]);
+  const stixCoreRelationshipsRelationsVariables = useMemo(
+    () => ({
+      authorId: stixDomainObjectId,
+      endDate: fallbackDates.monthAgo,
+    }),
+    [stixDomainObjectId, fallbackDates],
+  );
 
-  const timeSeriesVariables = useMemo(() => ({
-    authorId: stixDomainObjectId,
-    field: 'created_at',
-    operation: 'count',
-    startDate: fallbackDates.yearAgo,
-    endDate: fallbackDates.end,
-    interval: 'month',
-  }), [stixDomainObjectId, fallbackDates]);
+  const timeSeriesVariables = useMemo(
+    () => ({
+      authorId: stixDomainObjectId,
+      field: 'created_at',
+      operation: 'count',
+      startDate: fallbackDates.yearAgo,
+      endDate: fallbackDates.end,
+      interval: 'month',
+    }),
+    [stixDomainObjectId, fallbackDates],
+  );
 
   return (
     <div>
       <Grid container={true} spacing={3}>
         <Grid item xs={4}>
-          <Card
-            variant="outlined"
-            classes={{ root: classes.card }}
-            style={{ height: 120 }}
-          >
+          <Card variant="outlined" classes={{ root: classes.card }} style={{ height: 120 }}>
             <QueryRenderer
               query={stixDomainObjectAuthorKnowledgeReportsNumberQuery}
               variables={reportsNumberVariables}
@@ -164,16 +172,11 @@ const StixDomainObjectAuthorKnowledge = ({ t, fsd, n, classes, stixDomainObjectI
                   const difference = total - props.reportsNumber.count;
                   return (
                     <CardContent>
-                      <div className={classes.title}>
-                        {t('Total reports')}
-                      </div>
+                      <div className={classes.title}>{t('Total reports')}</div>
                       <div className={classes.number}>{n(total)}</div>
                       <ItemNumberDifference difference={difference} />
                       <div className={classes.icon}>
-                        <DescriptionOutlined
-                          color="inherit"
-                          fontSize="large"
-                        />
+                        <DescriptionOutlined color="inherit" fontSize="large" />
                       </div>
                     </CardContent>
                   );
@@ -188,15 +191,9 @@ const StixDomainObjectAuthorKnowledge = ({ t, fsd, n, classes, stixDomainObjectI
           </Card>
         </Grid>
         <Grid item xs={4}>
-          <Card
-            variant="outlined"
-            classes={{ root: classes.card }}
-            style={{ height: 120 }}
-          >
+          <Card variant="outlined" classes={{ root: classes.card }} style={{ height: 120 }}>
             <QueryRenderer
-              query={
-                stixDomainObjectAuthorKnowledgeStixCoreRelationshipsNumberQuery
-              }
+              query={stixDomainObjectAuthorKnowledgeStixCoreRelationshipsNumberQuery}
               variables={stixCoreRelationshipsObservablesVariables}
               render={({ props }) => {
                 if (props && props.stixCoreRelationshipsNumber) {
@@ -204,16 +201,11 @@ const StixDomainObjectAuthorKnowledge = ({ t, fsd, n, classes, stixDomainObjectI
                   const difference = total - props.stixCoreRelationshipsNumber.count;
                   return (
                     <CardContent>
-                      <div className={classes.title}>
-                        {t('Total observables')}
-                      </div>
+                      <div className={classes.title}>{t('Total observables')}</div>
                       <div className={classes.number}>{n(total)}</div>
                       <ItemNumberDifference difference={difference} />
                       <div className={classes.icon}>
-                        <HexagonMultipleOutline
-                          color="inherit"
-                          fontSize="large"
-                        />
+                        <HexagonMultipleOutline color="inherit" fontSize="large" />
                       </div>
                     </CardContent>
                   );
@@ -228,15 +220,9 @@ const StixDomainObjectAuthorKnowledge = ({ t, fsd, n, classes, stixDomainObjectI
           </Card>
         </Grid>
         <Grid item xs={4}>
-          <Card
-            variant="outlined"
-            classes={{ root: classes.card }}
-            style={{ height: 120 }}
-          >
+          <Card variant="outlined" classes={{ root: classes.card }} style={{ height: 120 }}>
             <QueryRenderer
-              query={
-                stixDomainObjectAuthorKnowledgeStixCoreRelationshipsNumberQuery
-              }
+              query={stixDomainObjectAuthorKnowledgeStixCoreRelationshipsNumberQuery}
               variables={stixCoreRelationshipsRelationsVariables}
               render={({ props }) => {
                 if (props && props.stixCoreRelationshipsNumber) {
@@ -244,9 +230,7 @@ const StixDomainObjectAuthorKnowledge = ({ t, fsd, n, classes, stixDomainObjectI
                   const difference = total - props.stixCoreRelationshipsNumber.count;
                   return (
                     <CardContent>
-                      <div className={classes.title}>
-                        {t('Total relations')}
-                      </div>
+                      <div className={classes.title}>{t('Total relations')}</div>
                       <div className={classes.number}>{n(total)}</div>
                       <ItemNumberDifference difference={difference} />
                       <div className={classes.icon}>
@@ -270,33 +254,19 @@ const StixDomainObjectAuthorKnowledge = ({ t, fsd, n, classes, stixDomainObjectI
           <Typography variant="h4" gutterBottom={true}>
             {t('Created entities')}
           </Typography>
-          <Paper
-            classes={{ root: classes.paper }}
-            variant="outlined"
-            style={{ height: 300 }}
-          >
+          <Paper classes={{ root: classes.paper }} variant="outlined" style={{ height: 300 }}>
             <QueryRenderer
-              query={
-                stixDomainObjectAuthorKnowledgeStixDomainObjectsTimeSeriesQuery
-              }
+              query={stixDomainObjectAuthorKnowledgeStixDomainObjectsTimeSeriesQuery}
               variables={timeSeriesVariables}
               render={({ props }) => {
                 if (props && props.stixDomainObjectsTimeSeries) {
-                  const chartData = props.stixDomainObjectsTimeSeries.map(
-                    (entry) => ({
-                      x: new Date(entry.date),
-                      y: entry.value,
-                    }),
-                  );
+                  const chartData = props.stixDomainObjectsTimeSeries.map((entry) => ({
+                    x: new Date(entry.date),
+                    y: entry.value,
+                  }));
                   return (
                     <Chart
-                      options={areaChartOptions(
-                        theme,
-                        true,
-                        fsd,
-                        simpleNumberFormat,
-                        undefined,
-                      )}
+                      options={areaChartOptions(theme, true, fsd, simpleNumberFormat, undefined)}
                       series={[
                         {
                           name: t('Number of reports'),
@@ -327,8 +297,4 @@ StixDomainObjectAuthorKnowledge.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withTheme,
-  withStyles(styles),
-)(StixDomainObjectAuthorKnowledge);
+export default compose(inject18n, withTheme, withStyles(styles))(StixDomainObjectAuthorKnowledge);

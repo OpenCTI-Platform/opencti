@@ -22,14 +22,15 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { isEmptyField } from '../../../../utils/utils';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const threatActorIndividualEditionDemographicsFocus = graphql`
-  mutation ThreatActorIndividualEditionDemographicsFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation ThreatActorIndividualEditionDemographicsFocusMutation($id: ID!, $input: EditContext!) {
     threatActorIndividualContextPatch(id: $id, input: $input) {
       id
     }
@@ -95,18 +96,19 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
   );
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(THREAT_ACTOR_INDIVIDUAL_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    date_of_birth: Yup.date()
-      .nullable()
-      .typeError(t_i18n('The value must be a date (yyyy-MM-dd)')),
-    gender: Yup.string().nullable().typeError(t_i18n('The value must be a string')),
-    marital_status: Yup.string()
-      .nullable()
-      .typeError(t_i18n('The value must be a string')),
-    job_title: Yup.string().nullable().max(250, t_i18n('The value is too long')),
-    bornIn: Yup.object().nullable(),
-    ethnicity: Yup.object().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      date_of_birth: Yup.date()
+        .nullable()
+        .typeError(t_i18n('The value must be a date (yyyy-MM-dd)')),
+      gender: Yup.string().nullable().typeError(t_i18n('The value must be a string')),
+      marital_status: Yup.string().nullable().typeError(t_i18n('The value must be a string')),
+      job_title: Yup.string().nullable().max(250, t_i18n('The value is too long')),
+      bornIn: Yup.object().nullable(),
+      ethnicity: Yup.object().nullable(),
+    },
+    mandatoryAttributes,
+  );
   const threatActorIndividualValidator = useDynamicSchemaEditionValidation(
     mandatoryAttributes,
     basicShape,
@@ -126,16 +128,17 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
     threatActorIndividualValidator,
   );
 
-  const handleChangeFocus = (name: string) => commitMutation({
-    ...defaultCommitMutation,
-    mutation: threatActorIndividualEditionDemographicsFocus,
-    variables: {
-      id: threatActorIndividual.id,
-      input: {
-        focusOn: name,
+  const handleChangeFocus = (name: string) =>
+    commitMutation({
+      ...defaultCommitMutation,
+      mutation: threatActorIndividualEditionDemographicsFocus,
+      variables: {
+        id: threatActorIndividual.id,
+        input: {
+          focusOn: name,
+        },
       },
-    },
-  });
+    });
 
   const handleSubmitField = (
     name: string,
@@ -186,7 +189,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
         validationSchema={threatActorIndividualValidator}
         validateOnChange={true}
         validateOnBlur={true}
-        onSubmit={() => { }}
+        onSubmit={() => {}}
       >
         {({ submitForm, isSubmitting, setFieldValue, isValid, dirty }) => (
           <div>
@@ -196,7 +199,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
                 id="PlaceOfBirth"
                 name="bornIn"
                 label={t_i18n('Place of Birth')}
-                required={(mandatoryAttributes.includes('bornIn'))}
+                required={mandatoryAttributes.includes('bornIn')}
                 containerStyle={fieldSpacingContainerStyle}
                 onChange={(name, value) => {
                   setFieldValue(name, value);
@@ -207,7 +210,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
                 id="Ethnicity"
                 name="ethnicity"
                 label={t_i18n('Ethnicity')}
-                required={(mandatoryAttributes.includes('ethnicity'))}
+                required={mandatoryAttributes.includes('ethnicity')}
                 containerStyle={fieldSpacingContainerStyle}
                 onChange={(name, value) => {
                   setFieldValue(name, value);
@@ -225,18 +228,13 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
-                  helperText: (
-                    <SubscriptionFocus
-                      context={context}
-                      fieldName="date_of_birth"
-                    />
-                  ),
+                  helperText: <SubscriptionFocus context={context} fieldName="date_of_birth" />,
                 }}
               />
               <OpenVocabField
                 name="marital_status"
                 label={t_i18n('Marital Status')}
-                required={(mandatoryAttributes.includes('marital_status'))}
+                required={mandatoryAttributes.includes('marital_status')}
                 type="marital_status_ov"
                 variant="edit"
                 onChange={(name, value) => setFieldValue(name, value)}
@@ -249,7 +247,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
               <OpenVocabField
                 name="gender"
                 label={t_i18n('Gender')}
-                required={(mandatoryAttributes.includes('gender'))}
+                required={mandatoryAttributes.includes('gender')}
                 type="gender_ov"
                 variant="edit"
                 onChange={(name, value) => setFieldValue(name, value)}
@@ -264,7 +262,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
                 name="job_title"
                 id="job_title"
                 label={t_i18n('Job Title')}
-                required={(mandatoryAttributes.includes('job_title'))}
+                required={mandatoryAttributes.includes('job_title')}
                 fullWidth={true}
                 multiline={false}
                 rows="1"
@@ -272,9 +270,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
                 style={{ marginTop: 20 }}
                 onFocus={handleChangeFocus}
                 onSubmit={handleSubmitField}
-                helperText={
-                  <SubscriptionFocus context={context} fieldName="Job Title" />
-                }
+                helperText={<SubscriptionFocus context={context} fieldName="Job Title" />}
               />
               {enableReferences && (
                 <CommitMessage

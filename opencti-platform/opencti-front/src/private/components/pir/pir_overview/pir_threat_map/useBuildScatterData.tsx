@@ -25,10 +25,7 @@ interface UseBuildScatterDataArgs {
   entityTypes: string[];
 }
 
-const useBuildScatterData = ({
-  stixDomainObjects,
-  entityTypes,
-}: UseBuildScatterDataArgs) => {
+const useBuildScatterData = ({ stixDomainObjects, entityTypes }: UseBuildScatterDataArgs) => {
   const MIN_DIFF_DATE = 1080; // 1080min = 18h.
   const MIN_DIFF_SCORE = 5;
 
@@ -65,15 +62,17 @@ const useBuildScatterData = ({
       const item = group[0];
       const color = group.length > 1 ? '#ffffff' : itemColor(item.type);
       return {
-        data: [{
-          x: new Date(item.date),
-          y: item.score,
-          fillColor: color,
-          meta: {
-            group,
-            size: group.length,
+        data: [
+          {
+            x: new Date(item.date),
+            y: item.score,
+            fillColor: color,
+            meta: {
+              group,
+              size: group.length,
+            },
           },
-        }],
+        ],
       };
     });
   }, [stixDomainObjects, entityTypes]);

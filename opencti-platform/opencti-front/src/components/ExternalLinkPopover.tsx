@@ -30,7 +30,8 @@ const ExternalLinkPopover: FunctionComponent<ExternalLinkPopoverProps> = ({
   };
 
   const displayLinkStr = `${externalLink}`;
-  const displayLinkCrop = displayLinkStr.length > 200 ? `${displayLinkStr.slice(0, 200)}...` : displayLinkStr;
+  const displayLinkCrop =
+    displayLinkStr.length > 200 ? `${displayLinkStr.slice(0, 200)}...` : displayLinkStr;
 
   return (
     <Dialog
@@ -46,7 +47,9 @@ const ExternalLinkPopover: FunctionComponent<ExternalLinkPopoverProps> = ({
       </Typography>
 
       <DialogActions>
-        <Button variant="secondary" onClick={handleCloseExternalLink}>{t_i18n('Cancel')}</Button>
+        <Button variant="secondary" onClick={handleCloseExternalLink}>
+          {t_i18n('Cancel')}
+        </Button>
         <Button
           startIcon={<OpenInNewOutlined fontSize="small" />}
           onClick={handleBrowseExternalLink}

@@ -50,11 +50,26 @@ interface StixCoreObjectAskAiProps {
   handleCloseOptions: () => void;
 }
 
-const isContainerWithContent = (type: string) => ['Report', 'Grouping', 'Case-Incident', 'Case-Rfi', 'Case-Rft'].includes(type);
+const isContainerWithContent = (type: string) =>
+  ['Report', 'Grouping', 'Case-Incident', 'Case-Rfi', 'Case-Rft'].includes(type);
 
 const stixCoreObjectAskAIContainerReportMutation = graphql`
-  mutation StixCoreObjectAskAIContainerReportMutation($id: ID!, $containerId: String!, $paragraphs: Int, $tone: Tone, $format: Format, $language: String) {
-    aiContainerGenerateReport(id: $id, containerId: $containerId, paragraphs: $paragraphs, tone: $tone, format: $format, language: $language)
+  mutation StixCoreObjectAskAIContainerReportMutation(
+    $id: ID!
+    $containerId: String!
+    $paragraphs: Int
+    $tone: Tone
+    $format: Format
+    $language: String
+  ) {
+    aiContainerGenerateReport(
+      id: $id
+      containerId: $containerId
+      paragraphs: $paragraphs
+      tone: $tone
+      format: $format
+      language: $language
+    )
   }
 `;
 
@@ -71,9 +86,12 @@ const actionsFormat = {
 };
 
 const actionsExplanation = {
-  'container-report': 'Generate a text report based on the knowledge graph (entities and relationships) of this container.',
-  'summarize-files': 'Generate a summary of the selected files (or all files associated to this entity).',
-  'convert-files': 'Try to convert the selected files (or all files associated to this entity) in a STIX 2.1 bundle.',
+  'container-report':
+    'Generate a text report based on the knowledge graph (entities and relationships) of this container.',
+  'summarize-files':
+    'Generate a summary of the selected files (or all files associated to this entity).',
+  'convert-files':
+    'Try to convert the selected files (or all files associated to this entity) in a STIX 2.1 bundle.',
 };
 
 const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
@@ -111,9 +129,18 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
     setDisplayAskAI(false);
   };
 
-  const [commitMutationUpdateContent] = useApiMutation<StixCoreObjectMappableContentFieldPatchMutation>(stixCoreObjectMappableContentFieldPatchMutation);
-  const [commitMutationCreateFile] = useApiMutation<StixCoreObjectContentFilesUploadStixCoreObjectMutation>(stixCoreObjectContentFilesUploadStixCoreObjectMutation);
-  const [commitMutationContainerReport] = useApiMutation<StixCoreObjectAskAIContainerReportMutation>(stixCoreObjectAskAIContainerReportMutation);
+  const [commitMutationUpdateContent] =
+    useApiMutation<StixCoreObjectMappableContentFieldPatchMutation>(
+      stixCoreObjectMappableContentFieldPatchMutation,
+    );
+  const [commitMutationCreateFile] =
+    useApiMutation<StixCoreObjectContentFilesUploadStixCoreObjectMutation>(
+      stixCoreObjectContentFilesUploadStixCoreObjectMutation,
+    );
+  const [commitMutationContainerReport] =
+    useApiMutation<StixCoreObjectAskAIContainerReportMutation>(
+      stixCoreObjectAskAIContainerReportMutation,
+    );
 
   const handleAskAiContent = () => {
     handleCloseOptions();
@@ -135,7 +162,11 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
         setDisableResponse(false);
       },
       onError: (error: Error) => {
-        setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
+        setContent(
+          t_i18n(
+            `An unknown error occurred, please ask your platform administrator: ${error.toString()}`,
+          ),
+        );
         setDisableResponse(false);
       },
     });
@@ -218,26 +249,30 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
 
   return (
     <>
-      <Dialog
-        open={optionsOpen}
-        onClose={handleCloseOptions}
-        title={t_i18n('Select options')}
-      >
-        <Alert severity="info">
-          {action && t_i18n(actionsExplanation[action])}
-        </Alert>
+      <Dialog open={optionsOpen} onClose={handleCloseOptions} title={t_i18n('Select options')}>
+        <Alert severity="info">{action && t_i18n(actionsExplanation[action])}</Alert>
         <FormControl style={fieldSpacingContainerStyle}>
           <InputLabel id="format">{t_i18n('Format')}</InputLabel>
           <Select
             labelId="format"
             value={format}
-            onChange={(event) => setFormat(event.target.value as unknown as 'html' | 'markdown' | 'text' | 'json')}
+            onChange={(event) =>
+              setFormat(event.target.value as unknown as 'html' | 'markdown' | 'text' | 'json')
+            }
             fullWidth={true}
           >
-            {action && actionsFormat[action].includes('html') && <MenuItem value="html">{t_i18n('HTML')}</MenuItem>}
-            {action && actionsFormat[action].includes('markdown') && <MenuItem value="markdown">{t_i18n('Markdown')}</MenuItem>}
-            {action && actionsFormat[action].includes('text') && <MenuItem value="text">{t_i18n('Plain text')}</MenuItem>}
-            {action && actionsFormat[action].includes('json') && <MenuItem value="json">{t_i18n('JSON')}</MenuItem>}
+            {action && actionsFormat[action].includes('html') && (
+              <MenuItem value="html">{t_i18n('HTML')}</MenuItem>
+            )}
+            {action && actionsFormat[action].includes('markdown') && (
+              <MenuItem value="markdown">{t_i18n('Markdown')}</MenuItem>
+            )}
+            {action && actionsFormat[action].includes('text') && (
+              <MenuItem value="text">{t_i18n('Plain text')}</MenuItem>
+            )}
+            {action && actionsFormat[action].includes('json') && (
+              <MenuItem value="json">{t_i18n('JSON')}</MenuItem>
+            )}
           </Select>
         </FormControl>
         {action && actionsOptions[action].includes('tone') && (
@@ -246,7 +281,9 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
             <Select
               labelId="tone"
               value={tone}
-              onChange={(event) => setTone(event.target.value as unknown as 'tactical' | 'operational' | 'strategic')}
+              onChange={(event) =>
+                setTone(event.target.value as unknown as 'tactical' | 'operational' | 'strategic')
+              }
               fullWidth={true}
             >
               <MenuItem value="tactical">{t_i18n('Tactical')}</MenuItem>
@@ -286,23 +323,18 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
               fullWidth={true}
             >
               {aiLanguage.map((lang) => (
-                <MenuItem key={lang.value} value={lang.name}>{t_i18n(lang.name)}</MenuItem>
+                <MenuItem key={lang.value} value={lang.name}>
+                  {t_i18n(lang.name)}
+                </MenuItem>
               ))}
             </Select>
           </FormControl>
         )}
         <DialogActions>
-          <Button
-            variant="secondary"
-            onClick={handleCloseOptions}
-            disabled={isSubmitting}
-          >
+          <Button variant="secondary" onClick={handleCloseOptions} disabled={isSubmitting}>
             {t_i18n('Cancel')}
           </Button>
-          <Button
-            onClick={handleAskAi}
-            disabled={isSubmitting}
-          >
+          <Button onClick={handleAskAi} disabled={isSubmitting}>
             {t_i18n('Generate')}
           </Button>
         </DialogActions>
@@ -321,7 +353,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
               <ListItem
                 dense={true}
                 divider={true}
-                secondaryAction={(
+                secondaryAction={
                   <Radio
                     checked={destination === 'content'}
                     onChange={() => setDestination('content')}
@@ -329,7 +361,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
                     name="destination"
                     inputProps={{ 'aria-label': 'destination' }}
                   />
-                )}
+                }
               >
                 <ListItemText
                   primary={t_i18n('Main content')}
@@ -341,7 +373,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
               <ListItem
                 dense={true}
                 divider={true}
-                secondaryAction={(
+                secondaryAction={
                   <Radio
                     checked={destination === 'file'}
                     onChange={() => setDestination('file')}
@@ -349,7 +381,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
                     name="destination"
                     inputProps={{ 'aria-label': 'destination' }}
                   />
-                )}
+                }
               >
                 <ListItemText
                   primary={t_i18n('New file')}
@@ -372,10 +404,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
           <Button variant="secondary" onClick={handleCancelDestination} disabled={isSubmitting}>
             {t_i18n('Cancel')}
           </Button>
-          <Button
-            onClick={submitAcceptedResult}
-            disabled={isSubmitting}
-          >
+          <Button onClick={submitAcceptedResult} disabled={isSubmitting}>
             {t_i18n('Submit')}
           </Button>
         </DialogActions>

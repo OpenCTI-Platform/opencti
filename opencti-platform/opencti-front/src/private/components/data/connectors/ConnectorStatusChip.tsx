@@ -41,12 +41,7 @@ const ConnectorStatusChip: React.FC<ConnectorStatusChipProps> = ({ connector }) 
     }
   };
 
-  return (
-    <ItemBoolean
-      status={itemBooleanStatus}
-      label={getTranslatedLabel(label)}
-    />
-  );
+  return <ItemBoolean status={itemBooleanStatus} label={getTranslatedLabel(label)} />;
 };
 
 export default ConnectorStatusChip;

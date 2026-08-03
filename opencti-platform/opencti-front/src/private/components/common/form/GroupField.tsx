@@ -26,16 +26,8 @@ const useStyles = makeStyles({
 });
 
 export const groupsQuery = graphql`
-  query GroupFieldQuery(
-    $orderMode: OrderingMode
-    $orderBy: GroupsOrdering
-    $filters: FilterGroup
-  ) {
-    groups(
-      orderMode: $orderMode
-      orderBy: $orderBy
-      filters: $filters
-    ) {
+  query GroupFieldQuery($orderMode: OrderingMode, $orderBy: GroupsOrdering, $filters: FilterGroup) {
+    groups(orderMode: $orderMode, orderBy: $orderBy, filters: $filters) {
       edges {
         node {
           id
@@ -98,7 +90,7 @@ const GroupField: React.FC<GroupFieldProps> = (props) => {
             const groupLabel = n?.node.name ?? '';
             const groupLabelInList = showConfidence
               ? `${n?.node.name} (${max_confidence})`
-              : n?.node.name ?? '';
+              : (n?.node.name ?? '');
             return {
               label: groupLabel,
               labelInList: groupLabelInList,
@@ -127,7 +119,10 @@ const GroupField: React.FC<GroupFieldProps> = (props) => {
       options={groups}
       onInputChange={searchGroups}
       onChange={typeof onChange === 'function' ? onChange : null}
-      renderOption={(renderProps: React.HTMLAttributes<HTMLLIElement>, option: { color: string; label: string; labelInList?: string }) => (
+      renderOption={(
+        renderProps: React.HTMLAttributes<HTMLLIElement>,
+        option: { color: string; label: string; labelInList?: string },
+      ) => (
         <li {...renderProps}>
           <div className={classes.icon} style={{ color: option.color }}>
             <ItemIcon type="Group" />

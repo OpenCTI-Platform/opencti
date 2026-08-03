@@ -50,8 +50,7 @@ export interface RepresentationFormEntityOption extends FieldOption {
   id: string;
 }
 
-interface CsvMapperRepresentationFormProps
-  extends FieldProps<CsvMapperRepresentationFormData> {
+interface CsvMapperRepresentationFormProps extends FieldProps<CsvMapperRepresentationFormData> {
   index: number;
   availableTypes: { value: string; type: string; id: string; label: string }[];
   handleRepresentationErrors: (key: string, value: boolean) => void;
@@ -60,9 +59,7 @@ interface CsvMapperRepresentationFormProps
   selectedOption: string;
 }
 
-const CsvMapperRepresentationForm: FunctionComponent<
-  CsvMapperRepresentationFormProps
-> = ({
+const CsvMapperRepresentationForm: FunctionComponent<CsvMapperRepresentationFormProps> = ({
   form,
   field,
   index,
@@ -122,8 +119,7 @@ const CsvMapperRepresentationForm: FunctionComponent<
     const selectChangeEvent = event as SelectChangeEvent;
     const val = selectChangeEvent?.target.value ?? '';
     return availableTypes.filter(
-      (type) => type.value.includes(val)
-        || t_i18n(`${prefixLabel}${type.label}`).includes(val),
+      (type) => type.value.includes(val) || t_i18n(`${prefixLabel}${type.label}`).includes(val),
     );
   };
   return (
@@ -138,15 +134,9 @@ const CsvMapperRepresentationForm: FunctionComponent<
       >
         <AccordionSummary expandIcon={<ExpandMoreOutlined />} onClick={toggle}>
           <div className={classes.container}>
-            <Typography>
-              {representationLabel(index, value, t_i18n)}
-            </Typography>
+            <Typography>{representationLabel(index, value, t_i18n)}</Typography>
             <Tooltip title={t_i18n('Delete')}>
-              <IconButton
-                variant="tertiary"
-                intent="destructive"
-                onClick={handleOpenDelete}
-              >
+              <IconButton variant="tertiary" intent="destructive" onClick={handleOpenDelete}>
                 <DeleteOutlined fontSize="small" />
               </IconButton>
             </Tooltip>
@@ -178,9 +168,7 @@ const CsvMapperRepresentationForm: FunctionComponent<
                   <div className={classes.icon}>
                     <ItemIcon type={option.label} />
                   </div>
-                  <div className={classes.text}>
-                    {t_i18n(`${prefixLabel}${option.label}`)}
-                  </div>
+                  <div className={classes.text}>{t_i18n(`${prefixLabel}${option.label}`)}</div>
                 </li>
               )}
             />
@@ -199,10 +187,7 @@ const CsvMapperRepresentationForm: FunctionComponent<
               />
             </div>
             <div style={{ textAlign: 'right', marginTop: '20px' }}>
-              <Button
-                color="error"
-                onClick={handleOpenDelete}
-              >
+              <Button color="error" onClick={handleOpenDelete}>
                 {t_i18n('Delete')}
               </Button>
             </div>

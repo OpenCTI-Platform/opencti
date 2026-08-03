@@ -24,7 +24,10 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import SecurityPlatformDeletion from './SecurityPlatformDeletion';
 import { PATH_SECURITY_PLATFORM, PATH_SECURITY_PLATFORMS } from '@components/common/routes/paths';
 
@@ -88,20 +91,20 @@ type RootSecurityPlatformProps = {
 };
 
 const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlatformProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootSecurityPlatformSubscription>>(() => ({
-    subscription,
-    variables: { id: securityPlatformId },
-  }), [securityPlatformId]);
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootSecurityPlatformSubscription>>(
+    () => ({
+      subscription,
+      variables: { id: securityPlatformId },
+    }),
+    [securityPlatformId],
+  );
   const location = useLocation();
 
   const { t_i18n } = useFormatter();
   useSubscription<RootSecurityPlatformSubscription>(subConfig);
 
-  const {
-    securityPlatform,
-    connectorsForExport,
-    connectorsForImport,
-  } = usePreloadedQuery<RootSecurityPlatformQuery>(securityPlatformQuery, queryRef);
+  const { securityPlatform, connectorsForExport, connectorsForImport } =
+    usePreloadedQuery<RootSecurityPlatformQuery>(securityPlatformQuery, queryRef);
 
   const { forceUpdate } = useForceUpdate();
 
@@ -115,43 +118,44 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
           <Routes>
             <Route
               path="/knowledge/*"
-              element={(
+              element={
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
-                  availableSections={[
-                    'attack_patterns',
-                  ]}
+                  availableSections={['attack_patterns']}
                   data={securityPlatform}
                 />
-              )}
+              }
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs elements={[
-              { label: t_i18n('Entities') },
-              { label: t_i18n('Security platforms'), link: PATH_SECURITY_PLATFORMS },
-              { label: securityPlatform.name, current: true },
-            ]}
+            <Breadcrumbs
+              elements={[
+                { label: t_i18n('Entities') },
+                { label: t_i18n('Security platforms'), link: PATH_SECURITY_PLATFORMS },
+                { label: securityPlatform.name, current: true },
+              ]}
             />
             <StixDomainObjectHeader
               entityType="SecurityPlatform"
               stixDomainObject={securityPlatform}
               noAliases
-              EditComponent={(
+              EditComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <SecurityPlatformEdition securityPlatformId={securityPlatform.id} />
                 </Security>
-              )}
-              RelateComponent={(
+              }
+              RelateComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <StixCoreRelationshipCreationFromEntityHeader
-                    data={securityPlatform}
-                  />
+                  <StixCoreRelationshipCreationFromEntityHeader data={securityPlatform} />
                 </Security>
-              )}
+              }
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                  <SecurityPlatformDeletion id={securityPlatform.id} isOpen={isOpen} handleClose={onClose} />
+                  <SecurityPlatformDeletion
+                    id={securityPlatform.id}
+                    isOpen={isOpen}
+                    handleClose={onClose}
+                  />
                 </Security>
               )}
               enableQuickSubscription={true}
@@ -162,11 +166,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
               entity={securityPlatform}
               basePath={basePath}
               pages={{
-                overview: (
-                  <SecurityPlatform
-                    securityPlatformData={securityPlatform}
-                  />
-                ),
+                overview: <SecurityPlatform securityPlatformData={securityPlatform} />,
                 knowledge: (
                   <div key={forceUpdate}>
                     <SecurityPlatformKnowledge
@@ -175,16 +175,8 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                     />
                   </div>
                 ),
-                content: (
-                  <StixCoreObjectContentRoot
-                    stixCoreObject={securityPlatform}
-                  />
-                ),
-                analyses: (
-                  <SecurityPlatformAnalysis
-                    securityPlatform={securityPlatform}
-                  />
-                ),
+                content: <StixCoreObjectContentRoot stixCoreObject={securityPlatform} />,
+                analyses: <SecurityPlatformAnalysis securityPlatform={securityPlatform} />,
                 files: (
                   <FileManager
                     id={securityPlatformId}
@@ -193,11 +185,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                     entity={securityPlatform}
                   />
                 ),
-                history: (
-                  <StixCoreObjectHistory
-                    stixCoreObjectId={securityPlatformId}
-                  />
-                ),
+                history: <StixCoreObjectHistory stixCoreObjectId={securityPlatformId} />,
               }}
             />
           </div>

@@ -121,7 +121,7 @@ const RootIncidentComponent = ({ queryRef }: RootIncidentComponentProps) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={(
+              element={
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -137,35 +137,37 @@ const RootIncidentComponent = ({ queryRef }: RootIncidentComponentProps) => {
                     'observables',
                   ]}
                   data={incident}
-                  attribution={['Threat-Actor-Individual', 'Threat-Actor-Group', 'Intrusion-Set', 'Campaign']}
+                  attribution={[
+                    'Threat-Actor-Individual',
+                    'Threat-Actor-Group',
+                    'Intrusion-Set',
+                    'Campaign',
+                  ]}
                 />
-              )}
+              }
             />
           </Routes>
-          <div
-            style={{ paddingRight: paddingRightValue() }}
-          >
-            <Breadcrumbs elements={[
-              { label: t_i18n('Events') },
-              { label: t_i18n('Incidents'), link: PATH_INCIDENTS },
-              { label: incident.name, current: true },
-            ]}
+          <div style={{ paddingRight: paddingRightValue() }}>
+            <Breadcrumbs
+              elements={[
+                { label: t_i18n('Events') },
+                { label: t_i18n('Incidents'), link: PATH_INCIDENTS },
+                { label: incident.name, current: true },
+              ]}
             />
             <StixDomainObjectHeader
               entityType="Incident"
               stixDomainObject={incident}
-              EditComponent={(
+              EditComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <IncidentEdition incidentId={incident.id} />
                 </Security>
-              )}
-              RelateComponent={(
+              }
+              RelateComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <StixCoreRelationshipCreationFromEntityHeader
-                    data={incident}
-                  />
+                  <StixCoreRelationshipCreationFromEntityHeader data={incident} />
                 </Security>
-              )}
+              }
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <IncidentDeletion id={incident.id} isOpen={isOpen} handleClose={onClose} />
@@ -186,11 +188,7 @@ const RootIncidentComponent = ({ queryRef }: RootIncidentComponentProps) => {
                     <IncidentKnowledge incidentData={incident} />
                   </div>
                 ),
-                content: (
-                  <StixCoreObjectContentRoot
-                    stixCoreObject={incident}
-                  />
-                ),
+                content: <StixCoreObjectContentRoot stixCoreObject={incident} />,
                 analyses: (
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={incident}
@@ -204,18 +202,19 @@ const RootIncidentComponent = ({ queryRef }: RootIncidentComponentProps) => {
                     entity={incident}
                   />
                 ),
-                history: (
-                  <StixCoreObjectHistory
-                    stixCoreObjectId={incidentId}
-                  />
-                ),
+                history: <StixCoreObjectHistory stixCoreObjectId={incidentId} />,
               }}
-              extraActions={isOverview && (
-                <>
-                  <AIInsights id={incident.id} />
-                  <StixCoreObjectSecurityCoverage id={incident.id} coverage={incident.securityCoverage} />
-                </>
-              )}
+              extraActions={
+                isOverview && (
+                  <>
+                    <AIInsights id={incident.id} />
+                    <StixCoreObjectSecurityCoverage
+                      id={incident.id}
+                      coverage={incident.securityCoverage}
+                    />
+                  </>
+                )
+              }
             />
           </div>
         </>

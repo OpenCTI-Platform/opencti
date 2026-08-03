@@ -26,60 +26,64 @@ interface EntityStixCoreRelationshipsForStixCyberObservableProps {
   isRelationReversed: boolean;
 }
 
-const EntityStixCoreRelationshipsStixCyberObservable: FunctionComponent<EntityStixCoreRelationshipsForStixCyberObservableProps> = (props) => {
+const EntityStixCoreRelationshipsStixCyberObservable: FunctionComponent<
+  EntityStixCoreRelationshipsForStixCyberObservableProps
+> = (props) => {
   const classes = useStyles();
 
-  const { entityId, entityLink, defaultStartTime, defaultStopTime, relationshipTypes, isRelationReversed } = props;
+  const {
+    entityId,
+    entityLink,
+    defaultStartTime,
+    defaultStopTime,
+    relationshipTypes,
+    isRelationReversed,
+  } = props;
   const entityTypes = ['Stix-Cyber-Observable'];
   const LOCAL_STORAGE_KEY = `relationships-${entityId}-${entityTypes.join('-')}-${relationshipTypes.join('-')}`;
 
-  const localStorage = usePaginationLocalStorage<PaginationOptions>(
-    LOCAL_STORAGE_KEY,
-    {
-      numberOfElements: { number: 0, symbol: '', original: 0 },
-      filters: emptyFilterGroup,
-      searchTerm: '',
-      sortBy: 'created',
-      orderAsc: false,
-      openExports: false,
-      view: 'entities',
-    },
-  );
+  const localStorage = usePaginationLocalStorage<PaginationOptions>(LOCAL_STORAGE_KEY, {
+    numberOfElements: { number: 0, symbol: '', original: 0 },
+    filters: emptyFilterGroup,
+    searchTerm: '',
+    sortBy: 'created',
+    orderAsc: false,
+    openExports: false,
+    view: 'entities',
+  });
   const { view } = localStorage.viewStorage;
 
   return (
     <ExportContextProvider>
       <div className={classes.container}>
-        {view === 'entities'
-          && (
-            <EntityStixCoreRelationshipsEntitiesView
-              entityId={entityId}
-              defaultStartTime={defaultStartTime}
-              defaultStopTime={defaultStopTime}
-              localStorage={localStorage}
-              relationshipTypes={relationshipTypes}
-              stixCoreObjectTypes={entityTypes}
-              isRelationReversed={isRelationReversed}
-              currentView={view}
-              enableContextualView
-            />
-          )}
+        {view === 'entities' && (
+          <EntityStixCoreRelationshipsEntitiesView
+            entityId={entityId}
+            defaultStartTime={defaultStartTime}
+            defaultStopTime={defaultStopTime}
+            localStorage={localStorage}
+            relationshipTypes={relationshipTypes}
+            stixCoreObjectTypes={entityTypes}
+            isRelationReversed={isRelationReversed}
+            currentView={view}
+            enableContextualView
+          />
+        )}
 
-        {view === 'relationships'
-          && (
-            <EntityStixCoreRelationshipsRelationshipsView
-              entityId={entityId}
-              entityLink={entityLink}
-              defaultStartTime={defaultStartTime}
-              defaultStopTime={defaultStopTime}
-              localStorage={localStorage}
-              relationshipTypes={relationshipTypes}
-              stixCoreObjectTypes={entityTypes}
-              isRelationReversed={isRelationReversed}
-              currentView={view}
-              enableContextualView
-            />
-          )}
+        {view === 'relationships' && (
+          <EntityStixCoreRelationshipsRelationshipsView
+            entityId={entityId}
+            entityLink={entityLink}
+            defaultStartTime={defaultStartTime}
+            defaultStopTime={defaultStopTime}
+            localStorage={localStorage}
+            relationshipTypes={relationshipTypes}
+            stixCoreObjectTypes={entityTypes}
+            isRelationReversed={isRelationReversed}
+            currentView={view}
+            enableContextualView
+          />
+        )}
 
         {view === 'contextual' && (
           <EntityStixCoreRelationshipsContextualView

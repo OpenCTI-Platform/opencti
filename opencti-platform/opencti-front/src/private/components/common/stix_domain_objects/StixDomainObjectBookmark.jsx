@@ -43,10 +43,7 @@ const StixDomainObjectBookmarkComponent = ({ node }) => {
     <Card to={`${link}/${node.id}`}>
       <CardHeader
         title={renderCardTitle(node)}
-        subheader={t_i18n(
-          'Last modified on',
-          { values: { date: fld(node.modified) } },
-        )}
+        subheader={t_i18n('Last modified on', { values: { date: fld(node.modified) } })}
         sx={{
           padding: 0,
           mb: 2,
@@ -61,13 +58,9 @@ const StixDomainObjectBookmarkComponent = ({ node }) => {
             color: theme.palette.text.secondary,
           },
         }}
-        action={(
-          <BookmarkToggle
-            stixId={node.id}
-            stixEntityType={node.entity_type}
-            isBookmarked={true}
-          />
-        )}
+        action={
+          <BookmarkToggle stixId={node.id} stixEntityType={node.entity_type} isBookmarked={true} />
+        }
       />
     </Card>
   );
@@ -77,49 +70,91 @@ StixDomainObjectBookmarkComponent.propTypes = {
   node: PropTypes.object,
 };
 
-export const StixDomainObjectBookmark = createFragmentContainer(
-  StixDomainObjectBookmarkComponent,
-  {
-    node: graphql`
-      fragment StixDomainObjectBookmark_node on StixDomainObject {
-        id
-        entity_type
-        parent_types
-        created_at
-        updated_at
-        modified
-        ... on AttackPattern {
-          name
-          x_mitre_id
+export const StixDomainObjectBookmark = createFragmentContainer(StixDomainObjectBookmarkComponent, {
+  node: graphql`
+    fragment StixDomainObjectBookmark_node on StixDomainObject {
+      id
+      entity_type
+      parent_types
+      created_at
+      updated_at
+      modified
+      ... on AttackPattern {
+        name
+        x_mitre_id
+      }
+      ... on Campaign {
+        name
+      }
+      ... on CourseOfAction {
+        name
+      }
+      ... on Individual {
+        name
+      }
+      ... on Organization {
+        name
+      }
+      ... on Sector {
+        name
+      }
+      ... on System {
+        name
+      }
+      ... on Indicator {
+        name
+      }
+      ... on Infrastructure {
+        name
+      }
+      ... on IntrusionSet {
+        name
+        countryFlag: stixCoreRelationships(
+          relationship_type: "originates-from"
+          toTypes: ["Country"]
+          first: 1
+          orderBy: created_at
+          orderMode: desc
+        ) {
+          edges {
+            node {
+              to {
+                ... on Country {
+                  name
+                  x_opencti_aliases
+                }
+              }
+            }
+          }
         }
-        ... on Campaign {
+        avatar {
+          id
           name
         }
-        ... on CourseOfAction {
-          name
-        }
-        ... on Individual {
-          name
-        }
-        ... on Organization {
-          name
-        }
-        ... on Sector {
-          name
-        }
-        ... on System {
-          name
-        }
-        ... on Indicator {
-          name
-        }
-        ... on Infrastructure {
-          name
-        }
-        ... on IntrusionSet {
-          name
+      }
+      ... on Position {
+        name
+      }
+      ... on City {
+        name
+      }
+      ... on AdministrativeArea {
+        name
+      }
+      ... on Country {
+        name
+      }
+      ... on Region {
+        name
+      }
+      ... on Malware {
+        name
+      }
+      ... on ThreatActor {
+        name
+        ... on ThreatActorIndividual {
           countryFlag: stixCoreRelationships(
-            relationship_type: "originates-from"
+            relationship_type: "located-at"
             toTypes: ["Country"]
             first: 1
             orderBy: created_at
@@ -141,108 +176,62 @@ export const StixDomainObjectBookmark = createFragmentContainer(
             name
           }
         }
-        ... on Position {
-          name
-        }
-        ... on City {
-          name
-        }
-        ... on AdministrativeArea {
-          name
-        }
-        ... on Country {
-          name
-        }
-        ... on Region {
-          name
-        }
-        ... on Malware {
-          name
-        }
-        ... on ThreatActor {
-          name
-          ... on ThreatActorIndividual {
-            countryFlag: stixCoreRelationships(
-              relationship_type: "located-at"
-              toTypes: ["Country"]
-              first: 1
-              orderBy: created_at
-              orderMode: desc
-            ) {
-              edges {
-                node {
-                  to {
-                    ... on Country {
-                      name
-                      x_opencti_aliases
-                    }
+        ... on ThreatActorGroup {
+          countryFlag: stixCoreRelationships(
+            relationship_type: "located-at"
+            toTypes: ["Country"]
+            first: 1
+            orderBy: created_at
+            orderMode: desc
+          ) {
+            edges {
+              node {
+                to {
+                  ... on Country {
+                    name
+                    x_opencti_aliases
                   }
                 }
               }
             }
-            avatar {
-              id
-              name
-            }
           }
-          ... on ThreatActorGroup {
-            countryFlag: stixCoreRelationships(
-              relationship_type: "located-at"
-              toTypes: ["Country"]
-              first: 1
-              orderBy: created_at
-              orderMode: desc
-            ) {
-              edges {
-                node {
-                  to {
-                    ... on Country {
-                      name
-                      x_opencti_aliases
-                    }
-                  }
-                }
-              }
-            }
-            avatar {
-              id
-              name
-            }
-          }
-
-        }
-        ... on Tool {
-          name
-        }
-        ... on Vulnerability {
-          name
-        }
-        ... on Incident {
-          name
-        }
-        createdBy {
-          ... on Identity {
+          avatar {
             id
             name
-            entity_type
           }
         }
-        objectLabel {
+      }
+      ... on Tool {
+        name
+      }
+      ... on Vulnerability {
+        name
+      }
+      ... on Incident {
+        name
+      }
+      createdBy {
+        ... on Identity {
           id
-          value
-          color
-        }
-        objectMarking {
-          id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
+          name
+          entity_type
         }
       }
-    `,
-  },
-);
+      objectLabel {
+        id
+        value
+        color
+      }
+      objectMarking {
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
+      }
+    }
+  `,
+});
 
 class StixDomainObjectBookmarkDummyComponent extends Component {
   render() {
@@ -251,38 +240,24 @@ class StixDomainObjectBookmarkDummyComponent extends Component {
       <Card>
         <CardHeader
           classes={{ root: classes.header }}
-          avatar={(
-            <Skeleton
-              animation="wave"
-              variant="circular"
-              width={30}
-              height={30}
-            />
-          )}
-          title={(
+          avatar={<Skeleton animation="wave" variant="circular" width={30} height={30} />}
+          title={
             <Skeleton
               animation="wave"
               variant="rectangular"
               width="90%"
               style={{ marginBottom: 10 }}
             />
-          )}
-          subheader={(
+          }
+          subheader={
             <Skeleton
               animation="wave"
               variant="rectangular"
               width="90%"
               style={{ marginBottom: 10 }}
             />
-          )}
-          action={(
-            <Skeleton
-              animation="wave"
-              variant="circular"
-              width={30}
-              height={30}
-            />
-          )}
+          }
+          action={<Skeleton animation="wave" variant="circular" width={30} height={30} />}
           slotProps={{
             title: { color: 'inherit' },
           }}

@@ -15,7 +15,10 @@ import { commitMutation, handleError } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import { FormAddInput, FormBuilderData, FormFieldAttribute } from './Form.d';
 import FormSchemaEditor from './FormSchemaEditor';
-import { convertFormBuilderDataToSchema, normalizeDraftAuthorizedMembersDefaults } from './FormUtils';
+import {
+  convertFormBuilderDataToSchema,
+  normalizeDraftAuthorizedMembersDefaults,
+} from './FormUtils';
 
 const formCreationMutation = graphql`
   mutation FormCreationMutation($input: FormAddInput!) {
@@ -35,7 +38,13 @@ interface FormCreationProps {
   queryRef: PreloadedQuery<FormCreationQuery>;
   handleClose: () => void;
   paginationOptions: FormLinesPaginationQuery$variables;
-  formData?: { id: string; name: string; description?: string; form_schema?: string; active?: boolean }; // For duplication
+  formData?: {
+    id: string;
+    name: string;
+    description?: string;
+    form_schema?: string;
+    active?: boolean;
+  }; // For duplication
 }
 
 export const formCreationQuery = graphql`
@@ -87,7 +96,9 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
                 authorizedMembers: schema.draftDefaults.authorizedMembers
                   ? {
                       ...schema.draftDefaults.authorizedMembers,
-                      defaults: normalizeDraftAuthorizedMembersDefaults(schema.draftDefaults.authorizedMembers.defaults || []),
+                      defaults: normalizeDraftAuthorizedMembersDefaults(
+                        schema.draftDefaults.authorizedMembers.defaults || [],
+                      ),
                     }
                   : undefined,
               }
@@ -117,7 +128,9 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
   }, [formData]);
 
   // Initialize formBuilderData with the parsed schema if duplicating
-  const [formBuilderData, setFormBuilderData] = useState<FormBuilderData | null>(initialFormBuilderData || null);
+  const [formBuilderData, setFormBuilderData] = useState<FormBuilderData | null>(
+    initialFormBuilderData || null,
+  );
 
   const data = usePreloadedQuery(formCreationQuery, queryRef);
   const { schemaAttributes } = data;
@@ -173,8 +186,14 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
     }
 
     // Validate that mainEntityParseFieldMapping is set when fieldMode is parsed
-    if (formBuilderData.mainEntityFieldMode === 'parsed' && !formBuilderData.mainEntityParseFieldMapping) {
-      setFieldError('form_schema', t_i18n('Map parsed values to attribute is required when using parsed mode'));
+    if (
+      formBuilderData.mainEntityFieldMode === 'parsed' &&
+      !formBuilderData.mainEntityParseFieldMapping
+    ) {
+      setFieldError(
+        'form_schema',
+        t_i18n('Map parsed values to attribute is required when using parsed mode'),
+      );
       setSubmitting(false);
       return;
     }
@@ -184,7 +203,10 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
       .filter((entity) => entity.fieldMode === 'parsed' && !entity.parseFieldMapping)
       .map((entity) => entity.label);
     if (missingMappings.length > 0) {
-      setFieldError('form_schema', t_i18n('Map parsed values to attribute is required for: ') + missingMappings.join(', '));
+      setFieldError(
+        'form_schema',
+        t_i18n('Map parsed values to attribute is required for: ') + missingMappings.join(', '),
+      );
       setSubmitting(false);
       return;
     }
@@ -199,12 +221,7 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
       mutation: formCreationMutation,
       variables: { input: finalValues },
       updater: (store: RecordSourceSelectorProxy) => {
-        insertNode(
-          store,
-          'Pagination_forms',
-          paginationOptions,
-          'formAdd',
-        );
+        insertNode(store, 'Pagination_forms', paginationOptions, 'formAdd');
       },
       optimisticUpdater: undefined,
       optimisticResponse: undefined,
@@ -262,17 +279,10 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
             />
 
             <FormButtonContainer>
-              <Button
-                variant="secondary"
-                onClick={handleClose}
-                disabled={isSubmitting}
-              >
+              <Button variant="secondary" onClick={handleClose} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting || !formBuilderData}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting || !formBuilderData}>
                 {formData ? t_i18n('Duplicate') : t_i18n('Create')}
               </Button>
             </FormButtonContainer>

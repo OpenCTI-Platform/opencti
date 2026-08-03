@@ -17,9 +17,7 @@ class SectorParentSectorsComponent extends Component {
     const { t, sector } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Label>
-          {t('Parent sectors')}
-        </Label>
+        <Label>{t('Parent sectors')}</Label>
         <List sx={{ py: 0 }}>
           {sector.parentSectors.edges.map((parentSectorEdge) => {
             const parentSector = parentSectorEdge.node;
@@ -54,24 +52,21 @@ SectorParentSectorsComponent.propTypes = {
   attackPattern: PropTypes.object,
 };
 
-const SectorParentSectors = createFragmentContainer(
-  SectorParentSectorsComponent,
-  {
-    sector: graphql`
-      fragment SectorParentSectors_sector on Sector {
-        id
-        parentSectors {
-          edges {
-            node {
-              id
-              name
-              description
-            }
+const SectorParentSectors = createFragmentContainer(SectorParentSectorsComponent, {
+  sector: graphql`
+    fragment SectorParentSectors_sector on Sector {
+      id
+      parentSectors {
+        edges {
+          node {
+            id
+            name
+            description
           }
         }
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default compose(inject18n)(SectorParentSectors);

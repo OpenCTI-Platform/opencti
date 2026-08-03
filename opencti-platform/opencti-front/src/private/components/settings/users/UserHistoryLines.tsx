@@ -1,7 +1,10 @@
 import React, { FunctionComponent, useEffect } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { interval } from 'rxjs';
-import { UserHistoryLinesQuery, UserHistoryLinesQuery$variables } from '@components/settings/users/__generated__/UserHistoryLinesQuery.graphql';
+import {
+  UserHistoryLinesQuery,
+  UserHistoryLinesQuery$variables,
+} from '@components/settings/users/__generated__/UserHistoryLinesQuery.graphql';
 import { UserHistoryLines_data$key } from '@components/settings/users/__generated__/UserHistoryLines_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import UserHistoryLine from './UserHistoryLine';
@@ -21,43 +24,51 @@ export const userHistoryLinesQuery = graphql`
     $cursor: ID
   ) {
     ...UserHistoryLines_data
-    @arguments( types: $types, search: $search, orderBy: $orderBy, orderMode: $orderMode, filters: $filters, cursor: $cursor)}
-`;
-
-export const userHistoryLinesFragment = graphql`
-    fragment UserHistoryLines_data on Query
-    @argumentDefinitions(
-      types: { type: "[String!]" }
-      search: { type: "String" }
-      orderBy: { type: "LogsOrdering", defaultValue: created_at }
-      orderMode: { type: "OrderingMode", defaultValue: asc }
-      filters: { type: "FilterGroup" }
-      cursor: { type: "ID" }
-    )
-    @refetchable(queryName: "UserHistoryLinesRefetchQuery") {
-      audits(
+      @arguments(
         types: $types
-        first: $first
+        search: $search
         orderBy: $orderBy
         orderMode: $orderMode
         filters: $filters
-        search: $search
-        after: $cursor
-      ) @connection(key: "Pagination_audits") {
-        edges {
-          node {
-            id
-            ...UserHistoryLine_node
-          }
-        }
-        pageInfo {
-          endCursor
-          hasNextPage
-          globalCount
+        cursor: $cursor
+      )
+  }
+`;
+
+export const userHistoryLinesFragment = graphql`
+  fragment UserHistoryLines_data on Query
+  @argumentDefinitions(
+    types: { type: "[String!]" }
+    search: { type: "String" }
+    orderBy: { type: "LogsOrdering", defaultValue: created_at }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+    cursor: { type: "ID" }
+  )
+  @refetchable(queryName: "UserHistoryLinesRefetchQuery") {
+    audits(
+      types: $types
+      first: $first
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+      search: $search
+      after: $cursor
+    ) @connection(key: "Pagination_audits") {
+      edges {
+        node {
+          id
+          ...UserHistoryLine_node
         }
       }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
     }
-  `;
+  }
+`;
 
 interface UserHistoryLinesProps {
   isRelationLog: boolean;
@@ -73,15 +84,14 @@ const UserHistoryLines: FunctionComponent<UserHistoryLinesProps> = ({
   refetch,
 }) => {
   const { t_i18n } = useFormatter();
-  const { data } = usePreloadedPaginationFragment<
-    UserHistoryLinesQuery,
-    UserHistoryLines_data$key
-  >({
-    linesQuery: userHistoryLinesQuery,
-    linesFragment: userHistoryLinesFragment,
-    queryRef,
-    nodePath: ['audits', 'pageInfo', 'globalCount'],
-  });
+  const { data } = usePreloadedPaginationFragment<UserHistoryLinesQuery, UserHistoryLines_data$key>(
+    {
+      linesQuery: userHistoryLinesQuery,
+      linesFragment: userHistoryLinesFragment,
+      queryRef,
+      nodePath: ['audits', 'pageInfo', 'globalCount'],
+    },
+  );
   const audits = data?.audits?.edges ?? [];
   useEffect(() => {
     // Refresh
@@ -98,9 +108,7 @@ const UserHistoryLines: FunctionComponent<UserHistoryLinesProps> = ({
       {audits.length > 0 ? (
         audits.map((auditEdge) => {
           const audit = auditEdge?.node;
-          return (audit
-            && <UserHistoryLine key={audit?.id} node={audit} />
-          );
+          return audit && <UserHistoryLine key={audit?.id} node={audit} />;
         })
       ) : (
         <div style={{ display: 'table', height: '100%', width: '100%' }}>

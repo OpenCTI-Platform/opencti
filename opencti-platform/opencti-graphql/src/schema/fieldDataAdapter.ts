@@ -37,7 +37,9 @@ export const inputHashesToStix = (data: Array<HashInput>) => {
 };
 
 // Must only be call in generic resolvers for data output
-export const stixHashesToInput = (instance: StixArtifact | StixFile | StixX509Certificate): Array<HashInput> => {
+export const stixHashesToInput = (
+  instance: StixArtifact | StixFile | StixX509Certificate,
+): Array<HashInput> => {
   const attributeValue = instance.hashes ?? {};
   const entries = Object.entries(attributeValue);
   return entries.map(([lab, val]) => {
@@ -47,20 +49,20 @@ export const stixHashesToInput = (instance: StixArtifact | StixFile | StixX509Ce
 
 export const isUpdatedAtObject = (type: string): boolean => {
   return (
-    isDatedInternalObject(type)
-    || isStixMetaObject(type)
-    || isStixCoreObject(type)
-    || isStixCoreRelationship(type)
-    || isStixSightingRelationship(type)
-    || isStixRefRelationship(type)
+    isDatedInternalObject(type) ||
+    isStixMetaObject(type) ||
+    isStixCoreObject(type) ||
+    isStixCoreRelationship(type) ||
+    isStixSightingRelationship(type) ||
+    isStixRefRelationship(type)
   );
 };
 
 export const isModifiedObject = (type: string): boolean => {
   return (
-    isStixMetaObject(type)
-    || isStixDomainObject(type)
-    || isStixCoreRelationship(type)
-    || isStixSightingRelationship(type)
+    isStixMetaObject(type) ||
+    isStixDomainObject(type) ||
+    isStixCoreRelationship(type) ||
+    isStixSightingRelationship(type)
   );
 };

@@ -17,11 +17,8 @@ const statsDateAttributes = [
 
 export const up = async (next) => {
   logApp.info('[MIGRATION] Dropping unused split date attributes');
-  const buildStatsDateAttributes = statsDateAttributes.map((attr) => [
-    `i_${attr}_day`,
-    `i_${attr}_month`,
-    `i_${attr}_year`,
-  ])
+  const buildStatsDateAttributes = statsDateAttributes
+    .map((attr) => [`i_${attr}_day`, `i_${attr}_month`, `i_${attr}_year`])
     .flat();
   logApp.info('[MIGRATION] Starting 1679409198437-drop-unused-internal-date-attributes.js');
   const source = buildStatsDateAttributes.map((attr) => `ctx._source.remove('${attr}')`).join(';');
@@ -41,7 +38,11 @@ export const up = async (next) => {
     },
   };
 
-  await elUpdateByQueryForMigration('[MIGRATION] Dropping unused split date attributes', READ_DATA_INDICES, updateQuery);
+  await elUpdateByQueryForMigration(
+    '[MIGRATION] Dropping unused split date attributes',
+    READ_DATA_INDICES,
+    updateQuery,
+  );
   logApp.info('[MIGRATION] 1679409198437-drop-unused-internal-date-attributes.js finished');
   next();
 };

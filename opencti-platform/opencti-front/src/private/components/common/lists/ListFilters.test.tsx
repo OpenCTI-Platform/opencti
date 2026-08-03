@@ -6,7 +6,8 @@ vi.mock('../../../../relay/environment', () => ({
   APP_BASE_PATH: '',
   MESSAGING$: { messages$: { subscribe: () => ({}) } },
   environment: {},
-  QueryRenderer: ({ render }: { render: (args: { props: null }) => React.ReactNode }) => render({ props: null }),
+  QueryRenderer: ({ render }: { render: (args: { props: null }) => React.ReactNode }) =>
+    render({ props: null }),
   fetchQuery: vi.fn(),
 }));
 
@@ -34,7 +35,8 @@ describe('ListFilters', () => {
     availableFilterKeys: ['entity_type', 'name', 'workflow_user'],
     filterElement: <div />,
     entityTypes: ['Stix-Core-Object'],
-    helpers: mockHelpers as unknown as import('src/utils/filters/filtersHelpers-types').handleFilterHelpers,
+    helpers:
+      mockHelpers as unknown as import('src/utils/filters/filtersHelpers-types').handleFilterHelpers,
   };
 
   it('renders without crashing', () => {

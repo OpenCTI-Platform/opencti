@@ -18,22 +18,24 @@ interface EEFieldProps {
   featureLabel: string;
 }
 
-const EEField: FunctionComponent<EEFieldProps> = ({
-  children,
-  featureLabel,
-}) => {
+const EEField: FunctionComponent<EEFieldProps> = ({ children, featureLabel }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const component = React.cloneElement(children, {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    label: <>{t_i18n(children.props.label)}<EEChip feature={featureLabel} /></>,
+    label: (
+      <>
+        {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          t_i18n(children.props.label)
+        }
+        <EEChip feature={featureLabel} />
+      </>
+    ),
   });
-  return (
-    <div className={classes.labelRoot}>
-      {component}
-    </div>
-  );
+  return <div className={classes.labelRoot}>{component}</div>;
 };
 
 export default EEField;

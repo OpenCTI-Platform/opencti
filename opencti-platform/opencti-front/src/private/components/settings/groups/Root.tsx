@@ -13,7 +13,10 @@ import Group from './Group';
 import { RootGroupsSubscription } from './__generated__/RootGroupsSubscription.graphql';
 import { RootGroupQuery } from './__generated__/RootGroupQuery.graphql';
 import Security from '../../../../utils/Security';
-import useGranted, { KNOWLEDGE_KNUPDATE_KNDELETE, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+  SETTINGS_SETACCESSES,
+} from '../../../../utils/hooks/useGranted';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
@@ -23,28 +26,20 @@ import TitleMainEntity from '../../../../components/common/typography/TitleMainE
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const subscription = graphql`
-    subscription RootGroupsSubscription($id: ID!) {
-        group(id: $id) {
-            ...Group_group
-        }
+  subscription RootGroupsSubscription($id: ID!) {
+    group(id: $id) {
+      ...Group_group
     }
+  }
 `;
 
 const groupQuery = graphql`
-  query RootGroupQuery(
-    $id: String!
-    $rolesOrderBy: RolesOrdering
-    $rolesOrderMode: OrderingMode
-  ) {
+  query RootGroupQuery($id: String!, $rolesOrderBy: RolesOrdering, $rolesOrderMode: OrderingMode) {
     group(id: $id) {
       id
       name
       standard_id
-      ...Group_group
-      @arguments(
-        rolesOrderBy: $rolesOrderBy
-        rolesOrderMode: $rolesOrderMode
-      )
+      ...Group_group @arguments(rolesOrderBy: $rolesOrderBy, rolesOrderMode: $rolesOrderMode)
     }
   }
 `;
@@ -91,9 +86,7 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
             ]}
           />
           <Stack direction="row" alignItems="center" paddingRight="200px" marginBottom={3}>
-            <TitleMainEntity sx={{ flex: 1 }}>
-              {group.name}
-            </TitleMainEntity>
+            <TitleMainEntity sx={{ flex: 1 }}>{group.name}</TitleMainEntity>
             <div style={{ marginRight: theme.spacing(0.5) }}>
               {canDelete && (
                 <PopoverMenu>
@@ -118,18 +111,10 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
               isOpen={openDelete}
               handleClose={handleCloseDelete}
             />
-            <GroupEdition
-              groupId={group.id}
-              disabled={!isAllowed && isSensitive}
-            />
+            <GroupEdition groupId={group.id} disabled={!isAllowed && isSensitive} />
           </Stack>
           <Routes>
-            <Route
-              path="/"
-              element={
-                <Group groupData={group} />
-              }
-            />
+            <Route path="/" element={<Group groupData={group} />} />
           </Routes>
         </>
       ) : (
@@ -141,7 +126,11 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
 
 const RootGroup = () => {
   const { groupId } = useParams() as { groupId: string };
-  const queryRef = useQueryLoading<RootGroupQuery>(groupQuery, { id: groupId, rolesOrderBy: 'name', rolesOrderMode: 'asc' });
+  const queryRef = useQueryLoading<RootGroupQuery>(groupQuery, {
+    id: groupId,
+    rolesOrderBy: 'name',
+    rolesOrderMode: 'asc',
+  });
   return (
     <div>
       {queryRef ? (

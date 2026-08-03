@@ -67,6 +67,4 @@ EventEdition.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-)(EventEdition);
+export default compose(inject18n)(EventEdition);

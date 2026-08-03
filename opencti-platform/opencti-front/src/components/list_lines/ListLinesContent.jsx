@@ -58,18 +58,19 @@ class ListLinesContent extends Component {
     if (!this.state.isScrollElementResolved) {
       this.updateScrollElement();
     }
-    const diff = !R.equals(this.props.dataList, prevProps.dataList)
-      || !R.equals(this.props.bookmarkList, prevProps.bookmarkList);
+    const diff =
+      !R.equals(this.props.dataList, prevProps.dataList) ||
+      !R.equals(this.props.bookmarkList, prevProps.bookmarkList);
     let selection = false;
     if (
-      Object.keys(this.props.selectedElements || {}).length
-      !== Object.keys(prevProps.selectedElements || {}).length
+      Object.keys(this.props.selectedElements || {}).length !==
+      Object.keys(prevProps.selectedElements || {}).length
     ) {
       selection = true;
     }
     if (
-      Object.keys(this.props.deSelectedElements || {}).length
-      !== Object.keys(prevProps.deSelectedElements || {}).length
+      Object.keys(this.props.deSelectedElements || {}).length !==
+      Object.keys(prevProps.deSelectedElements || {}).length
     ) {
       selection = true;
     }
@@ -94,21 +95,13 @@ class ListLinesContent extends Component {
   }
 
   _loadMoreRows() {
-    const {
-      loadMore,
-      hasMore,
-      isLoading,
-      dataList,
-      globalCount,
-      nbOfRowsToLoad,
-    } = this.props;
+    const { loadMore, hasMore, isLoading, dataList, globalCount, nbOfRowsToLoad } = this.props;
     if (!hasMore() || isLoading()) {
       return;
     }
     const difference = globalCount - dataList.length;
     this.setState({
-      loadingRowCount:
-        difference >= nbOfRowsToLoad ? nbOfRowsToLoad : difference,
+      loadingRowCount: difference >= nbOfRowsToLoad ? nbOfRowsToLoad : difference,
     });
     loadMore(nbOfRowsToLoad, this._resetLoadingRowCount);
   }

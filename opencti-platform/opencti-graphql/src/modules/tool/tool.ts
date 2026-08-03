@@ -17,7 +17,4 @@ const toolDefaultOverviewLayout: OverviewLayoutCustomization[] = [
 ];
 
 // Register only the default layout
-registerEntityOverviewLayoutCustomization(
-  ENTITY_TYPE_TOOL,
-  toolDefaultOverviewLayout,
-);
+registerEntityOverviewLayoutCustomization(ENTITY_TYPE_TOOL, toolDefaultOverviewLayout);

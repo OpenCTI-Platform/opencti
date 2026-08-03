@@ -13,10 +13,7 @@ import { SettingsMessagesLine_settingsMessage$data } from './__generated__/Setti
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const settingsMessagesPopoverPatch = graphql`
-  mutation SettingsMessagesPopoverPatchMutation(
-    $id: ID!
-    $input: String!
-  ) {
+  mutation SettingsMessagesPopoverPatchMutation($id: ID!, $input: String!) {
     settingsEdit(id: $id) {
       deleteMessage(input: $input) {
         messages_administration {
@@ -69,7 +66,12 @@ const SettingsMessagesPopover = ({
 
   return (
     <div>
-      <IconButton aria-label={t_i18n('Open menu')} onClick={handleOpen} aria-haspopup="true" color="primary">
+      <IconButton
+        aria-label={t_i18n('Open menu')}
+        onClick={handleOpen}
+        aria-haspopup="true"
+        color="primary"
+      >
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>

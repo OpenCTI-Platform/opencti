@@ -17,7 +17,8 @@ const LabelsVocabulariesMenu: FunctionComponent = () => {
   const isGrantedToKillChainPhases = useGranted([SETTINGS_SETKILLCHAINPHASES]);
   const isGrantedToCaseTemplates = useGranted([SETTINGS_SETCASETEMPLATES]);
   const isGrantedToStatusTemplates = useGranted([SETTINGS_SETSTATUSTEMPLATES]);
-  const isGrantedToCustomFields = useGranted([SETTINGS_SETCUSTOMIZATION]) && isFeatureEnable('CUSTOM_FIELDS');
+  const isGrantedToCustomFields =
+    useGranted([SETTINGS_SETCUSTOMIZATION]) && isFeatureEnable('CUSTOM_FIELDS');
   const entries: MenuEntry[] = [];
   if (isGrantedToLabels) {
     entries.push({

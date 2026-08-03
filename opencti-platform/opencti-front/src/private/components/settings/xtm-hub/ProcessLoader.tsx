@@ -8,10 +8,7 @@ interface ProcessLoaderProps {
   buttonText: string;
 }
 
-const ProcessLoader: FunctionComponent<ProcessLoaderProps> = ({
-  onFocusTab,
-  buttonText,
-}) => {
+const ProcessLoader: FunctionComponent<ProcessLoaderProps> = ({ onFocusTab, buttonText }) => {
   return (
     <Box
       sx={{

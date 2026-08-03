@@ -57,9 +57,7 @@ interface CaseRftDetailsProps {
   caseRftData: CaseRftDetails_case$key;
 }
 
-const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
-  caseRftData,
-}) => {
+const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({ caseRftData }) => {
   const { t_i18n } = useFormatter();
   const data = useFragment(CaseRftDetailsFragment, caseRftData);
   const takedownTypes = data.takedown_types ?? [];
@@ -69,32 +67,23 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={2} sx={{ marginBottom: 2 }}>
           <Grid item xs={12}>
-            <Label>
-              {t_i18n('Description')}
-            </Label>
+            <Label>{t_i18n('Description')}</Label>
             <FieldOrEmpty source={data.description}>
               <ExpandableMarkdown source={data.description} limit={300} />
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Request for takedown types')}
-            </Label>
+            <Label>{t_i18n('Request for takedown types')}</Label>
             <FieldOrEmpty source={takedownTypes}>
               <Stack direction="row" flexWrap="wrap" gap={1}>
                 {takedownTypes.map((takedownType) => (
-                  <Tag
-                    key={takedownType}
-                    label={takedownType}
-                  />
+                  <Tag key={takedownType} label={takedownType} />
                 ))}
               </Stack>
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Priority')}
-            </Label>
+            <Label>{t_i18n('Priority')}</Label>
             <ItemOpenVocab
               key="type"
               small={true}
@@ -104,9 +93,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
             />
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Severity')}
-            </Label>
+            <Label>{t_i18n('Severity')}</Label>
             <ItemOpenVocab
               key="type"
               small={true}

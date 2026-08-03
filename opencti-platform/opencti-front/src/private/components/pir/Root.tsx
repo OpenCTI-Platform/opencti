@@ -28,14 +28,14 @@ const PirRoot = () => {
   const { t_i18n } = useFormatter();
   return (
     <Suspense fallback={<Loader />}>
-      {isEnterpriseEdition
-        ? (
-            <Routes>
-              <Route path="/" element={boundaryWrapper(Pirs)} />
-              <Route path="/:pirId/*" element={boundaryWrapper(Pir)} />
-            </Routes>
-          )
-        : <EnterpriseEdition feature={t_i18n('PIR')} />}
+      {isEnterpriseEdition ? (
+        <Routes>
+          <Route path="/" element={boundaryWrapper(Pirs)} />
+          <Route path="/:pirId/*" element={boundaryWrapper(Pir)} />
+        </Routes>
+      ) : (
+        <EnterpriseEdition feature={t_i18n('PIR')} />
+      )}
     </Suspense>
   );
 };

@@ -35,9 +35,7 @@ const styles = (theme) => ({
   },
 });
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 const taxiiCollectionPopoverDeletionMutation = graphql`
@@ -140,12 +138,8 @@ class TaxiiCollectionPopover extends Component {
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
         >
-          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
-            {t('Update')}
-          </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
-          </MenuItem>
+          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>{t('Update')}</MenuItem>
+          <MenuItem onClick={this.handleOpenDelete.bind(this)}>{t('Delete')}</MenuItem>
         </Menu>
         <Drawer
           open={this.state.displayUpdate}
@@ -157,11 +151,7 @@ class TaxiiCollectionPopover extends Component {
             variables={{ id: taxiiCollectionId }}
             render={({ props }) => {
               if (props) {
-                return (
-                  <TaxiiCollectionEdition
-                    taxiiCollection={props.taxiiCollection}
-                  />
-                );
+                return <TaxiiCollectionEdition taxiiCollection={props.taxiiCollection} />;
               }
               return <div />;
             }}
@@ -173,9 +163,7 @@ class TaxiiCollectionPopover extends Component {
           title={t('Are you sure?')}
           size="small"
         >
-          <DialogContentText>
-            {t('Do you want to delete this collection?')}
-          </DialogContentText>
+          <DialogContentText>{t('Do you want to delete this collection?')}</DialogContentText>
           <DialogActions>
             <Button
               variant="secondary"
@@ -184,10 +172,7 @@ class TaxiiCollectionPopover extends Component {
             >
               {t('Cancel')}
             </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
+            <Button onClick={this.submitDelete.bind(this)} disabled={this.state.deleting}>
               {t('Confirm')}
             </Button>
           </DialogActions>
