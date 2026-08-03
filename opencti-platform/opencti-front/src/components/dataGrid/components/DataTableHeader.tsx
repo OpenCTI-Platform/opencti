@@ -111,7 +111,7 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
         className={classes.label}
         onClick={throttleSortColumn}
         role={column.isSortable ? 'button' : undefined}
-        tabIndex={column.isSortable ? 0 : -1}
+        tabIndex={column.isSortable ? 0 : undefined}
         onKeyDown={(event) => {
           if (!column.isSortable) {
             return;

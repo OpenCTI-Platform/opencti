@@ -191,6 +191,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                   && (
                     <button
                       type="button"
+                      disabled={!operatorOnClick}
                       style={{
                         display: 'inline-block',
                         height: '100%',
@@ -212,6 +213,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                   && (
                     <button
                       type="button"
+                      disabled={!operatorOnClick}
                       style={{
                         ...localModeStyle,
                         border: 'none',
