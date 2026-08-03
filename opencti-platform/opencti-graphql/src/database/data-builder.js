@@ -23,7 +23,7 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixDomainObject, isStixObjectAliased, resolveAliasesField, STIX_ORGANIZATIONS_RESTRICTED, STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import { getEntitiesListFromCache } from './cache';
-import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../utils/access';
+import { isServiceAccountUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../utils/access';
 import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { RELATION_IN_PIR } from '../schema/internalRelationship';
 import { pushAll } from '../utils/arrayUtil';
@@ -132,8 +132,8 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
         if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[inputField]
           && (!Array.isArray(input[inputField]) || input[inputField].length > 0)) {
           pushAll(relToCreate, buildInnerRelation(data, input[inputField], RELATION_GRANTED_TO));
-        } else if (!context.user_inside_platform_organization) {
-          // If user is not part of the platform organization, put its own organizations
+        } else if (!context.user_inside_platform_organization || (isServiceAccountUser(user) && isNotEmptyField(user.organizations))) {
+          // If user is not part of the platform organization or is a service account with organizations, put its own organizations
           pushAll(relToCreate, buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
         }
       } else if (relType === RELATION_OBJECT_MARKING) {
@@ -286,8 +286,8 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
     if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[INPUT_GRANTED_REFS]
       && (!Array.isArray(input[INPUT_GRANTED_REFS]) || input[INPUT_GRANTED_REFS].length > 0)) {
       pushAll(relToCreate, buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO));
-    } else if (!context.user_inside_platform_organization) {
-      // If user is not part of the platform organization, put its own organizations
+    } else if (!context.user_inside_platform_organization || (isServiceAccountUser(user) && isNotEmptyField(user.organizations))) {
+      // If user is not part of the platform organization  or is a service account with organizations, put its own organizations
       pushAll(relToCreate, buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
     }
     const markingsFiltered = await cleanMarkings(context, input.objectMarking);
