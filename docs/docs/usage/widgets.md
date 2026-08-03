@@ -31,7 +31,7 @@ A perspective is the way the platform will count the data to display in your wid
 
 Filters vary based on the selected perspective, defining the dataset to be utilized in the widget. Filters are instrumental in narrowing down the scope of data for a more focused analysis.
 
-You can either construct your own custom filters, either select a saved filter (see the 'Saved filters in widgets' section below).
+You can either construct your own custom filters or select a saved filter (see [Saved filters in widgets](#saved-filters-in-widgets) below).
 
 ![Widget filters with the 'entities' perspective](assets/widget-filters-entities.png)
 
