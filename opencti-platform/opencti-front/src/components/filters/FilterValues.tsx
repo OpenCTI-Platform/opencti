@@ -61,21 +61,21 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator ?? 'eq');
   const isOperatorChange = ['has_changed', 'not_has_changed'].includes(filterOperator ?? 'eq');
   const deactivatePopoverMenu = !isFilterEditable(filtersRestrictions, filterKey, filterValues) || !isReadWriteFilter;
-  const onCLick = deactivatePopoverMenu ? undefined : onClickLabel;
+  const onClick = deactivatePopoverMenu ? undefined : onClickLabel;
   const labelButtonStyle = {
     all: 'unset',
     cursor: 'pointer',
     fontWeight: 'bold',
   } as const;
   const renderLabel = () => {
-    if (!onCLick) {
+    if (!onClick) {
       return <strong>{label}</strong>;
     }
     return (
       <button
         type="button"
         style={labelButtonStyle}
-        onClick={onCLick}
+        onClick={onClick}
       >
         {label}
       </button>
