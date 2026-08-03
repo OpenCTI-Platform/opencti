@@ -22,6 +22,7 @@ import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { FieldOption } from '../../../../utils/field';
 import { IpWhitelistSettingsQuery } from './__generated__/IpWhitelistSettingsQuery.graphql';
 import type { GroupSetDefaultGroupForIngestionUsersQuery$data } from '@components/settings/groups/__generated__/GroupSetDefaultGroupForIngestionUsersQuery.graphql';
+import { OPENCTI_ADMIN_UUID } from 'src/utils/hooks/useGranted';
 
 const ipWhitelistSettingsQuery = graphql`
   query IpWhitelistSettingsQuery {
@@ -210,6 +211,10 @@ const IpWhitelistSettingsContent = () => {
                             // Add current user
                             if (!newExclusions.some((e) => e.id === me.id)) {
                               newExclusions.push({ id: me.id, name: me.name, entity_type: 'User' });
+                            }
+                            // Add admin user
+                            if (!newExclusions.some((e) => e.id === OPENCTI_ADMIN_UUID)) {
+                              newExclusions.push({ id: OPENCTI_ADMIN_UUID, name: 'admin', entity_type: 'User' });
                             }
                             // Fetch and add default group for service accounts
                             fetchQuery(groupSetDefaultGroupForIngestionUsersQuery, {
