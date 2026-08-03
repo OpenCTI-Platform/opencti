@@ -1,8 +1,4 @@
-import {
-  SavedFiltersAutocompleteOptionType,
-  SavedFiltersSelectionData,
-  WidgetSavedFilterScope,
-} from 'src/components/saved_filters/SavedFilterSelection';
+import { SavedFiltersAutocompleteOptionType, SavedFiltersSelectionData, WidgetSavedFilterScope } from 'src/components/saved_filters/SavedFilterSelection';
 import useAuth from 'src/utils/hooks/useAuth';
 
 /**
