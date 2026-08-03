@@ -221,6 +221,7 @@ nav:
         - Playbook creation: usage/playbook-creation.md
         - Playbook components: usage/playbook-components.md
       - Security Coverage: usage/security-coverage.md
+      - Data consistency: usage/dataSanityManager.md
     - Delete and restore knowledge: usage/delete-restore.md
     - Sharing and exports:
       - Native feeds: usage/feeds.md
