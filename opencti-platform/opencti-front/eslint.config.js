@@ -64,7 +64,7 @@ export default defineConfig([
   {
     plugins: {
       'import-newlines': importNewlines,
-      'custom-rules': { rules: customRules },
+      'custom-rules': customRules,
       '@stylistic': stylistic,
     },
   },

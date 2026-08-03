@@ -60,6 +60,14 @@ For general suggestions or questions about the project or the documentation, you
 
 * As much as possible, provide advices on how to test the feature or the bug fix you implemented in the Pull Request.
 
+### Editor setup
+
+OpenCTI uses [Oxlint](https://oxc.rs/docs/guide/usage/linter) and [Oxfmt](https://oxc.rs/docs/guide/usage/formatter) for linting and formatting the `opencti-graphql` and `opencti-front` TypeScript/JavaScript code (`.oxlintrc.json` / `.oxfmtrc.jsonc` in each package).
+
+* **VS Code**: install the recommended [Oxc extension](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode) (`oxc.oxc-vscode`, suggested automatically via `.vscode/extensions.json`). Formatting and lint fixes on save are already configured in `.vscode/settings.json`.
+
+* **IntelliJ / WebStorm**: install the [Oxc plugin](https://plugins.jetbrains.com/plugin/27061-oxc) from the JetBrains Marketplace, then enable it as the default formatter for JS/TS/JSX/TSX files in *Settings > Languages & Frameworks > JavaScript*. Since `.idea/` is not committed to the repository, this setup must be repeated locally by each contributor.
+
 ### How can you get in touch for other questions?
 
 If you need support or you wish to engage a discussion about the OpenCTI platform, feel free to join us on our [Slack channel](https://community.filigran.io). You can also send us an [email](mailto:contact@filigran.io).

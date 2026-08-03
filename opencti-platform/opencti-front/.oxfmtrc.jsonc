@@ -1,0 +1,22 @@
+{
+  "singleQuote": true,
+  "semi": true,
+  "printWidth": 100,
+  "arrowParens": "always",
+  "quoteProps": "as-needed",
+  "tabWidth": 2,
+  "bracketSameLine": false,
+  "ignorePatterns": [
+    "**/builder/**",
+    "**/coverage/**",
+    "**/node_module/**",
+    "**/packages/**",
+    "**/src/generated/**",
+    "**/__generated__/**",
+    "extract-i18n-keyword.js",
+    "playwright.config.ts",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "setup-vitest.ts"
+  ]
+}
