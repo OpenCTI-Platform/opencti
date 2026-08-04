@@ -35,14 +35,25 @@ export default class DashboardWidgetsPageModel {
   }
 
   selectWidget(widgetName: string) {
-    return this.page.getByLabel(widgetName, { exact: true }).click();
+    return this.widgetDialog().getByLabel(widgetName, { exact: true }).click();
   }
 
   selectPerspective(perspective: WidgetPerspective) {
     if (perspective === 'Entities') this.labelPerspective = 'entities';
     if (perspective === 'Knowledge graph') this.labelPerspective = 'relationships';
     if (perspective === 'Activity & history') this.labelPerspective = 'audits';
-    return this.page.getByLabel(perspective, { exact: true }).click();
+    return this.widgetDialog().getByLabel(perspective, { exact: true }).click();
+  }
+
+  /**
+   * Widget and perspective cards live in the creation dialog. They used to be
+   * reachable page-wide, but the design-system rail keeps a submenu's content
+   * region mounted while closed — a `hidden` region labelled by its parent, so
+   * `getByLabel('Entities')` now matches the navigation as well as the card.
+   * Scoping to the dialog anchors on where the card actually is.
+   */
+  private widgetDialog() {
+    return this.page.getByRole('dialog');
   }
 
   fillLabel(label: string) {
