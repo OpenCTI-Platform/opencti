@@ -40,7 +40,7 @@ const DataTableSearchEmptyState = ({ rawSearchTerm }: DataTableSearchEmptyStateP
                   <Link
                     target="_blank"
                     rel="noopener noreferrer"
-                    to="https://docs.opencti.io/latest/usage/search/"
+                    to="https://docs.opencti.io/latest/usage/search/#search-syntax"
                   >
                     {t_i18n('our documentation')}
                     <OpenInNew sx={{ fontSize: 14, pl: '2px', verticalAlign: 'middle', pb: '2px' }} />
