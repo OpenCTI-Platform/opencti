@@ -11,6 +11,7 @@ import {
   isRegardingOfFilterWarning,
   normalizeFilterGroupForBackend,
   normalizeFilterGroupForFrontend,
+  removeEmptyFiltersFromList,
   removeFrontendIdAndEmptyFiltersFromFilterGroupObject,
   removeIdAndIncorrectKeysFromFilterGroupObject,
   serializeFilterGroupForBackend,
@@ -23,6 +24,41 @@ import filterKeysSchema from '../tests/FilterUtilsConstants';
 import { FilterGroup } from './filtersHelpers-types';
 
 describe('Filters utils', () => {
+  describe('removeEmptyFiltersFromList', () => {
+    it('should remove filters with empty values when operator requires values', () => {
+      const filtersList = [
+        { key: 'name', values: [], operator: 'eq' },
+        { key: 'entity_type', values: ['Malware'], operator: 'eq' },
+      ];
+
+      expect(removeEmptyFiltersFromList(filtersList)).toEqual([
+        { key: 'entity_type', values: ['Malware'], operator: 'eq' },
+      ]);
+    });
+
+    it('should keep filters with no-value operators even when values are empty', () => {
+      const filtersList = [
+        { key: 'description', values: [], operator: 'nil' },
+        { key: 'objectMarking', values: [], operator: 'not_nil' },
+        { key: 'confidence', values: [], operator: 'has_changed' },
+        { key: 'workflow_id', values: [], operator: 'not_has_changed' },
+      ];
+
+      expect(removeEmptyFiltersFromList(filtersList)).toEqual(filtersList);
+    });
+
+    it('should treat missing operator as eq and remove empty filter', () => {
+      const filtersList = [
+        { key: 'name', values: [] },
+        { key: 'entity_type', values: ['Report'] },
+      ];
+
+      expect(removeEmptyFiltersFromList(filtersList)).toEqual([
+        { key: 'entity_type', values: ['Report'] },
+      ]);
+    });
+  });
+
   describe('useBuildFilterKeysMapFromEntityType', () => {
     it('should list filter definitions by given entity types attributes', () => {
       const stixCoreObjectKey = 'Stix-Core-Object';

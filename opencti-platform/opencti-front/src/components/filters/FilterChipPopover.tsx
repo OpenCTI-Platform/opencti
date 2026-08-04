@@ -21,6 +21,7 @@ import {
   isBasicTextFilter,
   isNumericFilter,
   isStixObjectTypes,
+  NO_VALUES_FILTER_OPERATORS,
   SELF_ID,
   SELF_ID_VALUE,
   useFilterDefinition,
@@ -235,7 +236,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     />
   );
 
-  const noValueOperator = !['not_nil', 'nil', 'has_changed', 'not_has_changed'].includes(filterOperator);
+  const noValueOperator = !NO_VALUES_FILTER_OPERATORS.includes(filterOperator);
   const renderSearchScopeSelection = (key: string) => (
     <SearchScopeElement
       name={key}

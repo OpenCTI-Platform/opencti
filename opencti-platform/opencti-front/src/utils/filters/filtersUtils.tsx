@@ -41,6 +41,9 @@ export const SELF_ID_VALUE = 'CURRENT ENTITY';
 
 export const ME_FILTER_VALUE = '@me';
 
+// filter operator requiring nothing in filter values
+export const NO_VALUES_FILTER_OPERATORS = ['nil', 'not_nil', 'has_changed', 'not_has_changed'];
+
 // 'within' operator filter constants
 export const DEFAULT_WITHIN_FILTER_VALUES = ['now-1d', 'now'];
 
@@ -218,6 +221,13 @@ export const isNumericFilter = (
   filterType?: string,
 ) => {
   return filterType === 'integer' || filterType === 'float';
+};
+
+/**
+ * Remove filters that have no values, except those whose operators are valid without values
+ */
+export const removeEmptyFiltersFromList = (filtersList: Filter[]) => {
+  return filtersList.filter((f) => NO_VALUES_FILTER_OPERATORS.includes(f.operator ?? 'eq') || f.values.length > 0);
 };
 
 // return the values of the filters of a specific key among a filters list
@@ -912,9 +922,7 @@ const removeFrontendIdAndEmptyFiltersFromFiltersArray = (filtersArray: Filter[])
     return newFilter;
   };
 
-  return filtersArray
-    .filter((f) => ['nil', 'not_nil', 'has_changed', 'not_has_changed'].includes(f.operator ?? 'eq') || f.values.length > 0)
-    .map((f) => removeFrontendIdFromFilter(f));
+  return removeEmptyFiltersFromList(filtersArray).map((f) => removeFrontendIdFromFilter(f));
 };
 
 // TODO use useRemoveIdAndIncorrectKeysFromFilterGroupObject instead when all the calling files are in pure function
