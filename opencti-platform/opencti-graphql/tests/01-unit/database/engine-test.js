@@ -40,7 +40,7 @@ describe('buildLocalMustFilter testing', () => {
     expect(() => buildLocalMustFilter(scriptFilter)).toThrow(/Filter script is not allowed/);
   });
 
-  it('should buildLocalMustFilter with internal_script should work', () => {
+  it('internal_script must be rejected by buildLocalMustFilter', () => {
     const scriptFilter = {
       key: ['name'],
       values: [
@@ -49,20 +49,7 @@ describe('buildLocalMustFilter testing', () => {
       operator: 'internal_script',
     };
 
-    const result = buildLocalMustFilter(scriptFilter);
-
-    expect(result).toStrictEqual({
-      bool: {
-        minimum_should_match: 1,
-        should: [
-          {
-            script: {
-              script: "doc.containsKey('name.keyword')",
-            },
-          },
-        ],
-      },
-    });
+    expect(() => buildLocalMustFilter(scriptFilter)).toThrow(/internal_script is not a valid public filter operator/);
   });
 
   it('buildLocalMustFilter with script should work when enabled', () => {
