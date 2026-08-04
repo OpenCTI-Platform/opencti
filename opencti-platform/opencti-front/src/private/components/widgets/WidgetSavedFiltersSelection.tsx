@@ -10,7 +10,7 @@ import ClearFiltersIcon from 'src/components/filters/ClearFiltersIcon';
 import WidgetCustomFiltersIcon from 'src/components/saved_filters/WidgetCustomFiltersIcon';
 import Divider from '@mui/material/Divider';
 
-const widgetSavedFiltersSelectionQuery = graphql`
+export const widgetSavedFiltersSelectionQuery = graphql`
   query WidgetSavedFiltersSelectionQuery($filters: FilterGroup) {
     savedFilters(first: 100, filters: $filters) {
       edges {

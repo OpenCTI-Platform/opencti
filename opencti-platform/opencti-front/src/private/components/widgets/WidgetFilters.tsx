@@ -10,11 +10,26 @@ import FilterIconButton from '../../../components/FilterIconButton';
 import { useFormatter } from '../../../components/i18n';
 import type { WidgetDataSelection, WidgetPerspective } from '../../../utils/widget/widget';
 import useHelper from '../../../utils/hooks/useHelper';
-import WidgetSavedFiltersSelection from './WidgetSavedFiltersSelection';
+import WidgetSavedFiltersSelection, { widgetSavedFiltersSelectionQuery } from './WidgetSavedFiltersSelection';
 import WidgetSavedFilterChips from './WidgetSavedFilterChips';
 import WidgetSavedFiltersIcon from 'src/components/saved_filters/WidgetSavedFiltersIcon';
 import Divider from '@mui/material/Divider';
 import { WidgetSavedFilterScope } from 'src/components/saved_filters/SavedFilterSelection';
+import { fetchQuery } from '../../../relay/environment';
+import type { WidgetSavedFiltersSelectionQuery } from './__generated__/WidgetSavedFiltersSelectionQuery.graphql';
+
+const isSavedFilterScopeCompatible = (filterScope: string | null | undefined, scope: WidgetSavedFilterScope) => {
+  if (!filterScope) return false;
+  if (scope === 'stix-core-relationship') {
+    return filterScope === 'relationships';
+  }
+  if (scope === 'History') {
+    return filterScope.includes('audit');
+  }
+  if (scope === 'Stix-Core-Object') {
+    return !filterScope.includes('audit') && filterScope !== 'relationships';
+  }
+};
 
 interface WidgetFiltersProps {
   perspective: WidgetPerspective | null;
@@ -39,6 +54,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
   const [useSavedFilter, setUseSavedFilter] = useState(!!dataSelection.filters_id);
   const [useSavedFilterDynamicFrom, setUseSavedFilterDynamicFrom] = useState(!!dataSelection.dynamicFrom_id);
   const [useSavedFilterDynamicTo, setUseSavedFilterDynamicTo] = useState(!!dataSelection.dynamicTo_id);
+  const [availableSavedFiltersScopes, setAvailableSavedFiltersScopes] = useState<string[]>([]);
 
   useEffect(() => {
     setDataSelection({
@@ -78,6 +94,37 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
       : { entityTypes: ['Stix-Core-Object'] };
     savedFiltersScope = 'Stix-Core-Object';
   }
+
+  useEffect(() => {
+    if (!isSavedFiltersAccessible) {
+      setAvailableSavedFiltersScopes([]);
+      return;
+    }
+
+    let isMounted = true;
+    fetchQuery<WidgetSavedFiltersSelectionQuery>(widgetSavedFiltersSelectionQuery, {})
+      .toPromise()
+      .then((result) => {
+        if (!isMounted) return;
+        const scopes = result?.savedFilters?.edges
+          ?.map((edge) => edge?.node?.scope)
+          .filter((scope): scope is string => Boolean(scope)) ?? [];
+        setAvailableSavedFiltersScopes(scopes);
+      })
+      .catch(() => {
+        if (isMounted) {
+          setAvailableSavedFiltersScopes([]);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isSavedFiltersAccessible]);
+
+  const hasAvailableSavedFilters = (contextScope: WidgetSavedFilterScope) => {
+    return availableSavedFiltersScopes.some((scope) => isSavedFilterScopeCompatible(scope, contextScope));
+  };
 
   let availableFilterKeys = useAvailableFilterKeysForEntityTypes(searchContext.entityTypes);
   if (perspective !== 'relationships') {
@@ -187,7 +234,10 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
               {isSavedFiltersAccessible && (
                 <>
                   <Divider orientation="vertical" flexItem />
-                  <WidgetSavedFiltersIcon onClick={handleSwitchToSavedFilter} perspective={perspective} />
+                  <WidgetSavedFiltersIcon
+                    onClick={handleSwitchToSavedFilter}
+                    disabled={!hasAvailableSavedFilters(savedFiltersScope)}
+                  />
                 </>
               )}
             </>
@@ -221,7 +271,10 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                   />
                   <Divider orientation="vertical" flexItem />
                   {isSavedFiltersAccessible && (
-                    <WidgetSavedFiltersIcon onClick={handleSwitchToSavedFilterDynamicFrom} />
+                    <WidgetSavedFiltersIcon
+                      onClick={handleSwitchToSavedFilterDynamicFrom}
+                      disabled={!hasAvailableSavedFilters('Stix-Core-Object')}
+                    />
                   )}
                 </>
               )}
@@ -251,7 +304,10 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                   />
                   <Divider orientation="vertical" flexItem />
                   {isSavedFiltersAccessible && (
-                    <WidgetSavedFiltersIcon onClick={handleSwitchToSavedFilterDynamicTo} />
+                    <WidgetSavedFiltersIcon
+                      onClick={handleSwitchToSavedFilterDynamicTo}
+                      disabled={!hasAvailableSavedFilters('Stix-Core-Object')}
+                    />
                   )}
                 </>
               )}
