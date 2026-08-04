@@ -154,7 +154,7 @@ export const buildUpdateEvent = (
   instance: StoreObject,
   changes: Change[],
   opts: UpdateEventOpts,
-  workflowStatuses?: { previous?: { name: string, scope: string }, current?: { name: string, scope: string } },
+  workflowStatuses?: { previous?: { name: string; scope: string }; current?: { name: string; scope: string } },
 ): UpdateEvent => {
   // Build and send the event
   const stix = convertStoreToStix_2_1(instance) as StixCoreObject;
@@ -171,7 +171,7 @@ export const buildUpdateEvent = (
   return buildStixUpdateEvent(user, previousStix, stix, changes, opts);
 };
 // Create
-export const buildCreateEvent = (user: AuthUser, instance: StoreObject, message: string, workflowStatus?: { name: string, scope: string }): StreamDataEvent => {
+export const buildCreateEvent = (user: AuthUser, instance: StoreObject, message: string, workflowStatus?: { name: string; scope: string }): StreamDataEvent => {
   const stix = convertStoreToStix_2_1(instance) as StixCoreObject;
   if (workflowStatus) {
     stix.extensions[STIX_EXT_OCTI].workflow_status_name = workflowStatus.name;

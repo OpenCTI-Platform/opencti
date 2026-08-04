@@ -37,12 +37,18 @@ export const initializeStreamStack = async () => {
 const resolveWorkflowStatusName = async (context: AuthContext, user: AuthUser, instance: StoreObject): Promise<{ name: string; scope: string } | undefined> => {
   const workflowId = (instance as unknown as { x_opencti_workflow_id?: string }).x_opencti_workflow_id;
   if (!workflowId) return undefined;
-  const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
-  const status = platformStatuses.find((s) => s.id === workflowId);
-  if (!status) return undefined;
-  const platformTemplates = await getEntitiesListFromCache<BasicWorkflowTemplateEntity>(context, user, ENTITY_TYPE_STATUS_TEMPLATE);
-  const template = platformTemplates.find((t) => t.id === status.template_id);
-  return template ? { name: template.name, scope: status.scope } : undefined;
+  try {
+    const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
+    const status = platformStatuses.find((s) => s.id === workflowId);
+    if (!status) return undefined;
+    const platformTemplates = await getEntitiesListFromCache<BasicWorkflowTemplateEntity>(context, user, ENTITY_TYPE_STATUS_TEMPLATE);
+    const template = platformTemplates.find((t) => t.id === status.template_id);
+    return template ? { name: template.name, scope: status.scope } : undefined;
+  } catch (e) {
+    // Enrichment for sync only, must never fail the write itself (e.g. cache not warmed up yet)
+    logApp.warn('[OPENCTI] Unable to resolve workflow status name for stream event', { error: e });
+    return undefined;
+  }
 };
 
 const pushToStream = async <T extends BaseEvent> (context: AuthContext, user: AuthUser, event: T, opts: EventOpts = {}) => {
