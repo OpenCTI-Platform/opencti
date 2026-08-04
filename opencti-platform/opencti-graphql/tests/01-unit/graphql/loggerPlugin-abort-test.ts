@@ -40,7 +40,7 @@ describe('loggerPlugin - severity of an abort-before-ES-call failure', () => {
     vi.clearAllMocks();
   });
 
-  it('BEFORE THE FIX (regression guard): a raw DatabaseError is always logged via logApp.error', async () => {
+  it('a genuine DatabaseError is still logged via logApp.error, regardless of its cause', async () => {
     // DATABASE_ERROR is a TECHNICAL_ERROR and stays logged at `error` level,
     // this is unrelated to the abort classification and must remain true.
     const abortCause = new AbortError('The http call was aborted before el request started.');
@@ -53,7 +53,7 @@ describe('loggerPlugin - severity of an abort-before-ES-call failure', () => {
     expect(logApp.warn).not.toHaveBeenCalled();
   });
 
-  it('AFTER THE FIX: a search aborted before reaching Elasticsearch (via wrapEngineError, as used by elFindByIds/elPaginate) is logged via logApp.warn, not logApp.error', async () => {
+  it('a search aborted before reaching Elasticsearch (via wrapEngineError, as used by elFindByIds/elPaginate) is logged via logApp.warn, not logApp.error', async () => {
     const abortCause = new AbortError('The http call was aborted before el request started.');
     const graphQLError = wrapEngineError('Fail to execute engine pagination', abortCause);
 
