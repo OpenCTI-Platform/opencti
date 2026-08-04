@@ -1,11 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
 import {
   type EntityOptions,
-  findEntitiesIdsWithRelations,
   fullRelationsList,
   internalFindByIds,
   internalFindByIdsMapped,
-  internalLoadById,
   loadEntityThroughRelationsPaginated,
   pageEntitiesConnection,
   storeLoadById,
@@ -56,8 +54,7 @@ import {
   internalCreateSecurityCoverageResult,
 } from './securityCoverageResult/securityCoverageResult-utils';
 import { splitSecurityCoverageInput } from './securityCoverage-utils';
-import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
-import { objects } from '../../domain/container';
+import { addStixCoreRelationship } from '../../domain/stixCoreRelationship';
 
 const COVERED_CONTAINERS_TYPE = [
   ENTITY_TYPE_CONTAINER_REPORT,
@@ -115,8 +112,9 @@ export const addSecurityCoverage = async (
   );
 
   // We have also input for the sc result when receiving bundles from OpenAEV.
+  let result: BasicStoreEntitySecurityCoverageResult | undefined;
   if (securityCoverageResultInput) {
-    const result = await internalCreateSecurityCoverageResult(context, user, {
+    result = await internalCreateSecurityCoverageResult(context, user, {
       ...securityCoverageResultInput,
       [INPUT_RESULT_OF]: createdSecurityCoverage.id,
       name: `${securityCoverageResultInput.name ?? ''} Result of ${createdSecurityCoverage.name}`.trim(),
@@ -127,22 +125,38 @@ export const addSecurityCoverage = async (
 
   // In case of manual creation, need to create associated has-covered relationships.
   const isManualCreation = !input.external_uri;
-  if (isManualCreation) {
-    const coveredEntity = await internalLoadById<BasicStoreEntity>(context, user, securityCoverageInput.objectCovered);
-    const isContainer = COVERED_CONTAINERS_TYPE.includes(coveredEntity.entity_type);
-    let targets: string[] = [];
-    if (isContainer) {
-      targets = coveredEntity.object;
-    } else {
-      targets = [];
-      const relationsCallback = async (relationships: StoreRelation[]) => {
-        console.log('-------pouet----------', relationships);
-      };
-      await fullRelationsList(context, user, [RELATION_TARGETS, RELATION_USES], {
-        fromId: coveredEntity.id,
-        toTypes: HAS_COVERED_TARGETS_TYPE,
-        callback: relationsCallback,
-      });
+  if (isManualCreation && result) {
+    const coveredEntity = await storeLoadByIdWithRefs<StoreEntity>(context, user, securityCoverageInput.objectCovered);
+    if (coveredEntity) {
+      const isContainer = COVERED_CONTAINERS_TYPE.includes(coveredEntity.entity_type);
+      let targets: string[] = [];
+      if (isContainer) {
+        // In case of containers add entities from the ones contained.
+        targets = coveredEntity.objects.flatMap((o) => {
+          if (!HAS_COVERED_TARGETS_TYPE.includes(o.entity_type)) return [];
+          return o.id;
+        });
+      } else {
+        // In case of non-containers add entities from targets and uses relationships.
+        await fullRelationsList(context, user, [RELATION_TARGETS, RELATION_USES], {
+          fromId: coveredEntity.id,
+          toTypes: HAS_COVERED_TARGETS_TYPE,
+          callback: async (relationships: StoreRelation[]) => {
+            targets.push(...relationships.map((r) => r.toId));
+          },
+        });
+      }
+      logApp.info(`[SECURITY-COVERAGE] addSecurityCoverage: Manual creation, ${targets.length} entities found for has-covered relationships`, { targets });
+      await Promise.all(
+        targets.map((target) => {
+          return addStixCoreRelationship(context, user, {
+            relationship_type: RELATION_HAS_COVERED,
+            fromId: result.id,
+            toId: target,
+            coverage_information: [],
+          });
+        }),
+      );
     }
   }
 
