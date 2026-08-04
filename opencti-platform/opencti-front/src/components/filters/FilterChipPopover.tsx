@@ -52,6 +52,7 @@ interface FilterChipMenuProps {
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
   host?: WidgetHost;
+  hideOperatorSelect?: boolean;
 }
 
 export interface FilterChipsParameter {
@@ -68,7 +69,7 @@ const AUTOCOMPLETE_KEY_ACTIONS: { [k: string]: AutocompleteChangeReason | Autoco
   RESET: 'reset',
 };
 
-const OperatorKeyValues: {
+export const OperatorKeyValues: {
   [key: string]: string;
 } = {
   eq: 'Equals',
@@ -106,6 +107,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   entityTypes,
   searchContext,
   host,
+  hideOperatorSelect = false,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
@@ -469,7 +471,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     const finalFilterDefinition = useFilterDefinition(fKey, entityTypes, subKey);
     return (
       <>
-        { availableOperators.length > 0 && (
+        { !hideOperatorSelect && availableOperators.length > 0 && (
           <Select
             labelId="change-operator-select-label"
             id="change-operator-select"

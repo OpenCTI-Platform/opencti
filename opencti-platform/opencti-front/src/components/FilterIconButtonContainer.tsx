@@ -13,6 +13,7 @@ import { DataColumns } from './list_lines';
 
 import type { WidgetHost } from '../utils/widget/widget';
 import { Filter, FilterGroup, handleFilterHelpers } from '../utils/filters/filtersHelpers-types';
+import { flattenFilters } from '../utils/filters/filterBuilderUtils';
 import FilterIconButtonGlobalMode from './FilterIconButtonGlobalMode';
 import ImbricatedFilterGroupDisplay from './filters/ImbricatedFilterGroupDisplay';
 import { FilterChipPopover, FilterChipsParameter } from './filters/FilterChipPopover';
@@ -364,7 +365,7 @@ const FilterIconButtonContainer: FunctionComponent<
       })}
       {filterChipsParams.filterId && filterChipsParams.anchorPosition && (
         <FilterChipPopover
-          filters={filters.filters}
+          filters={flattenFilters(filters)}
           params={filterChipsParams}
           handleClose={handleClose}
           open={Boolean(filterChipsParams.filterId)}
@@ -385,6 +386,7 @@ const FilterIconButtonContainer: FunctionComponent<
           filterObj={filters}
           filterMode={filters.mode}
           filterStyle={filterStyle}
+          onChipClick={helpers ? handleChipClick : undefined}
         />
       )}
     </Box>

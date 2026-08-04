@@ -10,6 +10,7 @@ const updateFilters = (filters: FilterGroup, updateFn: (filter: Filter) => Filte
     ...filters,
     filters: filters.filters
       .map(updateFn),
+    filterGroups: (filters.filterGroups ?? []).map((group) => updateFilters(group, updateFn)),
   } as FilterGroup;
 };
 
@@ -97,6 +98,7 @@ export const handleRemoveFilterUtil = ({ filters, id }: FiltersLocalStorageUtilP
   return {
     ...filters,
     filters: filters.filters.filter((f) => f.id !== id),
+    filterGroups: (filters.filterGroups ?? []).map((group) => handleRemoveFilterUtil({ filters: group, id })),
   };
 };
 

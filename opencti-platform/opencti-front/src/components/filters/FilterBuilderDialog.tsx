@@ -5,7 +5,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { AccountTreeOutlined } from '@mui/icons-material';
 import { usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import FilterBuilderGroup from './FilterBuilderGroup';
@@ -51,6 +50,7 @@ interface FilterBuilderContentProps extends Omit<FilterBuilderDialogProps, 'open
   onAddGroup: (path: FilterGroupPath) => void;
   onRemoveGroup: (path: FilterGroupPath) => void;
   onRemoveFilter: (id: string) => void;
+  onChangeFilterKey: (id: string, key: string, operator: string) => void;
 }
 
 const FilterBuilderContent: FunctionComponent<FilterBuilderContentProps> = ({
@@ -68,6 +68,7 @@ const FilterBuilderContent: FunctionComponent<FilterBuilderContentProps> = ({
   onAddGroup,
   onRemoveGroup,
   onRemoveFilter,
+  onChangeFilterKey,
 }) => {
   const { filtersRepresentatives } = usePreloadedQuery<FilterValuesContentQuery>(
     filterValuesContentQuery,
@@ -96,6 +97,7 @@ const FilterBuilderContent: FunctionComponent<FilterBuilderContentProps> = ({
       onAddGroup={onAddGroup}
       onRemoveGroup={onRemoveGroup}
       onRemoveFilter={onRemoveFilter}
+      onChangeFilterKey={onChangeFilterKey}
     />
   );
 };
@@ -127,6 +129,7 @@ const FilterBuilderDialog: FunctionComponent<FilterBuilderDialogProps> = ({
   const onAddGroup = (path: FilterGroupPath) => setLocalFilters((prev) => addSubGroupAtPath(prev, path));
   const onRemoveGroup = (path: FilterGroupPath) => setLocalFilters((prev) => removeGroupAtPath(prev, path));
   const onRemoveFilter = (id: string) => setLocalFilters((prev) => removeFilterInTree(prev, id));
+  const onChangeFilterKey = (id: string, key: string, operator: string) => setLocalFilters((prev) => updateFilterInTree(prev, id, (f) => ({ ...f, key, operator, values: [] })));
 
   // Recursive helpers so the shared FilterChipPopover can edit a filter's values
   // wherever it sits in the nested tree (matching by filter id).
@@ -189,14 +192,11 @@ const FilterBuilderDialog: FunctionComponent<FilterBuilderDialogProps> = ({
       fullWidth
       maxWidth="md"
     >
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, paddingBottom: 1 }}>
-        <AccountTreeOutlined color="primary" />
+      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, paddingBottom: 2.5, fontSize: '1rem' }}>
+        <AccountTreeOutlined color="primary" fontSize="small" />
         <span>{t_i18n('Advanced filter builder')}</span>
       </DialogTitle>
-      <DialogContent>
-        <Typography variant="body2" sx={{ color: 'text.secondary', marginBottom: 2 }}>
-          {t_i18n('Combine conditions with AND / OR operators and nested groups. Click a mode pill to switch its operator.')}
-        </Typography>
+      <DialogContent sx={{ paddingBottom: 0 }}>
         <Box
           sx={{
             minHeight: 240,
@@ -224,12 +224,13 @@ const FilterBuilderDialog: FunctionComponent<FilterBuilderDialogProps> = ({
                 onAddGroup={onAddGroup}
                 onRemoveGroup={onRemoveGroup}
                 onRemoveFilter={onRemoveFilter}
+                onChangeFilterKey={onChangeFilterKey}
               />
             </React.Suspense>
           )}
         </Box>
       </DialogContent>
-      <DialogActions sx={{ padding: '16px 24px 24px' }}>
+      <DialogActions sx={{ padding: '20px 24px 24px' }}>
         <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
         <Button onClick={handleValidate}>{t_i18n('Apply')}</Button>
       </DialogActions>

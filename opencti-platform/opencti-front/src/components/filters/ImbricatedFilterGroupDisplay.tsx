@@ -26,6 +26,7 @@ interface ImbricatedFilterGroupDisplayProps {
   filterMode: string;
   filtersRepresentativesMap: Map<string, FilterRepresentative>;
   filterStyle?: CSSProperties;
+  onChipClick?: (event: React.MouseEvent<HTMLButtonElement>, filterId?: string) => void;
 }
 
 const ImbricatedFilterGroupDisplay: FunctionComponent<ImbricatedFilterGroupDisplayProps> = ({
@@ -33,6 +34,7 @@ const ImbricatedFilterGroupDisplay: FunctionComponent<ImbricatedFilterGroupDispl
   filterMode,
   filtersRepresentativesMap,
   filterStyle,
+  onChipClick,
 }) => {
   const { filterGroups } = filterObj;
   const [open, setOpen] = useState(false);
@@ -70,30 +72,43 @@ const ImbricatedFilterGroupDisplay: FunctionComponent<ImbricatedFilterGroupDispl
     const valuesLabel = filter.values.length > 0
       ? filter.values.map((v) => filtersRepresentativesMap.get(v)?.value ?? v).join(filter.mode === 'and' ? ' & ' : ' | ')
       : '';
+    const editable = Boolean(onChipClick);
     return (
-      <Box
-        key={key}
-        component="span"
-        sx={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '4px',
-          padding: '1px 8px',
-          borderRadius: '6px',
-          backgroundColor: theme.palette.background.default,
-          border: `1px solid ${theme.palette.divider}`,
-          maxWidth: 240,
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}
-      >
-        <strong>{truncate(filterLabel, 20)}</strong>
-        {isOperatorIcon
-          ? convertOperatorToIcon(operator)
-          : <span style={{ opacity: 0.7 }}>{t_i18n(operator)}</span>}
-        {valuesLabel && <span>{truncate(valuesLabel, 30)}</span>}
-      </Box>
+      <Tooltip key={key} title={editable ? t_i18n('Click to edit this filter value') : ''}>
+        <Box
+          component={editable ? 'button' : 'span'}
+          type={editable ? 'button' : undefined}
+          onClick={editable
+            ? (event: React.MouseEvent<HTMLButtonElement>) => {
+                event.stopPropagation();
+                onChipClick?.(event, filter.id);
+              }
+            : undefined}
+          sx={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '1px 8px',
+            borderRadius: '6px',
+            backgroundColor: theme.palette.background.default,
+            border: `1px solid ${theme.palette.divider}`,
+            maxWidth: 240,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            font: 'inherit',
+            color: 'inherit',
+            cursor: editable ? 'pointer' : 'default',
+            '&:hover': editable ? { borderColor: theme.palette.primary.main } : undefined,
+          }}
+        >
+          <strong>{truncate(filterLabel, 20)}</strong>
+          {isOperatorIcon
+            ? convertOperatorToIcon(operator)
+            : <span style={{ opacity: 0.7 }}>{t_i18n(operator)}</span>}
+          {valuesLabel && <span>{truncate(valuesLabel, 30)}</span>}
+        </Box>
+      </Tooltip>
     );
   };
 
@@ -141,15 +156,15 @@ const ImbricatedFilterGroupDisplay: FunctionComponent<ImbricatedFilterGroupDispl
 
   return (
     <>
-      <Tooltip title={t_i18n('Click to view or edit these nested groups in the Advanced filter builder')}>
+      <Tooltip title={onChipClick ? '' : t_i18n('Click to view or edit these nested groups in the Advanced filter builder')}>
         <Box
-          onClick={handleClickOpen}
+          onClick={onChipClick ? undefined : handleClickOpen}
           sx={{
             ...(filterStyle as object),
             display: 'inline-flex',
             alignItems: 'center',
             gap: '6px',
-            cursor: 'pointer',
+            cursor: onChipClick ? 'default' : 'pointer',
             flexWrap: 'wrap',
           }}
         >
@@ -159,7 +174,18 @@ const ImbricatedFilterGroupDisplay: FunctionComponent<ImbricatedFilterGroupDispl
               {compactGroup(group, 0, `inline-group-${i}`)}
             </Fragment>
           ))}
-          <InformationOutline fontSize="small" color="warning" />
+          <Tooltip title={t_i18n('View the complete filter object')}>
+            <Box
+              component="span"
+              onClick={(event) => {
+                event.stopPropagation();
+                handleClickOpen();
+              }}
+              sx={{ display: 'inline-flex', cursor: 'pointer' }}
+            >
+              <InformationOutline fontSize="small" color="warning" />
+            </Box>
+          </Tooltip>
         </Box>
       </Tooltip>
 
