@@ -175,4 +175,3 @@ export const convertDashboardManifestIds = async (
   }
   return manifest;
 };
-
