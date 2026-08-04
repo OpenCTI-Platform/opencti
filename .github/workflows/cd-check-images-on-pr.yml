@@ -33,6 +33,7 @@ jobs:
           checkout_ref: ${{ github.sha }}
           client_python_local: true
           docker_image_suffix: ${{ matrix.suffix }}
+          fds_git_token: ${{ secrets.FDS_GIT_TOKEN }}
 
   # -----------------------
   # Build worker images

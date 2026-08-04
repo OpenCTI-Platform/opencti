@@ -1,0 +1,30 @@
+/* Host prerequisites for @filigran/design-system.
+   Every rule here is TEMPORARY BY DEFAULT and carries its own removal test.
+   Loaded after the library stylesheet and after the product's index.css. */
+
+/* 1. HOST CONCERN, not library debt. The product's navigation icons come from
+      MUI, which renders them at 24px; the library's navigation rows are
+      designed around 16px glyphs. Scoped to the navigation so no other MUI
+      icon in the application is affected.
+      REMOVAL TEST: none — this is permanent for as long as MUI icons are fed
+      into library slots. It disappears with the icons, not with a pin bump. */
+.app-navbar .MuiSvgIcon-root {
+  font-size: 16px;
+}
+
+/* 2. COMPENSATION for library feedback: floating surfaces are fixed at
+      Tailwind's `z-50`, and Radix copies that value inline onto the portal
+      wrapper it appends to <body>. This application's top bar sits at
+      `theme.zIndex.drawer - 1` = 1199, so every library menu, flyout and
+      tooltip would paint underneath it. 1300 is MUI's own `zIndex.modal` —
+      the level the MUI popovers being replaced already used.
+      `!important` is required: the value Radix writes is inline.
+      REMOVAL TEST: at a pin exposing a stacking hook (the ask is a
+      `--fds-z-overlay` custom property), delete this rule, set the variable
+      on :root, then open a collapsed-rail submenu flyout over the top bar in
+      both themes and confirm the wrapper computes above 1199:
+        [...document.querySelectorAll('body > [data-radix-popper-content-wrapper]')]
+          .map(w => getComputedStyle(w).zIndex)  // must be > 1199 */
+body > [data-radix-popper-content-wrapper] {
+  z-index: 1300 !important;
+}
