@@ -2,7 +2,6 @@ import { Page } from '@playwright/test';
 import { expect, test } from '../fixtures/baseFixtures';
 import DataProcessingTasksPage from '../model/DataProcessingTasks.pageModel';
 import EventsIncidentPage from '../model/EventsIncident.pageModel';
-import { sleep } from '../utils';
 import { runBackgroundTaskOnIncidentByFilter, runBackgroundTaskOnIncidentBySearch, searchOnDataEntitiesPerLabels } from './backgroudTaskSteps';
 
 /**
@@ -17,34 +16,29 @@ import { runBackgroundTaskOnIncidentByFilter, runBackgroundTaskOnIncidentBySearc
  * Add 'background-task-search-add-label' to all
  * Go in data > entities
  * Verify entity count for both labels 'background-task-filter-add-label' and 'background-task-search-add-label'
- * @param page
  */
 
-const waitAndRefreshUntilFirstTaskInStatus = async (page: Page, tasksPage: DataProcessingTasksPage, status: string, expectVisible: boolean) => {
-  await tasksPage.goto();
-  await expect(tasksPage.getPage()).toBeVisible();
-
-  const loopCount = 20; // 10*6000 = 2' max
-  let loopCurrent = 0;
-
-  const isOneStatusTaskOk = async () => {
-    await sleep(6000);
+/**
+ * Waits for a background task to reach the expected status using Playwright's
+ * built-in retry mechanism (toPass) instead of manual sleep loops.
+ */
+const waitForTaskStatus = async (
+  page: Page,
+  tasksPage: DataProcessingTasksPage,
+  status: string,
+  expectVisible: boolean,
+) => {
+  await expect(async () => {
     await tasksPage.goto();
     if (expectVisible) {
-      await expect(tasksPage.getPage()).toBeVisible();
-      const isOneOrMoreStatusVisible = await page.getByText(status).first().isVisible();
-      return isOneOrMoreStatusVisible;
+      await expect(page.getByText(status).first()).toBeVisible();
+    } else {
+      await expect(page.getByText(status)).toBeHidden();
     }
-    await expect(tasksPage.getPage()).toBeHidden();
-    const isOneOrMoreStatusHidden = await page.getByText(status).first().isHidden();
-    return isOneOrMoreStatusHidden;
-  };
-
-  let isStatusOk = await isOneStatusTaskOk();
-  while (!isStatusOk && loopCurrent < loopCount) {
-    isStatusOk = await isOneStatusTaskOk();
-    loopCurrent += 1;
-  }
+  }).toPass({
+    intervals: [2_000, 4_000, 6_000, 8_000, 10_000],
+    timeout: 120_000,
+  });
 };
 
 test('Verify background tasks execution', { tag: ['@ce', '@mutation', '@group1'] }, async ({ page }) => {
@@ -57,26 +51,26 @@ test('Verify background tasks execution', { tag: ['@ce', '@mutation', '@group1']
   await runBackgroundTaskOnIncidentByFilter(page, false);
   await runBackgroundTaskOnIncidentBySearch(page, false);
 
-  // Region Background task page
-  await sleep(3000); // Wait 3 secs for task creation
-  await tasksPage.goto();
-  await expect(tasksPage.getPage()).toBeVisible();
+  // Wait for task page to be accessible (replaces sleep(3000))
+  await expect(async () => {
+    await tasksPage.goto();
+    await expect(tasksPage.getPage()).toBeVisible();
+  }).toPass({
+    intervals: [1_000, 2_000, 3_000],
+    timeout: 10_000,
+  });
 
   // Wait until at least one is complete
-  await waitAndRefreshUntilFirstTaskInStatus(page, tasksPage, 'Complete', true);
-  await expect(page.getByText('Complete').first()).toBeVisible();
+  await waitForTaskStatus(page, tasksPage, 'Complete', true);
 
-  // Then wait until no more processing "Processing" or "Waiting"
-  await waitAndRefreshUntilFirstTaskInStatus(page, tasksPage, 'Waiting', false);
-  await expect(page.getByText('Waiting')).toBeHidden();
+  // Wait until no more "Waiting" tasks
+  await waitForTaskStatus(page, tasksPage, 'Waiting', false);
 
-  await waitAndRefreshUntilFirstTaskInStatus(page, tasksPage, 'Processing', false);
-  await expect(page.getByText('Processing')).toBeHidden();
+  // Wait until no more "Processing" tasks
+  await waitForTaskStatus(page, tasksPage, 'Processing', false);
 
-  // Then wait until the second one moves to "Complete" -> both are Complete we are good.
-  await waitAndRefreshUntilFirstTaskInStatus(page, tasksPage, 'Complete', true);
-  await expect(page.getByText('Complete').first()).toBeVisible();
-  // END Region Background task page
+  // Confirm final state: all tasks Complete
+  await waitForTaskStatus(page, tasksPage, 'Complete', true);
 
   await searchOnDataEntitiesPerLabels(page, false);
 });
