@@ -1,7 +1,7 @@
 import { alpha } from '@mui/material/styles';
 import { styled } from '@mui/material/styles';
 import { CloudUploadOutlined } from '@mui/icons-material';
-import { Box, Input, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import Button from '@common/button/Button';
 import { useTheme } from '@mui/styles';
