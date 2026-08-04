@@ -7,6 +7,7 @@ import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext'
 import useFiltersState from '../../../utils/filters/useFiltersState';
 import { isDraftWorkspaceFilterGroup, isFilterGroupNotEmpty, useAvailableFilterKeysForEntityTypes } from '../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../components/FilterIconButton';
+import FilterBuilderButton from '../../../components/filters/FilterBuilderButton';
 import { useFormatter } from '../../../components/i18n';
 import type { WidgetDataSelection, WidgetPerspective } from '../../../utils/widget/widget';
 import useHelper from '../../../utils/hooks/useHelper';
@@ -179,6 +180,16 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                 helpers={helpers}
                 searchContext={type === 'bookmark' ? undefined : searchContext}
               />
+              {type !== 'bookmark' && (
+                <FilterBuilderButton
+                  filters={filters}
+                  onSubmit={helpers.handleSetFilters}
+                  availableFilterKeys={availableFilterKeys}
+                  entityTypes={searchContext.entityTypes}
+                  availableEntityTypes={availableEntityTypes}
+                  searchContext={searchContext}
+                />
+              )}
               {isSavedFiltersAccessible && (
                 <>
                   <Divider orientation="vertical" flexItem />
@@ -214,6 +225,17 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                     type="from"
                     searchContext={{ entityTypes: ['Stix-Core-Object'] }}
                   />
+                  <FilterBuilderButton
+                    filters={filtersDynamicFrom}
+                    onSubmit={helpersDynamicFrom.handleSetFilters}
+                    availableFilterKeys={entitiesFilters}
+                    entityTypes={['Stix-Core-Object']}
+                    availableEntityTypes={[
+                      'Stix-Domain-Object',
+                      'Stix-Cyber-Observable',
+                    ]}
+                    searchContext={{ entityTypes: ['Stix-Core-Object'] }}
+                  />
                   <Divider orientation="vertical" flexItem />
                   {isSavedFiltersAccessible && (
                     <WidgetSavedFiltersIcon onClick={handleSwitchToSavedFilterDynamicFrom} />
@@ -242,6 +264,17 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                     ]}
                     helpers={helpersDynamicTo}
                     type="to"
+                    searchContext={{ entityTypes: ['Stix-Core-Object'] }}
+                  />
+                  <FilterBuilderButton
+                    filters={filtersDynamicTo}
+                    onSubmit={helpersDynamicTo.handleSetFilters}
+                    availableFilterKeys={entitiesFilters}
+                    entityTypes={['Stix-Core-Object']}
+                    availableEntityTypes={[
+                      'Stix-Domain-Object',
+                      'Stix-Cyber-Observable',
+                    ]}
                     searchContext={{ entityTypes: ['Stix-Core-Object'] }}
                   />
                   <Divider orientation="vertical" flexItem />
