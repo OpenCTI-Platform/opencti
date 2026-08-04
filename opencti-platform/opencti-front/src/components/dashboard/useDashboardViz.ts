@@ -51,13 +51,15 @@ const useDashboardViz = <TQuery extends OperationType>({
   // on every render when the parent passes a new array reference with the same content.
   const dataSelectionSignature = useMemo(() => JSON.stringify(dataSelection), [dataSelection]);
 
-  // Resolves the raw dataSelection into a query-ready form: it hydrates saved filters,
-  // injects the host entity context, and flags edge cases (missing host entity, preview
-  // mode, missing saved filters) via state setters. Resolution is asynchronous, so it
-  // returns a cleanup function that sets `cancelled` to prevent a stale resolution from
-  // overwriting the state of a newer one (used as an effect cleanup). The optional
-  // `onResolved` callback runs after the state setters with the fresh result, letting
-  // callers act on the freshly resolved data selection instead of the stale closure value.
+  /**
+   * Resolve raw data selection into a query-ready form.
+   *
+   * Hydrates saved filters, injects host entity context, and updates edge-case flags
+   * (`isMissingHostEntity`, `isPreviewMode`, `isMissingSavedFilters`).
+   *
+   * When provided, `onResolved` runs after state updates with the fresh resolution
+   * result so callers can avoid stale closure values.
+   */
   const handleResolveDataSelection = (
     onResolved?: (result: Awaited<ReturnType<typeof resolveDataSelection>>) => void,
   ) => {
@@ -144,10 +146,12 @@ const useDashboardViz = <TQuery extends OperationType>({
     return () => setQueryPending(queryId, false);
   }, [isPending, setQueryPending]);
 
-  // Used by dashboard token refresh to rebuild variables from latest inputs
-  // before forcing the load. Accepts an explicit resolved selection so a refresh can
-  // build variables from a freshly resolved data selection rather than the (possibly
-  // stale) `resolvedDataSelection` state, which only updates on a later render.
+  /**
+   * Rebuild query variables from the latest resolved selection and force a reload.
+   *
+   * Used by dashboard token refresh to avoid relying on a possibly stale
+   * `resolvedDataSelection` closure value.
+   */
   const forceReloadWithFreshVariables = useCallback((selection: WidgetDataSelection[] = resolvedDataSelection) => {
     if (!buildQueryVariables || !config || selection.length === 0) {
       reloadData(true);
@@ -167,9 +171,10 @@ const useDashboardViz = <TQuery extends OperationType>({
       return undefined;
     }
 
-    // Re-resolve on refresh, then force the reload with the freshly resolved data
-    // selection (and respecting the fresh edge-case flags) so the refreshed query uses
-    // up-to-date inputs instead of the stale closure value.
+    /**
+     * Re-resolve data selection on refresh, then force reload
+     * with the freshly resolved data selection.
+     */
     return handleResolveDataSelection((result) => {
       if (result.isMissingHostEntity || result.isMissingSavedFilters) {
         return;

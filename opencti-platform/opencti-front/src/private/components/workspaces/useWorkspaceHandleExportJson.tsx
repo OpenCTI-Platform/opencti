@@ -1,8 +1,8 @@
 import fileDownload from 'js-file-download';
 import { graphql } from 'react-relay';
-import { workspaceExportHandlerQuery$data } from '@components/workspaces/__generated__/workspaceExportHandlerQuery.graphql';
 import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import { useFormatter } from 'src/components/i18n';
+import { workspaceExportHandlerQuery } from '@components/workspaces/__generated__/workspaceExportHandlerQuery.graphql';
 
 interface workspaceToExport {
   id: string;
@@ -21,10 +21,9 @@ const useWorkspaceHandleExportJson = () => {
   const { t_i18n } = useFormatter();
 
   const workspaceHandleExportJson = (workspace: workspaceToExport) => {
-    fetchQuery(WorkspaceExportHandlerQuery, { id: workspace.id })
+    fetchQuery<workspaceExportHandlerQuery>(WorkspaceExportHandlerQuery, { id: workspace.id })
       .toPromise()
-      .then((data) => {
-        const result = data as workspaceExportHandlerQuery$data | null | undefined;
+      .then((result) => {
         if (result?.workspace?.toConfigurationExport) {
           const blob = new Blob([result.workspace.toConfigurationExport], { type: 'text/json' });
           const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');

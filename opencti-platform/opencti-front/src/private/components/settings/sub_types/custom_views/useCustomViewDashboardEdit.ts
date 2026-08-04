@@ -5,9 +5,9 @@ import useDashboard from '../../../../../components/dashboard/useDashboard';
 import { useCustomViewDashboardEdit_Mutation } from './__generated__/useCustomViewDashboardEdit_Mutation.graphql';
 import { useCustomViewDashboardEdit_LayoutMutation } from './__generated__/useCustomViewDashboardEdit_LayoutMutation.graphql';
 import { useCustomViewDashboardEdit_WidgetImportMutation } from './__generated__/useCustomViewDashboardEdit_WidgetImportMutation.graphql';
-import { useCustomViewDashboardEdit_WidgetExportQuery$data } from './__generated__/useCustomViewDashboardEdit_WidgetExportQuery.graphql';
 import { useCustomViewDashboardEdit_Query$data } from './__generated__/useCustomViewDashboardEdit_Query.graphql';
 import { useFormatter } from 'src/components/i18n';
+import { useCustomViewDashboardEdit_WidgetExportQuery } from '@components/settings/sub_types/custom_views/__generated__/useCustomViewDashboardEdit_WidgetExportQuery.graphql';
 
 export const customViewQuery = graphql`
   query useCustomViewDashboardEdit_Query($id: ID!) {
@@ -102,10 +102,9 @@ const useCustomViewDashboardEdit = ({ customView }: {
 
   const onExportWidget = async (id: string, widget: { id: string; type: string }) => {
     try {
-      const data = await fetchQuery(customViewExportWidgetQuery, { id, widgetId: widget.id })
+      const result = await fetchQuery<useCustomViewDashboardEdit_WidgetExportQuery>(customViewExportWidgetQuery, { id, widgetId: widget.id })
         .toPromise();
-      const result = data as useCustomViewDashboardEdit_WidgetExportQuery$data;
-      const exportString = result.customView?.toWidgetExport;
+      const exportString = result?.customView?.toWidgetExport;
       if (!exportString) {
         MESSAGING$.notifyError(t_i18n('Failed to export widget'));
         return null;

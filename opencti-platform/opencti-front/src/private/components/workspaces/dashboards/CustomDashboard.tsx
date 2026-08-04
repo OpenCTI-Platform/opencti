@@ -16,7 +16,7 @@ import Security from 'src/utils/Security';
 import { CustomDashboard_workspace$key } from './__generated__/CustomDashboard_workspace.graphql';
 import { CustomDashboardWidgetExportQuery$data } from './__generated__/CustomDashboardWidgetExportQuery.graphql';
 import { WIDGET_WORKSPACE_HOST } from './custom-dashboards-utils';
-import { CustomDashboardExportQuery$data } from './__generated__/CustomDashboardExportQuery.graphql';
+import { CustomDashboardExportQuery } from './__generated__/CustomDashboardExportQuery.graphql';
 import { Box } from '@mui/material';
 import { useFormatter } from 'src/components/i18n';
 
@@ -108,9 +108,9 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
 
   const onExport = async (id: string) => {
     try {
-      const data = await fetchQuery(dashboardExportQuery, { id })
-        .toPromise() as CustomDashboardExportQuery$data;
-      if (!data.workspace) {
+      const data = await fetchQuery<CustomDashboardExportQuery>(dashboardExportQuery, { id })
+        .toPromise();
+      if (!data?.workspace) {
         return null;
       }
       return data.workspace.toConfigurationExport;

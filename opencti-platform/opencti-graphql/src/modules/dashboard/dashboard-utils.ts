@@ -149,10 +149,13 @@ export const importDashboardWidgetConfiguration = async (
   };
 };
 
-// region workspace ids converter_2_1
-// Export: dashboard widget filter ids are converted to STIX ids,
-// and saved filter references are resolved to inline filter content.
-// Import: dashboard widget filter ids are converted back to internal ids.
+/**
+ * Convert dashboard widget ids between internal and STIX 2_1 formats.
+ *
+ * - Export (`from = 'internal'`): filter ids are converted to STIX ids and
+ *   saved filter references are resolved to inline filter content.
+ * - Import (`from = 'stix'`): filter ids are converted back to internal ids.
+ */
 export const convertDashboardManifestIds = async (
   context: AuthContext,
   user: AuthUser,
@@ -172,4 +175,4 @@ export const convertDashboardManifestIds = async (
   }
   return manifest;
 };
-// endregion
+
