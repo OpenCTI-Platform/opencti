@@ -17676,10 +17676,6 @@ export type Mutation = {
   userAdminTokenAdd: TokenGenerated;
   userAdminTokenRevoke?: Maybe<Scalars['ID']['output']>;
   userEdit?: Maybe<UserEditMutations>;
-  /**
-   * Merges the source user into the target user. Runs synchronously and returns the result;
-   * follow userMergeJournal to observe a run whose connection was cut.
-   */
   userMerge: UserMergeResult;
   userNoteAdd?: Maybe<Note>;
   userOpinionAdd?: Maybe<Opinion>;
@@ -25068,14 +25064,6 @@ export type Query = {
   unknownStixCoreObjects: Array<Scalars['String']['output']>;
   user?: Maybe<User>;
   userAlreadyExists?: Maybe<Scalars['Boolean']['output']>;
-  /**
-   * Execution journal of the merges. Reading it is how a run stays observable once the HTTP
-   * connection is gone: the connection dying does not stop the merge, so the journal is the
-   * only way to tell a dead connection from a failed merge.
-   *
-   * mergeId is optional on purpose — an operator who lost the connection also lost the id
-   * returned by the mutation, so requiring it would defeat the point of the query.
-   */
   userMergeJournal: Array<UserMergeJournalEntry>;
   users?: Maybe<UserConnection>;
   vocabularies?: Maybe<VocabularyConnection>;
@@ -37297,7 +37285,6 @@ export type UserLoginInput = {
   password: Scalars['String']['input'];
 };
 
-/** One entry of the execution journal, written per handler as the merge progresses. */
 export type UserMergeJournalEntry = {
   __typename?: 'UserMergeJournalEntry';
   completed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -37313,20 +37300,10 @@ export type UserMergeJournalEntry = {
 };
 
 export type UserMergeOptions = {
-  /**
-   * Suppresses every write on a single execution path — it is not a separate estimation
-   * endpoint. Defaults to true so that calling the mutation without options can never
-   * rewrite data.
-   */
   dryRun?: InputMaybe<Scalars['Boolean']['input']>;
-  /** Defaults to the non-widening strategy. */
   rightsStrategy?: InputMaybe<UserMergeRightsStrategy>;
 };
 
-/**
- * Outcome of one merge execution. The shape is identical in dry and real mode, which is what
- * makes "dry-run == real impact" verifiable from the API alone.
- */
 export type UserMergeResult = {
   __typename?: 'UserMergeResult';
   completed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -37341,9 +37318,7 @@ export type UserMergeResult = {
 };
 
 export enum UserMergeRightsStrategy {
-  /** Rights of the target are left untouched. */
   Strict = 'STRICT',
-  /** Rights of the source are added to those of the target. */
   Union = 'UNION'
 }
 
