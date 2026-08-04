@@ -1,6 +1,6 @@
 import { BUS_TOPICS } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
-import { createEntity, deleteElementById } from '../../../database/middleware';
+import { deleteElementById } from '../../../database/middleware';
 import { pageEntitiesConnection, storeLoadById, type EntityOptions } from '../../../database/middleware-loader';
 import { notify } from '../../../database/redis';
 import { type SecurityCoverageResultAddInput } from '../../../generated/graphql';
@@ -8,6 +8,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../schema/general';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { ENTITY_TYPE_SECURITY_COVERAGE, type BasicStoreEntitySecurityCoverage } from '../securityCoverage-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT, type BasicStoreEntitySecurityCoverageResult } from './securityCoverageResult-types';
+import { internalCreateSecurityCoverageResult } from './securityCoverageResult-utils';
 
 /**
  * Find a security coverage results by its ID.
@@ -80,12 +81,7 @@ export const addSecurityCoverageResult = async (
   if (!securityCoverageResultInput.name) {
     input.name = `Result of ${securityCoverage.name}`;
   }
-  const result: BasicStoreEntitySecurityCoverageResult = await createEntity(
-    context,
-    user,
-    input,
-    ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
-  );
+  const result = await internalCreateSecurityCoverageResult(context, user, input);
   return notify(
     BUS_TOPICS[ENTITY_TYPE_SECURITY_COVERAGE_RESULT].ADDED_TOPIC,
     result,

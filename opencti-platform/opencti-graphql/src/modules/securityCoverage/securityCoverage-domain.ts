@@ -1,9 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
 import {
   type EntityOptions,
+  findEntitiesIdsWithRelations,
   fullRelationsList,
   internalFindByIds,
   internalFindByIdsMapped,
+  internalLoadById,
   loadEntityThroughRelationsPaginated,
   pageEntitiesConnection,
   storeLoadById,
@@ -22,7 +24,7 @@ import { BUS_TOPICS, logApp } from '../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { createEntity, deleteElementById, storeLoadByIdsWithRefs, storeLoadByIdWithRefs } from '../../database/middleware';
 import { type SecurityCoverageAddInput } from '../../generated/graphql';
-import type { BasicStoreEntity, BasicStoreObject, BasicStoreRelation, StoreObject, StoreRelation } from '../../types/store';
+import type { BasicStoreEntity, BasicStoreObject, BasicStoreRelation, StoreEntity, StoreObject, StoreRelation } from '../../types/store';
 import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { STIX_SPEC_VERSION } from '../../database/stix';
 import { RELATION_HAS_COVERED, RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
@@ -47,15 +49,26 @@ import {
 } from './securityCoverageResult/securityCoverageResult-types';
 import { loadThroughDenormalized } from '../../resolvers/stix';
 import { stixCoreRelationshipsPaginated } from '../../domain/stixCoreObject';
-import { getAverageCoverageInformation, getMostRecentLastCoverageResult } from './securityCoverageResult/securityCoverageResult-utils';
+import {
+  getAverageCoverageInformation,
+  getMostRecentLastCoverageResult,
+  HAS_COVERED_TARGETS_TYPE,
+  internalCreateSecurityCoverageResult,
+} from './securityCoverageResult/securityCoverageResult-utils';
+import { splitSecurityCoverageInput } from './securityCoverage-utils';
+import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
+import { objects } from '../../domain/container';
 
+const COVERED_CONTAINERS_TYPE = [
+  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_CONTAINER_GROUPING,
+  ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
+];
 export const COVERED_ENTITIES_TYPE = [
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_INCIDENT,
-  ENTITY_TYPE_CONTAINER_REPORT,
-  ENTITY_TYPE_CONTAINER_GROUPING,
-  ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
+  ...COVERED_CONTAINERS_TYPE,
 ];
 
 // region CRUD
@@ -88,70 +101,49 @@ export const findSecurityCoverageByCoveredId = async (context: AuthContext, user
 export const addSecurityCoverage = async (
   context: AuthContext,
   user: AuthUser,
-  securityCoverageInput: SecurityCoverageAddInput,
+  input: SecurityCoverageAddInput,
 ): Promise<BasicStoreEntitySecurityCoverage> => {
   const {
-    coverage_information,
-    coverage_last_result,
-    coverage_valid_from,
-    coverage_valid_to,
-    external_uri,
-    tenant_name,
-    tenant_id,
-    ...onlySecurityCoverageInput
-  } = securityCoverageInput;
+    securityCoverageInput,
+    securityCoverageResultInput,
+  } = splitSecurityCoverageInput(input);
   const createdSecurityCoverage: BasicStoreEntitySecurityCoverage = await createEntity(
     context,
     user,
-    onlySecurityCoverageInput,
+    securityCoverageInput,
     ENTITY_TYPE_SECURITY_COVERAGE,
   );
 
-  if (external_uri || (coverage_information ?? []).length > 0) {
-    const {
-      confidence,
-      created,
-      createdBy,
-      fileMarkings,
-      filesMarkings,
-      modified,
-      objectLabel,
-      objectMarking,
-      x_opencti_modified_at,
-    } = onlySecurityCoverageInput;
-    const securityCoverageResultInput = {
-      name: tenant_name || external_uri || tenant_id || `Result of ${createdSecurityCoverage.name}`,
+  // We have also input for the sc result when receiving bundles from OpenAEV.
+  if (securityCoverageResultInput) {
+    const result = await internalCreateSecurityCoverageResult(context, user, {
+      ...securityCoverageResultInput,
       [INPUT_RESULT_OF]: createdSecurityCoverage.id,
-      coverage_information,
-      coverage_last_result,
-      coverage_valid_from,
-      coverage_valid_to,
-      external_uri,
-      confidence,
-      created,
-      createdBy,
-      fileMarkings,
-      filesMarkings,
-      modified,
-      objectLabel,
-      objectMarking,
-      x_opencti_modified_at,
-    };
-    const result: BasicStoreEntitySecurityCoverageResult = await createEntity(
-      context,
-      user,
-      securityCoverageResultInput,
-      ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
-    );
+      name: `${securityCoverageResultInput.name ?? ''} Result of ${createdSecurityCoverage.name}`.trim(),
+    });
     // Manually add it here to be able to resolve dynamic attributes
-    createdSecurityCoverage['result-of'] = [result.id];
-    logApp.info(
-      `[SECURITY-COVERAGE-RESULT][${createdSecurityCoverage.id}] SCR created: ${result.standard_id}`,
-      {
-        result: JSON.stringify(result),
-        input: JSON.stringify(securityCoverageInput),
-      },
-    );
+    createdSecurityCoverage[RELATION_RESULT_OF] = [result.id];
+  }
+
+  // In case of manual creation, need to create associated has-covered relationships.
+  const isManualCreation = !input.external_uri;
+  if (isManualCreation) {
+    const coveredEntity = await internalLoadById<BasicStoreEntity>(context, user, securityCoverageInput.objectCovered);
+    const isContainer = COVERED_CONTAINERS_TYPE.includes(coveredEntity.entity_type);
+    let targets: string[] = [];
+    if (isContainer) {
+      targets = coveredEntity.object;
+    } else {
+      targets = [];
+      const relationsCallback = async (relationships: StoreRelation[]) => {
+        console.log('-------pouet----------', relationships);
+      };
+      await fullRelationsList(context, user, [RELATION_TARGETS, RELATION_USES], {
+        fromId: coveredEntity.id,
+        toTypes: HAS_COVERED_TARGETS_TYPE,
+        callback: relationsCallback,
+      });
+    }
   }
 
   return notify(

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { transformHasCoveredFromId } from '../../../../src/modules/securityCoverage/securityCoverageResult/securityCoverageResult-utils';
+import { transformHasCoveredFromId } from '../../../../src/modules/securityCoverage/securityCoverage-utils';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 import { testContext } from '../../../utils/testQuery';
 
