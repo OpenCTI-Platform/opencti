@@ -12,7 +12,6 @@
     "build": "nx run-many --tuiAutoExit --target build",
     "test": "nx run-many --tuiAutoExit --target test,e2e",
     "lint": "nx run-many --tuiAutoExit --target lint",
-    "lint:oxlint": "nx run-many --tuiAutoExit --target lint-oxlint",
     "fmt": "nx run-many --tuiAutoExit --target fmt",
     "fmt:check": "nx run-many --tuiAutoExit --target fmt-check",
     "graphql": "nx run-many --tuiAutoExit --target graphql",
