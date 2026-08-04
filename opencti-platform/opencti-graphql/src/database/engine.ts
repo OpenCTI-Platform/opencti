@@ -594,12 +594,10 @@ export const isTransitoryError = (error: any): boolean => {
   return false;
 };
 
-// Aborts happen before the engine is ever reached, so they must not be
-// logged as an engine failure (see elExecuteWithAbortSignal). Both checks
-// are needed: node-fetch's AbortError class, and the `.name` fallback for
-// the native AbortError/DOMException that OpenSearch's own abort path can throw.
+// covers both engine clients: node-fetch's AbortError (ElkClient) and
+// OpenSearch's RequestAbortedError.
 export const isClientAbortError = (err: any): boolean => {
-  return err instanceof AbortError || err?.name === 'AbortError';
+  return err instanceof AbortError || err?.name === 'AbortError' || err?.name === 'RequestAbortedError';
 };
 
 // Use this instead of throwing DatabaseError directly when catching an error

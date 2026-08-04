@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AbortError } from 'node-fetch';
+import { errors as openSearchErrors } from '@opensearch-project/opensearch';
 import { wrapEngineError } from '../../../src/database/engine';
 import { CLIENT_ABORT_ERROR, DATABASE_ERROR } from '../../../src/config/errors';
 
@@ -53,5 +54,15 @@ describe('wrapEngineError testing', () => {
     const wrapped = wrapEngineError('Fail to execute engine pagination', { message: 'timeout' }, {});
 
     expect(wrapped.extensions?.code).toBe(DATABASE_ERROR);
+  });
+
+  it('should classify OpenSearch client aborts (RequestAbortedError) as CLIENT_ABORT_ERROR too', () => {
+    // real error class, not a guessed shape — its name isn't 'AbortError'
+    const abortCause = new openSearchErrors.RequestAbortedError('Request aborted');
+
+    const wrapped = wrapEngineError('Fail to execute engine pagination', abortCause, {});
+
+    expect(wrapped.extensions?.code).toBe(CLIENT_ABORT_ERROR);
+    expect(wrapped.extensions?.code).not.toBe(DATABASE_ERROR);
   });
 });
