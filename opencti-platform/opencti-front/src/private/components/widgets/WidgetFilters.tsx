@@ -51,25 +51,25 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
   const { host } = useWidgetConfigContext();
   const isSavedFiltersAccessible = isDashboardSavedFiltersFeatureEnabled && (host.kind === 'workspace' || host.kind === 'custom-view');
 
-  const [useSavedFilter, setUseSavedFilter] = useState(!!dataSelection.filters_id);
-  const [useSavedFilterDynamicFrom, setUseSavedFilterDynamicFrom] = useState(!!dataSelection.dynamicFrom_id);
-  const [useSavedFilterDynamicTo, setUseSavedFilterDynamicTo] = useState(!!dataSelection.dynamicTo_id);
+  const [isSavedFiltersMode, setIsSavedFiltersMode] = useState(!!dataSelection.filters_id);
+  const [isSavedDynamicFromMode, setIsSavedDynamicFromMode] = useState(!!dataSelection.dynamicFrom_id);
+  const [isSavedDynamicToMode, setIsSavedDynamicToMode] = useState(!!dataSelection.dynamicTo_id);
   const [availableSavedFiltersScopes, setAvailableSavedFiltersScopes] = useState<string[]>([]);
 
   useEffect(() => {
     setDataSelection({
       ...dataSelection,
-      filters: useSavedFilter ? undefined : filters,
-      dynamicTo: useSavedFilterDynamicTo ? undefined : filtersDynamicTo,
-      dynamicFrom: useSavedFilterDynamicFrom ? undefined : filtersDynamicFrom,
+      filters: isSavedFiltersMode ? undefined : filters,
+      dynamicTo: isSavedDynamicToMode ? undefined : filtersDynamicTo,
+      dynamicFrom: isSavedDynamicFromMode ? undefined : filtersDynamicFrom,
     });
   }, [
     filters,
     filtersDynamicFrom,
     filtersDynamicTo,
-    useSavedFilter,
-    useSavedFilterDynamicFrom,
-    useSavedFilterDynamicTo,
+    isSavedFiltersMode,
+    isSavedDynamicFromMode,
+    isSavedDynamicToMode,
   ]);
 
   let availableEntityTypes;
@@ -145,11 +145,11 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
   };
 
   const handleSwitchToSavedFilter = () => {
-    setUseSavedFilter(true);
+    setIsSavedFiltersMode(true);
   };
 
   const handleSwitchToCustomFilters = () => {
-    setUseSavedFilter(false);
+    setIsSavedFiltersMode(false);
     handleSavedFilterClear();
   };
 
@@ -162,7 +162,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
   };
 
   const handleSwitchToSavedFilterDynamicFrom = () => {
-    setUseSavedFilterDynamicFrom(true);
+    setIsSavedDynamicFromMode(true);
   };
 
   const handleSavedFilterClearDynamicFrom = () => {
@@ -173,7 +173,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
   };
 
   const handleSwitchToCustomFiltersDynamicFrom = () => {
-    setUseSavedFilterDynamicFrom(false);
+    setIsSavedDynamicFromMode(false);
     handleSavedFilterClearDynamicFrom();
   };
 
@@ -186,7 +186,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
   };
 
   const handleSwitchToSavedFilterDynamicTo = () => {
-    setUseSavedFilterDynamicTo(true);
+    setIsSavedDynamicToMode(true);
   };
 
   const handleSavedFilterClearDynamicTo = () => {
@@ -197,7 +197,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
   };
 
   const handleSwitchToCustomFiltersDynamicTo = () => {
-    setUseSavedFilterDynamicTo(false);
+    setIsSavedDynamicToMode(false);
     handleSavedFilterClearDynamicTo();
   };
 
@@ -213,7 +213,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
     <>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', paddingTop: 2 }}>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-          {useSavedFilter ? (
+          {isSavedFiltersMode ? (
             <>
               <WidgetSavedFiltersSelection
                 scope={savedFiltersScope}
@@ -247,7 +247,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
         {perspective === 'relationships' && (
           <>
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              {useSavedFilterDynamicFrom ? (
+              {isSavedDynamicFromMode ? (
                 <>
                   <WidgetSavedFiltersSelection
                     scope="Stix-Core-Object"
@@ -280,7 +280,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
               )}
             </Box>
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              {useSavedFilterDynamicTo ? (
+              {isSavedDynamicToMode ? (
                 <>
                   <WidgetSavedFiltersSelection
                     scope="Stix-Core-Object"
@@ -317,15 +317,15 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
       </Box>
 
       <Box sx={{ paddingTop: 1 }}>
-        {((useSavedFilterDynamicFrom && dataSelection.dynamicFrom_id)
-          || (!useSavedFilterDynamicFrom && isFilterGroupNotEmpty(filtersDynamicFrom)))
+        {((isSavedDynamicFromMode && dataSelection.dynamicFrom_id)
+          || (!isSavedDynamicFromMode && isFilterGroupNotEmpty(filtersDynamicFrom)))
         && (
           <div style={{ marginTop: 8, color: 'orange', marginBottom: 4 }}>
             {t_i18n('Pre-query to get data to be used as source entity of the relationship (limited to 5000)')}
           </div>
         )
         }
-        {useSavedFilterDynamicFrom ? (
+        {isSavedDynamicFromMode ? (
           <WidgetSavedFilterChips
             filterId={dataSelection.dynamicFrom_id}
             entityTypes={['Stix-Core-Object']}
@@ -346,15 +346,15 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
           />
         )}
 
-        {((useSavedFilterDynamicTo && dataSelection.dynamicTo_id)
-          || (!useSavedFilterDynamicTo && isFilterGroupNotEmpty(filtersDynamicTo)))
+        {((isSavedDynamicToMode && dataSelection.dynamicTo_id)
+          || (!isSavedDynamicToMode && isFilterGroupNotEmpty(filtersDynamicTo)))
         && (
           <div style={{ marginTop: 8, color: theme.palette.success.main, marginBottom: 4 }}>
             {t_i18n('Pre-query to get data to be used as target entity of the relationship (limited to 5000)')}
           </div>
         )
         }
-        {useSavedFilterDynamicTo ? (
+        {isSavedDynamicToMode ? (
           <WidgetSavedFilterChips
             filterId={dataSelection.dynamicTo_id}
             entityTypes={['Stix-Core-Object']}
@@ -383,7 +383,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             </div>
           )
         }
-        {useSavedFilter ? (
+        {isSavedFiltersMode ? (
           <WidgetSavedFilterChips
             filterId={dataSelection.filters_id}
             entityTypes={searchContext.entityTypes}
