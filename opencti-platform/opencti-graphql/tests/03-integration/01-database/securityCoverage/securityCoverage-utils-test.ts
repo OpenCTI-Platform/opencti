@@ -18,7 +18,7 @@ describe('Function transformHasCoveredFromId', () => {
     expect(newInput).toEqual({
       relationship_type: 'has-covered',
       external_uri: 'http://192.168.1.150:8080/admin/scenarios/001d6ae0-4344-4467-99d5-eb4b6962fd4b',
-      fromId: 'security-coverage-result--687bfcc3-4917-5ab9-8233-dfa1f3c69850',
+      fromId: 'security-coverage-result--90727e33-b5b6-54f4-8d17-ed5c68288553',
       toId: 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17',
     });
   });
@@ -49,7 +49,7 @@ describe('Function transformHasCoveredFromId', () => {
     );
     expect(newInput).toEqual({
       relationship_type: 'has-covered',
-      fromId: 'security-coverage-result--687bfcc3-4917-5ab9-8233-dfa1f3c69850',
+      fromId: 'security-coverage-result--90727e33-b5b6-54f4-8d17-ed5c68288553',
       toId: 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17',
     });
   });

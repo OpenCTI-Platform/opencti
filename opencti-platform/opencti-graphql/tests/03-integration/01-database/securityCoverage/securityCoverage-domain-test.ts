@@ -39,7 +39,7 @@ describe('SecurityCoverage domain', () => {
       const results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
       expect(results.length).toEqual(1);
       // Name should be the external_uri when it is defined
-      expect(results[0].name).toEqual(externalUri);
+      expect(results[0].name).toEqual(`${externalUri} Result of sc1`);
       await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
     });
 
@@ -53,7 +53,7 @@ describe('SecurityCoverage domain', () => {
       const results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
       expect(results.length).toEqual(1);
       // Name should be the tenant_name when it is defined
-      expect(results[0].name).toEqual('Super Coverage');
+      expect(results[0].name).toEqual('Super Coverage Result of sc1');
       await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
     });
 
