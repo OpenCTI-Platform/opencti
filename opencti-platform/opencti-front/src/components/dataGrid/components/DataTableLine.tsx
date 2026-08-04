@@ -73,7 +73,7 @@ const DataTableCell = ({
 
   return (
     <div
-      role="cell"
+      role="gridcell"
       key={`${cell.id}_${data.id}`}
       style={{
         ...cellContainerStyle(theme),
