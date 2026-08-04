@@ -201,8 +201,6 @@ import { AbortError } from 'node-fetch';
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
 export const ES_MAX_CONCURRENCY: number = conf.get('elasticsearch:max_concurrency');
-export const ES_DEFAULT_WILDCARD_PREFIX: boolean = booleanConf('elasticsearch:search_wildcard_prefix', false);
-export const ES_DEFAULT_FUZZY: boolean = booleanConf('elasticsearch:search_fuzzy', false);
 export const ES_INIT_MAPPING_MIGRATION: string = conf.get('elasticsearch:internal_init_mapping_migration') || 'off'; // off / old / standard
 export const ES_IS_OLD_MAPPING: boolean = ES_INIT_MAPPING_MIGRATION === 'old';
 export const ES_IS_INIT_MIGRATION: boolean = ES_INIT_MAPPING_MIGRATION === 'standard' || ES_IS_OLD_MAPPING;
@@ -1872,6 +1870,9 @@ const findElementsDuplicateIds = (elements: BasicStoreBase[]): string[] => {
 export const specialElasticCharsEscape = (query: string) => {
   return query.replace(/([/+|\-*()^~={}[\]:?!"\\])/g, '\\$1');
 };
+const specialElasticCharsEscapeWithLuceneSyntax = (query: string) => {
+  return query.replace(/([/+|\-()^={}[\]:?!"\\])/g, '\\$1');
+};
 export type ElFindByIdsOpts = {
   indices?: string[] | string | null;
   baseData?: boolean | null;
@@ -2158,7 +2159,7 @@ function processSearch(
   search: string,
   args: ProcessSearchArgs,
 ): { exactSearch: string[]; querySearch: string[] } {
-  const { useWildcardPrefix = ES_DEFAULT_WILDCARD_PREFIX } = args;
+  const { useWildcardPrefix } = args;
   let decodedSearch;
   try {
     decodedSearch = decodeURIComponent(refang(search))
@@ -2181,12 +2182,9 @@ function processSearch(
 
   for (let searchIndex = 0; searchIndex < partialSearch.length; searchIndex += 1) {
     const partialElement = partialSearch[searchIndex];
-    const cleanElement = specialElasticCharsEscape(partialElement);
+    const cleanElement = specialElasticCharsEscapeWithLuceneSyntax(partialElement);
     if (isNotEmptyField(cleanElement)) {
       querySearch.push(`${useWildcardPrefix ? '*' : ''}${cleanElement}*`);
-      if (ES_DEFAULT_FUZZY) {
-        querySearch.push(`${cleanElement}~`);
-      }
     }
   }
   return {
