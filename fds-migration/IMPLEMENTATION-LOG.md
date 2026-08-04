@@ -59,3 +59,9 @@ the navigation, are older than this change, and are left untouched.
   Flagged for the OpenCTI team: either restore the script and wire it into
   the front-end quality workflow, or drop the dead entry. The nine locale
   files were verified symmetric by hand for this change (5384 keys each).
+
+- **2026-08-04 — `Backend / Integration tests` is flaky on this branch.**
+  Two continuous-integration runs on the same commit `e85be9fa79` disagree:
+  run 30958977348 green, run 30958981411 red. This change touches no back-end
+  file. Dated here rather than investigated: it is not this pull request's
+  subject.

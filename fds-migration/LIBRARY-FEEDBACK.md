@@ -222,3 +222,26 @@ does on the rows inside it.
 
 **Removal test.** Delete the host rule; the rail must still measure 48px
 collapsed and 180px expanded at a 1500px viewport.
+
+---
+
+## 9. The same submenu entry answers to two different roles
+
+**Needed.** End-to-end tests must anchor on what the component emits. A stable
+anchor requires the same item to keep the same role whatever the rail state.
+
+**Today.** A submenu child is a real anchor in both states, but its exposed
+role is not the same: expanded, inside the accordion panel, it is a `link`;
+collapsed, inside the portalled flyout, Radix's `DropdownMenu` overrides it to
+`menuitem`. The parent row is a `button` when expanded and an `a` — carrying
+`aria-expanded` all the same — when collapsed.
+
+**Consequence.** `leftBar.pageModel.ts` carries two lookup strategies and can
+only tell the states apart by the parent's role, not by `aria-expanded`.
+
+**Ask.** Keep navigable submenu entries as `link` in the flyout too (Radix
+allows opting out of the menu semantics), or document the role matrix so
+consumers can anchor tests on it deliberately.
+
+**Removal test.** At such a pin, use `getByRole('link', …)` in the collapsed
+branch of `clickOnMenu`; `dashboard.spec.ts` must still pass.
