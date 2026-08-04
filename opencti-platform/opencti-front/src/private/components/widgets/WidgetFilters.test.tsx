@@ -37,6 +37,7 @@ vi.mock('../../../utils/filters/useFiltersState', async () => {
 });
 
 vi.mock('./WidgetSavedFiltersSelection', () => ({
+  widgetSavedFiltersSelectionQuery: {},
   default: ({
     onSelect,
     onDeselect,
@@ -58,6 +59,18 @@ vi.mock('./WidgetSavedFiltersSelection', () => ({
       </button>
     </div>
   ),
+}));
+
+vi.mock('../../../relay/environment', () => ({
+  fetchQuery: () => ({
+    toPromise: async () => ({
+      savedFilters: {
+        edges: [
+          { node: { scope: 'entities' } },
+        ],
+      },
+    }),
+  }),
 }));
 
 vi.mock('src/components/saved_filters/WidgetSavedFiltersIcon', () => ({
