@@ -33,9 +33,9 @@ export const checkDraftInContext = async (executeContext: AuthContext) => {
             value: '',
           }]);
         }
-        const serviceAccountHint = executeContext.user.user_service_account
+        const serviceAccountHint = executeContext.user.user_service_account === true
           ? ''
-          : ', consider switching your connector to a service account (instead of a user)';
+          : ', consider switching the user associated to your connector to a service account (instead of a user)';
         throw FunctionalError(`Draft ${executeContext.draft_context} cannot be found${serviceAccountHint}`);
       }
 

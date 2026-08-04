@@ -45,15 +45,15 @@ describe('checkDraftInContext service account hint', () => {
     const executeContext = buildContext({ user_service_account: false });
 
     await expect(checkDraftInContext(executeContext)).rejects.toThrowError(
-      `Draft ${draftId} cannot be found, consider switching your connector to a service account (instead of a user)`,
+      `Draft ${draftId} cannot be found, consider switching the user associated to your connector to a service account (instead of a user)`,
     );
   });
 
-  it('should not suggest switching to a service account when user_service_account is undefined', async () => {
+  it('should suggest switching to a service account when user_service_account is undefined', async () => {
     const executeContext = buildContext({});
 
     await expect(checkDraftInContext(executeContext)).rejects.toThrowError(
-      `Draft ${draftId} cannot be found, consider switching your connector to a service account (instead of a user)`,
+      `Draft ${draftId} cannot be found, consider switching the user associated to your connector to a service account (instead of a user)`,
     );
   });
 
