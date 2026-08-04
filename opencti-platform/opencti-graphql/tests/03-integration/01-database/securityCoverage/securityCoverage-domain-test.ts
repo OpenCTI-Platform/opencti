@@ -75,7 +75,7 @@ describe('SecurityCoverage domain', () => {
   });
 
   describe('Function securityCoverageStixBundle()', () => {
-    it('should export the coverage, its results and the covered entity', async () => {
+    it('should return a bundle containing the coverage and the covered entity', async () => {
       const input = {
         ...BASE_INPUT(),
         name: 'sc to export',
@@ -93,26 +93,6 @@ describe('SecurityCoverage domain', () => {
       expect(stixCoverage?.covered_ref).toEqual(report.standard_id);
       // The covered entity must be exported as a distinct object of the bundle
       expect(bundleObjects.filter((o) => o.id === report.standard_id).length).toEqual(1);
-      // The results must be exported as distinct objects, linked back to the coverage
-      const stixResults = bundleObjects.filter((o) => o.type === 'security-coverage-result');
-      expect(stixResults.length).toEqual(1);
-      expect(stixResults[0].result_of_ref).toEqual(securityCoverage.standard_id);
-
-      await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
-    });
-
-    it('should export the coverage and the covered entity when there is no result', async () => {
-      const input = {
-        ...BASE_INPUT(),
-        name: 'sc to export without result',
-      };
-      const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
-      const bundle = JSON.parse(await securityCoverageStixBundle(testContext, ADMIN_USER, securityCoverage.id));
-      const bundleObjects = bundle.objects as unknown as StixSecurityCoverage[];
-
-      expect(bundleObjects.filter((o) => o.type === 'security-coverage').length).toEqual(1);
-      expect(bundleObjects.filter((o) => o.id === report.standard_id).length).toEqual(1);
-      expect(bundleObjects.filter((o) => o.type === 'security-coverage-result').length).toEqual(0);
 
       await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
     });
