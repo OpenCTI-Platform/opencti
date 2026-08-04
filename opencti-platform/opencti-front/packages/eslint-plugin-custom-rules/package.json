@@ -6,8 +6,5 @@
   "exports": "./lib/index.js",
   "devDependencies": {
     "@typescript-eslint/parser": "8.65.0"
-  },
-  "peerDependencies": {
-    "eslint": ">=7"
   }
 }

@@ -57,7 +57,7 @@ yarn build        # Production build
 
 # Linting & Types
 yarn check-ts     # Check types
-yarn lint         # Run ESLint
+yarn lint         # Run Oxlint
 
 # Testing
 yarn test         # Unit tests (Vitest)

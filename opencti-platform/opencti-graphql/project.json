@@ -5,7 +5,14 @@
   "targets": {
     "install": {
       "executor": "nx:run-commands",
-      "dependsOn": [{ "projects": ["client-python"], "target": "install" }],
+      "dependsOn": [
+        {
+          "projects": [
+            "client-python"
+          ],
+          "target": "install"
+        }
+      ],
       "options": {
         "cwd": "opencti-platform/opencti-graphql",
         "command": "yarn install && yarn install:python"
@@ -29,16 +36,6 @@
       "options": {
         "cwd": "opencti-platform/opencti-graphql",
         "command": "yarn lint"
-      },
-      "metadata": {
-        "description": "Lint the OpenCTI GraphQL server"
-      }
-    },
-    "lint-oxlint": {
-      "executor": "nx:run-commands",
-      "options": {
-        "cwd": "opencti-platform/opencti-graphql",
-        "command": "yarn lint:oxlint"
       },
       "metadata": {
         "description": "Lint the OpenCTI GraphQL server with Oxlint"

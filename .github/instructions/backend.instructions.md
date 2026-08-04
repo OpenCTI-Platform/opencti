@@ -57,7 +57,7 @@ yarn build:schema  # Generate GraphQL schema & types
 
 # Linting & Types
 yarn check-ts      # Check TypeScript types
-yarn lint          # Run ESLint
+yarn lint          # Run Oxlint
 
 # Testing
 yarn test:ci-unit              # Fast unit tests
