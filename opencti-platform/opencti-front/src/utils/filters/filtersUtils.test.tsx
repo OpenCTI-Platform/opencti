@@ -3,6 +3,7 @@ import {
   buildFiltersAndOptionsForWidgets,
   buildFiltersForCustomView,
   emptyFilterGroup,
+  findFilterFromKey,
   findFiltersFromKeys,
   formatFiltersInPirContext,
   getEntityTypeThreeFirstLevelsFilterValues,
@@ -705,8 +706,37 @@ describe('Filters utils', () => {
   });
 });
 
-describe('Function findFilterFromKey: should return the filters of the specified keys among a filters list', () => {
-  it('findFilterFromKey without specifying an operator', () => {
+describe('Function findFilterFromKey', () => {
+  it('findFilterFromKey should return the first filter matching key and operator', () => {
+    const filtersList = [
+      { key: 'name', values: ['name1'], operator: 'eq' },
+      { key: 'name', values: ['name2'], operator: 'eq' },
+      { key: 'name', values: ['name3'], operator: 'not_eq' },
+    ];
+    const result = findFilterFromKey(filtersList, 'name');
+    expect(result).toEqual({ key: 'name', values: ['name1'], operator: 'eq' });
+  });
+
+  it('findFilterFromKey should return null when key is not found', () => {
+    const filtersList = [
+      { key: 'value', values: ['value1'], operator: 'eq' },
+    ];
+    const result = findFilterFromKey(filtersList, 'name');
+    expect(result).toBeNull();
+  });
+
+  it('findFilterFromKey should treat missing operator as eq', () => {
+    const filtersList = [
+      { key: 'name', values: ['name1'] },
+      { key: 'name', values: ['name2'], operator: 'not_eq' },
+    ];
+    const result = findFilterFromKey(filtersList, 'name');
+    expect(result).toEqual({ key: 'name', values: ['name1'] });
+  });
+});
+
+describe('Function findFiltersFromKeys: should return the filters of the specified keys among a filters list', () => {
+  it('findFiltersFromKey without specifying an operator', () => {
     const filtersList = [
       { key: 'value', values: [], operator: 'nil' },
       { key: 'name', values: ['name1', 'name2'], operator: 'eq' },
@@ -714,7 +744,7 @@ describe('Function findFilterFromKey: should return the filters of the specified
     const result = findFiltersFromKeys(filtersList, ['value']);
     expect(result).toEqual([]);
   });
-  it('findFilterFromKey with several results', () => {
+  it('findFiltersFromKey with several results', () => {
     const filtersList = [
       { key: 'value', values: [], operator: 'nil' },
       { key: 'name', values: ['name1', 'name2'], operator: 'eq' },
@@ -724,7 +754,7 @@ describe('Function findFilterFromKey: should return the filters of the specified
     expect(result).toEqual([{ key: 'name', values: ['name1', 'name2'], operator: 'eq' },
       { key: 'name', values: ['name3'], operator: 'eq' }]);
   });
-  it('findFilterFromKey with operator specified', () => {
+  it('findFiltersFromKey with operator specified', () => {
     const filtersList = [
       { key: 'value', values: [], operator: 'nil' },
       { key: 'name', values: ['name1', 'name2'], operator: 'eq' },
@@ -732,7 +762,7 @@ describe('Function findFilterFromKey: should return the filters of the specified
     const result = findFiltersFromKeys(filtersList, ['value'], 'nil');
     expect(result).toEqual([{ key: 'value', values: [], operator: 'nil' }]);
   });
-  it('findFilterFromKey with several keys', () => {
+  it('findFiltersFromKey with several keys', () => {
     const filtersList = [
       { key: 'value', values: ['value1'], operator: 'eq' },
       { key: 'created_at', values: ['XX', 'YY'], mode: 'or' },

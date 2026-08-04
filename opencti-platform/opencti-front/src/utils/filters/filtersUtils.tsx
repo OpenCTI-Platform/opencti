@@ -230,7 +230,9 @@ export const removeEmptyFiltersFromList = (filtersList: Filter[]) => {
   return filtersList.filter((f) => NO_VALUES_FILTER_OPERATORS.includes(f.operator ?? 'eq') || f.values.length > 0);
 };
 
-// return the values of the filters of a specific key among a filters list
+/**
+ * Return the values of the filters of a specific key among a filters list
+ */
 export const findFilterFromKey = (
   filters: Filter[],
   key: string,
@@ -247,6 +249,9 @@ export const findFilterFromKey = (
   return null;
 };
 
+/**
+ * Return all filters whose key is in `keys` and whose operator matches.
+ */
 export const findFiltersFromKeys = (
   filters: Filter[],
   keys: string[],
