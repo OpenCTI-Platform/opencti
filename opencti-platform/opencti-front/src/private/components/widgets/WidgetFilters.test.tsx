@@ -1,5 +1,5 @@
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { fireEvent, waitFor } from '@testing-library/react';
 import testRender, { createMockUserContext } from '../../../utils/tests/test-render';
 import WidgetFilters from './WidgetFilters';
@@ -61,16 +61,21 @@ vi.mock('./WidgetSavedFiltersSelection', () => ({
   ),
 }));
 
+vi.mock('./WidgetSavedFilterChips', () => ({
+  default: () => <div data-testid="saved-filter-chips" />,
+}));
+
 vi.mock('../../../relay/environment', () => ({
-  fetchQuery: () => ({
+  fetchQuery: vi.fn(() => ({
     toPromise: async () => ({
       savedFilters: {
         edges: [
           { node: { scope: 'entities' } },
+          { node: { scope: 'relationships' } },
         ],
       },
     }),
-  }),
+  })),
 }));
 
 vi.mock('src/components/saved_filters/WidgetSavedFiltersIcon', () => ({
@@ -81,24 +86,28 @@ vi.mock('src/components/saved_filters/WidgetSavedFiltersIcon', () => ({
   ),
 }));
 
-vi.mock('../../../utils/filters/filtersUtils', () => ({
-  isFilterGroupNotEmpty: () => false,
-  isDraftWorkspaceFilterGroup: (filters: import('src/utils/filters/filtersHelpers-types').FilterGroup | null | undefined) => {
-    if (!filters) return false;
-    const entityTypeFilter = filters.filters?.find((f: import('src/utils/filters/filtersHelpers-types').Filter) => f.key === 'entity_type');
-    if (!entityTypeFilter || entityTypeFilter.values.length === 0) return false;
-    return entityTypeFilter.values.every((v: import('src/utils/filters/filtersHelpers-types').FilterValue) => {
-      if (typeof v === 'string') return v === 'DraftWorkspace';
-      return (v?.value ?? (v as { id?: string })?.id) === 'DraftWorkspace';
-    });
-  },
-  useAvailableFilterKeysForEntityTypes: (entityTypes: string[]) => {
-    if (entityTypes.includes('DraftWorkspace')) {
-      return ['name', 'created_at', 'workflowInstanceCurrentState'];
-    }
-    return ['name', 'created_at'];
-  },
-}));
+vi.mock('../../../utils/filters/filtersUtils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../utils/filters/filtersUtils')>();
+  return {
+    ...actual,
+    isFilterGroupNotEmpty: () => false,
+    isDraftWorkspaceFilterGroup: (filters: import('src/utils/filters/filtersHelpers-types').FilterGroup | null | undefined) => {
+      if (!filters) return false;
+      const entityTypeFilter = filters.filters?.find((f: import('src/utils/filters/filtersHelpers-types').Filter) => f.key === 'entity_type');
+      if (!entityTypeFilter || entityTypeFilter.values.length === 0) return false;
+      return entityTypeFilter.values.every((v: import('src/utils/filters/filtersHelpers-types').FilterValue) => {
+        if (typeof v === 'string') return v === 'DraftWorkspace';
+        return (v?.value ?? (v as { id?: string })?.id) === 'DraftWorkspace';
+      });
+    },
+    useAvailableFilterKeysForEntityTypes: (entityTypes: string[]) => {
+      if (entityTypes.includes('DraftWorkspace')) {
+        return ['name', 'created_at', 'workflowInstanceCurrentState'];
+      }
+      return ['name', 'created_at'];
+    },
+  };
+});
 
 const createRenderOptions = () => ({
   userContext: createMockUserContext({
@@ -115,6 +124,10 @@ const createRenderOptions = () => ({
 });
 
 describe('WidgetFilters', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   const baseDataSelection = {
     filters: {
       mode: 'and',
