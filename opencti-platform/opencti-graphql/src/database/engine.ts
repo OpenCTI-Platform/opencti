@@ -2745,9 +2745,10 @@ export const buildLocalMustFilter = (validFilter: any) => {
             });
           } else if (operator === 'wildcard' || operator === 'not_wildcard') {
             const targets = operator === 'wildcard' ? valuesFiltering : noValuesFiltering;
+            const val = specialElasticCharsEscape(values[i].toString());
             targets.push({
               query_string: {
-                query: values[i] === '*' ? values[i] : `"${values[i].toString()}"`,
+                query: values[i] === '*' ? values[i] : `"${val}"`,
                 fields: arrayKeys,
               },
             });
