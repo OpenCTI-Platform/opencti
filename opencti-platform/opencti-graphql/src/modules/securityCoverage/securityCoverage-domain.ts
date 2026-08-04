@@ -132,7 +132,7 @@ export const addSecurityCoverage = async (
       let targets: string[] = [];
       if (isContainer) {
         // In case of containers add entities from the ones contained.
-        targets = coveredEntity.objects.flatMap((o) => {
+        targets = (coveredEntity.objects ?? []).flatMap((o) => {
           if (!HAS_COVERED_TARGETS_TYPE.includes(o.entity_type)) return [];
           return o.id;
         });
