@@ -10,15 +10,15 @@ describe('Function transformHasCoveredFromId', () => {
       SYSTEM_USER,
       {
         relationship_type: 'has-covered',
-        external_uri: 'http://192.168.1.150:8080/admin/scenarios/001d6ae0-4344-4467-99d5-eb4b6962fd4b',
-        fromId: 'security-coverage--c76bfcfe-2be5-500f-9b81-367457f1088f',
+        external_uri: 'http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a175',
+        fromId: 'security-coverage--9a2d4fa8-403c-5e15-ad4b-0f2909885db8',
         toId: 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17',
       },
     );
     expect(newInput).toEqual({
       relationship_type: 'has-covered',
-      external_uri: 'http://192.168.1.150:8080/admin/scenarios/001d6ae0-4344-4467-99d5-eb4b6962fd4b',
-      fromId: 'security-coverage-result--90727e33-b5b6-54f4-8d17-ed5c68288553',
+      external_uri: 'http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a175',
+      fromId: 'security-coverage-result--cd293e6b-384f-596d-b72d-4c47509553da',
       toId: 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17',
     });
   });
