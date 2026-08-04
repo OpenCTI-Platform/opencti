@@ -1,6 +1,6 @@
 import { ATTR_DB_NAMESPACE, SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { StoreObject, StoreRelation } from '../../types/store';
+import type { BasicWorkflowStatus, BasicWorkflowTemplateEntity, StoreObject, StoreRelation } from '../../types/store';
 import type { ActivityStreamEvent, BaseEvent, Change, CreateEventOpts, EventOpts, SseEvent, StreamDataEvent, StreamNotifEvent, UpdateEventOpts } from '../../types/event';
 import { isStixExportableInStreamData } from '../../schema/stixCoreObject';
 import { generateCreateMessage, generateDeleteMessage, generateRestoreMessage } from '../data-changes';
@@ -23,12 +23,26 @@ import { getDraftContext } from '../../utils/draftContext';
 import { rawRedisStreamClient } from '../redis-stream';
 import { telemetry } from '../../config/tracing';
 import { logApp } from '../../config/conf';
+import { getEntitiesListFromCache } from '../cache';
+import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../schema/internalObject';
 
 const streamClient: RawStreamClient = rawRedisStreamClient;
 export const initializeStreamStack = async () => {
   if (streamClient.initializeStreams) {
     await streamClient.initializeStreams();
   }
+};
+
+// Resolve the human-readable status template name/scope for an instance's x_opencti_workflow_id, so the wire event stays self-sufficient
+const resolveWorkflowStatusName = async (context: AuthContext, user: AuthUser, instance: StoreObject): Promise<{ name: string; scope: string } | undefined> => {
+  const workflowId = (instance as unknown as { x_opencti_workflow_id?: string }).x_opencti_workflow_id;
+  if (!workflowId) return undefined;
+  const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
+  const status = platformStatuses.find((s) => s.id === workflowId);
+  if (!status) return undefined;
+  const platformTemplates = await getEntitiesListFromCache<BasicWorkflowTemplateEntity>(context, user, ENTITY_TYPE_STATUS_TEMPLATE);
+  const template = platformTemplates.find((t) => t.id === status.template_id);
+  return template ? { name: template.name, scope: status.scope } : undefined;
 };
 
 const pushToStream = async <T extends BaseEvent> (context: AuthContext, user: AuthUser, event: T, opts: EventOpts = {}) => {
@@ -79,7 +93,11 @@ export const storeUpdateEvent = async (
 ) => {
   try {
     if (isStixExportableInStreamData(instance)) {
-      const event = buildUpdateEvent(user, previous, instance, changes, opts);
+      const workflowStatuses = {
+        previous: await resolveWorkflowStatusName(context, user, previous),
+        current: await resolveWorkflowStatusName(context, user, instance),
+      };
+      const event = buildUpdateEvent(user, previous, instance, changes, opts, workflowStatuses);
       await pushToStream(context, user, event, opts);
       return event;
     }
@@ -97,7 +115,8 @@ export const storeCreateRelationEvent = async (context: AuthContext, user: AuthU
       if (!withoutMessage) {
         message = restore ? generateRestoreMessage(instance) : generateCreateMessage(instance);
       }
-      const event = buildCreateEvent(user, instance, message);
+      const workflowStatus = await resolveWorkflowStatusName(context, user, instance);
+      const event = buildCreateEvent(user, instance, message, workflowStatus);
       await pushToStream(context, user, event, opts);
       return event;
     }
@@ -110,7 +129,8 @@ export const storeCreateRelationEvent = async (context: AuthContext, user: AuthU
 export const storeCreateEntityEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, message: string, opts: CreateEventOpts = {}) => {
   try {
     if (isStixExportableInStreamData(instance)) {
-      const event = buildCreateEvent(user, instance, message);
+      const workflowStatus = await resolveWorkflowStatusName(context, user, instance);
+      const event = buildCreateEvent(user, instance, message, workflowStatus);
       await pushToStream(context, user, event, opts);
       return event;
     }

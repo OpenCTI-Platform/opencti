@@ -22,7 +22,7 @@ import {
 import type { AuthContext, AuthUser } from '../types/user';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
-import type { BasicStoreEntity, BasicWorkflowStatus, StoreEntity } from '../types/store';
+import type { BasicStoreEntity, BasicWorkflowStatus, BasicWorkflowTemplateEntity, StoreEntity } from '../types/store';
 import { getEntitiesListFromCache } from '../database/cache';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { elCount } from '../database/engine';
@@ -50,6 +50,20 @@ export const findById = async (context: AuthContext, user: AuthUser, statusId: s
 export const findByType = async (context: AuthContext, user: AuthUser, statusType: string): Promise<Array<BasicWorkflowStatus>> => {
   const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
   return platformStatuses.filter((status) => status.type === statusType);
+};
+// Used by the sync manager to map a remote workflow status onto the equivalent locally configured one (matched by name, not by id).
+export const findStatusByTypeScopeAndTemplateName = async (
+  context: AuthContext,
+  user: AuthUser,
+  type: string,
+  scope: string | undefined | null,
+  templateName: string,
+): Promise<BasicWorkflowStatus | undefined> => {
+  const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
+  const platformTemplates = await getEntitiesListFromCache<BasicWorkflowTemplateEntity>(context, user, ENTITY_TYPE_STATUS_TEMPLATE);
+  const matchingTemplate = platformTemplates.find((template) => template.name === templateName);
+  if (!matchingTemplate) return undefined;
+  return platformStatuses.find((status) => status.type === type && status.scope === scope && status.template_id === matchingTemplate.id);
 };
 export const findStatusPaginated = (context: AuthContext, user: AuthUser, args: QueryStatusesArgs) => {
   return pageEntitiesConnection<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
