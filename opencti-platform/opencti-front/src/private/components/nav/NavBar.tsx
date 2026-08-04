@@ -28,6 +28,7 @@ export const navBarQuery = graphql`
   query NavBarQuery {
     settings {
       platform_whitemark
+      platform_title
     }
   }
 `;
@@ -82,7 +83,18 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
 }) => {
   const navStyle: React.CSSProperties & Record<string, string | undefined> = {};
   if (customBackground) navStyle.background = customBackground;
-  if (accentColor) navStyle['--color-filigran-brand-primary'] = accentColor;
+  if (accentColor) {
+    navStyle['--color-filigran-brand-primary'] = accentColor;
+    // The library derives the selected-row tint from a SECOND token, and
+    // declares it on `:root` as a `color-mix` of the first. Custom properties
+    // are substituted where they are declared, not where they are used, so
+    // that derived token is frozen against the root brand colour and an
+    // override placed here would never reach it: the left border followed the
+    // custom accent while the row tint stayed Filigran blue. Re-deriving it
+    // with the library's own formula is what makes the override complete.
+    navStyle['--color-filigran-brand-primary-transparency'] = `color-mix(in srgb, ${accentColor} 10%, transparent)`;
+    navStyle['--color-filigran-brand-primary-transparency-50'] = `color-mix(in srgb, ${accentColor} 50%, transparent)`;
+  }
 
   /**
    * Submenu rows are real anchors so Ctrl/Cmd-click and "open in new tab"
@@ -105,6 +117,22 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
     </NavbarSubmenuItem>
   );
 
+  /**
+   * `asChild` slots our anchor in place of the library's own <button>, so the
+   * row's internal layout is ours to reproduce: the library hides the label
+   * with `sr-only` while the rail is collapsed and shows the tooltip instead.
+   * Reproduced verbatim here — dropping the label instead of hiding it would
+   * strip the accessible name the collapsed rail is navigated by.
+   * See fds-migration/LIBRARY-FEEDBACK.md, "asChild rows must re-implement the
+   * row body, including the collapsed label".
+   */
+  const renderRowBody = (icon: React.ReactNode, label: string) => (
+    <>
+      <span className="inline-flex shrink-0" aria-hidden="true">{icon}</span>
+      <span className={collapsed ? 'sr-only' : 'flex-1 truncate text-left'}>{label}</span>
+    </>
+  );
+
   const renderItem = (item: NavItem) => {
     if (!item.subItems || item.subItems.length === 0) {
       return (
@@ -113,8 +141,7 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
             to={item.link}
             aria-current={isRouteSelected(pathname, item.link, item.exact) ? 'page' : undefined}
           >
-            {item.icon}
-            <span>{item.label}</span>
+            {renderRowBody(item.icon, item.label)}
           </Link>
         </NavbarItem>
       );
@@ -235,13 +262,13 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
   /**
    * Selected-row accent.
    *
-   * COMPENSATION — see LIBRARY-FEEDBACK "Navbar: no accent colour hook".
-   * `NavbarItem` paints its `aria-current="page"` state from the fixed brand
-   * token `--color-filigran-brand-primary`, and derives the row tint from it
-   * through `color-mix`. OpenCTI lets an administrator set `theme_primary`,
-   * and swaps the accent to the warning colour inside a draft. Overriding the
-   * single custom property on the `<nav>` recolours both the left border and
-   * the row tint in one place, through the cascade.
+   * COMPENSATION — see LIBRARY-FEEDBACK entries 1 and 6. `NavbarItem` paints
+   * its `aria-current="page"` state from the fixed brand token
+   * `--color-filigran-brand-primary`, and fills the row from a token derived
+   * from it. OpenCTI lets an administrator set `theme_primary`, and swaps the
+   * accent to the warning colour inside a draft. The colour is resolved here
+   * and the tokens are overridden on the `<nav>` (see `navStyle` in the view,
+   * which has to re-derive the tint token as well).
    * REMOVAL TEST: at a pin where `Navbar` exposes an accent prop, delete this
    * block, pass the same colour to that prop, and confirm `NavBar.test.tsx`
    * still passes — it asserts the resolved accent, not the mechanism.
@@ -269,10 +296,15 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
       header={(
         <ProductSwitcher
           label={t_i18n('Switch product')}
-          logo={<img src={productLogo} alt="" height={28} style={{ objectFit: 'contain', objectPosition: 'left' }} />}
+          logo={<img src={productLogo} alt="" width={126} height={28} style={{ objectFit: 'contain', objectPosition: 'left' }} />}
           logoCollapsed={<img src={productLogoCollapsed} alt="" height={28} width={28} style={{ objectFit: 'contain' }} />}
           logoTo="/dashboard"
-          logoLabel={t_i18n('Home')}
+          // The logo link and the "Home" row both point at /dashboard, so the
+          // logo cannot be named "Home": two links with the same accessible
+          // name inside one navigation are ambiguous for screen readers and
+          // break the e2e page object's `exact` name lookup. The platform
+          // title is what the logo actually depicts.
+          logoLabel={data?.settings?.platform_title || 'OpenCTI'}
           options={[
             {
               id: 'openaev',

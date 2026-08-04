@@ -127,10 +127,14 @@ describe('NavBarView', () => {
 });
 
 describe('NavBarView accent compensation', () => {
-  it('overrides the library brand token on the rail', () => {
+  it('overrides every brand token the selected row is painted from', () => {
     const { container } = renderNav({ accentColor: '#ff9800' });
     const nav = container.querySelector('nav');
     expect(nav?.style.getPropertyValue('--color-filigran-brand-primary')).toBe('#ff9800');
+    // The tint is a derived token declared on `:root`; overriding only the
+    // base token left the row tinted Filigran blue under a custom theme.
+    expect(nav?.style.getPropertyValue('--color-filigran-brand-primary-transparency'))
+      .toBe('color-mix(in srgb, #ff9800 10%, transparent)');
   });
 
   it('leaves the token alone when no accent is supplied', () => {
@@ -140,13 +144,18 @@ describe('NavBarView accent compensation', () => {
 
   /**
    * NON-REGRESSION GUARD. The compensation above works only because the
-   * library still paints the selected row from this exact custom property. If
-   * a future pin renames it, nothing would fail at build or runtime — the
-   * accent would just silently fall back to Filigran blue and the customised
-   * `theme_primary` would be lost without a single red test. This reads the
-   * installed stylesheet and fails loudly instead.
+   * library still paints the selected row from these exact custom properties.
+   * If a future pin renames one, or derives the row from a token this rail
+   * does not override, nothing would fail at build or at runtime — the accent
+   * would silently fall back to Filigran blue and the customised
+   * `theme_primary` would be lost without a single red test. So this reads the
+   * installed stylesheet, extracts EVERY custom property the `aria-current`
+   * rules resolve, and asserts the rail overrides each one. A substring match
+   * is not enough: the first version of this guard passed while the row tint
+   * was in fact still blue, because the rule it checked mentioned the base
+   * token and the tint came from a derived one.
    */
-  it('still finds the brand token driving the selected-row styling in the installed library', () => {
+  it('overrides every custom property the installed library resolves for the selected row', () => {
     const require = createRequire(import.meta.url);
     const cssPath = require.resolve('@filigran/design-system/dist/index.css');
     const css = readFileSync(cssPath, 'utf8');
@@ -154,9 +163,21 @@ describe('NavBarView accent compensation', () => {
       .split('}')
       .filter((rule) => rule.includes('aria-current=page') || rule.includes('aria-current="page"'));
     expect(currentPageRules.length).toBeGreaterThan(0);
-    expect(
-      currentPageRules.some((rule) => rule.includes('--color-filigran-brand-primary')),
-    ).toBe(true);
+
+    const referenced = new Set<string>();
+    currentPageRules.forEach((rule) => {
+      [...rule.matchAll(/var\((--[a-z0-9-]+)\)/g)].forEach((match) => referenced.add(match[1]));
+    });
+    expect(referenced.size).toBeGreaterThan(0);
+
+    const { container } = renderNav({ accentColor: '#ff9800' });
+    const nav = container.querySelector('nav');
+    referenced.forEach((property) => {
+      expect(
+        nav?.style.getPropertyValue(property),
+        `the rail must override ${property}, which the library resolves for aria-current rows`,
+      ).not.toBe('');
+    });
   });
 });
 

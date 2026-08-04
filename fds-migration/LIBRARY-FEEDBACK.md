@@ -148,3 +148,77 @@ wrapper above the app bar. It carries its own removal test in a comment.
 **Ask.** Either a documented, overridable z-index token for portalled surfaces,
 or a `container` prop so the product can portal them into its own stacking
 context.
+
+---
+
+## 6. Tokens derived from the brand colour cannot be overridden by a consumer
+
+**Needed.** A product with an administrator-configurable accent must be able to
+recolour the whole selected-row treatment, not part of it.
+
+**Today.** `--color-filigran-brand-primary` can be overridden on a subtree, but
+the tint the selected row is filled with comes from
+`--color-filigran-brand-primary-transparency`, which the stylesheet declares on
+`:root` as `color-mix(in srgb, var(--color-filigran-brand-primary) 10%,
+transparent)`. Custom properties are substituted where they are *declared*, so
+that derived token is frozen against the root brand colour: an override on the
+`<nav>` moves the left border and leaves the fill Filigran blue.
+
+**Consequence.** `NavBar.tsx` re-derives both `-transparency` and
+`-transparency-50` inline, duplicating the library's own formula. If the ratio
+changes in the library, the product silently disagrees with it.
+
+**Ask.** Either declare the derived tokens with the same scope as the base one
+(so a subtree override cascades into them), or expose the accent as a prop on
+`Navbar` — which would remove this entry and entry 1 together.
+
+**Removal test.** Delete the two derived-token lines from `navStyle`; the
+selected row of a rail rendered under a custom accent must still be tinted with
+that accent, asserted by the "overrides every custom property the installed
+library resolves for the selected row" test in `NavBar.test.tsx`.
+
+---
+
+## 7. `asChild` rows must re-implement the row body, including the collapsed label
+
+**Needed.** A row that is a real anchor (for Ctrl-click and "open in new tab")
+should still render like a library row.
+
+**Today.** `asChild` replaces the library's `<button>` with the consumer's
+element, so besides the `icon`/`showIcon` props of entry 2, the internal body —
+the icon wrapper, and the label span the library switches to `sr-only` while
+the rail is collapsed — is not rendered either. A consumer that simply puts an
+icon and a label inside its anchor gets labels overflowing a 48px rail; a
+consumer that drops the label instead loses the accessible name the collapsed
+rail is navigated by.
+
+**Consequence.** `NavBar.tsx` reproduces the library's own body markup and its
+`sr-only` switch, which couples the product to internal utility class names.
+
+**Ask.** Either a `render`/`asChild` variant that keeps the library body and
+only swaps the outer element, or an exported `NavbarItemBody` the consumer can
+place inside its own anchor.
+
+**Removal test.** At such a pin, replace `renderRowBody` with the library
+element; the collapsed-rail tests asserting `role=link` with the exact
+accessible name must still pass.
+
+---
+
+## 8. `Navbar` does not defend its own width in a flex host
+
+**Needed.** The rail must occupy exactly the width it advertises, since the
+product positions seven floating toolbars against that number.
+
+**Today.** The `<nav>` carries `w-12` / `w-45` but no `shrink-0`. Dropped into
+a flex row whose sibling is content-sized — which is what the MUI Drawer it
+replaces lived in — it shrank to 22px, silently invalidating every offset
+computed from the constants.
+
+**Consequence.** One host rule (`.app-navbar { flex: 0 0 auto }`).
+
+**Ask.** Add `shrink-0` to the `<nav>`'s own class list, as the library already
+does on the rows inside it.
+
+**Removal test.** Delete the host rule; the rail must still measure 48px
+collapsed and 180px expanded at a 1500px viewport.

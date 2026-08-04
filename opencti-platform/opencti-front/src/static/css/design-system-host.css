@@ -12,7 +12,22 @@
   font-size: 16px;
 }
 
-/* 2. COMPENSATION for library feedback: floating surfaces are fixed at
+/* 2. COMPENSATION for library feedback: the library's <nav> carries its width
+      utility but no `shrink-0`. The private layout is a flex row whose main
+      region is content-sized, so the row overflows and the browser shrinks
+      every shrinkable item. The MUI Drawer this rail replaces was immune
+      because MUI ships `flex: 0 0 auto` on the Drawer root, so the rail was
+      silently shrinking from 48px to 22px and every offset the seven floating
+      bars compute from the width constants was wrong.
+      REMOVAL TEST: at a pin where the library adds `shrink-0` to the <nav>,
+      delete this rule, then measure the running rail at a 1500px viewport:
+        document.querySelector('nav.app-navbar').getBoundingClientRect().width
+      must be 48 collapsed and 180 expanded. */
+.app-navbar {
+  flex: 0 0 auto;
+}
+
+/* 3. COMPENSATION for library feedback: floating surfaces are fixed at
       Tailwind's `z-50`, and Radix copies that value inline onto the portal
       wrapper it appends to <body>. This application's top bar sits at
       `theme.zIndex.drawer - 1` = 1199, so every library menu, flyout and
