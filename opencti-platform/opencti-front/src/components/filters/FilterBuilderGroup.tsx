@@ -304,7 +304,7 @@ const FilterBuilderGroup: FunctionComponent<FilterBuilderGroupProps> = ({
       <Box sx={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), marginBottom: theme.spacing(1) }}>
         {renderModeToggle()}
         <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-          {mode === 'and' ? t_i18n('match all conditions') : t_i18n('match any condition')}
+          {mode === 'and' ? t_i18n('match all group') : t_i18n('match any group')}
         </Typography>
         <Box sx={{ flexGrow: 1 }} />
         <Box
@@ -371,28 +371,52 @@ const FilterBuilderGroup: FunctionComponent<FilterBuilderGroupProps> = ({
       {/* Members */}
       {hasMembers ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }}>
-          {group.filters.map((filter) => renderConditionRow(filter))}
-          {group.filterGroups.map((subGroup, index) => (
-            <FilterBuilderGroup
-              key={`group-${index}`}
-              group={subGroup}
-              path={[...path, index]}
-              flatFilters={flatFilters}
-              helpers={helpers}
-              filtersRepresentativesMap={filtersRepresentativesMap}
-              entityTypes={entityTypes}
-              availableFilterKeys={availableFilterKeys}
-              availableEntityTypes={availableEntityTypes}
-              availableRelationshipTypes={availableRelationshipTypes}
-              availableRelationFilterTypes={availableRelationFilterTypes}
-              searchContext={searchContext}
-              onSetMode={onSetMode}
-              onAddFilter={onAddFilter}
-              onAddGroup={onAddGroup}
-              onRemoveGroup={onRemoveGroup}
-              onRemoveFilter={onRemoveFilter}
-              onChangeFilterKey={onChangeFilterKey}
-            />
+          {[
+            ...group.filters.map((filter) => ({ key: filter.id ?? '', node: renderConditionRow(filter) })),
+            ...group.filterGroups.map((subGroup, index) => ({
+              key: `group-${index}`,
+              node: (
+                <FilterBuilderGroup
+                  group={subGroup}
+                  path={[...path, index]}
+                  flatFilters={flatFilters}
+                  helpers={helpers}
+                  filtersRepresentativesMap={filtersRepresentativesMap}
+                  entityTypes={entityTypes}
+                  availableFilterKeys={availableFilterKeys}
+                  availableEntityTypes={availableEntityTypes}
+                  availableRelationshipTypes={availableRelationshipTypes}
+                  availableRelationFilterTypes={availableRelationFilterTypes}
+                  searchContext={searchContext}
+                  onSetMode={onSetMode}
+                  onAddFilter={onAddFilter}
+                  onAddGroup={onAddGroup}
+                  onRemoveGroup={onRemoveGroup}
+                  onRemoveFilter={onRemoveFilter}
+                  onChangeFilterKey={onChangeFilterKey}
+                />
+              ),
+            })),
+          ].map((member, index) => (
+            <React.Fragment key={member.key}>
+              {index > 0 && (
+                <Box
+                  component="span"
+                  sx={{
+                    alignSelf: 'flex-start',
+                    textTransform: 'uppercase',
+                    fontSize: '0.62rem',
+                    fontWeight: 700,
+                    letterSpacing: '0.08em',
+                    color: 'text.disabled',
+                    paddingLeft: theme.spacing(0.5),
+                  }}
+                >
+                  {t_i18n(mode)}
+                </Box>
+              )}
+              {member.node}
+            </React.Fragment>
           ))}
         </Box>
       ) : (

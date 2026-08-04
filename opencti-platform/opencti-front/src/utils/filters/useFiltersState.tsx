@@ -91,6 +91,10 @@ const useFiltersState = (initFilters: FilterGroup | null = emptyFilterGroup, def
         setFiltersState((prevState) => handleAddRepresentationFilterUtil({ filters: prevState, id, value: newValue }));
       }
     },
+    handleSetFilters: (filters: FilterGroup) => {
+      latestAddFilterIdRef.current = undefined;
+      setFiltersState(filters);
+    },
   }), [defaultClearFilters]);
 
   return [filtersState, helpers];

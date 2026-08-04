@@ -171,6 +171,7 @@ const FilterBuilderDialog: FunctionComponent<FilterBuilderDialogProps> = ({
     handleSwitchGlobalMode: () => setLocalFilters((prev) => ({ ...prev, mode: prev.mode === 'and' ? 'or' : 'and' })),
     handleRemoveFilterById: (id: string) => setLocalFilters((prev) => removeFilterInTree(prev, id)),
     handleClearAllFilters: () => setLocalFilters(emptyFilterGroup),
+    handleSetFilters: (fg: FilterGroup) => setLocalFilters(ensureFilterGroupIds(fg)),
   }), []);
 
   const queryRef = useQueryLoading<FilterValuesContentQuery>(

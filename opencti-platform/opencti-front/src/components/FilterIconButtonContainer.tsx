@@ -196,10 +196,13 @@ const FilterIconButtonContainer: FunctionComponent<
     margin: `${margin}`,
     display: 'flex',
     flexWrap: 'wrap',
+    alignItems: 'center',
     gap: 1,
     overflow: 'hidden',
-    backgroundColor: hasSavedFilters ? 'rgba(37, 150, 190, 0.3)' : 'transparent',
+    backgroundColor: hasSavedFilters ? theme.palette.action?.selected : 'transparent',
+    border: hasSavedFilters ? `1px solid ${theme.palette.divider}` : 'none',
     borderRadius: hasSavedFilters ? '4px' : '0px',
+    padding: hasSavedFilters ? '2px 8px' : 0,
   };
 
   if (!isReadWriteFilter) {
@@ -207,10 +210,13 @@ const FilterIconButtonContainer: FunctionComponent<
       margin: '0 0 0 0',
       display: 'flex',
       flexWrap: 'no-wrap',
+      alignItems: 'center',
       gap: 0,
       overflow: 'hidden',
       backgroundColor: 'none',
+      border: 'none',
       borderRadius: '0px',
+      padding: 0,
     };
   }
 

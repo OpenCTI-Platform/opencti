@@ -15,6 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { Box, FormControl, FormLabel } from '@mui/material';
 import FilterIconButton from '../../../../../../components/FilterIconButton';
+import FilterBuilderButton from '../../../../../../components/filters/FilterBuilderButton';
 import Filters from '../../../../common/lists/Filters';
 import useFiltersState from '../../../../../../utils/filters/useFiltersState';
 import { stixFilters, useAvailableFilterKeysForEntityTypes } from '../../../../../../utils/filters/filtersUtils';
@@ -75,6 +76,13 @@ const PlaybookFlowFieldFilters = ({
         <Filters
           helpers={helpers}
           availableFilterKeys={availableFilterKeys}
+          searchContext={searchContext}
+        />
+        <FilterBuilderButton
+          filters={filters}
+          onSubmit={helpers.handleSetFilters}
+          availableFilterKeys={availableFilterKeys}
+          entityTypes={entityTypes}
           searchContext={searchContext}
         />
       </Box>
