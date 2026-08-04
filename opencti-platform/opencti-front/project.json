@@ -15,7 +15,14 @@
     },
     "build": {
       "executor": "nx:run-commands",
-      "dependsOn": [{ "projects": ["opencti-graphql"], "target": "build" }],
+      "dependsOn": [
+        {
+          "projects": [
+            "opencti-graphql"
+          ],
+          "target": "build"
+        }
+      ],
       "options": {
         "cwd": "opencti-platform/opencti-front",
         "command": "yarn build"
@@ -31,17 +38,7 @@
         "command": "yarn check-ts && yarn lint && yarn verify-translation"
       },
       "metadata": {
-        "description": "Check TS, lint and verify translations in the OpenCTI front"
-      }
-    },
-    "lint-oxlint": {
-      "executor": "nx:run-commands",
-      "options": {
-        "cwd": "opencti-platform/opencti-front",
-        "command": "yarn lint:oxlint"
-      },
-      "metadata": {
-        "description": "Lint the OpenCTI front with Oxlint"
+        "description": "Check TS, lint (Oxlint) and verify translations in the OpenCTI front"
       }
     },
     "fmt": {
@@ -77,7 +74,12 @@
     "e2e": {
       "executor": "nx:run-commands",
       "dependsOn": [
-        { "projects": ["opencti-worker"], "target": "dev" }
+        {
+          "projects": [
+            "opencti-worker"
+          ],
+          "target": "dev"
+        }
       ],
       "options": {
         "cwd": "opencti-platform/opencti-front",
@@ -104,7 +106,14 @@
         "cwd": "opencti-platform/opencti-front",
         "command": "yarn relay"
       },
-      "dependsOn": [{ "projects": ["opencti-graphql"], "target": "graphql" }],
+      "dependsOn": [
+        {
+          "projects": [
+            "opencti-graphql"
+          ],
+          "target": "graphql"
+        }
+      ],
       "metadata": {
         "description": "Generate the relay schema based on the backend GraphQL schema"
       }
