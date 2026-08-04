@@ -201,8 +201,6 @@ import { AbortError } from 'node-fetch';
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
 export const ES_MAX_CONCURRENCY: number = conf.get('elasticsearch:max_concurrency');
-export const ES_DEFAULT_WILDCARD_PREFIX: boolean = booleanConf('elasticsearch:search_wildcard_prefix', false);
-export const ES_DEFAULT_FUZZY: boolean = booleanConf('elasticsearch:search_fuzzy', false);
 export const ES_INIT_MAPPING_MIGRATION: string = conf.get('elasticsearch:internal_init_mapping_migration') || 'off'; // off / old / standard
 export const ES_IS_OLD_MAPPING: boolean = ES_INIT_MAPPING_MIGRATION === 'old';
 export const ES_IS_INIT_MIGRATION: boolean = ES_INIT_MAPPING_MIGRATION === 'standard' || ES_IS_OLD_MAPPING;
@@ -1872,6 +1870,9 @@ const findElementsDuplicateIds = (elements: BasicStoreBase[]): string[] => {
 export const specialElasticCharsEscape = (query: string) => {
   return query.replace(/([/+|\-*()^~={}[\]:?!"\\])/g, '\\$1');
 };
+const specialElasticCharsEscapeWithLuceneSyntax = (query: string) => {
+  return query.replace(/([/+|\-()^={}[\]:?!"\\])/g, '\\$1');
+};
 export type ElFindByIdsOpts = {
   indices?: string[] | string | null;
   baseData?: boolean | null;
@@ -2158,7 +2159,7 @@ function processSearch(
   search: string,
   args: ProcessSearchArgs,
 ): { exactSearch: string[]; querySearch: string[] } {
-  const { useWildcardPrefix = ES_DEFAULT_WILDCARD_PREFIX } = args;
+  const { useWildcardPrefix } = args;
   let decodedSearch;
   try {
     decodedSearch = decodeURIComponent(refang(search))
@@ -2181,12 +2182,9 @@ function processSearch(
 
   for (let searchIndex = 0; searchIndex < partialSearch.length; searchIndex += 1) {
     const partialElement = partialSearch[searchIndex];
-    const cleanElement = specialElasticCharsEscape(partialElement);
+    const cleanElement = specialElasticCharsEscapeWithLuceneSyntax(partialElement);
     if (isNotEmptyField(cleanElement)) {
       querySearch.push(`${useWildcardPrefix ? '*' : ''}${cleanElement}*`);
-      if (ES_DEFAULT_FUZZY) {
-        querySearch.push(`${cleanElement}~`);
-      }
     }
   }
   return {
@@ -2459,6 +2457,20 @@ export const buildLocalMustFilter = (validFilter: any) => {
                   query: nestedSearchValue.toString(),
                 },
               });
+            } else if (['contains', 'not_contains', 'starts_with', 'not_starts_with', 'ends_with', 'not_ends_with'].includes(nestedOperator)) {
+              // Substring/prefix/suffix match on a nested string field, mirroring the non-nested handling:
+              // wildcarded query_string on the .keyword sub-field, routed to must (positive) or must_not (negated).
+              const target = nestedOperator.startsWith('not_') ? nestedMustNot : nestedShould;
+              const val = specialElasticCharsEscape(nestedSearchValue).replace(/\s/g, '\\ ');
+              let query;
+              if (nestedOperator === 'contains' || nestedOperator === 'not_contains') {
+                query = `*${val}*`;
+              } else if (nestedOperator === 'starts_with' || nestedOperator === 'not_starts_with') {
+                query = `${val}*`;
+              } else {
+                query = `*${val}`;
+              }
+              target.push({ query_string: { query, analyze_wildcard: true, fields: [`${nestedFieldKey}.keyword`] } } as any);
             } else if (RANGE_OPERATORS.includes(nestedOperator)) {
               nestedShould.push({
                 range: {
@@ -2476,13 +2488,18 @@ export const buildLocalMustFilter = (validFilter: any) => {
           }
         }
       }
-      const should = {
-        bool: {
-          should: nestedShould,
-          minimum_should_match: localFilterMode === 'or' ? 1 : nestedValues.length,
-        },
-      };
-      nestedMust.push(should);
+      // Only add a should clause when there is at least one positive condition; a negated-only
+      // operator (not_eq / not_contains / nil ...) puts its clause in nestedMustNot and must not
+      // be paired with an empty should (minimum_should_match would otherwise match nothing).
+      if (nestedShould.length > 0) {
+        const should = {
+          bool: {
+            should: nestedShould,
+            minimum_should_match: localFilterMode === 'or' ? 1 : nestedValues.length,
+          },
+        };
+        nestedMust.push(should);
+      }
     }
     const nestedQuery = {
       path: headKey,

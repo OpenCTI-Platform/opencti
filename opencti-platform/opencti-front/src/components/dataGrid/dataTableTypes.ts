@@ -163,6 +163,7 @@ export interface DataTableProps {
   trashOperationsEnabled?: boolean;
   disableBulkEnroll?: boolean;
   deleteDisable?: boolean;
+  searchTerm?: string;
 }
 
 export interface DataTableBodyProps {
@@ -173,6 +174,7 @@ export interface DataTableBodyProps {
   pageStart: number;
   emptyStateMessage?: string;
   hideHeaders: DataTableProps['hideHeaders'];
+  searchTerm?: string;
 }
 
 export interface DataTableDisplayFiltersProps {

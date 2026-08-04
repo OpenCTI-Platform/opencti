@@ -100,6 +100,7 @@ import './tool/tool';
 import './vulnerability/vulnerability';
 import './attackPattern/attackPattern';
 import './courseOfAction/courseOfAction';
+import './customField/custom-field';
 // endregion
 // region graphql registration
 import './channel/channel-graphql';
@@ -169,4 +170,5 @@ import './dataSharing/streamCollection-graphql';
 import './retentionRules/retentionRules-graphql';
 import './dataSanity/dataSanity-graphql';
 import './workflow/api/workflow-graphql';
+import './customField/custom-field-graphql';
 // endregion

@@ -1,4 +1,4 @@
-import React, { CSSProperties, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { CSSProperties, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as R from 'ramda';
 import DataTableHeaders from './DataTableHeaders';
 import { DataTableBodyProps, DataTableLineProps, DataTableVariant } from '../dataTableTypes';
@@ -8,6 +8,7 @@ import { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
 import callbackResizeObserver from '../../../utils/resizeObservers';
 import { useDataTable } from '../dataTableHooks';
 import DataTableEmptyState from './DataTableEmptyState';
+import DataTableSearchEmptyState from './DataTableSearchEmptyState';
 
 const DataTableBody = ({
   settingsMessagesBannerHeight = 0,
@@ -17,6 +18,7 @@ const DataTableBody = ({
   pageSize,
   hideHeaders = false,
   emptyStateMessage,
+  searchTerm,
 }: DataTableBodyProps) => {
   const {
     rootRef,
@@ -32,7 +34,7 @@ const DataTableBody = ({
       onToggleEntity,
     },
     useDataTablePaginationLocalStorage: {
-      viewStorage: { filters },
+      viewStorage: { filters, searchTerm: storedSearchTerm },
     },
     data,
     enableInfiniteScroll,
@@ -44,6 +46,8 @@ const DataTableBody = ({
     loadMore,
     hasMore,
   } = data ? { data } : useDataTable(dataQueryArgs); // data is from datatableWithoutFragment
+
+  const tableSearchTerm = searchTerm ?? storedSearchTerm;
 
   const resolvedData = useMemo(() => {
     if (!queryData) {
@@ -180,6 +184,11 @@ const DataTableBody = ({
     return null;
   }
 
+  const isSearching = !!tableSearchTerm
+    || (filters?.filters ?? [])
+      .filter((f) => ['nil', 'not_nil', 'has_changed', 'not_has_changed'].includes(f.operator ?? 'eq') || f.values.length > 0)
+      .length > 0;
+
   return (
     <>
       <div style={{ width: rowWidth }}>
@@ -189,6 +198,9 @@ const DataTableBody = ({
       </div>
 
       <div ref={scrollContainerRef} style={containerLinesStyle}>
+        {resolvedData.length === 0 && isSearching && (
+          <DataTableSearchEmptyState rawSearchTerm={tableSearchTerm} />
+        )}
         {resolvedData.length === 0 && !!emptyStateMessage && (
           <DataTableEmptyState message={emptyStateMessage} />
         )}
