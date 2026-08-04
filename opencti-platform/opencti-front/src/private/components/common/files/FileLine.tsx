@@ -234,7 +234,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     if (inNewWindow) {
       window.open(url, '_blank', 'noopener,noreferrer');
     } else {
-      window.location.pathname = url;
+      window.location.href = url;
     }
   };
   const generateIcon = () => {
