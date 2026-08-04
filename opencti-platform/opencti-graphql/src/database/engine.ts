@@ -2718,7 +2718,7 @@ export const buildLocalMustFilter = (validFilter: any) => {
               script: {
                 script: {
                   source: `
-                    def fieldValues = doc['${buildFieldForScriptQuery(headKey)}'];
+                    def fieldValues = doc[params.field];
                     if (fieldValues == null || fieldValues.length == 0) return false;
                     def filterValues = params.values;
                     if (params.mode == 'and') {
@@ -2729,6 +2729,7 @@ export const buildLocalMustFilter = (validFilter: any) => {
                     return false;
                   `,
                   params: {
+                    field: buildFieldForScriptQuery(headKey),
                     values,
                     mode: localFilterMode,
                   },
