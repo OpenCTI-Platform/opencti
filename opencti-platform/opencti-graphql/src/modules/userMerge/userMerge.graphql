@@ -1,0 +1,73 @@
+enum UserMergeRightsStrategy {
+    """Rights of the target are left untouched."""
+    STRICT
+    """Rights of the source are added to those of the target."""
+    UNION
+}
+
+enum UserMergeStatus {
+    RUNNING
+    SUCCESS
+    FAILED
+}
+
+input UserMergeOptions {
+    """
+    Suppresses every write on a single execution path — it is not a separate estimation
+    endpoint. Defaults to true so that calling the mutation without options can never
+    rewrite data.
+    """
+    dryRun: Boolean = true
+    """Defaults to the non-widening strategy."""
+    rightsStrategy: UserMergeRightsStrategy = STRICT
+}
+
+"""
+Outcome of one merge execution. The shape is identical in dry and real mode, which is what
+makes "dry-run == real impact" verifiable from the API alone.
+"""
+type UserMergeResult {
+    id: ID!
+    source_id: ID!
+    target_id: ID!
+    dry_run: Boolean!
+    rights_strategy: UserMergeRightsStrategy!
+    status: UserMergeStatus!
+    started_at: DateTime!
+    completed_at: DateTime
+    message: String
+}
+
+"""One entry of the execution journal, written per handler as the merge progresses."""
+type UserMergeJournalEntry {
+    id: ID!
+    merge_id: ID!
+    source_id: ID!
+    target_id: ID!
+    handler: String!
+    dry_run: Boolean!
+    status: UserMergeStatus!
+    started_at: DateTime!
+    completed_at: DateTime
+    message: String
+}
+
+extend type Query {
+    """
+    Execution journal of the merges. Reading it is how a run stays observable once the HTTP
+    connection is gone: the connection dying does not stop the merge, so the journal is the
+    only way to tell a dead connection from a failed merge.
+
+    mergeId is optional on purpose — an operator who lost the connection also lost the id
+    returned by the mutation, so requiring it would defeat the point of the query.
+    """
+    userMergeJournal(mergeId: ID, first: Int): [UserMergeJournalEntry!]! @auth(for: [BYPASS]) @ff(flags: ["MERGE_USERS"])
+}
+
+extend type Mutation {
+    """
+    Merges the source user into the target user. Runs synchronously and returns the result;
+    follow userMergeJournal to observe a run whose connection was cut.
+    """
+    userMerge(sourceId: ID!, targetId: ID!, options: UserMergeOptions): UserMergeResult! @auth(for: [BYPASS]) @ff(flags: ["MERGE_USERS"])
+}
