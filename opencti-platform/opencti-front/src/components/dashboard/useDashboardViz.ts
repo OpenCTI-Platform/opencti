@@ -83,6 +83,8 @@ const useDashboardViz = <TQuery extends OperationType>({
     };
   };
 
+  // Re-resolve selection inputs when schema, selection content, perspective, or host changes
+  // Because those changes make the result change
   useEffect(() => handleResolveDataSelection(), [filterKeysSchema, dataSelectionSignature, perspective, host]);
 
   const queryVariables = useMemo(
