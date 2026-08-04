@@ -60,7 +60,7 @@ const useDashboardViz = <TQuery extends OperationType>({
    * When provided, `onResolved` runs after state updates with the fresh resolution
    * result so callers can avoid stale closure values.
    */
-  const handleResolveDataSelection = (
+  const handleResolveDataSelection = useCallback((
     onResolved?: (result: Awaited<ReturnType<typeof resolveDataSelection>>) => void,
   ) => {
     let cancelled = false;
@@ -81,11 +81,11 @@ const useDashboardViz = <TQuery extends OperationType>({
     return () => {
       cancelled = true;
     };
-  };
+  }, [filterKeysSchema, dataSelectionSignature, perspective, host]);
 
   // Re-resolve selection inputs when schema, selection content, perspective, or host changes
   // Because those changes make the result change
-  useEffect(() => handleResolveDataSelection(), [filterKeysSchema, dataSelectionSignature, perspective, host]);
+  useEffect(() => handleResolveDataSelection(), [handleResolveDataSelection]);
 
   const queryVariables = useMemo(
     () => (buildQueryVariables && config && resolvedDataSelection.length > 0
