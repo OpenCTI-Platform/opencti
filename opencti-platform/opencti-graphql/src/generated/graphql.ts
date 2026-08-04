@@ -17676,6 +17676,11 @@ export type Mutation = {
   userAdminTokenAdd: TokenGenerated;
   userAdminTokenRevoke?: Maybe<Scalars['ID']['output']>;
   userEdit?: Maybe<UserEditMutations>;
+  /**
+   * Merges the source user into the target user. Runs synchronously and returns the result;
+   * follow userMergeJournal to observe a run whose connection was cut.
+   */
+  userMerge: UserMergeResult;
   userNoteAdd?: Maybe<Note>;
   userOpinionAdd?: Maybe<Opinion>;
   userSessionsKill?: Maybe<Array<Maybe<Scalars['ID']['output']>>>;
@@ -20336,6 +20341,13 @@ export type MutationUserAdminTokenRevokeArgs = {
 
 export type MutationUserEditArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationUserMergeArgs = {
+  options?: InputMaybe<UserMergeOptions>;
+  sourceId: Scalars['ID']['input'];
+  targetId: Scalars['ID']['input'];
 };
 
 
@@ -25056,6 +25068,15 @@ export type Query = {
   unknownStixCoreObjects: Array<Scalars['String']['output']>;
   user?: Maybe<User>;
   userAlreadyExists?: Maybe<Scalars['Boolean']['output']>;
+  /**
+   * Execution journal of the merges. Reading it is how a run stays observable once the HTTP
+   * connection is gone: the connection dying does not stop the merge, so the journal is the
+   * only way to tell a dead connection from a failed merge.
+   *
+   * mergeId is optional on purpose — an operator who lost the connection also lost the id
+   * returned by the mutation, so requiring it would defeat the point of the query.
+   */
+  userMergeJournal: Array<UserMergeJournalEntry>;
   users?: Maybe<UserConnection>;
   vocabularies?: Maybe<VocabularyConnection>;
   vocabulary?: Maybe<Vocabulary>;
@@ -28185,6 +28206,12 @@ export type QueryUserArgs = {
 
 export type QueryUserAlreadyExistsArgs = {
   name: Scalars['String']['input'];
+};
+
+
+export type QueryUserMergeJournalArgs = {
+  first?: InputMaybe<Scalars['Int']['input']>;
+  mergeId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
@@ -37270,6 +37297,62 @@ export type UserLoginInput = {
   password: Scalars['String']['input'];
 };
 
+/** One entry of the execution journal, written per handler as the merge progresses. */
+export type UserMergeJournalEntry = {
+  __typename?: 'UserMergeJournalEntry';
+  completed_at?: Maybe<Scalars['DateTime']['output']>;
+  dry_run: Scalars['Boolean']['output'];
+  handler: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  merge_id: Scalars['ID']['output'];
+  message?: Maybe<Scalars['String']['output']>;
+  source_id: Scalars['ID']['output'];
+  started_at: Scalars['DateTime']['output'];
+  status: UserMergeStatus;
+  target_id: Scalars['ID']['output'];
+};
+
+export type UserMergeOptions = {
+  /**
+   * Suppresses every write on a single execution path — it is not a separate estimation
+   * endpoint. Defaults to true so that calling the mutation without options can never
+   * rewrite data.
+   */
+  dryRun?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Defaults to the non-widening strategy. */
+  rightsStrategy?: InputMaybe<UserMergeRightsStrategy>;
+};
+
+/**
+ * Outcome of one merge execution. The shape is identical in dry and real mode, which is what
+ * makes "dry-run == real impact" verifiable from the API alone.
+ */
+export type UserMergeResult = {
+  __typename?: 'UserMergeResult';
+  completed_at?: Maybe<Scalars['DateTime']['output']>;
+  dry_run: Scalars['Boolean']['output'];
+  id: Scalars['ID']['output'];
+  message?: Maybe<Scalars['String']['output']>;
+  rights_strategy: UserMergeRightsStrategy;
+  source_id: Scalars['ID']['output'];
+  started_at: Scalars['DateTime']['output'];
+  status: UserMergeStatus;
+  target_id: Scalars['ID']['output'];
+};
+
+export enum UserMergeRightsStrategy {
+  /** Rights of the target are left untouched. */
+  Strict = 'STRICT',
+  /** Rights of the source are added to those of the target. */
+  Union = 'UNION'
+}
+
+export enum UserMergeStatus {
+  Failed = 'FAILED',
+  Running = 'RUNNING',
+  Success = 'SUCCESS'
+}
+
 export type UserOtpActivationInput = {
   code: Scalars['String']['input'];
   secret: Scalars['String']['input'];
@@ -40936,6 +41019,11 @@ export type ResolversTypes = ResolversObject<{
   UserInfoMapping: ResolverTypeWrapper<UserInfoMapping>;
   UserInfoMappingInput: UserInfoMappingInput;
   UserLoginInput: UserLoginInput;
+  UserMergeJournalEntry: ResolverTypeWrapper<UserMergeJournalEntry>;
+  UserMergeOptions: UserMergeOptions;
+  UserMergeResult: ResolverTypeWrapper<UserMergeResult>;
+  UserMergeRightsStrategy: UserMergeRightsStrategy;
+  UserMergeStatus: UserMergeStatus;
   UserOTPActivationInput: UserOtpActivationInput;
   UserOTPLoginInput: UserOtpLoginInput;
   UserSession: ResolverTypeWrapper<UserSession>;
@@ -41942,6 +42030,9 @@ export type ResolversParentTypes = ResolversObject<{
   UserInfoMapping: UserInfoMapping;
   UserInfoMappingInput: UserInfoMappingInput;
   UserLoginInput: UserLoginInput;
+  UserMergeJournalEntry: UserMergeJournalEntry;
+  UserMergeOptions: UserMergeOptions;
+  UserMergeResult: UserMergeResult;
   UserOTPActivationInput: UserOtpActivationInput;
   UserOTPLoginInput: UserOtpLoginInput;
   UserSession: UserSession;
@@ -48405,6 +48496,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   userAdminTokenAdd?: Resolver<ResolversTypes['TokenGenerated'], ParentType, ContextType, RequireFields<MutationUserAdminTokenAddArgs, 'input' | 'userId'>>;
   userAdminTokenRevoke?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationUserAdminTokenRevokeArgs, 'id' | 'userId'>>;
   userEdit?: Resolver<Maybe<ResolversTypes['UserEditMutations']>, ParentType, ContextType, RequireFields<MutationUserEditArgs, 'id'>>;
+  userMerge?: Resolver<ResolversTypes['UserMergeResult'], ParentType, ContextType, RequireFields<MutationUserMergeArgs, 'sourceId' | 'targetId'>>;
   userNoteAdd?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, RequireFields<MutationUserNoteAddArgs, 'input'>>;
   userOpinionAdd?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<MutationUserOpinionAddArgs, 'input'>>;
   userSessionsKill?: Resolver<Maybe<Array<Maybe<ResolversTypes['ID']>>>, ParentType, ContextType, RequireFields<MutationUserSessionsKillArgs, 'id'>>;
@@ -50249,6 +50341,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   unknownStixCoreObjects?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryUnknownStixCoreObjectsArgs, 'values'>>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
   userAlreadyExists?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryUserAlreadyExistsArgs, 'name'>>;
+  userMergeJournal?: Resolver<Array<ResolversTypes['UserMergeJournalEntry']>, ParentType, ContextType, Partial<QueryUserMergeJournalArgs>>;
   users?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType, Partial<QueryUsersArgs>>;
   vocabularies?: Resolver<Maybe<ResolversTypes['VocabularyConnection']>, ParentType, ContextType, Partial<QueryVocabulariesArgs>>;
   vocabulary?: Resolver<Maybe<ResolversTypes['Vocabulary']>, ParentType, ContextType, RequireFields<QueryVocabularyArgs, 'id'>>;
@@ -53235,6 +53328,31 @@ export type UserInfoMappingResolvers<ContextType = any, ParentType extends Resol
   name_expr?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type UserMergeJournalEntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserMergeJournalEntry'] = ResolversParentTypes['UserMergeJournalEntry']> = ResolversObject<{
+  completed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  dry_run?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  handler?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  merge_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  source_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  started_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['UserMergeStatus'], ParentType, ContextType>;
+  target_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+}>;
+
+export type UserMergeResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserMergeResult'] = ResolversParentTypes['UserMergeResult']> = ResolversObject<{
+  completed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  dry_run?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  rights_strategy?: Resolver<ResolversTypes['UserMergeRightsStrategy'], ParentType, ContextType>;
+  source_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  started_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['UserMergeStatus'], ParentType, ContextType>;
+  target_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+}>;
+
 export type UserSessionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserSession'] = ResolversParentTypes['UserSession']> = ResolversObject<{
   sessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['SessionDetail']>>>, ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
@@ -54576,6 +54694,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   UserEdge?: UserEdgeResolvers<ContextType>;
   UserEditMutations?: UserEditMutationsResolvers<ContextType>;
   UserInfoMapping?: UserInfoMappingResolvers<ContextType>;
+  UserMergeJournalEntry?: UserMergeJournalEntryResolvers<ContextType>;
+  UserMergeResult?: UserMergeResultResolvers<ContextType>;
   UserSession?: UserSessionResolvers<ContextType>;
   UserStatus?: UserStatusResolvers<ContextType>;
   VerifyOtp?: VerifyOtpResolvers<ContextType>;

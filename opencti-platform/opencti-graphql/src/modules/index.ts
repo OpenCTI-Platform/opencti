@@ -170,6 +170,7 @@ import './dataSharing/feed-graphql';
 import './dataSharing/streamCollection-graphql';
 import './retentionRules/retentionRules-graphql';
 import './dataSanity/dataSanity-graphql';
+import './userMerge/userMerge-graphql';
 import './workflow/api/workflow-graphql';
 import './customField/custom-field-graphql';
 // endregion
