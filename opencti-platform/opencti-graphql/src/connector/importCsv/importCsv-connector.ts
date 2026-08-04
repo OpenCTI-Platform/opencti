@@ -136,7 +136,6 @@ export const processCSVforWorkers = async (
           `${LOG_PREFIX} reading line from ${bulkLineCursor} to ${BULK_LINE_PARSING_NUMBER + bulkLineCursor}`,
         );
         // Need an async interator to prevent blocking
-        // eslint-disable-next-line no-restricted-syntax
         for await (const line of readStream) {
           if (
             startingLineNumber <= lineNumber &&

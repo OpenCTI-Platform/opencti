@@ -5,8 +5,7 @@ import NotificationTool from '../../../src/utils/NotificationTool';
 
 const digest = (period: 'hour' | 'day' | 'week' | 'month', triggerTime = ''): ResolvedDigest => {
   return {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+    // @ts-expect-error ResolvedDigest type is not compatible with the generated ResolvedDigest type for this field
     trigger: {
       internal_id: '',
       name: 'test notification',

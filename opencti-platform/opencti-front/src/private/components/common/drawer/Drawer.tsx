@@ -101,7 +101,7 @@ const getDrawerWidth = (size: DrawerSize) => {
   }
 };
 
-// eslint-disable-next-line react/display-name
+// oxlint-disable-next-line react/display-name
 const Drawer = forwardRef<HTMLDivElement, DrawerProps>(
   (
     {
@@ -151,8 +151,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(
         component = children;
       } else {
         component = React.cloneElement(children as React.ReactElement, {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
+          // @ts-expect-error child component prop types are unknown, so injected onClose prop can't be type-checked
           onClose: handleClose,
         });
       }

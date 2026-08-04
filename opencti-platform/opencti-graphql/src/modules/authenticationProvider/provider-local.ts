@@ -14,8 +14,7 @@ export let LOCAL_PROVIDER: ProviderConfiguration | undefined = undefined;
 
 export const registerLocalStrategy = async () => {
   logAuthInfo('Configuring local', EnvStrategyType.STRATEGY_LOCAL);
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore as per document new LocalStrategy is the right way, not sure what to do.
+  // @ts-expect-error as per document new LocalStrategy is the right way, not sure what to do.
   const localStrategy = new LocalStrategy({}, (username: string, password: string, done: any) => {
     return login(username, password)
       .then((info) => {

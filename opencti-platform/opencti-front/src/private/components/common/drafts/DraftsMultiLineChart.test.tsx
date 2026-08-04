@@ -3,7 +3,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import testRender from '../../../../utils/tests/test-render';
 import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let lastBuildQueryVariables: ((...args: any[]) => any) | undefined;
 
 vi.mock('../../../../components/dashboard/WidgetContainer', () => ({
@@ -21,7 +20,6 @@ vi.mock('../../../../components/dashboard/WidgetMultiLines', () => ({
 }));
 
 vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   default: (opts: any) => {
     lastBuildQueryVariables = opts.buildQueryVariables;
     return {
@@ -46,7 +44,6 @@ vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
 
 vi.mock('../../../../components/dashboard/dashboardVizUtils', () => ({
   computeWidgetFiltersForSelection: (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _selection: any,
     _config: any,
     opts: { fallbackToDefaultDates?: boolean } = {},

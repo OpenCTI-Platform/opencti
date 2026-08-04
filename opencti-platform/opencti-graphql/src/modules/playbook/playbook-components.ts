@@ -228,7 +228,7 @@ export const PLAYBOOK_INTERNAL_DATA_CRON: PlaybookComponent<CronConfiguration> =
   },
 };
 
-// eslint-disable-next-line  @typescript-eslint/no-empty-object-type
+// oxlint-disable-next-line typescript/no-empty-object-type
 interface IngestionConfiguration {}
 const PLAYBOOK_INGESTION_COMPONENT: PlaybookComponent<IngestionConfiguration> = {
   id: 'PLAYBOOK_INGESTION_COMPONENT',
@@ -376,8 +376,7 @@ const extendsBundleElementsWithExtensions = (bundle: StixBundle): StixBundle => 
   newBundle.objects = newBundle.objects.map((element) => {
     const data = structuredClone(element);
     const openctiType = generateInternalType(data); // convert from stix type
-    // eslint-disable-next-line
-    // @ts-ignore
+    // @ts-expect-error extensions is not declared on the generic bundle object type, but is built explicitly below
     data.extensions = isEmptyField(element.extensions) ? {} : element.extensions;
     if (isEmptyField(data.extensions[STIX_EXT_OCTI])) {
       data.extensions[STIX_EXT_OCTI] = {
@@ -609,7 +608,6 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
       // RESOLVE_OBSERVABLES is for now only triggered on indicator creation / update
       if (type === ENTITY_TYPE_INDICATOR && isNotEmptyField(id)) {
         // Indicator (based on) --> Observable
-        // eslint-disable-next-line max-len
         const relationOpts = {
           fromId: id,
           toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE],

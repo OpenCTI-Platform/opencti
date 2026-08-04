@@ -7,8 +7,7 @@ const basicObjectResolvers: Resolvers = {
       findFiltersRepresentatives(context, context.user, filters, { isMeValueForbidden }),
   },
   BasicObject: {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+    // @ts-expect-error obj is typed generically, entity_type narrowing is not inferred
     __resolveType(obj) {
       if (obj.entity_type) {
         return obj.entity_type.replace(/(?:^|-|_)(\w)/g, (_, letter) => letter.toUpperCase());

@@ -22,13 +22,11 @@ const EEField: FunctionComponent<EEFieldProps> = ({ children, featureLabel }) =>
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const component = React.cloneElement(children, {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+    // @ts-expect-error child component prop types are unknown, so injected label prop can't be type-checked
     label: (
       <>
         {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
+          // @ts-expect-error children.props is untyped since children is a generic ReactElement
           t_i18n(children.props.label)
         }
         <EEChip feature={featureLabel} />

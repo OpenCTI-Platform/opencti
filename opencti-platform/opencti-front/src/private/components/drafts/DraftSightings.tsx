@@ -384,7 +384,7 @@ const DraftSightings: FunctionComponent<DraftSightingsProps> = ({ isReadOnly }) 
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<DraftSightingsLinesPaginationQuery>;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   const getRedirectionLink = (stixSighting: any) => {
     if (isReadOnly) {
       const isUpdatedEntity =

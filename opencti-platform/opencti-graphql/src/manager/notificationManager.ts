@@ -689,7 +689,6 @@ export const buildTargetEvents = async (
               user,
               finalFilters,
             );
-            // eslint-disable-next-line max-len
             const translatedType = await eventTypeTranslaterForSideEvents(
               userContext,
               user,

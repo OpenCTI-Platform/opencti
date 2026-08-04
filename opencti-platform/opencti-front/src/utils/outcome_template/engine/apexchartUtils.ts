@@ -24,8 +24,7 @@ const chartDataURI = async (chartOptions: ApexOptions) => {
   await sleep(1000); // Wait animations are over
   const dataURI = await chart.dataURI();
   document.body.removeChild(canvas);
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
+  // @ts-expect-error dataURI() return type is not fully declared by the ApexCharts typings
   return dataURI.imgURI;
 };
 

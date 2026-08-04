@@ -162,8 +162,6 @@ const PlaybookPopover = ({ playbookId, running, paginationOptions }: PlaybookPop
 
   return (
     <>
-      {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-      {/* @ts-ignore */}
       <MoreVertButton
         onClick={handleOpen}
         aria-haspopup="true"

@@ -390,7 +390,6 @@ export const aiSummary = async (context, user, args) => {
   if (!containers.length) {
     throw FunctionalError('Not enough data to summarize the containers attached to the entity.');
   }
-  // eslint-disable-next-line no-restricted-syntax
   for (const container of containers) {
     const author = await fullEntitiesThroughRelationsToList(
       context,

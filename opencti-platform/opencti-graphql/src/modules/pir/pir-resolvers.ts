@@ -47,8 +47,7 @@ const pirResolvers: Resolvers = {
   },
   Pir: {
     creators: async (pir, _, context) => loadCreators(context, context.user, pir),
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+    // @ts-expect-error resolver signature is not compatible with the generated Resolvers type for pirContainers
     pirContainers: (pir, args, context) => findPirContainers(context, context.user, pir, args),
     authorizedMembers: (pir, _, context) => getAuthorizedMembers(context, context.user, pir),
     currentUserAccessRight: (pir, _, context) => getUserAccessRight(context.user, pir),

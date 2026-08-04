@@ -2,7 +2,7 @@ import { Field, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Drawer from '@components/common/drawer/Drawer';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTheme } from '@mui/styles';
 import { FormikHelpers } from 'formik/dist/types';
 import * as Yup from 'yup';
@@ -140,17 +140,17 @@ const IngestionCatalogConnectorCreation = ({
   const theme = useTheme<Theme>();
   const [isAcknowledgementPopoverOpen, setIsAcknowledgementPopoverOpen] = useState(false);
   const [compiledValidator, setCompiledValidator] = useState<Validator | undefined>(undefined);
+  const compiledValidatorContainerImageRef = useRef<string | undefined>(undefined);
   const [commitRegister] = useMutation<IngestionCatalogConnectorCreationMutation>(
     ingestionCatalogConnectorCreationMutation,
   );
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     if (
       !compiledValidator ||
-      compiledValidator.schema.container_image !== connector.container_image
+      compiledValidatorContainerImageRef.current !== connector.container_image
     ) {
+      compiledValidatorContainerImageRef.current = connector.container_image;
       setCompiledValidator(new Validator(connector as unknown as Schema));
     }
   }, [compiledValidator, connector]);

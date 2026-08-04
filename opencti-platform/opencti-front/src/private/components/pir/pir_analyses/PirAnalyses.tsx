@@ -251,7 +251,7 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
                 }}
               >
                 {
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  // oxlint-disable-next-line typescript/no-explicit-any
                   objects.edges.slice(0, max).map((e: any, i: number) => (
                     <div
                       key={i}

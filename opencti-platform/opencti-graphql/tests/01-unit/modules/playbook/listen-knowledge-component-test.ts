@@ -45,9 +45,9 @@ describe('findPlaybooksForEntity', () => {
 
     const result = await findPlaybooksForEntity(testContext, {} as any, 'entity-id');
     expect(result).toHaveLength(0);
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    // oxlint-disable-next-line no-unused-expressions
     expect(middleware.stixLoadById).not.toHaveBeenCalled;
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    // oxlint-disable-next-line no-unused-expressions
     expect(cache.getEntitiesListFromCache).not.toHaveBeenCalled;
   });
 

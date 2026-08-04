@@ -360,7 +360,6 @@ describe('useSearchEntities', () => {
     const [, searchEntities] = result.current;
 
     act(() => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       searchEntities('entity_type', {}, vi.fn(), null as any);
     });
 

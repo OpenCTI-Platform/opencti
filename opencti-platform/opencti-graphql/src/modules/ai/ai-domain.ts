@@ -142,7 +142,6 @@ export const makeLonger = async (
   return response;
 };
 
-// eslint-disable-next-line max-len
 export const changeTone = async (
   context: AuthContext,
   user: AuthUser,

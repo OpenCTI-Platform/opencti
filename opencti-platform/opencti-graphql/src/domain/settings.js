@@ -356,7 +356,6 @@ export const setupEnterpriseLicense = (context, user, { settingId, license }) =>
 export const getMessagesFilteredByRecipients = (user, settings) => {
   const messages = JSON.parse(settings.platform_messages ?? '[]');
   return messages.filter(({ recipients }) => {
-    // eslint-disable-next-line max-len
     return (
       isEmptyField(recipients) ||
       recipients.some((recipientId) =>

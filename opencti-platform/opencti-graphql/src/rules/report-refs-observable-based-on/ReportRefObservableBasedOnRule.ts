@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
 import def from './ReportRefObservableBasedOnDefinition';

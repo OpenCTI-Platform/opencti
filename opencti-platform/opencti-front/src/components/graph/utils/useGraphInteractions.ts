@@ -417,8 +417,8 @@ const useGraphInteractions = () => {
   const unfixNodes = () => {
     // --- Alternative way of unfixing nodes, not used for now.
     // graphData?.nodes.forEach((node) => {
-    //   node.fx = undefined; // eslint-disable-line no-param-reassign
-    //   node.fy = undefined; // eslint-disable-line no-param-reassign
+    //   node.fx = undefined; // oxlint-disable-line no-param-reassign
+    //   node.fy = undefined; // oxlint-disable-line no-param-reassign
     // });
     // applyForces();
     // --- Hard way of unfixing nodes, chosen one for now.

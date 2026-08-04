@@ -886,8 +886,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
             speeddial={true}
             type={createEntityType ?? undefined}
             inputValue={currentSearchTerm}
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore JSX component without proper TypeScript types
+            // @ts-expect-error JSX component without proper TypeScript types
             stixCyberObservableTypes={types || undefined}
             onCompleted={handleSCOEntityCreated}
           />

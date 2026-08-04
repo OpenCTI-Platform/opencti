@@ -8,7 +8,7 @@ import { getMainRepresentative, isFieldForIdentifier } from '../../utils/default
 import { simpleNumberFormat } from '../../utils/Number';
 
 interface WidgetTreeProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   data: readonly any[];
   groupBy: string;
   onMounted?: OpenCTIChartProps['onMounted'];

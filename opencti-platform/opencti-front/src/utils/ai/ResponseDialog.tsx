@@ -222,8 +222,6 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
     }),
     [id],
   );
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   useSubscription(subConfig);
   const height = 400;
 

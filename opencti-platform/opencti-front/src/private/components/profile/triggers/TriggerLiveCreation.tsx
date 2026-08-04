@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* oxlint-disable no-unused-vars */
 import Button from '@common/button/Button';
 import Checkbox from '@mui/material/Checkbox';
 import Dialog from '@common/dialog/Dialog';

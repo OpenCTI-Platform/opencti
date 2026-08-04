@@ -1068,7 +1068,7 @@ const useSearchEntities = ({
       const filterType = filterDefinition?.type ?? 'undefined';
       switch (filterType) {
         case 'vocabulary':
-          // eslint-disable-next-line no-case-declarations
+          // oxlint-disable-next-line no-case-declarations
           const vocabularyKey = filterDefinition?.elementsForFilterValuesSearch?.[0];
           if (vocabularyKey) buildOptionsFromVocabularySearchQuery(filterKey, [vocabularyKey]);
           break;
@@ -1076,12 +1076,12 @@ const useSearchEntities = ({
           buildOptionsFromStaticList(filterKey, ['true', 'false'], [], true);
           break;
         case 'enum':
-          // eslint-disable-next-line no-case-declarations
+          // oxlint-disable-next-line no-case-declarations
           const enumValues = filterDefinition?.elementsForFilterValuesSearch ?? [];
           buildOptionsFromStaticList(filterKey, enumValues, [], true);
           break;
         case 'id':
-          // eslint-disable-next-line no-case-declarations
+          // oxlint-disable-next-line no-case-declarations
           const idEntityTypes = filterDefinition?.elementsForFilterValuesSearch ?? [];
           if (idEntityTypes) {
             const completedStixCoreObjectTypes = stixCoreObjectTypes.concat([

@@ -8,7 +8,7 @@ import useResizeObserver from '../../utils/hooks/useResizeObserver';
 import WidgetNoData from './WidgetNoData';
 
 interface WidgetWordCloudProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   data: readonly any[];
   groupBy: string;
 }

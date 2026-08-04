@@ -22,8 +22,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
   const DEFAULT_COLOR = '#0fbcff'; // Normally never used (all colors are defined).
   const colors = {
     selected: theme.palette.secondary.main ?? DEFAULT_COLOR,
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+    // @ts-expect-error palette.warning is not declared as optional in the augmented Theme type
     inferred: theme.palette.warning?.main ?? DEFAULT_COLOR,
     numbersBackground: theme.palette.background.default ?? DEFAULT_COLOR,
     text: theme.palette.text?.secondary ?? DEFAULT_COLOR,

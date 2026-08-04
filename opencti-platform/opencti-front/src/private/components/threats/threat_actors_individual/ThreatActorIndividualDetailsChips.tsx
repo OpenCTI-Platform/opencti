@@ -47,7 +47,7 @@ const ThreatActorIndividualDetailsChips: FunctionComponent<
 
   const getRelationshipsOfType = (rel_type: SupportedTypes) => {
     const seen_persona_id_set = new Set<string>();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line typescript/no-explicit-any
     const relations: any[] = [];
     for (const { node } of data.stixCoreRelationships?.edges ?? []) {
       const { relationship_type } = node ?? {};

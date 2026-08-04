@@ -216,8 +216,7 @@ export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUs
   const parentAPsByKcpId = new Map<string, typeof allAttackPatterns>();
   for (const ap of allAttackPatterns) {
     if (subTechniqueIds.has(ap.id)) continue;
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+    // @ts-expect-error ap keys are dynamic, RELATION_KILL_CHAIN_PHASE is not a declared index
     const kcpIds: string[] = ap[RELATION_KILL_CHAIN_PHASE] ?? [];
     for (const kcpId of kcpIds) {
       if (!parentAPsByKcpId.has(kcpId)) parentAPsByKcpId.set(kcpId, []);
@@ -245,8 +244,7 @@ export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUs
         // Add sub attack patterns using map #1
         subAttackPatterns: subTechniquesByParentId.get(ap.id) ?? [],
         subAttackPatternsSearchText: (searchTextPartsByParentId.get(ap.id) ?? []).join(' | '),
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+        // @ts-expect-error ap keys are dynamic, RELATION_KILL_CHAIN_PHASE is not a declared index
         killChainPhasesIds: [...ap[RELATION_KILL_CHAIN_PHASE]],
       })),
     });

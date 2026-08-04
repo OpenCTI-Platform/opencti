@@ -7,7 +7,7 @@ import type { Theme } from '../Theme';
 import useDistributionGraphData from '../../utils/hooks/useDistributionGraphData';
 
 interface WidgetDonutProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   data: readonly any[];
   groupBy: string;
   onMounted?: OpenCTIChartProps['onMounted'];

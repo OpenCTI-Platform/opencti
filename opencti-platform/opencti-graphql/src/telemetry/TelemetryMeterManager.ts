@@ -666,8 +666,7 @@ export class TelemetryMeterManager {
     };
     const activeUsersCountGauge = meter.createObservableGauge(`opencti_${name}`, gaugeOptions);
     activeUsersCountGauge.addCallback((observableResult: ObservableResult) => {
-      /* eslint-disable @typescript-eslint/ban-ts-comment */
-      // @ts-ignore
+      // @ts-expect-error observer is a dynamic string property name, not part of the class's declared members
       observableResult.observe(this[observer]);
     });
   }

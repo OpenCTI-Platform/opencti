@@ -21,7 +21,7 @@ import { useTheme } from '@mui/styles';
 import { Theme } from '../Theme';
 
 interface WidgetTimelineProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   data: { value: any; link?: string }[];
   dateAttribute?: string;
 }

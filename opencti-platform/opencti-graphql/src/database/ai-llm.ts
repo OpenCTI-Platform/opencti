@@ -148,7 +148,7 @@ export const queryMistralAi = async (
     return 'No response from MistralAI';
   } catch (err) {
     logApp.error('[AI] Cannot query MistralAI', { cause: err });
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // oxlint-disable-next-line typescript/ban-ts-comment
     // @ts-expect-error
     return `An error occurred: ${err.toString()}`;
   }
@@ -181,7 +181,6 @@ export const queryChatGpt = async (
     });
     let content = '';
     if (response) {
-      // eslint-disable-next-line no-restricted-syntax
       for await (const chunk of response) {
         if (chunk.choices[0]?.delta.content !== undefined) {
           const streamText = chunk.choices[0].delta.content;
@@ -197,7 +196,7 @@ export const queryChatGpt = async (
     return 'No response from OpenAI';
   } catch (err) {
     logApp.error('[AI] Cannot query OpenAI', { cause: err });
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // oxlint-disable-next-line typescript/ban-ts-comment
     // @ts-expect-error
     return `An error occurred: ${err.toString()}`;
   }

@@ -164,11 +164,8 @@ const Audit = () => {
     await fetchQuery(AuditCSVQuery, { ...paginationOptions, first: 5000 })
       .toPromise()
       .then((result) => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+        // @ts-expect-error fetchQuery result is not typed against the AuditCSVQuery response shape
         const { audits } = result;
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         const csvData = audits.edges.map((n) => {
           const { node } = n;
           return {

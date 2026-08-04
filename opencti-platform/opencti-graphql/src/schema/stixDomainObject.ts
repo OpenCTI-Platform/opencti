@@ -193,7 +193,6 @@ export const isStixObjectAliased = (type: string): boolean => {
 };
 
 export const resolveAliasesField = (type: string): AttributeDefinition => {
-  // eslint-disable-next-line max-len
   if (
     type === ENTITY_TYPE_COURSE_OF_ACTION ||
     type === ENTITY_TYPE_VULNERABILITY ||

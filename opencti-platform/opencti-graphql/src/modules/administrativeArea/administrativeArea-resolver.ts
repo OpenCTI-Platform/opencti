@@ -22,8 +22,7 @@ const administrativeAreaResolvers: Resolvers = {
       findAdministrativeAreaPaginated(context, context.user, args),
   },
   AdministrativeArea: {
-    /* eslint-disable @typescript-eslint/ban-ts-comment */
-    // @ts-ignore
+    // @ts-expect-error resolver return type is not compatible with the generated Resolvers type for this field
     country: (administrativeArea, _, context) =>
       locatedAtCountry(context, context.user, administrativeArea.id),
   },

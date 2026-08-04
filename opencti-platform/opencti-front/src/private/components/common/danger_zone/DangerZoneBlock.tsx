@@ -83,8 +83,7 @@ const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({
           </Typography>
         )}
         {cloneElement(component as ReactElement, {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
+          // @ts-expect-error child component prop types are unknown, so injected props can't be type-checked
           title: currentTitle,
           disabled: isSensitive && !isAllowed,
           style: {
@@ -103,8 +102,7 @@ const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({
   } else {
     child = cloneElement(
       children as ReactElement,
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+      // @ts-expect-error child component prop types are unknown, so injected props can't be type-checked
       { disabled: !isAllowed, style, title: currentTitle },
     );
   }

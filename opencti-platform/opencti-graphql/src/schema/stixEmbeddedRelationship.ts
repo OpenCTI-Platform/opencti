@@ -14,7 +14,6 @@ export const isSingleRelationsRef = (entityType: string, databaseName: string): 
   isStixRefRelationship(databaseName) &&
   !schemaRelationsRefDefinition.isMultipleDatabaseName(entityType, databaseName);
 
-// eslint-disable-next-line
 export const instanceMetaRefsExtractor = (
   relationshipType: string,
   isInferred: boolean,
@@ -39,7 +38,6 @@ const RELATIONS_EMBEDDED_STIX_ATTRIBUTES = [
   objectLabel.stixName,
   bodyMultipart.stixName,
 ];
-// eslint-disable-next-line
 export const stixRefsExtractor = (data: any) => {
   if (!data.extensions?.[STIX_EXT_OCTI]?.type) {
     return [];

@@ -91,10 +91,8 @@ const replaceFiltersIds = (
         });
         regardingOfValues.push(dynamicSubfilter);
       }
-      // eslint-disable-next-line no-param-reassign
       f.values = regardingOfValues;
     } else {
-      // eslint-disable-next-line no-param-reassign
       f.values = filterValuesRemap(f, resolvedMap, from);
     }
   });

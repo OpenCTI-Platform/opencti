@@ -481,7 +481,7 @@ export const formSubmit = async (
     throw FunctionalError('Form not found', { id: input.formId });
   }
 
-  // eslint-disable-next-line no-useless-assignment
+  // oxlint-disable-next-line no-useless-assignment
   let values = {} as Record<string, any>;
   try {
     values = JSON.parse(input.values);

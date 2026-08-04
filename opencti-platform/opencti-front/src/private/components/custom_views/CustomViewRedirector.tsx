@@ -15,7 +15,7 @@ interface CustomViewRedirectorProps {
 
 // oxlint-disable-next-line react/display-name
 const renderMatch = (entity: { id: string; entity_type: string }) => {
-  // eslint-disable-next-line react/display-name
+  // oxlint-disable-next-line react/display-name
   return (info: SlugRedirectHandlerPageInfo) => {
     return (
       <CustomView

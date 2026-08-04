@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable typescript/no-explicit-any */
 import * as R from 'ramda';
 import { isDateStringNone } from '../components/i18n';
 import { truncate } from './String';
