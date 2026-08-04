@@ -186,9 +186,9 @@ const FintelDesignFormDrawer: FunctionComponent<FintelDesignFormDrawerProps> = (
           doCreate(values, helpers);
         }
       })
-      .catch((err) => {
-        handleErrorInForm(err as Error, helpers.setErrors);
-        handleError(err as Error);
+      .catch((err: Error) => {
+        handleErrorInForm(err, helpers.setErrors);
+        handleError(err);
         helpers.setSubmitting(false);
       });
   };
@@ -217,8 +217,8 @@ const FintelDesignFormDrawer: FunctionComponent<FintelDesignFormDrawerProps> = (
           });
         }
       })
-      .catch((err) => {
-        handleError(err as Error);
+      .catch((err: Error) => {
+        handleError(err);
         revert();
       });
   };

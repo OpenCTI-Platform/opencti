@@ -3057,9 +3057,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@pyroscope/nodejs@npm:0.6.1":
-  version: 0.6.1
-  resolution: "@pyroscope/nodejs@npm:0.6.1"
+"@pyroscope/nodejs@npm:0.6.2":
+  version: 0.6.2
+  resolution: "@pyroscope/nodejs@npm:0.6.2"
   dependencies:
     "@datadog/pprof": "npm:5.14.4"
     debug: "npm:^4.4.3"
@@ -3075,7 +3075,7 @@ __metadata:
       optional: true
     fastify:
       optional: true
-  checksum: 10c0/9487f6249dd5ed6e829ae67ad60125bdeba08f67494fd7a0166a8ae10688db58724e366ab3cd59fd22ca414649c81ded79ca9f03f969526b96d8c4d6cbecab21
+  checksum: 10c0/37350a9782ea14b82a351558720ac0e925daca255f93062daadbf146b8da041b21906de415c87e20082a1087983c4a31b20e2aff8cc76f9561c0a86ed8af896c
   languageName: node
   linkType: hard
 
@@ -6741,15 +6741,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express-rate-limit@npm:8.6.0":
-  version: 8.6.0
-  resolution: "express-rate-limit@npm:8.6.0"
+"express-rate-limit@npm:8.6.1":
+  version: 8.6.1
+  resolution: "express-rate-limit@npm:8.6.1"
   dependencies:
     debug: "npm:^4.4.3"
     ip-address: "npm:^10.2.0"
   peerDependencies:
     express: ">= 4.11"
-  checksum: 10c0/cce72e87963d90797ddced59de71046b90ca3ca088ab8e73587b50e812aaefa0b79f5a779743034f3ada01fd27d5c7f82063992a02981c7bc9ac74f8b01bb41a
+  checksum: 10c0/cb0e30283ef48925d8fe9efce6337a5877bb9a581f32f2594b08303dc075c24f1a52187e403c7f9889888d99eaabd9ac22182d2dadbd0b8acf3725e818131052
   languageName: node
   linkType: hard
 
@@ -9384,13 +9384,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-calls-python@npm:1.12.0":
-  version: 1.12.0
-  resolution: "node-calls-python@npm:1.12.0"
+"node-calls-python@npm:1.13.0":
+  version: 1.13.0
+  resolution: "node-calls-python@npm:1.13.0"
   dependencies:
     chokidar: "npm:^3.6.0"
     node-gyp: "npm:latest"
-  checksum: 10c0/29146be8628b74631584a073be467fcdf5457ef0b2060861d2426a9fb8eb382844ee78c82bdb450e4ca96cc17d75ea1d17070e1196c753d36790467cd952f6c6
+  checksum: 10c0/640a0f8f6b4891f64a771baa5270af649be51067098f1e61f25e3c70f86a300153ffceee0481acd3b92beca96d9c7f1b3adc530f1dc1a883975f0d6253fe3f1b
   languageName: node
   linkType: hard
 
@@ -9873,7 +9873,7 @@ __metadata:
     "@opentelemetry/sdk-trace-base": "npm:2.10.0"
     "@opentelemetry/sdk-trace-node": "npm:2.10.0"
     "@opentelemetry/semantic-conventions": "npm:1.43.0"
-    "@pyroscope/nodejs": "npm:0.6.1"
+    "@pyroscope/nodejs": "npm:0.6.2"
     "@rollup/plugin-graphql": "npm:3.0.0"
     "@sesamecare-oss/redlock": "npm:1.4.0"
     "@stylistic/eslint-plugin": "npm:5.10.0"
@@ -9929,7 +9929,7 @@ __metadata:
     eventsource: "npm:2.0.2"
     eventsource-parser: "npm:3.1.0"
     express: "npm:5.2.1"
-    express-rate-limit: "npm:8.6.0"
+    express-rate-limit: "npm:8.6.1"
     express-session: "npm:1.19.0"
     fast-json-patch: "npm:3.1.1"
     file-type: "npm:22.0.1"
@@ -9964,7 +9964,7 @@ __metadata:
     moment: "npm:2.30.1"
     moment-range: "npm:4.0.2"
     nconf: "npm:0.13.0"
-    node-calls-python: "npm:1.12.0"
+    node-calls-python: "npm:1.13.0"
     node-fetch: "npm:3.3.2"
     node-forge: "npm:1.4.0"
     nodemailer: "npm:9.0.3"

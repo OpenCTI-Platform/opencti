@@ -7,7 +7,6 @@ import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
 import { itemColor } from '../../../../utils/Colors';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
@@ -18,7 +17,7 @@ import {
 import { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { ReactNode } from 'react';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
+import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
 import { ApexOptions } from 'apexcharts';
 
 const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
@@ -492,29 +491,11 @@ const buildQueryVariables = (
   const selection = resolvedDataSelection[0];
   const subSelection = resolvedDataSelection[1];
 
-  const { startDate, endDate } = computeStartEndDates(config);
+  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(selection, config);
 
-  const dateAttribute = selection.date_attribute?.length
-    ? selection.date_attribute
-    : 'created_at';
-
-  const subDateAttribute = subSelection?.date_attribute?.length
-    ? subSelection.date_attribute
-    : 'created_at';
-
-  const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, {
-    startDate,
-    endDate,
-    dateAttribute,
-  });
-
-  const { filters: subFilters } = buildFiltersAndOptionsForWidgets(
-    subSelection?.filters,
-    {
-      startDate,
-      endDate,
-      dateAttribute: subDateAttribute,
-    },
+  const { dateAttribute: subDateAttribute, filters: subFilters } = computeWidgetFiltersForSelection(
+    subSelection,
+    config,
   );
 
   return {
@@ -524,7 +505,7 @@ const buildQueryVariables = (
     startDate,
     endDate,
     dateAttribute,
-    filters: normalizeFilterGroupForBackend(filters),
+    filters,
     limit: selection.number ?? 10,
     subDistributionField: subSelection?.attribute ?? 'entity_type',
     subDistributionOperation: 'count',
@@ -532,7 +513,7 @@ const buildQueryVariables = (
     subDistributionEndDate: endDate,
     subDistributionDateAttribute: subDateAttribute,
     subDistributionTypes: DATA_SELECTION_TYPES,
-    subDistributionFilters: normalizeFilterGroupForBackend(subFilters),
+    subDistributionFilters: subFilters,
     subDistributionLimit: subSelection?.number ?? 10,
   };
 };

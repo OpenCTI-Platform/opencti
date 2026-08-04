@@ -645,7 +645,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
         await commit(finalValues);
       } catch (error) {
         setSubmitting(false);
-        return handleErrorInForm(error, setErrors);
+        return handleErrorInForm(error as Error, setErrors);
       }
     }
     setSubmitting(false);

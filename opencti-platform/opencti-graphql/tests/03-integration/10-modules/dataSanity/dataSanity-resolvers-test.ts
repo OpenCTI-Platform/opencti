@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../utils/testQueryHelper';
+import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../utils/testQueryHelper';
 import { USER_PARTICIPATE } from '../../../utils/testQuery';
 
 const DATA_SANITY_OPERATIONS_QUERY = gql`
@@ -53,6 +53,14 @@ const DATA_SANITY_REQUEST_RUN_MUTATION = gql`
   }
 `;
 
+const DATA_SANITY_STOP_MUTATION = gql`
+  mutation DataSanityOperationStop($operation_name: String!) {
+    dataSanityOperationStop(operation_name: $operation_name)
+  }
+`;
+
+const findOperation = (operations: any[], identifier: string) => operations.find((op: any) => op.identifier === identifier);
+
 describe('Data sanity resolvers test coverage', () => {
   describe('Queries', () => {
     it('should list all data sanity operations', async () => {
@@ -103,12 +111,51 @@ describe('Data sanity resolvers test coverage', () => {
     it('should verify force_run was set after requesting run', async () => {
       // The previous mutation set force_run, verify via operations query
       const result = await queryAsAdminWithSuccess({ query: DATA_SANITY_OPERATIONS_QUERY });
-      const operation = result.data.dataSanityOperations.find(
-        (op: any) => op.identifier === 'caseSensitiveDuplicatedId',
-      );
+      const operation = findOperation(result.data.dataSanityOperations, 'caseSensitiveDuplicatedId');
       expect(operation).toBeDefined();
       // force_run should be true (set by the earlier mutation)
       expect(operation.force_run).toBe(true);
+    });
+
+    it('should stop a scheduled operation and mark it as done', async () => {
+      const result = await queryAsAdminWithSuccess({
+        query: DATA_SANITY_STOP_MUTATION,
+        variables: { operation_name: 'caseSensitiveDuplicatedId' },
+      });
+      // Returns the internal_id of the execution entity
+      expect(typeof result.data.dataSanityOperationStop).toBe('string');
+
+      const operations = await queryAsAdminWithSuccess({ query: DATA_SANITY_OPERATIONS_QUERY });
+      const operation = findOperation(operations.data.dataSanityOperations, 'caseSensitiveDuplicatedId');
+      expect(operation).toBeDefined();
+      // Marked as done: not running anymore and no pending force run
+      expect(operation.is_running).toBe(false);
+      expect(operation.force_run).toBe(false);
+      expect(operation.last_run_date).toBeDefined();
+      expect(operation.last_run_message).toEqual('Operation stopped manually');
+    });
+
+    it('should allow to schedule a stopped operation again', async () => {
+      await queryAsAdminWithSuccess({
+        query: DATA_SANITY_REQUEST_RUN_MUTATION,
+        variables: { operation_name: 'caseSensitiveDuplicatedId' },
+      });
+      const operations = await queryAsAdminWithSuccess({ query: DATA_SANITY_OPERATIONS_QUERY });
+      const operation = findOperation(operations.data.dataSanityOperations, 'caseSensitiveDuplicatedId');
+      expect(operation.force_run).toBe(true);
+
+      // Cleanup: leave the operation in a stopped state for other tests
+      await queryAsAdminWithSuccess({
+        query: DATA_SANITY_STOP_MUTATION,
+        variables: { operation_name: 'caseSensitiveDuplicatedId' },
+      });
+    });
+
+    it('should fail to stop an unknown operation', async () => {
+      await queryAsAdminWithError(
+        { query: DATA_SANITY_STOP_MUTATION, variables: { operation_name: 'unknownSanityOperation' } },
+        'Unknown sanity operation: unknownSanityOperation',
+      );
     });
   });
 
@@ -131,6 +178,13 @@ describe('Data sanity resolvers test coverage', () => {
     it('should forbid dataSanityOperationRequestRun mutation for non-bypass user', async () => {
       await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
         query: DATA_SANITY_REQUEST_RUN_MUTATION,
+        variables: { operation_name: 'caseSensitiveDuplicatedId' },
+      });
+    });
+
+    it('should forbid dataSanityOperationStop mutation for non-bypass user', async () => {
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
+        query: DATA_SANITY_STOP_MUTATION,
         variables: { operation_name: 'caseSensitiveDuplicatedId' },
       });
     });

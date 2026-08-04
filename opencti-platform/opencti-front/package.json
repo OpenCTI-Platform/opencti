@@ -1,6 +1,6 @@
 {
   "name": "opencti-front",
-  "version": "7.260728.0",
+  "version": "7.260803.0",
   "type": "module",
   "private": true,
   "workspaces": [
@@ -75,7 +75,7 @@
     "invert-color": "3.0.0",
     "ipaddr.js": "2.4.0",
     "is-svg": "6.1.0",
-    "js-base64": "3.9.1",
+    "js-base64": "3.9.2",
     "js-file-download": "0.4.12",
     "json5": "2.2.3",
     "leaflet": "1.9.4",
@@ -95,7 +95,7 @@
     "react-cookie": "8.1.2",
     "react-csv": "2.2.2",
     "react-dom": "19.2.8",
-    "react-draggable": "4.7.0",
+    "react-draggable": "4.7.1",
     "react-force-graph-2d": "1.29.1",
     "react-force-graph-3d": "1.29.1",
     "react-grid-layout": "2.2.3",
@@ -115,7 +115,7 @@
     "react-virtualized": "9.22.6",
     "react-wordcloud": "1.2.7",
     "reactflow": "11.11.4",
-    "recharts": "3.10.0",
+    "recharts": "3.10.1",
     "relay-runtime": "21.0.1",
     "remark-flexible-markers": "1.3.5",
     "remark-gfm": "4.0.1",
@@ -184,7 +184,7 @@
     "d3-color": "3.1.0",
     "json5": "2.2.3",
     "react": "19.2.8",
-    "webpack": "5.109.0",
+    "webpack": "5.109.2",
     "unrs-resolver": "1.11.1",
     "react-relay": "patch:react-relay@21.0.1#./patch/react-relay.patch"
   },

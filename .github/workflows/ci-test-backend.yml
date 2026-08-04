@@ -118,7 +118,7 @@ jobs:
       continue-on-error: true
       with:
         name: backend-test-results-integration
-        path: ${{ github.workspace }}/test-results
+        path: ${{ github.workspace }}/opencti-platform/opencti-graphql/test-results
         retention-days: 15
 
     # Output all logs used during the job
