@@ -1,4 +1,3 @@
-/* eslint-disable */
 import extractFiles from 'extract-files/extractFiles.mjs';
 import isExtractableFile from 'extract-files/isExtractableFile.mjs';
 

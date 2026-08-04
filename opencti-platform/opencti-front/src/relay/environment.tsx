@@ -133,7 +133,7 @@ export const environment = new Environment({ network, store, getDataID });
 interface QueryRendererProps {
   variables?: Record<string, unknown>;
   query: GraphQLTaggedNode;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   render: (data: any) => ReactNode;
   fetchPolicy?: FetchPolicy;
 }

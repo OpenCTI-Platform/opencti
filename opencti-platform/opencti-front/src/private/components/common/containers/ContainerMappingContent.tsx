@@ -396,8 +396,7 @@ const ContainerMappingContentComponent: FunctionComponent<
   const handleTextSelection = (text: string) => {
     if (text && text.length > 2) {
       setSelectedText(text.trim());
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+      // @ts-expect-error OPEN$ subject type does not include the OpenMapping action variant
       OPEN$.next({ action: 'OpenMapping' });
     }
   };

@@ -2,8 +2,6 @@ import moment from 'moment';
 import * as R from 'ramda';
 import DataLoader from 'dataloader';
 import Bluebird, { Promise as BluePromise } from 'bluebird';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import { compareUnsorted } from 'js-deep-equals';
 import {
   ATTR_DB_NAMESPACE,
@@ -949,11 +947,10 @@ export const buildRestrictedEntity = (resolvedEntity: BasicStoreEntity): BasicSt
   // for every attribute of the entity, we restrict it's value: we obfuscate the real value with a fake default value
   for (let i = 0; i < Object.keys(restrictedEntity).length; i += 1) {
     const item = Object.keys(restrictedEntity)[i];
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    restrictedEntity[item] = restrictedEntity[item]
-      ? restrictValue(restrictedEntity[item])
-      : restrictedEntity[item];
+    const restrictedEntityRecord = restrictedEntity as unknown as Record<string, unknown>;
+    restrictedEntityRecord[item] = restrictedEntityRecord[item]
+      ? restrictValue(restrictedEntityRecord[item])
+      : restrictedEntityRecord[item];
   }
   // we return the restricted entity with some additional restricted data in it
   return {
@@ -995,7 +992,6 @@ const convertAggregateDistributions = async (
     // The 'unknown' bucket has no real entity — skip resolution and access check
     if (filteredData[i].label === 'unknown') {
       grantedIds.push('unknown');
-      // eslint-disable-next-line no-continue
       continue;
     }
     const resolved = allResolveLabels[filteredData[i].label.toLowerCase()];
@@ -1139,8 +1135,7 @@ export const distributionHistory = async (context: AuthContext, user: AuthUser, 
     return result;
   }
   // TODO this return problably doesn't work when it happens: API always expects an entity in returned data, but there is none with this return
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
+  // @ts-expect-error Ramda's sortWith/take generic inference produces an incompatible return type
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
 export const distributionEntities = async (
@@ -1240,8 +1235,7 @@ export const distributionEntities = async (
     return result;
   }
   // TODO this return problably doesn't work when it happens: API always expects an entity in returned data, but there is none with this return
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
+  // @ts-expect-error Ramda's sortWith/take generic inference produces an incompatible return type
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
 export const distributionRelations = async (
@@ -1294,8 +1288,7 @@ export const distributionRelations = async (
     );
   }
   // TODO this return problably doesn't work when it happens: API always expects an entity in returned data, but there is none with this return
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
+  // @ts-expect-error Ramda's sortWith/take generic inference produces an incompatible return type
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
 // endregion
@@ -1482,8 +1475,7 @@ export const inputResolveRefs = async (
         resolutionsMap.set(dataKey, data);
       }
     }
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+    // @ts-expect-error Ramda groupBy iteratee parameter type doesn't match resolutionsMap.values() element type
     const groupByTypeElements = R.groupBy((e) => e.i_group.destKey, resolutionsMap.values());
     const resolved = Object.entries(groupByTypeElements).map(([k, val]) => {
       const attr = schemaAttributesDefinition.getAttribute(type, k);
@@ -2935,8 +2927,7 @@ const updateAttributeRaw = async (
         normalizeName(aliasedInstance.name) !== normalizeName(askedModificationName)
       ) {
         // If name change, we need to add the old name in aliases
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+        // @ts-expect-error aliasedInstance keys are dynamic, no index signature declared
         const aliases = [...(aliasedInstance[aliasField] ?? [])];
         if (upsert) {
           // For upsert, we concatenate everything to be none destructive
@@ -2959,8 +2950,7 @@ const updateAttributeRaw = async (
         } else if (!aliasesInput) {
           // Name change can create a duplicate with aliases
           // If it's the case aliases must be also patched.
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
+          // @ts-expect-error aliasedInstance keys are dynamic, no index signature declared
           const currentAliases = aliasedInstance[aliasField] || [];
           const targetAliases = currentAliases.filter((a: string) => a !== askedModificationName);
           if (currentAliases.length !== targetAliases.length) {
@@ -2976,11 +2966,11 @@ const updateAttributeRaw = async (
         // No name change asked but aliases addition
         if (upsert) {
           // In upsert we cumulate with current aliases
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
+          // @ts-expect-error aliasedInstance keys are dynamic, no index signature declared
+          const currentAliasesForUpsert = aliasedInstance[aliasField] || [];
           aliasesInput.value = R.uniqBy(
             (e) => normalizeName(e),
-            [...aliasesInput.value, ...(aliasedInstance[aliasField] || [])],
+            [...aliasesInput.value, ...currentAliasesForUpsert],
           );
         }
         // Internal ids alias must be generated again
@@ -3992,8 +3982,7 @@ const createRuleDataPatch = (instance: Record<string, any>) => {
       if (operation === RULES_ATTRIBUTES_BEHAVIOR.OPERATIONS.MIN) {
         if (isNumericAttribute(attribute)) {
           // TODO R.min might be broken here? R.min(values) is returning a function instead of a value
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
+          // @ts-expect-error Ramda's R.min generic inference returns an incompatible type here
           patch[attribute] = R.min(values);
         } else if (isDateAttribute(attribute)) {
           const timeValues = convertRulesTimeValues(values);
@@ -4005,8 +3994,7 @@ const createRuleDataPatch = (instance: Record<string, any>) => {
       if (operation === RULES_ATTRIBUTES_BEHAVIOR.OPERATIONS.MAX) {
         if (isNumericAttribute(attribute)) {
           // TODO R.min might be broken here? R.max(values) is returning a function instead of a value
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
+          // @ts-expect-error Ramda's R.max generic inference returns an incompatible type here
           patch[attribute] = R.max(values);
         } else if (isDateAttribute(attribute)) {
           const timeValues = convertRulesTimeValues(values);

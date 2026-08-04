@@ -101,9 +101,7 @@ const StixCoreObjectOpinionsRadar: FunctionComponent<StixCoreObjectOpinionsRadar
 
   return (
     <Chart
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      // Need to migrate Chart Charts.js file to TSX
+      // @ts-expect-error Need to migrate Chart Charts.js file to TSX
       options={radarChartOptions(
         theme,
         labels,

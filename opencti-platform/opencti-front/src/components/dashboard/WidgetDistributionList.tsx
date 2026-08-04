@@ -12,7 +12,7 @@ import { useFormatter } from '../i18n';
 import { useComputeLink } from '../../utils/hooks/useAppData';
 
 interface WidgetDistributionListProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   data: any[];
   hasSettingAccess?: boolean;
   overflow?: string;

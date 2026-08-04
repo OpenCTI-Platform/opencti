@@ -254,7 +254,7 @@ describe('TAXII ingestion resolver standard behavior', () => {
       variables: { id: createdTaxiiIngesterId, input: { key: 'authentication_value', value: ['user:name:P@ssw0rd!'] } },
     });
     expect(ingesterQueryResult.errors).toBeDefined();
-    if (ingesterQueryResult.errors) { // above expect is not taken by eslint
+    if (ingesterQueryResult.errors) {
       const error: GraphQLFormattedError = ingesterQueryResult.errors[0];
       expect(error.message).toContain('Username and password cannot have : character.');
     }

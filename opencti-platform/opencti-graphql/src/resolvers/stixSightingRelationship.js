@@ -119,7 +119,6 @@ const stixSightingRelationshipResolvers = {
           commitMessage,
           references,
         }),
-      // eslint-disable-next-line max-len
       relationDelete: ({ toId, relationship_type: relationshipType, commitMessage, references }) =>
         stixSightingRelationshipDeleteRelation(context, context.user, id, toId, relationshipType, {
           commitMessage,

@@ -11,7 +11,15 @@ const ATTACK_PATTERN = 'Attack-Pattern';
 const targetEntity = { internal_id: 'target-entity', entity_type: ATTACK_PATTERN } as any;
 
 // Realistic mix of STIX relationship types an Attack-Pattern accumulates relations through.
-const RELATION_TYPES = ['uses', 'targets', 'related-to', 'indicates', 'mitigates', 'detects', 'subtechnique-of'];
+const RELATION_TYPES = [
+  'uses',
+  'targets',
+  'related-to',
+  'indicates',
+  'mitigates',
+  'detects',
+  'subtechnique-of',
+];
 
 // Simple seeded PRNG (mulberry32) for a reproducible, non-adversarial "real-world-shaped" dataset.
 function mulberry32(seed: number) {
@@ -43,7 +51,9 @@ const buildRealisticDependencies = (
 ) => {
   return Array.from({ length: count }).map((_, index) => {
     const useOverlap = overlapPool && overlapPool.length > 0 && rng() < overlapRatio;
-    const internalId = useOverlap ? overlapPool[Math.floor(rng() * overlapPool.length)] : `${idPrefix}-entity-${index}`;
+    const internalId = useOverlap
+      ? overlapPool[Math.floor(rng() * overlapPool.length)]
+      : `${idPrefix}-entity-${index}`;
     const entityType = RELATION_TYPES[Math.floor(rng() * RELATION_TYPES.length)];
     const dated = rng() < datedRatio;
     return {
@@ -67,19 +77,25 @@ const buildRealisticDependencies = (
 // Frozen, verbatim copy of the pre-fix (commit 3e1529d531^) algorithm: R.find-equivalent linear scan
 // over the full targets array per source, plus a linear cache array scan. Kept local (not imported)
 // so this file remains a faithful "before" snapshot even if middleware.ts changes further in the future.
-const noDateRef = (e: { start_time?: string; stop_time?: string; first_seen?: string; last_seen?: string }) => (
-  e.first_seen === undefined && e.last_seen === undefined && e.start_time === undefined && e.stop_time === undefined
-);
+const noDateRef = (e: {
+  start_time?: string;
+  stop_time?: string;
+  first_seen?: string;
+  last_seen?: string;
+}) =>
+  e.first_seen === undefined &&
+  e.last_seen === undefined &&
+  e.start_time === undefined &&
+  e.stop_time === undefined;
 const preFixFilterTargetByExisting = (sources: any[], targets: any[]) => {
   const cache: string[] = [];
   const filtered: any[] = [];
   for (let index = 0; index < sources.length; index += 1) {
     const source = sources[index];
-    const finder = (t: any) => (
-      t.internal_id === source.internal_id
-      && t.i_relation.entity_type === source.i_relation.entity_type
-      && noDateRef(t.i_relation)
-    );
+    const finder = (t: any) =>
+      t.internal_id === source.internal_id &&
+      t.i_relation.entity_type === source.i_relation.entity_type &&
+      noDateRef(t.i_relation);
     const found = targets.find(finder);
     const id = `${source.i_relation.entity_type}-${source.internal_id}`;
     if (!found && !cache.includes(id)) {
@@ -95,7 +111,13 @@ const runComparison = async (label: string, sources: any[], targets: any[]) => {
   const targetDependencies = { i_relations_from: targets, i_relations_to: [] } as any;
 
   const newStart = performance.now();
-  const { redirects } = await filterTargetByExisting(testContext, targetEntity, 'from', sourcesDependencies, targetDependencies);
+  const { redirects } = await filterTargetByExisting(
+    testContext,
+    targetEntity,
+    'from',
+    sourcesDependencies,
+    targetDependencies,
+  );
   const newElapsed = performance.now() - newStart;
 
   const oldStart = performance.now();
@@ -105,8 +127,10 @@ const runComparison = async (label: string, sources: any[], targets: any[]) => {
   const newIds = redirects.map((r) => r.i_relation.internal_id).sort();
   const oldIds = oldFiltered.map((r) => r.i_relation.internal_id).sort();
 
-  // eslint-disable-next-line no-console
-  console.log(`[REAL-WORLD-SCALE] ${label}: new=${newElapsed.toFixed(2)}ms, old=${oldElapsed.toFixed(2)}ms, speedup=${(oldElapsed / Math.max(newElapsed, 0.001)).toFixed(1)}x, kept=${newIds.length}/${sources.length}`);
+  // oxlint-disable-next-line no-console
+  console.log(
+    `[REAL-WORLD-SCALE] ${label}: new=${newElapsed.toFixed(2)}ms, old=${oldElapsed.toFixed(2)}ms, speedup=${(oldElapsed / Math.max(newElapsed, 0.001)).toFixed(1)}x, kept=${newIds.length}/${sources.length}`,
+  );
 
   return { newElapsed, oldElapsed, newIds, oldIds };
 };
@@ -121,7 +145,11 @@ describe('filterTargetByExisting real-world-scale comparison (T1027 incident sha
     const overlapPool = targets.slice(0, 20000).map((t) => t.internal_id);
     const sources = buildRealisticDependencies(rng, 2000, 'source', 0.1, overlapPool, 0.25);
 
-    const { newElapsed, oldElapsed, newIds, oldIds } = await runComparison('target=77964 distinct, source=2000 (25% overlap)', sources, targets);
+    const { newElapsed, oldElapsed, newIds, oldIds } = await runComparison(
+      'target=77964 distinct, source=2000 (25% overlap)',
+      sources,
+      targets,
+    );
 
     expect(newIds).toEqual(oldIds); // correctness: identical decision set as the pre-fix algorithm
     expect(newElapsed).toBeLessThan(2000); // new: comfortably sub-second/low-second even at this scale
@@ -134,7 +162,11 @@ describe('filterTargetByExisting real-world-scale comparison (T1027 incident sha
     const overlapPool = targets.slice(0, 15000).map((t) => t.internal_id);
     const sources = buildRealisticDependencies(rng, 40000, 'source', 0.1, overlapPool, 0.3);
 
-    const { newElapsed, oldElapsed, newIds, oldIds } = await runComparison('target=40000 distinct, source=40000 distinct (30% overlap)', sources, targets);
+    const { newElapsed, oldElapsed, newIds, oldIds } = await runComparison(
+      'target=40000 distinct, source=40000 distinct (30% overlap)',
+      sources,
+      targets,
+    );
 
     expect(newIds).toEqual(oldIds);
     expect(newElapsed).toBeLessThan(2000);

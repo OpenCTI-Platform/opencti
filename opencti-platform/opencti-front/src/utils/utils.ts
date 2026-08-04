@@ -16,9 +16,9 @@ export const copyToClipboard = (t: (text: string) => string, text: string) => {
 };
 
 export const removeEmptyFields = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   obj: Record<string, any | undefined>,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
 ): Record<string, any> => {
   const clone = { ...obj };
   Object.keys(clone).forEach((key) => {

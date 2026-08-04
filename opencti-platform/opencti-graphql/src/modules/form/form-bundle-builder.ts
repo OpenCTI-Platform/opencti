@@ -189,7 +189,7 @@ export const buildMainStixEntities = async (
               ? field.defaultValue
               : values.mainEntityGroups[index][field.name];
           const convertedValue = convertFieldType(fieldValue, field);
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // oxlint-disable-next-line typescript/ban-ts-comment
           // @ts-expect-error
           mainEntity[field.attributeMapping.attributeName] = convertedValue;
         }
@@ -235,7 +235,7 @@ export const buildMainStixEntities = async (
           mainEntity.name = observableValue;
           mainEntity.x_opencti_main_observable_type = observableType;
         } else {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // oxlint-disable-next-line typescript/ban-ts-comment
           // @ts-expect-error
           mainEntity[schema.mainEntityParseFieldMapping] = refangedMainEntityParsed[index];
         }
@@ -251,7 +251,7 @@ export const buildMainStixEntities = async (
                 : values.mainEntityFields[field.attributeMapping.attributeName];
             if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
               const convertedValue = convertFieldType(fieldValue, field);
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // oxlint-disable-next-line typescript/ban-ts-comment
               // @ts-expect-error
               mainEntity[field.attributeMapping.attributeName] = convertedValue;
             }
@@ -289,7 +289,7 @@ export const buildMainStixEntities = async (
         const field = mainEntityFields[i];
         const fieldValue = field.isReadOnly && !isBypass ? field.defaultValue : values[field.name];
         const convertedValue = convertFieldType(fieldValue, field);
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // oxlint-disable-next-line typescript/ban-ts-comment
         // @ts-expect-error
         mainEntity[field.attributeMapping.attributeName] = convertedValue;
       }
@@ -384,7 +384,7 @@ export const buildAdditionalEntities = async (
                   ? field.defaultValue
                   : values[`additional_${additionalEntity.id}_groups`][index2][field.name];
               const convertedValue = convertFieldType(fieldValue, field);
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // oxlint-disable-next-line typescript/ban-ts-comment
               // @ts-expect-error
               newAdditionalEntity[field.attributeMapping.attributeName] = convertedValue;
             }
@@ -455,7 +455,7 @@ export const buildAdditionalEntities = async (
               newAdditionalEntity.name = observableValue;
               newAdditionalEntity.x_opencti_main_observable_type = observableType;
             } else {
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // oxlint-disable-next-line typescript/ban-ts-comment
               // @ts-expect-error
               newAdditionalEntity[additionalEntity.parseFieldMapping] =
                 refangedAdditionalParsed[index2];
@@ -471,7 +471,7 @@ export const buildAdditionalEntities = async (
                       ];
                 if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
                   const convertedValue = convertFieldType(fieldValue, field);
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // oxlint-disable-next-line typescript/ban-ts-comment
                   // @ts-expect-error
                   newAdditionalEntity[field.attributeMapping.attributeName] = convertedValue;
                 }
@@ -535,7 +535,7 @@ export const buildAdditionalEntities = async (
                 field.isReadOnly && !isBypass ? field.defaultValue : entityData[field.name];
               if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
                 const convertedValue = convertFieldType(fieldValue, field);
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // oxlint-disable-next-line typescript/ban-ts-comment
                 // @ts-expect-error
                 newAdditionalEntity[field.attributeMapping.attributeName] = convertedValue;
               }

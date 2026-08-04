@@ -68,7 +68,7 @@ const containerResolvers = {
   //   edges: async function* generateEdges(connection) {
   //     const t0 = new Date().getTime();
   //     const elements = connection.edges;
-  //     // eslint-disable-next-line no-restricted-syntax
+  //     // oxlint-disable-next-line no-restricted-syntax
   //     for (const [idx, item] of elements.entries()) {
   //       // Check every Nth item (e.g. 20th) if the elapsed time is larger than 50 ms.
   //       // If so, break and divide work into chunks using setImmediate
@@ -95,7 +95,6 @@ const containerResolvers = {
           commitMessage,
           references,
         }),
-      // eslint-disable-next-line max-len
       relationDelete: ({ toId, relationship_type: relationshipType, commitMessage, references }) =>
         stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType, {
           commitMessage,

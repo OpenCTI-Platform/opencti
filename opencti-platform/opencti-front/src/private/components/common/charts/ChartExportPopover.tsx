@@ -28,8 +28,7 @@ const ChartExportPopover = ({ chart, series }: ChartExportPopoverProps) => {
   const handleExportToCSV = () => {
     setAnchorEl(null);
     if (chart) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+      // @ts-expect-error chart.opts is not typed by the ApexCharts wrapper
       const currentFormatter = chart.opts.xaxis?.labels?.formatter;
       if (currentFormatter) {
         chart.updateOptions(

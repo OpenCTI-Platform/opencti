@@ -281,7 +281,7 @@ const DraftRelationships: FunctionComponent<DraftRelationshipsProps> = ({ isRead
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<DraftRelationshipsLinesPaginationQuery>;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   const getRedirectionLink = (stixRelationship: any) => {
     if (isReadOnly) {
       const isUpdatedEntity =

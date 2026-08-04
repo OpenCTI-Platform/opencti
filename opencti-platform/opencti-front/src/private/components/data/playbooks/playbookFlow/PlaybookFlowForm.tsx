@@ -152,8 +152,6 @@ const PlaybookFlowForm = ({
     // (transform the array to object keys, needed to keep same format as before refactoring).
     if (actionsFormValues) {
       actionsFormValues.forEach((value, i) => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         finalConfig[`actions-${i}-value`] = value;
       });
     }

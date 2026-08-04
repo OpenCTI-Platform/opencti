@@ -38,8 +38,7 @@ const fieldToSelect = (muiProps: SelectFieldProps) => {
     onClose:
       onClose ??
       (async (e) => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+        // @ts-expect-error e.target dataset is not part of the change event target's DOM typing
         const { dataset } = e.target;
         if (dataset && dataset.value) {
           await setFieldValue(field.name, dataset.value);
