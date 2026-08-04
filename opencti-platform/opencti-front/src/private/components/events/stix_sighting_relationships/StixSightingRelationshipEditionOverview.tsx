@@ -405,7 +405,6 @@ const StixSightingRelationshipEditionOverview: FunctionComponent<
   if (queryData.stixSightingRelationship === null) {
     return <ErrorNotFound />;
   }
-  // eslint-disable-next-line max-len
   const stixSightingRelationship =
     useFragment<StixSightingRelationshipEditionOverview_stixSightingRelationship$key>(
       StixSightingRelationshipEditionOverviewFragment,

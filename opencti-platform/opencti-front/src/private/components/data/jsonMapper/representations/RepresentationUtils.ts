@@ -60,7 +60,7 @@ export const jsonMapperRepresentationToFormData = (
   schemaAttributes: JsonMapperRepresentationAttributesForm_allSchemaAttributes$data['csvMapperSchemaAttributes'],
   computeDefaultValues: ReturnType<typeof useComputeDefaultValues>,
 ): JsonMapperRepresentationFormData => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   const computedSchemaAttributes: any[] = [];
   const entitySchemaAttributes =
     schemaAttributes.find((schema) => schema.name === representation.target.entity_type)

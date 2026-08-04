@@ -1295,7 +1295,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
       eventFile,
     ];
     const nonResolvedFiles = currentFiles.map((f) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // oxlint-disable-next-line no-unused-vars
       const { [INPUT_MARKINGS]: markingInput, ...nonResolvedFile } = f;
       return nonResolvedFile;
     });
@@ -1438,7 +1438,7 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
       return;
     }
     const nonResolvedFiles = files.map((f) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // oxlint-disable-next-line no-unused-vars
       const { [INPUT_MARKINGS]: markingInput, ...nonResolvedFile } = f;
       return nonResolvedFile;
     });

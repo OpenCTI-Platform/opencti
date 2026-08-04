@@ -560,7 +560,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({
 
     const startTime = Date.now();
     const TIMEOUT = 30000; // 30 seconds timeout
-    // eslint-disable-next-line prefer-const
+    // oxlint-disable-next-line prefer-const
     let interval: NodeJS.Timeout;
 
     const checkEntity = async () => {

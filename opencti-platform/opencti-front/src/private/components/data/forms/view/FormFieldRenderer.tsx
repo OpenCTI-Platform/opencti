@@ -148,8 +148,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
           reader.readAsDataURL(file);
         });
       });
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+      // @ts-expect-error filePromises resolved type isn't inferred correctly across the array map
       Promise.all(filePromises).then((fileData: { name?: string; data?: string }[]) => {
         // multiple defaults to false (single file mode)
         // Set multiple=true explicitly to allow multiple files

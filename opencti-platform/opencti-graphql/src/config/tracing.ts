@@ -4,8 +4,7 @@ import {
   PeriodicExportingMetricReader,
 } from '@opentelemetry/sdk-metrics';
 import { type Counter, type Histogram, ValueType, SpanKind } from '@opentelemetry/api';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
+// @ts-expect-error opentelemetry-node-metrics has no bundled type declarations
 import nodeMetrics from 'opentelemetry-node-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import nconf from 'nconf';

@@ -148,8 +148,6 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
               )}
               // Need to ignore because there is a property key in the object but the
               // type given by MUI does not reference it
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
               renderOption={({ key, ...props }, option) => (
                 // Separate key and other props because asked by React to avoid warnings.
                 <li key={key} {...props}>

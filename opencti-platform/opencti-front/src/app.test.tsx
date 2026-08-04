@@ -26,7 +26,6 @@ const me = {
   },
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const UserContextValue: any = {
   me,
   settings: {},

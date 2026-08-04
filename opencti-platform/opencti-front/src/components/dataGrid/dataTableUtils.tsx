@@ -76,7 +76,7 @@ export const defaultRender: NonNullable<DataTableColumn['render']> = (
   );
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any
 export const renderObservableValue = (observable: any, theme: Theme) => {
   switch (observable.entity_type) {
     case 'IPv4-Addr':

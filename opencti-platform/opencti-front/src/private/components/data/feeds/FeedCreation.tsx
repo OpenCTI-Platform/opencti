@@ -203,7 +203,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
       : { 0: {} };
 
   // TODO: typing this state properly implies deep refactoring
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   const [feedAttributes, setFeedAttributes] = useState<{ [key: string]: any }>(
     feedAttributesInitialState,
   );

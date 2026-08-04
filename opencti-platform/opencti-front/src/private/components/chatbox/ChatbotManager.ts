@@ -2,8 +2,6 @@ import type { Theme } from '../../../components/Theme';
 import { APP_BASE_PATH } from '../../../relay/environment';
 import embleme from '../../../static/images/embleme_filigran_white.png';
 import { DARK_BLUE } from '../../../utils/htmlToPdf/utils/constants';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore — legacy v1 package installed under an npm alias
 import type { BubbleProps } from '@filigran/chatbot-legacy';
 
 type FiligranChatbotElement = HTMLElement & BubbleProps;
@@ -84,8 +82,6 @@ class ChatbotManager {
   private async ensureWebComponentRegistered(): Promise<void> {
     if (this.webComponentRegistered) return;
     // Side-effect import registers the <filigran-chatbot> custom element
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore — legacy v1 package installed under an npm alias
     await import('@filigran/chatbot-legacy');
     this.webComponentRegistered = true;
   }

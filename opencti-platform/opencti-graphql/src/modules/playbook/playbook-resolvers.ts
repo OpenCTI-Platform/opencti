@@ -61,8 +61,7 @@ const playbookResolvers: Resolvers = {
         excludedIds ?? [],
       );
     },
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+    // @ts-expect-error resolver return type is not compatible with the generated Resolvers type for playbookComponents
     playbookComponents: (_, __, context) => availableComponents(context),
     playbookManagerInfo: (_, __, ___) => getManagerInfo(),
   },
@@ -76,8 +75,7 @@ const playbookResolvers: Resolvers = {
   },
   PlaybookComponent: {
     configuration_schema: async (current) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+      // @ts-expect-error current is typed generically without a schema() method
       const configurationSchema = await current.schema();
       return JSON.stringify(configurationSchema ?? '{}');
     },

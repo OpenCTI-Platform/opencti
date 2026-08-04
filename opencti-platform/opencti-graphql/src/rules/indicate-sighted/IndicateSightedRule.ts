@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import * as R from 'ramda';
 import def from './IndicateSightedDefinition';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';

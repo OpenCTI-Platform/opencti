@@ -134,9 +134,6 @@ const LegacyAISummaryForecast = ({ id, loading, setLoading }: AISummaryForecastP
     }),
     [busId],
   );
-  // TODO: Check by the engineering team
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   useSubscription(subConfig);
 
   // Query

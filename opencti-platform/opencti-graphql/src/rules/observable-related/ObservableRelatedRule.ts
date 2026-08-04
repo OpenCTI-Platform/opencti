@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { createInferredRelation, deleteInferredRuleElement } from '../../database/middleware';
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
 import { RELATION_RELATED_TO } from '../../schema/stixCoreRelationship';

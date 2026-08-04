@@ -27,7 +27,6 @@ const ingestionRssResolvers: Resolvers = {
         id: ingestionRss.created_by_ref,
         type: ENTITY_TYPE_IDENTITY,
       }),
-    // eslint-disable-next-line max-len
     defaultMarkingDefinitions: (ingestionRss, _, context) =>
       storeLoadByIds<BasicStoreEntityMarkingDefinition>(
         context,

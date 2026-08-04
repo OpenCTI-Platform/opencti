@@ -429,7 +429,6 @@ export const pirUnflagElement = async (
       fromId: sourceId,
       toId: pir.id,
     });
-    // eslint-disable-next-line no-restricted-syntax
     for (const rel of rels) {
       const relDependencies = (rel as any).pir_explanation as PirExplanation[];
       // fetch dependencies not concerning the relationship

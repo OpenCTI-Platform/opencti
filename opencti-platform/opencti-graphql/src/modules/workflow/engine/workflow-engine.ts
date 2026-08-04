@@ -82,7 +82,6 @@ export class StateMachine<TContext extends Context = Context> {
 
     if (!transition) {
       const reason = `No transition found from state '${this.currentState}' for event '${event}'`;
-      // eslint-disable-next-line no-console
       console.warn(reason);
       return { success: false, reason };
     }
@@ -93,7 +92,6 @@ export class StateMachine<TContext extends Context = Context> {
         const isValid = await condition(this.context);
         if (!isValid) {
           const reason = `Condition failed for transition '${event}'`;
-          // eslint-disable-next-line no-console
           console.error(reason);
           return { success: false, reason };
         }

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* oxlint-disable no-unused-vars */
 import React, { FunctionComponent, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Button from '@common/button/Button';
