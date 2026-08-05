@@ -28,7 +28,6 @@ export const navBarQuery = graphql`
   query NavBarQuery {
     settings {
       platform_whitemark
-      platform_title
     }
   }
 `;
@@ -302,9 +301,10 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
           // The logo link and the "Home" row both point at /dashboard, so the
           // logo cannot be named "Home": two links with the same accessible
           // name inside one navigation are ambiguous for screen readers and
-          // break the e2e page object's `exact` name lookup. The platform
-          // title is what the logo actually depicts.
-          logoLabel={data?.settings?.platform_title || 'OpenCTI'}
+          // break the e2e page object's `exact` name lookup. "logo" is the
+          // accessible name the replaced rail exposed (its <img alt="logo">),
+          // and two settings specs anchor on it, so keep it identical.
+          logoLabel="logo"
           options={[
             {
               id: 'openaev',
