@@ -164,14 +164,39 @@ const FilterBuilderGroup: FunctionComponent<FilterBuilderGroupProps> = ({
           backgroundColor: theme.palette.background.paper,
         }}
       >
-        {filter.values.map((value: string) => (
-          <Chip
-            key={value}
-            size="small"
-            label={filtersRepresentativesMap.get(value)?.value ?? value}
-            onDelete={() => helpers.handleRemoveRepresentationFilter(filter.id ?? '', value)}
-            sx={{ borderRadius: '4px', height: 22, fontSize: '0.75rem' }}
-          />
+        {filter.values.map((value: string, index: number) => (
+          <React.Fragment key={value}>
+            {index > 0 && (
+              <Tooltip title={t_i18n('Switch operator between values')}>
+                <Box
+                  component="button"
+                  type="button"
+                  onClick={() => helpers.handleSwitchLocalMode?.(filter)}
+                  sx={{
+                    cursor: 'pointer',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '1px 5px',
+                    fontSize: '0.62rem',
+                    fontWeight: 700,
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                    color: theme.palette.getContrastText(accent),
+                    backgroundColor: alpha(accent, 0.85),
+                    '&:hover': { backgroundColor: accent },
+                  }}
+                >
+                  {t_i18n(filter.mode ?? 'or')}
+                </Box>
+              </Tooltip>
+            )}
+            <Chip
+              size="small"
+              label={filtersRepresentativesMap.get(value)?.value ?? value}
+              onDelete={() => helpers.handleRemoveRepresentationFilter(filter.id ?? '', value)}
+              sx={{ borderRadius: '4px', height: 22, fontSize: '0.75rem' }}
+            />
+          </React.Fragment>
         ))}
         <Tooltip title={t_i18n('Add a value')}>
           {filter.values.length === 0 ? (
