@@ -289,7 +289,8 @@ export const rssExecutor = async (context: AuthContext, turndownService: Turndow
               }
             }
             // In case of error we need also to take in account the min_interval_minutes with last_execution_date update.
-            patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() }).catch((reason) => logApp.error('ERROR', { cause: reason }));
+            patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() })
+              .catch((reason) => logApp.error('[OPENCTI-MODULE] INGESTION Rss, error on updating ingestion status', { cause: reason }));
           });
         ingestionPromises.push(ingestionPromise);
       }
@@ -621,7 +622,8 @@ export const csvExecutor = async (context: AuthContext) => {
           .catch((e) => {
             logApp.warn('[OPENCTI-MODULE] INGESTION - Csv ingestion execution', { cause: e, name: ingestion.name });
             // In case of error we need also to take in account the min_interval_minutes with last_execution_date update.
-            patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() }).catch((reason) => logApp.error('ERROR', { cause: reason }));
+            patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() })
+              .catch((reason) => logApp.error('[OPENCTI-MODULE] INGESTION Csv, Error on updating ingestion status in database', { cause: reason }));
           });
         ingestionPromises.push(ingestionPromise);
       }
@@ -683,7 +685,8 @@ export const jsonExecutor = async (context: AuthContext) => {
         } catch (e) {
           logApp.warn('[OPENCTI-MODULE] INGESTION - Json ingestion execution', { cause: e, name: ingestion.name });
           // In case of error we need also to take in account the min_interval_minutes with last_execution_date update.
-          await patchJsonIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() }).catch((reason) => logApp.error('ERROR', { cause: reason }));
+          await patchJsonIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() })
+            .catch((reason) => logApp.error('[OPENCTI-MODULE] INGESTION Json, error on updating status', { cause: reason }));
         }
       } else {
         // Update the state
