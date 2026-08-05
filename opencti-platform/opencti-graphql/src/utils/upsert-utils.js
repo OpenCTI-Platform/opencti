@@ -497,7 +497,7 @@ export const generateAttributesInputsForUpsert = (context, _user, resolvedElemen
   return inputs;
 };
 
-const generateRefsInputsForUpsert = (context, user, resolvedElement, _type, updatePatch, confidenceForUpsert, validEnterpriseEdition) => {
+export const generateRefsInputsForUpsert = (context, user, resolvedElement, _type, updatePatch, confidenceForUpsert, validEnterpriseEdition) => {
   const { isConfidenceMatch, isConfidenceUpper } = confidenceForUpsert;
   const inputs = [];
   const metaInputFields = schemaRelationsRefDefinition.getRelationsRef(resolvedElement.entity_type).map((ref) => ref.name);
