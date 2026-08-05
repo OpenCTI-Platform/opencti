@@ -1,8 +1,14 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { addSecurityCoverage, listSecurityCoverageResults, securityCoverageDelete } from '../../../../src/modules/securityCoverage/securityCoverage-domain';
+import {
+  addSecurityCoverage,
+  listSecurityCoverageResults,
+  securityCoverageDelete,
+  securityCoverageStixBundle,
+} from '../../../../src/modules/securityCoverage/securityCoverage-domain';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { addReport, reportDeleteWithElements } from '../../../../src/domain/report';
 import type { StoreEntityReport } from '../../../../src/types/store';
+import type { StixSecurityCoverage } from '../../../../src/modules/securityCoverage/securityCoverage-types';
 
 describe('SecurityCoverage domain', () => {
   let report: StoreEntityReport;
@@ -64,6 +70,30 @@ describe('SecurityCoverage domain', () => {
       const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
       const results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
       expect(results.length).toEqual(0);
+      await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
+    });
+  });
+
+  describe('Function securityCoverageStixBundle()', () => {
+    it('should return a bundle containing the coverage and the covered entity', async () => {
+      const input = {
+        ...BASE_INPUT(),
+        name: 'sc to export',
+        coverage_information: [{
+          coverage_name: 'prevention',
+          coverage_score: 10,
+        }],
+      };
+      const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
+      const bundle = JSON.parse(await securityCoverageStixBundle(testContext, ADMIN_USER, securityCoverage.id));
+      const bundleObjects = bundle.objects as unknown as StixSecurityCoverage[];
+
+      const stixCoverage = bundleObjects.find((o) => o.type === 'security-coverage');
+      expect(stixCoverage?.id).toEqual(securityCoverage.standard_id);
+      expect(stixCoverage?.covered_ref).toEqual(report.standard_id);
+      // The covered entity must be exported as a distinct object of the bundle
+      expect(bundleObjects.filter((o) => o.id === report.standard_id).length).toEqual(1);
+
       await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
     });
   });
