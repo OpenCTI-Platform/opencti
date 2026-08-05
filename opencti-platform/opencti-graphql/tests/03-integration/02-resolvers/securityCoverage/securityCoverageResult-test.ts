@@ -118,7 +118,7 @@ describe('SecurityCoverageResult resolver', () => {
 
     const securityCoverageResultsData = securityCoverageResults.data?.securityCoverageResults;
     expect(securityCoverageResultsData).toBeDefined();
-    expect(securityCoverageResultsData.pageInfo.globalCount).toEqual(2);
+    expect(securityCoverageResultsData.pageInfo.globalCount).toEqual(3); // 1 from DATA-STIX-V2, 1 from securityCoverage-test.ts, 1 from previous test
     const uris = securityCoverageResultsData.edges.map((e: any) => e.node.external_uri);
     expect(uris).toContain('http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a175');
     expect(uris).toContain('http://localhost/admin/scenarios/d49dd003-3498-441f-96a8-a533067b1322');
@@ -155,7 +155,7 @@ describe('SecurityCoverageResult resolver', () => {
 
     const deletedId = result.data?.securityCoverageResultDelete;
     const securityCoverageResultsData = securityCoverageResults.data?.securityCoverageResults;
-    expect(securityCoverageResultsData.pageInfo.globalCount).toEqual(1);
+    expect(securityCoverageResultsData.pageInfo.globalCount).toEqual(2);
     expect(deletedId).toEqual(createdScrId);
   });
 });
