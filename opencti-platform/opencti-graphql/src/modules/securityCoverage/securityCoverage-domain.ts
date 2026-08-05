@@ -103,7 +103,11 @@ export const addSecurityCoverage = async (
   const {
     securityCoverageInput,
     securityCoverageResultInput,
+    add_related_entities,
+    shouldCreateResult,
   } = splitSecurityCoverageInput(input);
+
+  // 1. Create the SecurityCoverage entity.
   const createdSecurityCoverage: BasicStoreEntitySecurityCoverage = await createEntity(
     context,
     user,
@@ -111,52 +115,62 @@ export const addSecurityCoverage = async (
     ENTITY_TYPE_SECURITY_COVERAGE,
   );
 
-  // We have also input for the sc result when receiving bundles from OpenAEV.
+  // 2. Create an associated SecurityCoverageResult if we also
+  // have data for it (when receiving bundles from OpenAEV) or manual creation.
   let result: BasicStoreEntitySecurityCoverageResult | undefined;
-  if (securityCoverageResultInput) {
+  if (shouldCreateResult) {
     result = await internalCreateSecurityCoverageResult(context, user, {
       ...securityCoverageResultInput,
+      // Add extra attributes based on created SecurityCoverage
       [INPUT_RESULT_OF]: createdSecurityCoverage.id,
       name: `${securityCoverageResultInput.name ?? ''} Result of ${createdSecurityCoverage.name}`.trim(),
     });
-    // Manually add it here to be able to resolve dynamic attributes
+    // Manually add the ref here to be able to resolve dynamic attributes in GraphQL response
     createdSecurityCoverage[RELATION_RESULT_OF] = [result.id];
   }
 
   // In case of manual creation, need to create associated has-covered relationships.
-  const isManualCreation = !input.external_uri;
-  if (isManualCreation && result) {
-    const coveredEntity = await storeLoadByIdWithRefs<StoreEntity>(context, user, securityCoverageInput.objectCovered);
-    if (coveredEntity) {
-      const isContainer = COVERED_CONTAINERS_TYPE.includes(coveredEntity.entity_type);
-      let targets: string[] = [];
-      if (isContainer) {
-        // In case of containers add entities from the ones contained.
-        targets = (coveredEntity.objects ?? []).flatMap((o) => {
-          if (!HAS_COVERED_TARGETS_TYPE.includes(o.entity_type)) return [];
-          return o.id;
-        });
-      } else {
-        // In case of non-containers add entities from targets and uses relationships.
-        await fullRelationsList(context, user, [RELATION_TARGETS, RELATION_USES], {
-          fromId: coveredEntity.id,
-          toTypes: HAS_COVERED_TARGETS_TYPE,
-          callback: async (relationships: StoreRelation[]) => {
-            targets.push(...relationships.map((r) => r.toId));
-          },
-        });
-      }
-      logApp.info(`[SECURITY-COVERAGE] addSecurityCoverage: Manual creation, ${targets.length} entities found for has-covered relationships`, { targets });
-      await Promise.all(
-        targets.map((target) => {
-          return addStixCoreRelationship(context, user, {
-            relationship_type: RELATION_HAS_COVERED,
-            fromId: result.id,
-            toId: target,
-            coverage_information: [],
-          });
-        }),
+  if (add_related_entities) {
+    if (!result) {
+      // We should not arrive here, if asked to add related entities a SecurityCoverageResult
+      // should have been created, otherwise there was an error.
+      logApp.error(
+        `[SECURITY-COVERAGE] Error while trying to add related entities to the created SecurityCoverage ${createdSecurityCoverage.id}, no SecurityCoverageResult was created.`,
+        { securityCoverageResultInput, shouldCreateResult },
       );
+    } else {
+      const coveredEntity = await storeLoadByIdWithRefs<StoreEntity>(context, user, securityCoverageInput.objectCovered);
+      if (coveredEntity) {
+        const isContainer = COVERED_CONTAINERS_TYPE.includes(coveredEntity.entity_type);
+        let targets: string[] = [];
+        if (isContainer) {
+          // In case of containers add entities from the ones contained.
+          targets = (coveredEntity.objects ?? []).flatMap((o) => {
+            if (!HAS_COVERED_TARGETS_TYPE.includes(o.entity_type)) return [];
+            return o.id;
+          });
+        } else {
+          // In case of non-containers add entities from targets and uses relationships.
+          await fullRelationsList(context, user, [RELATION_TARGETS, RELATION_USES], {
+            fromId: coveredEntity.id,
+            toTypes: HAS_COVERED_TARGETS_TYPE,
+            callback: async (relationships: StoreRelation[]) => {
+              targets.push(...relationships.map((r) => r.toId));
+            },
+          });
+        }
+        logApp.info(`[SECURITY-COVERAGE] addSecurityCoverage: Manual creation, ${targets.length} entities found for has-covered relationships`, { targets });
+        await Promise.all(
+          targets.map((target) => {
+            return addStixCoreRelationship(context, user, {
+              relationship_type: RELATION_HAS_COVERED,
+              fromId: result.id,
+              toId: target,
+              coverage_information: [],
+            });
+          }),
+        );
+      }
     }
   }
 

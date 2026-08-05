@@ -1,6 +1,6 @@
 import { logApp } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
-import type { SecurityCoverageAddInput, SecurityCoverageResultAddInput, StixCoreRelationshipAddInput } from '../../generated/graphql';
+import type { SecurityCoverageAddInput, StixCoreRelationshipAddInput } from '../../generated/graphql';
 import { RELATION_HAS_COVERED } from '../../schema/stixCoreRelationship';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { findById, listSecurityCoverageResults } from './securityCoverage-domain';
@@ -69,43 +69,48 @@ export const splitSecurityCoverageInput = (input: SecurityCoverageAddInput) => {
     external_uri,
     tenant_name,
     tenant_id,
+    add_related_entities,
     ...securityCoverageInput
   } = input;
 
-  let securityCoverageResultInput: Partial<SecurityCoverageResultAddInput> | undefined;
-  if (external_uri || (coverage_information ?? []).length > 0) {
-    const {
-      confidence,
-      created,
-      createdBy,
-      fileMarkings,
-      filesMarkings,
-      modified,
-      objectLabel,
-      objectMarking,
-      x_opencti_modified_at,
-    } = securityCoverageInput;
-    securityCoverageResultInput = {
-      name: tenant_name || external_uri || tenant_id,
-      coverage_information,
-      coverage_last_result,
-      coverage_valid_from,
-      coverage_valid_to,
-      external_uri,
-      confidence,
-      created,
-      createdBy,
-      fileMarkings,
-      filesMarkings,
-      modified,
-      objectLabel,
-      objectMarking,
-      x_opencti_modified_at,
-    };
-  }
+  const {
+    confidence,
+    created,
+    createdBy,
+    fileMarkings,
+    filesMarkings,
+    modified,
+    objectLabel,
+    objectMarking,
+    x_opencti_modified_at,
+  } = securityCoverageInput;
+  const securityCoverageResultInput = {
+    name: tenant_name || external_uri || tenant_id,
+    coverage_information,
+    coverage_last_result,
+    coverage_valid_from,
+    coverage_valid_to,
+    external_uri,
+    confidence,
+    created,
+    createdBy,
+    fileMarkings,
+    filesMarkings,
+    modified,
+    objectLabel,
+    objectMarking,
+    x_opencti_modified_at,
+  };
+
+  // We should create a SecurityCoverageResult associated to the SecurityCoverage in two cases:
+  // 1. We explicitly ask for with add_related_entities (manual creation),
+  // 2. The input contains an external_uri, meaning the input came from OpenAEV.
+  const shouldCreateResult = add_related_entities || !!external_uri;
 
   return {
     securityCoverageInput,
     securityCoverageResultInput,
+    shouldCreateResult,
+    add_related_entities,
   };
 };
