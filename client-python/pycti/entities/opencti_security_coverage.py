@@ -41,6 +41,9 @@ class SecurityCoverage:
                   id
                 }
             }
+            results {
+                id
+            }
             objectMarking {
                 id
                 standard_id
