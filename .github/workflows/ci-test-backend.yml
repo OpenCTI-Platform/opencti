@@ -106,6 +106,7 @@ jobs:
             mkdir -p ../../opencti-connectors/external-import/restore-files/src
             wget -O ../../opencti-connectors/external-import/restore-files/src/restore-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/external-import/restore-files/src/restore-files.py
             yarn install
+            apk add --no-cache git # required by pip to install pycti from a git reference
             yarn install:python
             yarn build
             NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-integration-sync --coverage
@@ -240,6 +241,7 @@ jobs:
               mkdir -p ../../opencti-connectors/external-import/restore-files/src
               wget -O ../../opencti-connectors/external-import/restore-files/src/restore-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/external-import/restore-files/src/restore-files.py
               yarn install
+              apk add --no-cache git # required by pip to install pycti from a git reference
               yarn install:python
               yarn get-connectors-manifest
               NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules-and-others --coverage
@@ -314,6 +316,7 @@ jobs:
           sh -c 'set -eux
             cd /home/workspace/opencti-platform/opencti-graphql
             yarn install
+            apk add --no-cache git # required by pip to install pycti from a git reference
             yarn install:python
             yarn build
         '
@@ -341,6 +344,7 @@ jobs:
           filigran/builder:${{ github.sha }} \
           sh -c 'set -eux
             cd /home/workspace/opencti-platform/opencti-graphql
+            apk add --no-cache git # required by pip to install pycti from a git reference
             yarn install:python
             NODE_OPTIONS=--max_old_space_size=8192  yarn test:ci-unit --coverage
         '

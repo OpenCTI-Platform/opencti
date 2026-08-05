@@ -49,7 +49,7 @@ jobs:
             -v ${{ github.workspace }}/opencti-platform/opencti-graphql:/opt/opencti/opencti-graphql \
             -w /opt/opencti/opencti-graphql \
             filigran/builder:${{ github.sha }} \
-            sh -c "yarn install --immutable && yarn install:python && yarn build:prod && yarn workspaces focus --production"
+            sh -c "yarn install --immutable && apk add --no-cache git && yarn install:python && yarn build:prod && yarn workspaces focus --production"
 
       - name: Build front production and prune devDependencies
         run: |
