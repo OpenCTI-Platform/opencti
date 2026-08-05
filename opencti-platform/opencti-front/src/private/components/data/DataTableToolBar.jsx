@@ -263,6 +263,7 @@ const typesWithDetection = ['Indicator'];
 const typesWithKillChains = ['Indicator'];
 const typesWithIndicatorTypes = ['Indicator'];
 const typesWithPlatforms = ['Indicator'];
+const typesWithTemporalRange = ['stix-core-relationship'];
 
 const typesWithoutStatus = ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Artifact', 'ExternalReference'];
 const notShareableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
@@ -612,13 +613,18 @@ class DataTableToolBar extends Component {
   handleChangeActionInput(i, key, event) {
     const { value } = event.target;
     const { actionsInputs } = this.state;
+    const currentActionInput = actionsInputs[i] || {};
+    const previousType = currentActionInput.type;
+    const previousField = currentActionInput.field;
 
-    actionsInputs[i] = R.assoc(key, value, actionsInputs[i] || {});
+    actionsInputs[i] = R.assoc(key, value, currentActionInput);
     if (key === 'field') {
       if (value === 'x_opencti_detection') {
         actionsInputs[i] = R.assoc('values', ['false'], actionsInputs[i] || {});
       } else if (value === 'password_valid_until') {
         actionsInputs[i] = R.assoc('values', [new Date().toISOString()], actionsInputs[i] || {});
+      } else if (['start_time', 'stop_time'].includes(value) && actionsInputs[i]?.type === 'REMOVE') {
+        actionsInputs[i] = R.assoc('values', [''], actionsInputs[i] || {});
       } else {
         const values = [];
         actionsInputs[i] = R.assoc('values', values, actionsInputs[i] || {});
@@ -642,6 +648,14 @@ class DataTableToolBar extends Component {
           'ATTRIBUTE',
           actionsInputs[i] || {},
         );
+      }
+    }
+    if (key === 'type') {
+      if (value === 'REMOVE' && ['start_time', 'stop_time'].includes(previousField)) {
+        actionsInputs[i] = R.assoc('values', [''], actionsInputs[i] || {});
+      }
+      if (previousType === 'REMOVE' && value !== 'REMOVE' && ['start_time', 'stop_time'].includes(previousField)) {
+        actionsInputs[i] = R.assoc('values', [], actionsInputs[i] || {});
       }
     }
     this.setState({ actionsInputs });
@@ -841,6 +855,19 @@ class DataTableToolBar extends Component {
     return type;
   }
 
+  static normalizeActionValue(element) {
+    if (element?.id) return element.id;
+    if (element?.value) return element.value;
+    if (typeof element?.toISOString === 'function') return element.toISOString();
+    return element;
+  }
+
+  static displayActionValue(element) {
+    if (typeof element === 'string') return element;
+    if (typeof element?.toISOString === 'function') return element.toISOString();
+    return getMainRepresentative(element);
+  }
+
   getUserDatatableFinalActions(actions) {
     return actions.map((action) => {
       const currentType = this.constructor.getActionType(action.type, action.context.field);
@@ -848,7 +875,7 @@ class DataTableToolBar extends Component {
         type: currentType,
         context: {
           ...action.context,
-          values: action.context.values.map((element) => element.id || element.value || element),
+          values: action.context.values.map((element) => this.constructor.normalizeActionValue(element)),
         },
         containerId: null,
       };
@@ -884,7 +911,7 @@ class DataTableToolBar extends Component {
             context: n.context
               ? {
                   ...n.context,
-                  values: n.context.values.map((o) => o.id || o.value || o),
+                  values: n.context.values.map((o) => this.constructor.normalizeActionValue(o)),
                 }
               : null,
             containerId: n.type === 'PROMOTE' && promoteToContainer && container?.id ? container.id : null,
@@ -960,6 +987,9 @@ class DataTableToolBar extends Component {
     const disabled = actionsInputs[i]?.type == null || actionsInputs[i]?.type === '';
     const checkTypes = (typesList) => selectedTypes.every((type) => typesList.includes(type))
       && entityTypeFilterValues.every((type) => typesList.includes(type));
+    const hasTemporalRangeField = entityTypeFilterValues.some((type) => typesWithTemporalRange.includes(type))
+      || (this.props.types ?? []).some((type) => typesWithTemporalRange.includes(type))
+      || checkTypes(typesWithTemporalRange);
 
     let options = [];
     if (isUserDatatable) {
@@ -1002,6 +1032,14 @@ class DataTableToolBar extends Component {
         checkTypes(typesWithPlatforms) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && {
           label: t('Platforms'),
           value: 'platforms_ov',
+        },
+        hasTemporalRangeField && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && {
+          label: t('Start time'),
+          value: 'start_time',
+        },
+        hasTemporalRangeField && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && {
+          label: t('Stop time'),
+          value: 'stop_time',
         },
         ...(actionsInputs[i]?.type === 'REPLACE' ? [
           { label: t('Author'), value: 'created-by' },
@@ -1473,6 +1511,9 @@ class DataTableToolBar extends Component {
 
   handleChangeDate(i, newValue) {
     const { actionsInputs } = this.state;
+    if (actionsInputs[i]?.type === 'REMOVE' && ['start_time', 'stop_time'].includes(actionsInputs[i]?.field)) {
+      return;
+    }
     actionsInputs[i] = R.assoc(
       'inputValue',
       newValue && newValue.length > 0 ? newValue : '',
@@ -1483,6 +1524,9 @@ class DataTableToolBar extends Component {
 
   handleAcceptDate(i, newValue) {
     const { actionsInputs } = this.state;
+    if (actionsInputs[i]?.type === 'REMOVE' && ['start_time', 'stop_time'].includes(actionsInputs[i]?.field)) {
+      return;
+    }
     actionsInputs[i] = R.assoc(
       'values',
       Array.isArray(newValue) ? newValue : [newValue],
@@ -2097,8 +2141,11 @@ class DataTableToolBar extends Component {
           />
         );
       case 'account_lock_after_date':
+      case 'start_time':
+      case 'stop_time':
         return (
           <DateTimePicker
+            disabled={disabled || (actionsInputs[i]?.type === 'REMOVE' && ['start_time', 'stop_time'].includes(selectedField))}
             variant="inline"
             disableToolbar={false}
             autoOk={true}
@@ -2797,9 +2844,7 @@ class DataTableToolBar extends Component {
                                 R.join(
                                   ', ',
                                   R.map(
-                                    (p) => (typeof p === 'string'
-                                      ? p
-                                      : getMainRepresentative(p)),
+                                    (p) => this.constructor.displayActionValue(p),
                                     R.pathOr([], ['context', 'values'], o),
                                   ),
                                 ),
