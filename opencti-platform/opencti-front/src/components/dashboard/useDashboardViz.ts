@@ -85,7 +85,7 @@ const useDashboardViz = <TQuery extends OperationType>({
 
   // Re-resolve selection inputs when schema, selection content, perspective, or host changes
   // Because those changes make the result change
-  useEffect(() => handleResolveDataSelection(), [handleResolveDataSelection]);
+  useEffect(handleResolveDataSelection, [handleResolveDataSelection]);
 
   const queryVariables = useMemo(
     () => (buildQueryVariables && config && resolvedDataSelection.length > 0
@@ -183,7 +183,7 @@ const useDashboardViz = <TQuery extends OperationType>({
       }
       forceReloadWithFreshVariables(result.resolvedDataSelection);
     });
-  }, [refreshToken, isMissingHostEntity, isMissingSavedFilters, forceReloadWithFreshVariables]);
+  }, [refreshToken, isMissingHostEntity, isMissingSavedFilters, forceReloadWithFreshVariables, handleResolveDataSelection]);
 
   return {
     queryRef,
