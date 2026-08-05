@@ -477,7 +477,7 @@ const StixCoreRelationshipCreation = ({
         <List component="div" style={{ padding: '10px 20px 20px 20px' }}>
           {existingRelations.map((relation) => (
             <ListItemButton
-              focusVisibleClassName='focus-visible'
+              focusVisibleClassName="focus-visible"
               key={relation.node.id}
               className={classes.relation}
               onClick={() => handleSelectRelation(relation.node as unknown as ObjectToParse)}
@@ -585,7 +585,7 @@ const StixCoreRelationshipCreation = ({
             </ListItemButton>
           ))}
           <ListItemButton
-            focusVisibleClassName='focus-visible'
+            focusVisibleClassName="focus-visible"
             className={classes.relationCreation}
             onClick={handleChangeStep}
           >

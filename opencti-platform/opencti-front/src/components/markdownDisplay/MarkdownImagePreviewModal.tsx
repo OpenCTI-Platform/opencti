@@ -6,7 +6,6 @@ import IconButton from '../common/button/IconButton';
 import type { MarkdownPreviewImage } from './markdownPreviewImageUtils';
 import { useFormatter } from '../i18n';
 
-
 export type { MarkdownPreviewImage };
 
 interface MarkdownImagePreviewModalProps {
@@ -83,7 +82,7 @@ const MarkdownImagePreviewModal: FunctionComponent<MarkdownImagePreviewModalProp
 
   return (
     <Modal
-      role='dialog'
+      role="dialog"
       aria-label={t_i18n('Image preview')}
       open={open}
       onClose={onClose}
@@ -100,12 +99,13 @@ const MarkdownImagePreviewModal: FunctionComponent<MarkdownImagePreviewModalProp
         sx={imageModalStyle}
         onClick={onClose}
       >
-        <Box sx={{ position: "relative", width: '100%' }}>
+        <Box sx={{ position: 'relative', width: '100%' }}>
           <IconButton
             sx={{ color: 'rgba(255, 255, 255, 0.54)', position: 'absolute', top: 0, right: 0 }}
             onClick={onClose}
             size="small"
-            aria-label='Close'>
+            aria-label="Close"
+          >
             <CloseOutlined />
           </IconButton>
           {images.length > 1 ? (

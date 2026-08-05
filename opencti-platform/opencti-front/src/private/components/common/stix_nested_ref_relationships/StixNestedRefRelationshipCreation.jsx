@@ -612,7 +612,7 @@ class StixNestedRefRelationshipCreation extends Component {
         <List component="div" className={classes.container}>
           {existingRelations.map((relation) => (
             <ListItemButton
-              focusVisibleClassName='focus-visible'
+              focusVisibleClassName="focus-visible"
               key={relation.node.id}
               className={classes.relation}
               onClick={this.handleSelectRelation.bind(this, relation.node)}
@@ -720,7 +720,7 @@ class StixNestedRefRelationshipCreation extends Component {
             </ListItemButton>
           ))}
           <ListItemButton
-            focusVisibleClassName='focus-visible'
+            focusVisibleClassName="focus-visible"
             className={classes.relationCreation}
             onClick={this.handleChangeStep.bind(this)}
           >

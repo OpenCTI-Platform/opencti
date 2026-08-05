@@ -152,18 +152,20 @@ const ImageCarousel: FunctionComponent<ImageCarouselProps> = ({ data }) => {
           </Paper>
         )}
       </Carousel>
-      <Modal open={currentImage !== null}
+      <Modal
+        open={currentImage !== null}
         role="dialog"
         aria-label={t_i18n('Image preview')}
         onClose={() => setCurrentImage(null)}
       >
         <Box sx={modalStyle}>
-          <Box sx={{ position: "relative" }}>
+          <Box sx={{ position: 'relative' }}>
             <IconButton
               sx={{ color: 'rgba(255, 255, 255, 0.54)', position: 'absolute', top: 10, right: 10 }}
               onClick={() => setCurrentImage(null)}
               size="small"
-              aria-label='Close'>
+              aria-label="Close"
+            >
               <CloseOutlined />
             </IconButton>
             <img

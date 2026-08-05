@@ -268,8 +268,10 @@ const MarkdownDisplay: FunctionComponent<MarkdownWithRedirectionWarningProps> = 
   } else {
     markdownDisplayContent = (
       <>
-        <Link component="button"
-          onClick={(event) => browseLinkWarning(event)}>
+        <Link
+          component="button"
+          onClick={(event) => browseLinkWarning(event)}
+        >
           {markdownRender}
         </Link>
         <ExternalLinkPopover

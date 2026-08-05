@@ -405,7 +405,7 @@ class StixSightingRelationshipCreation extends Component {
         <List component="div" className={classes.container}>
           {existingSightings.map((sighting) => (
             <ListItemButton
-              focusVisibleClassName='focus-visible'
+              focusVisibleClassName="focus-visible"
               key={sighting.node.id}
               className={classes.relation}
               onClick={this.handleSelectSighting.bind(this, sighting.node)}
@@ -513,7 +513,7 @@ class StixSightingRelationshipCreation extends Component {
             </ListItemButton>
           ))}
           <ListItemButton
-            focusVisibleClassName='focus-visible'
+            focusVisibleClassName="focus-visible"
             className={classes.relationCreation}
             onClick={this.handleChangeStep.bind(this)}
           >
