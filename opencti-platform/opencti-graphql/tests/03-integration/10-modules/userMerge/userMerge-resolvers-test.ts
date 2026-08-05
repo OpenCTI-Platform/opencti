@@ -84,7 +84,7 @@ describe('User merge resolvers', () => {
     });
   });
 
-  describe('Contract of the stubbed engine', () => {
+  describe('Contract of the engine', () => {
     it('should default to a dry-run when no option is provided', async () => {
       const { data } = await queryAsAdminWithSuccess({
         query: USER_MERGE_MUTATION,
@@ -116,16 +116,7 @@ describe('User merge resolvers', () => {
       expect(data.userMerge.rights_strategy).toBe('UNION');
     });
 
-    it('should not report a success for a merge that did not happen', async () => {
-      const { data } = await queryAsAdminWithSuccess({
-        query: USER_MERGE_MUTATION,
-        variables: { sourceId: USER_PARTICIPATE.id, targetId: USER_EDITOR.id, options: { dryRun: false } },
-      });
-      expect(data.userMerge.status).toBe('FAILED');
-      expect(data.userMerge.message).toContain('not implemented');
-    });
-
-    it('should leave both users untouched, even when asked for a real run', async () => {
+    it('should leave both users untouched while no handler covers them', async () => {
       const sourceBefore = await readUser(USER_PARTICIPATE.id);
       const targetBefore = await readUser(USER_EDITOR.id);
       await queryAsAdminWithSuccess({
@@ -140,13 +131,13 @@ describe('User merge resolvers', () => {
   describe('Journal query', () => {
     it('should be readable without a merge id', async () => {
       const { data } = await queryAsAdminWithSuccess({ query: USER_MERGE_JOURNAL_QUERY, variables: {} });
-      expect(data.userMergeJournal).toEqual([]);
+      expect(Array.isArray(data.userMergeJournal)).toBe(true);
     });
 
-    it('should accept a merge id', async () => {
+    it('should return nothing for a merge id that never ran', async () => {
       const { data } = await queryAsAdminWithSuccess({
         query: USER_MERGE_JOURNAL_QUERY,
-        variables: { mergeId: 'any-merge-id', first: 10 },
+        variables: { mergeId: 'never-ran-merge-id', first: 10 },
       });
       expect(data.userMergeJournal).toEqual([]);
     });

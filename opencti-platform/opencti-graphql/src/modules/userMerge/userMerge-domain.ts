@@ -82,15 +82,15 @@ export const userMerge = async (
   await loadMergeableUser(context, user, sourceId, 'source');
   await loadMergeableUser(context, user, targetId, 'target');
   const resolvedOptions = resolveUserMergeOptions(options);
-  return executeUserMerge(sourceId, targetId, resolvedOptions);
+  return executeUserMerge(context, user, sourceId, targetId, resolvedOptions);
 };
 
 export const userMergeJournal = async (
-  _context: AuthContext,
+  context: AuthContext,
   user: AuthUser,
   mergeId?: string | null,
   first?: number | null,
 ): Promise<UserMergeJournalEntry[]> => {
   assertUserMergeAllowed(user);
-  return readUserMergeJournal(mergeId ?? undefined, first ?? undefined);
+  return readUserMergeJournal(context, user, mergeId ?? undefined, first ?? undefined);
 };

@@ -1,5 +1,6 @@
 import { INDEX_DELETED_OBJECTS, READ_PLATFORM_INDICES } from '../../database/utils';
 import type { AuthContext } from '../../types/user';
+import { ENTITY_TYPE_USER_MERGE_JOURNAL } from './userMergeJournal-types';
 import type { UserMergeOptions } from './userMerge-types';
 
 /**
@@ -11,6 +12,18 @@ import type { UserMergeOptions } from './userMerge-types';
  * is one extra target on the same queries.
  */
 export const USER_MERGE_TARGET_INDICES = [...READ_PLATFORM_INDICES, INDEX_DELETED_OBJECTS];
+
+/**
+ * Entity types the handlers must never touch, subtracted from the scope above.
+ *
+ * The journal lives in a live index and carries a creator_id of its own, and later chunks
+ * rewrite exactly that field across every live index. Left in scope, a merge would rewrite
+ * its own trace. The effect stays benign as long as the operator is not themselves a merge
+ * source, but the loop is closed explicitly rather than left to chance.
+ *
+ * The audit record joins this list when it lands.
+ */
+export const USER_MERGE_EXCLUDED_ENTITY_TYPES = [ENTITY_TYPE_USER_MERGE_JOURNAL];
 
 /** One planned or applied change, as it appears in the report. */
 export interface UserMergePlannedChange {
@@ -99,12 +112,16 @@ export const handlerDryRun = async (
   return { ...plan, updated: 0 };
 };
 
-/** Real mode: the same computation, then the writes. */
-export const handlerRun = async (
-  handler: UserMergeHandler,
-  handlerContext: UserMergeHandlerContext,
-): Promise<UserMergeHandlerOutcome> => {
-  const plan = await handler.compute(handlerContext);
-  const updated = await handler.apply(handlerContext, plan);
-  return { ...plan, updated };
+/**
+ * Order-independent signature of a plan, used by the engine to prove that what the real
+ * pass is about to write is what the dry pass showed the operator.
+ */
+export const planFingerprint = (plan: UserMergeHandlerPlan): string => {
+  const changes = [...plan.changes]
+    .map((change) => `${change.register_row_id}|${change.entity_type}|${change.count}|${change.exact}`)
+    .sort();
+  const alerts = [...plan.alerts]
+    .map((alert) => `${alert.register_row_id}|${alert.kind}|${alert.message}`)
+    .sort();
+  return JSON.stringify({ handler: plan.handler, changes, alerts });
 };
