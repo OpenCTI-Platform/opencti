@@ -1,15 +1,28 @@
 import * as R from 'ramda';
 import { Readable } from 'stream';
-import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import {
+  ATTR_DB_NAMESPACE,
+  ATTR_DB_OPERATION_NAME,
+  SEMATTRS_DB_NAME,
+  SEMATTRS_DB_OPERATION,
+} from '@opentelemetry/semantic-conventions';
 import { defaultValidationMode, deleteFile, uploadToStorage } from '../database/file-storage';
 import { internalLoadById, fullEntitiesList } from '../database/middleware-loader';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
-import { allFilesMimeTypeDistribution, allRemainingFilesCount } from '../modules/internal/document/document-domain';
+import {
+  allFilesMimeTypeDistribution,
+  allRemainingFilesCount,
+} from '../modules/internal/document/document-domain';
 import { getManagerConfigurationFromCache } from '../modules/managerConfiguration/managerConfiguration-domain';
 import { supportedMimeTypes } from '../modules/managerConfiguration/managerConfiguration-utils';
 import { isUserHasCapabilities, SYSTEM_USER } from '../utils/access';
-import { isEmptyField, isNotEmptyField, READ_INDEX_FILES, READ_INDEX_HISTORY } from '../database/utils';
+import {
+  isEmptyField,
+  isNotEmptyField,
+  READ_INDEX_FILES,
+  READ_INDEX_HISTORY,
+} from '../database/utils';
 import { getStats } from '../database/engine';
 import { extractContentFrom } from '../utils/fileToContent';
 import { stixLoadById } from '../database/middleware';
@@ -27,7 +40,11 @@ import { addWorkbenchUploadCount } from '../manager/telemetryManager';
 export const buildOptionsFromFileManager = async (context) => {
   let importPaths = ['import/'];
   const excludedPaths = ['import/pending/']; // always exclude pending
-  const managerConfiguration = await getManagerConfigurationFromCache(context, SYSTEM_USER, 'FILE_INDEX_MANAGER');
+  const managerConfiguration = await getManagerConfigurationFromCache(
+    context,
+    SYSTEM_USER,
+    'FILE_INDEX_MANAGER',
+  );
   const configMimetypes = managerConfiguration.manager_setting?.accept_mime_types;
   const includeGlobal = managerConfiguration.manager_setting?.include_global_files || false;
   const onlyForEntityTypes = managerConfiguration.manager_setting?.entity_types;
@@ -41,7 +58,10 @@ export const buildOptionsFromFileManager = async (context) => {
   }
   const maxFileSize = managerConfiguration.manager_setting?.max_file_size || 5242880;
   // const modifiedSince = await getIndexFromDate(context);
-  return { paths: importPaths, opts: { prefixMimeTypes: configMimetypes, maxFileSize, excludedPaths } };
+  return {
+    paths: importPaths,
+    opts: { prefixMimeTypes: configMimetypes, maxFileSize, excludedPaths },
+  };
 };
 
 export const filesMetrics = async (context, user) => {
@@ -55,11 +75,23 @@ export const filesMetrics = async (context, user) => {
       metricsByMimeType: [],
     };
   }
-  const filesMimeTypesDistribution = await allFilesMimeTypeDistribution(context, user, fileOptions.paths, fileOptions.opts);
-  const remainingFilesCount = await allRemainingFilesCount(context, user, fileOptions.paths, fileOptions.opts);
+  const filesMimeTypesDistribution = await allFilesMimeTypeDistribution(
+    context,
+    user,
+    fileOptions.paths,
+    fileOptions.opts,
+  );
+  const remainingFilesCount = await allRemainingFilesCount(
+    context,
+    user,
+    fileOptions.paths,
+    fileOptions.opts,
+  );
   const metricsByMimeType = [];
   supportedMimeTypes.forEach((mimeType) => {
-    const mimeTypeDistribution = filesMimeTypesDistribution.filter((dist) => dist.label.startsWith(mimeType));
+    const mimeTypeDistribution = filesMimeTypesDistribution.filter((dist) =>
+      dist.label.startsWith(mimeType),
+    );
     if (mimeTypeDistribution.length > 0) {
       metricsByMimeType.push({
         mimeType,
@@ -78,7 +110,10 @@ export const filesMetrics = async (context, user) => {
 export const uploadImport = async (context, user, args) => {
   const { file, fileMarkings: file_markings, noTriggerImport } = args;
   const path = 'import/global';
-  const { upload: up } = await uploadToStorage(context, user, path, file, { file_markings, noTriggerImport });
+  const { upload: up } = await uploadToStorage(context, user, path, file, {
+    file_markings,
+    noTriggerImport,
+  });
   const contextData = buildContextDataForFile(null, path, up.name, file_markings);
   await publishUserAction({
     user,
@@ -94,7 +129,14 @@ export const uploadPending = async (context, user, args) => {
   if (getDraftContext(context, user)) {
     throw UnsupportedError('Cannot create a workbench in draft');
   }
-  const { file, entityId = null, labels = null, errorOnExisting = false, refreshEntity = false, file_markings = [] } = args;
+  const {
+    file,
+    entityId = null,
+    labels = null,
+    errorOnExisting = false,
+    refreshEntity = false,
+    file_markings = [],
+  } = args;
   let finalFile = file;
   const meta = { labels, labels_text: labels ? labels.join(';') : undefined };
   const entity = entityId ? await internalLoadById(context, user, entityId) : undefined;
@@ -109,11 +151,9 @@ export const uploadPending = async (context, user, args) => {
       if (entityAsStix) {
         bundle = {
           ...bundle,
-          objects: bundle.objects.map((o) => (
-            o.id === entity.standard_id
-              ? { ...entityAsStix, object_refs: o.object_refs }
-              : o
-          )),
+          objects: bundle.objects.map((o) =>
+            o.id === entity.standard_id ? { ...entityAsStix, object_refs: o.object_refs } : o,
+          ),
         };
       }
     }
@@ -127,8 +167,18 @@ export const uploadPending = async (context, user, args) => {
     };
   }
 
-  const { upload: up } = await uploadToStorage(context, user, 'import/pending', finalFile, { meta, file_markings, errorOnExisting, entity });
-  const contextData = buildContextDataForFile(entity, 'import/pending', up.name, up.metaData.file_markings);
+  const { upload: up } = await uploadToStorage(context, user, 'import/pending', finalFile, {
+    meta,
+    file_markings,
+    errorOnExisting,
+    entity,
+  });
+  const contextData = buildContextDataForFile(
+    entity,
+    'import/pending',
+    up.name,
+    up.metaData.file_markings,
+  );
   await addWorkbenchUploadCount();
   await publishUserAction({
     user,
@@ -150,20 +200,31 @@ export const uploadAndAskJobImport = async (context, user, args = {}) => {
     noTriggerImport,
   } = args;
   const contextInDraft = { ...context, draft_context: draftId };
-  const uploadedFile = await uploadImport(contextInDraft, user, { file, fileMarkings, noTriggerImport });
+  const uploadedFile = await uploadImport(contextInDraft, user, {
+    file,
+    fileMarkings,
+    noTriggerImport,
+  });
   const canAskImport = isUserHasCapabilities(user, ['KNOWLEDGE_KNASKIMPORT']);
-  const canAskImportInDraft = isUserHasCapabilities(user, ['KNOWLEDGE_KNASKIMPORT'], { forceCapabilityInDraft: true });
+  const canAskImportInDraft = isUserHasCapabilities(user, ['KNOWLEDGE_KNASKIMPORT'], {
+    forceCapabilityInDraft: true,
+  });
 
-  if (connectors && (canAskImport || (canAskImportInDraft && validationMode === ValidationMode.Draft))) {
-    await Promise.all(connectors.map(async ({ connectorId, configuration }) => (
-      askJobImport(contextInDraft, user, {
-        fileName: uploadedFile.id,
-        connectorId,
-        configuration,
-        validationMode,
-        forceValidation: true,
-      })
-    )));
+  if (
+    connectors &&
+    (canAskImport || (canAskImportInDraft && validationMode === ValidationMode.Draft))
+  ) {
+    await Promise.all(
+      connectors.map(async ({ connectorId, configuration }) =>
+        askJobImport(contextInDraft, user, {
+          fileName: uploadedFile.id,
+          connectorId,
+          configuration,
+          validationMode,
+          forceValidation: true,
+        }),
+      ),
+    );
   }
 
   return uploadedFile;
@@ -197,9 +258,15 @@ export const deleteImport = async (context, user, fileName) => {
 };
 
 export const batchFileMarkingDefinitions = async (context, user, files) => {
-  const markingsFromCache = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
+  const markingsFromCache = await getEntitiesMapFromCache(
+    context,
+    user,
+    ENTITY_TYPE_MARKING_DEFINITION,
+  );
   return files.map((s) => {
-    const markings = (s.metaData.file_markings ?? []).map((id) => markingsFromCache.get(id)).filter((marking) => marking);
+    const markings = (s.metaData.file_markings ?? [])
+      .map((id) => markingsFromCache.get(id))
+      .filter((marking) => marking);
     return R.sortWith([
       R.ascend(R.propOr('TLP', 'definition_type')),
       R.descend(R.propOr(0, 'x_opencti_order')),
@@ -222,12 +289,18 @@ export const batchFileWorks = async (context, user, files) => {
     });
     return files.map((fileId) => items.filter(({ event_source_id }) => event_source_id === fileId));
   };
-  return telemetry(context, user, 'BATCH works for file', {
-    [ATTR_DB_NAMESPACE]: 'file_domain',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_NAME]: 'file_domain',
-    [ATTR_DB_OPERATION_NAME]: 'read',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_OPERATION]: 'read',
-  }, getWorkForFileFn);
+  return telemetry(
+    context,
+    user,
+    'BATCH works for file',
+    {
+      [ATTR_DB_NAMESPACE]: 'file_domain',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_NAME]: 'file_domain',
+      [ATTR_DB_OPERATION_NAME]: 'read',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_OPERATION]: 'read',
+    },
+    getWorkForFileFn,
+  );
 };

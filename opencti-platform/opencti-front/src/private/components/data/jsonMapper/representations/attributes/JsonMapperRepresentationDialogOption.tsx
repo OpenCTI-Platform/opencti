@@ -13,14 +13,19 @@ interface JsonMapperRepresentationDialogOptionProps {
   configuration?: JsonMapperRepresentationAttributeFormData;
 }
 
-const JsonMapperRepresentationDialogOption: FunctionComponent<JsonMapperRepresentationDialogOptionProps> = ({ children, configuration }) => {
+const JsonMapperRepresentationDialogOption: FunctionComponent<
+  JsonMapperRepresentationDialogOptionProps
+> = ({ children, configuration }) => {
   const [open, setOpen] = React.useState(false);
   const { t_i18n } = useFormatter();
   const handleClickOpen = () => {
     setOpen(true);
   };
   const visible = useMemo(() => {
-    return (!!configuration?.default_values || configuration?.default_values === false) && JSON.stringify(configuration.default_values) !== '[]';
+    return (
+      (!!configuration?.default_values || configuration?.default_values === false) &&
+      JSON.stringify(configuration.default_values) !== '[]'
+    );
   }, [configuration]);
 
   const handleClose = () => {
@@ -28,11 +33,7 @@ const JsonMapperRepresentationDialogOption: FunctionComponent<JsonMapperRepresen
   };
   return (
     <>
-      <IconButton
-        color="primary"
-        aria-label={t_i18n('Settings')}
-        onClick={handleClickOpen}
-      >
+      <IconButton color="primary" aria-label={t_i18n('Settings')} onClick={handleClickOpen}>
         <Badge color="secondary" variant="dot" invisible={!visible}>
           <CogOutline />
         </Badge>
@@ -42,11 +43,9 @@ const JsonMapperRepresentationDialogOption: FunctionComponent<JsonMapperRepresen
         onClose={handleClose}
         aria-labelledby="csv-mapper-dialog-title"
         aria-describedby="Configure optional settings to the field"
-        title={(
-          <span id="csv-mapper-dialog-title">
-            {t_i18n('Attribute mapping configuration')}
-          </span>
-        )}
+        title={
+          <span id="csv-mapper-dialog-title">{t_i18n('Attribute mapping configuration')}</span>
+        }
       >
         {children}
         <DialogActions>

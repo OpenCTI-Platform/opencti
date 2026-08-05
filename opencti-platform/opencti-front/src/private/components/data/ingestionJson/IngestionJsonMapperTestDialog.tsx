@@ -38,8 +38,12 @@ const IngestionJsonMapperTestDialog: FunctionComponent<IngestionJsonMapperTestDi
   setIsCreateDisabled,
 }) => {
   const { t_i18n } = useFormatter();
-  const [result, setResult] = useState<IngestionJsonMapperTestDialogMutation$data | undefined>(undefined);
-  const [commitTest] = useApiMutation(ingestionJsonMapperTestMutation, undefined, { errorMessage: 'Something went wrong. Please check the configuration.' });
+  const [result, setResult] = useState<IngestionJsonMapperTestDialogMutation$data | undefined>(
+    undefined,
+  );
+  const [commitTest] = useApiMutation(ingestionJsonMapperTestMutation, undefined, {
+    errorMessage: 'Something went wrong. Please check the configuration.',
+  });
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleClose = () => {
@@ -67,7 +71,10 @@ const IngestionJsonMapperTestDialog: FunctionComponent<IngestionJsonMapperTestDi
           pagination_with_sub_page_query_verb: values.pagination_with_sub_page_query_verb,
           pagination_with_sub_page_attribute_path: values.pagination_with_sub_page_attribute_path,
           user_id: typeof values.user_id === 'string' ? values.user_id : values.user_id.value,
-          json_mapper_id: typeof values.json_mapper_id === 'string' ? values.json_mapper_id : values.json_mapper_id.value,
+          json_mapper_id:
+            typeof values.json_mapper_id === 'string'
+              ? values.json_mapper_id
+              : values.json_mapper_id.value,
           markings: values.markings.map((marking) => marking.value),
         },
       },
@@ -89,24 +96,21 @@ const IngestionJsonMapperTestDialog: FunctionComponent<IngestionJsonMapperTestDi
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      title={t_i18n('Testing JSON feed')}
-    >
+    <Dialog open={open} onClose={handleClose} title={t_i18n('Testing JSON feed')}>
       <Box>
         <div style={{ width: '100%', marginTop: 10 }}>
-          <Alert
-            severity="info"
-            variant="outlined"
-            style={{ padding: '0px 10px 0px 10px' }}
-          >
+          <Alert severity="info" variant="outlined" style={{ padding: '0px 10px 0px 10px' }}>
             {t_i18n('Please, note that the test will be run on the 50 first lines')}
           </Alert>
         </div>
       </Box>
       <Box
-        sx={{ display: 'inline-flex', textAlign: 'center', marginTop: '8px', alignItems: 'baseline' }}
+        sx={{
+          display: 'inline-flex',
+          textAlign: 'center',
+          marginTop: '8px',
+          alignItems: 'baseline',
+        }}
       >
         <Button
           color={result?.ingestionJsonTester?.nbEntities ? 'primary' : 'secondary'}
@@ -119,37 +123,45 @@ const IngestionJsonMapperTestDialog: FunctionComponent<IngestionJsonMapperTestDi
             <Loader variant={LoaderVariant.inElement} />
           </Box>
         )}
-        {result
-          && (
-            <Box
-              sx={{
-                paddingTop: '8px',
-                marginLeft: '12px',
-                fontSize: '1rem',
-                gap: '8px',
-                justifyContent: 'center',
-                display: 'flex',
-              }}
-            >
-              <span>{t_i18n('Objects found')} : </span>
-              <span><strong>{result?.ingestionJsonTester?.nbEntities} </strong> {t_i18n('Entities')}</span>
-              <span><strong>{result?.ingestionJsonTester?.nbRelationships}</strong> {t_i18n('Relationships')}</span>
-            </Box>
-          )
-        }
+        {result && (
+          <Box
+            sx={{
+              paddingTop: '8px',
+              marginLeft: '12px',
+              fontSize: '1rem',
+              gap: '8px',
+              justifyContent: 'center',
+              display: 'flex',
+            }}
+          >
+            <span>{t_i18n('Objects found')} : </span>
+            <span>
+              <strong>{result?.ingestionJsonTester?.nbEntities} </strong> {t_i18n('Entities')}
+            </span>
+            <span>
+              <strong>{result?.ingestionJsonTester?.nbRelationships}</strong>{' '}
+              {t_i18n('Relationships')}
+            </span>
+          </Box>
+        )}
       </Box>
       <Box sx={{ marginTop: '8px' }}>
         <h3>State</h3>
         <CodeBlock
           customHeight="50px"
-          code={result?.ingestionJsonTester?.state || t_i18n('You will find here the computed state.')}
+          code={
+            result?.ingestionJsonTester?.state || t_i18n('You will find here the computed state.')
+          }
           language="json"
         />
       </Box>
       <Box sx={{ marginTop: '8px' }}>
         <h3>Objects</h3>
         <CodeBlock
-          code={result?.ingestionJsonTester?.objects || t_i18n('You will find here the result in JSON format.')}
+          code={
+            result?.ingestionJsonTester?.objects ||
+            t_i18n('You will find here the result in JSON format.')
+          }
           language="json"
         />
       </Box>

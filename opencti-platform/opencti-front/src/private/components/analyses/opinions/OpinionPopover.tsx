@@ -50,7 +50,11 @@ interface OpinionPopoverProps {
   };
 }
 
-const OpinionPopover: FunctionComponent<OpinionPopoverProps> = ({ opinion, variant = 'overview', onDelete }) => {
+const OpinionPopover: FunctionComponent<OpinionPopoverProps> = ({
+  opinion,
+  variant = 'overview',
+  onDelete,
+}) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
@@ -113,18 +117,11 @@ const OpinionPopover: FunctionComponent<OpinionPopoverProps> = ({ opinion, varia
       )}
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         {variant !== 'inList' && <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>}
-        <CollaborativeSecurity
-          data={opinion}
-          needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
-        >
+        <CollaborativeSecurity data={opinion} needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
           <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         </CollaborativeSecurity>
       </Menu>
-      <Formik
-        initialValues={{}}
-        onSubmit={submitDelete}
-        onReset={handleCloseDelete}
-      >
+      <Formik initialValues={{}} onSubmit={submitDelete} onReset={handleCloseDelete}>
         {({ submitForm, handleReset }) => (
           <Dialog
             open={displayDelete}
@@ -142,7 +139,6 @@ const OpinionPopover: FunctionComponent<OpinionPopoverProps> = ({ opinion, varia
             </DialogActions>
           </Dialog>
         )}
-
       </Formik>
       {variant !== 'inList' && (
         <QueryRenderer

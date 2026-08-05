@@ -27,9 +27,17 @@ interface StixCoreObjectBackgroundTaskComponentProps {
   actionsFilter: string[];
 }
 
-const StixCoreObjectBackgroundTasksComponent: FunctionComponent<StixCoreObjectBackgroundTaskComponentProps> = ({ actionsFilter, queryRef, refetch }) => {
-  const { stixCoreBackgroundActiveOperations } = usePreloadedQuery(stixCoreObjectActiveBackgroundTasksQuery, queryRef);
-  const filteredActiveTasks = stixCoreBackgroundActiveOperations?.filter((t) => t?.actions?.some((a) => actionsFilter.includes(a?.type ?? ''))) ?? [];
+const StixCoreObjectBackgroundTasksComponent: FunctionComponent<
+  StixCoreObjectBackgroundTaskComponentProps
+> = ({ actionsFilter, queryRef, refetch }) => {
+  const { stixCoreBackgroundActiveOperations } = usePreloadedQuery(
+    stixCoreObjectActiveBackgroundTasksQuery,
+    queryRef,
+  );
+  const filteredActiveTasks =
+    stixCoreBackgroundActiveOperations?.filter((t) =>
+      t?.actions?.some((a) => actionsFilter.includes(a?.type ?? '')),
+    ) ?? [];
   const currenActiveTasksCount = filteredActiveTasks?.length ?? 0;
   const hasCurrentActiveTask = currenActiveTasksCount > 0;
   const tooltip = filteredActiveTasks.map((task) => task.description).join('\n');
@@ -48,15 +56,8 @@ const StixCoreObjectBackgroundTasksComponent: FunctionComponent<StixCoreObjectBa
     <div style={{ display: 'flex', alignItems: 'center', padding: '0 12px' }}>
       {hasCurrentActiveTask && (
         <Tooltip title={<span style={{ whiteSpace: 'pre-line' }}>{tooltip}</span>}>
-          <Badge
-            badgeContent={currenActiveTasksCount}
-            color="warning"
-          >
-            <CircularProgress
-              variant="indeterminate"
-              size={25}
-              style={{ cursor: 'pointer' }}
-            />
+          <Badge badgeContent={currenActiveTasksCount} color="warning">
+            <CircularProgress variant="indeterminate" size={25} style={{ cursor: 'pointer' }} />
           </Badge>
         </Tooltip>
       )}
@@ -69,8 +70,13 @@ type StixCoreObjectBackgroundTaskProps = {
   actionsFilter: string[];
 };
 
-const StixCoreObjectBackgroundTasks: FunctionComponent<StixCoreObjectBackgroundTaskProps> = ({ id, actionsFilter }) => {
-  const [queryRef, loadQuery] = useQueryLoader<StixCoreObjectActiveBackgroundTasksQuery>(stixCoreObjectActiveBackgroundTasksQuery);
+const StixCoreObjectBackgroundTasks: FunctionComponent<StixCoreObjectBackgroundTaskProps> = ({
+  id,
+  actionsFilter,
+}) => {
+  const [queryRef, loadQuery] = useQueryLoader<StixCoreObjectActiveBackgroundTasksQuery>(
+    stixCoreObjectActiveBackgroundTasksQuery,
+  );
 
   useEffect(() => {
     loadQuery({ id }, { fetchPolicy: 'store-and-network' });
@@ -83,7 +89,11 @@ const StixCoreObjectBackgroundTasks: FunctionComponent<StixCoreObjectBackgroundT
     <>
       {queryRef && (
         <Suspense>
-          <StixCoreObjectBackgroundTasksComponent actionsFilter={actionsFilter} queryRef={queryRef} refetch={refetch} />
+          <StixCoreObjectBackgroundTasksComponent
+            actionsFilter={actionsFilter}
+            queryRef={queryRef}
+            refetch={refetch}
+          />
         </Suspense>
       )}
     </>

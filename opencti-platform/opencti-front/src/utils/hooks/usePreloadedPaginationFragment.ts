@@ -17,7 +17,10 @@ export interface UsePreloadedPaginationFragment<QueryType extends OperationType>
   setNumberOfElements?: UseLocalStorageHelpers['handleSetNumberOfElements'];
 }
 
-const usePreloadedPaginationFragment = <QueryType extends OperationType, FragmentKey extends KeyType>({
+const usePreloadedPaginationFragment = <
+  QueryType extends OperationType,
+  FragmentKey extends KeyType,
+>({
   queryRef,
   linesQuery,
   linesFragment,
@@ -25,12 +28,12 @@ const usePreloadedPaginationFragment = <QueryType extends OperationType, Fragmen
   setNumberOfElements,
 }: UsePreloadedPaginationFragment<QueryType>) => {
   const queryData = usePreloadedQuery(linesQuery, queryRef) as FragmentKey;
-  const { data, hasNext, loadNext, isLoadingNext } = usePaginationFragment<QueryType, FragmentKey>(linesFragment, queryData);
+  const { data, hasNext, loadNext, isLoadingNext } = usePaginationFragment<QueryType, FragmentKey>(
+    linesFragment,
+    queryData,
+  );
   useEffect(() => {
-    const deep_value = (nodePath ?? []).reduce(
-      (a, v) => a[v as keyof object],
-      data,
-    ) as number;
+    const deep_value = (nodePath ?? []).reduce((a, v) => a[v as keyof object], data) as number;
     if (setNumberOfElements && Number.isInteger(deep_value)) {
       setNumberOfElements(numberFormat(deep_value));
     }

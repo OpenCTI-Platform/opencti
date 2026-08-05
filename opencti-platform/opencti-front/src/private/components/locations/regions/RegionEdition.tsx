@@ -17,16 +17,13 @@ const RegionEdition = ({ regionId }: { regionId: string }) => {
       },
     });
   };
-  const queryRef = useQueryLoading<RegionEditionContainerQuery>(
-    regionEditionQuery,
-    { id: regionId },
-  );
+  const queryRef = useQueryLoading<RegionEditionContainerQuery>(regionEditionQuery, {
+    id: regionId,
+  });
   return (
     <>
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inline} />}
-        >
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
           <RegionEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}

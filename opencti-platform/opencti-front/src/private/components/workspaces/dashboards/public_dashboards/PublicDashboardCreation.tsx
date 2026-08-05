@@ -18,24 +18,13 @@ interface PublicDashboardCreationProps {
 const PublicDashboardCreation = ({ paginationOptions }: PublicDashboardCreationProps) => {
   const { t_i18n } = useFormatter();
 
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_publicDashboards',
-    paginationOptions,
-    'publicDashboardAdd',
-  );
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_publicDashboards', paginationOptions, 'publicDashboardAdd');
 
   return (
-    <Drawer
-      title={t_i18n('Create a public dashboard')}
-      controlledDial={PublicDashboardCreateDial}
-    >
+    <Drawer title={t_i18n('Create a public dashboard')} controlledDial={PublicDashboardCreateDial}>
       {({ onClose }) => (
-        <PublicDashboardCreationForm
-          updater={updater}
-          onCancel={onClose}
-          onCompleted={onClose}
-        />
+        <PublicDashboardCreationForm updater={updater} onCancel={onClose} onCompleted={onClose} />
       )}
     </Drawer>
   );

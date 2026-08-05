@@ -3,7 +3,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   standard_id: String!
   entity_type: String!
   parent_types: [String!]!
-  metrics:[Metric]
+  metrics: [Metric]
   # StixObject
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -206,7 +206,10 @@ type Query {
     search: String
     toStix: Boolean
   ): TaskConnection @auth
-  taskContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
+  taskContainsStixObjectOrStixRelationship(
+    id: String!
+    stixObjectOrStixRelationshipId: String!
+  ): Boolean @auth(for: [KNOWLEDGE])
 }
 
 # Mutations
@@ -237,7 +240,10 @@ input TaskAddInput {
 type Mutation {
   taskAdd(input: TaskAddInput!): Task @auth(for: [KNOWLEDGE_KNUPDATE])
   taskDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  taskFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Task @auth(for: [KNOWLEDGE_KNUPDATE])
-  taskRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  taskRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Task @auth(for: [KNOWLEDGE_KNUPDATE])
+  taskFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Task
+    @auth(for: [KNOWLEDGE_KNUPDATE])
+  taskRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
+    @auth(for: [KNOWLEDGE_KNUPDATE])
+  taskRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Task
+    @auth(for: [KNOWLEDGE_KNUPDATE])
 }

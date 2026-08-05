@@ -18,23 +18,29 @@ type ArgsType = Omit<UseMutationConfig<MutationParameters>, 'variables'>;
 const useSwitchDraft = (options?: UsiApiMutationOptions) => {
   const [commit] = useApiMutation(mutation, undefined, options);
 
-  const exitDraft = useCallback((args: ArgsType = {}) => {
-    commit({
-      ...args,
-      variables: {
-        input: { key: 'draft_context', value: '' },
-      },
-    });
-  }, [commit]);
+  const exitDraft = useCallback(
+    (args: ArgsType = {}) => {
+      commit({
+        ...args,
+        variables: {
+          input: { key: 'draft_context', value: '' },
+        },
+      });
+    },
+    [commit],
+  );
 
-  const enterDraft = useCallback((draftId: string, args: ArgsType = {}) => {
-    commit({
-      ...args,
-      variables: {
-        input: [{ key: 'draft_context', value: [draftId] }],
-      },
-    });
-  }, [commit]);
+  const enterDraft = useCallback(
+    (draftId: string, args: ArgsType = {}) => {
+      commit({
+        ...args,
+        variables: {
+          input: [{ key: 'draft_context', value: [draftId] }],
+        },
+      });
+    },
+    [commit],
+  );
 
   return {
     exitDraft,

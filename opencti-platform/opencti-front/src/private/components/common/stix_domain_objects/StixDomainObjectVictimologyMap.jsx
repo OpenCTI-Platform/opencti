@@ -85,21 +85,18 @@ const StixDomainObjectVictimologyMap = ({
   timeField,
 }) => {
   const { t_i18n } = useFormatter();
-  const queryRef = useQueryLoading(
-    stixDomainObjectVictimologyMapQuery,
-    {
-      fromId: stixDomainObjectId,
-      field: 'internal_id',
-      operation: 'count',
-      relationship_type: 'targets',
-      toTypes: ['Country'],
-      startDate,
-      endDate,
-      dateAttribute: timeField === 'functional' ? 'start_time' : 'created_at',
-      limit: 20,
-      isTo: true,
-    },
-  );
+  const queryRef = useQueryLoading(stixDomainObjectVictimologyMapQuery, {
+    fromId: stixDomainObjectId,
+    field: 'internal_id',
+    operation: 'count',
+    relationship_type: 'targets',
+    toTypes: ['Country'],
+    startDate,
+    endDate,
+    dateAttribute: timeField === 'functional' ? 'start_time' : 'created_at',
+    limit: 20,
+    isTo: true,
+  });
 
   if (!queryRef) {
     return null;
@@ -107,10 +104,7 @@ const StixDomainObjectVictimologyMap = ({
 
   return (
     <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <VictimologyMap
-        queryRef={queryRef}
-        title={title || t_i18n('Victimology map')}
-      />
+      <VictimologyMap queryRef={queryRef} title={title || t_i18n('Victimology map')} />
     </Suspense>
   );
 };

@@ -45,7 +45,10 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
         id: 'The value must be a datetime or a relative date expressed in date math. See our documentation for more information.',
         values: {
           link: (
-            <Link target="_blank" to="https://docs.opencti.io/latest/reference/filters/?H=filters#operators">
+            <Link
+              target="_blank"
+              to="https://docs.opencti.io/latest/reference/filters/?H=filters#operators"
+            >
               {t_i18n('our documentation')}
             </Link>
           ),
@@ -66,10 +69,7 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
     newValues[valueOrder] = value;
     setDateInput(newValues);
     if (isValuesIntervalValid(newValues)) {
-      helpers?.handleReplaceFilterValues(
-        filter?.id ?? '',
-        newValues,
-      );
+      helpers?.handleReplaceFilterValues(filter?.id ?? '', newValues);
     }
   };
   const handleChangeValue = (value: string) => {
@@ -87,16 +87,14 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
   };
   return (
     <div style={{ display: 'flex' }}>
-      {isDatePickerOpen
-        && (
-          <DateTimePicker
-            open={true}
-            onClose={() => setIsDatePickerOpen(false)}
-            sx={{ display: 'none' }}
-            onChange={handleChangeAbsoluteDateFilter}
-          />
-        )
-      }
+      {isDatePickerOpen && (
+        <DateTimePicker
+          open={true}
+          onClose={() => setIsDatePickerOpen(false)}
+          sx={{ display: 'none' }}
+          onChange={handleChangeAbsoluteDateFilter}
+        />
+      )}
       <TextField
         variant="outlined"
         size="small"

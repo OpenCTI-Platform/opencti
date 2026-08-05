@@ -60,9 +60,7 @@ const DynamicResolutionField = ({
   helperText,
 }) => {
   const { t_i18n } = useFormatter();
-  const [textFieldValue, setTextFieldValue] = useState(
-    field.value.map((n) => n.name).join('\n'),
-  );
+  const [textFieldValue, setTextFieldValue] = useState(field.value.map((n) => n.name).join('\n'));
   // Similar to componentDidMount and componentDidUpdate:
   useEffect(() => {
     const fetchData = async () => {
@@ -73,16 +71,19 @@ const DynamicResolutionField = ({
           .filter((n) => n.length > 1)
           .map((val) => {
             const filteredStixDomainObjects = stixDomainObjects.filter(
-              (n) => (types.includes(convertFromStixType(n.type))
-                || types.includes(n.x_opencti_location_type)
-                || types.includes(n.identity_class))
-              && (n.name === val.trim() || n.value === val.trim()),
+              (n) =>
+                (types.includes(convertFromStixType(n.type)) ||
+                  types.includes(n.x_opencti_location_type) ||
+                  types.includes(n.identity_class)) &&
+                (n.name === val.trim() || n.value === val.trim()),
             );
 
             if (filteredStixDomainObjects.length > 0) {
               const firstStixDomainObject = R.head(filteredStixDomainObjects);
-              const targetSelectedType = firstStixDomainObject.x_opencti_location_type
-                ?? filteredStixDomainObjects.identity_class ?? firstStixDomainObject.type;
+              const targetSelectedType =
+                firstStixDomainObject.x_opencti_location_type ??
+                filteredStixDomainObjects.identity_class ??
+                firstStixDomainObject.type;
               return {
                 id: firstStixDomainObject.id,
                 type: targetSelectedType,
@@ -107,9 +108,7 @@ const DynamicResolutionField = ({
               .toPromise()
               .then((data) => {
                 const stixDomainObjectsEdges = data.stixDomainObjects.edges;
-                const firstStixDomainObject = R.head(
-                  stixDomainObjectsEdges,
-                )?.node;
+                const firstStixDomainObject = R.head(stixDomainObjectsEdges)?.node;
                 if (firstStixDomainObject) {
                   return {
                     id: firstStixDomainObject.standard_id,
@@ -145,13 +144,15 @@ const DynamicResolutionField = ({
   const handleChangeType = (id, event) => {
     setFieldValue(
       field.name,
-      field.value.map((n) => (n.id === id
-        ? {
-            ...n,
-            id: `${convertToStixType(event.target.value)}--${uuid()}`,
-            type: event.target.value,
-          }
-        : n)),
+      field.value.map((n) =>
+        n.id === id
+          ? {
+              ...n,
+              id: `${convertToStixType(event.target.value)}--${uuid()}`,
+              type: event.target.value,
+            }
+          : n,
+      ),
     );
   };
   const [, meta] = useField(field.name);
@@ -182,7 +183,7 @@ const DynamicResolutionField = ({
                     <ItemIcon type={convertFromStixType(item.type)} />
                   </ListItemIcon>
                   <ListItemText
-                    primary={(
+                    primary={
                       <div>
                         <div style={inlineStyles.type}>
                           {item.in_platform ? (
@@ -192,8 +193,7 @@ const DynamicResolutionField = ({
                               variant="standard"
                               labelId="type"
                               value={convertFromStixType(item.type)}
-                              onChange={(event) => handleChangeType(item.id, event)
-                              }
+                              onChange={(event) => handleChangeType(item.id, event)}
                               style={{
                                 margin: 0,
                                 width: '80%',
@@ -208,15 +208,12 @@ const DynamicResolutionField = ({
                             </Select>
                           )}
                         </div>
-                        <div style={inlineStyles.default_value}>
-                          {item.name}
-                        </div>
+                        <div style={inlineStyles.default_value}>{item.name}</div>
                         <div style={inlineStyles.in_platform}>
                           <ItemBoolean
                             variant="inList"
                             status={isEmptyField(item.in_platform) || item.in_platform}
                             label={
-
                               item.in_platform
                                 ? t_i18n('In platform')
                                 : item.in_platform === null
@@ -226,7 +223,7 @@ const DynamicResolutionField = ({
                           />
                         </div>
                       </div>
-                    )}
+                    }
                   />
                 </ListItem>
               ))}

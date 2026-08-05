@@ -10,7 +10,9 @@ import { serializeObjectB64 } from '../../../../utils/object';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
 import { GraphContainerKnowledgeObjectsQuery } from '../../../../components/graph/__generated__/GraphContainerKnowledgeObjectsQuery.graphql';
-import GraphContainerKnowledge, { graphContainerKnowledgeObjectsQuery } from '../../../../components/graph/GraphContainerKnowledge';
+import GraphContainerKnowledge, {
+  graphContainerKnowledgeObjectsQuery,
+} from '../../../../components/graph/GraphContainerKnowledge';
 
 export const reportKnowledgeGraphQuery = graphql`
   query ReportKnowledgeGraphQuery($id: String) {
@@ -29,12 +31,7 @@ interface ReportKnowledgeGraphProps {
   enableReferences: boolean;
 }
 
-const ReportKnowledgeGraph = ({
-  id,
-  data,
-  mode,
-  enableReferences,
-}: ReportKnowledgeGraphProps) => {
+const ReportKnowledgeGraph = ({ id, data, mode, enableReferences }: ReportKnowledgeGraphProps) => {
   const PAGE_SIZE = 500;
   const queryObjectsRef = useQueryLoading<GraphContainerKnowledgeObjectsQuery>(
     graphContainerKnowledgeObjectsQuery,
@@ -49,10 +46,12 @@ const ReportKnowledgeGraph = ({
     commitEditPositions({
       variables: {
         id,
-        input: [{
-          key: 'x_opencti_graph_data',
-          value: [serializeObjectB64(positions)],
-        }],
+        input: [
+          {
+            key: 'x_opencti_graph_data',
+            value: [serializeObjectB64(positions)],
+          },
+        ],
       },
     });
   };

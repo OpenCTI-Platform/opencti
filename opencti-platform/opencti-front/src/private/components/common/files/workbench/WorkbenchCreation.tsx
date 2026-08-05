@@ -59,28 +59,29 @@ interface WorkbenchFileFormValues {
   fileMarkings: FieldOption[];
 }
 
-const WorkbenchCreationForm: React.FC<WorkbenchCreationProps> = ({ onCompleted, onReset, entity, paginationOptions }) => {
+const WorkbenchCreationForm: React.FC<WorkbenchCreationProps> = ({
+  onCompleted,
+  onReset,
+  entity,
+  paginationOptions,
+}) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [commitMutation] = useApiMutation<WorkbenchCreationMutation>(workbenchCreationMutation);
 
   const entityId = entity?.id;
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_global_pendingFiles',
-    paginationOptions,
-    'uploadPending',
-  );
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_global_pendingFiles', paginationOptions, 'uploadPending');
 
-  const fileValidation = () => Yup.object().shape({
-    name: Yup.string().trim().required(t_i18n('This field is required')),
-  });
+  const fileValidation = () =>
+    Yup.object().shape({
+      name: Yup.string().trim().required(t_i18n('This field is required')),
+    });
 
-  const onSubmit: FormikConfig<WorkbenchFileFormValues>['onSubmit'] = (values, {
-    setSubmitting,
-    setErrors,
-    resetForm,
-  }) => {
+  const onSubmit: FormikConfig<WorkbenchFileFormValues>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
     let { name } = values;
     const finalLabels = values.labels.map((label) => label.value);
     const file_markings = values.fileMarkings.map(({ value }) => value);
@@ -99,12 +100,14 @@ const WorkbenchCreationForm: React.FC<WorkbenchCreationProps> = ({ onCompleted, 
       setSubmitting(false);
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line typescript/no-explicit-any
     const objects: any = [];
     if (entityId) {
-      fetchQuery(workbenchFileCreatorStixCoreObjectQuery, { id: entityId }).toPromise()
+      fetchQuery(workbenchFileCreatorStixCoreObjectQuery, { id: entityId })
+        .toPromise()
         .then(async (entityData) => {
-          const { stixCoreObject: workbenchStixCoreObject } = entityData as WorkbenchFileCreatorStixCoreObjectQuery$data;
+          const { stixCoreObject: workbenchStixCoreObject } =
+            entityData as WorkbenchFileCreatorStixCoreObjectQuery$data;
           if (workbenchStixCoreObject?.toStix) {
             const stixEntity = JSON.parse(workbenchStixCoreObject.toStix);
             delete stixEntity.extensions;
@@ -185,24 +188,23 @@ const WorkbenchCreationForm: React.FC<WorkbenchCreationProps> = ({ onCompleted, 
               label: t_i18n('Labels'),
             }}
             options={[]}
-            renderOption={(
-              props: React.HTMLAttributes<HTMLLIElement>,
-              option: FieldOption,
-            ) => (
+            renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: FieldOption) => (
               <li {...props}>
-                <div style={{
-                  paddingTop: 4,
-                  display: 'inline-block',
-                  color: theme.palette.primary.main,
-                }}
+                <div
+                  style={{
+                    paddingTop: 4,
+                    display: 'inline-block',
+                    color: theme.palette.primary.main,
+                  }}
                 >
                   <ItemIcon type="Label" />
                 </div>
-                <div style={{
-                  display: 'inline-block',
-                  flexGrow: 1,
-                  marginLeft: 10,
-                }}
+                <div
+                  style={{
+                    display: 'inline-block',
+                    flexGrow: 1,
+                    marginLeft: 10,
+                  }}
                 >
                   {option.label}
                 </div>
@@ -222,17 +224,10 @@ const WorkbenchCreationForm: React.FC<WorkbenchCreationProps> = ({ onCompleted, 
             required={false}
           />
           <FormButtonContainer>
-            <Button
-              variant="secondary"
-              onClick={handleReset}
-              disabled={isSubmitting}
-            >
+            <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitForm}
-              disabled={isSubmitting}
-            >
+            <Button onClick={submitForm} disabled={isSubmitting}>
               {t_i18n('Create')}
             </Button>
           </FormButtonContainer>
@@ -250,16 +245,14 @@ const WorkbenchCreation = ({
   paginationOptions: ImportWorkbenchesContentQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_uploadedFiles', paginationOptions, 'uploadPending');
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_uploadedFiles', paginationOptions, 'uploadPending');
   const CreateWorkbenchControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="Workbench" {...props} />
   );
 
   return (
-    <Drawer
-      title={t_i18n('Create a workbench')}
-      controlledDial={CreateWorkbenchControlledDial}
-    >
+    <Drawer title={t_i18n('Create a workbench')} controlledDial={CreateWorkbenchControlledDial}>
       {({ onClose }) => (
         <WorkbenchCreationForm
           updater={updater}

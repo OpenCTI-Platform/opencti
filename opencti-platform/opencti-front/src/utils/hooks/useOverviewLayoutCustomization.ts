@@ -6,14 +6,20 @@ import { EntitySettingsFragment_entitySetting$key } from '@components/settings/s
 
 type OverviewWidgetLayout = { key: string; width: number; label: string };
 
-const useOverviewLayoutCustomization: (entityType: string) => OverviewWidgetLayout[] = (entityType) => {
+const useOverviewLayoutCustomization: (entityType: string) => OverviewWidgetLayout[] = (
+  entityType,
+) => {
   const { entitySettings } = useAuth();
-  const entitySettingsData = entitySettings?.edges?.map((setting) => (
-    useFragment<EntitySettingsFragment_entitySetting$key>(entitySettingsFragment, setting.node)));
+  const entitySettingsData = entitySettings?.edges?.map((setting) =>
+    useFragment<EntitySettingsFragment_entitySetting$key>(entitySettingsFragment, setting.node),
+  );
 
   const overviewLayoutCustomization = useMemo(() => {
     const overviewLayoutCustomizationEntries = entitySettingsData
-      ?.map(({ target_type, overview_layout_customization }) => ({ key: target_type, values: overview_layout_customization }))
+      ?.map(({ target_type, overview_layout_customization }) => ({
+        key: target_type,
+        values: overview_layout_customization,
+      }))
       .filter((entry) => !!entry.values)
       .map(({ key: entityTypeKey, values: widgetsValues }) => [entityTypeKey, widgetsValues]);
     const overviewLayoutCustomizations = overviewLayoutCustomizationEntries

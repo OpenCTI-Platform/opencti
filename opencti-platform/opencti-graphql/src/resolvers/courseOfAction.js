@@ -1,4 +1,9 @@
-import { addCourseOfAction, attackPatternsPaginated, findCourseOfActionPaginated, findById } from '../domain/courseOfAction';
+import {
+  addCourseOfAction,
+  attackPatternsPaginated,
+  findCourseOfActionPaginated,
+  findById,
+} from '../domain/courseOfAction';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -15,16 +20,19 @@ const courseOfActionResolvers = {
     coursesOfAction: (_, args, context) => findCourseOfActionPaginated(context, context.user, args),
   },
   CourseOfAction: {
-    attackPatterns: (courseOfAction, args, context) => attackPatternsPaginated(context, context.user, courseOfAction.id, args),
+    attackPatterns: (courseOfAction, args, context) =>
+      attackPatternsPaginated(context, context.user, courseOfAction.id, args),
   },
   Mutation: {
     courseOfActionEdit: (_, { id }, context) => ({
       delete: () => stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_COURSE_OF_ACTION),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      fieldPatch: ({ input, commitMessage, references }) =>
+        stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
     courseOfActionAdd: (_, { input }, context) => addCourseOfAction(context, context.user, input),
   },

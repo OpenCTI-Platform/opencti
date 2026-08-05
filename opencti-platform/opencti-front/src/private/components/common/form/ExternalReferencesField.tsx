@@ -71,9 +71,7 @@ interface ExternalReferencesFieldProps {
   noCreation?: boolean; // Disable inline creation to avoid nested forms
 }
 
-export const ExternalReferencesField: FunctionComponent<
-  ExternalReferencesFieldProps
-> = ({
+export const ExternalReferencesField: FunctionComponent<ExternalReferencesFieldProps> = ({
   name,
   style,
   onChange,
@@ -115,9 +113,7 @@ export const ExternalReferencesField: FunctionComponent<
     setExternalReferenceCreation(false);
   };
 
-  const searchExternalReferences = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const searchExternalReferences = (event: React.ChangeEvent<HTMLInputElement>) => {
     let filters: ExternalReferencesQueriesSearchQuery$variables['filters'];
     if (id) {
       filters = {
@@ -132,9 +128,8 @@ export const ExternalReferencesField: FunctionComponent<
     })
       .toPromise()
       .then((data) => {
-        const newExternalReferencesEdges = ((
-          data as ExternalReferencesQueriesSearchQuery$data
-        )?.externalReferences?.edges ?? []) as unknown as {
+        const newExternalReferencesEdges = ((data as ExternalReferencesQueriesSearchQuery$data)
+          ?.externalReferences?.edges ?? []) as unknown as {
           node: {
             description: string | null;
             external_id: string | null;
@@ -148,10 +143,7 @@ export const ExternalReferencesField: FunctionComponent<
           .slice()
           .sort((a, b) => a.node.source_name.localeCompare(b.node.source_name))
           .map((n) => ({
-            label: `[${n.node.source_name}] ${truncate(
-              n.node.description || n.node.url || n.node.external_id,
-              150,
-            )}`,
+            label: `[${n.node.source_name}] ${truncate(n.node.description || n.node.url || n.node.external_id, 150)}`,
             value: n.node.id,
             entity: n.node,
           }));
@@ -168,7 +160,7 @@ export const ExternalReferencesField: FunctionComponent<
         name={name}
         required={required}
         multiple={true}
-        filterOptions={(options: unknown) => (options)}
+        filterOptions={(options: unknown) => options}
         textfieldprops={{
           variant: 'standard',
           label: t_i18n('External references'),
@@ -181,23 +173,22 @@ export const ExternalReferencesField: FunctionComponent<
         onInputChange={searchExternalReferences}
         openCreate={noCreation ? undefined : handleOpenExternalReferenceCreation}
         onChange={typeof onChange === 'function' ? onChange : null}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: FieldOption,
-        ) => (
+        renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: FieldOption) => (
           <li {...props} key={option.value}>
-            <div style={{
-              paddingTop: 4,
-              display: 'inline-block',
-            }}
+            <div
+              style={{
+                paddingTop: 4,
+                display: 'inline-block',
+              }}
             >
               <ItemIcon type="External-Reference" />
             </div>
-            <div style={{
-              display: 'inline-block',
-              flexGrow: 1,
-              marginLeft: 10,
-            }}
+            <div
+              style={{
+                display: 'inline-block',
+                flexGrow: 1,
+                marginLeft: 10,
+              }}
             >
               {option.label}
             </div>
@@ -242,12 +233,10 @@ export const ExternalReferencesField: FunctionComponent<
               });
             }
             if (newExternalReference) {
-              const externalReferenceLabel = `[${
-                newExternalReference.source_name
-              }] ${truncate(
-                newExternalReference.description
-                || newExternalReference.url
-                || newExternalReference.external_id,
+              const externalReferenceLabel = `[${newExternalReference.source_name}] ${truncate(
+                newExternalReference.description ||
+                  newExternalReference.url ||
+                  newExternalReference.external_id,
                 150,
               )}`;
               const newExternalReferences = append(

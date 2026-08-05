@@ -62,7 +62,8 @@ export const createMockUserContext = (options?: CreateUserContextOptions): UserC
     settings: (settings ?? {}) as UserContextType['settings'],
     bannerSettings: (bannerSettings ?? {}) as UserContextType['bannerSettings'],
     entitySettings: (entitySettings ?? {}) as UserContextType['entitySettings'],
-    platformModuleHelpers: (platformModuleHelpers ?? {}) as UserContextType['platformModuleHelpers'],
+    platformModuleHelpers: (platformModuleHelpers ??
+      {}) as UserContextType['platformModuleHelpers'],
     schema: (schema ?? {}) as UserContextType['schema'],
     isXTMHubAccessible: true,
     about: {
@@ -112,9 +113,6 @@ interface TestRenderOptions {
  */
 const testRender = (ui: ReactNode, options?: TestRenderOptions) => {
   const { relayConfig, userContext, route } = options ?? {};
-  // TODO Fix this
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   const relayEnv = createMockEnvironment(relayConfig);
 
   if (route) {
@@ -143,9 +141,6 @@ const testRender = (ui: ReactNode, options?: TestRenderOptions) => {
  */
 export function testRenderHook<A, R>(hook: (args: A) => R, options?: TestRenderOptions) {
   const { relayConfig, userContext } = options ?? {};
-  // TODO Fix this
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   const relayEnv = createMockEnvironment(relayConfig);
 
   return {

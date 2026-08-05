@@ -1,16 +1,17 @@
 import React from 'react';
 import { Alert, Box, Typography } from '@mui/material';
-import { ControlProps, isControl, and, schemaMatches, RankedTester, rankWith } from '@jsonforms/core';
+import {
+  ControlProps,
+  isControl,
+  and,
+  schemaMatches,
+  RankedTester,
+  rankWith,
+} from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import { useFormatter } from '../../../../../components/i18n';
 
-const SUPPORTED_TYPES = [
-  'string',
-  'boolean',
-  'integer',
-  'number',
-  'array',
-];
+const SUPPORTED_TYPES = ['string', 'boolean', 'integer', 'number', 'array'];
 
 export const isSupportedType = (schemaType: string | string[]): boolean => {
   if (!schemaType) return false;
@@ -37,9 +38,7 @@ export const jsonFormUnsupportedTypeTester: RankedTester = rankWith(
   ),
 );
 
-const UnsupportedTypeRenderer: React.FC<ControlProps> = ({
-  label,
-}) => {
+const UnsupportedTypeRenderer: React.FC<ControlProps> = ({ label }) => {
   const { t_i18n } = useFormatter();
 
   return (
@@ -53,7 +52,9 @@ const UnsupportedTypeRenderer: React.FC<ControlProps> = ({
           },
         }}
       >
-        <Typography>{label} {t_i18n('- Unsupported')}</Typography>
+        <Typography>
+          {label} {t_i18n('- Unsupported')}
+        </Typography>
       </Alert>
     </Box>
   );

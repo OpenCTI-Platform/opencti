@@ -15,7 +15,9 @@ import withRouter from '../../utils/compat_router/withRouter';
 
 // Highest level of error catching, do not rely on any tierce (intl, theme, ...) pure fallback
 export const HighLevelError = () => (
-  <Alert severity="error">An unknown error occurred. Please contact your administrator or OpenCTI maintainers</Alert>
+  <Alert severity="error">
+    An unknown error occurred. Please contact your administrator or OpenCTI maintainers
+  </Alert>
 );
 
 // Really simple error display
@@ -26,13 +28,14 @@ export const SimpleError = () => {
     <div style={{ paddingTop: 10 }}>
       <Alert severity="error">
         <span style={{ marginRight: 10 }}>
-          {t_i18n(
-            '',
-            {
-              id: 'An unknown error occurred. Please provide a support package to your administrator or OpenCTI maintainers',
-              values: { link_support_package: <Link to="/dashboard/settings/experience">{t_i18n('support package')}</Link> },
+          {t_i18n('', {
+            id: 'An unknown error occurred. Please provide a support package to your administrator or OpenCTI maintainers',
+            values: {
+              link_support_package: (
+                <Link to="/dashboard/settings/experience">{t_i18n('support package')}</Link>
+              ),
             },
-          )}
+          })}
         </span>
       </Alert>
     </div>
@@ -55,7 +58,11 @@ export const NoMatch = () => <ErrorNotFound />;
 
 // Mutation to send the frontend error to the backend.
 const frontendErrorLogMutation = graphql`
-  mutation ErrorFrontendLogMutation($message: String!, $codeStack: String, $componentStack: String) {
+  mutation ErrorFrontendLogMutation(
+    $message: String!
+    $codeStack: String
+    $componentStack: String
+  ) {
     frontendErrorLog(message: $message, codeStack: $codeStack, componentStack: $componentStack)
   }
 `;
@@ -101,7 +108,12 @@ class ErrorBoundaryComponent extends React.Component {
       const types = map((e) => e.extensions.code, [...baseErrors, ...retroErrors]);
       // Specific error catching
       if (includes('COMPLEX_SEARCH_ERROR', types)) {
-        return <DedicatedWarning title="Complex search" description="Your search have too much terms to be executed. Please limit the number of words or the complexity" />;
+        return (
+          <DedicatedWarning
+            title="Complex search"
+            description="Your search have too much terms to be executed. Please limit the number of words or the complexity"
+          />
+        );
       }
       // IP whitelist block must redirect to login page
       if (includes('IP_FORBIDDEN', types)) {

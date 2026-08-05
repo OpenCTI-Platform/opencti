@@ -24,7 +24,7 @@ const closeOldWorks = async (context, connector) => {
   const status = await redisGetConnectorStatus(connector.internal_id);
   // If status is here we can try to close all old open works
   if (status) {
-    const [,, timestamp] = status.split('_');
+    const [, , timestamp] = status.split('_');
     // Get all works created before the current one and put a complete status on it.
     const filters = {
       mode: 'and',
@@ -41,7 +41,10 @@ const closeOldWorks = async (context, connector) => {
         try {
           const currentWorkStatus = await redisGetWork(element.internal_id);
           if (currentWorkStatus) {
-            const params = { completed_time: now(), completed_number: parseInt(currentWorkStatus.import_processed_number, 10) };
+            const params = {
+              completed_time: now(),
+              completed_number: parseInt(currentWorkStatus.import_processed_number, 10),
+            };
             const sourceScript = `ctx._source['status'] = "complete";
                 ctx._source['completed_time'] = params.completed_time;
                 ctx._source['completed_number'] = params.completed_number;`;
@@ -55,7 +58,9 @@ const closeOldWorks = async (context, connector) => {
             logApp.info('Work completed by force due to age', { workId: element.internal_id });
           }
         } catch (e) {
-          logApp.error('[OPENCTI-MODULE] Connector manager error processing work closing', { cause: e });
+          logApp.error('[OPENCTI-MODULE] Connector manager error processing work closing', {
+            cause: e,
+          });
         }
       }
     };
@@ -120,7 +125,10 @@ const connectorHandler = async () => {
     if (e.name === TYPE_LOCK_ERROR) {
       logApp.debug('[OPENCTI-MODULE] Connector manager already started by another API');
     } else {
-      logApp.error('[OPENCTI-MODULE] Connector manager handling error', { cause: e, manager: 'CONNECTOR_MANAGER' });
+      logApp.error('[OPENCTI-MODULE] Connector manager handling error', {
+        cause: e,
+        manager: 'CONNECTOR_MANAGER',
+      });
     }
   } finally {
     running = false;

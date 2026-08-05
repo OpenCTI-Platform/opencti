@@ -51,8 +51,8 @@ const countsFragment = graphql`
 const countsQuery = graphql`
   query PirOverviewCountsQuery($pirId: ID!, $startDate: DateTime) {
     pirRelationshipsDistribution(
-      field: "entity_type",
-      operation: count,
+      field: "entity_type"
+      operation: count
       startDate: $startDate
       relationship_type: "in-pir"
       pirId: $pirId
@@ -112,8 +112,10 @@ const PirOverviewCountsComponent = ({
   const campaigns24h = data24h?.find((d) => d.label === 'Campaign')?.value ?? 0;
   const instrusionSets = data?.find((d) => d.label === 'Intrusion-Set')?.value ?? 0;
   const instrusionSets24h = data24h?.find((d) => d.label === 'Intrusion-Set')?.value ?? 0;
-  const threatActorIndividuals = data?.find((d) => d.label === 'Threat-Actor-Individual')?.value ?? 0;
-  const threatActorIndividuals24h = data24h?.find((d) => d.label === 'Threat-Actor-Individual')?.value ?? 0;
+  const threatActorIndividuals =
+    data?.find((d) => d.label === 'Threat-Actor-Individual')?.value ?? 0;
+  const threatActorIndividuals24h =
+    data24h?.find((d) => d.label === 'Threat-Actor-Individual')?.value ?? 0;
   const threatActorGroups = data?.find((d) => d.label === 'Threat-Actor-Group')?.value ?? 0;
   const threatActorGroups24h = data24h?.find((d) => d.label === 'Threat-Actor-Group')?.value ?? 0;
   const threatActor = threatActorIndividuals + threatActorGroups;
@@ -121,26 +123,10 @@ const PirOverviewCountsComponent = ({
 
   return (
     <>
-      <PirOverviewCount
-        label="Malware"
-        value={malwares}
-        value24h={malwares24h}
-      />
-      <PirOverviewCount
-        label="Campaign"
-        value={campaigns}
-        value24h={campaigns24h}
-      />
-      <PirOverviewCount
-        label="Intrusion-Set"
-        value={instrusionSets}
-        value24h={instrusionSets24h}
-      />
-      <PirOverviewCount
-        label="Threat-Actor"
-        value={threatActor}
-        value24h={threatActor24h}
-      />
+      <PirOverviewCount label="Malware" value={malwares} value24h={malwares24h} />
+      <PirOverviewCount label="Campaign" value={campaigns} value24h={campaigns24h} />
+      <PirOverviewCount label="Intrusion-Set" value={instrusionSets} value24h={instrusionSets24h} />
+      <PirOverviewCount label="Threat-Actor" value={threatActor} value24h={threatActor24h} />
     </>
   );
 };
@@ -153,20 +139,15 @@ const PirOverviewCounts = ({ data }: PirOverviewCountsProps) => {
   const { t_i18n } = useFormatter();
   const { id: pirId } = useFragment(countsFragment, data);
 
-  const countsQueryRef = useQueryLoading<PirOverviewCountsQuery>(
-    countsQuery,
-    { pirId },
-  );
-  const counts24hQueryRef = useQueryLoading<PirOverviewCountsQuery>(
-    countsQuery,
-    { pirId, startDate: dayAgo() },
-  );
+  const countsQueryRef = useQueryLoading<PirOverviewCountsQuery>(countsQuery, { pirId });
+  const counts24hQueryRef = useQueryLoading<PirOverviewCountsQuery>(countsQuery, {
+    pirId,
+    startDate: dayAgo(),
+  });
 
   return (
     <Grid size={{ xs: 12 }}>
-      <CardTitle>
-        {t_i18n('Number of threats')}
-      </CardTitle>
+      <CardTitle>{t_i18n('Number of threats')}</CardTitle>
       <Grid container spacing={3}>
         <Suspense fallback={<PirOverviewCountsDummy />}>
           {countsQueryRef && counts24hQueryRef && (

@@ -9,20 +9,20 @@ const UNTIL_END = 100000000000000;
 
 export const isDateStringNone = (dateString) => {
   if (!dateString) return true;
-  if (dateString === (new Date(FROM_START).toISOString())) return true;
-  if (dateString === (new Date(UNTIL_END).toISOString())) return true;
+  if (dateString === new Date(FROM_START).toISOString()) return true;
+  if (dateString === new Date(UNTIL_END).toISOString()) return true;
   return (
-    dateString.startsWith('Invalid')
-    || dateString.startsWith('1970')
-    || dateString.startsWith('5138')
+    dateString.startsWith('Invalid') ||
+    dateString.startsWith('1970') ||
+    dateString.startsWith('5138')
   );
 };
 
 export const isNone = (date) => {
   if (!date) return true;
   if (date.length === 0) return true;
-  if (date === (new Date(FROM_START).toISOString())) return true;
-  if (date === (new Date(UNTIL_END).toISOString())) return true;
+  if (date === new Date(FROM_START).toISOString()) return true;
+  if (date === new Date(UNTIL_END).toISOString()) return true;
   const parsedDate = moment(date).format();
   return isDateStringNone(parsedDate);
 };
@@ -36,13 +36,10 @@ const inject18n = (WrappedComponent) => {
         if (number === null || number === '') {
           return EMPTY_VALUE;
         }
-        return `${this.props.intl.formatNumber(numberFormat(number).number)}${
-          numberFormat(number).symbol
-        }`;
+        return `${this.props.intl.formatNumber(numberFormat(number).number)}${numberFormat(number).symbol}`;
       };
-      const formatBytes = (number) => `${this.props.intl.formatNumber(bytesFormat(number).number)}${
-        bytesFormat(number).symbol
-      }`;
+      const formatBytes = (number) =>
+        `${this.props.intl.formatNumber(bytesFormat(number).number)}${bytesFormat(number).symbol}`;
       const longDate = (date) => {
         if (isNone(date)) {
           return EMPTY_VALUE;
@@ -166,18 +163,16 @@ const inject18n = (WrappedComponent) => {
 
 export const useFormatter = () => {
   const intl = useIntl();
-  const translate = (message, { id, values } = {}) => intl.formatMessage({ id: id ?? message }, values);
+  const translate = (message, { id, values } = {}) =>
+    intl.formatMessage({ id: id ?? message }, values);
   const formatNumber = (number) => {
     if (number === null || number === '') {
       return EMPTY_VALUE;
     }
-    return `${intl.formatNumber(numberFormat(number).number)}${
-      numberFormat(number).symbol
-    }`;
+    return `${intl.formatNumber(numberFormat(number).number)}${numberFormat(number).symbol}`;
   };
-  const formatBytes = (number) => `${intl.formatNumber(bytesFormat(number).number)}${
-    bytesFormat(number).symbol
-  }`;
+  const formatBytes = (number) =>
+    `${intl.formatNumber(bytesFormat(number).number)}${bytesFormat(number).symbol}`;
   const longDate = (date) => {
     if (isNone(date)) {
       return EMPTY_VALUE;
@@ -249,13 +244,15 @@ export const useFormatter = () => {
     if (isNone(date)) {
       return EMPTY_VALUE;
     }
-    return intl.formatDate(date, {
-      minute: 'numeric',
-      hour: 'numeric',
-      day: 'numeric',
-      month: 'numeric',
-      year: 'numeric',
-    }).replace(',', ''); // remove comma between date and hours
+    return intl
+      .formatDate(date, {
+        minute: 'numeric',
+        hour: 'numeric',
+        day: 'numeric',
+        month: 'numeric',
+        year: 'numeric',
+      })
+      .replace(',', ''); // remove comma between date and hours
   };
 
   const MONTH_IN_MILLIS = 2.592e9;

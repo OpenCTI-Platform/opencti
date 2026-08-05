@@ -22,25 +22,16 @@ const Organizations = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Organizations | Entities'));
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<OrganizationsLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    {
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<OrganizationsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
       openExports: false,
       filters: emptyFilterGroup,
-    },
-  );
+    });
   const renderLines = () => {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-    } = viewStorage;
+    const { sortBy, orderAsc, searchTerm, filters, openExports, numberOfElements } = viewStorage;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -91,27 +82,24 @@ const Organizations = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        createButton={(
+        createButton={
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <OrganizationCreation paginationOptions={paginationOptions} />
           </Security>
-        )}
+        }
         iconExtension
       >
         {queryRef && (
           <React.Suspense
-            fallback={(
+            fallback={
               <>
                 {Array(20)
                   .fill(0)
                   .map((_, idx) => (
-                    <OrganizationLineDummy
-                      key={idx}
-                      dataColumns={dataColumns}
-                    />
+                    <OrganizationLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            )}
+            }
           >
             <OrganizationsLines
               queryRef={queryRef}
@@ -128,7 +116,12 @@ const Organizations = () => {
 
   return (
     <div data-testid="organization-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Organizations'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Entities') },
+          { label: t_i18n('Organizations'), current: true },
+        ]}
+      />
       {renderLines()}
     </div>
   );

@@ -64,33 +64,26 @@ const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
           title={t_i18n(rule.name)}
           sx={{ title: styleRuleTitle }}
           component={({ disabled, style, title }) => (
-            <Card
-              title={title}
-              sx={style}
-            >
+            <Card title={title} sx={style}>
               <Stack gap={2}>
                 <div>
-                  <Label>
-                    {t_i18n('Description')}
-                  </Label>
+                  <Label>{t_i18n('Description')}</Label>
                   <span>{t_i18n(rule.description)}</span>
                 </div>
 
                 <div>
-                  <Label>
-                    {t_i18n('Status')}
-                  </Label>
+                  <Label>{t_i18n('Status')}</Label>
                   <FormGroup>
                     <FormControlLabel
                       label={ruleStatus}
-                      control={(
+                      control={
                         <Switch
                           color="secondary"
                           disabled={!isEngineEnabled || disabled}
                           checked={isEngineEnabled && rule.activated}
                           onChange={toggle}
                         />
-                      )}
+                      }
                     />
                   </FormGroup>
                 </div>

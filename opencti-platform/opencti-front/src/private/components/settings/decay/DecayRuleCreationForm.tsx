@@ -57,8 +57,20 @@ const DecayRuleCreationForm = ({ updater, onReset, onCompleted }: DecayRuleCreat
   const [commit] = useApiMutation(decayRuleCreationFormAddMutation);
   const [filters, filterHelpers] = useFiltersState();
 
-  const onSubmit: FormikConfig<DecayRuleCreationFormData>['onSubmit'] = (values, { setSubmitting, resetForm, setErrors }) => {
-    const { name, description, order, active, decay_lifetime, decay_pound, decay_points, decay_revoke_score } = values;
+  const onSubmit: FormikConfig<DecayRuleCreationFormData>['onSubmit'] = (
+    values,
+    { setSubmitting, resetForm, setErrors },
+  ) => {
+    const {
+      name,
+      description,
+      order,
+      active,
+      decay_lifetime,
+      decay_pound,
+      decay_points,
+      decay_revoke_score,
+    } = values;
     const jsonFilters = serializeFilterGroupForBackend(filters);
     const input = {
       name,
@@ -112,12 +124,7 @@ const DecayRuleCreationForm = ({ updater, onReset, onCompleted }: DecayRuleCreat
     >
       {({ submitForm, handleReset, isSubmitting, values }) => (
         <Form>
-          <Field
-            component={TextField}
-            name="name"
-            label={t_i18n('Name')}
-            fullWidth
-          />
+          <Field component={TextField} name="name" label={t_i18n('Name')} fullWidth />
           <Field
             component={MarkdownField}
             name="description"
@@ -127,13 +134,14 @@ const DecayRuleCreationForm = ({ updater, onReset, onCompleted }: DecayRuleCreat
             rows={2}
             style={{ marginTop: 20 }}
           />
-          <Box sx={{
-            paddingTop: '30px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: theme.spacing(1),
-            marginBottom: theme.spacing(1),
-          }}
+          <Box
+            sx={{
+              paddingTop: '30px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: theme.spacing(1),
+              marginBottom: theme.spacing(1),
+            }}
           >
             <Filters
               availableFilterKeys={enabledFilters}
@@ -171,7 +179,9 @@ const DecayRuleCreationForm = ({ updater, onReset, onCompleted }: DecayRuleCreat
                 <Typography variant="h3" gutterBottom style={{ marginTop: 20 }}>
                   <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                     <span>{t_i18n('Reaction points')}</span>
-                    <Tooltip title={t_i18n('Define at which score thresholds the indicator is updated.')}>
+                    <Tooltip
+                      title={t_i18n('Define at which score thresholds the indicator is updated.')}
+                    >
                       <InformationOutline fontSize="small" color="primary" />
                     </Tooltip>
                     <Tooltip title={t_i18n('Add a reaction point')}>
@@ -185,7 +195,8 @@ const DecayRuleCreationForm = ({ updater, onReset, onCompleted }: DecayRuleCreat
                     </Tooltip>
                   </Box>
                 </Typography>
-                {values.decay_points && values.decay_points.length > 0 && (
+                {values.decay_points &&
+                  values.decay_points.length > 0 &&
                   values.decay_points.map((decay_point, index) => (
                     <div key={index} style={{ display: 'flex' }}>
                       <div style={{ flex: 1 }}>
@@ -209,8 +220,7 @@ const DecayRuleCreationForm = ({ updater, onReset, onCompleted }: DecayRuleCreat
                         </Tooltip>
                       </div>
                     </div>
-                  ))
-                )}
+                  ))}
               </div>
             )}
           />
@@ -240,17 +250,10 @@ const DecayRuleCreationForm = ({ updater, onReset, onCompleted }: DecayRuleCreat
             containerstyle={fieldSpacingContainerStyle}
           />
           <FormButtonContainer>
-            <Button
-              variant="secondary"
-              onClick={handleReset}
-              disabled={isSubmitting}
-            >
+            <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitForm}
-              disabled={isSubmitting}
-            >
+            <Button onClick={submitForm} disabled={isSubmitting}>
               {t_i18n('Create')}
             </Button>
           </FormButtonContainer>

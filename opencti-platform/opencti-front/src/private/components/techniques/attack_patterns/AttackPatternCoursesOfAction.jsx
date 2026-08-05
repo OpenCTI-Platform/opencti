@@ -31,8 +31,7 @@ const AttackPatternCoursesOfActionComponent = ({ attackPattern }) => {
         const coursesOfAction = node.getLinkedRecord('coursesOfAction');
         const edges = coursesOfAction.getLinkedRecords('edges');
         const newEdges = filter(
-          (n) => n.getLinkedRecord('node').getValue('id')
-            !== courseOfActionEdge.node.id,
+          (n) => n.getLinkedRecord('node').getValue('id') !== courseOfActionEdge.node.id,
           edges,
         );
         coursesOfAction.setLinkedRecords(newEdges, 'edges');
@@ -43,12 +42,13 @@ const AttackPatternCoursesOfActionComponent = ({ attackPattern }) => {
   return (
     <div style={{ marginTop: 20 }}>
       <div style={{ display: 'flex', flexDirection: 'row' }}>
-        <Label action={(
-          <AddCoursesOfAction
-            attackPattern={attackPattern}
-            attackPatternCoursesOfAction={attackPattern.coursesOfAction.edges}
-          />
-        )}
+        <Label
+          action={
+            <AddCoursesOfAction
+              attackPattern={attackPattern}
+              attackPatternCoursesOfAction={attackPattern.coursesOfAction.edges}
+            />
+          }
         >
           {t_i18n('Courses of action')}
         </Label>
@@ -63,15 +63,13 @@ const AttackPatternCoursesOfActionComponent = ({ attackPattern }) => {
                 dense={true}
                 divider={true}
                 disablePadding={true}
-                secondaryAction={(
+                secondaryAction={
                   <Tooltip title={t_i18n('Delete relationship')}>
-                    <IconButton
-                      onClick={() => removeCourseOfAction(courseOfActionEdge)}
-                    >
+                    <IconButton onClick={() => removeCourseOfAction(courseOfActionEdge)}>
                       <Delete />
                     </IconButton>
                   </Tooltip>
-                )}
+                }
               >
                 <ListItemButton
                   component={Link}

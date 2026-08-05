@@ -1,13 +1,19 @@
 import React from 'react';
 import { graphql } from 'react-relay';
 import { ToolsLines_data$data } from '@components/arsenal/__generated__/ToolsLines_data.graphql';
-import { ToolsLinesPaginationQuery, ToolsLinesPaginationQuery$variables } from '@components/arsenal/__generated__/ToolsLinesPaginationQuery.graphql';
+import {
+  ToolsLinesPaginationQuery,
+  ToolsLinesPaginationQuery$variables,
+} from '@components/arsenal/__generated__/ToolsLinesPaginationQuery.graphql';
 import ToolCreation from './tools/ToolCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -53,14 +59,14 @@ const toolsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...ToolsLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -111,14 +117,16 @@ const Tools = () => {
     openExports: false,
     filters: emptyFilterGroup,
   };
-  const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<ToolsLinesPaginationQuery$variables>(
+  const {
+    viewStorage,
+    helpers: storageHelpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<ToolsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
 
-  const {
-    filters,
-  } = viewStorage;
+  const { filters } = viewStorage;
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Tool', filters);
   const queryPaginationOptions = {
@@ -148,7 +156,9 @@ const Tools = () => {
 
   return (
     <div data-testid="tool-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Tools'), current: true }]} />
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Tools'), current: true }]}
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
@@ -159,11 +169,11 @@ const Tools = () => {
           preloadedPaginationProps={preloadedPaginationOptions}
           lineFragment={toolLineFragment}
           exportContext={{ entity_type: 'Tool' }}
-          createButton={(
+          createButton={
             <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
               <ToolCreation paginationOptions={queryPaginationOptions} />
             </Security>
-          )}
+          }
         />
       )}
     </div>

@@ -5,9 +5,7 @@ import { getAttributeLabel } from '@components/data/csvMapper/representations/at
 import { Field } from 'formik';
 import CsvMapperRepresentationAttributeRefForm from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributeRefForm';
 import { CsvMapperRepresentationFormData } from '@components/data/csvMapper/representations/Representation';
-import {
-  CsvMapperRepresentationAttributesForm_allSchemaAttributes$key,
-} from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
+import { CsvMapperRepresentationAttributesForm_allSchemaAttributes$key } from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
 import { useCsvMappersData } from '../../csvMappers.data';
 import { useFormatter } from '../../../../../../components/i18n';
 
@@ -71,27 +69,31 @@ const CsvMapperRepresentationAttributesForm: FunctionComponent<
     return null;
   }
 
-  const entitySchemaAttributes = data?.csvMapperSchemaAttributes?.find(
-    (schema) => schema.name === representation.target_type,
-  )?.attributes ?? [];
+  const entitySchemaAttributes =
+    data?.csvMapperSchemaAttributes?.find((schema) => schema.name === representation.target_type)
+      ?.attributes ?? [];
 
-  const mutableSchemaAttributes: SchemaAttribute[] = entitySchemaAttributes.map((schema) => {
-    if (schema.name === 'hashes' || schema.name === 'authors') {
-      return (schema.mappings ?? []).map((mapping) => ({
-        ...mapping,
-        defaultValues: null,
-      }));
-    }
-    return [{
-      type: schema.type,
-      name: schema.name,
-      label: schema.label,
-      mandatory: schema.mandatory,
-      multiple: schema.multiple,
-      editDefault: schema.editDefault,
-      defaultValues: schema.defaultValues ? [...schema.defaultValues] : null,
-    }];
-  }).flat();
+  const mutableSchemaAttributes: SchemaAttribute[] = entitySchemaAttributes
+    .map((schema) => {
+      if (schema.name === 'hashes' || schema.name === 'authors') {
+        return (schema.mappings ?? []).map((mapping) => ({
+          ...mapping,
+          defaultValues: null,
+        }));
+      }
+      return [
+        {
+          type: schema.type,
+          name: schema.name,
+          label: schema.label,
+          mandatory: schema.mandatory,
+          multiple: schema.multiple,
+          editDefault: schema.editDefault,
+          defaultValues: schema.defaultValues ? [...schema.defaultValues] : null,
+        },
+      ];
+    })
+    .flat();
 
   return (
     <>

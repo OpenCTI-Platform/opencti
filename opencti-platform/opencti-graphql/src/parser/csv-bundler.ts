@@ -43,7 +43,9 @@ const sendBundleToWorker = async (bundle: BundleBuilder, opts: CsvBundlerIngesti
 
   const bundleBuilt = bundle.build();
   const objectCount = bundleBuilt.objects.length;
-  const bundleContentAsString = Buffer.from(JSON.stringify(bundleBuilt), 'utf-8').toString('base64');
+  const bundleContentAsString = Buffer.from(JSON.stringify(bundleBuilt), 'utf-8').toString(
+    'base64',
+  );
 
   logApp.debug(`${LOG_PREFIX} push bundle to worker with ${objectCount} objects`);
   await pushToWorkerForConnector(opts.connectorId, {
@@ -90,9 +92,17 @@ const internalGenerateBundles = async (
       if (!isEmptyLine) {
         try {
           // Compute input by representation
-          const inputs = await mappingProcess(context, applicantUser, csvMapper, record, refEntities);
+          const inputs = await mappingProcess(
+            context,
+            applicantUser,
+            csvMapper,
+            record,
+            refEntities,
+          );
           // Remove inline elements
-          const withoutInlineInputs = inputs.filter((input) => !inlineEntityTypes.includes(input.entity_type as string));
+          const withoutInlineInputs = inputs.filter(
+            (input) => !inlineEntityTypes.includes(input.entity_type as string),
+          );
           // Transform entity to stix
           const csvData = record.join(csvMapper.separator);
           const stixObjects = withoutInlineInputs.map((input) => {
@@ -100,7 +110,10 @@ const internalGenerateBundles = async (
           });
 
           // Add to bundle or else send current bundle content and move to next bundle.
-          if (bundleBuilder.canAddObjects(stixObjects) && bundleBuilder.objects.length < CSV_MAX_BUNDLE_SIZE_GENERATION) {
+          if (
+            bundleBuilder.canAddObjects(stixObjects) &&
+            bundleBuilder.objects.length < CSV_MAX_BUNDLE_SIZE_GENERATION
+          ) {
             bundleBuilder.addObjects(stixObjects, csvData);
           } else {
             let objectSentCount = bundleBuilder.objects.length;
@@ -256,29 +269,39 @@ export const bundleProcess = async (
   const records = maxRecordNumber ? rawRecords.slice(0, maxRecordNumber) : rawRecords;
   const refEntities = await handleRefEntities(context, user, mapper);
   if (records) {
-    await Promise.all((records.map(async (record: string[]) => {
-      const isEmptyLine = record.length === 1 && isEmptyField(record[0]);
-      // Handle header
-      if (skipLine) {
-        skipLine = false;
-      } else if (!isEmptyLine) {
-        try {
-          // Compute input by representation
-          const inputs = await mappingProcess(context, user, sanitizedMapper, record, refEntities);
-          // Remove inline elements
-          const withoutInlineInputs = inputs.filter((input) => !inlineEntityTypes.includes(input.entity_type as string));
-          // Transform entity to stix
-          const stixObjects = withoutInlineInputs.map((input) => {
-            return convertStoreToStix_2_1(input as unknown as StoreCommon);
-          });
-          // Add to bundle
-          const csvData = record.join(sanitizedMapper.separator);
-          bundleBuilder.addObjects(stixObjects, csvData);
-        } catch (e) {
-          logApp.error('CSV bundle process handler error', { cause: e });
+    await Promise.all(
+      records.map(async (record: string[]) => {
+        const isEmptyLine = record.length === 1 && isEmptyField(record[0]);
+        // Handle header
+        if (skipLine) {
+          skipLine = false;
+        } else if (!isEmptyLine) {
+          try {
+            // Compute input by representation
+            const inputs = await mappingProcess(
+              context,
+              user,
+              sanitizedMapper,
+              record,
+              refEntities,
+            );
+            // Remove inline elements
+            const withoutInlineInputs = inputs.filter(
+              (input) => !inlineEntityTypes.includes(input.entity_type as string),
+            );
+            // Transform entity to stix
+            const stixObjects = withoutInlineInputs.map((input) => {
+              return convertStoreToStix_2_1(input as unknown as StoreCommon);
+            });
+            // Add to bundle
+            const csvData = record.join(sanitizedMapper.separator);
+            bundleBuilder.addObjects(stixObjects, csvData);
+          } catch (e) {
+            logApp.error('CSV bundle process handler error', { cause: e });
+          }
         }
-      }
-    })));
+      }),
+    );
   }
   // Handle container
   if (entity && isStixDomainObjectContainer(entity.entity_type)) {

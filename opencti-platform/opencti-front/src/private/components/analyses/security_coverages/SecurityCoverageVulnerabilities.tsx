@@ -22,9 +22,9 @@ interface SecurityCoverageVulnerabilitiesProps {
   securityCoverage: SecurityCoverageVulnerabilities_securityCoverage$data;
 }
 
-const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCoverageVulnerabilitiesProps> = ({
-  securityCoverage,
-}) => {
+const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<
+  SecurityCoverageVulnerabilitiesProps
+> = ({ securityCoverage }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const paginationOptions = {
@@ -35,12 +35,13 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
   };
   return (
     <div>
-      <Label action={(
-        <AddVulnerabilities
-          securityCoverage={securityCoverage}
-          paginationOptions={paginationOptions}
-        />
-      )}
+      <Label
+        action={
+          <AddVulnerabilities
+            securityCoverage={securityCoverage}
+            paginationOptions={paginationOptions}
+          />
+        }
       >
         {t_i18n('Vulnerabilities')}
       </Label>
@@ -55,7 +56,7 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
                 dense={true}
                 divider={true}
                 disablePadding={true}
-                secondaryAction={(
+                secondaryAction={
                   <StixCoreRelationshipPopover
                     objectId={securityCoverage.id}
                     connectionKey="Pagination_vulnerabilities"
@@ -63,7 +64,7 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
                     paginationOptions={paginationOptions}
                     isCoverage={true}
                   />
-                )}
+                }
               >
                 <ListItemButton
                   component={Link}
@@ -74,9 +75,11 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
                     <ItemIcon color={theme.palette.primary.main} type="vulnerability" />
                   </ListItemIcon>
                   <ListItemText
-                    primary={(
+                    primary={
                       <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                        <Typography variant="body2" component="span" sx={{ flex: '1 1 10%' }}>{vulnerability?.name}</Typography>
+                        <Typography variant="body2" component="span" sx={{ flex: '1 1 10%' }}>
+                          {vulnerability?.name}
+                        </Typography>
                         <Box sx={{ flex: '1 1 auto', display: 'flex', justifyContent: 'center' }}>
                           <SecurityCoverageScores
                             coverage_information={coverage}
@@ -84,7 +87,7 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
                           />
                         </Box>
                       </Box>
-                    )}
+                    }
                   />
                 </ListItemButton>
               </ListItem>

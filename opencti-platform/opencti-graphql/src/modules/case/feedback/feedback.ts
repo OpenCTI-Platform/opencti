@@ -3,9 +3,22 @@ import { NAME_FIELD, normalizeName } from '../../../schema/identifier';
 import type { ModuleDefinition } from '../../../schema/module';
 import { registerDefinition } from '../../../schema/module';
 import { convertFeedbackToStix_2_0, convertFeedbackToStix_2_1 } from './feedback-converter';
-import { createdBy, objectAssignee, objectMarking, objectOrganization } from '../../../schema/stixRefRelationship';
-import { authorizedMembers, authorizedMembersActivationDate } from '../../../schema/attribute-definition';
-import { ENTITY_TYPE_CONTAINER_FEEDBACK, type Stix2Feedback, type StixFeedback, type StoreEntityFeedback } from './feedback-types';
+import {
+  createdBy,
+  objectAssignee,
+  objectMarking,
+  objectOrganization,
+} from '../../../schema/stixRefRelationship';
+import {
+  authorizedMembers,
+  authorizedMembersActivationDate,
+} from '../../../schema/attribute-definition';
+import {
+  ENTITY_TYPE_CONTAINER_FEEDBACK,
+  type Stix2Feedback,
+  type StixFeedback,
+  type StoreEntityFeedback,
+} from './feedback-types';
 
 const FEEDBACK_DEFINITION: ModuleDefinition<StoreEntityFeedback, StixFeedback, Stix2Feedback> = {
   type: {
@@ -32,8 +45,28 @@ const FEEDBACK_DEFINITION: ModuleDefinition<StoreEntityFeedback, StixFeedback, S
     { key: 'mostRecentHistory', width: 6, label: 'Most recent history' },
   ],
   attributes: [
-    { name: 'content', label: 'Content', type: 'string', format: 'short', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'rating', label: 'Rating', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    {
+      name: 'content',
+      label: 'Content',
+      type: 'string',
+      format: 'short',
+      mandatoryType: 'no',
+      editDefault: true,
+      multiple: false,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'rating',
+      label: 'Rating',
+      type: 'numeric',
+      precision: 'integer',
+      mandatoryType: 'external',
+      editDefault: true,
+      multiple: false,
+      upsert: true,
+      isFilterable: true,
+    },
     { ...authorizedMembers, editDefault: true },
     { ...authorizedMembersActivationDate },
   ],

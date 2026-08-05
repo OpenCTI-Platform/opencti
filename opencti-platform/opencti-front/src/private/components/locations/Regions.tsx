@@ -5,7 +5,10 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import ListLines from '../../../components/list_lines/ListLines';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import { RegionsLinesPaginationQuery, RegionsLinesPaginationQuery$variables } from './regions/__generated__/RegionsLinesPaginationQuery.graphql';
+import {
+  RegionsLinesPaginationQuery,
+  RegionsLinesPaginationQuery$variables,
+} from './regions/__generated__/RegionsLinesPaginationQuery.graphql';
 import RegionCreation from './regions/RegionCreation';
 import { RegionLineDummy } from './regions/RegionLine';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
@@ -19,9 +22,8 @@ const Regions: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Regions | Locations'));
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<RegionsLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    {
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<RegionsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
@@ -31,17 +33,9 @@ const Regions: FunctionComponent = () => {
         number: 0,
         symbol: '',
       },
-    },
-  );
+    });
   const renderLines = () => {
-    const {
-      searchTerm,
-      sortBy,
-      orderAsc,
-      filters,
-      openExports,
-      numberOfElements,
-    } = viewStorage;
+    const { searchTerm, sortBy, orderAsc, filters, openExports, numberOfElements } = viewStorage;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -82,16 +76,16 @@ const Regions: FunctionComponent = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        createButton={(
+        createButton={
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <RegionCreation paginationOptions={paginationOptions} />
           </Security>
-        )}
+        }
         iconExtension
       >
         {queryRef && (
           <React.Suspense
-            fallback={(
+            fallback={
               <>
                 {Array(20)
                   .fill(0)
@@ -99,7 +93,7 @@ const Regions: FunctionComponent = () => {
                     <RegionLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            )}
+            }
           >
             <RegionsLines
               queryRef={queryRef}
@@ -114,7 +108,9 @@ const Regions: FunctionComponent = () => {
   };
   return (
     <div data-testid="region-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Regions'), current: true }]} />
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Regions'), current: true }]}
+      />
       {renderLines()}
     </div>
   );

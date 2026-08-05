@@ -40,9 +40,7 @@ interface ProfileComponentProps {
   queryRef: PreloadedQuery<ProfileQuery>;
 }
 
-const ProfileComponent: FunctionComponent<ProfileComponentProps> = ({
-  queryRef,
-}) => {
+const ProfileComponent: FunctionComponent<ProfileComponentProps> = ({ queryRef }) => {
   const classes = useStyles();
   const data = usePreloadedQuery<ProfileQuery>(profileQuery, queryRef);
   const { me, about, settings, themes } = data;

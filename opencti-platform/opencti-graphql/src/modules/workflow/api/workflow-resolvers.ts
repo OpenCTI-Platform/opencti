@@ -18,7 +18,11 @@ const COMMENT_MAX_LENGTH = 1000; // Keep in sync with COMMENT_MAX_LENGTH in open
 
 const workflowResolvers = {
   Query: {
-    workflowDefinition: (_: any, { entityType, allowDraft = false }: { entityType: string; allowDraft?: boolean }, context: AuthContext) => {
+    workflowDefinition: (
+      _: any,
+      { entityType, allowDraft = false }: { entityType: string; allowDraft?: boolean },
+      context: AuthContext,
+    ) => {
       return getWorkflowDefinition(context, context.user!, entityType, allowDraft);
     },
     workflowInstance: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
@@ -29,34 +33,81 @@ const workflowResolvers = {
     },
   },
   Mutation: {
-    workflowDefinitionSet: (_: any, { entityType, definition }: { entityType: string; definition: string }, context: AuthContext) => {
+    workflowDefinitionSet: (
+      _: any,
+      { entityType, definition }: { entityType: string; definition: string },
+      context: AuthContext,
+    ) => {
       return setWorkflowDefinition(context, context.user!, entityType, definition);
     },
-    workflowDefinitionPublish: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
+    workflowDefinitionPublish: (
+      _: any,
+      { entityType }: { entityType: string },
+      context: AuthContext,
+    ) => {
       return publishWorkflowDefinition(context, context.user!, entityType);
     },
-    workflowDefinitionRestorePublished: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
+    workflowDefinitionRestorePublished: (
+      _: any,
+      { entityType }: { entityType: string },
+      context: AuthContext,
+    ) => {
       return restorePublishedWorkflowDefinition(context, context.user!, entityType);
     },
-    workflowDefinitionDelete: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
+    workflowDefinitionDelete: (
+      _: any,
+      { entityType }: { entityType: string },
+      context: AuthContext,
+    ) => {
       return deleteWorkflowDefinition(context, context.user!, entityType);
     },
-    triggerWorkflowEvent: (_: any, {
-      entityId,
-      eventName,
-      comment,
-      runtimeParams,
-    }: { entityId: string; eventName: string; comment?: string | null; runtimeParams?: Record<string, unknown> }, context: AuthContext) => {
+    triggerWorkflowEvent: (
+      _: any,
+      {
+        entityId,
+        eventName,
+        comment,
+        runtimeParams,
+      }: {
+        entityId: string;
+        eventName: string;
+        comment?: string | null;
+        runtimeParams?: Record<string, unknown>;
+      },
+      context: AuthContext,
+    ) => {
       const normalizedComment = comment?.trim() ?? undefined;
       if (normalizedComment !== undefined && normalizedComment.length > COMMENT_MAX_LENGTH) {
-        throw new GraphQLError(`Comment exceeds maximum allowed length of ${COMMENT_MAX_LENGTH} characters.`);
+        throw new GraphQLError(
+          `Comment exceeds maximum allowed length of ${COMMENT_MAX_LENGTH} characters.`,
+        );
       }
-      return triggerWorkflowEvent(context, context.user!, entityId, eventName, normalizedComment, runtimeParams ?? {});
+      return triggerWorkflowEvent(
+        context,
+        context.user!,
+        entityId,
+        eventName,
+        normalizedComment,
+        runtimeParams ?? {},
+      );
     },
-    clearWorkflowPendingState: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
+    clearWorkflowPendingState: (
+      _: any,
+      { entityId }: { entityId: string },
+      context: AuthContext,
+    ) => {
       return clearWorkflowPendingState(context, context.user!, entityId);
     },
-    reportWorkflowAsyncActionResult: async (_: any, args: { workflowInstanceId: string; workflowActionId: string; status: string; error?: string }, context: AuthContext) => {
+    reportWorkflowAsyncActionResult: async (
+      _: any,
+      args: {
+        workflowInstanceId: string;
+        workflowActionId: string;
+        status: string;
+        error?: string;
+      },
+      context: AuthContext,
+    ) => {
       await reportWorkflowAsyncActionResult(
         context,
         context.user!,
@@ -71,10 +122,19 @@ const workflowResolvers = {
   WorkflowInstance: {
     id: (instance: any) => instance.id || instance.internal_id,
     currentState: (instance: any) => instance.currentState,
-    currentStatus: (instance: any) => ({ id: instance.currentState, template_id: instance.currentState }),
+    currentStatus: (instance: any) => ({
+      id: instance.currentState,
+      template_id: instance.currentState,
+    }),
     allowedTransitions: (instance: any) => instance.allowedTransitions,
     lastHistoryEntry: (instance: any) => {
-      const history: Array<{ state: string; event: string; user_id: string; timestamp: string; comment?: string | null }> = instance.history ?? [];
+      const history: Array<{
+        state: string;
+        event: string;
+        user_id: string;
+        timestamp: string;
+        comment?: string | null;
+      }> = instance.history ?? [];
       return history.length > 0 ? history[history.length - 1] : null;
     },
     pendingStatus: (instance: any) => instance.pendingStatus ?? null,
@@ -92,8 +152,10 @@ const workflowResolvers = {
     toStatus: (transition: any) => ({ id: transition.toState, template_id: transition.toState }),
     comment: (transition: any) => transition.comment ?? null,
     actions: (transition: any) => transition.actions ?? [],
-    requiresShareOrganizationInput: (transition: any) => transition.requiresShareOrganizationInput ?? false,
-    requiresUnshareOrganizationInput: (transition: any) => transition.requiresUnshareOrganizationInput ?? false,
+    requiresShareOrganizationInput: (transition: any) =>
+      transition.requiresShareOrganizationInput ?? false,
+    requiresUnshareOrganizationInput: (transition: any) =>
+      transition.requiresUnshareOrganizationInput ?? false,
   },
   WorkflowPendingAsyncAction: {
     id: (slot: any) => slot.id,
@@ -113,7 +175,8 @@ const workflowResolvers = {
     asyncActions: (pt: any) => pt.asyncActions ?? [],
   },
   WorkflowTriggerResult: {
-    status: (result: any) => (result.newState ? { id: result.newState, template_id: result.newState } : null),
+    status: (result: any) =>
+      result.newState ? { id: result.newState, template_id: result.newState } : null,
     instance: (result: any) => result.instance,
     entity: (result: any) => result.entity,
     executionStatus: (result: any) => result.executionStatus ?? null,

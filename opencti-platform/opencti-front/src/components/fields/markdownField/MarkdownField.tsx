@@ -72,25 +72,31 @@ const MarkdownField = (props: MarkdownFieldProps): ReactElement => {
     }
   }, []);
 
-  const flushFormikValue = useCallback((shouldValidate = false) => {
-    clearFormikSyncTimeout();
-    setFieldValue(name, latestValueRef.current, shouldValidate);
-  }, [clearFormikSyncTimeout, name, setFieldValue]);
-
-  const handleValueChange = useCallback((nextValue: string, shouldValidate = false) => {
-    latestValueRef.current = nextValue;
-
-    if (formikSyncMode === 'immediate') {
-      setFieldValue(name, nextValue, shouldValidate);
-      return;
-    }
-
-    clearFormikSyncTimeout();
-    formikSyncTimeoutRef.current = setTimeout(() => {
+  const flushFormikValue = useCallback(
+    (shouldValidate = false) => {
+      clearFormikSyncTimeout();
       setFieldValue(name, latestValueRef.current, shouldValidate);
-      formikSyncTimeoutRef.current = null;
-    }, formikSyncDelayMs ?? 150);
-  }, [clearFormikSyncTimeout, formikSyncDelayMs, formikSyncMode, name, setFieldValue]);
+    },
+    [clearFormikSyncTimeout, name, setFieldValue],
+  );
+
+  const handleValueChange = useCallback(
+    (nextValue: string, shouldValidate = false) => {
+      latestValueRef.current = nextValue;
+
+      if (formikSyncMode === 'immediate') {
+        setFieldValue(name, nextValue, shouldValidate);
+        return;
+      }
+
+      clearFormikSyncTimeout();
+      formikSyncTimeoutRef.current = setTimeout(() => {
+        setFieldValue(name, latestValueRef.current, shouldValidate);
+        formikSyncTimeoutRef.current = null;
+      }, formikSyncDelayMs ?? 150);
+    },
+    [clearFormikSyncTimeout, formikSyncDelayMs, formikSyncMode, name, setFieldValue],
+  );
 
   useEffect(() => {
     return () => {

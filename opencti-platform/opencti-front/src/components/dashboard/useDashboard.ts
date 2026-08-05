@@ -3,7 +3,11 @@ import * as R from 'ramda';
 import { useEffect, useMemo, useState } from 'react';
 import fileDownload from 'js-file-download';
 import type { Widget, WidgetLayout } from '../../utils/widget/widget';
-import { deserializeDashboardManifestForFrontend, prepareManifest, serializeDashboardManifestForBackend } from './dashboard-utils';
+import {
+  deserializeDashboardManifestForFrontend,
+  prepareManifest,
+  serializeDashboardManifestForBackend,
+} from './dashboard-utils';
 import type { DashboardLike, DashboardManifest, DashboardWidget } from './dashboard-types';
 import useDebounceCallback from '../../utils/hooks/useDebounceCallback';
 
@@ -11,17 +15,20 @@ const LAYOUT_SAVE_DEBOUNCE_MS = 300;
 
 interface useDashboardProps {
   entity: DashboardLike | undefined | null;
-  onSave?: (entityId: string, newSerializedManifest: string, noRefresh: boolean, onCompleted: () => void) => void;
+  onSave?: (
+    entityId: string,
+    newSerializedManifest: string,
+    noRefresh: boolean,
+    onCompleted: () => void,
+  ) => void;
   onImportWidget?: (entityId: string, widgetConfigFile: File, serializedManifest: string) => void;
-  onExportWidget?: (entityId: string, widget: { id: string; type: string }) => Promise<string | null>;
+  onExportWidget?: (
+    entityId: string,
+    widget: { id: string; type: string },
+  ) => Promise<string | null>;
 }
 
-function useDashboard({
-  entity,
-  onImportWidget,
-  onExportWidget,
-  onSave,
-}: useDashboardProps) {
+function useDashboard({ entity, onImportWidget, onExportWidget, onSave }: useDashboardProps) {
   const serializedManifest = entity?.manifest;
   const [deleting, setDeleting] = useState(false);
   const [idToResize, setIdToResize] = useState<string | null>(null);
@@ -52,14 +59,20 @@ function useDashboard({
 
   useEffect(() => {
     setWidgetsLayouts(
-      widgetsArray.reduce((res, widget) => {
-        res[widget.id] = widget.layout;
-        return res;
-      }, {} as Record<string, WidgetLayout>),
+      widgetsArray.reduce(
+        (res, widget) => {
+          res[widget.id] = widget.layout;
+          return res;
+        },
+        {} as Record<string, WidgetLayout>,
+      ),
     );
   }, [widgetsArray]);
 
-  const saveManifest = (newManifest: DashboardManifest, opts = { layouts: widgetsLayouts, noRefresh: false }) => {
+  const saveManifest = (
+    newManifest: DashboardManifest,
+    opts = { layouts: widgetsLayouts, noRefresh: false },
+  ) => {
     const { layouts, noRefresh } = opts;
     const preparedManifest = prepareManifest(newManifest, layouts);
     const newManifestEncoded = serializeDashboardManifestForBackend(preparedManifest);
@@ -84,7 +97,10 @@ function useDashboard({
     debouncedSaveLayout.cancel();
   };
 
-  const handleDateChange = (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => {
+  const handleDateChange = (
+    type: 'startDate' | 'endDate' | 'relativeDate',
+    value: string | null,
+  ) => {
     cancelPendingLayoutSave();
     let newManifest = {
       ...manifest,
@@ -124,20 +140,17 @@ function useDashboard({
     if (!onExportWidget) {
       return;
     }
-    onExportWidget(id, widget)
-      .then((exportedWidget: string | null) => {
-        if (!exportedWidget) {
-          return;
-        }
-        const blob = new Blob([exportedWidget], {
-          type: 'text/json',
-        });
-        const [day, month, year] = new Date()
-          .toLocaleDateString('fr-FR')
-          .split('/');
-        const fileName = `${year}${month}${day}_octi_widget_${widget.type}.json`;
-        fileDownload(blob, fileName);
+    onExportWidget(id, widget).then((exportedWidget: string | null) => {
+      if (!exportedWidget) {
+        return;
+      }
+      const blob = new Blob([exportedWidget], {
+        type: 'text/json',
       });
+      const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
+      const fileName = `${year}${month}${day}_octi_widget_${widget.type}.json`;
+      fileDownload(blob, fileName);
+    });
   };
 
   const handleAddWidget = (widgetConfig: Widget) => {
@@ -192,10 +205,13 @@ function useDashboard({
   const handleLayoutChange = (layouts: ReadonlyArray<WidgetLayout>) => {
     if (deleting) return;
 
-    const newLayouts = layouts.reduce((res, layout) => {
-      res[layout.i] = layout;
-      return res;
-    }, {} as Record<string, WidgetLayout>);
+    const newLayouts = layouts.reduce(
+      (res, layout) => {
+        res[layout.i] = layout;
+        return res;
+      },
+      {} as Record<string, WidgetLayout>,
+    );
 
     if (R.equals(newLayouts, widgetsLayouts)) return;
 

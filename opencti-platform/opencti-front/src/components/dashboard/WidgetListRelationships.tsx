@@ -6,7 +6,7 @@ import ItemIcon from '../ItemIcon';
 import { useComputeLink } from '../../utils/hooks/useAppData';
 
 interface WidgetListRelationshipsProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   data: readonly any[];
   publicWidget?: boolean;
   widgetId: string;
@@ -27,18 +27,16 @@ const WidgetListRelationships = ({
     const columnKeys = columns.map((column) => column.attribute).filter((key) => key !== null);
     const percentWidth = 100 / (columns.length ?? 1);
 
-    return (
-      columnKeys.reduce<DataTableProps['dataColumns']>(
-        (acc, current) => ({
-          ...acc,
-          [current]: { percentWidth, isSortable: false },
-        }),
-        {},
-      )
+    return columnKeys.reduce<DataTableProps['dataColumns']>(
+      (acc, current) => ({
+        ...acc,
+        [current]: { percentWidth, isSortable: false },
+      }),
+      {},
     ) as DataTableProps['dataColumns'];
   }, [columns]);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   const getRedirectionLink = (stixRelationship: any) => {
     if (publicWidget) return '';
     const remoteNode = stixRelationship.from ?? stixRelationship.to;

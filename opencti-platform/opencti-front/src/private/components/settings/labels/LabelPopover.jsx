@@ -74,12 +74,8 @@ class LabelPopover extends Component {
       variables: {
         id: this.props.label.id,
       },
-      updater: (store) => deleteNode(
-        store,
-        'Pagination_labels',
-        this.props.paginationOptions,
-        this.props.label.id,
-      ),
+      updater: (store) =>
+        deleteNode(store, 'Pagination_labels', this.props.paginationOptions, this.props.label.id),
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleCloseDelete();
@@ -104,12 +100,8 @@ class LabelPopover extends Component {
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
         >
-          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
-            {t('Update')}
-          </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
-          </MenuItem>
+          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>{t('Update')}</MenuItem>
+          <MenuItem onClick={this.handleOpenDelete.bind(this)}>{t('Delete')}</MenuItem>
         </Menu>
         <LabelEdition
           label={this.props.label}
@@ -122,9 +114,7 @@ class LabelPopover extends Component {
           title={t('Are you sure?')}
           size="small"
         >
-          <DialogContentText>
-            {t('Do you want to delete this label?')}
-          </DialogContentText>
+          <DialogContentText>{t('Do you want to delete this label?')}</DialogContentText>
           <DialogActions>
             <Button
               variant="secondary"
@@ -133,10 +123,7 @@ class LabelPopover extends Component {
             >
               {t('Cancel')}
             </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
+            <Button onClick={this.submitDelete.bind(this)} disabled={this.state.deleting}>
               {t('Confirm')}
             </Button>
           </DialogActions>

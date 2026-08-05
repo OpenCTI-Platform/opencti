@@ -1,10 +1,15 @@
 import { graphql } from 'react-relay';
 
 export const stixCoreObjectTriggersFragment = graphql`
-  fragment stixCoreObjectTriggersUtils_triggers on Query @refetchable(queryName: "stixCoreObjectTriggersUtils_triggersRefetch") {
+  fragment stixCoreObjectTriggersUtils_triggers on Query
+  @refetchable(queryName: "stixCoreObjectTriggersUtils_triggersRefetch") {
     triggersKnowledgeCount(filters: $filters, includeAuthorities: $includeAuthorities)
-    triggersKnowledge(after: $after, filters: $filters, first: $first, includeAuthorities: $includeAuthorities)
-    @connection(key: "Pagination_quickSubscription__triggersKnowledge") {
+    triggersKnowledge(
+      after: $after
+      filters: $filters
+      first: $first
+      includeAuthorities: $includeAuthorities
+    ) @connection(key: "Pagination_quickSubscription__triggersKnowledge") {
       edges {
         node {
           id

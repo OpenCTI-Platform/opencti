@@ -8,12 +8,16 @@ input MeasureInput {
   date_seen: DateTime
 }
 
-type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject & StixDomainObject & ThreatActor {
+type ThreatActorIndividual implements BasicObject &
+  StixObject &
+  StixCoreObject &
+  StixDomainObject &
+  ThreatActor {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
   parent_types: [String!]!
-  metrics:[Metric]
+  metrics: [Metric]
   # StixObject
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -263,11 +267,25 @@ type Query {
 }
 
 type Mutation {
-  threatActorIndividualAdd(input: ThreatActorIndividualAddInput!): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
+  threatActorIndividualAdd(input: ThreatActorIndividualAddInput!): ThreatActorIndividual
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   threatActorIndividualDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  threatActorIndividualFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
-  threatActorIndividualContextPatch(id: ID!, input: EditContext): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
+  threatActorIndividualFieldPatch(
+    id: ID!
+    input: [EditInput]!
+    commitMessage: String
+    references: [String]
+  ): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
+  threatActorIndividualContextPatch(id: ID!, input: EditContext): ThreatActorIndividual
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   threatActorIndividualContextClean(id: ID!): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
-  threatActorIndividualRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  threatActorIndividualRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
+  threatActorIndividualRelationAdd(
+    id: ID!
+    input: StixRefRelationshipAddInput!
+  ): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  threatActorIndividualRelationDelete(
+    id: ID!
+    toId: StixRef!
+    relationship_type: String!
+  ): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
 }

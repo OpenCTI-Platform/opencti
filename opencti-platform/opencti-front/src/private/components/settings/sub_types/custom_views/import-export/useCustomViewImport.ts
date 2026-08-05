@@ -17,25 +17,29 @@ const customViewImportMutation = graphql`
 const useCustomViewImport = ({ targetEntityType }: { targetEntityType: string }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const [commitImportMutation, importing] = useApiMutation<useCustomViewImport_Mutation>(customViewImportMutation);
+  const [commitImportMutation, importing] =
+    useApiMutation<useCustomViewImport_Mutation>(customViewImportMutation);
 
-  const onImport = (file: File) => new Promise<void>((resolve, reject) => {
-    commitImportMutation({
-      variables: { targetEntityType, file },
-      onError: (e) => {
-        handleError(e);
-        reject();
-      },
-      onCompleted: (response) => {
-        if (response.customViewConfigurationImport) {
-          const { id } = response.customViewConfigurationImport;
-          MESSAGING$.notifySuccess(t_i18n('Custom view created'));
-          navigate(`/dashboard/settings/customization/entity_types/${targetEntityType}/custom-views/${id}`);
-        }
-        resolve();
-      },
+  const onImport = (file: File) =>
+    new Promise<void>((resolve, reject) => {
+      commitImportMutation({
+        variables: { targetEntityType, file },
+        onError: (e) => {
+          handleError(e);
+          reject();
+        },
+        onCompleted: (response) => {
+          if (response.customViewConfigurationImport) {
+            const { id } = response.customViewConfigurationImport;
+            MESSAGING$.notifySuccess(t_i18n('Custom view created'));
+            navigate(
+              `/dashboard/settings/customization/entity_types/${targetEntityType}/custom-views/${id}`,
+            );
+          }
+          resolve();
+        },
+      });
     });
-  });
   const helpers = useDashboardImport({ onImport });
   return { importing, ...helpers };
 };

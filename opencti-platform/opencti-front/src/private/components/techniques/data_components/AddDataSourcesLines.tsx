@@ -22,8 +22,7 @@ export const addDataSourcesLinesMutationAdd = graphql`
 
 export const addDataSourcesLinesQuery = graphql`
   query AddDataSourcesLinesQuery($search: String, $count: Int!, $cursor: ID) {
-    ...AddDataSourcesLines_data
-      @arguments(search: $search, count: $count, cursor: $cursor)
+    ...AddDataSourcesLines_data @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -53,9 +52,10 @@ interface AddDataSourcesLinesContainerProps {
   queryRef: PreloadedQuery<AddDataSourcesLinesQuery>;
 }
 
-const AddDataSourcesLines: FunctionComponent<
-  AddDataSourcesLinesContainerProps
-> = ({ dataComponentId, queryRef }) => {
+const AddDataSourcesLines: FunctionComponent<AddDataSourcesLinesContainerProps> = ({
+  dataComponentId,
+  queryRef,
+}) => {
   const { data } = usePreloadedPaginationFragment<
     AddDataSourcesLinesQuery,
     AddDataSourcesLines_data$key
@@ -71,15 +71,16 @@ const AddDataSourcesLines: FunctionComponent<
     readonly description?: string | null;
     readonly id: string;
     readonly name: string;
-  }) => commit({
-    variables: {
-      id: dataComponentId,
-      input: {
-        key: 'dataSource',
-        value: [dataSource.id],
+  }) =>
+    commit({
+      variables: {
+        id: dataComponentId,
+        input: {
+          key: 'dataSource',
+          value: [dataSource.id],
+        },
       },
-    },
-  });
+    });
 
   return (
     <List>
@@ -90,14 +91,9 @@ const AddDataSourcesLines: FunctionComponent<
             return (
               <ListItemText
                 key={idx}
-                primary={(
-                  <Skeleton
-                    animation="wave"
-                    variant="rectangular"
-                    width="90%"
-                    height="100%"
-                  />
-                )}
+                primary={
+                  <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
+                }
               />
             );
           }

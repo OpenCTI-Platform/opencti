@@ -3,9 +3,15 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import { DataColumns } from '../../../../components/list_lines';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { SettingsOrganizationsLines_data$key } from './__generated__/SettingsOrganizationsLines_data.graphql';
-import { SettingsOrganizationsLinesPaginationQuery, SettingsOrganizationsLinesPaginationQuery$variables } from './__generated__/SettingsOrganizationsLinesPaginationQuery.graphql';
+import {
+  SettingsOrganizationsLinesPaginationQuery,
+  SettingsOrganizationsLinesPaginationQuery$variables,
+} from './__generated__/SettingsOrganizationsLinesPaginationQuery.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { SettingsOrganizationLine, SettingsOrganizationLineDummy } from './SettingsOrganizationLine';
+import {
+  SettingsOrganizationLine,
+  SettingsOrganizationLineDummy,
+} from './SettingsOrganizationLine';
 
 const nbOfRowsToLoad = 50;
 
@@ -25,14 +31,14 @@ export const settingsOrganizationsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...SettingsOrganizationsLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -45,7 +51,8 @@ export const settingsOrganizationsLinesFragment = graphql`
     orderBy: { type: "OrganizationsOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "FilterGroup" }
-  ) @refetchable(queryName: "SettingsOrganizationsLinesRefetchQuery") {
+  )
+  @refetchable(queryName: "SettingsOrganizationsLinesRefetchQuery") {
     securityOrganizations(
       search: $search
       first: $count

@@ -17,7 +17,7 @@
   scrollbar-width: thin;
 }
 
-#root{
+#root {
   max-height: 100vh;
   height: 100vh;
 }
@@ -87,7 +87,8 @@ div.markdown p:last-child {
 }
 
 /* .mde-preview .mde-preview-content table th, .mde-preview .mde-preview-content table td */
-div.markdown table th, div.markdown table td {
+div.markdown table th,
+div.markdown table td {
   padding: 6px 13px;
   border: 1px solid #c8ccd0;
 }
@@ -137,7 +138,7 @@ div.markdown table {
   display: none; /* Chrome, Safari, Opera */
 }
 
-input[type="file"] {
+input[type='file'] {
   width: 100% !important;
 }
 
@@ -145,7 +146,8 @@ input[type="file"] {
   background-color: rgb(255, 255, 0) !important;
 }
 
-.marker-blue, .flexible-marker-blue {
+.marker-blue,
+.flexible-marker-blue {
   background-color: rgb(15, 188, 255) !important;
 }
 

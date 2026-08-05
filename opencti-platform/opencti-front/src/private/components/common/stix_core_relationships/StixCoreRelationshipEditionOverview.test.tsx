@@ -36,7 +36,9 @@ describe('Component: StixCoreRelationshipEditionOverviewComponent', () => {
         handleClose={vi.fn()}
         noStoreUpdate
       />,
-      { userContext },
+      {
+        userContext,
+      },
     );
 
     const coverageEdition = screen.queryByText('Coverage Information');
@@ -51,7 +53,9 @@ describe('Component: StixCoreRelationshipEditionOverviewComponent', () => {
         handleClose={vi.fn()}
         noStoreUpdate
       />,
-      { userContext },
+      {
+        userContext,
+      },
     );
 
     const coverageEdition = screen.queryByText('Coverage Information');
@@ -66,7 +70,9 @@ describe('Component: StixCoreRelationshipEditionOverviewComponent', () => {
         handleClose={vi.fn()}
         noStoreUpdate
       />,
-      { userContext },
+      {
+        userContext,
+      },
     );
 
     const coverageEdition = screen.queryByText('Coverage Information');

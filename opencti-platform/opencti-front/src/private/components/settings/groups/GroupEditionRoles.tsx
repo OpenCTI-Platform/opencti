@@ -12,45 +12,42 @@ import { GroupEditionRolesLinesSearchQuery } from './__generated__/GroupEditionR
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const groupEditionAddRoles = graphql`
-    mutation GroupEditionRolesRelationAddMutation(
-        $id: ID!
-        $input: InternalRelationshipAddInput!
-    ) {
-        groupEdit(id: $id) {
-            relationAdd(input: $input) {
-                from {
-                    ...GroupEditionRoles_group
-                }
-            }
+  mutation GroupEditionRolesRelationAddMutation($id: ID!, $input: InternalRelationshipAddInput!) {
+    groupEdit(id: $id) {
+      relationAdd(input: $input) {
+        from {
+          ...GroupEditionRoles_group
         }
+      }
     }
+  }
 `;
 
 const groupEditionRemoveRoles = graphql`
-    mutation GroupEditionRolesRelationDeleteMutation(
-        $id: ID!
-        $toId: StixRef!
-        $relationship_type: String!
-    ) {
-        groupEdit(id: $id) {
-            relationDelete(toId: $toId, relationship_type: $relationship_type) {
-                ...GroupEditionRoles_group
-            }
-        }
+  mutation GroupEditionRolesRelationDeleteMutation(
+    $id: ID!
+    $toId: StixRef!
+    $relationship_type: String!
+  ) {
+    groupEdit(id: $id) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
+        ...GroupEditionRoles_group
+      }
     }
+  }
 `;
 
 export const groupEditionRolesLinesSearchQuery = graphql`
-    query GroupEditionRolesLinesSearchQuery($search: String) {
-        roles(search: $search) {
-            edges {
-                node {
-                    id
-                    name
-                }
-            }
+  query GroupEditionRolesLinesSearchQuery($search: String) {
+    roles(search: $search) {
+      edges {
+        node {
+          id
+          name
         }
+      }
     }
+  }
 `;
 
 interface GroupEditionRolesComponentProps {
@@ -58,12 +55,10 @@ interface GroupEditionRolesComponentProps {
   queryRef: PreloadedQuery<GroupEditionRolesLinesSearchQuery>;
 }
 
-const GroupEditionRolesComponent: FunctionComponent<GroupEditionRolesComponentProps> = (
-  {
-    group,
-    queryRef,
-  },
-) => {
+const GroupEditionRolesComponent: FunctionComponent<GroupEditionRolesComponentProps> = ({
+  group,
+  queryRef,
+}) => {
   const { roles } = usePreloadedQuery<GroupEditionRolesLinesSearchQuery>(
     groupEditionRolesLinesSearchQuery,
     queryRef,
@@ -73,7 +68,11 @@ const GroupEditionRolesComponent: FunctionComponent<GroupEditionRolesComponentPr
   const [commitAddRole] = useApiMutation(groupEditionAddRoles);
   const [commitRemoveRole] = useApiMutation(groupEditionRemoveRoles);
 
-  const handleToggle = (roleId?: string, groupRole?: { id?: string }, event?: React.ChangeEvent<HTMLInputElement>) => {
+  const handleToggle = (
+    roleId?: string,
+    groupRole?: { id?: string },
+    event?: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     if (event?.target.checked) {
       commitAddRole({
         variables: {
@@ -97,53 +96,49 @@ const GroupEditionRolesComponent: FunctionComponent<GroupEditionRolesComponentPr
 
   return (
     <List>
-      {rolesData.sort((roleA, roleB) => roleA.name.localeCompare(roleB.name)).map((role) => {
-        const groupRole = groupRoles.find((g) => g.id === role.id);
-        return (
-          <ListItem
-            key={group.id}
-            divider={true}
-            secondaryAction={(
-              <Checkbox
-                onChange={(event) => handleToggle(
-                  role.id,
-                  groupRole,
-                  event,
-                )}
-                checked={groupRole !== undefined}
-              />
-            )}
-          >
-            <ListItemIcon color="primary">
-              <Security />
-            </ListItemIcon>
-            <ListItemText
-              primary={role.name}
-            />
-          </ListItem>
-        );
-      })}
+      {rolesData
+        .sort((roleA, roleB) => roleA.name.localeCompare(roleB.name))
+        .map((role) => {
+          const groupRole = groupRoles.find((g) => g.id === role.id);
+          return (
+            <ListItem
+              key={group.id}
+              divider={true}
+              secondaryAction={
+                <Checkbox
+                  onChange={(event) => handleToggle(role.id, groupRole, event)}
+                  checked={groupRole !== undefined}
+                />
+              }
+            >
+              <ListItemIcon color="primary">
+                <Security />
+              </ListItemIcon>
+              <ListItemText primary={role.name} />
+            </ListItem>
+          );
+        })}
     </List>
   );
 };
 
 const GroupEditionRoles = createFragmentContainer(GroupEditionRolesComponent, {
   group: graphql`
-      fragment GroupEditionRoles_group on Group
-      @argumentDefinitions(
-          orderBy: { type: "RolesOrdering", defaultValue: name }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-      ) {
-          id
-          roles(orderBy: $orderBy,orderMode: $orderMode) {
-              edges {
-                  node {
-                      id
-                      name  
-                  }
-              }
+    fragment GroupEditionRoles_group on Group
+    @argumentDefinitions(
+      orderBy: { type: "RolesOrdering", defaultValue: name }
+      orderMode: { type: "OrderingMode", defaultValue: asc }
+    ) {
+      id
+      roles(orderBy: $orderBy, orderMode: $orderMode) {
+        edges {
+          node {
+            id
+            name
           }
+        }
       }
+    }
   `,
 });
 

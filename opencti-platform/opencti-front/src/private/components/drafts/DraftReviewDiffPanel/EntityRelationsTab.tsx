@@ -33,7 +33,9 @@ interface EntityRelationsTabComponentProps {
   queryRef: PreloadedQuery<EntityRelationsTabQuery>;
 }
 
-const EntityRelationsTabComponent: FunctionComponent<EntityRelationsTabComponentProps> = ({ queryRef }) => {
+const EntityRelationsTabComponent: FunctionComponent<EntityRelationsTabComponentProps> = ({
+  queryRef,
+}) => {
   const { t_i18n } = useFormatter();
   const computeLink = useComputeLink();
   const { translateEntityType } = useEntityTranslation();
@@ -54,7 +56,15 @@ const EntityRelationsTabComponent: FunctionComponent<EntityRelationsTabComponent
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', backgroundColor: 'background.paper', borderRadius: '4px', p: '16px' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: 'background.paper',
+        borderRadius: '4px',
+        p: '16px',
+      }}
+    >
       <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mb: 2 }}>
         <Typography sx={{ width: 120, fontSize: 12, fontWeight: 600, color: 'text.secondary' }}>
           {t_i18n('Action')}
@@ -73,7 +83,10 @@ const EntityRelationsTabComponent: FunctionComponent<EntityRelationsTabComponent
             id: rel.relation_id,
             entity_type: rel.relationship_type,
             relationship_type: rel.relationship_type,
-            from: rel.from_id && rel.from_type ? { id: rel.from_id, entity_type: rel.from_type } : undefined,
+            from:
+              rel.from_id && rel.from_type
+                ? { id: rel.from_id, entity_type: rel.from_type }
+                : undefined,
             to: rel.to_id && rel.to_type ? { id: rel.to_id, entity_type: rel.to_type } : undefined,
           });
           return (
@@ -94,10 +107,19 @@ const EntityRelationsTabComponent: FunctionComponent<EntityRelationsTabComponent
                   {translateEntityType(rel.relationship_type)}
                 </Typography>
               </Box>
-              <Box sx={{ flex: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box
+                sx={{
+                  flex: 3,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
                 <Typography sx={{ fontSize: 14, color: 'text.primary', wordBreak: 'break-word' }}>
                   {rel.from_name || rel.from_id}
-                  <Box component="span" sx={{ mx: 1, color: 'text.secondary' }}>→</Box>
+                  <Box component="span" sx={{ mx: 1, color: 'text.secondary' }}>
+                    →
+                  </Box>
                   {rel.to_name || rel.to_id}
                 </Typography>
                 {relationLink && (
@@ -108,7 +130,14 @@ const EntityRelationsTabComponent: FunctionComponent<EntityRelationsTabComponent
                     target="_blank"
                     rel="noopener noreferrer"
                     size="small"
-                    sx={{ width: 26, height: 26, borderRadius: '4px', color: 'primary.main', backgroundColor: 'action.hover', flexShrink: 0 }}
+                    sx={{
+                      width: 26,
+                      height: 26,
+                      borderRadius: '4px',
+                      color: 'primary.main',
+                      backgroundColor: 'action.hover',
+                      flexShrink: 0,
+                    }}
                   >
                     <LaunchIcon sx={{ fontSize: 18 }} />
                   </IconButton>

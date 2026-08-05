@@ -12,9 +12,16 @@ import FormButtonContainer from '../../../../components/common/form/FormButtonCo
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import { commitMutation, defaultCommitMutation, handleErrorInForm } from '../../../../relay/environment';
+import {
+  commitMutation,
+  defaultCommitMutation,
+  handleErrorInForm,
+} from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
-import { StatusTemplateAddInput, StatusTemplateCreationContextualMutation$data } from './__generated__/StatusTemplateCreationContextualMutation.graphql';
+import {
+  StatusTemplateAddInput,
+  StatusTemplateCreationContextualMutation$data,
+} from './__generated__/StatusTemplateCreationContextualMutation.graphql';
 import { StatusTemplatesLinesPaginationQuery$variables } from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
 
 const statusTemplateMutation = graphql`
@@ -26,7 +33,7 @@ const statusTemplateMutation = graphql`
 `;
 
 const statusTemplateContextualMutation = graphql`
-  mutation StatusTemplateCreationContextualMutation( $input: StatusTemplateAddInput!) {
+  mutation StatusTemplateCreationContextualMutation($input: StatusTemplateAddInput!) {
     statusTemplateAdd(input: $input) {
       id
       name
@@ -34,21 +41,14 @@ const statusTemplateContextualMutation = graphql`
   }
 `;
 
-const CreateStatusTemplateControlledDial = (
-  props: DrawerControlledDialProps,
-) => (
-  <CreateEntityControlledDial
-    entityType="StatusTemplate"
-    {...props}
-  />
+const CreateStatusTemplateControlledDial = (props: DrawerControlledDialProps) => (
+  <CreateEntityControlledDial entityType="StatusTemplate" {...props} />
 );
 
 interface StatusTemplateCreationProps {
   contextual: boolean;
   inputValueContextual: string;
-  creationCallback: (
-    data: StatusTemplateCreationContextualMutation$data,
-  ) => void;
+  creationCallback: (data: StatusTemplateCreationContextualMutation$data) => void;
   handleClose: () => void;
   open: boolean;
   paginationOptions?: StatusTemplatesLinesPaginationQuery$variables;
@@ -73,7 +73,10 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
   };
   const onSubmit = (
     values: typeof initialValues,
-    { setSubmitting, resetForm }: {
+    {
+      setSubmitting,
+      resetForm,
+    }: {
       setSubmitting: (flag: boolean) => void;
       resetForm: () => void;
     },
@@ -83,17 +86,10 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
     };
     commitMutation({
       ...defaultCommitMutation,
-      mutation: contextual
-        ? statusTemplateContextualMutation
-        : statusTemplateMutation,
+      mutation: contextual ? statusTemplateContextualMutation : statusTemplateMutation,
       variables: { input: finalValues },
       updater: (store: RecordSourceSelectorProxy) => {
-        insertNode(
-          store,
-          'Pagination_statusTemplates',
-          paginationOptions,
-          'statusTemplateAdd',
-        );
+        insertNode(store, 'Pagination_statusTemplates', paginationOptions, 'statusTemplateAdd');
       },
       setSubmitting,
       onCompleted: () => {
@@ -103,7 +99,10 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
     });
   };
 
-  const onSubmitContextual: FormikConfig<StatusTemplateAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmitContextual: FormikConfig<StatusTemplateAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
     const finalValues = {
       ...values,
     };
@@ -115,9 +114,7 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: (
-        response: StatusTemplateCreationContextualMutation$data,
-      ) => {
+      onCompleted: (response: StatusTemplateCreationContextualMutation$data) => {
         setSubmitting(false);
         resetForm();
         if (contextual) {
@@ -160,17 +157,10 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
                   style={{ marginTop: 20 }}
                 />
                 <FormButtonContainer>
-                  <Button
-                    variant="secondary"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                  >
+                  <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t_i18n('Cancel')}
                   </Button>
-                  <Button
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
+                  <Button onClick={submitForm} disabled={isSubmitting}>
                     {t_i18n('Create')}
                   </Button>
                 </FormButtonContainer>
@@ -196,11 +186,7 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
         >
           {({ submitForm, handleReset, isSubmitting }) => (
             <Form>
-              <Dialog
-                open={open}
-                onClose={handleClose}
-                title={t_i18n('Create a status template')}
-              >
+              <Dialog open={open} onClose={handleClose} title={t_i18n('Create a status template')}>
                 <Field
                   component={TextField}
                   variant="standard"
@@ -219,10 +205,7 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
                   <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t_i18n('Cancel')}
                   </Button>
-                  <Button
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
+                  <Button onClick={submitForm} disabled={isSubmitting}>
                     {t_i18n('Create')}
                   </Button>
                 </DialogActions>

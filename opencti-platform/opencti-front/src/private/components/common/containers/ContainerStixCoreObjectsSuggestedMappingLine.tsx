@@ -60,42 +60,46 @@ interface ContainerStixCoreObjectsSuggestedMappingLineComponentProps {
   dataColumns: DataColumns;
   node: ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$key;
   contentMappingCount: Record<string, number>;
-  handleRemoveSuggestedMappingLine: (entityToRemove: NonNullable<ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$data['matchedEntity']>) => void;
+  handleRemoveSuggestedMappingLine: (
+    entityToRemove: NonNullable<
+      ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$data['matchedEntity']
+    >,
+  ) => void;
 }
 
 const ContainerStixCoreObjectsSuggestedMappingFragment = graphql`
-    fragment ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity on MappedEntity {
-      matchedString
-      matchedEntity{
+  fragment ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity on MappedEntity {
+    matchedString
+    matchedEntity {
+      id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
+      standard_id
+      entity_type
+      ... on StixObject {
+        representative {
+          main
+        }
+      }
+      objectMarking {
         id
-        draftVersion {
-          draft_id
-          draft_operation
-        }
-        standard_id
-        entity_type
-        ... on StixObject {
-          representative {
-            main
-          }
-        }
-        objectMarking {
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
+      }
+      createdBy {
+        ... on Identity {
           id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
+          name
+          entity_type
         }
       }
     }
-  `;
+  }
+`;
 
 export const ContainerStixCoreObjectsSuggestedMappingLine: FunctionComponent<
   ContainerStixCoreObjectsSuggestedMappingLineComponentProps
@@ -109,14 +113,14 @@ export const ContainerStixCoreObjectsSuggestedMappingLine: FunctionComponent<
       classes={{ root: classes.item }}
       divider={true}
       disablePadding
-      secondaryAction={(
+      secondaryAction={
         <IconButton
           aria-label={t_i18n('Remove suggested mapping')}
           onClick={() => handleRemoveSuggestedMappingLine(matchedEntity)}
         >
           <CloseOutlined />
         </IconButton>
-      )}
+      }
     >
       <ListItemButton
         component={Link}
@@ -127,12 +131,9 @@ export const ContainerStixCoreObjectsSuggestedMappingLine: FunctionComponent<
           <ItemIcon type={matchedEntity.entity_type} />
         </ListItemIcon>
         <ListItemText
-          primary={(
+          primary={
             <>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.entity_type.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.entity_type.width }}>
                 <Chip
                   classes={{ root: classes.chipInList }}
                   style={{
@@ -143,56 +144,38 @@ export const ContainerStixCoreObjectsSuggestedMappingLine: FunctionComponent<
                   label={t_i18n(`entity_${matchedEntity.entity_type}`)}
                 />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.createdBy.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.createdBy.width }}>
                 {matchedEntity.createdBy?.name ?? EMPTY_VALUE}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.value.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.value.width }}>
                 {matchedEntity.representative?.main}
-                {matchedEntity.draftVersion && (<DraftChip />)}
+                {matchedEntity.draftVersion && <DraftChip />}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.objectMarking.width }}
-              >
-                <ItemMarkings
-                  markingDefinitions={matchedEntity.objectMarking ?? []}
-                  limit={1}
-                />
+              <div className={classes.bodyItem} style={{ width: dataColumns.objectMarking.width }}>
+                <ItemMarkings markingDefinitions={matchedEntity.objectMarking ?? []} limit={1} />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.matched_text.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.matched_text.width }}>
                 {matchedString}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.mapping.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.mapping.width }}>
                 <Chip
                   classes={{ root: classes.chipInList }}
                   label={
-                    contentMappingCount[matchedString]
-                      ? contentMappingCount[matchedString]
-                      : '0'
+                    contentMappingCount[matchedString] ? contentMappingCount[matchedString] : '0'
                   }
                 />
               </div>
             </>
-          )}
+          }
         />
       </ListItemButton>
     </ListItem>
   );
 };
 
-export const ContainerStixCoreObjectsSuggestedMappingLineDummy = (props: ContainerStixCoreObjectsSuggestedMappingLineComponentProps) => {
+export const ContainerStixCoreObjectsSuggestedMappingLineDummy = (
+  props: ContainerStixCoreObjectsSuggestedMappingLineComponentProps,
+) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { dataColumns } = props;
@@ -200,7 +183,7 @@ export const ContainerStixCoreObjectsSuggestedMappingLineDummy = (props: Contain
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={(
+      secondaryAction={
         <IconButton
           disabled={true}
           aria-label={t_i18n('Open menu')}
@@ -209,30 +192,21 @@ export const ContainerStixCoreObjectsSuggestedMappingLineDummy = (props: Contain
         >
           <MoreVert />
         </IconButton>
-      )}
+      }
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
-                key={value.label}
-                className={classes.bodyItem}
-                style={{ width: value.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height={20}
-                />
+              <div key={value.label} className={classes.bodyItem} style={{ width: value.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height={20} />
               </div>
             ))}
           </div>
-        )}
+        }
       />
     </ListItem>
   );

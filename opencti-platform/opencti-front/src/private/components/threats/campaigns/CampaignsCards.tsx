@@ -7,7 +7,9 @@ import ListCardsContent from '../../../../components/list_cards/ListCardsContent
 import CampaignCard from './CampaignCard';
 import { GenericAttackCardDummy } from '../../common/cards/GenericAttackCard';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixDomainObjectBookmarks, { stixDomainObjectBookmarksQuery } from '../../common/stix_domain_objects/StixDomainObjectBookmarks';
+import StixDomainObjectBookmarks, {
+  stixDomainObjectBookmarksQuery,
+} from '../../common/stix_domain_objects/StixDomainObjectBookmarks';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 
@@ -23,14 +25,14 @@ export const campaignsCardsQuery = graphql`
     $filters: FilterGroup
   ) {
     ...CampaignsCards_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -114,9 +116,7 @@ const CampaignsCards: FunctionComponent<CampaignsCardsProps> = ({
             isLoading={isLoadingMore}
             DummyCardComponent={GenericAttackCardDummy}
             dataList={data?.campaigns?.edges ?? []}
-            globalCount={
-              data?.campaigns?.pageInfo?.globalCount ?? nbOfCardsToLoad
-            }
+            globalCount={data?.campaigns?.pageInfo?.globalCount ?? nbOfCardsToLoad}
             CardComponent={CampaignCard}
             nbOfCardsToLoad={nbOfCardsToLoad}
             onLabelClick={onLabelClick}

@@ -18,22 +18,22 @@ interface EEFieldProps {
   featureLabel: string;
 }
 
-const EEField: FunctionComponent<EEFieldProps> = ({
-  children,
-  featureLabel,
-}) => {
+const EEField: FunctionComponent<EEFieldProps> = ({ children, featureLabel }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const component = React.cloneElement(children, {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    label: <>{t_i18n(children.props.label)}<EEChip feature={featureLabel} /></>,
+    // @ts-expect-error child component prop types are unknown, so injected label prop can't be type-checked
+    label: (
+      <>
+        {
+          // @ts-expect-error children.props is untyped since children is a generic ReactElement
+          t_i18n(children.props.label)
+        }
+        <EEChip feature={featureLabel} />
+      </>
+    ),
   });
-  return (
-    <div className={classes.labelRoot}>
-      {component}
-    </div>
-  );
+  return <div className={classes.labelRoot}>{component}</div>;
 };
 
 export default EEField;

@@ -23,11 +23,7 @@ export const jsonFewShotExamples: {
         {
           key: 'entity_type',
           operator: 'eq',
-          values: [
-            'Threat-Actor-Group',
-            'Threat-Actor-Individual',
-            'Intrusion-Set',
-          ],
+          values: ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set'],
           mode: 'or',
         },
       ],
@@ -54,11 +50,7 @@ export const jsonFewShotExamples: {
         {
           key: 'entity_type',
           operator: 'eq',
-          values: [
-            'Intrusion-Set',
-            'Threat-Actor-Group',
-            'Threat-Actor-Individual',
-          ],
+          values: ['Intrusion-Set', 'Threat-Actor-Group', 'Threat-Actor-Individual'],
           mode: 'or',
         },
       ],
@@ -85,11 +77,7 @@ export const jsonFewShotExamples: {
         {
           key: 'entity_type',
           operator: 'eq',
-          values: [
-            'Threat-Actor-Group',
-            'Threat-Actor-Individual',
-            'Intrusion-Set',
-          ],
+          values: ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set'],
           mode: 'or',
         },
       ],
@@ -98,8 +86,7 @@ export const jsonFewShotExamples: {
   },
   {
     _comment: 'II/ Targeting and Potential Victims by ID (e.g., Malicious IP)',
-    input:
-      'Which victims and industry sectors are being affected by 134.175.104.84?',
+    input: 'Which victims and industry sectors are being affected by 134.175.104.84?',
     output: {
       mode: 'and',
       filters: [
@@ -221,11 +208,7 @@ export const jsonFewShotExamples: {
         {
           key: 'entity_type',
           operator: 'eq',
-          values: [
-            'Threat-Actor-Group',
-            'Threat-Actor-Individual',
-            'Intrusion-Set',
-          ],
+          values: ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set'],
           mode: 'or',
         },
         {
@@ -248,10 +231,8 @@ export const jsonFewShotExamples: {
     },
   },
   {
-    _comment:
-      'V/ Intelligence Reports and Incidents - Creators or Assignees (creator_id)',
-    input:
-      'What intelligence reports have been released by the Cambridge Group of Clubs?',
+    _comment: 'V/ Intelligence Reports and Incidents - Creators or Assignees (creator_id)',
+    input: 'What intelligence reports have been released by the Cambridge Group of Clubs?',
     output: {
       mode: 'and',
       filters: [
@@ -272,8 +253,7 @@ export const jsonFewShotExamples: {
     },
   },
   {
-    _comment:
-      'V/ Intelligence Reports and Incidents - Creators or Assignees (objectAssignee)',
+    _comment: 'V/ Intelligence Reports and Incidents - Creators or Assignees (objectAssignee)',
     input: 'Can you list all cybersecurity incidents assigned to John Doe?',
     output: {
       mode: 'and',
@@ -356,11 +336,7 @@ export const jsonFewShotExamples: {
         {
           key: 'entity_type',
           operator: 'eq',
-          values: [
-            'Threat-Actor-Group',
-            'Threat-Actor-Individual',
-            'Intrusion-Set',
-          ],
+          values: ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set'],
           mode: 'or',
         },
       ],
@@ -373,8 +349,7 @@ export const jsonFewShotExamples: {
     output: { mode: 'and', filters: [], filterGroups: [] },
   },
   {
-    _comment:
-      "VIII/ Grammatical and Linguistic Complexity (should return nothing as it's non-CTI)",
+    _comment: "VIII/ Grammatical and Linguistic Complexity (should return nothing as it's non-CTI)",
     input:
       'The sun, a radiant beacon in the sky, spread its golden warmth across the horizon, igniting the dawn with an explosion of brilliant color.',
     output: { mode: 'and', filters: [], filterGroups: [] },
@@ -400,11 +375,7 @@ export const jsonFewShotExamples: {
         {
           key: 'entity_type',
           operator: 'eq',
-          values: [
-            'Threat-Actor-Group',
-            'Threat-Actor-Individual',
-            'Intrusion-Set',
-          ],
+          values: ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set'],
           mode: 'or',
         },
       ],
@@ -432,11 +403,7 @@ export const jsonFewShotExamples: {
         {
           key: 'entity_type',
           operator: 'eq',
-          values: [
-            'Threat-Actor-Group',
-            'Threat-Actor-Individual',
-            'Intrusion-Set',
-          ],
+          values: ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set'],
           mode: 'or',
         },
       ],
@@ -472,11 +439,7 @@ export const jsonFewShotExamples: {
         {
           key: 'entity_type',
           operator: 'eq',
-          values: [
-            'Threat-Actor-Group',
-            'Threat-Actor-Individual',
-            'Intrusion-Set',
-          ],
+          values: ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set'],
           mode: 'or',
         },
       ],

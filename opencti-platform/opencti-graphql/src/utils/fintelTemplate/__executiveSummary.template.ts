@@ -25,12 +25,13 @@ const executiveSummaryContent = (containerType: string) => {
   } else if (containerType === 'Case-Rft') {
     typeWidget = '$takedownTypes';
   }
-  const reliabilityForReport = containerType === 'Report'
-    ? `<tr>
+  const reliabilityForReport =
+    containerType === 'Report'
+      ? `<tr>
       <td><strong>Self reliability</strong></td>
   <td>$reliabilitySelf</td>
   </tr>`
-    : '';
+      : '';
   return `
     <div>
       <h2>Executive report</h2>
@@ -160,7 +161,9 @@ const getMultiAttributesWidget = (containerType: string) => {
   }
 };
 
-export const generateFintelTemplateExecutiveSummary = (containerType: string): FintelTemplateAddInput => {
+export const generateFintelTemplateExecutiveSummary = (
+  containerType: string,
+): FintelTemplateAddInput => {
   const multiAttributesWidget = getMultiAttributesWidget(containerType);
   return {
     name: 'Executive Summary',

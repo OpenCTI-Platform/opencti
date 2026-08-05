@@ -6,7 +6,7 @@ export interface Deletion {
   handleOpenDelete: (e?: UIEvent) => void;
   displayDelete: boolean;
   handleCloseDelete: (e?: UIEvent) => void;
-  setDeleting: (value: (((prevState: boolean) => boolean) | boolean)) => void;
+  setDeleting: (value: ((prevState: boolean) => boolean) | boolean) => void;
 }
 
 const useDeletion = ({ handleClose }: { handleClose?: () => void }): Deletion => {

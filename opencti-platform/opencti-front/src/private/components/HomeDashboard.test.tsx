@@ -101,10 +101,16 @@ describe('HomeDashboard', () => {
     });
 
     expect(await screen.findByText('Permission required')).toBeInTheDocument();
-    expect(screen.getByText('You do not have permission to connect this product. Please contact your product administrator to connect the product on your behalf.')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'You do not have permission to connect this product. Please contact your product administrator to connect the product on your behalf.',
+      ),
+    ).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(sessionStorage.getItem(XTM_HUB_PERMISSION_REQUIRED_DIALOG_SESSION_STORAGE_KEY)).toBeNull();
+      expect(
+        sessionStorage.getItem(XTM_HUB_PERMISSION_REQUIRED_DIALOG_SESSION_STORAGE_KEY),
+      ).toBeNull();
     });
 
     await user.click(screen.getByRole('button', { name: 'Close' }));

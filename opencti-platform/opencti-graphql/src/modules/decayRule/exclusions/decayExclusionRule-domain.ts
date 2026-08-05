@@ -6,10 +6,25 @@ import { publishUserAction } from '../../../listener/UserActionListener';
 import { BUS_TOPICS } from '../../../config/conf';
 import { pageEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { ABSTRACT_INTERNAL_OBJECT, INPUT_CREATED_BY, INPUT_LABELS, INPUT_MARKINGS } from '../../../schema/general';
+import {
+  ABSTRACT_INTERNAL_OBJECT,
+  INPUT_CREATED_BY,
+  INPUT_LABELS,
+  INPUT_MARKINGS,
+} from '../../../schema/general';
 import { notify } from '../../../database/redis';
-import type { DecayExclusionRuleAddInput, EditInput, Label, MarkingDefinition, QueryDecayExclusionRulesArgs } from '../../../generated/graphql';
-import { type BasicStoreEntityDecayExclusionRule, ENTITY_TYPE_DECAY_EXCLUSION_RULE, type StoreEntityDecayExclusionRule } from './decayExclusionRule-types';
+import type {
+  DecayExclusionRuleAddInput,
+  EditInput,
+  Label,
+  MarkingDefinition,
+  QueryDecayExclusionRulesArgs,
+} from '../../../generated/graphql';
+import {
+  type BasicStoreEntityDecayExclusionRule,
+  ENTITY_TYPE_DECAY_EXCLUSION_RULE,
+  type StoreEntityDecayExclusionRule,
+} from './decayExclusionRule-types';
 import { createInternalObject } from '../../../domain/internalObject';
 import { getEntitiesListFromCache } from '../../../database/cache';
 import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
@@ -18,14 +33,32 @@ import { convertTypeToStixType } from '../../../database/stix-2-1-converter';
 export type ResolvedDecayExclusionRule = Record<string, any>;
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
-  return storeLoadById<BasicStoreEntityDecayExclusionRule>(context, user, id, ENTITY_TYPE_DECAY_EXCLUSION_RULE);
+  return storeLoadById<BasicStoreEntityDecayExclusionRule>(
+    context,
+    user,
+    id,
+    ENTITY_TYPE_DECAY_EXCLUSION_RULE,
+  );
 };
-export const findDecayExclusionRulePaginated = (context: AuthContext, user: AuthUser, args: QueryDecayExclusionRulesArgs) => {
-  return pageEntitiesConnection<BasicStoreEntityDecayExclusionRule>(context, user, [ENTITY_TYPE_DECAY_EXCLUSION_RULE], args);
+export const findDecayExclusionRulePaginated = (
+  context: AuthContext,
+  user: AuthUser,
+  args: QueryDecayExclusionRulesArgs,
+) => {
+  return pageEntitiesConnection<BasicStoreEntityDecayExclusionRule>(
+    context,
+    user,
+    [ENTITY_TYPE_DECAY_EXCLUSION_RULE],
+    args,
+  );
 };
 
 export const getActiveDecayExclusionRules = async (context: AuthContext, user: AuthUser) => {
-  const decayExclusionRuleList = await getEntitiesListFromCache<BasicStoreEntityDecayExclusionRule>(context, user, ENTITY_TYPE_DECAY_EXCLUSION_RULE);
+  const decayExclusionRuleList = await getEntitiesListFromCache<BasicStoreEntityDecayExclusionRule>(
+    context,
+    user,
+    ENTITY_TYPE_DECAY_EXCLUSION_RULE,
+  );
   return decayExclusionRuleList.filter((rule) => rule.active);
 };
 
@@ -38,7 +71,9 @@ export const checkDecayExclusionRules = async (
   const formattedIndicator = {
     ...resolvedIndicator,
     type: convertTypeToStixType(resolvedIndicator.entity_type),
-    object_marking_refs: (resolvedIndicator[INPUT_MARKINGS] ?? []).map((marking: MarkingDefinition) => marking.standard_id),
+    object_marking_refs: (resolvedIndicator[INPUT_MARKINGS] ?? []).map(
+      (marking: MarkingDefinition) => marking.standard_id,
+    ),
     created_by_ref: resolvedIndicator[INPUT_CREATED_BY]?.standard_id ?? '',
     labels: (resolvedIndicator[INPUT_LABELS] ?? []).map((label: Label) => label.value),
     extensions: {
@@ -58,19 +93,39 @@ export const checkDecayExclusionRules = async (
   return null;
 };
 
-export const addDecayExclusionRule = (context: AuthContext, user: AuthUser, input: DecayExclusionRuleAddInput) => {
+export const addDecayExclusionRule = (
+  context: AuthContext,
+  user: AuthUser,
+  input: DecayExclusionRuleAddInput,
+) => {
   const defaultOps = { created_at: now() };
   const decayExclusionRuleInput = { ...input, ...defaultOps };
-  return createInternalObject<StoreEntityDecayExclusionRule>(context, user, decayExclusionRuleInput, ENTITY_TYPE_DECAY_EXCLUSION_RULE);
+  return createInternalObject<StoreEntityDecayExclusionRule>(
+    context,
+    user,
+    decayExclusionRuleInput,
+    ENTITY_TYPE_DECAY_EXCLUSION_RULE,
+  );
 };
-export const fieldPatchDecayExclusionRule = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
+export const fieldPatchDecayExclusionRule = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  input: EditInput[],
+) => {
   const decayExclusionRule = await findById(context, user, id);
 
   if (!decayExclusionRule) {
     throw FunctionalError(`Decay exclusion rule ${id} cannot be found`);
   }
 
-  const { element } = await updateAttribute<StoreEntityDecayExclusionRule>(context, user, id, ENTITY_TYPE_DECAY_EXCLUSION_RULE, input);
+  const { element } = await updateAttribute<StoreEntityDecayExclusionRule>(
+    context,
+    user,
+    id,
+    ENTITY_TYPE_DECAY_EXCLUSION_RULE,
+    input,
+  );
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -81,14 +136,23 @@ export const fieldPatchDecayExclusionRule = async (context: AuthContext, user: A
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
 };
-export const deleteDecayExclusionRule = async (context: AuthContext, user: AuthUser, id: string) => {
+export const deleteDecayExclusionRule = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+) => {
   const decayExclusionRule = await findById(context, user, id);
 
   if (!decayExclusionRule) {
     throw FunctionalError(`Decay exclusion rule ${id} cannot be found`);
   }
 
-  const deleted = await deleteElementById<StoreEntityDecayExclusionRule>(context, user, id, ENTITY_TYPE_DECAY_EXCLUSION_RULE);
+  const deleted = await deleteElementById<StoreEntityDecayExclusionRule>(
+    context,
+    user,
+    id,
+    ENTITY_TYPE_DECAY_EXCLUSION_RULE,
+  );
   await publishUserAction({
     user,
     event_type: 'mutation',

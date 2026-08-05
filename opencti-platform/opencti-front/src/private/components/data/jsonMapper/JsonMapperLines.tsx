@@ -3,7 +3,10 @@ import { graphql, usePaginationFragment } from 'react-relay';
 import JsonMapperLine from '@components/data/jsonMapper/JsonMapperLine';
 import LineDummy from '@components/common/LineDummy';
 import { useJsonMappersData } from '@components/data/jsonMapper/jsonMappers.data';
-import { jsonMappers_MappersQuery, jsonMappers_MappersQuery$variables } from '@components/data/jsonMapper/__generated__/jsonMappers_MappersQuery.graphql';
+import {
+  jsonMappers_MappersQuery,
+  jsonMappers_MappersQuery$variables,
+} from '@components/data/jsonMapper/__generated__/jsonMappers_MappersQuery.graphql';
 import { JsonMapperLines_jsonMapper$key } from '@components/data/jsonMapper/__generated__/JsonMapperLines_jsonMapper.graphql';
 import { DataColumns } from '../../../../components/list_lines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
@@ -51,10 +54,10 @@ const JsonMapperLines: FunctionComponent<JsonMapperLinesProps> = ({
   dataColumns,
 }) => {
   const { jsonMappers } = useJsonMappersData();
-  const { data } = usePaginationFragment<
-    jsonMappers_MappersQuery,
-    JsonMapperLines_jsonMapper$key
-  >(jsonMapperLinesFragment, jsonMappers);
+  const { data } = usePaginationFragment<jsonMappers_MappersQuery, JsonMapperLines_jsonMapper$key>(
+    jsonMapperLinesFragment,
+    jsonMappers,
+  );
 
   const jsonMappersData = data?.jsonMappers?.edges ?? [];
   const globalCount = data?.jsonMappers?.pageInfo?.globalCount;

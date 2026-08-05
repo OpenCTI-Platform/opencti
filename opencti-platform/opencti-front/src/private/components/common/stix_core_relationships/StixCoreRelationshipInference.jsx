@@ -65,16 +65,19 @@ const StixCoreRelationshipInference = ({ stixRelationship, inference }) => {
     });
 
     // Build the graph objects
-    return buildGraphData([
-      { ...relationship, inferred: true },
-      relationship.from,
-      relationship.to,
-      ...explanations.filter((n) => n !== null),
-      ...explanations
-        .filter((n) => n !== null)
-        .map((n) => [n.from, n.to])
-        .flat(),
-    ], {});
+    return buildGraphData(
+      [
+        { ...relationship, inferred: true },
+        relationship.from,
+        relationship.to,
+        ...explanations.filter((n) => n !== null),
+        ...explanations
+          .filter((n) => n !== null)
+          .map((n) => [n.from, n.to])
+          .flat(),
+      ],
+      {},
+    );
   }, [stixRelationship, inference]);
 
   return (

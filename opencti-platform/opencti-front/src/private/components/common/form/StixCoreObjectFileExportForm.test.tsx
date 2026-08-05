@@ -8,7 +8,9 @@ import { BUILT_IN_FROM_TEMPLATE } from '../stix_core_objects/StixCoreObjectFileE
 vi.mock('./ObjectMarkingField', () => ({ default: () => null }));
 vi.mock('./FintelDesignField', () => ({ default: () => null }));
 vi.mock('../../../../utils/hooks/useEnterpriseEdition', () => ({ default: () => true }));
-vi.mock('../../../../utils/hooks/useAI', () => ({ default: () => ({ enabled: false, configured: false }) }));
+vi.mock('../../../../utils/hooks/useAI', () => ({
+  default: () => ({ enabled: false, configured: false }),
+}));
 
 const templateConnector: ConnectorOption = {
   ...BUILT_IN_FROM_TEMPLATE,

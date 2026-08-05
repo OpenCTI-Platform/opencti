@@ -29,20 +29,17 @@ const NarrativeEditionContainer = (props) => {
   );
 };
 
-const NarrativeEditionFragment = createFragmentContainer(
-  NarrativeEditionContainer,
-  {
-    narrative: graphql`
-      fragment NarrativeEditionContainer_narrative on Narrative {
-        id
-        ...NarrativeEditionOverview_narrative
-        editContext {
-          name
-          focusOn
-        }
+const NarrativeEditionFragment = createFragmentContainer(NarrativeEditionContainer, {
+  narrative: graphql`
+    fragment NarrativeEditionContainer_narrative on Narrative {
+      id
+      ...NarrativeEditionOverview_narrative
+      editContext {
+        name
+        focusOn
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default NarrativeEditionFragment;

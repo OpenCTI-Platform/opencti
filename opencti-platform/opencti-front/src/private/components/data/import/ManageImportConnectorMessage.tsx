@@ -12,7 +12,9 @@ const WarningText = styled('span')(({ theme }) => ({
   color: theme.palette.error.main,
 }));
 
-const ManageImportConnectorMessage: FunctionComponent<ManageImportConnectorMessageProps> = ({ name }) => {
+const ManageImportConnectorMessage: FunctionComponent<ManageImportConnectorMessageProps> = ({
+  name,
+}) => {
   const { t_i18n } = useFormatter();
   const isCsvMapperUpdater = useGranted([CSVMAPPERS]);
   switch (name) {
@@ -21,11 +23,13 @@ const ManageImportConnectorMessage: FunctionComponent<ManageImportConnectorMessa
         <Box sx={{ paddingTop: '18px' }}>
           <WarningText>{t_i18n('There are not any configurations set yet')}</WarningText>
           <div>
-            {
-              isCsvMapperUpdater
-                ? <Link to="/dashboard/data/processing/csv_mapper">{t_i18n('Create a CSV Mapper configuration')}</Link>
-                : <WarningText>{t_i18n('Please contact an administrator')}</WarningText>
-            }
+            {isCsvMapperUpdater ? (
+              <Link to="/dashboard/data/processing/csv_mapper">
+                {t_i18n('Create a CSV Mapper configuration')}
+              </Link>
+            ) : (
+              <WarningText>{t_i18n('Please contact an administrator')}</WarningText>
+            )}
           </div>
         </Box>
       );

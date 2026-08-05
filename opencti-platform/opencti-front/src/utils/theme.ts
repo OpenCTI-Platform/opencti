@@ -1,15 +1,23 @@
 import { Theme } from '../components/Theme';
-import { THEME_DARK_DEFAULT_BACKGROUND, THEME_DARK_DEFAULT_PAPER, THEME_DARK_DEFAULT_PRIMARY } from '../components/ThemeDark';
-import { THEME_LIGHT_DEFAULT_BACKGROUND, THEME_LIGHT_DEFAULT_PAPER, THEME_LIGHT_DEFAULT_PRIMARY } from '../components/ThemeLight';
+import {
+  THEME_DARK_DEFAULT_BACKGROUND,
+  THEME_DARK_DEFAULT_PAPER,
+  THEME_DARK_DEFAULT_PRIMARY,
+} from '../components/ThemeDark';
+import {
+  THEME_LIGHT_DEFAULT_BACKGROUND,
+  THEME_LIGHT_DEFAULT_PAPER,
+  THEME_LIGHT_DEFAULT_PRIMARY,
+} from '../components/ThemeLight';
 
-type CustomThemeKey
-  = | 'theme_background'
-    | 'theme_paper'
-    | 'theme_nav'
-    | 'theme_primary'
-    | 'theme_secondary'
-    | 'theme_accent'
-    | 'theme_text_color';
+type CustomThemeKey =
+  | 'theme_background'
+  | 'theme_paper'
+  | 'theme_nav'
+  | 'theme_primary'
+  | 'theme_secondary'
+  | 'theme_accent'
+  | 'theme_text_color';
 
 /**
  * Checks if saved theme has overriden the default theme.
@@ -21,21 +29,20 @@ type CustomThemeKey
  */
 export const hasCustomColor = (theme: Theme, key: CustomThemeKey) => {
   if (key === 'theme_background') {
-    const defaultColor = theme.palette.mode === 'dark'
-      ? THEME_DARK_DEFAULT_BACKGROUND
-      : THEME_LIGHT_DEFAULT_BACKGROUND;
+    const defaultColor =
+      theme.palette.mode === 'dark'
+        ? THEME_DARK_DEFAULT_BACKGROUND
+        : THEME_LIGHT_DEFAULT_BACKGROUND;
     return theme.palette.background.default !== defaultColor;
   }
   if (key === 'theme_paper') {
-    const defaultColor = theme.palette.mode === 'dark'
-      ? THEME_DARK_DEFAULT_PAPER
-      : THEME_LIGHT_DEFAULT_PAPER;
+    const defaultColor =
+      theme.palette.mode === 'dark' ? THEME_DARK_DEFAULT_PAPER : THEME_LIGHT_DEFAULT_PAPER;
     return theme.palette.background.paper !== defaultColor;
   }
   if (key === 'theme_primary') {
-    const defaultColor = theme.palette.mode === 'dark'
-      ? THEME_DARK_DEFAULT_PRIMARY
-      : THEME_LIGHT_DEFAULT_PRIMARY;
+    const defaultColor =
+      theme.palette.mode === 'dark' ? THEME_DARK_DEFAULT_PRIMARY : THEME_LIGHT_DEFAULT_PRIMARY;
     return theme.palette.primary.main !== defaultColor;
   }
   return false;

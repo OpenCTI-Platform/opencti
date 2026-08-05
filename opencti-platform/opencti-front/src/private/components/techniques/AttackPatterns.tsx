@@ -1,13 +1,19 @@
 import React from 'react';
 import { graphql } from 'react-relay';
-import { AttackPatternsLinesPaginationQuery, AttackPatternsLinesPaginationQuery$variables } from '@components/techniques/__generated__/AttackPatternsLinesPaginationQuery.graphql';
+import {
+  AttackPatternsLinesPaginationQuery,
+  AttackPatternsLinesPaginationQuery$variables,
+} from '@components/techniques/__generated__/AttackPatternsLinesPaginationQuery.graphql';
 import { AttackPatternsLines_data$data } from '@components/techniques/__generated__/AttackPatternsLines_data.graphql';
 import AttackPatternCreation from './attack_patterns/AttackPatternCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import {
+  useBuildEntityTypeBasedFilterContext,
+  emptyFilterGroup,
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -52,14 +58,14 @@ export const attackPatternsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...AttackPatternsLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -109,14 +115,16 @@ const AttackPatterns = () => {
     openExports: false,
     filters: emptyFilterGroup,
   };
-  const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<AttackPatternsLinesPaginationQuery$variables>(
+  const {
+    viewStorage,
+    helpers: storageHelpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<AttackPatternsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
 
-  const {
-    filters,
-  } = viewStorage;
+  const { filters } = viewStorage;
   const contextFilters = useBuildEntityTypeBasedFilterContext('Attack-Pattern', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
@@ -152,22 +160,29 @@ const AttackPatterns = () => {
 
   return (
     <div data-testid="attack-pattern-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Attack patterns'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Techniques') },
+          { label: t_i18n('Attack patterns'), current: true },
+        ]}
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: AttackPatternsLines_data$data) => data.attackPatterns?.edges?.map((n) => n?.node)}
+          resolvePath={(data: AttackPatternsLines_data$data) =>
+            data.attackPatterns?.edges?.map((n) => n?.node)
+          }
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationOptions}
           lineFragment={attackPatternLineFragment}
           exportContext={{ entity_type: 'Attack-Pattern' }}
-          createButton={(
+          createButton={
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <AttackPatternCreation paginationOptions={queryPaginationOptions} />
             </Security>
-          )}
+          }
         />
       )}
     </div>

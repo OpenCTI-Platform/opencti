@@ -21,17 +21,25 @@ const entitySettingResolvers: Resolvers = {
   Query: {
     entitySetting: (_, { id }, context) => findById(context, context.user, id),
     entitySettings: (_, args, context) => findEntitySettingPaginated(context, context.user, args),
-    entitySettingByType: (_, { targetType }, context) => findByType(context, context.user, targetType),
+    entitySettingByType: (_, { targetType }, context) =>
+      findByType(context, context.user, targetType),
   },
   EntitySetting: {
-    attributesDefinitions: (entitySetting, _, context) => queryEntitySettingSchemaAttributes(context, context.user, entitySetting),
-    mandatoryAttributes: (entitySetting, _, context) => queryMandatoryAttributesForSetting(context, context.user, entitySetting),
-    scaleAttributes: (entitySetting, _, context) => queryScaleAttributesForSetting(context, context.user, entitySetting),
-    defaultValuesAttributes: (entitySetting, _, context) => queryDefaultValuesAttributesForSetting(context, context.user, entitySetting),
+    attributesDefinitions: (entitySetting, _, context) =>
+      queryEntitySettingSchemaAttributes(context, context.user, entitySetting),
+    mandatoryAttributes: (entitySetting, _, context) =>
+      queryMandatoryAttributesForSetting(context, context.user, entitySetting),
+    scaleAttributes: (entitySetting, _, context) =>
+      queryScaleAttributesForSetting(context, context.user, entitySetting),
+    defaultValuesAttributes: (entitySetting, _, context) =>
+      queryDefaultValuesAttributesForSetting(context, context.user, entitySetting),
     availableSettings: (entitySetting, _, __) => getAvailableSettings(entitySetting.target_type),
-    overview_layout_customization: (entitySetting, _, __) => getOverviewLayoutCustomization(entitySetting),
-    fintelTemplates: (entitySetting, args, context) => getTemplatesForSetting(context, context.user, entitySetting.target_type, args),
-    requestAccessConfiguration: (entitySetting, _, context) => getRequestAccessConfiguration(context, context.user, entitySetting),
+    overview_layout_customization: (entitySetting, _, __) =>
+      getOverviewLayoutCustomization(entitySetting),
+    fintelTemplates: (entitySetting, args, context) =>
+      getTemplatesForSetting(context, context.user, entitySetting.target_type, args),
+    requestAccessConfiguration: (entitySetting, _, context) =>
+      getRequestAccessConfiguration(context, context.user, entitySetting),
   },
   Mutation: {
     entitySettingsFieldPatch: (_, { ids, input }, context) => {
@@ -45,7 +53,10 @@ const entitySettingResolvers: Resolvers = {
       },
       subscribe: /* v8 ignore next */ (_, { id }, context) => {
         const bus = BUS_TOPICS[ENTITY_TYPE_ENTITY_SETTING];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_ENTITY_SETTING, notifySelf: true });
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], {
+          type: ENTITY_TYPE_ENTITY_SETTING,
+          notifySelf: true,
+        });
       },
     },
   },

@@ -28,20 +28,17 @@ const ObservedDataEditionContainer = (props) => {
   );
 };
 
-const ObservedDataEditionFragment = createFragmentContainer(
-  ObservedDataEditionContainer,
-  {
-    observedData: graphql`
-      fragment ObservedDataEditionContainer_observedData on ObservedData {
-        id
-        ...ObservedDataEditionOverview_observedData
-        editContext {
-          name
-          focusOn
-        }
+const ObservedDataEditionFragment = createFragmentContainer(ObservedDataEditionContainer, {
+  observedData: graphql`
+    fragment ObservedDataEditionContainer_observedData on ObservedData {
+      id
+      ...ObservedDataEditionOverview_observedData
+      editContext {
+        name
+        focusOn
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default ObservedDataEditionFragment;

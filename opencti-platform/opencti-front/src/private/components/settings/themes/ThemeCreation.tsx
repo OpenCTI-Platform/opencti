@@ -35,11 +35,9 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
 
-  const [commit] = useApiMutation<ThemeCreationCreateMutation>(
-    createThemeMutation,
-    undefined,
-    { successMessage: t_i18n('Theme successfully created') },
-  );
+  const [commit] = useApiMutation<ThemeCreationCreateMutation>(createThemeMutation, undefined, {
+    successMessage: t_i18n('Theme successfully created'),
+  });
 
   const validator = themeValidationSchema(t_i18n);
 
@@ -88,12 +86,8 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
             theme_login_aside_image: values.theme_login_aside_image || null,
           },
         },
-        updater: (store: RecordSourceSelectorProxy) => insertNode(
-          store,
-          'Pagination_themes',
-          paginationOptions,
-          'themeAdd',
-        ),
+        updater: (store: RecordSourceSelectorProxy) =>
+          insertNode(store, 'Pagination_themes', paginationOptions, 'themeAdd'),
         onCompleted: () => {
           setSubmitting(false);
           resetForm();
@@ -107,12 +101,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
   };
 
   return (
-    <Drawer
-      title={t_i18n('Create a custom theme')}
-      open={open}
-      onClose={handleClose}
-      size="medium"
-    >
+    <Drawer title={t_i18n('Create a custom theme')} open={open} onClose={handleClose} size="medium">
       <Formik<ThemeCreationInput>
         onSubmit={handleSubmit}
         initialValues={initialValues}

@@ -6,19 +6,27 @@ import LinearProgress from '@mui/material/LinearProgress';
 import useGraphInteractions from './utils/useGraphInteractions';
 import SearchInput from '../SearchInput';
 import type { Theme } from '../Theme';
-import GraphToolbarDisplayTools, { GraphToolbarDisplayToolsProps } from './components/GraphToolbarDisplayTools';
+import GraphToolbarDisplayTools, {
+  GraphToolbarDisplayToolsProps,
+} from './components/GraphToolbarDisplayTools';
 import GraphToolbarSelectTools from './components/GraphToolbarSelectTools';
 import GraphToolbarFilterTools from './components/GraphToolbarFilterTools';
-import GraphToolbarContentTools, { GraphToolbarContentToolsProps } from './components/GraphToolbarContentTools';
+import GraphToolbarContentTools, {
+  GraphToolbarContentToolsProps,
+} from './components/GraphToolbarContentTools';
 import GraphToolbarTimeRange from './components/GraphToolbarTimeRange';
 import { useGraphContext } from './GraphContext';
 import GraphToolbarCorrelationTools from './components/GraphToolbarCorrelationTools';
-import GraphToolbarExpandTools, { GraphToolbarExpandToolsProps } from './components/GraphToolbarExpandTools';
+import GraphToolbarExpandTools, {
+  GraphToolbarExpandToolsProps,
+} from './components/GraphToolbarExpandTools';
 import useAuth from '../../utils/hooks/useAuth';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../utils/hooks/useDraftContext';
 
-export type GraphToolbarProps = GraphToolbarContentToolsProps & GraphToolbarExpandToolsProps & GraphToolbarDisplayToolsProps;
+export type GraphToolbarProps = GraphToolbarContentToolsProps &
+  GraphToolbarExpandToolsProps &
+  GraphToolbarDisplayToolsProps;
 
 const GraphToolbar = ({
   onInvestigationExpand,
@@ -28,20 +36,16 @@ const GraphToolbar = ({
 }: GraphToolbarProps) => {
   const theme = useTheme<Theme>();
   const draftContext = useDraftContext();
-  const { bannerSettings: { bannerHeightNumber } } = useAuth();
+  const {
+    bannerSettings: { bannerHeightNumber },
+  } = useAuth();
   const navOpen = localStorage.getItem('navOpen') === 'true';
   const { selectBySearch } = useGraphInteractions();
 
   const posBottom = draftContext ? DRAFT_TOOLBAR_HEIGHT : 0;
 
   const {
-    graphState: {
-      showTimeRange,
-      showLinearProgress,
-      loadingCurrent,
-      loadingTotal,
-      search,
-    },
+    graphState: { showTimeRange, showLinearProgress, loadingCurrent, loadingTotal, search },
     context,
   } = useGraphContext();
 
@@ -104,11 +108,7 @@ const GraphToolbar = ({
 
         <div style={{ flex: 1 }}>
           {context !== 'analyses' && (
-            <SearchInput
-              keyword={search ?? ''}
-              variant="thin"
-              onSubmit={selectBySearch}
-            />
+            <SearchInput keyword={search ?? ''} variant="thin" onSubmit={selectBySearch} />
           )}
         </div>
 

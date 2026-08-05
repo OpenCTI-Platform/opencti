@@ -34,7 +34,11 @@ const groupResolvers = {
     max_shareable_marking: (group, _, context) => groupMaxShareableMarkings(context, group),
     roles: (group, args, context) => rolesPaginated(context, context.user, group.id, args),
     members: (group, args, context) => membersPaginated(context, context.user, group.id, args),
-    default_dashboard: (current, _, context) => context.batch.idsBatchLoader.load({ id: current.default_dashboard, type: ENTITY_TYPE_WORKSPACE }),
+    default_dashboard: (current, _, context) =>
+      context.batch.idsBatchLoader.load({
+        id: current.default_dashboard,
+        type: ENTITY_TYPE_WORKSPACE,
+      }),
     editContext: (group) => fetchEditContext(group.id),
   },
   Mutation: {
@@ -44,7 +48,8 @@ const groupResolvers = {
       contextPatch: ({ input }) => groupEditContext(context, context.user, id, input),
       contextClean: () => groupCleanContext(context, context.user, id),
       relationAdd: ({ input }) => groupAddRelation(context, context.user, id, input),
-      relationDelete: ({ fromId, toId, relationship_type: relationshipType }) => groupDeleteRelation(context, context.user, id, fromId, toId, relationshipType),
+      relationDelete: ({ fromId, toId, relationship_type: relationshipType }) =>
+        groupDeleteRelation(context, context.user, id, fromId, toId, relationshipType),
       editDefaultMarking: ({ input }) => groupEditDefaultMarking(context, context.user, id, input),
     }),
     groupAdd: (_, { input }, context) => addGroup(context, context.user, input),
@@ -56,7 +61,11 @@ const groupResolvers = {
         const preFn = () => groupEditContext(context, context.user, id);
         const cleanFn = () => groupCleanContext(context, context.user, id);
         const bus = BUS_TOPICS[ENTITY_TYPE_GROUP];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_GROUP, preFn, cleanFn });
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], {
+          type: ENTITY_TYPE_GROUP,
+          preFn,
+          cleanFn,
+        });
       },
     },
   },

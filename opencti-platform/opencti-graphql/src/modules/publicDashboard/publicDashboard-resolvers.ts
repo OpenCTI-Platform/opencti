@@ -23,22 +23,32 @@ import { loadCreator } from '../../database/members';
 const publicDashboardResolvers: Resolvers = {
   Query: {
     publicDashboard: (_, { id }, context) => findById(context, context.user, id),
-    publicDashboards: (_, args, context) => findPublicDashboardPaginated(context, context.user, args),
-    publicDashboardByUriKey: (_, { uri_key }, context) => getPublicDashboardByUriKey(context, uri_key),
+    publicDashboards: (_, args, context) =>
+      findPublicDashboardPaginated(context, context.user, args),
+    publicDashboardByUriKey: (_, { uri_key }, context) =>
+      getPublicDashboardByUriKey(context, uri_key),
     publicStixCoreObjectsNumber: (_, args, context) => publicStixCoreObjectsNumber(context, args),
-    publicStixCoreObjectsMultiTimeSeries: (_, args, context) => publicStixCoreObjectsMultiTimeSeries(context, args),
-    publicStixRelationshipsMultiTimeSeries: (_, args, context) => publicStixRelationshipsMultiTimeSeries(context, args),
-    publicStixRelationshipsNumber: (_, args, context) => publicStixRelationshipsNumber(context, args),
-    publicStixCoreObjectsDistribution: (_, args, context) => publicStixCoreObjectsDistribution(context, args),
-    publicStixRelationshipsDistribution: (_, args, context) => publicStixRelationshipsDistribution(context, args),
+    publicStixCoreObjectsMultiTimeSeries: (_, args, context) =>
+      publicStixCoreObjectsMultiTimeSeries(context, args),
+    publicStixRelationshipsMultiTimeSeries: (_, args, context) =>
+      publicStixRelationshipsMultiTimeSeries(context, args),
+    publicStixRelationshipsNumber: (_, args, context) =>
+      publicStixRelationshipsNumber(context, args),
+    publicStixCoreObjectsDistribution: (_, args, context) =>
+      publicStixCoreObjectsDistribution(context, args),
+    publicStixRelationshipsDistribution: (_, args, context) =>
+      publicStixRelationshipsDistribution(context, args),
     publicBookmarks: (_, args, context) => publicBookmarks(context, args),
     publicStixCoreObjects: (_, args, context) => publicStixCoreObjectsPaginated(context, args),
     publicStixRelationships: (_, args, context) => publicStixRelationships(context, args),
   },
   PublicDashboard: {
-    allowed_markings: (publicDashboard, _, context) => getAllowedMarkings(context, context.user, publicDashboard),
-    owner: (publicDashboard, _, context) => loadCreator(context, context.user, publicDashboard.user_id),
-    dashboard: (publicDashboard, _, context) => findWorkspaceById(context, context.user, publicDashboard.dashboard_id),
+    allowed_markings: (publicDashboard, _, context) =>
+      getAllowedMarkings(context, context.user, publicDashboard),
+    owner: (publicDashboard, _, context) =>
+      loadCreator(context, context.user, publicDashboard.user_id),
+    dashboard: (publicDashboard, _, context) =>
+      findWorkspaceById(context, context.user, publicDashboard.dashboard_id),
   },
   Mutation: {
     publicDashboardAdd: (_, { input }, context) => {

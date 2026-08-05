@@ -9,24 +9,26 @@ export const getOptionsFromEntities = (
   let filteredOptions: FilterOptionValue[] = [];
   if (isStixObjectTypes.includes(filterKey)) {
     if (searchScope[filterKey] && searchScope[filterKey].length > 0) {
-      filteredOptions = (entities[filterKey] || [])
-        .filter((n) => searchScope[filterKey].some((s) => (n.parentTypes ?? []).concat(n.type).includes(s)));
+      filteredOptions = (entities[filterKey] || []).filter((n) =>
+        searchScope[filterKey].some((s) => (n.parentTypes ?? []).concat(n.type).includes(s)),
+      );
     } else {
-      filteredOptions = (entities[filterKey] || []);
+      filteredOptions = entities[filterKey] || [];
     }
   } else if (entities[filterKey]) {
     filteredOptions = entities[filterKey];
   }
-  return filteredOptions.map((f) => {
-    if (f.group) {
+  return filteredOptions
+    .map((f) => {
+      if (f.group) {
+        return f;
+      }
+      if (f.parentTypes) {
+        // In case of entity we group by type
+        return { ...f, group: f.type };
+      }
       return f;
-    }
-    if (f.parentTypes) {
-      // In case of entity we group by type
-      return { ...f, group: f.type };
-    }
-    return f;
-  })
+    })
     .sort((a, b) => {
       // In case value is null, for "no label" case we want it at the top of the list
       if (!b.value) {

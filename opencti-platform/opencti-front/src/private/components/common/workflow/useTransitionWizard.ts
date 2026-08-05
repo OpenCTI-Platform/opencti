@@ -6,7 +6,10 @@ import useSwitchDraft from '../../drafts/useSwitchDraft';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../../../../utils/hooks/useGranted';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
-import { workflowStatusTriggerMutation, workflowStatusClearMutation } from './WorkflowStatus.graphql';
+import {
+  workflowStatusTriggerMutation,
+  workflowStatusClearMutation,
+} from './WorkflowStatus.graphql';
 import type { WorkflowStatusTriggerMutation as WorkflowStatusTriggerMutationType } from './__generated__/WorkflowStatusTriggerMutation.graphql';
 import type { WorkflowStatusClearMutation as WorkflowStatusClearMutationType } from './__generated__/WorkflowStatusClearMutation.graphql';
 
@@ -31,7 +34,11 @@ interface UseTransitionWizardArgs {
   draftId?: string;
 }
 
-export const useTransitionWizard = ({ entityId, entityNavigationId, draftId }: UseTransitionWizardArgs) => {
+export const useTransitionWizard = ({
+  entityId,
+  entityNavigationId,
+  draftId,
+}: UseTransitionWizardArgs) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const { exitDraft } = useSwitchDraft();
@@ -40,8 +47,12 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId }: U
   const [wizard, setWizard] = useState<TransitionWizard | null>(null);
   const [commentValue, setCommentValue] = useState('');
 
-  const [commit, approving] = useMutation<WorkflowStatusTriggerMutationType>(workflowStatusTriggerMutation);
-  const [commitClear, clearing] = useMutation<WorkflowStatusClearMutationType>(workflowStatusClearMutation);
+  const [commit, approving] = useMutation<WorkflowStatusTriggerMutationType>(
+    workflowStatusTriggerMutation,
+  );
+  const [commitClear, clearing] = useMutation<WorkflowStatusClearMutationType>(
+    workflowStatusClearMutation,
+  );
 
   const exitDraftAfterValidation = () => {
     exitDraft({
@@ -69,9 +80,9 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId }: U
           window.localStorage.setItem(`${DRAFT_COMMENT_SEEN_PREFIX}${draftId}`, newTimestamp);
         }
         if (
-          response.triggerWorkflowEvent?.success
-          && response.triggerWorkflowEvent.executionStatus !== 'pending'
-          && actions.includes('validateDraft')
+          response.triggerWorkflowEvent?.success &&
+          response.triggerWorkflowEvent.executionStatus !== 'pending' &&
+          actions.includes('validateDraft')
         ) {
           MESSAGING$.notifySuccess(t_i18n('Draft validation in progress'));
           exitDraftAfterValidation();
@@ -127,12 +138,17 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId }: U
   };
 
   const handleOrgPickerSubmit = (
-    values: { shareOrganizations: Array<{ value: string }>; unshareOrganizations: Array<{ value: string }> },
+    values: {
+      shareOrganizations: Array<{ value: string }>;
+      unshareOrganizations: Array<{ value: string }>;
+    },
     { resetForm }: { resetForm: () => void },
   ) => {
     const rp: Record<string, string[]> = {};
-    if (wizard?.requiresShareOrg) rp.shareOrganizationIds = values.shareOrganizations.map((o) => o.value);
-    if (wizard?.requiresUnshareOrg) rp.unshareOrganizationIds = values.unshareOrganizations.map((o) => o.value);
+    if (wizard?.requiresShareOrg)
+      rp.shareOrganizationIds = values.shareOrganizations.map((o) => o.value);
+    if (wizard?.requiresUnshareOrg)
+      rp.unshareOrganizationIds = values.unshareOrganizations.map((o) => o.value);
     resetForm();
     advance({ runtimeParams: rp });
   };

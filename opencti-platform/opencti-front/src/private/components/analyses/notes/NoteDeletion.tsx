@@ -39,11 +39,9 @@ const NoteDeletion: FunctionComponent<NoteDeletionProps> = ({
     id: '... successfully deleted',
     values: { entity_type: t_i18n('entity_Note') },
   });
-  const [commit] = useApiMutation(
-    NoteDeletionDeleteMutation,
-    undefined,
-    { successMessage: deleteSuccessMessage },
-  );
+  const [commit] = useApiMutation(NoteDeletionDeleteMutation, undefined, {
+    successMessage: deleteSuccessMessage,
+  });
   const deletion = useDeletion({});
   const { setDeleting, handleCloseDelete } = deletion;
   const submitDelete = () => {

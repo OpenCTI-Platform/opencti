@@ -1,11 +1,18 @@
 import { buildStixDomain } from '../../../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 import { INPUT_OBJECTS } from '../../../schema/general';
-import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT, type Stix2CaseIncident, type StixCaseIncident, type StoreEntityCaseIncident } from './case-incident-types';
+import {
+  ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
+  type Stix2CaseIncident,
+  type StixCaseIncident,
+  type StoreEntityCaseIncident,
+} from './case-incident-types';
 import { assertType, cleanObject } from '../../../database/stix-converter-utils';
 import { buildStixDomain as buildStixDomain2 } from '../../../database/stix-2-0-converter';
 
-export const convertCaseIncidentToStix_2_1 = (instance: StoreEntityCaseIncident): StixCaseIncident => {
+export const convertCaseIncidentToStix_2_1 = (
+  instance: StoreEntityCaseIncident,
+): StixCaseIncident => {
   const caseIncident = buildStixDomain(instance);
   return {
     ...caseIncident,
@@ -26,7 +33,9 @@ export const convertCaseIncidentToStix_2_1 = (instance: StoreEntityCaseIncident)
   };
 };
 
-export const convertCaseIncidentToStix_2_0 = (instance: StoreEntityCaseIncident): Stix2CaseIncident => {
+export const convertCaseIncidentToStix_2_0 = (
+  instance: StoreEntityCaseIncident,
+): Stix2CaseIncident => {
   assertType(ENTITY_TYPE_CONTAINER_CASE_INCIDENT, instance.entity_type);
   const caseIncident = buildStixDomain2(instance);
   return {

@@ -19,10 +19,7 @@ const subscription = graphql`
 `;
 
 const killChainPhaseMutationFieldPatch = graphql`
-  mutation KillChainPhaseEditionFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-  ) {
+  mutation KillChainPhaseEditionFieldPatchMutation($id: ID!, $input: [EditInput]!) {
     killChainPhaseEdit(id: $id) {
       fieldPatch(input: $input) {
         ...KillChainPhasesLine_node
@@ -41,13 +38,14 @@ const killChainPhaseEditionFocus = graphql`
   }
 `;
 
-const killChainPhaseValidation = (t) => Yup.object().shape({
-  kill_chain_name: Yup.string().required(t('This field is required')),
-  phase_name: Yup.string().required(t('This field is required')),
-  x_opencti_order: Yup.number()
-    .typeError(t('The value must be a number'))
-    .integer(t('The value must be a number')),
-});
+const killChainPhaseValidation = (t) =>
+  Yup.object().shape({
+    kill_chain_name: Yup.string().required(t('This field is required')),
+    phase_name: Yup.string().required(t('This field is required')),
+    x_opencti_order: Yup.number()
+      .typeError(t('The value must be a number'))
+      .integer(t('The value must be a number')),
+  });
 
 class KillChainPhaseEditionContainer extends Component {
   constructor(props) {
@@ -95,10 +93,7 @@ class KillChainPhaseEditionContainer extends Component {
     const initialValues = over(
       lensProp('x_opencti_order'),
       defaultTo(''),
-      pickAll(
-        ['kill_chain_name', 'phase_name', 'x_opencti_order'],
-        killChainPhase,
-      ),
+      pickAll(['kill_chain_name', 'phase_name', 'x_opencti_order'], killChainPhase),
     );
     return (
       <Drawer
@@ -122,12 +117,7 @@ class KillChainPhaseEditionContainer extends Component {
                 fullWidth={true}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={(
-                  <SubscriptionFocus
-                    context={editContext}
-                    fieldName="kill_chain_name"
-                  />
-                )}
+                helperText={<SubscriptionFocus context={editContext} fieldName="kill_chain_name" />}
               />
               <Field
                 component={TextField}
@@ -138,12 +128,7 @@ class KillChainPhaseEditionContainer extends Component {
                 style={{ marginTop: 20 }}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={(
-                  <SubscriptionFocus
-                    context={editContext}
-                    fieldName="phase_name"
-                  />
-                )}
+                helperText={<SubscriptionFocus context={editContext} fieldName="phase_name" />}
               />
               <Field
                 component={TextField}
@@ -155,12 +140,7 @@ class KillChainPhaseEditionContainer extends Component {
                 style={{ marginTop: 20 }}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={(
-                  <SubscriptionFocus
-                    context={editContext}
-                    fieldName="x_opencti_order"
-                  />
-                )}
+                helperText={<SubscriptionFocus context={editContext} fieldName="x_opencti_order" />}
               />
             </Form>
           )}

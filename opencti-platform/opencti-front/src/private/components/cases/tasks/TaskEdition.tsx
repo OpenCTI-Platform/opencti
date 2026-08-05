@@ -17,16 +17,11 @@ const TaskEdition: FunctionComponent<{ caseId: string }> = ({ caseId }) => {
       },
     });
   };
-  const queryRef = useQueryLoading<TasksEditionContainerQuery>(
-    tasksEditionQuery,
-    { id: caseId },
-  );
+  const queryRef = useQueryLoading<TasksEditionContainerQuery>(tasksEditionQuery, { id: caseId });
   return (
     <>
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inline} />}
-        >
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
           <TasksEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}

@@ -89,8 +89,9 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
   // would only show up after a full page reload. Refetch the component
   // catalog whenever the add / replace / configure drawer opens so newly
   // bound agents appear without reloading.
-  const isComponentDrawerOpen = (action === 'add' || action === 'replace' || action === 'config')
-    && (selectedNode !== null || selectedEdge !== null);
+  const isComponentDrawerOpen =
+    (action === 'add' || action === 'replace' || action === 'config') &&
+    (selectedNode !== null || selectedEdge !== null);
   useEffect(() => {
     if (isComponentDrawerOpen) {
       refetchComponents({}, { fetchPolicy: 'store-and-network' });

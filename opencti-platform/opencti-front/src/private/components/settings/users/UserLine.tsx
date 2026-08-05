@@ -5,7 +5,15 @@ import Tooltip from '@mui/material/Tooltip';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
-import { PersonOutlined, AccountCircleOutlined, KeyboardArrowRightOutlined, HorizontalRule, Security, ReportGmailerrorred, ManageAccountsOutlined } from '@mui/icons-material';
+import {
+  PersonOutlined,
+  AccountCircleOutlined,
+  KeyboardArrowRightOutlined,
+  HorizontalRule,
+  Security,
+  ReportGmailerrorred,
+  ManageAccountsOutlined,
+} from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import { UserLine_node$data } from '@components/settings/users/__generated__/UserLine_node.graphql';
@@ -54,11 +62,14 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
   const userServiceAccount = node.user_service_account;
   const classes = useStyles();
   const { t_i18n, fd } = useFormatter();
-  const passwordValidUntil = (node as { password_valid_until?: string | null }).password_valid_until;
+  const passwordValidUntil = (node as { password_valid_until?: string | null })
+    .password_valid_until;
   const passwordValidUntilDisplay = dataColumns.password_valid_until
-    ? (dataColumns.password_valid_until.render
-        ? dataColumns.password_valid_until.render(passwordValidUntil)
-        : (passwordValidUntil ? fd(passwordValidUntil) : '-'))
+    ? dataColumns.password_valid_until.render
+      ? dataColumns.password_valid_until.render(passwordValidUntil)
+      : passwordValidUntil
+        ? fd(passwordValidUntil)
+        : '-'
     : null;
 
   return (
@@ -69,34 +80,22 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
       to={`/dashboard/settings/accesses/users/${node.id}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        {userServiceAccount && (<ManageAccountsOutlined />)}
+        {userServiceAccount && <ManageAccountsOutlined />}
         {!userServiceAccount && (external ? <AccountCircleOutlined /> : <PersonOutlined />)}
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
               {node.name}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.user_email.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.user_email.width }}>
               {node.user_email}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.firstname.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.firstname.width }}>
               <FieldOrEmpty source={node.firstname}>{node.firstname}</FieldOrEmpty>
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.lastname.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.lastname.width }}>
               <FieldOrEmpty source={node.lastname}>{node.lastname}</FieldOrEmpty>
             </div>
             <div
@@ -105,16 +104,15 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
             >
               {node.effective_confidence_level?.max_confidence ?? (
                 <Tooltip
-                  title={t_i18n("No confidence level found in this user's groups, and no confidence level defined at the user level.")}
+                  title={t_i18n(
+                    "No confidence level found in this user's groups, and no confidence level defined at the user level.",
+                  )}
                 >
                   <ReportGmailerrorred fontSize="small" color="error" />
                 </Tooltip>
               )}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.otp.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.otp.width }}>
               {node.otp_activated ? (
                 <Security fontSize="small" color="secondary" />
               ) : (
@@ -129,14 +127,11 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
                 {passwordValidUntilDisplay}
               </div>
             )}
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.created_at.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.created_at.width }}>
               {fd(node.created_at)}
             </div>
           </div>
-        )}
+        }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -157,7 +152,7 @@ export const UserLine = createFragmentContainer(UserLineComponent, {
       external
       lastname
       effective_confidence_level {
-        max_confidence 
+        max_confidence
       }
       otp_activated
       password_valid_until
@@ -174,109 +169,45 @@ export const UserLineDummy: React.FC<Pick<UserLineComponentProps, 'dataColumns'>
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-        <Skeleton
-          animation="wave"
-          variant="circular"
-          width={30}
-          height={30}
-        />
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.user_email.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.user_email.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.firstname.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.firstname.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.lastname.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.lastname.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.effective_confidence_level.width }}
             >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.otp.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width={40}
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.otp.width }}>
+              <Skeleton animation="wave" variant="rectangular" width={40} height="100%" />
             </div>
-            {dataColumns.password_valid_until
-              && (
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.password_valid_until.width }}
-                >
-                  <Skeleton
-                    animation="wave"
-                    variant="rectangular"
-                    width={100}
-                    height="100%"
-                  />
-                </div>
-              )}
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.created_at.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width={100}
-                height="100%"
-              />
+            {dataColumns.password_valid_until && (
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.password_valid_until.width }}
+              >
+                <Skeleton animation="wave" variant="rectangular" width={100} height="100%" />
+              </div>
+            )}
+            <div className={classes.bodyItem} style={{ width: dataColumns.created_at.width }}>
+              <Skeleton animation="wave" variant="rectangular" width={100} height="100%" />
             </div>
           </div>
-        )}
+        }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />

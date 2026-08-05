@@ -38,7 +38,10 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
     onFiltersChange({ ...filters, [key]: value });
   };
 
-  const handleBooleanFilterChange = (key: keyof ConnectorsStatusFilterState, value: boolean | null) => {
+  const handleBooleanFilterChange = (
+    key: keyof ConnectorsStatusFilterState,
+    value: boolean | null,
+  ) => {
     onFiltersChange({ ...filters, [key]: value });
   };
 
@@ -76,43 +79,45 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
         onChange={handleSearchInputChange}
       />
 
-      {
-        isEnterpriseEdition && showManagedFilters && (
-          <>
-            <Tooltip title={t_i18n('Apply filter to managed deployments only')} placement="top">
-              <Autocomplete
-                size="small"
-                sx={{ width: INPUT_WIDTH, backgroundColor: theme.palette.background.paper }}
-                options={managedConnectorOptions}
-                value={managedConnectorOptions.find((o) => o.value === filters.slug) || null}
-                onChange={(event, option) => handleFilterChange('slug', option?.value || '')}
-                isOptionEqualToValue={(option, value) => option.value === value.value}
-                renderInput={(params) => (
-                  <TextField {...params} label={t_i18n('Managed connector')} placeholder={t_i18n('Connector')} variant="outlined" />
-                )}
-                clearOnEscape
-              />
-            </Tooltip>
-
+      {isEnterpriseEdition && showManagedFilters && (
+        <>
+          <Tooltip title={t_i18n('Apply filter to managed deployments only')} placement="top">
             <Autocomplete
               size="small"
               sx={{ width: INPUT_WIDTH, backgroundColor: theme.palette.background.paper }}
-              options={managedOptions}
-              value={managedOptions.find((o) => o.value === filters.isManaged) || null} // This will show empty when isManaged is null
-              onChange={(event, option) => handleBooleanFilterChange('isManaged', option?.value ?? null)}
+              options={managedConnectorOptions}
+              value={managedConnectorOptions.find((o) => o.value === filters.slug) || null}
+              onChange={(event, option) => handleFilterChange('slug', option?.value || '')}
               isOptionEqualToValue={(option, value) => option.value === value.value}
               renderInput={(params) => (
-                <TextField {...params} label={t_i18n('Manager deployment')} variant="outlined" />
+                <TextField
+                  {...params}
+                  label={t_i18n('Managed connector')}
+                  placeholder={t_i18n('Connector')}
+                  variant="outlined"
+                />
               )}
+              clearOnEscape
             />
+          </Tooltip>
 
-            <ClearFiltersIcon
-              hasActiveFilters={hasActiveFilters}
-              onClear={handleClearFilters}
-            />
-          </>
-        )
-      }
+          <Autocomplete
+            size="small"
+            sx={{ width: INPUT_WIDTH, backgroundColor: theme.palette.background.paper }}
+            options={managedOptions}
+            value={managedOptions.find((o) => o.value === filters.isManaged) || null} // This will show empty when isManaged is null
+            onChange={(event, option) =>
+              handleBooleanFilterChange('isManaged', option?.value ?? null)
+            }
+            isOptionEqualToValue={(option, value) => option.value === value.value}
+            renderInput={(params) => (
+              <TextField {...params} label={t_i18n('Manager deployment')} variant="outlined" />
+            )}
+          />
+
+          <ClearFiltersIcon hasActiveFilters={hasActiveFilters} onClear={handleClearFilters} />
+        </>
+      )}
     </Stack>
   );
 };

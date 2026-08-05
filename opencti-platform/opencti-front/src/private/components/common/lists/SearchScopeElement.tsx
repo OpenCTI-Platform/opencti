@@ -34,9 +34,11 @@ const SearchScopeElement = ({
     entityTypes.push('Group');
   }
   const entitiesTypes = entityTypes
-    .filter((n) => (availableRelationFilterTypes && availableRelationFilterTypes[name]
-      ? availableRelationFilterTypes[name].includes(n)
-      : true))
+    .filter((n) =>
+      availableRelationFilterTypes && availableRelationFilterTypes[name]
+        ? availableRelationFilterTypes[name].includes(n)
+        : true,
+    )
     .map((n) => {
       return {
         label: t_i18n(displayEntityTypeForTranslation(n)),
@@ -45,7 +47,8 @@ const SearchScopeElement = ({
       };
     })
     .sort((a, b) => a.label.localeCompare(b.label));
-  const handleOpenSearchScope = (event: React.SyntheticEvent) => setAnchorElSearchScope(event.currentTarget);
+  const handleOpenSearchScope = (event: React.SyntheticEvent) =>
+    setAnchorElSearchScope(event.currentTarget);
   const handleCloseSearchScope = () => setAnchorElSearchScope(undefined);
   const handleToggleSearchScope = (key: string, value: string) => {
     setSearchScope((c) => ({
@@ -56,13 +59,16 @@ const SearchScopeElement = ({
     }));
   };
 
-  const color = searchScope[name] && searchScope[name].length > 0
-    ? 'secondary'
-    : 'primary';
+  const color = searchScope[name] && searchScope[name].length > 0 ? 'secondary' : 'primary';
 
   return (
     <InputAdornment position="end" style={{ position: 'absolute', right: 5 }}>
-      <IconButton disabled={disabled} onClick={handleOpenSearchScope} size="small" aria-label={t_i18n('Open menu')}>
+      <IconButton
+        disabled={disabled}
+        onClick={handleOpenSearchScope}
+        size="small"
+        aria-label={t_i18n('Open menu')}
+      >
         <PaletteOutlined fontSize="small" color={disabled ? undefined : color} />
       </IconButton>
       <Popover

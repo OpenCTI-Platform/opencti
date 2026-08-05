@@ -20,12 +20,14 @@ import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdow
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import { ExternalReferencesLinesPaginationQuery$variables } from '../__generated__/ExternalReferencesLinesPaginationQuery.graphql';
-import { ExternalReferenceAddInput, ExternalReferenceCreationMutation, ExternalReferenceCreationMutation$data } from './__generated__/ExternalReferenceCreationMutation.graphql';
+import {
+  ExternalReferenceAddInput,
+  ExternalReferenceCreationMutation,
+  ExternalReferenceCreationMutation$data,
+} from './__generated__/ExternalReferenceCreationMutation.graphql';
 
 const externalReferenceCreationMutation = graphql`
-  mutation ExternalReferenceCreationMutation(
-    $input: ExternalReferenceAddInput!
-  ) {
+  mutation ExternalReferenceCreationMutation($input: ExternalReferenceAddInput!) {
     externalReferenceAdd(input: $input) {
       id
       standard_id
@@ -38,29 +40,27 @@ const externalReferenceCreationMutation = graphql`
       created
       fileId
       draftVersion {
-          draft_id
-          draft_operation
+        draft_id
+        draft_operation
       }
       creators {
-          id
-          name
+        id
+        name
       }
     }
   }
 `;
 
-const externalReferenceValidation = (t: (value: string) => string) => Yup.object().shape({
-  source_name: Yup.string().required(t('This field is required')),
-  external_id: Yup.string().nullable(),
-  url: Yup.string()
-    .nullable()
-    .matches(
-      /^https?:\/\/[^\s/$.?#].[^\s]*$/,
-      t('The value must be an URL'),
-    ),
-  description: Yup.string().nullable(),
-  file: Yup.mixed().nullable(),
-});
+const externalReferenceValidation = (t: (value: string) => string) =>
+  Yup.object().shape({
+    source_name: Yup.string().required(t('This field is required')),
+    external_id: Yup.string().nullable(),
+    url: Yup.string()
+      .nullable()
+      .matches(/^https?:\/\/[^\s/$.?#].[^\s]*$/, t('The value must be an URL')),
+    description: Yup.string().nullable(),
+    file: Yup.mixed().nullable(),
+  });
 
 interface ExternalReferenceCreationProps {
   paginationOptions?: ExternalReferencesLinesPaginationQuery$variables;
@@ -99,10 +99,13 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
   const [commit] = useApiMutation<ExternalReferenceCreationMutation>(
     externalReferenceCreationMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_External-Reference')} ${t_i18n('successfully created')}` },
+    {
+      successMessage: `${t_i18n('entity_External-Reference')} ${t_i18n('successfully created')}`,
+    },
   );
 
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
 
   const onSubmit: FormikConfig<ExternalReferenceAddInput>['onSubmit'] = (
     values,
@@ -122,12 +125,13 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
       variables: {
         input: finalValues,
       },
-      updater: (store: RecordSourceSelectorProxy) => insertNode(
-        store,
-        'Pagination_externalReferences',
-        paginationOptions,
-        'externalReferenceAdd',
-      ),
+      updater: (store: RecordSourceSelectorProxy) =>
+        insertNode(
+          store,
+          'Pagination_externalReferences',
+          paginationOptions,
+          'externalReferenceAdd',
+        ),
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
@@ -145,7 +149,10 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
     });
   };
 
-  const onSubmitContextual: FormikConfig<ExternalReferenceAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmitContextual: FormikConfig<ExternalReferenceAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
     const uploadedFile = typeof values.file === 'string' || !values.file ? [] : [values.file];
     const finalValues = {
       ...R.dissoc('file', values),
@@ -270,17 +277,10 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
                   registerMarkdownImagesController={registerMarkdownImagesController}
                 />
                 <FormButtonContainer>
-                  <Button
-                    variant="secondary"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                  >
+                  <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t_i18n('Cancel')}
                   </Button>
-                  <Button
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
+                  <Button onClick={submitForm} disabled={isSubmitting}>
                     {t_i18n('Create')}
                   </Button>
                 </FormButtonContainer>
@@ -364,10 +364,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
                   >
                     {t_i18n('Cancel')}
                   </Button>
-                  <Button
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
+                  <Button onClick={submitForm} disabled={isSubmitting}>
                     {t_i18n('Create')}
                   </Button>
                 </DialogActions>

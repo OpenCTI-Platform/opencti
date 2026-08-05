@@ -58,73 +58,55 @@ const ThreatActorIndividualDemographics = ({
     <Card title={t_i18n('Demographic Information')}>
       <Grid container={true} spacing={3}>
         <Grid item xs={4}>
-          <Label action={(
-            <Security
-              needs={[KNOWLEDGE_KNUPDATE]}
-            >
-              <AddThreatActorIndividualDemographic
-                threatActorIndividual={threatActorIndividual}
-                relType="resides-in"
-                title={t_i18n('Add country of residence')}
-              />
-            </Security>
-          )}
+          <Label
+            action={
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <AddThreatActorIndividualDemographic
+                  threatActorIndividual={threatActorIndividual}
+                  relType="resides-in"
+                  title={t_i18n('Add country of residence')}
+                />
+              </Security>
+            }
           >
             {t_i18n('Country of Residence')}
           </Label>
           <div id="country_of_residence_list">
             <FieldOrEmpty source={countryRelationship.country_of_residence}>
-              {countryRelationship.country_of_residence.map(
-                (place: string, index: number) => (
-                  <Tag
-                    key={index}
-                    label={t_i18n(place)}
-                  />
-                ),
-              )}
+              {countryRelationship.country_of_residence.map((place: string, index: number) => (
+                <Tag key={index} label={t_i18n(place)} />
+              ))}
             </FieldOrEmpty>
           </div>
         </Grid>
         <Grid item xs={4}>
-          <Label action={(
-            <Security
-              needs={[KNOWLEDGE_KNUPDATE]}
-            >
-              <AddThreatActorIndividualDemographic
-                threatActorIndividual={threatActorIndividual}
-                relType="citizen-of"
-                title="Add citizenship"
-              />
-            </Security>
-          )}
+          <Label
+            action={
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <AddThreatActorIndividualDemographic
+                  threatActorIndividual={threatActorIndividual}
+                  relType="citizen-of"
+                  title="Add citizenship"
+                />
+              </Security>
+            }
           >
             {t_i18n('Citizenship')}
           </Label>
           <div id="citizenship_list">
             <FieldOrEmpty source={countryRelationship.citizenship}>
-              {countryRelationship.citizenship.map(
-                (place: string, index: number) => (
-                  <Tag
-                    key={index}
-                    label={t_i18n(place)}
-                  />
-                ),
-              )}
+              {countryRelationship.citizenship.map((place: string, index: number) => (
+                <Tag key={index} label={t_i18n(place)} />
+              ))}
             </FieldOrEmpty>
           </div>
         </Grid>
         <Grid item xs={4}>
-          <Label>
-            {t_i18n('Place of Birth')}
-          </Label>
-          <div id="place_of_birth">
-            {t_i18n(countryRelationship.place_of_birth ?? EMPTY_VALUE)}
-          </div>
+          <Label>{t_i18n('Place of Birth')}</Label>
+          <div id="place_of_birth">{t_i18n(countryRelationship.place_of_birth ?? EMPTY_VALUE)}</div>
         </Grid>
         <Grid item xs={4}>
-          <Label>
-            {t_i18n('Date of Birth')}
-          </Label>
+          <Label>{t_i18n('Date of Birth')}</Label>
           <div id="date_of_birth">
             {threatActorIndividual.date_of_birth
               ? fsd(threatActorIndividual.date_of_birth)
@@ -132,53 +114,39 @@ const ThreatActorIndividualDemographics = ({
           </div>
         </Grid>
         <Grid item xs={4}>
-          <Label action={(
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <AddThreatActorIndividualDemographic
-                threatActorIndividual={threatActorIndividual}
-                relType="national-of"
-                title={t_i18n('Add nationality')}
-              />
-            </Security>
-          )}
+          <Label
+            action={
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <AddThreatActorIndividualDemographic
+                  threatActorIndividual={threatActorIndividual}
+                  relType="national-of"
+                  title={t_i18n('Add nationality')}
+                />
+              </Security>
+            }
           >
             {t_i18n('Nationality')}
           </Label>
           <div id="nationality">
             <FieldOrEmpty source={countryRelationship.nationality}>
-              {countryRelationship.nationality.map(
-                (place: string, index: number) => (
-                  <Tag
-                    key={index}
-                    label={t_i18n(place)}
-                  />
-                ),
-              )}
+              {countryRelationship.nationality.map((place: string, index: number) => (
+                <Tag key={index} label={t_i18n(place)} />
+              ))}
             </FieldOrEmpty>
           </div>
         </Grid>
         <Grid item xs={4}>
-          <Label>
-            {t_i18n('Ethnicity')}
-          </Label>
+          <Label>{t_i18n('Ethnicity')}</Label>
           <div id="ethnicity">{t_i18n(countryRelationship.ethnicity ?? EMPTY_VALUE)}</div>
         </Grid>
         <Grid item xs={4}>
-          <Label>
-            {t_i18n('Gender')}
-          </Label>
+          <Label>{t_i18n('Gender')}</Label>
           <FieldOrEmpty source={threatActorIndividual.gender}>
-            <ItemOpenVocab
-              type="gender-ov"
-              value={threatActorIndividual.gender}
-              small
-            />
+            <ItemOpenVocab type="gender-ov" value={threatActorIndividual.gender} small />
           </FieldOrEmpty>
         </Grid>
         <Grid item xs={4}>
-          <Label>
-            {t_i18n('Marital Status')}
-          </Label>
+          <Label>{t_i18n('Marital Status')}</Label>
           <FieldOrEmpty source={threatActorIndividual.marital_status}>
             <ItemOpenVocab
               type="marital-status-ov"
@@ -188,9 +156,7 @@ const ThreatActorIndividualDemographics = ({
           </FieldOrEmpty>
         </Grid>
         <Grid item xs={4}>
-          <Label>
-            {t_i18n('Job Title')}
-          </Label>
+          <Label>{t_i18n('Job Title')}</Label>
           <FieldOrEmpty source={threatActorIndividual.job_title}>
             <div id="job_title">{threatActorIndividual.job_title}</div>
           </FieldOrEmpty>

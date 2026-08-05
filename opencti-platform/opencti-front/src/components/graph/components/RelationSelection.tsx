@@ -23,7 +23,9 @@ interface RelationSelectionProps {
   activated: boolean;
   setSelectedNodes: (nodes: Set<GraphNode>) => void;
   graphDataNodes: GraphNode[];
-  graph: MutableRefObject<ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>> | undefined>;
+  graph: MutableRefObject<
+    ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>> | undefined
+  >;
 }
 
 interface Coord {
@@ -43,7 +45,9 @@ interface ContextHandlerProps {
   setSelectedNodes?: (nodes: Set<GraphNode>) => void;
   activated?: boolean;
   storeFreeSelectionFunction?: (event: MouseEvent) => void;
-  graph?: MutableRefObject<ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>> | undefined>;
+  graph?: MutableRefObject<
+    ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>> | undefined
+  >;
 }
 
 const DISTANCE = 5;
@@ -60,7 +64,9 @@ const RelationSelection: FunctionComponent<RelationSelectionProps> = ({
   const theme = useTheme<Theme>();
   const lineRef = useRef<HTMLCanvasElement>(null);
 
-  let currentContext = lineRef.current?.getContext('2d') as CanvasRenderingContext2D & { reset: () => void };
+  let currentContext = lineRef.current?.getContext('2d') as CanvasRenderingContext2D & {
+    reset: () => void;
+  };
 
   const contextHandler = useRef<ContextHandlerProps>({});
 
@@ -92,7 +98,8 @@ const RelationSelection: FunctionComponent<RelationSelectionProps> = ({
     currentContext.lineWidth = 1;
     currentContext.setLineDash([1, 3]);
     currentContext.lineCap = 'round';
-    currentContext.strokeStyle = (theme.palette.success as SimplePaletteColorOptions)?.main ?? theme.palette.common.white;
+    currentContext.strokeStyle =
+      (theme.palette.success as SimplePaletteColorOptions)?.main ?? theme.palette.common.white;
     currentContext.beginPath();
     selectedNodes.clear();
   };
@@ -124,7 +131,8 @@ const RelationSelection: FunctionComponent<RelationSelectionProps> = ({
       const lastNodeCoords: Coord = graph.current.graph2ScreenCoords(lastNode.x, lastNode.y);
 
       currentContext.beginPath();
-      currentContext.strokeStyle = (theme.palette.success as SimplePaletteColorOptions)?.main ?? theme.palette.common.white;
+      currentContext.strokeStyle =
+        (theme.palette.success as SimplePaletteColorOptions)?.main ?? theme.palette.common.white;
       coord = reposition(e);
       currentContext.moveTo(firstNodeCoords.x, firstNodeCoords.y);
       currentContext.lineTo(lastNodeCoords.x, lastNodeCoords.y);
@@ -154,15 +162,24 @@ const RelationSelection: FunctionComponent<RelationSelectionProps> = ({
     }
   };
 
-  const storeFreeSelectionFunction = useCallback((event: MouseEvent) => {
-    storeFreeSelection(event);
-  }, [graph, activated, graphDataNodes]);
-  const stopFreeHandFunction = useCallback((event: MouseEvent) => {
-    stopFreeHand(event, storeFreeSelectionFunction);
-  }, [graph, activated, graphDataNodes]);
-  const startFreeHandFunction = useCallback((event: MouseEvent) => {
-    startFreeHand(event, storeFreeSelectionFunction);
-  }, [graph, activated, graphDataNodes]);
+  const storeFreeSelectionFunction = useCallback(
+    (event: MouseEvent) => {
+      storeFreeSelection(event);
+    },
+    [graph, activated, graphDataNodes],
+  );
+  const stopFreeHandFunction = useCallback(
+    (event: MouseEvent) => {
+      stopFreeHand(event, storeFreeSelectionFunction);
+    },
+    [graph, activated, graphDataNodes],
+  );
+  const startFreeHandFunction = useCallback(
+    (event: MouseEvent) => {
+      startFreeHand(event, storeFreeSelectionFunction);
+    },
+    [graph, activated, graphDataNodes],
+  );
 
   const contextEvent = useCallback((e: MouseEvent) => e.preventDefault(), []);
   useEffect(() => {
@@ -181,7 +198,9 @@ const RelationSelection: FunctionComponent<RelationSelectionProps> = ({
         storeFreeSelectionFunction,
         graph,
       };
-      currentContext = lineRef.current?.getContext('2d') as CanvasRenderingContext2D & { reset: () => void };
+      currentContext = lineRef.current?.getContext('2d') as CanvasRenderingContext2D & {
+        reset: () => void;
+      };
     }
     if (activated) {
       document.addEventListener('mousedown', startFreeHandFunction);
@@ -203,7 +222,7 @@ const RelationSelection: FunctionComponent<RelationSelectionProps> = ({
   return (
     <canvas
       ref={lineRef}
-      width={(width - 30)}
+      width={width - 30}
       height={height}
       className={classes.canvas}
       id="relation-canvas"

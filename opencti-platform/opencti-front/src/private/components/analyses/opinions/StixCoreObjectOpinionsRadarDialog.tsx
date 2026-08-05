@@ -19,8 +19,15 @@ import { adaptFieldValue } from '../../../../utils/String';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import useGranted, { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
+import useGranted, {
+  KNOWLEDGE_KNPARTICIPATE,
+  KNOWLEDGE_KNUPDATE,
+} from '../../../../utils/hooks/useGranted';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { opinionCreationMutation, opinionCreationUserMutation } from './OpinionCreation';
 import { opinionMutationFieldPatch } from './OpinionEditionOverview';
@@ -66,24 +73,21 @@ const OPINION_TYPE = 'Opinion';
 
 const StixCoreObjectOpinionsDialogComponent: FunctionComponent<
   StixCoreObjectOpinionsRadarDialogProps
-> = ({
-  queryRef,
-  stixCoreObjectId,
-  fetchQuery,
-  fetchDistributionQuery,
-  opinionOptions,
-}) => {
+> = ({ queryRef, stixCoreObjectId, fetchQuery, fetchDistributionQuery, opinionOptions }) => {
   const { t_i18n } = useFormatter();
   const { myOpinion } = usePreloadedQuery<StixCoreObjectOpinionsRadarDialogMyOpinionQuery>(
     stixCoreObjectOpinionsRadarDialogMyOpinionQuery,
     queryRef,
   );
   const { mandatoryAttributes } = useIsMandatoryAttribute(OPINION_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    opinion: Yup.string(),
-    explanation: Yup.string(),
-    confidence: Yup.number(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      opinion: Yup.string(),
+      explanation: Yup.string(),
+      confidence: Yup.number(),
+    },
+    mandatoryAttributes,
+  );
   const opinionValidator = useDynamicSchemaCreationValidation(
     mandatoryAttributes,
     basicShape,
@@ -97,7 +101,9 @@ const StixCoreObjectOpinionsDialogComponent: FunctionComponent<
     } else {
       MESSAGING$.notifyError(
         <span>
-          {t_i18n('The opinions has no value defined in your vocabulary. Please add them first to be able to add opinions.')}
+          {t_i18n(
+            'The opinions has no value defined in your vocabulary. Please add them first to be able to add opinions.',
+          )}
         </span>,
       );
     }
@@ -105,9 +111,7 @@ const StixCoreObjectOpinionsDialogComponent: FunctionComponent<
   const handleClose = () => setOpen(false);
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const [commitCreation] = useApiMutation(
-    userIsKnowledgeEditor
-      ? opinionCreationMutation
-      : opinionCreationUserMutation,
+    userIsKnowledgeEditor ? opinionCreationMutation : opinionCreationUserMutation,
   );
   const [commitEdition] = useApiMutation(opinionMutationFieldPatch);
   const onSubmit = (
@@ -154,25 +158,21 @@ const StixCoreObjectOpinionsDialogComponent: FunctionComponent<
     }
   };
 
-  const initialValues = useDefaultValues<OpinionAddInput>(
-    OPINION_TYPE,
-    {
-      id: myOpinion?.id,
-      opinion: myOpinion?.opinion
-        ?? (opinionOptions.length > 0 ? opinionOptions[Math.floor(opinionOptions.length / 2)].label : 'default'),
-      explanation: myOpinion?.explanation ?? '',
-      confidence: myOpinion?.confidence ?? 75,
-    },
-  );
+  const initialValues = useDefaultValues<OpinionAddInput>(OPINION_TYPE, {
+    id: myOpinion?.id,
+    opinion:
+      myOpinion?.opinion ??
+      (opinionOptions.length > 0
+        ? opinionOptions[Math.floor(opinionOptions.length / 2)].label
+        : 'default'),
+    explanation: myOpinion?.explanation ?? '',
+    confidence: myOpinion?.confidence ?? 75,
+  });
 
   return (
     <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
       <>
-        <IconButton
-          color="primary"
-          aria-label="Label"
-          onClick={handleOpen}
-        >
+        <IconButton color="primary" aria-label="Label" onClick={handleOpen}>
           <ThumbsUpDownOutlined fontSize="small" />
         </IconButton>
         {opinionOptions.length > 0 && (
@@ -200,27 +200,23 @@ const StixCoreObjectOpinionsDialogComponent: FunctionComponent<
                           maxWidth: 60,
                           overflow: 'hidden',
                         },
-                        '& .MuiSlider-thumb[style*="left: 0%"] .MuiSlider-valueLabelOpen':
-                            {
-                              left: -5,
-                              '&:before': {
-                                left: '22%',
-                              },
-                            },
-                        '& .MuiSlider-thumb[style*="left: 100%"] .MuiSlider-valueLabelOpen':
-                            {
-                              right: -5,
-                              '&:before': {
-                                left: '88%',
-                              },
-                            },
+                        '& .MuiSlider-thumb[style*="left: 0%"] .MuiSlider-valueLabelOpen': {
+                          left: -5,
+                          '&:before': {
+                            left: '22%',
+                          },
+                        },
+                        '& .MuiSlider-thumb[style*="left: 100%"] .MuiSlider-valueLabelOpen': {
+                          right: -5,
+                          '&:before': {
+                            left: '88%',
+                          },
+                        },
                       }}
                       style={{ marginTop: 30 }}
                       value={opinionOptions.find((o) => o.label === values.opinion)?.value}
                       onChange={(_, v) => {
-                        setFieldValue('opinion', opinionOptions.find(
-                          (m) => m.value === v,
-                        )?.label);
+                        setFieldValue('opinion', opinionOptions.find((m) => m.value === v)?.label);
                       }}
                       valueLabelDisplay="on"
                       valueLabelFormat={(v) => opinionOptions[v - 1].label}
@@ -235,7 +231,7 @@ const StixCoreObjectOpinionsDialogComponent: FunctionComponent<
                     component={MarkdownField}
                     name="explanation"
                     label={t_i18n('Explanation')}
-                    required={(mandatoryAttributes.includes('explanation'))}
+                    required={mandatoryAttributes.includes('explanation')}
                     fullWidth={true}
                     multiline={true}
                     rows="4"
@@ -250,10 +246,7 @@ const StixCoreObjectOpinionsDialogComponent: FunctionComponent<
                     <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                       {t_i18n('Cancel')}
                     </Button>
-                    <Button
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                    >
+                    <Button onClick={submitForm} disabled={isSubmitting}>
                       {myOpinion ? t_i18n('Update') : t_i18n('Create')}
                     </Button>
                   </DialogActions>
@@ -267,26 +260,28 @@ const StixCoreObjectOpinionsDialogComponent: FunctionComponent<
   );
 };
 
-const StixCoreObjectOpinionsDialog: FunctionComponent<Omit<StixCoreObjectOpinionsRadarDialogProps, 'queryRef' | 'fetchQuery'>> = (
-  props,
-) => {
+const StixCoreObjectOpinionsDialog: FunctionComponent<
+  Omit<StixCoreObjectOpinionsRadarDialogProps, 'queryRef' | 'fetchQuery'>
+> = (props) => {
   const variables: StixCoreObjectOpinionsRadarDialogMyOpinionQuery$variables = {
     id: props.stixCoreObjectId,
   };
-  const [queryRef, fetchLoadQuery] = useQueryLoader<StixCoreObjectOpinionsRadarDialogMyOpinionQuery>(
-    stixCoreObjectOpinionsRadarDialogMyOpinionQuery,
-  );
+  const [queryRef, fetchLoadQuery] =
+    useQueryLoader<StixCoreObjectOpinionsRadarDialogMyOpinionQuery>(
+      stixCoreObjectOpinionsRadarDialogMyOpinionQuery,
+    );
   const fetchQuery = useCallback(
     () => fetchLoadQuery(variables, { fetchPolicy: 'network-only' }),
     [],
   );
-  useEffect(
-    () => fetchLoadQuery(variables, { fetchPolicy: 'store-and-network' }),
-    [],
-  );
+  useEffect(() => fetchLoadQuery(variables, { fetchPolicy: 'store-and-network' }), []);
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <StixCoreObjectOpinionsDialogComponent {...props} queryRef={queryRef} fetchQuery={fetchQuery} />
+      <StixCoreObjectOpinionsDialogComponent
+        {...props}
+        queryRef={queryRef}
+        fetchQuery={fetchQuery}
+      />
     </React.Suspense>
   ) : (
     <Loader variant={LoaderVariant.inElement} />

@@ -7,26 +7,13 @@ interface ItemHistoryProps {
   message: string;
 }
 
-const ItemHistory: FunctionComponent<ItemHistoryProps> = ({
-  username,
-  message,
-}) => {
+const ItemHistory: FunctionComponent<ItemHistoryProps> = ({ username, message }) => {
   return (
     <Tooltip
-      title={(
-        <MarkdownDisplay
-          content={`\`${username}\` ${message}`}
-          remarkGfmPlugin
-          commonmark
-        />
-      )}
+      title={<MarkdownDisplay content={`\`${username}\` ${message}`} remarkGfmPlugin commonmark />}
     >
       <div style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-        <MarkdownDisplay
-          content={`\`${username}\` ${message}`}
-          remarkGfmPlugin
-          commonmark
-        />
+        <MarkdownDisplay content={`\`${username}\` ${message}`} remarkGfmPlugin commonmark />
       </div>
     </Tooltip>
   );

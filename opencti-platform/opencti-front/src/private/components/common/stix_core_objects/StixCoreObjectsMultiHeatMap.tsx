@@ -48,10 +48,7 @@ const StixCoreObjectsMultiHeatMapComponent = ({
   parameters,
   onMounted,
 }: StixCoreObjectsMultiHeatMapComponentProps) => {
-  const data = usePreloadedQuery(
-    stixCoreObjectsMultiHeatMapTimeSeriesQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery(stixCoreObjectsMultiHeatMapTimeSeriesQuery, queryRef);
   const series = data?.stixCoreObjectsMultiTimeSeries ?? [];
 
   if (!series.length) {
@@ -64,21 +61,19 @@ const StixCoreObjectsMultiHeatMapComponent = ({
     return {
       name: selection.label ?? 'Number of entities',
       data:
-          s?.data
-            ?.filter((entry): entry is { date: string; value: number } => Boolean(entry))
-            .map((entry) => ({
-              x: new Date(entry.date),
-              y: entry.value,
-            })) ?? [],
+        s?.data
+          ?.filter((entry): entry is { date: string; value: number } => Boolean(entry))
+          .map((entry) => ({
+            x: new Date(entry.date),
+            y: entry.value,
+          })) ?? [],
     };
   });
 
   const allValues = series
     .filter((s): s is NonNullable<typeof s> => !!s)
     .flatMap((s) =>
-      (s.data ?? [])
-        .filter((d): d is NonNullable<typeof d> => !!d)
-        .map((d) => d.value),
+      (s.data ?? []).filter((d): d is NonNullable<typeof d> => !!d).map((d) => d.value),
     );
   const minValue = allValues.length ? Math.min(...allValues) : 0;
   const maxValue = allValues.length ? Math.max(...allValues) : 0;
@@ -101,7 +96,12 @@ const buildQueryVariables = (
   config: DashboardConfig,
   parameters?: WidgetParameters,
 ): StixCoreObjectsMultiHeatMapTimeSeriesQuery['variables'] => {
-  const { startDate, endDate, timeSeriesParameters } = computeWidgetFiltersForMultiSelection(resolvedDataSelection, config, DATA_SELECTION_TYPES, { fallbackToDefaultDates: true });
+  const { startDate, endDate, timeSeriesParameters } = computeWidgetFiltersForMultiSelection(
+    resolvedDataSelection,
+    config,
+    DATA_SELECTION_TYPES,
+    { fallbackToDefaultDates: true },
+  );
   return {
     startDate,
     endDate,
@@ -133,7 +133,13 @@ const StixCoreObjectsMultiHeatMap = ({
 }: StixCoreObjectsMultiHeatMapProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiHeatMapTimeSeriesQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixCoreObjectsMultiHeatMapTimeSeriesQuery>({
     perspective: 'entities',
     dataSelection,
     host,

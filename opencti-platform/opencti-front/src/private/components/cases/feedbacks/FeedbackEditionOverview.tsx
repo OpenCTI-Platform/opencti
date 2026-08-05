@@ -6,7 +6,12 @@ import { FormikConfig } from 'formik/dist/types';
 import { GenericContext } from '@components/common/model/GenericContextModel';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { convertAssignees, convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertAssignees,
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { adaptFieldValue } from '../../../../utils/String';
 import { FeedbackEditionOverview_case$key } from './__generated__/FeedbackEditionOverview_case.graphql';
@@ -20,7 +25,11 @@ import RatingField from '../../../../components/fields/RatingField';
 import CommitMessage from '../../common/form/CommitMessage';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const feedbackMutationFieldPatch = graphql`
@@ -31,11 +40,7 @@ const feedbackMutationFieldPatch = graphql`
     $references: [String]
   ) {
     stixDomainObjectEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         ...FeedbackEditionOverview_case
         ...Feedback_case
       }
@@ -44,10 +49,7 @@ const feedbackMutationFieldPatch = graphql`
 `;
 
 export const feedbackEditionOverviewFocus = graphql`
-  mutation FeedbackEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation FeedbackEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     stixDomainObjectEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -118,11 +120,8 @@ const feedbackMutationRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    stixDomainObjectEdit(id: $id){
-      relationDelete(
-        toId: $toId
-        relationship_type: $relationship_type
-      ) {
+    stixDomainObjectEdit(id: $id) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...FeedbackEditionOverview_case
       }
     }
@@ -146,22 +145,26 @@ interface FeedbackEditionFormValues {
 
 const FEEDBACK_TYPE = 'Feedback';
 
-const FeedbackEditionOverviewComponent: FunctionComponent<
-  FeedbackEditionOverviewProps
-> = ({ feedbackRef, context, enableReferences = false, handleClose }) => {
+const FeedbackEditionOverviewComponent: FunctionComponent<FeedbackEditionOverviewProps> = ({
+  feedbackRef,
+  context,
+  enableReferences = false,
+  handleClose,
+}) => {
   const { t_i18n } = useFormatter();
   const feedbackData = useFragment(feedbackEditionOverviewFragment, feedbackRef);
 
-  const { mandatoryAttributes } = useIsMandatoryAttribute(
-    FEEDBACK_TYPE,
+  const { mandatoryAttributes } = useIsMandatoryAttribute(FEEDBACK_TYPE);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      description: Yup.string().nullable(),
+      x_opencti_workflow_id: Yup.object(),
+      rating: Yup.number().min(1).max(5),
+      confidence: Yup.number(),
+    },
+    mandatoryAttributes,
   );
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    description: Yup.string().nullable(),
-    x_opencti_workflow_id: Yup.object(),
-    rating: Yup.number().min(1).max(5),
-    confidence: Yup.number(),
-  }, mandatoryAttributes);
   const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
@@ -244,14 +247,7 @@ const FeedbackEditionOverviewComponent: FunctionComponent<
       validateOnBlur={true}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <Form>
           <AlertConfidenceForEntity entity={feedbackData} />
           <Field
@@ -259,19 +255,17 @@ const FeedbackEditionOverviewComponent: FunctionComponent<
             variant="standard"
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="name" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="name" />}
           />
           <Field
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -279,9 +273,7 @@ const FeedbackEditionOverviewComponent: FunctionComponent<
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             uploadEntityId={feedbackData.id}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
           />
           <ConfidenceField
             onFocus={editor.changeFocus}
@@ -293,7 +285,7 @@ const FeedbackEditionOverviewComponent: FunctionComponent<
           />
           <RatingField
             label={t_i18n('Rating')}
-            required={(mandatoryAttributes.includes('rating'))}
+            required={mandatoryAttributes.includes('rating')}
             rating={feedbackData.rating}
             size="small"
             style={fieldSpacingContainerStyle}
@@ -306,11 +298,9 @@ const FeedbackEditionOverviewComponent: FunctionComponent<
           />
           <ObjectAssigneeField
             name="objectAssignee"
-            required={(mandatoryAttributes.includes('objectAssignee'))}
+            required={mandatoryAttributes.includes('objectAssignee')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectAssignee" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectAssignee" />}
             onChange={editor.changeAssignee}
           />
           {feedbackData.workflowEnabled && (
@@ -321,31 +311,22 @@ const FeedbackEditionOverviewComponent: FunctionComponent<
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={fieldSpacingContainerStyle}
-              helpertext={(
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_workflow_id"
-                />
-              )}
+              helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />}
             />
           )}
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="createdBy" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />

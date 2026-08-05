@@ -11,16 +11,25 @@ const removeUnnecessaryHtml = (content: string) => {
     .replace(/<img[^>]+src=(\\?["'])[^'"]+\.gif\1[^>]*\/?>/gi, ''); // Remove GIFs from content
 
   // Remove script tags and their content
-  cleanedContent = cleanedContent.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  cleanedContent = cleanedContent.replace(
+    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+    '',
+  );
 
   // Remove style tags and their content (inline styles on elements are preserved)
   cleanedContent = cleanedContent.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
 
   // Remove iframe tags
-  cleanedContent = cleanedContent.replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '');
+  cleanedContent = cleanedContent.replace(
+    /<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi,
+    '',
+  );
 
   // Remove noscript tags
-  cleanedContent = cleanedContent.replace(/<noscript\b[^<]*(?:(?!<\/noscript>)<[^<]*)*<\/noscript>/gi, '');
+  cleanedContent = cleanedContent.replace(
+    /<noscript\b[^<]*(?:(?!<\/noscript>)<[^<]*)*<\/noscript>/gi,
+    '',
+  );
 
   // Remove comments
   cleanedContent = cleanedContent.replace(/<!--[\s\S]*?-->/g, '');

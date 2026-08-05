@@ -10,7 +10,10 @@ import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton } from '@mui/material';
 import { SubNarrativeNode } from '@components/techniques/narratives/NarrativesWithSubnarrativesLines';
 import { useFragment } from 'react-relay';
-import { NarrativeLine_node$data, NarrativeLine_node$key } from '@components/techniques/narratives/__generated__/NarrativeLine_node.graphql';
+import {
+  NarrativeLine_node$data,
+  NarrativeLine_node$key,
+} from '@components/techniques/narratives/__generated__/NarrativeLine_node.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import { emptyFilled } from '../../../../utils/String';
 import { narrativeLineFragment } from './NarrativeLine';
@@ -21,7 +24,10 @@ interface NarrativeWithSubnarrativeLineProps {
   node: SubNarrativeNode | NarrativeLine_node$key;
 }
 
-const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrativeLineProps> = ({ node, isSubNarrative }) => {
+const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrativeLineProps> = ({
+  node,
+  isSubNarrative,
+}) => {
   const theme = useTheme();
 
   let data: SubNarrativeNode | NarrativeLine_node$data = node as SubNarrativeNode;
@@ -29,7 +35,9 @@ const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrative
     data = useFragment(narrativeLineFragment, node as NarrativeLine_node$key);
   }
 
-  const subNarratives: NarrativeWithSubnarrativeLineProps['subNarratives'] = ((data as NarrativeLine_node$data).subNarratives?.edges ?? []).map(({ node: subNode }) => subNode);
+  const subNarratives: NarrativeWithSubnarrativeLineProps['subNarratives'] = (
+    (data as NarrativeLine_node$data).subNarratives?.edges ?? []
+  ).map(({ node: subNode }) => subNode);
 
   return (
     <div>
@@ -42,13 +50,10 @@ const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrative
         to={`/dashboard/techniques/narratives/${data.id}`}
       >
         <ListItemIcon style={{ color: theme.palette.primary.main }}>
-          <ItemIcon
-            type="Narrative"
-            size={isSubNarrative ? 'small' : 'medium'}
-          />
+          <ItemIcon type="Narrative" size={isSubNarrative ? 'small' : 'medium'} />
         </ListItemIcon>
         <ListItemText
-          primary={(
+          primary={
             <>
               <div
                 style={{
@@ -78,7 +83,7 @@ const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrative
                 {emptyFilled(data.description)}
               </div>
             </>
-          )}
+          }
         />
         <ListItemIcon style={{ position: 'absolute', right: -10 }}>
           <KeyboardArrowRightOutlined />
@@ -87,7 +92,11 @@ const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrative
       {subNarratives && subNarratives.length > 0 && (
         <List style={{ marginTop: 0, padding: 0 }}>
           {subNarratives.map((subNarrative) => (
-            <NarrativeWithSubnarrativeLine key={subNarrative.id} node={subNarrative} isSubNarrative={true} />
+            <NarrativeWithSubnarrativeLine
+              key={subNarrative.id}
+              node={subNarrative}
+              isSubNarrative={true}
+            />
           ))}
         </List>
       )}
@@ -104,9 +113,7 @@ export const NarrativeWithSubnarrativeLineDummy: FunctionComponent = () => {
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
-          <Skeleton animation="wave" variant="rectangular" width="90%" height={20} />
-        }
+        primary={<Skeleton animation="wave" variant="rectangular" width="90%" height={20} />}
       />
       <ListItemIcon style={{ position: 'absolute', right: -10 }}>
         <KeyboardArrowRightOutlined color="disabled" />

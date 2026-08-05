@@ -57,22 +57,20 @@ const entityStixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
   }
 `;
 
-const EntityStixCoreRelationshipsHorizontalBars = (
-  {
-    fromId,
-    toId,
-    relationshipType,
-    fromTypes,
-    toTypes,
-    field,
-    isTo,
-    startDate,
-    endDate,
-    dateAttribute,
-    seriesName,
-    title,
-  },
-) => {
+const EntityStixCoreRelationshipsHorizontalBars = ({
+  fromId,
+  toId,
+  relationshipType,
+  fromTypes,
+  toTypes,
+  field,
+  isTo,
+  startDate,
+  endDate,
+  dateAttribute,
+  seriesName,
+  title,
+}) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const navigate = useNavigate();
@@ -98,13 +96,12 @@ const EntityStixCoreRelationshipsHorizontalBars = (
         variables={stixCoreRelationshipsDistributionVariables}
         render={({ props }) => {
           if (
-            props
-            && props.stixCoreRelationshipsDistribution
-            && props.stixCoreRelationshipsDistribution.length > 0
+            props &&
+            props.stixCoreRelationshipsDistribution &&
+            props.stixCoreRelationshipsDistribution.length > 0
           ) {
             const data = props.stixCoreRelationshipsDistribution.map((n) => ({
               x:
-
                 field === 'internal_id'
                   ? getMainRepresentative(n.entity, t_i18n('Restricted'))
                   : field === 'entity_type'
@@ -112,9 +109,7 @@ const EntityStixCoreRelationshipsHorizontalBars = (
                     : n.label,
               y: n.value,
               fillColor:
-                field === 'internal_id'
-                  ? itemColor(n.entity?.entity_type)
-                  : itemColor(n.label),
+                field === 'internal_id' ? itemColor(n.entity?.entity_type) : itemColor(n.label),
             }));
             const chartData = [
               {
@@ -124,14 +119,11 @@ const EntityStixCoreRelationshipsHorizontalBars = (
             ];
             let redirectionUtils = null;
             if (field === 'internal_id') {
-              redirectionUtils = props.stixCoreRelationshipsDistribution
-                .map(
-                  (n) => ({
-                    id: n.label,
-                    name: n.entity?.representative?.main,
-                    entity_type: n.entity?.entity_type,
-                  }),
-                );
+              redirectionUtils = props.stixCoreRelationshipsDistribution.map((n) => ({
+                id: n.label,
+                name: n.entity?.representative?.main,
+                entity_type: n.entity?.entity_type,
+              }));
             }
             return (
               <Chart
@@ -184,11 +176,7 @@ const EntityStixCoreRelationshipsHorizontalBars = (
     );
   };
 
-  return (
-    <Card title={title || t_i18n('StixDomainObjects distribution')}>
-      {renderContent()}
-    </Card>
-  );
+  return <Card title={title || t_i18n('StixDomainObjects distribution')}>{renderContent()}</Card>;
 };
 
 export default EntityStixCoreRelationshipsHorizontalBars;

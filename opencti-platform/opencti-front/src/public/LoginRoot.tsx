@@ -69,17 +69,10 @@ export const rootPublicQuery = graphql`
   }
 `;
 
-const queryRef = loadQuery<LoginRootPublicQuery>(
-  environment,
-  rootPublicQuery,
-  {},
-);
+const queryRef = loadQuery<LoginRootPublicQuery>(environment, rootPublicQuery, {});
 
 const LoginRoot = ({ type }: { type: string }) => {
-  const data = usePreloadedQuery<LoginRootPublicQuery>(
-    rootPublicQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery<LoginRootPublicQuery>(rootPublicQuery, queryRef);
 
   return (
     <StyledEngineProvider injectFirst={true}>
@@ -87,15 +80,9 @@ const LoginRoot = ({ type }: { type: string }) => {
         <CssBaseline />
         <ConnectedIntlProvider settings={data.publicSettings}>
           <LoginContextProvider>
-            {type === '2FA_VALIDATION' && (
-              <OtpValidationPage settings={data.publicSettings} />
-            )}
-            {type === '2FA_ACTIVATION' && (
-              <OtpActivationPage settings={data.publicSettings} />
-            )}
-            {type === 'LOGIN' && (
-              <LoginPage settings={data.publicSettings} />
-            )}
+            {type === '2FA_VALIDATION' && <OtpValidationPage settings={data.publicSettings} />}
+            {type === '2FA_ACTIVATION' && <OtpActivationPage settings={data.publicSettings} />}
+            {type === 'LOGIN' && <LoginPage settings={data.publicSettings} />}
           </LoginContextProvider>
         </ConnectedIntlProvider>
       </ConnectedThemeProvider>

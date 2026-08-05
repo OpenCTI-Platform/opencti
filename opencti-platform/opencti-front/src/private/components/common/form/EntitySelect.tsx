@@ -1,8 +1,19 @@
-import { Autocomplete, Checkbox, Chip, TextField, TextFieldProps, TextFieldVariants } from '@mui/material';
+import {
+  Autocomplete,
+  Checkbox,
+  Chip,
+  TextField,
+  TextFieldProps,
+  TextFieldVariants,
+} from '@mui/material';
 import React, { Suspense, useEffect, useTransition } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { useTheme } from '@mui/styles';
-import { EntitySelectSearchQuery, FilterMode, FilterOperator } from './__generated__/EntitySelectSearchQuery.graphql';
+import {
+  EntitySelectSearchQuery,
+  FilterMode,
+  FilterOperator,
+} from './__generated__/EntitySelectSearchQuery.graphql';
 import useDebounceCallback from '../../../../utils/hooks/useDebounceCallback';
 import Loader from '../../../../components/Loader';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -77,12 +88,7 @@ const EntitySelectComponent = ({
       onInputChange={(_, val) => throttleSearch(val)}
       onChange={(_, val) => onChange?.(val)}
       renderInput={(params) => (
-        <TextField
-          {...params}
-          variant={variant}
-          size={size}
-          label={label}
-        />
+        <TextField {...params} variant={variant} size={size} label={label} />
       )}
       renderOption={({ key, ...props }, option) => (
         <li
@@ -97,22 +103,21 @@ const EntitySelectComponent = ({
           {...props}
         >
           {multiple && (
-            <Checkbox
-              checked={!!(value as EntityOption[]).find((v) => option.value === v.value)}
-            />
+            <Checkbox checked={!!(value as EntityOption[]).find((v) => option.value === v.value)} />
           )}
           <ItemIcon type={option.type} />
-          <span style={{
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
+          <span
+            style={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
           >
             {option.label}
           </span>
         </li>
       )}
-      renderTags={(values, getTagProps) => (
+      renderTags={(values, getTagProps) =>
         values.map((option, index) => (
           <Chip
             {...getTagProps({ index })}
@@ -125,7 +130,7 @@ const EntitySelectComponent = ({
             }}
           />
         ))
-      )}
+      }
     />
   );
 };
@@ -138,21 +143,25 @@ const EntitySelect = ({ types, ...otherProps }: EntitySelectProps) => {
   const [, startTransition] = useTransition();
   const [queryRef, loadQuery] = useQueryLoader<EntitySelectSearchQuery>(entitySelectSearchQuery);
 
-  const search = (search: string) => loadQuery({
-    search,
-    filters: {
-      mode: 'and' as FilterMode,
-      filterGroups: [],
-      filters: [
-        {
-          key: ['entity_type'],
-          values: types,
-          operator: 'eq' as FilterOperator,
-          mode: 'or' as FilterMode,
+  const search = (search: string) =>
+    loadQuery(
+      {
+        search,
+        filters: {
+          mode: 'and' as FilterMode,
+          filterGroups: [],
+          filters: [
+            {
+              key: ['entity_type'],
+              values: types,
+              operator: 'eq' as FilterOperator,
+              mode: 'or' as FilterMode,
+            },
+          ],
         },
-      ],
-    },
-  }, { fetchPolicy: 'store-and-network' });
+      },
+      { fetchPolicy: 'store-and-network' },
+    );
 
   // Initial load
   useEffect(() => {

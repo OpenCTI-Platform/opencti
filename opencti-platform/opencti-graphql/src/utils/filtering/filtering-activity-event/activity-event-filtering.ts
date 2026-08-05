@@ -9,14 +9,22 @@ import { UnsupportedError } from '../../../config/errors';
 // Validate Filter in case of comparison against an event
 export const validateFilterForActivityEventMatch = (filter: Filter) => {
   if (!Array.isArray(filter.key)) {
-    throw UnsupportedError('The provided filter key is not an array', { key: JSON.stringify(filter.key) });
+    throw UnsupportedError('The provided filter key is not an array', {
+      key: JSON.stringify(filter.key),
+    });
   }
   if (filter.key.length !== 1) {
-    throw UnsupportedError('Activity Stream Event filtering can only be executed on a unique filter key', { key: JSON.stringify(filter.key) });
+    throw UnsupportedError(
+      'Activity Stream Event filtering can only be executed on a unique filter key',
+      { key: JSON.stringify(filter.key) },
+    );
   }
   if (FILTER_WITH_EVENTS_KEY_TESTERS_MAP[filter.key[0]] === undefined) {
     const availableFilters = JSON.stringify(Object.keys(FILTER_WITH_EVENTS_KEY_TESTERS_MAP));
-    throw UnsupportedError('Activity Stream Event filtering is not compatible with the provided filter key', { key: JSON.stringify(filter.key), availableFilters });
+    throw UnsupportedError(
+      'Activity Stream Event filtering is not compatible with the provided filter key',
+      { key: JSON.stringify(filter.key), availableFilters },
+    );
   }
 };
 

@@ -26,9 +26,10 @@ interface CreateFileFormProps {
 const CreateFileForm = ({ isOpen, onClose, onReset, onSubmit }: CreateFileFormProps) => {
   const { t_i18n } = useFormatter();
 
-  const validation = () => Yup.object().shape({
-    name: Yup.string().required(t_i18n('This field is required')),
-  });
+  const validation = () =>
+    Yup.object().shape({
+      name: Yup.string().required(t_i18n('This field is required')),
+    });
 
   const initialValues: CreateFileFormInputs = {
     name: '',
@@ -46,11 +47,7 @@ const CreateFileForm = ({ isOpen, onClose, onReset, onSubmit }: CreateFileFormPr
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
         <Form>
-          <Dialog
-            open={isOpen}
-            onClose={onClose}
-            title={t_i18n('Create a file')}
-          >
+          <Dialog open={isOpen} onClose={onClose} title={t_i18n('Create a file')}>
             <Field
               component={TextField}
               variant="standard"
@@ -81,10 +78,7 @@ const CreateFileForm = ({ isOpen, onClose, onReset, onSubmit }: CreateFileFormPr
               <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </DialogActions>

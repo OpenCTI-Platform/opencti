@@ -9,9 +9,7 @@ import MenuItem from '@mui/material/MenuItem';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 
-import {
-  IngestionTaxiiCollectionLinesPaginationQuery$variables,
-} from '@components/data/ingestionTaxiiCollection/__generated__/IngestionTaxiiCollectionLinesPaginationQuery.graphql';
+import { IngestionTaxiiCollectionLinesPaginationQuery$variables } from '@components/data/ingestionTaxiiCollection/__generated__/IngestionTaxiiCollectionLinesPaginationQuery.graphql';
 import { IngestionTaxiiCollectionPopoverEditionQuery$data } from '@components/data/ingestionTaxiiCollection/__generated__/IngestionTaxiiCollectionPopoverEditionQuery.graphql';
 import { IngestionTaxiiCollectionPopoverExportQuery$data } from '@components/data/ingestionTaxiiCollection/__generated__/IngestionTaxiiCollectionPopoverExportQuery.graphql';
 import { PopoverProps } from '@mui/material/Popover';
@@ -22,7 +20,9 @@ import { fetchQuery, QueryRenderer } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
-import IngestionTaxiiCollectionEdition, { ingestionTaxiiCollectionMutationFieldPatch } from './IngestionTaxiiCollectionEdition';
+import IngestionTaxiiCollectionEdition, {
+  ingestionTaxiiCollectionMutationFieldPatch,
+} from './IngestionTaxiiCollectionEdition';
 
 const ingestionTaxiiPopoverDeletionMutation = graphql`
   mutation IngestionTaxiiCollectionPopoverDeletionMutation($id: ID!) {
@@ -135,10 +135,14 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
 
   const handleExport = async () => {
     handleClose();
-    const data = await fetchQuery(ingestionTaxiiCollectionExportQuery, { id: ingestionTaxiiId }).toPromise();
+    const data = await fetchQuery(ingestionTaxiiCollectionExportQuery, {
+      id: ingestionTaxiiId,
+    }).toPromise();
     const { ingestionTaxiiCollection } = data as IngestionTaxiiCollectionPopoverExportQuery$data;
     if (ingestionTaxiiCollection) {
-      const blob = new Blob([ingestionTaxiiCollection.toConfigurationExport], { type: 'text/json' });
+      const blob = new Blob([ingestionTaxiiCollection.toConfigurationExport], {
+        type: 'text/json',
+      });
       const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
       const fileName = `${year}${month}${day}_taxiiPush_${ingestionTaxiiCollection.name}.json`;
       fileDownload(blob, fileName);
@@ -186,30 +190,12 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
       >
         <MoreVert />
       </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
-        {!running && (
-          <MenuItem onClick={handleOpenStart}>
-            {t_i18n('Start')}
-          </MenuItem>
-        )}
-        {running && (
-          <MenuItem onClick={handleOpenStop}>
-            {t_i18n('Stop')}
-          </MenuItem>
-        )}
-        <MenuItem onClick={handleOpenUpdate}>
-          {t_i18n('Update')}
-        </MenuItem>
-        <MenuItem onClick={handleExport}>
-          {t_i18n('Export')}
-        </MenuItem>
-        <MenuItem onClick={handleOpenDelete}>
-          {t_i18n('Delete')}
-        </MenuItem>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        {!running && <MenuItem onClick={handleOpenStart}>{t_i18n('Start')}</MenuItem>}
+        {running && <MenuItem onClick={handleOpenStop}>{t_i18n('Stop')}</MenuItem>}
+        <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
+        <MenuItem onClick={handleExport}>{t_i18n('Export')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <QueryRenderer
         query={ingestionTaxiiEditionQuery}
@@ -232,50 +218,24 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         submitDelete={submitDelete}
         message={t_i18n('Do you want to delete this TAXII ingester?')}
       />
-      <Dialog
-        open={displayStart}
-        onClose={handleCloseStart}
-        title={t_i18n('Are you sure?')}
-      >
-        <DialogContentText>
-          {t_i18n('Do you want to start this TAXII ingester?')}
-        </DialogContentText>
+      <Dialog open={displayStart} onClose={handleCloseStart} title={t_i18n('Are you sure?')}>
+        <DialogContentText>{t_i18n('Do you want to start this TAXII ingester?')}</DialogContentText>
         <DialogActions>
-          <Button
-            variant="secondary"
-            onClick={handleCloseStart}
-            disabled={starting}
-          >
+          <Button variant="secondary" onClick={handleCloseStart} disabled={starting}>
             {t_i18n('Cancel')}
           </Button>
-          <Button
-            onClick={submitStart}
-            disabled={starting}
-          >
+          <Button onClick={submitStart} disabled={starting}>
             {t_i18n('Start')}
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog
-        open={displayStop}
-        onClose={handleCloseStop}
-        title={t_i18n('Are you sure?')}
-      >
-        <DialogContentText>
-          {t_i18n('Do you want to stop this TAXII ingester?')}
-        </DialogContentText>
+      <Dialog open={displayStop} onClose={handleCloseStop} title={t_i18n('Are you sure?')}>
+        <DialogContentText>{t_i18n('Do you want to stop this TAXII ingester?')}</DialogContentText>
         <DialogActions>
-          <Button
-            variant="secondary"
-            onClick={handleCloseStop}
-            disabled={stopping}
-          >
+          <Button variant="secondary" onClick={handleCloseStop} disabled={stopping}>
             {t_i18n('Cancel')}
           </Button>
-          <Button
-            onClick={submitStop}
-            disabled={stopping}
-          >
+          <Button onClick={submitStop} disabled={stopping}>
             {t_i18n('Stop')}
           </Button>
         </DialogActions>

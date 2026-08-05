@@ -35,14 +35,14 @@ export const markingDefinitionsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...MarkingDefinitionsLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -65,10 +65,7 @@ const markingDefinitionsLinesFragment = graphql`
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
-    orderBy: {
-      type: "MarkingDefinitionsOrdering"
-      defaultValue: definition
-    }
+    orderBy: { type: "MarkingDefinitionsOrdering", defaultValue: definition }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "FilterGroup" }
   )
@@ -112,7 +109,11 @@ const MarkingDefinitions = () => {
       symbol: '',
     },
   };
-  const { viewStorage: { filters }, helpers, paginationOptions } = usePaginationLocalStorage<MarkingDefinitionsLinesPaginationQuery>(
+  const {
+    viewStorage: { filters },
+    helpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<MarkingDefinitionsLinesPaginationQuery>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
@@ -151,10 +152,10 @@ const MarkingDefinitions = () => {
     created: { percentWidth: 15 },
   };
 
-  const queryRef = useQueryLoading(
-    markingDefinitionsLinesQuery,
-    { ...queryPaginationOptions, count: 25 },
-  );
+  const queryRef = useQueryLoading(markingDefinitionsLinesQuery, {
+    ...queryPaginationOptions,
+    count: 25,
+  });
 
   const preloadedPaginationProps = {
     linesQuery: markingDefinitionsLinesQuery,
@@ -166,16 +167,19 @@ const MarkingDefinitions = () => {
 
   return (
     <div style={{ paddingRight: '200px' }} data-testid="marking-settings-page">
-      <Breadcrumbs elements={[
-        { label: t_i18n('Settings') },
-        { label: t_i18n('Security') },
-        { label: t_i18n('Marking definitions'), current: true },
-      ]}
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Security') },
+          { label: t_i18n('Marking definitions'), current: true },
+        ]}
       />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: MarkingDefinitionsLines_data$data) => data.markingDefinitions?.edges?.map((e) => e?.node)}
+          resolvePath={(data: MarkingDefinitionsLines_data$data) =>
+            data.markingDefinitions?.edges?.map((e) => e?.node)
+          }
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           contextFilters={contextFilters}
@@ -183,9 +187,7 @@ const MarkingDefinitions = () => {
           preloadedPaginationProps={preloadedPaginationProps}
           icon={(data) => {
             const { x_opencti_color } = data;
-            return (
-              <MarkingIcon theme={theme} color={x_opencti_color} />
-            );
+            return <MarkingIcon theme={theme} color={x_opencti_color} />;
           }}
           actions={(markingDefinition) => (
             <MarkingDefinitionPopover

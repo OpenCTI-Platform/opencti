@@ -38,14 +38,8 @@ const OpinionEdition = ({ opinionId }) => {
         render={({ props }) => {
           if (props) {
             return (
-              <CollaborativeSecurity
-                data={props.opinion}
-                needs={[KNOWLEDGE_KNUPDATE]}
-              >
-                <OpinionEditionContainer
-                  opinion={props.opinion}
-                  handleClose={handleClose}
-                />
+              <CollaborativeSecurity data={props.opinion} needs={[KNOWLEDGE_KNUPDATE]}>
+                <OpinionEditionContainer opinion={props.opinion} handleClose={handleClose} />
               </CollaborativeSecurity>
             );
           }

@@ -30,9 +30,12 @@ import { isEmptyField } from '../database/utils';
 // Needs to have edit rights or needs to be creator of the note
 const checkUserAccess = async (context, user, id) => {
   const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
-  const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(KNOWLEDGE_UPDATE);
+  const isAuthorized =
+    userCapabilities.includes(BYPASS) || userCapabilities.includes(KNOWLEDGE_UPDATE);
   const note = await findById(context, user, id);
-  const isCreator = note[RELATION_CREATED_BY] ? note[RELATION_CREATED_BY] === user.individual_id : false;
+  const isCreator = note[RELATION_CREATED_BY]
+    ? note[RELATION_CREATED_BY] === user.individual_id
+    : false;
   const isCollaborationAllowed = userCapabilities.includes(KNOWLEDGE_COLLABORATION) && isCreator;
   const accessGranted = isAuthorized || isCollaborationAllowed;
   if (!accessGranted) throw ForbiddenAccess();
@@ -64,7 +67,12 @@ const noteResolvers = {
       return [];
     },
     noteContainsStixObjectOrStixRelationship: (_, args, context) => {
-      return noteContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
+      return noteContainsStixObjectOrStixRelationship(
+        context,
+        context.user,
+        args.id,
+        args.stixObjectOrStixRelationshipId,
+      );
     },
   },
   Mutation: {
@@ -77,7 +85,10 @@ const noteResolvers = {
         await checkUserAccess(context, context.user, id);
         const isManager = isUserHasCapability(context.user, KNOWLEDGE_KNUPDATE);
         const availableInputs = isManager ? input : input.filter((i) => i.key !== 'createdBy');
-        return stixDomainObjectEditField(context, context.user, id, availableInputs, { commitMessage, references });
+        return stixDomainObjectEditField(context, context.user, id, availableInputs, {
+          commitMessage,
+          references,
+        });
       },
       contextPatch: async ({ input }) => {
         await checkUserAccess(context, context.user, id);

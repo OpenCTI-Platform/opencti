@@ -1,4 +1,7 @@
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_CYBER_OBSERVABLE_HASHED_OBSERVABLE } from './general';
+import {
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ABSTRACT_STIX_CYBER_OBSERVABLE_HASHED_OBSERVABLE,
+} from './general';
 import { schemaTypesDefinition } from './schema-types';
 
 export const ENTITY_AUTONOMOUS_SYSTEM = 'Autonomous-System';
@@ -44,7 +47,10 @@ const STIX_CYBER_OBSERVABLES_HASHED_OBSERVABLES = [
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
 ];
-schemaTypesDefinition.register(ABSTRACT_STIX_CYBER_OBSERVABLE_HASHED_OBSERVABLE, STIX_CYBER_OBSERVABLES_HASHED_OBSERVABLES);
+schemaTypesDefinition.register(
+  ABSTRACT_STIX_CYBER_OBSERVABLE_HASHED_OBSERVABLE,
+  STIX_CYBER_OBSERVABLES_HASHED_OBSERVABLES,
+);
 export const STIX_CYBER_OBSERVABLES = [
   ENTITY_AUTONOMOUS_SYSTEM,
   ENTITY_DIRECTORY,
@@ -86,10 +92,12 @@ export const STIX_CYBER_OBSERVABLES = [
 ];
 schemaTypesDefinition.register(ABSTRACT_STIX_CYBER_OBSERVABLE, STIX_CYBER_OBSERVABLES);
 
-export const isStixCyberObservableHashedObservable = (type: string) => schemaTypesDefinition.isTypeIncludedIn(type, ABSTRACT_STIX_CYBER_OBSERVABLE_HASHED_OBSERVABLE)
-  || type === ABSTRACT_STIX_CYBER_OBSERVABLE_HASHED_OBSERVABLE;
-export const isStixCyberObservable = (type: string) => schemaTypesDefinition.isTypeIncludedIn(type, ABSTRACT_STIX_CYBER_OBSERVABLE)
-  || type === ABSTRACT_STIX_CYBER_OBSERVABLE;
+export const isStixCyberObservableHashedObservable = (type: string) =>
+  schemaTypesDefinition.isTypeIncludedIn(type, ABSTRACT_STIX_CYBER_OBSERVABLE_HASHED_OBSERVABLE) ||
+  type === ABSTRACT_STIX_CYBER_OBSERVABLE_HASHED_OBSERVABLE;
+export const isStixCyberObservable = (type: string) =>
+  schemaTypesDefinition.isTypeIncludedIn(type, ABSTRACT_STIX_CYBER_OBSERVABLE) ||
+  type === ABSTRACT_STIX_CYBER_OBSERVABLE;
 
 export const stixCyberObservableOptions = {
   StixCyberObservablesOrdering: {},

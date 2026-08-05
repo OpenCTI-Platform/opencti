@@ -22,7 +22,9 @@ import { itemColor } from '../../../../utils/Colors';
 import { minutesBefore, now, parse } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
 import SelectField from '../../../../components/fields/SelectField';
-import StixNestedRefRelationCreationFromEntityLines, { stixNestedRefRelationshipCreationFromEntityLinesQuery } from './StixNestedRefRelationshipCreationFromEntityLines';
+import StixNestedRefRelationCreationFromEntityLines, {
+  stixNestedRefRelationshipCreationFromEntityLinesQuery,
+} from './StixNestedRefRelationshipCreationFromEntityLines';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import { truncate } from '../../../../utils/String';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
@@ -31,7 +33,10 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ListLines from '../../../../components/list_lines/ListLines';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
-import { emptyFilterGroup, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  normalizeFilterGroupForBackend,
+} from '../../../../utils/filters/filtersUtils';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import Drawer from '../drawer/Drawer';
 
@@ -138,107 +143,107 @@ const stixNestedRefRelationshipResolveTypes = graphql`
   query StixNestedRefRelationshipCreationFromEntityResolveQuery($id: String!, $toType: String!) {
     stixSchemaRefRelationships(id: $id, toType: $toType) {
       entity {
-      ... on BasicObject {
-        id
-        entity_type
+        ... on BasicObject {
+          id
+          entity_type
+        }
+        ... on BasicRelationship {
+          id
+          entity_type
+        }
+        ... on AttackPattern {
+          name
+          description
+        }
+        ... on Campaign {
+          name
+          description
+        }
+        ... on CourseOfAction {
+          name
+          description
+        }
+        ... on Individual {
+          name
+          description
+        }
+        ... on Organization {
+          name
+          description
+        }
+        ... on Sector {
+          name
+          description
+        }
+        ... on System {
+          name
+          description
+        }
+        ... on Indicator {
+          name
+          description
+        }
+        ... on Infrastructure {
+          name
+          description
+        }
+        ... on IntrusionSet {
+          name
+          description
+        }
+        ... on Position {
+          name
+          description
+        }
+        ... on City {
+          name
+          description
+        }
+        ... on Country {
+          name
+          description
+        }
+        ... on Region {
+          name
+          description
+        }
+        ... on Malware {
+          name
+          description
+        }
+        ... on ThreatActor {
+          name
+          description
+        }
+        ... on Tool {
+          name
+          description
+        }
+        ... on Vulnerability {
+          name
+          description
+        }
+        ... on Incident {
+          name
+          description
+        }
+        ... on DataComponent {
+          name
+          entity_type
+        }
+        ... on DataSource {
+          name
+        }
+        ... on Case {
+          name
+        }
+        ... on MalwareAnalysis {
+          result_name
+        }
+        ... on StixCyberObservable {
+          observable_value
+        }
       }
-      ... on BasicRelationship {
-        id
-        entity_type
-      }
-      ... on AttackPattern {
-        name
-        description
-      }
-      ... on Campaign {
-        name
-        description
-      }
-      ... on CourseOfAction {
-        name
-        description
-      }
-      ... on Individual {
-        name
-        description
-      }
-      ... on Organization {
-        name
-        description
-      }
-      ... on Sector {
-        name
-        description
-      }
-      ... on System {
-        name
-        description
-      }
-      ... on Indicator {
-        name
-        description
-      }
-      ... on Infrastructure {
-        name
-        description
-      }
-      ... on IntrusionSet {
-        name
-        description
-      }
-      ... on Position {
-        name
-        description
-      }
-      ... on City {
-        name
-        description
-      }
-      ... on Country {
-        name
-        description
-      }
-      ... on Region {
-        name
-        description
-      }
-      ... on Malware {
-        name
-        description
-      }
-      ... on ThreatActor {
-        name
-        description
-      }
-      ... on Tool {
-        name
-        description
-      }
-      ... on Vulnerability {
-        name
-        description
-      }
-      ... on Incident {
-        name
-        description
-      }
-      ... on DataComponent {
-        name
-        entity_type
-      }
-      ... on DataSource {
-        name
-      }
-      ... on Case {
-        name
-      }
-      ... on MalwareAnalysis {
-        result_name
-      }
-      ... on StixCyberObservable {
-        observable_value
-      }
-    }
       from
       to
     }
@@ -317,42 +322,46 @@ const StixNestedRefRelationshipCreationFromEntity = ({
   const [searchTerm, setSearchTerm] = useState('');
   const containerRef = useRef(null);
 
-  const { stixSchemaRefRelationshipsPossibleTypes: targetStixCoreObjectTypes } = usePreloadedQuery(stixNestedRefRelationResolveTypes, possibleTypesQueryRef);
+  const { stixSchemaRefRelationshipsPossibleTypes: targetStixCoreObjectTypes } = usePreloadedQuery(
+    stixNestedRefRelationResolveTypes,
+    possibleTypesQueryRef,
+  );
 
-  const actualTypeFilter = [
-    ...(targetStixCoreObjectTypes ?? []),
-  ];
-  const initialFilters = actualTypeFilter.length > 0
-    ? {
-        mode: 'and',
-        filterGroups: [],
-        filters: [{
-          id: uuid(),
-          key: 'entity_type',
-          values: actualTypeFilter,
-          operator: 'eq',
-          mode: 'or',
-        }],
-      }
-    : emptyFilterGroup;
+  const actualTypeFilter = [...(targetStixCoreObjectTypes ?? [])];
+  const initialFilters =
+    actualTypeFilter.length > 0
+      ? {
+          mode: 'and',
+          filterGroups: [],
+          filters: [
+            {
+              id: uuid(),
+              key: 'entity_type',
+              values: actualTypeFilter,
+              operator: 'eq',
+              mode: 'or',
+            },
+          ],
+        }
+      : emptyFilterGroup;
   const [filters, helpers] = useFiltersState(initialFilters, initialFilters);
-  const virtualEntityTypes = actualTypeFilter.length > 0 ? actualTypeFilter : ['Stix-Domain-Object', 'Stix-Cyber-Observable'];
-  const stixNestedRefRelationshipValidation = () => Yup.object().shape({
-    relationship_type: Yup.string().required(t_i18n('This field is required')),
-    start_time: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t_i18n('This field is required')),
-    stop_time: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t_i18n('This field is required')),
-  });
+  const virtualEntityTypes =
+    actualTypeFilter.length > 0
+      ? actualTypeFilter
+      : ['Stix-Domain-Object', 'Stix-Cyber-Observable'];
+  const stixNestedRefRelationshipValidation = () =>
+    Yup.object().shape({
+      relationship_type: Yup.string().required(t_i18n('This field is required')),
+      start_time: Yup.date()
+        .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+        .required(t_i18n('This field is required')),
+      stop_time: Yup.date()
+        .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+        .required(t_i18n('This field is required')),
+    });
 
-  const {
-    onToggleEntity,
-    setSelectedElements,
-    selectedElements,
-    deSelectedElements,
-  } = useEntityToggle(`${entityId}_stixNestedRefRelationshipCreationFromEntity`);
+  const { onToggleEntity, setSelectedElements, selectedElements, deSelectedElements } =
+    useEntityToggle(`${entityId}_stixNestedRefRelationshipCreationFromEntity`);
 
   const handleOpenSpeedDial = () => {
     setOpenSpeedDial(true);
@@ -405,12 +414,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
           const payload = store.getRootField('stixRefRelationshipAdd');
           const newEdge = payload.setLinkedRecord(payload, 'node');
           const container = store.getRoot();
-          sharedUpdater(
-            store,
-            container.getDataID(),
-            paginationOptions,
-            newEdge,
-          );
+          sharedUpdater(store, container.getDataID(), paginationOptions, newEdge);
         },
         onCompleted: (response) => {
           resolve(response);
@@ -423,12 +427,8 @@ const StixNestedRefRelationshipCreationFromEntity = ({
     setSubmitting(true);
 
     for (const targetEntity of targetEntities) {
-      const fromEntityId = isReversedRelation
-        ? targetEntity.id
-        : entityId;
-      const toEntityId = isReversedRelation
-        ? entityId
-        : targetEntity.id;
+      const fromEntityId = isReversedRelation ? targetEntity.id : entityId;
+      const toEntityId = isReversedRelation ? entityId : targetEntity.id;
       const finalValues = {
         ...values,
         fromId: fromEntityId,
@@ -469,11 +469,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
       const newSelectedElements = R.omit([entity.id], selectedElements);
       setTargetEntities(R.values(newSelectedElements));
     } else {
-      const newSelectedElements = R.assoc(
-        entity.id,
-        entity,
-        selectedElements || {},
-      );
+      const newSelectedElements = R.assoc(entity.id, entity, selectedElements || {});
       setTargetEntities(R.values(newSelectedElements));
     }
   };
@@ -541,8 +537,10 @@ const StixNestedRefRelationshipCreationFromEntity = ({
             availableEntityTypes={virtualEntityTypes}
             additionalFilterKeys={{
               filterKeys: ['entity_type'],
-              filtersRestrictions: { preventFilterValuesEditionFor: new Map([['entity_type', actualTypeFilter]]) } }
-            }
+              filtersRestrictions: {
+                preventFilterValuesEditionFor: new Map([['entity_type', actualTypeFilter]]),
+              },
+            }}
           >
             <QueryRenderer
               query={stixNestedRefRelationshipCreationFromEntityLinesQuery}
@@ -565,7 +563,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                     />
                   );
                 }
-                return (<></>);
+                return <></>;
               }}
             />
           </ListLines>
@@ -646,11 +644,14 @@ const StixNestedRefRelationshipCreationFromEntity = ({
   const renderForm = (resolveEntityRef) => {
     let fromEntity = resolveEntityRef.entity;
     let toEntities = targetEntities;
-    const isSameEntityType = toEntities.every((item) => item.entity_type === toEntities[0].entity_type);
+    const isSameEntityType = toEntities.every(
+      (item) => item.entity_type === toEntities[0].entity_type,
+    );
     const isMultipleTo = toEntities.length > 1;
 
     let relationshipTypes = [];
-    const isReversedRelation = resolveEntityRef.from.length === 0 && resolveEntityRef.to.length !== 0;
+    const isReversedRelation =
+      resolveEntityRef.from.length === 0 && resolveEntityRef.to.length !== 0;
 
     if (isReversedRelation) {
       fromEntity = targetEntities;
@@ -672,7 +673,9 @@ const StixNestedRefRelationshipCreationFromEntity = ({
       stop_time: defaultTime,
     };
 
-    const fromEntityType = isReversedRelation ? fromEntity[0]?.entity_type : fromEntity?.entity_type;
+    const fromEntityType = isReversedRelation
+      ? fromEntity[0]?.entity_type
+      : fromEntity?.entity_type;
     const toEntityType = isReversedRelation ? toEntities?.entity_type : toEntities[0]?.entity_type;
 
     return (
@@ -698,9 +701,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                   <div
                     className={classes.itemHeader}
                     style={{
-                      borderBottom: `1px solid ${itemColor(
-                        fromEntityType,
-                      )}`,
+                      borderBottom: `1px solid ${itemColor(fromEntityType)}`,
                     }}
                   >
                     <div className={classes.icon}>
@@ -710,13 +711,14 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                         size="small"
                       />
                     </div>
-                    <div className={classes.type}>
-                      {t_i18n(`entity_${fromEntityType}`)}
-                    </div>
+                    <div className={classes.type}>{t_i18n(`entity_${fromEntityType}`)}</div>
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      {truncate(getMainRepresentative(isReversedRelation ? fromEntity[0] : fromEntity), 20)}
+                      {truncate(
+                        getMainRepresentative(isReversedRelation ? fromEntity[0] : fromEntity),
+                        20,
+                      )}
                     </span>
                   </div>
                 </div>
@@ -734,28 +736,24 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                   <div
                     className={classes.itemHeader}
                     style={{
-                      borderBottom: `1px solid ${itemColor(
-                        toEntityType,
-                      )}`,
+                      borderBottom: `1px solid ${itemColor(toEntityType)}`,
                     }}
                   >
                     <div className={classes.icon}>
-                      <ItemIcon
-                        type={toEntityType}
-                        color={itemColor(toEntityType)}
-                        size="small"
-                      />
+                      <ItemIcon type={toEntityType} color={itemColor(toEntityType)} size="small" />
                     </div>
-                    <div className={classes.type}>
-                      {t_i18n(`entity_${toEntityType}`)}
-                    </div>
+                    <div className={classes.type}>{t_i18n(`entity_${toEntityType}`)}</div>
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      {isMultipleTo
-                        ? (<em>{t_i18n('Multiple entities selected')}</em>)
-                        : (truncate(getMainRepresentative(isReversedRelation ? toEntities : toEntities[0]), 20))
-                      }
+                      {isMultipleTo ? (
+                        <em>{t_i18n('Multiple entities selected')}</em>
+                      ) : (
+                        truncate(
+                          getMainRepresentative(isReversedRelation ? toEntities : toEntities[0]),
+                          20,
+                        )
+                      )}
                     </span>
                   </div>
                 </div>
@@ -798,11 +796,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                 }}
               />
               <div className={classes.buttonBack}>
-                <Button
-                  variant="secondary"
-                  onClick={handleResetSelection}
-                  disabled={isSubmitting}
-                >
+                <Button variant="secondary" onClick={handleResetSelection} disabled={isSubmitting}>
                   {t_i18n('Back')}
                 </Button>
               </div>
@@ -849,57 +843,33 @@ const StixNestedRefRelationshipCreationFromEntity = ({
   return (
     <>
       {variant === 'inLine' ? (
-        <IconButton
-          color="primary"
-          aria-label="Label"
-          onClick={handleOpen}
-          size="small"
-        >
+        <IconButton color="primary" aria-label="Label" onClick={handleOpen} size="small">
           <Add fontSize="small" />
         </IconButton>
       ) : (
-        <Fab
-          onClick={handleOpen}
-          color="primary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
+        <Fab onClick={handleOpen} color="primary" aria-label="Add" className={classes.createButton}>
           <Add />
         </Fab>
       )}
 
-      <Drawer
-        open={open}
-        onClose={handleClose}
-        title={t_i18n('Create a relationship')}
-      >
+      <Drawer open={open} onClose={handleClose} title={t_i18n('Create a relationship')}>
         <>
-          {step === 0
-            ? renderSelectEntity()
-            : null
-          }
-          {step === 1
-            ? (
-                <QueryRenderer
-                  query={stixNestedRefRelationshipResolveTypes}
-                  variables={{
-                    id: entityId,
-                    toType: targetEntities[0].entity_type,
-                  }}
-                  render={({ props }) => {
-                    if (props && props.stixSchemaRefRelationships) {
-                      return (
-                        <div>
-                          {renderForm(props.stixSchemaRefRelationships)}
-                        </div>
-                      );
-                    }
-                    return renderLoader();
-                  }}
-                />
-              )
-            : null
-          }
+          {step === 0 ? renderSelectEntity() : null}
+          {step === 1 ? (
+            <QueryRenderer
+              query={stixNestedRefRelationshipResolveTypes}
+              variables={{
+                id: entityId,
+                toType: targetEntities[0].entity_type,
+              }}
+              render={({ props }) => {
+                if (props && props.stixSchemaRefRelationships) {
+                  return <div>{renderForm(props.stixSchemaRefRelationships)}</div>;
+                }
+                return renderLoader();
+              }}
+            />
+          ) : null}
         </>
       </Drawer>
     </>

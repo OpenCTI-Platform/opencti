@@ -9,28 +9,13 @@ interface MarkingIconProps {
 const MarkingIcon = ({ color, theme }: MarkingIconProps): React.ReactNode => {
   if (color === 'transparent') {
     const transparentColor = theme.palette.mode === 'light' ? '#2b2b2b' : '#ffffff';
-    return (
-      <ItemIcon
-        type="Marking-Definition"
-        color={transparentColor}
-      />
-    );
+    return <ItemIcon type="Marking-Definition" color={transparentColor} />;
   }
   if (theme.palette.mode === 'light' && color === '#ffffff') {
     // White alternative for light mode.
-    return (
-      <ItemIcon
-        type="Marking-Definition"
-        color="#2b2b2b"
-      />
-    );
+    return <ItemIcon type="Marking-Definition" color="#2b2b2b" />;
   }
-  return (
-    <ItemIcon
-      type="Marking-Definition"
-      color={color}
-    />
-  );
+  return <ItemIcon type="Marking-Definition" color={color} />;
 };
 
 export default MarkingIcon;

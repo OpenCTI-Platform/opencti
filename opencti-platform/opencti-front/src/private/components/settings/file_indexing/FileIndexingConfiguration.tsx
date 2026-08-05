@@ -58,9 +58,9 @@ interface FileIndexingConfigurationFormValues {
   entity_types: string[];
 }
 
-const FileIndexingConfiguration: FunctionComponent<
-  FileIndexingConfigurationProps
-> = ({ managerConfiguration }) => {
+const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProps> = ({
+  managerConfiguration,
+}) => {
   const { t_i18n } = useFormatter();
   const { stixCoreObjectTypes: availableEntityTypes } = useAttributes();
   const classes = useStyles();
@@ -71,10 +71,11 @@ const FileIndexingConfiguration: FunctionComponent<
     max_file_size: manager_setting?.max_file_size,
     entity_types: manager_setting?.entity_types,
   };
-  const [commitManagerSetting] = useApiMutation(
-    fileIndexingConfigurationFieldPatch,
-  );
-  const onSubmitForm: FormikConfig<FileIndexingConfigurationFormValues>['onSubmit'] = (values, { setSubmitting, setErrors }) => {
+  const [commitManagerSetting] = useApiMutation(fileIndexingConfigurationFieldPatch);
+  const onSubmitForm: FormikConfig<FileIndexingConfigurationFormValues>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors },
+  ) => {
     setSubmitting(true);
     const managerSettingValues = {
       accept_mime_types: values.accept_mime_types,
@@ -97,12 +98,10 @@ const FileIndexingConfiguration: FunctionComponent<
     });
   };
 
-  const formValidation = () => Yup.object().shape({
-    max_file_size: Yup.number()
-      .min(1)
-      .max(100)
-      .required(t_i18n('This field is required')),
-  });
+  const formValidation = () =>
+    Yup.object().shape({
+      max_file_size: Yup.number().min(1).max(100).required(t_i18n('This field is required')),
+    });
 
   return (
     <Card title={t_i18n('Configuration')}>
@@ -118,12 +117,7 @@ const FileIndexingConfiguration: FunctionComponent<
             </Typography>
             <List style={{ marginBottom: 12 }}>
               {(manager_setting?.supported_mime_types || []).map((mimeType: string) => (
-                <ListItem
-                  key={mimeType}
-                  divider={true}
-                  dense={true}
-                  style={{ height: 36 }}
-                >
+                <ListItem key={mimeType} divider={true} dense={true} style={{ height: 36 }}>
                   <ListItemText primary={t_i18n(mimeType)} />
                   <Checkbox
                     edge="start"
@@ -133,15 +127,10 @@ const FileIndexingConfiguration: FunctionComponent<
                       if (values.accept_mime_types.includes(mimeType)) {
                         setFieldValue(
                           'accept_mime_types',
-                          values.accept_mime_types.filter(
-                            (v: string) => v !== mimeType,
-                          ),
+                          values.accept_mime_types.filter((v: string) => v !== mimeType),
                         );
                       } else {
-                        setFieldValue('accept_mime_types', [
-                          ...values.accept_mime_types,
-                          mimeType,
-                        ]);
+                        setFieldValue('accept_mime_types', [...values.accept_mime_types, mimeType]);
                       }
                       submitForm();
                     }}
@@ -169,14 +158,10 @@ const FileIndexingConfiguration: FunctionComponent<
                 label: t_i18n('Restrict to specific entity types'),
               }}
               options={availableEntityTypes}
-              isOptionEqualToValue={(option: string, value: string) => option === value
-              }
+              isOptionEqualToValue={(option: string, value: string) => option === value}
               style={{ marginBottom: 12 }}
               onChange={submitForm}
-              renderOption={(
-                props: React.HTMLAttributes<HTMLLIElement>,
-                option: string,
-              ) => (
+              renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: string) => (
                 <li {...props}>
                   <div className={classes.icon}>
                     <ItemIcon type={option} />
@@ -189,9 +174,7 @@ const FileIndexingConfiguration: FunctionComponent<
               component={SwitchField}
               type="checkbox"
               name="include_global_files"
-              label={t_i18n(
-                'Include files not related to any knowledge (data import)',
-              )}
+              label={t_i18n('Include files not related to any knowledge (data import)')}
               containerstyle={{ marginBottom: 20 }}
               onChange={submitForm}
             />

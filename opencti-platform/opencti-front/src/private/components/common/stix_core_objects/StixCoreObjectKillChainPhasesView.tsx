@@ -43,9 +43,7 @@ const StixCoreObjectKillChainPhasesView = ({
   const theme = useTheme<Theme>();
   return (
     <div>
-      <Label sx={firstLine ? undefined : { marginTop: 2 }}>
-        {t_i18n('Kill chain phases')}
-      </Label>
+      <Label sx={firstLine ? undefined : { marginTop: 2 }}>{t_i18n('Kill chain phases')}</Label>
       <FieldOrEmpty source={killChainPhases}>
         <List sx={{ py: 0 }}>
           {killChainPhases.map((killChainPhase) => {
@@ -63,7 +61,11 @@ const StixCoreObjectKillChainPhasesView = ({
                 )}
                 <ListItemText
                   primary={killChainPhase.phase_name}
-                  secondary={<span style={{ color: theme.palette.text?.secondary }}>{killChainPhase.kill_chain_name}</span>}
+                  secondary={
+                    <span style={{ color: theme.palette.text?.secondary }}>
+                      {killChainPhase.kill_chain_name}
+                    </span>
+                  }
                 />
               </ListItem>
             );

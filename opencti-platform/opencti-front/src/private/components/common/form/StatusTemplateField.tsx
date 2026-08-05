@@ -60,7 +60,14 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
   required = false,
   label,
 }) => {
-  const { values } = useFormikContext<Record<string, { value: string; label: string; color: string } | { id: string; name: string; color: string }>>();
+  const { values } =
+    useFormikContext<
+      Record<
+        string,
+        | { value: string; label: string; color: string }
+        | { id: string; name: string; color: string }
+      >
+    >();
   const classes = useStyles();
   const { t_i18n } = useFormatter();
 
@@ -84,8 +91,7 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
       .toPromise()
       .then((data) => {
         const NewStatusTemplates = (
-          (data as StatusTemplateFieldSearchQuery$data)?.statusTemplates
-            ?.edges ?? []
+          (data as StatusTemplateFieldSearchQuery$data)?.statusTemplates?.edges ?? []
         ).map((n) => ({
           label: n?.node.name,
           value: n?.node.id,
@@ -94,9 +100,7 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
         const templateValues = [...statusTemplates, ...NewStatusTemplates];
         // Keep only the unique list of options
         const uniqTemplates = templateValues.filter((item, index) => {
-          return (
-            templateValues.findIndex((e) => e.value === item.value) === index
-          );
+          return templateValues.findIndex((e) => e.value === item.value) === index;
         });
         setStatusTemplates(uniqTemplates);
       });
@@ -104,9 +108,10 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
 
   const fieldValue = values[name];
 
-  const normalizedValue = (fieldValue && 'id' in fieldValue)
-    ? { value: fieldValue.id, label: fieldValue.name, color: fieldValue.color }
-    : (fieldValue ?? null);
+  const normalizedValue =
+    fieldValue && 'id' in fieldValue
+      ? { value: fieldValue.id, label: fieldValue.name, color: fieldValue.color }
+      : (fieldValue ?? null);
 
   return (
     <div style={{ width: '100%' }}>

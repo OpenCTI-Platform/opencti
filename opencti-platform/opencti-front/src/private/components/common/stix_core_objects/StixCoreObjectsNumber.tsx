@@ -14,28 +14,28 @@ import { ReactNode } from 'react';
 import { useGetNumberWidgetTitle } from 'src/utils/widget/widgetUtils';
 
 const stixCoreObjectsNumberNumberQuery = graphql`
-    query StixCoreObjectsNumberNumberSeriesQuery(
-        $dateAttribute: String
-        $types: [String]
-        $startDate: DateTime
-        $endDate: DateTime
-        $onlyInferred: Boolean
-        $filters: FilterGroup
-        $search: String
+  query StixCoreObjectsNumberNumberSeriesQuery(
+    $dateAttribute: String
+    $types: [String]
+    $startDate: DateTime
+    $endDate: DateTime
+    $onlyInferred: Boolean
+    $filters: FilterGroup
+    $search: String
+  ) {
+    stixCoreObjectsNumber(
+      dateAttribute: $dateAttribute
+      types: $types
+      startDate: $startDate
+      endDate: $endDate
+      onlyInferred: $onlyInferred
+      filters: $filters
+      search: $search
     ) {
-        stixCoreObjectsNumber(
-            dateAttribute: $dateAttribute
-            types: $types
-            startDate: $startDate
-            endDate: $endDate
-            onlyInferred: $onlyInferred
-            filters: $filters
-            search: $search
-        ) {
-            total
-            count
-        }
+      total
+      count
     }
+  }
 `;
 
 interface StixCoreObjectsNumberComponentProps {
@@ -111,15 +111,16 @@ const StixCoreObjectsNumber = ({
 
   const translatedNumberLabel = useGetNumberWidgetTitle(parameters, DEFAULT_TITLE);
 
-  const { isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsNumberNumberSeriesQuery>({
-    perspective: 'entities',
-    dataSelection,
-    host,
-    refreshRate,
-    query: stixCoreObjectsNumberNumberQuery,
-    buildQueryVariables,
-    config,
-  });
+  const { isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } =
+    useDashboardViz<StixCoreObjectsNumberNumberSeriesQuery>({
+      perspective: 'entities',
+      dataSelection,
+      host,
+      refreshRate,
+      query: stixCoreObjectsNumberNumberQuery,
+      buildQueryVariables,
+      config,
+    });
 
   return (
     <WidgetContainer

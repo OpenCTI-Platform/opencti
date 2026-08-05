@@ -76,7 +76,7 @@ const AuditDrawerContent: FunctionComponent<{ logId: string }> = ({ logId }) => 
   return (
     <Stack gap={2}>
       <Alert
-        content={(
+        content={
           <>
             <div>
               <MarkdownDisplay
@@ -86,7 +86,7 @@ const AuditDrawerContent: FunctionComponent<{ logId: string }> = ({ logId }) => 
               />
             </div>
           </>
-        )}
+        }
       />
 
       {log.context_uri && (
@@ -97,18 +97,13 @@ const AuditDrawerContent: FunctionComponent<{ logId: string }> = ({ logId }) => 
       )}
 
       {(log.context_data?.changes ?? []).length > 0 && (
-        <ChangesTable
-          changes={mappedChanges}
-          variant="text"
-        />
+        <ChangesTable changes={mappedChanges} variant="text" />
       )}
 
       {log.raw_data && (
         <div>
           <Label>{t_i18n('Raw data')}</Label>
-          <pre>
-            {log.raw_data}
-          </pre>
+          <pre>{log.raw_data}</pre>
         </div>
       )}
     </Stack>
@@ -119,12 +114,7 @@ const AuditDrawer: FunctionComponent<AuditDrawerProps> = ({ open, onClose, logId
   const { t_i18n } = useFormatter();
 
   return (
-    <Drawer
-      open={open}
-      title={t_i18n('Activity raw detail')}
-      onClose={onClose}
-      size="medium"
-    >
+    <Drawer open={open} title={t_i18n('Activity raw detail')} onClose={onClose} size="medium">
       <Suspense fallback={<Loader />}>
         <AuditDrawerContent logId={logId} />
       </Suspense>

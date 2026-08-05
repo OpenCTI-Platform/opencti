@@ -21,11 +21,8 @@ import CardNumber from '../../../../components/common/card/CardNumber';
 import CardStatistic from '../../../../components/common/card/CardStatistic';
 
 const fragmentData = graphql`
-  fragment RulesHeader_data on Query 
-  @argumentDefinitions(
-    startDate: { type: "DateTime!" }
-    endDate: { type: "DateTime" }
-  ) {
+  fragment RulesHeader_data on Query
+  @argumentDefinitions(startDate: { type: "DateTime!" }, endDate: { type: "DateTime" }) {
     stixDomainObjectsTimeSeries(
       field: "created_at"
       types: ["Stix-Object"]
@@ -48,11 +45,7 @@ const fragmentData = graphql`
       date
       value
     }
-    stixDomainObjectsNumber(
-      types: ["Stix-Object"]
-      onlyInferred: true
-      endDate: $endDate
-    ) {
+    stixDomainObjectsNumber(types: ["Stix-Object"], onlyInferred: true, endDate: $endDate) {
       total
       count
     }
@@ -130,12 +123,7 @@ const RulesHeader = ({ data }: RulesHeaderProps) => {
               diffValue={differenceEntities}
               diffLabel={t_i18n('24 hours')}
               label={t_i18n('Total inferred entities')}
-              icon={(
-                <Database
-                  sx={{ opacity: 0.35 }}
-                  fontSize="large"
-                />
-              )}
+              icon={<Database sx={{ opacity: 0.35 }} fontSize="large" />}
             />
           </Grid>
           <Grid size={{ xs: 6 }}>
@@ -144,45 +132,26 @@ const RulesHeader = ({ data }: RulesHeaderProps) => {
               diffValue={differenceRelations}
               diffLabel={t_i18n('24 hours')}
               label={t_i18n('Total inferred relations')}
-              icon={(
-                <GraphOutline
-                  sx={{ opacity: 0.35 }}
-                  fontSize="large"
-                />
-              )}
+              icon={<GraphOutline sx={{ opacity: 0.35 }} fontSize="large" />}
             />
           </Grid>
           <Grid size={{ xs: 6 }}>
             <CardStatistic
               label={t_i18n('Rules engine status')}
-              icon={(
-                <AutoFix
-                  sx={{ opacity: 0.35 }}
-                  fontSize="large"
-                />
-              )}
-              value={(
+              icon={<AutoFix sx={{ opacity: 0.35 }} fontSize="large" />}
+              value={
                 <ItemBoolean
                   status={isEngineEnabled}
                   label={isEngineEnabled ? t_i18n('Enabled') : t_i18n('Disabled')}
                 />
-              )}
+              }
             />
           </Grid>
           <Grid size={{ xs: 6 }}>
             <CardStatistic
               label={t_i18n('Last event processed')}
-              icon={(
-                <SettingsSuggestOutlined
-                  sx={{ opacity: 0.35 }}
-                  fontSize="large"
-                />
-              )}
-              value={(
-                <div style={{ fontSize: 18 }}>
-                  {nsdt(parse(lastEventTimestamp))}
-                </div>
-              )}
+              icon={<SettingsSuggestOutlined sx={{ opacity: 0.35 }} fontSize="large" />}
+              value={<div style={{ fontSize: 18 }}>{nsdt(parse(lastEventTimestamp))}</div>}
             />
           </Grid>
         </Grid>
@@ -192,13 +161,9 @@ const RulesHeader = ({ data }: RulesHeaderProps) => {
               type="area"
               width="100%"
               height={200}
-              options={areaChartOptions(
-                theme,
-                true,
-                md,
-                simpleNumberFormat,
-                'dataPoints',
-              ) as ApexOptions}
+              options={
+                areaChartOptions(theme, true, md, simpleNumberFormat, 'dataPoints') as ApexOptions
+              }
               series={[
                 { name: t_i18n('Inferred entities'), data: chartDataEntities },
                 { name: t_i18n('Inferred relationships'), data: chartDataRelations },

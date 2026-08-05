@@ -5,7 +5,10 @@ import ListLines from '../../../components/list_lines/ListLines';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import CountryCreation from './countries/CountryCreation';
-import { CountriesLinesPaginationQuery, CountriesLinesPaginationQuery$variables } from './countries/__generated__/CountriesLinesPaginationQuery.graphql';
+import {
+  CountriesLinesPaginationQuery,
+  CountriesLinesPaginationQuery$variables,
+} from './countries/__generated__/CountriesLinesPaginationQuery.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { CountryLineDummy } from './countries/CountryLine';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
@@ -19,9 +22,8 @@ const Countries: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Countries | Locations'));
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CountriesLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    {
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<CountriesLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
@@ -31,17 +33,9 @@ const Countries: FunctionComponent = () => {
         number: 0,
         symbol: '',
       },
-    },
-  );
+    });
   const renderLines = () => {
-    const {
-      searchTerm,
-      sortBy,
-      orderAsc,
-      filters,
-      openExports,
-      numberOfElements,
-    } = viewStorage;
+    const { searchTerm, sortBy, orderAsc, filters, openExports, numberOfElements } = viewStorage;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -82,16 +76,16 @@ const Countries: FunctionComponent = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        createButton={(
+        createButton={
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <CountryCreation paginationOptions={paginationOptions} />
           </Security>
-        )}
+        }
         iconExtension
       >
         {queryRef && (
           <React.Suspense
-            fallback={(
+            fallback={
               <>
                 {Array(20)
                   .fill(0)
@@ -99,7 +93,7 @@ const Countries: FunctionComponent = () => {
                     <CountryLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            )}
+            }
           >
             <CountriesLines
               queryRef={queryRef}
@@ -114,7 +108,9 @@ const Countries: FunctionComponent = () => {
   };
   return (
     <div data-testid="country-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Countries'), current: true }]} />
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Countries'), current: true }]}
+      />
       {renderLines()}
     </div>
   );

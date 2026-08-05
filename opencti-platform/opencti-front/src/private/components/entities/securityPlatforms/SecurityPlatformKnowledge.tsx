@@ -25,38 +25,33 @@ const SecurityPlatformKnowledgeComponent = ({
   securityPlatformData: SecurityPlatformKnowledge_securityPlatform$key;
   relatedRelationshipTypes: string[];
 }) => {
-  const securityPlatform = useFragment(
-    securityPlatformKnowledgeFragment,
-    securityPlatformData,
-  );
+  const securityPlatform = useFragment(securityPlatformKnowledgeFragment, securityPlatformData);
   const location = useLocation();
   const link = `/dashboard/entities/security_platforms/${securityPlatform.id}/knowledge`;
   const { schema } = useAuth();
-  const allRelationshipsTypes = getRelationshipTypesForEntityType(securityPlatform.entity_type, schema);
+  const allRelationshipsTypes = getRelationshipTypesForEntityType(
+    securityPlatform.entity_type,
+    schema,
+  );
   return (
     <div data-testid="security-platform-knowledge">
       <Routes>
         <Route
           path="/relations/:relationId"
-          element={(
-            <StixCoreRelationship
-              entityId={securityPlatform.id}
-              paddingRight={true}
-            />
-          )}
+          element={<StixCoreRelationship entityId={securityPlatform.id} paddingRight={true} />}
         />
         <Route
           path="/overview"
-          element={(
+          element={
             <StixDomainObjectKnowledge
               stixDomainObjectId={securityPlatform.id}
               stixDomainObjectType="SecurityPlatform"
             />
-          )}
+          }
         />
         <Route
           path="/all"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={securityPlatform.id}
@@ -67,11 +62,11 @@ const SecurityPlatformKnowledgeComponent = ({
               enableContextualView={false}
               isRelationReversed={true}
             />
-          )}
+          }
         />
         <Route
           path="/related"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={securityPlatform.id}
@@ -82,17 +77,17 @@ const SecurityPlatformKnowledgeComponent = ({
               enableContextualView={false}
               isRelationReversed={true}
             />
-          )}
+          }
         />
         <Route
           path="/attack_patterns"
-          element={(
+          element={
             <StixDomainObjectAttackPatterns
               stixDomainObjectId={securityPlatform.id}
               disableExport={false}
               entityType={securityPlatform.entity_type}
             />
-          )}
+          }
         />
         <Route index element={<Navigate replace={true} to="overview" />} />
       </Routes>

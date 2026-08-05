@@ -68,7 +68,9 @@ export const startModules = async () => {
   if (ENABLED_IMPORT_CSV_BUILT_IN_CONNECTOR) {
     startingPromises.push(importCsvConnector.start());
   } else {
-    logApp.info('[OPENCTI-MODULE] Connector built in manager not started (disabled by configuration)');
+    logApp.info(
+      '[OPENCTI-MODULE] Connector built in manager not started (disabled by configuration)',
+    );
   }
   // endregion
 
@@ -135,7 +137,9 @@ export const startModules = async () => {
   if (ENABLED_FILE_INDEX_MANAGER && isAttachmentProcessorEnabled()) {
     startingPromises.push(fileIndexManager.start());
   } else if (ENABLED_FILE_INDEX_MANAGER && !isAttachmentProcessorEnabled()) {
-    logApp.info('[OPENCTI-MODULE] File index manager not started : attachment processor is not configured.');
+    logApp.info(
+      '[OPENCTI-MODULE] File index manager not started : attachment processor is not configured.',
+    );
   } else {
     logApp.info('[OPENCTI-MODULE] File index manager not started (disabled by configuration)');
   }

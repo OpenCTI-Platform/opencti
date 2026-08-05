@@ -1,12 +1,18 @@
 import React from 'react';
 import Alert from '@mui/material/Alert';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import DecayRuleCreation from './DecayRuleCreation';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
-import { DecayRulesLinesPaginationQuery, DecayRulesLinesPaginationQuery$variables } from './__generated__/DecayRulesLinesPaginationQuery.graphql';
+import {
+  DecayRulesLinesPaginationQuery,
+  DecayRulesLinesPaginationQuery$variables,
+} from './__generated__/DecayRulesLinesPaginationQuery.graphql';
 import { DecayRulesLine_node$data } from './__generated__/DecayRulesLine_node.graphql';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { INDICATOR_DECAY_MANAGER } from '../../../../utils/platformModulesHelper';
@@ -26,14 +32,14 @@ export const decayRulesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...DecayRulesLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 export const decayRulesLinesFragment = graphql`
@@ -45,7 +51,8 @@ export const decayRulesLinesFragment = graphql`
     orderBy: { type: "DecayRuleOrdering", defaultValue: order }
     orderMode: { type: "OrderingMode", defaultValue: desc }
     filters: { type: "FilterGroup" }
-  ) @refetchable(queryName: "DecayRulesLinesRefetchQuery") {
+  )
+  @refetchable(queryName: "DecayRulesLinesRefetchQuery") {
     decayRules(
       search: $search
       first: $count
@@ -100,10 +107,11 @@ const DecayRules = () => {
     filters: emptyFilterGroup,
   };
 
-  const { viewStorage, paginationOptions } = usePaginationLocalStorage<DecayRulesLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    initialValues,
-  );
+  const { viewStorage, paginationOptions } =
+    usePaginationLocalStorage<DecayRulesLinesPaginationQuery$variables>(
+      LOCAL_STORAGE_KEY,
+      initialValues,
+    );
 
   const { filters } = viewStorage;
   const contextFilters = useBuildEntityTypeBasedFilterContext('DecayRule', filters);
@@ -151,10 +159,7 @@ const DecayRules = () => {
       isSortable: false,
       percentWidth: 15,
       render: (node: DecayRulesLine_node$data) => (
-        <ItemBoolean
-          label={node.active ? t_i18n('Yes') : t_i18n('No')}
-          status={node.active}
-        />
+        <ItemBoolean label={node.active ? t_i18n('Yes') : t_i18n('No')} status={node.active} />
       ),
     },
     order: {
@@ -170,18 +175,16 @@ const DecayRules = () => {
   return (
     <div data-testid="decay-rules-page" style={{ margin: 0, padding: '0 200px 0 0' }}>
       {!platformModuleHelpers.isIndicatorDecayManagerEnable() && alertContent && (
-        <Alert
-          severity="info"
-          variant="outlined"
-          style={{ padding: '0px 10px 0px 10px' }}
-        >
+        <Alert severity="info" variant="outlined" style={{ padding: '0px 10px 0px 10px' }}>
           {t_i18n(alertContent)}
         </Alert>
       )}
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data) => data.decayRules?.edges?.map(({ node }: { node: DecayRulesLine_node$data }) => node)}
+          resolvePath={(data) =>
+            data.decayRules?.edges?.map(({ node }: { node: DecayRulesLine_node$data }) => node)
+          }
           storageKey={LOCAL_STORAGE_KEY}
           disableLineSelection
           initialValues={initialValues}

@@ -11,12 +11,7 @@ const SettingsMessageCreation = ({
   open?: boolean;
 }) => {
   return (
-    <SettingsMessageForm
-      settingsId={settingsId}
-      handleClose={handleClose}
-      creation
-      open={open}
-    />
+    <SettingsMessageForm settingsId={settingsId} handleClose={handleClose} creation open={open} />
   );
 };
 

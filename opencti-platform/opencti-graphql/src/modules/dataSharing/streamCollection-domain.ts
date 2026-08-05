@@ -1,10 +1,20 @@
-import { ENTITY_TYPE_STREAM_COLLECTION, type BasicStoreEntityStreamCollection, type StoreEntityStreamCollection } from './streamCollection-types';
+import {
+  ENTITY_TYPE_STREAM_COLLECTION,
+  type BasicStoreEntityStreamCollection,
+  type StoreEntityStreamCollection,
+} from './streamCollection-types';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { delEditContext, notify, setEditContext } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
-import { isUserHasCapability, MEMBER_ACCESS_RIGHT_VIEW, SETTINGS_SET_ACCESSES, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../../utils/access';
+import {
+  isUserHasCapability,
+  MEMBER_ACCESS_RIGHT_VIEW,
+  SETTINGS_SET_ACCESSES,
+  SYSTEM_USER,
+  TAXIIAPI_SETCOLLECTIONS,
+} from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
@@ -12,15 +22,27 @@ import { validateFilterGroupForStreamOriginMatch } from '../../utils/filtering/f
 import { authorizedMembers } from '../../schema/attribute-definition';
 import { TAXIIAPI } from '../../domain/user';
 import { validatePublicUserId } from './dataSharing-utils';
-import { getConsumersForCollection, getLocalConsumerMetrics } from '../../graphql/streamConsumerRegistry';
+import {
+  getConsumersForCollection,
+  getLocalConsumerMetrics,
+} from '../../graphql/streamConsumerRegistry';
 import { fetchStreamInfo } from '../../database/stream/stream-handler';
 import { computeProcessingLagMetrics } from '../../utils/consumer-metrics';
 import { getStreamProductionRate } from '../../database/redis-stream';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { EditContext, EditInput, QueryStreamCollectionsArgs, StreamCollectionAddInput } from '../../generated/graphql';
+import type {
+  EditContext,
+  EditInput,
+  QueryStreamCollectionsArgs,
+  StreamCollectionAddInput,
+} from '../../generated/graphql';
 
 // Stream graphQL handlers
-export const createStreamCollection = async (context: AuthContext, user: AuthUser, input: StreamCollectionAddInput) => {
+export const createStreamCollection = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: StreamCollectionAddInput,
+) => {
   // our stix matching is currently limited, we need to validate the input filters
   if (input.filters) {
     validateFilterGroupForStixMatch(JSON.parse(input.filters));
@@ -30,7 +52,9 @@ export const createStreamCollection = async (context: AuthContext, user: AuthUse
     validateFilterGroupForStreamOriginMatch(JSON.parse(input.origin_filters));
   }
   if (input.stream_public && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    throw FunctionalError('You must have the SETTINGS_SETACCESSES capability to create a public stream collection');
+    throw FunctionalError(
+      'You must have the SETTINGS_SETACCESSES capability to create a public stream collection',
+    );
   }
   if (input.stream_public && !input.stream_public_user_id) {
     throw FunctionalError('A user must be configured when the stream collection is public');
@@ -44,7 +68,13 @@ export const createStreamCollection = async (context: AuthContext, user: AuthUse
     authorized_authorities: [TAXIIAPI_SETCOLLECTIONS],
     ...input,
   };
-  const { element, isCreation } = await createEntity(context, user, data, ENTITY_TYPE_STREAM_COLLECTION, { complete: true });
+  const { element, isCreation } = await createEntity(
+    context,
+    user,
+    data,
+    ENTITY_TYPE_STREAM_COLLECTION,
+    { complete: true },
+  );
   if (isCreation) {
     await publishUserAction({
       user,
@@ -58,21 +88,45 @@ export const createStreamCollection = async (context: AuthContext, user: AuthUse
   return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].ADDED_TOPIC, element, user);
 };
 export const findById = (context: AuthContext, user: AuthUser, collectionId: string) => {
-  return storeLoadById<BasicStoreEntityStreamCollection>(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION);
+  return storeLoadById<BasicStoreEntityStreamCollection>(
+    context,
+    user,
+    collectionId,
+    ENTITY_TYPE_STREAM_COLLECTION,
+  );
 };
-export const findStreamCollectionPaginated = (context: AuthContext, user: AuthUser, args: QueryStreamCollectionsArgs) => {
+export const findStreamCollectionPaginated = (
+  context: AuthContext,
+  user: AuthUser,
+  args: QueryStreamCollectionsArgs,
+) => {
   // If user is logged, list all streams where the user have access.
   if (user && isUserHasCapability(user, TAXIIAPI)) {
     // If user can manage the feeds, list everything related
     const options = { ...args, includeAuthorities: true };
-    return pageEntitiesConnection<BasicStoreEntityStreamCollection>(context, user, [ENTITY_TYPE_STREAM_COLLECTION], options);
+    return pageEntitiesConnection<BasicStoreEntityStreamCollection>(
+      context,
+      user,
+      [ENTITY_TYPE_STREAM_COLLECTION],
+      options,
+    );
   }
   // No user specified, listing only public streams
   const filters = addFilter(args?.filters, 'stream_public', 'true');
   const publicArgs = { ...(args ?? {}), filters };
-  return pageEntitiesConnection<BasicStoreEntityStreamCollection>(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION], publicArgs);
+  return pageEntitiesConnection<BasicStoreEntityStreamCollection>(
+    context,
+    SYSTEM_USER,
+    [ENTITY_TYPE_STREAM_COLLECTION],
+    publicArgs,
+  );
 };
-export const streamCollectionEditField = async (context: AuthContext, user: AuthUser, collectionId: string, input: EditInput[]) => {
+export const streamCollectionEditField = async (
+  context: AuthContext,
+  user: AuthUser,
+  collectionId: string,
+  input: EditInput[],
+) => {
   const filtersItem = input.find((item) => item.key === 'filters');
   if (filtersItem?.value) {
     // our stix matching is currently limited, we need to validate the input filters
@@ -84,17 +138,25 @@ export const streamCollectionEditField = async (context: AuthContext, user: Auth
     validateFilterGroupForStreamOriginMatch(JSON.parse(originFiltersItem.value[0]));
   }
   const publicFields = ['stream_public', 'stream_public_user_id'];
-  if (input.some((item) => publicFields.includes(item.key)) && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    throw FunctionalError('You must have the SETTINGS_SETACCESSES capability to modify public stream collection settings');
+  if (
+    input.some((item) => publicFields.includes(item.key)) &&
+    !isUserHasCapability(user, SETTINGS_SET_ACCESSES)
+  ) {
+    throw FunctionalError(
+      'You must have the SETTINGS_SETACCESSES capability to modify public stream collection settings',
+    );
   }
   const publicUserIdItem = input.find((item) => item.key === 'stream_public_user_id');
   if (publicUserIdItem?.value?.[0]) {
     await validatePublicUserId(context, publicUserIdItem.value[0]);
   }
-  const settingPublicTrue = input.find((item) => item.key === 'stream_public' && item.value?.[0] === 'true');
+  const settingPublicTrue = input.find(
+    (item) => item.key === 'stream_public' && item.value?.[0] === 'true',
+  );
   if (settingPublicTrue) {
     const existingCollection = await findById(context, user, collectionId);
-    const effectiveUserId = publicUserIdItem?.value?.[0] ?? existingCollection?.stream_public_user_id;
+    const effectiveUserId =
+      publicUserIdItem?.value?.[0] ?? existingCollection?.stream_public_user_id;
     if (!effectiveUserId) {
       throw FunctionalError('A user must be configured when the stream collection is public');
     }
@@ -106,7 +168,13 @@ export const streamCollectionEditField = async (context: AuthContext, user: Auth
     }
     return item;
   });
-  const { element } = await updateAttribute<StoreEntityStreamCollection>(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION, finalInput);
+  const { element } = await updateAttribute<StoreEntityStreamCollection>(
+    context,
+    user,
+    collectionId,
+    ENTITY_TYPE_STREAM_COLLECTION,
+    finalInput,
+  );
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -117,8 +185,17 @@ export const streamCollectionEditField = async (context: AuthContext, user: Auth
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].EDIT_TOPIC, element, user);
 };
-export const streamCollectionDelete = async (context: AuthContext, user: AuthUser, collectionId: string) => {
-  const deleted = await deleteElementById<StoreEntityStreamCollection>(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION);
+export const streamCollectionDelete = async (
+  context: AuthContext,
+  user: AuthUser,
+  collectionId: string,
+) => {
+  const deleted = await deleteElementById<StoreEntityStreamCollection>(
+    context,
+    user,
+    collectionId,
+    ENTITY_TYPE_STREAM_COLLECTION,
+  );
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -130,17 +207,30 @@ export const streamCollectionDelete = async (context: AuthContext, user: AuthUse
   await notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].DELETE_TOPIC, deleted, user);
   return collectionId;
 };
-export const streamCollectionCleanContext = async (context: AuthContext, user: AuthUser, collectionId: string) => {
+export const streamCollectionCleanContext = async (
+  context: AuthContext,
+  user: AuthUser,
+  collectionId: string,
+) => {
   await delEditContext(user, collectionId);
-  return storeLoadById(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION).then((collectionToReturn) => {
-    return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].EDIT_TOPIC, collectionToReturn, user);
-  });
+  return storeLoadById(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION).then(
+    (collectionToReturn) => {
+      return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].EDIT_TOPIC, collectionToReturn, user);
+    },
+  );
 };
-export const streamCollectionEditContext = async (context: AuthContext, user: AuthUser, collectionId: string, input: EditContext) => {
+export const streamCollectionEditContext = async (
+  context: AuthContext,
+  user: AuthUser,
+  collectionId: string,
+  input: EditContext,
+) => {
   await setEditContext(user, collectionId, input);
-  return storeLoadById(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION).then((collectionToReturn) => {
-    return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].EDIT_TOPIC, collectionToReturn, user);
-  });
+  return storeLoadById(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION).then(
+    (collectionToReturn) => {
+      return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].EDIT_TOPIC, collectionToReturn, user);
+    },
+  );
 };
 
 // Stream consumer monitoring
@@ -153,7 +243,12 @@ export const getStreamCollectionConsumers = async (collectionId: string) => {
   const streamInfo = await fetchStreamInfo();
   const streamProductionRate = await getStreamProductionRate();
   return consumers.map((consumer) => {
-    const processingLagMetrics = computeProcessingLagMetrics(consumer.lastEventId, streamInfo, consumer.deliveryRate, streamProductionRate);
+    const processingLagMetrics = computeProcessingLagMetrics(
+      consumer.lastEventId,
+      streamInfo,
+      consumer.deliveryRate,
+      streamProductionRate,
+    );
     return {
       connectionId: consumer.connectionId,
       userId: consumer.userId,
@@ -174,6 +269,11 @@ export const getStreamConsumerInformation = async (channelId: string, lastEventI
   const streamInfo = await fetchStreamInfo();
   const consumerMetrics = getLocalConsumerMetrics(channelId)!;
   const productionRate = await getStreamProductionRate();
-  const computedLagsMetrics = computeProcessingLagMetrics(lastEventId, streamInfo, consumerMetrics.deliveryRate, productionRate);
+  const computedLagsMetrics = computeProcessingLagMetrics(
+    lastEventId,
+    streamInfo,
+    consumerMetrics.deliveryRate,
+    productionRate,
+  );
   return { ...consumerMetrics, productionRate, ...computedLagsMetrics };
 };

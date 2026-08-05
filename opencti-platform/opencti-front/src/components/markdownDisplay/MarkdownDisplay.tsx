@@ -11,8 +11,14 @@ import ExternalLinkPopover from '../ExternalLinkPopover';
 import FieldOrEmpty from '../FieldOrEmpty';
 import { TEMP_IMAGE_SCHEME } from '../fields/markdownField/core/markdownImagePreviewUtils';
 import MarkdownImagePreviewModal from './MarkdownImagePreviewModal';
-import { normalizeEmbeddedImageDestinations, resolveAndNormalizeMarkdownImageUrl } from './markdownDisplayHelpers';
-import { extractMarkdownPreviewImages, isAllowedUploadedImageUrl } from './markdownPreviewImageUtils';
+import {
+  normalizeEmbeddedImageDestinations,
+  resolveAndNormalizeMarkdownImageUrl,
+} from './markdownDisplayHelpers';
+import {
+  extractMarkdownPreviewImages,
+  isAllowedUploadedImageUrl,
+} from './markdownPreviewImageUtils';
 
 const markdownStyle: React.CSSProperties = {
   overflowWrap: 'break-word',
@@ -29,7 +35,7 @@ const transformMarkdownUrl: NonNullable<MarkdownProps['urlTransform']> = (url) =
 
 export const MarkDownComponents = (
   theme: Theme,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
 ): Record<string, FunctionComponent<any>> => ({
   table: ({ tableProps }) => (
     <table
@@ -40,9 +46,7 @@ export const MarkDownComponents = (
       {...tableProps}
     />
   ),
-  tr: ({ trProps }) => (
-    <tr style={{ border: `1px solid ${theme.palette.divider}` }} {...trProps} />
-  ),
+  tr: ({ trProps }) => <tr style={{ border: `1px solid ${theme.palette.divider}` }} {...trProps} />,
   td: ({ tdProps }) => (
     <td
       style={{
@@ -96,9 +100,7 @@ const MarkdownDisplay: FunctionComponent<MarkdownWithRedirectionWarningProps> = 
 }) => {
   const theme = useTheme<Theme>();
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
-  const [externalLink, setExternalLink] = useState<string | URL | undefined>(
-    undefined,
-  );
+  const [externalLink, setExternalLink] = useState<string | URL | undefined>(undefined);
   const handleOpenExternalLink = (url: string) => {
     setDisplayExternalLink(true);
     setExternalLink(url);
@@ -114,10 +116,18 @@ const MarkdownDisplay: FunctionComponent<MarkdownWithRedirectionWarningProps> = 
     return elements;
   }, [removeLinks, removeLineBreaks]);
 
-  const resolveMarkdownImageUrl = useCallback((url: string) => {
-    const currentPathname = typeof window === 'undefined' ? '' : window.location.pathname;
-    return resolveAndNormalizeMarkdownImageUrl(url, resolveImageUrl, APP_BASE_PATH, currentPathname);
-  }, [resolveImageUrl]);
+  const resolveMarkdownImageUrl = useCallback(
+    (url: string) => {
+      const currentPathname = typeof window === 'undefined' ? '' : window.location.pathname;
+      return resolveAndNormalizeMarkdownImageUrl(
+        url,
+        resolveImageUrl,
+        APP_BASE_PATH,
+        currentPathname,
+      );
+    },
+    [resolveImageUrl],
+  );
 
   const [previewImageIndex, setPreviewImageIndex] = useState<number | null>(null);
 
@@ -126,48 +136,58 @@ const MarkdownDisplay: FunctionComponent<MarkdownWithRedirectionWarningProps> = 
   }, [content, limit]);
 
   const remarkContent = useMemo(() => {
-    return normalizeEmbeddedImageDestinations(expand || !limit ? content : truncate(content, limit));
+    return normalizeEmbeddedImageDestinations(
+      expand || !limit ? content : truncate(content, limit),
+    );
   }, [content, expand, limit]);
 
   const previewImages = useMemo(() => {
-    const source = (remarkContent ?? markdownContent ?? normalizeEmbeddedImageDestinations(content)).toString();
+    const source = (
+      remarkContent ??
+      markdownContent ??
+      normalizeEmbeddedImageDestinations(content)
+    ).toString();
     return extractMarkdownPreviewImages(source, resolveMarkdownImageUrl);
   }, [content, markdownContent, remarkContent, resolveMarkdownImageUrl]);
 
-  const imageComponent = useMemo<MarkdownProps['components']>(() => ({
-    img: ({ src, alt, ...imgProps }) => {
-      const rawUrl = typeof src === 'string' ? src : '';
-      const resolvedUrl = resolveMarkdownImageUrl(rawUrl);
-      const isAllowedImage = isAllowedUploadedImageUrl(rawUrl)
-        || (resolvedUrl ? isAllowedUploadedImageUrl(resolvedUrl) : false);
-      if (!resolvedUrl || !isAllowedImage) {
-        return <span>{alt || ''}</span>;
-      }
+  const imageComponent = useMemo<MarkdownProps['components']>(
+    () => ({
+      img: ({ src, alt, ...imgProps }) => {
+        const rawUrl = typeof src === 'string' ? src : '';
+        const resolvedUrl = resolveMarkdownImageUrl(rawUrl);
+        const isAllowedImage =
+          isAllowedUploadedImageUrl(rawUrl) ||
+          (resolvedUrl ? isAllowedUploadedImageUrl(resolvedUrl) : false);
+        if (!resolvedUrl || !isAllowedImage) {
+          return <span>{alt || ''}</span>;
+        }
 
-      const imageIndex = previewImages.findIndex((image) => image.src === resolvedUrl);
-      const canOpenPreview = enableImagePreviewModal && imageIndex >= 0;
+        const imageIndex = previewImages.findIndex((image) => image.src === resolvedUrl);
+        const canOpenPreview = enableImagePreviewModal && imageIndex >= 0;
 
-      return (
-        <img
-          src={resolvedUrl}
-          alt={alt || ''}
-          style={{
-            objectFit: 'cover',
-            maxHeight: '200px',
-            cursor: canOpenPreview ? 'zoom-in' : undefined,
-          }}
-          onClick={(event) => {
-            if (!canOpenPreview) {
-              return;
-            }
-            event.stopPropagation();
-            setPreviewImageIndex(imageIndex);
-          }}
-          {...imgProps}
-        />
-      );
-    },
-  }), [enableImagePreviewModal, previewImages, resolveMarkdownImageUrl]);
+        return (
+          <img
+            src={resolvedUrl}
+            alt={alt || ''}
+            style={{
+              objectFit: 'cover',
+              maxHeight: '200px',
+              cursor: canOpenPreview ? 'zoom-in' : undefined,
+            }}
+            onClick={(event) => {
+              if (!canOpenPreview) {
+                return;
+              }
+              event.stopPropagation();
+              setPreviewImageIndex(imageIndex);
+            }}
+            {...imgProps}
+          />
+        );
+      },
+    }),
+    [enableImagePreviewModal, previewImages, resolveMarkdownImageUrl],
+  );
 
   const markdownRender = useMemo(() => {
     if (!remarkGfmPlugin) {
@@ -250,9 +270,7 @@ const MarkdownDisplay: FunctionComponent<MarkdownWithRedirectionWarningProps> = 
     theme,
   ]);
 
-  const browseLinkWarning = (
-    event: SyntheticEvent<HTMLElement, MouseEvent>,
-  ) => {
+  const browseLinkWarning = (event: SyntheticEvent<HTMLElement, MouseEvent>) => {
     if ((event.target as HTMLElement).localName === 'a') {
       event.stopPropagation();
       event.preventDefault();
@@ -267,9 +285,7 @@ const MarkdownDisplay: FunctionComponent<MarkdownWithRedirectionWarningProps> = 
   } else {
     markdownDisplayContent = (
       <>
-        <div onClick={(event) => browseLinkWarning(event)}>
-          {markdownRender}
-        </div>
+        <div onClick={(event) => browseLinkWarning(event)}>{markdownRender}</div>
         <ExternalLinkPopover
           displayExternalLink={displayExternalLink}
           externalLink={externalLink}
@@ -292,7 +308,11 @@ const MarkdownDisplay: FunctionComponent<MarkdownWithRedirectionWarningProps> = 
     </>
   );
 
-  return emptyStringIfUndefined ? withModal : <FieldOrEmpty source={content}>{withModal}</FieldOrEmpty>;
+  return emptyStringIfUndefined ? (
+    withModal
+  ) : (
+    <FieldOrEmpty source={content}>{withModal}</FieldOrEmpty>
+  );
 };
 
 export default MarkdownDisplay;

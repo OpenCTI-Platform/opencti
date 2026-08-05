@@ -1,4 +1,9 @@
-import type { WidgetDataSelection, WidgetPerspective, WidgetHost, WidgetParameters } from '../../utils/widget/widget';
+import type {
+  WidgetDataSelection,
+  WidgetPerspective,
+  WidgetHost,
+  WidgetParameters,
+} from '../../utils/widget/widget';
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useDashboardRefreshToken, useDashboardSetQueryPending } from './DashboardRefreshContext';
 import { DashboardConfig } from './dashboard-types';
@@ -25,7 +30,11 @@ const useDashboardViz = <TQuery extends OperationType>({
   query: GraphQLTaggedNode;
   config?: DashboardConfig;
   parameters?: WidgetParameters;
-  buildQueryVariables?: (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig, parameters?: WidgetParameters) => TQuery['variables'];
+  buildQueryVariables?: (
+    resolvedDataSelection: WidgetDataSelection[],
+    config: DashboardConfig,
+    parameters?: WidgetParameters,
+  ) => TQuery['variables'];
 }) => {
   const [queryRef, load, disposeQuery] = useQueryLoader<TQuery>(query);
   const [isPending, startTransition] = useTransition();
@@ -60,37 +69,39 @@ const useDashboardViz = <TQuery extends OperationType>({
    * When provided, `onResolved` runs after state updates with the fresh resolution
    * result so callers can avoid stale closure values.
    */
-  const handleResolveDataSelection = useCallback((
-    onResolved?: (result: Awaited<ReturnType<typeof resolveDataSelection>>) => void,
-  ) => {
-    let cancelled = false;
-    resolveDataSelection({
-      filterKeysSchema,
-      dataSelection,
-      perspective,
-      host,
-    }).then((result) => {
-      if (!cancelled) {
-        setResolvedDataSelection(result.resolvedDataSelection);
-        setIsMissingHostEntity(result.isMissingHostEntity);
-        setIsPreviewMode(result.isPreviewMode);
-        setIsMissingSavedFilters(result.isMissingSavedFilters);
-        onResolved?.(result);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [filterKeysSchema, dataSelectionSignature, perspective, host]);
+  const handleResolveDataSelection = useCallback(
+    (onResolved?: (result: Awaited<ReturnType<typeof resolveDataSelection>>) => void) => {
+      let cancelled = false;
+      resolveDataSelection({
+        filterKeysSchema,
+        dataSelection,
+        perspective,
+        host,
+      }).then((result) => {
+        if (!cancelled) {
+          setResolvedDataSelection(result.resolvedDataSelection);
+          setIsMissingHostEntity(result.isMissingHostEntity);
+          setIsPreviewMode(result.isPreviewMode);
+          setIsMissingSavedFilters(result.isMissingSavedFilters);
+          onResolved?.(result);
+        }
+      });
+      return () => {
+        cancelled = true;
+      };
+    },
+    [filterKeysSchema, dataSelectionSignature, perspective, host],
+  );
 
   // Re-resolve selection inputs when schema, selection content, perspective, or host changes
   // Because those changes make the result change
   useEffect(handleResolveDataSelection, [handleResolveDataSelection]);
 
   const queryVariables = useMemo(
-    () => (buildQueryVariables && config && resolvedDataSelection.length > 0
-      ? buildQueryVariables(resolvedDataSelection, config, parameters)
-      : null),
+    () =>
+      buildQueryVariables && config && resolvedDataSelection.length > 0
+        ? buildQueryVariables(resolvedDataSelection, config, parameters)
+        : null,
     [buildQueryVariables, resolvedDataSelection, config, parameters],
   );
 
@@ -99,34 +110,46 @@ const useDashboardViz = <TQuery extends OperationType>({
     [queryVariables],
   );
 
-  const loadAndTrackSignature = useCallback((variables: TQuery['variables'], signature: string) => {
-    lastLoadedVariablesSignatureRef.current = signature;
-    startTransition(() => {
-      load(variables, {
-        fetchPolicy: 'store-and-network',
+  const loadAndTrackSignature = useCallback(
+    (variables: TQuery['variables'], signature: string) => {
+      lastLoadedVariablesSignatureRef.current = signature;
+      startTransition(() => {
+        load(variables, {
+          fetchPolicy: 'store-and-network',
+        });
       });
-    });
-  }, [load, startTransition]);
+    },
+    [load, startTransition],
+  );
 
-  const reloadData = useCallback((force = false) => {
-    if (isMissingHostEntity) {
-      return;
-    }
+  const reloadData = useCallback(
+    (force = false) => {
+      if (isMissingHostEntity) {
+        return;
+      }
 
-    if (isMissingSavedFilters) {
-      return;
-    }
+      if (isMissingSavedFilters) {
+        return;
+      }
 
-    if (!queryVariables || !queryVariablesSignature) {
-      return;
-    }
+      if (!queryVariables || !queryVariablesSignature) {
+        return;
+      }
 
-    if (!force && queryVariablesSignature === lastLoadedVariablesSignatureRef.current) {
-      return;
-    }
+      if (!force && queryVariablesSignature === lastLoadedVariablesSignatureRef.current) {
+        return;
+      }
 
-    loadAndTrackSignature(queryVariables, queryVariablesSignature);
-  }, [isMissingHostEntity, isMissingSavedFilters, queryVariables, queryVariablesSignature, loadAndTrackSignature]);
+      loadAndTrackSignature(queryVariables, queryVariablesSignature);
+    },
+    [
+      isMissingHostEntity,
+      isMissingSavedFilters,
+      queryVariables,
+      queryVariablesSignature,
+      loadAndTrackSignature,
+    ],
+  );
 
   useEffect(() => {
     if (!isMissingHostEntity || !isMissingSavedFilters) {
@@ -154,16 +177,26 @@ const useDashboardViz = <TQuery extends OperationType>({
    * Used by dashboard token refresh to avoid relying on a possibly stale
    * `resolvedDataSelection` closure value.
    */
-  const forceReloadWithFreshVariables = useCallback((selection: WidgetDataSelection[] = resolvedDataSelection) => {
-    if (!buildQueryVariables || !config || selection.length === 0) {
-      reloadData(true);
-      return;
-    }
+  const forceReloadWithFreshVariables = useCallback(
+    (selection: WidgetDataSelection[] = resolvedDataSelection) => {
+      if (!buildQueryVariables || !config || selection.length === 0) {
+        reloadData(true);
+        return;
+      }
 
-    const refreshedVariables = buildQueryVariables(selection, config, parameters);
-    const refreshedSignature = JSON.stringify(refreshedVariables);
-    loadAndTrackSignature(refreshedVariables, refreshedSignature);
-  }, [buildQueryVariables, config, resolvedDataSelection, parameters, reloadData, loadAndTrackSignature]);
+      const refreshedVariables = buildQueryVariables(selection, config, parameters);
+      const refreshedSignature = JSON.stringify(refreshedVariables);
+      loadAndTrackSignature(refreshedVariables, refreshedSignature);
+    },
+    [
+      buildQueryVariables,
+      config,
+      resolvedDataSelection,
+      parameters,
+      reloadData,
+      loadAndTrackSignature,
+    ],
+  );
 
   useEffect(() => {
     if (prevRefreshTokenRef.current === refreshToken) return undefined;
@@ -183,7 +216,13 @@ const useDashboardViz = <TQuery extends OperationType>({
       }
       forceReloadWithFreshVariables(result.resolvedDataSelection);
     });
-  }, [refreshToken, isMissingHostEntity, isMissingSavedFilters, forceReloadWithFreshVariables, handleResolveDataSelection]);
+  }, [
+    refreshToken,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    forceReloadWithFreshVariables,
+    handleResolveDataSelection,
+  ]);
 
   return {
     queryRef,

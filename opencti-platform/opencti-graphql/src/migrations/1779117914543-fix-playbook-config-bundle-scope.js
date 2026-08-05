@@ -11,7 +11,10 @@ import { PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT } from '../modules/playbo
 import { PLAYBOOK_SECURITY_COVERAGE_COMPONENT } from '../modules/playbook/components/security-coverage-component';
 import { PLAYBOOK_SHARING_COMPONENT } from '../modules/playbook/components/sharing-component';
 import { PLAYBOOK_UNSHARING_COMPONENT } from '../modules/playbook/components/unsharing-component';
-import { ENTITY_TYPE_PLAYBOOK, playbookBundleElementsToApply } from '../modules/playbook/playbook-types';
+import {
+  ENTITY_TYPE_PLAYBOOK,
+  playbookBundleElementsToApply,
+} from '../modules/playbook/playbook-types';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 
 // Modification in playbook component configs.
@@ -36,7 +39,8 @@ const elasticUpdate = (convertor) => {
   const playbooksUpdateQuery = {
     script: {
       params: { convertor },
-      source: 'if (params.convertor.containsKey(ctx._source.internal_id)) { ctx._source.playbook_definition = params.convertor[ctx._source.internal_id]; }',
+      source:
+        'if (params.convertor.containsKey(ctx._source.internal_id)) { ctx._source.playbook_definition = params.convertor[ctx._source.internal_id]; }',
     },
     query: {
       term: {
@@ -46,11 +50,7 @@ const elasticUpdate = (convertor) => {
       },
     },
   };
-  return elUpdateByQueryForMigration(
-    message,
-    READ_INDEX_INTERNAL_OBJECTS,
-    playbooksUpdateQuery,
-  );
+  return elUpdateByQueryForMigration(message, READ_INDEX_INTERNAL_OBJECTS, playbooksUpdateQuery);
 };
 
 export const up = async (next) => {

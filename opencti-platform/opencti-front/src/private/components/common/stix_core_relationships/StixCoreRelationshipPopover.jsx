@@ -34,9 +34,7 @@ const styles = (theme) => ({
   },
 });
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 const stixCoreRelationshipPopoverDeletionMutation = graphql`
@@ -135,12 +133,8 @@ class StixCoreRelationshipPopover extends Component {
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
         >
-          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
-            {t('Update')}
-          </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
-          </MenuItem>
+          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>{t('Update')}</MenuItem>
+          <MenuItem onClick={this.handleOpenDelete.bind(this)}>{t('Delete')}</MenuItem>
         </Menu>
         {stixCoreRelationshipId && (
           <StixCoreRelationshipEdition
@@ -157,9 +151,7 @@ class StixCoreRelationshipPopover extends Component {
           onClose={this.handleCloseDelete.bind(this)}
           title={t('Are you sure?')}
         >
-          <DialogContentText>
-            {t('Do you want to delete this relation?')}
-          </DialogContentText>
+          <DialogContentText>{t('Do you want to delete this relation?')}</DialogContentText>
           <DialogActions>
             <Button
               variant="secondary"
@@ -168,10 +160,7 @@ class StixCoreRelationshipPopover extends Component {
             >
               {t('Cancel')}
             </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
+            <Button onClick={this.submitDelete.bind(this)} disabled={this.state.deleting}>
               {t('Confirm')}
             </Button>
           </DialogActions>
@@ -192,7 +181,4 @@ StixCoreRelationshipPopover.propTypes = {
   objectId: PropTypes.string,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreRelationshipPopover);
+export default compose(inject18n, withStyles(styles))(StixCoreRelationshipPopover);

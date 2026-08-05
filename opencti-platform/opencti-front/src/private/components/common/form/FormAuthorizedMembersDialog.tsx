@@ -1,7 +1,9 @@
 import ToggleButton from '@mui/material/ToggleButton';
 import { LockPersonOutlined } from '@mui/icons-material';
 import React, { useState } from 'react';
-import FormAuthorizedMembers, { FormAuthorizedMembersInputs } from '@components/common/form/FormAuthorizedMembers';
+import FormAuthorizedMembers, {
+  FormAuthorizedMembersInputs,
+} from '@components/common/form/FormAuthorizedMembers';
 import { FormikHelpers } from 'formik/dist/types';
 import type { GraphQLTaggedNode } from 'relay-runtime';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
@@ -47,11 +49,7 @@ const FormAuthorizedMembersDialog = ({
   const [commit] = useApiMutation(mutation);
   const onSubmit = (
     values: FormAuthorizedMembersInputs,
-    {
-      setSubmitting,
-      resetForm,
-      setErrors,
-    }: FormikHelpers<FormAuthorizedMembersInputs>,
+    { setSubmitting, resetForm, setErrors }: FormikHelpers<FormAuthorizedMembersInputs>,
   ) => {
     commit({
       variables: {
@@ -63,9 +61,10 @@ const FormAuthorizedMembersDialog = ({
               .map((member) => ({
                 id: member.value,
                 access_right: member.accessRight,
-                groups_restriction_ids: member.groupsRestriction?.length > 0
-                  ? member.groupsRestriction.map((group) => group.value)
-                  : undefined,
+                groups_restriction_ids:
+                  member.groupsRestriction?.length > 0
+                    ? member.groupsRestriction.map((group) => group.value)
+                    : undefined,
               })),
       },
       onCompleted: () => {
@@ -81,11 +80,15 @@ const FormAuthorizedMembersDialog = ({
       },
     });
   };
-  const lockColor = (authorizedMembers && authorizedMembers.length > 0) ? 'warning' : 'primary';
+  const lockColor = authorizedMembers && authorizedMembers.length > 0 ? 'warning' : 'primary';
   return (
     <>
       {!handleClose && (
-        <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Manage access restriction')}>
+        <EETooltip
+          title={
+            disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Manage access restriction')
+          }
+        >
           <ToggleButton
             onClick={() => !disabledInDraft && isEnterpriseEdition && setOpenDrawer(true)}
             value="manage-access"

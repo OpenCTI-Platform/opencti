@@ -4,7 +4,9 @@ import { screen } from '@testing-library/react';
 import testRender from '../../../../../utils/tests/test-render';
 import { JsonFormDeprecatedRenderer, jsonFormDeprecatedTester } from './JsonFormDeprecatedRenderer';
 
-const jsonFormsDispatchMock = vi.fn((props: unknown) => <div data-testid="jsonforms-dispatch" data-props={JSON.stringify(props)} />);
+const jsonFormsDispatchMock = vi.fn((props: unknown) => (
+  <div data-testid="jsonforms-dispatch" data-props={JSON.stringify(props)} />
+));
 
 vi.mock('@jsonforms/react', () => ({
   JsonFormsDispatch: (props: unknown) => jsonFormsDispatchMock(props),
@@ -18,13 +20,7 @@ vi.mock('../../../../../components/i18n', () => ({
 }));
 
 vi.mock('../../../../../components/common/tag/Tag', () => ({
-  default: ({
-    label,
-    tooltipTitle,
-  }: {
-    label: string;
-    tooltipTitle?: string;
-  }) => (
+  default: ({ label, tooltipTitle }: { label: string; tooltipTitle?: string }) => (
     <span data-testid="deprecated-tag" data-tooltip-title={tooltipTitle ?? ''}>
       {label}
     </span>

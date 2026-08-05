@@ -9,7 +9,7 @@ import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { DraftEditionFocusMutation } from '@components/drafts/__generated__/DraftEditionFocusMutation.graphql';
 
 export const draftEditionFocus = graphql`
-  mutation DraftEditionFocusMutation($id: ID! $input: EditContext!) {
+  mutation DraftEditionFocusMutation($id: ID!, $input: EditContext!) {
     draftWorkspaceContextPatch(id: $id, input: $input) {
       id
     }
@@ -21,14 +21,9 @@ interface DraftEditionProps {
   overviewData: DraftRootFragment$data;
 }
 
-const DraftEdition: FunctionComponent<DraftEditionProps> = ({
-  draftId,
-  overviewData,
-}) => {
+const DraftEdition: FunctionComponent<DraftEditionProps> = ({ draftId, overviewData }) => {
   const { t_i18n } = useFormatter();
-  const [commit] = useApiMutation<DraftEditionFocusMutation>(
-    draftEditionFocus,
-  );
+  const [commit] = useApiMutation<DraftEditionFocusMutation>(draftEditionFocus);
 
   const handleClose = () => {
     commit({

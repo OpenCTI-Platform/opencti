@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { isValidLatitude, isValidLongitude, getValidatedCenter, validateCoordinates, DEFAULT_CENTER_COORDINATES } from './position.utils';
+import {
+  isValidLatitude,
+  isValidLongitude,
+  getValidatedCenter,
+  validateCoordinates,
+  DEFAULT_CENTER_COORDINATES,
+} from './position.utils';
 
 describe('Position utils', () => {
   describe('getValidatedCenter', () => {
@@ -15,8 +21,12 @@ describe('Position utils', () => {
     });
 
     it('should handle null and undefined values', () => {
-      expect(getValidatedCenter({ latitude: null, longitude: null })).toEqual(DEFAULT_CENTER_COORDINATES);
-      expect(getValidatedCenter({ latitude: undefined, longitude: undefined })).toEqual(DEFAULT_CENTER_COORDINATES);
+      expect(getValidatedCenter({ latitude: null, longitude: null })).toEqual(
+        DEFAULT_CENTER_COORDINATES,
+      );
+      expect(getValidatedCenter({ latitude: undefined, longitude: undefined })).toEqual(
+        DEFAULT_CENTER_COORDINATES,
+      );
       expect(getValidatedCenter({})).toEqual(DEFAULT_CENTER_COORDINATES);
     });
   });

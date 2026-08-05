@@ -29,17 +29,17 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const objectMembersFieldSearchQuery = graphql`
-    query ObjectMembersFieldSearchQuery($search: String, $first: Int, $entityTypes: [MemberType!]) {
-      members(search: $search, first: $first, entityTypes: $entityTypes) {
-            edges {
-                node {
-                    id
-                    entity_type
-                    name
-                }
-            }
+  query ObjectMembersFieldSearchQuery($search: String, $first: Int, $entityTypes: [MemberType!]) {
+    members(search: $search, first: $first, entityTypes: $entityTypes) {
+      edges {
+        node {
+          id
+          entity_type
+          name
         }
+      }
     }
+  }
 `;
 
 export interface OptionMember extends FieldOption {
@@ -82,35 +82,39 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const dynamicMembers: OptionMember[] = withDynamicKeys ? [
-    {
-      type: t_i18n(dynamicContextTypeLabel),
-      value: 'AUTHOR',
-      label: t_i18n(dynamicAuthorOrgLabel),
-    },
-    {
-      type: t_i18n(dynamicContextTypeLabel),
-      value: 'CREATORS',
-      label: t_i18n('Creators'),
-    },
-    {
-      type: t_i18n(dynamicContextTypeLabel),
-      value: 'ASSIGNEES',
-      label: t_i18n('Assignees'),
-    },
-    {
-      type: t_i18n(dynamicContextTypeLabel),
-      value: 'PARTICIPANTS',
-      label: t_i18n('Participants'),
-    },
-    ...(includeBundleOrganizationDynamicOption
-      ? [{
-          type: t_i18n(dynamicBundleTypeLabel),
-          value: 'BUNDLE_ORGANIZATIONS',
-          label: t_i18n('Organizations'),
-        }]
-      : []),
-  ] : [];
+  const dynamicMembers: OptionMember[] = withDynamicKeys
+    ? [
+        {
+          type: t_i18n(dynamicContextTypeLabel),
+          value: 'AUTHOR',
+          label: t_i18n(dynamicAuthorOrgLabel),
+        },
+        {
+          type: t_i18n(dynamicContextTypeLabel),
+          value: 'CREATORS',
+          label: t_i18n('Creators'),
+        },
+        {
+          type: t_i18n(dynamicContextTypeLabel),
+          value: 'ASSIGNEES',
+          label: t_i18n('Assignees'),
+        },
+        {
+          type: t_i18n(dynamicContextTypeLabel),
+          value: 'PARTICIPANTS',
+          label: t_i18n('Participants'),
+        },
+        ...(includeBundleOrganizationDynamicOption
+          ? [
+              {
+                type: t_i18n(dynamicBundleTypeLabel),
+                value: 'BUNDLE_ORGANIZATIONS',
+                label: t_i18n('Organizations'),
+              },
+            ]
+          : []),
+      ]
+    : [];
   const [members, setMembers] = useState<OptionMember[]>(dynamicMembers);
   const searchMembers = (event: React.ChangeEvent<HTMLInputElement>) => {
     fetchQuery(objectMembersFieldSearchQuery, {
@@ -120,19 +124,17 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
     })
       .toPromise()
       .then((data) => {
-        const NewMembers = (
-          (data as ObjectMembersFieldSearchQuery$data)?.members?.edges ?? []
-        ).map((n) => ({
-          label: n?.node.name,
-          value: n?.node.id,
-          type: n?.node.entity_type,
-        })).sort((a, b) => (b.type ? -b.type.localeCompare(a.type) : 0));
+        const NewMembers = ((data as ObjectMembersFieldSearchQuery$data)?.members?.edges ?? [])
+          .map((n) => ({
+            label: n?.node.name,
+            value: n?.node.id,
+            type: n?.node.entity_type,
+          }))
+          .sort((a, b) => (b.type ? -b.type.localeCompare(a.type) : 0));
         const templateValues = [...members, ...NewMembers];
         // Keep only the unique list of options
         const uniqTemplates = templateValues.filter((item, index) => {
-          return (
-            templateValues.findIndex((e) => e.value === item.value) === index
-          );
+          return templateValues.findIndex((e) => e.value === item.value) === index;
         });
         setMembers(uniqTemplates);
       });
@@ -157,10 +159,7 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
         options={members}
         groupBy={(option: OptionMember) => option.type}
         onInputChange={searchMembers}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: OptionMember,
-        ) => (
+        renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: OptionMember) => (
           <li {...props}>
             <div className={classes.icon}>
               <ItemIcon type={option.type} />

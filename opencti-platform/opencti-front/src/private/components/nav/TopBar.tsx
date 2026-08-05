@@ -25,7 +25,11 @@ import useDraftContext from '../../../utils/hooks/useDraftContext';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { KNOWLEDGE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { decodeSearchKeyword, handleSearchByFilter, handleSearchByKeyword } from '../../../utils/SearchUtils';
+import {
+  decodeSearchKeyword,
+  handleSearchByFilter,
+  handleSearchByKeyword,
+} from '../../../utils/SearchUtils';
 import Security from '../../../utils/Security';
 import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import AskArianeButton from '../chatbox/AskArianeButton';
@@ -81,9 +85,7 @@ const topBarQuery = graphql`
   }
 `;
 
-const TopBarComponent: FunctionComponent<TopBarProps> = ({
-  queryRef,
-}) => {
+const TopBarComponent: FunctionComponent<TopBarProps> = ({ queryRef }) => {
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -91,10 +93,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const { t_i18n } = useFormatter();
   const {
     bannerSettings: { bannerHeightNumber },
-    settings: {
-      platform_enterprise_edition: ee,
-      filigran_chatbot_ai_cgu_status,
-    },
+    settings: { platform_enterprise_edition: ee, filigran_chatbot_ai_cgu_status },
     isXTMHubAccessible,
     me,
   } = useAuth();
@@ -103,31 +102,39 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const { height: topBannerHeight } = useTopBanner();
-  const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
-    null,
-  );
+  const [notificationsNumber, setNotificationsNumber] = useState<null | number>(null);
   const [newsFeedsNumberFromSub, setNewsFeedsNumberFromSub] = useState<null | number>(null);
 
   const data = usePreloadedQuery(topBarQuery, queryRef);
   const page = usePage();
-  const handleNewNotificationsNumber = useCallback((
-    response: TopBarNotificationNumberSubscription$data | null | undefined | unknown,
-  ) => {
-    const notificationNumber = response ? (response as TopBarNotificationNumberSubscription$data).notificationsNumber?.count : null;
-    return setNotificationsNumber(notificationNumber ?? null);
-  }, [setNotificationsNumber]);
-  const handleNewNewsFeedNumber = useCallback((
-    response: TopBarNewsFeedNumberSubscription$data | null | undefined | unknown,
-  ) => {
-    const newsFeedNumber = response ? (response as TopBarNewsFeedNumberSubscription$data).newsFeedsNumber?.count : null;
-    return setNewsFeedsNumberFromSub(newsFeedNumber ?? null);
-  }, [setNewsFeedsNumberFromSub]);
-  const isNewNotification = notificationsNumber !== null
-    ? notificationsNumber > 0
-    : (data.myUnreadNotificationsCount ?? 0) > 0;
-  const newsFeedCount = isXTMHubAccessible && !isAllNewsFeedUnsubscribed
-    ? (newsFeedsNumberFromSub !== null ? newsFeedsNumberFromSub : (data.myUnreadNewsFeedsCount ?? 0))
-    : 0;
+  const handleNewNotificationsNumber = useCallback(
+    (response: TopBarNotificationNumberSubscription$data | null | undefined | unknown) => {
+      const notificationNumber = response
+        ? (response as TopBarNotificationNumberSubscription$data).notificationsNumber?.count
+        : null;
+      return setNotificationsNumber(notificationNumber ?? null);
+    },
+    [setNotificationsNumber],
+  );
+  const handleNewNewsFeedNumber = useCallback(
+    (response: TopBarNewsFeedNumberSubscription$data | null | undefined | unknown) => {
+      const newsFeedNumber = response
+        ? (response as TopBarNewsFeedNumberSubscription$data).newsFeedsNumber?.count
+        : null;
+      return setNewsFeedsNumberFromSub(newsFeedNumber ?? null);
+    },
+    [setNewsFeedsNumberFromSub],
+  );
+  const isNewNotification =
+    notificationsNumber !== null
+      ? notificationsNumber > 0
+      : (data.myUnreadNotificationsCount ?? 0) > 0;
+  const newsFeedCount =
+    isXTMHubAccessible && !isAllNewsFeedUnsubscribed
+      ? newsFeedsNumberFromSub !== null
+        ? newsFeedsNumberFromSub
+        : (data.myUnreadNewsFeedsCount ?? 0)
+      : 0;
   const isNewNewsFeed = newsFeedCount > 0;
   const hasUnread = isNewNotification || isNewNewsFeed;
   const subConfig = useMemo(
@@ -150,9 +157,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     });
     return () => sub.dispose();
   }, [shouldSubscribeToNewsFeed, handleNewNewsFeedNumber]);
-  const [navOpen, setNavOpen] = useState(
-    localStorage.getItem('navOpen') === 'true',
-  );
+  const [navOpen, setNavOpen] = useState(localStorage.getItem('navOpen') === 'true');
 
   useEffect(() => {
     const sub = MESSAGING$.toggleNav.subscribe({
@@ -182,18 +187,20 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         }
       }
       if (notResolvedValues && notResolvedValues.length > 0) {
-        MESSAGING$.notifyNLQ(`${t_i18n('Some entities you mentioned have not been found in the platform')}: ${notResolvedValues}`);
+        MESSAGING$.notifyNLQ(
+          `${t_i18n('Some entities you mentioned have not been found in the platform')}: ${notResolvedValues}`,
+        );
       } else if (!hasNonEmptyFilters) {
-        MESSAGING$.notifyNLQ(t_i18n('The NLQ model didn\'t find filters corresponding to your question'));
+        MESSAGING$.notifyNLQ(
+          t_i18n("The NLQ model didn't find filters corresponding to your question"),
+        );
       }
       handleSearchByFilter(keyword, 'nlq', navigate, filters);
     },
     onError: (msg) => MESSAGING$.notifyError(msg),
   });
 
-  const handleOpenMenu = (
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-  ) => {
+  const handleOpenMenu = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.preventDefault();
     setMenuOpen({ open: true, anchorEl: event.currentTarget });
   };
@@ -218,7 +225,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   };
 
   // global search keyword
-  const keyword = decodeSearchKeyword(location.pathname.match(/(?:\/dashboard\/search\/(?:knowledge|files)\/(.*))/)?.[1] ?? '');
+  const keyword = decodeSearchKeyword(
+    location.pathname.match(/(?:\/dashboard\/search\/(?:knowledge|files)\/(.*))/)?.[1] ?? '',
+  );
 
   const getAppTopBarGradient = (): string => {
     const defaultGradientDark = `${alpha(THEME_DARK_DEFAULT_BACKGROUND, 0.9)} 0%, ${alpha(theme.palette.designSystem.background.bg1, 0.9)}`;
@@ -268,29 +277,28 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           <Stack direction="row" gap={1} alignItems="center">
             <Security needs={[KNOWLEDGE]}>
               <>
-                {
-                  filigran_chatbot_ai_cgu_status !== CGUStatus.disabled && (
-                    <>
-                      <AskArianeButton />
-                      <CtemCommandCenterButton />
-                      {/* Discrete full-height separator between the AI (XTM One)
+                {filigran_chatbot_ai_cgu_status !== CGUStatus.disabled && (
+                  <>
+                    <AskArianeButton />
+                    <CtemCommandCenterButton />
+                    {/* Discrete full-height separator between the AI (XTM One)
                           actions and the standard platform actions. */}
-                      <Divider orientation="vertical" flexItem sx={{ mx: 1.5 }} />
-                    </>
-                  )
-                }
+                    <Divider orientation="vertical" flexItem sx={{ mx: 1.5 }} />
+                  </>
+                )}
               </>
             </Security>
             {!draftContext && (
               <Security needs={[KNOWLEDGE]}>
                 <>
-                  {ee.license_type === 'nfr' && <ItemBoolean label="EE DEV LICENSE" status={false} />}
-                  <Security needs={[KNOWLEDGE_KNASKIMPORT]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
-                    <UploadImport
-                      variant="icon"
-                      fontSize="medium"
-                      size="default"
-                    />
+                  {ee.license_type === 'nfr' && (
+                    <ItemBoolean label="EE DEV LICENSE" status={false} />
+                  )}
+                  <Security
+                    needs={[KNOWLEDGE_KNASKIMPORT]}
+                    capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}
+                  >
+                    <UploadImport variant="icon" fontSize="medium" size="default" />
                   </Security>
                   <Tooltip title={t_i18n('Triggers')}>
                     <IconButton
@@ -311,11 +319,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                       to="/dashboard/profile/notifications/alerts"
                       selected={location.pathname.startsWith('/dashboard/profile/notifications')}
                     >
-                      <Badge
-                        color="secondary"
-                        variant="dot"
-                        invisible={!hasUnread}
-                      >
+                      <Badge color="secondary" variant="dot" invisible={!hasUnread}>
                         <NotificationsOutlined fontSize="medium" />
                       </Badge>
                     </IconButton>
@@ -340,29 +344,18 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               open={menuOpen.open}
               onClose={handleCloseMenu}
             >
-              <MenuItem
-                component={Link}
-                to="/dashboard/profile"
-                onClick={handleCloseMenu}
-              >
+              <MenuItem component={Link} to="/dashboard/profile" onClick={handleCloseMenu}>
                 {t_i18n('Profile')}
               </MenuItem>
               <MenuItem onClick={handleOpenDrawer}>{t_i18n('Feedback')}</MenuItem>
-              <MenuItem
-                component="a"
-                href={`${APP_BASE_PATH}/logout`}
-                rel="noreferrer"
-              >
+              <MenuItem component="a" href={`${APP_BASE_PATH}/logout`} rel="noreferrer">
                 {t_i18n('Logout')}
               </MenuItem>
             </Menu>
           </Stack>
         </div>
       </Toolbar>
-      <FeedbackCreation
-        openDrawer={openDrawer}
-        handleCloseDrawer={handleCloseDrawer}
-      />
+      <FeedbackCreation openDrawer={openDrawer} handleCloseDrawer={handleCloseDrawer} />
     </AppBar>
   );
 };
@@ -374,14 +367,9 @@ const TopBar: FunctionComponent<Omit<TopBarProps, 'queryRef'>> = () => {
     <>
       {queryRef && (
         <React.Suspense
-          fallback={(
-            <AppBar
-              position="fixed"
-              className={classes.appBar}
-              variant="elevation"
-              elevation={1}
-            />
-          )}
+          fallback={
+            <AppBar position="fixed" className={classes.appBar} variant="elevation" elevation={1} />
+          }
         >
           <TopBarComponent queryRef={queryRef} />
         </React.Suspense>

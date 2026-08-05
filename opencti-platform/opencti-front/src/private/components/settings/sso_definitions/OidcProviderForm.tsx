@@ -181,11 +181,14 @@ const buildInitialValues = (data: OidcProviderData): OidcFormValues => {
     callback_url: conf.callback_url ?? '',
     issuer: conf.issuer ?? '',
     client_id: conf.client_id ?? '',
-    client_secret_action: (conf.client_secret as SecretInfo)?.source === 'EXTERNAL' && (conf.client_secret as SecretInfo)?.external_secret_name
-      ? 'use_external_secret'
-      : 'keep',
+    client_secret_action:
+      (conf.client_secret as SecretInfo)?.source === 'EXTERNAL' &&
+      (conf.client_secret as SecretInfo)?.external_secret_name
+        ? 'use_external_secret'
+        : 'keep',
     client_secret_new_value: '',
-    client_secret_secret_name: ((conf.client_secret as SecretInfo)?.external_secret_name as string) ?? '',
+    client_secret_secret_name:
+      ((conf.client_secret as SecretInfo)?.external_secret_name as string) ?? '',
     scopes: (conf.scopes ?? []).join(', '),
     audience: conf.audience ?? '',
     logout_remote: conf.logout_remote ?? false,
@@ -199,7 +202,10 @@ const buildInitialValues = (data: OidcProviderData): OidcFormValues => {
       default_groups: [...(conf.groups_mapping?.default_groups ?? [])],
       groups_expr: [...(conf.groups_mapping?.groups_expr ?? [])],
       group_splitter: conf.groups_mapping?.group_splitter ?? '',
-      groups_mapping: (conf.groups_mapping?.groups_mapping ?? []).map((m) => ({ provider: m.provider, platform: m.platform })),
+      groups_mapping: (conf.groups_mapping?.groups_mapping ?? []).map((m) => ({
+        provider: m.provider,
+        platform: m.platform,
+      })),
       auto_create_groups: conf.groups_mapping?.auto_create_groups ?? false,
       prevent_default_groups: conf.groups_mapping?.prevent_default_groups ?? false,
       extend_platform_groups: conf.groups_mapping?.extend_platform_groups ?? false,
@@ -208,7 +214,10 @@ const buildInitialValues = (data: OidcProviderData): OidcFormValues => {
       default_organizations: [...(conf.organizations_mapping?.default_organizations ?? [])],
       organizations_expr: [...(conf.organizations_mapping?.organizations_expr ?? [])],
       organizations_splitter: conf.organizations_mapping?.organizations_splitter ?? '',
-      organizations_mapping: (conf.organizations_mapping?.organizations_mapping ?? []).map((m) => ({ provider: m.provider, platform: m.platform })),
+      organizations_mapping: (conf.organizations_mapping?.organizations_mapping ?? []).map((m) => ({
+        provider: m.provider,
+        platform: m.platform,
+      })),
       auto_create_organizations: conf.organizations_mapping?.auto_create_organizations ?? false,
     },
     extra_conf: (conf.extra_conf ?? []).map((e) => ({ type: e.type, key: e.key, value: e.value })),
@@ -245,7 +254,9 @@ const OidcProviderForm = ({
   const [currentTab, setCurrentTab] = useState(0);
   const isEditing = !!data;
   const [overrideIdentifier, setOverrideIdentifier] = useState(!!data?.identifier_override);
-  const [overrideCallbackUrl, setOverrideCallbackUrl] = useState(!!data?.configuration?.callback_url);
+  const [overrideCallbackUrl, setOverrideCallbackUrl] = useState(
+    !!data?.configuration?.callback_url,
+  );
 
   const [commitCreate] = useApiMutation<OidcProviderFormCreateMutation>(oidcCreateMutation);
   const [commitEdit] = useApiMutation<OidcProviderFormEditMutation>(oidcEditMutation);
@@ -273,7 +284,7 @@ const OidcProviderForm = ({
         description: values.description || null,
         enabled: values.enabled,
         button_label_override: values.button_label_override || null,
-        identifier_override: overrideIdentifier ? (values.identifier_override || null) : null,
+        identifier_override: overrideIdentifier ? values.identifier_override || null : null,
       },
       configuration: {
         issuer: values.issuer,
@@ -283,8 +294,13 @@ const OidcProviderForm = ({
           : values.client_secret_action === 'use_external_secret'
             ? { client_secret: { external_secret_name: values.client_secret_secret_name || null } }
             : { client_secret: { new_value_cleartext: values.client_secret_new_value || null } }),
-        callback_url: overrideCallbackUrl ? (values.callback_url || null) : null,
-        scopes: values.scopes ? values.scopes.split(',').map((s) => s.trim()).filter(Boolean) : [],
+        callback_url: overrideCallbackUrl ? values.callback_url || null : null,
+        scopes: values.scopes
+          ? values.scopes
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [],
         audience: values.audience || null,
         logout_remote: values.logout_remote,
         logout_callback_url: values.logout_callback_url || null,
@@ -335,7 +351,12 @@ const OidcProviderForm = ({
         variables: { input },
         updater: (store: RecordSourceSelectorProxy) => {
           if (paginationOptions) {
-            insertNode(store, 'Pagination_authenticationProviders', paginationOptions, 'oidcProviderAdd');
+            insertNode(
+              store,
+              'Pagination_authenticationProviders',
+              paginationOptions,
+              'oidcProviderAdd',
+            );
           }
         },
         onCompleted: () => {
@@ -359,9 +380,10 @@ const OidcProviderForm = ({
       enableReinitialize
     >
       {({ handleReset, submitForm, isSubmitting, dirty, values, setFieldValue }) => {
-        const effectiveIdentifier = overrideIdentifier && values.identifier_override
-          ? values.identifier_override
-          : slugifyIdentifier(values.name);
+        const effectiveIdentifier =
+          overrideIdentifier && values.identifier_override
+            ? values.identifier_override
+            : slugifyIdentifier(values.name);
         const computedCallbackUrl = effectiveIdentifier
           ? `${settings.platform_url}/auth/${effectiveIdentifier}/callback`
           : '';
@@ -380,15 +402,15 @@ const OidcProviderForm = ({
           }
         };
 
-        const displayedCallbackUrl = overrideCallbackUrl && values.callback_url
-          ? values.callback_url
-          : computedCallbackUrl;
+        const displayedCallbackUrl =
+          overrideCallbackUrl && values.callback_url ? values.callback_url : computedCallbackUrl;
 
         // Detect mismatch between callback URL override and the effective identifier
-        const callbackUrlMismatch = overrideCallbackUrl
-          && values.callback_url
-          && effectiveIdentifier
-          && !values.callback_url.includes(`/auth/${effectiveIdentifier}/callback`);
+        const callbackUrlMismatch =
+          overrideCallbackUrl &&
+          values.callback_url &&
+          effectiveIdentifier &&
+          !values.callback_url.includes(`/auth/${effectiveIdentifier}/callback`);
 
         return (
           <Form>
@@ -426,39 +448,61 @@ const OidcProviderForm = ({
                 <Accordion
                   variant="outlined"
                   defaultExpanded={overrideIdentifier || overrideCallbackUrl}
-                  sx={{ mt: 2, borderRadius: 1, overflow: 'hidden', '&:before': { display: 'none' } }}
+                  sx={{
+                    mt: 2,
+                    borderRadius: 1,
+                    overflow: 'hidden',
+                    '&:before': { display: 'none' },
+                  }}
                 >
                   <AccordionSummary expandIcon={<ExpandMoreOutlined />} sx={{ px: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, overflow: 'hidden', width: '100%' }}>
-                      <Typography variant="caption" color="textSecondary" sx={{ whiteSpace: 'nowrap' }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        overflow: 'hidden',
+                        width: '100%',
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        color="textSecondary"
+                        sx={{ whiteSpace: 'nowrap' }}
+                      >
                         {t_i18n('Callback URL')}
                       </Typography>
                       {displayedCallbackUrl ? (
                         <ItemCopy content={displayedCallbackUrl} variant="inLine" />
                       ) : (
-                        <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic' }}>
+                        <Typography
+                          variant="body2"
+                          color="textSecondary"
+                          sx={{ fontStyle: 'italic' }}
+                        >
                           {t_i18n('Enter a configuration name to generate the callback URL.')}
                         </Typography>
                       )}
                     </Box>
                   </AccordionSummary>
                   <AccordionDetails sx={{ px: 2, pb: 3 }}>
-                    <Box sx={{
-                      display: 'grid',
-                      gridTemplateColumns: 'auto 1fr',
-                      alignItems: 'end',
-                      columnGap: 2,
-                      rowGap: 2,
-                    }}
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: 'auto 1fr',
+                        alignItems: 'end',
+                        columnGap: 2,
+                        rowGap: 2,
+                      }}
                     >
                       <FormControlLabel
-                        control={(
+                        control={
                           <MuiSwitch
                             checked={overrideIdentifier}
                             onChange={(_, checked) => handleToggleOverride(checked)}
                             size="small"
                           />
-                        )}
+                        }
                         label={t_i18n('Override identifier')}
                         componentsProps={{ typography: { variant: 'body2' } }}
                         sx={{ m: 0 }}
@@ -475,13 +519,13 @@ const OidcProviderForm = ({
                         disabled={!overrideIdentifier}
                       />
                       <FormControlLabel
-                        control={(
+                        control={
                           <MuiSwitch
                             checked={overrideCallbackUrl}
                             onChange={(_, checked) => handleToggleCallbackUrl(checked)}
                             size="small"
                           />
-                        )}
+                        }
                         label={t_i18n('Override callback URL')}
                         componentsProps={{ typography: { variant: 'body2' } }}
                         sx={{ m: 0 }}
@@ -498,13 +542,17 @@ const OidcProviderForm = ({
                           />
                           {callbackUrlMismatch && (
                             <Tooltip
-                              title={t_i18n('The callback URL does not contain the expected identifier path. The authentication callback will not work unless the URL includes "/auth/{identifier}/callback" where {identifier} matches the provider identifier.')}
+                              title={t_i18n(
+                                'The callback URL does not contain the expected identifier path. The authentication callback will not work unless the URL includes "/auth/{identifier}/callback" where {identifier} matches the provider identifier.',
+                              )}
                             >
                               <ErrorOutlined color="error" sx={{ mb: 0.5, fontSize: 20 }} />
                             </Tooltip>
                           )}
                         </Box>
-                      ) : <span />}
+                      ) : (
+                        <span />
+                      )}
                     </Box>
                   </AccordionDetails>
                 </Accordion>
@@ -611,9 +659,19 @@ const OidcProviderForm = ({
                       {({ push, remove }) => (
                         <>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <Typography variant="body2" color="textSecondary" style={{ width: '20%' }}>{t_i18n('Type')}</Typography>
-                            <Typography variant="body2" color="textSecondary" style={{ flex: 1 }}>{t_i18n('Key')}</Typography>
-                            <Typography variant="body2" color="textSecondary" style={{ flex: 1 }}>{t_i18n('Value')}</Typography>
+                            <Typography
+                              variant="body2"
+                              color="textSecondary"
+                              style={{ width: '20%' }}
+                            >
+                              {t_i18n('Type')}
+                            </Typography>
+                            <Typography variant="body2" color="textSecondary" style={{ flex: 1 }}>
+                              {t_i18n('Key')}
+                            </Typography>
+                            <Typography variant="body2" color="textSecondary" style={{ flex: 1 }}>
+                              {t_i18n('Value')}
+                            </Typography>
                             <IconButton
                               color="primary"
                               aria-label={t_i18n('Add')}
@@ -624,7 +682,11 @@ const OidcProviderForm = ({
                             </IconButton>
                           </div>
                           {values.extra_conf.length === 0 && (
-                            <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic', mt: 1 }}>
+                            <Typography
+                              variant="body2"
+                              color="textSecondary"
+                              sx={{ fontStyle: 'italic', mt: 1 }}
+                            >
                               {t_i18n('No extra configuration entries. Click + to add one.')}
                             </Typography>
                           )}

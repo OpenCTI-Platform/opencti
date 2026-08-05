@@ -5,7 +5,9 @@ import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloaded
 import ListCardsContent from '../../../../components/list_cards/ListCardsContent';
 import ThreatActorIndividualCard from './ThreatActorIndividualCard';
 import { GenericAttackCardDummy } from '../../common/cards/GenericAttackCard';
-import StixDomainObjectBookmarks, { stixDomainObjectBookmarksQuery } from '../../common/stix_domain_objects/StixDomainObjectBookmarks';
+import StixDomainObjectBookmarks, {
+  stixDomainObjectBookmarksQuery,
+} from '../../common/stix_domain_objects/StixDomainObjectBookmarks';
 import { ThreatActorsIndividualCardsPaginationQuery } from './__generated__/ThreatActorsIndividualCardsPaginationQuery.graphql';
 import { ThreatActorsIndividualCards_data$key } from './__generated__/ThreatActorsIndividualCards_data.graphql';
 import { StixDomainObjectBookmarksQuery$data } from '../../common/stix_domain_objects/__generated__/StixDomainObjectBookmarksQuery.graphql';
@@ -23,14 +25,14 @@ export const threatActorsIndividualCardsPaginationQuery = graphql`
     $filters: FilterGroup
   ) {
     ...ThreatActorsIndividualCards_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -76,9 +78,11 @@ interface ThreatActorsIndividualCardsProps {
   onLabelClick: HandleAddFilter;
 }
 
-const ThreatActorsIndividualCards: FunctionComponent<
-  ThreatActorsIndividualCardsProps
-> = ({ setNumberOfElements, queryRef, onLabelClick }) => {
+const ThreatActorsIndividualCards: FunctionComponent<ThreatActorsIndividualCardsProps> = ({
+  setNumberOfElements,
+  queryRef,
+  onLabelClick,
+}) => {
   const [bookmarks, setBookmarks] = useState([]);
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
     ThreatActorsIndividualCardsPaginationQuery,
@@ -111,10 +115,7 @@ const ThreatActorsIndividualCards: FunctionComponent<
             isLoading={isLoadingMore}
             DummyCardComponent={GenericAttackCardDummy}
             dataList={data?.threatActorsIndividuals?.edges ?? []}
-            globalCount={
-              data?.threatActorsIndividuals?.pageInfo?.globalCount
-              ?? nbOfCardsToLoad
-            }
+            globalCount={data?.threatActorsIndividuals?.pageInfo?.globalCount ?? nbOfCardsToLoad}
             CardComponent={ThreatActorIndividualCard}
             nbOfCardsToLoad={nbOfCardsToLoad}
             onLabelClick={onLabelClick}

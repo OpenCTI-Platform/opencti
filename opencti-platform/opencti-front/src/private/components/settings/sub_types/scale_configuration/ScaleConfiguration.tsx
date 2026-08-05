@@ -4,10 +4,22 @@ import * as Yup from 'yup';
 import { FormikErrors, FormikValues } from 'formik';
 import { clone } from 'ramda';
 import { Add } from '@mui/icons-material';
-import { FormControl, IconButton, InputLabel, MenuItem, Paper, Select, Typography } from '@mui/material';
+import {
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Typography,
+} from '@mui/material';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
-import { allScales, customScaleName, findSelectedScaleName } from '../../../../../utils/hooks/useScale';
+import {
+  allScales,
+  customScaleName,
+  findSelectedScaleName,
+} from '../../../../../utils/hooks/useScale';
 import type { ScaleConfig, Tick, UndefinedTick } from './scale';
 import ScaleConfigurationLine from './ScaleConfigurationLine';
 import ScaleBar from './ScaleBar';
@@ -32,11 +44,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const minMaxValidation = (
-  t: (value: string) => string,
-  min: number,
-  max: number,
-) => {
+const minMaxValidation = (t: (value: string) => string, min: number, max: number) => {
   return Yup.object().shape({
     label: Yup.string().required(t('This field is required')),
     color: Yup.string()
@@ -57,11 +65,7 @@ const minMaxValidation = (
   });
 };
 
-const tickValidation = (
-  t: (value: string) => string,
-  min: number,
-  max: number,
-) => {
+const tickValidation = (t: (value: string) => string, min: number, max: number) => {
   return Yup.object().shape({
     label: Yup.string().required(t('This field is required')),
     color: Yup.string()
@@ -94,13 +98,12 @@ const isTickDefinitionValid = (
   }
   tickDefinition.ticks.forEach((tick) => {
     if (
-      !tick.value
-      || Number(tick.value) < tickDefinition.min.value
-      || Number(tick.value) > tickDefinition.max.value
+      !tick.value ||
+      Number(tick.value) < tickDefinition.min.value ||
+      Number(tick.value) > tickDefinition.max.value
     ) {
       setErrors({
-        [fieldName]:
-          'Each tick value must be between minimum and maximum value',
+        [fieldName]: 'Each tick value must be between minimum and maximum value',
       });
       isValid = false;
     }
@@ -111,11 +114,7 @@ const isTickDefinitionValid = (
 interface EntitySettingScaleProps {
   initialValues: ScaleConfig;
   fieldName: string;
-  setFieldValue: (
-    field: string,
-    value: ScaleConfig,
-    shouldValidate?: boolean,
-  ) => void;
+  setFieldValue: (field: string, value: ScaleConfig, shouldValidate?: boolean) => void;
   setErrors: (errors: FormikErrors<FormikValues>) => void;
   customScale?: ScaleConfig | null;
   style?: Record<string, string | number>;
@@ -132,9 +131,7 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
   const { t_i18n } = useFormatter();
   const classes = useStyles();
 
-  const [tickDefinition, setTickDefinition] = useState<ScaleConfig>(
-    clone(initialValues),
-  );
+  const [tickDefinition, setTickDefinition] = useState<ScaleConfig>(clone(initialValues));
 
   const sortTick = (a: Tick | UndefinedTick, b: Tick | UndefinedTick) => {
     if (typeof a.value === 'string') return -1;
@@ -167,9 +164,7 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
   };
 
   const handleUpdateValueOfTick = (
-    validateForm: (
-      values?: Tick | UndefinedTick,
-    ) => Promise<FormikErrors<Tick | UndefinedTick>>,
+    validateForm: (values?: Tick | UndefinedTick) => Promise<FormikErrors<Tick | UndefinedTick>>,
     tickIndex: number | 'min' | 'max',
     property: keyof Tick,
     newValue: number | string,
@@ -209,9 +204,7 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <div className={classes.container}>
           <FormControl sx={{ m: 1, minWidth: 140, margin: 0 }}>
-            <InputLabel id="scale-selector">
-              {t_i18n('Selected scale template')}
-            </InputLabel>
+            <InputLabel id="scale-selector">{t_i18n('Selected scale template')}</InputLabel>
             <Select
               labelId="scale-selector"
               value={currentScaleName}
@@ -234,39 +227,25 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
           <ScaleConfigurationLine
             tick={tickDefinition.min}
             tickLabel={t_i18n('Minimum')}
-            validation={() => minMaxValidation(
-              t_i18n,
-              tickDefinition.min.value,
-              tickDefinition.max.value,
-            )
+            validation={() =>
+              minMaxValidation(t_i18n, tickDefinition.min.value, tickDefinition.max.value)
             }
-            handleUpdate={(
-              validateForm,
-              name: keyof Tick,
-              value: string | number,
-            ) => handleUpdateValueOfTick(validateForm, 'min', name, value)}
+            handleUpdate={(validateForm, name: keyof Tick, value: string | number) =>
+              handleUpdateValueOfTick(validateForm, 'min', name, value)
+            }
           />
           <ScaleConfigurationLine
             tick={tickDefinition.max}
             tickLabel={t_i18n('Maximum')}
-            validation={() => minMaxValidation(
-              t_i18n,
-              tickDefinition.min.value,
-              tickDefinition.max.value,
-            )
+            validation={() =>
+              minMaxValidation(t_i18n, tickDefinition.min.value, tickDefinition.max.value)
             }
-            handleUpdate={(
-              validateForm,
-              name: keyof Tick,
-              value: string | number,
-            ) => handleUpdateValueOfTick(validateForm, 'max', name, value)}
+            handleUpdate={(validateForm, name: keyof Tick, value: string | number) =>
+              handleUpdateValueOfTick(validateForm, 'max', name, value)
+            }
           />
           <div style={{ marginTop: 30, float: 'left' }}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ float: 'left', marginBottom: 0 }}
-            >
+            <Typography variant="h3" gutterBottom={true} style={{ float: 'left', marginBottom: 0 }}>
               {t_i18n('Ticks')}
             </Typography>
             <IconButton
@@ -284,17 +263,12 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
               tick={tick}
               tickLabel={t_i18n('Value')}
               deleteEnabled={true}
-              validation={() => tickValidation(
-                t_i18n,
-                tickDefinition.min.value,
-                tickDefinition.max.value,
-              )
+              validation={() =>
+                tickValidation(t_i18n, tickDefinition.min.value, tickDefinition.max.value)
               }
-              handleUpdate={(
-                validateForm,
-                name: keyof Tick,
-                value: string | number,
-              ) => handleUpdateValueOfTick(validateForm, index, name, value)}
+              handleUpdate={(validateForm, name: keyof Tick, value: string | number) =>
+                handleUpdateValueOfTick(validateForm, index, name, value)
+              }
               handleDelete={() => handleDeleteTickRow(index)}
               noMargin={index === 0}
             />

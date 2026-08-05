@@ -14,7 +14,13 @@ type DashboardWidgetConfigProps = {
   host: WidgetHost;
 };
 
-const DashboardWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidget, host }: DashboardWidgetConfigProps) => {
+const DashboardWidgetConfig = ({
+  widget,
+  onComplete,
+  closeMenu,
+  handleImportWidget,
+  host,
+}: DashboardWidgetConfigProps) => {
   const { t_i18n } = useFormatter();
   const [isWidgetConfigOpen, setIsWidgetConfigOpen] = useState<boolean>(false);
   const inputRef: React.MutableRefObject<HTMLInputElement | null> = useRef(null);
@@ -45,11 +51,7 @@ const DashboardWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidg
             ref={inputRef}
             onChange={handleWidgetImport}
           />
-          <Button
-            variant="secondary"
-            disableElevation
-            onClick={handleImportWidgetButtonClick}
-          >
+          <Button variant="secondary" disableElevation onClick={handleImportWidgetButtonClick}>
             {t_i18n('Import Widget')}
           </Button>
           <Button
@@ -62,11 +64,7 @@ const DashboardWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidg
           </Button>
         </>
       )}
-      {widget && (
-        <MenuItem onClick={handleUpdateWidgetMenuClick}>
-          {t_i18n('Update')}
-        </MenuItem>
-      )}
+      {widget && <MenuItem onClick={handleUpdateWidgetMenuClick}>{t_i18n('Update')}</MenuItem>}
       <WidgetConfig
         onComplete={onComplete}
         widget={widget}

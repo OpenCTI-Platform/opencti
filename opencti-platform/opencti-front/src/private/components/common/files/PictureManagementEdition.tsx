@@ -12,7 +12,10 @@ import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { pictureManagementUtilsMutation } from './PictureManagementUtils';
 import { PictureManagementUtils_node$data } from './__generated__/PictureManagementUtils_node.graphql';
-import { PictureManagementUtilsMutation, StixDomainObjectFileEditInput } from './__generated__/PictureManagementUtilsMutation.graphql';
+import {
+  PictureManagementUtilsMutation,
+  StixDomainObjectFileEditInput,
+} from './__generated__/PictureManagementUtilsMutation.graphql';
 import SwitchField from '../../../../components/fields/SwitchField';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
@@ -41,18 +44,24 @@ interface PictureManagementEditionFormValues {
   order: number | null | undefined;
 }
 
-const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps> = ({ picture, entityId, handleClose }) => {
+const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps> = ({
+  picture,
+  entityId,
+  handleClose,
+}) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const [commit] = useApiMutation<PictureManagementUtilsMutation>(
-    pictureManagementUtilsMutation,
-  );
-  const pictureValidation = () => Yup.object().shape({
-    description: Yup.string().nullable(),
-    order: Yup.number().nullable().integer(t_i18n('The value must be a number')),
-    inCarousel: Yup.boolean().nullable(),
-  });
-  const onSubmit: FormikConfig<PictureManagementEditionFormValues>['onSubmit'] = (values, { setSubmitting, setErrors }) => {
+  const [commit] = useApiMutation<PictureManagementUtilsMutation>(pictureManagementUtilsMutation);
+  const pictureValidation = () =>
+    Yup.object().shape({
+      description: Yup.string().nullable(),
+      order: Yup.number().nullable().integer(t_i18n('The value must be a number')),
+      inCarousel: Yup.boolean().nullable(),
+    });
+  const onSubmit: FormikConfig<PictureManagementEditionFormValues>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors },
+  ) => {
     const input: StixDomainObjectFileEditInput = {
       id: values.id,
       description: values.description,

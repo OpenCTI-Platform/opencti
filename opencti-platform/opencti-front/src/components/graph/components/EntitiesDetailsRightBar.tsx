@@ -39,7 +39,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
     borderRadius: 4,
     border: 'none',
     backgroundColor: theme.palette.background.default,
-    boxShadow: theme.palette.mode === 'light' ? '0 0px 8px 0px rgba(7, 13, 25, .2)' : `0 0px 8px 0px ${theme.palette.background.default}`,
+    boxShadow:
+      theme.palette.mode === 'light'
+        ? '0 0px 8px 0px rgba(7, 13, 25, .2)'
+        : `0 0px 8px 0px ${theme.palette.background.default}`,
     gap: '8px',
   },
   external: {
@@ -55,35 +58,32 @@ const EntitiesDetailsRightsBar = () => {
   const { selectDetailsPreviewObject } = useGraphInteractions();
 
   const {
-    graphState: {
-      selectedNodes,
-      selectedLinks,
-      detailsPreviewSelected,
-    },
+    graphState: { selectedNodes, selectedLinks, detailsPreviewSelected },
   } = useGraphContext();
 
   const selectedEntities = useMemo(() => {
     return [...selectedLinks, ...selectedNodes];
   }, [selectedLinks, selectedNodes]);
 
-  const uniqSelectedEntities = selectedEntities
-    .map((n) => {
-      if (
-        isGraphLink(n)
-        && n.source && typeof n.source !== 'string'
-        && n.target && typeof n.target !== 'string'
-      ) {
-        const source = n.source.label;
-        const target = n.target.label;
-        return { ...n, label: `${source} ➡️ ${target}` };
-      }
-      if (isGraphNode(n) && n.fromType && n.toType) {
-        const source = n.fromType;
-        const target = n.toType;
-        return { ...n, label: `${source} ➡️ ${target}` };
-      }
-      return n;
-    });
+  const uniqSelectedEntities = selectedEntities.map((n) => {
+    if (
+      isGraphLink(n) &&
+      n.source &&
+      typeof n.source !== 'string' &&
+      n.target &&
+      typeof n.target !== 'string'
+    ) {
+      const source = n.source.label;
+      const target = n.target.label;
+      return { ...n, label: `${source} ➡️ ${target}` };
+    }
+    if (isGraphNode(n) && n.fromType && n.toType) {
+      const source = n.fromType;
+      const target = n.toType;
+      return { ...n, label: `${source} ➡️ ${target}` };
+    }
+    return n;
+  });
 
   useEffect(() => {
     if (uniqSelectedEntities[0].id !== detailsPreviewSelected?.id) {
@@ -105,14 +105,16 @@ const EntitiesDetailsRightsBar = () => {
     return null;
   }
 
-  const hasOverviewPage = !detailsPreviewSelected.parent_types.some((el) => isStixNestedRefRelationship(el))
-    && (!detailsPreviewSelected.parent_types.includes('Stix-Meta-Object')
-      || detailsPreviewSelected.entity_type === 'External-Reference')
-    && detailsPreviewSelected.entity_type !== 'basic-relationship';
+  const hasOverviewPage =
+    !detailsPreviewSelected.parent_types.some((el) => isStixNestedRefRelationship(el)) &&
+    (!detailsPreviewSelected.parent_types.includes('Stix-Meta-Object') ||
+      detailsPreviewSelected.entity_type === 'External-Reference') &&
+    detailsPreviewSelected.entity_type !== 'basic-relationship';
 
-  const entityUrl = detailsPreviewSelected.entity_type === 'External-Reference'
-    ? `/dashboard/analyses/external_references/${detailsPreviewSelected.id}`
-    : `/dashboard/id/${detailsPreviewSelected.id}`;
+  const entityUrl =
+    detailsPreviewSelected.entity_type === 'External-Reference'
+      ? `/dashboard/analyses/external_references/${detailsPreviewSelected.id}`
+      : `/dashboard/id/${detailsPreviewSelected.id}`;
 
   return (
     <Drawer
@@ -178,10 +180,10 @@ const EntitiesDetailsRightsBar = () => {
         {detailsPreviewSelected.entity_type === 'basic-relationship' && (
           <BasicRelationshipDetails relation={detailsPreviewSelected as GraphLink} />
         )}
-        {detailsPreviewSelected.parent_types.includes('stix-relationship')
-          && detailsPreviewSelected.entity_type !== 'basic-relationship' && (
-          <RelationshipDetails relation={detailsPreviewSelected as GraphLink} />
-        )}
+        {detailsPreviewSelected.parent_types.includes('stix-relationship') &&
+          detailsPreviewSelected.entity_type !== 'basic-relationship' && (
+            <RelationshipDetails relation={detailsPreviewSelected as GraphLink} />
+          )}
         {detailsPreviewSelected.parent_types.includes('Stix-Core-Object') && (
           <EntityDetails entity={detailsPreviewSelected as GraphNode} />
         )}

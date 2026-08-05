@@ -7,13 +7,12 @@ const entityTypeChange = (fromType, toType, indices) => {
   const updateQuery = {
     script: {
       params: { toType, prefix: convertTypeToStixType(toType) },
-      source: "ctx._source.entity_type = params.toType; ctx._source.standard_id = (params.prefix + '--' + ctx._source.standard_id.splitOnToken('--')[1]);",
+      source:
+        "ctx._source.entity_type = params.toType; ctx._source.standard_id = (params.prefix + '--' + ctx._source.standard_id.splitOnToken('--')[1]);",
     },
     query: {
       bool: {
-        must: [
-          { term: { 'entity_type.keyword': { value: fromType } } },
-        ],
+        must: [{ term: { 'entity_type.keyword': { value: fromType } } }],
       },
     },
   };

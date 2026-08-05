@@ -13,17 +13,11 @@ export const up = async (next) => {
     },
     query: {
       bool: {
-        must: [
-          { term: { 'entity_type.keyword': { value: 'RetentionRule' } } },
-        ],
+        must: [{ term: { 'entity_type.keyword': { value: 'RetentionRule' } } }],
       },
     },
   };
-  await elUpdateByQueryForMigration(
-    message,
-    READ_DATA_INDICES,
-    updateQuery,
-  );
+  await elUpdateByQueryForMigration(message, READ_DATA_INDICES, updateQuery);
   logApp.info(`${message} > done`);
   next();
 };

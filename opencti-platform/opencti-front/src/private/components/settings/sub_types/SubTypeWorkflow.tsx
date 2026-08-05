@@ -2,8 +2,13 @@ import Workflow from './workflow/Workflow';
 import { ReactFlowProvider } from 'reactflow';
 import { ErrorBoundary } from '../../Error';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import useQueryLoading, { useQueryLoadingWithLoadQuery } from '../../../../utils/hooks/useQueryLoading';
-import { SubTypeWorkflowQuery, SubTypeWorkflowQuery$data } from './__generated__/SubTypeWorkflowQuery.graphql';
+import useQueryLoading, {
+  useQueryLoadingWithLoadQuery,
+} from '../../../../utils/hooks/useQueryLoading';
+import {
+  SubTypeWorkflowQuery,
+  SubTypeWorkflowQuery$data,
+} from './__generated__/SubTypeWorkflowQuery.graphql';
 import { SubTypeWorkflowDependenciesQuery } from './__generated__/SubTypeWorkflowDependenciesQuery.graphql';
 import Loader from '../../../../components/Loader';
 import { Suspense, useCallback } from 'react';
@@ -26,7 +31,7 @@ export const workflowQuery = graphql`
       initialState
       states {
         statusId
-        onExit{
+        onExit {
           type
           params
         }
@@ -100,13 +105,16 @@ export const extractWorkflowMembersIds = (
 
   const collected = allActionLists.flatMap((actions) => {
     // Get member IDs from updateAuthorizedMembers actions
-    const memberIds = (actions ?? [] as ActionList)
+    const memberIds = (actions ?? ([] as ActionList))
       ?.filter((action) => action.type === 'updateAuthorizedMembers')
       .flatMap((action) => (action.params as ActionParams).authorized_members ?? [])
-      .flatMap((authorizedMember) => [authorizedMember.id, ...(authorizedMember.groups_restriction_ids ?? [])]);
+      .flatMap((authorizedMember) => [
+        authorizedMember.id,
+        ...(authorizedMember.groups_restriction_ids ?? []),
+      ]);
 
     // Get organization IDs from asyncBulkAction actions
-    const orgIds = (actions ?? [] as ActionList)
+    const orgIds = (actions ?? ([] as ActionList))
       ?.filter((action) => action.type === 'asyncBulkAction')
       .flatMap((action) => (action.params as ActionParams).actions?.[0]?.context?.values ?? []);
 
@@ -126,10 +134,11 @@ const WorkflowWithDependencies = ({ queryRef, onRefetch }: WorkflowWithDependenc
   const { workflowDefinition } = usePreloadedQuery<SubTypeWorkflowQuery>(workflowQuery, queryRef);
   const memberIds = extractWorkflowMembersIds(workflowDefinition);
 
-  const depsQueryRef = useQueryLoading<SubTypeWorkflowDependenciesQuery>(workflowDependenciesQuery,
+  const depsQueryRef = useQueryLoading<SubTypeWorkflowDependenciesQuery>(
+    workflowDependenciesQuery,
     {
       memberFilters: memberIds.length
-        ? ({ mode: 'and' as const, filters: [{ key: ['id'], values: memberIds }], filterGroups: [] })
+        ? { mode: 'and' as const, filters: [{ key: ['id'], values: memberIds }], filterGroups: [] }
         : null,
     },
   );
@@ -151,7 +160,10 @@ const SubTypeWorkflow = () => {
   );
 
   const handleRefetch = useCallback(() => {
-    loadWorkflowQuery({ entityType: 'DraftWorkspace', allowDraft: true }, { fetchPolicy: 'network-only' });
+    loadWorkflowQuery(
+      { entityType: 'DraftWorkspace', allowDraft: true },
+      { fetchPolicy: 'network-only' },
+    );
   }, [loadWorkflowQuery]);
 
   if (!workflowQueryRef) {

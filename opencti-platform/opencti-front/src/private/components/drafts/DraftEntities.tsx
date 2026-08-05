@@ -1,5 +1,8 @@
 import React, { FunctionComponent, ReactNode, useState } from 'react';
-import { DraftEntitiesLinesPaginationQuery, DraftEntitiesLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftEntitiesLinesPaginationQuery.graphql';
+import {
+  DraftEntitiesLinesPaginationQuery,
+  DraftEntitiesLinesPaginationQuery$variables,
+} from '@components/drafts/__generated__/DraftEntitiesLinesPaginationQuery.graphql';
 import { useParams } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { DraftEntitiesLines_data$data } from '@components/drafts/__generated__/DraftEntitiesLines_data.graphql';
@@ -9,7 +12,10 @@ import { DraftEntities_node$data } from '@components/drafts/__generated__/DraftE
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../utils/filters/filtersUtils';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
@@ -17,103 +23,103 @@ import { useComputeLink } from '../../../utils/hooks/useAppData';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 
 const draftEntitiesLineFragment = graphql`
-    fragment DraftEntities_node on StixCoreObject {
-        id
-        standard_id
-        entity_type
-        created_at
-        representative {
-          main
-        }
-        draftVersion {
-          draft_operation
-        }
-        objectMarking {
-            id
-            definition
-            x_opencti_order
-            x_opencti_color
-        }
-        objectLabel {
-            id
-            value
-            color
-        }
-        createdBy {
-            ... on Identity {
-                id
-                name
-                entity_type
-            }
-        }
-        creators {
-            id
-            name
-        }
+  fragment DraftEntities_node on StixCoreObject {
+    id
+    standard_id
+    entity_type
+    created_at
+    representative {
+      main
     }
+    draftVersion {
+      draft_operation
+    }
+    objectMarking {
+      id
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+    createdBy {
+      ... on Identity {
+        id
+        name
+        entity_type
+      }
+    }
+    creators {
+      id
+      name
+    }
+  }
 `;
 
 const draftEntitiesLinesQuery = graphql`
-    query DraftEntitiesLinesPaginationQuery(
-        $draftId: String!
-        $types: [String]
-        $search: String
-        $count: Int!
-        $cursor: ID
-        $orderBy: StixCoreObjectsOrdering
-        $orderMode: OrderingMode
-        $filters: FilterGroup
-    ) {
-        ...DraftEntitiesLines_data
-        @arguments(
-            draftId: $draftId
-            types: $types
-            search: $search
-            count: $count
-            cursor: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        )
-    }
+  query DraftEntitiesLinesPaginationQuery(
+    $draftId: String!
+    $types: [String]
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: StixCoreObjectsOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...DraftEntitiesLines_data
+      @arguments(
+        draftId: $draftId
+        types: $types
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
+  }
 `;
 
 export const draftEntitiesLinesFragment = graphql`
-    fragment DraftEntitiesLines_data on Query
-    @argumentDefinitions(
-        draftId: { type: "String!" }
-        types: { type: "[String]" }
-        search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: { type: "StixCoreObjectsOrdering", defaultValue: name }
-        orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "FilterGroup" }
-    )
-    @refetchable(queryName: "DraftEntitiesLinesRefetchQuery") {
-        draftWorkspaceEntities(
-            draftId: $draftId
-            types: $types
-            search: $search
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        ) @connection(key: "Pagination_draftWorkspaceEntities") {
-            edges {
-                node {
-                    id
-                    ...DraftEntities_node
-                }
-            }
-            pageInfo {
-                endCursor
-                hasNextPage
-                globalCount
-            }
+  fragment DraftEntitiesLines_data on Query
+  @argumentDefinitions(
+    draftId: { type: "String!" }
+    types: { type: "[String]" }
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "StixCoreObjectsOrdering", defaultValue: name }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "DraftEntitiesLinesRefetchQuery") {
+    draftWorkspaceEntities(
+      draftId: $draftId
+      types: $types
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_draftWorkspaceEntities") {
+      edges {
+        node {
+          id
+          ...DraftEntities_node
         }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
     }
+  }
 `;
 
 const LOCAL_STORAGE_KEY = 'draft_entities';
@@ -135,7 +141,9 @@ const DraftEntities: FunctionComponent<DraftEntitiesProps> = ({
   const [open, setOpen] = useState(false);
   const [openCreateEntity, setOpenCreateEntity] = useState(false);
   const [openCreateObservable, setOpenCreateObservable] = useState(false);
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
   const handleCloseCreateEntity = () => {
     setOpenCreateEntity(false);
     setOpen(false);
@@ -161,12 +169,15 @@ const DraftEntities: FunctionComponent<DraftEntitiesProps> = ({
     viewStorage,
     paginationOptions,
     helpers: storageHelpers,
-  } = usePaginationLocalStorage<DraftEntitiesLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
-  const {
-    filters,
-    searchTerm,
-  } = viewStorage;
-  const contextFilters = useBuildEntityTypeBasedFilterContext(entitiesType, filters, { excludedEntityTypesParam: excludedEntityTypes, draftId });
+  } = usePaginationLocalStorage<DraftEntitiesLinesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY,
+    initialValues,
+  );
+  const { filters, searchTerm } = viewStorage;
+  const contextFilters = useBuildEntityTypeBasedFilterContext(entitiesType, filters, {
+    excludedEntityTypesParam: excludedEntityTypes,
+    draftId,
+  });
 
   const queryPaginationOptions = {
     ...paginationOptions,
@@ -225,49 +236,54 @@ const DraftEntities: FunctionComponent<DraftEntitiesProps> = ({
 
   let createButton: ReactNode;
   if (!isReadOnly && canUpdateKnowledge) {
-    createButton = entitiesType === 'Stix-Cyber-Observable' ? (
-      <>
-        <StixCyberObservableCreation
-          display={open}
-          contextual={false}
-          inputValue={searchTerm}
-          paginationKey="Pagination_draftWorkspaceEntities"
-          paginationOptions={queryPaginationOptions}
-          speeddial={false}
-          open={openCreateObservable}
-          controlledDialStyles={{ marginLeft: 1 }}
-          handleClose={handleCloseCreateObservable}
-          type={undefined}
-          defaultCreatedBy={undefined}
-        />
-      </>
-    ) : (
-      <>
-        <StixDomainObjectCreation
-          display={true}
-          inputValue={searchTerm}
-          paginationKey="Pagination_draftWorkspaceEntities"
-          paginationOptions={queryPaginationOptions}
-          speeddial={false}
-          controlledDialStyles={{ marginLeft: 1 }}
-          open={openCreateEntity}
-          handleClose={handleCloseCreateEntity}
-          onCompleted={() => setOpenCreateEntity(false)}
-          stixDomainObjectTypes={entitiesType}
-          creationCallback={undefined}
-          confidence={undefined}
-          defaultCreatedBy={undefined}
-          isFromBulkRelation={undefined}
-          defaultMarkingDefinitions={undefined}
-        />
-      </>
-    );
+    createButton =
+      entitiesType === 'Stix-Cyber-Observable' ? (
+        <>
+          <StixCyberObservableCreation
+            display={open}
+            contextual={false}
+            inputValue={searchTerm}
+            paginationKey="Pagination_draftWorkspaceEntities"
+            paginationOptions={queryPaginationOptions}
+            speeddial={false}
+            open={openCreateObservable}
+            controlledDialStyles={{ marginLeft: 1 }}
+            handleClose={handleCloseCreateObservable}
+            type={undefined}
+            defaultCreatedBy={undefined}
+          />
+        </>
+      ) : (
+        <>
+          <StixDomainObjectCreation
+            display={true}
+            inputValue={searchTerm}
+            paginationKey="Pagination_draftWorkspaceEntities"
+            paginationOptions={queryPaginationOptions}
+            speeddial={false}
+            controlledDialStyles={{ marginLeft: 1 }}
+            open={openCreateEntity}
+            handleClose={handleCloseCreateEntity}
+            onCompleted={() => setOpenCreateEntity(false)}
+            stixDomainObjectTypes={entitiesType}
+            creationCallback={undefined}
+            confidence={undefined}
+            defaultCreatedBy={undefined}
+            isFromBulkRelation={undefined}
+            defaultMarkingDefinitions={undefined}
+          />
+        </>
+      );
   }
 
   const getRedirectionLink = (stixObject: DraftEntities_node$data) => {
     if (isReadOnly) {
-      const isUpdatedEntity = stixObject.draftVersion?.draft_operation === 'update' || stixObject.draftVersion?.draft_operation === 'update_linked';
-      return isUpdatedEntity ? `/dashboard/id/${stixObject.id}` : `/dashboard/id/${stixObject.standard_id}`;
+      const isUpdatedEntity =
+        stixObject.draftVersion?.draft_operation === 'update' ||
+        stixObject.draftVersion?.draft_operation === 'update_linked';
+      return isUpdatedEntity
+        ? `/dashboard/id/${stixObject.id}`
+        : `/dashboard/id/${stixObject.standard_id}`;
     }
     return computeLink(stixObject);
   };
@@ -277,7 +293,9 @@ const DraftEntities: FunctionComponent<DraftEntitiesProps> = ({
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: DraftEntitiesLines_data$data) => data.draftWorkspaceEntities?.edges?.map((n) => n?.node)}
+          resolvePath={(data: DraftEntitiesLines_data$data) =>
+            data.draftWorkspaceEntities?.edges?.map((n) => n?.node)
+          }
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           contextFilters={contextFilters}

@@ -1,10 +1,19 @@
 import { randomUUID } from 'node:crypto';
 import { logApp } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
-import { createEntity, createRelation, loadEntity, updateAttribute } from '../../../database/middleware';
+import {
+  createEntity,
+  createRelation,
+  loadEntity,
+  updateAttribute,
+} from '../../../database/middleware';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../database/members';
-import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../database/middleware-loader';
+import {
+  fullEntitiesList,
+  internalLoadById,
+  storeLoadById,
+} from '../../../database/middleware-loader';
 import { resolveUserById } from '../../../domain/user';
 import { createListTask } from '../../../domain/backgroundTask-common';
 import { type EditInput, FilterMode, FilterOperator } from '../../../generated/graphql';
@@ -34,15 +43,25 @@ import {
   type WorkflowSerializedTransition,
   type WorkflowValidationError,
 } from '../types/workflow-types';
-import { validateWorkflowDefinitionData, extractAllStatesFromDefinition } from '../workflow-validation';
+import {
+  validateWorkflowDefinitionData,
+  extractAllStatesFromDefinition,
+} from '../workflow-validation';
 import { checkEnterpriseEdition } from '../../../enterprise-edition/ee';
 import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema/internalObject';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
 // 'validateDraft' is a CE feature and must NOT be listed here.
-const EE_ONLY_ACTION_TYPES = new Set<WorkflowActionConfig['type']>(['updateAuthorizedMembers', 'shareWithOrganizations', 'unshareFromOrganizations', 'asyncBulkAction']);
-const hasEEActions = (actions?: WorkflowActionConfig[]) => (actions ?? []).some((a) => EE_ONLY_ACTION_TYPES.has(a.type));
-const hasConditions = (conditions?: WorkflowSerializedTransition['conditions']) => Array.isArray(conditions?.filters) && conditions.filters.length > 0;
+const EE_ONLY_ACTION_TYPES = new Set<WorkflowActionConfig['type']>([
+  'updateAuthorizedMembers',
+  'shareWithOrganizations',
+  'unshareFromOrganizations',
+  'asyncBulkAction',
+]);
+const hasEEActions = (actions?: WorkflowActionConfig[]) =>
+  (actions ?? []).some((a) => EE_ONLY_ACTION_TYPES.has(a.type));
+const hasConditions = (conditions?: WorkflowSerializedTransition['conditions']) =>
+  Array.isArray(conditions?.filters) && conditions.filters.length > 0;
 
 // Domain-specific types
 interface WorkflowVersion {
@@ -124,7 +143,8 @@ const notifyWorkflowTransitionComment = async (
     const seenIds = new Set<string>();
     const uniqueRecipients = [...assignees, ...participants].filter((recipient) => {
       const recipientId = recipient.id;
-      if (!recipientId || seenIds.has(recipientId) || recipientId === triggeredByUserId) return false;
+      if (!recipientId || seenIds.has(recipientId) || recipientId === triggeredByUserId)
+        return false;
       seenIds.add(recipientId);
       return true;
     });
@@ -138,7 +158,11 @@ const notifyWorkflowTransitionComment = async (
         try {
           const recipientUser = await resolveUserById(context, recipientId);
           if (!recipientUser) return;
-          const hasAccess = await internalLoadById(context, recipientUser, entity.internal_id ?? entity.id);
+          const hasAccess = await internalLoadById(
+            context,
+            recipientUser,
+            entity.internal_id ?? entity.id,
+          );
           if (hasAccess) {
             recipientIdsWithAccess.add(recipientId);
           }
@@ -148,7 +172,9 @@ const notifyWorkflowTransitionComment = async (
       }),
     );
 
-    const recipientsWithAccess = uniqueRecipients.filter((recipient) => recipientIdsWithAccess.has(recipient.id));
+    const recipientsWithAccess = uniqueRecipients.filter((recipient) =>
+      recipientIdsWithAccess.has(recipient.id),
+    );
     if (recipientsWithAccess.length === 0) return;
 
     const entityName = extractEntityRepresentativeName(entity) || entity.entity_type;
@@ -163,15 +189,19 @@ const notifyWorkflowTransitionComment = async (
           created: now(),
           created_at: now(),
           updated_at: now(),
-          notification_content: [{
-            title: entityName,
-            events: [{
-              operation: 'update',
-              message: `[${eventName}] ${comment}`,
-              instance_id: entity.internal_id ?? entity.id,
-              entity_type: entity.entity_type,
-            }],
-          }],
+          notification_content: [
+            {
+              title: entityName,
+              events: [
+                {
+                  operation: 'update',
+                  message: `[${eventName}] ${comment}`,
+                  instance_id: entity.internal_id ?? entity.id,
+                  entity_type: entity.entity_type,
+                },
+              ],
+            },
+          ],
         };
         return addNotification(context, SYSTEM_USER, notificationPayload);
       }),
@@ -179,10 +209,14 @@ const notifyWorkflowTransitionComment = async (
     results
       .filter((r): r is PromiseRejectedResult => r.status === 'rejected')
       .forEach(({ reason }) => {
-        logApp.error('[OPENCTI-MODULE] Failed to send workflow notification to recipient', { cause: reason });
+        logApp.error('[OPENCTI-MODULE] Failed to send workflow notification to recipient', {
+          cause: reason,
+        });
       });
   } catch (error) {
-    logApp.error('[OPENCTI-MODULE] Failed to send workflow transition comment notifications', { cause: error });
+    logApp.error('[OPENCTI-MODULE] Failed to send workflow transition comment notifications', {
+      cause: error,
+    });
   }
 };
 
@@ -217,18 +251,19 @@ const getDefinitionData = async (
 
   if (entitySetting.workflow_id) {
     const executionContext = bypassDraftContext(context);
-    const workflowDefinitionEntity = await storeLoadById(
+    const workflowDefinitionEntity = (await storeLoadById(
       executionContext,
       executionContext.user!,
       entitySetting.workflow_id,
       ENTITY_TYPE_WORKFLOW_DEFINITION,
-    ) as WorkflowDefinitionEntity | undefined;
+    )) as WorkflowDefinitionEntity | undefined;
     if (workflowDefinitionEntity) {
       // Choose version based on allowDraft parameter
       let version;
       if (allowDraft) {
         // For UI editing: draft_version if exists, otherwise published_version
-        version = workflowDefinitionEntity.draft_version || workflowDefinitionEntity.published_version;
+        version =
+          workflowDefinitionEntity.draft_version || workflowDefinitionEntity.published_version;
       } else {
         // For runtime execution: ONLY published_version (no fallback)
         version = workflowDefinitionEntity.published_version;
@@ -236,14 +271,13 @@ const getDefinitionData = async (
 
       if (!version?.content) return null;
 
-      const workflowContent = typeof version.content === 'string'
-        ? JSON.parse(version.content)
-        : version.content;
+      const workflowContent =
+        typeof version.content === 'string' ? JSON.parse(version.content) : version.content;
 
       // Determine if draft and published are the same
       const draftVersion = workflowDefinitionEntity.draft_version;
       const publishedVersion = workflowDefinitionEntity.published_version;
-      const published = !draftVersion || (publishedVersion?.id === draftVersion?.id);
+      const published = !draftVersion || publishedVersion?.id === draftVersion?.id;
       const errors = version.validation_errors || [];
 
       return {
@@ -267,13 +301,18 @@ const findWorkflowInstanceEntity = async (
 ): Promise<WorkflowInstanceStoreEntity | null> => {
   // Find existing instance via entity_id attribute directly (more robust than relationship)
   const executionContext = bypassDraftContext(context);
-  return await loadEntity(executionContext, executionContext.user!, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
-    filters: {
-      mode: FilterMode.And,
-      filters: [{ key: ['entity_id'], values: [entityId] }],
-      filterGroups: [],
+  return (await loadEntity(
+    executionContext,
+    executionContext.user!,
+    [ENTITY_TYPE_WORKFLOW_INSTANCE],
+    {
+      filters: {
+        mode: FilterMode.And,
+        filters: [{ key: ['entity_id'], values: [entityId] }],
+        filterGroups: [],
+      },
     },
-  }) as WorkflowInstanceStoreEntity;
+  )) as WorkflowInstanceStoreEntity;
 };
 
 const initializeWorkflowInstance = async (
@@ -289,16 +328,23 @@ const initializeWorkflowInstance = async (
     entity_id: entityId,
     workflow_id: entitySetting.workflow_id || 'manual',
     currentState: initialState,
-    history: JSON.stringify([{
-      state: initialState,
-      user_id: user.id,
-      timestamp: new Date().toISOString(),
-      event: 'initialization',
-    }]),
+    history: JSON.stringify([
+      {
+        state: initialState,
+        user_id: user.id,
+        timestamp: new Date().toISOString(),
+        event: 'initialization',
+      },
+    ]),
   };
   const executionContext = bypassDraftContext(context);
   const executionUser = executionContext.user!;
-  const instance = await createEntity(executionContext, executionUser, instanceInput, ENTITY_TYPE_WORKFLOW_INSTANCE) as WorkflowInstanceStoreEntity;
+  const instance = (await createEntity(
+    executionContext,
+    executionUser,
+    instanceInput,
+    ENTITY_TYPE_WORKFLOW_INSTANCE,
+  )) as WorkflowInstanceStoreEntity;
 
   await createRelation(executionContext, executionUser, {
     fromId: entityId,
@@ -322,7 +368,11 @@ const ensureWorkflowInstance = async (
   definitionData: any,
 ): Promise<WorkflowInstanceStoreEntity> => {
   const effectiveEntityId = entity.internal_id || entity.id;
-  const existing = await findWorkflowInstanceEntity(executionContext, executionUser, effectiveEntityId);
+  const existing = await findWorkflowInstanceEntity(
+    executionContext,
+    executionUser,
+    effectiveEntityId,
+  );
   if (existing) return existing;
 
   const instanceEntity = await initializeWorkflowInstance(
@@ -345,7 +395,12 @@ const ensureWorkflowInstance = async (
     __workflowInstanceId: instanceEntity.internal_id || instanceEntity.id,
     __draftEntityIds: [],
   };
-  const instance = WorkflowFactory.getInstance(definitionData, definition, definitionData.initialState, workflowContext);
+  const instance = WorkflowFactory.getInstance(
+    definitionData,
+    definition,
+    definitionData.initialState,
+    workflowContext,
+  );
   await instance.start();
 
   return instanceEntity;
@@ -373,12 +428,12 @@ export const getWorkflowPublishedVersionId = async (
 ): Promise<string | null> => {
   if (!entitySetting.workflow_id) return null;
   const executionContext = bypassDraftContext(context);
-  const workflowDefinitionEntity = await storeLoadById(
+  const workflowDefinitionEntity = (await storeLoadById(
     executionContext,
     executionContext.user!,
     entitySetting.workflow_id,
     ENTITY_TYPE_WORKFLOW_DEFINITION,
-  ) as WorkflowDefinitionEntity | undefined;
+  )) as WorkflowDefinitionEntity | undefined;
   return workflowDefinitionEntity?.published_version?.id ?? null;
 };
 
@@ -406,15 +461,17 @@ export const setWorkflowDefinition = async (
 
   // Check if the definition uses EE-only features (actions/conditions on transitions
   // or onEnter/onExit actions on states), except for the 'validateDraft' action which is CE.
-  const definitionRequiresEE = (
-    (definitionObj.transitions ?? []).some((t: WorkflowSerializedTransition) => (
-      hasEEActions(t.asyncActions)
-      || hasEEActions(t.syncActions)
-      || hasConditions(t.conditions)
-      || !!t.comment
-    ))
-    || (definitionObj.states ?? []).some((s: WorkflowSerializedState) => hasEEActions(s.onEnter) || hasEEActions(s.onExit))
-  );
+  const definitionRequiresEE =
+    (definitionObj.transitions ?? []).some(
+      (t: WorkflowSerializedTransition) =>
+        hasEEActions(t.asyncActions) ||
+        hasEEActions(t.syncActions) ||
+        hasConditions(t.conditions) ||
+        !!t.comment,
+    ) ||
+    (definitionObj.states ?? []).some(
+      (s: WorkflowSerializedState) => hasEEActions(s.onEnter) || hasEEActions(s.onExit),
+    );
   if (definitionRequiresEE) {
     await checkEnterpriseEdition(context);
   }
@@ -422,7 +479,13 @@ export const setWorkflowDefinition = async (
   const executionContext = bypassDraftContext(context);
   const executionUser = executionContext.user!;
 
-  const errors = await validateWorkflowDefinitionData(executionContext, executionUser, definition, entityType, entitySetting.workflow_id ?? undefined);
+  const errors = await validateWorkflowDefinitionData(
+    executionContext,
+    executionUser,
+    definition,
+    entityType,
+    entitySetting.workflow_id ?? undefined,
+  );
 
   const workflowName = definitionObj.name || `Workflow for ${entityType}`;
 
@@ -437,12 +500,12 @@ export const setWorkflowDefinition = async (
 
   // 1. Check if we have an existing workflow linked
   if (entitySetting.workflow_id) {
-    const existingWorkflow = await storeLoadById(
+    const existingWorkflow = (await storeLoadById(
       executionContext,
       executionUser,
       entitySetting.workflow_id,
       ENTITY_TYPE_WORKFLOW_DEFINITION,
-    ) as WorkflowDefinitionEntity | undefined;
+    )) as WorkflowDefinitionEntity | undefined;
     if (existingWorkflow) {
       // Add to version history (prepend new version to maintain chronological order).
       // Cap at 100 entries to prevent unbounded growth (e.g. from a save loop triggered by UI hooks).
@@ -451,18 +514,24 @@ export const setWorkflowDefinition = async (
       const updatedVersions = [versionData, ...allVersions].slice(0, MAX_VERSIONS);
 
       // draft_version is always in all_versions
-      await updateAttribute(executionContext, executionUser, existingWorkflow.id, ENTITY_TYPE_WORKFLOW_DEFINITION, [
-        { key: 'draft_version', value: [versionData] },
-        { key: 'all_versions', value: updatedVersions },
-        { key: 'name', value: [workflowName] },
-      ]);
-
-      const updatedWorkflow = await storeLoadById(
+      await updateAttribute(
         executionContext,
         executionUser,
         existingWorkflow.id,
         ENTITY_TYPE_WORKFLOW_DEFINITION,
-      ) as WorkflowDefinitionEntity;
+        [
+          { key: 'draft_version', value: [versionData] },
+          { key: 'all_versions', value: updatedVersions },
+          { key: 'name', value: [workflowName] },
+        ],
+      );
+
+      const updatedWorkflow = (await storeLoadById(
+        executionContext,
+        executionUser,
+        existingWorkflow.id,
+        ENTITY_TYPE_WORKFLOW_DEFINITION,
+      )) as WorkflowDefinitionEntity;
       validateVersionConsistency(updatedWorkflow);
 
       // Check if draft matches published
@@ -483,20 +552,24 @@ export const setWorkflowDefinition = async (
     draft_version: versionData,
     all_versions: [versionData],
   };
-  const workflowDefinition = await createEntity(
+  const workflowDefinition = (await createEntity(
     executionContext,
     executionUser,
     workflowDefinitionInput,
     ENTITY_TYPE_WORKFLOW_DEFINITION,
-  ) as WorkflowDefinitionEntity;
+  )) as WorkflowDefinitionEntity;
 
   // Validate consistency after creation
   validateVersionConsistency(workflowDefinition);
 
   // 3. Link it to the EntitySetting
-  const { element } = await updateAttribute(executionContext, executionUser, entitySetting.id, 'EntitySetting', [
-    { key: 'workflow_id', value: [workflowDefinition.id] },
-  ]);
+  const { element } = await updateAttribute(
+    executionContext,
+    executionUser,
+    entitySetting.id,
+    'EntitySetting',
+    [{ key: 'workflow_id', value: [workflowDefinition.id] }],
+  );
 
   // New workflows have no published version yet
   const published = false;
@@ -522,9 +595,13 @@ export const deleteWorkflowDefinition = async (
   const entitySetting = await getWorkflowConfig(context, user, entityType);
   if (entitySetting?.workflow_id) {
     const executionContext = bypassDraftContext(context);
-    const { element } = await updateAttribute(executionContext, executionContext.user!, entitySetting.id, 'EntitySetting', [
-      { key: 'workflow_id', value: [null] },
-    ]);
+    const { element } = await updateAttribute(
+      executionContext,
+      executionContext.user!,
+      entitySetting.id,
+      'EntitySetting',
+      [{ key: 'workflow_id', value: [null] }],
+    );
     return element as unknown as BasicStoreEntityEntitySetting;
   }
   return entitySetting;
@@ -550,14 +627,16 @@ export const publishWorkflowDefinition = async (
   const executionContext = bypassDraftContext(context);
   const executionUser = executionContext.user!;
 
-  const workflowDefinitionEntity = await storeLoadById(
+  const workflowDefinitionEntity = (await storeLoadById(
     executionContext,
     executionUser,
     entitySetting.workflow_id,
     ENTITY_TYPE_WORKFLOW_DEFINITION,
-  ) as WorkflowDefinitionEntity | undefined;
+  )) as WorkflowDefinitionEntity | undefined;
   if (!workflowDefinitionEntity) {
-    throw FunctionalError('Workflow definition not found', { workflowId: entitySetting.workflow_id });
+    throw FunctionalError('Workflow definition not found', {
+      workflowId: entitySetting.workflow_id,
+    });
   }
 
   const draftVersion = workflowDefinitionEntity.draft_version;
@@ -597,33 +676,50 @@ export const publishWorkflowDefinition = async (
       if (removedStates.length > 0) {
         // Ending states (no outgoing transitions) are safe to remove even with active instances.
         const statesWithOutgoingTransitions = new Set<string>();
-        for (const transition of (oldDef.transitions ?? [])) {
+        for (const transition of oldDef.transitions ?? []) {
           const fromStates = Array.isArray(transition.from) ? transition.from : [transition.from];
           for (const s of fromStates) {
             if (s && s !== '*') statesWithOutgoingTransitions.add(s);
           }
         }
-        const nonEndingRemovedStates = removedStates.filter((s) => statesWithOutgoingTransitions.has(s));
+        const nonEndingRemovedStates = removedStates.filter((s) =>
+          statesWithOutgoingTransitions.has(s),
+        );
 
         if (nonEndingRemovedStates.length > 0) {
           // Note: 'workflow_id' is a reserved special filter key (WORKFLOW_FILTER) in OpenCTI that maps to
           // entity workflow status (x_opencti_workflow_id). We cannot use it as a raw ES filter key.
           // Instead, we filter by currentState in ES and post-filter by workflow_id.
-          const instancesInRemovedStates = await fullEntitiesList<any>(executionContext, executionUser, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
-            filters: {
-              mode: FilterMode.And,
-              filters: [
-                { key: ['currentState'], values: nonEndingRemovedStates, operator: FilterOperator.Eq, mode: FilterMode.Or },
-              ],
-              filterGroups: [],
+          const instancesInRemovedStates = await fullEntitiesList<any>(
+            executionContext,
+            executionUser,
+            [ENTITY_TYPE_WORKFLOW_INSTANCE],
+            {
+              filters: {
+                mode: FilterMode.And,
+                filters: [
+                  {
+                    key: ['currentState'],
+                    values: nonEndingRemovedStates,
+                    operator: FilterOperator.Eq,
+                    mode: FilterMode.Or,
+                  },
+                ],
+                filterGroups: [],
+              },
             },
-          });
-          const conflictingInstances = instancesInRemovedStates.filter((inst: any) => inst.workflow_id === workflowDefinitionEntity.id);
+          );
+          const conflictingInstances = instancesInRemovedStates.filter(
+            (inst: any) => inst.workflow_id === workflowDefinitionEntity.id,
+          );
 
           if (conflictingInstances.length > 0) {
             throw FunctionalError(
               'Cannot publish workflow: the following statuses are in use and cannot be removed. Move all items out of those statuses first.',
-              { removedStates: nonEndingRemovedStates, entityType: ENTITY_TYPE_STATUS_TEMPLATE },
+              {
+                removedStates: nonEndingRemovedStates,
+                entityType: ENTITY_TYPE_STATUS_TEMPLATE,
+              },
             );
           }
         }
@@ -633,11 +729,16 @@ export const publishWorkflowDefinition = async (
 
   // Validate consistency BEFORE publishing
   const allVersions = workflowDefinitionEntity.all_versions || [];
-  const draftInHistory = allVersions.some((version: WorkflowVersion) => version.id === draftVersion.id);
+  const draftInHistory = allVersions.some(
+    (version: WorkflowVersion) => version.id === draftVersion.id,
+  );
   if (!draftInHistory) {
-    throw FunctionalError('Consistency error: Cannot publish draft_version that is not in all_versions', {
-      draftVersionId: draftVersion.id,
-    });
+    throw FunctionalError(
+      'Consistency error: Cannot publish draft_version that is not in all_versions',
+      {
+        draftVersionId: draftVersion.id,
+      },
+    );
   }
 
   // CONSISTENCY GUARANTEE: published_version will be in all_versions (already there via draft)
@@ -647,14 +748,20 @@ export const publishWorkflowDefinition = async (
     { key: 'draft_version', value: [] },
   ];
 
-  await updateAttribute(executionContext, executionUser, workflowDefinitionEntity.id, ENTITY_TYPE_WORKFLOW_DEFINITION, updates);
-
-  const updatedWorkflow = await storeLoadById(
+  await updateAttribute(
     executionContext,
     executionUser,
     workflowDefinitionEntity.id,
     ENTITY_TYPE_WORKFLOW_DEFINITION,
-  ) as WorkflowDefinitionEntity;
+    updates,
+  );
+
+  const updatedWorkflow = (await storeLoadById(
+    executionContext,
+    executionUser,
+    workflowDefinitionEntity.id,
+    ENTITY_TYPE_WORKFLOW_DEFINITION,
+  )) as WorkflowDefinitionEntity;
   // Validate consistency after update
   validateVersionConsistency(updatedWorkflow);
 
@@ -691,14 +798,16 @@ export const restorePublishedWorkflowDefinition = async (
   const executionContext = bypassDraftContext(context);
   const executionUser = executionContext.user!;
 
-  const workflowDefinitionEntity = await storeLoadById(
+  const workflowDefinitionEntity = (await storeLoadById(
     executionContext,
     executionUser,
     entitySetting.workflow_id,
     ENTITY_TYPE_WORKFLOW_DEFINITION,
-  ) as WorkflowDefinitionEntity | undefined;
+  )) as WorkflowDefinitionEntity | undefined;
   if (!workflowDefinitionEntity) {
-    throw FunctionalError('Workflow definition not found', { workflowId: entitySetting.workflow_id });
+    throw FunctionalError('Workflow definition not found', {
+      workflowId: entitySetting.workflow_id,
+    });
   }
 
   if (!workflowDefinitionEntity.published_version) {
@@ -755,15 +864,18 @@ export const getWorkflowInstance = async (
   let pendingTransitionData: WorkflowPendingTransition | null = null;
   if (instanceEntity?.pendingTransition) {
     try {
-      const raw: WorkflowPendingTransition = typeof instanceEntity.pendingTransition === 'string'
-        ? JSON.parse(instanceEntity.pendingTransition)
-        : instanceEntity.pendingTransition;
+      const raw: WorkflowPendingTransition =
+        typeof instanceEntity.pendingTransition === 'string'
+          ? JSON.parse(instanceEntity.pendingTransition)
+          : instanceEntity.pendingTransition;
 
       // Enrich each slot with live BackgroundTask + Work entity data
       const enrichedSlots = await Promise.all(
         raw.asyncActions.map(async (slot) => {
           if (!slot.workId) return slot;
-          const workEntity = await storeLoadById<any>(context, user, slot.workId, 'Work', { indices: [READ_INDEX_HISTORY] }).catch(() => null);
+          const workEntity = await storeLoadById<any>(context, user, slot.workId, 'Work', {
+            indices: [READ_INDEX_HISTORY],
+          }).catch(() => null);
           if (!workEntity) return slot;
           // The BackgroundTask has task_expected_number (set at creation = ids.length)
           // and task_processed_number (updated per iteration by the task manager).
@@ -773,7 +885,12 @@ export const getWorkflowInstance = async (
           let expectedCount = 0;
           const backgroundTaskId = workEntity.background_task_id;
           if (backgroundTaskId) {
-            const bgTask = await storeLoadById<any>(context, user, backgroundTaskId, 'BackgroundTask').catch(() => null);
+            const bgTask = await storeLoadById<any>(
+              context,
+              user,
+              backgroundTaskId,
+              'BackgroundTask',
+            ).catch(() => null);
             if (bgTask) {
               expectedCount = bgTask.task_expected_number ?? 0;
               processedCount = bgTask.task_processed_number ?? 0;
@@ -816,7 +933,16 @@ export const getAllowedTransitions = async (
   context: AuthContext,
   user: AuthUser,
   entityId: string,
-): Promise<Array<{ event: string; toState: string; comment?: string; actions: string[]; requiresShareOrganizationInput: boolean; requiresUnshareOrganizationInput: boolean }>> => {
+): Promise<
+  Array<{
+    event: string;
+    toState: string;
+    comment?: string;
+    actions: string[];
+    requiresShareOrganizationInput: boolean;
+    requiresUnshareOrganizationInput: boolean;
+  }>
+> => {
   const entity = await storeLoadById(context, user, entityId, 'Basic-Object');
   if (!entity) {
     return [];
@@ -844,22 +970,24 @@ export const getAllowedTransitions = async (
   // Pre-evaluate conditions against the requesting user so the frontend only
   // sees transitions the current user is actually allowed to trigger.
   const conditionContext = { entity, user, triggeringUser: user };
-  const resolvedTransitions = (await Promise.all(
-    transitions.map(async (transition) => {
-      for (const condition of (transition.conditions ?? [])) {
-        const passes = await condition(conditionContext as any);
-        if (!passes) return null;
-      }
-      return {
-        event: transition.event,
-        toState: transition.to,
-        comment: transition.comment,
-        actions: transition.actionTypes || [],
-        requiresShareOrganizationInput: transition.requiresShareOrganizationInput ?? false,
-        requiresUnshareOrganizationInput: transition.requiresUnshareOrganizationInput ?? false,
-      };
-    }),
-  )).filter((t): t is NonNullable<typeof t> => t !== null);
+  const resolvedTransitions = (
+    await Promise.all(
+      transitions.map(async (transition) => {
+        for (const condition of transition.conditions ?? []) {
+          const passes = await condition(conditionContext as any);
+          if (!passes) return null;
+        }
+        return {
+          event: transition.event,
+          toState: transition.to,
+          comment: transition.comment,
+          actions: transition.actionTypes || [],
+          requiresShareOrganizationInput: transition.requiresShareOrganizationInput ?? false,
+          requiresUnshareOrganizationInput: transition.requiresUnshareOrganizationInput ?? false,
+        };
+      }),
+    )
+  ).filter((t): t is NonNullable<typeof t> => t !== null);
 
   return resolvedTransitions;
 };
@@ -905,13 +1033,20 @@ export const triggerWorkflowEvent = async (
     const executionContext = bypassDraftContext(context);
     const executionUser = executionContext.user!;
 
-    const instanceEntity = await ensureWorkflowInstance(executionContext, executionUser, entity, entitySetting, definitionData);
+    const instanceEntity = await ensureWorkflowInstance(
+      executionContext,
+      executionUser,
+      entity,
+      entitySetting,
+      definitionData,
+    );
 
     // 3. Lock check: reject new events while a transition is already pending
     if (instanceEntity.pendingStatus === 'pending') {
       return {
         success: false,
-        reason: 'A workflow transition is already pending for this entity. Wait for it to complete, retry the failed action, or ask an admin to clear the pending state.',
+        reason:
+          'A workflow transition is already pending for this entity. Wait for it to complete, retry the failed action, or ask an admin to clear the pending state.',
       };
     }
 
@@ -930,17 +1065,26 @@ export const triggerWorkflowEvent = async (
         filters: [{ key: ['draft_ids'], values: [draftId] }],
         filterGroups: [],
       };
-      const draftItems = await fullEntitiesList<any>(draftCtx, executionUser, ['Stix-Core-Object'], {
-        indices: [READ_INDEX_DRAFT_OBJECTS],
-        filters: draftFilter,
-      });
+      const draftItems = await fullEntitiesList<any>(
+        draftCtx,
+        executionUser,
+        ['Stix-Core-Object'],
+        {
+          indices: [READ_INDEX_DRAFT_OBJECTS],
+          filters: draftFilter,
+        },
+      );
       // Exclude update_linked entities — these are entities indirectly pulled into the draft
       // (e.g. organizations referenced by new sharing relations) and should not be targeted
       // by subsequent async actions like org sharing/unsharing.
-      draftEntityIds.push(...draftItems
-        .filter((item: any) => item.draft_change?.draft_operation !== DRAFT_OPERATION_UPDATE_LINKED)
-        .map((item: any) => item.internal_id)
-        .filter(Boolean));
+      draftEntityIds.push(
+        ...draftItems
+          .filter(
+            (item: any) => item.draft_change?.draft_operation !== DRAFT_OPERATION_UPDATE_LINKED,
+          )
+          .map((item: any) => item.internal_id)
+          .filter(Boolean),
+      );
     }
 
     const workflowContext = {
@@ -955,7 +1099,12 @@ export const triggerWorkflowEvent = async (
     };
 
     // 5. Create instance and trigger the event
-    const instance = WorkflowFactory.getInstance(definitionData, definition, currentStateId || '', workflowContext);
+    const instance = WorkflowFactory.getInstance(
+      definitionData,
+      definition,
+      currentStateId || '',
+      workflowContext,
+    );
     const result = await instance.trigger(eventName);
 
     if (!result.success) {
@@ -965,7 +1114,11 @@ export const triggerWorkflowEvent = async (
     const instanceId = instanceEntity.internal_id || instanceEntity.id;
 
     // 6a. Async transition: persist pendingTransition, do NOT advance state
-    if (result.executionStatus === 'pending' && result.asyncActionSlots && result.asyncActionSlots.length > 0) {
+    if (
+      result.executionStatus === 'pending' &&
+      result.asyncActionSlots &&
+      result.asyncActionSlots.length > 0
+    ) {
       // The action already generated stable slot IDs (identical to workflow_action_id on the BackgroundTask)
       const rawSlots: AsyncActionSlot[] = result.asyncActionSlots.map((rawSlot: any) => ({
         id: rawSlot.id,
@@ -980,7 +1133,8 @@ export const triggerWorkflowEvent = async (
         return fromStates.includes(currentStateId) && t.event === eventName;
       });
       // fallback on actions if syncActions not explicitly defined on transition (legacy support)
-      const serializedTransitions: WorkflowActionConfig[] = targetTransitionForSync?.syncActions ?? [];
+      const serializedTransitions: WorkflowActionConfig[] =
+        targetTransitionForSync?.syncActions ?? [];
 
       // Collect the onEnter actions of the target state so phase 2 can replay them.
       const toStateId = targetTransitionForSync?.to ?? instance.getCurrentState();
@@ -996,14 +1150,22 @@ export const triggerWorkflowEvent = async (
         ...(comment ? { comment } : {}),
         asyncActions: rawSlots,
         syncActions: serializedTransitions,
-        ...(serializedOnEnterActions.length > 0 ? { onEnterActions: serializedOnEnterActions } : {}),
+        ...(serializedOnEnterActions.length > 0
+          ? { onEnterActions: serializedOnEnterActions }
+          : {}),
       };
 
-      await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
-        { key: 'pendingStatus', value: ['pending'] },
-        { key: 'pendingError', value: [null] },
-        { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
-      ]);
+      await updateAttribute(
+        executionContext,
+        executionUser,
+        instanceId,
+        ENTITY_TYPE_WORKFLOW_INSTANCE,
+        [
+          { key: 'pendingStatus', value: ['pending'] },
+          { key: 'pendingError', value: [null] },
+          { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
+        ],
+      );
 
       const workflowInstance = await getWorkflowInstance(context, user, entityId);
       return {
@@ -1031,18 +1193,36 @@ export const triggerWorkflowEvent = async (
       ...(comment ? { comment } : {}),
     });
 
-    await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
-      { key: 'currentState', value: [newState] },
-      { key: 'history', value: [JSON.stringify(history)] },
-    ]);
+    await updateAttribute(
+      executionContext,
+      executionUser,
+      instanceId,
+      ENTITY_TYPE_WORKFLOW_INSTANCE,
+      [
+        { key: 'currentState', value: [newState] },
+        { key: 'history', value: [JSON.stringify(history)] },
+      ],
+    );
 
     const workflowInstance = await getWorkflowInstance(context, user, entityId);
     // Notify assignees and participants when a non-empty comment was provided
     if (comment?.trim()) {
-      await notifyWorkflowTransitionComment(executionContext, entity as BasicStoreEntity, eventName, comment, user.id);
+      await notifyWorkflowTransitionComment(
+        executionContext,
+        entity as BasicStoreEntity,
+        eventName,
+        comment,
+        user.id,
+      );
     }
 
-    return { success: true, newState, executionStatus: 'completed', instance: workflowInstance, entity };
+    return {
+      success: true,
+      newState,
+      executionStatus: 'completed',
+      instance: workflowInstance,
+      entity,
+    };
   } catch (error) {
     const reason = error instanceof Error ? error.message : 'Unknown error';
     return {
@@ -1064,10 +1244,20 @@ export const initializeEntityWorkflow = async (
 ): Promise<void> => {
   const executionContext = bypassDraftContext(context);
   const executionUser = executionContext.user!;
-  const entitySetting = await getWorkflowConfig(executionContext, executionUser, entity.entity_type);
+  const entitySetting = await getWorkflowConfig(
+    executionContext,
+    executionUser,
+    entity.entity_type,
+  );
   const definitionData = await getDefinitionData(executionContext, executionUser, entitySetting);
   if (!definitionData) return;
-  await ensureWorkflowInstance(executionContext, executionUser, entity, entitySetting, definitionData);
+  await ensureWorkflowInstance(
+    executionContext,
+    executionUser,
+    entity,
+    entitySetting,
+    definitionData,
+  );
 };
 
 export const isStatusTemplateUsedInWorkflows = async (
@@ -1083,7 +1273,9 @@ export const isStatusTemplateUsedInWorkflows = async (
   );
   for (const workflow of workflows) {
     // Check both published and draft versions
-    const versions = [workflow.published_version, workflow.draft_version].filter((v): v is WorkflowVersion => v !== undefined && v !== null);
+    const versions = [workflow.published_version, workflow.draft_version].filter(
+      (v): v is WorkflowVersion => v !== undefined && v !== null,
+    );
     for (const version of versions) {
       const content = version.content;
       if (typeof content === 'string' && content.includes(statusTemplateId)) {
@@ -1112,7 +1304,11 @@ export const clearWorkflowPendingState = async (
   const executionContext = bypassDraftContext(context);
   const executionUser = executionContext.user!;
   const effectiveEntityId = entity.internal_id || entity.id;
-  const instanceEntity = await findWorkflowInstanceEntity(executionContext, executionUser, effectiveEntityId);
+  const instanceEntity = await findWorkflowInstanceEntity(
+    executionContext,
+    executionUser,
+    effectiveEntityId,
+  );
   if (!instanceEntity) throw FunctionalError('No workflow instance found for entity', { entityId });
 
   let historyArr: any[];
@@ -1130,12 +1326,18 @@ export const clearWorkflowPendingState = async (
   });
 
   const instanceId = instanceEntity.internal_id || instanceEntity.id;
-  await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
-    { key: 'pendingStatus', value: [null] },
-    { key: 'pendingError', value: [null] },
-    { key: 'pendingTransition', value: [null] },
-    { key: 'history', value: [JSON.stringify(historyArr)] },
-  ]);
+  await updateAttribute(
+    executionContext,
+    executionUser,
+    instanceId,
+    ENTITY_TYPE_WORKFLOW_INSTANCE,
+    [
+      { key: 'pendingStatus', value: [null] },
+      { key: 'pendingError', value: [null] },
+      { key: 'pendingTransition', value: [null] },
+      { key: 'history', value: [JSON.stringify(historyArr)] },
+    ],
+  );
 
   return getWorkflowInstance(context, user, entityId);
 };

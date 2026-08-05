@@ -34,33 +34,39 @@ interface FeatureFlagDirectiveArgs {
 
 const FF_DIRECTIVE = 'ff';
 
-export const makeFeatureFlagDirectiveTransformer = (): (schema: GraphQLSchema) => GraphQLSchema => {
-  return (schema: GraphQLSchema) => mapSchema(schema, {
-    [MapperKind.OBJECT_FIELD]: (fieldConfig: GraphQLFieldConfig<any, any>, _fieldName: string) => {
-      const directive = getDirective(schema, fieldConfig, FF_DIRECTIVE);
-      const ffDirective = directive?.[0] as FeatureFlagDirectiveArgs | undefined;
+export const makeFeatureFlagDirectiveTransformer = (): ((
+  schema: GraphQLSchema,
+) => GraphQLSchema) => {
+  return (schema: GraphQLSchema) =>
+    mapSchema(schema, {
+      [MapperKind.OBJECT_FIELD]: (
+        fieldConfig: GraphQLFieldConfig<any, any>,
+        _fieldName: string,
+      ) => {
+        const directive = getDirective(schema, fieldConfig, FF_DIRECTIVE);
+        const ffDirective = directive?.[0] as FeatureFlagDirectiveArgs | undefined;
 
-      if (!ffDirective) {
-        return fieldConfig;
-      }
-
-      const { flags, softFail, defaultValue } = ffDirective;
-      if (!flags) {
-        return fieldConfig;
-      }
-
-      const { resolve = defaultFieldResolver } = fieldConfig;
-      fieldConfig.resolve = (source: any, args: any, context: AuthContext, info: any) => {
-        if (!flags.some((flag) => isFeatureEnabled(flag))) {
-          if (softFail) {
-            return defaultValue ? JSON.parse(defaultValue) : null;
-          } else {
-            throw ForbiddenAccess('Feature is disabled', { flags });
-          }
+        if (!ffDirective) {
+          return fieldConfig;
         }
-        return resolve(source, args, context, info);
-      };
-      return fieldConfig;
-    },
-  });
+
+        const { flags, softFail, defaultValue } = ffDirective;
+        if (!flags) {
+          return fieldConfig;
+        }
+
+        const { resolve = defaultFieldResolver } = fieldConfig;
+        fieldConfig.resolve = (source: any, args: any, context: AuthContext, info: any) => {
+          if (!flags.some((flag) => isFeatureEnabled(flag))) {
+            if (softFail) {
+              return defaultValue ? JSON.parse(defaultValue) : null;
+            } else {
+              throw ForbiddenAccess('Feature is disabled', { flags });
+            }
+          }
+          return resolve(source, args, context, info);
+        };
+        return fieldConfig;
+      },
+    });
 };

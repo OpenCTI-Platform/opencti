@@ -91,12 +91,7 @@ const TypesField = (props: TypesFieldProps) => {
 
   return (
     <Suspense fallback={FallbackSelect}>
-      {queryRef && (
-        <TypesFieldComponent
-          {...props}
-          queryRef={queryRef}
-        />
-      )}
+      {queryRef && <TypesFieldComponent {...props} queryRef={queryRef} />}
     </Suspense>
   );
 };

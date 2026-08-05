@@ -11,7 +11,12 @@ import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { isStixDomainObject } from '../../schema/stixDomainObject';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../../utils/access';
+import {
+  isUserHasCapability,
+  SETTINGS_SET_ACCESSES,
+  SYSTEM_USER,
+  TAXIIAPI_SETCOLLECTIONS,
+} from '../../utils/access';
 import { TAXIIAPI } from '../../domain/user';
 import { validatePublicUserId } from './dataSharing-utils';
 
@@ -28,13 +33,25 @@ const checkFeedIntegrity = (input: FeedAddInput) => {
       throw UnsupportedError(`${feedType} is not supported in http feeds`);
     }
     input.feed_attributes.forEach((f) => {
-      if (f.multi_match_strategy && !VALID_MULTI_MATCH_STRATEGIES.includes(f.multi_match_strategy)) {
-        throw ValidationError(`Invalid multi_match_strategy "${f.multi_match_strategy}", must be "first" or "list"`, 'multi_match_strategy');
+      if (
+        f.multi_match_strategy &&
+        !VALID_MULTI_MATCH_STRATEGIES.includes(f.multi_match_strategy)
+      ) {
+        throw ValidationError(
+          `Invalid multi_match_strategy "${f.multi_match_strategy}", must be "first" or "list"`,
+          'multi_match_strategy',
+        );
       }
-      const hasRelationshipMappings = f.mappings.some((m) => !!m.relationship_type && !!m.target_entity_type);
+      const hasRelationshipMappings = f.mappings.some(
+        (m) => !!m.relationship_type && !!m.target_entity_type,
+      );
       const effectiveStrategy = f.multi_match_strategy || 'list';
       const effectiveSeparator = f.multi_match_separator || ',';
-      if (hasRelationshipMappings && effectiveStrategy === 'list' && effectiveSeparator === input.separator) {
+      if (
+        hasRelationshipMappings &&
+        effectiveStrategy === 'list' &&
+        effectiveSeparator === input.separator
+      ) {
         throw ValidationError(
           `Multi-match separator for column "${f.attribute}" must differ from the feed CSV separator ("${input.separator}")`,
           'multi_match_separator',
@@ -44,7 +61,9 @@ const checkFeedIntegrity = (input: FeedAddInput) => {
         throw UnsupportedError('Feed mappings length does not match global types length');
       }
       if (!f.mappings.map((m) => m.type).includes(feedType)) {
-        throw UnsupportedError(`The mapping of the type ${feedType} is missing in the attribute ${f.attribute}.`);
+        throw UnsupportedError(
+          `The mapping of the type ${feedType} is missing in the attribute ${f.attribute}.`,
+        );
       }
       if (f.mappings.filter((m) => !input.feed_types.includes(m.type)).length > 0) {
         throw UnsupportedError(`The attribute ${f.attribute} contains an invalid mapping.`);
@@ -63,10 +82,16 @@ const checkFeedIntegrity = (input: FeedAddInput) => {
   }
 };
 
-export const createFeed = async (context: AuthContext, user: AuthUser, input: FeedAddInput): Promise<BasicStoreEntityFeed> => {
+export const createFeed = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: FeedAddInput,
+): Promise<BasicStoreEntityFeed> => {
   checkFeedIntegrity(input);
   if (input.feed_public && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    throw FunctionalError('You must have the SETTINGS_SETACCESSES capability to create a public feed');
+    throw FunctionalError(
+      'You must have the SETTINGS_SETACCESSES capability to create a public feed',
+    );
   }
   if (input.feed_public && !input.feed_public_user_id) {
     throw FunctionalError('A user must be configured when the feed is public');
@@ -75,7 +100,13 @@ export const createFeed = async (context: AuthContext, user: AuthUser, input: Fe
     await validatePublicUserId(context, input.feed_public_user_id);
   }
   const feedToCreate = { ...input, authorized_authorities: [TAXIIAPI_SETCOLLECTIONS] };
-  const { element, isCreation } = await createEntity(context, user, feedToCreate, ENTITY_TYPE_FEED, { complete: true });
+  const { element, isCreation } = await createEntity(
+    context,
+    user,
+    feedToCreate,
+    ENTITY_TYPE_FEED,
+    { complete: true },
+  );
   if (isCreation) {
     await publishUserAction({
       user,
@@ -88,19 +119,31 @@ export const createFeed = async (context: AuthContext, user: AuthUser, input: Fe
   }
   return element;
 };
-export const findById: DomainFindById<BasicStoreEntityFeed> = async (context: AuthContext, user: AuthUser, feedId: string) => {
+export const findById: DomainFindById<BasicStoreEntityFeed> = async (
+  context: AuthContext,
+  user: AuthUser,
+  feedId: string,
+) => {
   return storeLoadById<BasicStoreEntityFeed>(context, user, feedId, ENTITY_TYPE_FEED);
 };
-export const editFeed = async (context: AuthContext, user: AuthUser, id: string, input: FeedAddInput): Promise<BasicStoreEntityFeed> => {
+export const editFeed = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  input: FeedAddInput,
+): Promise<BasicStoreEntityFeed> => {
   checkFeedIntegrity(input);
   const feed = await findById(context, user, id);
   if (!feed) {
     throw FunctionalError(`Feed ${id} cant be found`);
   }
-  const publicFieldsChanged = input.feed_public !== feed.feed_public
-    || (input.feed_public_user_id ?? null) !== (feed.feed_public_user_id ?? null);
+  const publicFieldsChanged =
+    input.feed_public !== feed.feed_public ||
+    (input.feed_public_user_id ?? null) !== (feed.feed_public_user_id ?? null);
   if (publicFieldsChanged && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    throw FunctionalError('You must have the SETTINGS_SETACCESSES capability to modify public feed settings');
+    throw FunctionalError(
+      'You must have the SETTINGS_SETACCESSES capability to modify public feed settings',
+    );
   }
   if (input.feed_public && !input.feed_public_user_id) {
     throw FunctionalError('A user must be configured when the feed is public');
@@ -111,7 +154,10 @@ export const editFeed = async (context: AuthContext, user: AuthUser, id: string,
   // authorized_members renaming
   let finalInput = { ...input };
   if (finalInput.authorized_members) {
-    finalInput = { ...finalInput, restricted_members: finalInput.authorized_members } as FeedAddInput & { restricted_members: MemberAccessInput[] };
+    finalInput = {
+      ...finalInput,
+      restricted_members: finalInput.authorized_members,
+    } as FeedAddInput & { restricted_members: MemberAccessInput[] };
     delete finalInput.authorized_members;
   }
   await elReplace(context, feed._index, feed.internal_id, { doc: finalInput });
@@ -134,13 +180,20 @@ export const findFeedPaginated = (context: AuthContext, user: AuthUser, opts: Qu
   const filters = {
     mode: FilterMode.And,
     filterGroups: [],
-    filters: [{
-      key: ['feed_public'],
-      values: ['true'],
-    }],
+    filters: [
+      {
+        key: ['feed_public'],
+        values: ['true'],
+      },
+    ],
   };
   const publicArgs = { ...(opts ?? {}), filters };
-  return pageEntitiesConnection<BasicStoreEntityFeed>(context, SYSTEM_USER, [ENTITY_TYPE_FEED], publicArgs);
+  return pageEntitiesConnection<BasicStoreEntityFeed>(
+    context,
+    SYSTEM_USER,
+    [ENTITY_TYPE_FEED],
+    publicArgs,
+  );
 };
 export const feedDelete = async (context: AuthContext, user: AuthUser, feedId: string) => {
   const deleted = await deleteElementById<StoreEntity>(context, user, feedId, ENTITY_TYPE_FEED);

@@ -6,7 +6,9 @@ import {
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLinesQuery.graphql';
 import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import { useFormatter } from '../../../../components/i18n';
-import StixCoreObjectHistoryLines, { stixCoreObjectHistoryLinesQuery } from './StixCoreObjectHistoryLines';
+import StixCoreObjectHistoryLines, {
+  stixCoreObjectHistoryLinesQuery,
+} from './StixCoreObjectHistoryLines';
 import SearchInput from '../../../../components/SearchInput';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -16,7 +18,10 @@ type StixCoreObjectHistoryProps = {
   withoutRelations?: boolean;
 };
 
-const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreObjectHistoryProps) => {
+const StixCoreObjectHistory = ({
+  stixCoreObjectId,
+  withoutRelations,
+}: StixCoreObjectHistoryProps) => {
   useInitCreateRelationshipContext();
 
   const { t_i18n } = useFormatter();
@@ -60,35 +65,37 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
           values: ['create', 'delete', 'mutation'], // retro-compatibility
         },
       ],
-      filterGroups: [{
-        mode: 'or',
-        filters: [
-          {
-            key: ['event_scope'],
-            values: ['create', 'delete'],
-          },
-          {
-            key: ['event_scope'],
-            values: [], // if event_scope is null, event_type is not
-            operator: 'nil',
-          },
-        ],
-        filterGroups: [],
-      },
-      {
-        mode: 'or',
-        filters: [
-          {
-            key: ['context_data.from_id'],
-            values: [stixCoreObjectId],
-          },
-          {
-            key: ['context_data.to_id'],
-            values: [stixCoreObjectId],
-          },
-        ],
-        filterGroups: [],
-      }],
+      filterGroups: [
+        {
+          mode: 'or',
+          filters: [
+            {
+              key: ['event_scope'],
+              values: ['create', 'delete'],
+            },
+            {
+              key: ['event_scope'],
+              values: [], // if event_scope is null, event_type is not
+              operator: 'nil',
+            },
+          ],
+          filterGroups: [],
+        },
+        {
+          mode: 'or',
+          filters: [
+            {
+              key: ['context_data.from_id'],
+              values: [stixCoreObjectId],
+            },
+            {
+              key: ['context_data.to_id'],
+              values: [stixCoreObjectId],
+            },
+          ],
+          filterGroups: [],
+        },
+      ],
     },
     first: 20,
     orderBy: 'timestamp',
@@ -110,10 +117,7 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
           marginBottom: 0,
         }}
       >
-        <Grid
-          item
-          xs={withoutRelations ? 12 : 6}
-        >
+        <Grid item xs={withoutRelations ? 12 : 6}>
           {objectsQueryRef && (
             <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
               <StixCoreObjectHistoryLines
@@ -121,13 +125,13 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
                 queryRef={objectsQueryRef}
                 isRelationLog={false}
                 paginationOptions={objectsPaginationOptions}
-                action={(
+                action={
                   <SearchInput
                     variant="thin"
                     onSubmit={handleSearchEntity}
                     keyword={entitySearchTerm}
                   />
-                )}
+                }
               />
             </React.Suspense>
           )}
@@ -141,13 +145,13 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
                   queryRef={relationsQueryRef}
                   isRelationLog={true}
                   paginationOptions={relationsPaginationOptions}
-                  action={(
+                  action={
                     <SearchInput
                       variant="thin"
                       onSubmit={handleSearchRelations}
                       keyword={relationsSearchTerm}
                     />
-                  )}
+                  }
                 />
               </React.Suspense>
             )}

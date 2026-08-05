@@ -17,13 +17,7 @@ interface CardAccordionProps {
   onStateChange?: (open: boolean) => void;
 }
 
-const CardAccordion = ({
-  title,
-  action,
-  children,
-  preview,
-  onStateChange,
-}: CardAccordionProps) => {
+const CardAccordion = ({ title, action, children, preview, onStateChange }: CardAccordionProps) => {
   const theme = useTheme<Theme>();
   const [expanded, setExpanded] = useState(false);
 
@@ -71,10 +65,7 @@ const CardAccordion = ({
           {preview}
         </AccordionSummary>
         <AccordionDetails sx={detailsSx}>
-          {typeof children === 'function'
-            ? children({ changeState: setExpanded })
-            : children
-          }
+          {typeof children === 'function' ? children({ changeState: setExpanded }) : children}
         </AccordionDetails>
       </Accordion>
     </Card>

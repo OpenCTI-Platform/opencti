@@ -12,7 +12,11 @@ import IngestionTaxiiCollectionPopover from '@components/data/ingestionTaxiiColl
 import IngestionCsvPopover from '@components/data/ingestionCsv/IngestionCsvPopover';
 import IngestionJsonPopover from '@components/data/ingestionJson/IngestionJsonPopover';
 import FormView from '@components/data/forms/view/FormView';
-import { BuiltInIntegrationKind, getBuiltInIntegration, isBuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
+import {
+  BuiltInIntegrationKind,
+  getBuiltInIntegration,
+  isBuiltInIntegrationKind,
+} from '@components/integrations/available/builtInIntegrations';
 import IngestionTaxiiLogsDrawer from '@components/data/ingestionTaxii/IngestionTaxiiLogsDrawer';
 import { ConnectorWorksSection } from '@components/data/connectors/Connector';
 import { connectorIdFromIngestId } from '@components/integrations/deployed/useDeployedIntegrations';
@@ -30,7 +34,12 @@ import Label from '../../../../components/common/label/Label';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import Security from '../../../../utils/Security';
-import useGranted, { INGESTION_SETINGESTIONS, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MODULES } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  INGESTION_SETINGESTIONS,
+  KNOWLEDGE_KNASKIMPORT,
+  KNOWLEDGE_KNUPDATE,
+  MODULES,
+} from '../../../../utils/hooks/useGranted';
 
 const feedDetailSyncQuery = graphql`
   query FeedDetailSyncQuery($id: String!) {
@@ -241,18 +250,58 @@ const FeedActionsPopover = ({ kind, node }: FeedActionsPopoverProps) => {
   const onDeleteComplete = () => navigate('/dashboard/integrations/deployed');
   switch (kind) {
     case 'sync':
-      return <SyncPopover syncId={node.id} running={running} paginationOptions={{}} onDeleteComplete={onDeleteComplete} />;
+      return (
+        <SyncPopover
+          syncId={node.id}
+          running={running}
+          paginationOptions={{}}
+          onDeleteComplete={onDeleteComplete}
+        />
+      );
     case 'rss':
-      return <IngestionRssPopover ingestionRssId={node.id} running={running} paginationOptions={{}} onDeleteComplete={onDeleteComplete} />;
+      return (
+        <IngestionRssPopover
+          ingestionRssId={node.id}
+          running={running}
+          paginationOptions={{}}
+          onDeleteComplete={onDeleteComplete}
+        />
+      );
     case 'taxii':
-      return <IngestionTaxiiPopover ingestionTaxiiId={node.id} running={running} setStateValue={noop} onDeleteComplete={onDeleteComplete} />;
+      return (
+        <IngestionTaxiiPopover
+          ingestionTaxiiId={node.id}
+          running={running}
+          setStateValue={noop}
+          onDeleteComplete={onDeleteComplete}
+        />
+      );
     case 'taxii-push':
-      return <IngestionTaxiiCollectionPopover ingestionTaxiiId={node.id} running={running} onDeleteComplete={onDeleteComplete} />;
+      return (
+        <IngestionTaxiiCollectionPopover
+          ingestionTaxiiId={node.id}
+          running={running}
+          onDeleteComplete={onDeleteComplete}
+        />
+      );
     case 'csv':
-      return <IngestionCsvPopover ingestionCsvId={node.id} running={running} setStateHash={noop} onDeleteComplete={onDeleteComplete} />;
+      return (
+        <IngestionCsvPopover
+          ingestionCsvId={node.id}
+          running={running}
+          setStateHash={noop}
+          onDeleteComplete={onDeleteComplete}
+        />
+      );
     case 'json':
     default:
-      return <IngestionJsonPopover ingestionJsonId={node.id} running={running} onDeleteComplete={onDeleteComplete} />;
+      return (
+        <IngestionJsonPopover
+          ingestionJsonId={node.id}
+          running={running}
+          onDeleteComplete={onDeleteComplete}
+        />
+      );
   }
 };
 
@@ -290,7 +339,10 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
 
   const isIngestionFeedLogsEnabled = isFeatureEnable('INGESTION_FEED_LOGS');
 
-  const data = usePreloadedQuery(FEED_QUERIES[kind].query, queryRef) as Record<string, FeedDetailNode | null>;
+  const data = usePreloadedQuery(FEED_QUERIES[kind].query, queryRef) as Record<
+    string,
+    FeedDetailNode | null
+  >;
   const node = data[FEED_QUERIES[kind].rootField];
 
   if (!node || !definition) return <ErrorNotFound />;
@@ -314,7 +366,8 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
           ? new Date(node.last_execution_date).getTime() + periodMs
           : 0;
         // Overdue (or never executed): picked up by the next manager tick.
-        nextRunDisplay = nextRunTime <= Date.now() ? t_i18n('Imminent') : nsdt(new Date(nextRunTime));
+        nextRunDisplay =
+          nextRunTime <= Date.now() ? t_i18n('Imminent') : nsdt(new Date(nextRunTime));
       }
     }
   }
@@ -390,7 +443,10 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
               </div>
             </TitleMainEntity>
             {node.description && (
-              <Typography variant="body2" sx={{ color: theme.palette.text.secondary, marginTop: 0.5, maxWidth: 720 }}>
+              <Typography
+                variant="body2"
+                sx={{ color: theme.palette.text.secondary, marginTop: 0.5, maxWidth: 720 }}
+              >
                 {node.description}
               </Typography>
             )}
@@ -412,7 +468,9 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
               {node.uri && (
                 <DetailField label={t_i18n('URL')}>
                   <Tooltip title={node.uri}>
-                    <span><ItemCopy content={node.uri} /></span>
+                    <span>
+                      <ItemCopy content={node.uri} />
+                    </span>
                   </Tooltip>
                 </DetailField>
               )}
@@ -422,24 +480,16 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
                 </DetailField>
               )}
               {node.collection && (
-                <DetailField label={t_i18n('Collection')}>
-                  {node.collection}
-                </DetailField>
+                <DetailField label={t_i18n('Collection')}>{node.collection}</DetailField>
               )}
               {node.version && (
-                <DetailField label={t_i18n('TAXII version')}>
-                  {node.version}
-                </DetailField>
+                <DetailField label={t_i18n('TAXII version')}>{node.version}</DetailField>
               )}
               {node.verb && (
-                <DetailField label={t_i18n('HTTP verb')}>
-                  {node.verb.toUpperCase()}
-                </DetailField>
+                <DetailField label={t_i18n('HTTP verb')}>{node.verb.toUpperCase()}</DetailField>
               )}
               {node.csv_mapper_type && (
-                <DetailField label={t_i18n('CSV mapper type')}>
-                  {node.csv_mapper_type}
-                </DetailField>
+                <DetailField label={t_i18n('CSV mapper type')}>{node.csv_mapper_type}</DetailField>
               )}
               {node.authentication_type && (
                 <DetailField label={t_i18n('Authentication type')}>
@@ -448,7 +498,9 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
               )}
               {node.scheduling_period != null && (
                 <DetailField label={t_i18n('Scheduling period')}>
-                  <FieldOrEmpty source={node.scheduling_period}>{node.scheduling_period}</FieldOrEmpty>
+                  <FieldOrEmpty source={node.scheduling_period}>
+                    {node.scheduling_period}
+                  </FieldOrEmpty>
                 </DetailField>
               )}
               {(node.report_types?.length ?? 0) > 0 && (
@@ -461,27 +513,44 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
               </DetailField>
               {node.ssl_verify != null && (
                 <DetailField label={t_i18n('Verify SSL certificate')}>
-                  <ItemBoolean status={!!node.ssl_verify} label={node.ssl_verify ? t_i18n('Yes') : t_i18n('No')} />
+                  <ItemBoolean
+                    status={!!node.ssl_verify}
+                    label={node.ssl_verify ? t_i18n('Yes') : t_i18n('No')}
+                  />
                 </DetailField>
               )}
               {node.listen_deletion != null && (
                 <DetailField label={t_i18n('Take deletions into account')}>
-                  <ItemBoolean status={!!node.listen_deletion} label={node.listen_deletion ? t_i18n('Yes') : t_i18n('No')} />
+                  <ItemBoolean
+                    status={!!node.listen_deletion}
+                    label={node.listen_deletion ? t_i18n('Yes') : t_i18n('No')}
+                  />
                 </DetailField>
               )}
               {node.no_dependencies != null && (
                 <DetailField label={t_i18n('Do not insert dependencies')}>
-                  <ItemBoolean status={!!node.no_dependencies} label={node.no_dependencies ? t_i18n('Yes') : t_i18n('No')} />
+                  <ItemBoolean
+                    status={!!node.no_dependencies}
+                    label={node.no_dependencies ? t_i18n('Yes') : t_i18n('No')}
+                  />
                 </DetailField>
               )}
               {node.synchronized != null && (
                 <DetailField label={t_i18n('Use perfect synchronization')}>
-                  <ItemBoolean status={!!node.synchronized} label={node.synchronized ? t_i18n('Yes') : t_i18n('No')} />
+                  <ItemBoolean
+                    status={!!node.synchronized}
+                    label={node.synchronized ? t_i18n('Yes') : t_i18n('No')}
+                  />
                 </DetailField>
               )}
               {node.confidence_to_score != null && (
-                <DetailField label={t_i18n('Copy confidence level to OpenCTI scores for indicators')}>
-                  <ItemBoolean status={!!node.confidence_to_score} label={node.confidence_to_score ? t_i18n('Yes') : t_i18n('No')} />
+                <DetailField
+                  label={t_i18n('Copy confidence level to OpenCTI scores for indicators')}
+                >
+                  <ItemBoolean
+                    status={!!node.confidence_to_score}
+                    label={node.confidence_to_score ? t_i18n('Yes') : t_i18n('No')}
+                  />
                 </DetailField>
               )}
             </Grid>
@@ -491,13 +560,13 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
           <Card title={t_i18n('Activity')}>
             <Grid container spacing={3}>
               {node.queue_messages != null && (
-                <DetailField label={t_i18n('Queued bundles')}>
-                  {n(node.queue_messages)}
-                </DetailField>
+                <DetailField label={t_i18n('Queued bundles')}>{n(node.queue_messages)}</DetailField>
               )}
               {node.last_execution_date !== undefined && (
                 <DetailField label={t_i18n('Last run')}>
-                  <FieldOrEmpty source={node.last_execution_date}>{nsdt(node.last_execution_date)}</FieldOrEmpty>
+                  <FieldOrEmpty source={node.last_execution_date}>
+                    {nsdt(node.last_execution_date)}
+                  </FieldOrEmpty>
                 </DetailField>
               )}
               {node.scheduling_period !== undefined && (
@@ -507,28 +576,34 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
               )}
               {node.current_state_date !== undefined && (
                 <DetailField label={t_i18n('Current state')}>
-                  <FieldOrEmpty source={node.current_state_date}>{nsdt(node.current_state_date)}</FieldOrEmpty>
+                  <FieldOrEmpty source={node.current_state_date}>
+                    {nsdt(node.current_state_date)}
+                  </FieldOrEmpty>
                 </DetailField>
               )}
               {node.current_state_cursor !== undefined && (
                 <DetailField label={t_i18n('Current state cursor')}>
-                  <FieldOrEmpty source={node.current_state_cursor}>{node.current_state_cursor}</FieldOrEmpty>
+                  <FieldOrEmpty source={node.current_state_cursor}>
+                    {node.current_state_cursor}
+                  </FieldOrEmpty>
                 </DetailField>
               )}
               {node.current_state_hash !== undefined && (
                 <DetailField label={t_i18n('Current state hash')}>
-                  <FieldOrEmpty source={node.current_state_hash}>{node.current_state_hash}</FieldOrEmpty>
+                  <FieldOrEmpty source={node.current_state_hash}>
+                    {node.current_state_hash}
+                  </FieldOrEmpty>
                 </DetailField>
               )}
               {node.added_after_start !== undefined && (
                 <DetailField label={t_i18n('Import from date')}>
-                  <FieldOrEmpty source={node.added_after_start}>{nsdt(node.added_after_start)}</FieldOrEmpty>
+                  <FieldOrEmpty source={node.added_after_start}>
+                    {nsdt(node.added_after_start)}
+                  </FieldOrEmpty>
                 </DetailField>
               )}
               {node.created_at && (
-                <DetailField label={t_i18n('Creation date')}>
-                  {nsdt(node.created_at)}
-                </DetailField>
+                <DetailField label={t_i18n('Creation date')}>{nsdt(node.created_at)}</DetailField>
               )}
               {node.updated_at && (
                 <DetailField label={t_i18n('Modification date')}>

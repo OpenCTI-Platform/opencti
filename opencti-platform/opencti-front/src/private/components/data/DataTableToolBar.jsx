@@ -71,7 +71,11 @@ import { hexToRGB } from '../../../utils/Colors';
 import Security from '../../../utils/Security';
 import { EMPTY_VALUE, truncate } from '../../../utils/String';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
-import { getEntityTypeThreeFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
+import {
+  getEntityTypeThreeFirstLevelsFilterValues,
+  removeIdAndIncorrectKeysFromFilterGroupObject,
+  serializeFilterGroupForBackend,
+} from '../../../utils/filters/filtersUtils';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import {
   AUTOMATION,
@@ -212,11 +216,72 @@ const styles = (theme) => ({
   },
 });
 
-const notMergableTypes = ['Playbook', 'Indicator', 'Note', 'Opinion', 'Label', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
-const notAddableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
-const notUpdatableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
-const notScannableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
-const notEnrichableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
+const notMergableTypes = [
+  'Playbook',
+  'Indicator',
+  'Note',
+  'Opinion',
+  'Label',
+  'Case-Template',
+  'Task',
+  'DeleteOperation',
+  'InternalFile',
+  'PublicDashboard',
+  'Workspace',
+  'DraftWorkspace',
+  'Notification',
+];
+const notAddableTypes = [
+  'Playbook',
+  'Label',
+  'Vocabulary',
+  'Case-Template',
+  'DeleteOperation',
+  'InternalFile',
+  'PublicDashboard',
+  'Workspace',
+  'DraftWorkspace',
+  'Notification',
+];
+const notUpdatableTypes = [
+  'Playbook',
+  'Label',
+  'Vocabulary',
+  'Case-Template',
+  'Task',
+  'DeleteOperation',
+  'InternalFile',
+  'PublicDashboard',
+  'Workspace',
+  'DraftWorkspace',
+  'Notification',
+];
+const notScannableTypes = [
+  'Playbook',
+  'Label',
+  'Vocabulary',
+  'Case-Template',
+  'Task',
+  'DeleteOperation',
+  'InternalFile',
+  'PublicDashboard',
+  'Workspace',
+  'DraftWorkspace',
+  'Notification',
+];
+const notEnrichableTypes = [
+  'Playbook',
+  'Label',
+  'Vocabulary',
+  'Case-Template',
+  'Task',
+  'DeleteOperation',
+  'InternalFile',
+  'PublicDashboard',
+  'Workspace',
+  'DraftWorkspace',
+  'Notification',
+];
 const typesWithScore = [
   'Stix-Cyber-Observable',
   'Indicator',
@@ -264,12 +329,27 @@ const typesWithKillChains = ['Indicator'];
 const typesWithIndicatorTypes = ['Indicator'];
 const typesWithPlatforms = ['Indicator'];
 
-const typesWithoutStatus = ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Artifact', 'ExternalReference'];
-const notShareableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
+const typesWithoutStatus = [
+  'Stix-Core-Object',
+  'Stix-Domain-Object',
+  'Stix-Cyber-Observable',
+  'Artifact',
+  'ExternalReference',
+];
+const notShareableTypes = [
+  'Playbook',
+  'Label',
+  'Vocabulary',
+  'Case-Template',
+  'DeleteOperation',
+  'InternalFile',
+  'PublicDashboard',
+  'Workspace',
+  'DraftWorkspace',
+  'Notification',
+];
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 const toolBarListTaskAddMutation = graphql`
@@ -341,36 +421,37 @@ const toolBarOrganizationsQuery = graphql`
 `;
 
 const toolbarGroupsQuery = graphql`
-    query DataTableToolBarGroupsQuery($search: String) {
-      groups(search: $search) {
-        edges {
-          node {
-            id
-            name
-            entity_type
-          }
+  query DataTableToolBarGroupsQuery($search: String) {
+    groups(search: $search) {
+      edges {
+        node {
+          id
+          name
+          entity_type
         }
       }
     }
+  }
 `;
 
 export const toolBarUsersLinesSearchQuery = graphql`
-    query  DataTableToolBarUsersLinesSearchQuery(
-        $first: Int, $search: String,
-        $orderBy: UsersOrdering
-        $orderMode: OrderingMode
-    ) {
-        users(first: $first, search: $search, orderBy: $orderBy, orderMode: $orderMode) {
-            edges {
-                node {
-                    id
-                    entity_type
-                    name
-                    user_email
-                }
-            }
+  query DataTableToolBarUsersLinesSearchQuery(
+    $first: Int
+    $search: String
+    $orderBy: UsersOrdering
+    $orderMode: OrderingMode
+  ) {
+    users(first: $first, search: $search, orderBy: $orderBy, orderMode: $orderMode) {
+      edges {
+        node {
+          id
+          entity_type
+          name
+          user_email
         }
+      }
     }
+  }
 `;
 
 class DataTableToolBar extends Component {
@@ -515,10 +596,12 @@ class DataTableToolBar extends Component {
   }
 
   handleLaunchEnrollPlaybook(playbookId, playbookName) {
-    const actions = [{
-      type: 'ENROLL_PLAYBOOK',
-      context: { values: [{ id: playbookId, name: playbookName }] },
-    }];
+    const actions = [
+      {
+        type: 'ENROLL_PLAYBOOK',
+        context: { values: [{ id: playbookId, name: playbookName }] },
+      },
+    ];
     const description = `ENROLL IN PLAYBOOK ${playbookName}`;
     this.setState({ description, actions }, () => {
       this.handleCloseEnrollPlaybook();
@@ -529,14 +612,20 @@ class DataTableToolBar extends Component {
   handleOpenEnrichment(stixCyberObservableSubTypes, stixDomainObjectSubTypes) {
     // Get enrich type
     let enrichType;
-    const entityTypeFilterValues = getEntityTypeThreeFirstLevelsFilterValues(this.props.filters, stixCyberObservableSubTypes, stixDomainObjectSubTypes);
+    const entityTypeFilterValues = getEntityTypeThreeFirstLevelsFilterValues(
+      this.props.filters,
+      stixCyberObservableSubTypes,
+      stixDomainObjectSubTypes,
+    );
     if (this.props.selectAll) {
       enrichType = this.props.type ?? R.head(entityTypeFilterValues);
     } else {
       const selectedElementsList = Object.values(this.props.selectedElements || {});
-      const selectedTypes = R.uniq(selectedElementsList
-        .map((o) => o.entity_type)
-        .filter((entity_type) => entity_type !== undefined));
+      const selectedTypes = R.uniq(
+        selectedElementsList
+          .map((o) => o.entity_type)
+          .filter((entity_type) => entity_type !== undefined),
+      );
       enrichType = R.head(selectedTypes);
     }
     // Get available connectors
@@ -583,7 +672,7 @@ class DataTableToolBar extends Component {
 
     const actions = actionsInputs.map((n) => {
       if (categoryAttributeMapping[n.field]) {
-        return ({
+        return {
           type: n.type,
           context: {
             field: categoryAttributeMapping[n.field],
@@ -591,7 +680,7 @@ class DataTableToolBar extends Component {
             values: n.values.map((value) => value.label),
             options: n.options,
           },
-        });
+        };
       }
       return {
         type: n.type,
@@ -624,24 +713,16 @@ class DataTableToolBar extends Component {
         actionsInputs[i] = R.assoc('values', values, actionsInputs[i] || {});
       }
       if (
-        value === 'object-marking'
-        || value === 'object-label'
-        || value === 'created-by'
-        || value === 'external-reference'
-        || value === 'object-assignee'
-        || value === 'object-participant'
+        value === 'object-marking' ||
+        value === 'object-label' ||
+        value === 'created-by' ||
+        value === 'external-reference' ||
+        value === 'object-assignee' ||
+        value === 'object-participant'
       ) {
-        actionsInputs[i] = R.assoc(
-          'fieldType',
-          'RELATION',
-          actionsInputs[i] || {},
-        );
+        actionsInputs[i] = R.assoc('fieldType', 'RELATION', actionsInputs[i] || {});
       } else {
-        actionsInputs[i] = R.assoc(
-          'fieldType',
-          'ATTRIBUTE',
-          actionsInputs[i] || {},
-        );
+        actionsInputs[i] = R.assoc('fieldType', 'ATTRIBUTE', actionsInputs[i] || {});
       }
     }
     this.setState({ actionsInputs });
@@ -694,14 +775,16 @@ class DataTableToolBar extends Component {
   }
 
   handleLaunchRead(read) {
-    const actions = [{
-      type: 'REPLACE',
-      context: {
-        field: 'is_read',
-        type: 'ATTRIBUTE',
-        values: [read ? 'true' : 'false'],
+    const actions = [
+      {
+        type: 'REPLACE',
+        context: {
+          field: 'is_read',
+          type: 'ATTRIBUTE',
+          values: [read ? 'true' : 'false'],
+        },
       },
-    }];
+    ];
     this.setState({ actions }, () => {
       this.handleOpenTask();
     });
@@ -760,9 +843,7 @@ class DataTableToolBar extends Component {
 
   handleChangeEnrichSelected(connectorId) {
     if (this.state.enrichSelected.includes(connectorId)) {
-      const filtered = this.state.enrichSelected.filter(
-        (e) => e !== connectorId,
-      );
+      const filtered = this.state.enrichSelected.filter((e) => e !== connectorId);
       this.setState({ enrichSelected: filtered });
     } else {
       this.setState({
@@ -788,9 +869,7 @@ class DataTableToolBar extends Component {
   }
 
   handleLaunchEnrichment() {
-    const actions = [
-      { type: 'ENRICHMENT', context: { values: this.state.enrichSelected } },
-    ];
+    const actions = [{ type: 'ENRICHMENT', context: { values: this.state.enrichSelected } }];
     this.setState({ actions }, () => {
       this.handleCloseEnrichment();
       this.handleOpenTask();
@@ -822,11 +901,7 @@ class DataTableToolBar extends Component {
   titleCopy() {
     const { t } = this.props;
     if (this.props.numberOfSelectedElements > maxNumberOfObservablesToCopy) {
-      return `${
-        t(
-          'Copy disabled: too many selected elements (maximum number of elements for a copy: ',
-        ) + maxNumberOfObservablesToCopy
-      })`;
+      return `${t('Copy disabled: too many selected elements (maximum number of elements for a copy: ') + maxNumberOfObservablesToCopy})`;
     }
     return t('Copy to clipboard');
   }
@@ -876,10 +951,10 @@ class DataTableToolBar extends Component {
       removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys),
     );
 
-    const finalActions = taskScope === 'USER'
-      ? this.getUserDatatableFinalActions(actions)
-      : actions.map(
-          (n) => ({
+    const finalActions =
+      taskScope === 'USER'
+        ? this.getUserDatatableFinalActions(actions)
+        : actions.map((n) => ({
             type: n.type,
             context: n.context
               ? {
@@ -887,9 +962,9 @@ class DataTableToolBar extends Component {
                   values: n.context.values.map((o) => o.id || o.value || o),
                 }
               : null,
-            containerId: n.type === 'PROMOTE' && promoteToContainer && container?.id ? container.id : null,
-          }),
-        );
+            containerId:
+              n.type === 'PROMOTE' && promoteToContainer && container?.id ? container.id : null,
+          }));
 
     if (selectAll) {
       commitMutation({
@@ -906,14 +981,14 @@ class DataTableToolBar extends Component {
         },
         onCompleted: () => {
           handleClearSelectedElements();
-          const monitoringLink = !isInDraft ? <Link to="/dashboard/data/processing/tasks">{t('the dedicated page')}</Link> : t('the draft processes tab');
+          const monitoringLink = !isInDraft ? (
+            <Link to="/dashboard/data/processing/tasks">{t('the dedicated page')}</Link>
+          ) : (
+            t('the draft processes tab')
+          );
           MESSAGING$.notifySuccess(
             <span>
-              {t(
-                'The background task has been executed. You can monitor it on',
-              )}{' '}
-              {monitoringLink}
-              .
+              {t('The background task has been executed. You can monitor it on')} {monitoringLink}.
             </span>,
           );
           this.setState({ processing: false });
@@ -926,23 +1001,21 @@ class DataTableToolBar extends Component {
         variables: {
           input: {
             description,
-            ids: mergingElement
-              ? [mergingElement.id]
-              : Object.keys(selectedElements),
+            ids: mergingElement ? [mergingElement.id] : Object.keys(selectedElements),
             actions: finalActions,
             scope,
           },
         },
         onCompleted: () => {
           handleClearSelectedElements();
-          const monitoringLink = !isInDraft ? <Link to="/dashboard/data/processing/tasks">{t('the dedicated page')}</Link> : t('the draft processes tab');
+          const monitoringLink = !isInDraft ? (
+            <Link to="/dashboard/data/processing/tasks">{t('the dedicated page')}</Link>
+          ) : (
+            t('the draft processes tab')
+          );
           MESSAGING$.notifySuccess(
             <span>
-              {t(
-                'The background task has been executed. You can monitor it on',
-              )}{' '}
-              {monitoringLink}
-              .
+              {t('The background task has been executed. You can monitor it on')} {monitoringLink}.
             </span>,
           );
           this.setState({ processing: false });
@@ -958,8 +1031,9 @@ class DataTableToolBar extends Component {
 
     const isUserDatatable = taskScope === 'USER';
     const disabled = actionsInputs[i]?.type == null || actionsInputs[i]?.type === '';
-    const checkTypes = (typesList) => selectedTypes.every((type) => typesList.includes(type))
-      && entityTypeFilterValues.every((type) => typesList.includes(type));
+    const checkTypes = (typesList) =>
+      selectedTypes.every((type) => typesList.includes(type)) &&
+      entityTypeFilterValues.every((type) => typesList.includes(type));
 
     let options = [];
     if (isUserDatatable) {
@@ -982,8 +1056,12 @@ class DataTableToolBar extends Component {
         { label: t('Marking definitions'), value: 'object-marking' },
         { label: t('Labels'), value: 'object-label' },
         checkTypes(typesWithAssignee) && { label: t('Assignees'), value: 'object-assignee' },
-        checkTypes(typesWithParticipant) && { label: t('Participant'), value: 'object-participant' },
-        ((actionsInputs[i]?.type === 'ADD' && isAdmin) || (actionsInputs[i]?.type === 'REPLACE' && isAdmin)) && {
+        checkTypes(typesWithParticipant) && {
+          label: t('Participant'),
+          value: 'object-participant',
+        },
+        ((actionsInputs[i]?.type === 'ADD' && isAdmin) ||
+          (actionsInputs[i]?.type === 'REPLACE' && isAdmin)) && {
           label: t('Creator'),
           value: 'creator_id',
         },
@@ -991,50 +1069,68 @@ class DataTableToolBar extends Component {
           label: t('External references'),
           value: 'external-reference',
         },
-        checkTypes(typesWithKillChains) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && {
-          label: t('Kill chains'),
-          value: 'killChainPhases',
-        },
-        checkTypes(typesWithIndicatorTypes) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && {
-          label: t('Indicator types'),
-          value: 'indicator_type_ov',
-        },
-        checkTypes(typesWithPlatforms) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && {
-          label: t('Platforms'),
-          value: 'platforms_ov',
-        },
-        ...(actionsInputs[i]?.type === 'REPLACE' ? [
-          { label: t('Author'), value: 'created-by' },
-          { label: t('Confidence'), value: 'confidence' },
-          { label: t('Description'), value: 'description' },
-          checkTypes(typesWithSeverity) && { label: t('Severity'), value: 'case_severity_ov' },
-          checkTypes(typesWithPriority) && { label: t('Priority'), value: 'case_priority_ov' },
-          checkTypes(typesWithIncidentResponseType) && {
-            label: t('Incident response type'),
-            value: 'incident_response_types_ov',
+        checkTypes(typesWithKillChains) &&
+          (actionsInputs[i]?.type === 'ADD' ||
+            actionsInputs[i]?.type === 'REPLACE' ||
+            actionsInputs[i]?.type === 'REMOVE') && {
+            label: t('Kill chains'),
+            value: 'killChainPhases',
           },
-          checkTypes(typesWithRfiTypes) && {
-            label: t('Request for information types'),
-            value: 'request_for_information_types_ov',
+        checkTypes(typesWithIndicatorTypes) &&
+          (actionsInputs[i]?.type === 'ADD' ||
+            actionsInputs[i]?.type === 'REPLACE' ||
+            actionsInputs[i]?.type === 'REMOVE') && {
+            label: t('Indicator types'),
+            value: 'indicator_type_ov',
           },
-          checkTypes(typesWithRftTypes) && {
-            label: t('Request for takedown types'),
-            value: 'request_for_takedown_types_ov',
+        checkTypes(typesWithPlatforms) &&
+          (actionsInputs[i]?.type === 'ADD' ||
+            actionsInputs[i]?.type === 'REPLACE' ||
+            actionsInputs[i]?.type === 'REMOVE') && {
+            label: t('Platforms'),
+            value: 'platforms_ov',
           },
-          checkTypes(typesWithScore) && { label: t('Score'), value: 'x_opencti_score' },
-          checkTypes(typesWithDetection) && { label: t('Detection'), value: 'x_opencti_detection' },
-          selectedTypes.length === 1 && !typesWithoutStatus.includes(selectedTypes[0]) && {
-            label: t('Status'),
-            value: 'x_opencti_workflow_id',
-          },
-        ] : []),
+        ...(actionsInputs[i]?.type === 'REPLACE'
+          ? [
+              { label: t('Author'), value: 'created-by' },
+              { label: t('Confidence'), value: 'confidence' },
+              { label: t('Description'), value: 'description' },
+              checkTypes(typesWithSeverity) && { label: t('Severity'), value: 'case_severity_ov' },
+              checkTypes(typesWithPriority) && { label: t('Priority'), value: 'case_priority_ov' },
+              checkTypes(typesWithIncidentResponseType) && {
+                label: t('Incident response type'),
+                value: 'incident_response_types_ov',
+              },
+              checkTypes(typesWithRfiTypes) && {
+                label: t('Request for information types'),
+                value: 'request_for_information_types_ov',
+              },
+              checkTypes(typesWithRftTypes) && {
+                label: t('Request for takedown types'),
+                value: 'request_for_takedown_types_ov',
+              },
+              checkTypes(typesWithScore) && { label: t('Score'), value: 'x_opencti_score' },
+              checkTypes(typesWithDetection) && {
+                label: t('Detection'),
+                value: 'x_opencti_detection',
+              },
+              selectedTypes.length === 1 &&
+                !typesWithoutStatus.includes(selectedTypes[0]) && {
+                  label: t('Status'),
+                  value: 'x_opencti_workflow_id',
+                },
+            ]
+          : []),
       ].filter(Boolean);
     }
 
     const sortedOptions = options.sort((a, b) => a.label.localeCompare(b.label));
 
     const selectedFields = actionsInputs.map((a) => a.field).filter(Boolean);
-    const replaceSelectedFields = actionsInputs.filter((a) => a.type === 'REPLACE').map((a) => a.field).filter(Boolean);
+    const replaceSelectedFields = actionsInputs
+      .filter((a) => a.type === 'REPLACE')
+      .map((a) => a.field)
+      .filter(Boolean);
 
     return (
       <Select
@@ -1044,22 +1140,17 @@ class DataTableToolBar extends Component {
         onChange={this.handleChangeActionInput.bind(this, i, 'field')}
       >
         {sortedOptions.length > 0 ? (
-          sortedOptions.map(
-            (n) => {
-              // disable some fields to prevent making several actions on the same key if one of them is a replace
-              const disableField = (replaceSelectedFields.includes(n.value) && actionsInputs[i]?.field !== n.value)
-                || (selectedFields.includes(n.value) && actionsInputs[i]?.type === 'REPLACE');
-              return (
-                <MenuItem
-                  key={n.value}
-                  value={n.value}
-                  disabled={disableField}
-                >
-                  {n.label}
-                </MenuItem>
-              );
-            },
-          )
+          sortedOptions.map((n) => {
+            // disable some fields to prevent making several actions on the same key if one of them is a replace
+            const disableField =
+              (replaceSelectedFields.includes(n.value) && actionsInputs[i]?.field !== n.value) ||
+              (selectedFields.includes(n.value) && actionsInputs[i]?.type === 'REPLACE');
+            return (
+              <MenuItem key={n.value} value={n.value} disabled={disableField}>
+                {n.label}
+              </MenuItem>
+            );
+          })
         ) : (
           <MenuItem value="none">{t('None')}</MenuItem>
         )}
@@ -1129,11 +1220,12 @@ class DataTableToolBar extends Component {
       .toPromise()
       .then((data) => {
         const elements = data.groups.edges.map((e) => e.node);
-        const groups = elements.map((element) => ({
-          label: element.name,
-          type: element.entity_type,
-          value: element.id,
-        }))
+        const groups = elements
+          .map((element) => ({
+            label: element.name,
+            type: element.entity_type,
+            value: element.id,
+          }))
           .sort((a, b) => a.label.localeCompare(b.label))
           .sort((a, b) => a.type.localeCompare(b.type));
         this.setState({ groups });
@@ -1224,18 +1316,12 @@ class DataTableToolBar extends Component {
       .then((data) => {
         const externalReferences = (data?.externalReferences?.edges ?? [])
           .map((n) => ({
-            label: `[${n.node.source_name}] ${truncate(
-              n.node.description || n.node.external_id,
-              150,
-            )} ${n.node.url && `(${n.node.url})`}`,
+            label: `[${n.node.source_name}] ${truncate(n.node.description || n.node.external_id, 150)} ${n.node.url && `(${n.node.url})`}`,
             value: n.node.id,
           }))
           .sort((a, b) => a.label.localeCompare(b.label));
         this.setState({
-          externalReferences: R.union(
-            this.state.externalReferences,
-            externalReferences,
-          ),
+          externalReferences: R.union(this.state.externalReferences, externalReferences),
         });
       });
   }
@@ -1288,7 +1374,9 @@ class DataTableToolBar extends Component {
     if (selectedTypes.length === 1) {
       [selectedType] = selectedTypes;
     } else {
-      throw Error('It is not possible to bulk edit statuses if more than one entity type is selected.');
+      throw Error(
+        'It is not possible to bulk edit statuses if more than one entity type is selected.',
+      );
     }
     actionsInputs[i] = R.assoc(
       'inputValue',
@@ -1367,11 +1455,13 @@ class DataTableToolBar extends Component {
     })
       .toPromise()
       .then((data) => {
-        const participants = (data.members?.edges ?? []).map((n) => ({
-          label: n.node.name,
-          value: n.node.id,
-          type: n.node.entity_type,
-        })).sort((a, b) => a.label.localeCompare(b.label));
+        const participants = (data.members?.edges ?? [])
+          .map((n) => ({
+            label: n.node.name,
+            value: n.node.id,
+            type: n.node.entity_type,
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label));
         this.setState({
           participants: R.union(this.state.participants, participants),
         });
@@ -1983,13 +2073,15 @@ class DataTableToolBar extends Component {
       case 'x_opencti_detection':
         return (
           <FormControlLabel
-            control={(
+            control={
               <Switch
-                onChange={(event) => this.handleChangeSwitchInput(i, 'values', event.target.checked)}
+                onChange={(event) =>
+                  this.handleChangeSwitchInput(i, 'values', event.target.checked)
+                }
                 name={`actions-${i}-value`}
                 color="primary"
               />
-            )}
+            }
             label={t('Value')}
           />
         );
@@ -2152,10 +2244,17 @@ class DataTableToolBar extends Component {
   }
 
   getSelectedTypes(observableTypes, domainObjectTypes) {
-    const entityTypeFilterValues = getEntityTypeThreeFirstLevelsFilterValues(this.props.filters, observableTypes, domainObjectTypes);
+    const entityTypeFilterValues = getEntityTypeThreeFirstLevelsFilterValues(
+      this.props.filters,
+      observableTypes,
+      domainObjectTypes,
+    );
     const selectedElementsList = Object.values(this.props.selectedElements || {});
-    const selectedTypes = R.uniq([...selectedElementsList.map((o) => o.entity_type), ...entityTypeFilterValues]
-      .filter((entity_type) => entity_type !== undefined));
+    const selectedTypes = R.uniq(
+      [...selectedElementsList.map((o) => o.entity_type), ...entityTypeFilterValues].filter(
+        (entity_type) => entity_type !== undefined,
+      ),
+    );
     return { entityTypeFilterValues, selectedElementsList, selectedTypes };
   }
 
@@ -2217,40 +2316,63 @@ class DataTableToolBar extends Component {
     return (
       <UserContext.Consumer>
         {({ schema, settings, me }) => {
-          const isAdmin = me.capabilities.map((o) => o.name).filter((o) => [SETTINGS_SETACCESSES, BYPASS].includes(o)).length > 0;
+          const isAdmin =
+            me.capabilities
+              .map((o) => o.name)
+              .filter((o) => [SETTINGS_SETACCESSES, BYPASS].includes(o)).length > 0;
           const isInDraft = me.draftContext;
 
           const stixCyberObservableSubTypes = schema.scos.map((sco) => sco.id);
           const stixDomainObjectSubTypes = schema.sdos.map((sdo) => sdo.id);
-          const { entityTypeFilterValues, selectedElementsList, selectedTypes } = this.getSelectedTypes(stixCyberObservableSubTypes, stixDomainObjectSubTypes);
+          const { entityTypeFilterValues, selectedElementsList, selectedTypes } =
+            this.getSelectedTypes(stixCyberObservableSubTypes, stixDomainObjectSubTypes);
           // Some filter types are high level, we do not want to check them as "Different"
           // We might need to add some other types here before refactoring the toolbar
-          const elementsTypes = selectedElementsList.length > 0
-            ? R.uniq(selectedElementsList.map((e) => e.entity_type))
-            : selectedTypes;
-          const typesAreDifferent = elementsTypes.filter((type) => !['Stix-Core-Object', 'Stix-Domain-Object', 'stix-core-relationship', 'Stix-Cyber-Observable'].includes(type)).length > 1;
-          const preventMerge = selectedTypes.at(0) === 'Vocabulary'
-            && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
+          const elementsTypes =
+            selectedElementsList.length > 0
+              ? R.uniq(selectedElementsList.map((e) => e.entity_type))
+              : selectedTypes;
+          const typesAreDifferent =
+            elementsTypes.filter(
+              (type) =>
+                ![
+                  'Stix-Core-Object',
+                  'Stix-Domain-Object',
+                  'stix-core-relationship',
+                  'Stix-Cyber-Observable',
+                ].includes(type),
+            ).length > 1;
+          const preventMerge =
+            selectedTypes.at(0) === 'Vocabulary' &&
+            Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
           // region update
-          const typesAreNotUpdatable = notUpdatableTypes.includes(selectedTypes[0])
-            || (entityTypeFilterValues.length === 1
-              && notUpdatableTypes.includes(entityTypeFilterValues[0]));
+          const typesAreNotUpdatable =
+            notUpdatableTypes.includes(selectedTypes[0]) ||
+            (entityTypeFilterValues.length === 1 &&
+              notUpdatableTypes.includes(entityTypeFilterValues[0]));
           // endregion
           // region rules
-          const typesAreNotScannable = notScannableTypes.includes(selectedTypes[0])
-            || (entityTypeFilterValues.length === 1
-              && notScannableTypes.includes(entityTypeFilterValues[0]));
+          const typesAreNotScannable =
+            notScannableTypes.includes(selectedTypes[0]) ||
+            (entityTypeFilterValues.length === 1 &&
+              notScannableTypes.includes(entityTypeFilterValues[0]));
           // endregion
           // region enrich
-          const isManualEnrichSelect = !selectAll && (selectedTypes.filter((st) => !['Stix-Cyber-Observable', 'Stix-Domain-Object'].includes(st))).length === 1;
-          const isAllEnrichSelect = selectAll
-            && entityTypeFilterValues.length === 1
-            && entityTypeFilterValues[0] !== 'Stix-Cyber-Observable'
-            && entityTypeFilterValues[0] !== 'Stix-Domain-Object';
-          const enrichDisable = notEnrichableTypes.includes(selectedTypes[0])
-            || (entityTypeFilterValues.length === 1
-              && notEnrichableTypes.includes(entityTypeFilterValues[0]))
-            || (!isManualEnrichSelect && !isAllEnrichSelect);
+          const isManualEnrichSelect =
+            !selectAll &&
+            selectedTypes.filter(
+              (st) => !['Stix-Cyber-Observable', 'Stix-Domain-Object'].includes(st),
+            ).length === 1;
+          const isAllEnrichSelect =
+            selectAll &&
+            entityTypeFilterValues.length === 1 &&
+            entityTypeFilterValues[0] !== 'Stix-Cyber-Observable' &&
+            entityTypeFilterValues[0] !== 'Stix-Domain-Object';
+          const enrichDisable =
+            notEnrichableTypes.includes(selectedTypes[0]) ||
+            (entityTypeFilterValues.length === 1 &&
+              notEnrichableTypes.includes(entityTypeFilterValues[0])) ||
+            (!isManualEnrichSelect && !isAllEnrichSelect);
           // endregion
           // region orgaSharing
           const isShareableType = !notShareableTypes.includes(selectedTypes[0]);
@@ -2258,9 +2380,10 @@ class DataTableToolBar extends Component {
           // region merge
           const typesAreNotMergable = notMergableTypes.includes(selectedTypes[0]);
           const enableMerge = !typesAreNotMergable && !mergeDisable;
-          const typesAreNotAddableInContainer = notAddableTypes.includes(selectedTypes[0])
-            || (entityTypeFilterValues.length === 1
-              && notScannableTypes.includes(entityTypeFilterValues[0]));
+          const typesAreNotAddableInContainer =
+            notAddableTypes.includes(selectedTypes[0]) ||
+            (entityTypeFilterValues.length === 1 &&
+              notScannableTypes.includes(entityTypeFilterValues[0]));
           const titleCopy = this.titleCopy();
           let keptElement = null;
           let newAliases = [];
@@ -2272,15 +2395,16 @@ class DataTableToolBar extends Component {
               const names = selectedElementsList
                 .map((el) => el.name)
                 .filter((name) => name !== keptElement.name);
-              const aliases = keptElement.aliases !== null
-                ? selectedElementsList
-                    .map((el) => el.aliases)
-                    .flat()
-                    .filter((alias) => alias !== null && alias !== undefined)
-                : selectedElementsList
-                    .map((el) => el.x_opencti_aliases)
-                    .flat()
-                    .filter((alias) => alias !== null && alias !== undefined);
+              const aliases =
+                keptElement.aliases !== null
+                  ? selectedElementsList
+                      .map((el) => el.aliases)
+                      .flat()
+                      .filter((alias) => alias !== null && alias !== undefined)
+                  : selectedElementsList
+                      .map((el) => el.x_opencti_aliases)
+                      .flat()
+                      .filter((alias) => alias !== null && alias !== undefined);
 
               newAliases = names.concat(aliases).filter((o) => o && o.length > 0);
             }
@@ -2290,24 +2414,32 @@ class DataTableToolBar extends Component {
           const isEnterpriseEdition = settings.platform_enterprise_edition.license_validated;
           // endregion
           // region promote filters
-          const stixCyberObservableTypes = schema.scos.map((sco) => sco.id).concat('Stix-Cyber-Observable');
+          const stixCyberObservableTypes = schema.scos
+            .map((sco) => sco.id)
+            .concat('Stix-Cyber-Observable');
           const promotionTypes = stixCyberObservableTypes.concat(['Indicator']);
 
-          const isOnlyStixCyberObservablesTypes = entityTypeFilterValues.length > 0
-            && entityTypeFilterValues.every((id) => stixCyberObservableTypes.includes(id));
+          const isOnlyStixCyberObservablesTypes =
+            entityTypeFilterValues.length > 0 &&
+            entityTypeFilterValues.every((id) => stixCyberObservableTypes.includes(id));
 
-          const promotionTypesFiltered = entityTypeFilterValues.length > 0
-            && entityTypeFilterValues.every((id) => promotionTypes.includes(id));
+          const promotionTypesFiltered =
+            entityTypeFilterValues.length > 0 &&
+            entityTypeFilterValues.every((id) => promotionTypes.includes(id));
 
-          const cleanedSelectedTypes = selectedTypes.filter((type) => type !== 'Stix-Domain-Object' && type !== 'Stix-Core-Object');
+          const cleanedSelectedTypes = selectedTypes.filter(
+            (type) => type !== 'Stix-Domain-Object' && type !== 'Stix-Core-Object',
+          );
 
-          const isManualPromoteSelect = !selectAll
-            && cleanedSelectedTypes.length > 0
-            && cleanedSelectedTypes.every((type) => promotionTypes.includes(type));
+          const isManualPromoteSelect =
+            !selectAll &&
+            cleanedSelectedTypes.length > 0 &&
+            cleanedSelectedTypes.every((type) => promotionTypes.includes(type));
 
           const promoteEnabled = isManualPromoteSelect || promotionTypesFiltered;
 
-          const entityTypes = selectedTypes.length > 0 ? selectedTypes : [this.props.type ?? 'Stix-Core-Object'];
+          const entityTypes =
+            selectedTypes.length > 0 ? selectedTypes : [this.props.type ?? 'Stix-Core-Object'];
           const filterKeysMap = new Map();
           entityTypes.forEach((entityType) => {
             const currentMap = schema.filterKeysSchema.get(entityType);
@@ -2318,20 +2450,24 @@ class DataTableToolBar extends Component {
           // endregion
           return (
             <>
-              <Toolbar style={{ minHeight: 40, display: 'flex', justifyContent: 'space-between', height: '100%', paddingRight: 12, paddingLeft: 8 }} data-testid="opencti-toolbar">
+              <Toolbar
+                style={{
+                  minHeight: 40,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  height: '100%',
+                  paddingRight: 12,
+                  paddingLeft: 8,
+                }}
+                data-testid="opencti-toolbar"
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <Typography
-                    className={classes.title}
-                    color="inherit"
-                    variant="subtitle1"
-                  >
+                  <Typography className={classes.title} color="inherit" variant="subtitle1">
                     <strong>{numberOfSelectedElements}</strong> {t('selected')}{' '}
                   </Typography>
                   <IconButton
                     aria-label="clear"
-                    disabled={
-                      numberOfSelectedElements === 0 || this.state.processing
-                    }
+                    disabled={numberOfSelectedElements === 0 || this.state.processing}
                     onClick={handleClearSelectedElements.bind(this)}
                   >
                     <ClearOutlined />
@@ -2378,10 +2514,7 @@ class DataTableToolBar extends Component {
                             data-testid="remove-auth-members-button"
                             onClick={this.handleLaunchRemoveAuthMembers.bind(this)}
                             size="small"
-                            disabled={
-                              numberOfSelectedElements === 0
-                              || this.state.processing
-                            }
+                            disabled={numberOfSelectedElements === 0 || this.state.processing}
                           >
                             <LockOpenOutlined />
                           </IconButton>
@@ -2394,10 +2527,7 @@ class DataTableToolBar extends Component {
                           <span>
                             <IconButton
                               aria-label="update"
-                              disabled={
-                                numberOfSelectedElements === 0
-                                || this.state.processing
-                              }
+                              disabled={numberOfSelectedElements === 0 || this.state.processing}
                               onClick={this.handleOpenUpdate.bind(this)}
                               size="small"
                             >
@@ -2413,42 +2543,43 @@ class DataTableToolBar extends Component {
                           onSubmit={this.handleSubmitEmailTemplate.bind(this)}
                         />
                       )}
-                      {!removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && !isUserDatatable && (
-                        <UserContext.Consumer>
-                          {({ platformModuleHelpers }) => {
-                            const label = platformModuleHelpers.isRuleEngineEnable()
-                              ? 'Rule rescan'
-                              : 'Rule rescan (engine is disabled)';
-                            const buttonDisable = typesAreNotScannable
-                              || !platformModuleHelpers.isRuleEngineEnable()
-                              || numberOfSelectedElements === 0
-                              || this.state.processing;
-                            return typesAreNotScannable ? undefined : (
-                              <Tooltip title={t(label)}>
-                                <span>
-                                  <IconButton
-                                    aria-label="update"
-                                    disabled={buttonDisable}
-                                    onClick={this.handleOpenRescan.bind(this)}
-                                    size="small"
-                                  >
-                                    <AutoFixHighOutlined />
-                                  </IconButton>
-                                </span>
-                              </Tooltip>
-                            );
-                          }}
-                        </UserContext.Consumer>
-                      )}
+                      {!removeAuthMembersEnabled &&
+                        !removeFromDraftEnabled &&
+                        !isInDraft &&
+                        !isUserDatatable && (
+                          <UserContext.Consumer>
+                            {({ platformModuleHelpers }) => {
+                              const label = platformModuleHelpers.isRuleEngineEnable()
+                                ? 'Rule rescan'
+                                : 'Rule rescan (engine is disabled)';
+                              const buttonDisable =
+                                typesAreNotScannable ||
+                                !platformModuleHelpers.isRuleEngineEnable() ||
+                                numberOfSelectedElements === 0 ||
+                                this.state.processing;
+                              return typesAreNotScannable ? undefined : (
+                                <Tooltip title={t(label)}>
+                                  <span>
+                                    <IconButton
+                                      aria-label="update"
+                                      disabled={buttonDisable}
+                                      onClick={this.handleOpenRescan.bind(this)}
+                                      size="small"
+                                    >
+                                      <AutoFixHighOutlined />
+                                    </IconButton>
+                                  </span>
+                                </Tooltip>
+                              );
+                            }}
+                          </UserContext.Consumer>
+                        )}
                       {this.props.handleCopy && (
                         <Tooltip title={titleCopy}>
                           <span>
                             <IconButton
                               aria-label="copy"
-                              disabled={
-                                numberOfSelectedElements
-                                > maxNumberOfObservablesToCopy
-                              }
+                              disabled={numberOfSelectedElements > maxNumberOfObservablesToCopy}
                               onClick={this.props.handleCopy}
                               size="small"
                             >
@@ -2463,7 +2594,11 @@ class DataTableToolBar extends Component {
                             <IconButton
                               aria-label="enrichment"
                               disabled={this.state.processing || enrichDisable}
-                              onClick={this.handleOpenEnrichment.bind(this, stixCyberObservableSubTypes, stixDomainObjectSubTypes)}
+                              onClick={this.handleOpenEnrichment.bind(
+                                this,
+                                stixCyberObservableSubTypes,
+                                stixDomainObjectSubTypes,
+                              )}
                               size="small"
                             >
                               <CloudRefreshOutline fontSize="small" />
@@ -2487,57 +2622,57 @@ class DataTableToolBar extends Component {
                       )}
                     </Security>
                     <Security needs={[KNOWLEDGE_KNUPDATE_KNMERGE]}>
-                      {enableMerge && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && !isUserDatatable && (
-                        <Tooltip title={t('Merge')}>
-                          <span>
-                            <IconButton
-                              aria-label="merge"
-                              disabled={
-                                typesAreDifferent
-                                || numberOfSelectedElements < 2
-                                || numberOfSelectedElements > 4
-                                || preventMerge
-                                || selectAll
-                                || this.state.processing
-                              }
-                              onClick={this.handleOpenMerge.bind(this)}
-                              size="small"
-                            >
-                              <MergeOutlined fontSize="small" />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      )}
+                      {enableMerge &&
+                        !removeAuthMembersEnabled &&
+                        !removeFromDraftEnabled &&
+                        !isInDraft &&
+                        !isUserDatatable && (
+                          <Tooltip title={t('Merge')}>
+                            <span>
+                              <IconButton
+                                aria-label="merge"
+                                disabled={
+                                  typesAreDifferent ||
+                                  numberOfSelectedElements < 2 ||
+                                  numberOfSelectedElements > 4 ||
+                                  preventMerge ||
+                                  selectAll ||
+                                  this.state.processing
+                                }
+                                onClick={this.handleOpenMerge.bind(this)}
+                                size="small"
+                              >
+                                <MergeOutlined fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        )}
                     </Security>
-                    {!typesAreNotAddableInContainer && !removeAuthMembersEnabled && !isUserDatatable && (
-                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                        <Tooltip title={t('Add in container')}>
-                          <span>
-                            <IconButton
-                              aria-label="input"
-                              disabled={
-                                numberOfSelectedElements === 0
-                                || this.state.processing
-                              }
-                              onClick={this.handleOpenAddInContainer.bind(this)}
-                              size="small"
-                            >
-                              <MoveToInboxOutlined fontSize="small" />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      </Security>
-                    )}
+                    {!typesAreNotAddableInContainer &&
+                      !removeAuthMembersEnabled &&
+                      !isUserDatatable && (
+                        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                          <Tooltip title={t('Add in container')}>
+                            <span>
+                              <IconButton
+                                aria-label="input"
+                                disabled={numberOfSelectedElements === 0 || this.state.processing}
+                                onClick={this.handleOpenAddInContainer.bind(this)}
+                                size="small"
+                              >
+                                <MoveToInboxOutlined fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        </Security>
+                      )}
                     {container && (
                       <Security needs={[KNOWLEDGE_KNUPDATE]}>
                         <Tooltip title={t('Remove from the container')}>
                           <span>
                             <IconButton
                               aria-label="remove"
-                              disabled={
-                                numberOfSelectedElements === 0
-                                || this.state.processing
-                              }
+                              disabled={numberOfSelectedElements === 0 || this.state.processing}
                               onClick={this.handleLaunchRemove.bind(this)}
                               size="small"
                             >
@@ -2547,44 +2682,50 @@ class DataTableToolBar extends Component {
                         </Tooltip>
                       </Security>
                     )}
-                    {!trashOperationsEnabled && isShareableType && !removeAuthMembersEnabled && !isUserDatatable && (
-                      <>
-                        <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                          <EETooltip title={t('Share with organizations')}>
-                            <IconButton
-                              aria-label="input"
-                              onClick={isEnterpriseEdition ? this.handleOpenShare.bind(this) : null}
-                              size="small"
-                              disabled={
-                                numberOfSelectedElements === 0
-                                || this.state.processing
-                              }
-                            >
-                              <BankPlus fontSize="small" color={isEnterpriseEdition ? 'primary' : 'disabled'} />
-                            </IconButton>
-                          </EETooltip>
-                        </Security>
-                        <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                          <EETooltip title={t('Unshare with organizations')}>
-                            <IconButton
-                              aria-label="input"
-                              onClick={isEnterpriseEdition ? this.handleOpenUnshare.bind(this) : null}
-                              size="small"
-                              disabled={
-                                numberOfSelectedElements === 0
-                                || this.state.processing
-                              }
-                            >
-                              <BankMinus fontSize="small" color={isEnterpriseEdition ? 'primary' : 'disabled'} />
-                            </IconButton>
-                          </EETooltip>
-                        </Security>
-                      </>
-                    )}
-                    {!isInDraft
-                      && (!taskScope || taskScope === 'KNOWLEDGE')
-                      && !disableBulkEnroll
-                      && (
+                    {!trashOperationsEnabled &&
+                      isShareableType &&
+                      !removeAuthMembersEnabled &&
+                      !isUserDatatable && (
+                        <>
+                          <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                            <EETooltip title={t('Share with organizations')}>
+                              <IconButton
+                                aria-label="input"
+                                onClick={
+                                  isEnterpriseEdition ? this.handleOpenShare.bind(this) : null
+                                }
+                                size="small"
+                                disabled={numberOfSelectedElements === 0 || this.state.processing}
+                              >
+                                <BankPlus
+                                  fontSize="small"
+                                  color={isEnterpriseEdition ? 'primary' : 'disabled'}
+                                />
+                              </IconButton>
+                            </EETooltip>
+                          </Security>
+                          <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                            <EETooltip title={t('Unshare with organizations')}>
+                              <IconButton
+                                aria-label="input"
+                                onClick={
+                                  isEnterpriseEdition ? this.handleOpenUnshare.bind(this) : null
+                                }
+                                size="small"
+                                disabled={numberOfSelectedElements === 0 || this.state.processing}
+                              >
+                                <BankMinus
+                                  fontSize="small"
+                                  color={isEnterpriseEdition ? 'primary' : 'disabled'}
+                                />
+                              </IconButton>
+                            </EETooltip>
+                          </Security>
+                        </>
+                      )}
+                    {!isInDraft &&
+                      (!taskScope || taskScope === 'KNOWLEDGE') &&
+                      !disableBulkEnroll && (
                         <Security needs={[AUTOMATION]}>
                           <Tooltip title={t('Enroll in playbook')}>
                             <span>
@@ -2600,27 +2741,32 @@ class DataTableToolBar extends Component {
                           </Tooltip>
                         </Security>
                       )}
-                    {deleteDisable !== true && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isUserDatatable && (
-                      <Security needs={[deleteCapability]}>
-                        <Tooltip title={warningMessage || t('Delete')}>
-                          <span>
-                            <IconButton
-                              aria-label="delete"
-                              disabled={
-                                numberOfSelectedElements === 0
-                                || this.state.processing
-                                || selectedElementsList.find((element) => element.currentUserAccessRight === 'view')
-                              }
-                              onClick={this.handleLaunchDelete.bind(this)}
-                              color={warning ? 'error' : 'primary'}
-                              size="small"
-                            >
-                              <DeleteOutlined fontSize="small" />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      </Security>
-                    )}
+                    {deleteDisable !== true &&
+                      !removeAuthMembersEnabled &&
+                      !removeFromDraftEnabled &&
+                      !isUserDatatable && (
+                        <Security needs={[deleteCapability]}>
+                          <Tooltip title={warningMessage || t('Delete')}>
+                            <span>
+                              <IconButton
+                                aria-label="delete"
+                                disabled={
+                                  numberOfSelectedElements === 0 ||
+                                  this.state.processing ||
+                                  selectedElementsList.find(
+                                    (element) => element.currentUserAccessRight === 'view',
+                                  )
+                                }
+                                onClick={this.handleLaunchDelete.bind(this)}
+                                color={warning ? 'error' : 'primary'}
+                                size="small"
+                              >
+                                <DeleteOutlined fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        </Security>
+                      )}
                     {removeFromDraftEnabled && (
                       <Security needs={[KNOWLEDGE_KNUPDATE]}>
                         <Tooltip title={t('Remove from draft')}>
@@ -2629,10 +2775,7 @@ class DataTableToolBar extends Component {
                             aria-label="input"
                             onClick={this.handleLaunchRemoveFromDraft.bind(this)}
                             size="small"
-                            disabled={
-                              numberOfSelectedElements === 0
-                              || this.state.processing
-                            }
+                            disabled={numberOfSelectedElements === 0 || this.state.processing}
                           >
                             <DeleteSweepOutlined fontSize="small" color="primary" />
                           </IconButton>
@@ -2645,10 +2788,7 @@ class DataTableToolBar extends Component {
                           <span>
                             <IconButton
                               aria-label="restore"
-                              disabled={
-                                numberOfSelectedElements === 0
-                                || this.state.processing
-                              }
+                              disabled={numberOfSelectedElements === 0 || this.state.processing}
                               onClick={this.handleLaunchRestore.bind(this)}
                               color={warning ? 'error' : 'primary'}
                               size="small"
@@ -2661,10 +2801,7 @@ class DataTableToolBar extends Component {
                           <span>
                             <IconButton
                               aria-label="completeDelete"
-                              disabled={
-                                numberOfSelectedElements === 0
-                                || this.state.processing
-                              }
+                              disabled={numberOfSelectedElements === 0 || this.state.processing}
                               onClick={this.handleLaunchCompleteDelete.bind(this)}
                               color={warning ? 'error' : 'primary'}
                               size="small"
@@ -2684,13 +2821,11 @@ class DataTableToolBar extends Component {
                 data-testid="background-task-popup"
                 title={t('Launch a background task')}
               >
-                <DialogContentText>
-                  {`${n(numberOfSelectedElements)} ${t('selected element(s)')}`}
-                </DialogContentText>
+                <DialogContentText>{`${n(numberOfSelectedElements)} ${t('selected element(s)')}`}</DialogContentText>
                 {numberOfSelectedElements > 1000 && (
                   <Alert severity="warning">
                     {t(
-                      'You\'re targeting more than 1000 entities with this background task, be sure of what you\'re doing!',
+                      "You're targeting more than 1000 entities with this background task, be sure of what you're doing!",
                     )}
                   </Alert>
                 )}
@@ -2712,10 +2847,7 @@ class DataTableToolBar extends Component {
                             style={{
                               padding: '2px 5px 2px 5px',
                               marginRight: 5,
-                              color:
-                                  theme.palette.mode === 'dark'
-                                    ? '#000000'
-                                    : '#ffffff',
+                              color: theme.palette.mode === 'dark' ? '#000000' : '#ffffff',
                               backgroundColor: theme.palette.primary.main,
                             }}
                           >
@@ -2733,33 +2865,33 @@ class DataTableToolBar extends Component {
                                 <span>
                                   <Chip
                                     classes={{ root: classes.filter }}
-                                    label={(
+                                    label={
                                       <div>
                                         <strong>{t('Search')}</strong>: {search}
                                       </div>
-                                    )}
+                                    }
                                   />
                                   {filters.filters.length > 0 && (
-                                    <Chip
-                                      classes={{ root: classes.operator }}
-                                      label={t('AND')}
-                                    />
+                                    <Chip classes={{ root: classes.operator }} label={t('AND')} />
                                   )}
                                 </span>
                               )}
-                              <TasksFilterValueContainer filters={filters} entityTypes={entityTypes} />
+                              <TasksFilterValueContainer
+                                filters={filters}
+                                entityTypes={entityTypes}
+                              />
                             </div>
                           ) : (
                             <span>
                               {mergingElement
                                 ? truncate(
-                                    R.join(', ', [
-                                      getMainRepresentative(mergingElement),
-                                    ]),
+                                    R.join(', ', [getMainRepresentative(mergingElement)]),
                                     80,
                                   )
                                 : truncate(
-                                    selectedElementsList.map((o) => getMainRepresentative(o)).join(', '),
+                                    selectedElementsList
+                                      .map((o) => getMainRepresentative(o))
+                                      .join(', '),
                                     80,
                                   )}
                             </span>
@@ -2776,10 +2908,7 @@ class DataTableToolBar extends Component {
                                 style={{
                                   padding: '2px 5px 2px 5px',
                                   marginRight: 5,
-                                  color:
-                                      theme.palette.mode === 'dark'
-                                        ? '#000000'
-                                        : '#ffffff',
+                                  color: theme.palette.mode === 'dark' ? '#000000' : '#ffffff',
                                   backgroundColor: theme.palette.primary.main,
                                 }}
                               >
@@ -2789,17 +2918,13 @@ class DataTableToolBar extends Component {
                             <TableCell>
                               <Chip label={o.type} />
                             </TableCell>
-                            <TableCell>
-                              {R.pathOr(t('N/A'), ['context', 'field'], o)}
-                            </TableCell>
+                            <TableCell>{R.pathOr(t('N/A'), ['context', 'field'], o)}</TableCell>
                             <TableCell>
                               {truncate(
                                 R.join(
                                   ', ',
                                   R.map(
-                                    (p) => (typeof p === 'string'
-                                      ? p
-                                      : getMainRepresentative(p)),
+                                    (p) => (typeof p === 'string' ? p : getMainRepresentative(p)),
                                     R.pathOr([], ['context', 'values'], o),
                                   ),
                                 ),
@@ -2854,16 +2979,10 @@ class DataTableToolBar extends Component {
                               <Select
                                 variant="standard"
                                 value={actionsInputs[i]?.type}
-                                onChange={this.handleChangeActionInput.bind(
-                                  this,
-                                  i,
-                                  'type',
-                                )}
+                                onChange={this.handleChangeActionInput.bind(this, i, 'type')}
                               >
                                 <MenuItem value="ADD">{t('Add')}</MenuItem>
-                                <MenuItem value="REPLACE">
-                                  {t('Replace')}
-                                </MenuItem>
+                                <MenuItem value="REPLACE">{t('Replace')}</MenuItem>
                                 <MenuItem value="REMOVE">{t('Remove')}</MenuItem>
                               </Select>
                             </FormControl>
@@ -2871,11 +2990,24 @@ class DataTableToolBar extends Component {
                           <Grid item xs={3}>
                             <FormControl className={classes.formControl}>
                               <InputLabel>{t('Field')}</InputLabel>
-                              {this.renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin)}
+                              {this.renderFieldOptions(
+                                i,
+                                selectedTypes,
+                                entityTypeFilterValues,
+                                isAdmin,
+                              )}
                             </FormControl>
                           </Grid>
-                          <Grid item xs={6} style={{ display: 'flex', flexDirection: 'column-reverse' }}>
-                            {this.renderValuesOptions(i, selectedTypes, settings.platform_user_statuses)}
+                          <Grid
+                            item
+                            xs={6}
+                            style={{ display: 'flex', flexDirection: 'column-reverse' }}
+                          >
+                            {this.renderValuesOptions(
+                              i,
+                              selectedTypes,
+                              settings.platform_user_statuses,
+                            )}
                           </Grid>
                         </Grid>
                       </div>
@@ -2909,11 +3041,7 @@ class DataTableToolBar extends Component {
                 onClose={this.handleCloseMerge.bind(this)}
               >
                 <div>
-                  <Typography
-                    variant="h4"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
+                  <Typography variant="h4" gutterBottom={true} style={{ marginTop: 20 }}>
                     {t('Selected entities')}
                   </Typography>
                   <List>
@@ -2922,22 +3050,19 @@ class DataTableToolBar extends Component {
                         key={element.id}
                         dense={true}
                         divider={true}
-                        secondaryAction={(
+                        secondaryAction={
                           <Radio
                             checked={
                               keptEntityId
                                 ? keptEntityId === element.id
                                 : R.head(selectedElementsList).id === element.id
                             }
-                            onChange={this.handleChangeKeptEntityId.bind(
-                              this,
-                              element.id,
-                            )}
+                            onChange={this.handleChangeKeptEntityId.bind(this, element.id)}
                             value={element.id}
                             name="keptEntityID"
                             inputProps={{ 'aria-label': 'keptEntityID' }}
                           />
-                        )}
+                        }
                       >
                         <ListItemIcon>
                           <ItemIcon type={element.entity_type} />
@@ -2951,9 +3076,7 @@ class DataTableToolBar extends Component {
                           }}
                           primary={getMainRepresentative(element)}
                           secondary={truncate(
-                            element.description
-                            || element.x_opencti_description
-                            || '',
+                            element.description || element.x_opencti_description || '',
                             60,
                           )}
                         />
@@ -2969,46 +3092,28 @@ class DataTableToolBar extends Component {
                       </ListItem>
                     ))}
                   </List>
-                  <Typography
-                    variant="h4"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
+                  <Typography variant="h4" gutterBottom={true} style={{ marginTop: 20 }}>
                     {t('Merged entity')}
                   </Typography>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
+                  <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
                     {t('Name')}
                   </Typography>
                   <div style={{ overflowX: 'hidden', textOverflow: 'ellipsis' }}>
                     {getMainRepresentative(keptElement)}
                   </div>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
+                  <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
                     {t('Aliases')}
                   </Typography>
-                  {newAliases.map((label) => (label.length > 0 ? (
-                    <Chip
-                      key={label}
-                      classes={{ root: classes.aliases }}
-                      label={label}
-                    />
-                  ) : (
-                    ''
-                  )))}
+                  {newAliases.map((label) =>
+                    label.length > 0 ? (
+                      <Chip key={label} classes={{ root: classes.aliases }} label={label} />
+                    ) : (
+                      ''
+                    ),
+                  )}
                   {noAuthor !== true && (
                     <>
-                      <Typography
-                        variant="h3"
-                        gutterBottom={true}
-                        style={{ marginTop: 20 }}
-                      >
+                      <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
                         {t('Author')}
                       </Typography>
                       {keptElement?.createdBy?.name ?? EMPTY_VALUE}
@@ -3016,16 +3121,10 @@ class DataTableToolBar extends Component {
                   )}
                   {noMarking !== true && (
                     <>
-                      <Typography
-                        variant="h3"
-                        gutterBottom={true}
-                        style={{ marginTop: 20 }}
-                      >
+                      <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
                         {t('Marking')}
                       </Typography>
-                      <ItemMarkings
-                        markingDefinitions={keptElement?.objectMarking || []}
-                      />
+                      <ItemMarkings markingDefinitions={keptElement?.objectMarking || []} />
                     </>
                   )}
                   {noWarning !== true && (
@@ -3038,11 +3137,7 @@ class DataTableToolBar extends Component {
                     </>
                   )}
                   <FormButtonContainer>
-                    <Button
-                      onClick={this.handleLaunchMerge.bind(this)}
-                    >
-                      {t('Merge')}
-                    </Button>
+                    <Button onClick={this.handleLaunchMerge.bind(this)}>{t('Merge')}</Button>
                   </FormButtonContainer>
                 </div>
               </Drawer>
@@ -3052,11 +3147,7 @@ class DataTableToolBar extends Component {
                 onClose={this.handleCloseEnrichment.bind(this)}
               >
                 <div>
-                  <Typography
-                    variant="h4"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
+                  <Typography variant="h4" gutterBottom={true} style={{ marginTop: 20 }}>
                     {t('Selected connectors')}
                   </Typography>
                   <List>
@@ -3070,18 +3161,13 @@ class DataTableToolBar extends Component {
                         key={connector.id}
                         dense={true}
                         divider={true}
-                        secondaryAction={(
+                        secondaryAction={
                           <MuiSwitch
-                            checked={this.state.enrichSelected.includes(
-                              connector.id,
-                            )}
-                            onChange={this.handleChangeEnrichSelected.bind(
-                              this,
-                              connector.id,
-                            )}
+                            checked={this.state.enrichSelected.includes(connector.id)}
+                            onChange={this.handleChangeEnrichSelected.bind(this, connector.id)}
                             inputProps={{ 'aria-label': 'controlled' }}
                           />
-                        )}
+                        }
                       >
                         <ListItemIcon>
                           <CloudRefreshOutline />
@@ -3093,8 +3179,8 @@ class DataTableToolBar extends Component {
                   <FormButtonContainer>
                     <Button
                       disabled={
-                        this.state.enrichConnectors.length === 0
-                        || this.state.enrichSelected.length === 0
+                        this.state.enrichConnectors.length === 0 ||
+                        this.state.enrichSelected.length === 0
                       }
                       onClick={this.handleLaunchEnrichment.bind(this)}
                     >
@@ -3118,24 +3204,14 @@ class DataTableToolBar extends Component {
                 onClose={this.handleCloseRescan.bind(this)}
               >
                 <div>
-                  <Typography
-                    variant="h4"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
+                  <Typography variant="h4" gutterBottom={true} style={{ marginTop: 20 }}>
                     {t('Selected rules')}
                   </Typography>
                   <Alert severity="warning" style={{ marginTop: 20 }}>
-                    {t(
-                      'Element will be rescan with all compatible activated rules',
-                    )}
+                    {t('Element will be rescan with all compatible activated rules')}
                   </Alert>
                   <FormButtonContainer>
-                    <Button
-                      onClick={this.handleLaunchRescan.bind(this)}
-                    >
-                      {t('Rescan')}
-                    </Button>
+                    <Button onClick={this.handleLaunchRescan.bind(this)}>{t('Rescan')}</Button>
                   </FormButtonContainer>
                 </div>
               </Drawer>
@@ -3150,8 +3226,7 @@ class DataTableToolBar extends Component {
                   display={true}
                   speeddial={true}
                   stixDomainObjectTypes={['Container']}
-                  handleClose={() => this.setState({ containerCreation: false })
-                  }
+                  handleClose={() => this.setState({ containerCreation: false })}
                   creationCallback={(data) => {
                     const element = {
                       label: data.name,
@@ -3202,18 +3277,16 @@ class DataTableToolBar extends Component {
                 />
                 <FormControlLabel
                   style={{ marginTop: 20 }}
-                  control={(
+                  control={
                     <Checkbox
-                      checked={
-                        actionsInputs[0]?.options?.includeNeighbours || false
-                      }
+                      checked={actionsInputs[0]?.options?.includeNeighbours || false}
                       onChange={this.handleChangeActionInputOptions.bind(
                         this,
                         0,
                         'includeNeighbours',
                       )}
                     />
-                  )}
+                  }
                   label={t('Also include first neighbours')}
                 />
                 <IconButton
@@ -3228,8 +3301,7 @@ class DataTableToolBar extends Component {
                 <DialogActions>
                   <Button
                     variant="secondary"
-                    onClick={() => this.setState({ displayAddInContainer: false })
-                    }
+                    onClick={() => this.setState({ displayAddInContainer: false })}
                   >
                     {t('Cancel')}
                   </Button>
@@ -3276,7 +3348,9 @@ class DataTableToolBar extends Component {
                     this.setState(({ organizations }) => ({
                       organizations: [...(organizations ?? []), element],
                     }));
-                    this.setState({ shareOrganizations: [...this.state.shareOrganizations, element] });
+                    this.setState({
+                      shareOrganizations: [...this.state.shareOrganizations, element],
+                    });
                   }}
                 />
                 <Autocomplete
@@ -3321,23 +3395,26 @@ class DataTableToolBar extends Component {
                   <AddOutlined />
                 </IconButton>
                 <DialogActions>
-                  <Button
-                    variant="secondary"
-                    onClick={this.handleCloseShare.bind(this)}
-                  >
+                  <Button variant="secondary" onClick={this.handleCloseShare.bind(this)}>
                     {t('Cancel')}
                   </Button>
                   <Button
                     onClick={() => {
                       const shareActions = [
-                        { type: 'SHARE_MULTIPLE', context: { values: this.state.shareOrganizations } },
+                        {
+                          type: 'SHARE_MULTIPLE',
+                          context: { values: this.state.shareOrganizations },
+                        },
                       ];
                       const orgaNames = this.state.shareOrganizations.map((o) => o.label).join('|');
                       const sharingDescription = `SHARE with organizations ${orgaNames}`;
-                      this.setState({ description: sharingDescription, actions: shareActions }, () => {
-                        this.handleCloseShare();
-                        this.handleOpenTask();
-                      });
+                      this.setState(
+                        { description: sharingDescription, actions: shareActions },
+                        () => {
+                          this.handleCloseShare();
+                          this.handleOpenTask();
+                        },
+                      );
                     }}
                   >
                     {t('Share')}
@@ -3383,24 +3460,27 @@ class DataTableToolBar extends Component {
                   disableClearable
                 />
                 <DialogActions>
-                  <Button
-                    variant="secondary"
-                    onClick={this.handleCloseUnshare.bind(this)}
-                  >
+                  <Button variant="secondary" onClick={this.handleCloseUnshare.bind(this)}>
                     {t('Cancel')}
                   </Button>
                   <Button
                     color="secondary"
                     onClick={() => {
                       const shareActions = [
-                        { type: 'UNSHARE_MULTIPLE', context: { values: this.state.shareOrganizations } },
+                        {
+                          type: 'UNSHARE_MULTIPLE',
+                          context: { values: this.state.shareOrganizations },
+                        },
                       ];
                       const orgaNames = this.state.shareOrganizations.map((o) => o.label).join('|');
                       const sharingDescription = `UNSHARE with organizations ${orgaNames}`;
-                      this.setState({ description: sharingDescription, actions: shareActions }, () => {
-                        this.handleCloseUnshare();
-                        this.handleOpenTask();
-                      });
+                      this.setState(
+                        { description: sharingDescription, actions: shareActions },
+                        () => {
+                          this.handleCloseUnshare();
+                          this.handleOpenTask();
+                        },
+                      );
                     }}
                   >
                     {t('Unshare')}
@@ -3411,11 +3491,17 @@ class DataTableToolBar extends Component {
                 open={this.state.displayEnrollPlaybook}
                 onClose={this.handleCloseEnrollPlaybook.bind(this)}
                 onLaunch={this.handleLaunchEnrollPlaybook.bind(this)}
-                entityIds={this.props.selectAll ? undefined : Object.keys(this.props.selectedElements || {})}
+                entityIds={
+                  this.props.selectAll ? undefined : Object.keys(this.props.selectedElements || {})
+                }
                 isSelectAll={this.props.selectAll}
                 filters={this.props.selectAll ? this.props.filters : undefined}
                 search={this.props.selectAll ? this.props.search : undefined}
-                excludedIds={this.props.selectAll ? Object.keys(this.props.deSelectedElements || {}) : undefined}
+                excludedIds={
+                  this.props.selectAll
+                    ? Object.keys(this.props.deSelectedElements || {})
+                    : undefined
+                }
               />
             </>
           );

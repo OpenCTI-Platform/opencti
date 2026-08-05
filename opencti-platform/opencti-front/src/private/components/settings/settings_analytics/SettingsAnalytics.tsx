@@ -13,9 +13,10 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
 import Card from '../../../../components/common/card/Card';
 
-const SettingsAnalyticsValidation = () => Yup.object().shape({
-  analytics_google_analytics_v4: Yup.string().nullable(),
-});
+const SettingsAnalyticsValidation = () =>
+  Yup.object().shape({
+    analytics_google_analytics_v4: Yup.string().nullable(),
+  });
 
 interface SettingsAnalyticsProps {
   settings: SettingsQuery$data['settings'] & {
@@ -42,18 +43,15 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
       <Stack direction="row" gap={1}>
         <EEChip />
         <Tooltip
-          title={(
+          title={
             <>
               {t_i18n('If needed, you can set a')}{' '}
-              <Link
-                to="/dashboard/settings/accesses/policies"
-                target="_blank"
-              >
+              <Link to="/dashboard/settings/accesses/policies" target="_blank">
                 {t_i18n('consent message')}
               </Link>{' '}
               {t_i18n('on user login.')}
             </>
-          )}
+          }
         >
           <InformationOutline
             fontSize="small"
@@ -67,7 +65,6 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
 
   return (
     <>
-
       <Card title={title}>
         <Formik
           onSubmit={() => {}}
@@ -89,16 +86,17 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
                     }}
                     fullWidth
                     onFocus={(name: string) => handleChangeFocus(id, name)}
-                    onSubmit={(name: string, value: string | null) => handleSubmitField(id, name, value)
+                    onSubmit={(name: string, value: string | null) =>
+                      handleSubmitField(id, name, value)
                     }
                     disabled={!isEnterpriseEdition}
                     variant="standard"
-                    helperText={(
+                    helperText={
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="analytics_google_analytics_v4"
                       />
-                    )}
+                    }
                   />
                 </span>
               </EETooltip>

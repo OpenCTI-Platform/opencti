@@ -13,22 +13,12 @@ interface DashboardRawVizProps {
   host?: WidgetHost;
 }
 
-const DashboardRawViz = ({
-  widget,
-  popover,
-  config,
-  host,
-}: DashboardRawVizProps) => {
+const DashboardRawViz = ({ widget, popover, config, host }: DashboardRawVizProps) => {
   const { startDate, endDate } = computeStartEndDates(config);
 
   switch (widget.type) {
     case 'text':
-      return (
-        <WidgetText
-          parameters={widget.parameters}
-          popover={popover}
-        />
-      );
+      return <WidgetText parameters={widget.parameters} popover={popover} />;
     case 'custom-attributes':
       return (
         <StixCoreObjectsCustomAttributes
@@ -45,9 +35,7 @@ const DashboardRawViz = ({
         />
       );
     default:
-      return (
-        <WidgetNotImplemented popover={popover} />
-      );
+      return <WidgetNotImplemented popover={popover} />;
   }
 };
 

@@ -17,7 +17,10 @@ import TableCell from '@mui/material/TableCell';
 import TableBody from '@mui/material/TableBody';
 import ConnectorWorksErrorLine from '@components/data/connectors/ConnectorWorksErrorLine';
 import Drawer from '@components/common/drawer/Drawer';
-import { ConnectorWorks_data$data, State } from '@components/data/connectors/__generated__/ConnectorWorks_data.graphql';
+import {
+  ConnectorWorks_data$data,
+  State,
+} from '@components/data/connectors/__generated__/ConnectorWorks_data.graphql';
 import parseWorkErrors, { ParsedWorkMessage } from '@components/data/connectors/parseWorkErrors';
 import { connectorWorksWorkDeletionMutation } from '@components/data/connectors/ConnectorWorks';
 import { MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
@@ -29,7 +32,9 @@ import { MESSAGING$ } from '../../../../relay/environment';
 import Label from '../../../../components/common/label/Label';
 import { EMPTY_VALUE } from '../../../../utils/String';
 
-type WorkMessages = NonNullable<NonNullable<NonNullable<ConnectorWorks_data$data['works']>['edges']>[0]>['node']['errors'];
+type WorkMessages = NonNullable<
+  NonNullable<NonNullable<ConnectorWorks_data$data['works']>['edges']>[0]
+>['node']['errors'];
 interface ConnectorWorkLineProps {
   workId: string;
   workName: string | null | undefined;
@@ -42,9 +47,18 @@ interface ConnectorWorkLineProps {
   readOnly?: boolean | undefined;
   statusLabel?: string;
 }
-const ConnectorWorkLine: FunctionComponent<
-  ConnectorWorkLineProps
-> = ({ workId, workName, workStatus, workReceivedTime, workEndTime, workExpectedNumber, workProcessedNumber, workErrors, readOnly, statusLabel }) => {
+const ConnectorWorkLine: FunctionComponent<ConnectorWorkLineProps> = ({
+  workId,
+  workName,
+  workStatus,
+  workReceivedTime,
+  workEndTime,
+  workExpectedNumber,
+  workProcessedNumber,
+  workErrors,
+  readOnly,
+  statusLabel,
+}) => {
   const { t_i18n, nsdt } = useFormatter();
 
   const [commit] = useApiMutation(connectorWorksWorkDeletionMutation);
@@ -86,31 +100,25 @@ const ConnectorWorkLine: FunctionComponent<
         <Grid item xs={7}>
           <Grid container={true} spacing={1}>
             <Grid item xs={8}>
-              <Label>
-                {t_i18n('Name')}
-              </Label>
+              <Label>{t_i18n('Name')}</Label>
               <Tooltip title={workName}>
-                <Typography sx={{ overflowX: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'noWrap' }}>
+                <Typography
+                  sx={{ overflowX: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'noWrap' }}
+                >
                   {workName}
                 </Typography>
               </Tooltip>
             </Grid>
             <Grid item xs={4}>
-              <Label>
-                {statusLabel ?? t_i18n('Status')}
-              </Label>
+              <Label>{statusLabel ?? t_i18n('Status')}</Label>
               <TaskStatus status={workStatus} label={t_i18n(workStatus)} />
             </Grid>
             <Grid item xs={8}>
-              <Label>
-                {t_i18n('Work start time')}
-              </Label>
+              <Label>{t_i18n('Work start time')}</Label>
               {nsdt(workReceivedTime)}
             </Grid>
             <Grid item xs={4}>
-              <Label>
-                {t_i18n('Work end time')}
-              </Label>
+              <Label>{t_i18n('Work end time')}</Label>
               {workEndTime ? nsdt(workEndTime) : EMPTY_VALUE}
             </Grid>
           </Grid>
@@ -118,27 +126,19 @@ const ConnectorWorkLine: FunctionComponent<
         <Grid item xs={4}>
           <Grid container={true} spacing={2}>
             <Grid item xs={6}>
-              <Label>
-                {t_i18n('Operations completed')}
-              </Label>
+              <Label>{t_i18n('Operations completed')}</Label>
               <span style={{ fontWeight: 600, fontSize: 18 }}>
-                {workStatus === 'wait'
-                  ? EMPTY_VALUE
-                  : workProcessedNumber ?? EMPTY_VALUE}
+                {workStatus === 'wait' ? EMPTY_VALUE : (workProcessedNumber ?? EMPTY_VALUE)}
               </span>
             </Grid>
             <Grid item xs={6}>
-              <Label>
-                {t_i18n('Total number of operations')}
-              </Label>
+              <Label>{t_i18n('Total number of operations')}</Label>
               <span style={{ fontWeight: 600, fontSize: 18 }}>
                 {workExpectedNumber ?? EMPTY_VALUE}
               </span>
             </Grid>
             <Grid item xs={11}>
-              <Label>
-                {t_i18n('Progress')}
-              </Label>
+              <Label>{t_i18n('Progress')}</Label>
               <LinearProgress
                 style={{ borderRadius: 4, height: 10 }}
                 variant="determinate"
@@ -175,13 +175,11 @@ const ConnectorWorkLine: FunctionComponent<
           </Security>
         )}
       </Grid>
-      <Drawer
-        title={t_i18n('Errors')}
-        open={openDrawerErrors}
-        onClose={handleCloseDrawerErrors}
-      >
+      <Drawer title={t_i18n('Errors')} open={openDrawerErrors} onClose={handleCloseDrawerErrors}>
         <>
-          <Alert severity="info">{t_i18n('This page lists only the first 100 errors returned by the connector')}</Alert>
+          <Alert severity="info">
+            {t_i18n('This page lists only the first 100 errors returned by the connector')}
+          </Alert>
           <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
             <Tab label={`${t_i18n('Critical')} (${criticals.length})`} value="Critical" />
             <Tab label={`${t_i18n('Warning')} (${warnings.length})`} value="Warning" />
@@ -198,15 +196,18 @@ const ConnectorWorkLine: FunctionComponent<
                 </TableRow>
               </TableHead>
               <TableBody>
-                {tabValue === 'Critical' && criticals.map((error, i) => (
-                  <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
-                ))}
-                {tabValue === 'Warning' && warnings.map((error, i) => (
-                  <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
-                ))}
-                {tabValue === 'All' && errors.map((error, i) => (
-                  <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
-                ))}
+                {tabValue === 'Critical' &&
+                  criticals.map((error, i) => (
+                    <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
+                  ))}
+                {tabValue === 'Warning' &&
+                  warnings.map((error, i) => (
+                    <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
+                  ))}
+                {tabValue === 'All' &&
+                  errors.map((error, i) => (
+                    <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
+                  ))}
               </TableBody>
             </Table>
           </TableContainer>

@@ -4,7 +4,12 @@ import { useAppData } from '../../../utils/hooks/useAppData';
 import { DataTableLinesDummy } from './DataTableLine';
 import DataTableBody from './DataTableBody';
 import { buildMetricsColumns, defaultColumnsMap } from '../dataTableUtils';
-import { DataTableColumn, DataTableProps, DataTableVariant, LocalStorageColumns } from '../dataTableTypes';
+import {
+  DataTableColumn,
+  DataTableProps,
+  DataTableVariant,
+  LocalStorageColumns,
+} from '../dataTableTypes';
 import DataTableHeaders from './DataTableHeaders';
 import { DataTableProvider } from './DataTableContext';
 import {
@@ -19,7 +24,8 @@ import { getDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
 import callbackResizeObserver from '../../../utils/resizeObservers';
 
-type DataTableComponentProps = Pick<DataTableProps,
+type DataTableComponentProps = Pick<
+  DataTableProps,
   | 'dataColumns'
   | 'settingsMessagesBannerHeight'
   | 'filtersComponent'
@@ -91,10 +97,18 @@ const DataTableComponent = ({
   const { metricsDefinition } = useAppData();
 
   const defaultComputeLink = useDataTableComputeLink();
-  const columnsLocalStorage = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true);
+  const columnsLocalStorage = useDataTableLocalStorage<LocalStorageColumns>(
+    `${storageKey}_columns`,
+    {},
+    true,
+  );
   const [localStorageColumns, setLocalStorageColumns] = columnsLocalStorage;
 
-  const paginationLocalStorage = useDataTablePaginationLocalStorage(storageKey, initialValues, variant !== DataTableVariant.default);
+  const paginationLocalStorage = useDataTablePaginationLocalStorage(
+    storageKey,
+    initialValues,
+    variant !== DataTableVariant.default,
+  );
   const {
     viewStorage: { pageSize: viewStoragePageSize },
     helpers,
@@ -127,12 +141,14 @@ const DataTableComponent = ({
     const allDataColumns = { ...dataColumns, ...metricsColumns };
 
     const dataColumnsKeys = Object.keys(allDataColumns);
-    const localStorageColumnsKeys = Object.keys(localStorageColumns)
-      .filter((key) => key !== 'select' && key !== 'navigate' && key !== 'icon');
+    const localStorageColumnsKeys = Object.keys(localStorageColumns).filter(
+      (key) => key !== 'select' && key !== 'navigate' && key !== 'icon',
+    );
 
     // Check if keys order/length is the same
-    const isOrderSame = dataColumnsKeys.length === localStorageColumnsKeys.length
-      && dataColumnsKeys.every((key, index) => key === localStorageColumnsKeys[index]);
+    const isOrderSame =
+      dataColumnsKeys.length === localStorageColumnsKeys.length &&
+      dataColumnsKeys.every((key, index) => key === localStorageColumnsKeys[index]);
 
     // Only use localStorage if order matches and we are allowed to
     const useLocalStorage = isOrderSame && withLocalStorage;
@@ -155,13 +171,20 @@ const DataTableComponent = ({
         return R.mergeDeepRight(extendedColumnsMap.get(key) as DataTableColumn, {
           ...column,
           // Override column config with what we have in local storage
-          order: useLocalStorage && currentColumn?.index !== undefined ? currentColumn?.index : index,
-          visible: useLocalStorage && currentColumn?.visible !== undefined ? currentColumn?.visible : true,
-          percentWidth: useLocalStorage && currentColumn?.percentWidth !== undefined ? currentColumn?.percentWidth : percentWidth,
+          order:
+            useLocalStorage && currentColumn?.index !== undefined ? currentColumn?.index : index,
+          visible:
+            useLocalStorage && currentColumn?.visible !== undefined ? currentColumn?.visible : true,
+          percentWidth:
+            useLocalStorage && currentColumn?.percentWidth !== undefined
+              ? currentColumn?.percentWidth
+              : percentWidth,
         });
       }),
       // inject "navigate" action (chevron) if navigable and no specific actions defined
-      ...((disableNavigation || actions) ? [] : [{ id: 'navigate', visible: true } as DataTableColumn]),
+      ...(disableNavigation || actions
+        ? []
+        : [{ id: 'navigate', visible: true } as DataTableColumn]),
     ].sort((a, b) => a.order - b.order);
   };
 
@@ -235,7 +258,7 @@ const DataTableComponent = ({
         if (startsWithAction) offset += SELECT_COLUMN_SIZE;
         if (startsWithIcon) offset += ICON_COLUMN_SIZE;
         if (endsWithAction) offset += endActionsWidth;
-        if ((el.clientWidth - offset) !== tableWidth) {
+        if (el.clientWidth - offset !== tableWidth) {
           setTableWidth(el.clientWidth - offset);
         }
       };
@@ -245,7 +268,14 @@ const DataTableComponent = ({
     return () => {
       observer?.disconnect();
     };
-  }, [tableRef.current, tableWidth, endActionsWidth, endsWithAction, startsWithAction, startsWithIcon]);
+  }, [
+    tableRef.current,
+    tableWidth,
+    endActionsWidth,
+    endsWithAction,
+    startsWithAction,
+    startsWithIcon,
+  ]);
 
   return (
     <DataTableProvider
@@ -300,12 +330,12 @@ const DataTableComponent = ({
         ref={tableRef}
       >
         <React.Suspense
-          fallback={(
+          fallback={
             <>
               <DataTableHeaders dataTableToolBarComponent={dataTableToolBarComponent} />
               <DataTableLinesDummy number={Math.max(currentPageSize, 10)} />
             </>
-          )}
+          }
         >
           <DataTableBody
             settingsMessagesBannerHeight={settingsMessagesBannerHeight}

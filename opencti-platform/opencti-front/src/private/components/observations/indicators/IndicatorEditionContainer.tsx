@@ -37,20 +37,17 @@ const IndicatorEditionContainer: FunctionComponent<IndicatorEditionContainerProp
   );
 };
 
-const IndicatorEditionFragment = createFragmentContainer(
-  IndicatorEditionContainer,
-  {
-    indicator: graphql`
-      fragment IndicatorEditionContainer_indicator on Indicator {
-        id
-        ...IndicatorEditionOverview_indicator
-        editContext {
-          name
-          focusOn
-        }
+const IndicatorEditionFragment = createFragmentContainer(IndicatorEditionContainer, {
+  indicator: graphql`
+    fragment IndicatorEditionContainer_indicator on Indicator {
+      id
+      ...IndicatorEditionOverview_indicator
+      editContext {
+        name
+        focusOn
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default IndicatorEditionFragment;

@@ -57,13 +57,19 @@ const buildCatalogMap = async (): Promise<Record<string, CatalogType>> => {
       const contract = catalog.contracts[contractIndex];
       if (contract.manager_supported) {
         if (!contract.config_schema) {
-          logApp.warn('A contract has manager_supported=true but is missing config_schema', { contractTitle: contract.title });
+          logApp.warn('A contract has manager_supported=true but is missing config_schema', {
+            contractTitle: contract.title,
+          });
         } else {
           if (isEmptyField(contract.container_image)) {
-            throw UnsupportedError('Contract must define container_image field', { contractTitle: contract.title });
+            throw UnsupportedError('Contract must define container_image field', {
+              contractTitle: contract.title,
+            });
           }
           if (isEmptyField(contract.container_type)) {
-            throw UnsupportedError('Contract must define container_type field', { contractTitle: contract.title });
+            throw UnsupportedError('Contract must define container_type field', {
+              contractTitle: contract.title,
+            });
           }
 
           if (contract.config_schema) {
@@ -74,9 +80,14 @@ const buildCatalogMap = async (): Promise<Record<string, CatalogType>> => {
               additionalProperties: contract.config_schema.additionalProperties,
             };
             try {
-              getOrCompileValidator(`catalog-contract:${catalog.id}:${contract.slug}`, jsonValidation);
+              getOrCompileValidator(
+                `catalog-contract:${catalog.id}:${contract.slug}`,
+                jsonValidation,
+              );
             } catch (err) {
-              throw UnsupportedError('Contract must be a valid json schema definition', { cause: err });
+              throw UnsupportedError('Contract must be a valid json schema definition', {
+                cause: err,
+              });
             }
           }
         }
@@ -95,13 +106,22 @@ const buildCatalogMap = async (): Promise<Record<string, CatalogType>> => {
           const finalContract = c;
           if (finalContract.manager_supported) {
             if (!finalContract.config_schema) {
-              logApp.warn('A contract has manager_supported=true but is missing config_schema', { contractTitle: finalContract.title });
+              logApp.warn('A contract has manager_supported=true but is missing config_schema', {
+                contractTitle: finalContract.title,
+              });
             } else {
-              const EXCLUDED_CONFIG_VARS = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
+              const EXCLUDED_CONFIG_VARS = [
+                'OPENCTI_TOKEN',
+                'OPENCTI_URL',
+                'CONNECTOR_TYPE',
+                'CONNECTOR_RUN_AND_TERMINATE',
+              ];
               EXCLUDED_CONFIG_VARS.forEach((property) => {
                 delete finalContract.config_schema.properties[property];
               });
-              finalContract.config_schema.required = c.config_schema.required.filter((item) => !EXCLUDED_CONFIG_VARS.includes(item));
+              finalContract.config_schema.required = c.config_schema.required.filter(
+                (item) => !EXCLUDED_CONFIG_VARS.includes(item),
+              );
             }
           }
           return JSON.stringify(finalContract);
@@ -135,10 +155,7 @@ const getCatalogs = async (): Promise<Record<string, CatalogType>> => {
 
 const aesEncrypt = (text: string, key: Buffer, aesIv: Buffer) => {
   const cipher = crypto.createCipheriv('aes-256-gcm', key, aesIv);
-  const ciphertext = Buffer.concat([
-    cipher.update(Buffer.from(text, 'utf8')),
-    cipher.final(),
-  ]);
+  const ciphertext = Buffer.concat([cipher.update(Buffer.from(text, 'utf8')), cipher.final()]);
   const tag = cipher.getAuthTag();
 
   return Buffer.concat([ciphertext, tag]);
@@ -161,14 +178,15 @@ export const encryptValue = (rsaPublicKey: string, value: string) => {
 
   const version = Buffer.from([0x02]);
 
-  const concatenatedEncryptionBuffer = Buffer.concat([version, rsaEncryptedAesKeyAndIvBuffer, aesEncryptedValueBuffer]);
+  const concatenatedEncryptionBuffer = Buffer.concat([
+    version,
+    rsaEncryptedAesKeyAndIvBuffer,
+    aesEncryptedValueBuffer,
+  ]);
   return concatenatedEncryptionBuffer.toString('base64');
 };
 
-export const processPasswordConfigurationValue = (
-  rawValue: string,
-  publicKey: string,
-) => {
+export const processPasswordConfigurationValue = (rawValue: string, publicKey: string) => {
   return encryptValue(publicKey, rawValue);
 };
 
@@ -185,13 +203,17 @@ export const processConfigurationValue = (
   switch (propSchema.type) {
     case 'boolean':
       if (rawValue !== 'true' && rawValue !== 'false') {
-        throw UnsupportedError(`Field "${propKey}" must be a boolean value (true or false). Received: "${rawValue}"`);
+        throw UnsupportedError(
+          `Field "${propKey}" must be a boolean value (true or false). Received: "${rawValue}"`,
+        );
       }
       return rawValue;
     case 'integer': {
       const parsedInt = parseInt(rawValue, 10);
       if (Number.isNaN(parsedInt)) {
-        throw UnsupportedError(`Field "${propKey}" must be a valid integer. Received: "${rawValue}"`);
+        throw UnsupportedError(
+          `Field "${propKey}" must be a valid integer. Received: "${rawValue}"`,
+        );
       }
       return String(parsedInt);
     }
@@ -267,11 +289,7 @@ export const resolveConfigurationValue = (
       encrypted: true,
     };
   }
-  const processedValue = processConfigurationValue(
-    rawValue,
-    propSchema,
-    propKey,
-  );
+  const processedValue = processConfigurationValue(rawValue, propSchema, propKey);
 
   return {
     key: propKey,
@@ -282,13 +300,18 @@ export const resolveConfigurationValue = (
 /**
  * Format AJV validation errors into human-readable messages
  */
-const formatValidationErrors = (errors: any[] | null | undefined, contractTitle: string): string => {
+const formatValidationErrors = (
+  errors: any[] | null | undefined,
+  contractTitle: string,
+): string => {
   if (!errors || errors.length === 0) {
     return `Invalid contract configuration for ${contractTitle}`;
   }
 
   const errorMessages = errors.map((error) => {
-    const fieldPath = error.instancePath ? error.instancePath.replace(/^\//, '') : error.params?.missingProperty || 'unknown field';
+    const fieldPath = error.instancePath
+      ? error.instancePath.replace(/^\//, '')
+      : error.params?.missingProperty || 'unknown field';
 
     switch (error.keyword) {
       case 'required':
@@ -326,18 +349,24 @@ export const validateContractConfigurations = (
   // Build validation object from configurations
   // For AJV validation, arrays need to be actual arrays, not comma-separated strings
   type ContractConfigurationObject = Record<string, string | string[]>;
-  const contractObject = contractConfigurations.reduce<ContractConfigurationObject>((acc, config) => {
-    const propSchema = targetConfig.properties[config.key];
-    if (propSchema && config.value !== undefined && config.value !== null) {
-      // Convert comma-separated strings to arrays for AJV validation only
-      if (propSchema.type === 'array' && typeof config.value === 'string') {
-        acc[config.key] = config.value.split(',').map((v) => v.trim()).filter((v) => v !== '');
-      } else {
-        acc[config.key] = config.value;
+  const contractObject = contractConfigurations.reduce<ContractConfigurationObject>(
+    (acc, config) => {
+      const propSchema = targetConfig.properties[config.key];
+      if (propSchema && config.value !== undefined && config.value !== null) {
+        // Convert comma-separated strings to arrays for AJV validation only
+        if (propSchema.type === 'array' && typeof config.value === 'string') {
+          acc[config.key] = config.value
+            .split(',')
+            .map((v) => v.trim())
+            .filter((v) => v !== '');
+        } else {
+          acc[config.key] = config.value;
+        }
       }
-    }
-    return acc;
-  }, {});
+      return acc;
+    },
+    {},
+  );
 
   // Build validation properties - only include:
   // 1. Required fields (always needed for validation)
@@ -415,10 +444,10 @@ export const computeConnectorTargetContract = (
 
     // Skip optional fields that have no value, no default, and are not required
     if (
-      !isRequired
-      && !hasInput
-      && !hasExisting
-      && (propSchema.default === undefined || propSchema.default === null)
+      !isRequired &&
+      !hasInput &&
+      !hasExisting &&
+      (propSchema.default === undefined || propSchema.default === null)
     ) {
       return; // Skip this field entirely
     }
@@ -446,7 +475,9 @@ export const getSupportedContractsByImage = async (): Promise<Map<string, Catalo
   if (!contractsByImageCache) {
     contractsByImageCache = (async () => {
       const catalogDefinitions = await getCatalogs();
-      const contracts = Object.values(catalogDefinitions).map((catalog) => catalog.definition.contracts).flat();
+      const contracts = Object.values(catalogDefinitions)
+        .map((catalog) => catalog.definition.contracts)
+        .flat();
       return new Map(contracts.map((contract) => [contract.container_image, contract]));
     })().catch((err) => {
       contractsByImageCache = undefined;
@@ -466,7 +497,11 @@ export const findCatalog = async (_context: AuthContext, _user: AuthUser) => {
   return Object.values(catalogDefinitions).map((catalog) => catalog.graphql);
 };
 
-const findContract = async (_context: AuthContext, _user: AuthUser, predicate: (contract: any) => boolean) => {
+const findContract = async (
+  _context: AuthContext,
+  _user: AuthUser,
+  predicate: (contract: any) => boolean,
+) => {
   const catalogDefinitions = await getCatalogs();
   if (!catalogDefinitions) {
     return null;
@@ -490,6 +525,10 @@ export const findContractBySlug = (context: AuthContext, user: AuthUser, contrac
   return findContract(context, user, (contract) => contract.slug === contractSlug);
 };
 
-export const findContractByContainerImage = (context: AuthContext, user: AuthUser, containerImage: string) => {
+export const findContractByContainerImage = (
+  context: AuthContext,
+  user: AuthUser,
+  containerImage: string,
+) => {
   return findContract(context, user, (contract) => contract.container_image === containerImage);
 };

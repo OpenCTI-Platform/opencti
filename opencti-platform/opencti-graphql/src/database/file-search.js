@@ -17,10 +17,25 @@ import * as R from 'ramda';
 import { now } from '../utils/format';
 import { buildRefRelationKey } from '../schema/general';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
-import { buildPagination, cursorToOffset, INDEX_FILES, READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_FILES } from './utils';
+import {
+  buildPagination,
+  cursorToOffset,
+  INDEX_FILES,
+  READ_DATA_INDICES_WITHOUT_INTERNAL,
+  READ_INDEX_FILES,
+} from './utils';
 import { DatabaseError } from '../config/errors';
 import { logApp } from '../config/conf';
-import { buildDataRestrictions, elFindByIds, elIndex, elRawCount, elRawDeleteByQuery, elRawSearch, elRawUpdateByQuery, ES_MINIMUM_FIXED_PAGINATION } from './engine';
+import {
+  buildDataRestrictions,
+  elFindByIds,
+  elIndex,
+  elRawCount,
+  elRawDeleteByQuery,
+  elRawSearch,
+  elRawUpdateByQuery,
+  ES_MINIMUM_FIXED_PAGINATION,
+} from './engine';
 
 const buildIndexFileBody = (documentId, file, entity = null) => {
   const documentBody = {
@@ -36,7 +51,8 @@ const buildIndexFileBody = (documentId, file, entity = null) => {
     // index entity markings & organization restrictions
     documentBody.entity_type = entity.entity_type;
     documentBody.parent_types = entity.parent_types;
-    documentBody[buildRefRelationKey(RELATION_OBJECT_MARKING)] = entity[RELATION_OBJECT_MARKING] ?? [];
+    documentBody[buildRefRelationKey(RELATION_OBJECT_MARKING)] =
+      entity[RELATION_OBJECT_MARKING] ?? [];
     documentBody[buildRefRelationKey(RELATION_GRANTED_TO)] = entity[RELATION_GRANTED_TO] ?? [];
     // index entity authorized_members & authorized_authorities => not yet
     // documentBody.authorized_members = entity.authorized_members ?? [];
@@ -72,7 +88,11 @@ export const elIndexFiles = async (context, user, files) => {
         // try to index without file content
         const documentWithoutFileData = R.dissoc('file_data', documentBody);
         await elIndex(INDEX_FILES, documentWithoutFileData).catch((e) => {
-          logApp.error('Error in fallback file indexing', { message: e.message, cause: e, file_id });
+          logApp.error('Error in fallback file indexing', {
+            message: e.message,
+            cause: e,
+            file_id,
+          });
         });
       }
     }
@@ -87,7 +107,8 @@ export const elUpdateFilesWithEntityRestrictions = async (entity) => {
     [buildRefRelationKey(RELATION_OBJECT_MARKING)]: entity[RELATION_OBJECT_MARKING] ?? [],
     [buildRefRelationKey(RELATION_GRANTED_TO)]: entity[RELATION_GRANTED_TO] ?? [],
   };
-  const source = 'for (change in params.changes.entrySet()) { ctx._source[change.getKey()] = change.getValue() }';
+  const source =
+    'for (change in params.changes.entrySet()) { ctx._source[change.getKey()] = change.getValue() }';
   return elRawUpdateByQuery({
     index: READ_INDEX_FILES,
     refresh: true,
@@ -101,7 +122,10 @@ export const elUpdateFilesWithEntityRestrictions = async (entity) => {
       },
     },
   }).catch((err) => {
-    throw DatabaseError('Files entity restrictions indexing fail', { cause: err, entityId: entity.internal_id });
+    throw DatabaseError('Files entity restrictions indexing fail', {
+      cause: err,
+      entityId: entity.internal_id,
+    });
   });
 };
 
@@ -124,15 +148,26 @@ export const elUpdateRemovedFiles = async (entity, removed = true) => {
       },
     },
   }).catch((err) => {
-    throw DatabaseError('Files entity removed update fail', { cause: err, entityId: entity.internal_id });
+    throw DatabaseError('Files entity removed update fail', {
+      cause: err,
+      entityId: entity.internal_id,
+    });
   });
 };
 
-const buildFilesSearchResult = (data, first, searchAfter, connectionFormat = true, includeContent = false) => {
+const buildFilesSearchResult = (
+  data,
+  first,
+  searchAfter,
+  connectionFormat = true,
+  includeContent = false,
+) => {
   const convertedHits = data.hits.hits.map((hit) => {
     const elementData = hit._source;
-    const searchOccurrences = (hit.highlight && hit.highlight['attachment.content'])
-      ? hit.highlight['attachment.content'].length : 0;
+    const searchOccurrences =
+      hit.highlight && hit.highlight['attachment.content']
+        ? hit.highlight['attachment.content'].length
+        : 0;
     const element = {
       _index: hit._index,
       id: elementData.internal_id,
@@ -209,7 +244,15 @@ const elBuildSearchFilesQueryBody = async (context, user, options = {}) => {
   };
 };
 export const elSearchFiles = async (context, user, options = {}) => {
-  const { search = null, first = ES_MINIMUM_FIXED_PAGINATION, after, connectionFormat = true, includeContent = false, orderBy = null, orderMode = 'asc' } = options;
+  const {
+    search = null,
+    first = ES_MINIMUM_FIXED_PAGINATION,
+    after,
+    connectionFormat = true,
+    includeContent = false,
+    orderBy = null,
+    orderMode = 'asc',
+  } = options;
   const { fields = [], excludeFields = ['attachment.content'], highlight = true } = options; // results format options
   const searchAfter = after ? cursorToOffset(after) : undefined;
   const body = await elBuildSearchFilesQueryBody(context, user, options);
@@ -233,12 +276,16 @@ export const elSearchFiles = async (context, user, options = {}) => {
   if (highlight) {
     body.highlight = {
       fields: {
-        'attachment.content': { type: 'unified', boundary_scanner: 'word', number_of_fragments: 100 },
+        'attachment.content': {
+          type: 'unified',
+          boundary_scanner: 'word',
+          number_of_fragments: 100,
+        },
       },
     };
   }
-  const sourceIncludes = (fields?.length > 0) ? fields : [];
-  const sourceExcludes = (excludeFields?.length > 0) ? excludeFields : [];
+  const sourceIncludes = fields?.length > 0 ? fields : [];
+  const sourceExcludes = excludeFields?.length > 0 ? excludeFields : [];
   const query = {
     index: INDEX_FILES,
     track_total_hits: true,
@@ -248,7 +295,13 @@ export const elSearchFiles = async (context, user, options = {}) => {
   logApp.debug('[SEARCH] search files', { query });
   return elRawSearch(context, user, null, query)
     .then((data) => {
-      return buildFilesSearchResult(data, first, body.search_after, connectionFormat, includeContent);
+      return buildFilesSearchResult(
+        data,
+        first,
+        body.search_after,
+        connectionFormat,
+        includeContent,
+      );
     })
     .catch((err) => {
       throw DatabaseError('Files search pagination fail', { cause: err, query });

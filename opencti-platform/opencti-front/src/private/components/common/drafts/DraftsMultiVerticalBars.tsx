@@ -8,7 +8,12 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalBars';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
-import type { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import type {
+  Widget,
+  WidgetDataSelection,
+  WidgetHost,
+  WidgetParameters,
+} from '../../../../utils/widget/widget';
 import { DraftsMultiVerticalBarsTimeSeriesQuery } from './__generated__/DraftsMultiVerticalBarsTimeSeriesQuery.graphql';
 import { getWidgetInterval } from '../../../../utils/widget/widgetUtils';
 
@@ -60,13 +65,15 @@ const DraftsMultiVerticalBarsComponent = ({
 
   return (
     <WidgetVerticalBars
-      series={[{
-        name: selection?.label || t_i18n('Number of draft workspaces'),
-        data: data.draftWorkspacesTimeSeries.map((entry) => ({
-          x: new Date(entry?.date),
-          y: entry?.value,
-        })),
-      }]}
+      series={[
+        {
+          name: selection?.label || t_i18n('Number of draft workspaces'),
+          data: data.draftWorkspacesTimeSeries.map((entry) => ({
+            x: new Date(entry?.date),
+            y: entry?.value,
+          })),
+        },
+      ]}
       interval={parameters.interval}
       isStacked={parameters.stacked ?? undefined}
       hasLegend={parameters.legend ?? undefined}
@@ -119,7 +126,13 @@ const DraftsMultiVerticalBars = ({
 }: DraftsMultiVerticalBarsProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<DraftsMultiVerticalBarsTimeSeriesQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<DraftsMultiVerticalBarsTimeSeriesQuery>({
     perspective: 'entities',
     dataSelection,
     host,

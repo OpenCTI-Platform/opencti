@@ -19,24 +19,20 @@ interface UseActiveThemeParams {
   allThemes: RootPrivateQuery$data['themes'];
 }
 
-const useActiveTheme = ({
-  userThemeId,
-  platformTheme,
-  allThemes,
-}: UseActiveThemeParams) => {
+const useActiveTheme = ({ userThemeId, platformTheme, allThemes }: UseActiveThemeParams) => {
   const themes = allThemes?.edges.map((edge) => edge.node) || [];
 
-  const themeIdToFetch = (userThemeId && userThemeId !== 'default')
-    ? userThemeId
-    : platformTheme?.id;
+  const themeIdToFetch = userThemeId && userThemeId !== 'default' ? userThemeId : platformTheme?.id;
 
   const activeTheme = themeIdToFetch
     ? themes.find((theme) => theme.id === themeIdToFetch) || platformTheme
     : platformTheme;
 
-  const userThemeWasDeleted = !!(userThemeId
-    && userThemeId !== 'default'
-    && !themes.find((t) => t.id === userThemeId));
+  const userThemeWasDeleted = !!(
+    userThemeId &&
+    userThemeId !== 'default' &&
+    !themes.find((t) => t.id === userThemeId)
+  );
 
   return {
     activeTheme,

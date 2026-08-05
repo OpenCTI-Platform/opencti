@@ -1,6 +1,8 @@
 import React from 'react';
 import { OrganizationEditionContainerQuery } from '@components/entities/organizations/__generated__/OrganizationEditionContainerQuery.graphql';
-import OrganizationEditionContainer, { organizationEditionQuery } from './OrganizationEditionContainer';
+import OrganizationEditionContainer, {
+  organizationEditionQuery,
+} from './OrganizationEditionContainer';
 import { organizationEditionOverviewFocus } from './OrganizationEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
@@ -22,17 +24,14 @@ const OrganizationEdition = ({ organizationId }: OrganizationEditionProps) => {
       },
     });
   };
-  const queryRef = useQueryLoading<OrganizationEditionContainerQuery>(
-    organizationEditionQuery,
-    { id: organizationId },
-  );
+  const queryRef = useQueryLoading<OrganizationEditionContainerQuery>(organizationEditionQuery, {
+    id: organizationId,
+  });
 
   return (
     <>
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inline} />}
-        >
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
           <OrganizationEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}

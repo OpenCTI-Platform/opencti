@@ -8,11 +8,11 @@ import EditEntityControlledDial from '../../../../components/EditEntityControlle
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 export const securityPlatformEditionQuery = graphql`
-query SecurityPlatformEditionContainerQuery($id: String!) {
+  query SecurityPlatformEditionContainerQuery($id: String!) {
     securityPlatform(id: $id) {
-        ...SecurityPlatformEditionContainer_securityPlatform
+      ...SecurityPlatformEditionContainer_securityPlatform
     }
-}
+  }
 `;
 
 interface SecurityPlatformEditionProps {

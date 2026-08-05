@@ -12,20 +12,15 @@ const Root = () => {
     <Routes>
       <Route
         path="/"
-        element={draftContext?.id
-          ? (
-              <Navigate
-                to={`/dashboard/data/import/draft/${draftContext.id}/`}
-                replace={true}
-              />
-            )
-          : boundaryWrapper(Drafts)
+        element={
+          draftContext?.id ? (
+            <Navigate to={`/dashboard/data/import/draft/${draftContext.id}/`} replace={true} />
+          ) : (
+            boundaryWrapper(Drafts)
+          )
         }
       />
-      <Route
-        path="/:draftId/*"
-        element={boundaryWrapper(DraftRoot)}
-      />
+      <Route path="/:draftId/*" element={boundaryWrapper(DraftRoot)} />
     </Routes>
   );
 };

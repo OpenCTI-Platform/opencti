@@ -8,15 +8,17 @@ import {
   StixDomainObjectAttackPatternsKillChainQuery,
   StixDomainObjectAttackPatternsKillChainQuery$variables,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainQuery.graphql';
-import {
-  StixDomainObjectAttackPatternsKillChainContainer_data$data,
-} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainContainer_data.graphql';
+import { StixDomainObjectAttackPatternsKillChainContainer_data$data } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainContainer_data.graphql';
 import StixCoreRelationshipCreationFromEntity from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  isFilterGroupNotEmpty,
+  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
+} from '../../../../utils/filters/filtersUtils';
 import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
@@ -31,16 +33,9 @@ interface StixDomainObjectAttackPatternsKillChainMatrixProps {
   defaultStopTime?: string;
 }
 
-const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<StixDomainObjectAttackPatternsKillChainMatrixProps> = (
-  {
-    storageKey,
-    entityId,
-    currentView,
-    viewButtons,
-    defaultStartTime,
-    defaultStopTime,
-  },
-) => {
+const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<
+  StixDomainObjectAttackPatternsKillChainMatrixProps
+> = ({ storageKey, entityId, currentView, viewButtons, defaultStartTime, defaultStopTime }) => {
   const LOCAL_STORAGE_KEY = `${storageKey}-stix-matrix-in-line`;
   const dataColumns = {
     entity_type: { percentWidth: 11 },
@@ -61,15 +56,17 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
     view: currentView ?? 'matrix-in-line',
   };
 
-  const { paginationOptions, viewStorage, helpers: storageHelpers } = usePaginationLocalStorage<StixDomainObjectAttackPatternsKillChainQuery$variables>(
+  const {
+    paginationOptions,
+    viewStorage,
+    helpers: storageHelpers,
+  } = usePaginationLocalStorage<StixDomainObjectAttackPatternsKillChainQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
     true,
   );
 
-  const {
-    filters,
-  } = viewStorage;
+  const { filters } = viewStorage;
 
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Attack-Pattern']);
   const contextFilters = {
@@ -78,9 +75,7 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
       { key: 'entity_type', values: ['Attack-Pattern'], mode: 'or', operator: 'eq' },
       {
         key: 'regardingOf',
-        values: [
-          { key: 'id', values: [entityId] },
-        ],
+        values: [{ key: 'id', values: [entityId] }],
       },
     ],
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
@@ -90,10 +85,11 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
     filters: contextFilters,
   } as unknown as StixDomainObjectAttackPatternsKillChainQuery$variables;
 
-  const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<StixDomainObjectAttackPatternsKillChainQuery>(
-    stixDomainObjectAttackPatternsKillChainQuery,
-    queryPaginationOptions,
-  );
+  const [queryRef, loadQuery] =
+    useQueryLoadingWithLoadQuery<StixDomainObjectAttackPatternsKillChainQuery>(
+      stixDomainObjectAttackPatternsKillChainQuery,
+      queryPaginationOptions,
+    );
 
   const refetch = React.useCallback(() => {
     loadQuery(queryPaginationOptions, { fetchPolicy: 'store-and-network' });
@@ -122,7 +118,9 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
           <DataTable
             variant={DataTableVariant.inline}
             dataColumns={dataColumns}
-            resolvePath={(data: StixDomainObjectAttackPatternsKillChainContainer_data$data) => (data.attackPatterns?.edges ?? []).map((n) => n.node)}
+            resolvePath={(data: StixDomainObjectAttackPatternsKillChainContainer_data$data) =>
+              (data.attackPatterns?.edges ?? []).map((n) => n.node)
+            }
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
             contextFilters={contextFilters}

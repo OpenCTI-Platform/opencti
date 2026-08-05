@@ -3,7 +3,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import { FieldProps } from 'formik';
 import testRender from '../../../../utils/tests/test-render';
-import StixCoreObjectFilesAndHistory, { stixCoreObjectFilesAndHistoryAskJobImportMutation } from './StixCoreObjectFilesAndHistory';
+import StixCoreObjectFilesAndHistory, {
+  stixCoreObjectFilesAndHistoryAskJobImportMutation,
+} from './StixCoreObjectFilesAndHistory';
 import { fileManagerCreateDraftAskJobImportMutation } from '../files/FileManager';
 
 const { mockCommitMutation, mockNotifyError, mockNotifySuccess } = vi.hoisted(() => ({
@@ -23,10 +25,7 @@ vi.mock('react-relay', async (importOriginal) => {
 vi.mock('@mui/styles/withStyles', () => ({
   default: () => (Component: React.ComponentType<Record<string, unknown>>) => {
     const Wrapped = (props: Record<string, unknown>) => (
-      <Component
-        {...props}
-        classes={{ container: '', gridContainer: '', paper: '' }}
-      />
+      <Component {...props} classes={{ container: '', gridContainer: '', paper: '' }} />
     );
     return Wrapped;
   },
@@ -96,13 +95,24 @@ vi.mock('../../../../utils/edition', () => ({
 
 vi.mock('@common/dialog/Dialog', () => ({
   __esModule: true,
-  default: ({ open, children }: { open: boolean; children: React.ReactNode }) => (open ? <div>{children}</div> : null),
+  default: ({ open, children }: { open: boolean; children: React.ReactNode }) =>
+    open ? <div>{children}</div> : null,
 }));
 
 vi.mock('@common/button/Button', () => ({
   __esModule: true,
-  default: ({ onClick, children, disabled }: { onClick?: () => void; children: React.ReactNode; disabled?: boolean }) => (
-    <button type="button" onClick={onClick} disabled={disabled}>{children}</button>
+  default: ({
+    onClick,
+    children,
+    disabled,
+  }: {
+    onClick?: () => void;
+    children: React.ReactNode;
+    disabled?: boolean;
+  }) => (
+    <button type="button" onClick={onClick} disabled={disabled}>
+      {children}
+    </button>
   ),
 }));
 
@@ -137,11 +147,13 @@ vi.mock('../../../../components/fields/SelectField', () => ({
         >
           <option value="" />
           {React.Children.map(children, (child) => {
-            if (!React.isValidElement<{
-              value: string;
-              disabled?: boolean;
-              children?: React.ReactNode;
-            }>(child)) {
+            if (
+              !React.isValidElement<{
+                value: string;
+                disabled?: boolean;
+                children?: React.ReactNode;
+              }>(child)
+            ) {
               return null;
             }
             return (
@@ -158,7 +170,11 @@ vi.mock('../../../../components/fields/SelectField', () => ({
 
 vi.mock('../files/FileImportViewer', () => ({
   __esModule: true,
-  default: ({ handleOpenImport }: { handleOpenImport: (file: { id: string; metaData: { mimetype: string } }) => void }) => (
+  default: ({
+    handleOpenImport,
+  }: {
+    handleOpenImport: (file: { id: string; metaData: { mimetype: string } }) => void;
+  }) => (
     <button
       type="button"
       onClick={() => handleOpenImport({ id: 'file-1', metaData: { mimetype: 'application/json' } })}

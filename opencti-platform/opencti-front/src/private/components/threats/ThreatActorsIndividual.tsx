@@ -19,7 +19,10 @@ import {
   ThreatActorsIndividualCardsPaginationQuery$variables,
 } from './threat_actors_individual/__generated__/ThreatActorsIndividualCardsPaginationQuery.graphql';
 import ThreatActorIndividualCreation from './threat_actors_individual/ThreatActorIndividualCreation';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
@@ -42,12 +45,16 @@ const ThreatActorsIndividual = () => {
   };
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Threat Actors (Individual) | Threats'));
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ThreatActorsIndividualCardsPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY_THREAT_ACTORS_INDIVIDUAL,
-    initialValues,
-  );
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<ThreatActorsIndividualCardsPaginationQuery$variables>(
+      LOCAL_STORAGE_KEY_THREAT_ACTORS_INDIVIDUAL,
+      initialValues,
+    );
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext('Threat-Actor-Individual', viewStorage.filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext(
+    'Threat-Actor-Individual',
+    viewStorage.filters,
+  );
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -59,14 +66,7 @@ const ThreatActorsIndividual = () => {
   );
 
   const renderCards = () => {
-    const {
-      numberOfElements,
-      filters,
-      searchTerm,
-      sortBy,
-      orderAsc,
-      openExports,
-    } = viewStorage;
+    const { numberOfElements, filters, searchTerm, sortBy, orderAsc, openExports } = viewStorage;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -103,29 +103,25 @@ const ThreatActorsIndividual = () => {
             <StixCoreObjectForms entityType="Threat-Actor-Individual" />
           </Security>,
         ]}
-        createButton={(
+        createButton={
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
           </Security>
-        )}
+        }
       >
         {queryRef && (
           <React.Suspense
-            fallback={(
+            fallback={
               <Grid container={true} spacing={3} style={{ paddingLeft: 17 }}>
                 {Array(20)
                   .fill(0)
                   .map((_, idx) => (
-                    <Grid
-                      item
-                      xs={3}
-                      key={idx}
-                    >
+                    <Grid item xs={3} key={idx}>
                       <GenericAttackCardDummy />
                     </Grid>
                   ))}
               </Grid>
-            )}
+            }
           >
             <ThreatActorsIndividualCards
               queryRef={queryRef}
@@ -168,7 +164,9 @@ const ThreatActorsIndividual = () => {
         {queryRef && (
           <DataTable
             dataColumns={dataColumns}
-            resolvePath={(data: ThreatActorsIndividualCards_data$data) => data.threatActorsIndividuals?.edges?.map((n) => n?.node)}
+            resolvePath={(data: ThreatActorsIndividualCards_data$data) =>
+              data.threatActorsIndividuals?.edges?.map((n) => n?.node)
+            }
             storageKey={LOCAL_STORAGE_KEY_THREAT_ACTORS_INDIVIDUAL}
             initialValues={initialValues}
             contextFilters={contextFilters}
@@ -192,11 +190,11 @@ const ThreatActorsIndividual = () => {
                 <StixCoreObjectForms entityType="Threat-Actor-Individual" />
               </Security>,
             ]}
-            createButton={(
+            createButton={
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
               </Security>
-            )}
+            }
           />
         )}
       </>
@@ -205,7 +203,12 @@ const ThreatActorsIndividual = () => {
 
   return (
     <div data-testid="threat-actors-individual-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Threat actors (individual)'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Threats') },
+          { label: t_i18n('Threat actors (individual)'), current: true },
+        ]}
+      />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
     </div>
   );

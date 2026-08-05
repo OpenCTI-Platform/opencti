@@ -1,9 +1,14 @@
-type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
+type Feedback implements BasicObject &
+  StixObject &
+  StixCoreObject &
+  StixDomainObject &
+  Container &
+  Case {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
   parent_types: [String!]!
-  metrics:[Metric]
+  metrics: [Metric]
   # StixObject
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -210,7 +215,10 @@ type Query {
     search: String
     toStix: Boolean
   ): FeedbackConnection @auth(for: [KNOWLEDGE])
-  feedbackContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
+  feedbackContainsStixObjectOrStixRelationship(
+    id: String!
+    stixObjectOrStixRelationshipId: String!
+  ): Boolean @auth(for: [KNOWLEDGE])
 }
 
 # Mutations
@@ -250,5 +258,6 @@ input FeedbackAddInput {
 type Mutation {
   feedbackAdd(input: FeedbackAddInput!): Feedback @auth
   feedbackDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  feedbackEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]): Feedback @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS])
+  feedbackEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]): Feedback
+    @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS])
 }

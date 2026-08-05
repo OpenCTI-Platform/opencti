@@ -5,14 +5,15 @@ import { JsonMapperFormData } from '@components/data/jsonMapper/JsonMapper';
 import { jsonMappers_MappersQuery$variables } from '@components/data/jsonMapper/__generated__/jsonMappers_MappersQuery.graphql';
 import { useJsonMappersData } from '@components/data/jsonMapper/jsonMappers.data';
 import { JsonMapperRepresentationAttributesFormFragment } from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationAttributesForm';
-import { formDataToJsonMapper, jsonMapperToFormData } from '@components/data/jsonMapper/JsonMapperUtils';
+import {
+  formDataToJsonMapper,
+  jsonMapperToFormData,
+} from '@components/data/jsonMapper/JsonMapperUtils';
 import JsonMapperForm from '@components/data/jsonMapper/JsonMapperForm';
 import { jsonMapperEditionContainerFragment } from '@components/data/jsonMapper/JsonMapperEditionContainer';
 import { JsonMapperEditionContainerFragment_jsonMapper$key } from '@components/data/jsonMapper/__generated__/JsonMapperEditionContainerFragment_jsonMapper.graphql';
 import { JsonMapperAddInput } from '@components/data/jsonMapper/__generated__/JsonMapperCreationContainerMutation.graphql';
-import {
-  JsonMapperRepresentationAttributesForm_allSchemaAttributes$key,
-} from '@components/data/jsonMapper/representations/attributes/__generated__/JsonMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
+import { JsonMapperRepresentationAttributesForm_allSchemaAttributes$key } from '@components/data/jsonMapper/representations/attributes/__generated__/JsonMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { useComputeDefaultValues } from '../../../../utils/hooks/useDefaultValues';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -46,13 +47,12 @@ const JsonMapperCreation: FunctionComponent<JsonMapperCreationFormProps> = ({
   const data = useFragment<JsonMapperRepresentationAttributesForm_allSchemaAttributes$key>(
     JsonMapperRepresentationAttributesFormFragment,
     schemaAttributes,
-  ) || { csvMapperSchemaAttributes: [] };
+  ) || {
+    csvMapperSchemaAttributes: [],
+  };
 
   const computeDefaultValues = useComputeDefaultValues();
-  const jsonMapper = useFragment(
-    jsonMapperEditionContainerFragment,
-    mappingJson,
-  );
+  const jsonMapper = useFragment(jsonMapperEditionContainerFragment, mappingJson);
   const onSubmit: FormikConfig<JsonMapperFormData>['onSubmit'] = (
     values,
     { resetForm, setSubmitting, setErrors },
@@ -66,12 +66,8 @@ const JsonMapperCreation: FunctionComponent<JsonMapperCreationFormProps> = ({
       variables: {
         input,
       },
-      updater: (store) => insertNode(
-        store,
-        'Pagination_jsonMappers',
-        paginationOptions,
-        'jsonMapperAdd',
-      ),
+      updater: (store) =>
+        insertNode(store, 'Pagination_jsonMappers', paginationOptions, 'jsonMapperAdd'),
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -99,7 +95,14 @@ const JsonMapperCreation: FunctionComponent<JsonMapperCreationFormProps> = ({
       computeDefaultValues,
     );
   }
-  return <JsonMapperForm attributes={data.csvMapperSchemaAttributes} jsonMapper={initialValues} onSubmit={onSubmit} isDuplicated={isDuplicated} />;
+  return (
+    <JsonMapperForm
+      attributes={data.csvMapperSchemaAttributes}
+      jsonMapper={initialValues}
+      onSubmit={onSubmit}
+      isDuplicated={isDuplicated}
+    />
+  );
 };
 
 export default JsonMapperCreation;

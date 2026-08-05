@@ -21,9 +21,7 @@ import Security from '../../../../utils/Security';
 import { DraftChip, getDraftModeColor } from '../draft/DraftChip';
 import { SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine_node$key } from './__generated__/SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine_node.graphql';
 import { SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data$data } from './__generated__/SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data.graphql';
-import {
-  SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery$variables,
-} from './__generated__/SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery.graphql';
+import { SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery$variables } from './__generated__/SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery.graphql';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -49,7 +47,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
     minWidth: 0,
-
   },
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
@@ -573,7 +570,9 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = graph
 
 interface SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineProps {
   dataColumns: DataColumns;
-  node: NonNullable<SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data$data['stixCoreRelationships']>['edges'][0]['node'];
+  node: NonNullable<
+    SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data$data['stixCoreRelationships']
+  >['edges'][0]['node'];
   paginationOptions: SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery$variables;
   entityId: string;
   entityLink: string;
@@ -592,7 +591,10 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
   const theme = useTheme<Theme>();
   const { t_i18n, fsd } = useFormatter();
 
-  const data = useFragment<SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine_node$key>(SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment, node);
+  const data = useFragment<SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine_node$key>(
+    SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment,
+    node,
+  );
 
   const link = `${entityLink}/relations/${data.id}`;
   const isReversed = data.fromId === entityId;
@@ -609,75 +611,69 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
     <ListItem
       divider={true}
       disablePadding
-      secondaryAction={data.is_inferred ? (
-        <Tooltip
-          title={
-            t_i18n('Inferred knowledge based on the rule ')
-            + (data.x_opencti_inferences?.[0]?.rule.name ?? '')
-          }
-        >
-          <AutoFix fontSize="small" sx={{ mt: 1 }} />
-        </Tooltip>
-      ) : (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixCoreRelationshipPopover
-            stixCoreRelationshipId={data.id}
-            paginationOptions={paginationOptions}
-            connectionKey={connectionKey}
-          />
-        </Security>
-      )}
+      secondaryAction={
+        data.is_inferred ? (
+          <Tooltip
+            title={
+              t_i18n('Inferred knowledge based on the rule ') +
+              (data.x_opencti_inferences?.[0]?.rule.name ?? '')
+            }
+          >
+            <AutoFix fontSize="small" sx={{ mt: 1 }} />
+          </Tooltip>
+        ) : (
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <StixCoreRelationshipPopover
+              stixCoreRelationshipId={data.id}
+              paginationOptions={paginationOptions}
+              connectionKey={connectionKey}
+            />
+          </Security>
+        )
+      }
     >
-      <ListItemButton
-        classes={{ root: classes.item }}
-        component={Link}
-        to={link}
-      >
+      <ListItemButton classes={{ root: classes.item }} component={Link} to={link}>
         <ListItemIcon sx={{ minWidth: '40px' }}>
-          <ItemIcon type={data.entity_type} isReversed={isReversed} color={data.draftVersion ? draftColor : null} />
+          <ItemIcon
+            type={data.entity_type}
+            isReversed={isReversed}
+            color={data.draftVersion ? draftColor : null}
+          />
         </ListItemIcon>
         <ListItemText
-          primary={(
+          primary={
             <Stack direction="row">
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.relationship_type.width }}
               >
-                <ItemEntityType
-                  entityType={data.relationship_type}
-                />
+                <ItemEntityType entityType={data.relationship_type} />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.entity_type.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.entity_type.width }}>
                 <ItemEntityType
                   entityType={element.entity_type ?? ''}
                   showIcon
                   isRestricted={!row}
                 />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                <Stack direction="row" gap={0.5} alignItems="center" className={classes.bodyItemText}>
+              <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+                <Stack
+                  direction="row"
+                  gap={0.5}
+                  alignItems="center"
+                  className={classes.bodyItemText}
+                >
                   <Tooltip title={element.representative?.main}>
                     <Typography fontSize={13}>{element.representative?.main}</Typography>
                   </Tooltip>
-                  {element.draftVersion && (<DraftChip />)}
+                  {element.draftVersion && <DraftChip />}
                 </Stack>
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created_at.width }}
-              >
-                <span className={classes.bodyItemText}>
-                  {fsd(data.created_at)}
-                </span>
+              <div className={classes.bodyItem} style={{ width: dataColumns.created_at.width }}>
+                <span className={classes.bodyItemText}>{fsd(data.created_at)}</span>
               </div>
             </Stack>
-          )}
+          }
         />
       </ListItemButton>
     </ListItem>
@@ -686,86 +682,48 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
 
 export default SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine;
 
-export const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
+export const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy = ({
+  dataColumns,
+}: {
+  dataColumns: DataColumns;
+}) => {
   const classes = useStyles();
   return (
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={(
+      secondaryAction={
         <Box sx={{ root: classes.itemIconDisabled }}>
           <MoreVertOutlined />
         </Box>
-      )}
+      }
     >
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-        <Skeleton
-          animation="wave"
-          variant="circular"
-          width={30}
-          height={30}
-        />
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.relationship_type.width }}
             >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.entity_type.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.entity_type.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width={140}
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+              <Skeleton animation="wave" variant="rectangular" width={140} height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.created_at.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width={140}
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.created_at.width }}>
+              <Skeleton animation="wave" variant="rectangular" width={140} height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.confidence.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width={100}
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.confidence.width }}>
+              <Skeleton animation="wave" variant="rectangular" width={100} height="100%" />
             </div>
           </div>
-        )}
+        }
       />
     </ListItem>
   );

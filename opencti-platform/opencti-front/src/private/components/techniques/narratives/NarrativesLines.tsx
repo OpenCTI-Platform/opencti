@@ -1,6 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import { NarrativesLinesPaginationQuery, NarrativesLinesPaginationQuery$variables } from '@components/techniques/narratives/__generated__/NarrativesLinesPaginationQuery.graphql';
+import {
+  NarrativesLinesPaginationQuery,
+  NarrativesLinesPaginationQuery$variables,
+} from '@components/techniques/narratives/__generated__/NarrativesLinesPaginationQuery.graphql';
 import { NarrativesLines_data$key } from '@components/techniques/narratives/__generated__/NarrativesLines_data.graphql';
 import { NarrativeLine, NarrativeLineDummy } from './NarrativeLine';
 import { DataColumns } from '../../../../components/list_lines';
@@ -18,10 +21,7 @@ interface NarrativesLinesProps {
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
   selectedElements: Record<string, NarrativeLine_node$data>;
   deSelectedElements: Record<string, NarrativeLine_node$data>;
-  onToggleEntity: (
-    entity: NarrativeLine_node$data,
-    event: React.SyntheticEvent,
-  ) => void;
+  onToggleEntity: (entity: NarrativeLine_node$data, event: React.SyntheticEvent) => void;
   selectAll: boolean;
   onLabelClick?: HandleAddFilter;
   redirectionMode?: string;
@@ -37,14 +37,14 @@ export const narrativesLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...NarrativesLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 

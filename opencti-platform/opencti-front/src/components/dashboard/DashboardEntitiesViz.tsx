@@ -37,8 +37,10 @@ interface DashboardEntitiesVizProps {
 }
 
 const isDraftWorkspaceWidget = (widgetData: Widget): boolean => {
-  return widgetData.dataSelection.length > 0
-    && widgetData.dataSelection.every((selection) => isDraftWorkspaceFilterGroup(selection.filters));
+  return (
+    widgetData.dataSelection.length > 0 &&
+    widgetData.dataSelection.every((selection) => isDraftWorkspaceFilterGroup(selection.filters))
+  );
 };
 
 const DashboardEntitiesViz = ({
@@ -298,10 +300,7 @@ const DashboardEntitiesViz = ({
           />
         );
       }
-      if (
-        widget.dataSelection.length > 1
-        && widget.dataSelection[0].attribute?.endsWith('_id')
-      ) {
+      if (widget.dataSelection.length > 1 && widget.dataSelection[0].attribute?.endsWith('_id')) {
         return (
           <StixCoreObjectsMultiHorizontalBars
             variant={undefined}
@@ -380,9 +379,7 @@ const DashboardEntitiesViz = ({
         />
       );
     default:
-      return (
-        <WidgetNotImplemented popover={popover} />
-      );
+      return <WidgetNotImplemented popover={popover} />;
   }
 };
 

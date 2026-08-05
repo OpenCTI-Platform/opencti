@@ -1,5 +1,12 @@
 import Button from '@common/button/Button';
-import { InputAdornment, MenuItem, Select, SelectChangeEvent, Stack, Typography } from '@mui/material';
+import {
+  InputAdornment,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+  Stack,
+  Typography,
+} from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { ClearIcon } from '@mui/x-date-pickers';
 import { Field, Form, useFormikContext } from 'formik';
@@ -68,9 +75,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
   const fieldRef = useRef<HTMLDivElement>(null);
   const { setFieldValue, initialValues, values: formikValues } = useFormikContext<ThemeType>();
 
-  const [loginAsideType, setLoginAsideType] = useState(
-    formikValues.theme_login_aside_type || '',
-  );
+  const [loginAsideType, setLoginAsideType] = useState(formikValues.theme_login_aside_type || '');
 
   const handleFieldSubmit = () => {
     onChange?.(formikValues);
@@ -98,8 +103,9 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
 
     loginAsideFields.forEach((field) => setFieldValue(field, clearedValues[field]));
 
-    const hadSavedValues = loginAsideFields.some((field) => !!initialValues[field])
-      || !!initialValues.theme_login_aside_type;
+    const hadSavedValues =
+      loginAsideFields.some((field) => !!initialValues[field]) ||
+      !!initialValues.theme_login_aside_type;
 
     if (type || hadSavedValues) {
       onChange?.(clearedValues);
@@ -126,12 +132,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           label={t_i18n('Name')}
           error={!!errors.name}
           helperText={
-            errors.name || (
-              <ThemeDetectDuplicate
-                themeName={values.name}
-                themeId={themeId}
-              />
-            )
+            errors.name || <ThemeDetectDuplicate themeName={values.name} themeId={themeId} />
           }
           fullWidth
           disabled={isSystemDefault}
@@ -245,9 +246,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           {t_i18n('Login Page Customisation')}
         </Typography>
 
-        <Label>
-          {t_i18n('Right panel customisation')}
-        </Label>
+        <Label>{t_i18n('Right panel customisation')}</Label>
 
         <Stack gap={2.5}>
           <Select
@@ -257,9 +256,13 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
             variant="standard"
             displayEmpty
             renderValue={(value) =>
-              value
-                ? getAsideTypeLabel(value)
-                : <em style={{ color: theme.palette.text.disabled }}>{t_i18n('Select a background type')}</em>
+              value ? (
+                getAsideTypeLabel(value)
+              ) : (
+                <em style={{ color: theme.palette.text.disabled }}>
+                  {t_i18n('Select a background type')}
+                </em>
+              )
             }
             slotProps={{
               input: {
@@ -271,16 +274,30 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
             endAdornment={
               loginAsideType && (
                 <InputAdornment position="end" style={{ marginRight: 16 }}>
-                  <IconButton aria-label={t_i18n('Clear')} size="small" onClick={() => handleLoginAsideTypeChange({ target: { value: '' } } as SelectChangeEvent<string>)}>
+                  <IconButton
+                    aria-label={t_i18n('Clear')}
+                    size="small"
+                    onClick={() =>
+                      handleLoginAsideTypeChange({
+                        target: { value: '' },
+                      } as SelectChangeEvent<string>)
+                    }
+                  >
                     <ClearIcon fontSize="small" />
                   </IconButton>
                 </InputAdornment>
               )
             }
           >
-            <MenuItem value="color" sx={{ textTransform: 'capitalize' }}>{t_i18n('Add background color')}</MenuItem>
-            <MenuItem value="gradient" sx={{ textTransform: 'capitalize' }}>{t_i18n('Add background gradient')}</MenuItem>
-            <MenuItem value="image" sx={{ textTransform: 'capitalize' }}>{t_i18n('Image URL')}</MenuItem>
+            <MenuItem value="color" sx={{ textTransform: 'capitalize' }}>
+              {t_i18n('Add background color')}
+            </MenuItem>
+            <MenuItem value="gradient" sx={{ textTransform: 'capitalize' }}>
+              {t_i18n('Add background gradient')}
+            </MenuItem>
+            <MenuItem value="image" sx={{ textTransform: 'capitalize' }}>
+              {t_i18n('Image URL')}
+            </MenuItem>
           </Select>
 
           <div ref={fieldRef}>
@@ -337,11 +354,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
 
       {withButtons && (
         <FormButtonContainer>
-          <Button
-            variant="secondary"
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
+          <Button variant="secondary" onClick={onCancel} disabled={isSubmitting}>
             {t_i18n('Cancel')}
           </Button>
 

@@ -27,13 +27,9 @@ const ImportFilesFreeText = ({ onSubmit, onClose, initialContent }: ImportFilesF
   ) => {
     const fileType = isValidStixBundle(content) ? 'json' : 'txt';
     const blob = new Blob([content], { type: `text/${fileType}` });
-    const file = new File(
-      [blob],
-      `${now()}_global.${fileType}`,
-      {
-        type: fileType === 'json' ? 'application/json' : 'text/plain',
-      },
-    ) as File;
+    const file = new File([blob], `${now()}_global.${fileType}`, {
+      type: fileType === 'json' ? 'application/json' : 'text/plain',
+    }) as File;
     onSubmit(file);
     resetForm();
   };
@@ -48,14 +44,15 @@ const ImportFilesFreeText = ({ onSubmit, onClose, initialContent }: ImportFilesF
     >
       {({ handleReset, submitForm, isSubmitting, values }) => {
         return (
-          <Box sx={{
-            paddingInline: 2,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: theme.spacing(4),
-          }}
+          <Box
+            sx={{
+              paddingInline: 2,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: theme.spacing(4),
+            }}
           >
             <Field
               as={TextField}
@@ -83,10 +80,7 @@ const ImportFilesFreeText = ({ onSubmit, onClose, initialContent }: ImportFilesF
               >
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                disabled={isSubmitting || values.content.length === 0}
-                onClick={submitForm}
-              >
+              <Button disabled={isSubmitting || values.content.length === 0} onClick={submitForm}>
                 {t_i18n('Create file')}
               </Button>
             </Stack>

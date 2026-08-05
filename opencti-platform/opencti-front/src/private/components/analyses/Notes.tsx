@@ -1,14 +1,21 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { NotesLines_data$data } from '@components/analyses/__generated__/NotesLines_data.graphql';
-import { NotesLinesPaginationQuery, NotesLinesPaginationQuery$variables } from '@components/analyses/__generated__/NotesLinesPaginationQuery.graphql';
+import {
+  NotesLinesPaginationQuery,
+  NotesLinesPaginationQuery$variables,
+} from '@components/analyses/__generated__/NotesLinesPaginationQuery.graphql';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import NoteCreation from './notes/NoteCreation';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+  useGetDefaultFilterObject,
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -77,14 +84,14 @@ const notesLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...NotesLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -166,9 +173,7 @@ const Notes: FunctionComponent = () => {
     LOCAL_STORAGE_KEY,
     initialValues,
   );
-  const {
-    filters,
-  } = viewStorage;
+  const { filters } = viewStorage;
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Note', filters);
   const queryPaginationOptions = {
@@ -202,7 +207,9 @@ const Notes: FunctionComponent = () => {
 
   return (
     <span data-testid="notes-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Notes'), current: true }]} />
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Notes'), current: true }]}
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
@@ -213,11 +220,11 @@ const Notes: FunctionComponent = () => {
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={notesLineFragment}
           exportContext={{ entity_type: 'Note' }}
-          createButton={(
+          createButton={
             <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
               <NoteCreation paginationOptions={queryPaginationOptions} />
             </Security>
-          )}
+          }
         />
       )}
     </span>

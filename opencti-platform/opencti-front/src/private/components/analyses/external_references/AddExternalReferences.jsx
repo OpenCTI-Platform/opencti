@@ -11,7 +11,9 @@ import { useFormatter } from '../../../../components/i18n';
 import Drawer from '../../common/drawer/Drawer';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
-import AddExternalReferencesLines, { addExternalReferencesLinesQuery } from './AddExternalReferencesLines';
+import AddExternalReferencesLines, {
+  addExternalReferencesLinesQuery,
+} from './AddExternalReferencesLines';
 
 const AddExternalReferences = ({
   stixCoreObjectOrStixCoreRelationshipId,
@@ -43,12 +45,7 @@ const AddExternalReferences = ({
   };
   return (
     <>
-      <IconButton
-        variant="tertiary"
-        size="small"
-        aria-label="Add"
-        onClick={handleOpen}
-      >
+      <IconButton variant="tertiary" size="small" aria-label="Add" onClick={handleOpen}>
         <Add />
       </IconButton>
       <Drawer
@@ -56,21 +53,12 @@ const AddExternalReferences = ({
         open={open}
         onClose={handleClose}
         subHeader={{
-          right: [(
-            <Button
-              onClick={() => setDialogOpen(true)}
-              key="rightButton"
-            >
+          right: [
+            <Button onClick={() => setDialogOpen(true)} key="rightButton">
               {t_i18n('Create')} {t_i18n('entity_External-Reference')}
-            </Button>
-          )],
-          left: [(
-            <SearchInput
-              variant="inDrawer"
-              onSubmit={handleSearch}
-              key="leftInput"
-            />
-          )],
+            </Button>,
+          ],
+          left: [<SearchInput variant="inDrawer" onSubmit={handleSearch} key="leftInput" />],
         }}
       >
         <QueryRenderer
@@ -80,9 +68,7 @@ const AddExternalReferences = ({
             if (props) {
               return (
                 <AddExternalReferencesLines
-                  stixCoreObjectOrStixCoreRelationshipId={
-                    stixCoreObjectOrStixCoreRelationshipId
-                  }
+                  stixCoreObjectOrStixCoreRelationshipId={stixCoreObjectOrStixCoreRelationshipId}
                   stixCoreObjectOrStixCoreRelationshipReferences={
                     stixCoreObjectOrStixCoreRelationshipReferences
                   }
@@ -100,15 +86,10 @@ const AddExternalReferences = ({
                 {Array.from(Array(20), (e, i) => (
                   <ListItem key={i} divider={true}>
                     <ListItemIcon>
-                      <Skeleton
-                        animation="wave"
-                        variant="circular"
-                        width={30}
-                        height={30}
-                      />
+                      <Skeleton animation="wave" variant="circular" width={30} height={30} />
                     </ListItemIcon>
                     <ListItemText
-                      primary={(
+                      primary={
                         <Skeleton
                           animation="wave"
                           variant="rectangular"
@@ -116,15 +97,10 @@ const AddExternalReferences = ({
                           height={15}
                           style={{ marginBottom: 10 }}
                         />
-                      )}
-                      secondary={(
-                        <Skeleton
-                          animation="wave"
-                          variant="rectangular"
-                          width="90%"
-                          height={15}
-                        />
-                      )}
+                      }
+                      secondary={
+                        <Skeleton animation="wave" variant="rectangular" width="90%" height={15} />
+                      }
                     />
                   </ListItem>
                 ))}

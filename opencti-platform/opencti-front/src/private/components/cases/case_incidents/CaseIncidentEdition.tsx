@@ -3,7 +3,9 @@ import EditEntityControlledDial from '../../../../components/EditEntityControlle
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { CaseIncidentEditionContainerCaseQuery } from './__generated__/CaseIncidentEditionContainerCaseQuery.graphql';
-import CaseIncidentEditionContainer, { caseIncidentEditionQuery } from './CaseIncidentEditionContainer';
+import CaseIncidentEditionContainer, {
+  caseIncidentEditionQuery,
+} from './CaseIncidentEditionContainer';
 import { caseIncidentEditionOverviewFocus } from './CaseIncidentEditionOverview';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
@@ -24,9 +26,7 @@ const CaseIncidentEdition: FunctionComponent<{ caseId: string }> = ({ caseId }) 
   return (
     <>
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inline} />}
-        >
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
           <CaseIncidentEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}

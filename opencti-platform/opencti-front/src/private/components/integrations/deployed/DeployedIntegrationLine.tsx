@@ -19,8 +19,18 @@ import { EMPTY_VALUE } from '../../../../utils/String';
 const COLUMNS = {
   type: { width: '13%', minWidth: 110, display: { xs: 'none', sm: 'flex' } },
   description: { width: '18%', display: { xs: 'none', lg: 'flex' } },
-  messages: { width: '8%', minWidth: 72, display: { xs: 'none', sm: 'flex' }, justifyContent: 'flex-end' },
-  throughput: { width: '9%', minWidth: 84, display: { xs: 'none', md: 'flex' }, justifyContent: 'flex-end' },
+  messages: {
+    width: '8%',
+    minWidth: 72,
+    display: { xs: 'none', sm: 'flex' },
+    justifyContent: 'flex-end',
+  },
+  throughput: {
+    width: '9%',
+    minWidth: 84,
+    display: { xs: 'none', md: 'flex' },
+    justifyContent: 'flex-end',
+  },
   date: { width: '12%', minWidth: 130, display: { xs: 'none', md: 'flex' } },
   status: { width: '9%', minWidth: 84, display: 'flex' },
   actions: { width: 34, display: 'flex', justifyContent: 'center' },
@@ -173,7 +183,9 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
         </Tooltip>
         {item.isManaged && (
           <Tooltip title={t_i18n('Managed by the connector manager')}>
-            <DeveloperBoardOutlined sx={{ fontSize: 14, color: theme.palette.primary.main, flexShrink: 0 }} />
+            <DeveloperBoardOutlined
+              sx={{ fontSize: 14, color: theme.palette.primary.main, flexShrink: 0 }}
+            />
           </Tooltip>
         )}
       </Stack>
@@ -250,7 +262,10 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
                 fontSize: 12,
                 fontVariantNumeric: 'tabular-nums',
                 whiteSpace: 'nowrap',
-                color: item.throughputRate > 0 ? theme.palette.text.primary : theme.palette.text.secondary,
+                color:
+                  item.throughputRate > 0
+                    ? theme.palette.text.primary
+                    : theme.palette.text.secondary,
               }}
             >
               {`${n(item.throughputRate)}/s`}
@@ -272,7 +287,9 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
           >
             <Stack direction="row" alignItems="center" gap={0.5}>
               <ScheduleOutlined sx={{ fontSize: 13, color: theme.palette.text.secondary }} />
-              <Typography sx={{ fontSize: 12, color: theme.palette.text.secondary, whiteSpace: 'nowrap' }}>
+              <Typography
+                sx={{ fontSize: 12, color: theme.palette.text.secondary, whiteSpace: 'nowrap' }}
+              >
                 {rd(lastDate)}
               </Typography>
             </Stack>
@@ -285,9 +302,11 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
       </Box>
       {/* Status column. */}
       <Box onClick={(event) => event.stopPropagation()} sx={cellSx('status')}>
-        {item.status === 'processing'
-          ? <ItemBoolean status={undefined} label={statusText} />
-          : <ItemBoolean status={item.status === 'active'} label={statusText} />}
+        {item.status === 'processing' ? (
+          <ItemBoolean status={undefined} label={statusText} />
+        ) : (
+          <ItemBoolean status={item.status === 'active'} label={statusText} />
+        )}
       </Box>
       {/* Actions column. */}
       <Box sx={cellSx('actions')}>

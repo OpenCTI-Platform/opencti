@@ -58,7 +58,10 @@ const xtmOneClient = {
     return !!(XTM_ONE_URL && XTM_ONE_TOKEN);
   },
 
-  listAgentsForIntent: async (context: AuthContext, intent: string): Promise<IntentCatalogAgent[]> => {
+  listAgentsForIntent: async (
+    context: AuthContext,
+    intent: string,
+  ): Promise<IntentCatalogAgent[]> => {
     if (!XTM_ONE_URL || !XTM_ONE_TOKEN || !context.user) {
       return [];
     }
@@ -72,7 +75,10 @@ const xtmOneClient = {
           'Content-Type': 'application/json',
         },
       });
-      const response = await httpClient.get('/api/v1/intents/catalog?vertical=cti&intent=' + encodeURIComponent(intent), { timeout: 15000 });
+      const response = await httpClient.get(
+        '/api/v1/intents/catalog?vertical=cti&intent=' + encodeURIComponent(intent),
+        { timeout: 15000 },
+      );
       return response.data.flatMap((entry: IntentCatalogEntry) => entry.agents);
     } catch (error: any) {
       logApp.error('[XTM One] listAgentsForIntent failed', { error: error.message });
@@ -93,7 +99,9 @@ const xtmOneClient = {
           'Content-Type': 'application/json',
         },
       });
-      const response = await httpClient.post('/api/v1/platform/register', input, { timeout: 15000 });
+      const response = await httpClient.post('/api/v1/platform/register', input, {
+        timeout: 15000,
+      });
       return response.data;
     } catch (error: any) {
       logApp.error('[XTM One] Registration failed', { error: error.message });

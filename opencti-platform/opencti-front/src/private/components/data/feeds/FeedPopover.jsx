@@ -24,9 +24,7 @@ const styles = () => ({
   },
 });
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 const feedPopoverDeletionMutation = graphql`
@@ -144,15 +142,9 @@ class FeedPopover extends Component {
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
         >
-          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
-            {t('Update')}
-          </MenuItem>
-          <MenuItem onClick={this.handleOpenDuplicate.bind(this)}>
-            {t('Duplicate')}
-          </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
-          </MenuItem>
+          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>{t('Update')}</MenuItem>
+          <MenuItem onClick={this.handleOpenDuplicate.bind(this)}>{t('Duplicate')}</MenuItem>
+          <MenuItem onClick={this.handleOpenDelete.bind(this)}>{t('Delete')}</MenuItem>
         </Menu>
         <QueryRenderer
           query={feedEditionQuery}
@@ -196,9 +188,7 @@ class FeedPopover extends Component {
           size="small"
           title={t('Are you sure?')}
         >
-          <DialogContentText>
-            {t('Do you want to delete this feed?')}
-          </DialogContentText>
+          <DialogContentText>{t('Do you want to delete this feed?')}</DialogContentText>
           <DialogActions>
             <Button
               variant="secondary"
@@ -207,10 +197,7 @@ class FeedPopover extends Component {
             >
               {t('Cancel')}
             </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
+            <Button onClick={this.submitDelete.bind(this)} disabled={this.state.deleting}>
               {t('Confirm')}
             </Button>
           </DialogActions>

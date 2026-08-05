@@ -2,9 +2,19 @@ import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { READ_DATA_INDICES } from '../database/utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
-import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_BULK_OPERATIONS } from '../database/engine';
+import {
+  BULK_TIMEOUT,
+  elBulk,
+  elList,
+  ES_MAX_CONCURRENCY,
+  MAX_BULK_OPERATIONS,
+} from '../database/engine';
 import { logApp } from '../config/conf';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
+import {
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  buildRefRelationKey,
+} from '../schema/general';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { pushAll } from '../utils/arrayUtil';
@@ -31,7 +41,12 @@ export const up = async (next) => {
     filters: [{ key: buildRefRelationKey(RELATION_INDICATES), values: ['EXISTS'] }],
     filterGroups: [],
   };
-  const opts = { types: [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP], filters, noFiltersChecking: true, callback };
+  const opts = {
+    types: [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP],
+    filters,
+    noFiltersChecking: true,
+    callback,
+  };
   await elList(context, SYSTEM_USER, READ_DATA_INDICES, opts);
   // Apply operations.
   let currentProcessing = 0;
@@ -39,7 +54,9 @@ export const up = async (next) => {
   const concurrentUpdate = async (bulk) => {
     await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bulk });
     currentProcessing += bulk.length;
-    logApp.info(`[OPENCTI] Cleaning indicates indexation: ${currentProcessing} / ${bulkOperations.length}`);
+    logApp.info(
+      `[OPENCTI] Cleaning indicates indexation: ${currentProcessing} / ${bulkOperations.length}`,
+    );
   };
   await Promise.map(groupsOfOperations, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
   logApp.info(`[MIGRATION] Cleaning indicates done in ${new Date() - start} ms`);

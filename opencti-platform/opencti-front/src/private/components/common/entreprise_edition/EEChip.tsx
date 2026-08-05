@@ -8,13 +8,18 @@ import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useG
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useTheme } from '@mui/material/styles';
 
-const EEChip = React.forwardRef<HTMLDivElement, { feature?: string; clickable?: boolean; floating?: boolean }>(({ feature, clickable = true, floating = false }, ref) => {
+const EEChip = React.forwardRef<
+  HTMLDivElement,
+  { feature?: string; clickable?: boolean; floating?: boolean }
+>(({ feature, clickable = true, floating = false }, ref) => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [displayDialog, setDisplayDialog] = useState(false);
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
-  const { settings: { id: settingsId } } = useAuth();
+  const {
+    settings: { id: settingsId },
+  } = useAuth();
 
   const onClick = (e: MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
@@ -53,32 +58,32 @@ const EEChip = React.forwardRef<HTMLDivElement, { feature?: string; clickable?: 
         cursor: 'pointer',
       };
 
-  return (!isEnterpriseEdition && (
-    <>
-      <div
-        ref={ref}
-        style={divStyle}
-        onClick={(e) => onClick(e)}
-      >
-        EE
-      </div>
-      {isAdmin ? (
-        <EnterpriseEditionAgreement
-          open={displayDialog}
-          onClose={() => setDisplayDialog(false)}
-          settingsId={settingsId}
-        />
-      ) : (
-        <FeedbackCreation
-          openDrawer={displayDialog}
-          handleCloseDrawer={() => setDisplayDialog(false)}
-          initialValue={{
-            description: t_i18n(`I would like to use a EE feature ${feature ? `(${feature}) ` : ''}but I don't have EE activated.\nI would like to discuss with you about activating EE.`),
-          }}
-        />
-      )}
-    </>
-  ));
+  return (
+    !isEnterpriseEdition && (
+      <>
+        <div ref={ref} style={divStyle} onClick={(e) => onClick(e)}>
+          EE
+        </div>
+        {isAdmin ? (
+          <EnterpriseEditionAgreement
+            open={displayDialog}
+            onClose={() => setDisplayDialog(false)}
+            settingsId={settingsId}
+          />
+        ) : (
+          <FeedbackCreation
+            openDrawer={displayDialog}
+            handleCloseDrawer={() => setDisplayDialog(false)}
+            initialValue={{
+              description: t_i18n(
+                `I would like to use a EE feature ${feature ? `(${feature}) ` : ''}but I don't have EE activated.\nI would like to discuss with you about activating EE.`,
+              ),
+            }}
+          />
+        )}
+      </>
+    )
+  );
 });
 
 EEChip.displayName = 'EEChip';

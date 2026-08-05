@@ -10,18 +10,36 @@ import ObjectOrganizationField from '../../../common/form/ObjectOrganizationFiel
 import WorkflowConditionFilters from './WorkflowConditionFilters';
 import { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import WorkflowFieldList from './WorkflowFieldList';
-import { CommentMode, CommentModeType, FEATURE_NAME, WorkflowActionType, WorkflowDataType } from './utils';
+import {
+  CommentMode,
+  CommentModeType,
+  FEATURE_NAME,
+  WorkflowActionType,
+  WorkflowDataType,
+} from './utils';
 
 const TransitionForm = () => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { values, setFieldValue } = useFormikContext<WorkflowEditionFormValues>();
-  const hasUpdateAuthorizedMembers = values.syncActions?.some((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
-  const hasValidateDraft = values.syncActions?.some((a) => a.type === WorkflowActionType.validateDraft);
-  const hasShare = values.asyncActions?.some((a) => a.type === WorkflowActionType.shareWithOrganizations);
-  const hasUnshare = values.asyncActions?.some((a) => a.type === WorkflowActionType.unshareFromOrganizations);
-  const shareIdx = values.asyncActions?.findIndex((a) => a.type === WorkflowActionType.shareWithOrganizations) ?? -1;
-  const unshareIdx = values.asyncActions?.findIndex((a) => a.type === WorkflowActionType.unshareFromOrganizations) ?? -1;
+  const hasUpdateAuthorizedMembers = values.syncActions?.some(
+    (a) => a.type === WorkflowActionType.updateAuthorizedMembers,
+  );
+  const hasValidateDraft = values.syncActions?.some(
+    (a) => a.type === WorkflowActionType.validateDraft,
+  );
+  const hasShare = values.asyncActions?.some(
+    (a) => a.type === WorkflowActionType.shareWithOrganizations,
+  );
+  const hasUnshare = values.asyncActions?.some(
+    (a) => a.type === WorkflowActionType.unshareFromOrganizations,
+  );
+  const shareIdx =
+    values.asyncActions?.findIndex((a) => a.type === WorkflowActionType.shareWithOrganizations) ??
+    -1;
+  const unshareIdx =
+    values.asyncActions?.findIndex((a) => a.type === WorkflowActionType.unshareFromOrganizations) ??
+    -1;
 
   const disabledEEStyle: CSSProperties = !isEnterpriseEdition
     ? { opacity: 0.5, pointerEvents: 'none' }
@@ -42,27 +60,56 @@ const TransitionForm = () => {
   const handleToggleAction = (actionType: WorkflowActionType, checked: boolean) => {
     const currentActions = values.syncActions ?? [];
     if (checked) {
-      const newAction = actionType === WorkflowActionType.updateAuthorizedMembers
-        ? { type: actionType, params: { authorized_members: [{ label: 'Creators', type: 'Dynamic options', value: 'CREATORS', accessRight: 'admin' as const, groupsRestriction: [] }] } }
-        : { type: actionType };
+      const newAction =
+        actionType === WorkflowActionType.updateAuthorizedMembers
+          ? {
+              type: actionType,
+              params: {
+                authorized_members: [
+                  {
+                    label: 'Creators',
+                    type: 'Dynamic options',
+                    value: 'CREATORS',
+                    accessRight: 'admin' as const,
+                    groupsRestriction: [],
+                  },
+                ],
+              },
+            }
+          : { type: actionType };
       setFieldValue('syncActions', [...currentActions, newAction]);
     } else {
-      setFieldValue('syncActions', currentActions.filter((a) => a.type !== actionType));
+      setFieldValue(
+        'syncActions',
+        currentActions.filter((a) => a.type !== actionType),
+      );
     }
   };
 
   const handleToggleAsyncAction = (actionType: WorkflowActionType, checked: boolean) => {
     const currentAsync = values.asyncActions ?? [];
     if (checked) {
-      setFieldValue('asyncActions', [...currentAsync, { type: actionType, params: { organizations: [] } }]);
+      setFieldValue('asyncActions', [
+        ...currentAsync,
+        { type: actionType, params: { organizations: [] } },
+      ]);
     } else {
-      setFieldValue('asyncActions', currentAsync.filter((a) => a.type !== actionType));
+      setFieldValue(
+        'asyncActions',
+        currentAsync.filter((a) => a.type !== actionType),
+      );
     }
   };
 
   return (
     <>
-      <Field component={TextField} variant="standard" name="event" label={t_i18n('Transition name')} fullWidth />
+      <Field
+        component={TextField}
+        variant="standard"
+        name="event"
+        label={t_i18n('Transition name')}
+        fullWidth
+      />
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2 }}>
         <Typography variant="h6">
@@ -81,13 +128,18 @@ const TransitionForm = () => {
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <FormControlLabel
-            control={(
+            control={
               <Switch
                 checked={hasShare}
                 disabled={!isEnterpriseEdition}
-                onChange={(e) => handleToggleAsyncAction(WorkflowActionType.shareWithOrganizations, e.target.checked)}
+                onChange={(e) =>
+                  handleToggleAsyncAction(
+                    WorkflowActionType.shareWithOrganizations,
+                    e.target.checked,
+                  )
+                }
               />
-            )}
+            }
             label={t_i18n('Share with organizations')}
           />
           {hasShare && (
@@ -104,13 +156,18 @@ const TransitionForm = () => {
             </Box>
           )}
           <FormControlLabel
-            control={(
+            control={
               <Switch
                 checked={hasUnshare}
                 disabled={!isEnterpriseEdition}
-                onChange={(e) => handleToggleAsyncAction(WorkflowActionType.unshareFromOrganizations, e.target.checked)}
+                onChange={(e) =>
+                  handleToggleAsyncAction(
+                    WorkflowActionType.unshareFromOrganizations,
+                    e.target.checked,
+                  )
+                }
               />
-            )}
+            }
             label={t_i18n('Unshare from organizations')}
           />
           {hasUnshare && (
@@ -135,13 +192,15 @@ const TransitionForm = () => {
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <FormControlLabel
-            control={(
+            control={
               <Switch
                 checked={hasUpdateAuthorizedMembers}
                 disabled={!isEnterpriseEdition}
-                onChange={(e) => handleToggleAction(WorkflowActionType.updateAuthorizedMembers, e.target.checked)}
+                onChange={(e) =>
+                  handleToggleAction(WorkflowActionType.updateAuthorizedMembers, e.target.checked)
+                }
               />
-            )}
+            }
             label={t_i18n('Update authorized members')}
           />
           {values.syncActions && (
@@ -156,29 +215,35 @@ const TransitionForm = () => {
         <Typography variant="h6">
           {t_i18n('Comment')} <EEChip feature={t_i18n(FEATURE_NAME)} />
         </Typography>
-        <Alert severity="info" variant="outlined" style={{ opacity: isEnterpriseEdition ? 1 : 0.5 }}>
-          {t_i18n('When enabled, users will be prompted to leave a comment when changing the status.')}
+        <Alert
+          severity="info"
+          variant="outlined"
+          style={{ opacity: isEnterpriseEdition ? 1 : 0.5 }}
+        >
+          {t_i18n(
+            'When enabled, users will be prompted to leave a comment when changing the status.',
+          )}
         </Alert>
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <FormControlLabel
-            control={(
+            control={
               <Switch
                 checked={enableComments}
                 onChange={(e) => handleToggleEnableComments(e.target.checked)}
                 disabled={!isEnterpriseEdition}
               />
-            )}
+            }
             label={t_i18n('Enable comment')}
           />
           <Box sx={{ pl: 4 }}>
             <FormControlLabel
-              control={(
+              control={
                 <Switch
                   checked={requireComments}
                   disabled={!enableComments}
                   onChange={(e) => handleToggleRequireComments(e.target.checked)}
                 />
-              )}
+              }
               label={t_i18n('Required')}
             />
           </Box>
@@ -186,23 +251,25 @@ const TransitionForm = () => {
       </Box>
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
-        <Typography variant="h6">
-          {t_i18n('Draft validation')}
-        </Typography>
+        <Typography variant="h6">{t_i18n('Draft validation')}</Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <FormControlLabel
-            control={(
+            control={
               <Switch
                 checked={hasValidateDraft}
-                onChange={(e) => handleToggleAction(WorkflowActionType.validateDraft, e.target.checked)}
+                onChange={(e) =>
+                  handleToggleAction(WorkflowActionType.validateDraft, e.target.checked)
+                }
               />
-            )}
-            label={(
+            }
+            label={
               <Box style={{ display: 'flex', alignItems: 'center' }}>
                 {t_i18n('Validate draft')}
-                <Icon color="primary" fontSize="small" style={{ marginLeft: 8 }}><FlagOutlined /></Icon>
+                <Icon color="primary" fontSize="small" style={{ marginLeft: 8 }}>
+                  <FlagOutlined />
+                </Icon>
               </Box>
-            )}
+            }
           />
         </Box>
       </Box>

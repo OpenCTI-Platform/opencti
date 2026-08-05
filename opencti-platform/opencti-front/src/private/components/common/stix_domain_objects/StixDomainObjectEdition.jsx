@@ -35,15 +35,8 @@ const stixDomainObjectEditionQuery = graphql`
 
 class StixDomainObjectEdition extends Component {
   render() {
-    const {
-      classes,
-      stixDomainObjectId,
-      open,
-      handleClose,
-      handleDelete,
-      variant,
-      noStoreUpdate,
-    } = this.props;
+    const { classes, stixDomainObjectId, open, handleClose, handleDelete, variant, noStoreUpdate } =
+      this.props;
     return (
       <Drawer
         open={open}
@@ -65,9 +58,7 @@ class StixDomainObjectEdition extends Component {
                     stixDomainObject={props.stixDomainObject}
                     handleClose={handleClose.bind(this)}
                     handleDelete={
-                      typeof handleDelete === 'function'
-                        ? handleDelete.bind(this)
-                        : null
+                      typeof handleDelete === 'function' ? handleDelete.bind(this) : null
                     }
                     noStoreUpdate={noStoreUpdate}
                   />

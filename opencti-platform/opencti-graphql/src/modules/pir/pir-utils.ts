@@ -13,7 +13,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { type BasicStoreEntityPir, type BasicStoreRelationPir, type ParsedPir, type PirExplanation } from './pir-types';
+import {
+  type BasicStoreEntityPir,
+  type BasicStoreRelationPir,
+  type ParsedPir,
+  type PirExplanation,
+} from './pir-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { internalLoadById, pageRelationsConnection } from '../../database/middleware-loader';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
@@ -21,7 +26,11 @@ import { FunctionalError } from '../../config/errors';
 import { createRelation, patchAttribute } from '../../database/middleware';
 import { type FilterGroup, type PirAddInput, PirType } from '../../generated/graphql';
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_CAMPAIGN,
+  ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_MALWARE,
+} from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../../schema/general';
 import { RELATION_FROM_TYPES_FILTER } from '../../utils/filtering/filtering-constants';
 import { elUpdate } from '../../database/engine';
@@ -70,11 +79,12 @@ export const serializePir = (pir: PirAddInput) => {
  */
 export const constructFinalPirFilters = (pirType: PirType, pirFilters: FilterGroup) => {
   if (pirType === PirType.ThreatLandscape) {
-    return addFilter(
-      pirFilters,
-      RELATION_FROM_TYPES_FILTER,
-      [ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_THREAT_ACTOR, ENTITY_TYPE_MALWARE],
-    );
+    return addFilter(pirFilters, RELATION_FROM_TYPES_FILTER, [
+      ENTITY_TYPE_CAMPAIGN,
+      ENTITY_TYPE_INTRUSION_SET,
+      ENTITY_TYPE_THREAT_ACTOR,
+      ENTITY_TYPE_MALWARE,
+    ]);
   }
   return pirFilters;
 };
@@ -88,7 +98,12 @@ export const constructFinalPirFilters = (pirType: PirType, pirFilters: FilterGro
  * @param explanations List of explanations used to compute score.
  * @returns An integer between 0 and 100.
  */
-export const computePirScore = async (context: AuthContext, user: AuthUser, pirId: string, explanations: PirExplanation[]) => {
+export const computePirScore = async (
+  context: AuthContext,
+  user: AuthUser,
+  pirId: string,
+  explanations: PirExplanation[],
+) => {
   const pir = await getPirWithAccessCheck(context, user, pirId);
   // Used to keep only one explanation for a given filter.
   const uniqueFilters = new Set<string>();
@@ -115,7 +130,13 @@ export const computePirScore = async (context: AuthContext, user: AuthUser, pirI
  * @param score The new information of the entity for the PIR
  * @return a Promise object with PIR information on an entity
  */
-export const updatePirInformationOnEntity = async (context: AuthContext, user: AuthUser, entityId: string, pirId: string, score: number) => {
+export const updatePirInformationOnEntity = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityId: string,
+  pirId: string,
+  score: number,
+) => {
   const stixDomainObject = await internalLoadById(context, user, entityId);
   let newInformation: { pir_id: string; pir_score: number; last_pir_score_date: Date }[] = [];
   if (score > 0) {
@@ -129,7 +150,9 @@ export const updatePirInformationOnEntity = async (context: AuthContext, user: A
       } else ctx._source['pir_information'] = params.new_pir_information;
     `;
   // call elUpdate directly to avoid generating stream events and modifying the updated_at of the entity
-  return elUpdate(context, stixDomainObject._index, entityId, { script: { source, lang: 'painless', params } });
+  return elUpdate(context, stixDomainObject._index, entityId, {
+    script: { source, lang: 'painless', params },
+  });
 };
 
 /**
@@ -143,9 +166,11 @@ export const arePirExplanationsEqual = (
   explanation1: PirExplanation,
   explanation2: PirExplanation,
 ) => {
-  const sameRelationships = explanation1.dependencies.map((d1) => d1.element_id)
+  const sameRelationships = explanation1.dependencies
+    .map((d1) => d1.element_id)
     .every((d) => explanation2.dependencies.map((d2) => d2.element_id).includes(d));
-  const sameRelationshipsAuthors = explanation1.dependencies.map((d1) => d1.author_id)
+  const sameRelationshipsAuthors = explanation1.dependencies
+    .map((d1) => d1.author_id)
     .every((d) => explanation2.dependencies.map((d2) => d2.author_id).includes(d));
   const sameCriteriaWeight = explanation1.criterion.weight === explanation2.criterion.weight;
   const sameCriteriaFilters = explanation1.criterion.filters === explanation2.criterion.filters;
@@ -181,9 +206,11 @@ export const updatePirExplanationsArray = (
   newExplanations: PirExplanation[],
 ) => {
   return [
-    ...actualExplanations.filter((e) => { // remove explanations concerning the same relationship as new explanations
+    ...actualExplanations.filter((e) => {
+      // remove explanations concerning the same relationship as new explanations
       return newExplanations.every((newE) => {
-        const sameRelationships = e.dependencies.map((d1) => d1.element_id)
+        const sameRelationships = e.dependencies
+          .map((d1) => d1.element_id)
           .every((d) => newE.dependencies.map((d2) => d2.element_id).includes(d));
         return !sameRelationships;
       });
@@ -213,19 +240,33 @@ export const updatePirExplanations = async (
   lockIds: string[],
   operation?: string, // 'add' to add a new dependency, 'replace' by default
 ) => {
-  const inPirRels = await pageRelationsConnection<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pirId });
+  const inPirRels = await pageRelationsConnection<BasicStoreRelationPir>(
+    context,
+    user,
+    RELATION_IN_PIR,
+    { fromId: sourceId, toId: pirId },
+  );
   if (inPirRels.edges.length === 0) {
     // If = 0 then the in-pir relationship does not exist.
-    throw FunctionalError('Relation between the entity and a Pir not found', { sourceId, pirId, inPirRels });
+    throw FunctionalError('Relation between the entity and a Pir not found', {
+      sourceId,
+      pirId,
+      inPirRels,
+    });
   }
   if (inPirRels.edges.length > 1) {
     // If > 1, well this case should not be possible at all.
-    throw FunctionalError('Find more than one relation between an entity and a Pir', { sourceId, pirId, inPirRels });
+    throw FunctionalError('Find more than one relation between an entity and a Pir', {
+      sourceId,
+      pirId,
+      inPirRels,
+    });
   }
 
   const inPirRel = inPirRels.edges[0].node;
   let explanations = pirExplanations; // Default case : replace the entire array.
-  if (operation === 'add') { // Add case: add the new information contained in pirExplanations
+  if (operation === 'add') {
+    // Add case: add the new information contained in pirExplanations
     const newExplanations = diffPirExplanations(pirExplanations, inPirRel.pir_explanation);
     if (newExplanations.length === 0) {
       // In this case there is nothing to add so skip.
@@ -237,7 +278,14 @@ export const updatePirExplanations = async (
   // compute score
   const pir_score = await computePirScore(context, user, pirId, explanations);
   // replace pir_explanation on in-pir rel
-  await patchAttribute(context, user, inPirRel.id, RELATION_IN_PIR, { pir_explanation: explanations, pir_score }, { locks: lockIds });
+  await patchAttribute(
+    context,
+    user,
+    inPirRel.id,
+    RELATION_IN_PIR,
+    { pir_explanation: explanations, pir_score },
+    { locks: lockIds },
+  );
   // update pir information on the entity
   await updatePirInformationOnEntity(context, user, sourceId, pirId, pir_score);
 };

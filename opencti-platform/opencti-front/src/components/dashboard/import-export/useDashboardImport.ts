@@ -1,9 +1,7 @@
 import { BaseSyntheticEvent, useRef } from 'react';
 import { MESSAGING$ } from '../../../relay/environment';
 
-const useDashboardImport = ({ onImport }: {
-  onImport: (file: File) => Promise<void>;
-}) => {
+const useDashboardImport = ({ onImport }: { onImport: (file: File) => Promise<void> }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const onChange = (event: BaseSyntheticEvent) => {

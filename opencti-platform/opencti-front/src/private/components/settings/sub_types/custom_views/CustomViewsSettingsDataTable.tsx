@@ -39,13 +39,13 @@ export const customViewsLinesQuery = graphql`
     $entityType: String!
   ) {
     ...CustomViewsSettingsDataTable_data
-    @arguments(
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      entityType: $entityType
-    )
+      @arguments(
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        entityType: $entityType
+      )
   }
 `;
 
@@ -57,7 +57,8 @@ const customViewsLinesFragment = graphql`
     orderBy: { type: "CustomViewsOrdering" }
     orderMode: { type: "OrderingMode" }
     entityType: { type: "String!" }
-  ) @refetchable(queryName: "CustomViewsSettingsDataTableRefetchQuery") {
+  )
+  @refetchable(queryName: "CustomViewsSettingsDataTableRefetchQuery") {
     customViews(
       first: $count
       after: $cursor
@@ -94,7 +95,9 @@ const DATA_COLUMNS = {
         const { t_i18n } = useFormatter();
         return isDefault ? (
           <Tag color={theme.palette.success.main} label={t_i18n('Default')} />
-        ) : EMPTY_VALUE;
+        ) : (
+          EMPTY_VALUE
+        );
       };
       return <DefaultCell />;
     },
@@ -123,9 +126,7 @@ const DATA_COLUMNS = {
 const resolvePath = (d: CustomViewsSettingsDataTable_data$data) =>
   (d.customViews?.edges ?? []).map((e) => e.node);
 
-const CustomViewsSettingsDataTable = ({
-  targetType,
-}: CustomViewsSettingsDataTableProps) => {
+const CustomViewsSettingsDataTable = ({ targetType }: CustomViewsSettingsDataTableProps) => {
   const { t_i18n } = useFormatter();
   const getCustomViewLink = (entry: CustomViewsSettingsDataTable_node$data) => {
     return `/dashboard/settings/customization/entity_types/${targetType}/custom-views/${entry.id}`;
@@ -137,10 +138,9 @@ const CustomViewsSettingsDataTable = ({
     orderAsc: false,
   };
 
-  const { paginationOptions, helpers } = usePaginationLocalStorage<CustomViewsSettingsDataTablePaginationQuery['variables']>(
-    storageKey,
-    initialValues,
-  );
+  const { paginationOptions, helpers } = usePaginationLocalStorage<
+    CustomViewsSettingsDataTablePaginationQuery['variables']
+  >(storageKey, initialValues);
 
   const queryPaginationOptions = {
     entityType: targetType,

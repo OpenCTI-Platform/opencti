@@ -2,7 +2,17 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { scaleTime } from 'd3-scale';
 import { Handles, Rail, Slider, Ticks, Tracks } from 'react-compound-slider';
-import { addHours, addMinutes, differenceInMilliseconds, endOfToday, format, isAfter, isBefore, set, startOfToday } from 'date-fns';
+import {
+  addHours,
+  addMinutes,
+  differenceInMilliseconds,
+  endOfToday,
+  format,
+  isAfter,
+  isBefore,
+  set,
+  startOfToday,
+} from 'date-fns';
 
 import Track from './components/Track';
 import Tick from './components/Tick';
@@ -60,13 +70,18 @@ class TimeRange extends React.Component {
     const { value: startInterval } = source;
     const { value: endInterval } = target;
 
-    if ((startInterval > start && endInterval <= end) || (startInterval >= start && endInterval < end)) {
+    if (
+      (startInterval > start && endInterval <= end) ||
+      (startInterval >= start && endInterval < end)
+    ) {
       return true;
     }
     if (start >= startInterval && end <= endInterval) return true;
 
-    const isStartInBlockedInterval = start > startInterval && start < endInterval && end >= endInterval;
-    const isEndInBlockedInterval = end < endInterval && end > startInterval && start <= startInterval;
+    const isStartInBlockedInterval =
+      start > startInterval && start < endInterval && end >= endInterval;
+    const isEndInBlockedInterval =
+      end < endInterval && end > startInterval && start <= startInterval;
 
     return isStartInBlockedInterval || isEndInBlockedInterval;
   };
@@ -76,7 +91,9 @@ class TimeRange extends React.Component {
     const { disabledIntervals } = this;
 
     if (disabledIntervals?.length) {
-      const isValuesNotValid = disabledIntervals.some(({ source, target }) => this.checkIsSelectedIntervalNotValid(newTime, source, target));
+      const isValuesNotValid = disabledIntervals.some(({ source, target }) =>
+        this.checkIsSelectedIntervalNotValid(newTime, source, target),
+      );
       const formattedNewTime = newTime.map((t) => new Date(t));
       onUpdateCallback({ error: isValuesNotValid, time: formattedNewTime });
       return;
@@ -88,7 +105,10 @@ class TimeRange extends React.Component {
 
   getDateTicks = () => {
     const { timelineInterval = [startOfToday(), endOfToday()], ticksNumber = 48 } = this.props;
-    return scaleTime().domain(timelineInterval).ticks(ticksNumber).map((t) => +t);
+    return scaleTime()
+      .domain(timelineInterval)
+      .ticks(ticksNumber)
+      .map((t) => +t);
   };
 
   render() {
@@ -123,7 +143,9 @@ class TimeRange extends React.Component {
           rootStyle={{ position: 'relative', width: '100%' }}
         >
           <Rail>
-            {({ getRailProps }) => <RangeSliderRail className={sliderRailClassName} getRailProps={getRailProps} />}
+            {({ getRailProps }) => (
+              <RangeSliderRail className={sliderRailClassName} getRailProps={getRailProps} />
+            )}
           </Rail>
 
           <Handles>
@@ -193,12 +215,7 @@ class TimeRange extends React.Component {
             {({ ticks }) => (
               <>
                 {ticks.map((tick) => (
-                  <Tick
-                    key={tick.id}
-                    tick={tick}
-                    count={ticks.length}
-                    format={formatTick}
-                  />
+                  <Tick key={tick.id} tick={tick} count={ticks.length} format={formatTick} />
                 ))}
               </>
             )}

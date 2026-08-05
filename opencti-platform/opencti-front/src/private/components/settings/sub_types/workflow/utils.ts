@@ -3,8 +3,7 @@ import type { SubTypeWorkflowQuery$data } from '../__generated__/SubTypeWorkflow
 import { AuthorizedMemberOption } from '../../../../../utils/authorizedMembers';
 import type { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
 
-export type Condition = { field: string; operator: string; value: string }
-  | { type: string };
+export type Condition = { field: string; operator: string; value: string } | { type: string };
 
 export type Action = {
   type: string;
@@ -64,47 +63,56 @@ export enum WorkflowActionType {
 export const NODE_SIZE = { width: 160, height: 50 };
 
 const formatActions = (actions: Action[] = []) => {
-  return actions.map(({ type, params }) => {
-    if (type === 'updateAuthorizedMembers') {
-      return {
-        type,
-        params: { authorized_members: (params as { authorized_members: AuthorizedMemberOption[] }).authorized_members
-          .map(({ value, accessRight, groupsRestriction }) => ({
-            id: value,
-            access_right: accessRight,
-            groups_restriction_ids: groupsRestriction?.map((g) => g.value) ?? [],
-          })) },
-      };
-    }
-    if (type === 'validateDraft') {
-      return {
-        type,
-      };
-    }
-    if (type === 'shareWithOrganizations') {
-      const orgIds = ((params as { organizations?: (string | { value: string })[] })?.organizations ?? []).map((o) => (typeof o === 'string' ? o : o.value));
-      return {
-        type: 'asyncBulkAction',
-        params: {
-          scope: 'KNOWLEDGE',
-          actions: [{ type: 'SHARE', context: { values: orgIds } }],
-          failOnAnyError: true,
-        },
-      };
-    }
-    if (type === 'unshareFromOrganizations') {
-      const orgIds = ((params as { organizations?: (string | { value: string })[] })?.organizations ?? []).map((o) => (typeof o === 'string' ? o : o.value));
-      return {
-        type: 'asyncBulkAction',
-        params: {
-          scope: 'KNOWLEDGE',
-          actions: [{ type: 'UNSHARE', context: { values: orgIds } }],
-          failOnAnyError: true,
-        },
-      };
-    }
-    return undefined;
-  }).filter(Boolean);
+  return actions
+    .map(({ type, params }) => {
+      if (type === 'updateAuthorizedMembers') {
+        return {
+          type,
+          params: {
+            authorized_members: (
+              params as { authorized_members: AuthorizedMemberOption[] }
+            ).authorized_members.map(({ value, accessRight, groupsRestriction }) => ({
+              id: value,
+              access_right: accessRight,
+              groups_restriction_ids: groupsRestriction?.map((g) => g.value) ?? [],
+            })),
+          },
+        };
+      }
+      if (type === 'validateDraft') {
+        return {
+          type,
+        };
+      }
+      if (type === 'shareWithOrganizations') {
+        const orgIds = (
+          (params as { organizations?: (string | { value: string })[] })?.organizations ?? []
+        ).map((o) => (typeof o === 'string' ? o : o.value));
+        return {
+          type: 'asyncBulkAction',
+          params: {
+            scope: 'KNOWLEDGE',
+            actions: [{ type: 'SHARE', context: { values: orgIds } }],
+            failOnAnyError: true,
+          },
+        };
+      }
+      if (type === 'unshareFromOrganizations') {
+        const orgIds = (
+          (params as { organizations?: (string | { value: string })[] })?.organizations ?? []
+        ).map((o) => (typeof o === 'string' ? o : o.value));
+        return {
+          type: 'asyncBulkAction',
+          params: {
+            scope: 'KNOWLEDGE',
+            actions: [{ type: 'UNSHARE', context: { values: orgIds } }],
+            failOnAnyError: true,
+          },
+        };
+      }
+      return undefined;
+    })
+    .filter(Boolean);
 };
 
 const transformToWorkflowDefinition = (
@@ -115,11 +123,13 @@ const transformToWorkflowDefinition = (
   // 1. Extract States
   const states = nodes.flatMap(({ type, data: { onEnter = [], onExit = [], statusTemplate } }) => {
     if (type === WorkflowNodeType.status) {
-      return [{
-        statusId: statusTemplate.id,
-        onEnter: formatActions(onEnter),
-        onExit: formatActions(onExit),
-      }];
+      return [
+        {
+          statusId: statusTemplate.id,
+          onEnter: formatActions(onEnter),
+          onExit: formatActions(onExit),
+        },
+      ];
     }
     return [];
   });
@@ -149,13 +159,15 @@ const transformToWorkflowDefinition = (
       // Fan out: one SerializedTransition per (from, to) pair.
       // SerializedTransition.from is always a single string — never an array —
       // so the backend's getTransitions(currentState) strict-equality check works correctly.
-      const toStates = outgoingEdges.length > 0
-        ? outgoingEdges.map((outEdge) => nodes.find((n) => n.id === outEdge.target)?.data.statusTemplate.id || null)
-        : [null as string | null];
+      const toStates =
+        outgoingEdges.length > 0
+          ? outgoingEdges.map(
+              (outEdge) =>
+                nodes.find((n) => n.id === outEdge.target)?.data.statusTemplate.id || null,
+            )
+          : [null as string | null];
 
-      return fromStates.flatMap((from) =>
-        toStates.map((to) => ({ ...actionPayload, from, to })),
-      );
+      return fromStates.flatMap((from) => toStates.map((to) => ({ ...actionPayload, from, to })));
     }
     return [];
   });
@@ -169,9 +181,11 @@ const transformToWorkflowDefinition = (
   // Use the wildcard '*' instead — the backend treats it as a neutral initial state and
   // skips state-existence checks for it. This also keeps this function's output aligned
   // between handleReset and the autosave effect, preventing a spurious follow-up mutation.
-  const initialState = statusNodes.length === 0
-    ? '*'
-    : (nodes.find((n) => n.id === rootStatusNode?.id)?.data.statusTemplate.id || workflowDefinition?.initialState);
+  const initialState =
+    statusNodes.length === 0
+      ? '*'
+      : nodes.find((n) => n.id === rootStatusNode?.id)?.data.statusTemplate.id ||
+        workflowDefinition?.initialState;
 
   return {
     id: workflowDefinition?.id,
@@ -182,11 +196,10 @@ const transformToWorkflowDefinition = (
   };
 };
 
-const isElementStatus = (selectedElement: Node) => (selectedElement?.type === WorkflowNodeType.status || selectedElement?.type === WorkflowNodeType.placeholder);
-const isNewElementStatus = (selectedElement: Node) => (selectedElement?.type === WorkflowNodeType.placeholder);
+const isElementStatus = (selectedElement: Node) =>
+  selectedElement?.type === WorkflowNodeType.status ||
+  selectedElement?.type === WorkflowNodeType.placeholder;
+const isNewElementStatus = (selectedElement: Node) =>
+  selectedElement?.type === WorkflowNodeType.placeholder;
 
-export {
-  transformToWorkflowDefinition,
-  isElementStatus,
-  isNewElementStatus,
-};
+export { transformToWorkflowDefinition, isElementStatus, isNewElementStatus };

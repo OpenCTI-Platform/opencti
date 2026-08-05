@@ -46,7 +46,10 @@ export const findSessions = () => {
   const { store } = applicationSession;
   return new Promise((accept) => {
     store.all((_, result) => {
-      const sessionsPerUser = R.groupBy((s) => s.user.id, R.filter((n) => n.user, result));
+      const sessionsPerUser = R.groupBy(
+        (s) => s.user.id,
+        R.filter((n) => n.user, result),
+      );
       const sessions = Object.entries(sessionsPerUser).map(([k, v]) => {
         const userSessions = v.map((s) => {
           return {
@@ -75,7 +78,6 @@ export const findUserSessions = async (userId) => {
 export const killSession = async (id) => {
   const { store } = applicationSession;
   return new Promise((accept) => {
-    // eslint-disable-next-line no-void
     void store.destroy(id, (_, data) => {
       accept(data);
     });

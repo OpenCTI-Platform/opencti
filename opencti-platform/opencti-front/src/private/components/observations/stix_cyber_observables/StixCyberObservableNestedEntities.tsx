@@ -38,7 +38,7 @@ const StixCyberObservableNestedEntities: React.FC<StixCyberObservableNestedEntit
     <div style={{ height: isInLine ? 'auto' : '100%' }}>
       <Card
         title={t_i18n('Nested objects')}
-        action={(
+        action={
           <Stack direction="row" gap={1}>
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <StixNestedRefRelationshipCreationFromEntityContainer
@@ -49,14 +49,10 @@ const StixCyberObservableNestedEntities: React.FC<StixCyberObservableNestedEntit
               />
             </Security>
             {!isInLine && (
-              <SearchInput
-                variant="thin"
-                onSubmit={handleSearch}
-                keyword={searchTerm}
-              />
+              <SearchInput variant="thin" onSubmit={handleSearch} keyword={searchTerm} />
             )}
           </Stack>
-        )}
+        }
       >
         <StixCyberObservableNestedEntitiesTable
           stixCyberObservableId={entityId}

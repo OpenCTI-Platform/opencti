@@ -14,7 +14,9 @@ const fintelTemplateImportMutation = graphql`
 
 const useFintelTemplateImport = () => {
   const [mutating, setMutating] = useState(false);
-  const [commitImportMutation] = useApiMutation<useFintelTemplateImportMutation>(fintelTemplateImportMutation);
+  const [commitImportMutation] = useApiMutation<useFintelTemplateImportMutation>(
+    fintelTemplateImportMutation,
+  );
 
   const mutation: typeof commitImportMutation = ({ variables, onCompleted, onError }) => {
     setMutating(true);

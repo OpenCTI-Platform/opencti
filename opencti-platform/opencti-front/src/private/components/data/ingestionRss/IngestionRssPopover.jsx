@@ -37,9 +37,7 @@ const styles = (theme) => ({
   },
 });
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 const ingestionRssPopoverDeletionMutation = graphql`
@@ -155,10 +153,9 @@ class IngestionRssPopover extends Component {
   }
 
   async exportRssFeed() {
-    const { ingestionRss } = await fetchQuery(
-      ingestionRssPopoverExportQuery,
-      { id: this.props.ingestionRssId },
-    ).toPromise();
+    const { ingestionRss } = await fetchQuery(ingestionRssPopoverExportQuery, {
+      id: this.props.ingestionRssId,
+    }).toPromise();
 
     if (ingestionRss) {
       const blob = new Blob([ingestionRss.toConfigurationExport], { type: 'text/json' });
@@ -166,13 +163,13 @@ class IngestionRssPopover extends Component {
       const fileName = `${year}${month}${day}_rssFeed_${ingestionRss.name}.json`;
       fileDownload(blob, fileName);
     }
-  };
+  }
 
   async handleExport(e) {
     stopEvent(e);
     this.handleClose();
     await this.exportRssFeed();
-  };
+  }
 
   submitStart() {
     this.setState({ starting: true });
@@ -222,25 +219,11 @@ class IngestionRssPopover extends Component {
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
         >
-          {!running && (
-            <MenuItem onClick={this.handleOpenStart.bind(this)}>
-              {t('Start')}
-            </MenuItem>
-          )}
-          {running && (
-            <MenuItem onClick={this.handleOpenStop.bind(this)}>
-              {t('Stop')}
-            </MenuItem>
-          )}
-          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
-            {t('Update')}
-          </MenuItem>
-          <MenuItem onClick={this.handleExport.bind(this)}>
-            {t('Export')}
-          </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
-          </MenuItem>
+          {!running && <MenuItem onClick={this.handleOpenStart.bind(this)}>{t('Start')}</MenuItem>}
+          {running && <MenuItem onClick={this.handleOpenStop.bind(this)}>{t('Stop')}</MenuItem>}
+          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>{t('Update')}</MenuItem>
+          <MenuItem onClick={this.handleExport.bind(this)}>{t('Export')}</MenuItem>
+          <MenuItem onClick={this.handleOpenDelete.bind(this)}>{t('Delete')}</MenuItem>
         </Menu>
         <QueryRenderer
           query={ingestionRssEditionQuery}
@@ -263,9 +246,7 @@ class IngestionRssPopover extends Component {
           onClose={this.handleCloseDelete.bind(this)}
           title={t('Are you sure?')}
         >
-          <DialogContentText>
-            {t('Do you want to delete this RSS ingester?')}
-          </DialogContentText>
+          <DialogContentText>{t('Do you want to delete this RSS ingester?')}</DialogContentText>
           <DialogActions>
             <Button
               variant="secondary"
@@ -274,10 +255,7 @@ class IngestionRssPopover extends Component {
             >
               {t('Cancel')}
             </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
+            <Button onClick={this.submitDelete.bind(this)} disabled={this.state.deleting}>
               {t('Confirm')}
             </Button>
           </DialogActions>
@@ -288,9 +266,7 @@ class IngestionRssPopover extends Component {
           onClose={this.handleCloseStart.bind(this)}
           title={t('Are you sure?')}
         >
-          <DialogContentText>
-            {t('Do you want to start this RSS ingester?')}
-          </DialogContentText>
+          <DialogContentText>{t('Do you want to start this RSS ingester?')}</DialogContentText>
           <DialogActions>
             <Button
               variant="secondary"
@@ -299,10 +275,7 @@ class IngestionRssPopover extends Component {
             >
               {t('Cancel')}
             </Button>
-            <Button
-              onClick={this.submitStart.bind(this)}
-              disabled={this.state.starting}
-            >
+            <Button onClick={this.submitStart.bind(this)} disabled={this.state.starting}>
               {t('Start')}
             </Button>
           </DialogActions>
@@ -312,9 +285,7 @@ class IngestionRssPopover extends Component {
           onClose={this.handleCloseStop.bind(this)}
           title={t('Are you sure?')}
         >
-          <DialogContentText>
-            {t('Do you want to stop this RSS ingester?')}
-          </DialogContentText>
+          <DialogContentText>{t('Do you want to stop this RSS ingester?')}</DialogContentText>
           <DialogActions>
             <Button
               variant="secondary"
@@ -323,10 +294,7 @@ class IngestionRssPopover extends Component {
             >
               {t('Cancel')}
             </Button>
-            <Button
-              onClick={this.submitStop.bind(this)}
-              disabled={this.state.stopping}
-            >
+            <Button onClick={this.submitStop.bind(this)} disabled={this.state.stopping}>
               {t('Stop')}
             </Button>
           </DialogActions>

@@ -1,5 +1,11 @@
 import type { Resolvers } from '../../generated/graphql';
-import { attackPatternsPaginated, dataComponentAdd, findDataComponentPaginated, findById, withDataSource } from './dataComponent-domain';
+import {
+  attackPatternsPaginated,
+  dataComponentAdd,
+  findDataComponentPaginated,
+  findById,
+  withDataSource,
+} from './dataComponent-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -17,8 +23,10 @@ const dataComponentResolvers: Resolvers = {
     dataComponents: (_, args, context) => findDataComponentPaginated(context, context.user, args),
   },
   DataComponent: {
-    dataSource: (dataComponent, _, context) => withDataSource<BasicStoreEntityDataSource>(context, context.user, dataComponent.id),
-    attackPatterns: (dataComponent, args, context) => attackPatternsPaginated<any>(context, context.user, dataComponent.id, args),
+    dataSource: (dataComponent, _, context) =>
+      withDataSource<BasicStoreEntityDataSource>(context, context.user, dataComponent.id),
+    attackPatterns: (dataComponent, args, context) =>
+      attackPatternsPaginated<any>(context, context.user, dataComponent.id, args),
   },
   Mutation: {
     dataComponentAdd: (_, { input }, context) => {
@@ -28,7 +36,10 @@ const dataComponentResolvers: Resolvers = {
       return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_DATA_COMPONENT);
     },
     dataComponentFieldPatch: (_, { id, input, commitMessage, references }, context) => {
-      return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
+      return stixDomainObjectEditField(context, context.user, id, input, {
+        commitMessage,
+        references,
+      });
     },
     dataComponentContextPatch: (_, { id, input }, context) => {
       return stixDomainObjectEditContext(context, context.user, id, input);
@@ -39,7 +50,11 @@ const dataComponentResolvers: Resolvers = {
     dataComponentRelationAdd: (_, { id, input }, context) => {
       return stixDomainObjectAddRelation(context, context.user, id, input);
     },
-    dataComponentRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => {
+    dataComponentRelationDelete: (
+      _,
+      { id, toId, relationship_type: relationshipType },
+      context,
+    ) => {
       return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
     },
   },

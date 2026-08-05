@@ -20,7 +20,10 @@ import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloaded
 import CaseTemplateField from '../../common/form/CaseTemplateField';
 import { caseSetTemplateQuery, generateConnectionId } from '../CaseUtils';
 import { CaseTasksLines_data$key } from './__generated__/CaseTasksLines_data.graphql';
-import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
+import {
+  CaseTasksLinesQuery,
+  CaseTasksLinesQuery$variables,
+} from './__generated__/CaseTasksLinesQuery.graphql';
 import CaseTaskCreation from './CaseTaskCreation';
 import { CaseTasksLine } from './CaseTasksLine';
 import { tasksDataColumns } from './tasksDataColumns';
@@ -34,13 +37,13 @@ export const caseTasksLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...CaseTasksLines_data
-    @arguments(
-      count: $count
-      filters: $filters
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        count: $count
+        filters: $filters
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 
@@ -99,8 +102,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [commit] = useApiMutation(caseSetTemplateQuery);
-  const { data } = usePreloadedPaginationFragment<CaseTasksLinesQuery,
-    CaseTasksLines_data$key>({
+  const { data } = usePreloadedPaginationFragment<CaseTasksLinesQuery, CaseTasksLines_data$key>({
     queryRef,
     linesQuery: caseTasksLinesQuery,
     linesFragment: caseTasksLinesFragment,
@@ -119,9 +121,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
             commit({
               variables: {
                 id: caseId,
-                caseTemplatesId: values.caseTemplates.map(
-                  ({ value }) => value,
-                ),
+                caseTemplatesId: values.caseTemplates.map(({ value }) => value),
                 connections: [
                   generateConnectionId({
                     key: 'Pagination_tasks',
@@ -142,10 +142,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
         >
           {({ setFieldValue, submitForm, handleReset, isSubmitting }) => (
             <Form style={{ minWidth: 400 }}>
-              <CaseTemplateField
-                onChange={setFieldValue}
-                label="Case templates"
-              />
+              <CaseTemplateField onChange={setFieldValue} label="Case templates" />
               <FormButtonContainer>
                 <Button
                   variant="secondary"
@@ -157,10 +154,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
                 >
                   {t_i18n('Cancel')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
+                <Button onClick={submitForm} disabled={isSubmitting}>
                   {t_i18n('Apply')}
                 </Button>
               </FormButtonContainer>
@@ -168,11 +162,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
           )}
         </Formik>
       </Dialog>
-      <Drawer
-        open={open}
-        title={t_i18n('Create a task')}
-        onClose={handleClose}
-      >
+      <Drawer open={open} title={t_i18n('Create a task')} onClose={handleClose}>
         <CaseTaskCreation
           caseId={caseId}
           onClose={handleClose}
@@ -182,24 +172,20 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
       </Drawer>
       <Card
         title={t_i18n('Tasks')}
-        action={(
+        action={
           <>
             <Tooltip title={t_i18n('Add a task to this container')}>
-              <IconButton
-                onClick={handleOpen}
-              >
+              <IconButton onClick={handleOpen}>
                 <AddOutlined fontSize="small" />
               </IconButton>
             </Tooltip>
             <Tooltip title={t_i18n('Apply a new case template')}>
-              <IconButton
-                onClick={() => setOpenCaseTemplate(true)}
-              >
+              <IconButton onClick={() => setOpenCaseTemplate(true)}>
                 <ContentPasteGoOutlined fontSize="small" />
               </IconButton>
             </Tooltip>
           </>
-        )}
+        }
       >
         <ListLines
           sortBy={sortBy}

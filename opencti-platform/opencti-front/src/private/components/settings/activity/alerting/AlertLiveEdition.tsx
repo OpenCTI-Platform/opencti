@@ -9,7 +9,10 @@ import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import { convertNotifiers } from '../../../../../utils/edition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
-import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend } from '../../../../../utils/filters/filtersUtils';
+import {
+  deserializeFilterGroupForFrontend,
+  serializeFilterGroupForBackend,
+} from '../../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import NotifierField from '../../../common/form/NotifierField';
@@ -63,21 +66,17 @@ const alertLiveEditionFieldPatch = graphql`
   }
 `;
 
-const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
-  queryRef,
-  handleClose,
-}) => {
+const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({ queryRef, handleClose }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
-  const data = usePreloadedQuery<AlertEditionQuery>(
-    alertEditionQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery<AlertEditionQuery>(alertEditionQuery, queryRef);
   const trigger = useFragment<AlertLiveEdition_trigger$key>(
     alertLiveEditionFragment,
     data.triggerKnowledge,
   );
-  const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger?.filters ?? undefined) ?? undefined);
+  const [filters, helpers] = useFiltersState(
+    deserializeFilterGroupForFrontend(trigger?.filters ?? undefined) ?? undefined,
+  );
   const [commitFieldPatch] = useApiMutation(alertLiveEditionFieldPatch);
   useEffect(() => {
     commitFieldPatch({
@@ -90,10 +89,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
       },
     });
   }, [filters]);
-  const onSubmit: FormikConfig<AlertLiveFormValues>['onSubmit'] = (
-    values,
-    { setSubmitting },
-  ) => {
+  const onSubmit: FormikConfig<AlertLiveFormValues>['onSubmit'] = (values, { setSubmitting }) => {
     commitFieldPatch({
       variables: {
         id: trigger?.id,
@@ -105,10 +101,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
       },
     });
   };
-  const handleSubmitField = (
-    name: string,
-    value: FieldOption | string | string[],
-  ) => {
+  const handleSubmitField = (name: string, value: FieldOption | string | string[]) => {
     return liveActivityTriggerValidation(t_i18n)
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -121,17 +114,18 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
       })
       .catch(() => false);
   };
-  const handleSubmitFieldOptions = (name: string, value: { value: string }[]) => liveActivityTriggerValidation(t_i18n)
-    .validateAt(name, { [name]: value })
-    .then(() => {
-      commitFieldPatch({
-        variables: {
-          id: trigger?.id,
-          input: { key: name, value: value?.map(({ value: v }) => v) ?? '' },
-        },
-      });
-    })
-    .catch(() => false);
+  const handleSubmitFieldOptions = (name: string, value: { value: string }[]) =>
+    liveActivityTriggerValidation(t_i18n)
+      .validateAt(name, { [name]: value })
+      .then(() => {
+        commitFieldPatch({
+          variables: {
+            id: trigger?.id,
+            input: { key: name, value: value?.map(({ value: v }) => v) ?? '' },
+          },
+        });
+      })
+      .catch(() => false);
 
   const initialValues = {
     name: trigger?.name,
@@ -144,11 +138,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
   };
 
   return (
-    <Formik
-      enableReinitialize={true}
-      initialValues={initialValues as never}
-      onSubmit={onSubmit}
-    >
+    <Formik enableReinitialize={true} initialValues={initialValues as never} onSubmit={onSubmit}>
       {() => (
         <Form>
           <Field
@@ -171,10 +161,11 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
           />
           <NotifierField
             name="notifiers"
-            onChange={(name, values) => handleSubmitField(
-              name,
-              values.map(({ value }) => value),
-            )
+            onChange={(name, values) =>
+              handleSubmitField(
+                name,
+                values.map(({ value }) => value),
+              )
             }
           />
           <ObjectMembersField
@@ -207,11 +198,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
           </Box>
           <div className="clearfix" />
           {filters && (
-            <FilterIconButton
-              filters={filters}
-              helpers={helpers}
-              entityTypes={['History']}
-            />
+            <FilterIconButton filters={filters} helpers={helpers} entityTypes={['History']} />
           )}
         </Form>
       )}

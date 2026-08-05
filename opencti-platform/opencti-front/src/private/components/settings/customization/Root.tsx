@@ -28,100 +28,126 @@ const RootCustomization = () => {
   return (
     <>
       <Routes>
-        <Route
-          path="/entity_types/:subTypeId/custom-views/:customViewId"
-          element={null}
-        />
-        <Route
-          path="*"
-          element={<CustomizationMenu />}
-        />
+        <Route path="/entity_types/:subTypeId/custom-views/:customViewId" element={null} />
+        <Route path="*" element={<CustomizationMenu />} />
       </Routes>
       <Suspense fallback={<Loader />}>
         <Routes>
           <Route
             path="/"
-            element={<Navigate to="/dashboard/settings/customization/entity_types" replace={true} />}
+            element={
+              <Navigate to="/dashboard/settings/customization/entity_types" replace={true} />
+            }
           />
           <Route
             path="/entity_types"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+            element={
+              <Security
+                needs={[SETTINGS_SETCUSTOMIZATION]}
+                placeholder={<Navigate to={fallbackUrl} />}
+              >
                 <SubTypes />
               </Security>
-            )}
+            }
           />
           <Route
             path="/entity_types/:subTypeId/*"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+            element={
+              <Security
+                needs={[SETTINGS_SETCUSTOMIZATION]}
+                placeholder={<Navigate to={fallbackUrl} />}
+              >
                 <RootSubType />
               </Security>
-            )}
+            }
           />
           <Route
             path="/retention"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+            element={
+              <Security
+                needs={[SETTINGS_SETCUSTOMIZATION]}
+                placeholder={<Navigate to={fallbackUrl} />}
+              >
                 <Retention />
               </Security>
-            )}
+            }
           />
           <Route
             path="/rules"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+            element={
+              <Security
+                needs={[SETTINGS_SETCUSTOMIZATION]}
+                placeholder={<Navigate to={fallbackUrl} />}
+              >
                 <Rules />
               </Security>
-            )}
+            }
           />
           <Route
             path="/decay"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+            element={
+              <Security
+                needs={[SETTINGS_SETCUSTOMIZATION]}
+                placeholder={<Navigate to={fallbackUrl} />}
+              >
                 <DecayRuleTabs />
               </Security>
-            )}
+            }
           />
           <Route
             path="/decay/:decayRuleId/*"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+            element={
+              <Security
+                needs={[SETTINGS_SETCUSTOMIZATION]}
+                placeholder={<Navigate to={fallbackUrl} />}
+              >
                 <DecayRule />
               </Security>
-            )}
+            }
           />
           <Route
             path="/exclusion_lists"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+            element={
+              <Security
+                needs={[SETTINGS_SETCUSTOMIZATION]}
+                placeholder={<Navigate to={fallbackUrl} />}
+              >
                 <ExclusionLists />
               </Security>
-            )}
+            }
           />
           <Route
             path="/fintel_designs"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+            element={
+              <Security
+                needs={[SETTINGS_SETCUSTOMIZATION]}
+                placeholder={<Navigate to={fallbackUrl} />}
+              >
                 <FintelDesigns />
               </Security>
-            )}
+            }
           />
           <Route
             path="/fintel_designs/:fintelDesignId/*"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+            element={
+              <Security
+                needs={[SETTINGS_SETCUSTOMIZATION]}
+                placeholder={<Navigate to={fallbackUrl} />}
+              >
                 <FintelDesign />
               </Security>
-            )}
+            }
           />
           <Route
             path="/notifiers"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+            element={
+              <Security
+                needs={[SETTINGS_SETCUSTOMIZATION]}
+                placeholder={<Navigate to={fallbackUrl} />}
+              >
                 <Notifiers />
               </Security>
-            )}
+            }
           />
         </Routes>
       </Suspense>

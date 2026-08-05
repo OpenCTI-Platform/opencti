@@ -21,7 +21,8 @@ vi.mock('react-relay', async (importOriginal) => {
     ...actual,
     createFragmentContainer: (component: React.ComponentType) => component,
     useFragment: (_fragment: unknown, data: unknown) => data,
-    useMutation: vi.fn()
+    useMutation: vi
+      .fn()
       .mockImplementationOnce(() => [mockCommit, false])
       .mockImplementationOnce(() => [mockCommitClear, false])
       .mockImplementation(() => [vi.fn(), false]),
@@ -59,24 +60,36 @@ const makeStatus = () => ({
   template: { name: 'In review', color: '#ff0000' },
 });
 
-const makeDraft = (overrides: Record<string, unknown> = {}): WorkflowStatus_data$key => ({
-  id: 'draft-1',
-  entity_id: 'entity-1',
-  processingCount: 0,
-  workflowInstance: {
-    id: 'instance-1',
-    currentState: 'in_review',
-    currentStatus: makeStatus(),
-    lastHistoryEntry: null,
-    allowedTransitions: [],
-    pendingStatus: null,
-    pendingTransition: null,
-    pendingError: null,
-  },
-  ...overrides,
-} as unknown as WorkflowStatus_data$key);
+const makeDraft = (overrides: Record<string, unknown> = {}): WorkflowStatus_data$key =>
+  ({
+    id: 'draft-1',
+    entity_id: 'entity-1',
+    processingCount: 0,
+    workflowInstance: {
+      id: 'instance-1',
+      currentState: 'in_review',
+      currentStatus: makeStatus(),
+      lastHistoryEntry: null,
+      allowedTransitions: [],
+      pendingStatus: null,
+      pendingTransition: null,
+      pendingError: null,
+    },
+    ...overrides,
+  }) as unknown as WorkflowStatus_data$key;
 
-const makePendingDraft = (asyncActions = [{ id: 's1', workId: 'w1', type: 'asyncBulkAction', status: 'pending', expectedCount: 20, processedCount: 5 }]) =>
+const makePendingDraft = (
+  asyncActions = [
+    {
+      id: 's1',
+      workId: 'w1',
+      type: 'asyncBulkAction',
+      status: 'pending',
+      expectedCount: 20,
+      processedCount: 5,
+    },
+  ],
+) =>
   makeDraft({
     workflowInstance: {
       id: 'instance-1',
@@ -139,7 +152,16 @@ describe('WorkflowTransitions – pending state UI', () => {
   });
 
   it('hides the progress counter when expectedCount is 0', () => {
-    const draft = makePendingDraft([{ id: 's1', workId: 'w1', type: 'asyncBulkAction', status: 'pending', expectedCount: 0, processedCount: 0 }]);
+    const draft = makePendingDraft([
+      {
+        id: 's1',
+        workId: 'w1',
+        type: 'asyncBulkAction',
+        status: 'pending',
+        expectedCount: 0,
+        processedCount: 0,
+      },
+    ]);
     testRender(<WorkflowTransitions data={draft} />);
     expect(screen.queryByText(/\//)).toBeNull();
   });
@@ -202,7 +224,9 @@ describe('WorkflowTransitions – validate draft dialog', () => {
 
     const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
-    expect(await screen.findByText('Do you want to approve this draft and send it to ingestion?')).toBeDefined();
+    expect(
+      await screen.findByText('Do you want to approve this draft and send it to ingestion?'),
+    ).toBeDefined();
   });
 
   it('shows a warning Alert when processingCount > 0 in the validate dialog', async () => {

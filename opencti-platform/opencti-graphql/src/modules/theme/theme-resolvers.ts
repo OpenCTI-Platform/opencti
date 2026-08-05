@@ -1,5 +1,12 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addTheme, deleteTheme, fieldPatchTheme, findById, findThemePaginated, themeImport } from './theme-domain';
+import {
+  addTheme,
+  deleteTheme,
+  fieldPatchTheme,
+  findById,
+  findThemePaginated,
+  themeImport,
+} from './theme-domain';
 
 const themeResolvers: Resolvers = {
   Query: {

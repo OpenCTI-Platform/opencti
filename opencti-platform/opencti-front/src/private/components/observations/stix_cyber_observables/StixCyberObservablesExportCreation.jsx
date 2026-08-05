@@ -20,13 +20,14 @@ import Loader from '../../../../components/Loader';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../../common/files/FileManager';
+import {
+  CONTENT_MAX_MARKINGS_HELPERTEXT,
+  CONTENT_MAX_MARKINGS_TITLE,
+} from '../../common/files/FileManager';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/MarkingDefinitionsQuery';
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 const styles = () => ({
@@ -55,22 +56,17 @@ export const StixCyberObservablesExportCreationMutation = graphql`
   }
 `;
 
-const exportValidation = (t_i18n) => Yup.object().shape({
-  format: Yup.string().required(t_i18n('This field is required')),
-  type: Yup.string().trim().required(t_i18n('This field is required')),
-});
+const exportValidation = (t_i18n) =>
+  Yup.object().shape({
+    format: Yup.string().required(t_i18n('This field is required')),
+    type: Yup.string().trim().required(t_i18n('This field is required')),
+  });
 
 export const scopesConn = (exportConnectors) => {
   const scopes = uniq(flatten(map((c) => c.connector_scope, exportConnectors)));
   const connectors = map((s) => {
-    const filteredConnectors = filter(
-      (e) => includes(s, e.connector_scope),
-      exportConnectors,
-    );
-    return map(
-      (x) => ({ data: { name: x.name, active: x.active } }),
-      filteredConnectors,
-    );
+    const filteredConnectors = filter((e) => includes(s, e.connector_scope), exportConnectors);
+    return map((x) => ({ data: { name: x.name, active: x.active } }), filteredConnectors);
   }, scopes);
   const zipped = zip(scopes, connectors);
   return fromPairs(zipped);
@@ -137,11 +133,10 @@ class StixCyberObservablesExportCreationComponent extends Component {
   render() {
     const { classes, t, data } = this.props;
     const connectorsExport = propOr([], 'connectorsForExport', data);
-    const exportScopes = uniq(
-      flatten(map((c) => c.connector_scope, connectorsExport)),
-    );
+    const exportScopes = uniq(flatten(map((c) => c.connector_scope, connectorsExport)));
     const exportConnsPerFormat = scopesConn(connectorsExport);
-    const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
+    const isExportActive = (format) =>
+      filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
     const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
     const visibleColumnExportEnabledFormats = ['text/csv'];
     return (
@@ -190,14 +185,18 @@ class StixCyberObservablesExportCreationComponent extends Component {
                         this.handleClose();
                       }}
                       data-testid="StixCyberObservablesExportCreationDialog"
-                      title={(
+                      title={
                         <Stack direction="row" alignItems="center" gap={1}>
                           {t('Generate an export')}
-                          <Tooltip title={t('Your max shareable markings will be applied to the content max markings')}>
+                          <Tooltip
+                            title={t(
+                              'Your max shareable markings will be applied to the content max markings',
+                            )}
+                          >
                             <InfoOutlined fontSize="small" color="primary" />
                           </Tooltip>
                         </Stack>
-                      )}
+                      }
                     >
                       <QueryRenderer
                         query={markingDefinitionsLinesSearchQuery}
@@ -236,15 +235,15 @@ class StixCyberObservablesExportCreationComponent extends Component {
                                     {t('Simple export (just the entity)')}
                                   </MenuItem>
                                   <MenuItem value="full">
-                                    {t(
-                                      'Full export (entity and first neighbours)',
-                                    )}
+                                    {t('Full export (entity and first neighbours)')}
                                   </MenuItem>
                                 </Field>
                                 <ObjectMarkingField
                                   name="contentMaxMarkings"
                                   label={t(CONTENT_MAX_MARKINGS_TITLE)}
-                                  onChange={(_, values) => this.handleSelectedContentMaxMarkingsChange(values)}
+                                  onChange={(_, values) =>
+                                    this.handleSelectedContentMaxMarkingsChange(values)
+                                  }
                                   style={fieldSpacingContainerStyle}
                                   limitToMaxSharing
                                   helpertext={t(CONTENT_MAX_MARKINGS_HELPERTEXT)}
@@ -255,24 +254,19 @@ class StixCyberObservablesExportCreationComponent extends Component {
                                   filterTargetIds={this.state.selectedContentMaxMarkingsIds}
                                   style={fieldSpacingContainerStyle}
                                 />
-                                {visibleColumnExportEnabledFormats.includes(values.format)
-                                  ? (
-                                      <Field
-                                        component={SelectField}
-                                        variant="standard"
-                                        name="columns"
-                                        label={t('Choose column to export')}
-                                        fullWidth={true}
-                                        containerstyle={fieldSpacingContainerStyle}
-                                      >
-                                        <MenuItem value="all">
-                                          {t('All attributes')}
-                                        </MenuItem>
-                                        <MenuItem value="view">
-                                          {t('Current view')}
-                                        </MenuItem>
-                                      </Field>
-                                    ) : undefined}
+                                {visibleColumnExportEnabledFormats.includes(values.format) ? (
+                                  <Field
+                                    component={SelectField}
+                                    variant="standard"
+                                    name="columns"
+                                    label={t('Choose column to export')}
+                                    fullWidth={true}
+                                    containerstyle={fieldSpacingContainerStyle}
+                                  >
+                                    <MenuItem value="all">{t('All attributes')}</MenuItem>
+                                    <MenuItem value="view">{t('Current view')}</MenuItem>
+                                  </Field>
+                                ) : undefined}
                               </>
                             );
                           }
@@ -283,10 +277,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
                         <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                           {t('Cancel')}
                         </Button>
-                        <Button
-                          onClick={submitForm}
-                          disabled={isSubmitting}
-                        >
+                        <Button onClick={submitForm} disabled={isSubmitting}>
                           {t('Create')}
                         </Button>
                       </DialogActions>
@@ -328,7 +319,4 @@ StixCyberObservablesExportCreations.propTypes = {
   onExportAsk: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCyberObservablesExportCreations);
+export default compose(inject18n, withStyles(styles))(StixCyberObservablesExportCreations);

@@ -7,12 +7,7 @@ import CreateFileForm from './CreateFileForm';
 describe('Component: CreateFileForm', () => {
   it('should not be displayed if not opened', () => {
     testRender(
-      <CreateFileForm
-        isOpen={false}
-        onClose={() => {}}
-        onReset={() => {}}
-        onSubmit={() => {}}
-      />,
+      <CreateFileForm isOpen={false} onClose={() => {}} onReset={() => {}} onSubmit={() => {}} />,
     );
 
     const child = screen.queryByText('Create a file');
@@ -21,12 +16,7 @@ describe('Component: CreateFileForm', () => {
 
   it('should be displayed if opened', () => {
     testRender(
-      <CreateFileForm
-        isOpen={true}
-        onClose={() => {}}
-        onReset={() => {}}
-        onSubmit={() => {}}
-      />,
+      <CreateFileForm isOpen={true} onClose={() => {}} onReset={() => {}} onSubmit={() => {}} />,
     );
 
     const child = screen.queryByText('Create a file');
@@ -37,12 +27,7 @@ describe('Component: CreateFileForm', () => {
     const onSubmit = vi.fn();
 
     const { user } = testRender(
-      <CreateFileForm
-        isOpen={true}
-        onClose={() => {}}
-        onReset={() => {}}
-        onSubmit={onSubmit}
-      />,
+      <CreateFileForm isOpen={true} onClose={() => {}} onReset={() => {}} onSubmit={onSubmit} />,
     );
 
     await user.click(screen.getByRole('button', { name: 'Create' }));
@@ -53,12 +38,7 @@ describe('Component: CreateFileForm', () => {
     const onSubmit = vi.fn();
 
     const { user } = testRender(
-      <CreateFileForm
-        isOpen={true}
-        onClose={() => {}}
-        onReset={() => {}}
-        onSubmit={onSubmit}
-      />,
+      <CreateFileForm isOpen={true} onClose={() => {}} onReset={() => {}} onSubmit={onSubmit} />,
     );
 
     await user.type(screen.getByLabelText('Name'), 'Super file');

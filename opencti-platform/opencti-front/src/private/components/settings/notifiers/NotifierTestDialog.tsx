@@ -43,10 +43,7 @@ const NotifierTestResult = ({
 }: {
   queryRef: PreloadedQuery<NotifierTestDialogQuery>;
 }) => {
-  const { notifierTest } = usePreloadedQuery<NotifierTestDialogQuery>(
-    notifierTestQuery,
-    queryRef,
-  );
+  const { notifierTest } = usePreloadedQuery<NotifierTestDialogQuery>(notifierTestQuery, queryRef);
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   return (
@@ -81,46 +78,30 @@ const NotifierTestDialog: FunctionComponent<NotifierTestDialogProps> = ({
 
   const [target, setTarget] = useState('default_notification');
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      title={t_i18n('Testing notifier')}
-    >
+    <Dialog open={open} onClose={onClose} title={t_i18n('Testing notifier')}>
       <div className={classes.container}>
         <Typography>Choose target</Typography>
-        <Select
-          value={target}
-          onChange={(e) => setTarget(e.target.value)}
-          fullWidth={true}
-        >
-          <MenuItem value="default_notification">
-            {t_i18n('Sample Notification')}
-          </MenuItem>
+        <Select value={target} onChange={(e) => setTarget(e.target.value)} fullWidth={true}>
+          <MenuItem value="default_notification">{t_i18n('Sample Notification')}</MenuItem>
           <MenuItem value="default_digest">{t_i18n('Sample Digest')}</MenuItem>
-          <MenuItem value="default_activity">
-            {t_i18n('Sample Activity Alert')}
-          </MenuItem>
+          <MenuItem value="default_activity">{t_i18n('Sample Activity Alert')}</MenuItem>
         </Select>
       </div>
       <div className={classes.container}>
         {!queryRef && <Typography>Result</Typography>}
         <React.Suspense
-          fallback={(
+          fallback={
             <>
               <Typography>Result</Typography>
               <Loader variant={LoaderVariant.inElement} />
             </>
-          )}
+          }
         >
           {queryRef && <NotifierTestResult queryRef={queryRef} />}
         </React.Suspense>
       </div>
       <DialogActions>
-        <Button
-          onClick={() => onTest(target)}
-        >
-          {t_i18n('Test')}
-        </Button>
+        <Button onClick={() => onTest(target)}>{t_i18n('Test')}</Button>
       </DialogActions>
     </Dialog>
   );

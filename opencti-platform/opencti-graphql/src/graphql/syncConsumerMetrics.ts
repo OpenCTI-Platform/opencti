@@ -26,7 +26,13 @@ export interface SyncConsumerMetricsData {
  * Store consumer metrics received from the remote stream.
  * Called by the syncManager when a consumer_metrics event is received.
  */
-export const storeSyncConsumerMetrics = async (syncId: string, connectionId: string, connectedAt: string, metrics: SyncConsumerMetricsData, lastEventId: string): Promise<void> => {
+export const storeSyncConsumerMetrics = async (
+  syncId: string,
+  connectionId: string,
+  connectedAt: string,
+  metrics: SyncConsumerMetricsData,
+  lastEventId: string,
+): Promise<void> => {
   try {
     const client = getClientBase();
     const key = `${SYNC_METRICS_KEY_PREFIX}${syncId}`;
@@ -53,7 +59,9 @@ export const storeSyncConsumerMetrics = async (syncId: string, connectionId: str
  * Read consumer metrics for a Synchronizer from Redis.
  * Returns null if no metrics are available (sync not running or no data yet).
  */
-export const readSyncConsumerMetrics = async (syncId: string): Promise<SyncConsumerMetricsData | null> => {
+export const readSyncConsumerMetrics = async (
+  syncId: string,
+): Promise<SyncConsumerMetricsData | null> => {
   try {
     const client = getClientBase();
     const key = `${SYNC_METRICS_KEY_PREFIX}${syncId}`;

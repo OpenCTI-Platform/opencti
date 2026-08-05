@@ -1,5 +1,9 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addAdministrativeArea, findAdministrativeAreaPaginated, findById } from './administrativeArea-domain';
+import {
+  addAdministrativeArea,
+  findAdministrativeAreaPaginated,
+  findById,
+} from './administrativeArea-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -14,22 +18,31 @@ import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from './administrativeArea-t
 const administrativeAreaResolvers: Resolvers = {
   Query: {
     administrativeArea: (_, { id }, context) => findById(context, context.user, id),
-    administrativeAreas: (_, args, context) => findAdministrativeAreaPaginated(context, context.user, args),
+    administrativeAreas: (_, args, context) =>
+      findAdministrativeAreaPaginated(context, context.user, args),
   },
   AdministrativeArea: {
-    /* eslint-disable @typescript-eslint/ban-ts-comment */
-    // @ts-ignore
-    country: (administrativeArea, _, context) => locatedAtCountry(context, context.user, administrativeArea.id),
+    // @ts-expect-error resolver return type is not compatible with the generated Resolvers type for this field
+    country: (administrativeArea, _, context) =>
+      locatedAtCountry(context, context.user, administrativeArea.id),
   },
   Mutation: {
     administrativeAreaAdd: (_, { input }, context) => {
       return addAdministrativeArea(context, context.user, input);
     },
     administrativeAreaDelete: (_, { id }, context) => {
-      return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA);
+      return stixDomainObjectDelete(
+        context,
+        context.user,
+        id,
+        ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA,
+      );
     },
     administrativeAreaFieldPatch: (_, { id, input, commitMessage, references }, context) => {
-      return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
+      return stixDomainObjectEditField(context, context.user, id, input, {
+        commitMessage,
+        references,
+      });
     },
     administrativeAreaContextPatch: (_, { id, input }, context) => {
       return stixDomainObjectEditContext(context, context.user, id, input);
@@ -40,7 +53,11 @@ const administrativeAreaResolvers: Resolvers = {
     administrativeAreaRelationAdd: (_, { id, input }, context) => {
       return stixDomainObjectAddRelation(context, context.user, id, input);
     },
-    administrativeAreaRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => {
+    administrativeAreaRelationDelete: (
+      _,
+      { id, toId, relationship_type: relationshipType },
+      context,
+    ) => {
       return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
     },
   },

@@ -30,7 +30,11 @@ import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../task/task-types';
-import { isBooleanAttribute, isNumericAttribute, schemaAttributesDefinition } from '../../schema/schema-attributes';
+import {
+  isBooleanAttribute,
+  isNumericAttribute,
+  schemaAttributesDefinition,
+} from '../../schema/schema-attributes';
 import { isEmptyField } from '../../database/utils';
 import type { MandatoryType } from '../../schema/attribute-definition';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
@@ -85,13 +89,36 @@ export const defaultScale = JSON.stringify({
   },
 });
 
-const templateObjectSettings = ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'enforce_reference', 'workflow_configuration', 'templates'];
+const templateObjectSettings = [
+  'attributes_configuration',
+  'platform_entity_files_ref',
+  'platform_hidden_type',
+  'enforce_reference',
+  'workflow_configuration',
+  'templates',
+];
 
 // Available settings works by override.
 export const availableSettings: Record<string, Array<string>> = {
-  [ABSTRACT_STIX_DOMAIN_OBJECT]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'enforce_reference', 'workflow_configuration'],
-  [ABSTRACT_STIX_CORE_RELATIONSHIP]: ['attributes_configuration', 'enforce_reference', 'workflow_configuration'],
-  [STIX_SIGHTING_RELATIONSHIP]: ['attributes_configuration', 'enforce_reference', 'platform_hidden_type', 'workflow_configuration', 'workflow_id'],
+  [ABSTRACT_STIX_DOMAIN_OBJECT]: [
+    'attributes_configuration',
+    'platform_entity_files_ref',
+    'platform_hidden_type',
+    'enforce_reference',
+    'workflow_configuration',
+  ],
+  [ABSTRACT_STIX_CORE_RELATIONSHIP]: [
+    'attributes_configuration',
+    'enforce_reference',
+    'workflow_configuration',
+  ],
+  [STIX_SIGHTING_RELATIONSHIP]: [
+    'attributes_configuration',
+    'enforce_reference',
+    'platform_hidden_type',
+    'workflow_configuration',
+    'workflow_id',
+  ],
   [ABSTRACT_STIX_CYBER_OBSERVABLE]: ['platform_hidden_type'],
   [ENTITY_TYPE_EXTERNAL_REFERENCE]: ['platform_hidden_type'],
   [ENTITY_TYPE_CONTAINER]: templateObjectSettings,
@@ -103,12 +130,37 @@ export const availableSettings: Record<string, Array<string>> = {
   [ENTITY_TYPE_VULNERABILITY]: templateObjectSettings,
   [ENTITY_TYPE_INCIDENT]: templateObjectSettings,
   // enforce_reference not available on specific entities
-  [ENTITY_TYPE_CONTAINER_NOTE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration'],
-  [ENTITY_TYPE_CONTAINER_OPINION]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration'],
-  [ENTITY_TYPE_CONTAINER_CASE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration'],
-  [ENTITY_TYPE_CONTAINER_TASK]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration'],
+  [ENTITY_TYPE_CONTAINER_NOTE]: [
+    'attributes_configuration',
+    'platform_entity_files_ref',
+    'platform_hidden_type',
+    'workflow_configuration',
+  ],
+  [ENTITY_TYPE_CONTAINER_OPINION]: [
+    'attributes_configuration',
+    'platform_entity_files_ref',
+    'platform_hidden_type',
+    'workflow_configuration',
+  ],
+  [ENTITY_TYPE_CONTAINER_CASE]: [
+    'attributes_configuration',
+    'platform_entity_files_ref',
+    'platform_hidden_type',
+    'workflow_configuration',
+  ],
+  [ENTITY_TYPE_CONTAINER_TASK]: [
+    'attributes_configuration',
+    'platform_entity_files_ref',
+    'platform_hidden_type',
+    'workflow_configuration',
+  ],
   [ENTITY_TYPE_CONTAINER_CASE_RFI]: [...templateObjectSettings, 'request_access_workflow'],
-  [ENTITY_TYPE_DRAFT_WORKSPACE]: ['attributes_configuration', 'platform_hidden_type', 'workflow_configuration', 'workflow_id'],
+  [ENTITY_TYPE_DRAFT_WORKSPACE]: [
+    'attributes_configuration',
+    'platform_hidden_type',
+    'workflow_configuration',
+    'workflow_id',
+  ],
 };
 
 export const getAvailableSettings = (targetType: string) => {
@@ -125,7 +177,9 @@ export const getAvailableSettings = (targetType: string) => {
   }
 
   if (!settings) {
-    throw UnsupportedError('This entity type is not support for entity settings', { target_type: targetType });
+    throw UnsupportedError('This entity type is not support for entity settings', {
+      target_type: targetType,
+    });
   }
 
   return settings;
@@ -134,15 +188,23 @@ export const getAvailableSettings = (targetType: string) => {
 // -- HELPERS --
 
 export const getEntitySettingFromCache = async (context: AuthContext, type: string) => {
-  const entitySettings = await getEntitiesListFromCache<BasicStoreEntityEntitySetting>(context, SYSTEM_USER, ENTITY_TYPE_ENTITY_SETTING);
+  const entitySettings = await getEntitiesListFromCache<BasicStoreEntityEntitySetting>(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_ENTITY_SETTING,
+  );
   let entitySetting = entitySettings.find((es) => es.target_type === type);
 
   if (!entitySetting) {
     // Inheritance
     if (isStixCoreRelationship(type)) {
-      entitySetting = entitySettings.find((es) => es.target_type === ABSTRACT_STIX_CORE_RELATIONSHIP);
+      entitySetting = entitySettings.find(
+        (es) => es.target_type === ABSTRACT_STIX_CORE_RELATIONSHIP,
+      );
     } else if (isStixCyberObservable(type)) {
-      entitySetting = entitySettings.find((es) => es.target_type === ABSTRACT_STIX_CYBER_OBSERVABLE);
+      entitySetting = entitySettings.find(
+        (es) => es.target_type === ABSTRACT_STIX_CYBER_OBSERVABLE,
+      );
     }
   }
 
@@ -156,7 +218,10 @@ export const getAttributesConfiguration = (entitySetting: BasicStoreEntityEntity
   return null;
 };
 
-export const getDefaultValues = (attributeConfiguration: AttributeConfiguration, multiple: boolean): string[] | string | undefined => {
+export const getDefaultValues = (
+  attributeConfiguration: AttributeConfiguration,
+  multiple: boolean,
+): string[] | string | undefined => {
   if (attributeConfiguration.default_values) {
     if (multiple) {
       return attributeConfiguration.default_values;
@@ -173,7 +238,9 @@ const getStaticDefaultValues = (input: any, entitySetting: BasicStoreEntityEntit
   }
   const entityType = entitySetting.target_type;
   const entityAttributes = [...schemaAttributesDefinition.getAttributes(entityType).values()];
-  const attributesWithDefaultNullValues = entityAttributes.filter((a) => a.defaultValue !== undefined);
+  const attributesWithDefaultNullValues = entityAttributes.filter(
+    (a) => a.defaultValue !== undefined,
+  );
   if (attributesWithDefaultNullValues.length === 0) {
     return staticDefaultValues;
   }
@@ -190,13 +257,20 @@ export const fillDefaultValues = (user: any, input: any, entitySetting: any) => 
   const filledValues = new Map();
   const staticDefaultValues = getStaticDefaultValues(input, entitySetting);
   if (attributesConfiguration) {
-    attributesConfiguration.filter((attr) => attr.default_values)
+    attributesConfiguration
+      .filter((attr) => attr.default_values)
       .forEach((attr) => {
         // Do not compute default value if we already have a value in the input.
         // Empty is a valid value (i.e. [] for arrays or "" for strings).
         if (input[attr.name] === undefined || input[attr.name] === null) {
-          const attributeDef = schemaAttributesDefinition.getAttribute(entitySetting.target_type, attr.name);
-          const refDef = schemaRelationsRefDefinition.getRelationRef(entitySetting.target_type, attr.name);
+          const attributeDef = schemaAttributesDefinition.getAttribute(
+            entitySetting.target_type,
+            attr.name,
+          );
+          const refDef = schemaRelationsRefDefinition.getRelationRef(
+            entitySetting.target_type,
+            attr.name,
+          );
           let isMultiple = false;
           if (attributeDef) {
             isMultiple = attributeDef.multiple;
@@ -214,14 +288,18 @@ export const fillDefaultValues = (user: any, input: any, entitySetting: any) => 
           if (attr.name === INPUT_AUTHORIZED_MEMBERS && parsedValue) {
             const defaultAuthorizedMembers = (parsedValue as string[]).map((v) => JSON.parse(v));
             // Replace dynamic creator rule with the id of the user making the query.
-            const creatorRule = defaultAuthorizedMembers.find((v) => v.id === MEMBER_ACCESS_CREATOR);
+            const creatorRule = defaultAuthorizedMembers.find(
+              (v) => v.id === MEMBER_ACCESS_CREATOR,
+            );
             if (creatorRule) {
               creatorRule.id = user.id;
             }
             filledValues.set(attr.name, defaultAuthorizedMembers);
           } else if (attr.name === INPUT_MARKINGS && parsedValue) {
             const defaultMarkings = user?.default_marking ?? [];
-            const globalDefaultMarking = (defaultMarkings.find((entry: any) => entry.entity_type === 'GLOBAL')?.values ?? []).map((m: any) => m.id);
+            const globalDefaultMarking = (
+              defaultMarkings.find((entry: any) => entry.entity_type === 'GLOBAL')?.values ?? []
+            ).map((m: any) => m.id);
             if (!isEmptyField(globalDefaultMarking)) {
               filledValues.set(INPUT_MARKINGS, globalDefaultMarking);
             }
@@ -232,5 +310,9 @@ export const fillDefaultValues = (user: any, input: any, entitySetting: any) => 
       });
   }
 
-  return { ...input, ...Object.fromEntries(staticDefaultValues), ...Object.fromEntries(filledValues) };
+  return {
+    ...input,
+    ...Object.fromEntries(staticDefaultValues),
+    ...Object.fromEntries(filledValues),
+  };
 };

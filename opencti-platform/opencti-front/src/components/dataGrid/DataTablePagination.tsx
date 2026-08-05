@@ -50,35 +50,39 @@ const DataTablePagination = ({
   const firstItem = items * ((page ?? 1) - 1) + 1;
   const lastItem = Math.min(firstItem + items - 1, numberOfElements.original ?? 0);
 
-  const fetchMore = useCallback((direction = 'forward') => {
-    let nextPage;
-    if (direction === 'previous' && page > 1) {
-      nextPage = page - 1;
-      setPage(nextPage);
-    } else {
-      nextPage = page + 1;
-      setPage(nextPage);
-    }
-  }, [page, pageSize]);
+  const fetchMore = useCallback(
+    (direction = 'forward') => {
+      let nextPage;
+      if (direction === 'previous' && page > 1) {
+        nextPage = page - 1;
+        setPage(nextPage);
+      } else {
+        nextPage = page + 1;
+        setPage(nextPage);
+      }
+    },
+    [page, pageSize],
+  );
 
   const handleToggleVisibility = (columnId: string) => {
-    setColumns((prevColumns) => prevColumns.map((column) => (
-      column.id === columnId
-        ? { ...column, visible: !column.visible }
-        : column
-    )));
+    setColumns((prevColumns) =>
+      prevColumns.map((column) =>
+        column.id === columnId ? { ...column, visible: !column.visible } : column,
+      ),
+    );
   };
 
-  const computeDataColumnOptions = () => (columns ?? [])
-    .filter(({ id }) => !['select', 'navigate', 'icon'].includes(id))
-    .map((column) => ({
-      value: column.id,
-      label: t_i18n(column.label ?? column.id),
-      selected: column.visible,
-      onClick: () => handleToggleVisibility(column.id),
-      menuLevel: 1,
-      keepMenuOpen: true,
-    }));
+  const computeDataColumnOptions = () =>
+    (columns ?? [])
+      .filter(({ id }) => !['select', 'navigate', 'icon'].includes(id))
+      .map((column) => ({
+        value: column.id,
+        label: t_i18n(column.label ?? column.id),
+        selected: column.visible,
+        onClick: () => handleToggleVisibility(column.id),
+        menuLevel: 1,
+        keepMenuOpen: true,
+      }));
 
   const resetTable = () => {
     resetColumns();
@@ -98,7 +102,9 @@ const DataTablePagination = ({
             label: t_i18n('Columns'),
             menuLevel: 0,
             nestedOptions: computeDataColumnOptions(),
-          }] : []),
+          },
+        ]
+      : []),
     {
       value: 'menu-rows-per-page',
       label: t_i18n('Rows per page'),
@@ -174,11 +180,7 @@ const DataTablePagination = ({
         height: 36,
       }}
     >
-      <ButtonGroup
-        size="small"
-        variant="text"
-        color="pagination"
-      >
+      <ButtonGroup size="small" variant="text" color="pagination">
         <IconButton
           onClick={() => fetchMore('previous')}
           variant="tertiary"
@@ -194,12 +196,11 @@ const DataTablePagination = ({
           <ArrowLeft />
         </IconButton>
         <Tooltip
-          title={(
+          title={
             <div>
-              <strong>{`${numberOfElements.original}`}</strong>{' '}
-              {t_i18n('entitie(s)')}
+              <strong>{`${numberOfElements.original}`}</strong> {t_i18n('entitie(s)')}
             </div>
-          )}
+          }
         >
           <Box
             sx={{
@@ -211,9 +212,9 @@ const DataTablePagination = ({
           >
             <Typography variant="body2">
               <span>{`${lastItem ? firstItem : 0} - ${lastItem} `}</span>
-              <span style={{ opacity: 0.6 }}>
-                {`/ ${numberOfElements.number}${numberOfElements.symbol}`}
-              </span>
+              <span
+                style={{ opacity: 0.6 }}
+              >{`/ ${numberOfElements.number}${numberOfElements.symbol}`}</span>
             </Typography>
           </Box>
         </Tooltip>

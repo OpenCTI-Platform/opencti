@@ -7,7 +7,10 @@ import StixCoreObjectsDonut from '../../common/stix_core_objects/StixCoreObjects
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/StixCoreObjectKillChainPhasesView';
-import { InfrastructureDetails_infrastructure$data, InfrastructureDetails_infrastructure$key } from './__generated__/InfrastructureDetails_infrastructure.graphql';
+import {
+  InfrastructureDetails_infrastructure$data,
+  InfrastructureDetails_infrastructure$key,
+} from './__generated__/InfrastructureDetails_infrastructure.graphql';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
@@ -84,38 +87,26 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
           <Grid item xs={12}>
-            <Label>
-              {t_i18n('Description')}
-            </Label>
+            <Label>{t_i18n('Description')}</Label>
             <ExpandableMarkdown source={data.description} limit={400} />
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Infrastructure types')}
-            </Label>
+            <Label>{t_i18n('Infrastructure types')}</Label>
             <FieldOrEmpty source={infrastructureTypes}>
               <Stack direction="row" flexWrap="wrap" gap={1}>
-                {infrastructureTypes.length > 0
-                  && infrastructureTypes.map((infrastructureType) => (
-                    <Tag
-                      key={infrastructureType}
-                      label={infrastructureType}
-                    />
-                  ),
-                  )}
+                {infrastructureTypes.length > 0 &&
+                  infrastructureTypes.map((infrastructureType) => (
+                    <Tag key={infrastructureType} label={infrastructureType} />
+                  ))}
               </Stack>
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('First seen')}
-            </Label>
+            <Label>{t_i18n('First seen')}</Label>
             {data.first_seen ? fldt(data.first_seen) : EMPTY_VALUE}
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Last seen')}
-            </Label>
+            <Label>{t_i18n('Last seen')}</Label>
             {data.last_seen ? fldt(data.last_seen) : EMPTY_VALUE}
           </Grid>
           <Grid item xs={6}>

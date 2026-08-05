@@ -1,6 +1,9 @@
 import { graphql, PreloadedQuery } from 'react-relay';
 import React, { FunctionComponent } from 'react';
-import { IngestionJsonLineComponent, IngestionJsonLineDummy } from '@components/data/ingestionJson/IngestionJsonLine';
+import {
+  IngestionJsonLineComponent,
+  IngestionJsonLineDummy,
+} from '@components/data/ingestionJson/IngestionJsonLine';
 import {
   IngestionJsonLinesPaginationQuery,
   IngestionJsonLinesPaginationQuery$variables,
@@ -30,26 +33,26 @@ export const ingestionJsonLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...IngestionJsonLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
 const ingestionJsonLinesFragment = graphql`
-  fragment IngestionJsonLines_data on Query 
+  fragment IngestionJsonLines_data on Query
   @argumentDefinitions(
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
     orderBy: { type: "IngestionJsonOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
-    filters:{ type: "FilterGroup" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "IngestionJsonLinesRefetchQuery") {
     ingestionJsons(
@@ -83,7 +86,8 @@ const IngestionJsonLines: FunctionComponent<IngestionJsonLinesProps> = ({
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
     IngestionJsonLinesPaginationQuery,
-    IngestionJsonLines_data$key>({
+    IngestionJsonLines_data$key
+  >({
     queryRef,
     linesQuery: ingestionJsonLinesQuery,
     linesFragment: ingestionJsonLinesFragment,

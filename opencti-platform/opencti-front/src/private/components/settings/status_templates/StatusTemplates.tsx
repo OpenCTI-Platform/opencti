@@ -6,11 +6,17 @@ import { StatusTemplatesLine_node$data } from '@components/settings/status_templ
 import StatusTemplateCreation from './StatusTemplateCreation';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { StatusTemplatesLinesPaginationQuery, StatusTemplatesLinesPaginationQuery$variables } from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
+import {
+  StatusTemplatesLinesPaginationQuery,
+  StatusTemplatesLinesPaginationQuery$variables,
+} from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../../utils/filters/filtersUtils';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../../components/dataGrid/DataTable';
@@ -24,13 +30,13 @@ export const statusTemplatesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...StatusTemplatesLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 
@@ -88,14 +94,11 @@ const StatusTemplates = () => {
     filters: emptyFilterGroup,
   };
 
-  const {
-    viewStorage,
-    helpers,
-    paginationOptions,
-  } = usePaginationLocalStorage<StatusTemplatesLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    initialValues,
-  );
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<StatusTemplatesLinesPaginationQuery$variables>(
+      LOCAL_STORAGE_KEY,
+      initialValues,
+    );
 
   const { filters } = viewStorage;
   const contextFilters = useBuildEntityTypeBasedFilterContext('StatusTemplates', filters);
@@ -135,11 +138,21 @@ const StatusTemplates = () => {
 
   return (
     <div style={{ marginRight: 200 }} data-testid="status-template-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Status templates'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Taxonomies') },
+          { label: t_i18n('Status templates'), current: true },
+        ]}
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data) => data.statusTemplates?.edges?.map(({ node }: { node: StatusTemplatesLine_node$data }) => node)}
+          resolvePath={(data) =>
+            data.statusTemplates?.edges?.map(
+              ({ node }: { node: StatusTemplatesLine_node$data }) => node,
+            )
+          }
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           contextFilters={contextFilters}
@@ -147,19 +160,21 @@ const StatusTemplates = () => {
           disableNavigation
           disableLineSelection
           preloadedPaginationProps={preloadedPaginationProps}
-          actions={(row) => <StatusTemplatePopover data={row} paginationOptions={paginationOptions} />}
+          actions={(row) => (
+            <StatusTemplatePopover data={row} paginationOptions={paginationOptions} />
+          )}
           searchContextFinal={{ entityTypes: ['StatusTemplates'] }}
           icon={(data) => <FactCheckOutlined sx={{ color: data.color }} />}
-          createButton={(
+          createButton={
             <StatusTemplateCreation
               paginationOptions={paginationOptions}
               contextual={false}
-              creationCallback={() => { }}
-              handleClose={() => { }}
+              creationCallback={() => {}}
+              handleClose={() => {}}
               inputValueContextual=""
               open={false}
             />
-          )}
+          }
         />
       )}
     </div>

@@ -72,15 +72,14 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<
   const { t_i18n, nsdt } = useFormatter();
   const theme = useTheme<Theme>();
 
-  const note = useFragment(
-    StixCoreObjectOrStixCoreRelationshipNoteCardFragment,
-    data,
-  );
+  const note = useFragment(StixCoreObjectOrStixCoreRelationshipNoteCardFragment, data);
 
   const noteImageResolver = (url: string) => resolveNoteEmbeddedImageUrl(url, note.id);
 
   const authorName = note.createdBy ? note.createdBy.name : null;
-  const authorLink = note.createdBy ? `${resolveLink(note.createdBy.entity_type)}/${note.createdBy.id}` : null;
+  const authorLink = note.createdBy
+    ? `${resolveLink(note.createdBy.entity_type)}/${note.createdBy.id}`
+    : null;
 
   return (
     <Card>
@@ -95,16 +94,9 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<
           mb: 2,
         }}
       >
-        <Stack
-          direction="row"
-          spacing={0.5}
-          sx={{ textTransform: 'none' }}
-        >
+        <Stack direction="row" spacing={0.5} sx={{ textTransform: 'none' }}>
           <Typography variant="body1" sx={{ fontWeight: 800 }}>
-            {authorLink
-              ? <Link to={authorLink}>{authorName}</Link>
-              : t_i18n('Unknown')
-            }
+            {authorLink ? <Link to={authorLink}>{authorName}</Link> : t_i18n('Unknown')}
           </Typography>
           <Typography variant="body1" sx={{ color: theme.palette.text.light }}>
             {t_i18n('added a note on', { values: { date: nsdt(note.created) } })}
@@ -157,17 +149,11 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<
         <Grid size={{ xs: 2 }}>
           <Box>
             <Label>{t_i18n('Marking')}</Label>
-            <ItemMarkings
-              markingDefinitions={note.objectMarking ?? []}
-              limit={2}
-            />
+            <ItemMarkings markingDefinitions={note.objectMarking ?? []} limit={2} />
           </Box>
           <Box sx={{ mt: 2 }}>
             <Label>{t_i18n('Confidence level')}</Label>
-            <ItemConfidence
-              confidence={note.confidence}
-              entityType={note.entity_type}
-            />
+            <ItemConfidence confidence={note.confidence} entityType={note.entity_type} />
           </Box>
           <Box sx={{ mt: 2 }}>
             <Label>{t_i18n('Likelihood')}</Label>
@@ -181,10 +167,7 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<
             <FieldOrEmpty source={note.note_types}>
               <Stack direction="row" spacing={1}>
                 {note.note_types?.map((type) => (
-                  <Tag
-                    key={type}
-                    label={t_i18n(type)}
-                  />
+                  <Tag key={type} label={t_i18n(type)} />
                 ))}
               </Stack>
             </FieldOrEmpty>

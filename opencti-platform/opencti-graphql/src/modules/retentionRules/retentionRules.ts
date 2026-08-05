@@ -1,6 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
 import convertRetentionRuleToStix from './retentionRules-converter';
-import { ENTITY_TYPE_RETENTION_RULE, type StixRetentionRule, type StoreEntityRetentionRule } from './retentionRules-types';
+import {
+  ENTITY_TYPE_RETENTION_RULE,
+  type StixRetentionRule,
+  type StoreEntityRetentionRule,
+} from './retentionRules-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { RETENTION_SCOPE_VALUES, RETENTION_UNIT_VALUES } from '../../manager/retentionManager';

@@ -15,7 +15,10 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import { getPaddingRight, isNotEmptyField } from '../../../../utils/utils';
 import SecurityCoverageEdition from './SecurityCoverageEdition';
 import SecurityCoverageDeletion from './SecurityCoverageDeletion';
@@ -28,13 +31,13 @@ import SecurityCoverageResult from '@components/analyses/security_coverages/Secu
 import { PATH_SECURITY_COVERAGE, PATH_SECURITY_COVERAGES } from '@components/common/routes/paths';
 
 const subscription = graphql`
-    subscription RootSecurityCoverageSubscription($id: ID!) {
-        securityCoverage(id: $id) {
-            id
-            external_uri
-            ...SecurityCoverage_securityCoverage
-        }
+  subscription RootSecurityCoverageSubscription($id: ID!) {
+    securityCoverage(id: $id) {
+      id
+      external_uri
+      ...SecurityCoverage_securityCoverage
     }
+  }
 `;
 
 const securityCoverageQuery = graphql`
@@ -76,16 +79,16 @@ type RootSecurityCoverageProps = {
 const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCoverageProps) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  const {
-    securityCoverage,
-    connectorsForExport,
-    connectorsForImport,
-  } = usePreloadedQuery<RootSecurityCoverageQuery>(securityCoverageQuery, queryRef);
+  const { securityCoverage, connectorsForExport, connectorsForImport } =
+    usePreloadedQuery<RootSecurityCoverageQuery>(securityCoverageQuery, queryRef);
 
-  const subConfig = useMemo(() => ({
-    subscription,
-    variables: { id: securityCoverageId },
-  }), [securityCoverageId]);
+  const subConfig = useMemo(
+    () => ({
+      subscription,
+      variables: { id: securityCoverageId },
+    }),
+    [securityCoverageId],
+  );
 
   useSubscription<RootSecurityCoverageSubscription>(subConfig);
 
@@ -98,23 +101,28 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
     <>
       {securityCoverage ? (
         <div style={{ paddingRight }}>
-          <Breadcrumbs elements={[
-            { label: t_i18n('Analyses') },
-            { label: t_i18n('Security coverages'), link: PATH_SECURITY_COVERAGES },
-            { label: securityCoverage.name, current: true },
-          ]}
+          <Breadcrumbs
+            elements={[
+              { label: t_i18n('Analyses') },
+              { label: t_i18n('Security coverages'), link: PATH_SECURITY_COVERAGES },
+              { label: securityCoverage.name, current: true },
+            ]}
           />
           <StixDomainObjectHeader
             entityType="Security-Coverage"
             stixDomainObject={securityCoverage}
-            EditComponent={(
+            EditComponent={
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <SecurityCoverageEdition securityCoverageId={securityCoverage.id} />
               </Security>
-            )}
+            }
             DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
               <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                <SecurityCoverageDeletion securityCoverageId={securityCoverage.id} isOpen={isOpen} handleClose={onClose} />
+                <SecurityCoverageDeletion
+                  securityCoverageId={securityCoverage.id}
+                  isOpen={isOpen}
+                  handleClose={onClose}
+                />
               </Security>
             )}
             enableEnricher={true}
@@ -127,14 +135,9 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
             entity={securityCoverage}
             basePath={basePath}
             pages={{
-              overview:
-                <SecurityCoverage data={securityCoverage} />,
+              overview: <SecurityCoverage data={securityCoverage} />,
               result: <SecurityCoverageResult id={securityCoverage.id} />,
-              content: (
-                <StixCoreObjectContentRoot
-                  stixCoreObject={securityCoverage}
-                />
-              ),
+              content: <StixCoreObjectContentRoot stixCoreObject={securityCoverage} />,
               files: (
                 <FileManager
                   id={securityCoverageId}
@@ -143,55 +146,49 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
                   entity={securityCoverage}
                 />
               ),
-              history: (
-                <StixCoreObjectHistory
-                  stixCoreObjectId={securityCoverageId}
-                />
-              ),
+              history: <StixCoreObjectHistory stixCoreObjectId={securityCoverageId} />,
             }}
-            extraActions={!isContent && (
-              <>
-                <Button
-                  disabled={!hasExternalUri}
-                  startIcon={<OaevLogo />}
-                  onClick={() => setDisplayExternalLink(true)}
-                  title={hasExternalUri ? securityCoverage.external_uri : undefined}
-                  variant="tertiary"
-                  size="small"
-                  sx={{ mt: 2 }}
-                >
-                  {hasExternalUri ? `${t_i18n('Go to OpenAEV')}` : `${t_i18n('Provisioning OpenAEV')}`}
-                </Button>
-                <ExternalLinkPopover
-                  externalLink={hasExternalUri ? securityCoverage.external_uri : undefined}
-                  displayExternalLink={displayExternalLink}
-                  setDisplayExternalLink={setDisplayExternalLink}
-                />
-              </>
-            )}
-            extraRoutes={(
+            extraActions={
+              !isContent && (
+                <>
+                  <Button
+                    disabled={!hasExternalUri}
+                    startIcon={<OaevLogo />}
+                    onClick={() => setDisplayExternalLink(true)}
+                    title={hasExternalUri ? securityCoverage.external_uri : undefined}
+                    variant="tertiary"
+                    size="small"
+                    sx={{ mt: 2 }}
+                  >
+                    {hasExternalUri
+                      ? `${t_i18n('Go to OpenAEV')}`
+                      : `${t_i18n('Provisioning OpenAEV')}`}
+                  </Button>
+                  <ExternalLinkPopover
+                    externalLink={hasExternalUri ? securityCoverage.external_uri : undefined}
+                    displayExternalLink={displayExternalLink}
+                    setDisplayExternalLink={setDisplayExternalLink}
+                  />
+                </>
+              )
+            }
+            extraRoutes={
               <>
                 <Route
                   path="/knowledge/*"
-                  element={(
+                  element={
                     <div>
-                      <SecurityCoverageKnowledge
-                        securityCoverageData={securityCoverage}
-                      />
+                      <SecurityCoverageKnowledge securityCoverageData={securityCoverage} />
                     </div>
-                  )}
+                  }
                 />
                 {/** Is this route an error ? **/}
                 <Route
                   path="/relations/:relationId"
-                  element={(
-                    <StixCoreRelationship
-                      entityId={securityCoverageId}
-                    />
-                  )}
+                  element={<StixCoreRelationship entityId={securityCoverageId} />}
                 />
               </>
-            )}
+            }
           />
         </div>
       ) : (

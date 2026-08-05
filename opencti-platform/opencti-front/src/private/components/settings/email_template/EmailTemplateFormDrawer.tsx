@@ -2,7 +2,10 @@ import Drawer from '@components/common/drawer/Drawer';
 import React from 'react';
 import { FormikConfig } from 'formik/dist/types';
 import { useNavigate } from 'react-router-dom';
-import EmailTemplateForm, { EmailTemplateFormInputKeys, EmailTemplateFormInputs } from '@components/settings/email_template/EmailTemplateForm';
+import EmailTemplateForm, {
+  EmailTemplateFormInputKeys,
+  EmailTemplateFormInputs,
+} from '@components/settings/email_template/EmailTemplateForm';
 import useEmailTemplateAdd from '@components/settings/email_template/useEmailTemplateAdd';
 import useEmailTemplateEdit from '@components/settings/email_template/useEmailTemplateEdit';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
@@ -76,11 +79,7 @@ const FintelTemplateFormDrawer = ({
 
   return (
     <>
-      <Drawer
-        title={template ? editionTitle : createTitle}
-        open={isOpen}
-        onClose={onClose}
-      >
+      <Drawer title={template ? editionTitle : createTitle} open={isOpen} onClose={onClose}>
         <EmailTemplateForm
           onClose={onClose}
           onSubmit={onAdd}

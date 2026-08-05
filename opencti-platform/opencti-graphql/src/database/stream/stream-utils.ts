@@ -4,7 +4,13 @@ import type { StoreObject } from '../../types/store';
 import { generateMergeMessage } from '../data-changes';
 import { convertStoreToStix_2_1 } from '../stix-2-1-converter';
 import type { StixCoreObject, StixObject } from '../../types/stix-2-1-common';
-import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../utils';
+import {
+  asyncListTransformation,
+  EVENT_TYPE_CREATE,
+  EVENT_TYPE_DELETE,
+  EVENT_TYPE_MERGE,
+  EVENT_TYPE_UPDATE,
+} from '../utils';
 import { UnsupportedError } from '../../config/errors';
 import { INTERNAL_EXPORTABLE_TYPES } from '../../schema/stixCoreObject';
 import type {
@@ -68,20 +74,20 @@ export interface SizedNotifEvent<T extends StreamNotifEvent> {
 
 export interface RawStreamClient {
   initializeStreams: () => Promise<void>;
-  rawPushToStream: <T extends BaseEvent> (event: T) => Promise<void>;
+  rawPushToStream: <T extends BaseEvent>(event: T) => Promise<void>;
   rawFetchStreamInfo: (streamName?: string) => Promise<StreamInfo>;
-  rawCreateStreamProcessor: <T extends BaseEvent> (
+  rawCreateStreamProcessor: <T extends BaseEvent>(
     provider: string,
     callback: (events: Array<SseEvent<T>>, lastEventId: string) => Promise<void>,
     opts?: StreamProcessorOption,
   ) => StreamProcessor;
-  rawFetchStreamEventsRangeFromEventId: <T extends BaseEvent> (
+  rawFetchStreamEventsRangeFromEventId: <T extends BaseEvent>(
     startEventId: string,
     callback: (events: Array<SseEvent<T>>, lastEventId: string) => void,
     opts?: FetchEventRangeOption,
   ) => Promise<{ lastEventId: string }>;
-  rawStoreNotificationEvent: <T extends StreamNotifEvent> (event: T) => Promise<void>;
-  rawFetchRangeNotifications: <T extends StreamNotifEvent> (
+  rawStoreNotificationEvent: <T extends StreamNotifEvent>(event: T) => Promise<void>;
+  rawFetchRangeNotifications: <T extends StreamNotifEvent>(
     start: Date,
     end: Date,
     callback: (events: Array<SizedNotifEvent<T>>) => Promise<boolean | void> | boolean | void,
@@ -93,7 +99,12 @@ export const isStreamPublishable = (opts: EventOpts) => {
   return opts.publishStreamEvent === undefined || opts.publishStreamEvent;
 };
 // Merge
-export const buildMergeEvent = async (user: AuthUser, previous: StoreObject, instance: StoreObject, sourceEntities: Array<StoreObject>): Promise<MergeEvent> => {
+export const buildMergeEvent = async (
+  user: AuthUser,
+  previous: StoreObject,
+  instance: StoreObject,
+  sourceEntities: Array<StoreObject>,
+): Promise<MergeEvent> => {
   const message = generateMergeMessage(instance, sourceEntities);
   const previousStix = convertStoreToStix_2_1(previous) as StixCoreObject;
   const currentStix = convertStoreToStix_2_1(instance) as StixCoreObject;
@@ -107,7 +118,10 @@ export const buildMergeEvent = async (user: AuthUser, previous: StoreObject, ins
     context: {
       patch: jsonpatch.compare(previousStix, currentStix),
       reverse_patch: jsonpatch.compare(currentStix, previousStix),
-      sources: await asyncListTransformation<StixObject>(sourceEntities, convertStoreToStix_2_1) as StixCoreObject[],
+      sources: (await asyncListTransformation<StixObject>(
+        sourceEntities,
+        convertStoreToStix_2_1,
+      )) as StixCoreObject[],
     },
   };
 };
@@ -126,7 +140,9 @@ export const buildStixUpdateEvent = (
     throw UnsupportedError('Update event must contains a valid previous patch');
   }
   if (patch.length === 1 && patch[0].path === '/modified' && !opts.allow_only_modified) {
-    throw UnsupportedError('Update event must contains more operation than just modified/updated_at value');
+    throw UnsupportedError(
+      'Update event must contains more operation than just modified/updated_at value',
+    );
   }
   const entityType = stix.extensions[STIX_EXT_OCTI].type;
   const scope = INTERNAL_EXPORTABLE_TYPES.includes(entityType) ? 'internal' : 'external';
@@ -148,14 +164,24 @@ export const buildStixUpdateEvent = (
     },
   };
 };
-export const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: StoreObject, changes: Change[], opts: UpdateEventOpts): UpdateEvent => {
+export const buildUpdateEvent = (
+  user: AuthUser,
+  previous: StoreObject,
+  instance: StoreObject,
+  changes: Change[],
+  opts: UpdateEventOpts,
+): UpdateEvent => {
   // Build and send the event
   const stix = convertStoreToStix_2_1(instance) as StixCoreObject;
   const previousStix = convertStoreToStix_2_1(previous) as StixCoreObject;
   return buildStixUpdateEvent(user, previousStix, stix, changes, opts);
 };
 // Create
-export const buildCreateEvent = (user: AuthUser, instance: StoreObject, message: string): StreamDataEvent => {
+export const buildCreateEvent = (
+  user: AuthUser,
+  instance: StoreObject,
+  message: string,
+): StreamDataEvent => {
   const stix = convertStoreToStix_2_1(instance) as StixCoreObject;
   return {
     version: EVENT_CURRENT_VERSION,

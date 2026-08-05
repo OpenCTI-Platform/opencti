@@ -1,10 +1,14 @@
-import { JsonMapperRepresentationAttributeEdit, JsonMapperRepresentationAttributeFormData } from '@components/data/jsonMapper/representations/attributes/Attribute';
+import {
+  JsonMapperRepresentationAttributeEdit,
+  JsonMapperRepresentationAttributeFormData,
+} from '@components/data/jsonMapper/representations/attributes/Attribute';
 import {
   JsonMapperEditionContainerFragment_jsonMapper$data,
   JsonMapperOperator,
 } from '@components/data/jsonMapper/__generated__/JsonMapperEditionContainerFragment_jsonMapper.graphql';
 
-export type JsonMapperRepresentation = JsonMapperEditionContainerFragment_jsonMapper$data['representations'][number];
+export type JsonMapperRepresentation =
+  JsonMapperEditionContainerFragment_jsonMapper$data['representations'][number];
 
 export type JsonMapperRepresentationEdit = Omit<JsonMapperRepresentation, 'attributes'> & {
   attributes: JsonMapperRepresentationAttributeEdit[];

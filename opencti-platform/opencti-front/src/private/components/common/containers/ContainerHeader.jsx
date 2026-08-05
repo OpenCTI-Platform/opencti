@@ -13,7 +13,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import ExportButtons from '../../../../components/ExportButtons';
 import { useFormatter } from '../../../../components/i18n';
 import PopoverMenu from '../../../../components/PopoverMenu';
-import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import {
+  authorizedMembersToOptions,
+  useGetCurrentUserAccessRight,
+} from '../../../../utils/authorizedMembers';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { resolveLink } from '../../../../utils/Entity';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
@@ -411,10 +414,7 @@ export const containerHeaderObjectsQuery = graphql`
 `;
 
 const containerHeaderEditAuthorizedMembersMutation = graphql`
-  mutation ContainerHeaderEditAuthorizedMembersMutation(
-    $id: ID!
-    $input: [MemberAccessInput!]
-  ) {
+  mutation ContainerHeaderEditAuthorizedMembersMutation($id: ID!, $input: [MemberAccessInput!]) {
     containerEdit(id: $id) {
       editAuthorizedMembers(input: $input) {
         authorized_members {
@@ -462,10 +462,15 @@ const ContainerHeader = (props) => {
   const [openDelete, setOpenDelete] = useState(false);
 
   const draftContext = useDraftContext();
-  const currentDraftAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
+  const currentDraftAccessRight = useGetCurrentUserAccessRight(
+    draftContext?.currentUserAccessRight,
+  );
   const currentAccessRight = useGetCurrentUserAccessRight(container.currentUserAccessRight);
 
-  const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]) && currentAccessRight.canEdit && (!draftContext || currentDraftAccessRight.canEdit);
+  const canDelete =
+    useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]) &&
+    currentAccessRight.canEdit &&
+    (!draftContext || currentDraftAccessRight.canEdit);
   const isSharingGranted = useGranted([KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
   const isAuthorizedMembersGranted = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
   const isEnrichPlaybookGranted = useGranted([AUTOMATION]);
@@ -503,7 +508,8 @@ const ContainerHeader = (props) => {
     marginBottom: theme.spacing(1),
   };
 
-  const overrideContainerStyle = knowledge || currentMode === 'graph' || currentMode === 'correlation';
+  const overrideContainerStyle =
+    knowledge || currentMode === 'graph' || currentMode === 'correlation';
 
   if (overrideContainerStyle) {
     // container knowledge / graph style
@@ -540,31 +546,41 @@ const ContainerHeader = (props) => {
   const enableManageAuthorizedMembers = currentAccessRight.canManage && isAuthorizedMembersEnabled;
 
   // sharing buttons should be disabled for containers according to some autorized members conditions
-  const isSharingDisabled = (!enableManageAuthorizedMembers && !currentAccessRight.canEdit)
-    || (enableManageAuthorizedMembers && container.authorized_members && container.authorized_members.length > 0);
+  const isSharingDisabled =
+    (!enableManageAuthorizedMembers && !currentAccessRight.canEdit) ||
+    (enableManageAuthorizedMembers &&
+      container.authorized_members &&
+      container.authorized_members.length > 0);
 
-  const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
+  const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, {
+    first: 20,
+    ...triggersPaginationOptions,
+  });
 
   const displaySharing = !knowledge && disableSharing !== true;
   const displayAuthorizedMembers = !knowledge && !!enableManageAuthorizedMembers;
   const displayEnrollPlaybook = enableEnrollPlaybook;
 
-  let initialNumberOfButtons = (!knowledge ? 1 : 0) + (enableQuickSubscription ? 1 : 0) + (enableEnricher ? 1 : 0);
+  let initialNumberOfButtons =
+    (!knowledge ? 1 : 0) + (enableQuickSubscription ? 1 : 0) + (enableEnricher ? 1 : 0);
   const displayEnrollPlaybookButton = displayEnrollPlaybook && initialNumberOfButtons < 3;
   if (displayEnrollPlaybookButton) initialNumberOfButtons += 1;
   const displaySharingButton = displaySharing && initialNumberOfButtons < 3;
   if (displaySharingButton) initialNumberOfButtons += 1;
   const displayAuthorizedMembersButton = displayAuthorizedMembers && initialNumberOfButtons < 3;
 
-  const displayPopoverMenu = (displaySharing && !displaySharingButton && isSharingGranted)
-    || (displayAuthorizedMembers && !displayAuthorizedMembersButton && isAuthorizedMembersGranted)
-    || (displayEnrollPlaybook && !displayEnrollPlaybookButton && isEnrichPlaybookGranted) || (!knowledge && canDelete);
+  const displayPopoverMenu =
+    (displaySharing && !displaySharingButton && isSharingGranted) ||
+    (displayAuthorizedMembers && !displayAuthorizedMembersButton && isAuthorizedMembersGranted) ||
+    (displayEnrollPlaybook && !displayEnrollPlaybookButton && isEnrichPlaybookGranted) ||
+    (!knowledge && canDelete);
 
-  const title = container.name
-    || container.attribute_abstract
-    || container.content
-    || container.opinion
-    || `${fd(container.first_observed)} - ${fd(container.last_observed)}`;
+  const title =
+    container.name ||
+    container.attribute_abstract ||
+    container.content ||
+    container.opinion ||
+    `${fd(container.first_observed)} - ${fd(container.last_observed)}`;
 
   return (
     <div style={containerStyle}>
@@ -573,7 +589,7 @@ const ContainerHeader = (props) => {
           <HeaderMainEntityLayout
             title={title}
             isNestedHeader={knowledge}
-            rightActions={(
+            rightActions={
               <>
                 {!knowledge && (
                   <StixCoreObjectBackgroundTasks
@@ -597,12 +613,12 @@ const ContainerHeader = (props) => {
                   <FormAuthorizedMembersDialog
                     id={container.id}
                     owner={container.creators?.[0]}
-                    authorizedMembers={authorizedMembersToOptions(
-                      container.authorized_members,
-                    )}
+                    authorizedMembers={authorizedMembersToOptions(container.authorized_members)}
                     mutation={containerHeaderEditAuthorizedMembersMutation}
                     open={openAccessRestriction}
-                    handleClose={displayAuthorizedMembersButton ? undefined : handleCloseAccessRestriction}
+                    handleClose={
+                      displayAuthorizedMembersButton ? undefined : handleCloseAccessRestriction
+                    }
                     canDeactivate={true}
                   />
                 )}
@@ -617,75 +633,72 @@ const ContainerHeader = (props) => {
                     investigationAddFromContainer={investigationAddFromContainer}
                   />
                 )}
-                {
-                  modes && (
-                    <div id="container-view-buttons">
-                      <ToggleButtonGroup size="small" exclusive={true}>
-                        {modes.includes('graph') && (
-                          <Tooltip title={t_i18n('Graph view')}>
-                            <ToggleButton
-                              value="graph"
-                              component={Link}
-                              to={`${link}/graph`}
-                              selected={currentMode === 'graph'}
-                            >
-                              <VectorPolygon
-                                fontSize="small"
-                                color={currentMode === 'graph' ? 'primary' : 'inherit'}
-                              />
-                            </ToggleButton>
-                          </Tooltip>
-                        )}
-                        {modes.includes('timeline') && (
-                          <Tooltip title={t_i18n('TimeLine view')}>
-                            <ToggleButton
-                              value="timeline"
-                              component={Link}
-                              to={`${link}/timeline`}
-                              selected={currentMode === 'timeline'}
-                            >
-                              <ChartTimeline
-                                fontSize="small"
-                                color={currentMode === 'timeline' ? 'primary' : 'inherit'}
-                              />
-                            </ToggleButton>
-                          </Tooltip>
-                        )}
-                        {modes.includes('correlation') && (
-                          <Tooltip title={t_i18n('Correlation view')}>
-                            <ToggleButton
-                              value="correlation"
-                              component={Link}
-                              to={`${link}/correlation`}
-                              selected={currentMode === 'correlation'}
-                            >
-                              <VectorLink
-                                fontSize="small"
-                                color={
-                                  currentMode === 'correlation' ? 'primary' : 'inherit'
-                                }
-                              />
-                            </ToggleButton>
-                          </Tooltip>
-                        )}
-                        {modes.includes('matrix') && (
-                          <Tooltip title={t_i18n('Tactics matrix view')}>
-                            <ToggleButton
-                              value="matrix"
-                              component={Link}
-                              to={`${link}/matrix`}
-                              selected={currentMode === 'matrix'}
-                            >
-                              <ViewColumnOutlined
-                                fontSize="small"
-                                color={currentMode === 'matrix' ? 'primary' : 'inherit'}
-                              />
-                            </ToggleButton>
-                          </Tooltip>
-                        )}
-                      </ToggleButtonGroup>
-                    </div>
-                  )}
+                {modes && (
+                  <div id="container-view-buttons">
+                    <ToggleButtonGroup size="small" exclusive={true}>
+                      {modes.includes('graph') && (
+                        <Tooltip title={t_i18n('Graph view')}>
+                          <ToggleButton
+                            value="graph"
+                            component={Link}
+                            to={`${link}/graph`}
+                            selected={currentMode === 'graph'}
+                          >
+                            <VectorPolygon
+                              fontSize="small"
+                              color={currentMode === 'graph' ? 'primary' : 'inherit'}
+                            />
+                          </ToggleButton>
+                        </Tooltip>
+                      )}
+                      {modes.includes('timeline') && (
+                        <Tooltip title={t_i18n('TimeLine view')}>
+                          <ToggleButton
+                            value="timeline"
+                            component={Link}
+                            to={`${link}/timeline`}
+                            selected={currentMode === 'timeline'}
+                          >
+                            <ChartTimeline
+                              fontSize="small"
+                              color={currentMode === 'timeline' ? 'primary' : 'inherit'}
+                            />
+                          </ToggleButton>
+                        </Tooltip>
+                      )}
+                      {modes.includes('correlation') && (
+                        <Tooltip title={t_i18n('Correlation view')}>
+                          <ToggleButton
+                            value="correlation"
+                            component={Link}
+                            to={`${link}/correlation`}
+                            selected={currentMode === 'correlation'}
+                          >
+                            <VectorLink
+                              fontSize="small"
+                              color={currentMode === 'correlation' ? 'primary' : 'inherit'}
+                            />
+                          </ToggleButton>
+                        </Tooltip>
+                      )}
+                      {modes.includes('matrix') && (
+                        <Tooltip title={t_i18n('Tactics matrix view')}>
+                          <ToggleButton
+                            value="matrix"
+                            component={Link}
+                            to={`${link}/matrix`}
+                            selected={currentMode === 'matrix'}
+                          >
+                            <ViewColumnOutlined
+                              fontSize="small"
+                              color={currentMode === 'matrix' ? 'primary' : 'inherit'}
+                            />
+                          </ToggleButton>
+                        </Tooltip>
+                      )}
+                    </ToggleButtonGroup>
+                  </div>
+                )}
 
                 {!knowledge && (
                   <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
@@ -719,20 +732,18 @@ const ContainerHeader = (props) => {
                 )}
                 {enableEnricher && (
                   <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-                    <StixCoreObjectEnrichment
-                      stixCoreObjectId={container.id}
-                    />
+                    <StixCoreObjectEnrichment stixCoreObjectId={container.id} />
                   </Security>
                 )}
-                {displayEnrollPlaybook
-                  && (
-                    <StixCoreObjectEnrollPlaybook
-                      stixCoreObjectId={container.id}
-                      open={openEnrollPlaybook}
-                      handleClose={displayEnrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
-                    />
-                  )
-                }
+                {displayEnrollPlaybook && (
+                  <StixCoreObjectEnrollPlaybook
+                    stixCoreObjectId={container.id}
+                    open={openEnrollPlaybook}
+                    handleClose={
+                      displayEnrollPlaybookButton ? undefined : handleCloseEnrollPlaybook
+                    }
+                  />
+                )}
                 {displayPopoverMenu && (
                   <>
                     <PopoverMenu>
@@ -767,10 +778,11 @@ const ContainerHeader = (props) => {
                             />
                           )}
                           {canDelete && (
-                            <MenuItem onClick={() => {
-                              handleOpenDelete();
-                              closeMenu();
-                            }}
+                            <MenuItem
+                              onClick={() => {
+                                handleOpenDelete();
+                                closeMenu();
+                              }}
                             >
                               {t_i18n('Delete')}
                             </MenuItem>
@@ -785,16 +797,11 @@ const ContainerHeader = (props) => {
                 )}
                 {EditComponent}
               </>
-            )}
-            leftTags={
-              container.draftVersion && (
-                <DraftChip />
-              )
             }
+            leftTags={container.draftVersion && <DraftChip />}
             rightTags={
-              !knowledge && displaySharing && (
-                <StixCoreObjectSharingList data={container} inContainer={true} />
-              )
+              !knowledge &&
+              displaySharing && <StixCoreObjectSharingList data={container} inContainer={true} />
             }
           />
         </React.Suspense>

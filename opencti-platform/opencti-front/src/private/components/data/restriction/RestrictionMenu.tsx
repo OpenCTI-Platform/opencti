@@ -5,10 +5,14 @@ const RestrictionMenu = () => {
   const isEnterpriseEdition = useEnterpriseEdition();
 
   const entries: MenuEntry[] = [
-    ...(isEnterpriseEdition ? [{
-      path: '/dashboard/data/restriction/restricted',
-      label: 'Restricted entities',
-    }] : []),
+    ...(isEnterpriseEdition
+      ? [
+          {
+            path: '/dashboard/data/restriction/restricted',
+            label: 'Restricted entities',
+          },
+        ]
+      : []),
     {
       path: '/dashboard/data/restriction/drafts',
       label: 'Restricted drafts',

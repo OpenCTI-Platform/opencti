@@ -24,9 +24,11 @@ export const up = async (next) => {
   for (let index = 0; index < subTypes.edges.length; index += 1) {
     const entityType = subTypes.edges[index].node.id;
 
-    if (migrationEntitySetting.platform_entity_files_ref(entityType)
-      || migrationEntitySetting.platform_hidden_type(entityType)
-      || migrationEntitySetting.enforce_reference(entityType)) {
+    if (
+      migrationEntitySetting.platform_entity_files_ref(entityType) ||
+      migrationEntitySetting.platform_hidden_type(entityType) ||
+      migrationEntitySetting.enforce_reference(entityType)
+    ) {
       const entitySetting = await findByType(context, SYSTEM_USER, entityType);
       const inputs = [];
 
@@ -46,7 +48,9 @@ export const up = async (next) => {
 
   // Remove setting property from DB
 
-  const settingsFromEl = await elLoadById(context, SYSTEM_USER, settings.id, { type: ENTITY_TYPE_SETTINGS });
+  const settingsFromEl = await elLoadById(context, SYSTEM_USER, settings.id, {
+    type: ENTITY_TYPE_SETTINGS,
+  });
   settingsFromEl.platform_entities_files_ref = null;
   settingsFromEl.platform_hidden_types = null;
 

@@ -32,12 +32,8 @@ const DataComponentAttackPatternsComponent: FunctionComponent<{
         toId: attackPatternId,
         relationship_type: 'detects',
       },
-      updater: (store) => deleteNodeFromEdge(
-        store,
-        'attackPatterns',
-        dataComponent.id,
-        attackPatternId,
-      ),
+      updater: (store) =>
+        deleteNodeFromEdge(store, 'attackPatterns', dataComponent.id, attackPatternId),
     });
   };
 
@@ -47,10 +43,7 @@ const DataComponentAttackPatternsComponent: FunctionComponent<{
         marginTop: 20,
       }}
     >
-      <Label action={(
-        <AddAttackPatterns dataComponent={dataComponent} />
-      )}
-      >
+      <Label action={<AddAttackPatterns dataComponent={dataComponent} />}>
         {t_i18n('Attack patterns')}
       </Label>
       {dataComponent.attackPatterns && (
@@ -62,14 +55,9 @@ const DataComponentAttackPatternsComponent: FunctionComponent<{
                 return (
                   <ListItemText
                     key={idx}
-                    primary={(
-                      <Skeleton
-                        animation="wave"
-                        variant="rectangular"
-                        width="90%"
-                        height="100%"
-                      />
-                    )}
+                    primary={
+                      <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
+                    }
                   />
                 );
               }
@@ -79,14 +67,14 @@ const DataComponentAttackPatternsComponent: FunctionComponent<{
                   dense={true}
                   divider={true}
                   disablePadding={true}
-                  secondaryAction={(
+                  secondaryAction={
                     <IconButton
                       aria-label="Remove"
                       onClick={() => removeAttackPattern(attackPattern.id)}
                     >
                       <LinkOff />
                     </IconButton>
-                  )}
+                  }
                 >
                   <ListItemButton
                     component={Link}
@@ -108,28 +96,25 @@ const DataComponentAttackPatternsComponent: FunctionComponent<{
   );
 };
 
-const DataComponentAttackPatterns = createFragmentContainer(
-  DataComponentAttackPatternsComponent,
-  {
-    dataComponent: graphql`
-      fragment DataComponentAttackPatterns_dataComponent on DataComponent {
-        id
-        name
-        parent_types
-        entity_type
-        attackPatterns {
-          edges {
-            node {
-              id
-              parent_types
-              name
-              description
-            }
+const DataComponentAttackPatterns = createFragmentContainer(DataComponentAttackPatternsComponent, {
+  dataComponent: graphql`
+    fragment DataComponentAttackPatterns_dataComponent on DataComponent {
+      id
+      name
+      parent_types
+      entity_type
+      attackPatterns {
+        edges {
+          node {
+            id
+            parent_types
+            name
+            description
           }
         }
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default DataComponentAttackPatterns;

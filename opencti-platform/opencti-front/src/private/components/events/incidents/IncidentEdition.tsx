@@ -18,16 +18,13 @@ const IncidentEdition = ({ incidentId }: { incidentId: string }) => {
     });
   };
 
-  const queryRef = useQueryLoading<IncidentEditionContainerQuery>(
-    IncidentEditionQuery,
-    { id: incidentId },
-  );
+  const queryRef = useQueryLoading<IncidentEditionContainerQuery>(IncidentEditionQuery, {
+    id: incidentId,
+  });
   return (
     <>
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inline} />}
-        >
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
           <IncidentEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}

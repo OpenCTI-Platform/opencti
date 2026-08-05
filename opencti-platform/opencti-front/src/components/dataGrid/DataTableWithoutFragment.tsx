@@ -7,7 +7,9 @@ import type { Theme } from '../Theme';
 import { useDataTableContext } from './components/DataTableContext';
 import type { LocalStorage } from '../../utils/hooks/useLocalStorageModel';
 
-type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
+type OCTIDataTableProps = Pick<
+  DataTableProps,
+  | 'dataColumns'
   | 'storageKey'
   | 'rootRef'
   | 'actions'
@@ -27,18 +29,22 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
   | 'onSort'
   | 'isLocalStorageEnabled'
   | 'variant'
-  | 'actionsColumnWidth'> & {
-    data: unknown;
-    globalCount: number;
-    initialValues?: LocalStorage;
-  };
+  | 'actionsColumnWidth'
+> & {
+  data: unknown;
+  globalCount: number;
+  initialValues?: LocalStorage;
+};
 
 interface DataTableWithoutFragmentInternalToolBarProps {
   taskScope: string;
   dataIds: string[];
 }
 
-const DataTableWithoutFragmentInternalToolbar = ({ taskScope, dataIds }: DataTableWithoutFragmentInternalToolBarProps) => {
+const DataTableWithoutFragmentInternalToolbar = ({
+  taskScope,
+  dataIds,
+}: DataTableWithoutFragmentInternalToolBarProps) => {
   const theme = useTheme<Theme>();
 
   const {
@@ -69,9 +75,11 @@ const DataTableWithoutFragmentInternalToolbar = ({ taskScope, dataIds }: DataTab
   );
 };
 
-const DataTableWithoutFragment = (props: OCTIDataTableProps & {
-  taskScope?: string;
-}) => {
+const DataTableWithoutFragment = (
+  props: OCTIDataTableProps & {
+    taskScope?: string;
+  },
+) => {
   const { data, taskScope, initialValues } = props;
 
   const extractDataIds = () => {
@@ -88,14 +96,13 @@ const DataTableWithoutFragment = (props: OCTIDataTableProps & {
       resolvePath={(a) => a}
       initialValues={initialValues ?? {}}
       disableLineSelection={!taskScope}
-      dataTableToolBarComponent={taskScope
-        ? (
-            <DataTableWithoutFragmentInternalToolbar
-              dataIds={extractDataIds()}
-              taskScope={taskScope}
-            />
-          )
-        : undefined
+      dataTableToolBarComponent={
+        taskScope ? (
+          <DataTableWithoutFragmentInternalToolbar
+            dataIds={extractDataIds()}
+            taskScope={taskScope}
+          />
+        ) : undefined
       }
     />
   );

@@ -36,10 +36,10 @@ const MarkdownField = (props) => {
   const internalOnBlur = (event) => {
     const { nodeName } = event.relatedTarget || {};
     if (
-      nodeName === 'INPUT'
-      || nodeName === 'DIV'
-      || nodeName === 'BUTTON'
-      || nodeName === undefined
+      nodeName === 'INPUT' ||
+      nodeName === 'DIV' ||
+      nodeName === 'BUTTON' ||
+      nodeName === undefined
     ) {
       setFieldTouched(name, true);
       if (typeof onSubmit === 'function') {
@@ -60,11 +60,7 @@ const MarkdownField = (props) => {
       onBlur={internalOnBlur}
       onFocus={internalOnFocus}
     >
-      <InputLabel
-        shrink={true}
-        required={required}
-        error={!!meta.error}
-      >
+      <InputLabel shrink={true} required={required} error={!!meta.error}>
         {label}
       </InputLabel>
       <ReactMde
@@ -72,19 +68,15 @@ const MarkdownField = (props) => {
         readOnly={disabled}
         onChange={(value) => setFieldValue(name, value)}
         selectedTab={controlledSelectedTab || selectedTab}
-        onTabChange={(tab) => (controlledSetSelectTab
-          ? controlledSetSelectTab(tab)
-          : setSelectedTab(tab))
+        onTabChange={(tab) =>
+          controlledSetSelectTab ? controlledSetSelectTab(tab) : setSelectedTab(tab)
         }
-        generateMarkdownPreview={(markdown) => Promise.resolve(
-          <div onMouseUp={() => internalOnSelect()}>
-            <MarkdownDisplay
-              content={markdown}
-              remarkGfmPlugin={true}
-              commonmark={true}
-            />
-          </div>,
-        )
+        generateMarkdownPreview={(markdown) =>
+          Promise.resolve(
+            <div onMouseUp={() => internalOnSelect()}>
+              <MarkdownDisplay content={markdown} remarkGfmPlugin={true} commonmark={true} />
+            </div>,
+          )
         }
         l18n={{
           write: t_i18n('Write'),
@@ -98,9 +90,7 @@ const MarkdownField = (props) => {
         minEditorHeight={height || 100}
         maxEditorHeight={height || 100}
       />
-      {!R.isNil(meta.error) && (
-        <FormHelperText error={true}>{meta.error}</FormHelperText>
-      )}
+      {!R.isNil(meta.error) && <FormHelperText error={true}>{meta.error}</FormHelperText>}
     </div>
   );
 };

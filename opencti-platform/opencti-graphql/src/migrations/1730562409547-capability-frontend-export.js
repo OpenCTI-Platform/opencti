@@ -19,9 +19,15 @@ export const up = async (next) => {
       const roleId = roles[i].id;
       const capabilities = await roleCapabilities(context, SYSTEM_USER, roleId);
       // Select 'Access ingestion' if 'Access Data sharing & ingestion' or 'Access administration' is selected
-      const hasKnowledgeAccessCapability = capabilities.some((capability) => capability.name === 'KNOWLEDGE');
+      const hasKnowledgeAccessCapability = capabilities.some(
+        (capability) => capability.name === 'KNOWLEDGE',
+      );
       if (hasKnowledgeAccessCapability) {
-        const input = { fromId: roleId, toId: frontendExportCapability.id, relationship_type: 'has-capability' };
+        const input = {
+          fromId: roleId,
+          toId: frontendExportCapability.id,
+          relationship_type: 'has-capability',
+        };
         await createRelation(context, SYSTEM_USER, input);
       }
     }

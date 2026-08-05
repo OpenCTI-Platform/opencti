@@ -35,7 +35,10 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
   const location = useLocation();
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const { me, bannerSettings: { bannerHeightNumber } } = useAuth();
+  const {
+    me,
+    bannerSettings: { bannerHeightNumber },
+  } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const { height: topBannerHeight } = useTopBanner();
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
@@ -44,22 +47,14 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
   // Stack all the floating banners that sit above the top bar so the chatbot
   // panel sticks right under the actual top bar in every configuration.
   // See `TopBar.tsx` which uses the same sum to offset its toolbar.
-  const topOffset = TOP_BAR_HEIGHT
-    + bannerHeightNumber
-    + topBannerHeight
-    + settingsMessagesBannerHeight;
+  const topOffset =
+    TOP_BAR_HEIGHT + bannerHeightNumber + topBannerHeight + settingsMessagesBannerHeight;
 
   const firstName = me.user_email?.split('@')[0] ?? 'User';
 
   const accentColor = theme.palette.ai?.main ?? '#7b5cff';
 
-  const logoIcon = (
-    <FiligranIcon
-      icon={LogoXtmOneIcon}
-      size="small"
-      style={{ color: 'inherit' }}
-    />
-  );
+  const logoIcon = <FiligranIcon icon={LogoXtmOneIcon} size="small" style={{ color: 'inherit' }} />;
 
   const isDarkMode = theme.palette.mode === 'dark';
 
@@ -71,9 +66,7 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
 
   const draftId = me.draftContext?.id;
   const requestHeaders = draftId ? { 'opencti-draft-id': draftId } : undefined;
-  const draftBorderColor = draftId
-    ? theme.palette.designSystem.alert.warning.primary
-    : undefined;
+  const draftBorderColor = draftId ? theme.palette.designSystem.alert.warning.primary : undefined;
 
   // Forward the user's current in-app location so the agent is always aware
   // of the page (URI) the question is being asked from. The router uses
@@ -87,9 +80,10 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
   const pageContext = { url: location.pathname };
 
   const handleRelativeLinkClick = (href: string) => {
-    const normalizedHref = APP_BASE_PATH && href.startsWith(APP_BASE_PATH)
-      ? href.slice(APP_BASE_PATH.length) || '/'
-      : href;
+    const normalizedHref =
+      APP_BASE_PATH && href.startsWith(APP_BASE_PATH)
+        ? href.slice(APP_BASE_PATH.length) || '/'
+        : href;
     navigate(normalizedHref);
   };
 

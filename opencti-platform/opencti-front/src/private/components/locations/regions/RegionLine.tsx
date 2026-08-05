@@ -70,9 +70,10 @@ interface RegionLineComponentProps {
   node: RegionLine_node$key;
 }
 
-export const RegionLineComponent: FunctionComponent<
-  RegionLineComponentProps
-> = ({ dataColumns, node }) => {
+export const RegionLineComponent: FunctionComponent<RegionLineComponentProps> = ({
+  dataColumns,
+  node,
+}) => {
   const classes = useStyles();
   const { fd } = useFormatter();
   const data = useFragment(regionLineFragment, node);
@@ -87,29 +88,20 @@ export const RegionLineComponent: FunctionComponent<
         <ItemIcon type="Region" />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
               {data.name}
-              {data.draftVersion && (<DraftChip />)}
+              {data.draftVersion && <DraftChip />}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.created.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.created.width }}>
               {fd(data.created)}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.modified.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.modified.width }}>
               {fd(data.modified)}
             </div>
           </>
-        )}
+        }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -118,11 +110,7 @@ export const RegionLineComponent: FunctionComponent<
   );
 };
 
-export const RegionLineDummy = ({
-  dataColumns,
-}: {
-  dataColumns: DataColumns;
-}) => {
+export const RegionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
@@ -130,43 +118,19 @@ export const RegionLineDummy = ({
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.created.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.created.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.modified.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.modified.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
           </>
-        )}
+        }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined color="disabled" />

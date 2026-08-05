@@ -2,7 +2,10 @@ import { graphql, PreloadedQuery, useFragment } from 'react-relay';
 import React, { CSSProperties, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { useTheme } from '@mui/material/styles';
-import { knowledgeGraphStixCoreObjectQuery, knowledgeGraphStixRelationshipQuery } from '@components/common/containers/KnowledgeGraphQuery';
+import {
+  knowledgeGraphStixCoreObjectQuery,
+  knowledgeGraphStixRelationshipQuery,
+} from '@components/common/containers/KnowledgeGraphQuery';
 import fetchMetaObjectsCount from '@components/workspaces/investigations/utils/fetchMetaObjectsCount';
 import WorkspaceHeader from '@components/workspaces/workspaceHeader/WorkspaceHeader';
 import { useInvestigationState } from '@components/workspaces/investigations/utils/useInvestigationState';
@@ -54,12 +57,7 @@ const investigationGraphFragment = graphql`
 
 const investigationGraphObjectsQuery = graphql`
   query InvestigationGraphObjectsQuery($id: String!, $count: Int!, $cursor: ID) {
-    ...InvestigationGraphObjects_fragment
-    @arguments(
-      id: $id
-      count: $count
-      cursor: $cursor
-    )
+    ...InvestigationGraphObjects_fragment @arguments(id: $id, count: $count, cursor: $cursor)
   }
 `;
 
@@ -73,7 +71,7 @@ const investigationGraphObjectsFragment = graphql`
   ) {
     workspace(id: $id) {
       objects(first: $count, after: $cursor)
-      @connection(key: "Pagination_investigationGraph_objects") {
+        @connection(key: "Pagination_investigationGraph_objects") {
         pageInfo {
           endCursor
           hasNextPage
@@ -433,19 +431,11 @@ const InvestigationGraphComponent = ({
   const bannerHeight = useSettingsMessagesBannerHeight();
   const { rawObjects } = useGraphContext();
 
-  const {
-    addLink,
-    setLoadingCurrent,
-    setLoadingTotal,
-    rebuildGraphData,
-  } = useGraphInteractions();
+  const { addLink, setLoadingCurrent, setLoadingTotal, rebuildGraphData } = useGraphInteractions();
 
   const investigation = useFragment(investigationGraphFragment, dataInvestigation);
 
-  const {
-    addInvestigationOpInStack,
-    getOpsUntilExpand,
-  } = useInvestigationState(investigation.id);
+  const { addInvestigationOpInStack, getOpsUntilExpand } = useInvestigationState(investigation.id);
 
   useEffect(() => {
     setLoadingTotal(totalData);
@@ -469,10 +459,12 @@ const InvestigationGraphComponent = ({
     commitEditPositions({
       variables: {
         id: investigation.id,
-        input: [{
-          key: 'graph_data',
-          value: [serializeObjectB64(positions)],
-        }],
+        input: [
+          {
+            key: 'graph_data',
+            value: [serializeObjectB64(positions)],
+          },
+        ],
       },
     });
   };
@@ -485,11 +477,13 @@ const InvestigationGraphComponent = ({
     commitUpdateEntities({
       variables: {
         id: investigation.id,
-        input: [{
-          key: 'investigated_entities_ids',
-          operation,
-          value: ids,
-        }],
+        input: [
+          {
+            key: 'investigated_entities_ids',
+            operation,
+            value: ids,
+          },
+        ],
       },
       onCompleted,
     });
@@ -500,11 +494,11 @@ const InvestigationGraphComponent = ({
   };
 
   const addInGraph: GraphToolbarProps['onInvestigationExpand'] = async (newObjects) => {
-    updateInvestigationEntitiesGraph(newObjects.map((o) => o.id), 'add');
-    rebuildGraphData([
-      ...rawObjects,
-      ...await fetchMetaObjectsCount(newObjects),
-    ]);
+    updateInvestigationEntitiesGraph(
+      newObjects.map((o) => o.id),
+      'add',
+    );
+    rebuildGraphData([...rawObjects, ...(await fetchMetaObjectsCount(newObjects))]);
   };
 
   const removeInGraph: GraphToolbarProps['onRemove'] = (ids, onCompleted) => {
@@ -591,8 +585,10 @@ const InvestigationGraphComponent = ({
 
 const REFETCH_DEBOUNCE_MS = 50;
 
-interface InvestigationGraphLoaderProps
-  extends Omit<InvestigationGraphComponentProps, 'currentData' | 'totalData'> {
+interface InvestigationGraphLoaderProps extends Omit<
+  InvestigationGraphComponentProps,
+  'currentData' | 'totalData'
+> {
   investigationId: string;
   dataPositions: InvestigationGraphData_fragment$key;
   queryObjectsRef: PreloadedQuery<InvestigationGraphObjectsQuery>;
@@ -624,12 +620,9 @@ const InvestigationGraphLoader = ({
   });
 
   // Use a debounce to avoid spamming too quickly the backend.
-  const debounceFetchMore = useDebounceCallback(
-    () => {
-      loadMore(pageSize);
-    },
-    REFETCH_DEBOUNCE_MS,
-  );
+  const debounceFetchMore = useDebounceCallback(() => {
+    loadMore(pageSize);
+  }, REFETCH_DEBOUNCE_MS);
   // When finishing fetching a page, get the next if any.
   useEffect(() => {
     if (!isLoadingMore() && hasMore()) {
@@ -675,10 +668,7 @@ interface InvestigationGraphProps {
   data: NonNullable<InvestigationGraphQuery$data['workspace']>;
 }
 
-const InvestigationGraph = ({
-  id,
-  data,
-}: InvestigationGraphProps) => {
+const InvestigationGraph = ({ id, data }: InvestigationGraphProps) => {
   const PAGE_SIZE = 500;
   const queryObjectsRef = useQueryLoading<InvestigationGraphObjectsQuery>(
     investigationGraphObjectsQuery,

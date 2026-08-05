@@ -19,7 +19,11 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -27,7 +31,10 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import { AttackPatternCreationMutation, AttackPatternCreationMutation$variables } from './__generated__/AttackPatternCreationMutation.graphql';
+import {
+  AttackPatternCreationMutation,
+  AttackPatternCreationMutation$variables,
+} from './__generated__/AttackPatternCreationMutation.graphql';
 
 const attackPatternMutation = graphql`
   mutation AttackPatternCreationMutation($input: AttackPatternAddInput!) {
@@ -86,7 +93,11 @@ interface AttackPatternAddInput {
 }
 
 interface AttackPatternFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string, response: AttackPatternCreationMutation['response']['attackPatternAdd']) => void;
+  updater: (
+    store: RecordSourceSelectorProxy,
+    key: string,
+    response: AttackPatternCreationMutation['response']['attackPatternAdd'],
+  ) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -105,20 +116,25 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
 }) => {
   const { t_i18n } = useFormatter();
   const { mandatoryAttributes } = useIsMandatoryAttribute(ATTACK_PATTERN_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    description: Yup.string().nullable(),
-    x_mitre_id: Yup.string().nullable(),
-  }, mandatoryAttributes);
-
-  const attackPatternValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
-
-  const [commit] = useApiMutation<AttackPatternCreationMutation>(
-    attackPatternMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Attack-Pattern')} ${t_i18n('successfully created')}` },
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      description: Yup.string().nullable(),
+      x_mitre_id: Yup.string().nullable(),
+    },
+    mandatoryAttributes,
   );
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+
+  const attackPatternValidator = useDynamicSchemaCreationValidation(
+    mandatoryAttributes,
+    basicShape,
+  );
+
+  const [commit] = useApiMutation<AttackPatternCreationMutation>(attackPatternMutation, undefined, {
+    successMessage: `${t_i18n('entity_Attack-Pattern')} ${t_i18n('successfully created')}`,
+  });
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
 
   const onSubmit: FormikConfig<AttackPatternAddInput>['onSubmit'] = (
     values,
@@ -158,21 +174,18 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
       },
     });
   };
-  const initialValues = useDefaultValues(
-    ATTACK_PATTERN_TYPE,
-    {
-      name: inputValue ?? '',
-      x_mitre_id: '',
-      description: '',
-      confidence: undefined,
-      createdBy: defaultCreatedBy,
-      objectMarking: defaultMarkingDefinitions ?? [],
-      killChainPhases: [],
-      objectLabel: [],
-      externalReferences: [],
-      file: undefined,
-    },
-  );
+  const initialValues = useDefaultValues(ATTACK_PATTERN_TYPE, {
+    name: inputValue ?? '',
+    x_mitre_id: '',
+    description: '',
+    confidence: undefined,
+    createdBy: defaultCreatedBy,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    killChainPhases: [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  });
   return (
     <Formik<AttackPatternAddInput>
       initialValues={initialValues}
@@ -188,7 +201,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
             component={TextField}
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth={true}
             detectDuplicate={['Attack-Pattern']}
           />
@@ -196,7 +209,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
             component={TextField}
             name="x_mitre_id"
             label={t_i18n('External ID')}
-            required={(mandatoryAttributes.includes('x_mitre_id'))}
+            required={mandatoryAttributes.includes('x_mitre_id')}
             fullWidth={true}
             style={fieldSpacingContainerStyle}
           />
@@ -204,7 +217,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -219,48 +232,41 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
           />
           <KillChainPhasesField
             name="killChainPhases"
-            required={(mandatoryAttributes.includes('killChainPhases'))}
+            required={mandatoryAttributes.includes('killChainPhases')}
             style={fieldSpacingContainerStyle}
           />
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ObjectLabelField
             name="objectLabel"
-            required={(mandatoryAttributes.includes('objectLabel'))}
+            required={mandatoryAttributes.includes('objectLabel')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.objectLabel}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"
-            required={(mandatoryAttributes.includes('externalReferences'))}
+            required={mandatoryAttributes.includes('externalReferences')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
           <FormButtonContainer>
-            <Button
-              variant="secondary"
-              onClick={handleReset}
-              disabled={isSubmitting}
-            >
+            <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitForm}
-              disabled={isSubmitting}
-            >
+            <Button onClick={submitForm} disabled={isSubmitting}>
               {t_i18n('Create')}
             </Button>
           </FormButtonContainer>
@@ -285,18 +291,14 @@ const AttackPatternCreation = ({
   const [open, setOpen] = useState<boolean>(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_attackPatterns',
-    paginationOptions,
-    'attackPatternAdd',
-  );
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_attackPatterns', paginationOptions, 'attackPatternAdd');
   const CreateAttackPatternControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="Attack-Pattern" {...props} />
   );
   const CreateAttackPatternControlledDialContextual = CreateAttackPatternControlledDial({
     onOpen: handleOpen,
-    onClose: () => { },
+    onClose: () => {},
   });
   const renderClassic = () => (
     <Drawer
@@ -304,26 +306,19 @@ const AttackPatternCreation = ({
       controlledDial={CreateAttackPatternControlledDial}
     >
       {({ onClose }) => (
-        <AttackPatternCreationForm
-          updater={updater}
-          onCompleted={onClose}
-          onReset={onClose}
-        />
+        <AttackPatternCreationForm updater={updater} onCompleted={onClose} onReset={onClose} />
       )}
     </Drawer>
   );
 
   const renderContextual = () => (
-    <div style={{
-      display: display ? 'block' : 'none',
-    }}
+    <div
+      style={{
+        display: display ? 'block' : 'none',
+      }}
     >
       {CreateAttackPatternControlledDialContextual}
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        title={t_i18n('Create an attack pattern')}
-      >
+      <Dialog open={open} onClose={handleClose} title={t_i18n('Create an attack pattern')}>
         <AttackPatternCreationForm
           inputValue={inputValue}
           updater={updater}
@@ -334,9 +329,7 @@ const AttackPatternCreation = ({
     </div>
   );
 
-  return contextual
-    ? renderContextual()
-    : renderClassic();
+  return contextual ? renderContextual() : renderClassic();
 };
 
 export default AttackPatternCreation;

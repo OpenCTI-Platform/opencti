@@ -38,32 +38,18 @@ const WidgetNumber = ({
     <Stack height="100%" justifyContent="space-between">
       <Stack direction="row" alignItems="start">
         <Stack direction="row" alignItems="start" gap={1} flex={1}>
-          <Typography
-            color={theme.palette.text.light}
-            variant="body2"
-            gutterBottom
-          >
+          <Typography color={theme.palette.text.light} variant="body2" gutterBottom>
             {label}
           </Typography>
           {diffValue !== undefined && diffLabel && (
-            <NumberDifference
-              value={diffValue}
-              description={diffLabel}
-            />
+            <NumberDifference value={diffValue} description={diffLabel} />
           )}
         </Stack>
         {action}
       </Stack>
 
-      <Stack
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-      >
-        <div
-          data-testid={`card-number-${label}`}
-          style={valueStyle}
-        >
+      <Stack direction="row" justifyContent="space-between" alignItems="center">
+        <div data-testid={`card-number-${label}`} style={valueStyle}>
           {n(value)}
         </div>
         {entityType && (

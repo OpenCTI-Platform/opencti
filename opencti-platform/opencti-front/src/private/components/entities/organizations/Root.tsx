@@ -19,14 +19,20 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import OrganizationAnalysis from './OrganizationAnalysis';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import OrganizationEdition from './OrganizationEdition';
 import OrganizationDeletion from './OrganizationDeletion';
 import { PATH_ORGANIZATION, PATH_ORGANIZATIONS } from '@components/common/routes/paths';
@@ -96,28 +102,22 @@ type RootOrganizationProps = {
 };
 
 const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootOrganizationSubscription>>(() => ({
-    subscription,
-    variables: { id: organizationId },
-  }), [organizationId]);
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootOrganizationSubscription>>(
+    () => ({
+      subscription,
+      variables: { id: organizationId },
+    }),
+    [organizationId],
+  );
   const location = useLocation();
   const navigate = useNavigate();
   const LOCAL_STORAGE_KEY = `organization-${organizationId}`;
-  const params = buildViewParamsFromUrlAndStorage(
-    navigate,
-    location,
-    LOCAL_STORAGE_KEY,
-  );
+  const params = buildViewParamsFromUrlAndStorage(navigate, location, LOCAL_STORAGE_KEY);
 
   const [viewAs, setViewAs] = useState<string>(propOr('knowledge', 'viewAs', params));
 
   const saveView = () => {
-    saveViewParameters(
-      navigate,
-      location,
-      LOCAL_STORAGE_KEY,
-      viewAs,
-    );
+    saveViewParameters(navigate, location, LOCAL_STORAGE_KEY, viewAs);
   };
 
   const handleChangeViewAs = (event: React.ChangeEvent<{ value: string }>) => {
@@ -128,11 +128,8 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
   const { t_i18n } = useFormatter();
   useSubscription<RootOrganizationSubscription>(subConfig);
 
-  const {
-    organization,
-    connectorsForExport,
-    connectorsForImport,
-  } = usePreloadedQuery<RootOrganizationQuery>(organizationQuery, queryRef);
+  const { organization, connectorsForExport, connectorsForImport } =
+    usePreloadedQuery<RootOrganizationQuery>(organizationQuery, queryRef);
 
   const { forceUpdate } = useForceUpdate();
 
@@ -146,38 +143,41 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
           <Routes>
             <Route
               path="/knowledge/*"
-              element={viewAs === 'knowledge' && (
-                <StixCoreObjectKnowledgeBar
-                  stixCoreObjectLink={link}
-                  availableSections={[
-                    'sectors',
-                    'organizations',
-                    'individuals',
-                    'locations',
-                    'used_tools',
-                    'threats',
-                    'threat_actors',
-                    'intrusion_sets',
-                    'campaigns',
-                    'incidents',
-                    'malwares',
-                    'attack_patterns',
-                    'tools',
-                    'vulnerabilities',
-                    'infrastructures',
-                    'observables',
-                  ]}
-                  data={organization}
-                />
-              )}
+              element={
+                viewAs === 'knowledge' && (
+                  <StixCoreObjectKnowledgeBar
+                    stixCoreObjectLink={link}
+                    availableSections={[
+                      'sectors',
+                      'organizations',
+                      'individuals',
+                      'locations',
+                      'used_tools',
+                      'threats',
+                      'threat_actors',
+                      'intrusion_sets',
+                      'campaigns',
+                      'incidents',
+                      'malwares',
+                      'attack_patterns',
+                      'tools',
+                      'vulnerabilities',
+                      'infrastructures',
+                      'observables',
+                    ]}
+                    data={organization}
+                  />
+                )
+              }
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs elements={[
-              { label: t_i18n('Entities') },
-              { label: t_i18n('Organizations'), link: PATH_ORGANIZATIONS },
-              { label: organization.name, current: true },
-            ]}
+            <Breadcrumbs
+              elements={[
+                { label: t_i18n('Entities') },
+                { label: t_i18n('Organizations'), link: PATH_ORGANIZATIONS },
+                { label: organization.name, current: true },
+              ]}
             />
             <StixDomainObjectHeader
               entityType="Organization"
@@ -186,21 +186,23 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
               isOpenctiAlias={true}
               enableQuickSubscription={true}
               enableAuthorizedMembers={true}
-              EditComponent={(
+              EditComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <OrganizationEdition organizationId={organization.id} />
                 </Security>
-              )}
-              RelateComponent={(
+              }
+              RelateComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <StixCoreRelationshipCreationFromEntityHeader
-                    data={organization}
-                  />
+                  <StixCoreRelationshipCreationFromEntityHeader data={organization} />
                 </Security>
-              )}
+              }
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                  <OrganizationDeletion id={organization.id} isOpen={isOpen} handleClose={onClose} />
+                  <OrganizationDeletion
+                    id={organization.id}
+                    isOpen={isOpen}
+                    handleClose={onClose}
+                  />
                 </Security>
               )}
               onViewAs={handleChangeViewAs}
@@ -213,25 +215,13 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
               entity={organization}
               basePath={basePath}
               pages={{
-                overview: (
-                  <Organization
-                    organizationData={organization}
-                    viewAs={viewAs}
-                  />
-                ),
+                overview: <Organization organizationData={organization} viewAs={viewAs} />,
                 knowledge: (
                   <div key={forceUpdate}>
-                    <OrganizationKnowledge
-                      organizationData={organization}
-                      viewAs={viewAs}
-                    />
+                    <OrganizationKnowledge organizationData={organization} viewAs={viewAs} />
                   </div>
                 ),
-                content: (
-                  <StixCoreObjectContentRoot
-                    stixCoreObject={organization}
-                  />
-                ),
+                content: <StixCoreObjectContentRoot stixCoreObject={organization} />,
                 analyses: (
                   <OrganizationAnalysis
                     organization={organization}
@@ -265,11 +255,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
                     entity={organization}
                   />
                 ),
-                history: (
-                  <StixCoreObjectHistory
-                    stixCoreObjectId={organizationId}
-                  />
-                ),
+                history: <StixCoreObjectHistory stixCoreObjectId={organizationId} />,
               }}
             />
           </div>

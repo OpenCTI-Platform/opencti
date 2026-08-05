@@ -29,10 +29,7 @@ const customViewLayoutMutation = graphql`
 `;
 
 export const customViewMutation = graphql`
-  mutation useCustomViewDashboardEdit_Mutation(
-    $id: ID!
-    $input: [EditInput!]!
-  ) {
+  mutation useCustomViewDashboardEdit_Mutation($id: ID!, $input: [EditInput!]!) {
     customViewEdit(id: $id, input: $input) {
       id
       manifest
@@ -62,23 +59,35 @@ const customViewExportWidgetQuery = graphql`
   }
 `;
 
-const useCustomViewDashboardEdit = ({ customView }: {
+const useCustomViewDashboardEdit = ({
+  customView,
+}: {
   customView: useCustomViewDashboardEdit_Query$data['customView'];
 }) => {
   const { t_i18n } = useFormatter();
-  const [commitSaveMutation] = useApiMutation<useCustomViewDashboardEdit_Mutation>(customViewMutation);
-  const [commitSaveLayoutMutation] = useApiMutation<useCustomViewDashboardEdit_LayoutMutation>(customViewLayoutMutation);
-  const [commitImportWidgetMutation] = useApiMutation<useCustomViewDashboardEdit_WidgetImportMutation>(customViewImportWidgetMutation);
+  const [commitSaveMutation] =
+    useApiMutation<useCustomViewDashboardEdit_Mutation>(customViewMutation);
+  const [commitSaveLayoutMutation] =
+    useApiMutation<useCustomViewDashboardEdit_LayoutMutation>(customViewLayoutMutation);
+  const [commitImportWidgetMutation] =
+    useApiMutation<useCustomViewDashboardEdit_WidgetImportMutation>(customViewImportWidgetMutation);
 
-  const onSave = (id: string, newManifestEncoded: string, noRefresh: boolean, onCompleted: () => void) => {
+  const onSave = (
+    id: string,
+    newManifestEncoded: string,
+    noRefresh: boolean,
+    onCompleted: () => void,
+  ) => {
     const commitMutation = noRefresh ? commitSaveLayoutMutation : commitSaveMutation;
     commitMutation({
       variables: {
         id,
-        input: [{
-          key: 'manifest',
-          value: [newManifestEncoded],
-        }],
+        input: [
+          {
+            key: 'manifest',
+            value: [newManifestEncoded],
+          },
+        ],
       },
       updater: (store, data) => {
         // Set the modified manifest in local Relay store
@@ -102,8 +111,10 @@ const useCustomViewDashboardEdit = ({ customView }: {
 
   const onExportWidget = async (id: string, widget: { id: string; type: string }) => {
     try {
-      const result = await fetchQuery<useCustomViewDashboardEdit_WidgetExportQuery>(customViewExportWidgetQuery, { id, widgetId: widget.id })
-        .toPromise();
+      const result = await fetchQuery<useCustomViewDashboardEdit_WidgetExportQuery>(
+        customViewExportWidgetQuery,
+        { id, widgetId: widget.id },
+      ).toPromise();
       const exportString = result?.customView?.toWidgetExport;
       if (!exportString) {
         MESSAGING$.notifyError(t_i18n('Failed to export widget'));

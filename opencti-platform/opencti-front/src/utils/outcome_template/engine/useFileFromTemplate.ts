@@ -27,10 +27,10 @@ const useFileFromTemplate = () => {
       fintelTemplate = template;
     } else if (templateId) {
       const variables = { id: templateId };
-      const data = await fetchQuery(
+      const data = (await fetchQuery(
         engineFintelTemplateQuery,
         variables,
-      ).toPromise() as EngineFintelTemplateQuery$data;
+      ).toPromise()) as EngineFintelTemplateQuery$data;
       fintelTemplate = data.fintelTemplate;
     }
 
@@ -51,15 +51,24 @@ const useFileFromTemplate = () => {
             widget.dataSelection[0],
           );
           for (const outcome of attributesOutcomes) {
-            template_content = template_content.replaceAll(`$${outcome.variableName}`, outcome.attributeData as string);
+            template_content = template_content.replaceAll(
+              `$${outcome.variableName}`,
+              outcome.attributeData as string,
+            );
           }
         } catch (error) {
-          MESSAGING$.notifyError(`One of the attribute widgets resolution raised an error. ${error}`);
+          MESSAGING$.notifyError(
+            `One of the attribute widgets resolution raised an error. ${error}`,
+          );
         }
-      // other widgets
+        // other widgets
       } else {
         let outcome = '';
-        const filters = buildFiltersForTemplateWidgets(widget.dataSelection[0]?.filters ?? undefined, containerId, maxContentMarkings);
+        const filters = buildFiltersForTemplateWidgets(
+          widget.dataSelection[0]?.filters ?? undefined,
+          containerId,
+          maxContentMarkings,
+        );
         try {
           if (widget.type === 'list') {
             outcome = await buildListOutcome(

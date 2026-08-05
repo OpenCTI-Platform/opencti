@@ -18,12 +18,9 @@ export const up = async (next) => {
 
   // 1. Load every existing Software observable (minimal but sufficient field set to
   // recompute a standard_id and to build the bulk update / merge operations).
-  const allSoftwares = await fullEntitiesList(
-    context,
-    SYSTEM_USER,
-    [ENTITY_SOFTWARE],
-    { indices: [READ_INDEX_STIX_CYBER_OBSERVABLES] },
-  );
+  const allSoftwares = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_SOFTWARE], {
+    indices: [READ_INDEX_STIX_CYBER_OBSERVABLES],
+  });
   if (allSoftwares.length === 0) {
     logMigration.info(`${message} > no Software observable found, nothing to do`);
     next();
@@ -33,7 +30,10 @@ export const up = async (next) => {
 
   // 2. Compute the new standard_id (lowercased name) for each Software and group them.
   // Entities sharing the same new id would collide after the code change and must be merged.
-  const softwaresWithNewId = allSoftwares.map((sw) => ({ sw, newId: generateStandardId(ENTITY_SOFTWARE, sw) }));
+  const softwaresWithNewId = allSoftwares.map((sw) => ({
+    sw,
+    newId: generateStandardId(ENTITY_SOFTWARE, sw),
+  }));
   const groupedByNewId = R.groupBy((e) => e.newId, softwaresWithNewId);
   const groups = Object.values(groupedByNewId);
 
@@ -50,25 +50,35 @@ export const up = async (next) => {
     const group = collisionGroups[index];
     const { newId } = group[0];
     const sorted = R.sortWith(
-      [
-        R.ascend((e) => e.sw.created_at || ''),
-        R.ascend((e) => e.sw.internal_id || ''),
-      ],
+      [R.ascend((e) => e.sw.created_at || ''), R.ascend((e) => e.sw.internal_id || '')],
       group,
     );
     const target = sorted[0].sw;
     const sources = sorted.slice(1).map((e) => e.sw);
     try {
       if (target.standard_id !== newId) {
-        await patchAttribute(context, SYSTEM_USER, target.internal_id, target.entity_type, { standard_id: newId });
+        await patchAttribute(context, SYSTEM_USER, target.internal_id, target.entity_type, {
+          standard_id: newId,
+        });
       }
-      await mergeEntities(context, SYSTEM_USER, target.internal_id, sources.map((s) => s.internal_id));
+      await mergeEntities(
+        context,
+        SYSTEM_USER,
+        target.internal_id,
+        sources.map((s) => s.internal_id),
+      );
       mergedEntities += sources.length;
-      logApp.info(`${message} > merged ${sources.length} Software into ${target.internal_id} (${index + 1}/${collisionGroups.length})`);
+      logApp.info(
+        `${message} > merged ${sources.length} Software into ${target.internal_id} (${index + 1}/${collisionGroups.length})`,
+      );
     } catch (err) {
       // Do not abort the whole migration if one group fails: log and keep going,
       // the remaining Software observables can still have their standard_id rewritten.
-      logApp.error(`${message} > failed to merge group for ${newId}`, { cause: err, targetId: target.internal_id, sourceIds: sources.map((s) => s.internal_id) });
+      logApp.error(`${message} > failed to merge group for ${newId}`, {
+        cause: err,
+        targetId: target.internal_id,
+        sourceIds: sources.map((s) => s.internal_id),
+      });
     }
   }
 
@@ -94,14 +104,16 @@ export const up = async (next) => {
     const concurrentUpdate = async (bulk) => {
       await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bulk });
       currentProcessing += bulk.length;
-      logApp.info(`${message} > bulk rewrote Software standard ids: ${currentProcessing} / ${bulkOperations.length}`);
+      logApp.info(
+        `${message} > bulk rewrote Software standard ids: ${currentProcessing} / ${bulkOperations.length}`,
+      );
     };
     await Promise.map(groupsOfOperations, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
   }
 
   logMigration.info(
-    `${message} > done in ${new Date().getTime() - start} ms`
-    + ` (${bulkOperations.length / 2} standard_id rewritten, ${mergedEntities} duplicate(s) merged across ${collisionGroups.length} group(s))`,
+    `${message} > done in ${new Date().getTime() - start} ms` +
+      ` (${bulkOperations.length / 2} standard_id rewritten, ${mergedEntities} duplicate(s) merged across ${collisionGroups.length} group(s))`,
   );
   next();
 };

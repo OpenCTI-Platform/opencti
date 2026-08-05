@@ -1,4 +1,9 @@
-import { WidgetDataSelection, WidgetHost, WidgetParameters, WidgetPerspective } from 'src/utils/widget/widget';
+import {
+  WidgetDataSelection,
+  WidgetHost,
+  WidgetParameters,
+  WidgetPerspective,
+} from 'src/utils/widget/widget';
 import { graphql } from 'react-relay';
 import {
   buildFiltersAndOptionsForWidgets,
@@ -31,7 +36,9 @@ export const savedFilterQuery = graphql`
  */
 const fetchSavedFilterContent = async (filterId: string) => {
   try {
-    const result = await fetchQuery(savedFilterQuery, { id: filterId }).toPromise() as dashboardVizUtilsSavedFilterQuery$data | undefined;
+    const result = (await fetchQuery(savedFilterQuery, { id: filterId }).toPromise()) as
+      | dashboardVizUtilsSavedFilterQuery$data
+      | undefined;
     if (!result?.savedFilter) return null;
     return JSON.parse(result.savedFilter.filters);
   } catch {
@@ -62,8 +69,16 @@ export const resolveDataSelection = async ({
   } else if (perspective === 'audits') {
     mainEntityTypes = ['History'];
   }
-  const availableFilterKeysMain = getAvailableFilterKeysForEntityTypes(filterKeysSchema, mainEntityTypes, true);
-  const availableFilterKeysSecondary = getAvailableFilterKeysForEntityTypes(filterKeysSchema, ['Stix-Core-Object'], true);
+  const availableFilterKeysMain = getAvailableFilterKeysForEntityTypes(
+    filterKeysSchema,
+    mainEntityTypes,
+    true,
+  );
+  const availableFilterKeysSecondary = getAvailableFilterKeysForEntityTypes(
+    filterKeysSchema,
+    ['Stix-Core-Object'],
+    true,
+  );
   let hostEntityNeeded = false;
   const updatedDataSelection = await Promise.all(
     dataSelection.map(async (data) => {
@@ -72,9 +87,11 @@ export const resolveDataSelection = async ({
       const savedFilterIds = [data.filters_id, data.dynamicFrom_id, data.dynamicTo_id];
       for (let i = 0; i < savedFilterIds.length; i += 1) {
         const savedFilterId = savedFilterIds[i];
-        if (savedFilterId) { // if a saved filter id is defined
+        if (savedFilterId) {
+          // if a saved filter id is defined
           const resolved = await fetchSavedFilterContent(savedFilterId); // fetch the saved filter content
-          if (!resolved) { // the saved filter is missing or not accessible
+          if (!resolved) {
+            // the saved filter is missing or not accessible
             isMissingSavedFilters = true;
           } else {
             filters[i] = resolved; // replace the associated filter by the saved filter content
@@ -84,20 +101,35 @@ export const resolveDataSelection = async ({
       // For custom-view widgets, resolve SELF_ID placeholders with the actual host entity ID
       let resolvedFilters = filters;
       if (host?.kind === 'custom-view') {
-        resolvedFilters = filters.map((f) => buildFiltersForCustomView(f, host.customViewTargetEntityId));
+        resolvedFilters = filters.map((f) =>
+          buildFiltersForCustomView(f, host.customViewTargetEntityId),
+        );
         hostEntityNeeded = hostEntityNeeded || filters.some((f, i) => f !== resolvedFilters[i]);
       }
       return {
         ...data,
-        filters: removeIdAndIncorrectKeysFromFilterGroupObject(resolvedFilters[0], availableFilterKeysMain),
-        dynamicFrom: removeIdAndIncorrectKeysFromFilterGroupObject(resolvedFilters[1], availableFilterKeysSecondary),
-        dynamicTo: removeIdAndIncorrectKeysFromFilterGroupObject(resolvedFilters[2], availableFilterKeysSecondary),
+        filters: removeIdAndIncorrectKeysFromFilterGroupObject(
+          resolvedFilters[0],
+          availableFilterKeysMain,
+        ),
+        dynamicFrom: removeIdAndIncorrectKeysFromFilterGroupObject(
+          resolvedFilters[1],
+          availableFilterKeysSecondary,
+        ),
+        dynamicTo: removeIdAndIncorrectKeysFromFilterGroupObject(
+          resolvedFilters[2],
+          availableFilterKeysSecondary,
+        ),
       };
-    }));
-  const isMissingHostEntity = host?.kind === 'custom-view'
-    && hostEntityNeeded
-    && !host.customViewTargetEntityId;
-  const isPreviewMode = host?.kind === 'custom-view' && hostEntityNeeded && Boolean(host.customViewTargetEntityId) && host.previewMode;
+    }),
+  );
+  const isMissingHostEntity =
+    host?.kind === 'custom-view' && hostEntityNeeded && !host.customViewTargetEntityId;
+  const isPreviewMode =
+    host?.kind === 'custom-view' &&
+    hostEntityNeeded &&
+    Boolean(host.customViewTargetEntityId) &&
+    host.previewMode;
   return {
     resolvedDataSelection: updatedDataSelection,
     isMissingHostEntity,
@@ -116,9 +148,7 @@ export const computeStartEndDates = (config?: DashboardConfig, fallbackToDefault
     ? computeRelativeDate(config.relativeDate)
     : config?.startDate;
 
-  const endDate = config?.relativeDate
-    ? formatDate(dayStartDate(null, false))
-    : config?.endDate;
+  const endDate = config?.relativeDate ? formatDate(dayStartDate(null, false)) : config?.endDate;
 
   return fallbackToDefaultDates
     ? {
@@ -143,19 +173,14 @@ export const computeWidgetFiltersForSelection = (
     fallbackToDefaultDates?: boolean;
   } = {},
 ) => {
-  const dateAttribute = selection?.date_attribute?.length
-    ? selection.date_attribute
-    : 'created_at';
+  const dateAttribute = selection?.date_attribute?.length ? selection.date_attribute : 'created_at';
   const { startDate, endDate } = computeStartEndDates(config, opts.fallbackToDefaultDates);
-  const { filters } = buildFiltersAndOptionsForWidgets(
-    selection?.filters,
-    {
-      startDate,
-      endDate,
-      dateAttribute,
-      isKnowledgeRelationshipWidget: opts.isKnowledgeRelationshipWidget ?? undefined,
-    },
-  );
+  const { filters } = buildFiltersAndOptionsForWidgets(selection?.filters, {
+    startDate,
+    endDate,
+    dateAttribute,
+    isKnowledgeRelationshipWidget: opts.isKnowledgeRelationshipWidget ?? undefined,
+  });
 
   return {
     dateAttribute,
@@ -240,7 +265,11 @@ export const buildRelationshipSingleWidgetBaseQueryVariables = (
   selection: WidgetDataSelection,
   config: DashboardConfig,
 ) => {
-  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(selection, config, { isKnowledgeRelationshipWidget: true });
+  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(
+    selection,
+    config,
+    { isKnowledgeRelationshipWidget: true },
+  );
 
   return {
     startDate,

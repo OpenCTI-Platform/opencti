@@ -83,9 +83,7 @@ describe('useWorkflowInitialElements', () => {
   });
 
   it('should return empty arrays if workflowDefinition is null', () => {
-    const { result } = renderHook(() =>
-      useWorkflowInitialElements(null, null, null),
-    );
+    const { result } = renderHook(() => useWorkflowInitialElements(null, null, null));
 
     expect(result.current.initialNodes).toEqual([]);
     expect(result.current.initialEdges).toEqual([]);
@@ -124,7 +122,9 @@ describe('useWorkflowInitialElements', () => {
     const transitionEdges = result.current.initialEdges;
 
     expect(transitionNodes).toHaveLength(1);
-    expect(transitionNodes[0].id).toBe(`${WorkflowNodeType.transition}-status-open-close_event-status-closed`);
+    expect(transitionNodes[0].id).toBe(
+      `${WorkflowNodeType.transition}-status-open-close_event-status-closed`,
+    );
 
     expect(transitionEdges).toHaveLength(2);
     expect(transitionEdges[0].source).toBe('status-open');
@@ -192,9 +192,10 @@ describe('useWorkflowInitialElements', () => {
     }
 
     const { result, rerender } = renderHook(
-      ({ def }: HookProps) =>
-        useWorkflowInitialElements(def, mockStatusTemplates, mockMembers),
-      { initialProps: { def: mockWorkflowDefinition } },
+      ({ def }: HookProps) => useWorkflowInitialElements(def, mockStatusTemplates, mockMembers),
+      {
+        initialProps: { def: mockWorkflowDefinition },
+      },
     );
 
     const firstResult = result.current;
@@ -239,7 +240,7 @@ describe('useWorkflowInitialElements', () => {
 
     const membersWithOrg: SubTypeWorkflowDependenciesQuery$data['members'] = {
       edges: [
-        ...mockMembers.edges ?? [],
+        ...(mockMembers.edges ?? []),
         { node: { id: orgId, name: 'Org Alpha', entity_type: 'Organization' } },
       ],
     };
@@ -248,7 +249,9 @@ describe('useWorkflowInitialElements', () => {
       useWorkflowInitialElements(defWithShare, mockStatusTemplates, membersWithOrg),
     );
 
-    const transitionNode = result.current.initialNodes.find((n: Node) => n.type === WorkflowNodeType.transition);
+    const transitionNode = result.current.initialNodes.find(
+      (n: Node) => n.type === WorkflowNodeType.transition,
+    );
     const action = transitionNode?.data.asyncActions[0];
     expect(action.type).toBe('shareWithOrganizations');
     expect(action.params.organizations[0]).toMatchObject({ value: orgId, label: 'Org Alpha' });
@@ -283,7 +286,9 @@ describe('useWorkflowInitialElements', () => {
       useWorkflowInitialElements(defWithUnshare, mockStatusTemplates, mockMembers),
     );
 
-    const transitionNode = result.current.initialNodes.find((n: Node) => n.type === WorkflowNodeType.transition);
+    const transitionNode = result.current.initialNodes.find(
+      (n: Node) => n.type === WorkflowNodeType.transition,
+    );
     const action = transitionNode?.data.asyncActions[0];
     expect(action.type).toBe('unshareFromOrganizations');
   });
@@ -299,15 +304,17 @@ describe('useWorkflowInitialElements', () => {
   it('should not create an outgoing edge when transition.to is null', () => {
     const defWithNullTo: SubTypeWorkflowQuery$data['workflowDefinition'] = {
       ...mockWorkflowDefinition!,
-      transitions: [{
-        from: ['status-open'],
-        to: null,
-        event: 'draft_event',
-        conditions: {},
-        comment: null,
-        asyncActions: [],
-        syncActions: [],
-      }],
+      transitions: [
+        {
+          from: ['status-open'],
+          to: null,
+          event: 'draft_event',
+          conditions: {},
+          comment: null,
+          asyncActions: [],
+          syncActions: [],
+        },
+      ],
     };
 
     const { result } = renderHook(() =>

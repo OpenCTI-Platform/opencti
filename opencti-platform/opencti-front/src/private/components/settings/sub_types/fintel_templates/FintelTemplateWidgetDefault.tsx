@@ -45,9 +45,7 @@ const FintelTemplateWidgetDefault = ({
       }}
     >
       <div style={{ display: 'flex', flex: 1, alignItems: 'center', gap: theme.spacing(1) }}>
-        <Tooltip title={widget.type}>
-          {renderWidgetIcon(widget.type, 'small')}
-        </Tooltip>
+        <Tooltip title={widget.type}>{renderWidgetIcon(widget.type, 'small')}</Tooltip>
 
         <Typography style={{ fontStyle: 'italic', flex: 1 }} variant="body2">
           {widget.parameters?.title ?? variableName}
@@ -55,33 +53,26 @@ const FintelTemplateWidgetDefault = ({
 
         <div>
           <Tooltip title={t_i18n('Change which data to retrieve in this widget')}>
-            <IconButton
-              aria-haspopup="true"
-              color="primary"
-              onClick={onUpdate}
-            >
+            <IconButton aria-haspopup="true" color="primary" onClick={onUpdate}>
               <Edit fontSize="small" />
             </IconButton>
           </Tooltip>
 
           <Tooltip title={t_i18n('Delete widget')}>
-            <IconButton
-              aria-haspopup="true"
-              color="primary"
-              onClick={onDelete}
-            >
+            <IconButton aria-haspopup="true" color="primary" onClick={onDelete}>
               <DeleteOutline fontSize="small" />
             </IconButton>
           </Tooltip>
         </div>
       </div>
 
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: theme.spacing(1),
-        paddingLeft: theme.spacing(3.5),
-      }}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: theme.spacing(1),
+          paddingLeft: theme.spacing(3.5),
+        }}
       >
         <ListItemText secondary={`$${variableName}`} />
 
@@ -92,11 +83,7 @@ const FintelTemplateWidgetDefault = ({
         )}
 
         <Tooltip title={t_i18n('Copy widget name to clipboard')}>
-          <IconButton
-            aria-haspopup="true"
-            color="primary"
-            onClick={copyWidgetToClipboard}
-          >
+          <IconButton aria-haspopup="true" color="primary" onClick={copyWidgetToClipboard}>
             <ContentCopy fontSize="small" />
           </IconButton>
         </Tooltip>

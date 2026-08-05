@@ -6,7 +6,7 @@ type ExclusionList implements InternalObject & BasicObject {
   entity_type: String!
   representative: Representative!
   parent_types: [String!]!
-  metrics:[Metric]
+  metrics: [Metric]
   created_at: DateTime!
   enabled: Boolean!
   exclusion_list_entity_types: [String!]!
@@ -60,7 +60,9 @@ type Query {
 }
 
 type Mutation {
-  exclusionListFileAdd(input: ExclusionListFileAddInput!): ExclusionList @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  exclusionListFieldPatch(id: ID!, input: [EditInput!], file: Upload): ExclusionList @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  exclusionListFileAdd(input: ExclusionListFileAddInput!): ExclusionList
+    @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  exclusionListFieldPatch(id: ID!, input: [EditInput!], file: Upload): ExclusionList
+    @auth(for: [SETTINGS_SETCUSTOMIZATION])
   exclusionListDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }

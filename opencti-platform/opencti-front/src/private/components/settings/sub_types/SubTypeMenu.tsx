@@ -17,40 +17,23 @@ const SubTypeMenu = ({ entityType, tabs }: SubTypeMenuProps) => {
 
   if (!hasAtLeastOneEnabledTab) return null;
 
-  const currentTab = getCurrentTab(location.pathname, `/dashboard/settings/customization/entity_types/${entityType}`);
+  const currentTab = getCurrentTab(
+    location.pathname,
+    `/dashboard/settings/customization/entity_types/${entityType}`,
+  );
 
   return (
-    <Tabs
-      value={currentTab || false}
-      sx={{ paddingBottom: 2 }}
-    >
+    <Tabs value={currentTab || false} sx={{ paddingBottom: 2 }}>
       {tabs.workflow && (
-        <Tab
-          component={Link}
-          to="workflow"
-          value="workflow"
-          label={t_i18n('Workflow')}
-        />
+        <Tab component={Link} to="workflow" value="workflow" label={t_i18n('Workflow')} />
       )}
 
-      {
-        tabs.attributes && (
-          <Tab
-            component={Link}
-            to="attributes"
-            value="attributes"
-            label={t_i18n('Attributes')}
-          />
-        )
-      }
+      {tabs.attributes && (
+        <Tab component={Link} to="attributes" value="attributes" label={t_i18n('Attributes')} />
+      )}
 
       {tabs.templates && (
-        <Tab
-          component={Link}
-          to="templates"
-          value="templates"
-          label={t_i18n('Templates')}
-        />
+        <Tab component={Link} to="templates" value="templates" label={t_i18n('Templates')} />
       )}
 
       {tabs['overview-layout'] && (

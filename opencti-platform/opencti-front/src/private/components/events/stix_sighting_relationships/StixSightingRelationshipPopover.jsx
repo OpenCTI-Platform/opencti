@@ -34,9 +34,7 @@ const styles = (theme) => ({
   },
 });
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 const stixSightingRelationshipPopoverDeletionMutation = graphql`
@@ -93,8 +91,8 @@ class StixSightingRelationshipPopover extends Component {
         id: this.props.stixSightingRelationshipId,
       },
       updater: (store) => {
-        const isUndefinedCallback = this.props.onDelete === undefined
-          || typeof this.props.onDelete !== 'function';
+        const isUndefinedCallback =
+          this.props.onDelete === undefined || typeof this.props.onDelete !== 'function';
         if (isUndefinedCallback) {
           deleteNode(
             store,
@@ -133,12 +131,8 @@ class StixSightingRelationshipPopover extends Component {
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
         >
-          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
-            {t('Update')}
-          </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
-          </MenuItem>
+          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>{t('Update')}</MenuItem>
+          <MenuItem onClick={this.handleOpenDelete.bind(this)}>{t('Delete')}</MenuItem>
         </Menu>
         <StixSightingRelationshipEdition
           variant="noGraph"
@@ -152,9 +146,7 @@ class StixSightingRelationshipPopover extends Component {
           onClose={this.handleCloseDelete.bind(this)}
           title={t('Are you sure?')}
         >
-          <DialogContentText>
-            {t('Do you want to delete this sighting?')}
-          </DialogContentText>
+          <DialogContentText>{t('Do you want to delete this sighting?')}</DialogContentText>
           <DialogActions>
             <Button
               variant="secondary"
@@ -163,10 +155,7 @@ class StixSightingRelationshipPopover extends Component {
             >
               {t('Cancel')}
             </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
+            <Button onClick={this.submitDelete.bind(this)} disabled={this.state.deleting}>
               {t('Confirm')}
             </Button>
           </DialogActions>
@@ -185,7 +174,4 @@ StixSightingRelationshipPopover.propTypes = {
   onDelete: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixSightingRelationshipPopover);
+export default compose(inject18n, withStyles(styles))(StixSightingRelationshipPopover);

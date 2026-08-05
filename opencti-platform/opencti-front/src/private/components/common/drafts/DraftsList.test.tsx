@@ -10,7 +10,9 @@ vi.mock('../../../../relay/environment', () => ({
 }));
 
 vi.mock('../../../../components/dashboard/WidgetContainer', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <div data-testid="widget-container">{children}</div>,
+  default: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="widget-container">{children}</div>
+  ),
 }));
 
 vi.mock('../../../../components/dashboard/WidgetNoData', () => ({
@@ -37,9 +39,8 @@ vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
 }));
 
 vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
-  default: ({ queryRef, children }: { queryRef: unknown; children: React.ReactNode }) => (
-    queryRef ? <>{children}</> : <div data-testid="loader" />
-  ),
+  default: ({ queryRef, children }: { queryRef: unknown; children: React.ReactNode }) =>
+    queryRef ? <>{children}</> : <div data-testid="loader" />,
 }));
 
 vi.mock('../../../../components/dashboard/dashboardVizUtils', () => ({
@@ -56,11 +57,13 @@ import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
 describe('DraftsList', () => {
   const minimalProps = {
     config: { relativeDate: null, startDate: null, endDate: null },
-    dataSelection: [{
-      filters: emptyFilterGroup,
-      date_attribute: 'created_at',
-      sort_by: 'created_at',
-    }],
+    dataSelection: [
+      {
+        filters: emptyFilterGroup,
+        date_attribute: 'created_at',
+        sort_by: 'created_at',
+      },
+    ],
     widgetId: 'widget-1',
     parameters: {},
   };
@@ -79,10 +82,12 @@ describe('DraftsList', () => {
     // The component uses created_at as fallback when date_attribute is empty
     const propsWithEmptyDate = {
       ...minimalProps,
-      dataSelection: [{
-        ...minimalProps.dataSelection[0],
-        date_attribute: '',
-      }],
+      dataSelection: [
+        {
+          ...minimalProps.dataSelection[0],
+          date_attribute: '',
+        },
+      ],
     };
     const { container } = testRender(<DraftsList {...propsWithEmptyDate} />);
     expect(container).toBeTruthy();

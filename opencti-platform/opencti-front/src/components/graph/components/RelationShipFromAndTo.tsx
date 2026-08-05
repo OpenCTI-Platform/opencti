@@ -132,9 +132,10 @@ interface RelationShipFromAndToComponentProps {
   queryRef: PreloadedQuery<RelationShipFromAndToQuery>;
   direction: string;
 }
-const RelationShipFromAndToComponent: FunctionComponent<
-  RelationShipFromAndToComponentProps
-> = ({ queryRef, direction }) => {
+const RelationShipFromAndToComponent: FunctionComponent<RelationShipFromAndToComponentProps> = ({
+  queryRef,
+  direction,
+}) => {
   const { t_i18n } = useFormatter();
   const entity = usePreloadedQuery<RelationShipFromAndToQuery>(
     relationShipFromAndToQuery,
@@ -147,9 +148,7 @@ const RelationShipFromAndToComponent: FunctionComponent<
   return (
     <React.Fragment>
       <div>
-        <Label>
-          {t_i18n(direction === 'From' ? 'Source' : 'Target')}
-        </Label>
+        <Label>{t_i18n(direction === 'From' ? 'Source' : 'Target')}</Label>
         <Tooltip title={getMainRepresentative(stixCoreObject)}>
           <span>{truncate(getMainRepresentative(stixCoreObject), 40)}</span>
         </Tooltip>
@@ -164,19 +163,14 @@ interface RelationShipFromAndToProps {
   queryRef: PreloadedQuery<RelationShipFromAndToQuery>;
 }
 
-const RelationShipFromAndTo: FunctionComponent<
-  Omit<RelationShipFromAndToProps, 'queryRef'>
-> = ({ id, direction }) => {
-  const queryRef = useQueryLoading<RelationShipFromAndToQuery>(
-    relationShipFromAndToQuery,
-    { id },
-  );
+const RelationShipFromAndTo: FunctionComponent<Omit<RelationShipFromAndToProps, 'queryRef'>> = ({
+  id,
+  direction,
+}) => {
+  const queryRef = useQueryLoading<RelationShipFromAndToQuery>(relationShipFromAndToQuery, { id });
   return queryRef ? (
     <React.Suspense fallback={<div />}>
-      <RelationShipFromAndToComponent
-        queryRef={queryRef}
-        direction={direction}
-      />
+      <RelationShipFromAndToComponent queryRef={queryRef} direction={direction} />
     </React.Suspense>
   ) : (
     <div />

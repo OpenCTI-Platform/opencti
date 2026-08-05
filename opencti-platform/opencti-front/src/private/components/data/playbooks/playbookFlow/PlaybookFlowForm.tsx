@@ -25,11 +25,23 @@ import SelectField from '../../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../../components/i18n';
 import { parse } from '../../../../../utils/Time';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
-import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../../utils/filters/filtersUtils';
+import {
+  deserializeFilterGroupForFrontend,
+  emptyFilterGroup,
+  serializeFilterGroupForBackend,
+} from '../../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../../utils/filters/useFiltersState';
-import type { PlaybookBundleElementsToApply, PlaybookComponentConfigSchema, PlaybookComponents, PlaybookConfig, PlaybookNode } from '../types/playbook-types';
+import type {
+  PlaybookBundleElementsToApply,
+  PlaybookComponentConfigSchema,
+  PlaybookComponents,
+  PlaybookConfig,
+  PlaybookNode,
+} from '../types/playbook-types';
 import PlaybookFlowFieldAccessRestrictions from './playbookFlowFields/PlaybookFlowFieldAccessRestrictions';
-import PlaybookFlowFieldArray, { PlaybookFlowFieldArrayProps } from './playbookFlowFields/PlaybookFlowFieldArray';
+import PlaybookFlowFieldArray, {
+  PlaybookFlowFieldArrayProps,
+} from './playbookFlowFields/PlaybookFlowFieldArray';
 import PlaybookFlowFieldAuthorizedMembers from './playbookFlowFields/PlaybookFlowFieldAuthorizedMembers';
 import PlaybookFlowFieldBoolean from './playbookFlowFields/PlaybookFlowFieldBoolean';
 import PlaybookFlowFieldCaseTemplates from './playbookFlowFields/PlaybookFlowFieldCaseTemplates';
@@ -46,25 +58,24 @@ import PlaybookFlowFieldActions from './playbookFlowFields/playbookFlowFieldsAct
 import { PlaybookUpdateActionsForm } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
 import { computeInitialComponentConfigValues } from './playbookComponents-utils';
 
-export type PlaybookFlowFormData
+export type PlaybookFlowFormData =
   // Component: update knowledge
-  = PlaybookUpdateActionsForm
-    & {
+  PlaybookUpdateActionsForm & {
     // Common for several components
-      name: string;
-      description?: string;
-      applyToElements?: PlaybookBundleElementsToApply;
-      filters?: string;
-      // Component: CRON
-      time?: string;
-      period?: string;
-      day?: string;
-      triggerTime?: string;
-      // Component: Container wrapper
-      newContainer?: boolean;
-      // Component : create indicator and create observable
-      wrap_in_container?: boolean;
-    };
+    name: string;
+    description?: string;
+    applyToElements?: PlaybookBundleElementsToApply;
+    filters?: string;
+    // Component: CRON
+    time?: string;
+    period?: string;
+    day?: string;
+    triggerTime?: string;
+    // Component: Container wrapper
+    newContainer?: boolean;
+    // Component : create indicator and create observable
+    wrap_in_container?: boolean;
+  };
 
 interface PlaybookFlowFormProps {
   action: string | null;
@@ -72,7 +83,12 @@ interface PlaybookFlowFormProps {
   playbookComponents: PlaybookComponents;
   componentId: string | null;
   onConfigAdd: (component: unknown, name: string, config: unknown, description?: string) => void;
-  onConfigReplace: (component: unknown, name: string, config: unknown, description?: string) => void;
+  onConfigReplace: (
+    component: unknown,
+    name: string,
+    config: unknown,
+    description?: string,
+  ) => void;
   handleClose: () => void;
 }
 
@@ -86,22 +102,24 @@ const PlaybookFlowForm = ({
   handleClose,
 }: PlaybookFlowFormProps) => {
   const { t_i18n } = useFormatter();
-  const nodeData = (action === 'config' || action === 'replace') ? selectedNode?.data : undefined;
+  const nodeData = action === 'config' || action === 'replace' ? selectedNode?.data : undefined;
   const currentConfig = nodeData?.configuration ?? null;
 
-  const filtersState = useFiltersState(currentConfig?.filters
-    ? deserializeFilterGroupForFrontend(currentConfig.filters)
-    : emptyFilterGroup,
+  const filtersState = useFiltersState(
+    currentConfig?.filters
+      ? deserializeFilterGroupForFrontend(currentConfig.filters)
+      : emptyFilterGroup,
   );
 
-  const elementsFiltersState = useFiltersState(currentConfig?.applyWithFilters
-    ? deserializeFilterGroupForFrontend(currentConfig.applyWithFilters)
-    : emptyFilterGroup,
+  const elementsFiltersState = useFiltersState(
+    currentConfig?.applyWithFilters
+      ? deserializeFilterGroupForFrontend(currentConfig.applyWithFilters)
+      : emptyFilterGroup,
   );
 
   const selectedComponent = playbookComponents.find((c) => c?.id === componentId);
   const configurationSchema = selectedComponent?.configuration_schema
-    ? JSON.parse(selectedComponent.configuration_schema) as PlaybookComponentConfigSchema
+    ? (JSON.parse(selectedComponent.configuration_schema) as PlaybookComponentConfigSchema)
     : null;
 
   // Submit function that formats correctly the data for the backend.
@@ -134,8 +152,6 @@ const PlaybookFlowForm = ({
     // (transform the array to object keys, needed to keep same format as before refactoring).
     if (actionsFormValues) {
       actionsFormValues.forEach((value, i) => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         finalConfig[`actions-${i}-value`] = value;
       });
     }
@@ -154,7 +170,13 @@ const PlaybookFlowForm = ({
     name: Yup.string().trim().required(t_i18n('This field is required')),
   });
 
-  const initialValues = computeInitialComponentConfigValues({ action, currentConfig, configurationSchema, nodeData, selectedComponent });
+  const initialValues = computeInitialComponentConfigValues({
+    action,
+    currentConfig,
+    configurationSchema,
+    nodeData,
+    selectedComponent,
+  });
 
   return (
     <div style={{ padding: '0px 0px 20px 0px' }}>
@@ -191,180 +213,173 @@ const PlaybookFlowForm = ({
                 multiline
                 style={fieldSpacingContainerStyle}
               />
-              {Object.entries(configurationSchema?.properties ?? {}).map(
-                ([propName, property]) => {
-                  if (propName === 'access_restrictions') {
-                    return <PlaybookFlowFieldAccessRestrictions key={propName} />;
-                  }
-                  if (propName === 'authorized_members') {
-                    return <PlaybookFlowFieldAuthorizedMembers key={propName} />;
-                  }
-                  if (propName === 'run_as') {
-                    return (
-                      <PlaybookFlowFieldRunAs
-                        key={propName}
-                        name={propName}
-                        label={property.$ref ?? 'Run as'}
-                        style={fieldSpacingContainerStyle}
-                      />
-                    );
-                  }
-                  if (propName === 'periodicity' || propName === 'duration') {
-                    return (
-                      <PeriodicityField
-                        key={propName}
-                        name={propName}
-                        label={t_i18n(property.$ref)}
-                        style={fieldSpacingContainerStyle}
-                      />
-                    );
-                  }
-                  if (propName === 'type_affinity') {
-                    return (
-                      <Field
-                        key={propName}
-                        component={SelectField}
-                        variant="standard"
-                        name="type_affinity"
-                        label={t_i18n('Type affinity')}
-                        fullWidth={true}
-                        containerstyle={{ width: '100%', marginTop: 20 }}
-                      >
-                        <MenuItem key="ENDPOINT" value="ENDPOINT">
-                          {t_i18n('Endpoint')}
-                        </MenuItem>
-                      </Field>
-                    );
-                  }
-                  if (propName === 'platforms_affinity') {
-                    return (
-                      <OpenVocabField
-                        key={propName}
-                        name={propName}
-                        type="platforms_ov"
-                        label={t_i18n(property.$ref)}
-                        containerStyle={fieldSpacingContainerStyle}
-                        multiple={true}
-                      />
-                    );
-                  }
-                  if (propName === 'organizations') {
-                    return <PlaybookFlowFieldOrganizations key={propName} />;
-                  }
-                  if (propName === 'inPirFilters') {
-                    return <PlaybookFlowFieldInPirFilters key={propName} />;
-                  }
-                  if (propName === 'targets') {
-                    return <PlaybookFlowFieldTargets key={propName} />;
-                  }
-                  if (propName === 'caseTemplates') {
-                    return <PlaybookFlowFieldCaseTemplates key={propName} />;
-                  }
-                  if (propName === 'filters') {
-                    return (
-                      <PlaybookFlowFieldFilters
-                        key={propName}
-                        componentId={componentId}
-                        filtersState={filtersState}
-                      />
-                    );
-                  }
-                  if (propName === 'applyWithFilters') {
-                    return (
-                      <PlaybookFlowFieldFilters
-                        label={t_i18n('Apply when')}
-                        key={propName}
-                        componentId={componentId}
-                        filtersState={elementsFiltersState}
-                      />
-                    );
-                  }
-                  if (propName === 'period') {
-                    return <PlaybookFlowFieldPeriod key={propName} />;
-                  }
-                  if (propName === 'triggerTime') {
-                    return <PlaybookFlowFieldTriggerTime key={propName} />;
-                  }
-                  if (propName === 'actions') {
-                    return (
-                      <PlaybookFlowFieldActions
-                        key={propName}
-                        operations={property.items?.properties?.op?.enum}
-                      />
-                    );
-                  }
-                  if (property.type === 'number') {
-                    return (
-                      <PlaybookFlowFieldNumber
-                        key={propName}
-                        name={propName}
-                        label={t_i18n(property.$ref ?? propName)}
-                      />
-                    );
-                  }
-                  if (property.type === 'boolean') {
-                    let helperText = '';
-                    if (propName === 'create_rel') {
-                      helperText = t_i18n('If both entities are of interest for selected PIR, then the target is kept');
-                    }
-                    return (
-                      <PlaybookFlowFieldBoolean
-                        key={propName}
-                        name={propName}
-                        helperText={helperText}
-                        label={t_i18n(property.$ref ?? propName)}
-                      />
-                    );
-                  }
-                  if (property.type === 'string' && property.oneOf) {
-                    return (
-                      <PlaybookFlowFieldArray
-                        key={propName}
-                        name={propName}
-                        label={t_i18n(property.$ref ?? propName)}
-                        options={property.oneOf as PlaybookFlowFieldArrayProps['options']}
-                        required={requiredProperties.includes(propName)}
-                      />
-                    );
-                  }
-                  if (property.type === 'array') {
-                    return (
-                      <PlaybookFlowFieldArray
-                        key={propName}
-                        name={propName}
-                        label={t_i18n(property.$ref ?? propName)}
-                        options={(property.items?.oneOf ?? []) as PlaybookFlowFieldArrayProps['options']}
-                        multiple
-                      />
-                    );
-                  }
-                  const isTextarea = property.format === 'textarea';
+              {Object.entries(configurationSchema?.properties ?? {}).map(([propName, property]) => {
+                if (propName === 'access_restrictions') {
+                  return <PlaybookFlowFieldAccessRestrictions key={propName} />;
+                }
+                if (propName === 'authorized_members') {
+                  return <PlaybookFlowFieldAuthorizedMembers key={propName} />;
+                }
+                if (propName === 'run_as') {
                   return (
-                    <PlaybookFlowFieldString
+                    <PlaybookFlowFieldRunAs
+                      key={propName}
+                      name={propName}
+                      label={property.$ref ?? 'Run as'}
+                      style={fieldSpacingContainerStyle}
+                    />
+                  );
+                }
+                if (propName === 'periodicity' || propName === 'duration') {
+                  return (
+                    <PeriodicityField
+                      key={propName}
+                      name={propName}
+                      label={t_i18n(property.$ref)}
+                      style={fieldSpacingContainerStyle}
+                    />
+                  );
+                }
+                if (propName === 'type_affinity') {
+                  return (
+                    <Field
+                      key={propName}
+                      component={SelectField}
+                      variant="standard"
+                      name="type_affinity"
+                      label={t_i18n('Type affinity')}
+                      fullWidth={true}
+                      containerstyle={{ width: '100%', marginTop: 20 }}
+                    >
+                      <MenuItem key="ENDPOINT" value="ENDPOINT">
+                        {t_i18n('Endpoint')}
+                      </MenuItem>
+                    </Field>
+                  );
+                }
+                if (propName === 'platforms_affinity') {
+                  return (
+                    <OpenVocabField
+                      key={propName}
+                      name={propName}
+                      type="platforms_ov"
+                      label={t_i18n(property.$ref)}
+                      containerStyle={fieldSpacingContainerStyle}
+                      multiple={true}
+                    />
+                  );
+                }
+                if (propName === 'organizations') {
+                  return <PlaybookFlowFieldOrganizations key={propName} />;
+                }
+                if (propName === 'inPirFilters') {
+                  return <PlaybookFlowFieldInPirFilters key={propName} />;
+                }
+                if (propName === 'targets') {
+                  return <PlaybookFlowFieldTargets key={propName} />;
+                }
+                if (propName === 'caseTemplates') {
+                  return <PlaybookFlowFieldCaseTemplates key={propName} />;
+                }
+                if (propName === 'filters') {
+                  return (
+                    <PlaybookFlowFieldFilters
+                      key={propName}
+                      componentId={componentId}
+                      filtersState={filtersState}
+                    />
+                  );
+                }
+                if (propName === 'applyWithFilters') {
+                  return (
+                    <PlaybookFlowFieldFilters
+                      label={t_i18n('Apply when')}
+                      key={propName}
+                      componentId={componentId}
+                      filtersState={elementsFiltersState}
+                    />
+                  );
+                }
+                if (propName === 'period') {
+                  return <PlaybookFlowFieldPeriod key={propName} />;
+                }
+                if (propName === 'triggerTime') {
+                  return <PlaybookFlowFieldTriggerTime key={propName} />;
+                }
+                if (propName === 'actions') {
+                  return (
+                    <PlaybookFlowFieldActions
+                      key={propName}
+                      operations={property.items?.properties?.op?.enum}
+                    />
+                  );
+                }
+                if (property.type === 'number') {
+                  return (
+                    <PlaybookFlowFieldNumber
                       key={propName}
                       name={propName}
                       label={t_i18n(property.$ref ?? propName)}
-                      multiline={isTextarea}
-                      rows={isTextarea ? 3 : undefined}
                     />
                   );
-                },
-              )}
+                }
+                if (property.type === 'boolean') {
+                  let helperText = '';
+                  if (propName === 'create_rel') {
+                    helperText = t_i18n(
+                      'If both entities are of interest for selected PIR, then the target is kept',
+                    );
+                  }
+                  return (
+                    <PlaybookFlowFieldBoolean
+                      key={propName}
+                      name={propName}
+                      helperText={helperText}
+                      label={t_i18n(property.$ref ?? propName)}
+                    />
+                  );
+                }
+                if (property.type === 'string' && property.oneOf) {
+                  return (
+                    <PlaybookFlowFieldArray
+                      key={propName}
+                      name={propName}
+                      label={t_i18n(property.$ref ?? propName)}
+                      options={property.oneOf as PlaybookFlowFieldArrayProps['options']}
+                      required={requiredProperties.includes(propName)}
+                    />
+                  );
+                }
+                if (property.type === 'array') {
+                  return (
+                    <PlaybookFlowFieldArray
+                      key={propName}
+                      name={propName}
+                      label={t_i18n(property.$ref ?? propName)}
+                      options={
+                        (property.items?.oneOf ?? []) as PlaybookFlowFieldArrayProps['options']
+                      }
+                      multiple
+                    />
+                  );
+                }
+                const isTextarea = property.format === 'textarea';
+                return (
+                  <PlaybookFlowFieldString
+                    key={propName}
+                    name={propName}
+                    label={t_i18n(property.$ref ?? propName)}
+                    multiline={isTextarea}
+                    rows={isTextarea ? 3 : undefined}
+                  />
+                );
+              })}
               <FormButtonContainer>
-                <Button
-                  variant="secondary"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                >
+                <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={!actionsAreValid || isSubmitting}
-                >
-                  {selectedNode?.data?.component?.id
-                    ? t_i18n('Update')
-                    : t_i18n('Create')}
+                <Button onClick={submitForm} disabled={!actionsAreValid || isSubmitting}>
+                  {selectedNode?.data?.component?.id ? t_i18n('Update') : t_i18n('Create')}
                 </Button>
               </FormButtonContainer>
             </Form>

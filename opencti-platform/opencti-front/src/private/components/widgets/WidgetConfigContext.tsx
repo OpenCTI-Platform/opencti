@@ -1,5 +1,11 @@
 import React, { createContext, Dispatch, ReactNode, useContext, useEffect, useState } from 'react';
-import type { Widget, WidgetHost, WidgetDataSelection, WidgetParameters, WidgetPerspective } from '../../../utils/widget/widget';
+import type {
+  Widget,
+  WidgetHost,
+  WidgetDataSelection,
+  WidgetParameters,
+  WidgetPerspective,
+} from '../../../utils/widget/widget';
 import { emptyFilterGroup, SELF_ID } from '../../../utils/filters/filtersUtils';
 import { getCurrentDataSelectionLimit } from '../../../utils/widget/widgetUtils';
 import type { WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
@@ -21,14 +27,9 @@ interface WidgetConfigContextProps {
   setStep: Dispatch<React.SetStateAction<number>>;
   config: WidgetConfigType;
   setConfigWidget: (widget: WidgetConfigType['widget']) => void;
-  setConfigVariableName: (
-    variableName: WidgetConfigType['fintelVariableName'],
-  ) => void;
+  setConfigVariableName: (variableName: WidgetConfigType['fintelVariableName']) => void;
   setDataSelection: (dataSelection: WidgetDataSelection[]) => void;
-  setDataSelectionWithIndex: (
-    selection: WidgetDataSelection,
-    index: number,
-  ) => void;
+  setDataSelectionWithIndex: (selection: WidgetDataSelection, index: number) => void;
 }
 
 const WidgetConfigContext = createContext<WidgetConfigContextProps | undefined>(undefined);
@@ -42,11 +43,7 @@ interface WidgetConfigProviderProps {
   open: boolean;
 }
 
-const buildConfig = (
-  context: WidgetHost,
-  w?: Widget,
-  varName?: string,
-): WidgetConfigType => {
+const buildConfig = (context: WidgetHost, w?: Widget, varName?: string): WidgetConfigType => {
   let type = w?.type ?? '';
   if (type === '' && context.kind === 'fintelTemplate') {
     type = 'list';
@@ -58,20 +55,23 @@ const buildConfig = (
       type: type as WidgetVisualizationTypes | '',
       perspective: w?.perspective ?? null,
       parameters: w?.parameters ?? {},
-      dataSelection: w?.dataSelection ?? [{
-        label: '',
-        number: 10,
-        sort_by: 'created_at',
-        sort_mode: 'desc',
-        attribute: 'entity_type',
-        date_attribute: 'created_at',
-        perspective: null,
-        isTo: true,
-        filters: emptyFilterGroup,
-        dynamicFrom: emptyFilterGroup,
-        dynamicTo: emptyFilterGroup,
-        instance_id: (w?.type === 'attribute' || w?.type === 'custom-attributes') ? SELF_ID : undefined,
-      }],
+      dataSelection: w?.dataSelection ?? [
+        {
+          label: '',
+          number: 10,
+          sort_by: 'created_at',
+          sort_mode: 'desc',
+          attribute: 'entity_type',
+          date_attribute: 'created_at',
+          perspective: null,
+          isTo: true,
+          filters: emptyFilterGroup,
+          dynamicFrom: emptyFilterGroup,
+          dynamicTo: emptyFilterGroup,
+          instance_id:
+            w?.type === 'attribute' || w?.type === 'custom-attributes' ? SELF_ID : undefined,
+        },
+      ],
     },
   };
 };
@@ -96,7 +96,11 @@ export const WidgetConfigProvider = ({
     setConfig(buildConfig(host, initialWidget, initialVariableName));
     let initialStep = 0;
     if (initialWidget) {
-      if (initialWidget?.type === 'text' || initialWidget?.type === 'attribute' || initialWidget?.type === 'custom-attributes') {
+      if (
+        initialWidget?.type === 'text' ||
+        initialWidget?.type === 'attribute' ||
+        initialWidget?.type === 'custom-attributes'
+      ) {
         initialStep = 3;
       } else if (initialWidget?.dataSelection) {
         initialStep = 2;
@@ -153,17 +157,18 @@ export const WidgetConfigProvider = ({
   };
 
   return (
-    <WidgetConfigContext.Provider value={{
-      host,
-      disabledSteps,
-      config: conf,
-      setConfigWidget,
-      setConfigVariableName,
-      setDataSelection,
-      setDataSelectionWithIndex,
-      step,
-      setStep,
-    }}
+    <WidgetConfigContext.Provider
+      value={{
+        host,
+        disabledSteps,
+        config: conf,
+        setConfigWidget,
+        setConfigVariableName,
+        setDataSelection,
+        setDataSelectionWithIndex,
+        step,
+        setStep,
+      }}
     >
       {children}
     </WidgetConfigContext.Provider>

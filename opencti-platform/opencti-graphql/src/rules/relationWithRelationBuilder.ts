@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { createInferredRelation, deleteInferredRuleElement } from '../database/middleware';
 import { buildPeriodFromDates, computeRangeIntersection } from '../utils/format';
 import { createRuleContent } from './rules-utils';
@@ -11,7 +10,10 @@ import type { BasicStoreRelation, StoreObject } from '../types/store';
 import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { executionContext, RULE_MANAGER_USER } from '../utils/access';
 
-const buildRelationWithRelationRule = (ruleDefinition: RuleDefinition, relationTypes: RelationTypes): RuleRuntime => {
+const buildRelationWithRelationRule = (
+  ruleDefinition: RuleDefinition,
+  relationTypes: RelationTypes,
+): RuleRuntime => {
   const { id } = ruleDefinition;
   const { leftType, rightType, creationType } = relationTypes;
   const resolveTypes = { [leftType]: rightType, [rightType]: leftType };
@@ -31,7 +33,11 @@ const buildRelationWithRelationRule = (ruleDefinition: RuleDefinition, relationT
       const rels = relationships.filter((r) => r.internal_id !== createdId);
       for (let relIndex = 0; relIndex < rels.length; relIndex += 1) {
         const { internal_id: foundRelationId, toId, confidence } = rels[relIndex];
-        const { start_time, stop_time, [RELATION_OBJECT_MARKING]: object_marking_refs } = rels[relIndex];
+        const {
+          start_time,
+          stop_time,
+          [RELATION_OBJECT_MARKING]: object_marking_refs,
+        } = rels[relIndex];
         // If we looking for left side relation, relation toId of found rel will be the to of the creation
         // If we looking for right side, relation toId of found rel will be the from of the creation
         const inferenceFromId = relationTypeToFind === leftType ? targetRef : toId;
@@ -44,7 +50,11 @@ const buildRelationWithRelationRule = (ruleDefinition: RuleDefinition, relationT
         const dependencies = [sourceRef, createdId, targetRef, foundRelationId, toId];
         const explanation = [foundRelationId, createdId];
         // Create the inferred relation
-        const input = { fromId: inferenceFromId, toId: inferenceToId, relationship_type: creationType };
+        const input = {
+          fromId: inferenceFromId,
+          toId: inferenceToId,
+          relationship_type: creationType,
+        };
         const ruleContent = createRuleContent(id, dependencies, explanation, {
           confidence: computedConfidence,
           start_time: range.start,

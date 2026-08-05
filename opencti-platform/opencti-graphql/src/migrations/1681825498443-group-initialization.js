@@ -10,7 +10,9 @@ export const up = async (next) => {
   logApp.info('[MIGRATION] Group initialization migration');
   const context = executionContext('migration');
   const groups = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_GROUP]);
-  const patchingGroups = groups.filter((g) => g.auto_new_marking === undefined || g.default_assignation === undefined);
+  const patchingGroups = groups.filter(
+    (g) => g.auto_new_marking === undefined || g.default_assignation === undefined,
+  );
   logApp.info(`[MIGRATION] Group initialization patching ${patchingGroups.length} groups`);
   let currentProcessing = 0;
   const concurrentUpdate = async (group) => {
@@ -23,7 +25,9 @@ export const up = async (next) => {
     }
     await groupEditField(context, SYSTEM_USER, group.id, updateInput);
     currentProcessing += 1;
-    logApp.info(`[OPENCTI] Group initialization patching : ${currentProcessing} / ${patchingGroups.length}`);
+    logApp.info(
+      `[OPENCTI] Group initialization patching : ${currentProcessing} / ${patchingGroups.length}`,
+    );
   };
   await Promise.map(patchingGroups, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
   logApp.info('[MIGRATION] Group initialization done.');

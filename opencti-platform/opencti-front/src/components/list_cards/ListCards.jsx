@@ -8,7 +8,13 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-import { ArrowDownward, ArrowUpward, FileDownloadOutlined, ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
+import {
+  ArrowDownward,
+  ArrowUpward,
+  FileDownloadOutlined,
+  ViewListOutlined,
+  ViewModuleOutlined,
+} from '@mui/icons-material';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import { UserContext } from '../../utils/hooks/useAuth';
@@ -91,11 +97,7 @@ class ListCards extends Component {
           return (
             <>
               <div className={classes.parameters}>
-                <SearchInput
-                  variant="small"
-                  onSubmit={handleSearch.bind(this)}
-                  keyword={keyword}
-                />
+                <SearchInput variant="small" onSubmit={handleSearch.bind(this)} keyword={keyword} />
                 {availableFilterKeys.length > 0 && (
                   <Filters
                     helpers={helpers}
@@ -109,9 +111,7 @@ class ListCards extends Component {
                   />
                 )}
                 <div className={classes.sortFieldContainer}>
-                  <InputLabel classes={{ root: classes.sortFieldLabel }}>
-                    {t('Sort by')}
-                  </InputLabel>
+                  <InputLabel classes={{ root: classes.sortFieldLabel }}>{t('Sort by')}</InputLabel>
                   <FormControl>
                     <Select
                       name="sort-by"
@@ -134,11 +134,7 @@ class ListCards extends Component {
                       ))}
                     </Select>
                   </FormControl>
-                  <IconButton
-                    aria-label="Sort by"
-                    onClick={this.reverse.bind(this)}
-                    size="small"
-                  >
+                  <IconButton aria-label="Sort by" onClick={this.reverse.bind(this)} size="small">
                     {orderAsc ? (
                       <ArrowDownward fontSize="small" />
                     ) : (
@@ -154,8 +150,8 @@ class ListCards extends Component {
                       {t('entitie(s)')}
                     </div>
                   )}
-                  {(typeof handleChangeView === 'function'
-                    || typeof handleToggleExports === 'function') && (
+                  {(typeof handleChangeView === 'function' ||
+                    typeof handleToggleExports === 'function') && (
                     <ToggleButtonGroup
                       size="small"
                       value="cards"
@@ -182,25 +178,16 @@ class ListCards extends Component {
                           </ToggleButton>
                         </Tooltip>
                       )}
-                      {typeof handleToggleExports === 'function'
-                        && !exportDisabled && (
+                      {typeof handleToggleExports === 'function' && !exportDisabled && (
                         <Tooltip title={t('Open export panel')}>
                           <ToggleButton value="export" aria-label="export">
-                            <FileDownloadOutlined
-                              color="primary"
-                              fontSize="small"
-                            />
+                            <FileDownloadOutlined color="primary" fontSize="small" />
                           </ToggleButton>
                         </Tooltip>
                       )}
-                      {typeof handleToggleExports === 'function'
-                        && exportDisabled && (
+                      {typeof handleToggleExports === 'function' && exportDisabled && (
                         <Tooltip
-                          title={`${
-                            t(
-                              'Export is disabled because too many entities are targeted (maximum number of entities is: ',
-                            ) + export_max_size
-                          })`}
+                          title={`${t('Export is disabled because too many entities are targeted (maximum number of entities is: ') + export_max_size})`}
                         >
                           <span>
                             <ToggleButton
@@ -217,21 +204,19 @@ class ListCards extends Component {
                     </ToggleButtonGroup>
                   )}
 
-                  {
-                    additionalHeaderButtons && (
-                      <Stack
-                        direction="row"
-                        gap={1}
-                        sx={{
-                          '&:empty': {
-                            display: 'none',
-                          },
-                        }}
-                      >
-                        {[...additionalHeaderButtons]}
-                      </Stack>
-                    )
-                  }
+                  {additionalHeaderButtons && (
+                    <Stack
+                      direction="row"
+                      gap={1}
+                      sx={{
+                        '&:empty': {
+                          display: 'none',
+                        },
+                      }}
+                    >
+                      {[...additionalHeaderButtons]}
+                    </Stack>
+                  )}
 
                   {createButton}
                 </Stack>

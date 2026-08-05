@@ -18,7 +18,10 @@ import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import { serializeFilterGroupForBackend, useAvailableFilterKeysForEntityTypes } from '../../../../utils/filters/filtersUtils';
+import {
+  serializeFilterGroupForBackend,
+  useAvailableFilterKeysForEntityTypes,
+} from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { insertNode } from '../../../../utils/store';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
@@ -28,30 +31,28 @@ import CreateEntityControlledDial from '../../../../components/CreateEntityContr
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 
 const RetentionCreationMutation = graphql`
-    mutation RetentionCreationMutation($input: RetentionRuleAddInput!) {
-        retentionRuleAdd(input: $input) {
-            ...RetentionLine_node
-        }
+  mutation RetentionCreationMutation($input: RetentionRuleAddInput!) {
+    retentionRuleAdd(input: $input) {
+      ...RetentionLine_node
     }
+  }
 `;
 
 const RetentionCheckMutation = graphql`
-    mutation RetentionCreationCheckMutation($input: RetentionRuleAddInput!) {
-        retentionRuleCheck(input: $input)
-    }
+  mutation RetentionCreationCheckMutation($input: RetentionRuleAddInput!) {
+    retentionRuleCheck(input: $input)
+  }
 `;
 
-const RetentionCreationValidation = (t: (text: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  retention_unit: Yup.string().required(t('This field is required')),
-  max_retention: Yup.number().min(1, t('This field must be >= 1')),
-});
+const RetentionCreationValidation = (t: (text: string) => string) =>
+  Yup.object().shape({
+    name: Yup.string().required(t('This field is required')),
+    retention_unit: Yup.string().required(t('This field is required')),
+    max_retention: Yup.number().min(1, t('This field must be >= 1')),
+  });
 
 const CreateRetentionControlledDial = (props: DrawerControlledDialProps) => (
-  <CreateEntityControlledDial
-    entityType="RetentionRule"
-    {...props}
-  />
+  <CreateEntityControlledDial entityType="RetentionRule" {...props} />
 );
 
 interface RetentionFormValues {
@@ -61,15 +62,25 @@ interface RetentionFormValues {
   filters: string;
 }
 
-const RetentionCreation = ({ paginationOptions }: { paginationOptions: RetentionLinesPaginationQuery$variables }) => {
+const RetentionCreation = ({
+  paginationOptions,
+}: {
+  paginationOptions: RetentionLinesPaginationQuery$variables;
+}) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
 
   const [filters, helpers] = useFiltersState();
   const [verified, setVerified] = useState(false);
-  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
+  const availableFilterKeys = useAvailableFilterKeysForEntityTypes([
+    'Stix-Core-Object',
+    'stix-core-relationship',
+  ]);
 
-  const onSubmit: FormikConfig<RetentionFormValues>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
+  const onSubmit: FormikConfig<RetentionFormValues>['onSubmit'] = (
+    values,
+    { setSubmitting, resetForm },
+  ) => {
     const jsonFilters = serializeFilterGroupForBackend(filters);
     const finalValues = {
       ...values,
@@ -83,12 +94,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
         input: finalValues,
       },
       updater: (store: RecordSourceSelectorProxy) => {
-        insertNode(
-          store,
-          'Pagination_retentionRules',
-          paginationOptions,
-          'retentionRuleAdd',
-        );
+        insertNode(store, 'Pagination_retentionRules', paginationOptions, 'retentionRuleAdd');
       },
       setSubmitting,
       onCompleted: () => {
@@ -138,12 +144,25 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
     >
       {({ onClose }) => (
         <Formik
-          initialValues={{ name: '', max_retention: '31', retention_unit: 'days', scope: 'knowledge', filters: '' }}
+          initialValues={{
+            name: '',
+            max_retention: '31',
+            retention_unit: 'days',
+            scope: 'knowledge',
+            filters: '',
+          }}
           validationSchema={RetentionCreationValidation(t_i18n)}
           onSubmit={onSubmit}
           onReset={onClose}
         >
-          {({ submitForm, handleReset, isSubmitting, values: formValues, validateForm, setTouched }) => (
+          {({
+            submitForm,
+            handleReset,
+            isSubmitting,
+            values: formValues,
+            validateForm,
+            setTouched,
+          }) => (
             <Form>
               <Field
                 component={TextField}
@@ -204,13 +223,14 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
               >
                 <MenuItem value="knowledge">{t_i18n('Knowledge')}</MenuItem>
               </Field>
-              <Box sx={{
-                paddingTop: 4,
-                display: 'flex',
-                alignItems: 'center',
-                gap: theme.spacing(1),
-                marginBottom: theme.spacing(1),
-              }}
+              <Box
+                sx={{
+                  paddingTop: 4,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: theme.spacing(1),
+                  marginBottom: theme.spacing(1),
+                }}
               >
                 <Filters
                   availableFilterKeys={availableFilterKeys}
@@ -225,11 +245,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                 searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
               />
               <FormButtonContainer>
-                <Button
-                  variant="secondary"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                >
+                <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
@@ -245,10 +261,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                 >
                   {t_i18n('Verify')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={!verified || isSubmitting}
-                >
+                <Button onClick={submitForm} disabled={!verified || isSubmitting}>
                   {t_i18n('Create')}
                 </Button>
               </FormButtonContainer>

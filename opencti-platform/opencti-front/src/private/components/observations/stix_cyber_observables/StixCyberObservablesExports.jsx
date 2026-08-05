@@ -4,13 +4,13 @@ import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Slide from '@mui/material/Slide';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixCyberObservablesExportsContent, { stixCyberObservablesExportsContentQuery } from './StixCyberObservablesExportsContent';
+import StixCyberObservablesExportsContent, {
+  stixCyberObservablesExportsContentQuery,
+} from './StixCyberObservablesExportsContent';
 import Drawer from '@components/common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
@@ -65,7 +65,4 @@ StixCyberObservablesExports.propTypes = {
   exportContext: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCyberObservablesExports);
+export default compose(inject18n, withStyles(styles))(StixCyberObservablesExports);

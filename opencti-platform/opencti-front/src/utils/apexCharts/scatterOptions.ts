@@ -50,10 +50,7 @@ export const scatterChartOptions = ({
     },
     formatter: labelsFormatter,
   },
-  colors: [
-    theme.palette.primary.main,
-    ...colors(theme.palette.mode === 'dark' ? 400 : 600),
-  ],
+  colors: [theme.palette.primary.main, ...colors(theme.palette.mode === 'dark' ? 400 : 600)],
   states: {
     hover: {
       filter: {

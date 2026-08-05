@@ -31,11 +31,9 @@ const GroupingDeletion: FunctionComponent<GroupingDeletionProps> = ({
     id: '... successfully deleted',
     values: { entity_type: t_i18n('entity_Grouping') },
   });
-  const [commitMutation] = useApiMutation(
-    GroupingDeletionDeleteMutation,
-    undefined,
-    { successMessage: deleteSuccessMessage },
-  );
+  const [commitMutation] = useApiMutation(GroupingDeletionDeleteMutation, undefined, {
+    successMessage: deleteSuccessMessage,
+  });
   const deletion = useDeletion({ handleClose });
   const { setDeleting } = deletion;
   const submitDelete = () => {

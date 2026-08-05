@@ -23,7 +23,10 @@ import { getPaddingRight } from '../../../../utils/utils';
 import { RootToolQuery } from './__generated__/RootToolQuery.graphql';
 import { RootToolSubscription } from './__generated__/RootToolSubscription.graphql';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import ToolKnowledge from './ToolKnowledge';
 import ToolDeletion from './ToolDeletion';
 import { PATH_TOOL, PATH_TOOLS } from '@components/common/routes/paths';
@@ -84,20 +87,22 @@ type RootToolProps = {
 };
 
 const RootTool = ({ queryRef, toolId }: RootToolProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootToolSubscription>>(() => ({
-    subscription,
-    variables: { id: toolId },
-  }), [toolId]);
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootToolSubscription>>(
+    () => ({
+      subscription,
+      variables: { id: toolId },
+    }),
+    [toolId],
+  );
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootToolSubscription>(subConfig);
 
-  const {
-    tool,
-    connectorsForExport,
-    connectorsForImport,
-  } = usePreloadedQuery<RootToolQuery>(toolQuery, queryRef);
+  const { tool, connectorsForExport, connectorsForImport } = usePreloadedQuery<RootToolQuery>(
+    toolQuery,
+    queryRef,
+  );
 
   const { forceUpdate } = useForceUpdate();
 
@@ -111,7 +116,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={(
+              element={
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -129,31 +134,30 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
                   ]}
                   data={tool}
                 />
-              )}
+              }
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs elements={[
-              { label: t_i18n('Arsenal') },
-              { label: t_i18n('Tools'), link: PATH_TOOLS },
-              { label: tool.name, current: true },
-            ]}
+            <Breadcrumbs
+              elements={[
+                { label: t_i18n('Arsenal') },
+                { label: t_i18n('Tools'), link: PATH_TOOLS },
+                { label: tool.name, current: true },
+              ]}
             />
             <StixDomainObjectHeader
               entityType="Tool"
               stixDomainObject={tool}
-              EditComponent={(
+              EditComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <ToolEdition toolId={tool.id} />
                 </Security>
-              )}
-              RelateComponent={(
+              }
+              RelateComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <StixCoreRelationshipCreationFromEntityHeader
-                    data={tool}
-                  />
+                  <StixCoreRelationshipCreationFromEntityHeader data={tool} />
                 </Security>
-              )}
+              }
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <ToolDeletion id={tool.id} isOpen={isOpen} handleClose={onClose} />
@@ -168,18 +172,13 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
               entity={tool}
               basePath={basePath}
               pages={{
-                overview:
-                  <Tool toolData={tool} />,
+                overview: <Tool toolData={tool} />,
                 knowledge: (
                   <div key={forceUpdate}>
                     <ToolKnowledge toolData={tool} />
                   </div>
                 ),
-                content: (
-                  <StixCoreObjectContentRoot
-                    stixCoreObject={tool}
-                  />
-                ),
+                content: <StixCoreObjectContentRoot stixCoreObject={tool} />,
                 analyses: (
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={tool}
@@ -193,11 +192,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
                     entity={tool}
                   />
                 ),
-                history: (
-                  <StixCoreObjectHistory
-                    stixCoreObjectId={toolId}
-                  />
-                ),
+                history: <StixCoreObjectHistory stixCoreObjectId={toolId} />,
               }}
             />
           </div>

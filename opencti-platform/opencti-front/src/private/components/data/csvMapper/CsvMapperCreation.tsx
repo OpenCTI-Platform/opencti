@@ -6,11 +6,12 @@ import { CsvMapperAddInput } from '@components/data/csvMapper/__generated__/CsvM
 import { csvMappers_MappersQuery$variables } from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
 import { CsvMapperEditionContainerFragment_csvMapper$key } from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerFragment_csvMapper.graphql';
 import { useCsvMappersData } from '@components/data/csvMapper/csvMappers.data';
-import {
-  CsvMapperRepresentationAttributesForm_allSchemaAttributes$key,
-} from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
+import { CsvMapperRepresentationAttributesForm_allSchemaAttributes$key } from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
 import { CsvMapperRepresentationAttributesFormFragment } from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributesForm';
-import { csvMapperToFormData, formDataToCsvMapper } from '@components/data/csvMapper/CsvMapperUtils';
+import {
+  csvMapperToFormData,
+  formDataToCsvMapper,
+} from '@components/data/csvMapper/CsvMapperUtils';
 import CsvMapperForm from '@components/data/csvMapper/CsvMapperForm';
 import { csvMapperEditionContainerFragment } from '@components/data/csvMapper/CsvMapperEditionContainer';
 import { CsvMappersImportQuery$data } from '@components/data/__generated__/CsvMappersImportQuery.graphql';
@@ -52,12 +53,11 @@ const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
   const data = useFragment<CsvMapperRepresentationAttributesForm_allSchemaAttributes$key>(
     CsvMapperRepresentationAttributesFormFragment,
     schemaAttributes,
-  ) || { csvMapperSchemaAttributes: [] };
+  ) || {
+    csvMapperSchemaAttributes: [],
+  };
   const computeDefaultValues = useComputeDefaultValues();
-  const csvMapper = useFragment(
-    csvMapperEditionContainerFragment,
-    mappingCsv,
-  );
+  const csvMapper = useFragment(csvMapperEditionContainerFragment, mappingCsv);
   const onSubmit: FormikConfig<CsvMapperFormData>['onSubmit'] = (
     values,
     { resetForm, setSubmitting, setErrors },
@@ -74,12 +74,8 @@ const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
       variables: {
         input,
       },
-      updater: (store) => insertNode(
-        store,
-        'Pagination_csvMappers',
-        paginationOptions,
-        'csvMapperAdd',
-      ),
+      updater: (store) =>
+        insertNode(store, 'Pagination_csvMappers', paginationOptions, 'csvMapperAdd'),
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -125,7 +121,9 @@ const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
     );
   }
 
-  return <CsvMapperForm csvMapper={initialValues} onSubmit={onSubmit} isDuplicated={isDuplicated} />;
+  return (
+    <CsvMapperForm csvMapper={initialValues} onSubmit={onSubmit} isDuplicated={isDuplicated} />
+  );
 };
 
 export default CsvMapperCreation;

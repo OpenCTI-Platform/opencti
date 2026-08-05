@@ -1,7 +1,13 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React, { createContext, ReactNode, useContext } from 'react';
-import { jsonMappers_MappersQuery, jsonMappers_MappersQuery$data } from '@components/data/jsonMapper/__generated__/jsonMappers_MappersQuery.graphql';
-import { jsonMappers_SchemaAttributesQuery, jsonMappers_SchemaAttributesQuery$data } from '@components/data/jsonMapper/__generated__/jsonMappers_SchemaAttributesQuery.graphql';
+import {
+  jsonMappers_MappersQuery,
+  jsonMappers_MappersQuery$data,
+} from '@components/data/jsonMapper/__generated__/jsonMappers_MappersQuery.graphql';
+import {
+  jsonMappers_SchemaAttributesQuery,
+  jsonMappers_SchemaAttributesQuery$data,
+} from '@components/data/jsonMapper/__generated__/jsonMappers_SchemaAttributesQuery.graphql';
 
 export const mappersQuery = graphql`
   query jsonMappers_MappersQuery(
@@ -12,13 +18,13 @@ export const mappersQuery = graphql`
     $search: String
   ) {
     ...JsonMapperLines_jsonMapper
-    @arguments(
-      count: $count
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-      search: $search
-    )
+      @arguments(
+        count: $count
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+        search: $search
+      )
   }
 `;
 
@@ -57,9 +63,7 @@ const JsonMappersProvider = ({
 export const useJsonMappersData = () => {
   const context = useContext(JsonMappersContext);
   if (!context) {
-    throw new Error(
-      'useJsonMappersData must be used within a JsonMappersProvider',
-    );
+    throw new Error('useJsonMappersData must be used within a JsonMappersProvider');
   }
   return context;
 };

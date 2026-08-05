@@ -23,7 +23,10 @@ const channelResolvers: Resolvers = {
       return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_CHANNEL);
     },
     channelFieldPatch: (_, { id, input, commitMessage, references }, context) => {
-      return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
+      return stixDomainObjectEditField(context, context.user, id, input, {
+        commitMessage,
+        references,
+      });
     },
     channelContextPatch: (_, { id, input }, context) => {
       return stixDomainObjectEditContext(context, context.user, id, input);

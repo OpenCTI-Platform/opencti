@@ -1,13 +1,39 @@
 import { getHeapStatistics } from 'node:v8';
 import nconf from 'nconf';
 import ipaddr from 'ipaddr.js';
-import { createEntity, fullEntitiesOrRelationsList, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
-import conf, { ACCOUNT_STATUSES, booleanConf, BUS_TOPICS, ENABLED_DEMO_MODE, ENABLED_FEATURE_FLAGS, getBaseUrl, PLATFORM_VERSION, PLAYGROUND_ENABLED } from '../config/conf';
+import {
+  createEntity,
+  fullEntitiesOrRelationsList,
+  loadEntity,
+  patchAttribute,
+  updateAttribute,
+} from '../database/middleware';
+import conf, {
+  ACCOUNT_STATUSES,
+  booleanConf,
+  BUS_TOPICS,
+  ENABLED_DEMO_MODE,
+  ENABLED_FEATURE_FLAGS,
+  getBaseUrl,
+  PLATFORM_VERSION,
+  PLAYGROUND_ENABLED,
+} from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
-import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { isUserHasCapability, SETTINGS_SET_ACCESSES, SETTINGS_SETCUSTOMIZATION, SETTINGS_SETMANAGEXTMHUB, SETTINGS_SETPARAMETERS, SYSTEM_USER } from '../utils/access';
+import {
+  ENTITY_TYPE_GROUP,
+  ENTITY_TYPE_ROLE,
+  ENTITY_TYPE_SETTINGS,
+} from '../schema/internalObject';
+import {
+  isUserHasCapability,
+  SETTINGS_SET_ACCESSES,
+  SETTINGS_SETCUSTOMIZATION,
+  SETTINGS_SETMANAGEXTMHUB,
+  SETTINGS_SETPARAMETERS,
+  SYSTEM_USER,
+} from '../utils/access';
 import { storeLoadById } from '../database/middleware-loader';
 import { publishUserAction } from '../listener/UserActionListener';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
@@ -36,7 +62,10 @@ export const getApplicationInfo = () => ({
 
 export const getApplicationDependencies = async (context) => {
   return [
-    { name: 'Search engine', version: searchEngineVersion().then((v) => `${v.platform} - ${v.version}`) },
+    {
+      name: 'Search engine',
+      version: searchEngineVersion().then((v) => `${v.platform} - ${v.version}`),
+    },
     { name: 'RabbitMQ', version: getRabbitMQVersion(context) },
     { name: 'Redis', version: getRedisVersion() },
     { name: 'XTM-One', version: getXtmOneRegistrationVersion() }, // Do not change this, client relies on the name to activate feature
@@ -74,15 +103,25 @@ export const getProtectedSensitiveConfig = async (context, user) => {
     enabled: booleanConf('protected_sensitive_config:enabled', false),
     markings: {
       enabled: booleanConf('protected_sensitive_config:markings:enabled', false),
-      protected_ids: await getProtectedMarkingsIdsByNames(context, user, nconf.get('protected_sensitive_config:markings:protected_definitions') ?? []),
+      protected_ids: await getProtectedMarkingsIdsByNames(
+        context,
+        user,
+        nconf.get('protected_sensitive_config:markings:protected_definitions') ?? [],
+      ),
     },
     groups: {
       enabled: booleanConf('protected_sensitive_config:groups:enabled', false),
-      protected_ids: getStandardIdsByNames(ENTITY_TYPE_GROUP, nconf.get('protected_sensitive_config:groups:protected_names') ?? []),
+      protected_ids: getStandardIdsByNames(
+        ENTITY_TYPE_GROUP,
+        nconf.get('protected_sensitive_config:groups:protected_names') ?? [],
+      ),
     },
     roles: {
       enabled: booleanConf('protected_sensitive_config:roles:enabled', false),
-      protected_ids: getStandardIdsByNames(ENTITY_TYPE_ROLE, nconf.get('protected_sensitive_config:roles:protected_names') ?? []),
+      protected_ids: getStandardIdsByNames(
+        ENTITY_TYPE_ROLE,
+        nconf.get('protected_sensitive_config:roles:protected_names') ?? [],
+      ),
     },
     rules: {
       enabled: booleanConf('protected_sensitive_config:rules:enabled', false),
@@ -123,7 +162,10 @@ export const getSettings = async (context) => {
     platform_enterprise_edition: eeInfo,
     valid_enterprise_edition: eeInfo.license_validated,
     platform_providers: buildAvailableProviders(platformSettings),
-    platform_user_statuses: Object.entries(ACCOUNT_STATUSES).map(([k, v]) => ({ status: k, message: v })),
+    platform_user_statuses: Object.entries(ACCOUNT_STATUSES).map(([k, v]) => ({
+      status: k,
+      message: v,
+    })),
     platform_cluster: clusterInfo.info,
     platform_demo: ENABLED_DEMO_MODE,
     platform_modules: clusterInfo.modules,
@@ -142,7 +184,7 @@ export const getSettings = async (context) => {
     filigran_chatbot_ai_url: XTM_ONE_CHATBOT_URL,
     platform_feature_flags: [
       { id: 'RUNTIME_SORTING', enable: isRuntimeSortEnable() },
-      ...(ENABLED_FEATURE_FLAGS.map((feature) => ({ id: feature, enable: true }))),
+      ...ENABLED_FEATURE_FLAGS.map((feature) => ({ id: feature, enable: true })),
     ],
     playground_enabled: PLAYGROUND_ENABLED,
   };
@@ -212,9 +254,7 @@ const PARAMETERS_SETTINGS_RESTRICTED_KEYS = [
   'platform_reference_attachment',
 ];
 
-const CUSTOMIZATION_SETTINGS_RESTRICTED_KEYS = [
-  'platform_notifier_auto_trigger_assignee',
-];
+const CUSTOMIZATION_SETTINGS_RESTRICTED_KEYS = ['platform_notifier_auto_trigger_assignee'];
 
 const ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS = [
   'xtm_hub_token',
@@ -240,11 +280,14 @@ export const settingsEditField = async (context, user, settingsId, input) => {
     ...(hasSetXTMHubCapability ? [] : ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS),
   ];
 
-  const dataWithRestrictKeys = keysUserCannotModify.length === 0
-    ? input
-    : input.filter((i) => !keysUserCannotModify.includes(i.key));
+  const dataWithRestrictKeys =
+    keysUserCannotModify.length === 0
+      ? input
+      : input.filter((i) => !keysUserCannotModify.includes(i.key));
 
-  const data = hasSetXTMHubCapability ? completeXTMHubDataForRegistration(user, dataWithRestrictKeys) : dataWithRestrictKeys;
+  const data = hasSetXTMHubCapability
+    ? completeXTMHubDataForRegistration(user, dataWithRestrictKeys)
+    : dataWithRestrictKeys;
 
   const settings = await getSettings(context);
   const enterpriseLicense = data.find((inputData) => inputData.key === 'enterprise_license');
@@ -260,7 +303,11 @@ export const settingsEditField = async (context, user, settingsId, input) => {
   const cguStatus = data.find((inputData) => inputData.key === 'filigran_chatbot_ai_cgu_status');
   if (cguStatus && cguStatus.value) {
     const validStatuses = Object.values(CguStatus);
-    if (!Array.isArray(cguStatus.value) || cguStatus.value.length > 1 || !validStatuses.includes(cguStatus.value[0])) {
+    if (
+      !Array.isArray(cguStatus.value) ||
+      cguStatus.value.length > 1 ||
+      !validStatuses.includes(cguStatus.value[0])
+    ) {
       throw UnsupportedError(`Invalid CGU status, expected one of ${validStatuses.join(', ')}`);
     }
   }
@@ -281,7 +328,9 @@ export const settingsEditField = async (context, user, settingsId, input) => {
       }
     });
     if (invalidEntries.length > 0) {
-      throw UnsupportedError(`Invalid IP address or CIDR entries in allow list: ${invalidEntries.join(', ')}`);
+      throw UnsupportedError(
+        `Invalid IP address or CIDR entries in allow list: ${invalidEntries.join(', ')}`,
+      );
     }
   }
 
@@ -299,14 +348,24 @@ export const settingsEditField = async (context, user, settingsId, input) => {
 };
 
 export const setupEnterpriseLicense = (context, user, { settingId, license }) => {
-  return settingsEditField(context, user, settingId, [{ key: 'enterprise_license', value: [license] }]);
+  return settingsEditField(context, user, settingId, [
+    { key: 'enterprise_license', value: [license] },
+  ]);
 };
 
 export const getMessagesFilteredByRecipients = (user, settings) => {
   const messages = JSON.parse(settings.platform_messages ?? '[]');
   return messages.filter(({ recipients }) => {
-    // eslint-disable-next-line max-len
-    return isEmptyField(recipients) || recipients.some((recipientId) => [user.id, ...user.groups.map(({ id }) => id), ...user.organizations.map(({ id }) => id)].includes(recipientId));
+    return (
+      isEmptyField(recipients) ||
+      recipients.some((recipientId) =>
+        [
+          user.id,
+          ...user.groups.map(({ id }) => id),
+          ...user.organizations.map(({ id }) => id),
+        ].includes(recipientId),
+      )
+    );
   });
 };
 
@@ -355,14 +414,17 @@ export const getCriticalAlerts = async (context, user) => {
     if (groupsWithNull.length === 0) {
       return [];
     }
-    return [{
-      type: 'GROUP_WITH_NULL_CONFIDENCE_LEVEL',
-      // default message for API users
-      message: 'Some groups have field group_confidence_level to null, members will not be able to use the platform properly.',
-      details: {
-        groups: groupsWithNull,
+    return [
+      {
+        type: 'GROUP_WITH_NULL_CONFIDENCE_LEVEL',
+        // default message for API users
+        message:
+          'Some groups have field group_confidence_level to null, members will not be able to use the platform properly.',
+        details: {
+          groups: groupsWithNull,
+        },
       },
-    }];
+    ];
   }
 
   // no alert

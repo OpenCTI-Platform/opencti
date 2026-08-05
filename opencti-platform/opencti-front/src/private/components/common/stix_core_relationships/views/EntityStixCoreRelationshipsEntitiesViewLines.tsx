@@ -3,11 +3,17 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../../components/list_lines/ListLinesContent';
 import { DataColumns } from '../../../../../components/list_lines';
 import type { UseEntityToggle } from '../../../../../utils/hooks/useEntityToggle';
-import { EntityStixCoreRelationshipsEntitiesLineDummy, EntityStixCoreRelationshipsEntitiesViewLine } from './EntityStixCoreRelationshipsEntitiesViewLine';
+import {
+  EntityStixCoreRelationshipsEntitiesLineDummy,
+  EntityStixCoreRelationshipsEntitiesViewLine,
+} from './EntityStixCoreRelationshipsEntitiesViewLine';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import usePreloadedPaginationFragment from '../../../../../utils/hooks/usePreloadedPaginationFragment';
-import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../../utils/hooks/useLocalStorage';
+import {
+  HandleAddFilter,
+  UseLocalStorageHelpers,
+} from '../../../../../utils/hooks/useLocalStorage';
 import {
   EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery,
   EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables,
@@ -76,15 +82,15 @@ export const entityStixCoreRelationshipsEntitiesQuery = graphql`
     $types: [String]
   ) {
     ...EntityStixCoreRelationshipsEntitiesViewLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-      types: $types
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+        types: $types
+      )
   }
 `;
 
@@ -120,11 +126,11 @@ const EntityStixCoreRelationshipsEntitiesComponent: FunctionComponent<
       hasMore={hasMore}
       isLoading={isLoadingMore}
       dataList={data?.stixCoreObjects?.edges ?? []}
-      globalCount={
-        data?.stixCoreObjects?.pageInfo?.globalCount ?? nbOfRowsToLoad
-      }
+      globalCount={data?.stixCoreObjects?.pageInfo?.globalCount ?? nbOfRowsToLoad}
       LineComponent={EntityStixCoreRelationshipsEntitiesViewLine}
-      DummyLineComponent={(props: DataColumns) => <EntityStixCoreRelationshipsEntitiesLineDummy {...props} dataColumns={dataColumns} />}
+      DummyLineComponent={(props: DataColumns) => (
+        <EntityStixCoreRelationshipsEntitiesLineDummy {...props} dataColumns={dataColumns} />
+      )}
       dataColumns={dataColumns}
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}
@@ -143,23 +149,27 @@ const EntityStixCoreRelationshipsEntitiesViewLines: FunctionComponent<
 > = (props) => {
   const queryRef = useQueryLoading<EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery>(
     entityStixCoreRelationshipsEntitiesQuery,
-    { count: 25, ...props.paginationOptions },
+    {
+      count: 25,
+      ...props.paginationOptions,
+    },
   );
   return queryRef ? (
-    <React.Suspense fallback={(
-      <>
-        {Array(20)
-          .fill(0)
-          .map((_, idx) => (
-            <EntityStixCoreRelationshipsEntitiesLineDummy key={idx} dataColumns={props.dataColumns} />
-          ))}
-      </>
-    )}
+    <React.Suspense
+      fallback={
+        <>
+          {Array(20)
+            .fill(0)
+            .map((_, idx) => (
+              <EntityStixCoreRelationshipsEntitiesLineDummy
+                key={idx}
+                dataColumns={props.dataColumns}
+              />
+            ))}
+        </>
+      }
     >
-      <EntityStixCoreRelationshipsEntitiesComponent
-        {...props}
-        queryRef={queryRef}
-      />
+      <EntityStixCoreRelationshipsEntitiesComponent {...props} queryRef={queryRef} />
     </React.Suspense>
   ) : (
     <Loader variant={LoaderVariant.inElement} />

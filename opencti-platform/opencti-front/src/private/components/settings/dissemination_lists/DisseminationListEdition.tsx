@@ -3,8 +3,14 @@ import { graphql } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
 import { FormikConfig } from 'formik';
 import { DisseminationListsLine_node$data } from '@components/settings/dissemination_lists/__generated__/DisseminationListsLine_node.graphql';
-import { formatEmailsForApi, formatEmailsForFront } from '@components/settings/dissemination_lists/DisseminationListUtils';
-import DisseminationListForm, { DisseminationListFormData, DisseminationListFormInputKeys } from '@components/settings/dissemination_lists/DisseminationListForm';
+import {
+  formatEmailsForApi,
+  formatEmailsForFront,
+} from '@components/settings/dissemination_lists/DisseminationListUtils';
+import DisseminationListForm, {
+  DisseminationListFormData,
+  DisseminationListFormInputKeys,
+} from '@components/settings/dissemination_lists/DisseminationListForm';
 import { handleErrorInForm } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { useFormatter } from '../../../../components/i18n';
@@ -44,16 +50,15 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
   ) => {
     setSubmitting(true);
 
-    const input = Object.entries(values)
-      .map(([key, value]) => {
-        if (key === 'emails') {
-          return { key, value: formatEmailsForApi(value) };
-        }
-        return {
-          key,
-          value,
-        };
-      });
+    const input = Object.entries(values).map(([key, value]) => {
+      if (key === 'emails') {
+        return { key, value: formatEmailsForApi(value) };
+      }
+      return {
+        key,
+        value,
+      };
+    });
 
     commitFieldPatch({
       variables: {
@@ -87,11 +92,7 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
   };
 
   return (
-    <Drawer
-      title={t_i18n('Update a dissemination list')}
-      open={isOpen}
-      onClose={onClose}
-    >
+    <Drawer title={t_i18n('Update a dissemination list')} open={isOpen} onClose={onClose}>
       <DisseminationListForm
         onSubmit={onSubmit}
         onSubmitField={onSubmitField}

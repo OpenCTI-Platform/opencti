@@ -32,10 +32,14 @@ const validateNoProxyForUrllib = (noProxyList: string[]): string[] => {
   });
 
   if (invalidEntries.length > 0) {
-    logApp.warn('[OPENCTI] The following NO_PROXY entries are not compatible with Python urllib.request and will be excluded:', {
-      invalid_entries: invalidEntries,
-      reason: 'urllib.request does not support wildcard (*) patterns or CIDR notation (/24). Use leading dot (.example.com) for subdomain matching.',
-    });
+    logApp.warn(
+      '[OPENCTI] The following NO_PROXY entries are not compatible with Python urllib.request and will be excluded:',
+      {
+        invalid_entries: invalidEntries,
+        reason:
+          'urllib.request does not support wildcard (*) patterns or CIDR notation (/24). Use leading dot (.example.com) for subdomain matching.',
+      },
+    );
   }
 
   return validEntries;
@@ -64,10 +68,7 @@ const validateProxyUrl = (url: string, proxyType: string): boolean => {
   }
 };
 
-const processProxyCACertificates = (
-  proxyCA: any,
-  configAdapter: ConfigAdapter,
-): string[] => {
+const processProxyCACertificates = (proxyCA: any, configAdapter: ConfigAdapter): string[] => {
   if (proxyCA === undefined || proxyCA === null || proxyCA === '') {
     return [];
   }
@@ -185,7 +186,12 @@ export const getProxyConfigurationForContract = (
     config.HTTPS_CA_CERTIFICATES = caCertValue;
   }
 
-  const rejectUnauthorized = String(configAdapter.booleanConf('https_proxy_reject_unauthorized', DEFAULT_HTTPS_PROXY_REJECT_UNAUTHORIZED));
+  const rejectUnauthorized = String(
+    configAdapter.booleanConf(
+      'https_proxy_reject_unauthorized',
+      DEFAULT_HTTPS_PROXY_REJECT_UNAUTHORIZED,
+    ),
+  );
   config.HTTPS_PROXY_REJECT_UNAUTHORIZED = rejectUnauthorized;
 
   proxyConfigCache.set(configAdapter, config);
@@ -198,7 +204,14 @@ export const injectProxyConfiguration = (
 ): Array<{ key: string; value: string }> => {
   const proxyConfig = getProxyConfigurationForContract(configAdapter);
   const filteredConfig = existingConfig.filter(
-    (item) => !['HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY', 'HTTPS_CA_CERTIFICATES', 'HTTPS_PROXY_REJECT_UNAUTHORIZED'].includes(item.key),
+    (item) =>
+      ![
+        'HTTP_PROXY',
+        'HTTPS_PROXY',
+        'NO_PROXY',
+        'HTTPS_CA_CERTIFICATES',
+        'HTTPS_PROXY_REJECT_UNAUTHORIZED',
+      ].includes(item.key),
   );
   const proxyConfigArray = Object.entries(proxyConfig).map(([key, value]) => ({
     key,

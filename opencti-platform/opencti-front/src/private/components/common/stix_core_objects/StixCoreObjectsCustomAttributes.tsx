@@ -1,6 +1,11 @@
 import React, { useRef } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { WidgetColumn, WidgetDataSelection, WidgetHost, type WidgetParameters } from 'src/utils/widget/widget';
+import {
+  WidgetColumn,
+  WidgetDataSelection,
+  WidgetHost,
+  type WidgetParameters,
+} from 'src/utils/widget/widget';
 import { useFormatter } from 'src/components/i18n';
 import { WidgetColumnsLayout } from '@components/widgets/WidgetCustomAttributesColumnsInput';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
@@ -83,7 +88,7 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         analysis_started
         analysis_ended
         version
-        configuration_version 
+        configuration_version
         analysis_engine_version
         analysis_definition_version
         modules
@@ -447,7 +452,7 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         updated_at
       }
       ... on AdministrativeArea {
-        name    
+        name
         description
         modified
         updated_at
@@ -539,7 +544,7 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         x_opencti_order
         x_opencti_color
       }
-      }
+    }
   }
 `;
 
@@ -594,18 +599,20 @@ const StixCoreObjectsCustomAttributes = ({
 }: StixCoreObjectsCustomAttributesProps) => {
   const { t_i18n } = useFormatter();
   const rootRef = useRef(null);
-  const isCustomViewContext = host?.kind === 'custom-view' && Boolean(host.customViewTargetEntityId);
+  const isCustomViewContext =
+    host?.kind === 'custom-view' && Boolean(host.customViewTargetEntityId);
   const isPreviewMode = isCustomViewContext && host.previewMode;
 
-  const selection: WidgetDataSelection = (dataSelection)[0];
-  const layout: WidgetColumnsLayout = (selection.layout) ?? '1';
+  const selection: WidgetDataSelection = dataSelection[0];
+  const layout: WidgetColumnsLayout = selection.layout ?? '1';
 
   const resolvedEntityId = host?.kind === 'custom-view' ? host.customViewTargetEntityId : undefined;
   const entityType = host?.kind === 'custom-view' ? host.customViewTargetEntityType : undefined;
 
-  const columns: readonly WidgetColumn[] = (selection.columns && selection.columns.length > 0)
-    ? selection.columns
-    : getCustomAttributesColumns(entityType);
+  const columns: readonly WidgetColumn[] =
+    selection.columns && selection.columns.length > 0
+      ? selection.columns
+      : getCustomAttributesColumns(entityType);
 
   const queryRef = useQueryLoading<StixCoreObjectsCustomAttributesQuery>(
     stixCoreObjectsCustomAttributesQuery,
@@ -622,20 +629,20 @@ const StixCoreObjectsCustomAttributes = ({
       showPreviewTag={isPreviewMode}
     >
       <div ref={rootRef} style={{ height: '100%', overflowY: 'auto' }}>
-        {!resolvedEntityId
-          ? <WidgetNoHostEntity host={host} />
-          : queryRef
-            ? (
-                <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-                  <StixCoreObjectsCustomAttributesContent
-                    queryRef={queryRef}
-                    columns={columns}
-                    layout={layout}
-                    host={host}
-                  />
-                </React.Suspense>
-              )
-            : <Loader variant={LoaderVariant.inElement} />}
+        {!resolvedEntityId ? (
+          <WidgetNoHostEntity host={host} />
+        ) : queryRef ? (
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            <StixCoreObjectsCustomAttributesContent
+              queryRef={queryRef}
+              columns={columns}
+              layout={layout}
+              host={host}
+            />
+          </React.Suspense>
+        ) : (
+          <Loader variant={LoaderVariant.inElement} />
+        )}
       </div>
     </WidgetContainer>
   );

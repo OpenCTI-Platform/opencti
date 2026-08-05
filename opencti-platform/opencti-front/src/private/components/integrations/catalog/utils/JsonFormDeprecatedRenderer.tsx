@@ -1,5 +1,12 @@
 import React, { useEffect, useRef } from 'react';
-import { and, ControlProps, isControl, rankWith, RankedTester, schemaMatches } from '@jsonforms/core';
+import {
+  and,
+  ControlProps,
+  isControl,
+  rankWith,
+  RankedTester,
+  schemaMatches,
+} from '@jsonforms/core';
 import { JsonFormsDispatch, withJsonFormsControlProps } from '@jsonforms/react';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -14,7 +21,9 @@ const formatDeprecatedDescription = (rawDescription?: string) => {
     return rawDescription;
   }
 
-  return rawDescription.replace(/\b[A-Z0-9]+(?:_[A-Z0-9]+)+\b/g, (token) => token.replace(/_/g, ' '));
+  return rawDescription.replace(/\b[A-Z0-9]+(?:_[A-Z0-9]+)+\b/g, (token) =>
+    token.replace(/_/g, ' '),
+  );
 };
 
 export const JsonFormDeprecatedRenderer = (props: ControlProps) => {
@@ -41,9 +50,10 @@ export const JsonFormDeprecatedRenderer = (props: ControlProps) => {
   // color is computed to ensure sufficient contrast with the background in both light and dark mode,
   // while still being visually associated with the warning status
   const warningBaseColor = theme.palette.designSystem.alert.warning.primary ?? '#E6700F';
-  const warningHintColor = theme.palette.mode === 'light'
-    ? lighten(warningBaseColor, 0.18)
-    : lighten(warningBaseColor, 0.72);
+  const warningHintColor =
+    theme.palette.mode === 'light'
+      ? lighten(warningBaseColor, 0.18)
+      : lighten(warningBaseColor, 0.72);
 
   if (!visible) {
     return null;
@@ -103,11 +113,10 @@ export const JsonFormDeprecatedRenderer = (props: ControlProps) => {
         cells={cells}
       />
 
-      <Typography
-        variant="caption"
-        sx={{ color: warningHintColor }}
-      >
-        {t_i18n('This field is deprecated. It is shown because a value was previously set. Consider removing it if no longer needed.')}
+      <Typography variant="caption" sx={{ color: warningHintColor }}>
+        {t_i18n(
+          'This field is deprecated. It is shown because a value was previously set. Consider removing it if no longer needed.',
+        )}
       </Typography>
     </Box>
   );

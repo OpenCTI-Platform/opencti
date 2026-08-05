@@ -13,7 +13,11 @@ import TextField from '../../../../components/TextField';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { insertNode } from '../../../../utils/store';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
@@ -58,27 +62,27 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
 
-  const { mandatoryAttributes } = useIsMandatoryAttribute(
-    TASK_TYPE,
+  const { mandatoryAttributes } = useIsMandatoryAttribute(TASK_TYPE);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      description: Yup.string().nullable().max(5000, t_i18n('The value is too long')),
+      due_date: Yup.date().nullable(),
+      objectLabel: Yup.array(),
+      objectMarking: Yup.array(),
+      objectAssignee: Yup.array(),
+      objectParticipant: Yup.array(),
+      x_opencti_workflow_id: Yup.object(),
+    },
+    mandatoryAttributes,
   );
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    description: Yup.string().nullable().max(5000, t_i18n('The value is too long')),
-    due_date: Yup.date().nullable(),
-    objectLabel: Yup.array(),
-    objectMarking: Yup.array(),
-    objectAssignee: Yup.array(),
-    objectParticipant: Yup.array(),
-    x_opencti_workflow_id: Yup.object(),
-  }, mandatoryAttributes);
   const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
-  const [addTask] = useApiMutation<CaseTaskCreationMutation>(
-    caseTaskAddMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Task')} ${t_i18n('successfully created')}` },
-  );
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const [addTask] = useApiMutation<CaseTaskCreationMutation>(caseTaskAddMutation, undefined, {
+    successMessage: `${t_i18n('entity_Task')} ${t_i18n('successfully created')}`,
+  });
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
 
   const onSubmit: FormikConfig<FormikCaseTaskAddInput>['onSubmit'] = (
     values,
@@ -91,16 +95,15 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
         input: {
           ...buildCreationFilesInput(),
           ...values,
-          objectAssignee: (values.objectAssignee ?? []).map(
-            ({ value }) => value,
-          ),
+          objectAssignee: (values.objectAssignee ?? []).map(({ value }) => value),
           objectParticipant: values.objectParticipant.map(({ value }) => value),
           objectLabel: (values.objectLabel ?? []).map(({ value }) => value),
           objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
           objects: [caseId],
         },
       },
-      updater: (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_tasks', paginationOptions, 'taskAdd'),
+      updater: (store: RecordSourceSelectorProxy) =>
+        insertNode(store, 'Pagination_tasks', paginationOptions, 'taskAdd'),
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
@@ -136,7 +139,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
             variant="standard"
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth
           />
           <Field
@@ -150,22 +153,22 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
           />
           <ObjectAssigneeField
             name="objectAssignee"
-            required={(mandatoryAttributes.includes('objectAssignee'))}
+            required={mandatoryAttributes.includes('objectAssignee')}
             style={fieldSpacingContainerStyle}
           />
           <ObjectParticipantField
             name="objectParticipant"
-            required={(mandatoryAttributes.includes('objectParticipant'))}
+            required={mandatoryAttributes.includes('objectParticipant')}
             style={fieldSpacingContainerStyle}
           />
           <ObjectLabelField
             name="objectLabel"
-            required={(mandatoryAttributes.includes('objectLabel'))}
+            required={mandatoryAttributes.includes('objectLabel')}
             style={fieldSpacingContainerStyle}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
@@ -173,7 +176,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             fullWidth
             multiline
             rows="4"
@@ -183,17 +186,10 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
             uploadFileMarkings={(values.objectMarking ?? []).map(({ value }) => value)}
           />
           <FormButtonContainer>
-            <Button
-              onClick={handleReset}
-              disabled={isSubmitting}
-              variant="secondary"
-            >
+            <Button onClick={handleReset} disabled={isSubmitting} variant="secondary">
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitForm}
-              disabled={isSubmitting}
-            >
+            <Button onClick={submitForm} disabled={isSubmitting}>
               {t_i18n('Create')}
             </Button>
           </FormButtonContainer>

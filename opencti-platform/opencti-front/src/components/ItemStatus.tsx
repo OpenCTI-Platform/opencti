@@ -29,7 +29,7 @@ const ItemStatus = ({ status, disabled, onClick }: ItemStatusProps) => {
         label={status.template.name}
         color={status.template.color}
         sx={tagStyle}
-        {...onClick && { onClick: onClick }}
+        {...(onClick && { onClick: onClick })}
       />
     );
   }

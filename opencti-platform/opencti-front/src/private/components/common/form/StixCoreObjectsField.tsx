@@ -281,7 +281,11 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const { stixCoreObjectTypes: entityTypes, stixCyberObservableTypes, stixDomainObjectTypes } = useAttributes();
+  const {
+    stixCoreObjectTypes: entityTypes,
+    stixCyberObservableTypes,
+    stixDomainObjectTypes,
+  } = useAttributes();
   const { setFieldValue, values } = useFormikContext<Record<string, unknown>>();
 
   const [anchorElSearchScope, setAnchorElSearchScope] = useState<HTMLElement | null>(null);
@@ -293,7 +297,9 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
   const [openSDOCreation, setOpenSDOCreation] = useState(false);
   const [openSCOCreation, setOpenSCOCreation] = useState(false);
   const [createEntityType, setCreateEntityType] = useState<string | null>(null);
-  const [valueBeforeCreate, setValueBeforeCreate] = useState<StixCoreObjectOption | StixCoreObjectOption[] | null>(null);
+  const [valueBeforeCreate, setValueBeforeCreate] = useState<
+    StixCoreObjectOption | StixCoreObjectOption[] | null
+  >(null);
   // Ref to track if entity was successfully created (prevents handleClose from restoring old value)
   const entityCreatedSuccessfully = React.useRef(false);
 
@@ -307,12 +313,15 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
    * Context value provided to the SDO / SCO creation dialogs when deferCreation=true.
    * useApiMutation will call captureInput() instead of dispatching the real mutation.
    */
-  const deferredContextValue = useMemo(() => ({
-    isDeferredMode: deferCreation,
-    captureInput: (input: Record<string, unknown>) => {
-      deferredCapturedRef.current = input;
-    },
-  }), [deferCreation]);
+  const deferredContextValue = useMemo(
+    () => ({
+      isDeferredMode: deferCreation,
+      captureInput: (input: Record<string, unknown>) => {
+        deferredCapturedRef.current = input;
+      },
+    }),
+    [deferCreation],
+  );
 
   /**
    * Build a pending-creation option from captured deferred input data.
@@ -322,22 +331,27 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
    * For SCO mutations, capturedInput has no `name`; we use currentSearchTerm
    * (the value typed by the user, e.g. an IP address) as the display label.
    */
-  const buildPendingOption = useCallback((capturedInput: Record<string, unknown>): StixCoreObjectOption => {
-    const entityName = (capturedInput.name as string | undefined) || currentSearchTerm || 'New Entity';
-    const pendingId = `${PENDING_ENTITY_PREFIX}${uuidv4()}`;
-    return {
-      label: entityName,
-      value: pendingId,
-      type: createEntityType || '',
-      isPendingCreation: true,
-      pendingInputData: {
-        entityType: createEntityType || '',
-        input: capturedInput,
-      },
-    };
-  }, [createEntityType, currentSearchTerm]);
+  const buildPendingOption = useCallback(
+    (capturedInput: Record<string, unknown>): StixCoreObjectOption => {
+      const entityName =
+        (capturedInput.name as string | undefined) || currentSearchTerm || 'New Entity';
+      const pendingId = `${PENDING_ENTITY_PREFIX}${uuidv4()}`;
+      return {
+        label: entityName,
+        value: pendingId,
+        type: createEntityType || '',
+        isPendingCreation: true,
+        pendingInputData: {
+          entityType: createEntityType || '',
+          input: capturedInput,
+        },
+      };
+    },
+    [createEntityType, currentSearchTerm],
+  );
 
-  const handleOpenSearchScope = (event: React.MouseEvent<HTMLElement>) => setAnchorElSearchScope(event.currentTarget);
+  const handleOpenSearchScope = (event: React.MouseEvent<HTMLElement>) =>
+    setAnchorElSearchScope(event.currentTarget);
   const handleCloseSearchScope = () => setAnchorElSearchScope(null);
 
   const handleToggleSearchScope = (key: string, value: string) => {
@@ -349,25 +363,34 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
     }));
   };
 
-  const isObservableType = useCallback((type: string) => {
-    return stixCyberObservableTypes.includes(type);
-  }, [stixCyberObservableTypes]);
+  const isObservableType = useCallback(
+    (type: string) => {
+      return stixCyberObservableTypes.includes(type);
+    },
+    [stixCyberObservableTypes],
+  );
 
-  const isDomainObjectType = useCallback((type: string) => {
-    return stixDomainObjectTypes.includes(type);
-  }, [stixDomainObjectTypes]);
+  const isDomainObjectType = useCallback(
+    (type: string) => {
+      return stixDomainObjectTypes.includes(type);
+    },
+    [stixDomainObjectTypes],
+  );
 
   const getTargetTypes = useCallback(() => {
     return types ?? searchScope[name] ?? [];
   }, [types, searchScope, name]);
 
-  const shouldShowCreateOption = useCallback((resultsCount: number) => {
-    if (disabled || disableCreation) return false;
-    if (resultsCount >= 10) return false;
-    const targetTypes = getTargetTypes();
-    if (targetTypes.length === 0) return true;
-    return targetTypes.some((t) => isDomainObjectType(t) || isObservableType(t));
-  }, [disabled, disableCreation, getTargetTypes, isDomainObjectType, isObservableType]);
+  const shouldShowCreateOption = useCallback(
+    (resultsCount: number) => {
+      if (disabled || disableCreation) return false;
+      if (resultsCount >= 10) return false;
+      const targetTypes = getTargetTypes();
+      if (targetTypes.length === 0) return true;
+      return targetTypes.some((t) => isDomainObjectType(t) || isObservableType(t));
+    },
+    [disabled, disableCreation, getTargetTypes, isDomainObjectType, isObservableType],
+  );
 
   const getCreationType = useCallback(() => {
     const targetTypes = getTargetTypes();
@@ -410,123 +433,205 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
     }
   }, [getTargetTypes, isObservableType, isDomainObjectType]);
 
-  const handleSDOEntityCreated = useCallback((createdEntity: CreatedEntity | undefined) => {
-    entityCreatedSuccessfully.current = true;
-    setOpenSDOCreation(false);
-    setCreateEntityType(null);
-    setValueBeforeCreate(null);
+  const handleSDOEntityCreated = useCallback(
+    (createdEntity: CreatedEntity | undefined) => {
+      entityCreatedSuccessfully.current = true;
+      setOpenSDOCreation(false);
+      setCreateEntityType(null);
+      setValueBeforeCreate(null);
 
-    if (createdEntity?.id && createdEntity?.entity_type) {
-      const entityLabel = createdEntity.representative?.main
-        || createdEntity.name
-        || createdEntity.observable_value
-        || createdEntity.id;
-      const newOption: StixCoreObjectOption = {
-        label: entityLabel,
-        value: createdEntity.id,
-        type: createdEntity.entity_type,
-      };
+      if (createdEntity?.id && createdEntity?.entity_type) {
+        const entityLabel =
+          createdEntity.representative?.main ||
+          createdEntity.name ||
+          createdEntity.observable_value ||
+          createdEntity.id;
+        const newOption: StixCoreObjectOption = {
+          label: entityLabel,
+          value: createdEntity.id,
+          type: createdEntity.entity_type,
+        };
 
-      setStixCoreObjects((prev) => [newOption, ...prev.filter((o) => !o.isCreateOption)]);
+        setStixCoreObjects((prev) => [newOption, ...prev.filter((o) => !o.isCreateOption)]);
 
-      const currentValue = values[name] as StixCoreObjectOption | StixCoreObjectOption[] | null;
-      if (multiple) {
-        const currentArray = Array.isArray(currentValue) ? currentValue : [];
-        setFieldValue(name, [...currentArray, newOption]);
+        const currentValue = values[name] as StixCoreObjectOption | StixCoreObjectOption[] | null;
+        if (multiple) {
+          const currentArray = Array.isArray(currentValue) ? currentValue : [];
+          setFieldValue(name, [...currentArray, newOption]);
+        } else {
+          setFieldValue(name, newOption);
+        }
       } else {
-        setFieldValue(name, newOption);
+        fetchQuery(stixCoreObjectsFieldSearchQuery, {
+          search: currentSearchTerm,
+          types: types ?? searchScope[name] ?? [],
+        })
+          .toPromise()
+          .then((data: unknown) => {
+            const typedData = data as {
+              stixCoreObjects?: { edges?: Array<{ node: Record<string, unknown> }> };
+            };
+            const results = R.pipe(
+              R.pathOr([], ['stixCoreObjects', 'edges']),
+              R.map((n: { node: Record<string, unknown> }) => ({
+                label: getMainRepresentative(n.node),
+                value: n.node.id as string,
+                type: n.node.entity_type as string,
+              })),
+            )(typedData) as StixCoreObjectOption[];
+
+            const finalResults = [...results];
+            if (shouldShowCreateOption(results.length)) {
+              const creationType = getCreationType();
+              const createLabel = creationType
+                ? `${t_i18n('Create')} ${t_i18n(`entity_${creationType}`)}`
+                : t_i18n('Create');
+
+              finalResults.push({
+                label: createLabel,
+                value: CREATE_OPTION_VALUE,
+                type: 'create',
+                isCreateOption: true,
+              });
+            }
+
+            setStixCoreObjects(finalResults);
+          });
       }
-    } else {
-      fetchQuery(stixCoreObjectsFieldSearchQuery, {
-        search: currentSearchTerm,
-        types: types ?? searchScope[name] ?? [],
-      })
-        .toPromise()
-        .then((data: unknown) => {
-          const typedData = data as { stixCoreObjects?: { edges?: Array<{ node: Record<string, unknown> }> } };
-          const results = R.pipe(
-            R.pathOr([], ['stixCoreObjects', 'edges']),
-            R.map((n: { node: Record<string, unknown> }) => ({
-              label: getMainRepresentative(n.node),
-              value: n.node.id as string,
-              type: n.node.entity_type as string,
-            })),
-          )(typedData) as StixCoreObjectOption[];
+    },
+    [
+      currentSearchTerm,
+      getCreationType,
+      multiple,
+      name,
+      searchScope,
+      setFieldValue,
+      shouldShowCreateOption,
+      t_i18n,
+      types,
+      values,
+    ],
+  );
 
-          const finalResults = [...results];
-          if (shouldShowCreateOption(results.length)) {
-            const creationType = getCreationType();
-            const createLabel = creationType
-              ? `${t_i18n('Create')} ${t_i18n(`entity_${creationType}`)}`
-              : t_i18n('Create');
-
-            finalResults.push({
-              label: createLabel,
-              value: CREATE_OPTION_VALUE,
-              type: 'create',
-              isCreateOption: true,
-            });
-          }
-
-          setStixCoreObjects(finalResults);
-        });
-    }
-  }, [currentSearchTerm, getCreationType, multiple, name, searchScope, setFieldValue, shouldShowCreateOption, t_i18n, types, values]);
-
-  const handleSCOEntityCreated = useCallback((createdObservable?: CreatedEntity | null) => {
-    // --- Deferred creation path ---
-    const capturedInput = deferredCapturedRef.current;
-    if (deferCreation && capturedInput) {
-      const newOption = buildPendingOption(capturedInput);
-      setStixCoreObjects((prev) => [newOption, ...prev.filter((o) => !o.isCreateOption)]);
-      const currentValue = values[name] as StixCoreObjectOption | StixCoreObjectOption[] | null;
-      if (multiple) {
-        setFieldValue(name, [...(Array.isArray(currentValue) ? currentValue : []), newOption]);
-      } else {
-        setFieldValue(name, newOption);
+  const handleSCOEntityCreated = useCallback(
+    (createdObservable?: CreatedEntity | null) => {
+      // --- Deferred creation path ---
+      const capturedInput = deferredCapturedRef.current;
+      if (deferCreation && capturedInput) {
+        const newOption = buildPendingOption(capturedInput);
+        setStixCoreObjects((prev) => [newOption, ...prev.filter((o) => !o.isCreateOption)]);
+        const currentValue = values[name] as StixCoreObjectOption | StixCoreObjectOption[] | null;
+        if (multiple) {
+          setFieldValue(name, [...(Array.isArray(currentValue) ? currentValue : []), newOption]);
+        } else {
+          setFieldValue(name, newOption);
+        }
+        deferredCapturedRef.current = null;
+        entityCreatedSuccessfully.current = true;
+        setOpenSCOCreation(false);
+        setCreateEntityType(null);
+        setValueBeforeCreate(null);
+        return;
       }
-      deferredCapturedRef.current = null;
+
+      // --- Normal creation path ---
       entityCreatedSuccessfully.current = true;
       setOpenSCOCreation(false);
       setCreateEntityType(null);
       setValueBeforeCreate(null);
-      return;
-    }
 
-    // --- Normal creation path ---
-    entityCreatedSuccessfully.current = true;
-    setOpenSCOCreation(false);
-    setCreateEntityType(null);
-    setValueBeforeCreate(null);
+      if (createdObservable?.id && createdObservable?.entity_type) {
+        const entityLabel =
+          createdObservable.representative?.main ||
+          createdObservable.observable_value ||
+          createdObservable.name ||
+          createdObservable.id;
+        const newOption: StixCoreObjectOption = {
+          label: entityLabel,
+          value: createdObservable.id,
+          type: createdObservable.entity_type,
+        };
 
-    if (createdObservable?.id && createdObservable?.entity_type) {
-      const entityLabel = createdObservable.representative?.main
-        || createdObservable.observable_value
-        || createdObservable.name
-        || createdObservable.id;
-      const newOption: StixCoreObjectOption = {
-        label: entityLabel,
-        value: createdObservable.id,
-        type: createdObservable.entity_type,
-      };
+        setStixCoreObjects((prev) => [newOption, ...prev.filter((o) => !o.isCreateOption)]);
 
-      setStixCoreObjects((prev) => [newOption, ...prev.filter((o) => !o.isCreateOption)]);
-
-      const currentValue = values[name] as StixCoreObjectOption | StixCoreObjectOption[] | null;
-      if (multiple) {
-        const currentArray = Array.isArray(currentValue) ? currentValue : [];
-        setFieldValue(name, [...currentArray, newOption]);
+        const currentValue = values[name] as StixCoreObjectOption | StixCoreObjectOption[] | null;
+        if (multiple) {
+          const currentArray = Array.isArray(currentValue) ? currentValue : [];
+          setFieldValue(name, [...currentArray, newOption]);
+        } else {
+          setFieldValue(name, newOption);
+        }
       } else {
-        setFieldValue(name, newOption);
+        fetchQuery(stixCoreObjectsFieldSearchQuery, {
+          search: currentSearchTerm,
+          types: types ?? searchScope[name] ?? [],
+        })
+          .toPromise()
+          .then((data: unknown) => {
+            const typedData = data as {
+              stixCoreObjects?: { edges?: Array<{ node: Record<string, unknown> }> };
+            };
+            const results = R.pipe(
+              R.pathOr([], ['stixCoreObjects', 'edges']),
+              R.map((n: { node: Record<string, unknown> }) => ({
+                label: getMainRepresentative(n.node),
+                value: n.node.id as string,
+                type: n.node.entity_type as string,
+              })),
+            )(typedData) as StixCoreObjectOption[];
+
+            const finalResults = [...results];
+            if (shouldShowCreateOption(results.length)) {
+              const creationType = getCreationType();
+              const createLabel = creationType
+                ? `${t_i18n('Create')} ${t_i18n(`entity_${creationType}`)}`
+                : t_i18n('Create');
+
+              finalResults.push({
+                label: createLabel,
+                value: CREATE_OPTION_VALUE,
+                type: 'create',
+                isCreateOption: true,
+              });
+            }
+
+            setStixCoreObjects(finalResults);
+          });
       }
-    } else {
+    },
+    [
+      buildPendingOption,
+      currentSearchTerm,
+      deferCreation,
+      getCreationType,
+      multiple,
+      name,
+      searchScope,
+      setFieldValue,
+      shouldShowCreateOption,
+      t_i18n,
+      types,
+      values,
+    ],
+  );
+
+  const searchStixCoreObjects = useCallback(
+    (event: React.SyntheticEvent | null, newInputValue?: string, reason?: string) => {
+      const searchValue = newInputValue ?? '';
+
+      if (reason === 'input' || reason === undefined) {
+        setCurrentSearchTerm(searchValue);
+      }
+
       fetchQuery(stixCoreObjectsFieldSearchQuery, {
-        search: currentSearchTerm,
+        search: searchValue,
         types: types ?? searchScope[name] ?? [],
       })
         .toPromise()
         .then((data: unknown) => {
-          const typedData = data as { stixCoreObjects?: { edges?: Array<{ node: Record<string, unknown> }> } };
+          const typedData = data as {
+            stixCoreObjects?: { edges?: Array<{ node: Record<string, unknown> }> };
+          };
           const results = R.pipe(
             R.pathOr([], ['stixCoreObjects', 'edges']),
             R.map((n: { node: Record<string, unknown> }) => ({
@@ -553,50 +658,9 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
 
           setStixCoreObjects(finalResults);
         });
-    }
-  }, [buildPendingOption, currentSearchTerm, deferCreation, getCreationType, multiple, name, searchScope, setFieldValue, shouldShowCreateOption, t_i18n, types, values]);
-
-  const searchStixCoreObjects = useCallback((event: React.SyntheticEvent | null, newInputValue?: string, reason?: string) => {
-    const searchValue = newInputValue ?? '';
-
-    if (reason === 'input' || reason === undefined) {
-      setCurrentSearchTerm(searchValue);
-    }
-
-    fetchQuery(stixCoreObjectsFieldSearchQuery, {
-      search: searchValue,
-      types: types ?? searchScope[name] ?? [],
-    })
-      .toPromise()
-      .then((data: unknown) => {
-        const typedData = data as { stixCoreObjects?: { edges?: Array<{ node: Record<string, unknown> }> } };
-        const results = R.pipe(
-          R.pathOr([], ['stixCoreObjects', 'edges']),
-          R.map((n: { node: Record<string, unknown> }) => ({
-            label: getMainRepresentative(n.node),
-            value: n.node.id as string,
-            type: n.node.entity_type as string,
-          })),
-        )(typedData) as StixCoreObjectOption[];
-
-        const finalResults = [...results];
-        if (shouldShowCreateOption(results.length)) {
-          const creationType = getCreationType();
-          const createLabel = creationType
-            ? `${t_i18n('Create')} ${t_i18n(`entity_${creationType}`)}`
-            : t_i18n('Create');
-
-          finalResults.push({
-            label: createLabel,
-            value: CREATE_OPTION_VALUE,
-            type: 'create',
-            isCreateOption: true,
-          });
-        }
-
-        setStixCoreObjects(finalResults);
-      });
-  }, [getCreationType, name, searchScope, shouldShowCreateOption, t_i18n, types]);
+    },
+    [getCreationType, name, searchScope, shouldShowCreateOption, t_i18n, types],
+  );
 
   const entitiesTypes = R.pipe(
     R.map((n: string) => ({
@@ -608,33 +672,36 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
     R.filter((type: { value: string }) => (types ? types.includes(type.value) : true)),
   )(entityTypes);
 
-  const handleChange = useCallback((
-    fieldName: string,
-    value: StixCoreObjectOption | StixCoreObjectOption[] | null,
-  ) => {
-    if (!value) {
-      setFieldValue(fieldName, value);
-      return;
-    }
+  const handleChange = useCallback(
+    (fieldName: string, value: StixCoreObjectOption | StixCoreObjectOption[] | null) => {
+      if (!value) {
+        setFieldValue(fieldName, value);
+        return;
+      }
 
-    if (Array.isArray(value)) {
-      const createOptionSelected = value.find((v) => v.value === CREATE_OPTION_VALUE);
-      if (createOptionSelected) {
-        const filteredValue = value.filter((v) => v.value !== CREATE_OPTION_VALUE);
-        setValueBeforeCreate(filteredValue);
-        setFieldValue(fieldName, filteredValue);
+      if (Array.isArray(value)) {
+        const createOptionSelected = value.find((v) => v.value === CREATE_OPTION_VALUE);
+        if (createOptionSelected) {
+          const filteredValue = value.filter((v) => v.value !== CREATE_OPTION_VALUE);
+          setValueBeforeCreate(filteredValue);
+          setFieldValue(fieldName, filteredValue);
+          handleOpenCreation();
+          return;
+        }
+      } else if (value.value === CREATE_OPTION_VALUE) {
+        const currentValue = values[fieldName] as
+          | StixCoreObjectOption
+          | StixCoreObjectOption[]
+          | null;
+        setValueBeforeCreate(currentValue);
         handleOpenCreation();
         return;
       }
-    } else if (value.value === CREATE_OPTION_VALUE) {
-      const currentValue = values[fieldName] as StixCoreObjectOption | StixCoreObjectOption[] | null;
-      setValueBeforeCreate(currentValue);
-      handleOpenCreation();
-      return;
-    }
 
-    setFieldValue(fieldName, value);
-  }, [handleOpenCreation, setFieldValue, values]);
+      setFieldValue(fieldName, value);
+    },
+    [handleOpenCreation, setFieldValue, values],
+  );
 
   return (
     <>
@@ -651,14 +718,25 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
           helperText: helpertext,
           onFocus: searchStixCoreObjects,
         }}
-        endAdornment={(
+        endAdornment={
           <InputAdornment position="end" style={{ position: 'absolute', right: 0 }}>
             {!disableCreation && (
-              <IconButton onClick={handleOpenCreation} size="small" disabled={disabled} title={t_i18n('Create')} aria-label={t_i18n('Create')}>
+              <IconButton
+                onClick={handleOpenCreation}
+                size="small"
+                disabled={disabled}
+                title={t_i18n('Create')}
+                aria-label={t_i18n('Create')}
+              >
                 <Add fontSize="small" color="primary" />
               </IconButton>
             )}
-            <IconButton onClick={handleOpenSearchScope} size="small" disabled={disabled} aria-label={t_i18n('Open menu')}>
+            <IconButton
+              onClick={handleOpenSearchScope}
+              size="small"
+              disabled={disabled}
+              aria-label={t_i18n('Open menu')}
+            >
               <PaletteOutlined
                 fontSize="small"
                 color={searchScope[name] && searchScope[name].length > 0 ? 'secondary' : 'primary'}
@@ -696,23 +774,24 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
               </MenuList>
             </Popover>
           </InputAdornment>
-        )}
-        groupBy={(option: StixCoreObjectOption) => option.isCreateOption ? '' : option.type}
+        }
+        groupBy={(option: StixCoreObjectOption) => (option.isCreateOption ? '' : option.type)}
         noOptionsText={t_i18n('No available options')}
         options={stixCoreObjects}
         onInputChange={searchStixCoreObjects}
         onChange={handleChange}
         filterOptions={(options: StixCoreObjectOption[]) => options}
-        renderOption={(innerProps: React.HTMLAttributes<HTMLLIElement>, option: StixCoreObjectOption) => {
+        renderOption={(
+          innerProps: React.HTMLAttributes<HTMLLIElement>,
+          option: StixCoreObjectOption,
+        ) => {
           if (option.isCreateOption) {
             return (
               <li {...innerProps} key={option.value}>
                 <div className={classes.icon}>
                   <ItemIcon type="Add" />
                 </div>
-                <div className={`${classes.text} ${classes.createOption}`}>
-                  {option.label}
-                </div>
+                <div className={`${classes.text} ${classes.createOption}`}>{option.label}</div>
               </li>
             );
           }
@@ -725,7 +804,9 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
             </li>
           );
         }}
-        isOptionEqualToValue={(option: StixCoreObjectOption, value: FieldOption) => option.value === value.value}
+        isOptionEqualToValue={(option: StixCoreObjectOption, value: FieldOption) =>
+          option.value === value.value
+        }
         classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
 
@@ -739,9 +820,15 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
             if (deferCreation && capturedInput) {
               const newOption = buildPendingOption(capturedInput);
               setStixCoreObjects((prev) => [newOption, ...prev.filter((o) => !o.isCreateOption)]);
-              const currentValue = values[name] as StixCoreObjectOption | StixCoreObjectOption[] | null;
+              const currentValue = values[name] as
+                | StixCoreObjectOption
+                | StixCoreObjectOption[]
+                | null;
               if (multiple) {
-                setFieldValue(name, [...(Array.isArray(currentValue) ? currentValue : []), newOption]);
+                setFieldValue(name, [
+                  ...(Array.isArray(currentValue) ? currentValue : []),
+                  newOption,
+                ]);
               } else {
                 setFieldValue(name, newOption);
               }
@@ -799,8 +886,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
             speeddial={true}
             type={createEntityType ?? undefined}
             inputValue={currentSearchTerm}
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore JSX component without proper TypeScript types
+            // @ts-expect-error JSX component without proper TypeScript types
             stixCyberObservableTypes={types || undefined}
             onCompleted={handleSCOEntityCreated}
           />

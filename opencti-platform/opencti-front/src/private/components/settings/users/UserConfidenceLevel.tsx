@@ -23,7 +23,7 @@ const MaxConfidenceSource: React.FC<UserConfidenceLevelProps> = ({ user }) => {
       return (
         <Tooltip
           sx={{ marginLeft: 1 }}
-          title={(
+          title={
             <>
               {t_i18n('', {
                 id: 'The Max Confidence Level is currently inherited from...',
@@ -37,7 +37,7 @@ const MaxConfidenceSource: React.FC<UserConfidenceLevelProps> = ({ user }) => {
               })}
               <UserConfidenceOverrides overrides={overrides} />
             </>
-          )}
+          }
         >
           <InformationOutline fontSize="small" color="info" />
         </Tooltip>
@@ -48,12 +48,14 @@ const MaxConfidenceSource: React.FC<UserConfidenceLevelProps> = ({ user }) => {
       return (
         <Tooltip
           sx={{ marginLeft: 1 }}
-          title={(
+          title={
             <div>
-              {t_i18n('The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user\'s groups.')}
+              {t_i18n(
+                "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.",
+              )}
               <UserConfidenceOverrides overrides={overrides} />
             </div>
-          )}
+          }
         >
           <InformationOutline fontSize="small" color="info" />
         </Tooltip>
@@ -64,7 +66,9 @@ const MaxConfidenceSource: React.FC<UserConfidenceLevelProps> = ({ user }) => {
       return (
         <Tooltip
           sx={{ marginLeft: 1 }}
-          title={t_i18n('The user has BYPASS capability, their max confidence level is set to 100.')}
+          title={t_i18n(
+            'The user has BYPASS capability, their max confidence level is set to 100.',
+          )}
         >
           <InformationOutline fontSize="small" color="info" />
         </Tooltip>
@@ -80,7 +84,9 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ user }) => {
   if (!user.effective_confidence_level) {
     return (
       <Tooltip
-        title={t_i18n("No confidence level found in this user's groups, and no confidence level defined at the user level.")}
+        title={t_i18n(
+          "No confidence level found in this user's groups, and no confidence level defined at the user level.",
+        )}
       >
         <ReportGmailerrorred fontSize="small" color="error" />
       </Tooltip>
@@ -90,9 +96,7 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ user }) => {
   return (
     <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
       <span>{`${user.effective_confidence_level.max_confidence ?? EMPTY_VALUE}`}</span>
-      {user.effective_confidence_level.source
-        && <MaxConfidenceSource user={user} />
-      }
+      {user.effective_confidence_level.source && <MaxConfidenceSource user={user} />}
     </Box>
   );
 };

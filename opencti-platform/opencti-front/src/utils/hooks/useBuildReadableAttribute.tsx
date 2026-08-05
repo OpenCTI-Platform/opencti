@@ -19,7 +19,8 @@ const MARKDOWN_ATTRIBUTES = [
 ];
 
 const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTable = false) => {
-  let value: string | ReactElement = typeof inputValue === 'string' ? inputValue : JSON.stringify(inputValue);
+  let value: string | ReactElement =
+    typeof inputValue === 'string' ? inputValue : JSON.stringify(inputValue);
 
   if (attributeType === 'date') {
     value = dateFormat(new Date(value)) ?? '';
@@ -46,7 +47,11 @@ const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTab
 const useBuildReadableAttribute = () => {
   const stixCoreObjectsAttributesMap = useBuildFilterKeysMapFromEntityType(['Stix-Core-Object']);
 
-  const buildReadableAttribute = (attributeData: unknown, displayInfo: WidgetColumn, inTable = false) => {
+  const buildReadableAttribute = (
+    attributeData: unknown,
+    displayInfo: WidgetColumn,
+    inTable = false,
+  ) => {
     const { attribute, displayStyle } = displayInfo;
     let attributeType: string | undefined;
     if (attribute) {
@@ -65,7 +70,9 @@ const useBuildReadableAttribute = () => {
           </ul>,
         );
       } else {
-        readableAttribute = attributeData.map((r) => buildStringAttribute(r, attributeType, inTable)).join(', ');
+        readableAttribute = attributeData
+          .map((r) => buildStringAttribute(r, attributeType, inTable))
+          .join(', ');
       }
     } else {
       readableAttribute = buildStringAttribute(attributeData, attributeType, inTable);

@@ -1,5 +1,12 @@
 import type { Resolvers } from '../../generated/graphql';
-import { findById, findExclusionListPaginated, addExclusionListFile, deleteExclusionList, fieldPatchExclusionList, getCacheStatus } from './exclusionList-domain';
+import {
+  findById,
+  findExclusionListPaginated,
+  addExclusionListFile,
+  deleteExclusionList,
+  fieldPatchExclusionList,
+  getCacheStatus,
+} from './exclusionList-domain';
 
 const exclusionListResolver: Resolvers = {
   Query: {

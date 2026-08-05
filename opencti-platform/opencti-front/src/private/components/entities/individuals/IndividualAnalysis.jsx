@@ -30,18 +30,15 @@ IndividualAnalysisComponent.propTypes = {
   viewAs: PropTypes.string,
 };
 
-const IndividualAnalysis = createFragmentContainer(
-  IndividualAnalysisComponent,
-  {
-    individual: graphql`
-      fragment IndividualAnalysis_individual on Individual {
-        id
-        name
-        x_opencti_aliases
-        x_opencti_graph_data
-      }
-    `,
-  },
-);
+const IndividualAnalysis = createFragmentContainer(IndividualAnalysisComponent, {
+  individual: graphql`
+    fragment IndividualAnalysis_individual on Individual {
+      id
+      name
+      x_opencti_aliases
+      x_opencti_graph_data
+    }
+  `,
+});
 
 export default IndividualAnalysis;

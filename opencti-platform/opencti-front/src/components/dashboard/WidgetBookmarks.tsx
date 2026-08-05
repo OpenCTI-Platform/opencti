@@ -42,24 +42,20 @@ const WidgetBookmarks = ({ bookmarks }: WidgetBookmarksProps) => {
           const link = resolveLink(bookmark.entity_type);
           return (
             <Grid item xs={4} key={bookmark.id}>
-              <Card
-                padding="none"
-                variant="outlined"
-                to={`${link}/${bookmark.id}`}
-              >
+              <Card padding="none" variant="outlined" to={`${link}/${bookmark.id}`}>
                 <CardHeader
                   sx={{
                     paddingBottom: 0,
                     marginBottom: 0,
                   }}
-                  avatar={(
+                  avatar={
                     <Avatar sx={{ backgroundColor: theme.palette.primary.main }}>
                       <ItemIcon
                         type={bookmark.entity_type}
                         color={theme.palette.background.default}
                       />
                     </Avatar>
-                  )}
+                  }
                   title={bookmark.name}
                   subheader={`${t_i18n('Updated on')} ${fsd(bookmark.modified)}`}
                 />

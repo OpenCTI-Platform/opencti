@@ -12,37 +12,37 @@ import { SecurityCoverageTestedEntitiesChart_securityCoverage$key } from './__ge
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 
 const securityCoverageRelationshipDistributionFragment = graphql`
-    fragment SecurityCoverageTestedEntitiesChart_securityCoverage on SecurityCoverage{
-        totalCountPerEntityType : stixCoreRelationshipsDistribution(
-            field:"entity_type", 
-            relationship_type: "has-covered", 
-            operation:count,
-            filters: {
-              mode: and
-              filters: [
-                  { key: "toTypes", operator: not_eq, values: ["Securityplatform"] }
-              ]
-              filterGroups: []
-            }){
-            label,
-            value
-        }
-        testedCountPerEntityType: stixCoreRelationshipsDistribution(
-            field:"entity_type", 
-            relationship_type: "has-covered", 
-            operation:count, 
-            filters: {
-            mode: and
-            filters: [
-                { key: "coverage_information", operator: not_nil, values: [] },
-                { key: "toTypes", operator: not_eq, values: ["Securityplatform"] }
-              ]
-              filterGroups: []
-            }){
-            label,
-            value
-        }
+  fragment SecurityCoverageTestedEntitiesChart_securityCoverage on SecurityCoverage {
+    totalCountPerEntityType: stixCoreRelationshipsDistribution(
+      field: "entity_type"
+      relationship_type: "has-covered"
+      operation: count
+      filters: {
+        mode: and
+        filters: [{ key: "toTypes", operator: not_eq, values: ["Securityplatform"] }]
+        filterGroups: []
+      }
+    ) {
+      label
+      value
     }
+    testedCountPerEntityType: stixCoreRelationshipsDistribution(
+      field: "entity_type"
+      relationship_type: "has-covered"
+      operation: count
+      filters: {
+        mode: and
+        filters: [
+          { key: "coverage_information", operator: not_nil, values: [] }
+          { key: "toTypes", operator: not_eq, values: ["Securityplatform"] }
+        ]
+        filterGroups: []
+      }
+    ) {
+      label
+      value
+    }
+  }
 `;
 
 interface Props {
@@ -50,11 +50,12 @@ interface Props {
 }
 
 function normalizeDistribution(
-  arr: ReadonlyArray<
-    | { readonly label: string; readonly value: number | null | undefined }
+  arr:
+    | ReadonlyArray<
+        { readonly label: string; readonly value: number | null | undefined } | null | undefined
+      >
     | null
-    | undefined
-  > | null | undefined,
+    | undefined,
 ) {
   return (arr ?? [])
     .filter((v) => v != null)
@@ -73,12 +74,9 @@ const SecurityCoverageTestedEntitiesChart: FunctionComponent<Props> = ({ securit
   const testedCounts = normalizeDistribution(data.testedCountPerEntityType);
 
   const { categories, testedData, notCoveredData } = useMemo(() => {
-    const testedByLabel = new Map(
-      (testedCounts || []).map(({ label, value }) => [label, value]),
-    );
+    const testedByLabel = new Map((testedCounts || []).map(({ label, value }) => [label, value]));
 
-    const sortedEntities = (totalCounts ?? [])
-      .sort((a, b) => (a.label).localeCompare(b.label));
+    const sortedEntities = (totalCounts ?? []).sort((a, b) => a.label.localeCompare(b.label));
 
     const categories: string[] = [];
     const testedData: number[] = [];
@@ -96,20 +94,23 @@ const SecurityCoverageTestedEntitiesChart: FunctionComponent<Props> = ({ securit
     return { categories, testedData, notCoveredData };
   }, [totalCounts, testedCounts]);
 
-  const series = useMemo(() => [
-    {
-      name: t_i18n('Tested entities'),
-      data: testedData,
-    },
-    {
-      name: t_i18n('Not covered'),
-      data: notCoveredData,
-    },
-  ], [testedData, notCoveredData]);
+  const series = useMemo(
+    () => [
+      {
+        name: t_i18n('Tested entities'),
+        data: testedData,
+      },
+      {
+        name: t_i18n('Not covered'),
+        data: notCoveredData,
+      },
+    ],
+    [testedData, notCoveredData],
+  );
 
   const options: ApexOptions = useMemo(
     () => ({
-      ...verticalBarsChartOptions(
+      ...(verticalBarsChartOptions(
         theme,
         t_i18n,
         simpleNumberFormat,
@@ -118,7 +119,7 @@ const SecurityCoverageTestedEntitiesChart: FunctionComponent<Props> = ({ securit
         true,
         false,
         undefined,
-      ) as ApexOptions,
+      ) as ApexOptions),
       xaxis: { categories },
     }),
     [theme, categories],
@@ -126,17 +127,11 @@ const SecurityCoverageTestedEntitiesChart: FunctionComponent<Props> = ({ securit
 
   return (
     <Card title={t_i18n('Tested entities')}>
-      {categories.length === 0
-        ? <WidgetNoData /> : (
-            <Chart
-              options={options}
-              series={series}
-              type="bar"
-              width="100%"
-              height="100%"
-            />
-          )}
-
+      {categories.length === 0 ? (
+        <WidgetNoData />
+      ) : (
+        <Chart options={options} series={series} type="bar" width="100%" height="100%" />
+      )}
     </Card>
   );
 };

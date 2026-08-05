@@ -10,14 +10,14 @@ interface DigestNotificationDrawerProps {
   onClose: () => void;
 }
 
-const DigestNotificationDrawer: FunctionComponent<DigestNotificationDrawerProps> = ({ notification, open, onClose }) => {
+const DigestNotificationDrawer: FunctionComponent<DigestNotificationDrawerProps> = ({
+  notification,
+  open,
+  onClose,
+}) => {
   const { t_i18n } = useFormatter();
   return (
-    <Drawer
-      title={t_i18n('Digests Details')}
-      open={open}
-      onClose={onClose}
-    >
+    <Drawer title={t_i18n('Digests Details')} open={open} onClose={onClose}>
       <DigestNotification notification={notification} />
     </Drawer>
   );

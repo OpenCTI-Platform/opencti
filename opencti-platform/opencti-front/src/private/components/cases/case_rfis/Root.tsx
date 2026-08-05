@@ -20,7 +20,11 @@ import CaseRfiKnowledge from './CaseRfiKnowledge';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import { getPaddingRight } from '../../../../utils/utils';
 import CaseRfiEdition from './CaseRfiEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
@@ -85,9 +89,7 @@ interface RootCaseRfiComponentProps {
 }
 
 const RootCaseRfiComponent = ({ queryRef, caseId }: RootCaseRfiComponentProps) => {
-  const subConfig = useMemo<
-    GraphQLSubscriptionConfig<RootCaseRfiCaseSubscription>
-  >(
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootCaseRfiCaseSubscription>>(
     () => ({
       subscription,
       variables: { id: caseId },
@@ -95,7 +97,8 @@ const RootCaseRfiComponent = ({ queryRef, caseId }: RootCaseRfiComponentProps) =
     [caseId],
   );
   const location = useLocation();
-  const enableReferences = useIsEnforceReference('Case-Rfi') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
+  const enableReferences =
+    useIsEnforceReference('Case-Rfi') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
 
@@ -109,7 +112,8 @@ const RootCaseRfiComponent = ({ queryRef, caseId }: RootCaseRfiComponentProps) =
   }
   const basePath = PATH_RFI(caseId);
   const paddingRight = getPaddingRight(location.pathname, basePath, false);
-  const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
+  const isKnowledgeOrContent =
+    location.pathname.includes('knowledge') || location.pathname.includes('content');
   const currentAccessRight = useGetCurrentUserAccessRight(caseData.currentUserAccessRight);
   const CaseRfiKnowledgeComponent = CaseRfiKnowledge as React.ComponentType<{
     caseData: FragmentRef<CaseRfiKnowledge_case$data>;
@@ -117,19 +121,20 @@ const RootCaseRfiComponent = ({ queryRef, caseId }: RootCaseRfiComponentProps) =
   }>;
   return (
     <div style={{ paddingRight }}>
-      <Breadcrumbs elements={[
-        { label: t_i18n('Cases') },
-        { label: t_i18n('Requests for information'), link: PATH_RFIS },
-        { label: caseData.name, current: true },
-      ]}
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Cases') },
+          { label: t_i18n('Requests for information'), link: PATH_RFIS },
+          { label: caseData.name, current: true },
+        ]}
       />
       <ContainerHeader
         container={caseData}
-        EditComponent={(
+        EditComponent={
           <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
             <CaseRfiEdition caseId={caseData.id} />
           </Security>
-        )}
+        }
         DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
             <CaseRfiDeletion id={caseData.id} isOpen={isOpen} handleClose={onClose} />
@@ -146,22 +151,11 @@ const RootCaseRfiComponent = ({ queryRef, caseId }: RootCaseRfiComponentProps) =
         pages={{
           overview: <CaseRfi caseRfiData={caseData} enableReferences={enableReferences} />,
           knowledge: (
-            <CaseRfiKnowledgeComponent
-              caseData={caseData}
-              enableReferences={enableReferences}
-            />
+            <CaseRfiKnowledgeComponent caseData={caseData} enableReferences={enableReferences} />
           ),
-          content: (
-            <StixCoreObjectContentRoot
-              stixCoreObject={caseData}
-              isContainer={true}
-            />
-          ),
+          content: <StixCoreObjectContentRoot stixCoreObject={caseData} isContainer={true} />,
           entities: (
-            <ContainerStixDomainObjects
-              container={caseData}
-              enableReferences={enableReferences}
-            />
+            <ContainerStixDomainObjects container={caseData} enableReferences={enableReferences} />
           ),
           observables: (
             <ContainerStixCyberObservables
@@ -180,7 +174,16 @@ const RootCaseRfiComponent = ({ queryRef, caseId }: RootCaseRfiComponentProps) =
             />
           ),
         }}
-        extraActions={!isKnowledgeOrContent && <AIInsights id={caseData.id} tabs={['containers']} defaultTab="containers" isContainer={true} />}
+        extraActions={
+          !isKnowledgeOrContent && (
+            <AIInsights
+              id={caseData.id}
+              tabs={['containers']}
+              defaultTab="containers"
+              isContainer={true}
+            />
+          )
+        }
       />
     </div>
   );

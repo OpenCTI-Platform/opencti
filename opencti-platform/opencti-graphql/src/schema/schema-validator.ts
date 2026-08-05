@@ -1,9 +1,17 @@
 import * as R from 'ramda';
 import Ajv from 'ajv';
-import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import {
+  ATTR_DB_NAMESPACE,
+  ATTR_DB_OPERATION_NAME,
+  SEMATTRS_DB_NAME,
+  SEMATTRS_DB_OPERATION,
+} from '@opentelemetry/semantic-conventions';
 import { schemaAttributesDefinition } from './schema-attributes';
 import { UnsupportedError, ValidationError } from '../config/errors';
-import type { AttributeConfiguration, BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
+import type {
+  AttributeConfiguration,
+  BasicStoreEntityEntitySetting,
+} from '../modules/entitySetting/entitySetting-types';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { getEntityValidatorCreation, getEntityValidatorUpdate } from './validator-register';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -16,7 +24,11 @@ import { EditOperation } from '../generated/graphql';
 import { utcDate } from '../utils/format';
 import { schemaRelationsRefDefinition } from './schema-relationsRef';
 import { extendedErrors } from '../config/conf';
-import { isUserHasCapability, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../utils/access';
+import {
+  isUserHasCapability,
+  KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS,
+  KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
+} from '../utils/access';
 
 const ajv = new Ajv();
 
@@ -35,7 +47,11 @@ export const validateAndFormatSchemaAttribute = (
     // with a patch object, the value matches something inside the object and not the object itself
     // so we cannot check directly the multiplicity as it concerns an internal mapping
     // let's assume it's OK, and validateDataBeforeIndexing would check it.
-    throw ValidationError('Attribute cannot be multiple', attributeName, extendedErrors({ input: editInput }));
+    throw ValidationError(
+      'Attribute cannot be multiple',
+      attributeName,
+      extendedErrors({ input: editInput }),
+    );
   }
   // Data validation
   if (attributeDefinition.type === 'string') {
@@ -43,7 +59,11 @@ export const validateAndFormatSchemaAttribute = (
     for (let index = 0; index < editInput.value.length; index += 1) {
       const value = editInput.value[index];
       if (value && !R.is(String, value)) {
-        throw ValidationError('Attribute must be a string', attributeName, extendedErrors({ input: editInput }));
+        throw ValidationError(
+          'Attribute must be a string',
+          attributeName,
+          extendedErrors({ input: editInput }),
+        );
       } else {
         values.push(value ? value.trim() : value);
       }
@@ -58,14 +78,20 @@ export const validateAndFormatSchemaAttribute = (
       const jsonValue = R.head(editInput.value); // json cannot be multiple
       const valid = validate(JSON.parse(jsonValue as string));
       if (!valid) {
-        throw ValidationError('The JSON schema is not valid', attributeName, { errors: validate.errors });
+        throw ValidationError('The JSON schema is not valid', attributeName, {
+          errors: validate.errors,
+        });
       }
     }
   }
   if (attributeDefinition.type === 'boolean') {
     editInput.value.forEach((value) => {
       if (value && !R.is(Boolean, value) && !R.is(String, value)) {
-        throw ValidationError('Attribute must be a boolean/string', attributeName, extendedErrors({ input: editInput }));
+        throw ValidationError(
+          'Attribute must be a boolean/string',
+          attributeName,
+          extendedErrors({ input: editInput }),
+        );
       }
     });
   }
@@ -73,7 +99,11 @@ export const validateAndFormatSchemaAttribute = (
     // Test date value (Accept only ISO date string)
     editInput.value.forEach((value) => {
       if (value && !R.is(String, value) && !utcDate(value).isValid()) {
-        throw ValidationError('Attribute must be a boolean/string', attributeName, extendedErrors({ input: editInput }));
+        throw ValidationError(
+          'Attribute must be a boolean/string',
+          attributeName,
+          extendedErrors({ input: editInput }),
+        );
       }
     });
   }
@@ -81,31 +111,48 @@ export const validateAndFormatSchemaAttribute = (
     // Test numeric value (Accept string)
     editInput.value.forEach((value) => {
       if (value && Number.isNaN(Number(value))) {
-        throw ValidationError('Attribute must be a numeric/string', attributeName, extendedErrors({ input: editInput }));
+        throw ValidationError(
+          'Attribute must be a numeric/string',
+          attributeName,
+          extendedErrors({ input: editInput }),
+        );
       }
     });
   }
 };
 
-const validateFormatSchemaAttributes = async (context: AuthContext, user: AuthUser, instanceType: string, editInputs: EditInput[]) => {
+const validateFormatSchemaAttributes = async (
+  context: AuthContext,
+  user: AuthUser,
+  instanceType: string,
+  editInputs: EditInput[],
+) => {
   const validateFormatSchemaAttributesFn = async () => {
     const availableAttributes = schemaAttributesDefinition.getAttributes(instanceType);
     if (R.isEmpty(editInputs) || !Array.isArray(editInputs)) {
-      throw UnsupportedError('Cannot validate an empty or invalid input', { ...extendedErrors({ input: editInputs }) });
+      throw UnsupportedError('Cannot validate an empty or invalid input', {
+        ...extendedErrors({ input: editInputs }),
+      });
     }
     editInputs.forEach((editInput) => {
       const attributeDefinition = availableAttributes.get(editInput.key);
       validateAndFormatSchemaAttribute(editInput.key, attributeDefinition, editInput);
     });
   };
-  return telemetry(context, user, 'SCHEMA ATTRIBUTES VALIDATION', {
-    [ATTR_DB_NAMESPACE]: 'validation',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_NAME]: 'validation',
-    [ATTR_DB_OPERATION_NAME]: 'schema_attributes',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_OPERATION]: 'schema_attributes',
-  }, validateFormatSchemaAttributesFn);
+  return telemetry(
+    context,
+    user,
+    'SCHEMA ATTRIBUTES VALIDATION',
+    {
+      [ATTR_DB_NAMESPACE]: 'validation',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_NAME]: 'validation',
+      [ATTR_DB_OPERATION_NAME]: 'schema_attributes',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_OPERATION]: 'schema_attributes',
+    },
+    validateFormatSchemaAttributesFn,
+  );
 };
 
 // -- VALIDATE ATTRIBUTE MANDATORY --
@@ -126,12 +173,16 @@ const validateMandatoryAttributes = (
     mandatoryAttributes = attributesConfiguration.filter((attr) => attr.mandatory);
   }
   // In creation if enforce reference is activated, user must provide a least 1 external references
-  if (!isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE) && isCreation && entitySetting.enforce_reference) {
+  if (
+    !isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE) &&
+    isCreation &&
+    entitySetting.enforce_reference
+  ) {
     mandatoryAttributes.push({ name: externalReferences.name, mandatory: true });
   }
   const inputKeys = Object.keys(input);
   mandatoryAttributes.forEach((attr) => {
-    if (!(validation(inputKeys, attr.name))) {
+    if (!validation(inputKeys, attr.name)) {
       throw ValidationError('This attribute is mandatory', attr.name);
     }
   });
@@ -149,19 +200,28 @@ const validateMandatoryAttributesOnCreation = async (
       return;
     }
     // Should have all the mandatory keys and the associated values not null
-    const inputValidValue = (inputKeys: string[], mandatoryKey: string) => (inputKeys.includes(mandatoryKey)
-      && (Array.isArray(input[mandatoryKey]) ? (input[mandatoryKey] as []).some((i: string) => isNotEmptyField(i)) : isNotEmptyField(input[mandatoryKey])));
+    const inputValidValue = (inputKeys: string[], mandatoryKey: string) =>
+      inputKeys.includes(mandatoryKey) &&
+      (Array.isArray(input[mandatoryKey])
+        ? (input[mandatoryKey] as []).some((i: string) => isNotEmptyField(i))
+        : isNotEmptyField(input[mandatoryKey]));
 
     validateMandatoryAttributes(user, input, entitySetting, true, inputValidValue);
   };
-  return telemetry(context, user, 'MANDATORY CREATION VALIDATION', {
-    [ATTR_DB_NAMESPACE]: 'validation',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_NAME]: 'validation',
-    [ATTR_DB_OPERATION_NAME]: 'mandatory',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_OPERATION]: 'mandatory',
-  }, validateMandatoryAttributesOnCreationFn);
+  return telemetry(
+    context,
+    user,
+    'MANDATORY CREATION VALIDATION',
+    {
+      [ATTR_DB_NAMESPACE]: 'validation',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_NAME]: 'validation',
+      [ATTR_DB_OPERATION_NAME]: 'mandatory',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_OPERATION]: 'mandatory',
+    },
+    validateMandatoryAttributesOnCreationFn,
+  );
 };
 const validateMandatoryAttributesOnUpdate = async (
   context: AuthContext,
@@ -171,19 +231,28 @@ const validateMandatoryAttributesOnUpdate = async (
 ) => {
   const validateMandatoryAttributesOnUpdateFn = async () => {
     // If the mandatory key is present the associated value should be not null
-    const inputValidValue = (inputKeys: string[], mandatoryKey: string) => (!inputKeys.includes(mandatoryKey)
-      || (Array.isArray(input[mandatoryKey]) ? (input[mandatoryKey] as []).some((i: string) => isNotEmptyField(i)) : isNotEmptyField(input[mandatoryKey])));
+    const inputValidValue = (inputKeys: string[], mandatoryKey: string) =>
+      !inputKeys.includes(mandatoryKey) ||
+      (Array.isArray(input[mandatoryKey])
+        ? (input[mandatoryKey] as []).some((i: string) => isNotEmptyField(i))
+        : isNotEmptyField(input[mandatoryKey]));
 
     validateMandatoryAttributes(user, input, entitySetting, false, inputValidValue);
   };
-  return telemetry(context, user, 'MANDATORY UPDATE VALIDATION', {
-    [ATTR_DB_NAMESPACE]: 'validation',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_NAME]: 'validation',
-    [ATTR_DB_OPERATION_NAME]: 'mandatory',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_OPERATION]: 'mandatory',
-  }, validateMandatoryAttributesOnUpdateFn);
+  return telemetry(
+    context,
+    user,
+    'MANDATORY UPDATE VALIDATION',
+    {
+      [ATTR_DB_NAMESPACE]: 'validation',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_NAME]: 'validation',
+      [ATTR_DB_OPERATION_NAME]: 'mandatory',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_OPERATION]: 'mandatory',
+    },
+    validateMandatoryAttributesOnUpdateFn,
+  );
 };
 
 export const validateInputCreation = async (
@@ -196,8 +265,11 @@ export const validateInputCreation = async (
 ) => {
   const validateInputCreationFn = async () => {
     // Generic validator
-    const editInputs: EditInput[] = Object.entries(input)
-      .map(([k, v]) => ({ operation: EditOperation.Replace, value: Array.isArray(v) ? v : [v], key: k }));
+    const editInputs: EditInput[] = Object.entries(input).map(([k, v]) => ({
+      operation: EditOperation.Replace,
+      value: Array.isArray(v) ? v : [v],
+      key: k,
+    }));
     await validateFormatSchemaAttributes(context, user, instanceType, editInputs);
     await validateMandatoryAttributesOnCreation(context, user, input, entitySetting, opts);
     // Functional validator
@@ -209,17 +281,26 @@ export const validateInputCreation = async (
       }
     }
   };
-  return telemetry(context, user, 'CREATION VALIDATION', {
-    [ATTR_DB_NAMESPACE]: 'validation',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_NAME]: 'validation',
-    [ATTR_DB_OPERATION_NAME]: 'creation',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_OPERATION]: 'creation',
-  }, validateInputCreationFn);
+  return telemetry(
+    context,
+    user,
+    'CREATION VALIDATION',
+    {
+      [ATTR_DB_NAMESPACE]: 'validation',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_NAME]: 'validation',
+      [ATTR_DB_OPERATION_NAME]: 'creation',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_OPERATION]: 'creation',
+    },
+    validateInputCreationFn,
+  );
 };
 
-export const validateUpdatableAttribute = (instanceType: string, input: Record<string, unknown>) => {
+export const validateUpdatableAttribute = (
+  instanceType: string,
+  input: Record<string, unknown>,
+) => {
   const invalidKeys: string[] = [];
   Object.entries(input).forEach(([key]) => {
     const attribute = schemaAttributesDefinition.getAttribute(instanceType, key);
@@ -265,12 +346,18 @@ export const validateInputUpdate = async (
       }
     }
   };
-  return telemetry(context, user, 'UPDATE VALIDATION', {
-    [ATTR_DB_NAMESPACE]: 'validation',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_NAME]: 'validation',
-    [ATTR_DB_OPERATION_NAME]: 'update',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_OPERATION]: 'update',
-  }, validateInputUpdateFn);
+  return telemetry(
+    context,
+    user,
+    'UPDATE VALIDATION',
+    {
+      [ATTR_DB_NAMESPACE]: 'validation',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_NAME]: 'validation',
+      [ATTR_DB_OPERATION_NAME]: 'update',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_OPERATION]: 'update',
+    },
+    validateInputUpdateFn,
+  );
 };

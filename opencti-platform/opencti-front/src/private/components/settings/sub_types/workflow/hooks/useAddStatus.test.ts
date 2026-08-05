@@ -65,10 +65,12 @@ describe('useAddStatus', () => {
     const updater = hoisted.mockSetNodes.mock.calls[0][0];
     const updatedNodes = updater([]);
 
-    expect(updatedNodes).toContainEqual(expect.objectContaining({
-      id: 'NEW_STATUS_ID',
-      type: WorkflowNodeType.status,
-    }));
+    expect(updatedNodes).toContainEqual(
+      expect.objectContaining({
+        id: 'NEW_STATUS_ID',
+        type: WorkflowNodeType.status,
+      }),
+    );
   });
 
   it('Case 2: should append transition/status and REMOVE placeholder', () => {

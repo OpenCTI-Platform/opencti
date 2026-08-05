@@ -7,9 +7,14 @@ import {
 import { FintelDesignsLines_data$data } from '@components/settings/fintel_design/__generated__/FintelDesignsLines_data.graphql';
 import { FintelDesignsLine_node$data } from '@components/settings/fintel_design/__generated__/FintelDesignsLine_node.graphql';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
-import FintelDesignFormDrawer, { FintelDesignEditData } from '@components/settings/fintel_design/FintelDesignFormDrawer';
+import FintelDesignFormDrawer, {
+  FintelDesignEditData,
+} from '@components/settings/fintel_design/FintelDesignFormDrawer';
 import { useFormatter } from '../../../../components/i18n';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
@@ -37,14 +42,14 @@ const fintelDesignsQuery = graphql`
     $filters: FilterGroup
   ) {
     ...FintelDesignsLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -57,7 +62,8 @@ export const fintelDesignsFragment = graphql`
     orderBy: { type: "FintelDesignOrdering", defaultValue: default }
     orderMode: { type: "OrderingMode", defaultValue: desc }
     filters: { type: "FilterGroup" }
-  ) @refetchable(queryName: "FintelDesignsLinesRefetchQuery") {
+  )
+  @refetchable(queryName: "FintelDesignsLinesRefetchQuery") {
     fintelDesigns(
       search: $search
       first: $count
@@ -159,12 +165,12 @@ const FintelDesigns = () => {
       label: t_i18n('Default'),
       percentWidth: 20,
       isSortable: true,
-      render: ({ default: isDefault }) => isDefault ? (
-        <Tag
-          color={theme.palette.success.main}
-          label={isDefault ? t_i18n('Default') : ''}
-        />
-      ) : '-',
+      render: ({ default: isDefault }) =>
+        isDefault ? (
+          <Tag color={theme.palette.success.main} label={isDefault ? t_i18n('Default') : ''} />
+        ) : (
+          '-'
+        ),
     },
   };
 
@@ -196,13 +202,19 @@ const FintelDesigns = () => {
         ) : (
           <>
             <Alert
-              content={t_i18n('If no design configuration is detected, the default settings will be applied.')}
+              content={t_i18n(
+                'If no design configuration is detected, the default settings will be applied.',
+              )}
             />
             {queryRef && (
               <DataTable
                 dataColumns={dataColumns}
                 resolvePath={(data: FintelDesignsLines_data$data) => {
-                  type OuterNode = NonNullable<NonNullable<FintelDesignsLines_data$data['fintelDesigns']>['edges'][number]['node']>;
+                  type OuterNode = NonNullable<
+                    NonNullable<
+                      FintelDesignsLines_data$data['fintelDesigns']
+                    >['edges'][number]['node']
+                  >;
                   const nodes = (data.fintelDesigns?.edges ?? [])
                     .map((n) => n?.node)
                     .filter((node): node is OuterNode => Boolean(node));
@@ -226,12 +238,14 @@ const FintelDesigns = () => {
                     fintelDesignId={row.id}
                     isDefault={!!row.default}
                     currentDefaultName={row.currentDefaultName}
-                    onUpdate={() => setFintelDesignToEdit({
-                      id: row.id,
-                      name: row.name,
-                      description: row.description ?? null,
-                      default: !!row.default,
-                    })}
+                    onUpdate={() =>
+                      setFintelDesignToEdit({
+                        id: row.id,
+                        name: row.name,
+                        description: row.description ?? null,
+                        default: !!row.default,
+                      })
+                    }
                     onDelete={canDelete ? () => setFintelDesignToDelete(row.id) : undefined}
                   />
                 )}

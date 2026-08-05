@@ -35,49 +35,46 @@ const userMutation = graphql`
   }
 `;
 
-const userValidation = (t) => Yup.object().shape({
-  user_service_account: Yup.boolean(),
-  name: Yup.string().required(t('This field is required')),
-  user_email: Yup.string()
-    .email(t('The value must be an email address'))
-    .when('user_service_account', {
+const userValidation = (t) =>
+  Yup.object().shape({
+    user_service_account: Yup.boolean(),
+    name: Yup.string().required(t('This field is required')),
+    user_email: Yup.string()
+      .email(t('The value must be an email address'))
+      .when('user_service_account', {
+        is: true,
+        then: (schema) => schema.nullable(),
+        otherwise: (schema) => schema.required(t('This field is required')).nullable(),
+      }),
+    firstname: Yup.string().nullable(),
+    lastname: Yup.string().nullable(),
+    description: Yup.string().nullable(),
+    password: Yup.string().when('user_service_account', {
       is: true,
       then: (schema) => schema.nullable(),
       otherwise: (schema) => schema.required(t('This field is required')).nullable(),
     }),
-  firstname: Yup.string().nullable(),
-  lastname: Yup.string().nullable(),
-  description: Yup.string().nullable(),
-  password: Yup.string()
-    .when('user_service_account', {
-      is: true,
-      then: (schema) => schema.nullable(),
-      otherwise: (schema) => schema.required(t('This field is required')).nullable(),
-    }),
-  confirmation: Yup.string()
-    .oneOf([Yup.ref('password'), null], t('The values do not match'))
-    .when('user_service_account', {
-      is: true,
-      then: (schema) => schema.nullable(),
-      otherwise: (schema) => schema.required(t('This field is required')).nullable(),
-    }),
-  user_confidence_level_enabled: Yup.boolean(),
-  user_confidence_level: Yup.number()
-    .min(0, t('The value must be greater than or equal to 0'))
-    .max(100, t('The value must be less than or equal to 100'))
-    .when('user_confidence_level_enabled', {
-      is: true,
-      then: (schema) => schema.required(t('This field is required')).nullable(),
-      otherwise: (schema) => schema.nullable(),
-    }),
-  prevent_default_groups: Yup.boolean(),
-});
+    confirmation: Yup.string()
+      .oneOf([Yup.ref('password'), null], t('The values do not match'))
+      .when('user_service_account', {
+        is: true,
+        then: (schema) => schema.nullable(),
+        otherwise: (schema) => schema.required(t('This field is required')).nullable(),
+      }),
+    user_confidence_level_enabled: Yup.boolean(),
+    user_confidence_level: Yup.number()
+      .min(0, t('The value must be greater than or equal to 0'))
+      .max(100, t('The value must be less than or equal to 100'))
+      .when('user_confidence_level_enabled', {
+        is: true,
+        then: (schema) => schema.required(t('This field is required')).nullable(),
+        otherwise: (schema) => schema.nullable(),
+      }),
+    prevent_default_groups: Yup.boolean(),
+  });
 
 const CreateUserControlledDial = (props) => (
-  <CreateEntityControlledDial
-    entityType="User"
-    {...props}
-  />
+  <CreateEntityControlledDial entityType="User" {...props} />
 );
 
 const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
@@ -88,7 +85,8 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
   const { groups: defaultGroups } = usePreloadedQuery(groupsQuery, defaultGroupsQueryRef);
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
-    const { objectOrganization, groups, user_confidence_level, email_template_id, ...rest } = values;
+    const { objectOrganization, groups, user_confidence_level, email_template_id, ...rest } =
+      values;
     const finalValues = {
       ...rest,
       objectOrganization: objectOrganization.map((n) => n.value),
@@ -147,14 +145,13 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
   };
 
   return (
-    <Drawer
-      title={t_i18n('Create a user')}
-      controlledDial={CreateUserControlledDial}
-    >
+    <Drawer title={t_i18n('Create a user')} controlledDial={CreateUserControlledDial}>
       {({ onClose }) => (
         <>
           <Alert severity="info">
-            {t_i18n('Unless you prevent the default groups assignation, the user will be created with the specified groups and the default groups.')}
+            {t_i18n(
+              'Unless you prevent the default groups assignation, the user will be created with the specified groups and the default groups.',
+            )}
           </Alert>
           <Formik
             initialValues={initialValues}
@@ -173,7 +170,9 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                       label={t_i18n('This user is a service account')}
                     />
                     <Tooltip
-                      title={t_i18n('Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.')}
+                      title={t_i18n(
+                        'Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.',
+                      )}
                     >
                       <InformationOutline
                         fontSize="small"
@@ -254,16 +253,20 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                     component={SwitchField}
                     type="checkbox"
                     name="prevent_default_groups"
-                    label={(
+                    label={
                       <div style={{ display: 'flex' }}>
-                        <>{t_i18n('Don\'t add the user to the default groups')}</>
+                        <>{t_i18n("Don't add the user to the default groups")}</>
                         <Tooltip
                           title={`${t_i18n('The default groups are:')} ${defaultGroups.edges.map((g) => g.node.name)}`}
                         >
-                          <InformationOutline style={{ marginLeft: 8 }} fontSize="small" color="primary" />
+                          <InformationOutline
+                            style={{ marginLeft: 8 }}
+                            fontSize="small"
+                            color="primary"
+                          />
                         </Tooltip>
                       </div>
-                    )}
+                    }
                   />
                   <Field
                     component={SelectField}
@@ -291,10 +294,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                       fullWidth: true,
                     }}
                   />
-                  <EmailTemplateField
-                    name="email_template_id"
-                    label={t_i18n('Email template')}
-                  />
+                  <EmailTemplateField name="email_template_id" label={t_i18n('Email template')} />
                   {hasSetAccess && (
                     <UserConfidenceLevelField
                       name="user_confidence_level"
@@ -303,17 +303,10 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                   )}
                 </Stack>
                 <FormButtonContainer>
-                  <Button
-                    variant="secondary"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                  >
+                  <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t_i18n('Cancel')}
                   </Button>
-                  <Button
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
+                  <Button onClick={submitForm} disabled={isSubmitting}>
                     {t_i18n('Create')}
                   </Button>
                 </FormButtonContainer>

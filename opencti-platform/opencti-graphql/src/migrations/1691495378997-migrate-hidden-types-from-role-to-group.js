@@ -13,11 +13,17 @@ export const up = async (next) => {
   logApp.info(`${message} > started`);
   const context = executionContext('migration');
 
-  const groups = await elList(context, SYSTEM_USER, [READ_INDEX_INTERNAL_OBJECTS], { types: [ENTITY_TYPE_GROUP] });
-  const roles = await elList(context, SYSTEM_USER, [READ_INDEX_INTERNAL_OBJECTS], { types: [ENTITY_TYPE_ROLE] });
+  const groups = await elList(context, SYSTEM_USER, [READ_INDEX_INTERNAL_OBJECTS], {
+    types: [ENTITY_TYPE_GROUP],
+  });
+  const roles = await elList(context, SYSTEM_USER, [READ_INDEX_INTERNAL_OBJECTS], {
+    types: [ENTITY_TYPE_ROLE],
+  });
   // Retrieve all default_hidden_types by role, concat and add to group
   const updateGroup = async (group) => {
-    const rolesGroup = roles.filter((role) => (role[RELATION_HAS_ROLE] ?? []).includes(group.internal_id));
+    const rolesGroup = roles.filter((role) =>
+      (role[RELATION_HAS_ROLE] ?? []).includes(group.internal_id),
+    );
     const defaultHiddenTypes = rolesGroup
       .map((role) => role.default_hidden_types)
       .flat()
@@ -41,10 +47,9 @@ export const up = async (next) => {
     refresh: true,
     wait_for_completion: true,
     body: updateRoleQuery,
-  })
-    .catch((err) => {
-      throw DatabaseError('Error updating elastic', { cause: err });
-    });
+  }).catch((err) => {
+    throw DatabaseError('Error updating elastic', { cause: err });
+  });
 
   logApp.info(`${message} > done`);
   next();

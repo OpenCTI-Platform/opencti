@@ -3,7 +3,10 @@ import { DatabaseError } from '../config/errors';
 import { elRawUpdateByQuery } from '../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { addNotifier } from '../modules/notifier/notifier-domain';
-import { DEFAULT_TEAM_DIGEST_MESSAGE, DEFAULT_TEAM_MESSAGE } from '../modules/notifier/notifier-statics';
+import {
+  DEFAULT_TEAM_DIGEST_MESSAGE,
+  DEFAULT_TEAM_MESSAGE,
+} from '../modules/notifier/notifier-statics';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 
 const message = '[MIGRATION] Renaming outcomes to notifiers and create defaults';
@@ -18,9 +21,7 @@ export const up = async (next) => {
     },
     query: {
       bool: {
-        must: [
-          { term: { 'entity_type.keyword': { value: 'Trigger' } } },
-        ],
+        must: [{ term: { 'entity_type.keyword': { value: 'Trigger' } } }],
       },
     },
   };
@@ -32,8 +33,11 @@ export const up = async (next) => {
   }).catch((err) => {
     throw DatabaseError('Error updating elastic', { cause: err });
   });
-  await Promise.all([DEFAULT_TEAM_MESSAGE, DEFAULT_TEAM_DIGEST_MESSAGE]
-    .map((notifier) => addNotifier(context, SYSTEM_USER, notifier)));
+  await Promise.all(
+    [DEFAULT_TEAM_MESSAGE, DEFAULT_TEAM_DIGEST_MESSAGE].map((notifier) =>
+      addNotifier(context, SYSTEM_USER, notifier),
+    ),
+  );
   logApp.info(`${message} > done`);
   next();
 };

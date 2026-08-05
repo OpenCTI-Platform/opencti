@@ -57,7 +57,11 @@ const scopes: Array<RuleScope> = [
     attributes: [{ name: 'object_refs' }],
   },
   {
-    filters: { types: [RELATION_BASED_ON], fromTypes: [ENTITY_TYPE_INDICATOR], toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE] },
+    filters: {
+      types: [RELATION_BASED_ON],
+      fromTypes: [ENTITY_TYPE_INDICATOR],
+      toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE],
+    },
     attributes: [],
   },
 ];

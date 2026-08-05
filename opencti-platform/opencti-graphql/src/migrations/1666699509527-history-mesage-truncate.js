@@ -7,7 +7,8 @@ export const up = async (next) => {
   await elUpdateByQueryForMigration('[MIGRATION] Truncating history message', READ_INDEX_HISTORY, {
     script: {
       // Keep the data length under 512 chars
-      source: "def size = ctx._source.context_data.message.length(); if (size > 512) { def message = ctx._source.context_data.message.substring(size - 498, size); ctx._source.context_data.message = (message.startsWith('`') ? 'changes ... ' : 'changes ... `') + message}",
+      source:
+        "def size = ctx._source.context_data.message.length(); if (size > 512) { def message = ctx._source.context_data.message.substring(size - 498, size); ctx._source.context_data.message = (message.startsWith('`') ? 'changes ... ' : 'changes ... `') + message}",
     },
     query: {
       bool: {
@@ -23,14 +24,17 @@ export const up = async (next) => {
             match: {
               entity_type: 'History', // Prevent work fetching
             },
-          }, {
+          },
+          {
             bool: {
-              should: [{
-                multi_match: {
-                  fields: ['event_type.keyword'],
-                  query: 'update', // Only update must be cleaned
+              should: [
+                {
+                  multi_match: {
+                    fields: ['event_type.keyword'],
+                    query: 'update', // Only update must be cleaned
+                  },
                 },
-              }],
+              ],
             },
           },
         ],

@@ -3,7 +3,10 @@ import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@common/button/IconButton';
 import { DeleteOutlined, EditOutlined } from '@mui/icons-material';
-import { SavedFiltersAutocompleteOptionType, SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
+import {
+  SavedFiltersAutocompleteOptionType,
+  SavedFiltersSelectionData,
+} from 'src/components/saved_filters/SavedFilterSelection';
 import { Autocomplete, useTheme } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { useFormatter } from 'src/components/i18n';
@@ -38,7 +41,9 @@ const SavedFiltersAutocomplete = ({
 
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const [savedFilterToEdit, setSavedFilterToEdit] = useState<SavedFiltersSelectionData | undefined>();
+  const [savedFilterToEdit, setSavedFilterToEdit] = useState<
+    SavedFiltersSelectionData | undefined
+  >();
 
   const MY_FILTERS_GROUP_LABEL = t_i18n('My filters');
 
@@ -54,7 +59,10 @@ const SavedFiltersAutocomplete = ({
     setSavedFilterToEdit(option);
   };
 
-  const renderOption = (params: React.HTMLAttributes<HTMLLIElement> & { key: string }, option: SavedFiltersAutocompleteOptionType) => {
+  const renderOption = (
+    params: React.HTMLAttributes<HTMLLIElement> & { key: string },
+    option: SavedFiltersAutocompleteOptionType,
+  ) => {
     const filterLabel = option.ownerName ? `${option.label} (${option.ownerName})` : option.label;
     const filterLabelWithScope = localStorageKey
       ? filterLabel // if localStorageKey, the scope is the same for every saved filters of the list
@@ -62,9 +70,23 @@ const SavedFiltersAutocomplete = ({
     const canManage = option.canManage && (hasSharingSavedFiltersCapability || option.isOwner);
     return (
       <li {...params} key={params.key}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+          }}
+        >
           <Tooltip title={filterLabelWithScope} enterDelay={500}>
-            <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
+            <div
+              style={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                minWidth: 0,
+              }}
+            >
               <Typography component="span">{filterLabel}</Typography>
             </div>
           </Tooltip>
@@ -120,7 +142,9 @@ const SavedFiltersAutocomplete = ({
           },
         }}
         noOptionsText={t_i18n('No available options')}
-        onChange={(_, selectedOption: SavedFiltersAutocompleteOptionType) => onChange?.(selectedOption)}
+        onChange={(_, selectedOption: SavedFiltersAutocompleteOptionType) =>
+          onChange?.(selectedOption)
+        }
         onInputChange={onInputChange}
         renderOption={renderOption}
         renderInput={(params) => (

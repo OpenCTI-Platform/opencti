@@ -22,7 +22,10 @@ export type EmailTemplateFormInputKeys = keyof EmailTemplateFormInputs;
 
 interface EmailTemplateFormProps {
   onClose: () => void;
-  onSubmit: (values: EmailTemplateFormInputs, helpers: FormikHelpers<EmailTemplateFormInputs>) => void;
+  onSubmit: (
+    values: EmailTemplateFormInputs,
+    helpers: FormikHelpers<EmailTemplateFormInputs>,
+  ) => void;
   onSubmitField?: (field: EmailTemplateFormInputKeys, value: string) => void;
   defaultValues?: EmailTemplateFormInputs;
 }
@@ -55,7 +58,8 @@ const EmailTemplateForm: FunctionComponent<EmailTemplateFormProps> = ({
 
   const updateField = async (field: EmailTemplateFormInputKeys, value: string) => {
     if (onSubmitField) {
-      validation.validateAt(field, { [field]: value })
+      validation
+        .validateAt(field, { [field]: value })
         .then(() => onSubmitField(field, value))
         .catch(() => false);
     }
@@ -122,10 +126,7 @@ const EmailTemplateForm: FunctionComponent<EmailTemplateFormProps> = ({
               >
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>

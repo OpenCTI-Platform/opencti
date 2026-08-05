@@ -63,11 +63,7 @@ interface PlaybookPopoverProps {
   paginationOptions?: PlaybooksLinesPaginationQuery$variables;
 }
 
-const PlaybookPopover = ({
-  playbookId,
-  running,
-  paginationOptions,
-}: PlaybookPopoverProps) => {
+const PlaybookPopover = ({ playbookId, running, paginationOptions }: PlaybookPopoverProps) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
@@ -115,10 +111,9 @@ const PlaybookPopover = ({
   );
 
   const exportPlaybook = async () => {
-    const { playbook } = await fetchQuery(
-      playbookExportQuery,
-      { id: playbookId },
-    ).toPromise() as PlaybookPopoverExportQuery$data;
+    const { playbook } = (await fetchQuery(playbookExportQuery, {
+      id: playbookId,
+    }).toPromise()) as PlaybookPopoverExportQuery$data;
     if (playbook) {
       const blob = new Blob([playbook.toConfigurationExport], { type: 'text/json' });
       const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
@@ -153,12 +148,7 @@ const PlaybookPopover = ({
       },
       updater: (store) => {
         if (paginationOptions) {
-          deleteNode(
-            store,
-            'Pagination_playbooks',
-            paginationOptions,
-            playbookId,
-          );
+          deleteNode(store, 'Pagination_playbooks', paginationOptions, playbookId);
         }
       },
       onCompleted: () => {
@@ -172,8 +162,6 @@ const PlaybookPopover = ({
 
   return (
     <>
-      {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-      {/* @ts-ignore */}
       <MoreVertButton
         onClick={handleOpen}
         aria-haspopup="true"
@@ -181,19 +169,14 @@ const PlaybookPopover = ({
         color="primary"
         size="small"
       >
-        {paginationOptions
-          ? <MoreVert />
-          : <MoreVert fontSize="small" color="primary" />}
+        {paginationOptions ? <MoreVert /> : <MoreVert fontSize="small" color="primary" />}
       </MoreVertButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
-        {running
-          ? <MenuItem onClick={handleOpenToggle}>{t_i18n('Stop')}</MenuItem>
-          : <MenuItem onClick={handleOpenToggle}>{t_i18n('Start')}</MenuItem>
-        }
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        {running ? (
+          <MenuItem onClick={handleOpenToggle}>{t_i18n('Stop')}</MenuItem>
+        ) : (
+          <MenuItem onClick={handleOpenToggle}>{t_i18n('Start')}</MenuItem>
+        )}
         <MenuItem onClick={submitDuplicate}>{t_i18n('Duplicate')}</MenuItem>
         <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         <MenuItem onClick={onExport}>{t_i18n('Export')}</MenuItem>

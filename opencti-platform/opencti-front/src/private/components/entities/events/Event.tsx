@@ -68,29 +68,18 @@ interface EventProps {
   eventData: Event_event$key;
 }
 
-const Event: React.FC<EventProps> = ({
-  eventData,
-}) => {
+const Event: React.FC<EventProps> = ({ eventData }) => {
   useInitCreateRelationshipContext();
 
-  const event = useFragment<Event_event$key>(
-    eventFragment,
-    eventData,
-  );
+  const event = useFragment<Event_event$key>(eventFragment, eventData);
   return (
     <div data-testid="event-details-page">
-      <Grid
-        container={true}
-        spacing={3}
-        style={{ marginBottom: 20 }}
-      >
+      <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
         <Grid item xs={6}>
           <EventDetails event={event} />
         </Grid>
         <Grid item xs={6}>
-          <StixDomainObjectOverview
-            stixDomainObject={event}
-          />
+          <StixDomainObjectOverview stixDomainObject={event} />
         </Grid>
         <Grid item xs={6}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships

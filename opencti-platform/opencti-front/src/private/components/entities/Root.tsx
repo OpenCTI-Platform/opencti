@@ -39,54 +39,24 @@ const Root = () => {
           path="/"
           element={<Navigate to={`/dashboard/entities/${redirect}`} replace={true} />}
         />
-        <Route
-          path="/sectors"
-          element={boundaryWrapper(Sectors)}
-        />
-        <Route
-          path="/sectors/:sectorId/*"
-          element={boundaryWrapper(RootSector)}
-        />
-        <Route
-          path="/events"
-          element={boundaryWrapper(Events)}
-        />
-        <Route
-          path="/events/:eventId/*"
-          element={boundaryWrapper(RootEvent)}
-        />
-        <Route
-          path="/organizations"
-          element={boundaryWrapper(Organizations)}
-        />
+        <Route path="/sectors" element={boundaryWrapper(Sectors)} />
+        <Route path="/sectors/:sectorId/*" element={boundaryWrapper(RootSector)} />
+        <Route path="/events" element={boundaryWrapper(Events)} />
+        <Route path="/events/:eventId/*" element={boundaryWrapper(RootEvent)} />
+        <Route path="/organizations" element={boundaryWrapper(Organizations)} />
         <Route
           path="/organizations/:organizationId/*"
           element={boundaryWrapper(RootOrganization)}
         />
-        <Route
-          path="/security_platforms"
-          element={boundaryWrapper(Security)}
-        />
+        <Route path="/security_platforms" element={boundaryWrapper(Security)} />
         <Route
           path="/security_platforms/:securityPlatformId/*"
           element={boundaryWrapper(RootSecurity)}
         />
-        <Route
-          path="/systems"
-          element={boundaryWrapper(Systems)}
-        />
-        <Route
-          path="/systems/:systemId/*"
-          element={boundaryWrapper(RootSystem)}
-        />
-        <Route
-          path="/individuals"
-          element={boundaryWrapper(Individuals)}
-        />
-        <Route
-          path="/individuals/:individualId/*"
-          element={boundaryWrapper(RootIndividual)}
-        />
+        <Route path="/systems" element={boundaryWrapper(Systems)} />
+        <Route path="/systems/:systemId/*" element={boundaryWrapper(RootSystem)} />
+        <Route path="/individuals" element={boundaryWrapper(Individuals)} />
+        <Route path="/individuals/:individualId/*" element={boundaryWrapper(RootIndividual)} />
       </Routes>
     </Suspense>
   );

@@ -4,7 +4,7 @@ import { DataTableColumn, DataTableProps, DataTableVariant } from '../dataGrid/d
 import type { WidgetColumn } from '../../utils/widget/widget';
 
 interface WidgetListCoreObjectsProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   data: readonly any[];
   publicWidget?: boolean;
   rootRef: DataTableProps['rootRef'];
@@ -22,19 +22,15 @@ const WidgetListCoreObjects = ({
   columns,
 }: WidgetListCoreObjectsProps) => {
   const buildColumns = useMemo((): DataTableProps['dataColumns'] => {
-    const percentWidth = (100) / (columns.length ?? 1);
+    const percentWidth = 100 / (columns.length ?? 1);
 
-    return columns
-      .reduce<Record<string, Partial<DataTableColumn>>>(
-        (acc, { attribute, label }) => {
-          if (!attribute) {
-            return acc;
-          }
-          acc[attribute] = { percentWidth, isSortable: false, ...(label ? { label } : {}) };
-          return acc;
-        },
-        {},
-      );
+    return columns.reduce<Record<string, Partial<DataTableColumn>>>((acc, { attribute, label }) => {
+      if (!attribute) {
+        return acc;
+      }
+      acc[attribute] = { percentWidth, isSortable: false, ...(label ? { label } : {}) };
+      return acc;
+    }, {});
   }, [columns]);
 
   return (

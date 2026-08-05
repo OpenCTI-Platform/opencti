@@ -71,33 +71,22 @@ interface IndividualProps {
   viewAs: string;
 }
 
-const Individual: React.FC<IndividualProps> = ({
-  individualData,
-  viewAs,
-}) => {
+const Individual: React.FC<IndividualProps> = ({ individualData, viewAs }) => {
   useInitCreateRelationshipContext();
 
-  const individual = useFragment<Individual_individual$key>(
-    individualFragment,
-    individualData,
-  );
-  const lastReportsProps = viewAs === 'knowledge'
-    ? { stixCoreObjectOrStixRelationshipId: individual.id }
-    : { authorId: individual.id };
+  const individual = useFragment<Individual_individual$key>(individualFragment, individualData);
+  const lastReportsProps =
+    viewAs === 'knowledge'
+      ? { stixCoreObjectOrStixRelationshipId: individual.id }
+      : { authorId: individual.id };
   return (
     <div data-testid="individual-details-page">
-      <Grid
-        container={true}
-        spacing={3}
-        style={{ marginBottom: 20 }}
-      >
+      <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
         <Grid item xs={6}>
           <IndividualDetails individual={individual} />
         </Grid>
         <Grid item xs={6}>
-          <StixDomainObjectOverview
-            stixDomainObject={individual}
-          />
+          <StixDomainObjectOverview stixDomainObject={individual} />
         </Grid>
         {viewAs === 'knowledge' && (
           <Grid item xs={6}>
@@ -107,18 +96,11 @@ const Individual: React.FC<IndividualProps> = ({
             />
           </Grid>
         )}
-        <Grid
-          item
-          xs={viewAs === 'knowledge' ? 6 : 12}
-        >
-          <StixCoreObjectOrStixRelationshipLastContainers
-            {...lastReportsProps}
-          />
+        <Grid item xs={viewAs === 'knowledge' ? 6 : 12}>
+          <StixCoreObjectOrStixRelationshipLastContainers {...lastReportsProps} />
         </Grid>
         <Grid item xs={6}>
-          <StixCoreObjectExternalReferences
-            stixCoreObjectId={individual.id}
-          />
+          <StixCoreObjectExternalReferences stixCoreObjectId={individual.id} />
         </Grid>
         <Grid item xs={6}>
           <StixCoreObjectLatestHistory stixCoreObjectId={individual.id} />

@@ -1,7 +1,11 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { createEntity } from '../../../database/middleware';
 import type { EntityOptions } from '../../../database/middleware-loader';
-import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
+import {
+  internalLoadById,
+  pageEntitiesConnection,
+  storeLoadById,
+} from '../../../database/middleware-loader';
 import { BUS_TOPICS } from '../../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../../schema/general';
 import { notify } from '../../../database/redis';
@@ -17,15 +21,32 @@ import { isStixId } from '../../../schema/schemaUtils';
 import { RELATION_OBJECT } from '../../../schema/stixRefRelationship';
 import { FilterMode } from '../../../generated/graphql';
 
-export const findById: DomainFindById<BasicStoreEntityCaseRfi> = (context: AuthContext, user: AuthUser, caseId: string) => {
+export const findById: DomainFindById<BasicStoreEntityCaseRfi> = (
+  context: AuthContext,
+  user: AuthUser,
+  caseId: string,
+) => {
   return storeLoadById(context, user, caseId, ENTITY_TYPE_CONTAINER_CASE_RFI);
 };
 
-export const findRfiPaginated = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCaseRfi>) => {
-  return pageEntitiesConnection<BasicStoreEntityCaseRfi>(context, user, [ENTITY_TYPE_CONTAINER_CASE_RFI], opts);
+export const findRfiPaginated = (
+  context: AuthContext,
+  user: AuthUser,
+  opts: EntityOptions<BasicStoreEntityCaseRfi>,
+) => {
+  return pageEntitiesConnection<BasicStoreEntityCaseRfi>(
+    context,
+    user,
+    [ENTITY_TYPE_CONTAINER_CASE_RFI],
+    opts,
+  );
 };
 
-export const addCaseRfi = async (context: AuthContext, user: AuthUser, caseRfiAdd: CaseRfiAddInput) => {
+export const addCaseRfi = async (
+  context: AuthContext,
+  user: AuthUser,
+  caseRfiAdd: CaseRfiAddInput,
+) => {
   let caseToCreate = caseRfiAdd.created ? caseRfiAdd : { ...caseRfiAdd, created: now() };
   if (isEmptyField(caseRfiAdd.createdBy)) {
     const individualId = await resolveUserIndividual(context, user);
@@ -35,13 +56,24 @@ export const addCaseRfi = async (context: AuthContext, user: AuthUser, caseRfiAd
   delete caseToCreate.caseTemplates;
   const created = await createEntity(context, user, caseToCreate, ENTITY_TYPE_CONTAINER_CASE_RFI);
   if (caseTemplates) {
-    await Promise.all(caseTemplates.map((caseTemplate) => upsertTemplateForCase(context, user, created.id, caseTemplate)));
+    await Promise.all(
+      caseTemplates.map((caseTemplate) =>
+        upsertTemplateForCase(context, user, created.id, caseTemplate),
+      ),
+    );
   }
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const caseRfiContainsStixObjectOrStixRelationship = async (context: AuthContext, user: AuthUser, caseRfiId: string, thingId: string) => {
-  const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).internal_id : thingId;
+export const caseRfiContainsStixObjectOrStixRelationship = async (
+  context: AuthContext,
+  user: AuthUser,
+  caseRfiId: string,
+  thingId: string,
+) => {
+  const resolvedThingId = isStixId(thingId)
+    ? (await internalLoadById(context, user, thingId)).internal_id
+    : thingId;
   const args = {
     first: 1,
     filters: {

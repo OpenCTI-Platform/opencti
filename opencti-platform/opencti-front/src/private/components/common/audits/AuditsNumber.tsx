@@ -22,10 +22,21 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import { UNIQUE_COUNT_ESTIMATION_THRESHOLD, UNIQUE_COUNT_ESTIMATION_WARNING, useGetNumberWidgetTitle } from '../../../../utils/widget/widgetUtils';
-import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import {
+  UNIQUE_COUNT_ESTIMATION_THRESHOLD,
+  UNIQUE_COUNT_ESTIMATION_WARNING,
+  useGetNumberWidgetTitle,
+} from '../../../../utils/widget/widgetUtils';
+import type {
+  WidgetDataSelection,
+  WidgetHost,
+  WidgetParameters,
+} from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import {
+  buildFiltersAndOptionsForWidgets,
+  normalizeFilterGroupForBackend,
+} from '../../../../utils/filters/filtersUtils';
 import AuditsWidgetRenderContent from '../../../../components/dashboard/AuditsWidgetRenderContent';
 
 const auditsNumberNumberQuery = graphql`
@@ -71,10 +82,7 @@ const AuditsNumberComponent: FunctionComponent<AuditsNumberComponentProps> = ({
   onShowWarning,
 }) => {
   const { t_i18n } = useFormatter();
-  const data = usePreloadedQuery<AuditsNumberNumberSeriesQuery>(
-    auditsNumberNumberQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery<AuditsNumberNumberSeriesQuery>(auditsNumberNumberQuery, queryRef);
 
   useEffect(() => {
     onShowWarning(isUnique && (data.auditsNumber?.total ?? 0) > UNIQUE_COUNT_ESTIMATION_THRESHOLD);
@@ -126,27 +134,39 @@ const AuditsNumber: FunctionComponent<AuditsNumberProps> = ({
   const [showWarning, setShowWarning] = useState(false);
   const { t_i18n } = useFormatter();
 
-  const buildQueryVariables = useCallback((resolvedDataSelection: WidgetDataSelection[]): AuditsNumberNumberSeriesQuery['variables'] => {
-    const selection = resolvedDataSelection[0];
-    const types = ['History', 'Activity'];
-    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-      ? selection.date_attribute
-      : 'timestamp';
-    const { filters } = buildFiltersAndOptionsForWidgets(
-      selection.filters,
-      { removeTypeAll: true, startDate: startDate ?? undefined, endDate: endDate ?? undefined, dateAttribute },
-    );
-    return {
-      types,
-      filters: normalizeFilterGroupForBackend(filters),
-      startDate: startDate ?? undefined,
-      endDate: dayAgo(),
-      field: selection.attribute,
-      unique: selection.unique,
-    };
-  }, [startDate, endDate]);
+  const buildQueryVariables = useCallback(
+    (resolvedDataSelection: WidgetDataSelection[]): AuditsNumberNumberSeriesQuery['variables'] => {
+      const selection = resolvedDataSelection[0];
+      const types = ['History', 'Activity'];
+      const dateAttribute =
+        selection.date_attribute && selection.date_attribute.length > 0
+          ? selection.date_attribute
+          : 'timestamp';
+      const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, {
+        removeTypeAll: true,
+        startDate: startDate ?? undefined,
+        endDate: endDate ?? undefined,
+        dateAttribute,
+      });
+      return {
+        types,
+        filters: normalizeFilterGroupForBackend(filters),
+        startDate: startDate ?? undefined,
+        endDate: dayAgo(),
+        field: selection.attribute,
+        unique: selection.unique,
+      };
+    },
+    [startDate, endDate],
+  );
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsNumberNumberSeriesQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<AuditsNumberNumberSeriesQuery>({
     perspective: 'audits',
     dataSelection,
     host,

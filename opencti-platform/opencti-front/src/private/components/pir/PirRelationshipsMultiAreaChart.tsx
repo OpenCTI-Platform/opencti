@@ -54,20 +54,21 @@ interface PirRelationshipsMultiAreaChartProps {
   pirId: string;
 }
 
-const PirRelationshipsMultiAreaChart = ({
-  pirId,
-}: PirRelationshipsMultiAreaChartProps) => {
+const PirRelationshipsMultiAreaChart = ({ pirId }: PirRelationshipsMultiAreaChartProps) => {
   const { t_i18n } = useFormatter();
-  const dataSelection: PirWidgetDataSelection[] = [{
-    field: 'created_at',
-    pirId,
-  }];
+  const dataSelection: PirWidgetDataSelection[] = [
+    {
+      field: 'created_at',
+      pirId,
+    },
+  ];
 
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
-      const dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-        ? selection.date_attribute
-        : 'created_at';
+      const dataSelectionDateAttribute =
+        selection.date_attribute && selection.date_attribute.length > 0
+          ? selection.date_attribute
+          : 'created_at';
       const { filters } = buildFiltersAndOptionsForWidgets(selection.filters);
       return {
         field: dataSelectionDateAttribute,
@@ -93,15 +94,15 @@ const PirRelationshipsMultiAreaChart = ({
           if (props && props.pirRelationshipsMultiTimeSeries) {
             return (
               <WidgetMultiAreas
-                series={dataSelection.map((selection, i) => ({
-                  name: selection.label || t_i18n('Number of entities'),
-                  data: props.pirRelationshipsMultiTimeSeries?.[i]?.data?.map(
-                    (entry) => ({
+                series={
+                  dataSelection.map((selection, i) => ({
+                    name: selection.label || t_i18n('Number of entities'),
+                    data: props.pirRelationshipsMultiTimeSeries?.[i]?.data?.map((entry) => ({
                       x: new Date(entry?.date),
                       y: entry?.value,
-                    }),
-                  ),
-                })) as ApexAxisChartSeries}
+                    })),
+                  })) as ApexAxisChartSeries
+                }
                 interval="month"
               />
             );
@@ -116,10 +117,7 @@ const PirRelationshipsMultiAreaChart = ({
   };
 
   return (
-    <WidgetContainer
-      height={250}
-      variant="inLine"
-    >
+    <WidgetContainer height={250} variant="inLine">
       {renderContent()}
     </WidgetContainer>
   );

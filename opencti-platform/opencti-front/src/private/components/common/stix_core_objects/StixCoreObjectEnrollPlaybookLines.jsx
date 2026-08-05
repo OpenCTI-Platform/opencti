@@ -26,7 +26,7 @@ export const stixCoreObjectEnrollPlaybookLinesQuery = graphql`
 
 const stixCoreObjectEnrollPlaybookLinesPlaybookExecute = graphql`
   mutation StixCoreObjectEnrollPlaybookLinesMutation($id: ID!, $entityId: String!) {
-      playbookExecute(id: $id, entityId: $entityId)
+    playbookExecute(id: $id, entityId: $entityId)
   }
 `;
 
@@ -45,11 +45,7 @@ const styles = (theme) => ({
   },
 });
 
-const StixCoreObjectEnrollPlaybook = ({
-  id,
-  playbooksForEntity,
-  classes,
-}) => {
+const StixCoreObjectEnrollPlaybook = ({ id, playbooksForEntity, classes }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { t_i18n } = useFormatter();
 
@@ -67,7 +63,9 @@ const StixCoreObjectEnrollPlaybook = ({
   return (
     <>
       <Alert severity="info" variant="outlined">
-        {t_i18n('Listing playbooks with entry points manual or live trigger (events) and matching filters.')}
+        {t_i18n(
+          'Listing playbooks with entry points manual or live trigger (events) and matching filters.',
+        )}
       </Alert>
       <List>
         {playbooksForEntity.length > 0 ? (
@@ -77,7 +75,7 @@ const StixCoreObjectEnrollPlaybook = ({
                 <ListItem
                   divider={true}
                   classes={{ root: classes.item }}
-                  secondaryAction={(
+                  secondaryAction={
                     <Security needs={[AUTOMATION]}>
                       <div style={{ right: 0 }}>
                         <Tooltip title={t_i18n('Trigger this playbook now')}>
@@ -90,7 +88,7 @@ const StixCoreObjectEnrollPlaybook = ({
                         </Tooltip>
                       </div>
                     </Security>
-                  )}
+                  }
                 >
                   <ListItemIcon classes={{ root: classes.itemIcon }}>
                     <ItemIcon type="Playbook" />
@@ -101,9 +99,7 @@ const StixCoreObjectEnrollPlaybook = ({
             );
           })
         ) : (
-          <div className={classes.noResult}>
-            {t_i18n('No available playbooks for this entity')}
-          </div>
+          <div className={classes.noResult}>{t_i18n('No available playbooks for this entity')}</div>
         )}
       </List>
     </>
@@ -125,7 +121,4 @@ const StixCoreObjectEnrollPlaybookLinesFragment = createRefetchContainer(
   stixCoreObjectEnrollPlaybookLinesQuery,
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreObjectEnrollPlaybookLinesFragment);
+export default R.compose(inject18n, withStyles(styles))(StixCoreObjectEnrollPlaybookLinesFragment);

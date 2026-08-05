@@ -90,14 +90,17 @@ interface RoleEditionCapabilitiesComponentProps {
   isCapabilitiesInDraft?: boolean;
 }
 
-const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitiesComponentProps> = ({ role, queryRef, isCapabilitiesInDraft = false }) => {
+const RoleEditionCapabilitiesComponent: FunctionComponent<
+  RoleEditionCapabilitiesComponentProps
+> = ({ role, queryRef, isCapabilitiesInDraft = false }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
-  const { capabilities, capabilitiesInDraft } = usePreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>(
-    roleEditionCapabilitiesLinesSearch,
-    queryRef,
-  );
+  const { capabilities, capabilitiesInDraft } =
+    usePreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>(
+      roleEditionCapabilitiesLinesSearch,
+      queryRef,
+    );
 
   const relationshipType = isCapabilitiesInDraft ? 'has-capability-in-draft' : 'has-capability';
   const capabilitiesType = isCapabilitiesInDraft ? 'capabilitiesInDraft' : 'capabilities';
@@ -109,10 +112,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
   const [commitAddCapability] = useApiMutation(roleEditionAddCapability);
   const [commitRemoveCapability] = useApiMutation(roleEditionRemoveCapability);
   const [commitPatchAllowSensitiveConf] = useApiMutation(roleEditionPatchAllowSensitiveConf);
-  const handleToggle = (
-    capabilityId: string,
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleToggle = (capabilityId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const roleId = role.id;
     if (event.target.checked) {
       commitAddCapability({
@@ -135,9 +135,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
     }
   };
 
-  const handleSensitiveToggle = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleSensitiveToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
     const roleId = role.id;
     commitPatchAllowSensitiveConf({
       variables: {
@@ -161,25 +159,25 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
             key="sensitive"
             divider={true}
             style={{ paddingLeft: 0 }}
-            secondaryAction={(
+            secondaryAction={
               <Checkbox
                 onChange={(event) => handleSensitiveToggle(event)}
                 checked={!!role.can_manage_sensitive_config}
                 style={{ color: theme.palette.dangerZone.main }}
                 disabled={false}
               />
-            )}
+            }
           >
             <ListItemIcon style={{ minWidth: 32 }}>
               <LocalPoliceOutlined fontSize="small" />
             </ListItemIcon>
             <ListItemText
-              primary={(
+              primary={
                 <Stack alignItems="center" direction="row" gap={1}>
                   {t_i18n('Allow modification of sensitive configuration')}
                   <DangerZoneChip />
                 </Stack>
-              )}
+              }
             />
           </ListItem>
         )}
@@ -187,17 +185,19 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
           const capability = edge?.node;
           if (capability) {
             const paddingLeft = capability.name.split('_').length * 20 - 20;
-            const roleCapability = roleCapabilities.find(
-              (r) => r.name === capability.name,
-            );
+            const roleCapability = roleCapabilities.find((r) => r.name === capability.name);
             const matchingCapabilities = roleCapabilities.filter(
-              (r) => capability.name !== r.name
-                && r.name.includes(capability.name)
-                && capability.name !== 'BYPASS',
+              (r) =>
+                capability.name !== r.name &&
+                r.name.includes(capability.name) &&
+                capability.name !== 'BYPASS',
             );
-            const draftCapaMatchingMainCapa = (role.capabilities ?? []).filter((r) => r?.name?.includes(capability.name));
+            const draftCapaMatchingMainCapa = (role.capabilities ?? []).filter((r) =>
+              r?.name?.includes(capability.name),
+            );
             const isDisabled = isCapabilitiesInDraft
-              ? matchingCapabilities.length > 0 || (draftCapaMatchingMainCapa.length > 0 && roleCapability === undefined)
+              ? matchingCapabilities.length > 0 ||
+                (draftCapaMatchingMainCapa.length > 0 && roleCapability === undefined)
               : matchingCapabilities.length > 0;
             const isChecked = isDisabled || roleCapability !== undefined;
             return (
@@ -205,13 +205,15 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
                 key={capability.name}
                 divider={true}
                 style={{ paddingLeft }}
-                secondaryAction={capability.name !== SETTINGS && (
-                  <Checkbox
-                    onChange={(event) => handleToggle(capability.id, event)}
-                    checked={isChecked}
-                    disabled={isDisabled}
-                  />
-                )}
+                secondaryAction={
+                  capability.name !== SETTINGS && (
+                    <Checkbox
+                      onChange={(event) => handleToggle(capability.id, event)}
+                      checked={isChecked}
+                      disabled={isDisabled}
+                    />
+                  )
+                }
               >
                 <ListItemIcon style={{ minWidth: 32 }}>
                   <LocalPoliceOutlined fontSize="small" />
@@ -228,26 +230,23 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
   return <Loader variant={LoaderVariant.inline} />;
 };
 
-const RoleEditionCapabilities = createFragmentContainer(
-  RoleEditionCapabilitiesComponent,
-  {
-    role: graphql`
-      fragment RoleEditionCapabilities_role on Role {
+const RoleEditionCapabilities = createFragmentContainer(RoleEditionCapabilitiesComponent, {
+  role: graphql`
+    fragment RoleEditionCapabilities_role on Role {
+      id
+      can_manage_sensitive_config
+      capabilities {
         id
-        can_manage_sensitive_config
-        capabilities {
-          id
-          name
-          description
-        }
-        capabilitiesInDraft {
-          id
-          name
-          description
-        }
+        name
+        description
       }
-    `,
-  },
-);
+      capabilitiesInDraft {
+        id
+        name
+        description
+      }
+    }
+  `,
+});
 
 export default RoleEditionCapabilities;

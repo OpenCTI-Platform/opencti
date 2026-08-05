@@ -1,14 +1,14 @@
 import React, { FunctionComponent } from 'react';
-import {
-  StixNestedRefRelationshipEditionOverviewQuery,
-} from '@components/common/stix_nested_ref_relationships/__generated__/StixNestedRefRelationshipEditionOverviewQuery.graphql';
+import { StixNestedRefRelationshipEditionOverviewQuery } from '@components/common/stix_nested_ref_relationships/__generated__/StixNestedRefRelationshipEditionOverviewQuery.graphql';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Drawer from '../drawer/Drawer';
 import { StixNestedRefRelationshipEditionContextQuery } from './__generated__/StixNestedRefRelationshipEditionContextQuery.graphql';
-import StixNestedRefRelationshipEditionOverview, { stixNestedRefRelationshipEditionQuery } from './StixNestedRefRelationshipEditionOverview';
+import StixNestedRefRelationshipEditionOverview, {
+  stixNestedRefRelationshipEditionQuery,
+} from './StixNestedRefRelationshipEditionOverview';
 
 const stixNestedRefRelationshipEditionContextQuery = graphql`
   query StixNestedRefRelationshipEditionContextQuery($id: String!) {
@@ -26,11 +26,9 @@ interface StixNestedRefRelationshipEditionProps {
   open: boolean;
   handleClose?: () => void;
 }
-const StixNestedRefRelationshipEdition: FunctionComponent<StixNestedRefRelationshipEditionProps> = ({
-  stixNestedRefRelationshipId,
-  open,
-  handleClose,
-}) => {
+const StixNestedRefRelationshipEdition: FunctionComponent<
+  StixNestedRefRelationshipEditionProps
+> = ({ stixNestedRefRelationshipId, open, handleClose }) => {
   const contextQueryRef = useQueryLoading<StixNestedRefRelationshipEditionContextQuery>(
     stixNestedRefRelationshipEditionContextQuery,
     { id: stixNestedRefRelationshipId },
@@ -54,12 +52,7 @@ const StixNestedRefRelationshipEditionContent: FunctionComponent<
   StixNestedRefRelationshipEditionProps & {
     contextQueryRef: PreloadedQuery<StixNestedRefRelationshipEditionContextQuery>;
   }
-> = ({
-  stixNestedRefRelationshipId,
-  open,
-  handleClose,
-  contextQueryRef,
-}) => {
+> = ({ stixNestedRefRelationshipId, open, handleClose, contextQueryRef }) => {
   const { t_i18n } = useFormatter();
 
   const contextData = usePreloadedQuery(
@@ -83,9 +76,7 @@ const StixNestedRefRelationshipEditionContent: FunctionComponent<
     >
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
-          <StixNestedRefRelationshipEditionOverview
-            queryRef={queryRef}
-          />
+          <StixNestedRefRelationshipEditionOverview queryRef={queryRef} />
         </React.Suspense>
       ) : (
         <Loader variant={LoaderVariant.inline} />

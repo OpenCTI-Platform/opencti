@@ -55,21 +55,18 @@ const ThreatActorGroupEditionContainer = ({
   );
 };
 
-const ThreatActorGroupEditionFragment = createFragmentContainer(
-  ThreatActorGroupEditionContainer,
-  {
-    threatActorGroup: graphql`
-      fragment ThreatActorGroupEditionContainer_ThreatActorGroup on ThreatActorGroup {
-        id
-        ...ThreatActorGroupEditionOverview_ThreatActorGroup
-        ...ThreatActorGroupEditionDetails_ThreatActorGroup
-        editContext {
-          name
-          focusOn
-        }
+const ThreatActorGroupEditionFragment = createFragmentContainer(ThreatActorGroupEditionContainer, {
+  threatActorGroup: graphql`
+    fragment ThreatActorGroupEditionContainer_ThreatActorGroup on ThreatActorGroup {
+      id
+      ...ThreatActorGroupEditionOverview_ThreatActorGroup
+      ...ThreatActorGroupEditionDetails_ThreatActorGroup
+      editContext {
+        name
+        focusOn
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default ThreatActorGroupEditionFragment;

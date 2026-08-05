@@ -70,14 +70,8 @@ const syncCreationValidation = () => {
 };
 
 export const syncStreamCollectionQuery = graphql`
-  query SyncCreationStreamCollectionQuery(
-    $uri: String!
-    $token: String
-    $ssl_verify: Boolean
-  ) {
-    synchronizerFetch(
-      input: { uri: $uri, token: $token, ssl_verify: $ssl_verify }
-    ) {
+  query SyncCreationStreamCollectionQuery($uri: String!, $token: String, $ssl_verify: Boolean) {
+    synchronizerFetch(input: { uri: $uri, token: $token, ssl_verify: $ssl_verify }) {
       id
       name
       description
@@ -110,10 +104,7 @@ type StreamOption = {
 };
 
 const CreateSynchronizerControlledDial = (props: DrawerControlledDialProps) => (
-  <CreateEntityControlledDial
-    entityType="Synchronizer"
-    {...props}
-  />
+  <CreateEntityControlledDial entityType="Synchronizer" {...props} />
 );
 
 interface SyncCreationProps {
@@ -143,14 +134,16 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
 
   const [commitVerify] = useApiMutation(syncCheckMutation);
 
-  const handleVerify = (values: SynchronizerAddInput, setErrors: FormikHelpers<SynchronizerAddInput>['setErrors']) => {
-    const userId
-      = typeof values.user_id === 'object'
-        ? values.user_id?.value
-        : values.user_id;
-    const input = { ...values, user_id: userId,
+  const handleVerify = (
+    values: SynchronizerAddInput,
+    setErrors: FormikHelpers<SynchronizerAddInput>['setErrors'],
+  ) => {
+    const userId = typeof values.user_id === 'object' ? values.user_id?.value : values.user_id;
+    const input = {
+      ...values,
+      user_id: userId,
       automatic_user: values.automatic_user ?? true,
-      ...((values.automatic_user !== false) && { confidence_level: Number(values.confidence_level) }),
+      ...(values.automatic_user !== false && { confidence_level: Number(values.confidence_level) }),
     };
     commitVerify({
       variables: { input },
@@ -171,24 +164,21 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
 
   const [commitCreation] = useApiMutation(syncCreationMutation);
 
-  const onSubmit: FormikConfig<SynchronizerAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
-    const userId
-      = typeof values.user_id === 'object'
-        ? values.user_id?.value
-        : values.user_id;
-    const input = { ...values, user_id: userId,
+  const onSubmit: FormikConfig<SynchronizerAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
+    const userId = typeof values.user_id === 'object' ? values.user_id?.value : values.user_id;
+    const input = {
+      ...values,
+      user_id: userId,
       automatic_user: values.automatic_user ?? true,
-      ...((values.automatic_user !== false) && { confidence_level: Number(values.confidence_level) }),
+      ...(values.automatic_user !== false && { confidence_level: Number(values.confidence_level) }),
     };
     commitCreation({
       variables: { input },
       updater: (store) => {
-        insertNode(
-          store,
-          'Pagination_synchronizers',
-          paginationOptions,
-          'synchronizerAdd',
-        );
+        insertNode(store, 'Pagination_synchronizers', paginationOptions, 'synchronizerAdd');
       },
       onError: (error) => {
         MESSAGING$.notifyRelayError(error as unknown as RelayError);
@@ -238,7 +228,10 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
         const errors = relayErrors.map((err) => ({
           [err.data?.field ?? 'unknownField']: err.data?.message,
         }));
-        const formError = errors.length > 0 ? R.mergeAll(errors) : { uri: t_i18n('Unable to validate remote OpenCTI URL') };
+        const formError =
+          errors.length > 0
+            ? R.mergeAll(errors)
+            : { uri: t_i18n('Unable to validate remote OpenCTI URL') };
         setErrors({ ...currentErrors, ...formError });
         setStreams([]);
       });
@@ -292,9 +285,14 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                   icon={false}
                   severity="warning"
                   variant="outlined"
-                  style={{ position: 'relative',
-                    marginTop: 20, width: '100%',
-                    overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+                  style={{
+                    position: 'relative',
+                    marginTop: 20,
+                    width: '100%',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
                 >
                   <AlertTitle>{t_i18n('Remote OpenCTI configuration')}</AlertTitle>
                   <Tooltip
@@ -330,58 +328,51 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                       label={t_i18n('Remote OpenCTI stream ID')}
                       inputProps={{ name: 'stream_id', id: 'stream_id' }}
                       containerstyle={fieldSpacingContainerStyle}
-                      renderValue={(value: string | undefined) => streams.filter((stream) => stream.value === value).at(0)?.name}
+                      renderValue={(value: string | undefined) =>
+                        streams.filter((stream) => stream.value === value).at(0)?.name
+                      }
                     >
-                      {streams.map(
-                        ({ value, label, name, description, filters }) => {
-                          const streamsFilters = deserializeFilterGroupForFrontend(filters);
-                          return (
-                            <EnrichedTooltip
-                              key={value}
-                              value={value}
-                              style={{ overflow: 'hidden' }}
-                              title={(
-                                <Grid
-                                  container
-                                  spacing={1}
-                                  style={{ overflow: 'hidden' }}
-                                >
-                                  <Grid key={name} item xs={12}>
-                                    <Typography>{name}</Typography>
-                                  </Grid>
-                                  <Grid key={description} item xs={12}>
-                                    <Typography>{description}</Typography>
-                                  </Grid>
-                                  <Grid key={filters} item xs={12}>
-                                    <FilterIconButton
-                                      filters={streamsFilters}
-                                      variant="small"
-                                    />
-                                  </Grid>
+                      {streams.map(({ value, label, name, description, filters }) => {
+                        const streamsFilters = deserializeFilterGroupForFrontend(filters);
+                        return (
+                          <EnrichedTooltip
+                            key={value}
+                            value={value}
+                            style={{ overflow: 'hidden' }}
+                            title={
+                              <Grid container spacing={1} style={{ overflow: 'hidden' }}>
+                                <Grid key={name} item xs={12}>
+                                  <Typography>{name}</Typography>
                                 </Grid>
-                              )}
-                              placement="bottom-start"
-                            >
-                              <MenuItem key={value} value={value}>
-                                {label}
-                              </MenuItem>
-                            </EnrichedTooltip>
-                          );
-                        },
-                      )}
+                                <Grid key={description} item xs={12}>
+                                  <Typography>{description}</Typography>
+                                </Grid>
+                                <Grid key={filters} item xs={12}>
+                                  <FilterIconButton filters={streamsFilters} variant="small" />
+                                </Grid>
+                              </Grid>
+                            }
+                            placement="bottom-start"
+                          >
+                            <MenuItem key={value} value={value}>
+                              {label}
+                            </MenuItem>
+                          </EnrichedTooltip>
+                        );
+                      })}
                     </Field>
                   )}
-                  <div style={{
-                    width: '100%',
-                    marginTop: 20,
-                    textAlign: 'right',
-                  }}
+                  <div
+                    style={{
+                      width: '100%',
+                      marginTop: 20,
+                      textAlign: 'right',
+                    }}
                   >
                     {streams.length === 0 && (
                       <Button
                         color="secondary"
-                        onClick={() => handleGetStreams(values, setErrors, errors)
-                        }
+                        onClick={() => handleGetStreams(values, setErrors, errors)}
                         disabled={isSubmitting}
                         style={{
                           marginLeft: 10,
@@ -407,10 +398,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                     )}
                   </div>
                 </Alert>
-                <IngestionCreationUserHandling
-                  default_confidence_level={50}
-                  labelTag="S"
-                />
+                <IngestionCreationUserHandling default_confidence_level={50} labelTag="S" />
                 <Field
                   component={DateTimePickerField}
                   name="current_state_date"
@@ -444,13 +432,14 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                       icon={false}
                       severity="error"
                       variant="outlined"
-                      style={{ position: 'relative',
-                        marginTop: 20, width: '100%',
-                        overflow: 'hidden' }}
+                      style={{
+                        position: 'relative',
+                        marginTop: 20,
+                        width: '100%',
+                        overflow: 'hidden',
+                      }}
                     >
-                      <div>
-                        {t_i18n('Use these options if you know what you are doing')}
-                      </div>
+                      <div>{t_i18n('Use these options if you know what you are doing')}</div>
                     </Alert>
                     <Field
                       component={SwitchField}
@@ -473,9 +462,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                       label={t_i18n('Use perfect synchronization')}
                     />
                     <div>
-                      {t_i18n(
-                        'Use this option only in case of platform to platform replication',
-                      )}
+                      {t_i18n('Use this option only in case of platform to platform replication')}
                     </div>
                     <div>
                       {t_i18n(
@@ -485,11 +472,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                   </AccordionDetails>
                 </Accordion>
                 <FormButtonContainer>
-                  <Button
-                    variant="secondary"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                  >
+                  <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t_i18n('Cancel')}
                   </Button>
                   <Button

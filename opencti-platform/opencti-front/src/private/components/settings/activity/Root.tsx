@@ -24,27 +24,36 @@ const RootActivity = () => {
           />
           <Route
             path="/audit"
-            element={(
-              <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={fallbackUrl} />}>
+            element={
+              <Security
+                needs={[SETTINGS_SECURITYACTIVITY]}
+                placeholder={<Navigate to={fallbackUrl} />}
+              >
                 <Audit />
               </Security>
-            )}
+            }
           />
           <Route
             path="/configuration"
-            element={(
-              <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={fallbackUrl} />}>
+            element={
+              <Security
+                needs={[SETTINGS_SECURITYACTIVITY]}
+                placeholder={<Navigate to={fallbackUrl} />}
+              >
                 <Configuration />
               </Security>
-            )}
+            }
           />
           <Route
             path="/alerting"
-            element={(
-              <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={fallbackUrl} />}>
+            element={
+              <Security
+                needs={[SETTINGS_SECURITYACTIVITY]}
+                placeholder={<Navigate to={fallbackUrl} />}
+              >
                 <Alerting />
               </Security>
-            )}
+            }
           />
         </Routes>
       </Suspense>

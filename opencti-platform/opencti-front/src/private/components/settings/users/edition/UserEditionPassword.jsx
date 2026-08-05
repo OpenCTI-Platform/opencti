@@ -11,10 +11,7 @@ import TextField from '../../../../../components/TextField';
 import PasswordPolicies from '../../../common/form/PasswordPolicies';
 
 const userMutationFieldPatch = graphql`
-  mutation UserEditionPasswordFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-  ) {
+  mutation UserEditionPasswordFieldPatchMutation($id: ID!, $input: [EditInput]!) {
     userEdit(id: $id) {
       fieldPatch(input: $input) {
         ...UserEditionPassword_user
@@ -23,12 +20,13 @@ const userMutationFieldPatch = graphql`
   }
 `;
 
-const userValidation = (t) => Yup.object().shape({
-  password: Yup.string().required(t('This field is required')),
-  confirmation: Yup.string()
-    .oneOf([Yup.ref('password'), null], t('The values do not match'))
-    .required(t('This field is required')),
-});
+const userValidation = (t) =>
+  Yup.object().shape({
+    password: Yup.string().required(t('This field is required')),
+    confirmation: Yup.string()
+      .oneOf([Yup.ref('password'), null], t('The values do not match'))
+      .required(t('This field is required')),
+  });
 
 const formatExpiryDate = (value) => {
   if (!value) return null;
@@ -129,9 +127,7 @@ const UserEditionPasswordComponent = ({ user }) => {
             </Button>
           </div>
           {formattedExpiry && (
-            <FormHelperText style={{ marginTop: 8 }}>
-              {`Expiry: ${formattedExpiry}`}
-            </FormHelperText>
+            <FormHelperText style={{ marginTop: 8 }}>{`Expiry: ${formattedExpiry}`}</FormHelperText>
           )}
         </Form>
       )}
@@ -139,18 +135,15 @@ const UserEditionPasswordComponent = ({ user }) => {
   );
 };
 
-const UserEditionPassword = createFragmentContainer(
-  UserEditionPasswordComponent,
-  {
-    user: graphql`
-      fragment UserEditionPassword_user on User {
-        id
-        external
-        account_status
-        password_valid_until
-      }
-    `,
-  },
-);
+const UserEditionPassword = createFragmentContainer(UserEditionPasswordComponent, {
+  user: graphql`
+    fragment UserEditionPassword_user on User {
+      id
+      external
+      account_status
+      password_valid_until
+    }
+  `,
+});
 
 export default UserEditionPassword;

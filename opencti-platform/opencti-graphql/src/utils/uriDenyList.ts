@@ -56,7 +56,11 @@ const matchesDenyPattern = (hostParts: UriHostParts, pattern: string): boolean =
  * Verifies that the given URI is not in the application URI deny list.
  * Throws a FunctionalError if the URI matches a denied pattern.
  */
-export const verifyUriWithDenyList = (uri: string, denyList: string[], errorMessage = 'This URI is not allowed.'): void => {
+export const verifyUriWithDenyList = (
+  uri: string,
+  denyList: string[],
+  errorMessage = 'This URI is not allowed.',
+): void => {
   if (denyList.length === 0) return;
 
   const hostParts = extractHostParts(uri);

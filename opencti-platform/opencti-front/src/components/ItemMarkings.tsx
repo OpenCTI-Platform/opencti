@@ -23,11 +23,7 @@ interface ChipMarkingProps {
   disableTooltip?: boolean;
 }
 
-const ChipMarking = ({
-  markingDefinition,
-  onClick,
-  disableTooltip = false,
-}: ChipMarkingProps) => {
+const ChipMarking = ({ markingDefinition, onClick, disableTooltip = false }: ChipMarkingProps) => {
   const theme = useTheme<Theme>();
 
   const getColor = () => {
@@ -75,23 +71,19 @@ const ChipMarking = ({
       label={markingDefinition.definition || 'no definition'}
       labelTextTransform="none"
       disableTooltip={disableTooltip}
-      {...itemMarkingColor && { color: itemMarkingColor }}
-      {...hasClickCallback && {
+      {...(itemMarkingColor && { color: itemMarkingColor })}
+      {...(hasClickCallback && {
         onClick: (e) => {
           stopEvent(e);
           onClick?.(markingDefinition);
         },
-      }}
+      })}
       maxWidth={100}
     />
   );
 };
 
-const ItemMarkings = ({
-  markingDefinitions,
-  limit = 0,
-  onClick,
-}: ItemMarkingsProps) => {
+const ItemMarkings = ({ markingDefinitions, limit = 0, onClick }: ItemMarkingsProps) => {
   const theme = useTheme<Theme>();
   const markings = markingDefinitions ?? [];
 
@@ -116,7 +108,7 @@ const ItemMarkings = ({
   // return a multiple marking tags in the tooltip
   return (
     <Tooltip
-      title={(
+      title={
         <Stack
           gap={1}
           direction="row"
@@ -126,24 +118,23 @@ const ItemMarkings = ({
             p: 1,
           }}
         >
-          {
-            markings.map((markingDefinition) => (
-              <ChipMarking
-                key={markingDefinition.id}
-                markingDefinition={markingDefinition}
-                onClick={onClick}
-                disableTooltip
-              />
-            ))
-          }
+          {markings.map((markingDefinition) => (
+            <ChipMarking
+              key={markingDefinition.id}
+              markingDefinition={markingDefinition}
+              onClick={onClick}
+              disableTooltip
+            />
+          ))}
         </Stack>
-      )}
+      }
       slotProps={{
         tooltip: {
           sx: {
-            backgroundColor: theme.palette.mode === 'light'
-              ? theme.palette.common.white
-              : theme.palette.common.black,
+            backgroundColor:
+              theme.palette.mode === 'light'
+                ? theme.palette.common.white
+                : theme.palette.common.black,
             maxWidth: 260,
           },
         },
@@ -166,11 +157,7 @@ const ItemMarkings = ({
                 },
               }}
             >
-              <ChipMarking
-                markingDefinition={markingDefinition}
-                onClick={onClick}
-                disableTooltip
-              />
+              <ChipMarking markingDefinition={markingDefinition} onClick={onClick} disableTooltip />
             </Badge>
           ) : (
             <ChipMarking
@@ -181,7 +168,6 @@ const ItemMarkings = ({
             />
           );
         })}
-
       </Stack>
     </Tooltip>
   );

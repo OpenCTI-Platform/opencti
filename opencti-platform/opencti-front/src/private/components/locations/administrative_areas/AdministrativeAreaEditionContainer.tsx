@@ -1,9 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Drawer, { DrawerControlledDialType } from '@components/common/drawer/Drawer';
-import {
-  AdministrativeAreaEditionOverview_administrativeArea$key,
-} from '@components/locations/administrative_areas/__generated__/AdministrativeAreaEditionOverview_administrativeArea.graphql';
+import { AdministrativeAreaEditionOverview_administrativeArea$key } from '@components/locations/administrative_areas/__generated__/AdministrativeAreaEditionOverview_administrativeArea.graphql';
 import AdministrativeAreaEditionOverview from './AdministrativeAreaEditionOverview';
 import { useFormatter } from '../../../../components/i18n';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -28,12 +26,9 @@ export const administrativeAreaEditionQuery = graphql`
     }
   }
 `;
-const AdministrativeAreaEditionContainer: FunctionComponent<AdministrativeAreaEditionContainerProps> = ({
-  queryRef,
-  handleClose,
-  open,
-  controlledDial,
-}) => {
+const AdministrativeAreaEditionContainer: FunctionComponent<
+  AdministrativeAreaEditionContainerProps
+> = ({ queryRef, handleClose, open, controlledDial }) => {
   const { t_i18n } = useFormatter();
   const { administrativeArea } = usePreloadedQuery(administrativeAreaEditionQuery, queryRef);
   if (administrativeArea === null) {
@@ -49,7 +44,9 @@ const AdministrativeAreaEditionContainer: FunctionComponent<AdministrativeAreaEd
     >
       {({ onClose }) => (
         <AdministrativeAreaEditionOverview
-          administrativeAreaRef={administrativeArea as AdministrativeAreaEditionOverview_administrativeArea$key}
+          administrativeAreaRef={
+            administrativeArea as AdministrativeAreaEditionOverview_administrativeArea$key
+          }
           context={administrativeArea?.editContext}
           handleClose={onClose}
           enableReferences={useIsEnforceReference('Administrative-Area')}

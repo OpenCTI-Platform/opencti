@@ -1,6 +1,10 @@
 import React from 'react';
 import NavToolbarMenu, { MenuEntry } from '@components/common/menus/NavToolbarMenu';
-import useGranted, { AUTOMATION_AUTMANAGE, CSVMAPPERS, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import useGranted, {
+  AUTOMATION_AUTMANAGE,
+  CSVMAPPERS,
+  KNOWLEDGE_KNUPDATE,
+} from '../../../utils/hooks/useGranted';
 
 const ProcessingMenu = () => {
   const isAutomationManager = useGranted([AUTOMATION_AUTMANAGE]);

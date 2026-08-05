@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import buildRelationToRelationRule from '../relationToRelationBuilder';
 import { RELATION_ATTRIBUTED_TO, RELATION_INDICATES } from '../../schema/stixCoreRelationship';
 import def from './AttributionIndicatorIndicatesDefinition';

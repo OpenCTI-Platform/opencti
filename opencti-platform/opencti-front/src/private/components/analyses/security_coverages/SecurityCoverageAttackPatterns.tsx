@@ -1,5 +1,7 @@
 import Typography from '@mui/material/Typography';
-import StixCoreRelationshipCreationFromEntity, { TargetEntity } from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
+import StixCoreRelationshipCreationFromEntity, {
+  TargetEntity,
+} from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
@@ -32,29 +34,29 @@ const securityCoverageAttackPatternsFragment = graphql`
   fragment SecurityCoverageAttackPatternsFragment on SecurityCoverage {
     id
     attPatterns: stixCoreRelationships(
-        orderBy: created_at
-        orderMode: asc
-        relationship_type: "has-covered"
-        toTypes: ["Attack-Pattern"]
-        first: 25
+      orderBy: created_at
+      orderMode: asc
+      relationship_type: "has-covered"
+      toTypes: ["Attack-Pattern"]
+      first: 25
     ) @connection(key: "Pagination_attPatterns") {
-        edges {
-            node {
-                id
-                coverage_information {
-                    coverage_name
-                    coverage_score
-                }
-                to {
-                    ... on AttackPattern {
-                        id
-                        parent_types
-                        name
-                        description
-                    }
-                }
+      edges {
+        node {
+          id
+          coverage_information {
+            coverage_name
+            coverage_score
+          }
+          to {
+            ... on AttackPattern {
+              id
+              parent_types
+              name
+              description
             }
+          }
         }
+      }
     }
     ...SecurityCoverageAttackPatternsMatrix_securityCoverage
   }
@@ -131,7 +133,7 @@ const SecurityCoverageAttackPatterns = ({
   return (
     <Card
       title={t_i18n('Attack patterns coverage')}
-      action={(
+      action={
         <Stack direction="row" spacing={1}>
           <StixCoreRelationshipCreationFromEntity
             entityId={securityCoverage.id}
@@ -200,12 +202,9 @@ const SecurityCoverageAttackPatterns = ({
               </Select>
             </FormControl>
           )}
-          <SearchInput
-            variant="thin"
-            onSubmit={setSearchTerm}
-          />
+          <SearchInput variant="thin" onSubmit={setSearchTerm} />
         </Stack>
-      )}
+      }
     >
       {viewMode === 'matrix' ? (
         <SecurityCoverageAttackPatternsMatrix
@@ -227,7 +226,7 @@ const SecurityCoverageAttackPatterns = ({
                     dense={true}
                     divider={true}
                     disablePadding={true}
-                    secondaryAction={(
+                    secondaryAction={
                       <StixCoreRelationshipPopover
                         objectId={securityCoverage.id}
                         connectionKey="Pagination_attPatterns"
@@ -235,7 +234,7 @@ const SecurityCoverageAttackPatterns = ({
                         paginationOptions={paginationOptions}
                         isCoverage={true}
                       />
-                    )}
+                    }
                   >
                     <ListItemButton
                       component={Link}
@@ -246,17 +245,21 @@ const SecurityCoverageAttackPatterns = ({
                         <ItemIcon color={theme.palette.primary.main} type="attack-pattern" />
                       </ListItemIcon>
                       <ListItemText
-                        primary={(
+                        primary={
                           <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                            <Typography variant="body2" component="span" sx={{ flex: '1 1 10%' }}>{attackPattern?.name}</Typography>
-                            <Box sx={{ flex: '1 1 auto', display: 'flex', justifyContent: 'center' }}>
+                            <Typography variant="body2" component="span" sx={{ flex: '1 1 10%' }}>
+                              {attackPattern?.name}
+                            </Typography>
+                            <Box
+                              sx={{ flex: '1 1 auto', display: 'flex', justifyContent: 'center' }}
+                            >
                               <SecurityCoverageScores
                                 coverage_information={coverage}
                                 variant="header"
                               />
                             </Box>
                           </Box>
-                        )}
+                        }
                       />
                     </ListItemButton>
                   </ListItem>

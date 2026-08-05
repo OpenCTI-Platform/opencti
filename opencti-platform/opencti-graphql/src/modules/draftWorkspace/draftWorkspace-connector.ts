@@ -19,10 +19,10 @@ export const DRAFT_VALIDATION_CONNECTOR: Connector = {
 };
 
 export const draftValidationConnectorRuntime = async () => {
-  return ({
+  return {
     ...DRAFT_VALIDATION_CONNECTOR,
     configurations: [],
-  });
+  };
 };
 
 const connectorConfig: ConnectorConfig = {
@@ -43,7 +43,12 @@ const initDraftValidationConnector = () => {
   return {
     start: async () => {
       logApp.info(`[OPENCTI-MODULE] Starting ${connectorConfig.name} manager`);
-      await registerConnectorQueues(connector.id, connector.name, connector.connector_type, connector.connector_scope);
+      await registerConnectorQueues(
+        connector.id,
+        connector.name,
+        connector.connector_type,
+        connector.connector_scope,
+      );
     },
     status: () => {
       return {

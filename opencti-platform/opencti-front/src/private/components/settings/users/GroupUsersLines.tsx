@@ -1,7 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { UserLine, UserLineDummy } from './UserLine';
-import { GroupUsersLinesQuery, GroupUsersLinesQuery$variables } from './__generated__/GroupUsersLinesQuery.graphql';
+import {
+  GroupUsersLinesQuery,
+  GroupUsersLinesQuery$variables,
+} from './__generated__/GroupUsersLinesQuery.graphql';
 import { DataColumns } from '../../../../components/list_lines';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
@@ -51,7 +54,7 @@ const groupUsersLinesFragment = graphql`
       ) @connection(key: "Pagination_group_members") {
         edges {
           node {
-            ...UserLine_node            
+            ...UserLine_node
           }
         }
         pageInfo {

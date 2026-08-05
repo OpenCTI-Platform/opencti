@@ -42,10 +42,7 @@ const organizationMutationFieldPatch = graphql`
 `;
 
 export const organizationEditionOverviewFocus = graphql`
-  mutation SettingsOrganizationEditionFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation SettingsOrganizationEditionFocusMutation($id: ID!, $input: EditContext!) {
     organizationContextPatch(id: $id, input: $input) {
       id
     }
@@ -94,15 +91,14 @@ interface SettingsOrganizationEditionProps {
   enableReferences?: boolean;
 }
 
-export const convertGrantableGroups = (organization: SettingsOrganization_organization$data) => (organization?.grantable_groups ?? []).map((n) => ({
-  label: n.name,
-  value: n.id,
-}));
+export const convertGrantableGroups = (organization: SettingsOrganization_organization$data) =>
+  (organization?.grantable_groups ?? []).map((n) => ({
+    label: n.name,
+    value: n.id,
+  }));
 
 const UpdateSettingsOrganizationControlledDial = (props: DrawerControlledDialProps) => (
-  <EditEntityControlledDial
-    {...props}
-  />
+  <EditEntityControlledDial {...props} />
 );
 
 const SettingsOrganizationEdition = ({
@@ -119,10 +115,7 @@ const SettingsOrganizationEdition = ({
     contact_information: Yup.string().nullable(),
     x_opencti_organization_type: Yup.string().nullable(),
   };
-  const organizationValidator = useSchemaEditionValidation(
-    'Organization',
-    basicShape,
-  );
+  const organizationValidator = useSchemaEditionValidation('Organization', basicShape);
   const queries = {
     fieldPatch: organizationMutationFieldPatch,
     relationAdd: organizationMutationRelationAdd,
@@ -163,8 +156,7 @@ const SettingsOrganizationEdition = ({
       variables: {
         id: organization.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {
@@ -206,14 +198,7 @@ const SettingsOrganizationEdition = ({
             onClose();
           }}
         >
-          {({
-            submitForm,
-            isSubmitting,
-            isValid,
-            dirty,
-            setFieldValue,
-            values,
-          }) => (
+          {({ submitForm, isSubmitting, isValid, dirty, setFieldValue, values }) => (
             <Form>
               <Field
                 component={TextField}
@@ -223,9 +208,7 @@ const SettingsOrganizationEdition = ({
                 fullWidth={true}
                 onFocus={editor.changeFocus}
                 onSubmit={handleSubmitField}
-                helperText={
-                  <SubscriptionFocus context={context} fieldName="name" />
-                }
+                helperText={<SubscriptionFocus context={context} fieldName="name" />}
               />
               <Field
                 component={MarkdownField}
@@ -237,12 +220,7 @@ const SettingsOrganizationEdition = ({
                 style={{ marginTop: 20 }}
                 onFocus={editor.changeFocus}
                 onSubmit={handleSubmitField}
-                helperText={(
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="description"
-                  />
-                )}
+                helperText={<SubscriptionFocus context={context} fieldName="description" />}
               />
               <OpenVocabField
                 label={t_i18n('Organization type')}
@@ -267,17 +245,9 @@ const SettingsOrganizationEdition = ({
                 style={{ marginTop: 20 }}
                 onFocus={editor.changeFocus}
                 onSubmit={handleSubmitField}
-                helperText={(
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="contact_information"
-                  />
-                )}
+                helperText={<SubscriptionFocus context={context} fieldName="contact_information" />}
               />
-              <DashboardField
-                onChange={editor.changeField}
-                context={context}
-              />
+              <DashboardField onChange={editor.changeField} context={context} />
               <SettingsOrganizationHiddenTypesField organizationData={organization} />
               <EEField featureLabel="Organization sharing">
                 <GroupField

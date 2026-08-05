@@ -17,13 +17,19 @@ import React, { useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { PirHistoryLogsFragment$data } from './__generated__/PirHistoryLogsFragment.graphql';
-import { PirHistoryLogsQuery, PirHistoryLogsQuery$variables } from './__generated__/PirHistoryLogsQuery.graphql';
+import {
+  PirHistoryLogsQuery,
+  PirHistoryLogsQuery$variables,
+} from './__generated__/PirHistoryLogsQuery.graphql';
 import { PirHistoryFragment$key } from './__generated__/PirHistoryFragment.graphql';
 import { PirHistoryLogFragment$data } from './__generated__/PirHistoryLogFragment.graphql';
 import { pirHistoryFilterGroup, pirLogRedirectUri } from '../pir-history-utils';
 import PirHistoryMessage from '../PirHistoryMessage';
 import { useFormatter } from '../../../../components/i18n';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
@@ -54,7 +60,7 @@ const pirHistoryLogFragment = graphql`
 `;
 
 const pirHistoryLogsFragment = graphql`
-  fragment PirHistoryLogsFragment on Query 
+  fragment PirHistoryLogsFragment on Query
   @argumentDefinitions(
     pirId: { type: "ID!" }
     search: { type: "String" }
@@ -100,15 +106,15 @@ const pirHistoryLogsQuery = graphql`
     $filters: FilterGroup
   ) {
     ...PirHistoryLogsFragment
-    @arguments(
-      pirId: $pirId
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        pirId: $pirId
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -166,7 +172,9 @@ const PirHistory = ({ data }: PirHistoryProps) => {
       id: 'entity_type',
       label: 'Type',
       render: ({ context_data }) => {
-        const entityTypeLabel = t_i18n(displayEntityTypeForTranslation(context_data?.entity_type ?? ''));
+        const entityTypeLabel = t_i18n(
+          displayEntityTypeForTranslation(context_data?.entity_type ?? ''),
+        );
         return (
           <Tooltip title={entityTypeLabel}>
             <div style={{ height: 24 }}>
@@ -181,12 +189,7 @@ const PirHistory = ({ data }: PirHistoryProps) => {
       id: 'pir_log_message',
       label: 'Message',
       render: (log) => {
-        const message = (
-          <PirHistoryMessage
-            log={log}
-            pirName={name}
-          />
-        );
+        const message = <PirHistoryMessage log={log} pirName={name} />;
         return (
           <Tooltip title={message}>
             <div>{message}</div>
@@ -199,42 +202,44 @@ const PirHistory = ({ data }: PirHistoryProps) => {
     },
   };
 
-  return queryRef && (
-    <div style={{ height: 'calc(100vh - 250px)' }} ref={(r) => setRef(r)}>
-      <DataTable
-        rootRef={ref ?? undefined}
-        removeSelectAll
-        disableLineSelection
-        dataColumns={dataColumns}
-        storageKey={LOCAL_STORAGE_KEY}
-        initialValues={initialValues}
-        contextFilters={contextFilters}
-        lineFragment={pirHistoryLogFragment}
-        entityTypes={['History']}
-        getComputeLink={({ context_data }: PirHistoryLogFragment$data) => {
-          return pirLogRedirectUri(context_data);
-        }}
-        searchContextFinal={{ entityTypes: ['History'], elementType: 'Pir' }}
-        availableFilterKeys={[
-          'timestamp',
-          'contextObjectLabel',
-          'contextObjectMarking',
-          'contextCreator',
-          'contextCreatedBy',
-          'contextEntityType',
-        ]}
-        resolvePath={(d: PirHistoryLogsFragment$data) => {
-          return d.pirLogs?.edges?.map((e) => e?.node);
-        }}
-        preloadedPaginationProps={{
-          linesQuery: pirHistoryLogsQuery,
-          linesFragment: pirHistoryLogsFragment,
-          queryRef,
-          nodePath: ['pirLogs', 'pageInfo', 'globalCount'],
-          setNumberOfElements: helpers.handleSetNumberOfElements,
-        }}
-      />
-    </div>
+  return (
+    queryRef && (
+      <div style={{ height: 'calc(100vh - 250px)' }} ref={(r) => setRef(r)}>
+        <DataTable
+          rootRef={ref ?? undefined}
+          removeSelectAll
+          disableLineSelection
+          dataColumns={dataColumns}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          contextFilters={contextFilters}
+          lineFragment={pirHistoryLogFragment}
+          entityTypes={['History']}
+          getComputeLink={({ context_data }: PirHistoryLogFragment$data) => {
+            return pirLogRedirectUri(context_data);
+          }}
+          searchContextFinal={{ entityTypes: ['History'], elementType: 'Pir' }}
+          availableFilterKeys={[
+            'timestamp',
+            'contextObjectLabel',
+            'contextObjectMarking',
+            'contextCreator',
+            'contextCreatedBy',
+            'contextEntityType',
+          ]}
+          resolvePath={(d: PirHistoryLogsFragment$data) => {
+            return d.pirLogs?.edges?.map((e) => e?.node);
+          }}
+          preloadedPaginationProps={{
+            linesQuery: pirHistoryLogsQuery,
+            linesFragment: pirHistoryLogsFragment,
+            queryRef,
+            nodePath: ['pirLogs', 'pageInfo', 'globalCount'],
+            setNumberOfElements: helpers.handleSetNumberOfElements,
+          }}
+        />
+      </div>
+    )
   );
 };
 

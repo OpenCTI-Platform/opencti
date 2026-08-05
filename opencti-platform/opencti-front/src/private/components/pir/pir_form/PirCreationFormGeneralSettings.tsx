@@ -77,24 +77,24 @@ const PirCreationFormGeneralSettings = ({ redisQueryRef }: PirCreationFormGenera
         label={t_i18n('Rescan period (days)')}
         fullWidth={true}
         containerstyle={{ marginTop: 20, width: '100%' }}
-        helpertext={t_i18n('How far back to rescan at creation. If the PIR engine has less history than this period, only the history period will be taken')}
+        helpertext={t_i18n(
+          'How far back to rescan at creation. If the PIR engine has less history than this period, only the history period will be taken',
+        )}
       >
         <MenuItem value={0}>{t_i18n('No rescan')}</MenuItem>
         <MenuItem value={1}>{t_i18n('1 day')}</MenuItem>
         <MenuItem value={30}>{t_i18n('1 month')}</MenuItem>
         <MenuItem value={182}>{t_i18n('6 months')}</MenuItem>
       </Field>
-      {showRescanAlert
-        && (
-          <Alert severity="warning" variant="outlined" style={{ marginTop: 20 }}>
-            <AlertTitle>{t_i18n('Rescan begins before stream first event date')}</AlertTitle>
-            {t_i18n(
-              'Events before stream first event date ({firstEventDate}) won\'t be taken into account.',
-              { values: { firstEventDate: fld(firstEventDate) } },
-            )}
-          </Alert>
-        )
-      }
+      {showRescanAlert && (
+        <Alert severity="warning" variant="outlined" style={{ marginTop: 20 }}>
+          <AlertTitle>{t_i18n('Rescan begins before stream first event date')}</AlertTitle>
+          {t_i18n(
+            "Events before stream first event date ({firstEventDate}) won't be taken into account.",
+            { values: { firstEventDate: fld(firstEventDate) } },
+          )}
+        </Alert>
+      )}
     </>
   );
 };

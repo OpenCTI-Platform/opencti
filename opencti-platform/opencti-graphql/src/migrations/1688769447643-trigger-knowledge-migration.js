@@ -10,13 +10,12 @@ export const up = async (next) => {
   const updateQuery = {
     script: {
       params: { trigger_scope: 'knowledge', capabilities: ['SETTINGS_SETACCESSES'] },
-      source: 'ctx._source.trigger_scope = params.trigger_scope; ctx._source.authorized_authorities = params.capabilities',
+      source:
+        'ctx._source.trigger_scope = params.trigger_scope; ctx._source.authorized_authorities = params.capabilities',
     },
     query: {
       bool: {
-        must: [
-          { term: { 'entity_type.keyword': { value: 'Trigger' } } },
-        ],
+        must: [{ term: { 'entity_type.keyword': { value: 'Trigger' } } }],
       },
     },
   };

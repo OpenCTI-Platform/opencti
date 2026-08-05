@@ -39,13 +39,17 @@ const FintelDesignPopover = ({
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [replaceDialogOpen, setReplaceDialogOpen] = useState(false);
-  const [resolvedDefaultName, setResolvedDefaultName] = useState<string | undefined>(currentDefaultName);
+  const [resolvedDefaultName, setResolvedDefaultName] = useState<string | undefined>(
+    currentDefaultName,
+  );
   const [commitSetDefault] = useApiMutation(fintelDesignSetDefaultMutation);
 
   const refetchDesigns = () => {
-    fetchQuery(fintelDesignsCurrentDefaultQuery, {}).toPromise().catch((err) => {
-      handleError(err);
-    });
+    fetchQuery(fintelDesignsCurrentDefaultQuery, {})
+      .toPromise()
+      .catch((err) => {
+        handleError(err);
+      });
   };
 
   const doSetDefault = () => {
@@ -71,11 +75,15 @@ const FintelDesignPopover = ({
     fetchQuery(fintelDesignsCurrentDefaultQuery, {})
       .toPromise()
       .then((result) => {
-        const data = result as {
-          fintelDesigns?: {
-            edges?: Array<{ node?: { id: string; name: string; default?: boolean } | null } | null>;
-          };
-        } | undefined;
+        const data = result as
+          | {
+              fintelDesigns?: {
+                edges?: Array<{
+                  node?: { id: string; name: string; default?: boolean } | null;
+                } | null>;
+              };
+            }
+          | undefined;
         const existingDefault = data?.fintelDesigns?.edges
           ?.map((edge) => edge?.node)
           .find((node) => node?.default && node.id !== fintelDesignId);
@@ -152,9 +160,11 @@ const FintelDesignPopover = ({
         }}
       >
         {onUpdate && <MenuItem onClick={onUpdateClick}>{t_i18n('Update')}</MenuItem>}
-        {isDefault
-          ? <MenuItem onClick={onRemoveDefault}>{t_i18n('Remove default')}</MenuItem>
-          : <MenuItem onClick={onSetAsDefault}>{t_i18n('Set as default')}</MenuItem>}
+        {isDefault ? (
+          <MenuItem onClick={onRemoveDefault}>{t_i18n('Remove default')}</MenuItem>
+        ) : (
+          <MenuItem onClick={onSetAsDefault}>{t_i18n('Set as default')}</MenuItem>
+        )}
         {onDelete && <MenuItem onClick={onDeleteClick}>{t_i18n('Delete')}</MenuItem>}
       </Menu>
 

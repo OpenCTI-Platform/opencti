@@ -4,18 +4,17 @@ import {
   CsvMapperRepresentationAttributeFormData,
 } from '@components/data/csvMapper/representations/attributes/Attribute';
 import { CsvMapperRepresentationFormData } from '@components/data/csvMapper/representations/Representation';
-import {
-  CsvMapperRepresentationAttributesForm_allSchemaAttributes$data,
-} from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
+import { CsvMapperRepresentationAttributesForm_allSchemaAttributes$data } from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
 import { SchemaAttribute } from './CsvMapperRepresentationAttributesForm';
 import { isNotEmptyField } from '../../../../../../utils/utils';
 import { defaultValuesToStringArray } from '../../../../../../utils/defaultValues';
 import { useComputeDefaultValues } from '../../../../../../utils/hooks/useDefaultValues';
 
 export const alphabet = (size = 0) => {
-  const fn = () => Array.from(Array(26))
-    .map((_, i) => i + 65)
-    .map((x) => String.fromCharCode(x));
+  const fn = () =>
+    Array.from(Array(26))
+      .map((_, i) => i + 65)
+      .map((x) => String.fromCharCode(x));
   const letters: string[] = fn();
   for (let step = 0; step < size; step += 1) {
     const additionalLetters = fn();
@@ -39,10 +38,12 @@ export const getBasedOnRepresentations = (
   attribute: CsvMapperRepresentationAttributeFormData | undefined,
   representations: CsvMapperRepresentationFormData[],
 ) => {
-  return attribute?.based_on?.flatMap((r) => {
-    const rep = representations.find((o) => o.id === r);
-    return rep ?? [];
-  }) ?? [];
+  return (
+    attribute?.based_on?.flatMap((r) => {
+      const rep = representations.find((o) => o.id === r);
+      return rep ?? [];
+    }) ?? []
+  );
 };
 
 // get the entity type of given ref "from" or "to"
@@ -57,8 +58,7 @@ export const getInfoForRef = (
   if (ref && isNotEmptyField(ref.based_on)) {
     const firstRepresentationId = ref.based_on[0];
     if (firstRepresentationId) {
-      fromType = representations.find((r) => r.id === firstRepresentationId)
-        ?.target_type;
+      fromType = representations.find((r) => r.id === firstRepresentationId)?.target_type;
       return [fromType, firstRepresentationId];
     }
   }
@@ -85,13 +85,15 @@ export const csvMapperAttributeToFormData = (
     column_name: attribute.column?.column_name ?? undefined,
     separator: attribute.column?.configuration?.separator ?? undefined,
     pattern_date: attribute.column?.configuration?.pattern_date ?? undefined,
-    default_values: schemaAttribute ? computeDefaultValues(
-      entityType,
-      attribute.key,
-      schemaAttribute.multiple,
-      schemaAttribute.type,
-      attribute.default_values ?? [],
-    ) : null,
+    default_values: schemaAttribute
+      ? computeDefaultValues(
+          entityType,
+          attribute.key,
+          schemaAttribute.multiple,
+          schemaAttribute.type,
+          attribute.default_values ?? [],
+        )
+      : null,
     based_on: attribute.based_on?.representations
       ? [...(attribute.based_on?.representations ?? [])]
       : undefined,
@@ -109,28 +111,27 @@ export const formDataToCsvMapperAttribute = (
   data: CsvMapperRepresentationAttributeFormData,
   name?: string,
 ): CsvMapperRepresentationAttributeEdit => {
-  const based_on = isNotEmptyField(data.based_on)
-    ? { representations: data.based_on }
-    : null;
+  const based_on = isNotEmptyField(data.based_on) ? { representations: data.based_on } : null;
 
   const default_values = isNotEmptyField(data.default_values)
     ? defaultValuesToStringArray(data.default_values ?? null)
     : null;
 
-  const configuration = isNotEmptyField(data.pattern_date)
-    || isNotEmptyField(data.separator)
-    ? {
-        pattern_date: data.pattern_date ?? null,
-        separator: data.separator ?? null,
-      }
-    : null;
+  const configuration =
+    isNotEmptyField(data.pattern_date) || isNotEmptyField(data.separator)
+      ? {
+          pattern_date: data.pattern_date ?? null,
+          separator: data.separator ?? null,
+        }
+      : null;
 
-  const column = isNotEmptyField(data.column_name) || isNotEmptyField(configuration)
-    ? {
-        column_name: data.column_name ?? null,
-        configuration,
-      }
-    : null;
+  const column =
+    isNotEmptyField(data.column_name) || isNotEmptyField(configuration)
+      ? {
+          column_name: data.column_name ?? null,
+          configuration,
+        }
+      : null;
 
   return {
     key: name ?? data.key,

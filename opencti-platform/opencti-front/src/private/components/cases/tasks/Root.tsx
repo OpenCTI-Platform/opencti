@@ -5,7 +5,11 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import Security from 'src/utils/Security';
-import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from 'src/utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+  KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
+} from 'src/utils/hooks/useGranted';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -83,7 +87,8 @@ const RootTaskComponent = ({ queryRef, taskId }: RootTaskComponentProps) => {
     [taskId],
   );
   const location = useLocation();
-  const enableReferences = useIsEnforceReference('Task') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
+  const enableReferences =
+    useIsEnforceReference('Task') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
 
   useSubscription(subConfig);
@@ -100,19 +105,20 @@ const RootTaskComponent = ({ queryRef, taskId }: RootTaskComponentProps) => {
     <>
       {data ? (
         <div style={{ paddingRight }}>
-          <Breadcrumbs elements={[
-            { label: t_i18n('Cases') },
-            { label: t_i18n('Tasks'), link: PATH_TASKS },
-            { label: data.name, current: true },
-          ]}
+          <Breadcrumbs
+            elements={[
+              { label: t_i18n('Cases') },
+              { label: t_i18n('Tasks'), link: PATH_TASKS },
+              { label: data.name, current: true },
+            ]}
           />
           <ContainerHeader
             container={data}
-            EditComponent={(
+            EditComponent={
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <TaskEdition caseId={data.id} />
               </Security>
-            )}
+            }
             DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
               <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                 <TaskDeletion id={data.id} isOpen={isOpen} handleClose={onClose} />
@@ -128,11 +134,7 @@ const RootTaskComponent = ({ queryRef, taskId }: RootTaskComponentProps) => {
             basePath={basePath}
             pages={{
               overview: <CaseTask taskData={data} enableReferences={enableReferences} />,
-              content: (
-                <StixCoreObjectContentRoot
-                  stixCoreObject={data}
-                />
-              ),
+              content: <StixCoreObjectContentRoot stixCoreObject={data} />,
               files: (
                 <StixCoreObjectFilesAndHistory
                   id={taskId}
@@ -143,8 +145,7 @@ const RootTaskComponent = ({ queryRef, taskId }: RootTaskComponentProps) => {
                   bypassEntityId={true}
                 />
               ),
-              history:
-                <StixCoreObjectHistory stixCoreObjectId={taskId} />,
+              history: <StixCoreObjectHistory stixCoreObjectId={taskId} />,
             }}
           />
         </div>

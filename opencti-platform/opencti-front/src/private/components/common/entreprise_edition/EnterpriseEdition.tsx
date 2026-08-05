@@ -19,7 +19,15 @@ import { useFormatter } from '../../../../components/i18n';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 import Card from '@common/card/Card';
 
-const EnterpriseEdition = ({ title, message, feature }: { title?: string; message?: string; feature?: string }) => {
+const EnterpriseEdition = ({
+  title,
+  message,
+  feature,
+}: {
+  title?: string;
+  message?: string;
+  feature?: string;
+}) => {
   const { isSensitive, isAllowed } = useSensitiveModifications('ce_ee_toggle');
   const { t_i18n } = useFormatter();
   return (

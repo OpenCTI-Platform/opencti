@@ -1,64 +1,65 @@
 type SupportPackage implements InternalObject & BasicObject {
-    id: ID!
-    name: String!
-    standard_id: String!
-    entity_type: String!
-    representative: Representative!
-    parent_types: [String!]!
-    metrics:[Metric]
-    created_at: DateTime!
-    package_status: PackageStatus!
-    package_url: String
-    package_upload_dir: String
-    nodes_count: Int!
-    createdBy: Individual
-    creators: [Creator!]
+  id: ID!
+  name: String!
+  standard_id: String!
+  entity_type: String!
+  representative: Representative!
+  parent_types: [String!]!
+  metrics: [Metric]
+  created_at: DateTime!
+  package_status: PackageStatus!
+  package_url: String
+  package_upload_dir: String
+  nodes_count: Int!
+  createdBy: Individual
+  creators: [Creator!]
 }
 
 type SupportPackageConnection {
-    pageInfo: PageInfo!
-    edges: [SupportPackageEdge!]!
+  pageInfo: PageInfo!
+  edges: [SupportPackageEdge!]!
 }
 
 type SupportPackageEdge {
-    cursor: String!
-    node: SupportPackage!
+  cursor: String!
+  node: SupportPackage!
 }
 
 enum PackageStatus {
-    IN_PROGRESS
-    READY
-    IN_ERROR
+  IN_PROGRESS
+  READY
+  IN_ERROR
 }
 
 enum SupportPackageOrdering {
-    name
-    created_at
-    package_status
+  name
+  created_at
+  package_status
 }
 
 input SupportPackageAddInput {
-    name: String! @constraint(minLength: 2, format: "not-blank")
+  name: String! @constraint(minLength: 2, format: "not-blank")
 }
 
 input SupportPackageForceZipInput {
-    id: String! @constraint(minLength: 2, format: "not-blank")
+  id: String! @constraint(minLength: 2, format: "not-blank")
 }
 
 type Query {
-    supportPackage(id: String!): SupportPackage @auth(for: [SETTINGS_SUPPORT])
-    supportPackages(
-        first: Int
-        after: ID
-        orderBy: SupportPackageOrdering
-        orderMode: OrderingMode
-        filters: FilterGroup
-        search: String
-    ): SupportPackageConnection @auth(for: [SETTINGS_SUPPORT])
+  supportPackage(id: String!): SupportPackage @auth(for: [SETTINGS_SUPPORT])
+  supportPackages(
+    first: Int
+    after: ID
+    orderBy: SupportPackageOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): SupportPackageConnection @auth(for: [SETTINGS_SUPPORT])
 }
 
 type Mutation {
-    supportPackageAdd(input: SupportPackageAddInput!): SupportPackage @auth(for: [SETTINGS_SUPPORT])
-    supportPackageForceZip(input: SupportPackageForceZipInput!): SupportPackage @auth(for: [SETTINGS_SUPPORT])
-    supportPackageDelete(id: ID!): ID @auth(for: [SETTINGS_SUPPORT])
+  supportPackageAdd(input: SupportPackageAddInput!): SupportPackage @auth(for: [SETTINGS_SUPPORT])
+  supportPackageForceZip(input: SupportPackageForceZipInput!): SupportPackage
+    @auth(for: [SETTINGS_SUPPORT])
+  supportPackageDelete(id: ID!): ID @auth(for: [SETTINGS_SUPPORT])
 }

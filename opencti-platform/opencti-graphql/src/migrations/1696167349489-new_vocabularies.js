@@ -2,12 +2,7 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { addVocabulary } from '../modules/vocabulary/vocabulary-domain';
 
 const newVocabularies = {
-  gender_ov: [
-    { key: 'male' },
-    { key: 'female' },
-    { key: 'nonbinary' },
-    { key: 'other' },
-  ],
+  gender_ov: [{ key: 'male' }, { key: 'female' }, { key: 'nonbinary' }, { key: 'other' }],
   marital_status_ov: [
     { key: 'annulled' },
     { key: 'divorced' },

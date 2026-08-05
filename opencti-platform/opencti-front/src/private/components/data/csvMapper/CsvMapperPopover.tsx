@@ -5,7 +5,9 @@ import IconButton from '@common/button/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql, useQueryLoader } from 'react-relay';
 import { PopoverProps } from '@mui/material/Popover';
-import CsvMapperEditionContainer, { csvMapperEditionContainerQuery } from '@components/data/csvMapper/CsvMapperEditionContainer';
+import CsvMapperEditionContainer, {
+  csvMapperEditionContainerQuery,
+} from '@components/data/csvMapper/CsvMapperEditionContainer';
 import { CsvMapperEditionContainerQuery } from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerQuery.graphql';
 import { csvMappers_MappersQuery$variables } from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
 import CsvMapperCreationContainer from '@components/data/csvMapper/CsvMapperCreationContainer';
@@ -50,7 +52,9 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
   const handleClose = () => setAnchorEl(null);
 
   // -- Edition --
-  const [queryRef, loadQuery] = useQueryLoader<CsvMapperEditionContainerQuery>(csvMapperEditionContainerQuery);
+  const [queryRef, loadQuery] = useQueryLoader<CsvMapperEditionContainerQuery>(
+    csvMapperEditionContainerQuery,
+  );
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
 
   const handleOpenUpdate = () => {
@@ -81,12 +85,7 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
         id: csvMapperId,
       },
       updater: (store) => {
-        deleteNode(
-          store,
-          'Pagination_csvMappers',
-          paginationOptions,
-          csvMapperId,
-        );
+        deleteNode(store, 'Pagination_csvMappers', paginationOptions, csvMapperId);
       },
       onCompleted: () => {
         setDeleting(false);
@@ -96,10 +95,9 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
   };
 
   const exportCsvMapper = async () => {
-    const { csvMapper } = await fetchQuery(
-      csvMapperExportQuery,
-      { id: csvMapperId },
-    ).toPromise() as CsvMapperPopoverExportQuery$data;
+    const { csvMapper } = (await fetchQuery(csvMapperExportQuery, {
+      id: csvMapperId,
+    }).toPromise()) as CsvMapperPopoverExportQuery$data;
 
     if (csvMapper) {
       const blob = new Blob([csvMapper.toConfigurationExport], { type: 'text/json' });
@@ -117,7 +115,12 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
 
   return (
     <>
-      <IconButton aria-label={t_i18n('Open menu')} onClick={handleOpen} aria-haspopup="true" color="primary">
+      <IconButton
+        aria-label={t_i18n('Open menu')}
+        onClick={handleOpen}
+        aria-haspopup="true"
+        color="primary"
+      >
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>

@@ -1,5 +1,9 @@
 import { clone } from 'ramda';
-import type { Scale, ScaleConfig, Tick } from '@components/settings/sub_types/scale_configuration/scale';
+import type {
+  Scale,
+  ScaleConfig,
+  Tick,
+} from '@components/settings/sub_types/scale_configuration/scale';
 import useEntitySettings from './useEntitySettings';
 
 const admiraltyScale: ScaleConfig = {
@@ -95,20 +99,13 @@ export const isCustomScale = (scale: ScaleConfig) => {
   return !allScales.some((s) => s.json === jsonScale);
 };
 
-const useScale = (
-  entityType: string | null,
-  attributeName: string,
-): ScaleConfig => {
+const useScale = (entityType: string | null, attributeName: string): ScaleConfig => {
   if (!entityType) {
     // return default configuration scale if entity type is not defined (ex: relationships)
     return defaultScale;
   }
-  const entitySetting = useEntitySettings(entityType).find(
-    (node) => node.scaleAttributes !== null,
-  );
-  const scaleAttribute = entitySetting?.scaleAttributes.find(
-    (a) => a.name === attributeName,
-  );
+  const entitySetting = useEntitySettings(entityType).find((node) => node.scaleAttributes !== null);
+  const scaleAttribute = entitySetting?.scaleAttributes.find((a) => a.name === attributeName);
   if (!scaleAttribute || !scaleAttribute.scale) {
     return defaultScale;
   }
@@ -121,10 +118,16 @@ export const buildScaleFilters = (
   attributeName: string,
 ): { label: string; value: string; color: string }[] => {
   const scale = useScale(entityType, attributeName);
-  const minLevel = { label: scale.min.label, value: scale.min.value.toString(), color: scale.min.color };
-  const tickLevels = scale.ticks.map((tick) => (
-    { label: tick.label, value: tick.value.toString(), color: tick.color }
-  ));
+  const minLevel = {
+    label: scale.min.label,
+    value: scale.min.value.toString(),
+    color: scale.min.color,
+  };
+  const tickLevels = scale.ticks.map((tick) => ({
+    label: tick.label,
+    value: tick.value.toString(),
+    color: tick.color,
+  }));
   return [minLevel, ...tickLevels];
 };
 
@@ -145,9 +148,9 @@ export const buildScaleLevel = (
   }
   let level: Tick;
   const { min, max } = scale;
-  const sortedTicks = (
-    scale.ticks.filter((tick) => !!tick) as Array<Tick>
-  ).sort((a: Tick, b: Tick) => b.value - a.value);
+  const sortedTicks = (scale.ticks.filter((tick) => !!tick) as Array<Tick>).sort(
+    (a: Tick, b: Tick) => b.value - a.value,
+  );
   const tickLevel = sortedTicks.find((tick: Tick) => value >= tick?.value);
   if (value > max.value) {
     level = max;
@@ -160,10 +163,7 @@ export const buildScaleLevel = (
   }
   return {
     level,
-    marks: [
-      ...sortedTicks,
-      min,
-    ],
+    marks: [...sortedTicks, min],
     scale,
   };
 };

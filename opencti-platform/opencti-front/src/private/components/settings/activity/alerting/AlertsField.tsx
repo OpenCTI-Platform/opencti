@@ -147,10 +147,7 @@ const AlertsField: FunctionComponent<TriggersFieldProps> = ({
         onInputChange={searchTriggers}
         openCreate={handleOpenTriggerCreation}
         onChange={typeof onChange === 'function' ? onChange : null}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: FieldOption,
-        ) => (
+        renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: FieldOption) => (
           <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>
               <CampaignOutlined />

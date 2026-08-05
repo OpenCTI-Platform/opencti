@@ -33,11 +33,9 @@ const UserDeletionDialog: FunctionComponent<UserDeletionDialogProps> = ({
     id: '... successfully deleted',
     values: { entity_type: t_i18n('User') },
   });
-  const [commit] = useApiMutation(
-    userDeletionMutation,
-    undefined,
-    { successMessage: deleteSuccessMessage },
-  );
+  const [commit] = useApiMutation(userDeletionMutation, undefined, {
+    successMessage: deleteSuccessMessage,
+  });
 
   const submitDelete = () => {
     setDeleting(true);
@@ -51,29 +49,32 @@ const UserDeletionDialog: FunctionComponent<UserDeletionDialogProps> = ({
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClose}
-      title={t_i18n('Do you want to delete this user?')}
-    >
+    <Dialog open={isOpen} onClose={handleClose} title={t_i18n('Do you want to delete this user?')}>
       <ul>
-        <li>{t_i18n('All notifications, triggers and digests associated with the user will be deleted.')}</li>
-        <li>{t_i18n('All investigations and dashboard where the user is the only admin, will be deleted.')}</li>
-        <li>{t_i18n('All public streams, taxii, csv using this user right to share data will be stopped and turn private. Please update them with a new user to turn them public again.')}</li>
+        <li>
+          {t_i18n(
+            'All notifications, triggers and digests associated with the user will be deleted.',
+          )}
+        </li>
+        <li>
+          {t_i18n(
+            'All investigations and dashboard where the user is the only admin, will be deleted.',
+          )}
+        </li>
+        <li>
+          {t_i18n(
+            'All public streams, taxii, csv using this user right to share data will be stopped and turn private. Please update them with a new user to turn them public again.',
+          )}
+        </li>
       </ul>
-      {t_i18n('If you want to keep the associated information, we recommend deactivating the user instead.')}
+      {t_i18n(
+        'If you want to keep the associated information, we recommend deactivating the user instead.',
+      )}
       <DialogActions>
-        <Button
-          variant="secondary"
-          onClick={handleClose}
-          disabled={deleting}
-        >
+        <Button variant="secondary" onClick={handleClose} disabled={deleting}>
           {t_i18n('Cancel')}
         </Button>
-        <Button
-          onClick={submitDelete}
-          disabled={deleting}
-        >
+        <Button onClick={submitDelete} disabled={deleting}>
           {t_i18n('Delete')}
         </Button>
       </DialogActions>

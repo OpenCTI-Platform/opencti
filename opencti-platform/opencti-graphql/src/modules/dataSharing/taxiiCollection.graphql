@@ -49,6 +49,7 @@ extend type Query {
   ): TaxiiCollectionConnection @public # Code protected
 }
 extend type Mutation {
-  taxiiCollectionAdd(input: TaxiiCollectionAddInput!): TaxiiCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  taxiiCollectionAdd(input: TaxiiCollectionAddInput!): TaxiiCollection
+    @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   taxiiCollectionEdit(id: ID!): TaxiiCollectionEditMutations @auth(for: [TAXIIAPI_SETCOLLECTIONS])
 }

@@ -70,9 +70,7 @@ interface SecurityPlatformProps {
   securityPlatformData: SecurityPlatform_securityPlatform$key;
 }
 
-const SecurityPlatform: React.FC<SecurityPlatformProps> = ({
-  securityPlatformData,
-}) => {
+const SecurityPlatform: React.FC<SecurityPlatformProps> = ({ securityPlatformData }) => {
   useInitCreateRelationshipContext();
 
   const securityPlatform = useFragment<SecurityPlatform_securityPlatform$key>(
@@ -81,11 +79,7 @@ const SecurityPlatform: React.FC<SecurityPlatformProps> = ({
   );
   return (
     <div data-testid="security-platform-details-page">
-      <Grid
-        container={true}
-        spacing={3}
-        style={{ marginBottom: 20 }}
-      >
+      <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
         <Grid item xs={6}>
           <SecurityPlatformDetails securityPlatform={securityPlatform} />
         </Grid>
@@ -105,14 +99,10 @@ const SecurityPlatform: React.FC<SecurityPlatformProps> = ({
           />
         </Grid>
         <Grid item xs={6}>
-          <StixCoreObjectExternalReferences
-            stixCoreObjectId={securityPlatform.id}
-          />
+          <StixCoreObjectExternalReferences stixCoreObjectId={securityPlatform.id} />
         </Grid>
         <Grid item xs={6}>
-          <StixCoreObjectLatestHistory
-            stixCoreObjectId={securityPlatform.id}
-          />
+          <StixCoreObjectLatestHistory stixCoreObjectId={securityPlatform.id} />
         </Grid>
         <Grid item xs={12}>
           <StixCoreObjectOrStixCoreRelationshipNotes

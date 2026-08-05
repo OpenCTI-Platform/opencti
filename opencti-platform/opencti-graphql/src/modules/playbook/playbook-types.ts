@@ -51,7 +51,11 @@ export interface NodeInstance<T extends object> {
   configuration: T;
 }
 
-export interface PlaybookExecution { output_port: string | undefined; forceBundleTracking?: boolean; bundle: StixBundle }
+export interface PlaybookExecution {
+  output_port: string | undefined;
+  forceBundleTracking?: boolean;
+  bundle: StixBundle;
+}
 
 export interface PlaybookExecutionStep<T extends object> {
   component: PlaybookComponent<T>;
@@ -70,11 +74,11 @@ export interface ExecutorParameters<T extends object> {
   event?: StreamDataEvent;
 }
 
-export type PlaybookCategory
-  = | 'start_playbook'
-    | 'transform_and_enrich'
-    | 'share_and_access'
-    | 'end_playbook';
+export type PlaybookCategory =
+  | 'start_playbook'
+  | 'transform_and_enrich'
+  | 'share_and_access'
+  | 'end_playbook';
 
 export interface PlaybookComponent<T extends object> {
   id: string;
@@ -191,4 +195,5 @@ export const playbookBundleElementsToApply = {
 } as const;
 
 type PlaybookElementsToApplyKey = keyof typeof playbookBundleElementsToApply;
-export type PlaybookBundleElementsToApply = (typeof playbookBundleElementsToApply)[PlaybookElementsToApplyKey]['value'];
+export type PlaybookBundleElementsToApply =
+  (typeof playbookBundleElementsToApply)[PlaybookElementsToApplyKey]['value'];

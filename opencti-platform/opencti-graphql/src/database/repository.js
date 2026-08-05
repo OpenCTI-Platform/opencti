@@ -1,8 +1,18 @@
 import { filter, includes, map, pipe } from 'ramda';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_SYNC, ENTITY_TYPE_USER } from '../schema/internalObject';
+import {
+  ENTITY_TYPE_CONNECTOR,
+  ENTITY_TYPE_CONNECTOR_MANAGER,
+  ENTITY_TYPE_SYNC,
+  ENTITY_TYPE_USER,
+} from '../schema/internalObject';
 import { BACKGROUND_TASK_QUEUES, connectorConfig } from './rabbitmq';
 import { sinceNowInMinutes } from '../utils/format';
-import { CONNECTOR_INTERNAL_ANALYSIS, CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_IMPORT_FILE, CONNECTOR_INTERNAL_NOTIFICATION } from '../schema/general';
+import {
+  CONNECTOR_INTERNAL_ANALYSIS,
+  CONNECTOR_INTERNAL_ENRICHMENT,
+  CONNECTOR_INTERNAL_IMPORT_FILE,
+  CONNECTOR_INTERNAL_NOTIFICATION,
+} from '../schema/general';
 import { fullEntitiesList, topEntitiesList, storeLoadById } from './middleware-loader';
 import { isEmptyField, isNotEmptyField } from './utils';
 import { BUILTIN_NOTIFIERS_CONNECTORS } from '../modules/notifier/notifier-statics';
@@ -39,7 +49,8 @@ export const getConnectorJwks = async () => {
 export const issueConnectorJWT = async () => {
   const keyPair = await getJWTKeyPair();
   const jwt = new SignJWT({ iss: 'opencti', sub: 'connector' })
-    .setIssuedAt().setExpirationTime('1h');
+    .setIssuedAt()
+    .setExpirationTime('1h');
   return await keyPair.signJwt(jwt);
 };
 
@@ -58,7 +69,9 @@ export const completeConnector = (connector) => {
     }
 
     completed.config = connectorConfig(connector.id, connector.listen_callback_uri);
-    completed.active = connector.built_in ? (connector.active ?? true) : (sinceNowInMinutes(connector.updated_at) < 5);
+    completed.active = connector.built_in
+      ? (connector.active ?? true)
+      : sinceNowInMinutes(connector.updated_at) < 5;
     return completed;
   }
   return null;
@@ -66,8 +79,9 @@ export const completeConnector = (connector) => {
 
 export const connector = async (context, user, id) => {
   // Database connector
-  const element = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR)
-    .then((conn) => completeConnector(conn));
+  const element = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((conn) =>
+    completeConnector(conn),
+  );
   if (isEmptyField(element)) {
     // Built in connector
     const conn = await builtInConnector(context, user, id);
@@ -116,7 +130,9 @@ const computeConnectorTokenConfiguration = async (context, cn) => {
     const targetUser = platformUsers.get(cn.connector_user_id);
     // If token is empty, remove / generate a new one
     const COMPOSER_TOKEN = 'Composer managed token';
-    const currentToken = (targetUser.api_tokens ?? []).find((token) => token.name === COMPOSER_TOKEN);
+    const currentToken = (targetUser.api_tokens ?? []).find(
+      (token) => token.name === COMPOSER_TOKEN,
+    );
     // Get encrypted token in redis
     const redisClient = getClientBase();
     // Composer key must be base on user to handle correct user change
@@ -128,11 +144,18 @@ const computeConnectorTokenConfiguration = async (context, cn) => {
       if (currentToken) {
         await revokeUserTokenByAdmin(context, SYSTEM_USER, cn.connector_user_id, currentToken.id);
       }
-      const { plaintext_token } = await addUserTokenByAdmin(context, SYSTEM_USER, cn.connector_user_id, { name: COMPOSER_TOKEN });
+      const { plaintext_token } = await addUserTokenByAdmin(
+        context,
+        SYSTEM_USER,
+        cn.connector_user_id,
+        { name: COMPOSER_TOKEN },
+      );
       // Get the public key of the connector manager
       // TODO Currently connector manager is a list but not used correctly
       // We need to adapt if we want to handle correctly multiple managers
-      const connectorManagers = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_CONNECTOR_MANAGER]);
+      const connectorManagers = await fullEntitiesList(context, SYSTEM_USER, [
+        ENTITY_TYPE_CONNECTOR_MANAGER,
+      ]);
       const { public_key } = connectorManagers[0];
       // Encrypt the token with the public key of the connector manager
       encryptedToken = encryptValue(public_key, plaintext_token);
@@ -154,16 +177,24 @@ const computeConnectorTokenConfiguration = async (context, cn) => {
   }
 };
 
-export const computeManagerConnectorConfiguration = async (context, _, cn, { withEncrypted = false } = {}) => {
+export const computeManagerConnectorConfiguration = async (
+  context,
+  _,
+  cn,
+  { withEncrypted = false } = {},
+) => {
   if (!cn.catalog_id) {
     return [];
   }
   const currentContractConfig = structuredClone(cn.manager_contract_configuration) ?? [];
-  const contract = withEncrypted ? currentContractConfig : currentContractConfig.filter((c) => !c.encrypted);
+  const contract = withEncrypted
+    ? currentContractConfig
+    : currentContractConfig.filter((c) => !c.encrypted);
   contract.push({ key: 'CONNECTOR_ID', value: cn.internal_id });
   contract.push({ key: 'CONNECTOR_NAME', value: cn.name });
   contract.push({ key: 'CONNECTOR_TYPE', value: cn.connector_type });
-  if (withEncrypted) { // Inject OPENCTI_TOKEN variable when needed
+  if (withEncrypted) {
+    // Inject OPENCTI_TOKEN variable when needed
     const encryptedToken = await computeConnectorTokenConfiguration(context, cn);
     contract.push({ key: 'OPENCTI_TOKEN', value: encryptedToken, encrypted: true });
   }
@@ -176,12 +207,16 @@ export const computeManagerConnectorImage = async (cn) => {
   const contracts = await getSupportedContractsByImage();
   const contract = contracts.get(cn.manager_contract_image);
   if (!contract) return '';
-  return isNotEmptyField(cn.manager_contract_image) ? `${cn.manager_contract_image}:${contract.container_version}` : null;
+  return isNotEmptyField(cn.manager_contract_image)
+    ? `${cn.manager_contract_image}:${contract.container_version}`
+    : null;
 };
 
 export const computeManagerContractHash = async (context, user, cn) => {
   const image = await computeManagerConnectorImage(cn);
-  const config = await computeManagerConnectorConfiguration(context, user, cn, { withEncrypted: true });
+  const config = await computeManagerConnectorConfiguration(context, user, cn, {
+    withEncrypted: true,
+  });
   const subHash = config.map((c) => `${c.key}|${c.value}`);
   return shortHash({ image, subHash, state: cn.connector_state_timestamp });
 };
@@ -255,7 +290,9 @@ export const connectorsForWorker = async (context, user) => {
       name: `Playbook ${playbook.internal_id} queue`,
       connector_scope: [],
       config: connectorConfig(playbook.internal_id),
-      connector_priority_group: playbookRealtimePriority ? ConnectorPriorityGroup.Realtime : ConnectorPriorityGroup.Default,
+      connector_priority_group: playbookRealtimePriority
+        ? ConnectorPriorityGroup.Realtime
+        : ConnectorPriorityGroup.Default,
       active: true,
     });
   }
@@ -270,7 +307,9 @@ export const connectorsForWorker = async (context, user) => {
     });
   }
   // Expose pirs
-  const pirs = await fullEntitiesList(context, user, [ENTITY_TYPE_PIR], { includeAuthorities: true });
+  const pirs = await fullEntitiesList(context, user, [ENTITY_TYPE_PIR], {
+    includeAuthorities: true,
+  });
   for (let i = 0; i < pirs.length; i += 1) {
     const pir = pirs[i];
     registeredConnectors.push({
@@ -289,24 +328,50 @@ export const connectorsForPlaybook = async (context, user) => {
   return registeredConnectors.filter((r) => r.playbook_compatible === true);
 };
 
-const filterConnectors = (instances, type, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {
+const filterConnectors = (
+  instances,
+  type,
+  scope,
+  onlyAlive = false,
+  onlyAuto = false,
+  onlyContextual = false,
+) => {
   return pipe(
     filter((c) => c.connector_type === type),
     filter((c) => (onlyAlive ? c.active === true : true)),
     filter((c) => (onlyAuto ? c.auto === true : true)),
     filter((c) => (onlyContextual ? c.only_contextual === true : true)),
-    filter((c) => (scope && c.connector_scope && c.connector_scope.length > 0
-      ? includes(scope.toLowerCase(), map((s) => s.toLowerCase(), c.connector_scope))
-      : true)),
+    filter((c) =>
+      scope && c.connector_scope && c.connector_scope.length > 0
+        ? includes(
+            scope.toLowerCase(),
+            map((s) => s.toLowerCase(), c.connector_scope),
+          )
+        : true,
+    ),
   )(instances);
 };
 
-export const connectorsFor = async (context, user, type, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {
+export const connectorsFor = async (
+  context,
+  user,
+  type,
+  scope,
+  onlyAlive = false,
+  onlyAuto = false,
+  onlyContextual = false,
+) => {
   const connects = await connectors(context, user);
   return filterConnectors(connects, type, scope, onlyAlive, onlyAuto, onlyContextual);
 };
 
-export const connectorsForEnrichment = async (context, user, scope, onlyAlive = false, onlyAuto = false) => {
+export const connectorsForEnrichment = async (
+  context,
+  user,
+  scope,
+  onlyAlive = false,
+  onlyAuto = false,
+) => {
   return connectorsFor(context, user, CONNECTOR_INTERNAL_ENRICHMENT, scope, onlyAlive, onlyAuto);
 };
 
@@ -314,15 +379,60 @@ export const connectorsEnrichment = (instances, scope, onlyAlive = false, onlyAu
   return filterConnectors(instances, CONNECTOR_INTERNAL_ENRICHMENT, scope, onlyAlive, onlyAuto);
 };
 
-export const connectorsForImport = async (context, user, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {
-  return connectorsFor(context, user, CONNECTOR_INTERNAL_IMPORT_FILE, scope, onlyAlive, onlyAuto, onlyContextual);
+export const connectorsForImport = async (
+  context,
+  user,
+  scope,
+  onlyAlive = false,
+  onlyAuto = false,
+  onlyContextual = false,
+) => {
+  return connectorsFor(
+    context,
+    user,
+    CONNECTOR_INTERNAL_IMPORT_FILE,
+    scope,
+    onlyAlive,
+    onlyAuto,
+    onlyContextual,
+  );
 };
 
-export const connectorsForAnalysis = async (context, user, scope = null, onlyAlive = true, onlyAuto = false, onlyContextual = false) => {
-  return connectorsFor(context, user, CONNECTOR_INTERNAL_ANALYSIS, scope, onlyAlive, onlyAuto, onlyContextual);
+export const connectorsForAnalysis = async (
+  context,
+  user,
+  scope = null,
+  onlyAlive = true,
+  onlyAuto = false,
+  onlyContextual = false,
+) => {
+  return connectorsFor(
+    context,
+    user,
+    CONNECTOR_INTERNAL_ANALYSIS,
+    scope,
+    onlyAlive,
+    onlyAuto,
+    onlyContextual,
+  );
 };
 
-export const connectorsForNotification = async (context, user, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {
-  const notificationConnectors = await connectorsFor(context, user, CONNECTOR_INTERNAL_NOTIFICATION, scope, onlyAlive, onlyAuto, onlyContextual);
+export const connectorsForNotification = async (
+  context,
+  user,
+  scope,
+  onlyAlive = false,
+  onlyAuto = false,
+  onlyContextual = false,
+) => {
+  const notificationConnectors = await connectorsFor(
+    context,
+    user,
+    CONNECTOR_INTERNAL_NOTIFICATION,
+    scope,
+    onlyAlive,
+    onlyAuto,
+    onlyContextual,
+  );
   return [...notificationConnectors, ...Object.values(BUILTIN_NOTIFIERS_CONNECTORS)];
 };

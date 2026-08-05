@@ -55,11 +55,7 @@ const usePublicDashboardWidgets = (uriKey: string, config?: DashboardConfig) => 
   const entityWidget = (widget: Widget) => {
     switch (widget.type) {
       case 'bookmark':
-        return (
-          <Card>
-            {t_i18n('Bookmarks are not supported in public dashboards')}
-          </Card>
-        );
+        return <Card>{t_i18n('Bookmarks are not supported in public dashboards')}</Card>;
       case 'number':
         return (
           <PublicStixCoreObjectsNumber
@@ -191,9 +187,7 @@ const usePublicDashboardWidgets = (uriKey: string, config?: DashboardConfig) => 
           />
         );
       default:
-        return (
-          <Card>{t_i18n('Not implemented yet')}</Card>
-        );
+        return <Card>{t_i18n('Not implemented yet')}</Card>;
     }
   };
 
@@ -345,35 +339,23 @@ const usePublicDashboardWidgets = (uriKey: string, config?: DashboardConfig) => 
           />
         );
       default:
-        return (
-          <Card>{t_i18n('Not implemented yet')}</Card>
-        );
+        return <Card>{t_i18n('Not implemented yet')}</Card>;
     }
   };
 
   const auditWidget = (widget: Widget) => {
     switch (widget.type) {
       default:
-        return (
-          <Card>
-            {t_i18n('Audits are not supported in public dashboards')}
-          </Card>
-        );
+        return <Card>{t_i18n('Audits are not supported in public dashboards')}</Card>;
     }
   };
 
   const rawWidget = (widget: Widget) => {
     switch (widget.type) {
       case 'text':
-        return (
-          <WidgetText
-            parameters={widget.parameters}
-          />
-        );
+        return <WidgetText parameters={widget.parameters} />;
       default:
-        return (
-          <Card>{t_i18n('Not implemented yet')}</Card>
-        );
+        return <Card>{t_i18n('Not implemented yet')}</Card>;
     }
   };
 

@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { WidgetDataSelection } from '../../../../utils/widget/widget';
-import { buildStixRelationshipsTimelineData, RELATIONSHIP_TIMELINE_DATE_KEY } from './StixRelationshipsTimeline';
+import {
+  buildStixRelationshipsTimelineData,
+  RELATIONSHIP_TIMELINE_DATE_KEY,
+} from './StixRelationshipsTimeline';
 
 describe('buildStixRelationshipsTimelineData', () => {
   it('uses relationship date attribute on relDate without overriding remote node created field', () => {

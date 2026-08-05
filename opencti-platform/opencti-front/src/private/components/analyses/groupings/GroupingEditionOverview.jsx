@@ -19,7 +19,11 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 
 export const groupingMutationFieldPatch = graphql`
   mutation GroupingEditionOverviewFieldPatchMutation(
@@ -42,10 +46,7 @@ export const groupingMutationFieldPatch = graphql`
 `;
 
 export const groupingEditionOverviewFocus = graphql`
-  mutation GroupingEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation GroupingEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     groupingContextPatch(id: $id, input: $input) {
       id
     }
@@ -71,11 +72,7 @@ const groupingMutationRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    groupingRelationDelete(
-      id: $id
-      toId: $toId
-      relationship_type: $relationship_type
-    ) {
+    groupingRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
       ...GroupingEditionOverview_grouping
     }
   }
@@ -87,16 +84,19 @@ const GroupingEditionOverviewComponent = (props) => {
   const { grouping, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
   const { mandatoryAttributes } = useIsMandatoryAttribute(GROUPING_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    confidence: Yup.number().nullable(),
-    context: Yup.string(),
-    description: Yup.string().nullable(),
-    references: Yup.array(),
-    x_opencti_workflow_id: Yup.object(),
-    createdBy: Yup.object().nullable(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      confidence: Yup.number().nullable(),
+      context: Yup.string(),
+      description: Yup.string().nullable(),
+      references: Yup.array(),
+      x_opencti_workflow_id: Yup.object(),
+      createdBy: Yup.object().nullable(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
+  );
   const groupingValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
   const queries = {
     fieldPatch: groupingMutationFieldPatch,
@@ -104,12 +104,7 @@ const GroupingEditionOverviewComponent = (props) => {
     relationDelete: groupingMutationRelationDelete,
     editionFocus: groupingEditionOverviewFocus,
   };
-  const editor = useFormEditor(
-    grouping,
-    enableReferences,
-    queries,
-    groupingValidator,
-  );
+  const editor = useFormEditor(grouping, enableReferences, queries, groupingValidator);
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
@@ -130,8 +125,7 @@ const GroupingEditionOverviewComponent = (props) => {
       variables: {
         id: grouping.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       onCompleted: () => {
@@ -185,14 +179,7 @@ const GroupingEditionOverviewComponent = (props) => {
       validateOnBlur={true}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <div>
           <Form>
             <AlertConfidenceForEntity entity={grouping} />
@@ -200,14 +187,12 @@ const GroupingEditionOverviewComponent = (props) => {
               component={TextField}
               name="name"
               label={t_i18n('Name')}
-              required={(mandatoryAttributes.includes('name'))}
+              required={mandatoryAttributes.includes('name')}
               fullWidth={true}
               onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               askAi={true}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="name" />
-              }
+              helperText={<SubscriptionFocus context={context} fieldName="name" />}
             />
             <ConfidenceField
               onFocus={editor.changeFocus}
@@ -221,7 +206,7 @@ const GroupingEditionOverviewComponent = (props) => {
               label={t_i18n('Context')}
               type="grouping-context-ov"
               name="context"
-              required={(mandatoryAttributes.includes('context'))}
+              required={mandatoryAttributes.includes('context')}
               onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               onChange={(name, value) => setFieldValue(name, value)}
@@ -234,7 +219,7 @@ const GroupingEditionOverviewComponent = (props) => {
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
-              required={(mandatoryAttributes.includes('description'))}
+              required={mandatoryAttributes.includes('description')}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -252,34 +237,24 @@ const GroupingEditionOverviewComponent = (props) => {
                 onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
-                helpertext={(
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="x_opencti_workflow_id"
-                  />
-                )}
+                helpertext={
+                  <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
+                }
               />
             )}
             <CreatedByField
               name="createdBy"
-              required={(mandatoryAttributes.includes('createdBy'))}
+              required={mandatoryAttributes.includes('createdBy')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
-              helpertext={
-                <SubscriptionFocus context={context} fieldName="createdBy" />
-              }
+              helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
               onChange={editor.changeCreated}
             />
             <ObjectMarkingField
               name="objectMarking"
-              required={(mandatoryAttributes.includes('objectMarking'))}
+              required={mandatoryAttributes.includes('objectMarking')}
               style={fieldSpacingContainerStyle}
-              helpertext={(
-                <SubscriptionFocus
-                  context={context}
-                  fieldname="objectMarking"
-                />
-              )}
+              helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
               setFieldValue={setFieldValue}
               onChange={editor.changeMarking}
             />

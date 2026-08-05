@@ -45,11 +45,7 @@ const WidgetRenderContent = ({
     return <Loader variant={LoaderVariant.inElement} />;
   }
 
-  return (
-    <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      {children}
-    </Suspense>
-  );
+  return <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>{children}</Suspense>;
 };
 
 export default WidgetRenderContent;

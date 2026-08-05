@@ -27,7 +27,12 @@ import {
   isStixDomainObjectContainer,
   isStixDomainObjectLocation,
 } from './stixDomainObject';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from './stixMetaObject';
+import {
+  ENTITY_TYPE_EXTERNAL_REFERENCE,
+  ENTITY_TYPE_KILL_CHAIN_PHASE,
+  ENTITY_TYPE_LABEL,
+  ENTITY_TYPE_MARKING_DEFINITION,
+} from './stixMetaObject';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from './internalObject';
 import { schemaTypesDefinition } from './schema-types';
@@ -712,7 +717,12 @@ export const createdBy: RefAttribute = {
   label: 'Author',
   datable: false,
   isFilterable: true,
-  toTypes: [ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_IDENTITY_SYSTEM, ENTITY_TYPE_IDENTITY_ORGANIZATION],
+  toTypes: [
+    ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+    ENTITY_TYPE_IDENTITY_SECTOR,
+    ENTITY_TYPE_IDENTITY_SYSTEM,
+    ENTITY_TYPE_IDENTITY_ORGANIZATION,
+  ],
 };
 
 export const objectMarking: RefAttribute = {
@@ -748,7 +758,12 @@ export const objects: RefAttribute = {
   },
   datable: false,
   isFilterable: true,
-  toTypes: [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_REF_RELATIONSHIP, STIX_TYPE_SIGHTING],
+  toTypes: [
+    ABSTRACT_STIX_CORE_OBJECT,
+    ABSTRACT_STIX_CORE_RELATIONSHIP,
+    ABSTRACT_STIX_REF_RELATIONSHIP,
+    STIX_TYPE_SIGHTING,
+  ],
 };
 
 export const objectOrganization: RefAttribute = {
@@ -762,11 +777,14 @@ export const objectOrganization: RefAttribute = {
   multiple: true,
   upsert: true,
   isRefExistingForTypes(this, fromType, toType) {
-    return !(fromType === ENTITY_TYPE_EVENT
-      || fromType === ENTITY_TYPE_IDENTITY_ORGANIZATION
-      || fromType === ENTITY_TYPE_IDENTITY_SECTOR
-      || isStixDomainObjectLocation(fromType))
-    && this.toTypes.includes(toType);
+    return (
+      !(
+        fromType === ENTITY_TYPE_EVENT ||
+        fromType === ENTITY_TYPE_IDENTITY_ORGANIZATION ||
+        fromType === ENTITY_TYPE_IDENTITY_SECTOR ||
+        isStixDomainObjectLocation(fromType)
+      ) && this.toTypes.includes(toType)
+    );
   },
   datable: false,
   isFilterable: true,
@@ -959,13 +977,20 @@ schemaTypesDefinition.register(
   [...STIX_REF_RELATIONSHIPS, ...META_RELATIONS].map((arr) => arr.databaseName),
 );
 
-export const isStixRefRelationship = (type: string) => schemaTypesDefinition.isTypeIncludedIn(type, ABSTRACT_STIX_REF_RELATIONSHIP) || type === ABSTRACT_STIX_REF_RELATIONSHIP;
+export const isStixRefRelationship = (type: string) =>
+  schemaTypesDefinition.isTypeIncludedIn(type, ABSTRACT_STIX_REF_RELATIONSHIP) ||
+  type === ABSTRACT_STIX_REF_RELATIONSHIP;
 
-const isStixMetaRelationship = (type: string) => META_RELATIONS.some((ref) => ref.databaseName === type);
+const isStixMetaRelationship = (type: string) =>
+  META_RELATIONS.some((ref) => ref.databaseName === type);
 
-export const isStixRefUnidirectionalRelationship = (type: string) => isStixMetaRelationship(type) && type !== RELATION_OBJECT;
+export const isStixRefUnidirectionalRelationship = (type: string) =>
+  isStixMetaRelationship(type) && type !== RELATION_OBJECT;
 
-export const buildRelationRef = (relationRef: Omit<RefAttribute, 'isRefExistingForTypes'>, isRefExistingForTypes: Checker): RefAttribute => {
+export const buildRelationRef = (
+  relationRef: Omit<RefAttribute, 'isRefExistingForTypes'>,
+  isRefExistingForTypes: Checker,
+): RefAttribute => {
   return {
     ...relationRef,
     isRefExistingForTypes,
@@ -973,4 +998,8 @@ export const buildRelationRef = (relationRef: Omit<RefAttribute, 'isRefExistingF
 };
 
 // retro-compatibility with cyber-observable-relationship
-export const STIX_REF_RELATIONSHIP_TYPES = [ABSTRACT_STIX_META_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, ABSTRACT_STIX_REF_RELATIONSHIP];
+export const STIX_REF_RELATIONSHIP_TYPES = [
+  ABSTRACT_STIX_META_RELATIONSHIP,
+  ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
+  ABSTRACT_STIX_REF_RELATIONSHIP,
+];

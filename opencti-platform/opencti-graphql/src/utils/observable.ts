@@ -280,10 +280,7 @@ export const detectObservableType = (value: string): string => {
     // Autonomous System
     {
       type: ENTITY_AUTONOMOUS_SYSTEM,
-      patterns: [
-        /^AS\d{1,10}$/i,
-        /^ASN?\s*\d{1,10}$/i,
-      ],
+      patterns: [/^AS\d{1,10}$/i, /^ASN?\s*\d{1,10}$/i],
       priority: 8,
     },
 
@@ -303,7 +300,9 @@ export const detectObservableType = (value: string): string => {
   const sortedPatterns = observablePatterns.sort((a, b) => (b.priority || 0) - (a.priority || 0));
 
   // Test each pattern against the value
-  const matchedPattern = sortedPatterns.find((observablePattern) => observablePattern.patterns.some((pattern) => pattern.test(trimmedValue)));
+  const matchedPattern = sortedPatterns.find((observablePattern) =>
+    observablePattern.patterns.some((pattern) => pattern.test(trimmedValue)),
+  );
   if (matchedPattern) {
     return matchedPattern.type;
   }

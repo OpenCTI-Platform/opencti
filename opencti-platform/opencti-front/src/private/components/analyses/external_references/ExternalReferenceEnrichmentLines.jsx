@@ -42,10 +42,7 @@ const externalReferenceEnrichmentLinesDeleteMutation = graphql`
 `;
 
 const externalReferenceEnrichmentLinesAskEnrich = graphql`
-  mutation ExternalReferenceEnrichmentLinesMutation(
-    $id: ID!
-    $connectorId: ID!
-  ) {
+  mutation ExternalReferenceEnrichmentLinesMutation($id: ID!, $connectorId: ID!) {
     externalReferenceEdit(id: $id) {
       askEnrichment(connectorId: $connectorId) {
         id
@@ -55,10 +52,7 @@ const externalReferenceEnrichmentLinesAskEnrich = graphql`
 `;
 
 const externalReferenceEnrichmentLinesAskJob = graphql`
-  mutation ExternalReferenceEnrichmentLinesAskJobMutation(
-    $fileName: ID!
-    $connectorId: String
-  ) {
+  mutation ExternalReferenceEnrichmentLinesAskJobMutation($fileName: ID!, $connectorId: String) {
     askJobImport(fileName: $fileName, connectorId: $connectorId) {
       id
     }
@@ -90,10 +84,10 @@ const ExternalReferenceEnrichment = (props) => {
   const theme = useTheme();
   const { externalReference, connectorsForImport, relay, classes, t, nsdt } = props;
   const { id } = externalReference;
-  const file = externalReference.importFiles
-    && externalReference.importFiles.edges.length > 0
-    ? externalReference.importFiles.edges[0].node
-    : null;
+  const file =
+    externalReference.importFiles && externalReference.importFiles.edges.length > 0
+      ? externalReference.importFiles.edges[0].node
+      : null;
   const askJob = (connectorId) => {
     commitMutation({
       mutation: externalReferenceEnrichmentLinesAskJob,
@@ -128,30 +122,26 @@ const ExternalReferenceEnrichment = (props) => {
       subscription.unsubscribe();
     };
   });
-  const connectors = file && file.metaData
-    ? R.filter(
-        (n) => R.includes(file.metaData.mimetype, n.connector_scope)
-          || n.connector_scope.length === 0,
-        connectorsForImport,
-      )
-    : [];
-  const allConnectors = R.sortBy(R.prop('name'), [
-    ...externalReference.connectors,
-    ...connectors,
-  ]);
+  const connectors =
+    file && file.metaData
+      ? R.filter(
+          (n) =>
+            R.includes(file.metaData.mimetype, n.connector_scope) || n.connector_scope.length === 0,
+          connectorsForImport,
+        )
+      : [];
+  const allConnectors = R.sortBy(R.prop('name'), [...externalReference.connectors, ...connectors]);
   return (
     <List>
       {allConnectors.length > 0 ? (
         allConnectors.map((connector) => {
-          const jobs = connector.connector_type === 'INTERNAL_IMPORT_FILE'
-            ? R.filter(
-                (n) => n.connector.id === connector.id,
-                R.propOr([], 'works', file),
-              )
-            : R.filter(
-                (n) => n.connector && n.connector.id === connector.id,
-                R.propOr([], 'jobs', externalReference),
-              );
+          const jobs =
+            connector.connector_type === 'INTERNAL_IMPORT_FILE'
+              ? R.filter((n) => n.connector.id === connector.id, R.propOr([], 'works', file))
+              : R.filter(
+                  (n) => n.connector && n.connector.id === connector.id,
+                  R.propOr([], 'jobs', externalReference),
+                );
 
           const isRefreshing = R.filter((node) => node.status !== 'complete', jobs).length > 0;
           return (
@@ -159,17 +149,16 @@ const ExternalReferenceEnrichment = (props) => {
               <ListItem
                 divider={true}
                 disablePadding
-                secondaryAction={(
+                secondaryAction={
                   <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
                     <div style={{ right: 0 }}>
-                      <Tooltip
-                        title={t('Refresh the knowledge using this connector')}
-                      >
+                      <Tooltip title={t('Refresh the knowledge using this connector')}>
                         <IconButton
                           disabled={!connector.active || isRefreshing}
-                          onClick={() => (connector.connector_type === 'INTERNAL_IMPORT_FILE'
-                            ? askJob(connector.id)
-                            : askEnrich(connector.id))
+                          onClick={() =>
+                            connector.connector_type === 'INTERNAL_IMPORT_FILE'
+                              ? askJob(connector.id)
+                              : askEnrich(connector.id)
                           }
                           size="default"
                         >
@@ -178,11 +167,9 @@ const ExternalReferenceEnrichment = (props) => {
                       </Tooltip>
                     </div>
                   </Security>
-                )}
+                }
               >
-                <ListItemButton
-                  classes={{ root: classes.item }}
-                >
+                <ListItemButton classes={{ root: classes.item }}>
                   <Tooltip
                     title={
                       connector.active
@@ -192,7 +179,9 @@ const ExternalReferenceEnrichment = (props) => {
                   >
                     <ListItemIcon
                       style={{
-                        color: connector.active ? theme.palette.success.main : theme.palette.error.main,
+                        color: connector.active
+                          ? theme.palette.success.main
+                          : theme.palette.error.main,
                       }}
                     >
                       <Extension />
@@ -231,7 +220,7 @@ const ExternalReferenceEnrichment = (props) => {
                       <ListItem
                         dense={true}
                         divider={true}
-                        secondaryAction={(
+                        secondaryAction={
                           <div style={{ right: 0 }}>
                             <IconButton
                               aria-label={t('delete')}
@@ -240,11 +229,9 @@ const ExternalReferenceEnrichment = (props) => {
                               <Delete />
                             </IconButton>
                           </div>
-                        )}
+                        }
                       >
-                        <ListItemButton
-                          classes={{ root: classes.nested }}
-                        >
+                        <ListItemButton classes={{ root: classes.nested }}>
                           <ListItemIcon>
                             {isFail && (
                               <Warning
@@ -262,8 +249,8 @@ const ExternalReferenceEnrichment = (props) => {
                                 }}
                               />
                             )}
-                            {((!isFail && work.status === 'wait')
-                              || work.status === 'progress') && (
+                            {((!isFail && work.status === 'wait') ||
+                              work.status === 'progress') && (
                               <CircularProgress
                                 size={20}
                                 thickness={2}
@@ -282,9 +269,7 @@ const ExternalReferenceEnrichment = (props) => {
           );
         })
       ) : (
-        <div className={classes.noResult}>
-          {t('No connectors for this type of entity')}
-        </div>
+        <div className={classes.noResult}>{t('No connectors for this type of entity')}</div>
       )}
     </List>
   );
@@ -338,7 +323,4 @@ const ExternalReferenceEnrichmentLinesFragment = createRefetchContainer(
   externalReferenceEnrichmentLinesQuery,
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(ExternalReferenceEnrichmentLinesFragment);
+export default R.compose(inject18n, withStyles(styles))(ExternalReferenceEnrichmentLinesFragment);

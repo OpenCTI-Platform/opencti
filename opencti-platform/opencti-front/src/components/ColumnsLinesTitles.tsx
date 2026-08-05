@@ -63,10 +63,7 @@ const ColumnsLinesTitles: FunctionComponent<TriggerLineTitlesProps> = ({
   ) => {
     if (isSortable) {
       const orderComponent = orderAsc ? (
-        <ArrowDropDown
-          classes={{ root: classes.sortIcon }}
-          style={{ top: 0 }}
-        />
+        <ArrowDropDown classes={{ root: classes.sortIcon }} style={{ top: 0 }} />
       ) : (
         <ArrowDropUp classes={{ root: classes.sortIcon }} style={{ top: 0 }} />
       );
@@ -92,22 +89,22 @@ const ColumnsLinesTitles: FunctionComponent<TriggerLineTitlesProps> = ({
     <ListItem
       classes={{ root: classes.item }}
       divider={false}
-      secondaryAction={secondaryAction && (
-        <> &nbsp; </>
-      )}
+      secondaryAction={secondaryAction && <> &nbsp; </>}
     >
       <ListItemIcon> &nbsp; </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <>
-            {toPairs(dataColumns).map((dataColumn) => renderHeaderElement(
-              dataColumn[0],
-              dataColumn[1].label,
-              dataColumn[1].width,
-              dataColumn[1].isSortable,
-            ))}
+            {toPairs(dataColumns).map((dataColumn) =>
+              renderHeaderElement(
+                dataColumn[0],
+                dataColumn[1].label,
+                dataColumn[1].width,
+                dataColumn[1].isSortable,
+              ),
+            )}
           </>
-        )}
+        }
       />
     </ListItem>
   );

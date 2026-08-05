@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { RELATION_ATTRIBUTED_TO, RELATION_TARGETS } from '../../schema/stixCoreRelationship';
 import def from './AttributionTargetsDefinition';
 import buildRelationWithRelationRule from '../relationWithRelationBuilder';

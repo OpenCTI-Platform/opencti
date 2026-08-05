@@ -1,10 +1,17 @@
 import type { Resolvers } from '../../../generated/graphql';
-import { addDecayExclusionRule, deleteDecayExclusionRule, fieldPatchDecayExclusionRule, findDecayExclusionRulePaginated, findById } from './decayExclusionRule-domain';
+import {
+  addDecayExclusionRule,
+  deleteDecayExclusionRule,
+  fieldPatchDecayExclusionRule,
+  findDecayExclusionRulePaginated,
+  findById,
+} from './decayExclusionRule-domain';
 
 const decayExclusionRuleResolver: Resolvers = {
   Query: {
     decayExclusionRule: (_, { id }, context) => findById(context, context.user, id),
-    decayExclusionRules: (_, args, context) => findDecayExclusionRulePaginated(context, context.user, args),
+    decayExclusionRules: (_, args, context) =>
+      findDecayExclusionRulePaginated(context, context.user, args),
   },
   Mutation: {
     decayExclusionRuleAdd: (_, { input }, context) => {

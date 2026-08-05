@@ -10,10 +10,7 @@ import { monthsAgo, now } from '../../../utils/Time';
  * would defeat the variables-equality guard in usePublicDashboardViz and
  * relaunch the widget query on every render.
  */
-const usePublicWidgetDefaultDates = (
-  startDate?: string | null,
-  endDate?: string | null,
-) => {
+const usePublicWidgetDefaultDates = (startDate?: string | null, endDate?: string | null) => {
   const defaultStartDate = useMemo(() => monthsAgo(12), []);
   const defaultEndDate = useMemo(() => now(), []);
   return {

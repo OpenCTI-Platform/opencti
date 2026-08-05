@@ -45,8 +45,7 @@ const IngestionCsvEditionContainer: FunctionComponent<IngestionCsvEditionContain
           enableReferences={useIsEnforceReference('IngestionCsv')}
           handleClose={onClose}
         />
-      )
-      }
+      )}
     </Drawer>
   );
 };

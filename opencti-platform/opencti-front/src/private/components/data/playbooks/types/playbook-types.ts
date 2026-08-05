@@ -2,7 +2,9 @@ import { Edge, Node, XYPosition } from 'reactflow';
 import { PlaybookFlow_playbookComponents$data } from '../playbookFlow/__generated__/PlaybookFlow_playbookComponents.graphql';
 import { PlaybookUpdateAction } from '../playbookFlow/playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
 
-export type PlaybookComponents = NonNullable<PlaybookFlow_playbookComponents$data['playbookComponents']>;
+export type PlaybookComponents = NonNullable<
+  PlaybookFlow_playbookComponents$data['playbookComponents']
+>;
 export type PlaybookComponent = NonNullable<PlaybookComponents[number]>;
 
 export enum PlaybookBundleElementsToApply {
@@ -77,6 +79,6 @@ export type PlaybookComponentConfigSchema = {
           };
         };
       };
-    }
+    };
   };
 };

@@ -21,26 +21,40 @@ const entityTypeListValidator = (entityTypeList?: FieldOption[]) => {
   return true;
 };
 
-export const exclusionListUpdateValidator = (t: (n: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  exclusion_list_entity_types: Yup.array().min(1, t('Minimum one entity type')).test(
-    'entityTypeListValidator',
-    t('Incompatible types, can\'t mix IP types with other types'),
-    (value?: FieldOption[]) => entityTypeListValidator(value),
-  ).required(t('This field is required')),
-});
+export const exclusionListUpdateValidator = (t: (n: string) => string) =>
+  Yup.object().shape({
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    exclusion_list_entity_types: Yup.array()
+      .min(1, t('Minimum one entity type'))
+      .test(
+        'entityTypeListValidator',
+        t("Incompatible types, can't mix IP types with other types"),
+        (value?: FieldOption[]) => entityTypeListValidator(value),
+      )
+      .required(t('This field is required')),
+  });
 
-export const exclusionListCreationValidator = (t: (value: string) => string, isCreatedWithFile: boolean) => {
+export const exclusionListCreationValidator = (
+  t: (value: string) => string,
+  isCreatedWithFile: boolean,
+) => {
   return Yup.object().shape({
     name: Yup.string().trim().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
-    exclusion_list_entity_types: Yup.array().min(1, t('Minimum one entity type')).test(
-      'entityTypeListValidator',
-      t('Incompatible types, can\'t mix IP types with other types'),
-      (value?: FieldOption[]) => entityTypeListValidator(value),
-    ).required(t('This field is required')),
-    file: isCreatedWithFile ? Yup.mixed().required(t('This field is required')) : Yup.mixed().nullable(),
-    content: isCreatedWithFile ? Yup.string().nullable() : Yup.string().required(t('This field is required')),
+    exclusion_list_entity_types: Yup.array()
+      .min(1, t('Minimum one entity type'))
+      .test(
+        'entityTypeListValidator',
+        t("Incompatible types, can't mix IP types with other types"),
+        (value?: FieldOption[]) => entityTypeListValidator(value),
+      )
+      .required(t('This field is required')),
+    file: isCreatedWithFile
+      ? Yup.mixed().required(t('This field is required'))
+      : Yup.mixed().nullable(),
+    content: isCreatedWithFile
+      ? Yup.string().nullable()
+      : Yup.string().required(t('This field is required')),
   });
 };

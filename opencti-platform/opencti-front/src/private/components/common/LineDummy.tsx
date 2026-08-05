@@ -41,24 +41,15 @@ const LineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
-                key={value.label}
-                className={classes.bodyItem}
-                style={{ width: value.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height={20}
-                />
+              <div key={value.label} className={classes.bodyItem} style={{ width: value.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height={20} />
               </div>
             ))}
           </div>
-        )}
+        }
       />
     </ListItem>
   );

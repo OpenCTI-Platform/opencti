@@ -1,6 +1,8 @@
 import React from 'react';
 import { graphql, usePreloadedQuery } from 'react-relay';
-import StixSightingRelationshipEditionOverview, { stixSightingRelationshipEditionOverviewQuery } from './StixSightingRelationshipEditionOverview';
+import StixSightingRelationshipEditionOverview, {
+  stixSightingRelationshipEditionOverviewQuery,
+} from './StixSightingRelationshipEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Drawer from '@components/common/drawer/Drawer';
@@ -34,7 +36,9 @@ const StixSightingRelationshipEditionWithContext = ({
   noStoreUpdate,
   inGraph,
 }) => {
-  const editContextQueryRef = useQueryLoading(stixSightingRelationshipEditContextQuery, { id: stixSightingRelationshipId });
+  const editContextQueryRef = useQueryLoading(stixSightingRelationshipEditContextQuery, {
+    id: stixSightingRelationshipId,
+  });
 
   if (!editContextQueryRef) {
     return null;
@@ -90,7 +94,9 @@ const StixSightingRelationshipEdition = ({
   editContext,
 }) => {
   const { t_i18n } = useFormatter();
-  const queryRef = useQueryLoading(stixSightingRelationshipEditionOverviewQuery, { id: stixSightingRelationshipId });
+  const queryRef = useQueryLoading(stixSightingRelationshipEditionOverviewQuery, {
+    id: stixSightingRelationshipId,
+  });
 
   const renderInGraph = () => {
     return (

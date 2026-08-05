@@ -70,14 +70,12 @@ export const exportImage = async (
           fileDownload(blob, `${name}.png`, 'image/png');
         }
         if (adjust) {
-          container.setAttribute(
-            'style',
-            `width:${currentWidth}px; height:${currentHeight}px;`,
-          );
+          container.setAttribute('style', `width:${currentWidth}px; height:${currentHeight}px;`);
           adjust(true);
         }
         resolve();
-      }).catch((reason) => {
+      })
+      .catch((reason) => {
         reject(reason);
       });
   });
@@ -139,10 +137,7 @@ export const exportPdf = async (
         const pdf = pdfMake.createPdf(docDefinition);
         pdf.download(`${name}.pdf`).then(() => {
           if (adjust) {
-            container.setAttribute(
-              'style',
-              `width:${offsetWidth}px; height:${offsetHeight}px;`,
-            );
+            container.setAttribute('style', `width:${offsetWidth}px; height:${offsetHeight}px;`);
           }
           resolve();
         });

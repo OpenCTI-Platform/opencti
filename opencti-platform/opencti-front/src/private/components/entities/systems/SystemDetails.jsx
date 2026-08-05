@@ -18,23 +18,17 @@ class SystemDetailsComponent extends Component {
         <Card title={t('Details')}>
           <Grid container={true} spacing={3}>
             <Grid item xs={12}>
-              <Label>
-                {t('Description')}
-              </Label>
+              <Label>{t('Description')}</Label>
               <ExpandableMarkdown source={system.description} limit={400} />
             </Grid>
             <Grid item xs={6}>
-              <Label>
-                {t('Reliability')}
-              </Label>
+              <Label>{t('Reliability')}</Label>
               <ItemOpenVocab
                 displayMode="chip"
                 type="reliability_ov"
                 value={system.x_opencti_reliability}
               />
-              <Label sx={{ marginTop: 2 }}>
-                {t('Contact information')}
-              </Label>
+              <Label sx={{ marginTop: 2 }}>{t('Contact information')}</Label>
               <MarkdownDisplay
                 content={system.contact_information}
                 remarkGfmPlugin={true}

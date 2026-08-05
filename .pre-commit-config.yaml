@@ -15,17 +15,32 @@ repos:
   #   rev: v1.31.0
   #   hooks:
   #     - id: yamllint
-  - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: 'ec8e518'  # Use the sha / tag you want to point at ec8e518 == 8.41.0
+  - repo: local
     hooks:
-    -   id: eslint
-        additional_dependencies:
-        -   eslint@8.41.0
-        -   eslint-plugin-jsx-a11y@6.7.1
-        -   eslint-plugin-react@7.32.2
-        -   eslint-plugin-react-hooks@4.6.0
-        files: \.[jt]sx?$  # *.js, *.jsx, *.ts and *.tsx
-        types: [file]
+      - id: oxlint-graphql
+        name: oxlint (opencti-graphql)
+        entry: bash -c 'cd opencti-platform/opencti-graphql && yarn lint'
+        language: system
+        files: ^opencti-platform/opencti-graphql/src/.*\.[jt]sx?$
+        pass_filenames: false
+      - id: oxfmt-check-graphql
+        name: oxfmt --check (opencti-graphql)
+        entry: bash -c 'cd opencti-platform/opencti-graphql && yarn fmt:check'
+        language: system
+        files: ^opencti-platform/opencti-graphql/src/.*\.[jt]sx?$
+        pass_filenames: false
+      - id: oxlint-front
+        name: oxlint (opencti-front)
+        entry: bash -c 'cd opencti-platform/opencti-front && yarn lint'
+        language: system
+        files: ^opencti-platform/opencti-front/src/.*\.[jt]sx?$
+        pass_filenames: false
+      - id: oxfmt-check-front
+        name: oxfmt --check (opencti-front)
+        entry: bash -c 'cd opencti-platform/opencti-front && yarn fmt:check'
+        language: system
+        files: ^opencti-platform/opencti-front/src/.*\.[jt]sx?$
+        pass_filenames: false
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:

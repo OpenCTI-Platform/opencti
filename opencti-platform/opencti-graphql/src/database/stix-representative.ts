@@ -23,7 +23,12 @@ import {
   isStixDomainObjectThreatActor,
 } from '../schema/stixDomainObject';
 import type * as SDO from '../types/stix-2-1-sdo';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import {
+  ENTITY_TYPE_EXTERNAL_REFERENCE,
+  ENTITY_TYPE_KILL_CHAIN_PHASE,
+  ENTITY_TYPE_LABEL,
+  ENTITY_TYPE_MARKING_DEFINITION,
+} from '../schema/stixMetaObject';
 import type * as SMO from '../types/stix-2-1-smo';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
@@ -78,7 +83,13 @@ import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 
 export const extractStixRepresentative = (
   stix: S.StixObject,
-  { fromRestricted = false, toRestricted = false }: { fromRestricted: boolean; toRestricted: boolean } = { fromRestricted: false, toRestricted: false },
+  {
+    fromRestricted = false,
+    toRestricted = false,
+  }: { fromRestricted: boolean; toRestricted: boolean } = {
+    fromRestricted: false,
+    toRestricted: false,
+  },
   withArrowForRelationships = false,
 ): string => {
   const entityType = stix.extensions[STIX_EXT_OCTI].type;
@@ -95,16 +106,24 @@ export const extractStixRepresentative = (
   // region Sighting
   if (isStixSightingRelationship(entityType)) {
     const sighting = stix as SRO.StixSighting;
-    const fromValue = fromRestricted ? 'Restricted' : sighting.extensions[STIX_EXT_OCTI].sighting_of_value;
-    const targetValue = toRestricted ? 'Restricted' : sighting.extensions[STIX_EXT_OCTI].where_sighted_values;
+    const fromValue = fromRestricted
+      ? 'Restricted'
+      : sighting.extensions[STIX_EXT_OCTI].sighting_of_value;
+    const targetValue = toRestricted
+      ? 'Restricted'
+      : sighting.extensions[STIX_EXT_OCTI].where_sighted_values;
     return `${fromValue} sighted in/at ${targetValue}`;
   }
   // endregion
   // region Relationship
   if (isBasicRelationship(entityType)) {
     const relation = stix as SRO.StixRelation;
-    const fromValue = fromRestricted ? 'Restricted' : relation.extensions[STIX_EXT_OCTI].source_value;
-    const targetValue = toRestricted ? 'Restricted' : relation.extensions[STIX_EXT_OCTI].target_value;
+    const fromValue = fromRestricted
+      ? 'Restricted'
+      : relation.extensions[STIX_EXT_OCTI].source_value;
+    const targetValue = toRestricted
+      ? 'Restricted'
+      : relation.extensions[STIX_EXT_OCTI].target_value;
     const separator = withArrowForRelationships ? '➡️' : relation.relationship_type;
     return `${fromValue} ${separator} ${targetValue}`;
   }
@@ -316,12 +335,14 @@ export const extractStixRepresentative = (
 const extractUserAccessPropertiesFromSighting = (sighting: SRO.StixSighting) => {
   return [
     {
-      [RELATION_OBJECT_MARKING]: sighting.extensions[STIX_EXT_OCTI].sighting_of_ref_object_marking_refs,
+      [RELATION_OBJECT_MARKING]:
+        sighting.extensions[STIX_EXT_OCTI].sighting_of_ref_object_marking_refs,
       [RELATION_GRANTED_TO]: sighting.extensions[STIX_EXT_OCTI].sighting_of_ref_granted_refs,
       entity_type: sighting.extensions[STIX_EXT_OCTI].sighting_of_type,
     } as BasicStoreCommon,
     {
-      [RELATION_OBJECT_MARKING]: sighting.extensions[STIX_EXT_OCTI].where_sighted_refs_object_marking_refs,
+      [RELATION_OBJECT_MARKING]:
+        sighting.extensions[STIX_EXT_OCTI].where_sighted_refs_object_marking_refs,
       [RELATION_GRANTED_TO]: sighting.extensions[STIX_EXT_OCTI].where_sighted_refs_granted_refs,
       entity_type: head(sighting.extensions[STIX_EXT_OCTI].where_sighted_types),
     } as BasicStoreCommon,
@@ -368,5 +389,9 @@ export const extractStixRepresentativeForUser = async (
   const [from, to] = extractUserAccessPropertiesFromStixObject(stix);
   const fromRestricted = from ? !(await isUserCanAccessStoreElement(context, user, from)) : false;
   const toRestricted = to ? !(await isUserCanAccessStoreElement(context, user, to)) : false;
-  return extractStixRepresentative(stix, { fromRestricted, toRestricted }, withArrowForRelationships);
+  return extractStixRepresentative(
+    stix,
+    { fromRestricted, toRestricted },
+    withArrowForRelationships,
+  );
 };

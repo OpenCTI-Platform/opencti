@@ -15,7 +15,10 @@ const unflatten = (data) => {
   for (const i in data) {
     const keys = i.split('.');
     keys.reduce((r, e, j) => {
-      return r[e] || (r[e] = Number.isNaN(Number(keys[j + 1])) ? (keys.length - 1 === j ? data[i] : {}) : []);
+      return (
+        r[e] ||
+        (r[e] = Number.isNaN(Number(keys[j + 1])) ? (keys.length - 1 === j ? data[i] : {}) : [])
+      );
     }, result);
   }
   return result;
@@ -39,7 +42,11 @@ export const extractObservablesFromIndicatorPattern = (pattern) => {
 
     enterObjectType(ctx) {
       if (this.element) {
-        let formattedType = `${ctx.getText().split('-').map((e) => pascalize(e)).join('-')}`;
+        let formattedType = `${ctx
+          .getText()
+          .split('-')
+          .map((e) => pascalize(e))
+          .join('-')}`;
         if (formattedType === 'File') {
           formattedType = 'StixFile';
         }
@@ -76,13 +83,13 @@ export const extractObservablesFromIndicatorPattern = (pattern) => {
     enterKeyPathStep(ctx) {
       const text = ctx.getText();
       if (this.element) {
-        this.element.component += text.replaceAll('\'', '');
+        this.element.component += text.replaceAll("'", '');
       }
     }
 
     enterPrimitiveLiteral(ctx) {
       if (this.element) {
-        const val = ctx.getText().replaceAll('\'', '');
+        const val = ctx.getText().replaceAll("'", '');
         const data = { type: this.element.type, [this.element.component]: val };
         const unflat = unflatten(data);
         observables.push(unflat);
@@ -95,10 +102,16 @@ export const extractObservablesFromIndicatorPattern = (pattern) => {
 };
 
 export const validateObservableGeneration = (observableType, indicatorPattern) => {
-  if (observableType === C.ENTITY_NETWORK_TRAFFIC && (indicatorPattern.includes('dst_ref') || indicatorPattern.includes('src_ref'))) {
+  if (
+    observableType === C.ENTITY_NETWORK_TRAFFIC &&
+    (indicatorPattern.includes('dst_ref') || indicatorPattern.includes('src_ref'))
+  ) {
     return false; // we can't create this type of observables (issue #5293)
   }
-  if (observableType === C.ENTITY_EMAIL_MESSAGE && (indicatorPattern.includes('from_ref') || indicatorPattern.includes('sender_ref'))) {
+  if (
+    observableType === C.ENTITY_EMAIL_MESSAGE &&
+    (indicatorPattern.includes('from_ref') || indicatorPattern.includes('sender_ref'))
+  ) {
     return false; // we can't create this type of observables (issue #5293)
   }
   return true;
@@ -154,11 +167,15 @@ export const cleanupIndicatorPattern = (patternType, pattern) => {
 
 export const systemChecker = /^\d{0,10}$/;
 export const domainChecker = /^(?=.{1,253}$)(?!-)(?:[^\s.](?:[^\s.]{0,61}[^\s.])?\.)+[^\s.]{2,63}$/;
-export const hostnameChecker = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-_]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-_]*[A-Za-z0-9])$/;
-export const emailChecker = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-export const ipv6Checker = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))(?:\/([0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]))?$/;
+export const hostnameChecker =
+  /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-_]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-_]*[A-Za-z0-9])$/;
+export const emailChecker =
+  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+export const ipv6Checker =
+  /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))(?:\/([0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]))?$/;
 export const macAddrChecker = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
-export const ipv4Checker = /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(?:\/([0-9]|[1-2][0-9]|3[0-2]))?$/;
+export const ipv4Checker =
+  /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(?:\/([0-9]|[1-2][0-9]|3[0-2]))?$/;
 export const cpeChecker = /^cpe:\/\/[a-zA-Z0-9_./:-]+|^cpe:\/[a-zA-Z0-9_./:-]+$/;
 export const fintelTemplateVariableNameChecker = /^[A-Za-z0-9_-]+$/;
 export const imeiChecker = /(^[0-9]{15,16})$/;
@@ -208,7 +225,8 @@ export const checkObservableSyntax = (observableType, observableData) => {
       if (!macAddrChecker.test(observableData.value)) return 'Valid MAC address';
       break;
     case C.ENTITY_SOFTWARE:
-      if (!observableData.name && !cpeChecker.test(observableData.cpe) && !observableData.swid) return 'Valid Software attributes';
+      if (!observableData.name && !cpeChecker.test(observableData.cpe) && !observableData.swid)
+        return 'Valid Software attributes';
       break;
     case C.ENTITY_IMEI:
       if (!imeiChecker.test(observableData.value)) return 'Valid IMEI';

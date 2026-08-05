@@ -1,7 +1,10 @@
 import React from 'react';
 import { graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
-import { IndicatorsLinesPaginationQuery, IndicatorsLinesPaginationQuery$variables } from '@components/observations/__generated__/IndicatorsLinesPaginationQuery.graphql';
+import {
+  IndicatorsLinesPaginationQuery,
+  IndicatorsLinesPaginationQuery$variables,
+} from '@components/observations/__generated__/IndicatorsLinesPaginationQuery.graphql';
 import { IndicatorsLines_data$data } from '@components/observations/__generated__/IndicatorsLines_data.graphql';
 import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
 import IndicatorCreation from './indicators/IndicatorCreation';
@@ -10,7 +13,11 @@ import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+  useGetDefaultFilterObject,
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
@@ -73,14 +80,14 @@ const indicatorsLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...IndicatorsLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      filters: $filters
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        filters: $filters
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 
@@ -131,7 +138,10 @@ const Indicators = () => {
   const initialValues = {
     filters: {
       ...emptyFilterGroup,
-      filters: useGetDefaultFilterObject(['pattern_type', 'x_opencti_main_observable_type'], ['Indicator']),
+      filters: useGetDefaultFilterObject(
+        ['pattern_type', 'x_opencti_main_observable_type'],
+        ['Indicator'],
+      ),
     },
     searchTerm: '',
     sortBy: 'created',
@@ -196,11 +206,18 @@ const Indicators = () => {
 
   return (
     <div data-testid="indicator-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Indicators'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Observations') },
+          { label: t_i18n('Indicators'), current: true },
+        ]}
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: IndicatorsLines_data$data) => data.indicators?.edges?.map((n) => n?.node)}
+          resolvePath={(data: IndicatorsLines_data$data) =>
+            data.indicators?.edges?.map((n) => n?.node)
+          }
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           contextFilters={contextFilters}
@@ -208,15 +225,19 @@ const Indicators = () => {
           preloadedPaginationProps={preloadedPaginationOptions}
           exportContext={{ entity_type: 'Indicator' }}
           additionalHeaderButtons={[
-            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
+            <Security
+              key="form-intake"
+              needs={[KNOWLEDGE_KNUPDATE]}
+              capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}
+            >
               <StixCoreObjectForms entityType="Threat-Actor-Group" />
             </Security>,
           ]}
-          createButton={(
+          createButton={
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <IndicatorCreation paginationOptions={queryPaginationOptions} />
             </Security>
-          )}
+          }
         />
       )}
     </div>

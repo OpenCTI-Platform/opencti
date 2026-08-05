@@ -53,21 +53,18 @@ const CampaignEditionContainer = (props) => {
   );
 };
 
-const CampaignEditionFragment = createFragmentContainer(
-  CampaignEditionContainer,
-  {
-    campaign: graphql`
-      fragment CampaignEditionContainer_campaign on Campaign {
-        id
-        ...CampaignEditionOverview_campaign
-        ...CampaignEditionDetails_campaign
-        editContext {
-          name
-          focusOn
-        }
+const CampaignEditionFragment = createFragmentContainer(CampaignEditionContainer, {
+  campaign: graphql`
+    fragment CampaignEditionContainer_campaign on Campaign {
+      id
+      ...CampaignEditionOverview_campaign
+      ...CampaignEditionDetails_campaign
+      editContext {
+        name
+        focusOn
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default CampaignEditionFragment;

@@ -2,7 +2,10 @@ import React, { FunctionComponent, useMemo } from 'react';
 import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
+import {
+  SETTINGS_SETACCESSES,
+  VIRTUAL_ORGANIZATION_ADMIN,
+} from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -38,7 +41,9 @@ interface RootSettingsOrganizationComponentProps {
   queryRef: PreloadedQuery<RootSettingsOrganizationQuery>;
   organizationId: string;
 }
-const RootSettingsOrganizationComponent: FunctionComponent<RootSettingsOrganizationComponentProps> = ({ queryRef, organizationId }) => {
+const RootSettingsOrganizationComponent: FunctionComponent<
+  RootSettingsOrganizationComponentProps
+> = ({ queryRef, organizationId }) => {
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootSettingsOrganizationSubscription>>(
     () => ({
       subscription,
@@ -55,20 +60,19 @@ const RootSettingsOrganizationComponent: FunctionComponent<RootSettingsOrganizat
     <Security needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}>
       {organization ? (
         <>
-          <Breadcrumbs elements={[
-            { label: t_i18n('Settings') },
-            { label: t_i18n('Security') },
-            { label: t_i18n('Organizations'), link: '/dashboard/settings/accesses/organizations' },
-            { label: organization.name, current: true },
-          ]}
+          <Breadcrumbs
+            elements={[
+              { label: t_i18n('Settings') },
+              { label: t_i18n('Security') },
+              {
+                label: t_i18n('Organizations'),
+                link: '/dashboard/settings/accesses/organizations',
+              },
+              { label: organization.name, current: true },
+            ]}
           />
           <Routes>
-            <Route
-              path="/"
-              element={
-                <SettingsOrganization organizationData={organization} />
-              }
-            />
+            <Route path="/" element={<SettingsOrganization organizationData={organization} />} />
           </Routes>
         </>
       ) : (
@@ -79,7 +83,9 @@ const RootSettingsOrganizationComponent: FunctionComponent<RootSettingsOrganizat
 };
 const RootSettingsOrganization = () => {
   const { organizationId } = useParams() as { organizationId: string };
-  const queryRef = useQueryLoading<RootSettingsOrganizationQuery>(organizationQuery, { id: organizationId });
+  const queryRef = useQueryLoading<RootSettingsOrganizationQuery>(organizationQuery, {
+    id: organizationId,
+  });
   return (
     <div>
       {queryRef ? (

@@ -1,6 +1,12 @@
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import React, { useEffect, useState, useContext } from 'react';
-import { HubOutlined, MapOutlined, RocketLaunchOutlined, VideoLibraryOutlined, WidgetsOutlined } from '@mui/icons-material';
+import {
+  HubOutlined,
+  MapOutlined,
+  RocketLaunchOutlined,
+  VideoLibraryOutlined,
+  WidgetsOutlined,
+} from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import XtmHubTab from '@components/settings/xtm-hub/XtmHubTab';
 import Button from '@common/button/Button';
@@ -54,89 +60,91 @@ const XtmHubSettingsComponent = () => {
 
   const accent = theme.palette.xtmhub?.main ?? '#00f1bd';
   const registrationStatus = xtmHubSettings.xtm_hub_registration_status ?? undefined;
-  const isRegistered = registrationStatus === 'registered' || registrationStatus === 'lost_connectivity';
-  const canInteract = isGrantedToXtmHub
-    && isXTMHubAccessible
-    && xtmHubSettings.xtm_hub_backend_is_reachable;
+  const isRegistered =
+    registrationStatus === 'registered' || registrationStatus === 'lost_connectivity';
+  const canInteract =
+    isGrantedToXtmHub && isXTMHubAccessible && xtmHubSettings.xtm_hub_backend_is_reachable;
   const hubUrl = settings?.platform_xtmhub_url ?? 'https://hub.filigran.io/app';
 
   const statusChip = (() => {
     if (registrationStatus === 'registered') {
-      return <Tag label={t_i18n('Connected')} color={theme.palette.success.main} labelTextTransform="none" disableTooltip />;
+      return (
+        <Tag
+          label={t_i18n('Connected')}
+          color={theme.palette.success.main}
+          labelTextTransform="none"
+          disableTooltip
+        />
+      );
     }
     if (registrationStatus === 'lost_connectivity') {
-      return <Tag label={t_i18n('Connectivity lost')} color={theme.palette.error.main} labelTextTransform="none" disableTooltip />;
+      return (
+        <Tag
+          label={t_i18n('Connectivity lost')}
+          color={theme.palette.error.main}
+          labelTextTransform="none"
+          disableTooltip
+        />
+      );
     }
     return <Tag label={t_i18n('Not connected')} labelTextTransform="none" disableTooltip />;
   })();
 
-  const footer = isRegistered
-    ? (
-        <>
-          {canInteract && (
-            <XtmHubTab
-              registrationStatus={registrationStatus}
-              // In lost_connectivity, XtmHubTab runs the (re)connect flow when
-              // the dialog opens: the trigger must offer to connect, not to
-              // disconnect (which is only available while fully registered).
-              renderTrigger={(openDialog) => (registrationStatus === 'registered' ? (
-                <Button
-                  variant="secondary"
-                  intent="destructive"
-                  onClick={openDialog}
-                >
-                  {t_i18n('Disconnect from XTM Hub')}
-                </Button>
-              ) : (
-                <Button
-                  gradient
-                  variant="secondary"
-                  onClick={openDialog}
-                >
-                  {t_i18n('Connect to XTM Hub')}
-                </Button>
-              ))}
-            />
+  const footer = isRegistered ? (
+    <>
+      {canInteract && (
+        <XtmHubTab
+          registrationStatus={registrationStatus}
+          // In lost_connectivity, XtmHubTab runs the (re)connect flow when
+          // the dialog opens: the trigger must offer to connect, not to
+          // disconnect (which is only available while fully registered).
+          renderTrigger={(openDialog) =>
+            registrationStatus === 'registered' ? (
+              <Button variant="secondary" intent="destructive" onClick={openDialog}>
+                {t_i18n('Disconnect from XTM Hub')}
+              </Button>
+            ) : (
+              <Button gradient variant="secondary" onClick={openDialog}>
+                {t_i18n('Connect to XTM Hub')}
+              </Button>
+            )
+          }
+        />
+      )}
+      <Button
+        gradient
+        variant="secondary"
+        component="a"
+        href={hubUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {t_i18n('Go to the Hub')}
+      </Button>
+    </>
+  ) : (
+    <>
+      <Button
+        variant="secondary"
+        component="a"
+        href="https://filigran.io/platforms/xtm-hub/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {t_i18n('Explore XTM Hub')}
+      </Button>
+      {canInteract && (
+        <XtmHubTab
+          registrationStatus={registrationStatus}
+          renderTrigger={(openDialog) => (
+            <Button gradient variant="secondary" onClick={openDialog}>
+              {t_i18n('Connect to XTM Hub')}
+            </Button>
           )}
-          <Button
-            gradient
-            variant="secondary"
-            component="a"
-            href={hubUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {t_i18n('Go to the Hub')}
-          </Button>
-        </>
-      )
-    : (
-        <>
-          <Button
-            variant="secondary"
-            component="a"
-            href="https://filigran.io/platforms/xtm-hub/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {t_i18n('Explore XTM Hub')}
-          </Button>
-          {canInteract && (
-            <XtmHubTab
-              registrationStatus={registrationStatus}
-              renderTrigger={(openDialog) => (
-                <Button
-                  gradient
-                  variant="secondary"
-                  onClick={openDialog}
-                >
-                  {t_i18n('Connect to XTM Hub')}
-                </Button>
-              )}
-            />
-          )}
-        </>
-      );
+        />
+      )}
+    </>
+  );
 
   return (
     <ExperienceCard
@@ -156,7 +164,11 @@ const XtmHubSettingsComponent = () => {
           <div>
             <ExperienceDetailRow label={t_i18n('Connection status')}>
               <ItemBoolean
-                label={registrationStatus === 'registered' ? t_i18n('Connected') : t_i18n('Connectivity lost')}
+                label={
+                  registrationStatus === 'registered'
+                    ? t_i18n('Connected')
+                    : t_i18n('Connectivity lost')
+                }
                 status={registrationStatus === 'registered'}
               />
             </ExperienceDetailRow>
@@ -192,7 +204,9 @@ const XtmHubSettingsComponent = () => {
             {t_i18n('Extend and scale your OpenCTI experience')}
           </ExperienceHeadline>
           <Typography variant="body2" color="textSecondary">
-            {t_i18n("XTM Hub is a central forum to access resources, share tradecraft, and optimize the use of Filigran's products, fostering collaboration and empowering the community.")}
+            {t_i18n(
+              "XTM Hub is a central forum to access resources, share tradecraft, and optimize the use of Filigran's products, fostering collaboration and empowering the community.",
+            )}
           </Typography>
           <div
             style={{
@@ -201,10 +215,26 @@ const XtmHubSettingsComponent = () => {
               gap: theme.spacing(1.5),
             }}
           >
-            <ExperienceFeatureTile accent={accent} icon={<RocketLaunchOutlined />} label={t_i18n('XTM Platform free trial')} />
-            <ExperienceFeatureTile accent={accent} icon={<WidgetsOutlined />} label={t_i18n('Pre-built content')} />
-            <ExperienceFeatureTile accent={accent} icon={<MapOutlined />} label={t_i18n('XTM Platform Roadmap')} />
-            <ExperienceFeatureTile accent={accent} icon={<VideoLibraryOutlined />} label={t_i18n('Academy')} />
+            <ExperienceFeatureTile
+              accent={accent}
+              icon={<RocketLaunchOutlined />}
+              label={t_i18n('XTM Platform free trial')}
+            />
+            <ExperienceFeatureTile
+              accent={accent}
+              icon={<WidgetsOutlined />}
+              label={t_i18n('Pre-built content')}
+            />
+            <ExperienceFeatureTile
+              accent={accent}
+              icon={<MapOutlined />}
+              label={t_i18n('XTM Platform Roadmap')}
+            />
+            <ExperienceFeatureTile
+              accent={accent}
+              icon={<VideoLibraryOutlined />}
+              label={t_i18n('Academy')}
+            />
           </div>
         </>
       )}
@@ -217,10 +247,12 @@ const XtmHubSettings: React.FC = () => {
   const [isCheckDone, setIsCheckDone] = useState(false);
 
   useEffect(() => {
-    commitCheckConnectivity({ variables: {},
+    commitCheckConnectivity({
+      variables: {},
       onCompleted: () => {
         setIsCheckDone(true);
-      } });
+      },
+    });
   }, []);
 
   if (!isCheckDone) {

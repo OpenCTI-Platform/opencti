@@ -28,7 +28,10 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import TextField from '../../../../components/TextField';
 import { handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
@@ -79,7 +82,13 @@ interface StixCoreObjectNode {
   representative?: { main: string };
   createdBy?: { id: string; name: string };
   objectLabel?: { id: string; value: string; color: string }[];
-  objectMarking?: { id: string; definition_type: string; definition: string; x_opencti_order: number; x_opencti_color: string }[];
+  objectMarking?: {
+    id: string;
+    definition_type: string;
+    definition: string;
+    x_opencti_order: number;
+    x_opencti_color: string;
+  }[];
 }
 
 interface EntitiesQueryProps {
@@ -209,15 +218,17 @@ const securityCoverageValidation = (t: (value: string) => string, isAutomated: b
 
   return Yup.object().shape({
     ...baseShape,
-    coverage_information: Yup.array().of(
-      Yup.object().shape({
-        coverage_name: Yup.string().required(t('This field is required')),
-        coverage_score: Yup.number()
-          .required(t('This field is required'))
-          .min(0, t('Score must be at least 0'))
-          .max(100, t('Score must be at most 100')),
-      }),
-    ).min(1, t('At least one coverage metric is required')),
+    coverage_information: Yup.array()
+      .of(
+        Yup.object().shape({
+          coverage_name: Yup.string().required(t('This field is required')),
+          coverage_score: Yup.number()
+            .required(t('This field is required'))
+            .min(0, t('Score must be at least 0'))
+            .max(100, t('Score must be at most 100')),
+        }),
+      )
+      .min(1, t('At least one coverage metric is required')),
   });
 };
 
@@ -311,7 +322,9 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
   // Stepper state - if we have a preselected entity, start at step 0 (choose type)
   const [activeStep, setActiveStep] = useState(0);
   const [mode, setMode] = useState<'manual' | 'automated' | null>(null);
-  const [selectedEntity, setSelectedEntity] = useState<StixCoreObjectNode | null>(preSelectedEntity);
+  const [selectedEntity, setSelectedEntity] = useState<StixCoreObjectNode | null>(
+    preSelectedEntity,
+  );
 
   // Entity selection state - not persisted to local storage or URL
   const [searchTerm, setSearchTerm] = useState('');
@@ -326,9 +339,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
         values: [
           {
             key: 'relationship_type',
-            values: [
-              'object-covered',
-            ],
+            values: ['object-covered'],
           },
         ],
         mode: 'or',
@@ -341,15 +352,8 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
 
   // When we have a preselected entity, we skip the "Select entity" step
   const steps = preSelectedEntityId
-    ? [
-        t_i18n('Choose type'),
-        t_i18n('Coverage details'),
-      ]
-    : [
-        t_i18n('Choose type'),
-        t_i18n('Select entity to cover'),
-        t_i18n('Coverage details'),
-      ];
+    ? [t_i18n('Choose type'), t_i18n('Coverage details')]
+    : [t_i18n('Choose type'), t_i18n('Select entity to cover'), t_i18n('Coverage details')];
 
   const buildColumns = () => {
     return {
@@ -388,7 +392,10 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
     setActiveStep(1);
   };
 
-  const handleSelectEntity = (entity: StixCoreObjectNode, setFieldValue?: (field: string, value: unknown) => void) => {
+  const handleSelectEntity = (
+    entity: StixCoreObjectNode,
+    setFieldValue?: (field: string, value: unknown) => void,
+  ) => {
     setSelectedEntity(entity);
     // Update the form name with the selected entity's representative name
     if (setFieldValue && (entity.representative?.main || entity.name)) {
@@ -414,10 +421,13 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
   const [commit] = useApiMutation<SecurityCoverageCreationMutation>(
     securityCoverageMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Security-Coverage')} ${t_i18n('successfully created')}` },
+    {
+      successMessage: `${t_i18n('entity_Security-Coverage')} ${t_i18n('successfully created')}`,
+    },
   );
 
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
 
   const onSubmit: FormikConfig<SecurityCoverageFormValues>['onSubmit'] = (
     values,
@@ -432,12 +442,14 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
       name: values.name,
       description: values.description,
       objectCovered: selectedEntity.id,
-      ...(mode === 'manual' ? {
-        coverage_information: values.coverage_information.map((info) => ({
-          coverage_name: info.coverage_name,
-          coverage_score: Number(info.coverage_score),
-        })),
-      } : {}),
+      ...(mode === 'manual'
+        ? {
+            coverage_information: values.coverage_information.map((info) => ({
+              coverage_name: info.coverage_name,
+              coverage_score: Number(info.coverage_score),
+            })),
+          }
+        : {}),
       periodicity: values.periodicity,
       duration: values.duration,
       type_affinity: values.type_affinity,
@@ -475,27 +487,32 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
   };
 
   // Use entity name from preselected entity or fallback to provided name
-  const defaultName = preSelectedEntity?.representative?.main || preSelectedEntity?.name || preSelectedEntityName || inputValue || '';
-  const defaultLabels = (preSelectedEntity?.objectLabel ?? []).map((label) => ({ value: label.id, label: label.value }));
+  const defaultName =
+    preSelectedEntity?.representative?.main ||
+    preSelectedEntity?.name ||
+    preSelectedEntityName ||
+    inputValue ||
+    '';
+  const defaultLabels = (preSelectedEntity?.objectLabel ?? []).map((label) => ({
+    value: label.id,
+    label: label.value,
+  }));
 
-  const initialValues = useDefaultValues<SecurityCoverageFormValues>(
-    'Security-Coverage',
-    {
-      name: defaultName,
-      description: '',
-      external_uri: '',
-      createdBy: defaultCreatedBy,
-      objectMarking: defaultMarkingDefinitions ?? [],
-      confidence: defaultConfidence,
-      auto_enrichment_disable: mode === 'manual',
-      objectLabel: defaultLabels,
-      coverage_information: [],
-      periodicity: 'P1D',
-      duration: 'P30D',
-      type_affinity: 'ENDPOINT',
-      platforms_affinity: ['windows', 'linux', 'macos'],
-    },
-  );
+  const initialValues = useDefaultValues<SecurityCoverageFormValues>('Security-Coverage', {
+    name: defaultName,
+    description: '',
+    external_uri: '',
+    createdBy: defaultCreatedBy,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    confidence: defaultConfidence,
+    auto_enrichment_disable: mode === 'manual',
+    objectLabel: defaultLabels,
+    coverage_information: [],
+    periodicity: 'P1D',
+    duration: 'P30D',
+    type_affinity: 'ENDPOINT',
+    platforms_affinity: ['windows', 'linux', 'macos'],
+  });
 
   const renderStepContent = (
     step: number,
@@ -540,11 +557,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
               >
                 <CardContent>
                   <EditOutlined sx={{ fontSize: 40 }} color="primary" />
-                  <Typography
-                    gutterBottom
-                    variant="h2"
-                    style={{ marginTop: 20 }}
-                  >
+                  <Typography gutterBottom variant="h2" style={{ marginTop: 20 }}>
                     {t_i18n('Manual Input')}
                   </Typography>
                   <br />
@@ -567,7 +580,10 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
                 }}
               >
                 <CardContent>
-                  <AutoModeOutlined sx={{ fontSize: 40 }} color={hasEnrichmentConnectors ? 'primary' : 'disabled'} />
+                  <AutoModeOutlined
+                    sx={{ fontSize: 40 }}
+                    color={hasEnrichmentConnectors ? 'primary' : 'disabled'}
+                  />
                   <Typography
                     gutterBottom
                     variant="h2"
@@ -582,17 +598,16 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
                     color={hasEnrichmentConnectors ? 'textPrimary' : 'textSecondary'}
                   >
                     {hasEnrichmentConnectors
-                      ? t_i18n('OpenAEV (or other AEV platforms) can be used to automate security coverage assessment')
+                      ? t_i18n(
+                          'OpenAEV (or other AEV platforms) can be used to automate security coverage assessment',
+                        )
                       : t_i18n('No enrichment connector available for Security Coverage')}
                   </Typography>
                 </CardContent>
               </Card>
             </Box>
             <div className={classes.buttons} style={{ marginTop: 20 }}>
-              <Button
-                onClick={handleClose}
-                classes={{ root: classes.button }}
-              >
+              <Button onClick={handleClose} classes={{ root: classes.button }}>
                 {t_i18n('Cancel')}
               </Button>
             </div>
@@ -606,7 +621,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
           search: searchTerm,
           filters: contextFilters,
           orderBy: sortBy,
-          orderMode: orderAsc ? 'asc' : 'desc' as 'asc' | 'desc',
+          orderMode: orderAsc ? 'asc' : ('desc' as 'asc' | 'desc'),
           count: 50,
           cursor: null,
         };
@@ -637,7 +652,16 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
               filters={filters}
               paginationOptions={queryPaginationOptions}
               numberOfElements={{ number: 0, symbol: '' }}
-              availableFilterKeys={['entity_type', 'objectLabel', 'createdBy', 'objectMarking', 'created_start_date', 'created_end_date', 'created_at_start_date', 'created_at_end_date']}
+              availableFilterKeys={[
+                'entity_type',
+                'objectLabel',
+                'createdBy',
+                'objectMarking',
+                'created_start_date',
+                'created_end_date',
+                'created_at_start_date',
+                'created_at_end_date',
+              ]}
               availableEntityTypes={DEFAULT_ENTITY_TYPES}
               noPadding={true}
               disableCards={true}
@@ -666,7 +690,9 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
                       paginationOptions={queryPaginationOptions}
                       selectedElements={{}}
                       selectAll={false}
-                      onToggleEntity={(entity: StixCoreObjectNode) => handleSelectEntity(entity, setFieldValue)}
+                      onToggleEntity={(entity: StixCoreObjectNode) =>
+                        handleSelectEntity(entity, setFieldValue)
+                      }
                       onLabelClick={helpers.handleAddSingleValueFilter}
                       redirectionMode={undefined}
                       selectedEntity={selectedEntity}
@@ -709,7 +735,11 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
             />
             <PeriodicityField
               name="periodicity"
-              label={mode === 'automated' ? t_i18n('Coverage recurrence (every x)') : t_i18n('Coverage validity period')}
+              label={
+                mode === 'automated'
+                  ? t_i18n('Coverage recurrence (every x)')
+                  : t_i18n('Coverage validity period')
+              }
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
@@ -786,16 +816,17 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
               setFieldValue={setFieldValue}
             />
             <FormButtonContainer>
-              <Button
-                variant="secondary"
-                onClick={handleClose}
-                disabled={isSubmitting}
-              >
+              <Button variant="secondary" onClick={handleClose} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting || !values.name || (mode === 'manual' && (!values.coverage_information || values.coverage_information.length === 0))}
+                disabled={
+                  isSubmitting ||
+                  !values.name ||
+                  (mode === 'manual' &&
+                    (!values.coverage_information || values.coverage_information.length === 0))
+                }
               >
                 {t_i18n('Create')}
               </Button>
@@ -837,7 +868,14 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
       >
         {({ values, isSubmitting, setFieldValue, resetForm, submitForm }) => (
           <Form>
-            {renderStepContent(activeStep, values, setFieldValue, isSubmitting, submitForm, resetForm)}
+            {renderStepContent(
+              activeStep,
+              values,
+              setFieldValue,
+              isSubmitting,
+              submitForm,
+              resetForm,
+            )}
           </Form>
         )}
       </Formik>
@@ -850,7 +888,9 @@ interface SecurityCoverageCreationProps {
 }
 
 // Wrapper component to handle preselected entity fetching
-export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFormProps> = (props) => {
+export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFormProps> = (
+  props,
+) => {
   const { preSelectedEntityId } = props;
 
   if (preSelectedEntityId) {
@@ -858,12 +898,22 @@ export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFor
       <QueryRenderer
         query={securityCoveragePreselectedEntityQuery}
         variables={{ id: preSelectedEntityId }}
-        render={({ props: queryProps }: { props: { stixCoreObject: StixCoreObjectNode | null } | null }) => {
+        render={({
+          props: queryProps,
+        }: {
+          props: { stixCoreObject: StixCoreObjectNode | null } | null;
+        }) => {
           if (!queryProps || !queryProps.stixCoreObject) {
             return <Loader variant={LoaderVariant.inElement} />;
           }
 
-          return <SecurityCoverageCreationFormInner {...props} preSelectedEntity={queryProps.stixCoreObject} shouldRedirect={true} />;
+          return (
+            <SecurityCoverageCreationFormInner
+              {...props}
+              preSelectedEntity={queryProps.stixCoreObject}
+              shouldRedirect={true}
+            />
+          );
         }}
       />
     );
@@ -872,7 +922,10 @@ export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFor
   return <SecurityCoverageCreationFormInner {...props} preSelectedEntity={null} />;
 };
 
-const SecurityCoverageCreationWrapper: FunctionComponent<{ updater: (store: RecordSourceSelectorProxy, key: string) => void; onClose?: () => void }> = ({ updater, onClose }) => {
+const SecurityCoverageCreationWrapper: FunctionComponent<{
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onClose?: () => void;
+}> = ({ updater, onClose }) => {
   return (
     <QueryRenderer
       query={securityCoverageConnectorsQuery}
@@ -880,12 +933,22 @@ const SecurityCoverageCreationWrapper: FunctionComponent<{ updater: (store: Reco
       render={({ props }: { props: ConnectorsQueryProps | null }) => {
         const connectors = props?.connectors || [];
         const hasConnector = connectors.some((connector) => {
-          return connector.active
-            && connector.connector_type === 'INTERNAL_ENRICHMENT'
-            && connector.connector_scope
-            && connector.connector_scope.some((scope: string) => scope.toLowerCase() === 'security-coverage');
+          return (
+            connector.active &&
+            connector.connector_type === 'INTERNAL_ENRICHMENT' &&
+            connector.connector_scope &&
+            connector.connector_scope.some(
+              (scope: string) => scope.toLowerCase() === 'security-coverage',
+            )
+          );
         });
-        return <SecurityCoverageCreationForm updater={updater} onClose={onClose} hasEnrichmentConnectors={hasConnector} />;
+        return (
+          <SecurityCoverageCreationForm
+            updater={updater}
+            onClose={onClose}
+            hasEnrichmentConnectors={hasConnector}
+          />
+        );
       }}
     />
   );
@@ -895,16 +958,17 @@ const SecurityCoverageCreation: FunctionComponent<SecurityCoverageCreationProps>
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination__securityCoverages',
-    paginationOptions,
-    'securityCoverageAdd',
-    null,
-    null,
-    null,
-    null,
-  );
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(
+      store,
+      'Pagination__securityCoverages',
+      paginationOptions,
+      'securityCoverageAdd',
+      null,
+      null,
+      null,
+      null,
+    );
 
   const CreateSecurityCoverageControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="Security-Coverage" {...props} />

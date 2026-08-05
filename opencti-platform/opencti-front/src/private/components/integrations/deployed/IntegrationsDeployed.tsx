@@ -1,6 +1,14 @@
 import React, { ChangeEvent, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Box, MenuItem, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
+import {
+  Box,
+  MenuItem,
+  Stack,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
+} from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { alpha, useTheme } from '@mui/material/styles';
 import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
@@ -13,12 +21,23 @@ import ConnectorsState, { connectorsStateQuery } from '@components/data/connecto
 import { ConnectorsListQuery } from '@components/data/connectors/__generated__/ConnectorsListQuery.graphql';
 import { ConnectorsLogosQuery } from '@components/data/connectors/__generated__/ConnectorsLogosQuery.graphql';
 import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
-import DeployedFacetSidebar, { useDeployedTypeMetadata } from '@components/integrations/deployed/DeployedFacetSidebar';
+import DeployedFacetSidebar, {
+  useDeployedTypeMetadata,
+} from '@components/integrations/deployed/DeployedFacetSidebar';
 import DeployedIntegrationCard from '@components/integrations/deployed/DeployedIntegrationCard';
-import DeployedIntegrationLine, { DeployedIntegrationLinesHeader } from '@components/integrations/deployed/DeployedIntegrationLine';
+import DeployedIntegrationLine, {
+  DeployedIntegrationLinesHeader,
+} from '@components/integrations/deployed/DeployedIntegrationLine';
 import useDeployedIntegrations from '@components/integrations/deployed/useDeployedIntegrations';
-import useDeployedIntegrationsFilters, { DeployedSection, DeployedSortMode } from '@components/integrations/deployed/useDeployedIntegrationsFilters';
-import { MarketplaceEmptyState, MarketplaceSectionHeader, ResultCountChip } from '@components/integrations/components/MarketplaceUi';
+import useDeployedIntegrationsFilters, {
+  DeployedSection,
+  DeployedSortMode,
+} from '@components/integrations/deployed/useDeployedIntegrationsFilters';
+import {
+  MarketplaceEmptyState,
+  MarketplaceSectionHeader,
+  ResultCountChip,
+} from '@components/integrations/components/MarketplaceUi';
 import useProgressiveReveal from '@components/integrations/components/useProgressiveReveal';
 import { IntegrationsData } from '@components/integrations/Integrations';
 import { useFormatter } from '../../../../components/i18n';
@@ -77,8 +96,8 @@ const IntegrationsDeployedContent = ({
 
   const [searchInput, setSearchInput] = useState(filters.search);
 
-  const [view, setView] = useState<DeployedViewMode>(
-    () => (localStorage.getItem(VIEW_STORAGE_KEY) === 'lines' ? 'lines' : 'cards'),
+  const [view, setView] = useState<DeployedViewMode>(() =>
+    localStorage.getItem(VIEW_STORAGE_KEY) === 'lines' ? 'lines' : 'cards',
   );
   const handleViewChange = (_: React.MouseEvent, value: DeployedViewMode | null) => {
     if (!value) return;
@@ -118,7 +137,10 @@ const IntegrationsDeployedContent = ({
 
   // Progressive mounting while scrolling, as on the available tab.
   const revealResetKey = JSON.stringify({ filters, sort });
-  const { visibleCount, sentinelRef, hasMore } = useProgressiveReveal(filteredItems.length, revealResetKey);
+  const { visibleCount, sentinelRef, hasMore } = useProgressiveReveal(
+    filteredItems.length,
+    revealResetKey,
+  );
   const visibleSections = useMemo(() => {
     const result: (DeployedSection & { totalCount: number })[] = [];
     let remaining = visibleCount;
@@ -137,7 +159,11 @@ const IntegrationsDeployedContent = ({
   // Below md the sidebar stacks full-width above the cards instead of
   // squeezing them against a fixed 250px column.
   return (
-    <Stack direction={{ xs: 'column', md: 'row' }} gap={2} alignItems={{ xs: 'stretch', md: 'flex-start' }}>
+    <Stack
+      direction={{ xs: 'column', md: 'row' }}
+      gap={2}
+      alignItems={{ xs: 'stretch', md: 'flex-start' }}
+    >
       <DeployedFacetSidebar
         filters={filters}
         onFiltersChange={setFilters}
@@ -192,14 +218,11 @@ const IntegrationsDeployedContent = ({
           <MarketplaceEmptyState
             hasActiveFilters={hasActiveFilters}
             onResetFilters={handleResetFilters}
-            extraAction={(
-              <Button
-                component={Link}
-                to="/dashboard/integrations/available"
-              >
+            extraAction={
+              <Button component={Link} to="/dashboard/integrations/available">
                 {t_i18n('Browse the catalog')}
               </Button>
-            )}
+            }
           />
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: view === 'lines' ? 3 : 4 }}>
@@ -237,16 +260,17 @@ const IntegrationsDeployedContent = ({
                     >
                       <DeployedIntegrationLinesHeader />
                       {section.items.map((item) => (
-                        <DeployedIntegrationLine key={item.id} item={item} onChange={handleItemChange} />
+                        <DeployedIntegrationLine
+                          key={item.id}
+                          item={item}
+                          onChange={handleItemChange}
+                        />
                       ))}
                     </Box>
                   ) : (
                     <Grid container spacing={2}>
                       {section.items.map((item) => (
-                        <Grid
-                          key={item.id}
-                          size={{ xs: 12, sm: 6, lg: 4, xl: 3 }}
-                        >
+                        <Grid key={item.id} size={{ xs: 12, sm: 6, lg: 4, xl: 3 }}>
                           <DeployedIntegrationCard item={item} onChange={handleItemChange} />
                         </Grid>
                       ))}
@@ -272,9 +296,12 @@ interface IntegrationsDeployedProps {
 const IntegrationsDeployed = ({ data }: IntegrationsDeployedProps) => {
   const isConnectorReader = useGranted([MODULES]);
 
-  const [connectorsListRef, loadConnectorsList] = useQueryLoader<ConnectorsListQuery>(connectorsListQuery);
-  const [connectorsStateRef, loadConnectorsState] = useQueryLoader<ConnectorsStateQuery>(connectorsStateQuery);
-  const [connectorsLogosRef, loadConnectorsLogos] = useQueryLoader<ConnectorsLogosQuery>(connectorsLogosQuery);
+  const [connectorsListRef, loadConnectorsList] =
+    useQueryLoader<ConnectorsListQuery>(connectorsListQuery);
+  const [connectorsStateRef, loadConnectorsState] =
+    useQueryLoader<ConnectorsStateQuery>(connectorsStateQuery);
+  const [connectorsLogosRef, loadConnectorsLogos] =
+    useQueryLoader<ConnectorsLogosQuery>(connectorsLogosQuery);
   const [logosBySlug, setLogosBySlug] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
@@ -324,10 +351,7 @@ const IntegrationsDeployed = ({ data }: IntegrationsDeployedProps) => {
                   {renderContent(connectorsListData, connectorsStateData)}
                   {connectorsLogosRef && (
                     <Suspense fallback={null}>
-                      <ConnectorsLogos
-                        queryRef={connectorsLogosRef}
-                        onLoaded={setLogosBySlug}
-                      />
+                      <ConnectorsLogos queryRef={connectorsLogosRef} onLoaded={setLogosBySlug} />
                     </Suspense>
                   )}
                 </>

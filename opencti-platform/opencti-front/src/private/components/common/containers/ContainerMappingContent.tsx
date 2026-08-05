@@ -1,9 +1,18 @@
 import { FunctionComponent, useEffect, useRef, useState } from 'react';
-import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader, UseQueryLoaderLoadQueryOptions } from 'react-relay';
+import {
+  graphql,
+  PreloadedQuery,
+  useFragment,
+  usePreloadedQuery,
+  useQueryLoader,
+  UseQueryLoaderLoadQueryOptions,
+} from 'react-relay';
 import Grid from '@mui/material/Grid';
 import StixCoreObjectMappableContent from '@components/common/stix_core_objects/StixCoreObjectMappableContent';
 import { Link } from 'react-router-dom';
-import ContainerStixCoreObjectsSuggestedMapping, { containerStixCoreObjectsSuggestedMappingQuery } from '@components/common/containers/ContainerStixCoreObjectsSuggestedMapping';
+import ContainerStixCoreObjectsSuggestedMapping, {
+  containerStixCoreObjectsSuggestedMappingQuery,
+} from '@components/common/containers/ContainerStixCoreObjectsSuggestedMapping';
 import {
   ContainerStixCoreObjectsSuggestedMappingQuery,
   ContainerStixCoreObjectsSuggestedMappingQuery$data,
@@ -20,14 +29,10 @@ import {
 } from '@components/common/containers/__generated__/ContainerMappingContent_container.graphql';
 import { ContainerMappingContentQuery$data } from '@components/common/containers/__generated__/ContainerMappingContentQuery.graphql';
 import { ContainerMappingContentFieldPatchMutation } from '@components/common/containers/__generated__/ContainerMappingContentFieldPatchMutation.graphql';
-import {
-  ContainerMappingContentAddSuggestedMappingRelationsMutation,
-} from '@components/common/containers/__generated__/ContainerMappingContentAddSuggestedMappingRelationsMutation.graphql';
+import { ContainerMappingContentAddSuggestedMappingRelationsMutation } from '@components/common/containers/__generated__/ContainerMappingContentAddSuggestedMappingRelationsMutation.graphql';
 import { ContainerMappingContentAskSuggestedMappingMutation } from '@components/common/containers/__generated__/ContainerMappingContentAskSuggestedMappingMutation.graphql';
 import { ContainerMappingContentClearSuggestedMappingMutation } from '@components/common/containers/__generated__/ContainerMappingContentClearSuggestedMappingMutation.graphql';
-import {
-  ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$data,
-} from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity.graphql';
+import { ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$data } from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity.graphql';
 import ContainerStixCoreObjectsMappingHeader from '@components/common/containers/ContainerStixCoreObjectsMappingHeader';
 import { useFormatter } from '../../../../components/i18n';
 import { MESSAGING$ } from '../../../../relay/environment';
@@ -48,11 +53,7 @@ export const contentMutationFieldPatch = graphql`
     $references: [String]
   ) {
     stixDomainObjectEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         ...ContainerMappingContent_container
       }
     }
@@ -125,11 +126,7 @@ const addSuggestedMappingRelationsMutation = graphql`
     $references: [String]
   ) {
     stixCoreObjectEdit(id: $id) {
-      relationsAdd(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      relationsAdd(input: $input, commitMessage: $commitMessage, references: $references) {
         id
       }
     }
@@ -143,11 +140,7 @@ const askSuggestedMappingMutation = graphql`
     $contentType: AnalysisContentType!
   ) {
     stixCoreObjectEdit(id: $id) {
-      askAnalysis(
-        contentSource: $contentSource
-        contentType: $contentType
-      )
-      {
+      askAnalysis(contentSource: $contentSource, contentType: $contentType) {
         id
         connector {
           id
@@ -164,10 +157,7 @@ const clearSuggestedMappingMutation = graphql`
     $contentType: AnalysisContentType!
   ) {
     stixCoreObjectEdit(id: $id) {
-      analysisClear(
-        contentSource: $contentSource
-        contentType: $contentType
-      )
+      analysisClear(contentSource: $contentSource, contentType: $contentType)
     }
   }
 `;
@@ -175,11 +165,18 @@ const clearSuggestedMappingMutation = graphql`
 interface ContainerMappingContentComponentProps {
   containerData: ContainerMappingContent_container$data;
   queryRef: PreloadedQuery<ContainerStixCoreObjectsSuggestedMappingQuery>;
-  loadQuery: (variables: ContainerStixCoreObjectsSuggestedMappingQuery$variables, options?: (UseQueryLoaderLoadQueryOptions | undefined)) => void;
+  loadQuery: (
+    variables: ContainerStixCoreObjectsSuggestedMappingQuery$variables,
+    options?: UseQueryLoaderLoadQueryOptions | undefined,
+  ) => void;
   currentMode: 'content' | 'editor' | 'mapping';
 }
 
-export type MappedEntityType = NonNullable<NonNullable<ContainerStixCoreObjectsSuggestedMappingQuery$data['stixCoreObjectAnalysis']>['mappedEntities']>[number];
+export type MappedEntityType = NonNullable<
+  NonNullable<
+    ContainerStixCoreObjectsSuggestedMappingQuery$data['stixCoreObjectAnalysis']
+  >['mappedEntities']
+>[number];
 
 const ContainerMappingContentComponent: FunctionComponent<
   ContainerMappingContentComponentProps
@@ -196,13 +193,12 @@ const ContainerMappingContentComponent: FunctionComponent<
   );
 
   const workInProgress = suggestedMappingData.stixCoreObjectAnalysis?.analysisStatus
-    ? suggestedMappingData.stixCoreObjectAnalysis?.analysisStatus === 'wait' || suggestedMappingData.stixCoreObjectAnalysis?.analysisStatus === 'progress'
+    ? suggestedMappingData.stixCoreObjectAnalysis?.analysisStatus === 'wait' ||
+      suggestedMappingData.stixCoreObjectAnalysis?.analysisStatus === 'progress'
     : false;
 
   const LOCAL_STORAGE_KEY = `container-${containerData.id}-mapping`;
-  const {
-    paginationOptions,
-  } = usePaginationLocalStorage(
+  const { paginationOptions } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
     {
       id: containerData.id,
@@ -238,12 +234,21 @@ const ContainerMappingContentComponent: FunctionComponent<
   const [inSuggestedMode, setInSuggestedMode] = useState(false);
   const analysisStatus = useRef('');
 
-  const [commitFieldPatch] = useApiMutation<ContainerMappingContentFieldPatchMutation>(contentMutationFieldPatch);
-  const [commitRelationsAdd] = useApiMutation<ContainerMappingContentAddSuggestedMappingRelationsMutation>(addSuggestedMappingRelationsMutation);
-  const [commitAnalysisAsk] = useApiMutation<ContainerMappingContentAskSuggestedMappingMutation>(askSuggestedMappingMutation);
-  const [commitAnalysisClear] = useApiMutation<ContainerMappingContentClearSuggestedMappingMutation>(clearSuggestedMappingMutation);
+  const [commitFieldPatch] =
+    useApiMutation<ContainerMappingContentFieldPatchMutation>(contentMutationFieldPatch);
+  const [commitRelationsAdd] =
+    useApiMutation<ContainerMappingContentAddSuggestedMappingRelationsMutation>(
+      addSuggestedMappingRelationsMutation,
+    );
+  const [commitAnalysisAsk] = useApiMutation<ContainerMappingContentAskSuggestedMappingMutation>(
+    askSuggestedMappingMutation,
+  );
+  const [commitAnalysisClear] =
+    useApiMutation<ContainerMappingContentClearSuggestedMappingMutation>(
+      clearSuggestedMappingMutation,
+    );
 
-  const mappedEntities = (suggestedMappingData.stixCoreObjectAnalysis?.mappedEntities ?? []);
+  const mappedEntities = suggestedMappingData.stixCoreObjectAnalysis?.mappedEntities ?? [];
   const filterRemovedEntities = (mappedEntity: MappedEntityType) => {
     return !removedEntities.find((r) => r === mappedEntity.matchedEntity?.id);
   };
@@ -276,9 +281,7 @@ const ContainerMappingContentComponent: FunctionComponent<
     for (const mappedString of mappedStrings) {
       const escapedMappedString = mappedString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const descriptionRegex = new RegExp(`\\b(${escapedMappedString})\\b`, 'gi');
-      const descriptionCount = (
-        (description || '').match(descriptionRegex) || []
-      ).length;
+      const descriptionCount = ((description || '').match(descriptionRegex) || []).length;
       const contentRegex = new RegExp(`\\b(${escapedMappedString})\\b`, 'gi');
       const contentCount = ((contentField || '').match(contentRegex) || []).length;
       contentMapping[mappedString] = descriptionCount + contentCount;
@@ -286,7 +289,11 @@ const ContainerMappingContentComponent: FunctionComponent<
     return contentMapping;
   };
 
-  const handleRemoveSuggestedMappingLine = (removedEntity: NonNullable<ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$data['matchedEntity']>) => {
+  const handleRemoveSuggestedMappingLine = (
+    removedEntity: NonNullable<
+      ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$data['matchedEntity']
+    >,
+  ) => {
     setRemovedEntities([...removedEntities, removedEntity.id]);
   };
 
@@ -298,7 +305,9 @@ const ContainerMappingContentComponent: FunctionComponent<
     ?.filter((e) => !removedEntities.find((r) => r === e.matchedEntity?.id))
     .map((e) => e?.matchedString);
   const suggestedMappingCount = countMappingMatch(suggestedMappedStrings ?? []);
-  const filteredSuggestedMappedStrings = suggestedMappedStrings?.filter((s) => !mappedStrings.includes(s));
+  const filteredSuggestedMappedStrings = suggestedMappedStrings?.filter(
+    (s) => !mappedStrings.includes(s),
+  );
 
   const handleAskNewSuggestedMapping = () => {
     setValidating(false);
@@ -315,10 +324,10 @@ const ContainerMappingContentComponent: FunctionComponent<
       onCompleted: (response) => {
         MESSAGING$.notifySuccess(
           <span>
-            {t_i18n(
-              'New suggested mapping has been asked. You can monitor the progress on',
-            )}{' '}
-            <Link to={`/dashboard/integrations/connectors/${response?.stixCoreObjectEdit?.askAnalysis?.connector?.id}`}>
+            {t_i18n('New suggested mapping has been asked. You can monitor the progress on')}{' '}
+            <Link
+              to={`/dashboard/integrations/connectors/${response?.stixCoreObjectEdit?.askAnalysis?.connector?.id}`}
+            >
               {t_i18n('the dedicated page')}
             </Link>
             .
@@ -352,10 +361,12 @@ const ContainerMappingContentComponent: FunctionComponent<
     commitFieldPatch({
       variables: {
         id: containerData.id,
-        input: [{
-          key: 'content_mapping',
-          value: [serializeObjectB64(newMappingData)],
-        }],
+        input: [
+          {
+            key: 'content_mapping',
+            value: [serializeObjectB64(newMappingData)],
+          },
+        ],
       },
       onCompleted: () => {
         setInSuggestedMode(false);
@@ -385,8 +396,7 @@ const ContainerMappingContentComponent: FunctionComponent<
   const handleTextSelection = (text: string) => {
     if (text && text.length > 2) {
       setSelectedText(text.trim());
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+      // @ts-expect-error OPEN$ subject type does not include the OpenMapping action variant
       OPEN$.next({ action: 'OpenMapping' });
     }
   };
@@ -399,10 +409,12 @@ const ContainerMappingContentComponent: FunctionComponent<
     commitFieldPatch({
       variables: {
         id: containerData.id,
-        input: [{
-          key: 'content_mapping',
-          value: [serializeObjectB64(newMappingData)],
-        }],
+        input: [
+          {
+            key: 'content_mapping',
+            value: [serializeObjectB64(newMappingData)],
+          },
+        ],
       },
       onCompleted: () => {
         setOpen(false);
@@ -417,10 +429,12 @@ const ContainerMappingContentComponent: FunctionComponent<
     commitFieldPatch({
       variables: {
         id: containerData.id,
-        input: [{
-          key: 'content_mapping',
-          value: [serializeObjectB64({})],
-        }],
+        input: [
+          {
+            key: 'content_mapping',
+            value: [serializeObjectB64({})],
+          },
+        ],
       },
       onCompleted: () => {
         setClearing(false);
@@ -436,12 +450,7 @@ const ContainerMappingContentComponent: FunctionComponent<
 
   return (
     <>
-      <Grid
-        container
-        alignItems="stretch"
-        columnSpacing={2}
-        mb={2}
-      >
+      <Grid container alignItems="stretch" columnSpacing={2} mb={2}>
         <Grid item xs={6} sx={{ display: 'flex', flexDirection: 'column' }}>
           <StixCoreObjectMappableContent
             containerData={containerData}
@@ -507,15 +516,14 @@ const ContainerMappingContentComponent: FunctionComponent<
         }}
         defaultCreatedBy={containerData.createdBy ?? null}
         defaultMarkingDefinitions={containerData.objectMarking ?? []}
-        targetStixCoreObjectTypes={[
-          'Stix-Domain-Object',
-          'Stix-Cyber-Observable',
-        ]}
+        targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
         confidence={containerData.confidence}
         paginationOptions={paginationOptions}
         onAdd={addMapping}
         enableReferences={enableReferences}
-        containerStixCoreObjects={Object.values(contentMappingData).map((c) => ({ node: { id: c } }))}
+        containerStixCoreObjects={Object.values(contentMappingData).map((c) => ({
+          node: { id: c },
+        }))}
       />
     </>
   );
@@ -526,8 +534,14 @@ interface ContainerMappingContentProps {
   currentMode: 'mapping' | 'editor' | 'content';
 }
 
-const ContainerMappingContent = ({ containerFragment, currentMode }: ContainerMappingContentProps) => {
-  const containerData = useFragment<ContainerMappingContent_container$key>(containerContentFragment, containerFragment);
+const ContainerMappingContent = ({
+  containerFragment,
+  currentMode,
+}: ContainerMappingContentProps) => {
+  const containerData = useFragment<ContainerMappingContent_container$key>(
+    containerContentFragment,
+    containerFragment,
+  );
   const [queryRef, loadQuery] = useQueryLoader<ContainerStixCoreObjectsSuggestedMappingQuery>(
     containerStixCoreObjectsSuggestedMappingQuery,
   );

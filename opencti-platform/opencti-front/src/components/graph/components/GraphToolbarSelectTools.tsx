@@ -13,13 +13,7 @@ const GraphToolbarSelectTools = () => {
 
   const {
     stixCoreObjectTypes,
-    graphState: {
-      mode3D,
-      selectFreeRectangle,
-      selectFree,
-      selectRelationshipMode,
-      selectedNodes,
-    },
+    graphState: { mode3D, selectFreeRectangle, selectFree, selectRelationshipMode, selectedNodes },
   } = useGraphContext();
 
   const {
@@ -31,9 +25,12 @@ const GraphToolbarSelectTools = () => {
   } = useGraphInteractions();
 
   const titleSelectRelationshipMode = () => {
-    if (selectRelationshipMode === 'children') return t_i18n('Select Child Relationships of Selected Nodes (From)');
-    if (selectRelationshipMode === 'parent') return t_i18n('Select Parent Relationships of Selected Nodes (To)');
-    if (selectRelationshipMode === 'deselect') return t_i18n('Deselect Relationships of Selected Nodes');
+    if (selectRelationshipMode === 'children')
+      return t_i18n('Select Child Relationships of Selected Nodes (From)');
+    if (selectRelationshipMode === 'parent')
+      return t_i18n('Select Parent Relationships of Selected Nodes (To)');
+    if (selectRelationshipMode === 'deselect')
+      return t_i18n('Deselect Relationships of Selected Nodes');
     return t_i18n('Select Relationships of Selected Nodes');
   };
   const iconSelectRelationshipMode = () => {

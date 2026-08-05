@@ -69,30 +69,18 @@ interface IndicatorProps {
   indicatorData: Indicator_indicator$key;
 }
 
-const Indicator: React.FC<IndicatorProps> = ({
-  indicatorData,
-}) => {
+const Indicator: React.FC<IndicatorProps> = ({ indicatorData }) => {
   useInitCreateRelationshipContext();
 
-  const indicator = useFragment<Indicator_indicator$key>(
-    indicatorFragment,
-    indicatorData,
-  );
+  const indicator = useFragment<Indicator_indicator$key>(indicatorFragment, indicatorData);
   return (
     <div data-testid="indicator-overview">
-      <Grid
-        container={true}
-        spacing={3}
-        style={{ marginBottom: 20 }}
-      >
+      <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
         <Grid item xs={6}>
           <IndicatorDetails indicator={indicator} />
         </Grid>
         <Grid item xs={6}>
-          <StixDomainObjectOverview
-            stixDomainObject={indicator}
-            withPattern={true}
-          />
+          <StixDomainObjectOverview stixDomainObject={indicator} withPattern={true} />
         </Grid>
         <Grid item xs={6}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships

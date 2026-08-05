@@ -27,11 +27,7 @@ const useStyles = makeStyles({
   },
 });
 
-const queryRef = loadQuery<LoginRootPublicQuery>(
-  environment,
-  rootPublicQuery,
-  {},
-);
+const queryRef = loadQuery<LoginRootPublicQuery>(environment, rootPublicQuery, {});
 
 const PublicDataSharing = () => {
   const theme = useTheme<Theme>();
@@ -48,7 +44,13 @@ const PublicDataSharing = () => {
     <>
       <div className={classes.container}>
         <img
-          src={loginLogo && loginLogo.length > 0 ? loginLogo : theme.palette.mode === 'dark' ? logoDark : logoLight}
+          src={
+            loginLogo && loginLogo.length > 0
+              ? loginLogo
+              : theme.palette.mode === 'dark'
+                ? logoDark
+                : logoLight
+          }
           alt="logo"
           className={classes.logo}
         />

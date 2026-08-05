@@ -5,7 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import { fetchQuery as relayFetchQuery, graphql } from 'react-relay';
 import useFintelTemplateAdd from './useFintelTemplateAdd';
 import useFintelTemplateEdit from './useFintelTemplateEdit';
-import FintelTemplateForm, { FintelTemplateFormInputKeys, FintelTemplateFormInputs } from './FintelTemplateForm';
+import FintelTemplateForm, {
+  FintelTemplateFormInputKeys,
+  FintelTemplateFormInputs,
+} from './FintelTemplateForm';
 import FintelTemplateReplaceDefaultDialog from './FintelTemplateReplaceDefaultDialog';
 import { useFormatter } from '../../../../../components/i18n';
 import { environment, handleError, MESSAGING$ } from '../../../../../relay/environment';
@@ -60,11 +63,18 @@ const FintelTemplateFormDrawer = ({
 
   const fetchExistingDefault = (excludeId?: string) => {
     if (!entityType) return Promise.resolve(undefined);
-    return relayFetchQuery(environment, fintelTemplateCurrentDefaultQuery, { targetType: entityType }, { fetchPolicy: 'network-only' })
+    return relayFetchQuery(
+      environment,
+      fintelTemplateCurrentDefaultQuery,
+      { targetType: entityType },
+      { fetchPolicy: 'network-only' },
+    )
       .toPromise()
       .then((result: unknown) => {
         const data = result as FintelTemplateFormDrawerCurrentDefaultQuery$data;
-        return data.entitySettingByType?.fintelTemplates?.edges.map((e) => e.node).find((n) => n.default && n.id !== excludeId);
+        return data.entitySettingByType?.fintelTemplates?.edges
+          .map((e) => e.node)
+          .find((n) => n.default && n.id !== excludeId);
       });
   };
 
@@ -105,7 +115,10 @@ const FintelTemplateFormDrawer = ({
     else handleUnsetDefault(revert);
   };
 
-  const doAdd = (values: FintelTemplateFormInputs, setSubmitting?: (isSubmitting: boolean) => void) => {
+  const doAdd = (
+    values: FintelTemplateFormInputs,
+    setSubmitting?: (isSubmitting: boolean) => void,
+  ) => {
     if (!entityType) return;
 
     commitAddMutation({
@@ -134,10 +147,7 @@ const FintelTemplateFormDrawer = ({
     });
   };
 
-  const onAdd: FormikConfig<FintelTemplateFormInputs>['onSubmit'] = (
-    values,
-    { setSubmitting },
-  ) => {
+  const onAdd: FormikConfig<FintelTemplateFormInputs>['onSubmit'] = (values, { setSubmitting }) => {
     if (values.default) {
       fetchExistingDefault()
         .then((existing) => {
@@ -162,7 +172,8 @@ const FintelTemplateFormDrawer = ({
     if (!template) return;
 
     let input: { key: string; value: [unknown] } = { key: field, value: [value] };
-    if (field === 'published') input = { key: 'start_date', value: [value === 'true' ? new Date() : null] };
+    if (field === 'published')
+      input = { key: 'start_date', value: [value === 'true' ? new Date() : null] };
     commitEditMutation({
       variables: { id: template.id, input: [input] },
     });
@@ -170,11 +181,7 @@ const FintelTemplateFormDrawer = ({
 
   return (
     <>
-      <Drawer
-        title={template ? editionTitle : createTitle}
-        open={isOpen}
-        onClose={onClose}
-      >
+      <Drawer title={template ? editionTitle : createTitle} open={isOpen} onClose={onClose}>
         <FintelTemplateForm
           onClose={onClose}
           onSubmit={onAdd}

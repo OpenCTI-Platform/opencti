@@ -17,9 +17,7 @@ import { Stack } from '@mui/material';
 
 const interval$ = interval(FIVE_SECONDS);
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 class StixDomainObjectsExportsContentComponent extends Component {
@@ -53,20 +51,15 @@ class StixDomainObjectsExportsContentComponent extends Component {
     const stixDomainObjectsExportFiles = data?.stixDomainObjectsExportFiles?.edges ?? [];
 
     const connectorsExport = data?.connectorsForExport ?? [];
-    const exportScopes = uniq(
-      flatten(map((c) => c.connector_scope, connectorsExport)),
-    );
+    const exportScopes = uniq(flatten(map((c) => c.connector_scope, connectorsExport)));
     const exportConnsPerFormat = scopesConn(connectorsExport);
-    const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
+    const isExportActive = (format) =>
+      filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
     const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
 
     return (
       <>
-        <Stack
-          direction="row"
-          justifyContent="flex-end"
-          gap={1}
-        >
+        <Stack direction="row" justifyContent="flex-end" gap={1}>
           <Tooltip
             title={
               isExportPossible
@@ -87,15 +80,16 @@ class StixDomainObjectsExportsContentComponent extends Component {
         <List>
           {stixDomainObjectsExportFiles.length > 0 ? (
             stixDomainObjectsExportFiles.map(
-              (file) => file?.node && (
-                <FileLine
-                  key={file.node.id}
-                  file={file.node}
-                  dense={true}
-                  disableImport={true}
-                  directDownload={true}
-                />
-              ),
+              (file) =>
+                file?.node && (
+                  <FileLine
+                    key={file.node.id}
+                    file={file.node}
+                    dense={true}
+                    disableImport={true}
+                    directDownload={true}
+                  />
+                ),
             )
           ) : (
             <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -118,7 +112,9 @@ class StixDomainObjectsExportsContentComponent extends Component {
             paginationOptions={paginationOptions}
             open={this.state.open}
             onClose={this.handleClose}
-            onExportAsk={() => this.props.relay.refetch({ count: 25, exportContext: this.props.exportContext })}
+            onExportAsk={() =>
+              this.props.relay.refetch({ count: 25, exportContext: this.props.exportContext })
+            }
             exportScopes={exportScopes}
             isExportActive={isExportActive}
           />
@@ -129,12 +125,8 @@ class StixDomainObjectsExportsContentComponent extends Component {
 }
 
 export const stixDomainObjectsExportsContentQuery = graphql`
-  query StixDomainObjectsExportsContentRefetchQuery(
-    $count: Int!
-    $exportContext: ExportContext!
-  ) {
-    ...StixDomainObjectsExportsContent_data
-      @arguments(count: $count, exportContext: $exportContext)
+  query StixDomainObjectsExportsContentRefetchQuery($count: Int!, $exportContext: ExportContext!) {
+    ...StixDomainObjectsExportsContent_data @arguments(count: $count, exportContext: $exportContext)
   }
 `;
 

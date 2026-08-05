@@ -62,17 +62,15 @@ const stixCoreObjectKnowledgeBarFragment = graphql`
       value
     }
     # distribution for observable and indicator type
-    stixCoreObjectsDistribution(
-      field: "entity_type",
-      operation: count,
-    ) {
+    stixCoreObjectsDistribution(field: "entity_type", operation: count) {
       label
       value
     }
   }
 `;
 
-type ObjectsDistribution = StixCoreObjectKnowledgeBar_stixCoreObject$data['relationshipsWithoutRelatedToDistribution']
+type ObjectsDistribution =
+  | StixCoreObjectKnowledgeBar_stixCoreObject$data['relationshipsWithoutRelatedToDistribution']
   | StixCoreObjectKnowledgeBar_stixCoreObject$data['relationshipsRelatedDistribution']
   | StixCoreObjectKnowledgeBar_stixCoreObject$data['stixCoreObjectsDistribution'];
 
@@ -136,12 +134,14 @@ const StixCoreObjectKnowledgeBar = ({
     stixCoreObjectsDistribution,
   } = useFragment(stixCoreObjectKnowledgeBarFragment, data);
 
-  const indexEntities = (distribution: ObjectsDistribution): Record<string, number> => (
-    distribution?.reduce((acc, item) => ({
-      ...acc,
-      ...(item?.label ? { [item.label]: item.value || 0 } : {}),
-    }), {}) || {}
-  );
+  const indexEntities = (distribution: ObjectsDistribution): Record<string, number> =>
+    distribution?.reduce(
+      (acc, item) => ({
+        ...acc,
+        ...(item?.label ? { [item.label]: item.value || 0 } : {}),
+      }),
+      {},
+    ) || {};
 
   const distributions = {
     withoutRelated: indexEntities(relationshipsWithoutRelatedToDistribution),
@@ -216,10 +216,13 @@ const StixCoreObjectKnowledgeBar = ({
           label: 'Locations',
           iconType: 'Location',
           path: 'locations',
-          count: sumEntitiesByKeys(
-            distributions.withoutRelated,
-            ['Region', 'Country', 'City', 'Position', 'Administrative-Area'],
-          ),
+          count: sumEntitiesByKeys(distributions.withoutRelated, [
+            'Region',
+            'Country',
+            'City',
+            'Position',
+            'Administrative-Area',
+          ]),
         },
         {
           label: 'Used tools',
@@ -236,10 +239,13 @@ const StixCoreObjectKnowledgeBar = ({
           label: 'All threats',
           iconType: 'threats',
           path: 'threats',
-          count: sumEntitiesByKeys(
-            distributions.withoutRelated,
-            ['Threat-Actor-Individual', 'Threat-Actor-Group', 'Intrusion-Set', 'Campaign', 'Incident'],
-          ),
+          count: sumEntitiesByKeys(distributions.withoutRelated, [
+            'Threat-Actor-Individual',
+            'Threat-Actor-Group',
+            'Intrusion-Set',
+            'Campaign',
+            'Incident',
+          ]),
         },
         {
           label: 'Attribution',
@@ -251,19 +257,26 @@ const StixCoreObjectKnowledgeBar = ({
           label: 'Victimology',
           iconType: 'victimology',
           path: 'victimology',
-          count: sumEntitiesByKeys(
-            distributions.withoutRelated,
-            ['Event', 'System', 'Sector', 'Organization', 'Individual', 'Region', 'Country', 'City', 'Position'],
-          ),
+          count: sumEntitiesByKeys(distributions.withoutRelated, [
+            'Event',
+            'System',
+            'Sector',
+            'Organization',
+            'Individual',
+            'Region',
+            'Country',
+            'City',
+            'Position',
+          ]),
         },
         {
           label: 'Threat actors',
           iconType: 'Threat-Actor-Individual',
           path: 'threat_actors',
-          count: sumEntitiesByKeys(
-            distributions.withoutRelated,
-            ['Threat-Actor-Individual', 'Threat-Actor-Group'],
-          ),
+          count: sumEntitiesByKeys(distributions.withoutRelated, [
+            'Threat-Actor-Individual',
+            'Threat-Actor-Group',
+          ]),
         },
         {
           label: 'Intrusion sets',
@@ -344,7 +357,12 @@ const StixCoreObjectKnowledgeBar = ({
           label: 'Observables',
           iconType: 'Stix-Cyber-Observable',
           path: 'observables',
-          count: sumEntitiesByKeys(distributions.coreObjects, [...schema.scos.map((s) => s.id), 'Stixfile', 'Ipv4-Addr', 'Ipv6-Addr']),
+          count: sumEntitiesByKeys(distributions.coreObjects, [
+            ...schema.scos.map((s) => s.id),
+            'Stixfile',
+            'Ipv4-Addr',
+            'Ipv6-Addr',
+          ]),
         },
         {
           label: 'Infrastructures',
@@ -422,26 +440,25 @@ const StixCoreObjectKnowledgeBar = ({
           label="Overview"
           count={0}
         />
-        {sectionsConfig.map((section, index) => (
-          section.items.length > 0 && (
-            <MenuList component="nav" key={index} style={{ paddingBlock: 0 }}>
-              {section.title && (
-                <ListSubheader style={{ height: 35 }}>
-                  {section.title}
-                </ListSubheader>
-              )}
-              {section.items.map(({ path, label, iconType, count }) => (
-                <KnowledgeBarItem
-                  key={label}
-                  to={`${stixCoreObjectLink}/${path}`}
-                  iconType={iconType}
-                  label={label}
-                  count={count ?? 0}
-                />
-              ))}
-            </MenuList>
-          )
-        ))}
+        {sectionsConfig.map(
+          (section, index) =>
+            section.items.length > 0 && (
+              <MenuList component="nav" key={index} style={{ paddingBlock: 0 }}>
+                {section.title && (
+                  <ListSubheader style={{ height: 35 }}>{section.title}</ListSubheader>
+                )}
+                {section.items.map(({ path, label, iconType, count }) => (
+                  <KnowledgeBarItem
+                    key={label}
+                    to={`${stixCoreObjectLink}/${path}`}
+                    iconType={iconType}
+                    label={label}
+                    count={count ?? 0}
+                  />
+                ))}
+              </MenuList>
+            ),
+        )}
       </MenuList>
     </Drawer>
   );

@@ -3,7 +3,11 @@ import Grid from '@mui/material/Grid';
 import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import Drafts from '@components/drafts/Drafts';
-import useGranted, { hasCapabilitiesInDraft, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE } from '../../../../../utils/hooks/useGranted';
+import useGranted, {
+  hasCapabilitiesInDraft,
+  KNOWLEDGE_KNASKIMPORT,
+  KNOWLEDGE_KNUPDATE,
+} from '../../../../../utils/hooks/useGranted';
 import useDraftContext from '../../../../../utils/hooks/useDraftContext';
 import { useFormatter } from '../../../../../components/i18n';
 import Card from '../../../../../components/common/card/Card';
@@ -24,23 +28,25 @@ const DraftWorkspaceViewer = ({ entityId }: DraftWorkspaceViewerProps) => {
       <Card
         padding="horizontal"
         title={t_i18n('Drafts')}
-        action={draftContext ? undefined : (
-          <>
-            {canAskImport || canCreateKnowledgeInDraft ? (
-              <IconButton
-                color="primary"
-                aria-label="Add"
-                onClick={() => setOpenCreate(true)}
-                size="small"
-                variant="tertiary"
-              >
-                <Add fontSize="small" />
-              </IconButton>
-            ) : (
-              <span />
-            )}
-          </>
-        )}
+        action={
+          draftContext ? undefined : (
+            <>
+              {canAskImport || canCreateKnowledgeInDraft ? (
+                <IconButton
+                  color="primary"
+                  aria-label="Add"
+                  onClick={() => setOpenCreate(true)}
+                  size="small"
+                  variant="tertiary"
+                >
+                  <Add fontSize="small" />
+                </IconButton>
+              ) : (
+                <span />
+              )}
+            </>
+          )
+        }
       >
         <Drafts
           entityId={entityId}

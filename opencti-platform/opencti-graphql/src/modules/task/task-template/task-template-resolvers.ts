@@ -1,5 +1,11 @@
 import type { Resolvers } from '../../../generated/graphql';
-import { findTaskTemplatePaginated, findById, taskTemplateAdd, taskTemplateDelete, taskTemplateEdit } from './task-template-domain';
+import {
+  findTaskTemplatePaginated,
+  findById,
+  taskTemplateAdd,
+  taskTemplateDelete,
+  taskTemplateEdit,
+} from './task-template-domain';
 
 const taskTemplateResolvers: Resolvers = {
   Query: {
@@ -9,7 +15,8 @@ const taskTemplateResolvers: Resolvers = {
   Mutation: {
     taskTemplateAdd: (_, { input }, context) => taskTemplateAdd(context, context.user, input),
     taskTemplateDelete: (_, { id }, context) => taskTemplateDelete(context, context.user, id),
-    taskTemplateFieldPatch: (_, { id, input }, context) => taskTemplateEdit(context, context.user, id, input),
+    taskTemplateFieldPatch: (_, { id, input }, context) =>
+      taskTemplateEdit(context, context.user, id, input),
   },
 };
 

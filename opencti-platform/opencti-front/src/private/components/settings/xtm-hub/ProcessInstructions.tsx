@@ -15,16 +15,10 @@ const ProcessInstructions: FunctionComponent<ProcessInstructionsProps> = ({
   const { t_i18n } = useFormatter();
 
   return (
-    <Box
-      sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}
-    >
-      <p style={{ whiteSpace: 'pre-line', width: '100%' }}>
-        {t_i18n(instructionKey)}
-      </p>
+    <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+      <p style={{ whiteSpace: 'pre-line', width: '100%' }}>{t_i18n(instructionKey)}</p>
       <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
-        <Button onClick={onContinue}>
-          {t_i18n('Continue')}
-        </Button>
+        <Button onClick={onContinue}>{t_i18n('Continue')}</Button>
       </div>
     </Box>
   );

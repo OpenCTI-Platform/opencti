@@ -15,7 +15,10 @@ import HiddenTypesIndicator from './HiddenTypesIndicator';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 export const groups = new Map<string, string[]>([
-  ['Analysis', ['Report', 'Grouping', 'Malware-Analysis', 'Security-Coverage', 'Note', 'External-Reference']],
+  [
+    'Analysis',
+    ['Report', 'Grouping', 'Malware-Analysis', 'Security-Coverage', 'Note', 'External-Reference'],
+  ],
   ['Cases', ['Case-Incident', 'Case-Rfi', 'Case-Rft', 'Task', 'Feedback']],
   ['Events', ['Incident', 'stix-sighting-relationship', 'Observed-Data']],
   ['Observations', ['Stix-Cyber-Observable', 'Artifact', 'Indicator', 'Infrastructure']],
@@ -23,25 +26,17 @@ export const groups = new Map<string, string[]>([
   ['Arsenal', ['Malware', 'Channel', 'Tool', 'Vulnerability']],
   [
     'Techniques',
-    [
-      'Attack-Pattern',
-      'Narrative',
-      'Course-Of-Action',
-      'Data-Component',
-      'Data-Source',
-    ],
+    ['Attack-Pattern', 'Narrative', 'Course-Of-Action', 'Data-Component', 'Data-Source'],
   ],
   ['Entities', ['Sector', 'Event', 'Organization', 'SecurityPlatform', 'System', 'Individual']],
-  [
-    'Locations',
-    ['Region', 'Country', 'Administrative-Area', 'City', 'Position'],
-  ],
+  ['Locations', ['Region', 'Country', 'Administrative-Area', 'City', 'Position']],
 ]);
 const groupKeys = Array.from(groups.keys());
 
-export const findGroupKey = (value: string) => Array.from(groups.entries())
-  .filter(({ 1: v }) => v.includes(value))
-  .map(([k]) => k)[0];
+export const findGroupKey = (value: string) =>
+  Array.from(groups.entries())
+    .filter(({ 1: v }) => v.includes(value))
+    .map(([k]) => k)[0];
 
 const itemsFromGroup = (values: string[]) => {
   for (let i = 0; i < groupKeys.length; i += 1) {
@@ -54,9 +49,7 @@ const itemsFromGroup = (values: string[]) => {
         // Remove element when group unselected
         values.splice(j, 1);
 
-        values = values.filter(
-          (el) => !(groups.get(groupKeys[i]) ?? []).includes(el),
-        );
+        values = values.filter((el) => !(groups.get(groupKeys[i]) ?? []).includes(el));
       }
     }
   }
@@ -81,7 +74,8 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
 
-  const entitySettings = useEntitySettings().filter(({ platform_hidden_type }) => platform_hidden_type !== null)
+  const entitySettings = useEntitySettings()
+    .filter(({ platform_hidden_type }) => platform_hidden_type !== null)
     .map((node) => ({
       ...node,
       hidden: node.platform_hidden_type ?? false,
@@ -90,21 +84,20 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
     .filter((entitySetting) => entitySetting.group !== undefined)
     .sort((a, b) => groupKeys.indexOf(a.group) - groupKeys.indexOf(b.group));
 
-  const entitySettingsHiddenGrouped = entitySettings.reduce(
-    (entryMap, entry) => {
-      const values = entryMap.get(entry.group) || [];
-      values.push(entry);
-      entryMap.set(entry.group, values);
-      return entryMap;
-    },
-    new Map<string, EntitySettingHidden[]>(),
-  );
+  const entitySettingsHiddenGrouped = entitySettings.reduce((entryMap, entry) => {
+    const values = entryMap.get(entry.group) || [];
+    values.push(entry);
+    entryMap.set(entry.group, values);
+    return entryMap;
+  }, new Map<string, EntitySettingHidden[]>());
 
   let initialEntitySettingsEntityType;
   if (initialValues) {
     initialEntitySettingsEntityType = initialValues;
   } else {
-    initialEntitySettingsEntityType = entitySettings.filter((node) => node.hidden).map((node) => node.target_type);
+    initialEntitySettingsEntityType = entitySettings
+      .filter((node) => node.hidden)
+      .map((node) => node.target_type);
   }
 
   const [entitySettingsEntityType, setEntitySettingsEntityType] = useState<string[]>([
@@ -149,51 +142,43 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
   };
 
   const isSelectedGroup = (group: string) => {
-    return groups
-      .get(group)
-      ?.every((el) => entitySettingsEntityType.includes(el));
+    return groups.get(group)?.every((el) => entitySettingsEntityType.includes(el));
   };
 
   const computeItems = () => {
     const items: ReactElement[] = [];
     entitySettingsHiddenGrouped.forEach((values, key) => {
       items.push(
-        <MenuItem
-          key={key}
-          value={isSelectedGroup(key) ? `not-${key}` : key}
-          dense={true}
-        >
-          <Checkbox
-            checked={isSelectedGroup(key)}
-          />
+        <MenuItem key={key} value={isSelectedGroup(key) ? `not-${key}` : key} dense={true}>
+          <Checkbox checked={isSelectedGroup(key)} />
           {t_i18n(key)}
         </MenuItem>,
       );
       const valuesKeys = groups.get(key) ?? [];
       (values as EntitySettingHidden[])
         .sort((a, b) => valuesKeys.indexOf(a.target_type) - valuesKeys.indexOf(b.target_type))
-        .forEach((platformHiddenType) => items.push(
-          <MenuItem
-            key={platformHiddenType.target_type}
-            value={platformHiddenType.target_type}
-            dense={true}
-          >
-            <Checkbox
-              checked={
-                entitySettingsEntityType.indexOf(platformHiddenType.target_type) > -1}
-              style={{ marginLeft: 10 }}
-            />
-            {t_i18n(`entity_${platformHiddenType.target_type}`)}
-            <Security needs={[SETTINGS_SETACCESSES]}>
-              <HiddenTypesIndicator platformHiddenTargetType={platformHiddenType.target_type} />
-            </Security>
-          </MenuItem>,
-        ));
+        .forEach((platformHiddenType) =>
+          items.push(
+            <MenuItem
+              key={platformHiddenType.target_type}
+              value={platformHiddenType.target_type}
+              dense={true}
+            >
+              <Checkbox
+                checked={entitySettingsEntityType.indexOf(platformHiddenType.target_type) > -1}
+                style={{ marginLeft: 10 }}
+              />
+              {t_i18n(`entity_${platformHiddenType.target_type}`)}
+              <Security needs={[SETTINGS_SETACCESSES]}>
+                <HiddenTypesIndicator platformHiddenTargetType={platformHiddenType.target_type} />
+              </Security>
+            </MenuItem>,
+          ),
+        );
     });
     return items;
   };
   return (
-
     <Field
       component={SelectField}
       variant="standard"

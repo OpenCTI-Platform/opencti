@@ -1,5 +1,12 @@
-import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import { clearIntervalAsync as clearDynamicIntervalAsync, setIntervalAsync as setDynamicIntervalAsync } from 'set-interval-async/dynamic';
+import {
+  clearIntervalAsync,
+  setIntervalAsync,
+  type SetIntervalAsyncTimer,
+} from 'set-interval-async/fixed';
+import {
+  clearIntervalAsync as clearDynamicIntervalAsync,
+  setIntervalAsync as setDynamicIntervalAsync,
+} from 'set-interval-async/dynamic';
 import moment from 'moment/moment';
 import { createStreamProcessor } from '../database/stream/stream-handler';
 import { type StreamProcessor } from '../database/stream/stream-utils';
@@ -96,7 +103,10 @@ const initManager = (manager: ManagerDefinition) => {
         if (e.name === TYPE_LOCK_ERROR) {
           logApp.debug(`[OPENCTI-MODULE] ${manager.label} already started by another API`);
         } else {
-          logApp.error(`[OPENCTI-MODULE] ${manager.label} handling error`, { cause: e, manager: manager.id });
+          logApp.error(`[OPENCTI-MODULE] ${manager.label} handling error`, {
+            cause: e,
+            manager: manager.id,
+          });
         }
       } finally {
         running = false;
@@ -117,11 +127,15 @@ const initManager = (manager: ManagerDefinition) => {
       }
       let lock;
       try {
-      // Lock the manager
+        // Lock the manager
         lock = await lockResources([manager.streamSchedulerHandler.lockKey], { retryCount: 0 });
         running = true;
         logApp.info(`[OPENCTI-MODULE] Running ${manager.label} stream handler`);
-        streamProcessor = createStreamProcessor(manager.label, manager.streamSchedulerHandler.handler, manager.streamSchedulerHandler.streamOpts);
+        streamProcessor = createStreamProcessor(
+          manager.label,
+          manager.streamSchedulerHandler.handler,
+          manager.streamSchedulerHandler.streamOpts,
+        );
         const startFrom = manager.streamSchedulerHandler.streamProcessorStartFrom();
         await streamProcessor.start(startFrom);
         while (!shutdown && streamProcessor.running()) {
@@ -131,9 +145,14 @@ const initManager = (manager: ManagerDefinition) => {
         logApp.info(`[OPENCTI-MODULE] End of ${manager.label} stream handler`);
       } catch (e: any) {
         if (e.name === TYPE_LOCK_ERROR) {
-          logApp.debug(`[OPENCTI-MODULE] ${manager.label} stream handler already started by another API`);
+          logApp.debug(
+            `[OPENCTI-MODULE] ${manager.label} stream handler already started by another API`,
+          );
         } else {
-          logApp.error(`[OPENCTI-MODULE] ${manager.label} stream error`, { cause: e, manager: manager.id });
+          logApp.error(`[OPENCTI-MODULE] ${manager.label} stream error`, {
+            cause: e,
+            manager: manager.id,
+          });
         }
       } finally {
         if (streamProcessor) await streamProcessor.shutdown();
@@ -146,8 +165,12 @@ const initManager = (manager: ManagerDefinition) => {
     manager,
     start: async () => {
       if (manager.cronSchedulerHandler) {
-        const asyncInterval = manager.cronSchedulerHandler.dynamicSchedule ? setDynamicIntervalAsync : setIntervalAsync;
-        logApp.info(`[OPENCTI-MODULE] Starting ${manager.label} every ${manager.cronSchedulerHandler.interval}`);
+        const asyncInterval = manager.cronSchedulerHandler.dynamicSchedule
+          ? setDynamicIntervalAsync
+          : setIntervalAsync;
+        logApp.info(
+          `[OPENCTI-MODULE] Starting ${manager.label} every ${manager.cronSchedulerHandler.interval}`,
+        );
         const { handlerInitializer } = manager.cronSchedulerHandler;
         scheduler = asyncInterval(async () => {
           await cronHandler(handlerInitializer);
@@ -180,14 +203,18 @@ const initManager = (manager: ManagerDefinition) => {
         if (manager.cronSchedulerHandler?.shutdown) {
           manager.cronSchedulerHandler?.shutdown();
         }
-        const asyncCleanInterval = manager.cronSchedulerHandler && manager.cronSchedulerHandler.dynamicSchedule
-          ? clearDynamicIntervalAsync : clearIntervalAsync;
+        const asyncCleanInterval =
+          manager.cronSchedulerHandler && manager.cronSchedulerHandler.dynamicSchedule
+            ? clearDynamicIntervalAsync
+            : clearIntervalAsync;
         await asyncCleanInterval(scheduler);
       }
       if (streamScheduler) {
         await clearIntervalAsync(streamScheduler);
       }
-      logApp.info(`[OPENCTI-MODULE] ${manager.label} stopped in ${new Date().getTime() - startTime} ms`);
+      logApp.info(
+        `[OPENCTI-MODULE] ${manager.label} stopped in ${new Date().getTime() - startTime} ms`,
+      );
       return true;
     },
   };
@@ -197,7 +224,12 @@ interface ManagerModule {
   manager: ManagerDefinition;
   start: () => Promise<void>;
   shutdown: () => Promise<boolean>;
-  status: (settings?: BasicStoreSettings) => { running: boolean; enable: boolean; warning: boolean; id: string };
+  status: (settings?: BasicStoreSettings) => {
+    running: boolean;
+    enable: boolean;
+    warning: boolean;
+    id: string;
+  };
 }
 
 const managersModule = {
@@ -214,13 +246,11 @@ export const registerManager = (manager: ManagerDefinition) => {
 };
 
 export const getAllEnabledManagers = () => {
-  return managersModule.managers
-    .filter((managerModule) => managerModule.manager.enabledToStart());
+  return managersModule.managers.filter((managerModule) => managerModule.manager.enabledToStart());
 };
 
 export const getAllDisabledManagers = () => {
-  return managersModule.managers
-    .filter((managerModule) => !managerModule.manager.enabledToStart());
+  return managersModule.managers.filter((managerModule) => !managerModule.manager.enabledToStart());
 };
 
 export const startAllManagers = async () => {
@@ -228,19 +258,17 @@ export const startAllManagers = async () => {
   const disabledManagers = getAllDisabledManagers();
 
   for (let i = 0; i < disabledManagers.length; i += 1) {
-    logApp.info(`[OPENCTI-MODULE] ${disabledManagers[i].manager.label} not started (disabled by configuration)`);
+    logApp.info(
+      `[OPENCTI-MODULE] ${disabledManagers[i].manager.label} not started (disabled by configuration)`,
+    );
   }
-  await Promise.all(
-    managersToStart.map((managerModule) => managerModule.start()),
-  );
+  await Promise.all(managersToStart.map((managerModule) => managerModule.start()));
 };
 
 export const shutdownAllManagers = async () => {
   const managersToShutdown = getAllEnabledManagers();
 
-  await Promise.all(
-    managersToShutdown.map((managerModule) => managerModule.shutdown()),
-  );
+  await Promise.all(managersToShutdown.map((managerModule) => managerModule.shutdown()));
 };
 
 export const getAllManagersStatuses = (settings: BasicStoreSettings) => {

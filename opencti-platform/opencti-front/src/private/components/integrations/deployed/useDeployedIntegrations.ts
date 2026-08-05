@@ -2,8 +2,14 @@ import { useMemo } from 'react';
 import { v5 as uuidv5 } from 'uuid';
 import { ConnectorsListQuery } from '@components/data/connectors/__generated__/ConnectorsListQuery.graphql';
 import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
-import { BUILT_IN_INTEGRATIONS, BuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
-import { IngestionFeedsData, IngestionFeedsFormsData } from '@components/integrations/deployed/IngestionFeeds';
+import {
+  BUILT_IN_INTEGRATIONS,
+  BuiltInIntegrationKind,
+} from '@components/integrations/available/builtInIntegrations';
+import {
+  IngestionFeedsData,
+  IngestionFeedsFormsData,
+} from '@components/integrations/deployed/IngestionFeeds';
 import { computeConnectorStatus } from '../../../../utils/Connector';
 
 // Mirrors the backend: every built-in feed registers a technical queue
@@ -38,7 +44,8 @@ export interface DeployedIntegrationItem {
   detailUrl: string;
   searchText: string;
   // Raw merged connector record, needed by connector row actions
-  connector?: ConnectorsListQuery['response']['connectors'][number] & Partial<ConnectorsStateQuery['response']['connectors'][number]>;
+  connector?: ConnectorsListQuery['response']['connectors'][number] &
+    Partial<ConnectorsStateQuery['response']['connectors'][number]>;
 }
 
 interface UseDeployedIntegrationsProps {
@@ -62,7 +69,10 @@ const feedStatus = (running: boolean | null | undefined) => {
 };
 
 const buildSearchText = (parts: (string | null | undefined)[]): string => {
-  return parts.filter((part) => !!part).join(' ').toLowerCase();
+  return parts
+    .filter((part) => !!part)
+    .join(' ')
+    .toLowerCase();
 };
 
 const builtInLabel = (kind: BuiltInIntegrationKind): string => {
@@ -93,7 +103,10 @@ const useDeployedIntegrations = ({
       if (idx === -1) continue;
       const connectorId = queue.name.substring(queue.name.indexOf('_', idx) + 1);
       if (!connectorId) continue;
-      queueMessagesByConnector.set(connectorId, (queueMessagesByConnector.get(connectorId) ?? 0) + messages);
+      queueMessagesByConnector.set(
+        connectorId,
+        (queueMessagesByConnector.get(connectorId) ?? 0) + messages,
+      );
       // RabbitMQ omits message_stats until a queue sees traffic: keep null in
       // that case so the UI shows a placeholder instead of a misleading 0.
       const rate = Number(queue.message_stats?.ack_details?.rate);

@@ -43,7 +43,7 @@ const alertDigestEditionFragment = graphql`
     event_types
     description
     filters
-    notifiers{
+    notifiers {
       id
       name
     }
@@ -61,20 +61,24 @@ const alertDigestEditionFragment = graphql`
 `;
 
 const alertDigestEditionFieldPatch = graphql`
-  mutation AlertDigestEditionFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput!]!
-  ) {
+  mutation AlertDigestEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
     triggerActivityFieldPatch(id: $id, input: $input) {
       ...AlertDigestEdition_trigger
     }
   }
 `;
 
-const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryRef, paginationOptions, handleClose }) => {
+const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({
+  queryRef,
+  paginationOptions,
+  handleClose,
+}) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery<AlertEditionQuery>(alertEditionQuery, queryRef);
-  const trigger = useFragment<AlertDigestEdition_trigger$key>(alertDigestEditionFragment, data.triggerKnowledge);
+  const trigger = useFragment<AlertDigestEdition_trigger$key>(
+    alertDigestEditionFragment,
+    data.triggerKnowledge,
+  );
   const [commitFieldPatch] = useApiMutation(alertDigestEditionFieldPatch);
   const onSubmit: FormikConfig<AlertDigestFormValues>['onSubmit'] = (values, { setSubmitting }) => {
     commitFieldPatch({
@@ -89,34 +93,37 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
     });
   };
   const handleSubmitField = (name: string, value: FieldOption | string | string[]) => {
-    return digestTriggerValidation(t_i18n).validateAt(name, { [name]: value }).then(() => {
-      commitFieldPatch({
-        variables: {
-          id: trigger?.id,
-          input: { key: name, value: value || '' },
-        },
-      });
-    }).catch(() => false);
+    return digestTriggerValidation(t_i18n)
+      .validateAt(name, { [name]: value })
+      .then(() => {
+        commitFieldPatch({
+          variables: {
+            id: trigger?.id,
+            input: { key: name, value: value || '' },
+          },
+        });
+      })
+      .catch(() => false);
   };
-  const handleSubmitFieldOptions = (name: string, value: { value: string }[]) => digestTriggerValidation(t_i18n)
-    .validateAt(name, { [name]: value })
-    .then(() => {
-      commitFieldPatch({
-        variables: {
-          id: trigger?.id,
-          input: { key: name, value: value?.map(({ value: v }) => v) ?? '' },
-        },
-      });
-    })
-    .catch(() => false);
+  const handleSubmitFieldOptions = (name: string, value: { value: string }[]) =>
+    digestTriggerValidation(t_i18n)
+      .validateAt(name, { [name]: value })
+      .then(() => {
+        commitFieldPatch({
+          variables: {
+            id: trigger?.id,
+            input: { key: name, value: value?.map(({ value: v }) => v) ?? '' },
+          },
+        });
+      })
+      .catch(() => false);
   const handleSubmitDay = (_: string, value: string) => {
     const day = value && value.length > 0 ? value : '1';
     const currentTime = trigger?.trigger_time?.split('-') ?? [
       `${parse(dayStartDate()).utc().format('HH:mm:00.000')}Z`,
     ];
-    const newTime = currentTime.length > 1
-      ? `${day}-${currentTime[1]}`
-      : `${day}-${currentTime[0]}`;
+    const newTime =
+      currentTime.length > 1 ? `${day}-${currentTime[1]}` : `${day}-${currentTime[0]}`;
     return commitFieldPatch({
       variables: {
         id: trigger?.id,
@@ -125,15 +132,15 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
     });
   };
   const handleSubmitTime = (_: string, value: string) => {
-    const time = value && value.length > 0
-      ? `${parse(value).utc().format('HH:mm:00.000')}Z`
-      : `${parse(dayStartDate()).utc().format('HH:mm:00.000')}Z`;
+    const time =
+      value && value.length > 0
+        ? `${parse(value).utc().format('HH:mm:00.000')}Z`
+        : `${parse(dayStartDate()).utc().format('HH:mm:00.000')}Z`;
     const currentTime = trigger?.trigger_time?.split('-') ?? [
       `${parse(dayStartDate()).utc().format('HH:mm:00.000')}Z`,
     ];
-    const newTime = currentTime.length > 1 && trigger?.period !== 'hour'
-      ? `${currentTime[0]}-${time}`
-      : time;
+    const newTime =
+      currentTime.length > 1 && trigger?.period !== 'hour' ? `${currentTime[0]}-${time}` : time;
     return commitFieldPatch({
       variables: {
         id: trigger?.id,
@@ -250,7 +257,12 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
           )}
           <NotifierField
             name="notifiers"
-            onChange={(name, v) => handleSubmitField(name, v.map(({ value }) => value))}
+            onChange={(name, v) =>
+              handleSubmitField(
+                name,
+                v.map(({ value }) => value),
+              )
+            }
           />
           <ObjectMembersField
             label="Recipients"
@@ -262,7 +274,6 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
         </Form>
       )}
     </Formik>
-
   );
 };
 

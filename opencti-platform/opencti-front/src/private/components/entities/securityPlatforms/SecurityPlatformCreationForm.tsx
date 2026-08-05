@@ -12,7 +12,10 @@ import OpenVocabField from '@components/common/form/OpenVocabField';
 import CreatedByField from '@components/common/form/CreatedByField';
 import ObjectLabelField from '@components/common/form/ObjectLabelField';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
-import { getSecurityPlatformValidator, SECURITY_PLATFORM_TYPE } from '@components/entities/securityPlatforms/SecurityPlatformUtils';
+import {
+  getSecurityPlatformValidator,
+  SECURITY_PLATFORM_TYPE,
+} from '@components/entities/securityPlatforms/SecurityPlatformUtils';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -66,24 +69,22 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
   const [commit] = useApiMutation<SecurityPlatformCreationMutation>(
     securityPlatformCreationMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_SecurityPlatform')} ${t_i18n('successfully created')}` },
-  );
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
-
-  const {
-    bulkCommit,
-    bulkCount,
-    bulkCurrentCount,
-    BulkResult,
-    resetBulk,
-  } = useBulkCommit<SecurityPlatformCreationMutation>({
-    commit,
-    relayUpdater: (store) => {
-      if (updater) {
-        updater(store, 'securityPlatformAdd');
-      }
+    {
+      successMessage: `${t_i18n('entity_SecurityPlatform')} ${t_i18n('successfully created')}`,
     },
-  });
+  );
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
+
+  const { bulkCommit, bulkCount, bulkCurrentCount, BulkResult, resetBulk } =
+    useBulkCommit<SecurityPlatformCreationMutation>({
+      commit,
+      relayUpdater: (store) => {
+        if (updater) {
+          updater(store, 'securityPlatformAdd');
+        }
+      },
+    });
 
   useEffect(() => {
     if (bulkCount > 1) {
@@ -91,11 +92,10 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
     }
   }, [bulkCount]);
 
-  const onSubmit: FormikConfig<SecurityPlatformCreationFormData>['onSubmit'] = (values, {
-    setSubmitting,
-    setErrors,
-    resetForm,
-  }) => {
+  const onSubmit: FormikConfig<SecurityPlatformCreationFormData>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
     const allNames = splitMultilines(values.name);
     const variables: SecurityPlatformCreationMutation$variables[] = allNames.map((name) => ({
       input: {
@@ -124,17 +124,14 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
     });
   };
 
-  const initialValues = useDefaultValues(
-    SECURITY_PLATFORM_TYPE,
-    {
-      name: inputValue ?? '',
-      description: '',
-      security_platform_type: undefined,
-      createdBy: defaultCreatedBy ?? undefined, // undefined for Require Fields Flagging, if Configured Mandatory Field
-      objectMarking: defaultMarkingDefinitions ?? [],
-      objectLabel: [],
-    },
-  );
+  const initialValues = useDefaultValues(SECURITY_PLATFORM_TYPE, {
+    name: inputValue ?? '',
+    description: '',
+    security_platform_type: undefined,
+    createdBy: defaultCreatedBy ?? undefined, // undefined for Require Fields Flagging, if Configured Mandatory Field
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+  });
 
   return (
     <Formik<SecurityPlatformCreationFormData>
@@ -145,14 +142,7 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({
-        submitForm,
-        handleReset,
-        isSubmitting,
-        setFieldValue,
-        values,
-        resetForm,
-      }) => (
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values, resetForm }) => (
         <>
           <BulkTextModal
             open={bulkModalOpen}
@@ -185,7 +175,7 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
               variant="standard"
               name="name"
               label={t_i18n('Name')}
-              required={(mandatoryAttributes.includes('name'))}
+              required={mandatoryAttributes.includes('name')}
               fullWidth={true}
               detectDuplicate={['securityPlatform']}
             />
@@ -193,7 +183,7 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
-              required={(mandatoryAttributes.includes('description'))}
+              required={mandatoryAttributes.includes('description')}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -202,47 +192,40 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
               registerMarkdownImagesController={registerMarkdownImagesController}
               uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
-            { /* TODO Improve customization (vocab with letter range) 2662 */}
+            {/* TODO Improve customization (vocab with letter range) 2662 */}
             <OpenVocabField
               label={t_i18n('Security platform type')}
               type="security_platform_type_ov"
               name="security_platform_type"
-              required={(mandatoryAttributes.includes('security_platform_type'))}
+              required={mandatoryAttributes.includes('security_platform_type')}
               containerStyle={fieldSpacingContainerStyle}
               multiple={false}
               onChange={setFieldValue}
             />
             <CreatedByField
               name="createdBy"
-              required={(mandatoryAttributes.includes('createdBy'))}
+              required={mandatoryAttributes.includes('createdBy')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
-              required={(mandatoryAttributes.includes('objectLabel'))}
+              required={mandatoryAttributes.includes('objectLabel')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
-              required={(mandatoryAttributes.includes('objectMarking'))}
+              required={mandatoryAttributes.includes('objectMarking')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <FormButtonContainer>
-              <Button
-                variant="secondary"
-                onClick={handleReset}
-                disabled={isSubmitting}
-              >
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>

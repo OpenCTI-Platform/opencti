@@ -9,9 +9,7 @@ export const up = async (next) => {
     },
     query: {
       bool: {
-        must: [
-          { term: { 'entity_type.keyword': { value: 'Sync' } } },
-        ],
+        must: [{ term: { 'entity_type.keyword': { value: 'Sync' } } }],
       },
     },
   };

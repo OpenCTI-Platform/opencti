@@ -1,6 +1,19 @@
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { useFragment } from 'react-relay';
-import { Alert, AlertTitle, Box, CircularProgress, DialogActions, DialogContentText, Divider, Menu, MenuItem, TextField, Tooltip, Typography } from '@mui/material';
+import {
+  Alert,
+  AlertTitle,
+  Box,
+  CircularProgress,
+  DialogActions,
+  DialogContentText,
+  Divider,
+  Menu,
+  MenuItem,
+  TextField,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import { ArrowDropDownOutlined, ErrorOutline, LockOpenOutlined } from '@mui/icons-material';
 import { Form, Formik } from 'formik';
 import * as Yup from 'yup';
@@ -43,14 +56,20 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
     handleValidateDraft,
     handleClear,
     notifyBackgroundTransitionComplete,
-  } = useTransitionWizard({ entityId: draft.id, entityNavigationId: draft.entity_id, draftId: draft.id });
+  } = useTransitionWizard({
+    entityId: draft.id,
+    entityNavigationId: draft.entity_id,
+    draftId: draft.id,
+  });
 
   const workflowInstance = draft.workflowInstance;
   const isPending = workflowInstance?.pendingStatus === 'pending';
   const pendingTransition = workflowInstance?.pendingTransition ?? null;
 
   const prevIsPendingRef = useRef<boolean>(isPending);
-  const prevSyncActionsRef = useRef<readonly { type: string }[] | null>(pendingTransition?.syncActions ?? null);
+  const prevSyncActionsRef = useRef<readonly { type: string }[] | null>(
+    pendingTransition?.syncActions ?? null,
+  );
   useEffect(() => {
     const wasJustPending = prevIsPendingRef.current && !isPending;
     if (wasJustPending) {
@@ -79,8 +98,14 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
 
   // Pending state UI
   if (isPending && pendingTransition) {
-    const totalExpected = pendingTransition.asyncActions.reduce((sum, s) => sum + (s.expectedCount ?? 0), 0);
-    const totalProcessed = pendingTransition.asyncActions.reduce((sum, s) => sum + (s.processedCount ?? 0), 0);
+    const totalExpected = pendingTransition.asyncActions.reduce(
+      (sum, s) => sum + (s.expectedCount ?? 0),
+      0,
+    );
+    const totalProcessed = pendingTransition.asyncActions.reduce(
+      (sum, s) => sum + (s.processedCount ?? 0),
+      0,
+    );
     return (
       <>
         <Divider orientation="vertical" flexItem sx={{ marginRight: 1 }} />
@@ -116,13 +141,21 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
       <>
         <Divider orientation="vertical" flexItem sx={{ marginRight: 1 }} />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Tooltip title={workflowInstance.pendingError ?? t_i18n('One or more async workflow actions failed')}>
+          <Tooltip
+            title={
+              workflowInstance.pendingError ?? t_i18n('One or more async workflow actions failed')
+            }
+          >
             <ErrorOutline color="error" fontSize="small" />
           </Tooltip>
           <Typography variant="caption" color="error">
             {t_i18n('Transition failed')}
           </Typography>
-          <Tooltip title={t_i18n('Force-unlock this transition (admin only). The background task will be orphaned.')}>
+          <Tooltip
+            title={t_i18n(
+              'Force-unlock this transition (admin only). The background task will be orphaned.',
+            )}
+          >
             <span>
               <Button
                 variant="secondary"
@@ -153,13 +186,15 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
             <Button
               key={transition.event}
               variant="primary"
-              onClick={() => handleTransition(
-                transition.event,
-                transition.actions ?? [],
-                transition.comment,
-                transition.requiresShareOrganizationInput,
-                transition.requiresUnshareOrganizationInput,
-              )}
+              onClick={() =>
+                handleTransition(
+                  transition.event,
+                  transition.actions ?? [],
+                  transition.comment,
+                  transition.requiresShareOrganizationInput,
+                  transition.requiresUnshareOrganizationInput,
+                )
+              }
               disabled={approving}
             >
               {transition.event}
@@ -227,7 +262,9 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
               {wizard?.requiresShareOrg && (
                 <>
                   <DialogContentText sx={{ mb: 2 }}>
-                    {t_i18n('Select the organizations to share the draft content with during this transition.')}
+                    {t_i18n(
+                      'Select the organizations to share the draft content with during this transition.',
+                    )}
                   </DialogContentText>
                   <ObjectOrganizationField
                     name="shareOrganizations"
@@ -240,7 +277,9 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
               {wizard?.requiresUnshareOrg && (
                 <>
                   <DialogContentText sx={{ mb: 2, mt: wizard?.requiresShareOrg ? 2 : 0 }}>
-                    {t_i18n('Select the organizations to unshare the draft content from during this transition.')}
+                    {t_i18n(
+                      'Select the organizations to unshare the draft content from during this transition.',
+                    )}
                   </DialogContentText>
                   <ObjectOrganizationField
                     name="unshareOrganizations"
@@ -260,10 +299,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
                 >
                   {t_i18n('Cancel')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting || approving}
-                >
+                <Button onClick={submitForm} disabled={isSubmitting || approving}>
                   {t_i18n('Confirm')}
                 </Button>
               </DialogActions>
@@ -301,15 +337,16 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
           helperText={`${commentValue.length} / ${COMMENT_MAX_LENGTH}`}
         />
         <DialogActions>
-          <Button
-            variant="secondary"
-            onClick={() => setWizard(null)}
-          >
+          <Button variant="secondary" onClick={() => setWizard(null)}>
             {t_i18n('Cancel')}
           </Button>
           <Button
             onClick={handleConfirmComment}
-            disabled={wizard?.commentMode === CommentMode.required && commentValue.trim() === '' && !canBypassMandatoryFields}
+            disabled={
+              wizard?.commentMode === CommentMode.required &&
+              commentValue.trim() === '' &&
+              !canBypassMandatoryFields
+            }
           >
             {t_i18n('Confirm')}
           </Button>
@@ -330,22 +367,18 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
           {draft.processingCount > 0 && (
             <Alert sx={{ marginTop: 1 }} severity="warning">
               <AlertTitle>{t_i18n('Ongoing processes')}</AlertTitle>
-              {t_i18n('There are processes still running that could impact the data of the draft. '
-                + 'By approving the draft now, the remaining changes that would have been applied by those processes will be ignored.')}
+              {t_i18n(
+                'There are processes still running that could impact the data of the draft. ' +
+                  'By approving the draft now, the remaining changes that would have been applied by those processes will be ignored.',
+              )}
             </Alert>
           )}
         </DialogContentText>
         <DialogActions>
-          <Button
-            variant="secondary"
-            onClick={() => setWizard(null)}
-          >
+          <Button variant="secondary" onClick={() => setWizard(null)}>
             {t_i18n('Cancel')}
           </Button>
-          <Button
-            onClick={handleValidateDraft}
-            disabled={approving}
-          >
+          <Button onClick={handleValidateDraft} disabled={approving}>
             {t_i18n('Approve')}
           </Button>
         </DialogActions>

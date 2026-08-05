@@ -29,7 +29,8 @@ const killChainPhaseResolvers = {
       contextPatch: ({ input }) => killChainPhaseEditContext(context, context.user, id, input),
       contextClean: () => killChainPhaseCleanContext(context, context.user, id),
       relationAdd: ({ input }) => killChainPhaseAddRelation(context, context.user, id, input),
-      relationDelete: ({ relationId }) => killChainPhaseDeleteRelation(context, context.user, id, relationId),
+      relationDelete: ({ relationId }) =>
+        killChainPhaseDeleteRelation(context, context.user, id, relationId),
     }),
     killChainPhaseAdd: (_, { input }, context) => addKillChainPhase(context, context.user, input),
   },
@@ -40,7 +41,11 @@ const killChainPhaseResolvers = {
         const preFn = () => killChainPhaseEditContext(context, context.user, id);
         const cleanFn = () => killChainPhaseCleanContext(context, context.user, id);
         const bus = BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_KILL_CHAIN_PHASE, preFn, cleanFn });
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], {
+          type: ENTITY_TYPE_KILL_CHAIN_PHASE,
+          preFn,
+          cleanFn,
+        });
       },
     },
   },

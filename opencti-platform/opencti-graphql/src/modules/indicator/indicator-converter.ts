@@ -1,6 +1,10 @@
 import moment from 'moment';
 import { getObservableValuesFromPattern } from './indicator-domain';
-import { buildKillChainPhases, buildMITREExtensions, buildStixDomain } from '../../database/stix-2-1-converter';
+import {
+  buildKillChainPhases,
+  buildMITREExtensions,
+  buildStixDomain,
+} from '../../database/stix-2-1-converter';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { StixIndicator, StoreEntityIndicator, Stix2Indicator } from './indicator-types';
 import { ENTITY_TYPE_INDICATOR } from './indicator-types';
@@ -15,9 +19,12 @@ const convertIndicatorToStix = (instance: StoreEntityIndicator): StixIndicator =
   const indicator = buildStixDomain(instance);
   // Adding one second to the valid_until if valid_from and valid_until are equals,
   // because according to STIX 2.1 specification the valid_until must be greater than the valid_from.
-  const computedValidUntil = (
-    isNotEmptyField(instance.valid_from) && isNotEmptyField(instance.valid_until) && instance.valid_until === instance.valid_from
-  ) ? moment(instance.valid_from).add(1, 'seconds').toDate() : instance.valid_until;
+  const computedValidUntil =
+    isNotEmptyField(instance.valid_from) &&
+    isNotEmptyField(instance.valid_until) &&
+    instance.valid_until === instance.valid_from
+      ? moment(instance.valid_from).add(1, 'seconds').toDate()
+      : instance.valid_until;
   return {
     ...indicator,
     name: instance.name,
@@ -45,13 +52,15 @@ const convertIndicatorToStix = (instance: StoreEntityIndicator): StixIndicator =
 export const convertIndicatorToStix_2_0 = (instance: StoreEntity): Stix2Indicator => {
   assertType(ENTITY_TYPE_INDICATOR, instance.entity_type);
   const indicator = instance as StoreEntityIndicator;
-  const killChainPhases: Array<StixInternalKillChainPhase> = (instance[INPUT_KILLCHAIN] ?? []).map((k: any) => {
-    return cleanObject({
-      kill_chain_name: k.kill_chain_name,
-      phase_name: k.phase_name,
-      x_opencti_order: k.x_opencti_order,
-    });
-  });
+  const killChainPhases: Array<StixInternalKillChainPhase> = (instance[INPUT_KILLCHAIN] ?? []).map(
+    (k: any) => {
+      return cleanObject({
+        kill_chain_name: k.kill_chain_name,
+        phase_name: k.phase_name,
+        x_opencti_order: k.x_opencti_order,
+      });
+    },
+  );
   return {
     ...buildStixDomain2(instance),
     name: instance.name,

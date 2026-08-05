@@ -23,13 +23,8 @@ const caseTemplateMutation = graphql`
   }
 `;
 
-const CreateCaseTemplateControlledDial = (
-  props: DrawerControlledDialProps,
-) => (
-  <CreateEntityControlledDial
-    entityType="Case-Template"
-    {...props}
-  />
+const CreateCaseTemplateControlledDial = (props: DrawerControlledDialProps) => (
+  <CreateEntityControlledDial entityType="Case-Template" {...props} />
 );
 
 interface CaseTemplateCreationProps {
@@ -52,7 +47,10 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
   };
   const onSubmit = (
     values: typeof initialValues,
-    { setSubmitting, resetForm }: {
+    {
+      setSubmitting,
+      resetForm,
+    }: {
       setSubmitting: (flag: boolean) => void;
       resetForm: () => void;
     },
@@ -67,12 +65,7 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
       mutation: caseTemplateMutation,
       variables: { input: finalValues },
       updater: (store: RecordSourceSelectorProxy) => {
-        insertNode(
-          store,
-          'Pagination_caseTemplates',
-          paginationOptions,
-          'caseTemplateAdd',
-        );
+        insertNode(store, 'Pagination_caseTemplates', paginationOptions, 'caseTemplateAdd');
       },
       setSubmitting,
       onCompleted: () => {
@@ -112,22 +105,12 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
                 rows="4"
                 style={{ marginTop: 20 }}
               />
-              <CaseTemplateTasks
-                onChange={setFieldValue}
-                values={values.tasks}
-              />
+              <CaseTemplateTasks onChange={setFieldValue} values={values.tasks} />
               <FormButtonContainer>
-                <Button
-                  variant="secondary"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                >
+                <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
+                <Button onClick={submitForm} disabled={isSubmitting}>
                   {t_i18n('Create')}
                 </Button>
               </FormButtonContainer>

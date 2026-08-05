@@ -76,7 +76,9 @@ const SavedFilterEditDialog = ({
   const { me } = useAuth();
   const hasShareFilterCapability = useGranted([KNOWLEDGE_KNSHAREFILTERS]);
 
-  const ownerMember = savedFilter.authorizedMembers?.find((a) => a.member_id === savedFilter.creator_id);
+  const ownerMember = savedFilter.authorizedMembers?.find(
+    (a) => a.member_id === savedFilter.creator_id,
+  );
   const owner = ownerMember
     ? {
         id: ownerMember.member_id,
@@ -85,15 +87,11 @@ const SavedFilterEditDialog = ({
       }
     : { id: me.id, name: me.name, entity_type: 'User' };
 
-  const [commitFieldPatch] = useApiMutation(
-    savedFilterFieldPatchMutation,
-    undefined,
-    { successMessage: t_i18n('Saved filter successfully updated') },
-  );
+  const [commitFieldPatch] = useApiMutation(savedFilterFieldPatchMutation, undefined, {
+    successMessage: t_i18n('Saved filter successfully updated'),
+  });
 
-  const [commitAuthorizedMembers] = useApiMutation(
-    savedFilterEditAuthorizedMembersMutation,
-  );
+  const [commitAuthorizedMembers] = useApiMutation(savedFilterEditAuthorizedMembersMutation);
 
   const handleSubmit = (values: SavedFilterEditFormValues) => {
     // Update name
@@ -141,12 +139,7 @@ const SavedFilterEditDialog = ({
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={onClose}
-      size="medium"
-      title={t_i18n('Edit saved filter')}
-    >
+    <Dialog open={isOpen} onClose={onClose} size="medium" title={t_i18n('Edit saved filter')}>
       <Formik<SavedFilterEditFormValues>
         initialValues={initialValues}
         enableReinitialize
@@ -162,14 +155,15 @@ const SavedFilterEditDialog = ({
               onChange={(e) => setFieldValue('name', e.target.value)}
             />
             <Security needs={[KNOWLEDGE_KNSHAREFILTERS]}>
-              <SavedFilterSharingSection
-                owner={owner}
-                isEditMode
-              />
+              <SavedFilterSharingSection owner={owner} isEditMode />
             </Security>
             <DialogActions>
-              <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
-              <Button onClick={submitForm} disabled={!values.name}>{t_i18n('Save')}</Button>
+              <Button variant="secondary" onClick={onClose}>
+                {t_i18n('Cancel')}
+              </Button>
+              <Button onClick={submitForm} disabled={!values.name}>
+                {t_i18n('Save')}
+              </Button>
             </DialogActions>
           </Form>
         )}

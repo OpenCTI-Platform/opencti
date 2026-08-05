@@ -1,10 +1,15 @@
 import { v4 as uuid } from 'uuid';
 import { JsonMapperRepresentationType } from '@components/data/jsonMapper/__generated__/JsonMapperEditionContainerFragment_jsonMapper.graphql';
-import { JsonMapperRepresentation, JsonMapperRepresentationEdit, JsonMapperRepresentationFormData } from '@components/data/jsonMapper/representations/Representation';
-import { formDataToJsonMapperAttribute, jsonMapperAttributeToFormData } from '@components/data/jsonMapper/representations/attributes/AttributeUtils';
 import {
-  JsonMapperRepresentationAttributesForm_allSchemaAttributes$data,
-} from '@components/data/jsonMapper/representations/attributes/__generated__/JsonMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
+  JsonMapperRepresentation,
+  JsonMapperRepresentationEdit,
+  JsonMapperRepresentationFormData,
+} from '@components/data/jsonMapper/representations/Representation';
+import {
+  formDataToJsonMapperAttribute,
+  jsonMapperAttributeToFormData,
+} from '@components/data/jsonMapper/representations/attributes/AttributeUtils';
+import { JsonMapperRepresentationAttributesForm_allSchemaAttributes$data } from '@components/data/jsonMapper/representations/attributes/__generated__/JsonMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
 import { isEmptyField } from '../../../../../utils/utils';
 import { useComputeDefaultValues } from '../../../../../utils/hooks/useDefaultValues';
 
@@ -55,11 +60,11 @@ export const jsonMapperRepresentationToFormData = (
   schemaAttributes: JsonMapperRepresentationAttributesForm_allSchemaAttributes$data['csvMapperSchemaAttributes'],
   computeDefaultValues: ReturnType<typeof useComputeDefaultValues>,
 ): JsonMapperRepresentationFormData => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   const computedSchemaAttributes: any[] = [];
-  const entitySchemaAttributes = schemaAttributes.find(
-    (schema) => schema.name === representation.target.entity_type,
-  )?.attributes ?? [];
+  const entitySchemaAttributes =
+    schemaAttributes.find((schema) => schema.name === representation.target.entity_type)
+      ?.attributes ?? [];
   for (let i = 0; i < entitySchemaAttributes.length; i += 1) {
     const entitySchemaAttribute = entitySchemaAttributes[i];
     if (entitySchemaAttribute.name === 'hashes') {
@@ -121,14 +126,12 @@ export const formDataToJsonMapperRepresentation = (
       path: data.target?.path ?? '',
     },
     identifier: data.identifier,
-    attributes: (Object.entries(data.attributes)).flatMap(([name, attribute]) => {
+    attributes: Object.entries(data.attributes).flatMap(([name, attribute]) => {
       const mapperAttribute = formDataToJsonMapperAttribute(attribute, name);
-      return (
-        isEmptyField(mapperAttribute.attr_path?.path)
-        && isEmptyField(mapperAttribute.complex_path?.formula)
-        && isEmptyField(mapperAttribute.based_on?.representations)
-        && isEmptyField(mapperAttribute.default_values)
-      )
+      return isEmptyField(mapperAttribute.attr_path?.path) &&
+        isEmptyField(mapperAttribute.complex_path?.formula) &&
+        isEmptyField(mapperAttribute.based_on?.representations) &&
+        isEmptyField(mapperAttribute.default_values)
         ? []
         : mapperAttribute;
     }),

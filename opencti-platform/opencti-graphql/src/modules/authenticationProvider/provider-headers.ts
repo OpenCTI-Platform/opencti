@@ -5,7 +5,12 @@ import { createAuthLogger } from './providers-logger';
 import { createMapper } from './mappings-utils';
 import { handleProviderLogin } from './providers';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
-import { AuthType, EnvStrategyType, HEADERS_STRATEGY_IDENTIFIER, type ProviderConfiguration } from './providers-configuration';
+import {
+  AuthType,
+  EnvStrategyType,
+  HEADERS_STRATEGY_IDENTIFIER,
+  type ProviderConfiguration,
+} from './providers-configuration';
 import { sessionAuthenticateUser } from '../../domain/user';
 import type { Request, Response } from 'express';
 import { extractRefererPathFromReq, setCookieError } from '../../http/httpUtils';
@@ -14,17 +19,21 @@ export const HEADERS_PROVIDER_NAME = 'Headers';
 export let HEADERS_PROVIDER: ProviderConfiguration | undefined = undefined;
 
 export const registerHeadersStrategy = async (context: AuthContext) => {
-  const logger = createAuthLogger(HEADERS_PROVIDER_NAME, HEADERS_PROVIDER_NAME, HEADERS_PROVIDER_NAME);
+  const logger = createAuthLogger(
+    HEADERS_PROVIDER_NAME,
+    HEADERS_PROVIDER_NAME,
+    HEADERS_PROVIDER_NAME,
+  );
 
   const handleHeadersAuthenticationRequest = async (req: Request, res: Response) => {
-    const settings = await getSettings(context) as unknown as BasicStoreSettings;
+    const settings = (await getSettings(context)) as unknown as BasicStoreSettings;
     const headerStrategy = settings.headers_auth;
     const redirect = extractRefererPathFromReq(req) ?? '/';
     const isActivated = headerStrategy?.enabled;
     if (!isActivated) {
       setCookieError(res, 'Headers authentication is not available');
       res.redirect(redirect);
-    } else if (!await isEnterpriseEdition(context)) {
+    } else if (!(await isEnterpriseEdition(context))) {
       setCookieError(res, 'Headers authentication strategy is not available');
       res.redirect(redirect);
     } else {

@@ -12,7 +12,11 @@ import { UserContext } from '../../../../utils/hooks/useAuth';
 import { FieldOption } from '../../../../utils/field';
 
 export const objectAssigneeFieldMembersSearchQuery = graphql`
-  query ObjectAssigneeFieldMembersSearchQuery($search: String, $first: Int, $entityTypes: [MemberType!]) {
+  query ObjectAssigneeFieldMembersSearchQuery(
+    $search: String
+    $first: Int
+    $entityTypes: [MemberType!]
+  ) {
     members(search: $search, first: $first, entityTypes: $entityTypes) {
       edges {
         node {
@@ -90,7 +94,7 @@ const ObjectAssigneeField: FunctionComponent<ObjectAssigneeFieldProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const { me } = useContext((UserContext));
+  const { me } = useContext(UserContext);
   const [assignees, setAssignees] = useState<OptionAssignee[]>([]);
 
   const searchAssignees = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,7 +118,13 @@ const ObjectAssigneeField: FunctionComponent<ObjectAssigneeFieldProps> = ({
         });
         // Add current user if is not in the only first results displayed
         const isMeDisplayed = newAssignees.find((assignee) => assignee.value === me?.id);
-        if (me && !isMeDisplayed) newAssignees.unshift({ label: me.name, value: me.id, type: 'User', group: t_i18n('Current User') });
+        if (me && !isMeDisplayed)
+          newAssignees.unshift({
+            label: me.name,
+            value: me.id,
+            type: 'User',
+            group: t_i18n('Current User'),
+          });
         newAssignees.sort((a, b) => {
           // Display first the current user
           if (a.value === me?.id) return -1;

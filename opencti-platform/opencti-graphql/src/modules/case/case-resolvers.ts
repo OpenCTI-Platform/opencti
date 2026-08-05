@@ -15,16 +15,17 @@ const caseResolvers: Resolvers = {
     cases: (_, args, context) => findCasesPaginated(context, context.user, args),
   },
   Case: {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+    // @ts-expect-error obj is typed generically, entity_type narrowing is not inferred
     __resolveType(obj) {
       if (obj.entity_type) {
         return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) => letter.toUpperCase());
       }
       return 'Unknown';
     },
-    tasks: (current, args, context) => caseTasksPaginated<BasicStoreEntityTask>(context, context.user, current.id, args),
-    objectParticipant: async (container, _, context) => loadParticipants(context, context.user, container),
+    tasks: (current, args, context) =>
+      caseTasksPaginated<BasicStoreEntityTask>(context, context.user, current.id, args),
+    objectParticipant: async (container, _, context) =>
+      loadParticipants(context, context.user, container),
   },
   CasesOrdering: {
     creator: 'creator_id',
@@ -40,7 +41,9 @@ const caseResolvers: Resolvers = {
       return stixDomainObjectDelete(context, context.user, id, caseEntity.entity_type);
     },
     caseSetTemplate: async (_, { id, caseTemplatesId }, context) => {
-      await BluePromise.map(caseTemplatesId, (caseTemplateId) => upsertTemplateForCase(context, context.user, id, caseTemplateId));
+      await BluePromise.map(caseTemplatesId, (caseTemplateId) =>
+        upsertTemplateForCase(context, context.user, id, caseTemplateId),
+      );
       return findById(context, context.user, id);
     },
   },

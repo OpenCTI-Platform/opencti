@@ -35,19 +35,13 @@ const ActionMenuButton = ({ onAddObject, type }: ActionMenuButtonProps) => {
 
   return (
     <div>
-      <IconButton
-        color="secondary"
-        aria-label="Add"
-        onClick={handleClick}
-      >
+      <IconButton color="secondary" aria-label="Add" onClick={handleClick}>
         <Add fontSize="small" />
       </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-      >
-        <MenuItem onClick={() => onClickItem('updateAuthorizedMembers')}>{t_i18n('Update authorized members')}</MenuItem>
+      <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+        <MenuItem onClick={() => onClickItem('updateAuthorizedMembers')}>
+          {t_i18n('Update authorized members')}
+        </MenuItem>
         <MenuItem onClick={() => onClickItem('validateDraft')}>{t_i18n('Validate draft')}</MenuItem>
       </Menu>
     </div>

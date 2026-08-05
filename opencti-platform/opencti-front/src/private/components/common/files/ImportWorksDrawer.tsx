@@ -24,11 +24,13 @@ import type { Theme } from '../../../../components/Theme';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import { hexToRGB } from '../../../../utils/Colors';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
-import { ImportWorksDrawerQuery, ImportWorksDrawerQuery$variables } from './__generated__/ImportWorksDrawerQuery.graphql';
+import {
+  ImportWorksDrawerQuery,
+  ImportWorksDrawerQuery$variables,
+} from './__generated__/ImportWorksDrawerQuery.graphql';
 
 export const importConnectorsFragment = graphql`
-  fragment ImportWorksDrawer_connectorsImport on Connector
-  @relay(plural: true) {
+  fragment ImportWorksDrawer_connectorsImport on Connector @relay(plural: true) {
     id
     name
     active
@@ -37,7 +39,7 @@ export const importConnectorsFragment = graphql`
     updated_at
     configurations {
       id
-      name,
+      name
       configuration
     }
   }
@@ -54,7 +56,7 @@ export const fileWorksQuery = graphql`
       xtm_one_intent
       configurations {
         id
-        name,
+        name
         configuration
       }
     }
@@ -151,10 +153,12 @@ const FileWorksComponent = ({
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery<ImportWorksDrawerQuery>(fileWorksQuery, queryRef);
   const draftContext = useDraftContext();
-  const firstNode = !isWorkbench ? data.importFiles?.edges[0]?.node : data.pendingFiles?.edges[0]?.node;
+  const firstNode = !isWorkbench
+    ? data.importFiles?.edges[0]?.node
+    : data.pendingFiles?.edges[0]?.node;
 
   if (!firstNode) {
-    return (<div>No Data</div>);
+    return <div>No Data</div>;
   }
 
   const { id, works } = firstNode;
@@ -219,20 +223,19 @@ const FileWorksComponent = ({
       isSortable: false,
       render: ({ status, errors = [], messages = [] }, { nsdt }) => {
         const isError = errors.length > 0;
-        const messagesAndErrors = [...messages, ...errors]
-          .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+        const messagesAndErrors = [...messages, ...errors].sort(
+          (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+        );
 
         const messageToDisplay = (
           <>
-            {messagesAndErrors.length > 0 ? (
-              messagesAndErrors.map((message) => (
-                <div key={`${message.timestamp}-${message.message}`} style={{ minWidth: 200 }}>
-                  [{nsdt(message.timestamp)}] {message.message}
-                </div>
-              ))
-            ) : (
-              t_i18n(status)
-            )}
+            {messagesAndErrors.length > 0
+              ? messagesAndErrors.map((message) => (
+                  <div key={`${message.timestamp}-${message.message}`} style={{ minWidth: 200 }}>
+                    [{nsdt(message.timestamp)}] {message.message}
+                  </div>
+                ))
+              : t_i18n(status)}
           </>
         );
 
@@ -317,31 +320,23 @@ const FileWorksComponent = ({
           disableNavigation
         />
       ) : (
-        <div style={{
-          paddingBlock: 8,
-          fontSize: 15,
-        }}
+        <div
+          style={{
+            paddingBlock: 8,
+            fontSize: 15,
+          }}
         >
           {t_i18n('No import works for this file')}
         </div>
-
       )}
       {!!displayDelete && (
-        <Dialog
-          open={!!displayDelete}
-          onClose={() => setDisplayDelete(undefined)}
-        >
-          <DialogContentText>
-            {t_i18n('Do you want to remove this job?')}
-          </DialogContentText>
+        <Dialog open={!!displayDelete} onClose={() => setDisplayDelete(undefined)}>
+          <DialogContentText>{t_i18n('Do you want to remove this job?')}</DialogContentText>
           <DialogActions>
             <Button variant="secondary" onClick={() => setDisplayDelete(undefined)}>
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={() => deleteWork(displayDelete)}
-              disabled={deleting}
-            >
+            <Button onClick={() => deleteWork(displayDelete)} disabled={deleting}>
               {t_i18n('Delete')}
             </Button>
           </DialogActions>
@@ -362,7 +357,8 @@ const ImportWorksDrawer = ({
 }) => {
   const { t_i18n } = useFormatter();
   const [openLaunchImport, setOpenLaunchImport] = useState(false);
-  const [queryRef, loadQuery, disposeQuery] = useQueryLoader<ImportWorksDrawerQuery>(fileWorksQuery);
+  const [queryRef, loadQuery, disposeQuery] =
+    useQueryLoader<ImportWorksDrawerQuery>(fileWorksQuery);
   const draftContext = useDraftContext();
   const paginationFilters = {
     filters: {
@@ -414,7 +410,7 @@ const ImportWorksDrawer = ({
     <>
       <Drawer
         title={t_i18n('File imports')}
-        header={(
+        header={
           <>
             {!isWorkbench && (
               <Button
@@ -428,7 +424,7 @@ const ImportWorksDrawer = ({
               </Button>
             )}
           </>
-        )}
+        }
         open={open}
         onClose={onClose}
       >

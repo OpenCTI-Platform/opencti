@@ -21,22 +21,37 @@ import { ENTITY_TYPE_SECURITY_COVERAGE } from './securityCoverage-types';
 const SecurityCoverageResolvers: Resolvers = {
   Query: {
     securityCoverage: (_, { id }, context) => findSecurityCoverageById(context, context.user, id),
-    securityCoverages: (_, args, context) => pageSecurityCoverageConnections(context, context.user, args),
+    securityCoverages: (_, args, context) =>
+      pageSecurityCoverageConnections(context, context.user, args),
   },
   SecurityCoverage: {
-    objectCovered: (SecurityCoverage, _, context) => objectCovered<any>(context, context.user, SecurityCoverage.id),
-    toStixBundle: (SecurityCoverage, _, context) => securityCoverageStixBundle(context, context.user, SecurityCoverage.id),
+    objectCovered: (SecurityCoverage, _, context) =>
+      objectCovered<any>(context, context.user, SecurityCoverage.id),
+    toStixBundle: (SecurityCoverage, _, context) =>
+      securityCoverageStixBundle(context, context.user, SecurityCoverage.id),
   },
   Mutation: {
-    securityCoverageAdd: (_, { input }, context) => addSecurityCoverage(context, context.user, input),
-    securityCoverageDelete: (_, { id }, context) => securityCoverageDelete(context, context.user, id),
+    securityCoverageAdd: (_, { input }, context) =>
+      addSecurityCoverage(context, context.user, input),
+    securityCoverageDelete: (_, { id }, context) =>
+      securityCoverageDelete(context, context.user, id),
     securityCoverageFieldPatch: (_, { id, input, commitMessage, references }, context) => {
-      return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
+      return stixDomainObjectEditField(context, context.user, id, input, {
+        commitMessage,
+        references,
+      });
     },
-    securityCoverageContextPatch: (_, { id, input }, context) => stixDomainObjectEditContext(context, context.user, id, input),
-    securityCoverageContextClean: (_, { id }, context) => stixDomainObjectCleanContext(context, context.user, id),
-    securityCoverageRelationAdd: (_, { id, input }, context) => stixDomainObjectAddRelation(context, context.user, id, input),
-    securityCoverageRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => {
+    securityCoverageContextPatch: (_, { id, input }, context) =>
+      stixDomainObjectEditContext(context, context.user, id, input),
+    securityCoverageContextClean: (_, { id }, context) =>
+      stixDomainObjectCleanContext(context, context.user, id),
+    securityCoverageRelationAdd: (_, { id, input }, context) =>
+      stixDomainObjectAddRelation(context, context.user, id, input),
+    securityCoverageRelationDelete: (
+      _,
+      { id, toId, relationship_type: relationshipType },
+      context,
+    ) => {
       return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
     },
   },
@@ -47,7 +62,8 @@ const SecurityCoverageResolvers: Resolvers = {
       },
       subscribe: (_: any, { id }: any, context: any) => {
         const bus = BUS_TOPICS[ENTITY_TYPE_SECURITY_COVERAGE];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_SECURITY_COVERAGE,
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], {
+          type: ENTITY_TYPE_SECURITY_COVERAGE,
           notifySelf: true,
         });
       },

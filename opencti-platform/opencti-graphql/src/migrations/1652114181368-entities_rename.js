@@ -20,13 +20,15 @@ export const up = async (next) => {
       },
       query: {
         bool: {
-          must: [
-            { term: { 'entity_type.keyword': { value: source } } },
-          ],
+          must: [{ term: { 'entity_type.keyword': { value: source } } }],
         },
       },
     };
-    await elUpdateByQueryForMigration(`[MIGRATION] Renaming entity ${source}`, READ_DATA_INDICES, updateQuery);
+    await elUpdateByQueryForMigration(
+      `[MIGRATION] Renaming entity ${source}`,
+      READ_DATA_INDICES,
+      updateQuery,
+    );
   }
   logApp.info('[MIGRATION] 1652114181368-entities_rename.js finished');
   next();

@@ -56,9 +56,15 @@ export const up = async (next) => {
     const urlsToMerge = data.hits.hits;
     const target = R.head(urlsToMerge)._source;
     // 1. Update the standard_id of the target
-    const { element: updatedTarget } = await patchAttribute(context, SYSTEM_USER, target.internal_id, target.entity_type, {
-      standard_id: generateStandardId(target.entity_type, target),
-    });
+    const { element: updatedTarget } = await patchAttribute(
+      context,
+      SYSTEM_USER,
+      target.internal_id,
+      target.entity_type,
+      {
+        standard_id: generateStandardId(target.entity_type, target),
+      },
+    );
     const elementsToMerge = urlsToMerge.slice(1);
     const sources = elementsToMerge.map((s) => s._source.internal_id);
     // 2. Merge everything else inside the target

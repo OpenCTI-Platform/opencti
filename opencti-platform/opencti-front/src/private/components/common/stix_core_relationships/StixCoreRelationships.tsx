@@ -4,11 +4,18 @@ import { graphql } from 'react-relay';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import { useTheme } from '@mui/styles';
 import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
-import { StixCoreRelationshipsLinesPaginationQuery, StixCoreRelationshipsLinesPaginationQuery$variables } from './__generated__/StixCoreRelationshipsLinesPaginationQuery.graphql';
+import {
+  StixCoreRelationshipsLinesPaginationQuery,
+  StixCoreRelationshipsLinesPaginationQuery$variables,
+} from './__generated__/StixCoreRelationshipsLinesPaginationQuery.graphql';
 import { StixCoreRelationshipsLines_data$data } from './__generated__/StixCoreRelationshipsLines_data.graphql';
 import StixCoreRelationshipCreationFromEntity from './StixCoreRelationshipCreationFromEntity';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { emptyFilterGroup, isFilterGroupNotEmpty, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  isFilterGroupNotEmpty,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -49,7 +56,7 @@ export const stixCoreRelationshipsFragment = graphql`
     created_at
     updated_at
     is_inferred
-    draftVersion{
+    draftVersion {
       draft_id
       draft_operation
     }
@@ -152,7 +159,7 @@ export const stixCoreRelationshipsFragment = graphql`
         stop_time
         created
         representative {
-            main
+          main
         }
       }
     }
@@ -169,14 +176,14 @@ export const stixCoreRelationshipsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...StixCoreRelationshipsLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -186,10 +193,7 @@ export const stixCoreRelationshipsLinesFragment = graphql`
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
-    orderBy: {
-      type: "StixCoreRelationshipsOrdering"
-      defaultValue: created
-    }
+    orderBy: { type: "StixCoreRelationshipsOrdering", defaultValue: created }
     orderMode: { type: "OrderingMode", defaultValue: desc }
     filters: { type: "FilterGroup" }
   )
@@ -207,23 +211,23 @@ export const stixCoreRelationshipsLinesFragment = graphql`
           id
           entity_type
           created_at
-          draftVersion{
+          draftVersion {
             draft_id
             draft_operation
           }
           createdBy {
             ... on Identity {
-            name
+              name
             }
           }
-            objectMarking {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-            ...StixCoreRelationships
+          objectMarking {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+          ...StixCoreRelationships
         }
       }
       pageInfo {
@@ -235,19 +239,17 @@ export const stixCoreRelationshipsLinesFragment = graphql`
   }
 `;
 
-const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
-  {
-    storageKey,
-    entityId,
-    currentView,
-    viewButtons,
-    targetTypes,
-    direction,
-    relationshipTypes,
-    defaultStartTime,
-    defaultStopTime,
-  },
-) => {
+const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = ({
+  storageKey,
+  entityId,
+  currentView,
+  viewButtons,
+  targetTypes,
+  direction,
+  relationshipTypes,
+  defaultStartTime,
+  defaultStopTime,
+}) => {
   const LOCAL_STORAGE_KEY = `${storageKey}-stix-core-relationships`;
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
@@ -263,12 +265,12 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
       render: ({ is_inferred, entity_type, draftVersion }) => {
         if (is_inferred) {
           const inferredColor = draftVersion ? getDraftModeColor(theme) : itemColor(entity_type);
-          return (<AutoFix style={{ color: inferredColor }} />);
+          return <AutoFix style={{ color: inferredColor }} />;
         }
         if (draftVersion) {
-          return (<ItemIcon type={entity_type} color={getDraftModeColor(theme)} />);
+          return <ItemIcon type={entity_type} color={getDraftModeColor(theme)} />;
         }
-        return (<ItemIcon type={entity_type} />);
+        return <ItemIcon type={entity_type} />;
       },
     },
     fromType: {
@@ -310,14 +312,16 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
     view: currentView ?? 'relationships',
   };
 
-  const { paginationOptions, viewStorage, helpers: storageHelpers } = usePaginationLocalStorage<StixCoreRelationshipsLinesPaginationQuery$variables>(
+  const {
+    paginationOptions,
+    viewStorage,
+    helpers: storageHelpers,
+  } = usePaginationLocalStorage<StixCoreRelationshipsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
     true,
   );
-  const {
-    filters,
-  } = viewStorage;
+  const { filters } = viewStorage;
 
   // Filters due to screen context
   const userFilters = useBuildEntityTypeBasedFilterContext('stix-core-relationship', filters);
@@ -369,7 +373,9 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
           <DataTable
             variant={DataTableVariant.inline}
             dataColumns={dataColumns}
-            resolvePath={(data: StixCoreRelationshipsLines_data$data) => data.stixCoreRelationships?.edges?.map((n) => n.node)}
+            resolvePath={(data: StixCoreRelationshipsLines_data$data) =>
+              data.stixCoreRelationships?.edges?.map((n) => n.node)
+            }
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
             contextFilters={contextFilters}

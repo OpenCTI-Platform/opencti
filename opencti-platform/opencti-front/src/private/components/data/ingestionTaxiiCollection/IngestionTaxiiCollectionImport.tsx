@@ -27,10 +27,17 @@ interface IngestionTaxiiCollectionImportProps {
   onClose?: () => void;
 }
 
-const IngestionTaxiiCollectionImport: FunctionComponent<IngestionTaxiiCollectionImportProps> = ({ paginationOptions, hideTrigger, onClose }) => {
+const IngestionTaxiiCollectionImport: FunctionComponent<IngestionTaxiiCollectionImportProps> = ({
+  paginationOptions,
+  hideTrigger,
+  onClose,
+}) => {
   const inputFileRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState<boolean>(false);
-  const [importedInput, setImportedInput] = useState<IngestionTaxiiCollectionImportQuery$data['ingestionTaxiiCollectionAddInputFromImport'] | undefined>(undefined);
+  const [importedInput, setImportedInput] = useState<
+    | IngestionTaxiiCollectionImportQuery$data['ingestionTaxiiCollectionAddInputFromImport']
+    | undefined
+  >(undefined);
   const { t_i18n } = useFormatter();
 
   const fileImport = async (event: BaseSyntheticEvent) => {
@@ -38,7 +45,8 @@ const IngestionTaxiiCollectionImport: FunctionComponent<IngestionTaxiiCollection
     if (!file) return;
     try {
       const data = await fetchQuery(taxiiCollectionImportQuery, { file }).toPromise();
-      const { ingestionTaxiiCollectionAddInputFromImport } = data as IngestionTaxiiCollectionImportQuery$data;
+      const { ingestionTaxiiCollectionAddInputFromImport } =
+        data as IngestionTaxiiCollectionImportQuery$data;
       setImportedInput(ingestionTaxiiCollectionAddInputFromImport);
       setOpen(true);
       if (inputFileRef.current) {

@@ -67,13 +67,8 @@ class StixSightingRelationshipCreationFromEntityStixCyberObservablesLinesContain
 
   render() {
     const { t, classes, data, handleSelect } = this.props;
-    const stixCyberObservablesNodes = map(
-      (n) => n.node,
-      data.stixCyberObservables.edges,
-    );
-    const byType = groupBy(
-      (stixCyberObservable) => stixCyberObservable.entity_type,
-    );
+    const stixCyberObservablesNodes = map((n) => n.node, data.stixCyberObservables.edges);
+    const byType = groupBy((stixCyberObservable) => stixCyberObservable.entity_type);
     const stixCyberObservables = byType(stixCyberObservablesNodes);
     const stixCyberObservablesTypes = keys(stixCyberObservables);
 
@@ -91,9 +86,7 @@ class StixSightingRelationshipCreationFromEntityStixCyberObservablesLinesContain
             elevation={3}
           >
             <AccordionSummary expandIcon={<ExpandMore />}>
-              <Typography className={classes.heading}>
-                {t(`entity_${type}`)}
-              </Typography>
+              <Typography className={classes.heading}>{t(`entity_${type}`)}</Typography>
               <Typography className={classes.secondaryHeading}>
                 {stixCyberObservables[type].length} {t('observable(s)')}
               </Typography>
@@ -155,20 +148,18 @@ export const stixSightingRelationshipCreationFromEntityStixCyberObservablesLines
   }
 `;
 
-const StixSightingRelationshipCreationFromEntityStixCyberObservablesLines = createPaginationContainer(
-  StixSightingRelationshipCreationFromEntityStixCyberObservablesLinesContainer,
-  {
-    data: graphql`
+const StixSightingRelationshipCreationFromEntityStixCyberObservablesLines =
+  createPaginationContainer(
+    StixSightingRelationshipCreationFromEntityStixCyberObservablesLinesContainer,
+    {
+      data: graphql`
         fragment StixSightingRelationshipCreationFromEntityStixCyberObservablesLines_data on Query
         @argumentDefinitions(
           search: { type: "String" }
           types: { type: "[String]" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: {
-            type: "StixCyberObservablesOrdering"
-            defaultValue: created_at
-          }
+          orderBy: { type: "StixCyberObservablesOrdering", defaultValue: created_at }
           orderMode: { type: "OrderingMode", defaultValue: asc }
         ) {
           stixCyberObservables(
@@ -190,32 +181,31 @@ const StixSightingRelationshipCreationFromEntityStixCyberObservablesLines = crea
           }
         }
       `,
-  },
-  {
-    direction: 'forward',
-    getConnectionFromProps(props) {
-      return props.data && props.data.stixCyberObservables;
     },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      };
+    {
+      direction: 'forward',
+      getConnectionFromProps(props) {
+        return props.data && props.data.stixCyberObservables;
+      },
+      getFragmentVariables(prevVars, totalCount) {
+        return {
+          ...prevVars,
+          count: totalCount,
+        };
+      },
+      getVariables(props, { count, cursor }, fragmentVariables) {
+        return {
+          search: fragmentVariables.search,
+          types: fragmentVariables.types,
+          count,
+          cursor,
+          orderBy: fragmentVariables.orderBy,
+          orderMode: fragmentVariables.orderMode,
+        };
+      },
+      query: stixSightingRelationshipCreationFromEntityStixCyberObservablesLinesQuery,
     },
-    getVariables(props, { count, cursor }, fragmentVariables) {
-      return {
-        search: fragmentVariables.search,
-        types: fragmentVariables.types,
-        count,
-        cursor,
-        orderBy: fragmentVariables.orderBy,
-        orderMode: fragmentVariables.orderMode,
-      };
-    },
-    query:
-        stixSightingRelationshipCreationFromEntityStixCyberObservablesLinesQuery,
-  },
-);
+  );
 
 export default compose(
   inject18n,

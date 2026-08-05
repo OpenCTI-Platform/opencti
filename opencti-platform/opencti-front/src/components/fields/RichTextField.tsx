@@ -83,18 +83,19 @@ const RichTextField = ({
               {label}
             </InputLabel>
           )}
-          <div style={{
-            flex: 1,
-            textAlign: 'center',
-            marginBottom: theme.spacing(0.5),
-            color: theme.palette.warn.main,
-          }}
+          <div
+            style={{
+              flex: 1,
+              textAlign: 'center',
+              marginBottom: theme.spacing(0.5),
+              color: theme.palette.warn.main,
+            }}
           >
             {lastSavedValue !== undefined && lastSavedValue !== value && (
               <span>{t_i18n('You have unsaved changes')}</span>
             )}
           </div>
-          {askAi && (enabled && configured) && (
+          {askAi && enabled && configured && (
             <TextFieldAskAI
               currentValue={value ?? ''}
               setFieldValue={(val) => {
@@ -108,28 +109,30 @@ const RichTextField = ({
             />
           )}
           {hasFullScreen && (
-            <IconButton aria-label={t_i18n('Set full screen')} size="small" onClick={() => setFullScreen(true)}>
+            <IconButton
+              aria-label={t_i18n('Set full screen')}
+              size="small"
+              onClick={() => setFullScreen(true)}
+            >
               <FullscreenOutlined fontSize="small" />
             </IconButton>
           )}
         </div>
       )}
 
-      {
-        fullScreen
-          ? (
-              <Dialog
-                open={fullScreen}
-                onClose={() => setFullScreen(false)}
-                fullScreen
-                showCloseButton
-                title={t_i18n('Content')}
-              >
-                {RichTextEditorInstance}
-              </Dialog>
-            )
-          : RichTextEditorInstance
-      }
+      {fullScreen ? (
+        <Dialog
+          open={fullScreen}
+          onClose={() => setFullScreen(false)}
+          fullScreen
+          showCloseButton
+          title={t_i18n('Content')}
+        >
+          {RichTextEditorInstance}
+        </Dialog>
+      ) : (
+        RichTextEditorInstance
+      )}
 
       {fieldErrors && showError && (
         <FormHelperText style={{ marginTop: theme.spacing(1) }} error>

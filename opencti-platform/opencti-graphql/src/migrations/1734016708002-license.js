@@ -8,13 +8,12 @@ export const up = async (next) => {
   logMigration.info(`${message} > started`);
   const updateQuery = {
     script: {
-      source: "if (ctx._source.containsKey('enterprise_edition')) { ctx._source.enterprise_license = ctx._source.enterprise_edition; ctx._source.remove('enterprise_edition'); }",
+      source:
+        "if (ctx._source.containsKey('enterprise_edition')) { ctx._source.enterprise_license = ctx._source.enterprise_edition; ctx._source.remove('enterprise_edition'); }",
     },
     query: {
       bool: {
-        must: [
-          { term: { 'entity_type.keyword': { value: 'Settings' } } },
-        ],
+        must: [{ term: { 'entity_type.keyword': { value: 'Settings' } } }],
       },
     },
   };

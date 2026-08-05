@@ -1,6 +1,12 @@
-import { caseSensitiveDuplicatedId, caseSensitiveDuplicatedIdDryRun } from './operations/caseSensitiveDuplicatedId';
+import {
+  caseSensitiveDuplicatedId,
+  caseSensitiveDuplicatedIdDryRun,
+} from './operations/caseSensitiveDuplicatedId';
 import type { AuthContext } from '../../types/user';
-import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from '../../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_ATTACK_PATTERN,
+  ENTITY_TYPE_COURSE_OF_ACTION,
+} from '../../schema/stixDomainObject';
 
 export type ExecutionType = 'run_once'; // For now, we only need one, but later we will have 'on_demand', 'periodic' or 'live' scripts.
 // Map of entity_type or relation_type to the number of impacted elements
@@ -33,7 +39,10 @@ export interface SanityOperation {
 /*
   Hard coded list of available operations
  */
-const CASE_SENSITIVE_DUPLICATED_ID_ENTITY_TYPES = [ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION];
+const CASE_SENSITIVE_DUPLICATED_ID_ENTITY_TYPES = [
+  ENTITY_TYPE_ATTACK_PATTERN,
+  ENTITY_TYPE_COURSE_OF_ACTION,
+];
 
 const SANITY_OPERATIONS: SanityOperation[] = [
   {
@@ -41,7 +50,8 @@ const SANITY_OPERATIONS: SanityOperation[] = [
     dryRun: caseSensitiveDuplicatedIdDryRun(CASE_SENSITIVE_DUPLICATED_ID_ENTITY_TYPES),
     operationRun: caseSensitiveDuplicatedId(CASE_SENSITIVE_DUPLICATED_ID_ENTITY_TYPES),
     execution_type: 'run_once',
-    description: 'Find attack pattern or course of action that are duplicated when ignoring case and merge duplicates.',
+    description:
+      'Find attack pattern or course of action that are duplicated when ignoring case and merge duplicates.',
     display_name: 'Case sensitive Duplicated ID',
     eligibleEntityTypes: CASE_SENSITIVE_DUPLICATED_ID_ENTITY_TYPES,
   },

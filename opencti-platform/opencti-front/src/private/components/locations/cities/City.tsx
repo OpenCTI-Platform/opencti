@@ -75,22 +75,14 @@ const cityFragment = graphql`
   }
 `;
 
-const City = ({
-  cityData,
-}: {
-  cityData: City_city$key;
-}) => {
+const City = ({ cityData }: { cityData: City_city$key }) => {
   useInitCreateRelationshipContext();
 
   const classes = useStyles();
   const city = useFragment<City_city$key>(cityFragment, cityData);
   return (
     <div data-testid="city-details-page">
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-      >
+      <Grid container={true} spacing={3} classes={{ container: classes.gridContainer }}>
         <Grid item xs={4}>
           <LocationDetails locationData={city} />
         </Grid>
@@ -106,9 +98,7 @@ const City = ({
           />
         </Grid>
         <Grid item xs={4}>
-          <StixDomainObjectOverview
-            stixDomainObject={city}
-          />
+          <StixDomainObjectOverview stixDomainObject={city} />
         </Grid>
         <Grid item xs={6}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships

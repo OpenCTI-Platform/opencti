@@ -1,9 +1,14 @@
 import { buildStixDomain } from '../../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
-import type { StixCustomFieldDefinition, StoreEntityCustomFieldDefinition } from './custom-field-types';
+import type {
+  StixCustomFieldDefinition,
+  StoreEntityCustomFieldDefinition,
+} from './custom-field-types';
 import { cleanObject } from '../../database/stix-converter-utils';
 
-const convertCustomFieldDefinitionToStix = (instance: StoreEntityCustomFieldDefinition): StixCustomFieldDefinition => {
+const convertCustomFieldDefinitionToStix = (
+  instance: StoreEntityCustomFieldDefinition,
+): StixCustomFieldDefinition => {
   const customFieldDefinition = buildStixDomain(instance);
   return {
     ...customFieldDefinition,

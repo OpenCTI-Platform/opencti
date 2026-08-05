@@ -70,7 +70,6 @@ export const PopoverListItem: React.FC<PopoverListItemProps> = ({
             }}
           />
         </Box>
-
       </ListItemIcon>
 
       {external && (
@@ -116,7 +115,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
-  const currentLogo = navOpen ? logo : (logoCollapsed || logo);
+  const currentLogo = navOpen ? logo : logoCollapsed || logo;
 
   const handleMouseLeave = () => {
     setAnchorEl(null);
@@ -204,7 +203,11 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
             minWidth: 228,
           }}
         >
-          <Tooltip title={isNotEmptyField(openAEVUrl) ? t_i18n('Platform connected') : t_i18n('Get OpenAEV now')}>
+          <Tooltip
+            title={
+              isNotEmptyField(openAEVUrl) ? t_i18n('Platform connected') : t_i18n('Get OpenAEV now')
+            }
+          >
             <span>
               <PopoverListItem
                 logoSrc={theme.palette.mode === 'dark' ? logoOpenAEVDark : logoOpenAEVLight}
@@ -217,7 +220,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
 
           <Divider />
 
-          {(xtmhubStatus === 'registered' || !hasXtmHubAccess) ? (
+          {xtmhubStatus === 'registered' || !hasXtmHubAccess ? (
             <PopoverListItem
               logoSrc={theme.palette.mode === 'dark' ? logoXTMHubDark : logoXTMHubLight}
               href={isNotEmptyField(xtmhubUrl) ? xtmhubUrl : XTMHUB_FALLBACK_URL}

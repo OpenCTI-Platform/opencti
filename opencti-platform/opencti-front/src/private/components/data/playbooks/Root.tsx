@@ -49,12 +49,12 @@ const RootPlaybookComponent = ({
     <Routes>
       <Route
         path="/"
-        element={(
+        element={
           <Playbook
             dataPlaybook={playbook}
             playbookComponentsQueryRef={playbookComponentsQueryRef}
           />
-        )}
+        }
       />
     </Routes>
   );
@@ -64,9 +64,8 @@ const RootPlaybook = () => {
   const { playbookId } = useParams();
   if (!playbookId) return <ErrorNotFound />;
 
-  const playbookComponentsQueryRef = useQueryLoading<PlaybookComponentsQuery>(
-    playbookComponentsQuery,
-  );
+  const playbookComponentsQueryRef =
+    useQueryLoading<PlaybookComponentsQuery>(playbookComponentsQuery);
 
   const [playbookQueryRef, loadPlaybookQuery] = useQueryLoader<RootPlaybookQuery>(playbookQuery);
   useEffect(() => {

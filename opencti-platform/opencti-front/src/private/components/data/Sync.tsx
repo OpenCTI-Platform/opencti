@@ -1,6 +1,9 @@
 import React, { useContext } from 'react';
 import MuiAlert from '@mui/material/Alert';
-import { SyncLinesPaginationQuery$data, SyncLinesPaginationQuery$variables } from '@components/data/sync/__generated__/SyncLinesPaginationQuery.graphql';
+import {
+  SyncLinesPaginationQuery$data,
+  SyncLinesPaginationQuery$variables,
+} from '@components/data/sync/__generated__/SyncLinesPaginationQuery.graphql';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
 import SyncLines, { SyncLinesQuery } from './sync/SyncLines';
@@ -83,10 +86,11 @@ const Sync = () => {
 
   if (!platformModuleHelpers.isSyncManagerEnable()) {
     return (
-      <div style={{
-        margin: 0,
-        padding: '0 0 50px 0',
-      }}
+      <div
+        style={{
+          margin: 0,
+          padding: '0 0 50px 0',
+        }}
       >
         <MuiAlert severity="info">
           {t_i18n(platformModuleHelpers.generateDisableMessage(SYNC_MANAGER))}
@@ -99,7 +103,11 @@ const Sync = () => {
     <div data-testid="streams-page">
       <PageContainer>
         <Breadcrumbs
-          elements={[{ label: t_i18n('Integrations') }, { label: t_i18n('Deployed'), link: '/dashboard/integrations/deployed?kind=sync' }, { label: t_i18n('OpenCTI Streams'), current: true }]}
+          elements={[
+            { label: t_i18n('Integrations') },
+            { label: t_i18n('Deployed'), link: '/dashboard/integrations/deployed?kind=sync' },
+            { label: t_i18n('OpenCTI Streams'), current: true },
+          ]}
         />
         <ListLines
           sortBy={viewStorage.sortBy}
@@ -110,7 +118,7 @@ const Sync = () => {
           displayImport={false}
           secondaryAction={true}
           keyword={viewStorage.searchTerm}
-          createButton={(
+          createButton={
             <Security needs={[INGESTION_SETINGESTIONS]}>
               <>
                 <SyncImport paginationOptions={paginationOptions} />
@@ -128,7 +136,7 @@ const Sync = () => {
                 <SyncCreation triggerButton paginationOptions={paginationOptions} />
               </>
             </Security>
-          )}
+          }
           iconExtension
         >
           <QueryRenderer

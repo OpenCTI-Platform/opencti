@@ -5,10 +5,7 @@ import { GroupHiddenTypesField_group$key } from './__generated__/GroupHiddenType
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const groupHiddenTypesFieldPatch = graphql`
-  mutation GroupHiddenTypesFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-  ) {
+  mutation GroupHiddenTypesFieldPatchMutation($id: ID!, $input: [EditInput]!) {
     groupEdit(id: $id) {
       fieldPatch(input: $input) {
         ...GroupHiddenTypesField_group
@@ -24,18 +21,18 @@ const groupHiddenTypesFieldFragment = graphql`
   }
 `;
 
-const GroupHiddenTypesField = ({
-  groupData,
-}: {
-  groupData: GroupHiddenTypesField_group$key;
-}) => {
-  const group = useFragment<GroupHiddenTypesField_group$key>(groupHiddenTypesFieldFragment, groupData);
+const GroupHiddenTypesField = ({ groupData }: { groupData: GroupHiddenTypesField_group$key }) => {
+  const group = useFragment<GroupHiddenTypesField_group$key>(
+    groupHiddenTypesFieldFragment,
+    groupData,
+  );
   const [commit] = useApiMutation(groupHiddenTypesFieldPatch);
 
   const handleChange = (newValues: string[]) => {
     commit({
       variables: {
-        id: group?.id, input: { key: 'default_hidden_types', value: newValues },
+        id: group?.id,
+        input: { key: 'default_hidden_types', value: newValues },
       },
     });
   };

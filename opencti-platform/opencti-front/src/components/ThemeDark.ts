@@ -53,13 +53,17 @@ const ThemeDark = (
       light: '#F8958C',
       dark: '#881106',
       contrastText: '#000000',
-      text: { primary: '#F8958C' } },
+      text: { primary: '#F8958C' },
+    },
     success: { main: '#17AB1F', dark: '#094E0B' },
-    primary: { main: primary || THEME_DARK_DEFAULT_PRIMARY, light: primary ? alpha(primary, 0.08) : '#B2ECFF' },
+    primary: {
+      main: primary || THEME_DARK_DEFAULT_PRIMARY,
+      light: primary ? alpha(primary, 0.08) : '#B2ECFF',
+    },
     secondary: { main: secondary || THEME_DARK_DEFAULT_SECONDARY },
     gradient: { main: '#00f18d' },
     border: {
-      primary: hexToRGB((primary || THEME_DARK_DEFAULT_PRIMARY), 0.3),
+      primary: hexToRGB(primary || THEME_DARK_DEFAULT_PRIMARY, 0.3),
       secondary: '#424751',
       pagination: hexToRGB('#ffffff', 0.5),
       paper: hexToRGB('#ffffff', 0.12),
@@ -92,12 +96,8 @@ const ThemeDark = (
       accent: accent || THEME_DARK_DEFAULT_ACCENT,
       shadow: 'rgba(200, 200, 200, 0.15)',
       // the only way for now to know if we should apply the paper color or not
-      secondary: paper === THEME_DARK_DEFAULT_PAPER
-        ? '#0C1524'
-        : (paper ?? '#0C1524'),
-      drawer: nav === THEME_DARK_DEFAULT_NAV
-        ? '#0f1d34'
-        : (darken(nav ?? '#0f1d34', 0.5)),
+      secondary: paper === THEME_DARK_DEFAULT_PAPER ? '#0C1524' : (paper ?? '#0C1524'),
+      drawer: nav === THEME_DARK_DEFAULT_NAV ? '#0f1d34' : darken(nav ?? '#0f1d34', 0.5),
 
       disabled: '#363B46',
       gradient: {
@@ -383,9 +383,7 @@ const ThemeDark = (
       styleOverrides: {
         paper: {
           backgroundImage: 'none',
-          backgroundColor: paper === THEME_DARK_DEFAULT_PAPER
-            ? '#0F1D34'
-            : (paper ?? '#0F1D34'),
+          backgroundColor: paper === THEME_DARK_DEFAULT_PAPER ? '#0F1D34' : (paper ?? '#0F1D34'),
           borderRadius: 4,
         },
       },
@@ -494,9 +492,7 @@ const ThemeDark = (
           },
         },
         outlined: {
-          backgroundColor: paper === THEME_DARK_DEFAULT_PAPER
-            ? '#0C1524'
-            : (paper ?? '#0C1524'),
+          backgroundColor: paper === THEME_DARK_DEFAULT_PAPER ? '#0C1524' : (paper ?? '#0C1524'),
         },
       },
     },
@@ -532,8 +528,7 @@ const ThemeDark = (
             animation: 'autofill 0s forwards',
             WebkitTextFillColor: '#ffffff !important',
             caretColor: 'transparent !important',
-            WebkitBoxShadow:
-              '0 0 0 1000px rgba(4, 8, 17, 0.88) inset !important',
+            WebkitBoxShadow: '0 0 0 1000px rgba(4, 8, 17, 0.88) inset !important',
             borderTopLeftRadius: 'inherit',
             borderTopRightRadius: 'inherit',
           },
@@ -707,9 +702,7 @@ const ThemeDark = (
           },
           '& .MuiOutlinedInput-root': {
             // the only way for now to know if we should apply the paper color or not
-            backgroundColor: paper === THEME_DARK_DEFAULT_PAPER
-              ? '#0C1524'
-              : (paper ?? '#0C1524'),
+            backgroundColor: paper === THEME_DARK_DEFAULT_PAPER ? '#0C1524' : (paper ?? '#0C1524'),
             '& fieldset': {
               borderColor: 'transparent',
             },
@@ -717,7 +710,6 @@ const ThemeDark = (
         },
       },
     },
-
   },
 });
 

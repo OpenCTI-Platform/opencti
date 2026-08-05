@@ -53,15 +53,9 @@ const Rules = () => {
   // which can cause blink effects with slower networks.
   const queryVariables = useRef({ startDate: yearsAgo(1), endDate: dayAgo() });
   const [rulesQueryRef, loadQuery] = useQueryLoader<RulesQuery>(rulesQuery);
-  useInterval(
-    () => {
-      loadQuery(
-        queryVariables.current,
-        { fetchPolicy: 'store-and-network' },
-      );
-    },
-    FIVE_SECONDS,
-  );
+  useInterval(() => {
+    loadQuery(queryVariables.current, { fetchPolicy: 'store-and-network' });
+  }, FIVE_SECONDS);
 
   return (
     <div style={{ paddingRight: 200 }} data-testid="rules-page">

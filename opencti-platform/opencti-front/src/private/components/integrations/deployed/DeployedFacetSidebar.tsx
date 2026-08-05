@@ -1,12 +1,29 @@
 import React, { Dispatch, SetStateAction } from 'react';
 import { alpha, useTheme } from '@mui/material/styles';
 import { Box, Stack } from '@mui/material';
-import { AutorenewOutlined, ExtensionOutlined, PauseCircleOutlined, PlayCircleOutlined, WidgetsOutlined } from '@mui/icons-material';
+import {
+  AutorenewOutlined,
+  ExtensionOutlined,
+  PauseCircleOutlined,
+  PlayCircleOutlined,
+  WidgetsOutlined,
+} from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import Button from '@common/button/Button';
-import { FacetCheckbox, FacetGroupLabel, toggleValue } from '@components/integrations/catalog/IngestionCatalogFacetSidebar';
-import { getConnectorMetadata, getConnectorTypeIcon, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
-import { getBuiltInIntegration, isBuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
+import {
+  FacetCheckbox,
+  FacetGroupLabel,
+  toggleValue,
+} from '@components/integrations/catalog/IngestionCatalogFacetSidebar';
+import {
+  getConnectorMetadata,
+  getConnectorTypeIcon,
+  IngestionConnectorType,
+} from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
+import {
+  getBuiltInIntegration,
+  isBuiltInIntegrationKind,
+} from '@components/integrations/available/builtInIntegrations';
 import {
   DEPLOYED_KIND_FACETS,
   DEPLOYED_STATUS_FACETS,
@@ -121,11 +138,7 @@ const DeployedFacetSidebar = ({
             appears to host the clear action when a filter is active. */}
         {hasActiveFilters && (
           <Stack direction="row" alignItems="center" justifyContent="flex-end">
-            <Button
-              variant="tertiary"
-              size="small"
-              onClick={onClearAll}
-            >
+            <Button variant="tertiary" size="small" onClick={onClearAll}>
               {t_i18n('Clear all')}
             </Button>
           </Stack>
@@ -140,7 +153,9 @@ const DeployedFacetSidebar = ({
               count={facets.kindCounts[kind] ?? 0}
               icon={KIND_FACET_ICONS[kind]}
               label={kindLabel(kind)}
-              onToggle={() => onFiltersChange((prev) => ({ ...prev, kinds: toggleValue(prev.kinds, kind) }))}
+              onToggle={() =>
+                onFiltersChange((prev) => ({ ...prev, kinds: toggleValue(prev.kinds, kind) }))
+              }
             />
           ))}
         </Box>
@@ -156,7 +171,9 @@ const DeployedFacetSidebar = ({
                 count={facets.typeCounts[type] ?? 0}
                 icon={icon}
                 label={label}
-                onToggle={() => onFiltersChange((prev) => ({ ...prev, types: toggleValue(prev.types, type) }))}
+                onToggle={() =>
+                  onFiltersChange((prev) => ({ ...prev, types: toggleValue(prev.types, type) }))
+                }
               />
             );
           })}
@@ -171,7 +188,12 @@ const DeployedFacetSidebar = ({
               count={facets.statusCounts[status] ?? 0}
               icon={STATUS_FACET_ICONS[status]}
               label={statusLabel(status)}
-              onToggle={() => onFiltersChange((prev) => ({ ...prev, statuses: toggleValue(prev.statuses, status) }))}
+              onToggle={() =>
+                onFiltersChange((prev) => ({
+                  ...prev,
+                  statuses: toggleValue(prev.statuses, status),
+                }))
+              }
             />
           ))}
         </Box>

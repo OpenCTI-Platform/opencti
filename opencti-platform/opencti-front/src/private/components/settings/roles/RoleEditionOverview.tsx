@@ -13,10 +13,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 
 const roleMutationFieldPatch = graphql`
-  mutation RoleEditionOverviewFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-  ) {
+  mutation RoleEditionOverviewFieldPatchMutation($id: ID!, $input: [EditInput]!) {
     roleEdit(id: $id) {
       fieldPatch(input: $input) {
         ...RoleEditionOverview_role
@@ -35,27 +32,31 @@ const roleEditionOverviewFocus = graphql`
   }
 `;
 
-const roleValidation = (t: (n: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-});
+const roleValidation = (t: (n: string) => string) =>
+  Yup.object().shape({
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+  });
 
 interface RoleEditionOverviewComponentProps {
   role: RoleEditionOverview_role$data;
-  context: ReadonlyArray<{
-    readonly focusOn?: string | null;
-    readonly name: string;
-  }> | null | undefined;
+  context:
+    | ReadonlyArray<{
+        readonly focusOn?: string | null;
+        readonly name: string;
+      }>
+    | null
+    | undefined;
 }
 
-const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewComponentProps> = ({ role, context }) => {
+const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewComponentProps> = ({
+  role,
+  context,
+}) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
-  const initialValues = R.pick(
-    ['name', 'description'],
-    role,
-  );
+  const initialValues = R.pick(['name', 'description'], role);
   const [commitFocus] = useApiMutation(roleEditionOverviewFocus);
   const [commitFieldPatch] = useApiMutation(roleMutationFieldPatch);
   const handleChangeFocus = (name: string) => {
@@ -96,9 +97,7 @@ const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewCompone
               fullWidth={true}
               onFocus={handleChangeFocus}
               onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="name" />
-              }
+              helperText={<SubscriptionFocus context={context} fieldName="name" />}
             />
             <Field
               component={MarkdownField}
@@ -110,9 +109,7 @@ const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewCompone
               style={{ marginTop: 20 }}
               onFocus={handleChangeFocus}
               onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="description" />
-              }
+              helperText={<SubscriptionFocus context={context} fieldName="description" />}
             />
           </Form>
         )}
@@ -121,17 +118,14 @@ const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewCompone
   );
 };
 
-const RoleEditionOverview = createFragmentContainer(
-  RoleEditionOverviewComponent,
-  {
-    role: graphql`
-      fragment RoleEditionOverview_role on Role {
-        id
-        name
-        description
-      }
-    `,
-  },
-);
+const RoleEditionOverview = createFragmentContainer(RoleEditionOverviewComponent, {
+  role: graphql`
+    fragment RoleEditionOverview_role on Role {
+      id
+      name
+      description
+    }
+  `,
+});
 
 export default RoleEditionOverview;

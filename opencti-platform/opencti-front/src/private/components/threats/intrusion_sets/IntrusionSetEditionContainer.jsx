@@ -55,21 +55,18 @@ const IntrusionSetEditionContainer = (props) => {
   );
 };
 
-const IntrusionSetEditionFragment = createFragmentContainer(
-  IntrusionSetEditionContainer,
-  {
-    intrusionSet: graphql`
-      fragment IntrusionSetEditionContainer_intrusionSet on IntrusionSet {
-        id
-        ...IntrusionSetEditionOverview_intrusionSet
-        ...IntrusionSetEditionDetails_intrusionSet
-        editContext {
-          name
-          focusOn
-        }
+const IntrusionSetEditionFragment = createFragmentContainer(IntrusionSetEditionContainer, {
+  intrusionSet: graphql`
+    fragment IntrusionSetEditionContainer_intrusionSet on IntrusionSet {
+      id
+      ...IntrusionSetEditionOverview_intrusionSet
+      ...IntrusionSetEditionDetails_intrusionSet
+      editContext {
+        name
+        focusOn
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default IntrusionSetEditionFragment;

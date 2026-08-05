@@ -33,17 +33,18 @@ const TestWrapper = ({ entityType, basePath }: TestWrapperProps) => {
 
   const { anchorEl, onOpen, onClose, isOpen } = dropDownMenuState;
 
-  const renderMenuItems = () => otherCustomViews.map(({ id, name, path }) => (
-    <MenuItem
-      key={id}
-      role="link"
-      component={Link}
-      to={`${basePath}/${path}`}
-      selected={currentCustomViewTab === path}
-    >
-      {name}
-    </MenuItem>
-  ));
+  const renderMenuItems = () =>
+    otherCustomViews.map(({ id, name, path }) => (
+      <MenuItem
+        key={id}
+        role="link"
+        component={Link}
+        to={`${basePath}/${path}`}
+        selected={currentCustomViewTab === path}
+      >
+        {name}
+      </MenuItem>
+    ));
 
   const renderDefaultCustomViewTab = () => {
     return defaultCustomView ? (
@@ -106,13 +107,15 @@ describe('useCustomViewTabs', () => {
   });
   it('renders another tab', () => {
     vi.mocked(useCustomViewsData).mockImplementation(() => ({
-      allCustomViews: [{
-        id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
-        name: customViewDisplayName,
-        path: customViewPath,
-        targetEntityType: 'Intrusion-Set',
-        default: false,
-      }],
+      allCustomViews: [
+        {
+          id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
+          name: customViewDisplayName,
+          path: customViewPath,
+          targetEntityType: 'Intrusion-Set',
+          default: false,
+        },
+      ],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
     const customViewDisplayName = 'My custom view';
@@ -128,19 +131,22 @@ describe('useCustomViewTabs', () => {
 
   it('renders a "Custom view" tab when multiple custom views available', async () => {
     vi.mocked(useCustomViewsData).mockImplementation(() => ({
-      allCustomViews: [{
-        id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
-        name: 'My first custom view',
-        path: 'some-path',
-        targetEntityType: 'Intrusion-Set',
-        default: false,
-      }, {
-        id: '90ebf22f-2c36-4836-b21a-e114ed4ca2ab',
-        name: 'My second custom view',
-        path: 'some-other-path',
-        targetEntityType: 'Intrusion-Set',
-        default: false,
-      }],
+      allCustomViews: [
+        {
+          id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
+          name: 'My first custom view',
+          path: 'some-path',
+          targetEntityType: 'Intrusion-Set',
+          default: false,
+        },
+        {
+          id: '90ebf22f-2c36-4836-b21a-e114ed4ca2ab',
+          name: 'My second custom view',
+          path: 'some-other-path',
+          targetEntityType: 'Intrusion-Set',
+          default: false,
+        },
+      ],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
     const { user } = testRender(<TestWrapper entityType="Intrusion-Set" basePath="" />);
@@ -148,60 +154,64 @@ describe('useCustomViewTabs', () => {
     expect(tabElem).toBeInTheDocument();
     await user.click(tabElem);
     const firstLinkElem = screen.getByRole('link', { name: /My first custom view/i });
-    expect(firstLinkElem).toHaveAttribute(
-      'href',
-      expect.stringMatching(/some-path$/),
-    );
+    expect(firstLinkElem).toHaveAttribute('href', expect.stringMatching(/some-path$/));
     const secondLinkElem = screen.getByRole('link', { name: /My second custom view/i });
-    expect(secondLinkElem).toHaveAttribute(
-      'href',
-      expect.stringMatching(/some-other-path$/),
-    );
+    expect(secondLinkElem).toHaveAttribute('href', expect.stringMatching(/some-other-path$/));
   });
 
   it('does not render another tab when custom view available but for other entity type', () => {
     const customViewDisplayName = 'My custom view';
     const customViewPath = 'some-path';
     vi.mocked(useCustomViewsData).mockImplementation(() => ({
-      allCustomViews: [{
-        id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
-        name: customViewDisplayName,
-        path: customViewPath,
-        targetEntityType: 'Intrusion-Set',
-        default: false,
-      }],
+      allCustomViews: [
+        {
+          id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
+          name: customViewDisplayName,
+          path: customViewPath,
+          targetEntityType: 'Intrusion-Set',
+          default: false,
+        },
+      ],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
     testRender(<TestWrapper entityType="Case-Rft" basePath="" />);
-    expect(screen.queryByRole('tab', {
-      name: new RegExp(customViewDisplayName, 'i'),
-    })).not.toBeInTheDocument();
-    expect(screen.queryByRole('tab', {
-      name: /Custom view/i,
-    })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('tab', {
+        name: new RegExp(customViewDisplayName, 'i'),
+      }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('tab', {
+        name: /Custom view/i,
+      }),
+    ).not.toBeInTheDocument();
   });
 
   it('renders a default and a "Custom view" tab with other values when multiple custom views available and one is default', async () => {
     vi.mocked(useCustomViewsData).mockImplementation(() => ({
-      allCustomViews: [{
-        id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
-        name: 'My first custom view',
-        path: 'some-path',
-        targetEntityType: 'Intrusion-Set',
-        default: false,
-      }, {
-        id: '90ebf22f-2c36-4836-b21a-e114ed4ca2ab',
-        name: 'My second custom view',
-        path: 'some-other-path',
-        targetEntityType: 'Intrusion-Set',
-        default: false,
-      }, {
-        id: '808605b9-7bb3-4578-9175-e1ca74600e34',
-        name: 'My default custom view',
-        path: 'default-path',
-        targetEntityType: 'Intrusion-Set',
-        default: true,
-      }],
+      allCustomViews: [
+        {
+          id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
+          name: 'My first custom view',
+          path: 'some-path',
+          targetEntityType: 'Intrusion-Set',
+          default: false,
+        },
+        {
+          id: '90ebf22f-2c36-4836-b21a-e114ed4ca2ab',
+          name: 'My second custom view',
+          path: 'some-other-path',
+          targetEntityType: 'Intrusion-Set',
+          default: false,
+        },
+        {
+          id: '808605b9-7bb3-4578-9175-e1ca74600e34',
+          name: 'My default custom view',
+          path: 'default-path',
+          targetEntityType: 'Intrusion-Set',
+          default: true,
+        },
+      ],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
     const { user } = testRender(<TestWrapper entityType="Intrusion-Set" basePath="" />);
@@ -211,14 +221,8 @@ describe('useCustomViewTabs', () => {
     expect(othersTabElem).toBeInTheDocument();
     await user.click(othersTabElem);
     const firstLinkElem = screen.getByRole('link', { name: /My first custom view/i });
-    expect(firstLinkElem).toHaveAttribute(
-      'href',
-      expect.stringMatching(/some-path$/),
-    );
+    expect(firstLinkElem).toHaveAttribute('href', expect.stringMatching(/some-path$/));
     const secondLinkElem = screen.getByRole('link', { name: /My second custom view/i });
-    expect(secondLinkElem).toHaveAttribute(
-      'href',
-      expect.stringMatching(/some-other-path$/),
-    );
+    expect(secondLinkElem).toHaveAttribute('href', expect.stringMatching(/some-other-path$/));
   });
 });

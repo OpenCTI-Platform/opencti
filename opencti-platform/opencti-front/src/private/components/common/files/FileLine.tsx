@@ -2,7 +2,12 @@ import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
-import { DeleteOutlined, DocumentScannerOutlined, GetAppOutlined, WarningOutlined } from '@mui/icons-material';
+import {
+  DeleteOutlined,
+  DocumentScannerOutlined,
+  GetAppOutlined,
+  WarningOutlined,
+} from '@mui/icons-material';
 import { ListItem, ListItemButton, Stack } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -41,7 +46,9 @@ import FileWork from './FileWork';
 import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
 
 const Transition = React.forwardRef(({ children, ...otherProps }: SlideProps, ref) => (
-  <Slide direction="up" ref={ref} {...otherProps}>{children}</Slide>
+  <Slide direction="up" ref={ref} {...otherProps}>
+    {children}
+  </Slide>
 ));
 Transition.displayName = 'TransitionSlide';
 
@@ -125,14 +132,13 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     setAnchorEl(null);
   };
 
-  const isContainsReference = isNotEmptyField(
-    file?.metaData?.external_reference_id,
-  );
+  const isContainsReference = isNotEmptyField(file?.metaData?.external_reference_id);
   const isFail = file?.metaData?.errors && file.metaData.errors.length > 0;
   const isProgress = file?.uploadStatus === 'progress' || file?.uploadStatus === 'wait';
   const isOutdated = file?.uploadStatus === 'timeout';
   const file_markings = file?.metaData?.file_markings;
-  const fileMarkings = me.allowed_marking?.filter(({ id }) => (file_markings ?? []).includes(id)) ?? [];
+  const fileMarkings =
+    me.allowed_marking?.filter(({ id }) => (file_markings ?? []).includes(id)) ?? [];
 
   const isImportActive = () => connectors && connectors.filter((x) => x.data.active).length > 0;
   const fileDeleteDraftDisabled = !!draftContext && !file?.draftVersion;
@@ -145,9 +151,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   const history: { message?: string | null; timestamp?: unknown }[] = [];
 
   if (isOutdated) {
-    const time = moment
-      .duration(file.lastModifiedSinceMin, 'minutes')
-      .humanize();
+    const time = moment.duration(file.lastModifiedSinceMin, 'minutes').humanize();
     history.push({
       message: `Connector execution timeout, no activity for ${time}`,
     });
@@ -240,20 +244,19 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   const generateIcon = () => {
     const fileInDraft = file?.draftVersion;
     const color = fileInDraft ? getDraftModeColor(theme) : theme.palette.primary.main;
-    const fileColor = (nested || fileInDraft) ? color : 'inherit';
+    const fileColor = nested || fileInDraft ? color : 'inherit';
     return isExternalReferenceAttachment || isContainsReference ? (
       <DocumentScannerOutlined style={{ color }} />
     ) : (
       <FileOutline style={{ color: fileColor }} />
     );
   };
-  const listUri = `${APP_BASE_PATH}/storage/${
-    directDownload ? 'get' : 'view'
-  }/${encodedFilePath}`;
-  const isWarning = isArtifact
-    || encodedFilePath.endsWith('.exe')
-    || encodedFilePath.endsWith('.pif')
-    || encodedFilePath.endsWith('.dll');
+  const listUri = `${APP_BASE_PATH}/storage/${directDownload ? 'get' : 'view'}/${encodedFilePath}`;
+  const isWarning =
+    isArtifact ||
+    encodedFilePath.endsWith('.exe') ||
+    encodedFilePath.endsWith('.pif') ||
+    encodedFilePath.endsWith('.dll');
   const fileExtension = file?.name.substring(file?.name.lastIndexOf('.')) ?? '';
   const fileNameWithoutExtension = file?.name.substring(0, file?.name.lastIndexOf('.')) ?? '';
 
@@ -272,18 +275,11 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         divider={true}
         dense={dense}
         disablePadding
-        secondaryAction={(
-          <Stack
-            direction="row"
-            alignItems="center"
-            gap={1}
-          >
+        secondaryAction={
+          <Stack direction="row" alignItems="center" gap={1}>
             {!isProgress && !isFail && !isOutdated && (
               <Box sx={{ maxWidth: 150 }}>
-                <ItemMarkings
-                  markingDefinitions={fileMarkings}
-                  limit={1}
-                />
+                <ItemMarkings markingDefinitions={fileMarkings} limit={1} />
               </Box>
             )}
             {!disableImport && (
@@ -326,26 +322,18 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                     <GetAppOutlined fontSize="small" />
                   </IconButton>
                 </Tooltip>
-                <Menu
-                  anchorEl={anchorEl}
-                  open={Boolean(anchorEl)}
-                  onClose={handleClose}
-                >
+                <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
                   <MenuItem
                     dense={true}
-                    onClick={() => handleLink(
-                      `${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`,
-                    )
+                    onClick={() =>
+                      handleLink(`${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`)
                     }
                   >
                     {t_i18n('Encrypted archive')}
                   </MenuItem>
                   <MenuItem
                     dense={true}
-                    onClick={() => handleLink(
-                      `${APP_BASE_PATH}/storage/get/${encodedFilePath}`,
-                    )
-                    }
+                    onClick={() => handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`)}
                   >
                     {t_i18n('Raw file')}
                   </MenuItem>
@@ -356,7 +344,13 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
               <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
                 <>
                   {isFail || isOutdated ? (
-                    <Tooltip title={fileDeleteDraftDisabled ? t_i18n('Not available in draft') : t_i18n('Delete this file')}>
+                    <Tooltip
+                      title={
+                        fileDeleteDraftDisabled
+                          ? t_i18n('Not available in draft')
+                          : t_i18n('Delete this file')
+                      }
+                    >
                       <IconButton
                         disabled={isProgress}
                         onClick={(event) => {
@@ -373,7 +367,13 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                       </IconButton>
                     </Tooltip>
                   ) : (
-                    <Tooltip title={fileDeleteDraftDisabled ? t_i18n('Not available in draft') : t_i18n('Delete this file')}>
+                    <Tooltip
+                      title={
+                        fileDeleteDraftDisabled
+                          ? t_i18n('Not available in draft')
+                          : t_i18n('Delete this file')
+                      }
+                    >
                       <IconButton
                         disabled={isProgress}
                         onClick={(event) => {
@@ -394,23 +394,17 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
               </Security>
             )}
           </Stack>
-        )}
+        }
       >
         <ListItemButton
           classes={{ root: nested ? classes.itemNested : classes.item }}
           rel="noopener noreferrer"
           onClick={
-            onClick
-            || (() => (isWarning ? setDisplayDownload(true) : handleLink(listUri, true)))
+            onClick || (() => (isWarning ? setDisplayDownload(true) : handleLink(listUri, true)))
           }
         >
           <ListItemIcon>
-            {isProgress && (
-              <CircularProgress
-                size={20}
-                color={nested ? 'primary' : 'inherit'}
-              />
-            )}
+            {isProgress && <CircularProgress size={20} color={nested ? 'primary' : 'inherit'} />}
             {!isProgress && (isFail || isOutdated) && (
               <Tooltip title={toolTip !== 'null' ? toolTip : ''}>
                 <WarningOutlined
@@ -430,11 +424,9 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                 secondary: classes.fileName,
               }}
               primary={`${truncate(fileNameWithoutExtension, 80)}${fileExtension}`}
-              secondary={(
-                <>
-                  {`${truncate(status, 80 - lastModifiedDate.length)} (${lastModifiedDate})`}
-                </>
-              )}
+              secondary={
+                <>{`${truncate(status, 80 - lastModifiedDate.length)} (${lastModifiedDate})`}</>
+              }
             />
           </Tooltip>
         </ListItemButton>
@@ -444,37 +436,29 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         deletion={deletion}
         submitDelete={handleRemoveFile}
         message={t_i18n('Do you want to delete this file?')}
-        warning={isContainsReference
-          ? { message: t_i18n('This file is linked to an external reference. If you delete it, the reference will be deleted as well.') }
-          : undefined}
+        warning={
+          isContainsReference
+            ? {
+                message: t_i18n(
+                  'This file is linked to an external reference. If you delete it, the reference will be deleted as well.',
+                ),
+              }
+            : undefined
+        }
       />
-      <Dialog
-        open={displayRemove}
-        onClose={handleCloseRemove}
-        title={t_i18n('Are you sure?')}
-      >
-        <DialogContentText>
-          {t_i18n('Do you want to remove this job?')}
-        </DialogContentText>
+      <Dialog open={displayRemove} onClose={handleCloseRemove} title={t_i18n('Are you sure?')}>
+        <DialogContentText>{t_i18n('Do you want to remove this job?')}</DialogContentText>
         <DialogActions>
           <Button variant="secondary" onClick={handleCloseRemove} disabled={deleting}>
             {t_i18n('Cancel')}
           </Button>
-          <Button
-            onClick={() => handleRemoveJob(file?.id)}
-            disabled={deleting}
-          >
+          <Button onClick={() => handleRemoveJob(file?.id)} disabled={deleting}>
             {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog
-        open={displayDownload}
-        onClose={handleCloseDownload}
-      >
-        <DialogContentText>
-          {t_i18n('How do you want to download this file?')}
-        </DialogContentText>
+      <Dialog open={displayDownload} onClose={handleCloseDownload}>
+        <DialogContentText>{t_i18n('How do you want to download this file?')}</DialogContentText>
         <Alert
           severity="warning"
           variant="outlined"
@@ -488,17 +472,11 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
           <Button onClick={handleCloseDownload} disabled={deleting}>
             {t_i18n('Cancel')}
           </Button>
-          <Button
-            onClick={() => handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`)
-            }
-          >
+          <Button onClick={() => handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`)}>
             {t_i18n('Raw file')}
           </Button>
           <Button
-            onClick={() => handleLink(
-              `${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`,
-            )
-            }
+            onClick={() => handleLink(`${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`)}
           >
             {t_i18n('Encrypted archive')}
           </Button>

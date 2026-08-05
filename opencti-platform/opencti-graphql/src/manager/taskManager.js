@@ -8,12 +8,26 @@ import conf, { booleanConf, logApp } from '../config/conf';
 import { resolveUserByIdFromCache } from '../domain/user';
 import { storeLoadByIdsWithRefs } from '../database/middleware';
 import { now } from '../utils/format';
-import { isEmptyField, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';
+import {
+  isEmptyField,
+  READ_DATA_INDICES,
+  READ_DATA_INDICES_WITHOUT_INFERRED,
+} from '../database/utils';
 import { elList } from '../database/engine';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_OBJECTS, RULE_PREFIX } from '../schema/general';
-import { executionContext, isUserInPlatformOrganization, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
-import { buildEntityFilters, internalFindByIds, internalLoadById, fullRelationsList } from '../database/middleware-loader';
+import {
+  executionContext,
+  isUserInPlatformOrganization,
+  RULE_MANAGER_USER,
+  SYSTEM_USER,
+} from '../utils/access';
+import {
+  buildEntityFilters,
+  internalFindByIds,
+  internalLoadById,
+  fullRelationsList,
+} from '../database/middleware-loader';
 import { getRule } from '../domain/rules';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
@@ -95,7 +109,13 @@ export const taskRule = async (context, user, task, callback) => {
   if (enable) {
     const { scan } = ruleDefinition;
     // task_position is no longer used, but we still handle it to properly process task that were processing before task migrated to worker
-    const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', ...buildEntityFilters(scan.types, scan), after: task_position };
+    const options = {
+      baseData: true,
+      orderMode: 'asc',
+      orderBy: 'updated_at',
+      ...buildEntityFilters(scan.types, scan),
+      after: task_position,
+    };
     const finalOpts = { ...options, callback };
     await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, finalOpts);
   } else {
@@ -105,15 +125,37 @@ export const taskRule = async (context, user, task, callback) => {
       filterGroups: [],
     };
     // task_position is no longer used, but we still handle it to properly process task that were processing before task migrated to worker
-    const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', filters, after: task_position };
+    const options = {
+      baseData: true,
+      orderMode: 'asc',
+      orderBy: 'updated_at',
+      filters,
+      after: task_position,
+    };
     const finalOpts = { ...options, callback };
     await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES, finalOpts);
   }
 };
 
 export const taskQuery = async (context, user, task, callback, baseFields = []) => {
-  const { task_position, task_filters, task_search = null, task_excluded_ids = [], scope, task_order_mode } = task;
-  const options = await buildQueryFilters(context, user, task_filters, task_search, task_position, scope, task_order_mode, task_excluded_ids);
+  const {
+    task_position,
+    task_filters,
+    task_search = null,
+    task_excluded_ids = [],
+    scope,
+    task_order_mode,
+  } = task;
+  const options = await buildQueryFilters(
+    context,
+    user,
+    task_filters,
+    task_search,
+    task_position,
+    scope,
+    task_order_mode,
+    task_excluded_ids,
+  );
   const finalOpts = { ...options, baseData: true, baseFields, callback };
   await elList(context, user, READ_DATA_INDICES, finalOpts);
 };
@@ -136,13 +178,15 @@ const throwErrorInDraftContext = (context, user, actionType) => {
   if (!getDraftContext(context, user)) {
     return;
   }
-  if (actionType === ACTION_TYPE_COMPLETE_DELETE
-    || actionType === ACTION_TYPE_RESTORE
-    || actionType === ACTION_TYPE_RULE_APPLY
-    || actionType === ACTION_TYPE_RULE_CLEAR
-    || actionType === ACTION_TYPE_RULE_ELEMENT_RESCAN
-    || actionType === ACTION_TYPE_SEND_EMAIL
-    || actionType === ACTION_TYPE_ENROLL_PLAYBOOK) {
+  if (
+    actionType === ACTION_TYPE_COMPLETE_DELETE ||
+    actionType === ACTION_TYPE_RESTORE ||
+    actionType === ACTION_TYPE_RULE_APPLY ||
+    actionType === ACTION_TYPE_RULE_CLEAR ||
+    actionType === ACTION_TYPE_RULE_ELEMENT_RESCAN ||
+    actionType === ACTION_TYPE_SEND_EMAIL ||
+    actionType === ACTION_TYPE_ENROLL_PLAYBOOK
+  ) {
     throw FunctionalError('Cannot execute this task type in draft', { actionType });
   }
 };
@@ -163,8 +207,10 @@ export const baseOperationBuilder = (actionType, operations, element) => {
     baseOperationObject.opencti_field_patch = operations.map((action) => {
       let attrKey = action.context.field;
       if (action.context.type === 'RELATION') {
-        attrKey = schemaRelationsRefDefinition
-          .convertDatabaseNameToInputName(element.entity_type, action.context.field);
+        attrKey = schemaRelationsRefDefinition.convertDatabaseNameToInputName(
+          element.entity_type,
+          action.context.field,
+        );
       }
       // Dynamically transform description attrKey to x_opencti_description for observables
       if (isStixCyberObservable(element.entity_type) && attrKey === 'description') {
@@ -325,7 +371,14 @@ const standardOperationCallback = async (context, user, task, actionType, operat
   };
 };
 
-export const buildContainersElementsBundle = async (context, user, containers, elements, withNeighbours, operationType) => {
+export const buildContainersElementsBundle = async (
+  context,
+  user,
+  containers,
+  elements,
+  withNeighbours,
+  operationType,
+) => {
   const elementIds = new Set();
   const elementStandardIds = new Set();
   for (let index = 0; index < elements.length; index += 1) {
@@ -347,13 +400,15 @@ export const buildContainersElementsBundle = async (context, user, containers, e
     await fullRelationsList(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, args);
   }
   // Build limited stix object to limit memory footprint
-  const containerOperations = [{
-    type: operationType,
-    context: {
-      field: INPUT_OBJECTS,
-      values: Array.from(elementIds),
+  const containerOperations = [
+    {
+      type: operationType,
+      context: {
+        field: INPUT_OBJECTS,
+        values: Array.from(elementIds),
+      },
     },
-  }];
+  ];
   const objects = [];
   for (let i = 0; i < containers.length; i += 1) {
     const container = containers[i];
@@ -378,7 +433,14 @@ const containerOperationCallback = async (context, user, task, containers, opera
   const operationType = operations[0].type;
   let totalProcessed = task.task_processed_number;
   return async (elements) => {
-    const objects = await buildContainersElementsBundle(context, user, containers, elements, withNeighbours, operationType);
+    const objects = await buildContainersElementsBundle(
+      context,
+      user,
+      containers,
+      elements,
+      withNeighbours,
+      operationType,
+    );
     // Send actions to queue
     await sendResultToQueue(context, user, task, objects);
     // Update task
@@ -406,7 +468,8 @@ const promoteOperationCallback = async (context, user, task, container) => {
             const observableToCreate = {
               ...R.dissoc('type', observable),
               entity_type: observable.type,
-              x_opencti_description: indicator.description ? indicator.description
+              x_opencti_description: indicator.description
+                ? indicator.description
                 : `Simple observable of indicator {${indicator.name || indicator.pattern}}`,
               x_opencti_score: indicator.x_opencti_score,
               createdBy: indicator.createdBy,
@@ -415,7 +478,10 @@ const promoteOperationCallback = async (context, user, task, container) => {
               objectLabel: indicator.objectLabel,
               externalReferences: indicator.externalReferences,
             };
-            observableToCreate.standard_id = generateStandardId(observableToCreate.entity_type, observableToCreate);
+            observableToCreate.standard_id = generateStandardId(
+              observableToCreate.entity_type,
+              observableToCreate,
+            );
             const stixObservable = convertStoreToStix_2_1(observableToCreate);
             objects.push(stixObservable);
             const relationToCreate = {
@@ -437,9 +503,17 @@ const promoteOperationCallback = async (context, user, task, container) => {
         }
         // If observable, promote to indicator
         if (isStixCyberObservable(loadedElement.entity_type)) {
-          const indicatorToCreate = await generateIndicatorFromObservable(context, user, loadedElement, loadedElement);
+          const indicatorToCreate = await generateIndicatorFromObservable(
+            context,
+            user,
+            loadedElement,
+            loadedElement,
+          );
           indicatorToCreate.entity_type = ENTITY_TYPE_INDICATOR;
-          indicatorToCreate.standard_id = generateStandardId(ENTITY_TYPE_INDICATOR, indicatorToCreate);
+          indicatorToCreate.standard_id = generateStandardId(
+            ENTITY_TYPE_INDICATOR,
+            indicatorToCreate,
+          );
           const stixIndicator = convertStoreToStix_2_1(indicatorToCreate);
           objects.push(stixIndicator);
           const relationToCreate = {
@@ -459,24 +533,29 @@ const promoteOperationCallback = async (context, user, task, container) => {
           objects.push(stixRelation);
         }
       } catch (e) {
-        logApp.error('[OPENCTI-MODULE][TASK-MANAGER] Task manager error during promote operation, skipping element', {
-          cause: e,
-          taskId: task.internal_id,
-          workId: task.work_id,
-          elementId: loadedElements[index]?.internal_id,
-          elementType: loadedElements[index]?.entity_type,
-        });
+        logApp.error(
+          '[OPENCTI-MODULE][TASK-MANAGER] Task manager error during promote operation, skipping element',
+          {
+            cause: e,
+            taskId: task.internal_id,
+            workId: task.work_id,
+            elementId: loadedElements[index]?.internal_id,
+            elementType: loadedElements[index]?.entity_type,
+          },
+        );
       }
     }
     const objectRefs = objects.map((object) => object.id);
     if (container) {
-      const containerOperations = [{
-        type: 'ADD',
-        context: {
-          field: INPUT_OBJECTS,
-          values: objects.map((object) => object.id),
+      const containerOperations = [
+        {
+          type: 'ADD',
+          context: {
+            field: INPUT_OBJECTS,
+            values: objects.map((object) => object.id),
+          },
         },
-      }];
+      ];
       objects.push({
         id: container.standard_id,
         type: convertTypeToStixType(container.entity_type),
@@ -514,7 +593,9 @@ const sharingOperationCallback = async (context, user, task, actionType, operati
       // We also need to push a no split bundle directly
       if (isStixDomainObjectContainer(element.entity_type)) {
         const containerObjects = [];
-        const sharingElements = await getContainerObjects(context, user, element.internal_id, { all: true });
+        const sharingElements = await getContainerObjects(context, user, element.internal_id, {
+          all: true,
+        });
         const allSharingElements = sharingElements.edges?.map((n) => n.node);
         for (let shareIndex = 0; shareIndex < allSharingElements?.length; shareIndex += 1) {
           await doYield();
@@ -570,7 +651,9 @@ const customFieldValuesRemoveOperationCallback = async (context, user, task, ope
               id: element.internal_id,
               type: element.entity_type,
               opencti_operation: 'patch',
-              opencti_field_patch: [{ key: 'custom_field_values', value: [{ field_id: fieldId }], operation: 'remove' }],
+              opencti_field_patch: [
+                { key: 'custom_field_values', value: [{ field_id: fieldId }], operation: 'remove' },
+              ],
             },
           },
         });
@@ -595,7 +678,9 @@ const computeOperationCallback = async (context, user, task, actionType, operati
   // Handle specific case of promoting indicator or observable
   if (actionType === ACTION_TYPE_PROMOTE) {
     const { containerId } = operations[0];
-    const container = containerId ? await internalLoadById(context, user, containerId, { baseData: true }) : undefined;
+    const container = containerId
+      ? await internalLoadById(context, user, containerId, { baseData: true })
+      : undefined;
     return promoteOperationCallback(context, user, task, container);
   }
   // Handle specific case of removing a deleted custom field definition values from entities
@@ -618,7 +703,8 @@ const workerTaskHandler = async (context, user, task, actionType, operations) =>
     // Task query will be enlisted step by step except for sharing/un sharing.
     // custom_field_values isn't part of the base fields, but the removal callback needs it on
     // every element; requesting it upfront here avoids a separate reload of all elements.
-    const baseFields = actionType === ACTION_TYPE_REMOVE_CUSTOM_FIELD_VALUES ? ['custom_field_values'] : [];
+    const baseFields =
+      actionType === ACTION_TYPE_REMOVE_CUSTOM_FIELD_VALUES ? ['custom_field_values'] : [];
     await taskQuery(context, user, task, callback, baseFields);
   }
   if (task.type === TASK_TYPE_LIST) {
@@ -641,7 +727,11 @@ const handleTaskMigrationToWorker = async (context, task) => {
       await updateTask(context, updatedTask.id, { connector_id: updatedTask.connector_id });
     }
     if (!updatedTask.work_id) {
-      const work = await createWorkForBackgroundTask(context, updatedTask.id, updatedTask.connector_id);
+      const work = await createWorkForBackgroundTask(
+        context,
+        updatedTask.id,
+        updatedTask.connector_id,
+      );
       updatedTask.work_id = work.id;
       await updateTask(context, updatedTask.id, { work_id: updatedTask.work_id });
     }
@@ -666,7 +756,9 @@ const taskHandlerGenerator = (context) => {
     // Fetch the user responsible for the task
     const rawUser = await resolveUserByIdFromCache(context, task.initiator_id);
     const user = { ...rawUser, origin: { user_id: rawUser.id, referer: 'background_task' } };
-    logApp.debug(`[OPENCTI-MODULE][TASK-MANAGER] Executing job using userId:${rawUser.id}, for task ${task.internal_id}`);
+    logApp.debug(
+      `[OPENCTI-MODULE][TASK-MANAGER] Executing job using userId:${rawUser.id}, for task ${task.internal_id}`,
+    );
     const draftID = task.draft_context ?? '';
     const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     const user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
@@ -675,7 +767,8 @@ const taskHandlerGenerator = (context) => {
     // Current format is not aligned with worker practices
     // We need to reformat the actions to back process support
     // Grouping at the same time to add extra checks
-    if (isRuleTask) { // Rescan is not a rule task, but a query one
+    if (isRuleTask) {
+      // Rescan is not a rule task, but a query one
       const actionType = task.enable ? ACTION_TYPE_RULE_APPLY : ACTION_TYPE_RULE_CLEAR;
       task.actions = [{ type: actionType, context: { rule_id: task.rule } }];
     }
@@ -701,7 +794,11 @@ const taskHandlerGenerator = (context) => {
       return action.type;
     }, task.actions);
     const typeOfActions = Object.keys(actionsGroup);
-    for (let typeOfActionIndex = 0; typeOfActionIndex < typeOfActions.length; typeOfActionIndex += 1) {
+    for (
+      let typeOfActionIndex = 0;
+      typeOfActionIndex < typeOfActions.length;
+      typeOfActionIndex += 1
+    ) {
       const typeOfAction = typeOfActions[typeOfActionIndex];
       throwErrorInDraftContext(context, user, typeOfAction);
       const operations = actionsGroup[typeOfAction];
@@ -721,13 +818,17 @@ const tasksHandler = async () => {
     const context = executionContext('task_manager', SYSTEM_USER);
     const tasks = await findTasksToExecute(context);
     const taskHandler = taskHandlerGenerator(context);
-    await BluePromise.map(tasks, taskHandler, { concurrency: TASK_CONCURRENCY })
-      .catch((error) => logApp.error('[OPENCTI-MODULE][TASK-MANAGER] Task manager error', { cause: error }));
+    await BluePromise.map(tasks, taskHandler, { concurrency: TASK_CONCURRENCY }).catch((error) =>
+      logApp.error('[OPENCTI-MODULE][TASK-MANAGER] Task manager error', { cause: error }),
+    );
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {
       logApp.debug('[OPENCTI-MODULE] Task manager already in progress by another API');
     } else {
-      logApp.error('[OPENCTI-MODULE] Task manager handler error', { cause: e, manager: 'TASK_MANAGER' });
+      logApp.error('[OPENCTI-MODULE] Task manager handler error', {
+        cause: e,
+        manager: 'TASK_MANAGER',
+      });
     }
   } finally {
     running = false;

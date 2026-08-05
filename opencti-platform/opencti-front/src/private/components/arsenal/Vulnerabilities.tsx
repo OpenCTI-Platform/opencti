@@ -1,6 +1,9 @@
 import React from 'react';
 import { graphql } from 'react-relay';
-import { VulnerabilitiesLinesPaginationQuery, VulnerabilitiesLinesPaginationQuery$variables } from '@components/arsenal/__generated__/VulnerabilitiesLinesPaginationQuery.graphql';
+import {
+  VulnerabilitiesLinesPaginationQuery,
+  VulnerabilitiesLinesPaginationQuery$variables,
+} from '@components/arsenal/__generated__/VulnerabilitiesLinesPaginationQuery.graphql';
 import { VulnerabilitiesLines_data$data } from '@components/arsenal/__generated__/VulnerabilitiesLines_data.graphql';
 import VulnerabilityCreation from './vulnerabilities/VulnerabilityCreation';
 import Security from '../../../utils/Security';
@@ -8,7 +11,10 @@ import { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../utils/hook
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useAuth from '../../../utils/hooks/useAuth';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -59,14 +65,14 @@ const vulnerabilitiesLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...VulnerabilitiesLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -122,14 +128,16 @@ const Vulnerabilities = () => {
     filters: emptyFilterGroup,
   };
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-  const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<VulnerabilitiesLinesPaginationQuery$variables>(
+  const {
+    viewStorage,
+    helpers: storageHelpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<VulnerabilitiesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
 
-  const {
-    filters,
-  } = viewStorage;
+  const { filters } = viewStorage;
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Vulnerability', filters);
   const queryPaginationOptions = {
@@ -161,22 +169,29 @@ const Vulnerabilities = () => {
 
   return (
     <div data-testid="vulnerability-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Vulnerabilities'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Arsenal') },
+          { label: t_i18n('Vulnerabilities'), current: true },
+        ]}
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: VulnerabilitiesLines_data$data) => (data?.vulnerabilities?.edges || []).map((n) => n?.node)}
+          resolvePath={(data: VulnerabilitiesLines_data$data) =>
+            (data?.vulnerabilities?.edges || []).map((n) => n?.node)
+          }
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationOptions}
           lineFragment={vulnerabilityLineFragment}
           exportContext={{ entity_type: 'Vulnerability' }}
-          createButton={(
+          createButton={
             <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
               <VulnerabilityCreation paginationOptions={queryPaginationOptions} />
             </Security>
-          )}
+          }
         />
       )}
     </div>

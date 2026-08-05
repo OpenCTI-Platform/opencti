@@ -12,7 +12,14 @@ export const up = async (next) => {
   const users = await findAllUser(context, SYSTEM_USER);
   for (let index = 0; index < users.length; index += 1) {
     const user = users[index];
-    const userToken = await fullEntitiesThroughRelationsFromList(context, SYSTEM_USER, user.id, 'authorized-by', 'Token', { withInferences: false });
+    const userToken = await fullEntitiesThroughRelationsFromList(
+      context,
+      SYSTEM_USER,
+      user.id,
+      'authorized-by',
+      'Token',
+      { withInferences: false },
+    );
     if (userToken) {
       // Update the token of the client with existing  token
       const patch = { api_token: userToken.uuid };

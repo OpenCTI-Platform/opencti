@@ -1,6 +1,12 @@
 import type { StixObject } from '../../types/stix-2-1-common';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
-import { AuthenticationProviderType, ExtraConfEntryType, type LdapConfiguration, type OidcConfiguration, type SamlConfiguration } from '../../generated/graphql';
+import {
+  AuthenticationProviderType,
+  ExtraConfEntryType,
+  type LdapConfiguration,
+  type OidcConfiguration,
+  type SamlConfiguration,
+} from '../../generated/graphql';
 
 export const ENTITY_TYPE_AUTHENTICATION_PROVIDER = 'AuthenticationProvider';
 
@@ -136,9 +142,14 @@ export interface SecretProvider {
   mandatory: (field: string) => Promise<string>;
 }
 
-export type AuthenticationProviderStoreConfiguration = OidcStoreConfiguration | SamlStoreConfiguration | LdapStoreConfiguration;
+export type AuthenticationProviderStoreConfiguration =
+  | OidcStoreConfiguration
+  | SamlStoreConfiguration
+  | LdapStoreConfiguration;
 
-export interface BasicStoreEntityAuthenticationProvider<T extends AuthenticationProviderStoreConfiguration | unknown = unknown> extends BasicStoreEntity {
+export interface BasicStoreEntityAuthenticationProvider<
+  T extends AuthenticationProviderStoreConfiguration | unknown = unknown,
+> extends BasicStoreEntity {
   name: string;
   description: string;
   enabled: boolean;
@@ -148,7 +159,9 @@ export interface BasicStoreEntityAuthenticationProvider<T extends Authentication
   configuration: T;
 }
 
-export interface StoreEntityAuthenticationProvider<T = OidcConfiguration | SamlConfiguration | LdapConfiguration> extends StoreEntity {
+export interface StoreEntityAuthenticationProvider<
+  T = OidcConfiguration | SamlConfiguration | LdapConfiguration,
+> extends StoreEntity {
   name: string;
   description: string;
   enabled: boolean;

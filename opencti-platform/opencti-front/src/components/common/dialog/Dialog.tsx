@@ -1,5 +1,11 @@
 import { CloseOutlined } from '@mui/icons-material';
-import { Box, DialogActionsProps, DialogContent, DialogContentProps, DialogTitle } from '@mui/material';
+import {
+  Box,
+  DialogActionsProps,
+  DialogContent,
+  DialogContentProps,
+  DialogTitle,
+} from '@mui/material';
 import MUIDialog, { DialogProps as MUIDialogProps } from '@mui/material/Dialog';
 import { ReactNode } from 'react';
 import IconButton from '../button/IconButton';
@@ -55,16 +61,21 @@ const Dialog = ({
       }}
     >
       {(title || showCloseButton) && (
-        <DialogTitle sx={{
-          paddingY: 0,
-          paddingX: 3,
-          mb: 2,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: showCloseButton && !title ? 'flex-end' : 'space-between',
-        }}
+        <DialogTitle
+          sx={{
+            paddingY: 0,
+            paddingX: 3,
+            mb: 2,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: showCloseButton && !title ? 'flex-end' : 'space-between',
+          }}
         >
-          {title && <Box component="span" sx={{ width: '100%' }}>{title}</Box>}
+          {title && (
+            <Box component="span" sx={{ width: '100%' }}>
+              {title}
+            </Box>
+          )}
           {showCloseButton && onClose && (
             <IconButton
               aria-label="close"

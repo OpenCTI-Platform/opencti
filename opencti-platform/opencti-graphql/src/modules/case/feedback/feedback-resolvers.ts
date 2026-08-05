@@ -1,5 +1,11 @@
 import type { Resolvers } from '../../../generated/graphql';
-import { addFeedback, feedbackContainsStixObjectOrStixRelationship, feedbackEditAuthorizedMembers, findFeedbackPaginated, findById } from './feedback-domain';
+import {
+  addFeedback,
+  feedbackContainsStixObjectOrStixRelationship,
+  feedbackEditAuthorizedMembers,
+  findFeedbackPaginated,
+  findById,
+} from './feedback-domain';
 import { stixDomainObjectDelete } from '../../../domain/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from './feedback-types';
 
@@ -8,7 +14,12 @@ const feedbackResolvers: Resolvers = {
     feedback: (_, { id }, context) => findById(context, context.user, id),
     feedbacks: (_, args, context) => findFeedbackPaginated(context, context.user, args),
     feedbackContainsStixObjectOrStixRelationship: (_, args, context) => {
-      return feedbackContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
+      return feedbackContainsStixObjectOrStixRelationship(
+        context,
+        context.user,
+        args.id,
+        args.stixObjectOrStixRelationshipId,
+      );
     },
   },
   FeedbacksOrdering: {

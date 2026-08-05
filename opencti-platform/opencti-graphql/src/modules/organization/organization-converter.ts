@@ -1,7 +1,11 @@
 import { convertIdentityToStix } from '../../database/stix-2-1-converter';
 import { convertIdentityToStix as convertIdentityToStix_2_0 } from '../../database/stix-2-0-converter';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from './organization-types';
-import type { Stix2Organization, StixOrganization, StoreEntityOrganization } from './organization-types';
+import type {
+  Stix2Organization,
+  StixOrganization,
+  StoreEntityOrganization,
+} from './organization-types';
 import type { StoreEntity } from '../../types/store';
 import { assertType } from '../../database/stix-converter-utils';
 

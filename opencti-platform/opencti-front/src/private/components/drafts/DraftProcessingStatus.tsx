@@ -41,7 +41,7 @@ const DraftProcessingStatus: FunctionComponent<DraftProcessingStatusProps> = ({ 
       {isCurrentDraftProcessing && (
         <Tag
           color={theme.palette.designSystem.alert.warning.primary}
-          label={(
+          label={
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
               <span>{t_i18n('Processes currently running')}</span>
               <Box
@@ -60,7 +60,7 @@ const DraftProcessingStatus: FunctionComponent<DraftProcessingStatusProps> = ({ 
                 {currentDraftProcessingCount}
               </Box>
             </Box>
-          )}
+          }
           onClick={() => {
             forceRefetch();
             setDisplayProcesses(true);
@@ -75,13 +75,19 @@ const DraftProcessingStatus: FunctionComponent<DraftProcessingStatusProps> = ({ 
         }}
       >
         <>
-          <Alert severity="info">{t_i18n('This page lists the most recent works and tasks of the current draft')}</Alert>
-          <Tabs style={{ paddingBottom: 10 }} value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
+          <Alert severity="info">
+            {t_i18n('This page lists the most recent works and tasks of the current draft')}
+          </Alert>
+          <Tabs
+            style={{ paddingBottom: 10 }}
+            value={tabValue}
+            onChange={(_, newValue) => setTabValue(newValue)}
+          >
             <Tab label={t_i18n('Works')} value="Works" />
             <Tab label={t_i18n('Tasks')} value="Tasks" />
           </Tabs>
-          {tabValue === 'Works' && (<DraftWorks draftId={currentDraftId} />)}
-          {tabValue === 'Tasks' && (<DraftTasks draftId={currentDraftId} />)}
+          {tabValue === 'Works' && <DraftWorks draftId={currentDraftId} />}
+          {tabValue === 'Tasks' && <DraftTasks draftId={currentDraftId} />}
         </>
       </Drawer>
     </div>

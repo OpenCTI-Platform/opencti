@@ -18,12 +18,7 @@ const StatusNode = ({ id, data }: NodeProps) => {
           borderRadius: 4,
         }}
       />
-      <Handle
-        id="target"
-        type="target"
-        position={Position.Top}
-        style={{ top: -2.5, zIndex: 1 }}
-      />
+      <Handle id="target" type="target" position={Position.Top} style={{ top: -2.5, zIndex: 1 }} />
       <Chip
         key={id}
         style={{

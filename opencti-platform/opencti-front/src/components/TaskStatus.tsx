@@ -30,10 +30,7 @@ const TaskStatus = ({ status, label }: TaskStatusProps) => {
 
   return (
     <>
-      <Tag
-        color={color()}
-        label={label}
-      />
+      <Tag color={color()} label={label} />
     </>
   );
 };

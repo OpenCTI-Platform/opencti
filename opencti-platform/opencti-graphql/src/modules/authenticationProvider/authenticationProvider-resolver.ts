@@ -1,4 +1,9 @@
-import { AuthenticationProviderRuntimeStatus, AuthenticationProviderType, AuthLogLevel, type Resolvers } from '../../generated/graphql';
+import {
+  AuthenticationProviderRuntimeStatus,
+  AuthenticationProviderType,
+  AuthLogLevel,
+  type Resolvers,
+} from '../../generated/graphql';
 import { type AuthLogEntry, redisGetAuthLogHistory } from '../../database/redis';
 import {
   addAuthenticationProvider,
@@ -37,7 +42,9 @@ const logsToLogs = (logs: AuthLogEntry[]) => {
   }));
 };
 
-const runtimeStatus = (provider: BasicStoreEntityAuthenticationProvider): AuthenticationProviderRuntimeStatus => {
+const runtimeStatus = (
+  provider: BasicStoreEntityAuthenticationProvider,
+): AuthenticationProviderRuntimeStatus => {
   if (!provider.enabled) {
     return AuthenticationProviderRuntimeStatus.Disabled;
   }
@@ -70,8 +77,10 @@ const authenticationProviderResolver: Resolvers = {
   },
   Query: {
     availableSecrets: () => getAvailableSecrets(),
-    authenticationProvider: (_, { id }, context) => findAuthenticationProviderById(context, context.user, id),
-    authenticationProviders: (_, args, context) => findAuthenticationProviderByIdPaginated(context, context.user, args),
+    authenticationProvider: (_, { id }, context) =>
+      findAuthenticationProviderById(context, context.user, id),
+    authenticationProviders: (_, args, context) =>
+      findAuthenticationProviderByIdPaginated(context, context.user, args),
     authLogHistoryById: async (_: unknown, { id }: { id: string }) => {
       const entries = await redisGetAuthLogHistory(id);
       return logsToLogs(entries);
@@ -93,31 +102,79 @@ const authenticationProviderResolver: Resolvers = {
   },
   Mutation: {
     oidcProviderAdd: (_, { input }, context) => {
-      return addAuthenticationProvider(context, context.user, input, AuthenticationProviderType.Oidc);
+      return addAuthenticationProvider(
+        context,
+        context.user,
+        input,
+        AuthenticationProviderType.Oidc,
+      );
     },
     oidcProviderEdit: (_, { id, input }, context) => {
-      return editAuthenticationProvider(context, context.user, id, input, AuthenticationProviderType.Oidc);
+      return editAuthenticationProvider(
+        context,
+        context.user,
+        id,
+        input,
+        AuthenticationProviderType.Oidc,
+      );
     },
     oidcProviderDelete: (_, { id }, context) => {
-      return deleteAuthenticationProvider(context, context.user, id, AuthenticationProviderType.Oidc);
+      return deleteAuthenticationProvider(
+        context,
+        context.user,
+        id,
+        AuthenticationProviderType.Oidc,
+      );
     },
     samlProviderAdd: (_, { input }, context) => {
-      return addAuthenticationProvider(context, context.user, input, AuthenticationProviderType.Saml);
+      return addAuthenticationProvider(
+        context,
+        context.user,
+        input,
+        AuthenticationProviderType.Saml,
+      );
     },
     samlProviderEdit: (_, { id, input }, context) => {
-      return editAuthenticationProvider(context, context.user, id, input, AuthenticationProviderType.Saml);
+      return editAuthenticationProvider(
+        context,
+        context.user,
+        id,
+        input,
+        AuthenticationProviderType.Saml,
+      );
     },
     samlProviderDelete: (_, { id }, context) => {
-      return deleteAuthenticationProvider(context, context.user, id, AuthenticationProviderType.Saml);
+      return deleteAuthenticationProvider(
+        context,
+        context.user,
+        id,
+        AuthenticationProviderType.Saml,
+      );
     },
     ldapProviderAdd: (_, { input }, context) => {
-      return addAuthenticationProvider(context, context.user, input, AuthenticationProviderType.Ldap);
+      return addAuthenticationProvider(
+        context,
+        context.user,
+        input,
+        AuthenticationProviderType.Ldap,
+      );
     },
     ldapProviderEdit: (_, { id, input }, context) => {
-      return editAuthenticationProvider(context, context.user, id, input, AuthenticationProviderType.Ldap);
+      return editAuthenticationProvider(
+        context,
+        context.user,
+        id,
+        input,
+        AuthenticationProviderType.Ldap,
+      );
     },
     ldapProviderDelete: (_, { id }, context) => {
-      return deleteAuthenticationProvider(context, context.user, id, AuthenticationProviderType.Ldap);
+      return deleteAuthenticationProvider(
+        context,
+        context.user,
+        id,
+        AuthenticationProviderType.Ldap,
+      );
     },
   },
 };

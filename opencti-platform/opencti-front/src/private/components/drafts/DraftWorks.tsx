@@ -43,9 +43,7 @@ const LOCAL_STORAGE_KEY = 'draft_works';
 interface DraftWorksComponentProps {
   queryRef: PreloadedQuery<DraftWorksQuery>;
 }
-const DraftWorksComponent: FunctionComponent<
-  DraftWorksComponentProps
-> = ({ queryRef }) => {
+const DraftWorksComponent: FunctionComponent<DraftWorksComponentProps> = ({ queryRef }) => {
   const theme = useTheme<Theme>();
   const { draftWorkspace } = usePreloadedQuery<DraftWorksQuery>(draftWorksQuery, queryRef);
   const { id, works } = useFragment(draftWorksFragment, draftWorkspace) as DraftWorksFragment$data;
@@ -86,9 +84,19 @@ const DraftWorksComponent: FunctionComponent<
             textTransform: 'uppercase',
             borderRadius: 4,
             width: 90,
-            color: status === 'progress' || status === 'wait' ? theme.palette.warn.main : theme.palette.success.main,
-            borderColor: status === 'progress' || status === 'wait' ? theme.palette.warn.main : theme.palette.success.main,
-            backgroundColor: hexToRGB(status === 'progress' || status === 'wait' ? theme.palette.warn.main : theme.palette.success.main),
+            color:
+              status === 'progress' || status === 'wait'
+                ? theme.palette.warn.main
+                : theme.palette.success.main,
+            borderColor:
+              status === 'progress' || status === 'wait'
+                ? theme.palette.warn.main
+                : theme.palette.success.main,
+            backgroundColor: hexToRGB(
+              status === 'progress' || status === 'wait'
+                ? theme.palette.warn.main
+                : theme.palette.success.main,
+            ),
           }}
         />
       ),

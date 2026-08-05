@@ -57,6 +57,4 @@ CourseOfActionEdition.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-)(CourseOfActionEdition);
+export default compose(inject18n)(CourseOfActionEdition);

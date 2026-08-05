@@ -5,7 +5,10 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { CaseTemplateTasksLines_data$key } from './__generated__/CaseTemplateTasksLines_data.graphql';
-import { CaseTemplateTasksLines_DataQuery, CaseTemplateTasksLines_DataQuery$variables } from './__generated__/CaseTemplateTasksLines_DataQuery.graphql';
+import {
+  CaseTemplateTasksLines_DataQuery,
+  CaseTemplateTasksLines_DataQuery$variables,
+} from './__generated__/CaseTemplateTasksLines_DataQuery.graphql';
 import { CaseTemplateTasksLinesPaginationQuery } from './__generated__/CaseTemplateTasksLinesPaginationQuery.graphql';
 import { CaseTemplateTasksLine, CaseTemplateTasksLineDummy } from './CaseTemplateTasksLine';
 
@@ -25,13 +28,13 @@ export const tasksLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...CaseTemplateTasksLines_data
-    @arguments(
-      search: $search
-      count: $count
-      orderMode: $orderMode
-      orderBy: $orderBy
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        orderMode: $orderMode
+        orderBy: $orderBy
+        filters: $filters
+      )
   }
 `;
 
@@ -76,12 +79,10 @@ const CaseTemplateTasksLines: FunctionComponent<TasksLinesProps> = ({
   paginationOptions,
   setNumberOfElements,
 }) => {
-  const {
-    data,
-    hasMore,
-    loadMore,
-    isLoadingMore,
-  } = usePreloadedPaginationFragment<CaseTemplateTasksLines_DataQuery, CaseTemplateTasksLines_data$key>({
+  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
+    CaseTemplateTasksLines_DataQuery,
+    CaseTemplateTasksLines_data$key
+  >({
     queryRef,
     linesQuery: tasksLinesQuery,
     linesFragment: tasksLinesFragment,

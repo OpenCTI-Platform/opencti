@@ -10,7 +10,11 @@ import Alert from 'src/components/Alert';
 import Filters from '@components/common/lists/Filters';
 import FilterIconButton from 'src/components/FilterIconButton';
 import useFiltersState from 'src/utils/filters/useFiltersState';
-import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from 'src/utils/filters/filtersUtils';
+import {
+  deserializeFilterGroupForFrontend,
+  emptyFilterGroup,
+  serializeFilterGroupForBackend,
+} from 'src/utils/filters/filtersUtils';
 import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import Button from '@common/button/Button';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -98,14 +102,12 @@ const DecayExclusionRuleEdition = ({ data, isOpen, onClose }: DecayExclusionRule
   };
 
   return (
-    <Drawer
-      title={t_i18n('Update a decay exclusion rule')}
-      open={isOpen}
-      onClose={handleClose}
-    >
+    <Drawer title={t_i18n('Update a decay exclusion rule')} open={isOpen} onClose={handleClose}>
       <>
         <Alert
-          content={t_i18n('Be careful, please define some filter for your exclusion rule, otherwise, since no filters are set, any indicator will match the rule and will have an exclusion rule')}
+          content={t_i18n(
+            'Be careful, please define some filter for your exclusion rule, otherwise, since no filters are set, any indicator will match the rule and will have an exclusion rule',
+          )}
           severity="warning"
           style={{ marginBottom: 20 }}
         />
@@ -116,12 +118,7 @@ const DecayExclusionRuleEdition = ({ data, isOpen, onClose }: DecayExclusionRule
         >
           {({ submitForm, handleReset, isSubmitting }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
-              <Field
-                component={TextField}
-                name="name"
-                label={t_i18n('Name')}
-                fullWidth={true}
-              />
+              <Field component={TextField} name="name" label={t_i18n('Name')} fullWidth={true} />
               <Field
                 component={MarkdownField}
                 name="description"
@@ -131,13 +128,14 @@ const DecayExclusionRuleEdition = ({ data, isOpen, onClose }: DecayExclusionRule
                 rows={2}
                 style={{ marginTop: 20 }}
               />
-              <Box sx={{
-                paddingTop: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: theme.spacing(1),
-                marginBottom: theme.spacing(1),
-              }}
+              <Box
+                sx={{
+                  paddingTop: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: theme.spacing(1),
+                  marginBottom: theme.spacing(1),
+                }}
               >
                 <Filters
                   availableFilterKeys={enabledFilters}
@@ -159,11 +157,7 @@ const DecayExclusionRuleEdition = ({ data, isOpen, onClose }: DecayExclusionRule
                 >
                   {t_i18n('Cancel')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                  style={{ marginLeft: 16 }}
-                >
+                <Button onClick={submitForm} disabled={isSubmitting} style={{ marginLeft: 16 }}>
                   {t_i18n('Update')}
                 </Button>
               </div>

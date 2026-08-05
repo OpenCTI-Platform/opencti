@@ -54,11 +54,17 @@ const groupingResolvers: Resolvers = {
       return distributionEntities(context, context.user, [ENTITY_TYPE_CONTAINER_GROUPING], args);
     },
     groupingContainsStixObjectOrStixRelationship: (_, args, context) => {
-      return groupingContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
+      return groupingContainsStixObjectOrStixRelationship(
+        context,
+        context.user,
+        args.id,
+        args.stixObjectOrStixRelationshipId,
+      );
     },
   },
   Grouping: {
-    securityCoverage: (grouping, _, context) => findSecurityCoverageByCoveredId(context, context.user, grouping.id),
+    securityCoverage: (grouping, _, context) =>
+      findSecurityCoverageByCoveredId(context, context.user, grouping.id),
   },
   Mutation: {
     groupingAdd: (_, { input }, context) => {
@@ -68,7 +74,10 @@ const groupingResolvers: Resolvers = {
       return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_CONTAINER_GROUPING);
     },
     groupingFieldPatch: (_, { id, input, commitMessage, references }, context) => {
-      return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
+      return stixDomainObjectEditField(context, context.user, id, input, {
+        commitMessage,
+        references,
+      });
     },
     groupingContextPatch: (_, { id, input }, context) => {
       return stixDomainObjectEditContext(context, context.user, id, input);

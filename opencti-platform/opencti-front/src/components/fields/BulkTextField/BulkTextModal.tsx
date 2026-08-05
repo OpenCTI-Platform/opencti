@@ -1,6 +1,16 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import { Alert, DialogActions, FormControl, InputLabel, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
+import {
+  Alert,
+  DialogActions,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { splitMultilines } from '../../../utils/String';
 import { useFormatter } from '../../i18n';
@@ -40,7 +50,10 @@ const BulkTextModal = ({
     setValue(formValue);
   };
 
-  const noDuplicateNoEmptyValues = useMemo(() => Array.from(new Set(splitMultilines(value))), [value]);
+  const noDuplicateNoEmptyValues = useMemo(
+    () => Array.from(new Set(splitMultilines(value))),
+    [value],
+  );
   const nbLines = noDuplicateNoEmptyValues.length;
 
   const validate = () => {
@@ -52,15 +65,14 @@ const BulkTextModal = ({
   const label = t_i18n('Values (one per line)');
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      title={title || t_i18n('Create multiple entities')}
-    >
+    <Dialog open={open} onClose={onClose} title={title || t_i18n('Create multiple entities')}>
       <Stack gap={2}>
         <Alert severity="info" variant="outlined">
           <Typography variant="body2">
-            {t_i18n('If you are adding more than {limit} values, please upload them through', { values: { limit: MAX_LINES } })} <a href="/dashboard/data/import">{t_i18n('Imports')}</a>
+            {t_i18n('If you are adding more than {limit} values, please upload them through', {
+              values: { limit: MAX_LINES },
+            })}{' '}
+            <a href="/dashboard/data/import">{t_i18n('Imports')}</a>
           </Typography>
         </Alert>
 
@@ -77,7 +89,9 @@ const BulkTextModal = ({
               fullWidth={true}
             >
               {availableKeys?.map((key) => (
-                <MenuItem key={key} value={key}>{key}</MenuItem>
+                <MenuItem key={key} value={key}>
+                  {key}
+                </MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -92,7 +106,9 @@ const BulkTextModal = ({
           multiline={true}
           rows="5"
           error={nbLines > MAX_LINES}
-          helperText={t_i18n('{count} / {limit} entries detected', { values: { count: nbLines, limit: MAX_LINES } })}
+          helperText={t_i18n('{count} / {limit} entries detected', {
+            values: { count: nbLines, limit: MAX_LINES },
+          })}
         />
       </Stack>
 

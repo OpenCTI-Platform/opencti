@@ -48,7 +48,10 @@ const TransitionEdge = ({
       />
 
       {isHovered && (
-        <g transform={`translate(${edgeCenterX}, ${edgeCenterY})`} style={{ pointerEvents: 'none' }}>
+        <g
+          transform={`translate(${edgeCenterX}, ${edgeCenterY})`}
+          style={{ pointerEvents: 'none' }}
+        >
           <rect
             x={-10}
             y={-10}

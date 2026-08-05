@@ -31,11 +31,9 @@ const PositionDeletion: FunctionComponent<PositionDeletionProps> = ({
     id: '... successfully deleted',
     values: { entity_type: t_i18n('entity_Position') },
   });
-  const [commitMutation] = useApiMutation(
-    positionDeletionMutation,
-    undefined,
-    { successMessage: deleteSuccessMessage },
-  );
+  const [commitMutation] = useApiMutation(positionDeletionMutation, undefined, {
+    successMessage: deleteSuccessMessage,
+  });
 
   const deletion = useDeletion({ handleClose });
   const { setDeleting } = deletion;

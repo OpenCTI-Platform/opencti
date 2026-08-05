@@ -18,7 +18,15 @@ type DrawerContainerPropsType = {
   togglePromoteToContainer: () => void;
 };
 
-const PromoteDrawer = ({ isOpen, onClose, isOnlyStixCyberObservablesTypes, onSubmit, isContainer, promoteToContainer, togglePromoteToContainer }: DrawerContainerPropsType) => {
+const PromoteDrawer = ({
+  isOpen,
+  onClose,
+  isOnlyStixCyberObservablesTypes,
+  onSubmit,
+  isContainer,
+  promoteToContainer,
+  togglePromoteToContainer,
+}: DrawerContainerPropsType) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
@@ -35,11 +43,7 @@ const PromoteDrawer = ({ isOpen, onClose, isOnlyStixCyberObservablesTypes, onSub
   };
 
   return (
-    <Drawer
-      title={t_i18n('Observables and indicators conversion')}
-      onClose={onClose}
-      open={isOpen}
-    >
+    <Drawer title={t_i18n('Observables and indicators conversion')} onClose={onClose} open={isOpen}>
       <div style={{ padding: '10px 20px 20px 20px' }}>
         {isOnlyStixCyberObservablesTypes ? (
           <div>
@@ -57,16 +61,13 @@ const PromoteDrawer = ({ isOpen, onClose, isOnlyStixCyberObservablesTypes, onSub
           </div>
         )}
         {renderPromoteToContainerCheckBox()}
-        <div style={{
-          marginTop: 20,
-          textAlign: 'right',
-        }}
+        <div
+          style={{
+            marginTop: 20,
+            textAlign: 'right',
+          }}
         >
-          <Button
-            sx={{ marginLeft: theme.spacing(2) }}
-            color="secondary"
-            onClick={onSubmit}
-          >
+          <Button sx={{ marginLeft: theme.spacing(2) }} color="secondary" onClick={onSubmit}>
             {t_i18n('Generate')}
           </Button>
         </div>

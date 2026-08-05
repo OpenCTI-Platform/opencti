@@ -178,16 +178,16 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
       name
     }
     ... on CaseIncident {
-        name
+      name
     }
     ... on CaseRfi {
-        name
+      name
     }
     ... on CaseRft {
-        name
+      name
     }
-    ... on SecurityPlatform{
-        name
+    ... on SecurityPlatform {
+      name
     }
     ... on StixCyberObservable {
       observable_value
@@ -246,10 +246,7 @@ export const EntityStixCoreRelationshipsEntitiesViewLine: FunctionComponent<
 }) => {
   const classes = useStyles();
   const { nsdt } = useFormatter();
-  const stixCoreObject = useFragment(
-    entityStixCoreRelationshipsEntitiesFragment,
-    node,
-  );
+  const stixCoreObject = useFragment(entityStixCoreRelationshipsEntitiesFragment, node);
   return (
     <ListItemButton
       classes={{ root: classes.item }}
@@ -260,16 +257,17 @@ export const EntityStixCoreRelationshipsEntitiesViewLine: FunctionComponent<
       <ListItemIcon
         classes={{ root: classes.itemIcon }}
         style={{ minWidth: 40 }}
-        onClick={(event) => (event.shiftKey
-          ? onToggleShiftEntity(index, stixCoreObject)
-          : onToggleEntity(stixCoreObject, event))
+        onClick={(event) =>
+          event.shiftKey
+            ? onToggleShiftEntity(index, stixCoreObject)
+            : onToggleEntity(stixCoreObject, event)
         }
       >
         <Checkbox
           edge="start"
           checked={
-            (selectAll && !(stixCoreObject.id in (deSelectedElements || {})))
-            || stixCoreObject.id in (selectedElements || {})
+            (selectAll && !(stixCoreObject.id in (deSelectedElements || {}))) ||
+            stixCoreObject.id in (selectedElements || {})
           }
           disableRipple={true}
         />
@@ -279,12 +277,9 @@ export const EntityStixCoreRelationshipsEntitiesViewLine: FunctionComponent<
       </ListItemIcon>
       <ListItemText
         classes={{ root: classes.listItemText }}
-        primary={(
+        primary={
           <div className={classes.row}>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.entity_type.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.entity_type.width }}>
               <ItemEntityType entityType={stixCoreObject.entity_type} />
             </div>
             <div
@@ -296,47 +291,29 @@ export const EntityStixCoreRelationshipsEntitiesViewLine: FunctionComponent<
               }}
             >
               {getMainRepresentative(stixCoreObject)}
-              {stixCoreObject.draftVersion && (<DraftChip />)}
+              {stixCoreObject.draftVersion && <DraftChip />}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.createdBy.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.createdBy.width }}>
               {stixCoreObject.createdBy?.name ?? EMPTY_VALUE}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.creator.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.creator.width }}>
               {(stixCoreObject.creators ?? []).map((c) => c?.name).join(', ')}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectLabel.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.objectLabel.width }}>
               <StixCoreObjectLabels
                 variant="inList"
                 labels={stixCoreObject.objectLabel}
                 onClick={onLabelClick}
               />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.created_at.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.created_at.width }}>
               {nsdt(stixCoreObject.created_at)}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectMarking.width }}
-            >
-              <ItemMarkings
-                markingDefinitions={stixCoreObject.objectMarking ?? []}
-                limit={1}
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.objectMarking.width }}>
+              <ItemMarkings markingDefinitions={stixCoreObject.objectMarking ?? []} limit={1} />
             </div>
           </div>
-        )}
+        }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRight />
@@ -352,10 +329,7 @@ export const EntityStixCoreRelationshipsEntitiesLineDummy = ({
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
-      <ListItemIcon
-        classes={{ root: classes.itemIconDisabled }}
-        style={{ minWidth: 40 }}
-      >
+      <ListItemIcon classes={{ root: classes.itemIconDisabled }} style={{ minWidth: 40 }}>
         <Checkbox edge="start" disabled={true} disableRipple={true} />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -363,18 +337,10 @@ export const EntityStixCoreRelationshipsEntitiesLineDummy = ({
       </ListItemIcon>
       <ListItemText
         classes={{ root: classes.listItemText }}
-        primary={(
+        primary={
           <div className={classes.row}>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.entity_type.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.entity_type.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
             <div
               className={classes.bodyItem}
@@ -384,70 +350,25 @@ export const EntityStixCoreRelationshipsEntitiesLineDummy = ({
                   : dataColumns.observable_value.width,
               }}
             >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.createdBy.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.createdBy.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.creator.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.creator.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectLabel.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.objectLabel.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.created_at.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width={140}
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.created_at.width }}>
+              <Skeleton animation="wave" variant="rectangular" width={140} height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectMarking.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width={100}
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.objectMarking.width }}>
+              <Skeleton animation="wave" variant="rectangular" width={100} height="100%" />
             </div>
           </div>
-        )}
+        }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRight />

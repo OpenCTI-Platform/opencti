@@ -13,9 +13,7 @@ const reportKnowledgeCorrelationEdit = graphql`
 `;
 
 const useReportKnowledgeCorrelationEdit = () => {
-  return useApiMutation<useReportKnowledgeCorrelationEditMutation>(
-    reportKnowledgeCorrelationEdit,
-  );
+  return useApiMutation<useReportKnowledgeCorrelationEditMutation>(reportKnowledgeCorrelationEdit);
 };
 
 export default useReportKnowledgeCorrelationEdit;

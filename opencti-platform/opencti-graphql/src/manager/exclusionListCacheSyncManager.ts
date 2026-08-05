@@ -3,7 +3,9 @@ import conf, { logApp, PLATFORM_INSTANCE_ID } from '../config/conf';
 import { redisGetExclusionListStatus } from '../database/redis';
 import { getIsCacheInitialized, syncExclusionListCache } from '../database/exclusionListCache';
 
-const EXCLUSION_LIST_CACHE_SYNC_MANAGER_LOCK_KEY = conf.get('exclusion_list_cache_sync_manager:lock_key') || 'exclusion_list_cache_sync_manager_lock';
+const EXCLUSION_LIST_CACHE_SYNC_MANAGER_LOCK_KEY =
+  conf.get('exclusion_list_cache_sync_manager:lock_key') ||
+  'exclusion_list_cache_sync_manager_lock';
 const SCHEDULE_TIME = conf.get('exclusion_list_cache_sync_manager:interval') || 10000; // 10 seconds
 
 const exclusionListCacheSyncHandler = async () => {
@@ -12,7 +14,10 @@ const exclusionListCacheSyncHandler = async () => {
 
   if (!exclusionListStatus?.last_cache_date) return;
 
-  if (exclusionListStatus.last_cache_date !== exclusionListStatus[PLATFORM_INSTANCE_ID] || !isLocalCacheInitialized) {
+  if (
+    exclusionListStatus.last_cache_date !== exclusionListStatus[PLATFORM_INSTANCE_ID] ||
+    !isLocalCacheInitialized
+  ) {
     logApp.info('[OPENCTI-MODULE][EXCLUSION-SYNC-MANAGER] local cache needs to be updated');
     await syncExclusionListCache(exclusionListStatus.last_cache_date);
     logApp.info('[OPENCTI-MODULE][EXCLUSION-SYNC-MANAGER] local cache has been updated');

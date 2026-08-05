@@ -11,7 +11,8 @@ import useDashboard from './useDashboard';
 // easier (and faster) to run & debug tests
 vi.mock(import('./dashboard-utils'), async (importOriginal) => {
   const mockedSerialize = (manifest: DashboardManifest) => manifest as unknown as string;
-  const mockedDeserialize = (manifest: string | null | undefined) => manifest as unknown as DashboardManifest;
+  const mockedDeserialize = (manifest: string | null | undefined) =>
+    manifest as unknown as DashboardManifest;
   const originalModule = await importOriginal();
   return {
     ...originalModule,
@@ -57,19 +58,21 @@ describe('useDashboard', () => {
         distributed: false,
         content: 'Some content',
       },
-      dataSelection: [{
-        label: 'Some data',
-        number: 10,
-        sort_by: 'created_at',
-        sort_mode: 'desc',
-        attribute: 'entity_type',
-        date_attribute: 'created_at',
-        perspective: null,
-        isTo: true,
-        filters: emptyFilterGroup,
-        dynamicFrom: emptyFilterGroup,
-        dynamicTo: emptyFilterGroup,
-      }],
+      dataSelection: [
+        {
+          label: 'Some data',
+          number: 10,
+          sort_by: 'created_at',
+          sort_mode: 'desc',
+          attribute: 'entity_type',
+          date_attribute: 'created_at',
+          perspective: null,
+          isTo: true,
+          filters: emptyFilterGroup,
+          dynamicFrom: emptyFilterGroup,
+          dynamicTo: emptyFilterGroup,
+        },
+      ],
     } satisfies Widget;
 
     it('adds a first widget to the layout', () => {
@@ -81,10 +84,14 @@ describe('useDashboard', () => {
         }),
       };
       const saveSpy = vi.fn();
-      const { result, rerender } = renderHook((entity: DashboardLike) => useDashboard({
-        entity,
-        onSave: saveSpy,
-      }), { initialProps: entity });
+      const { result, rerender } = renderHook(
+        (entity: DashboardLike) =>
+          useDashboard({
+            entity,
+            onSave: saveSpy,
+          }),
+        { initialProps: entity },
+      );
 
       // Act: add widget to the dashboard
       act(() => result.current.handleAddWidget(widget));
@@ -146,10 +153,14 @@ describe('useDashboard', () => {
         }),
       };
       const saveSpy = vi.fn();
-      const { result, rerender } = renderHook((entity: DashboardLike) => useDashboard({
-        entity,
-        onSave: saveSpy,
-      }), { initialProps: entity });
+      const { result, rerender } = renderHook(
+        (entity: DashboardLike) =>
+          useDashboard({
+            entity,
+            onSave: saveSpy,
+          }),
+        { initialProps: entity },
+      );
 
       // Act: add widget to the dashboard
       act(() => result.current.handleAddWidget(widget));
@@ -201,10 +212,14 @@ describe('useDashboard', () => {
         }),
       };
       const saveSpy = vi.fn();
-      const { result, rerender } = renderHook((entity: DashboardLike) => useDashboard({
-        entity,
-        onSave: saveSpy,
-      }), { initialProps: entity });
+      const { result, rerender } = renderHook(
+        (entity: DashboardLike) =>
+          useDashboard({
+            entity,
+            onSave: saveSpy,
+          }),
+        { initialProps: entity },
+      );
 
       // Act: change date range
       const startDate = formatDate('2026-04-27 22:39');
@@ -311,10 +326,14 @@ describe('useDashboard', () => {
         }),
       };
       const saveSpy = vi.fn();
-      const { result, rerender } = renderHook((entity: DashboardLike) => useDashboard({
-        entity,
-        onSave: saveSpy,
-      }), { initialProps: entity });
+      const { result, rerender } = renderHook(
+        (entity: DashboardLike) =>
+          useDashboard({
+            entity,
+            onSave: saveSpy,
+          }),
+        { initialProps: entity },
+      );
 
       // Act: update widget
       const updatedWidget = {
@@ -372,10 +391,14 @@ describe('useDashboard', () => {
         }),
       };
       const saveSpy = vi.fn();
-      const { result, rerender } = renderHook((entity: DashboardLike) => useDashboard({
-        entity,
-        onSave: saveSpy,
-      }), { initialProps: entity });
+      const { result, rerender } = renderHook(
+        (entity: DashboardLike) =>
+          useDashboard({
+            entity,
+            onSave: saveSpy,
+          }),
+        { initialProps: entity },
+      );
 
       // Act: delete widget
       act(() => result.current.handleDeleteWidget(existingWidget.id));
@@ -425,10 +448,14 @@ describe('useDashboard', () => {
         }),
       };
       const saveSpy = vi.fn();
-      const { result, rerender } = renderHook((entity: DashboardLike) => useDashboard({
-        entity,
-        onSave: saveSpy,
-      }), { initialProps: entity });
+      const { result, rerender } = renderHook(
+        (entity: DashboardLike) =>
+          useDashboard({
+            entity,
+            onSave: saveSpy,
+          }),
+        { initialProps: entity },
+      );
 
       // Act: duplicate widget
       act(() => result.current.handleDuplicateWidget(existingWidget));
@@ -495,31 +522,43 @@ describe('useDashboard', () => {
         }),
       };
       const saveSpy = vi.fn();
-      const { result } = renderHook((entity: DashboardLike) => useDashboard({
-        entity,
-        onSave: saveSpy,
-      }), { initialProps: entity });
+      const { result } = renderHook(
+        (entity: DashboardLike) =>
+          useDashboard({
+            entity,
+            onSave: saveSpy,
+          }),
+        { initialProps: entity },
+      );
 
       expect(result.current.widgetsLayouts).toStrictEqual({
         [existingWidget.id]: existingWidget.layout,
       });
 
       // Act: change layout
-      act(() => result.current.handleLayoutChange([{
-        ...existingWidget.layout,
-        x: 2,
-        w: 7,
-      }]));
+      act(() =>
+        result.current.handleLayoutChange([
+          {
+            ...existingWidget.layout,
+            x: 2,
+            w: 7,
+          },
+        ]),
+      );
 
       act(() => {
         vi.advanceTimersByTime(300);
       });
       // Call twice to check noop when layouts are equal
-      act(() => result.current.handleLayoutChange([{
-        ...existingWidget.layout,
-        x: 2,
-        w: 7,
-      }]));
+      act(() =>
+        result.current.handleLayoutChange([
+          {
+            ...existingWidget.layout,
+            x: 2,
+            w: 7,
+          },
+        ]),
+      );
 
       const expectedSerializedManifest = fakeSerialize({
         config: {},
@@ -577,17 +616,25 @@ describe('useDashboard', () => {
         }),
       };
       const importWidgetSpy = vi.fn();
-      const { result } = renderHook((entity: DashboardLike) => useDashboard({
-        entity,
-        onImportWidget: importWidgetSpy,
-      }), { initialProps: entity });
+      const { result } = renderHook(
+        (entity: DashboardLike) =>
+          useDashboard({
+            entity,
+            onImportWidget: importWidgetSpy,
+          }),
+        { initialProps: entity },
+      );
 
       // Act: change layout
-      act(() => result.current.handleLayoutChange([{
-        ...existingWidget.layout,
-        x: 2,
-        w: 7,
-      }]));
+      act(() =>
+        result.current.handleLayoutChange([
+          {
+            ...existingWidget.layout,
+            x: 2,
+            w: 7,
+          },
+        ]),
+      );
 
       const fakeFile = {} as unknown as File;
 
@@ -641,17 +688,23 @@ describe('useDashboard', () => {
           },
         }),
       };
-      const { result } = renderHook((entity: DashboardLike) => useDashboard({
-        entity,
-        onExportWidget: undefined, // Intentionally not provided
-      }), { initialProps: entity });
+      const { result } = renderHook(
+        (entity: DashboardLike) =>
+          useDashboard({
+            entity,
+            onExportWidget: undefined, // Intentionally not provided
+          }),
+        { initialProps: entity },
+      );
 
       // Act: export widget
       assert.doesNotThrow(async () => {
-        await act(async () => result.current.handleExportWidget(entity.id, {
-          id: existingWidget.id,
-          type: existingWidget.type,
-        }));
+        await act(async () =>
+          result.current.handleExportWidget(entity.id, {
+            id: existingWidget.id,
+            type: existingWidget.type,
+          }),
+        );
       });
     });
 
@@ -681,20 +734,28 @@ describe('useDashboard', () => {
         }),
       };
       const exportWidgetStub = vi.fn().mockResolvedValue('some-string');
-      const { result } = renderHook((entity: DashboardLike) => useDashboard({
-        entity,
-        onExportWidget: exportWidgetStub,
-      }), { initialProps: entity });
+      const { result } = renderHook(
+        (entity: DashboardLike) =>
+          useDashboard({
+            entity,
+            onExportWidget: exportWidgetStub,
+          }),
+        { initialProps: entity },
+      );
 
       // Act: export widget
-      await act(async () => result.current.handleExportWidget(entity.id, {
-        id: existingWidget.id,
-        type: existingWidget.type,
-      }));
+      await act(async () =>
+        result.current.handleExportWidget(entity.id, {
+          id: existingWidget.id,
+          type: existingWidget.type,
+        }),
+      );
 
       expect(vi.mocked(fileDownload)).toHaveBeenCalledExactlyOnceWith(
         expect.any(Blob),
-        expect.stringMatching(new RegExp(`^[0-9]{8}_octi_widget_${existingWidget.type}.json$`, 'i')),
+        expect.stringMatching(
+          new RegExp(`^[0-9]{8}_octi_widget_${existingWidget.type}.json$`, 'i'),
+        ),
       );
     });
   });
@@ -726,10 +787,14 @@ describe('useDashboard', () => {
         }),
       };
       const saveSpy = vi.fn();
-      const { result } = renderHook((entity: DashboardLike) => useDashboard({
-        entity,
-        onSave: saveSpy,
-      }), { initialProps: entity });
+      const { result } = renderHook(
+        (entity: DashboardLike) =>
+          useDashboard({
+            entity,
+            onSave: saveSpy,
+          }),
+        { initialProps: entity },
+      );
 
       expect(result.current.idToResize).toBe(null);
 

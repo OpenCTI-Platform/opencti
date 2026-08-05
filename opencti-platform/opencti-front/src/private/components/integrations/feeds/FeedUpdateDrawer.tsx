@@ -3,11 +3,19 @@ import { graphql, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import type { PreloadedQuery } from 'react-relay';
 import SyncEdition from '@components/data/sync/SyncEdition';
 import IngestionRssEdition from '@components/data/ingestionRss/IngestionRssEdition';
-import IngestionTaxiiEditionContainer, { ingestionTaxiiEditionContainerQuery } from '@components/data/ingestionTaxii/IngestionTaxiiEditionContainer';
+import IngestionTaxiiEditionContainer, {
+  ingestionTaxiiEditionContainerQuery,
+} from '@components/data/ingestionTaxii/IngestionTaxiiEditionContainer';
 import IngestionTaxiiCollectionEdition from '@components/data/ingestionTaxiiCollection/IngestionTaxiiCollectionEdition';
-import IngestionCsvEditionContainer, { ingestionCsvEditionContainerQuery } from '@components/data/ingestionCsv/IngestionCsvEditionContainer';
-import IngestionJsonEditionContainer, { ingestionJsonEditionContainerQuery } from '@components/data/ingestionJson/IngestionJsonEditionContainer';
-import FormEditionContainer, { formEditionContainerQuery } from '@components/data/forms/FormEditionContainer';
+import IngestionCsvEditionContainer, {
+  ingestionCsvEditionContainerQuery,
+} from '@components/data/ingestionCsv/IngestionCsvEditionContainer';
+import IngestionJsonEditionContainer, {
+  ingestionJsonEditionContainerQuery,
+} from '@components/data/ingestionJson/IngestionJsonEditionContainer';
+import FormEditionContainer, {
+  formEditionContainerQuery,
+} from '@components/data/forms/FormEditionContainer';
 import { IngestionTaxiiEditionContainerQuery } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiEditionContainerQuery.graphql';
 import { IngestionCsvEditionContainerQuery } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionContainerQuery.graphql';
 import { IngestionJsonEditionContainerQuery } from '@components/data/ingestionJson/__generated__/IngestionJsonEditionContainerQuery.graphql';
@@ -75,23 +83,26 @@ interface KindUpdateProps {
   onClose: () => void;
 }
 
-const SyncUpdateContent = ({ queryRef, onClose }: { queryRef: PreloadedQuery<FeedUpdateDrawerSyncQuery>; onClose: () => void }) => {
+const SyncUpdateContent = ({
+  queryRef,
+  onClose,
+}: {
+  queryRef: PreloadedQuery<FeedUpdateDrawerSyncQuery>;
+  onClose: () => void;
+}) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(feedUpdateDrawerSyncQuery, queryRef);
   if (!data.synchronizer) return null;
   return (
-    <Drawer
-      title={t_i18n('Update an OpenCTI stream')}
-      open={true}
-      onClose={onClose}
-    >
+    <Drawer title={t_i18n('Update an OpenCTI stream')} open={true} onClose={onClose}>
       <SyncEdition synchronizer={data.synchronizer} />
     </Drawer>
   );
 };
 
 const SyncUpdate = ({ feedId, onClose }: KindUpdateProps) => {
-  const [queryRef, loadQuery] = useQueryLoader<FeedUpdateDrawerSyncQuery>(feedUpdateDrawerSyncQuery);
+  const [queryRef, loadQuery] =
+    useQueryLoader<FeedUpdateDrawerSyncQuery>(feedUpdateDrawerSyncQuery);
   useEffect(() => {
     loadQuery({ id: feedId }, { fetchPolicy: 'store-and-network' });
   }, [feedId]);
@@ -103,16 +114,16 @@ const SyncUpdate = ({ feedId, onClose }: KindUpdateProps) => {
   );
 };
 
-const RssUpdateContent = ({ queryRef, onClose }: { queryRef: PreloadedQuery<FeedUpdateDrawerRssQuery>; onClose: () => void }) => {
+const RssUpdateContent = ({
+  queryRef,
+  onClose,
+}: {
+  queryRef: PreloadedQuery<FeedUpdateDrawerRssQuery>;
+  onClose: () => void;
+}) => {
   const data = usePreloadedQuery(feedUpdateDrawerRssQuery, queryRef);
   if (!data.ingestionRss) return null;
-  return (
-    <IngestionRssEdition
-      ingestionRss={data.ingestionRss}
-      handleClose={onClose}
-      open={true}
-    />
-  );
+  return <IngestionRssEdition ingestionRss={data.ingestionRss} handleClose={onClose} open={true} />;
 };
 
 const RssUpdate = ({ feedId, onClose }: KindUpdateProps) => {
@@ -128,7 +139,13 @@ const RssUpdate = ({ feedId, onClose }: KindUpdateProps) => {
   );
 };
 
-const TaxiiPushUpdateContent = ({ queryRef, onClose }: { queryRef: PreloadedQuery<FeedUpdateDrawerTaxiiPushQuery>; onClose: () => void }) => {
+const TaxiiPushUpdateContent = ({
+  queryRef,
+  onClose,
+}: {
+  queryRef: PreloadedQuery<FeedUpdateDrawerTaxiiPushQuery>;
+  onClose: () => void;
+}) => {
   const data = usePreloadedQuery(feedUpdateDrawerTaxiiPushQuery, queryRef);
   if (!data.ingestionTaxiiCollection) return null;
   return (
@@ -141,7 +158,9 @@ const TaxiiPushUpdateContent = ({ queryRef, onClose }: { queryRef: PreloadedQuer
 };
 
 const TaxiiPushUpdate = ({ feedId, onClose }: KindUpdateProps) => {
-  const [queryRef, loadQuery] = useQueryLoader<FeedUpdateDrawerTaxiiPushQuery>(feedUpdateDrawerTaxiiPushQuery);
+  const [queryRef, loadQuery] = useQueryLoader<FeedUpdateDrawerTaxiiPushQuery>(
+    feedUpdateDrawerTaxiiPushQuery,
+  );
   useEffect(() => {
     loadQuery({ id: feedId }, { fetchPolicy: 'store-and-network' });
   }, [feedId]);
@@ -154,69 +173,60 @@ const TaxiiPushUpdate = ({ feedId, onClose }: KindUpdateProps) => {
 };
 
 const TaxiiUpdate = ({ feedId, onClose }: KindUpdateProps) => {
-  const [queryRef, loadQuery] = useQueryLoader<IngestionTaxiiEditionContainerQuery>(ingestionTaxiiEditionContainerQuery);
+  const [queryRef, loadQuery] = useQueryLoader<IngestionTaxiiEditionContainerQuery>(
+    ingestionTaxiiEditionContainerQuery,
+  );
   useEffect(() => {
     loadQuery({ id: feedId }, { fetchPolicy: 'store-and-network' });
   }, [feedId]);
   if (!queryRef) return null;
   return (
     <Suspense fallback={null}>
-      <IngestionTaxiiEditionContainer
-        queryRef={queryRef}
-        open={true}
-        handleClose={onClose}
-      />
+      <IngestionTaxiiEditionContainer queryRef={queryRef} open={true} handleClose={onClose} />
     </Suspense>
   );
 };
 
 const CsvUpdate = ({ feedId, onClose }: KindUpdateProps) => {
-  const [queryRef, loadQuery] = useQueryLoader<IngestionCsvEditionContainerQuery>(ingestionCsvEditionContainerQuery);
+  const [queryRef, loadQuery] = useQueryLoader<IngestionCsvEditionContainerQuery>(
+    ingestionCsvEditionContainerQuery,
+  );
   useEffect(() => {
     loadQuery({ id: feedId }, { fetchPolicy: 'store-and-network' });
   }, [feedId]);
   if (!queryRef) return null;
   return (
     <Suspense fallback={null}>
-      <IngestionCsvEditionContainer
-        queryRef={queryRef}
-        open={true}
-        handleClose={onClose}
-      />
+      <IngestionCsvEditionContainer queryRef={queryRef} open={true} handleClose={onClose} />
     </Suspense>
   );
 };
 
 const JsonUpdate = ({ feedId, onClose }: KindUpdateProps) => {
-  const [queryRef, loadQuery] = useQueryLoader<IngestionJsonEditionContainerQuery>(ingestionJsonEditionContainerQuery);
+  const [queryRef, loadQuery] = useQueryLoader<IngestionJsonEditionContainerQuery>(
+    ingestionJsonEditionContainerQuery,
+  );
   useEffect(() => {
     loadQuery({ id: feedId }, { fetchPolicy: 'store-and-network' });
   }, [feedId]);
   if (!queryRef) return null;
   return (
     <Suspense fallback={null}>
-      <IngestionJsonEditionContainer
-        queryRef={queryRef}
-        open={true}
-        handleClose={onClose}
-      />
+      <IngestionJsonEditionContainer queryRef={queryRef} open={true} handleClose={onClose} />
     </Suspense>
   );
 };
 
 const FormUpdate = ({ feedId, onClose }: KindUpdateProps) => {
-  const [queryRef, loadQuery] = useQueryLoader<FormEditionContainerQuery>(formEditionContainerQuery);
+  const [queryRef, loadQuery] =
+    useQueryLoader<FormEditionContainerQuery>(formEditionContainerQuery);
   useEffect(() => {
     loadQuery({ id: feedId }, { fetchPolicy: 'store-and-network' });
   }, [feedId]);
   if (!queryRef) return null;
   return (
     <Suspense fallback={null}>
-      <FormEditionContainer
-        queryRef={queryRef}
-        open={true}
-        handleClose={onClose}
-      />
+      <FormEditionContainer queryRef={queryRef} open={true} handleClose={onClose} />
     </Suspense>
   );
 };

@@ -14,13 +14,13 @@ const publicStixCoreObjectsTimelineQuery = graphql`
     $startDate: DateTime
     $endDate: DateTime
     $uriKey: String!
-    $widgetId : String!
+    $widgetId: String!
   ) {
     publicStixCoreObjects(
       startDate: $startDate
       endDate: $endDate
       uriKey: $uriKey
-      widgetId : $widgetId
+      widgetId: $widgetId
     ) {
       edges {
         node {
@@ -78,15 +78,12 @@ const PublicStixCoreObjectsTimelineComponent = ({
   queryRef,
   dateAttribute,
 }: PublicStixCoreObjectsTimelineComponentProps) => {
-  const { publicStixCoreObjects } = usePreloadedQuery(
-    publicStixCoreObjectsTimelineQuery,
-    queryRef,
-  );
+  const { publicStixCoreObjects } = usePreloadedQuery(publicStixCoreObjectsTimelineQuery, queryRef);
 
   if (
-    publicStixCoreObjects
-    && publicStixCoreObjects?.edges
-    && publicStixCoreObjects.edges.length > 0
+    publicStixCoreObjects &&
+    publicStixCoreObjects?.edges &&
+    publicStixCoreObjects.edges.length > 0
   ) {
     const stixCoreObjectsEdges = publicStixCoreObjects.edges;
     const data = stixCoreObjectsEdges.flatMap((stixCoreObjectEdge) => {
@@ -120,17 +117,19 @@ const PublicStixCoreObjectsTimeline = ({
     },
   );
   const selection = dataSelection[0];
-  const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-    ? selection.date_attribute
-    : 'created_at';
+  const dateAttribute =
+    selection.date_attribute && selection.date_attribute.length > 0
+      ? selection.date_attribute
+      : 'created_at';
 
   return (
-    <WidgetContainer
-      title={parameters?.title ?? title ?? t_i18n('Entities number')}
-    >
+    <WidgetContainer title={parameters?.title ?? title ?? t_i18n('Entities number')}>
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <PublicStixCoreObjectsTimelineComponent queryRef={queryRef} dateAttribute={dateAttribute} />
+          <PublicStixCoreObjectsTimelineComponent
+            queryRef={queryRef}
+            dateAttribute={dateAttribute}
+          />
         </React.Suspense>
       ) : (
         <Loader variant={LoaderVariant.inElement} />

@@ -11,11 +11,7 @@ export const addCoursesOfActionMutationRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    stixCoreRelationshipDelete(
-      fromId: $fromId
-      toId: $toId
-      relationship_type: $relationship_type
-    )
+    stixCoreRelationshipDelete(fromId: $fromId, toId: $toId, relationship_type: $relationship_type)
   }
 `;
 
@@ -42,13 +38,8 @@ AddCoursesOfActionLinesContainer.propTypes = {
 };
 
 export const addCoursesOfActionLinesQuery = graphql`
-  query AddCoursesOfActionLinesQuery(
-    $search: String
-    $count: Int!
-    $cursor: ID
-  ) {
-    ...AddCoursesOfActionLines_data
-      @arguments(search: $search, count: $count, cursor: $cursor)
+  query AddCoursesOfActionLinesQuery($search: String, $count: Int!, $cursor: ID) {
+    ...AddCoursesOfActionLines_data @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 

@@ -19,23 +19,17 @@ class IndividualDetailsComponent extends Component {
         <Card title={t('Details')}>
           <Grid container={true} spacing={3}>
             <Grid item xs={12}>
-              <Label>
-                {t('Description')}
-              </Label>
+              <Label>{t('Description')}</Label>
               <ExpandableMarkdown source={individual.description} limit={400} />
             </Grid>
             <Grid item xs={6}>
-              <Label>
-                {t('Reliability')}
-              </Label>
+              <Label>{t('Reliability')}</Label>
               <ItemOpenVocab
                 displayMode="chip"
                 type="reliability_ov"
                 value={individual.x_opencti_reliability}
               />
-              <Label sx={{ marginTop: 2 }}>
-                {t('Contact information')}
-              </Label>
+              <Label sx={{ marginTop: 2 }}>{t('Contact information')}</Label>
               <FieldOrEmpty source={individual.contact_information}>
                 <Tag label={individual.contact_information} />
               </FieldOrEmpty>

@@ -4,7 +4,9 @@ type Connector = { readonly manager_contract_image: string | null | undefined };
 const createDeploymentCountMap = (connectors: readonly Connector[]) => {
   const deploymentCountMap = new Map<string, number>();
 
-  const hasManagerContractImage = (connector: Connector): connector is Connector & { manager_contract_image: string } => {
+  const hasManagerContractImage = (
+    connector: Connector,
+  ): connector is Connector & { manager_contract_image: string } => {
     return connector.manager_contract_image != null;
   };
 

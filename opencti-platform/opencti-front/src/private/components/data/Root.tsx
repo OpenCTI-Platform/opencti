@@ -35,17 +35,41 @@ const Health = lazy(() => import('./health/Root'));
 // section, preserving any query params of the deep link.
 const LegacyConnectorRedirect = () => {
   const { connectorId } = useParams();
-  return <Navigate to={{ pathname: `/dashboard/integrations/connectors/${connectorId}`, search: window.location.search }} replace={true} />;
+  return (
+    <Navigate
+      to={{
+        pathname: `/dashboard/integrations/connectors/${connectorId}`,
+        search: window.location.search,
+      }}
+      replace={true}
+    />
+  );
 };
 
 const LegacyCatalogConnectorRedirect = () => {
   const { connectorSlug } = useParams();
-  return <Navigate to={{ pathname: `/dashboard/integrations/catalog/${connectorSlug}`, search: window.location.search }} replace={true} />;
+  return (
+    <Navigate
+      to={{
+        pathname: `/dashboard/integrations/catalog/${connectorSlug}`,
+        search: window.location.search,
+      }}
+      replace={true}
+    />
+  );
 };
 
 const LegacyFormRedirect = () => {
   const { formId } = useParams();
-  return <Navigate to={{ pathname: `/dashboard/integrations/feeds/form/${formId}`, search: window.location.search }} replace={true} />;
+  return (
+    <Navigate
+      to={{
+        pathname: `/dashboard/integrations/feeds/form/${formId}`,
+        search: window.location.search,
+      }}
+      replace={true}
+    />
+  );
 };
 
 const Root = () => {
@@ -81,18 +105,9 @@ const Root = () => {
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
-        <Route
-          path="/"
-          element={<Navigate to={redirect} replace={true} />}
-        />
-        <Route
-          path="/entities"
-          element={boundaryWrapper(Entities)}
-        />
-        <Route
-          path="/relationships"
-          element={boundaryWrapper(Relationships)}
-        />
+        <Route path="/" element={<Navigate to={redirect} replace={true} />} />
+        <Route path="/entities" element={boundaryWrapper(Entities)} />
+        <Route path="/relationships" element={boundaryWrapper(Relationships)} />
         <Route
           path="/ingestion"
           element={<Navigate to="/dashboard/integrations" replace={true} />}
@@ -119,7 +134,9 @@ const Root = () => {
         />
         <Route
           path="/ingestion/collection"
-          element={<Navigate to="/dashboard/integrations/deployed?kind=taxii-push" replace={true} />}
+          element={
+            <Navigate to="/dashboard/integrations/deployed?kind=taxii-push" replace={true} />
+          }
         />
         <Route
           path="/ingestion/csv"
@@ -133,104 +150,76 @@ const Root = () => {
           path="/ingestion/forms"
           element={<Navigate to="/dashboard/integrations/deployed?kind=form" replace={true} />}
         />
-        <Route
-          path="/ingestion/forms/:formId"
-          element={<LegacyFormRedirect />}
-        />
+        <Route path="/ingestion/forms/:formId" element={<LegacyFormRedirect />} />
         <Route
           path="/ingestion/connectors"
           element={<Navigate to="/dashboard/integrations/deployed" replace={true} />}
         />
-        <Route
-          path="/ingestion/connectors/:connectorId/*"
-          element={<LegacyConnectorRedirect />}
-        />
-        <Route
-          path="/import/*"
-          element={boundaryWrapper(RootImport)}
-        />
+        <Route path="/ingestion/connectors/:connectorId/*" element={<LegacyConnectorRedirect />} />
+        <Route path="/import/*" element={boundaryWrapper(RootImport)} />
         <Route
           path="/sharing"
           element={<Navigate to="/dashboard/data/sharing/streams" replace={true} />}
         />
-        <Route
-          path="/sharing/streams"
-          element={boundaryWrapper(Stream)}
-        />
-        <Route
-          path="/sharing/feeds"
-          element={boundaryWrapper(Feed)}
-        />
-        <Route
-          path="/sharing/taxii"
-          element={boundaryWrapper(Taxii)}
-        />
+        <Route path="/sharing/streams" element={boundaryWrapper(Stream)} />
+        <Route path="/sharing/feeds" element={boundaryWrapper(Feed)} />
+        <Route path="/sharing/taxii" element={boundaryWrapper(Taxii)} />
         <Route
           path="/processing"
-          element={(
+          element={
             <Security
               needs={[KNOWLEDGE_KNUPDATE, AUTOMATION_AUTMANAGE]}
-              placeholder={(
+              placeholder={
                 <Security
                   needs={[CSVMAPPERS]}
                   placeholder={<Navigate to="/dashboard/data/processing/tasks" />}
                 >
                   <Navigate to="/dashboard/data/processing/csv_mapper" />
                 </Security>
-              )}
+              }
             >
-              <Navigate to={isGrantedToAutomation ? '/dashboard/data/processing/automation' : '/dashboard/data/processing/tasks'} />
+              <Navigate
+                to={
+                  isGrantedToAutomation
+                    ? '/dashboard/data/processing/automation'
+                    : '/dashboard/data/processing/tasks'
+                }
+              />
             </Security>
-          )}
+          }
         />
-        <Route
-          path="/processing/automation"
-          element={boundaryWrapper(Playbooks)}
-        />
-        <Route
-          path="/processing/automation/:playbookId"
-          element={boundaryWrapper(RootPlaybook)}
-        />
+        <Route path="/processing/automation" element={boundaryWrapper(Playbooks)} />
+        <Route path="/processing/automation/:playbookId" element={boundaryWrapper(RootPlaybook)} />
         <Route
           path="/processing/csv_mapper"
-          element={(
-            <Security
-              needs={[CSVMAPPERS]}
-              placeholder={<Navigate to="/dashboard" />}
-            >
+          element={
+            <Security needs={[CSVMAPPERS]} placeholder={<Navigate to="/dashboard" />}>
               <CsvMappers />
             </Security>
-          )}
+          }
         />
         <Route
           path="/processing/json_mapper"
-          element={(
-            <Security
-              needs={[CSVMAPPERS]}
-              placeholder={<Navigate to="/dashboard" />}
-            >
+          element={
+            <Security needs={[CSVMAPPERS]} placeholder={<Navigate to="/dashboard" />}>
               <JsonMappers />
             </Security>
-          )}
+          }
         />
         <Route
           path="/processing/tasks"
-          element={(
-            <Security
-              needs={[KNOWLEDGE_KNUPDATE]}
-              placeholder={<Navigate to="/dashboard" />}
-            >
+          element={
+            <Security needs={[KNOWLEDGE_KNUPDATE]} placeholder={<Navigate to="/dashboard" />}>
               <Tasks />
             </Security>
-          )}
+          }
         />
-        <Route
-          path="/restriction/*"
-          element={boundaryWrapper(Management)}
-        />
+        <Route path="/restriction/*" element={boundaryWrapper(Management)} />
         <Route
           path="/health/*"
-          element={isDataSanityManagerEnabled ? boundaryWrapper(Health) : <Navigate to="/dashboard" />}
+          element={
+            isDataSanityManagerEnabled ? boundaryWrapper(Health) : <Navigate to="/dashboard" />
+          }
         />
       </Routes>
     </Suspense>

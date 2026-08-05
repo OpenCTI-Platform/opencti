@@ -30,7 +30,11 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
 import { truncate } from '../../../../utils/String';
 import { convertFiltersFromOldFormat } from '../../../../utils/filters/filtersFromOldFormat';
-import { deserializeFilterGroupForFrontend, isStringifiedFilterGroupFormatCorrect, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
+import {
+  deserializeFilterGroupForFrontend,
+  isStringifiedFilterGroupFormatCorrect,
+  isFilterGroupNotEmpty,
+} from '../../../../utils/filters/filtersUtils';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { deleteNode } from '../../../../utils/store';
 
@@ -43,9 +47,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 export const tasksListTaskDeletionMutation = graphql`
@@ -63,13 +65,13 @@ export const tasksListQuery = graphql`
     $filters: FilterGroup
   ) {
     ...TasksList_data
-    @arguments(
-      count: $count
-      orderBy: $orderBy
-      orderMode: $orderMode
-      includeAuthorities: $includeAuthorities
-      filters: $filters
-    )
+      @arguments(
+        count: $count
+        orderBy: $orderBy
+        orderMode: $orderMode
+        includeAuthorities: $includeAuthorities
+        filters: $filters
+      )
   }
 `;
 
@@ -148,7 +150,7 @@ const TasksListFragment = graphql`
             }
             status
             timestamp
-            draft_context  
+            draft_context
           }
         }
       }
@@ -244,13 +246,18 @@ const TasksList = ({ data, options }) => {
           } else if (task.task_ids) {
             listIds = truncate(R.join(', ', task.task_ids), 60);
           }
-          const lastTaskExecutionDate = task.work ? task.work.completed_time : task.last_execution_date;
+          const lastTaskExecutionDate = task.work
+            ? task.work.completed_time
+            : task.last_execution_date;
           const taskWorkProcessedNumber = task.work?.tracking?.import_processed_number ?? 0;
           const taskWorkExpectedNumber = task.work?.tracking?.import_expected_number ?? 0;
-          const progressNumberDisplay = task.work ? ` ${taskWorkProcessedNumber}/${taskWorkExpectedNumber}` : '';
-          const provisioningNumberDisplay = task.work && (task.work.status === 'wait' || task.work.status === 'progress')
-            ? ` (Provisioning: ${task.task_processed_number}/${task.task_expected_number})`
+          const progressNumberDisplay = task.work
+            ? ` ${taskWorkProcessedNumber}/${taskWorkExpectedNumber}`
             : '';
+          const provisioningNumberDisplay =
+            task.work && (task.work.status === 'wait' || task.work.status === 'progress')
+              ? ` (Provisioning: ${task.task_processed_number}/${task.task_expected_number})`
+              : '';
           const progressFullText = `${t_i18n('Progress')}${progressNumberDisplay}${provisioningNumberDisplay}`;
           let progressValue;
           if (task.work) {
@@ -259,7 +266,7 @@ const TasksList = ({ data, options }) => {
             } else if (task.work.status === 'wait') {
               progressValue = 0;
             } else if (taskWorkExpectedNumber) {
-              progressValue = Math.round((100 * (taskWorkProcessedNumber)) / (taskWorkExpectedNumber));
+              progressValue = Math.round((100 * taskWorkProcessedNumber) / taskWorkExpectedNumber);
             } else {
               progressValue = 0;
             }
@@ -287,45 +294,40 @@ const TasksList = ({ data, options }) => {
                         {task.task_search && (
                           <Stack direction="row" gap={1}>
                             <Tag
-                              label={(
+                              label={
                                 <div>
-                                  <strong>{t_i18n('Search')}</strong>:{' '}
-                                  {task.task_search}
+                                  <strong>{t_i18n('Search')}</strong>: {task.task_search}
                                 </div>
-                              )}
+                              }
                             />
-                            <Tag
-                              label={t_i18n('AND')}
-                            />
+                            <Tag label={t_i18n('AND')} />
                           </Stack>
                         )}
-                        {task.type !== 'RULE'
-                          && (isFilterGroupNotEmpty(filters)
-                            ? (
-                                <TasksFilterValueContainer
-                                  filters={filters}
-                                  entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Notification', 'User']}
-                                />
-                              )
-                            : (
-                                <Tag
-                                  label={(
-                                    <div>
-                                      <strong>{t_i18n('List of entities')}</strong>:{' '}
-                                      {listIds}
-                                    </div>
-                                  )}
-                                  sx={{
-                                    width: 'fit-content',
-                                  }}
-                                />
-                              )
-                          )
-                        }
+                        {task.type !== 'RULE' &&
+                          (isFilterGroupNotEmpty(filters) ? (
+                            <TasksFilterValueContainer
+                              filters={filters}
+                              entityTypes={[
+                                'Stix-Core-Object',
+                                'stix-core-relationship',
+                                'Notification',
+                                'User',
+                              ]}
+                            />
+                          ) : (
+                            <Tag
+                              label={
+                                <div>
+                                  <strong>{t_i18n('List of entities')}</strong>: {listIds}
+                                </div>
+                              }
+                              sx={{
+                                width: 'fit-content',
+                              }}
+                            />
+                          ))}
                         {task.type === 'RULE' && (
-                          <Tag
-                            label={<div>{t_i18n('All rule targets')}</div>}
-                          />
+                          <Tag label={<div>{t_i18n('All rule targets')}</div>} />
                         )}
                       </Stack>
                     </Grid>
@@ -334,13 +336,9 @@ const TasksList = ({ data, options }) => {
                         <Typography variant="h3" gutterBottom={true}>
                           {t_i18n('Actions')}
                         </Typography>
-                        {task.type === 'RULE' && (
-                          <Tag
-                            label={<div>{t_i18n('APPLY RULE')}</div>}
-                          />
-                        )}
-                        {task.actions
-                          && R.map(
+                        {task.type === 'RULE' && <Tag label={<div>{t_i18n('APPLY RULE')}</div>} />}
+                        {task.actions &&
+                          R.map(
                             (action) => (
                               <Stack
                                 key={task.actions.indexOf(action)}
@@ -348,30 +346,19 @@ const TasksList = ({ data, options }) => {
                                 gap={1}
                                 flexWrap="wrap"
                               >
-                                <Tag
-                                  label={action.type}
-                                />
+                                <Tag label={action.type} />
                                 {action.context && (
                                   <Tag
-                                    label={(
+                                    label={
                                       <div>
                                         {action.context.field && (
                                           <span>
-                                            <strong>
-                                              {t_i18n(action.context.field)}
-                                            </strong>
-                                            :{' '}
+                                            <strong>{t_i18n(action.context.field)}</strong>:{' '}
                                           </span>
                                         )}
-                                        {truncate(
-                                          R.join(
-                                            ', ',
-                                            action.context.values || [],
-                                          ),
-                                          80,
-                                        )}
+                                        {truncate(R.join(', ', action.context.values || []), 80)}
                                       </div>
-                                    )}
+                                    }
                                   />
                                 )}
                               </Stack>
@@ -406,16 +393,17 @@ const TasksList = ({ data, options }) => {
                       </Typography>
                       {nsdt(lastTaskExecutionDate)}
                     </Grid>
-                    {(task.scope ?? task.type)
-                      && (
-                        <Grid item xs={2}>
-                          <Typography variant="h3" gutterBottom={true}>
-                            {t_i18n('Scope')}
-                          </Typography>
-                          <TaskScope scope={task.scope ?? task.type} label={t_i18n(task.scope ?? task.type)} />
-                        </Grid>
-                      )
-                    }
+                    {(task.scope ?? task.type) && (
+                      <Grid item xs={2}>
+                        <Typography variant="h3" gutterBottom={true}>
+                          {t_i18n('Scope')}
+                        </Typography>
+                        <TaskScope
+                          scope={task.scope ?? task.type}
+                          label={t_i18n(task.scope ?? task.type)}
+                        />
+                      </Grid>
+                    )}
                     <Grid item xs={2}>
                       <Typography variant="h3" gutterBottom={true}>
                         {t_i18n('Status')}
@@ -445,42 +433,35 @@ const TasksList = ({ data, options }) => {
                 >
                   {taskErrors.length} {t_i18n('errors')}
                 </Button>
-                {task.scope // if task.scope exists = it is list task or a query task
-                  ? (
-                      <Button
-                        style={{ position: 'absolute', right: 10, bottom: 10 }}
-                        variant="secondary"
-                        onClick={() => handleDeleteTask(task.id)}
-                        size="small"
-                      >
-                        <Delete fontSize="small" />
+                {task.scope ? ( // if task.scope exists = it is list task or a query task
+                  <Button
+                    style={{ position: 'absolute', right: 10, bottom: 10 }}
+                    variant="secondary"
+                    onClick={() => handleDeleteTask(task.id)}
+                    size="small"
+                  >
+                    <Delete fontSize="small" />
                     &nbsp;&nbsp;{t_i18n('Delete')}
-                      </Button>
-                    )
-                  : (
-                      <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                        <Button
-                          style={{ position: 'absolute', right: 10, bottom: 10 }}
-                          variant="outlined"
-                          onClick={() => handleDeleteTask(task.id)}
-                          size="small"
-                        >
-                          <Delete fontSize="small" />
+                  </Button>
+                ) : (
+                  <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                    <Button
+                      style={{ position: 'absolute', right: 10, bottom: 10 }}
+                      variant="outlined"
+                      onClick={() => handleDeleteTask(task.id)}
+                      size="small"
+                    >
+                      <Delete fontSize="small" />
                       &nbsp;&nbsp;{t_i18n('Delete')}
-                        </Button>
-                      </Security>
-                    )
-                }
+                    </Button>
+                  </Security>
+                )}
               </Grid>
             </Card>
           );
         })}
       </Stack>
-      <Dialog
-        open={displayMessages}
-        keepMounted={true}
-        onClose={handleCloseMessages}
-      >
+      <Dialog open={displayMessages} keepMounted={true} onClose={handleCloseMessages}>
         <DialogContentText>
           <TableContainer component={Paper}>
             <Table className={classes.table} aria-label="simple table">
@@ -502,19 +483,11 @@ const TasksList = ({ data, options }) => {
           </TableContainer>
         </DialogContentText>
         <DialogActions>
-          <Button
-            onClick={handleCloseMessages}
-          >
-            {t_i18n('Close')}
-          </Button>
+          <Button onClick={handleCloseMessages}>{t_i18n('Close')}</Button>
         </DialogActions>
       </Dialog>
 
-      <Dialog
-        open={displayErrors}
-        keepMounted={true}
-        onClose={handleCloseErrors}
-      >
+      <Dialog open={displayErrors} keepMounted={true} onClose={handleCloseErrors}>
         <DialogContentText>
           <TableContainer component={Paper}>
             <Table className={classes.table} aria-label="simple table">
@@ -536,9 +509,7 @@ const TasksList = ({ data, options }) => {
           </TableContainer>
         </DialogContentText>
         <DialogActions>
-          <Button onClick={handleCloseErrors}>
-            {t_i18n('Close')}
-          </Button>
+          <Button onClick={handleCloseErrors}>{t_i18n('Close')}</Button>
         </DialogActions>
       </Dialog>
     </div>

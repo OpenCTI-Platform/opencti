@@ -26,13 +26,8 @@ const disseminationListCreationMutation = graphql`
   }
 `;
 
-const CreateDisseminationListControlledDial = (
-  props: DrawerControlledDialProps,
-) => (
-  <CreateEntityControlledDial
-    entityType="DisseminationList"
-    {...props}
-  />
+const CreateDisseminationListControlledDial = (props: DrawerControlledDialProps) => (
+  <CreateEntityControlledDial entityType="DisseminationList" {...props} />
 );
 
 interface DisseminationListCreationProps {
@@ -44,12 +39,7 @@ const DisseminationListCreation: FunctionComponent<DisseminationListCreationProp
 }) => {
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy, rootField: string) => {
-    insertNode(
-      store,
-      'Pagination_disseminationLists',
-      paginationOptions,
-      rootField,
-    );
+    insertNode(store, 'Pagination_disseminationLists', paginationOptions, rootField);
   };
 
   const [commit] = useApiMutation(disseminationListCreationMutation);
@@ -86,12 +76,7 @@ const DisseminationListCreation: FunctionComponent<DisseminationListCreationProp
       title={t_i18n('Create a dissemination list')}
       controlledDial={CreateDisseminationListControlledDial}
     >
-      {({ onClose }) => (
-        <DisseminationListForm
-          onSubmit={onSubmit}
-          onReset={onClose}
-        />
-      )}
+      {({ onClose }) => <DisseminationListForm onSubmit={onSubmit} onReset={onClose} />}
     </Drawer>
   );
 };

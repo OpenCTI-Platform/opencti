@@ -8,7 +8,11 @@ import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCo
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
-import { OrderingMode, StixCoreObjectsListQuery, StixCoreObjectsOrdering } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsListQuery.graphql';
+import {
+  OrderingMode,
+  StixCoreObjectsListQuery,
+  StixCoreObjectsOrdering,
+} from '@components/common/stix_core_objects/__generated__/StixCoreObjectsListQuery.graphql';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
 
@@ -462,11 +466,14 @@ interface StixCoreObjectsListProps {
 
 const DATA_SELECTION_TYPES = ['Stix-Core-Object'];
 
-const buildQueryVariables = (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig) => {
+const buildQueryVariables = (
+  resolvedDataSelection: WidgetDataSelection[],
+  config: DashboardConfig,
+) => {
   const selection = resolvedDataSelection[0];
-  const orderBy = (selection.sort_by && selection.sort_by.length > 0
-    ? selection.sort_by
-    : 'created_at') as StixCoreObjectsOrdering | null | undefined;
+  const orderBy = (
+    selection.sort_by && selection.sort_by.length > 0 ? selection.sort_by : 'created_at'
+  ) as StixCoreObjectsOrdering | null | undefined;
   const first = selection.number ?? 10;
   const orderMode = (selection.sort_mode ?? 'asc') as OrderingMode;
   const { filters } = computeWidgetFiltersForSelection(selection, config);
@@ -493,7 +500,13 @@ const StixCoreObjectsList = ({
 }: StixCoreObjectsListProps) => {
   const { t_i18n } = useFormatter();
   const rootRef = useRef<HTMLDivElement>(null);
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsListQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixCoreObjectsListQuery>({
     perspective: 'entities',
     dataSelection,
     host,

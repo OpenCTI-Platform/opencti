@@ -60,7 +60,7 @@ const SecurityCoverageEntityLine: React.FC<SecurityCoverageEntityLineProps> = ({
 }) => {
   const classes = useStyles();
   // Handle both edge.node and direct node structures
-  const entity = 'node' in node && node.node ? node.node : node as EntityNode;
+  const entity = 'node' in node && node.node ? node.node : (node as EntityNode);
   const isSelected = selectedEntity?.id === entity.id;
 
   return (
@@ -74,47 +74,29 @@ const SecurityCoverageEntityLine: React.FC<SecurityCoverageEntityLineProps> = ({
         <ItemIcon type={entity.entity_type} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.entity_type.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.entity_type.width }}>
               <ItemEntityType entityType={entity.entity_type} />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.value.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.value.width }}>
               {getMainRepresentative(entity)}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.createdBy.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.createdBy.width }}>
               {entity.createdBy?.name ?? EMPTY_VALUE}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectLabel.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.objectLabel.width }}>
               <StixCoreObjectLabels
                 variant="inList"
                 labels={entity.objectLabel || []}
                 onClick={onLabelClick}
               />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectMarking.width }}
-            >
-              <ItemMarkings
-                markingDefinitions={entity.objectMarking ?? []}
-                limit={1}
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.objectMarking.width }}>
+              <ItemMarkings markingDefinitions={entity.objectMarking ?? []} limit={1} />
             </div>
           </div>
-        )}
+        }
       />
     </ListItemButton>
   );

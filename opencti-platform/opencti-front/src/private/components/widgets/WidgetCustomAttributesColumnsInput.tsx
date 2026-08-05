@@ -1,6 +1,18 @@
 import React, { FunctionComponent } from 'react';
 import { DragDropContext, Draggable, Droppable, DropResult } from '@hello-pangea/dnd';
-import { Box, Checkbox, FormControlLabel, IconButton, List, ListItem, ListItemIcon, ListItemText, Radio, RadioGroup, Typography } from '@mui/material';
+import {
+  Box,
+  Checkbox,
+  FormControlLabel,
+  IconButton,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Radio,
+  RadioGroup,
+  Typography,
+} from '@mui/material';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import { Close, DragIndicatorOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
@@ -58,11 +70,11 @@ const DraggableColumnItem: FunctionComponent<DraggableColumnItemProps> = ({
           background: snapshotDrag.isDragging ? 'rgba(0, 0, 0, 0.05)' : 'inherit',
           height: 42,
         }}
-        secondaryAction={(
+        secondaryAction={
           <IconButton onClick={() => onRemove(column.attribute)}>
             <Close />
           </IconButton>
-        )}
+        }
       >
         <ListItemIcon {...providedDrag.dragHandleProps}>
           <DragIndicatorOutlined />
@@ -82,17 +94,11 @@ const SingleColumnLayout: FunctionComponent<ColumnLayoutProps> = ({
   listSx,
 }) => (
   <Box sx={{ flex: 2 }}>
-    <Typography variant="h4">
-      {`${t_i18n('Selected attributes')} (${value.length})`}
-    </Typography>
+    <Typography variant="h4">{`${t_i18n('Selected attributes')} (${value.length})`}</Typography>
     <DragDropContext onDragEnd={handleDragEnd}>
       <Droppable droppableId="col_1">
         {(providedDrop) => (
-          <List
-            ref={providedDrop.innerRef}
-            {...providedDrop.droppableProps}
-            sx={listSx}
-          >
+          <List ref={providedDrop.innerRef} {...providedDrop.droppableProps} sx={listSx}>
             {value.map((column, index) => (
               <DraggableColumnItem
                 key={column.attribute}
@@ -124,17 +130,16 @@ const DoubleColumnLayout: FunctionComponent<ColumnLayoutProps> = ({
 
   return (
     <Box sx={{ flex: 2, display: 'flex', flexDirection: 'column' }}>
-      <Typography variant="h4">
-        {`${t_i18n('Selected attributes')} (${value.length})`}
-      </Typography>
+      <Typography variant="h4">{`${t_i18n('Selected attributes')} (${value.length})`}</Typography>
       <DragDropContext onDragEnd={handleDragEnd}>
-        <Box sx={{
-          display: 'flex',
-          flex: 1,
-          border: `1px solid ${theme.palette.common.white}`,
-          borderRadius: `${theme.borderRadius}px`,
-          overflow: 'hidden',
-        }}
+        <Box
+          sx={{
+            display: 'flex',
+            flex: 1,
+            border: `1px solid ${theme.palette.common.white}`,
+            borderRadius: `${theme.borderRadius}px`,
+            overflow: 'hidden',
+          }}
         >
           {(['col_1', 'col_2'] as const).map((colId, colIndex) => {
             const colItems = colIndex === 0 ? col1Items : col2Items;
@@ -172,22 +177,18 @@ const DoubleColumnLayout: FunctionComponent<ColumnLayoutProps> = ({
   );
 };
 
-const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttributesColumnsInputProps> = ({
-  availableColumns,
-  defaultColumns,
-  value = [],
-  onChange,
-  layout = '1',
-  onLayoutChange,
-}) => {
+const WidgetCustomAttributesColumnsInput: FunctionComponent<
+  WidgetCustomAttributesColumnsInputProps
+> = ({ availableColumns, defaultColumns, value = [], onChange, layout = '1', onLayoutChange }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
-  const { handleDragEndSingleColumn, handleDragEndDoubleColumns, handleToggleColumn, formatColumnName } = useWidgetColumnsCustomization(
-    availableColumns,
-    value,
-    onChange,
-  );
+  const {
+    handleDragEndSingleColumn,
+    handleDragEndDoubleColumns,
+    handleToggleColumn,
+    formatColumnName,
+  } = useWidgetColumnsCustomization(availableColumns, value, onChange);
 
   const listSx = {
     border: `1px solid ${theme.palette.common.white}`,
@@ -201,7 +202,6 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
         <Typography>{t_i18n('Customize attributes')}</Typography>
       </AccordionSummary>
       <AccordionDetails sx={{ background: 'none', paddingBlock: theme.spacing(2) }}>
-
         {/* Layout selector */}
         {onLayoutChange && (
           <Box sx={{ marginBottom: theme.spacing(2) }}>
@@ -211,17 +211,23 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
               value={layout}
               onChange={(e) => onLayoutChange(e.target.value as WidgetColumnsLayout)}
             >
-              <FormControlLabel value="1" control={<Radio size="small" />} label={t_i18n('1 column')} />
-              <FormControlLabel value="2" control={<Radio size="small" />} label={t_i18n('2 columns')} />
+              <FormControlLabel
+                value="1"
+                control={<Radio size="small" />}
+                label={t_i18n('1 column')}
+              />
+              <FormControlLabel
+                value="2"
+                control={<Radio size="small" />}
+                label={t_i18n('2 columns')}
+              />
             </RadioGroup>
           </Box>
         )}
 
         <Box sx={{ display: 'flex', width: '100%', gap: theme.spacing(2) }}>
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <Typography variant="h4">
-              {`${t_i18n('Available attributes')} (${availableColumns.length})`}
-            </Typography>
+            <Typography variant="h4">{`${t_i18n('Available attributes')} (${availableColumns.length})`}</Typography>
             <List sx={{ ...listSx, flex: 1 }}>
               {availableColumns.map((column) => (
                 <ListItem disablePadding key={column.attribute} sx={{ height: 42 }}>
@@ -263,7 +269,6 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
             {t_i18n('Reset')}
           </Button>
         </Box>
-
       </AccordionDetails>
     </Accordion>
   );

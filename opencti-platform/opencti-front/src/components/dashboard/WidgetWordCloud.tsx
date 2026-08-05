@@ -8,7 +8,7 @@ import useResizeObserver from '../../utils/hooks/useResizeObserver';
 import WidgetNoData from './WidgetNoData';
 
 interface WidgetWordCloudProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   data: readonly any[];
   groupBy: string;
 }
@@ -22,10 +22,7 @@ const WidgetWordCloud = ({ data, groupBy }: WidgetWordCloudProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const { width, height } = useResizeObserver(containerRef);
 
-  const wordCloudData = useMemo(
-    () => buildWidgetWordCloudOption(data, groupBy),
-    [data, groupBy],
-  );
+  const wordCloudData = useMemo(() => buildWidgetWordCloudOption(data, groupBy), [data, groupBy]);
 
   const sanitizedWords = useMemo(
     // Log scale requires strictly positive finite values; 0/NaN can crash d3-wordcloud internals.
@@ -57,15 +54,9 @@ const WidgetWordCloud = ({ data, groupBy }: WidgetWordCloudProps) => {
   return (
     <div ref={containerRef} style={{ width: '100%', height: '100%' }}>
       {shouldRenderWordCloud && (
-        <ReactWordcloud
-          words={sanitizedWords}
-          minSize={[1, 1]}
-          options={options}
-        />
+        <ReactWordcloud words={sanitizedWords} minSize={[1, 1]} options={options} />
       )}
-      {shouldRenderEmptyState && (
-        <WidgetNoData />
-      )}
+      {shouldRenderEmptyState && <WidgetNoData />}
     </div>
   );
 };

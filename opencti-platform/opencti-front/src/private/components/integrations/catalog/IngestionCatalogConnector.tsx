@@ -6,7 +6,10 @@ import { IngestionCatalogConnectorQuery } from '@components/integrations/catalog
 import useConnectorDeployDialog from '@components/integrations/catalog/hooks/useConnectorDeployDialog';
 import createDeploymentCountMap from '@components/integrations/catalog/utils/createDeploymentCountMap';
 import ConnectorDeploymentBanner from '@components/data/connectors/ConnectorDeploymentBanner';
-import { ConnectorManagerStatusProvider, useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
+import {
+  ConnectorManagerStatusProvider,
+  useConnectorManagerStatus,
+} from '@components/data/connectors/ConnectorManagerStatusContext';
 import { Stack } from '@mui/material';
 import React, { Suspense, useEffect } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
@@ -37,7 +40,12 @@ const ingestionCatalogConnectorQuery = graphql`
 
 interface IngestionCatalogConnectorComponentProps {
   queryRef: PreloadedQuery<IngestionCatalogConnectorQuery>;
-  onClickDeploy: (connector: IngestionConnector, catalogId: string, hasActiveManagers: boolean, deploymentCount: number) => void;
+  onClickDeploy: (
+    connector: IngestionConnector,
+    catalogId: string,
+    hasActiveManagers: boolean,
+    deploymentCount: number,
+  ) => void;
   openConfig?: boolean;
 }
 
@@ -52,17 +60,12 @@ const IngestionCatalogConnectorComponent = ({
 
   const { hasActiveManagers } = useConnectorManagerStatus();
 
-  const { contract, connectors } = usePreloadedQuery(
-    ingestionCatalogConnectorQuery,
-    queryRef,
-  );
+  const { contract, connectors } = usePreloadedQuery(ingestionCatalogConnectorQuery, queryRef);
 
   setTitle(t_i18n('Available | Integrations'));
   const connector = contract ? JSON.parse(contract.contract) : null;
   const deploymentCounts = createDeploymentCountMap(connectors);
-  const deploymentCount = connector
-    ? (deploymentCounts.get(connector.container_image) ?? 0)
-    : 0;
+  const deploymentCount = connector ? (deploymentCounts.get(connector.container_image) ?? 0) : 0;
 
   useEffect(() => {
     if (openConfig && contract && connector) {
@@ -89,7 +92,9 @@ const IngestionCatalogConnectorComponent = ({
           <IngestionCatalogConnectorHeader
             connector={connector}
             isEnterpriseEdition={isEnterpriseEdition}
-            onClickDeploy={() => onClickDeploy(connector, contract?.catalog_id, hasActiveManagers, deploymentCount)}
+            onClickDeploy={() =>
+              onClickDeploy(connector, contract?.catalog_id, hasActiveManagers, deploymentCount)
+            }
           />
           <IngestionCatalogConnectorOverview connector={connector} />
         </Stack>
@@ -104,12 +109,12 @@ const IngestionCatalogConnector = () => {
   const [searchParams] = useSearchParams();
   const shouldAutoOpen = searchParams.get(SEARCH_PARAMS.OPEN_CONFIG) === 'true';
 
-  const queryRef = useQueryLoading<IngestionCatalogConnectorQuery>(
-    ingestionCatalogConnectorQuery,
-    { slug: connectorSlug ?? '' },
-  );
+  const queryRef = useQueryLoading<IngestionCatalogConnectorQuery>(ingestionCatalogConnectorQuery, {
+    slug: connectorSlug ?? '',
+  });
 
-  const { catalogState, handleOpenDeployDialog, handleCloseDeployDialog, handleCreate } = useConnectorDeployDialog();
+  const { catalogState, handleOpenDeployDialog, handleCloseDeployDialog, handleCreate } =
+    useConnectorDeployDialog();
 
   return (
     <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
@@ -123,19 +128,17 @@ const IngestionCatalogConnector = () => {
         </ConnectorManagerStatusProvider>
       )}
 
-      {
-        catalogState.selectedConnector && (
-          <IngestionCatalogConnectorCreation
-            open={!!catalogState.selectedConnector}
-            connector={catalogState.selectedConnector}
-            onClose={handleCloseDeployDialog}
-            catalogId={catalogState.selectedCatalogId}
-            hasActiveManagers={catalogState.hasActiveManagers}
-            onCreate={handleCreate}
-            deploymentCount={catalogState.deploymentCount}
-          />
-        )
-      }
+      {catalogState.selectedConnector && (
+        <IngestionCatalogConnectorCreation
+          open={!!catalogState.selectedConnector}
+          connector={catalogState.selectedConnector}
+          onClose={handleCloseDeployDialog}
+          catalogId={catalogState.selectedCatalogId}
+          hasActiveManagers={catalogState.hasActiveManagers}
+          onCreate={handleCreate}
+          deploymentCount={catalogState.deploymentCount}
+        />
+      )}
     </Suspense>
   );
 };

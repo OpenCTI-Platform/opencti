@@ -1,6 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
 import convertExclusionListToStix from './exclusionList-converter';
-import { ENTITY_TYPE_EXCLUSION_LIST, type StixExclusionList, type StoreEntityExclusionList } from './exclusionList-types';
+import {
+  ENTITY_TYPE_EXCLUSION_LIST,
+  type StixExclusionList,
+  type StoreEntityExclusionList,
+} from './exclusionList-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 

@@ -10,8 +10,9 @@ interface CsvMapperRepresentationAttributeSelectedConfigurationsProps {
 const flexStyle = { display: 'flex', alignItems: 'end', gap: '4px' };
 const containerStyle = { gridColumnStart: 2, gridColumnEnd: 4 };
 
-const CsvMapperRepresentationAttributeSelectedConfigurations:
-FunctionComponent<CsvMapperRepresentationAttributeSelectedConfigurationsProps> = ({ configuration }) => {
+const CsvMapperRepresentationAttributeSelectedConfigurations: FunctionComponent<
+  CsvMapperRepresentationAttributeSelectedConfigurationsProps
+> = ({ configuration }) => {
   const { t_i18n } = useFormatter();
   if (!configuration?.pattern_date && !configuration?.separator) {
     return null;
@@ -19,24 +20,18 @@ FunctionComponent<CsvMapperRepresentationAttributeSelectedConfigurationsProps> =
 
   return (
     <div style={containerStyle}>
-      {
-        configuration.pattern_date
-        && (
-          <div style={flexStyle}>
-            <SubdirectoryArrowRight />{t_i18n('Date pattern')}:
-            <span>{configuration.pattern_date}</span>
-          </div>
-        )
-      }
-      {
-        configuration.separator
-        && (
-          <div style={flexStyle}>
-            <SubdirectoryArrowRight /> {t_i18n('List separator')}:
-            <span>{configuration.separator}</span>
-          </div>
-        )
-      }
+      {configuration.pattern_date && (
+        <div style={flexStyle}>
+          <SubdirectoryArrowRight />
+          {t_i18n('Date pattern')}:<span>{configuration.pattern_date}</span>
+        </div>
+      )}
+      {configuration.separator && (
+        <div style={flexStyle}>
+          <SubdirectoryArrowRight /> {t_i18n('List separator')}:
+          <span>{configuration.separator}</span>
+        </div>
+      )}
     </div>
   );
 };

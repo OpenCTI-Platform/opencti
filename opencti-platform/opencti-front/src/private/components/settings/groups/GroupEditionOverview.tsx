@@ -20,10 +20,7 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import type { Theme } from '../../../../components/Theme';
 
 export const groupMutationFieldPatch = graphql`
-  mutation GroupEditionOverviewFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-  ) {
+  mutation GroupEditionOverviewFieldPatchMutation($id: ID!, $input: [EditInput]!) {
     groupEdit(id: $id) {
       fieldPatch(input: $input) {
         ...GroupEditionOverview_group
@@ -65,11 +62,8 @@ const groupMutationRelationDelete = graphql`
     $relationship_type: String!
   ) {
     groupEdit(id: $id) {
-      relationDelete( 
-        fromId: $fromId
-        toId: $toId
-        relationship_type: $relationship_type) {
-          ...GroupEditionOverview_group
+      relationDelete(fromId: $fromId, toId: $toId, relationship_type: $relationship_type) {
+        ...GroupEditionOverview_group
       }
     }
   }
@@ -78,9 +72,11 @@ const groupMutationRelationDelete = graphql`
 interface GroupEditionOverviewComponentProps {
   group: GroupEditionOverview_group$data;
   context?: readonly (GenericContext | null)[] | null;
-
 }
-const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewComponentProps> = ({ group, context }) => {
+const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewComponentProps> = ({
+  group,
+  context,
+}) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
@@ -112,10 +108,12 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
     auto_new_marking: group.auto_new_marking,
     no_creators: group.no_creators,
     restrict_delete: group.restrict_delete,
-    default_dashboard: group.default_dashboard ? {
-      value: group.default_dashboard.id,
-      label: group.default_dashboard.name,
-    } : null,
+    default_dashboard: group.default_dashboard
+      ? {
+          value: group.default_dashboard.id,
+          label: group.default_dashboard.name,
+        }
+      : null,
   };
 
   return (
@@ -124,8 +122,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={groupValidator}
-        onSubmit={() => {
-        }}
+        onSubmit={() => {}}
       >
         {() => (
           <Form style={{ marginTop: theme.spacing(2) }}>
@@ -136,9 +133,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
               fullWidth={true}
               onFocus={editor.changeFocus}
               onSubmit={editor.changeField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="name" />
-              }
+              helperText={<SubscriptionFocus context={context} fieldName="name" />}
             />
             <Field
               component={MarkdownField}
@@ -150,17 +145,9 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
               style={{ marginTop: 20 }}
               onFocus={editor.changeFocus}
               onSubmit={editor.changeField}
-              helperText={(
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="description"
-                />
-              )}
+              helperText={<SubscriptionFocus context={context} fieldName="description" />}
             />
-            <DashboardField
-              onChange={editor.changeField}
-              context={context}
-            />
+            <DashboardField onChange={editor.changeField} context={context} />
             <GroupHiddenTypesField groupData={group} />
             <Field
               component={SwitchField}
@@ -169,23 +156,17 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
               label={t_i18n('Granted by default at user creation')}
               containerstyle={{ marginTop: 20 }}
               onChange={editor.changeField}
-
             />
             <FormHelperText>
-              <SubscriptionFocus
-                context={context}
-                fieldName="default_assignation"
-              />
+              <SubscriptionFocus context={context} fieldName="default_assignation" />
             </FormHelperText>
             <Field
               component={SwitchField}
               type="checkbox"
               name="auto_new_marking"
-              label={(
+              label={
                 <>
-                  {t_i18n(
-                    'Automatically authorize this group to new marking definition',
-                  )}
+                  {t_i18n('Automatically authorize this group to new marking definition')}
                   <Tooltip
                     title={t_i18n(
                       'The new marking definitions will also be shareable by this group.',
@@ -198,47 +179,34 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
                     />
                   </Tooltip>
                 </>
-              )}
+              }
               containerstyle={{ marginTop: 20 }}
               onChange={editor.changeField}
             />
             <FormHelperText>
-              <SubscriptionFocus
-                context={context}
-                fieldName="auto_new_marking"
-              />
+              <SubscriptionFocus context={context} fieldName="auto_new_marking" />
             </FormHelperText>
             <Field
               component={SwitchField}
               type="checkbox"
               name="no_creators"
-              label={t_i18n(
-                'Do not accumulate creators for the users of this group',
-              )}
+              label={t_i18n('Do not accumulate creators for the users of this group')}
               containerstyle={{ marginTop: 20 }}
               onChange={editor.changeField}
             />
             <FormHelperText>
-              <SubscriptionFocus
-                context={context}
-                fieldName="no_creators"
-              />
+              <SubscriptionFocus context={context} fieldName="no_creators" />
             </FormHelperText>
             <Field
               component={SwitchField}
               type="checkbox"
               name="restrict_delete"
-              label={t_i18n(
-                'Do not allow these users to delete content created by other users',
-              )}
+              label={t_i18n('Do not allow these users to delete content created by other users')}
               containerstyle={{ marginTop: 20 }}
               onChange={editor.changeField}
             />
             <FormHelperText>
-              <SubscriptionFocus
-                context={context}
-                fieldName="restrict_delete"
-              />
+              <SubscriptionFocus context={context} fieldName="restrict_delete" />
             </FormHelperText>
           </Form>
         )}
@@ -247,30 +215,27 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
   );
 };
 
-const GroupEditionOverview = createFragmentContainer(
-  GroupEditionOverviewComponent,
-  {
-    group: graphql`
-      fragment GroupEditionOverview_group on Group {
+const GroupEditionOverview = createFragmentContainer(GroupEditionOverviewComponent, {
+  group: graphql`
+    fragment GroupEditionOverview_group on Group {
+      id
+      name
+      description
+      default_assignation
+      no_creators
+      restrict_delete
+      auto_new_marking
+      default_dashboard {
         id
         name
-        description
-        default_assignation
-        no_creators
-        restrict_delete
-        auto_new_marking
-        default_dashboard {
+        authorizedMembers {
           id
-          name
-          authorizedMembers {
-            id
-            member_id
-          }
+          member_id
         }
-        ...GroupHiddenTypesField_group
       }
-    `,
-  },
-);
+      ...GroupHiddenTypesField_group
+    }
+  `,
+});
 
 export default GroupEditionOverview;

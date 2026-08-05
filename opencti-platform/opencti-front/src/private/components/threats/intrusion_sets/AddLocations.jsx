@@ -42,19 +42,11 @@ class AddLocations extends Component {
     const paginationOptions = {
       search: this.state.search,
     };
-    const updater = (store) => insertNode(
-      store,
-      'Pagination_locations',
-      paginationOptions,
-      'locationAdd',
-    );
+    const updater = (store) =>
+      insertNode(store, 'Pagination_locations', paginationOptions, 'locationAdd');
     return (
       <>
-        <IconButton
-          color="primary"
-          aria-label="Add"
-          onClick={this.handleOpen.bind(this)}
-        >
+        <IconButton color="primary" aria-label="Add" onClick={this.handleOpen.bind(this)}>
           <Add fontSize="small" />
         </IconButton>
         <Drawer
@@ -62,7 +54,7 @@ class AddLocations extends Component {
           onClose={this.handleClose.bind(this)}
           title={t('Add locations')}
           subHeader={{
-            right: [(
+            right: [
               <LocationCreation
                 display={this.state.open}
                 contextual={true}
@@ -70,15 +62,15 @@ class AddLocations extends Component {
                 paginationOptions={paginationOptions}
                 updater={updater}
                 key="rightButton"
-              />
-            )],
-            left: [(
+              />,
+            ],
+            left: [
               <SearchInput
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
                 key="leftInput"
-              />
-            )],
+              />,
+            ],
           }}
         >
           <QueryRenderer

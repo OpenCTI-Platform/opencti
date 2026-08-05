@@ -26,7 +26,10 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
 import { isPathOverview } from '../../../../utils/tabUtils';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import SectorEdition from './SectorEdition';
 import SectorDeletion from './SectorDeletion';
 import { PATH_SECTOR, PATH_SECTORS } from '@components/common/routes/paths';
@@ -85,20 +88,22 @@ type RootSectorProps = {
 };
 
 const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootSectorSubscription>>(() => ({
-    subscription,
-    variables: { id: sectorId },
-  }), [sectorId]);
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootSectorSubscription>>(
+    () => ({
+      subscription,
+      variables: { id: sectorId },
+    }),
+    [sectorId],
+  );
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootSectorSubscription>(subConfig);
 
-  const {
-    sector,
-    connectorsForExport,
-    connectorsForImport,
-  } = usePreloadedQuery<RootSectorQuery>(sectorQuery, queryRef);
+  const { sector, connectorsForExport, connectorsForImport } = usePreloadedQuery<RootSectorQuery>(
+    sectorQuery,
+    queryRef,
+  );
 
   const { forceUpdate } = useForceUpdate();
 
@@ -113,7 +118,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={(
+              element={
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -130,15 +135,16 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
                   ]}
                   data={sector}
                 />
-              )}
+              }
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs elements={[
-              { label: t_i18n('Entities') },
-              { label: t_i18n('Sectors'), link: PATH_SECTORS },
-              { label: sector.name, current: true },
-            ]}
+            <Breadcrumbs
+              elements={[
+                { label: t_i18n('Entities') },
+                { label: t_i18n('Sectors'), link: PATH_SECTORS },
+                { label: sector.name, current: true },
+              ]}
             />
             <StixDomainObjectHeader
               entityType="Sector"
@@ -146,18 +152,16 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
               stixDomainObject={sector}
               isOpenctiAlias={true}
               enableQuickSubscription={true}
-              EditComponent={(
+              EditComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <SectorEdition sectorId={sector.id} />
                 </Security>
-              )}
-              RelateComponent={(
+              }
+              RelateComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <StixCoreRelationshipCreationFromEntityHeader
-                    data={sector}
-                  />
+                  <StixCoreRelationshipCreationFromEntityHeader data={sector} />
                 </Security>
-              )}
+              }
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <SectorDeletion id={sector.id} isOpen={isOpen} handleClose={onClose} />
@@ -170,18 +174,13 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
               entity={sector}
               basePath={basePath}
               pages={{
-                overview:
-                  <Sector sectorData={sector} />,
+                overview: <Sector sectorData={sector} />,
                 knowledge: (
                   <div key={forceUpdate}>
                     <SectorKnowledge sectorData={sector} />
                   </div>
                 ),
-                content: (
-                  <StixCoreObjectContentRoot
-                    stixCoreObject={sector}
-                  />
-                ),
+                content: <StixCoreObjectContentRoot stixCoreObject={sector} />,
                 analyses: (
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={sector}
@@ -213,11 +212,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
                     entity={sector}
                   />
                 ),
-                history: (
-                  <StixCoreObjectHistory
-                    stixCoreObjectId={sectorId}
-                  />
-                ),
+                history: <StixCoreObjectHistory stixCoreObjectId={sectorId} />,
               }}
               extraActions={isOverview && <AIInsights id={sector.id} />}
             />

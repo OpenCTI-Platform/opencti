@@ -13,7 +13,11 @@ export const up = async (next) => {
       },
     },
   };
-  await elUpdateByQueryForMigration('[MIGRATION] Add entity setting workflow_configuration', READ_INDEX_INTERNAL_OBJECTS, query);
+  await elUpdateByQueryForMigration(
+    '[MIGRATION] Add entity setting workflow_configuration',
+    READ_INDEX_INTERNAL_OBJECTS,
+    query,
+  );
   next();
 };
 

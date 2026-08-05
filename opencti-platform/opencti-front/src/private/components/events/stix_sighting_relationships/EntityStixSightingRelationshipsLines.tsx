@@ -6,7 +6,10 @@ import {
   EntityStixSightingRelationshipsLinesPaginationQuery$variables,
 } from '@components/events/stix_sighting_relationships/__generated__/EntityStixSightingRelationshipsLinesPaginationQuery.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { EntityStixSightingRelationshipLine, EntityStixSightingRelationshipLineDummy } from './EntityStixSightingRelationshipLine';
+import {
+  EntityStixSightingRelationshipLine,
+  EntityStixSightingRelationshipLineDummy,
+} from './EntityStixSightingRelationshipLine';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
@@ -26,17 +29,17 @@ export const entityStixSightingRelationshipsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...EntityStixSightingRelationshipsLines_data
-    @arguments(
-      fromId: $fromId
-      toId: $toId
-      toTypes: $toTypes
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        fromId: $fromId
+        toId: $toId
+        toTypes: $toTypes
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -49,10 +52,7 @@ export const EntityStixSightingRelationshipsLinesFragment = graphql`
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
-    orderBy: {
-      type: "StixSightingRelationshipsOrdering"
-      defaultValue: first_seen
-    }
+    orderBy: { type: "StixSightingRelationshipsOrdering", defaultValue: first_seen }
     orderMode: { type: "OrderingMode", defaultValue: desc }
     filters: { type: "FilterGroup" }
   )
@@ -92,7 +92,9 @@ interface EntityStixSightingRelationshipsLinesProps {
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
 }
 
-const EntityStixSightingRelationshipsLines: FunctionComponent<EntityStixSightingRelationshipsLinesProps> = ({
+const EntityStixSightingRelationshipsLines: FunctionComponent<
+  EntityStixSightingRelationshipsLinesProps
+> = ({
   dataColumns,
   queryRef,
   paginationOptions,

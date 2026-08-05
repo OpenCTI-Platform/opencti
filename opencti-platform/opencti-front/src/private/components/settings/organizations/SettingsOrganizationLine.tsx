@@ -74,19 +74,15 @@ export const SettingsOrganizationLine: FunctionComponent<SettingsOrganizationLin
       to={`/dashboard/settings/accesses/organizations/${organization.id}`}
     >
       <ListItemText
-        primary={(
+        primary={
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
-                key={value.label}
-                className={classes.bodyItem}
-                style={{ width: value.width }}
-              >
+              <div key={value.label} className={classes.bodyItem} style={{ width: value.width }}>
                 {value.render?.(organization, { t: t_i18n, classes })}
               </div>
             ))}
           </div>
-        )}
+        }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -95,44 +91,31 @@ export const SettingsOrganizationLine: FunctionComponent<SettingsOrganizationLin
   );
 };
 
-export const SettingsOrganizationLineDummy = ({
-  dataColumns,
-}: {
-  dataColumns: DataColumns;
-}) => {
+export const SettingsOrganizationLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const classes = useStyles();
   return (
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={(
+      secondaryAction={
         <Box sx={{ root: classes.itemIconDisabled }}>
           <MoreVertOutlined />
         </Box>
-      )}
+      }
     >
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
-                key={value.label}
-                className={classes.bodyItem}
-                style={{ width: value.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height={20}
-                />
+              <div key={value.label} className={classes.bodyItem} style={{ width: value.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height={20} />
               </div>
             ))}
           </div>
-        )}
+        }
       />
     </ListItem>
   );

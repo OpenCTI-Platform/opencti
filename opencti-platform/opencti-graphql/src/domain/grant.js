@@ -1,8 +1,15 @@
 import { assoc, dissoc, pipe, uniq } from 'ramda';
 import nconf from 'nconf';
 import { createEntity, createRelation, updateAttribute } from '../database/middleware';
-import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../schema/internalObject';
-import { RELATION_HAS_CAPABILITY, RELATION_HAS_CAPABILITY_IN_DRAFT } from '../schema/internalRelationship';
+import {
+  ENTITY_TYPE_CAPABILITY,
+  ENTITY_TYPE_GROUP,
+  ENTITY_TYPE_ROLE,
+} from '../schema/internalObject';
+import {
+  RELATION_HAS_CAPABILITY,
+  RELATION_HAS_CAPABILITY_IN_DRAFT,
+} from '../schema/internalRelationship';
 import { generateStandardId } from '../schema/identifier';
 import { publishUserAction } from '../listener/UserActionListener';
 
@@ -11,15 +18,31 @@ export const addCapability = async (context, user, capability) => {
 };
 
 export const updateCapability = async (context, user, capabilityId, input) => {
-  const { element: updatedElem } = await updateAttribute(context, user, capabilityId, ENTITY_TYPE_CAPABILITY, input);
+  const { element: updatedElem } = await updateAttribute(
+    context,
+    user,
+    capabilityId,
+    ENTITY_TYPE_CAPABILITY,
+    input,
+  );
   return updatedElem;
 };
 
-const createCapabilitiesRelations = async ({ context, user, roleId, capabilities, relationshipType }) => {
+const createCapabilitiesRelations = async ({
+  context,
+  user,
+  roleId,
+  capabilities,
+  relationshipType,
+}) => {
   for (let index = 0; index < capabilities.length; index += 1) {
     const capability = capabilities[index];
     const generateToId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: capability });
-    await createRelation(context, user, { fromId: roleId, toId: generateToId, relationship_type: relationshipType });
+    await createRelation(context, user, {
+      fromId: roleId,
+      toId: generateToId,
+      relationship_type: relationshipType,
+    });
   }
 };
 
@@ -36,7 +59,13 @@ export const addRole = async (context, user, role) => {
     can_manage_sensitive_config: role.can_manage_sensitive_config ?? false, // default when undefined is false
   };
 
-  const { element, isCreation } = await createEntity(context, user, completeRoleToCreate, ENTITY_TYPE_ROLE, { complete: true });
+  const { element, isCreation } = await createEntity(
+    context,
+    user,
+    completeRoleToCreate,
+    ENTITY_TYPE_ROLE,
+    { complete: true },
+  );
   await createCapabilitiesRelations({
     context,
     user,
@@ -79,7 +108,13 @@ export const addGroup = async (context, user, group) => {
     restrict_delete: group.restrict_delete ?? false,
     auto_new_marking: group.auto_new_marking ?? false,
   };
-  const { element, isCreation } = await createEntity(context, user, groupWithDefaultValues, ENTITY_TYPE_GROUP, { complete: true });
+  const { element, isCreation } = await createEntity(
+    context,
+    user,
+    groupWithDefaultValues,
+    ENTITY_TYPE_GROUP,
+    { complete: true },
+  );
   if (isCreation) {
     await publishUserAction({
       user,

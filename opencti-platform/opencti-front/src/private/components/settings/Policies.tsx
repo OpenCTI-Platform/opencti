@@ -67,28 +67,28 @@ export const policiesFieldPatch = graphql`
   }
 `;
 
-const policiesValidation = () => Yup.object().shape({
-  platform_organization: Yup.object().nullable(),
-  view_all_users: Yup.boolean(),
-  platform_login_message: Yup.string().nullable(),
-  platform_consent_message: Yup.string().nullable(),
-  platform_consent_confirm_text: Yup.string().nullable(),
-  platform_banner_level: Yup.string().nullable(),
-  platform_banner_text: Yup.string().nullable(),
-  platform_no_access_message: Yup.string().nullable(),
-});
+const policiesValidation = () =>
+  Yup.object().shape({
+    platform_organization: Yup.object().nullable(),
+    view_all_users: Yup.boolean(),
+    platform_login_message: Yup.string().nullable(),
+    platform_consent_message: Yup.string().nullable(),
+    platform_consent_confirm_text: Yup.string().nullable(),
+    platform_banner_level: Yup.string().nullable(),
+    platform_banner_text: Yup.string().nullable(),
+    platform_no_access_message: Yup.string().nullable(),
+  });
 
 interface PoliciesComponentProps {
   keyword?: string;
   queryRef: PreloadedQuery<PoliciesQuery>;
 }
 
-const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
-  queryRef,
-}) => {
+const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({ queryRef }) => {
   const theme = useTheme<Theme>();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const [openPlatformOrganizationChanges, setOpenPlatformOrganizationChanges] = useState<boolean>(false);
+  const [openPlatformOrganizationChanges, setOpenPlatformOrganizationChanges] =
+    useState<boolean>(false);
 
   const data = usePreloadedQuery(policiesQuery, queryRef);
   const settings = useFragment<Policies$key>(PoliciesFragment, data.settings);
@@ -141,12 +141,17 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
       }}
       data-testid="policies-settings-page"
     >
-      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Policies'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Security') },
+          { label: t_i18n('Policies'), current: true },
+        ]}
+      />
       <Grid container={true} spacing={3}>
         <Grid item xs={12}>
           <Formik
-            onSubmit={() => {
-            }}
+            onSubmit={() => {}}
             initialValues={initialValues}
             enableReinitialize={true}
             validationSchema={policiesValidation()}
@@ -157,19 +162,26 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                   <Grid item xs={6}>
                     <DangerZoneBlock
                       type="platform_organization"
-                      title={<>{t_i18n('Platform main organization')} <EEChip /></>}
+                      title={
+                        <>
+                          {t_i18n('Platform main organization')} <EEChip />
+                        </>
+                      }
                       displayTitle={false}
                       component={({ disabled, style, title }) => (
-                        <Card
-                          title={title}
-                          sx={style}
-                        >
+                        <Card title={title} sx={style}>
                           <Alert severity="info" variant="outlined">
-                            {t_i18n('When you set a platform organization you enable the organization sharing and segregation feature.')}
+                            {t_i18n(
+                              'When you set a platform organization you enable the organization sharing and segregation feature.',
+                            )}
                             <br />
-                            {t_i18n('Therefore all pieces of knowledge which are not explicitly shared with any organization won\'t be accessible to user(s) not member of the platform organization.')}
+                            {t_i18n(
+                              "Therefore all pieces of knowledge which are not explicitly shared with any organization won't be accessible to user(s) not member of the platform organization.",
+                            )}
                             <br />
-                            {t_i18n('Service Account will automatically be part of the Platform Main Organization, but will not be listed in the list of users of this organisation')}
+                            {t_i18n(
+                              'Service Account will automatically be part of the Platform Main Organization, but will not be listed in the list of users of this organisation',
+                            )}
                           </Alert>
                           <EETooltip>
                             <ObjectOrganizationField
@@ -186,7 +198,9 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                             open={openPlatformOrganizationChanges}
                             keepMounted
                             onClose={() => setOpenPlatformOrganizationChanges(false)}
-                            title={t_i18n('Numerous repercussions linked to the activation of this feature')}
+                            title={t_i18n(
+                              'Numerous repercussions linked to the activation of this feature',
+                            )}
                           >
                             <Alert
                               severity="warning"
@@ -197,7 +211,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                               }}
                             >
                               {t_i18n(
-                                'This feature has implications for the entire platform and must be fully understood before being used. For example, it\'s mandatory to have organizations set up for each user, otherwise they won\'t be able to log in. It is also mandatory to include connector\'s users in the platform main organization to avoid import problems.',
+                                "This feature has implications for the entire platform and must be fully understood before being used. For example, it's mandatory to have organizations set up for each user, otherwise they won't be able to log in. It is also mandatory to include connector's users in the platform main organization to avoid import problems.",
                               )}
                             </Alert>
 
@@ -215,7 +229,10 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                                 onClick={() => {
                                   setPlatformOrganization(values.platform_organization);
                                   setOpenPlatformOrganizationChanges(false);
-                                  handleSubmitField('platform_organization', values.platform_organization);
+                                  handleSubmitField(
+                                    'platform_organization',
+                                    values.platform_organization,
+                                  );
                                   if (values.platform_organization) {
                                     setFieldValue('view_all_users', false);
                                     handleSubmitField('view_all_users', 'false');
@@ -235,7 +252,9 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                   <Grid item xs={6}>
                     <Card title={t_i18n('Users visibility')}>
                       <Alert severity="info" variant="outlined">
-                        {t_i18n('This option is automatically disabled when a platform organization is set.')}
+                        {t_i18n(
+                          'This option is automatically disabled when a platform organization is set.',
+                        )}
                       </Alert>
                       <Field
                         component={SwitchField}

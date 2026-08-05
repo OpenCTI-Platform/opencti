@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import def from './RelatedToRelatedDefinition';
 import buildRelationToRelationRule from '../relationToRelationBuilder';
 import { RELATION_RELATED_TO } from '../../schema/stixCoreRelationship';

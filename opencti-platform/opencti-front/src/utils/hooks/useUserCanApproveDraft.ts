@@ -6,7 +6,9 @@ const useUserCanApproveDraft = (): boolean => {
   const { me } = useAuth();
 
   const isBypassUserFlag = isBypassUser(me);
-  const canDeleteKnowledge = getCapabilitiesName(me.capabilities).includes(KNOWLEDGE_KNUPDATE_KNDELETE);
+  const canDeleteKnowledge = getCapabilitiesName(me.capabilities).includes(
+    KNOWLEDGE_KNUPDATE_KNDELETE,
+  );
 
   return canDeleteKnowledge || isBypassUserFlag;
 };

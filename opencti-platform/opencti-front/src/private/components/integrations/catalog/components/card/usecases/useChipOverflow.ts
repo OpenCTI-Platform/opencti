@@ -16,9 +16,7 @@ const useChipOverflow = (items: string[]) => {
     if (!containerRef.current) return;
 
     const containerWidth = containerRef.current.offsetWidth;
-    const widths = chipRefs.current
-      .slice(0, items.length)
-      .map((chip) => chip?.offsetWidth ?? 0);
+    const widths = chipRefs.current.slice(0, items.length).map((chip) => chip?.offsetWidth ?? 0);
     const totalWidth = widths.reduce((acc, width, index) => acc + width + (index > 0 ? GAP : 0), 0);
 
     // Everything fits: no overflow chip needed.

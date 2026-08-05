@@ -1,5 +1,5 @@
 input RetentionRuleAddInput {
-  name: String! @constraint(minLength:2, format: "not-blank")
+  name: String! @constraint(minLength: 2, format: "not-blank")
   filters: String
   max_retention: Int! @constraint(min: 1)
   retention_unit: RetentionUnit
@@ -56,16 +56,17 @@ type RetentionRuleEditMutations {
 type Query {
   retentionRule(id: String!): RetentionRule @auth(for: [SETTINGS_SETCUSTOMIZATION])
   retentionRules(
-    first: Int,
-    after: ID,
-    search: String,
+    first: Int
+    after: ID
+    search: String
     orderBy: RetentionRuleOrdering
     orderMode: OrderingMode
   ): RetentionRuleConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
 
 type Mutation {
-  retentionRuleAdd(input: RetentionRuleAddInput!): RetentionRule! @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  retentionRuleAdd(input: RetentionRuleAddInput!): RetentionRule!
+    @auth(for: [SETTINGS_SETCUSTOMIZATION])
   retentionRuleCheck(input: RetentionRuleAddInput): Int! @auth(for: [SETTINGS_SETCUSTOMIZATION])
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }

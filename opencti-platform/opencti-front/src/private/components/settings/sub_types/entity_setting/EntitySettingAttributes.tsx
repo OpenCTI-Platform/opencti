@@ -44,10 +44,7 @@ const EntitySettingAttributes = ({
   searchTerm,
 }: EntitySettingAttributesProps) => {
   const { t_i18n } = useFormatter();
-  const entitySetting = useFragment(
-    entitySettingAttributesFragment,
-    entitySettingsData,
-  );
+  const entitySetting = useFragment(entitySettingAttributesFragment, entitySettingsData);
   if (!entitySetting) {
     return <ErrorNotFound />;
   }
@@ -75,16 +72,12 @@ const EntitySettingAttributes = ({
           {attributesMandatory.includes(data.name) ? (
             <CheckCircleOutlined
               fontSize="small"
-              color={
-                data.mandatoryType === 'customizable' ? 'success' : 'disabled'
-              }
+              color={data.mandatoryType === 'customizable' ? 'success' : 'disabled'}
             />
           ) : (
             <DoNotDisturbOnOutlined
               fontSize="small"
-              color={
-                data.mandatoryType === 'customizable' ? 'primary' : 'disabled'
-              }
+              color={data.mandatoryType === 'customizable' ? 'primary' : 'disabled'}
             />
           )}
         </>
@@ -104,10 +97,7 @@ const EntitySettingAttributes = ({
           }
         }
         return isDefaultValuesSet ? (
-          <CheckCircleOutlined
-            fontSize="small"
-            color={data.editDefault ? 'success' : 'disabled'}
-          />
+          <CheckCircleOutlined fontSize="small" color={data.editDefault ? 'success' : 'disabled'} />
         ) : (
           <DoNotDisturbOnOutlined
             fontSize="small"

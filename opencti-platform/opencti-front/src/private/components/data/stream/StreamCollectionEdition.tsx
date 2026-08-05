@@ -17,7 +17,13 @@ import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty, serializeFilterGroupForBackend, stixFilters, streamOriginFilters } from '../../../../utils/filters/filtersUtils';
+import {
+  deserializeFilterGroupForFrontend,
+  isFilterGroupNotEmpty,
+  serializeFilterGroupForBackend,
+  stixFilters,
+  streamOriginFilters,
+} from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreatorField from '../../common/form/CreatorField';
@@ -35,36 +41,44 @@ interface StreamCollectionCreationForm {
 }
 
 export const streamCollectionMutationFieldPatch = graphql`
-    mutation StreamCollectionEditionFieldPatchMutation($id: ID!$input: [EditInput]!) {
-        streamCollectionEdit(id: $id) {
-            fieldPatch(input: $input) {
-                ...StreamCollectionEdition_streamCollection
-            }
-        }
+  mutation StreamCollectionEditionFieldPatchMutation($id: ID!, $input: [EditInput]!) {
+    streamCollectionEdit(id: $id) {
+      fieldPatch(input: $input) {
+        ...StreamCollectionEdition_streamCollection
+      }
     }
+  }
 `;
 
-const streamCollectionValidation = (requiredSentence: string) => Yup.object().shape({
-  name: Yup.string().required(requiredSentence),
-  description: Yup.string().nullable(),
-  stream_public: Yup.bool().nullable(),
-  stream_public_user_id: Yup.mixed().nullable(),
-  restricted_members: Yup.array().nullable(),
-});
+const streamCollectionValidation = (requiredSentence: string) =>
+  Yup.object().shape({
+    name: Yup.string().required(requiredSentence),
+    description: Yup.string().nullable(),
+    stream_public: Yup.bool().nullable(),
+    stream_public_user_id: Yup.mixed().nullable(),
+    restricted_members: Yup.array().nullable(),
+  });
 
-const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: StreamCollectionEdition_streamCollection$data }> = ({ streamCollection }) => {
+const StreamCollectionEditionContainer: FunctionComponent<{
+  streamCollection: StreamCollectionEdition_streamCollection$data;
+}> = ({ streamCollection }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const isGrantedToSetAccesses = useGranted([SETTINGS_SETACCESSES]);
-  const initialValues = { ...streamCollection,
+  const initialValues = {
+    ...streamCollection,
     restricted_members: convertAuthorizedMembers(streamCollection),
     stream_public: streamCollection.stream_public ?? null,
     name: streamCollection.name ?? '',
     description: streamCollection.description ?? '',
     stream_public_user_id: convertUser(streamCollection, 'stream_public_user'),
   };
-  const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(streamCollection.filters) ?? undefined);
-  const [originFilters, originHelpers] = useFiltersState(deserializeFilterGroupForFrontend(streamCollection.origin_filters) ?? undefined);
+  const [filters, helpers] = useFiltersState(
+    deserializeFilterGroupForFrontend(streamCollection.filters) ?? undefined,
+  );
+  const [originFilters, originHelpers] = useFiltersState(
+    deserializeFilterGroupForFrontend(streamCollection.origin_filters) ?? undefined,
+  );
   const handleSubmitField = (name: string, value: FieldOption[] | string) => {
     streamCollectionValidation(t_i18n('This field is required'))
       .validateAt(name, { [name]: value })
@@ -85,24 +99,25 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
       })
       .catch(() => false);
   };
-  const handleSubmitFieldOptions = (name: string, value: FieldOption[]) => streamCollectionValidation(t_i18n('This field is required'))
-    .validateAt(name, { [name]: value })
-    .then(() => {
-      commitMutation({
-        mutation: streamCollectionMutationFieldPatch,
-        variables: {
-          id: streamCollection.id,
-          input: { key: name, value: value?.map(({ value: v }) => v) ?? '' },
-        },
-        setSubmitting: undefined,
-        onCompleted: undefined,
-        onError: undefined,
-        optimisticResponse: undefined,
-        optimisticUpdater: undefined,
-        updater: undefined,
-      });
-    })
-    .catch(() => false);
+  const handleSubmitFieldOptions = (name: string, value: FieldOption[]) =>
+    streamCollectionValidation(t_i18n('This field is required'))
+      .validateAt(name, { [name]: value })
+      .then(() => {
+        commitMutation({
+          mutation: streamCollectionMutationFieldPatch,
+          variables: {
+            id: streamCollection.id,
+            input: { key: name, value: value?.map(({ value: v }) => v) ?? '' },
+          },
+          setSubmitting: undefined,
+          onCompleted: undefined,
+          onError: undefined,
+          optimisticResponse: undefined,
+          optimisticUpdater: undefined,
+          updater: undefined,
+        });
+      })
+      .catch(() => false);
 
   useEffect(() => {
     const jsonFilters = serializeFilterGroupForBackend(filters);
@@ -182,11 +197,11 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
             variant="outlined"
             style={{ position: 'relative' }}
           >
-            <AlertTitle>
-              {t_i18n('Make this stream public and available to anyone')}
-            </AlertTitle>
+            <AlertTitle>{t_i18n('Make this stream public and available to anyone')}</AlertTitle>
             <FormControlLabel
-              control={<Switch checked={!!values.stream_public} disabled={!isGrantedToSetAccesses} />}
+              control={
+                <Switch checked={!!values.stream_public} disabled={!isGrantedToSetAccesses} />
+              }
               style={{ marginLeft: 1 }}
               onChange={(_, checked) => {
                 setFieldValue('stream_public', checked);
@@ -238,18 +253,21 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
               />
             )}
           </Alert>
-          <Box sx={{
-            marginTop: '20px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: theme.spacing(1),
-            marginBottom: theme.spacing(1),
-          }}
+          <Box
+            sx={{
+              marginTop: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: theme.spacing(1),
+              marginBottom: theme.spacing(1),
+            }}
           >
             <Filters
               availableFilterKeys={stixFilters}
               helpers={helpers}
-              searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] }}
+              searchContext={{
+                entityTypes: ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'],
+              }}
             />
           </Box>
           <FilterIconButton
@@ -272,7 +290,9 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
                   style={{ position: 'relative', width: '100%', overflow: 'hidden' }}
                 >
                   <div>
-                    {t_i18n('Origin filters only apply to live events. Recovery mode (when starting from a past date) and dependency events will ignore them.')}
+                    {t_i18n(
+                      'Origin filters only apply to live events. Recovery mode (when starting from a past date) and dependency events will ignore them.',
+                    )}
                   </div>
                 </Alert>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -298,31 +318,28 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
   );
 };
 
-const StreamCollectionEditionFragment = createFragmentContainer(
-  StreamCollectionEditionContainer,
-  {
-    streamCollection: graphql`
-            fragment StreamCollectionEdition_streamCollection on StreamCollection {
-                id
-                name
-                description
-                filters
-                origin_filters
-                stream_live
-                stream_public
-                stream_public_user {
-                    id
-                    entity_type
-                    name
-                }
-                authorized_members {
-                    id
-                    member_id
-                    name
-                }
-            }
-        `,
-  },
-);
+const StreamCollectionEditionFragment = createFragmentContainer(StreamCollectionEditionContainer, {
+  streamCollection: graphql`
+    fragment StreamCollectionEdition_streamCollection on StreamCollection {
+      id
+      name
+      description
+      filters
+      origin_filters
+      stream_live
+      stream_public
+      stream_public_user {
+        id
+        entity_type
+        name
+      }
+      authorized_members {
+        id
+        member_id
+        name
+      }
+    }
+  `,
+});
 
 export default StreamCollectionEditionFragment;

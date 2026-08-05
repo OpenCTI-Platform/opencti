@@ -5,12 +5,20 @@ import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGra
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
-import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
+import {
+  getMainRepresentative,
+  isFieldForIdentifier,
+} from '../../../../utils/defaultRepresentatives';
 import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
-import type { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import type {
+  Widget,
+  WidgetDataSelection,
+  WidgetHost,
+  WidgetParameters,
+} from '../../../../utils/widget/widget';
 import { DraftsDistributionListQuery } from './__generated__/DraftsDistributionListQuery.graphql';
 
 const draftsDistributionListQuery = graphql`
@@ -82,9 +90,9 @@ const DraftsDistributionListComponent = ({
     if (isFieldForIdentifier(selection.attribute ?? undefined)) {
       label = getMainRepresentative(n?.entity) || n?.label;
     } else if (
-      selection.attribute === 'entity_type'
-      && n?.label
-      && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`
+      selection.attribute === 'entity_type' &&
+      n?.label &&
+      t_i18n(`entity_${n.label}`) !== `entity_${n.label}`
     ) {
       label = t_i18n(`entity_${n.label}`);
     }
@@ -96,12 +104,7 @@ const DraftsDistributionListComponent = ({
     };
   });
 
-  return (
-    <WidgetDistributionList
-      data={formatted}
-      hasSettingAccess={hasSetAccess}
-    />
-  );
+  return <WidgetDistributionList data={formatted} hasSettingAccess={hasSetAccess} />;
 };
 
 interface DraftsDistributionListProps {
@@ -115,9 +118,15 @@ interface DraftsDistributionListProps {
   refreshRate?: number | null;
 }
 
-const buildQueryVariables = (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig): DraftsDistributionListQuery['variables'] => {
+const buildQueryVariables = (
+  resolvedDataSelection: WidgetDataSelection[],
+  config: DashboardConfig,
+): DraftsDistributionListQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(selection, config);
+  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(
+    selection,
+    config,
+  );
   return {
     field: selection.attribute ?? 'entity_type',
     operation: 'count' as DraftsDistributionListQuery['variables']['operation'],
@@ -141,7 +150,13 @@ const DraftsDistributionList = ({
 }: DraftsDistributionListProps) => {
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<DraftsDistributionListQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<DraftsDistributionListQuery>({
     perspective: 'entities',
     dataSelection,
     host,

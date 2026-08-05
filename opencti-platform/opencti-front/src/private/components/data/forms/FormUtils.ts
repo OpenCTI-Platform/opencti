@@ -1,8 +1,18 @@
 /**
  * Utility functions and constants for Form components
  */
-import type { FormFieldAttribute, EntityTypeOption, AttributeOption, RelationshipTypeOption, FormBuilderData, FormSchemaDefinition } from './Form.d';
-import { getOpenVocabAttributes, getVocabularyMappingByAttribute } from '../../../../utils/vocabularyMapping';
+import type {
+  FormFieldAttribute,
+  EntityTypeOption,
+  AttributeOption,
+  RelationshipTypeOption,
+  FormBuilderData,
+  FormSchemaDefinition,
+} from './Form.d';
+import {
+  getOpenVocabAttributes,
+  getVocabularyMappingByAttribute,
+} from '../../../../utils/vocabularyMapping';
 import type { AuthorizedMemberOption, AccessRight } from '../../../../utils/authorizedMembers';
 import type { FieldOption } from '../../../../utils/field';
 
@@ -59,17 +69,20 @@ export const CONTAINER_TYPES = [
 /**
  * Generate a unique ID for a field
  */
-export const generateFieldId = () => `field-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+export const generateFieldId = () =>
+  `field-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
 /**
  * Generate a unique ID for an entity
  */
-export const generateEntityId = () => `entity-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+export const generateEntityId = () =>
+  `entity-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
 /**
  * Generate a unique ID for a relationship
  */
-export const generateRelationshipId = () => `rel-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+export const generateRelationshipId = () =>
+  `rel-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
 /**
  * Get available field types based on entity attributes
@@ -87,7 +100,13 @@ export const getAvailableFieldTypes = (
   const { attributes } = entity;
 
   // Special field types that are always available
-  const specialFieldTypes = ['createdBy', 'objectMarking', 'objectLabel', 'externalReferences', 'files'];
+  const specialFieldTypes = [
+    'createdBy',
+    'objectMarking',
+    'objectLabel',
+    'externalReferences',
+    'files',
+  ];
 
   // Get list of attributes that support OpenVocab
   const openVocabAttributeNames = getOpenVocabAttributes();
@@ -101,7 +120,9 @@ export const getAvailableFieldTypes = (
 
     // For OpenVocab field type, check if any attributes match our vocabulary mapping
     if (fieldType.value === 'openvocab') {
-      return attributes.some((attr: AttributeOption) => openVocabAttributeNames.includes(attr.name));
+      return attributes.some((attr: AttributeOption) =>
+        openVocabAttributeNames.includes(attr.name),
+      );
     }
 
     const allowedAttributeTypes = FIELD_TYPE_TO_ATTRIBUTE_TYPE[fieldType.value] || [];
@@ -146,48 +167,58 @@ export const getAttributesForEntityType = (
 ): AttributeOption[] => {
   // Handle special reference field types that map to exact attributes
   if (fieldType === 'createdBy') {
-    return [{
-      value: 'createdBy',
-      name: 'createdBy',
-      label: t_i18n('Created By'),
-      mandatory: false,
-    }];
+    return [
+      {
+        value: 'createdBy',
+        name: 'createdBy',
+        label: t_i18n('Created By'),
+        mandatory: false,
+      },
+    ];
   }
 
   if (fieldType === 'objectMarking') {
-    return [{
-      value: 'objectMarking',
-      name: 'objectMarking',
-      label: t_i18n('Marking Definitions'),
-      mandatory: false,
-    }];
+    return [
+      {
+        value: 'objectMarking',
+        name: 'objectMarking',
+        label: t_i18n('Marking Definitions'),
+        mandatory: false,
+      },
+    ];
   }
 
   if (fieldType === 'objectLabel') {
-    return [{
-      value: 'objectLabel',
-      name: 'objectLabel',
-      label: t_i18n('Labels'),
-      mandatory: false,
-    }];
+    return [
+      {
+        value: 'objectLabel',
+        name: 'objectLabel',
+        label: t_i18n('Labels'),
+        mandatory: false,
+      },
+    ];
   }
 
   if (fieldType === 'externalReferences') {
-    return [{
-      value: 'externalReferences',
-      name: 'externalReferences',
-      label: t_i18n('External References'),
-      mandatory: false,
-    }];
+    return [
+      {
+        value: 'externalReferences',
+        name: 'externalReferences',
+        label: t_i18n('External References'),
+        mandatory: false,
+      },
+    ];
   }
 
   if (fieldType === 'files') {
-    return [{
-      value: 'x_opencti_files',
-      name: 'x_opencti_files',
-      label: t_i18n('Files'),
-      mandatory: false,
-    }];
+    return [
+      {
+        value: 'x_opencti_files',
+        name: 'x_opencti_files',
+        label: t_i18n('Files'),
+        mandatory: false,
+      },
+    ];
   }
 
   const entity = entityTypes.find((e) => e.value === entityType);
@@ -213,27 +244,35 @@ export const getAttributesForEntityType = (
 
   // Filter attributes based on their type
   return (entity.attributes || [])
-    .filter((attr: { type?: string; name: string; label?: string; mandatory?: boolean; multiple?: boolean }) => {
-      // Skip 'ref' and 'object' type attributes as they need special handling
-      const attrType = attr.type || 'string';
-      if (attrType === 'ref' || attrType === 'refs' || attrType === 'object') {
-        return false;
-      }
+    .filter(
+      (attr: {
+        type?: string;
+        name: string;
+        label?: string;
+        mandatory?: boolean;
+        multiple?: boolean;
+      }) => {
+        // Skip 'ref' and 'object' type attributes as they need special handling
+        const attrType = attr.type || 'string';
+        if (attrType === 'ref' || attrType === 'refs' || attrType === 'object') {
+          return false;
+        }
 
-      // Check if attribute type matches field type
-      return allowedAttributeTypes.some((allowedType) => {
-        // For multiselect, include string attributes that support multiple
-        if (fieldType === 'multiselect' && attrType === 'string' && attr.multiple) {
-          return true;
-        }
-        // For select, include string attributes that don't support multiple
-        if (fieldType === 'select' && attrType === 'string' && !attr.multiple) {
-          return true;
-        }
-        // Regular type matching
-        return attrType === allowedType || attrType.includes(allowedType);
-      });
-    })
+        // Check if attribute type matches field type
+        return allowedAttributeTypes.some((allowedType) => {
+          // For multiselect, include string attributes that support multiple
+          if (fieldType === 'multiselect' && attrType === 'string' && attr.multiple) {
+            return true;
+          }
+          // For select, include string attributes that don't support multiple
+          if (fieldType === 'select' && attrType === 'string' && !attr.multiple) {
+            return true;
+          }
+          // Regular type matching
+          return attrType === allowedType || attrType.includes(allowedType);
+        });
+      },
+    )
     .map((attr: AttributeOption) => ({
       value: attr.name,
       name: attr.name,
@@ -254,7 +293,10 @@ export const getAttributesForEntityType = (
 export const getAvailableRelationships = (
   mainEntityType: string,
   additionalEntityTypes: string[],
-  schema: { scrs?: Array<{ id: string; label?: string }>; schemaRelationsTypesMapping?: Map<string, readonly string[]> },
+  schema: {
+    scrs?: Array<{ id: string; label?: string }>;
+    schemaRelationsTypesMapping?: Map<string, readonly string[]>;
+  },
   t_i18n: (key: string) => string,
 ): RelationshipTypeOption[] => {
   if (!mainEntityType || !schema) return [];
@@ -317,36 +359,50 @@ export const getInitialMandatoryFields = (
   }
 
   // Filter mandatory attributes (mandatoryType === 'external' means truly mandatory)
-  const mandatoryAttributes = entity.attributes.filter((attr: AttributeOption & { mandatoryType?: string }) => attr.mandatory || attr.mandatoryType === 'external');
+  const mandatoryAttributes = entity.attributes.filter(
+    (attr: AttributeOption & { mandatoryType?: string }) =>
+      attr.mandatory || attr.mandatoryType === 'external',
+  );
 
   // Pre-populate fields for mandatory attributes with default values if available
-  return mandatoryAttributes.map((attr: AttributeOption & { defaultValues?: Array<{ id: string; name: string }> | null; mandatoryType?: string; type?: string }) => {
-    const defaultValue = (attr.defaultValues && attr.defaultValues.length && attr.defaultValues.length > 0) ? attr.defaultValues[0] : null;
-
-    // Convert attribute type to appropriate field type
-    let fieldType = mapAttributeTypeToFieldType(attr.type || 'string', attr.name);
-    const vocabMapping = getVocabularyMappingByAttribute(attr.name);
-    if (vocabMapping) {
-      fieldType = 'openvocab';
-    }
-
-    return {
-      id: generateFieldId(),
-      name: attr.name,
-      label: attr.label || t_i18n(attr.name),
-      description: '',
-      type: fieldType,
-      required: true,
-      isMandatory: true, // Mark as mandatory attribute field
-      entityType, // Add entityType for field type filtering
-      attributeMapping: {
-        entity: 'main_entity',
-        attributeName: attr.name,
-        mappingType: 'direct',
+  return mandatoryAttributes.map(
+    (
+      attr: AttributeOption & {
+        defaultValues?: Array<{ id: string; name: string }> | null;
+        mandatoryType?: string;
+        type?: string;
       },
-      ...(defaultValue ? { defaultValue: defaultValue.id || defaultValue.name } : {}),
-    };
-  });
+    ) => {
+      const defaultValue =
+        attr.defaultValues && attr.defaultValues.length && attr.defaultValues.length > 0
+          ? attr.defaultValues[0]
+          : null;
+
+      // Convert attribute type to appropriate field type
+      let fieldType = mapAttributeTypeToFieldType(attr.type || 'string', attr.name);
+      const vocabMapping = getVocabularyMappingByAttribute(attr.name);
+      if (vocabMapping) {
+        fieldType = 'openvocab';
+      }
+
+      return {
+        id: generateFieldId(),
+        name: attr.name,
+        label: attr.label || t_i18n(attr.name),
+        description: '',
+        type: fieldType,
+        required: true,
+        isMandatory: true, // Mark as mandatory attribute field
+        entityType, // Add entityType for field type filtering
+        attributeMapping: {
+          entity: 'main_entity',
+          attributeName: attr.name,
+          mappingType: 'direct',
+        },
+        ...(defaultValue ? { defaultValue: defaultValue.id || defaultValue.name } : {}),
+      };
+    },
+  );
 };
 
 /**
@@ -371,7 +427,11 @@ type EntitySettingNode = {
 };
 
 export const buildEntityTypes = (
-  schema: { scos?: Array<{ id: string; label?: string }>; sdos?: Array<{ id: string; label?: string }>; smos?: Array<{ id: string; label?: string }> },
+  schema: {
+    scos?: Array<{ id: string; label?: string }>;
+    sdos?: Array<{ id: string; label?: string }>;
+    smos?: Array<{ id: string; label?: string }>;
+  },
   entitySettings: { edges: ReadonlyArray<{ node: EntitySettingNode }> },
   t_i18n: (key: string) => string,
 ): EntityTypeOption[] => {
@@ -438,7 +498,9 @@ const normalizeGroupsRestriction = (groupsRestriction: unknown): FieldOption[] =
         return { value: group, label: group };
       }
       if (typeof group === 'object' && group !== null) {
-        const value = (group as { value?: string; id?: string }).value || (group as { value?: string; id?: string }).id;
+        const value =
+          (group as { value?: string; id?: string }).value ||
+          (group as { value?: string; id?: string }).id;
         if (value) {
           const label = (group as { label?: string }).label || value;
           return { value, label };
@@ -485,21 +547,30 @@ export const normalizeDraftAuthorizedMembersDefaults = (
         };
       }
 
-      const value = (rule as { value?: string; id?: string }).value || (rule as { value?: string; id?: string }).id;
+      const value =
+        (rule as { value?: string; id?: string }).value ||
+        (rule as { value?: string; id?: string }).id;
       if (!value) {
         return null;
       }
 
-      const type = (rule as { type?: string }).type || (value === 'CREATORS' || value === 'AUTHOR' ? dynamicOptionsLabel : '');
-      const accessRight = ((rule as { accessRight?: AccessRight }).accessRight || 'admin') as AccessRight;
+      const type =
+        (rule as { type?: string }).type ||
+        (value === 'CREATORS' || value === 'AUTHOR' ? dynamicOptionsLabel : '');
+      const accessRight = ((rule as { accessRight?: AccessRight }).accessRight ||
+        'admin') as AccessRight;
 
       return {
         ...(rule as AuthorizedMemberOption),
-        label: (rule as { label?: string }).label || (value === 'CREATORS' ? creatorsLabel : value === 'AUTHOR' ? authorOrgLabel : value),
+        label:
+          (rule as { label?: string }).label ||
+          (value === 'CREATORS' ? creatorsLabel : value === 'AUTHOR' ? authorOrgLabel : value),
         value,
         type,
         accessRight,
-        groupsRestriction: normalizeGroupsRestriction((rule as { groupsRestriction?: unknown }).groupsRestriction),
+        groupsRestriction: normalizeGroupsRestriction(
+          (rule as { groupsRestriction?: unknown }).groupsRestriction,
+        ),
       };
     })
     .filter((rule): rule is AuthorizedMemberOption => !!rule);
@@ -510,9 +581,7 @@ export const normalizeDraftAuthorizedMembersDefaults = (
  * @param values The form builder data from UI
  * @returns The schema definition for backend
  */
-export const convertFormBuilderDataToSchema = (
-  values: FormBuilderData,
-): FormSchemaDefinition => {
+export const convertFormBuilderDataToSchema = (values: FormBuilderData): FormSchemaDefinition => {
   const hasNonEmptyArray = <T>(value?: T[]) => Array.isArray(value) && value.length > 0;
 
   const normalizedDraftAuthorizedMembersDefaults = values.draftDefaults?.authorizedMembers
@@ -524,28 +593,36 @@ export const convertFormBuilderDataToSchema = (
         name: values.draftDefaults.name
           ? {
               isEditable: values.draftDefaults.name.isEditable ?? false,
-              isRequired: (values.draftDefaults.name.isEditable ?? false) && (values.draftDefaults.name.isRequired ?? false),
+              isRequired:
+                (values.draftDefaults.name.isEditable ?? false) &&
+                (values.draftDefaults.name.isRequired ?? false),
               defaultValue: values.draftDefaults.name.defaultValue ?? '',
             }
           : undefined,
         description: values.draftDefaults.description
           ? {
               isEditable: values.draftDefaults.description.isEditable ?? false,
-              isRequired: (values.draftDefaults.description.isEditable ?? false) && (values.draftDefaults.description.isRequired ?? false),
+              isRequired:
+                (values.draftDefaults.description.isEditable ?? false) &&
+                (values.draftDefaults.description.isRequired ?? false),
               defaultValue: values.draftDefaults.description.defaultValue ?? '',
             }
           : undefined,
         objectAssignee: values.draftDefaults.objectAssignee
           ? {
               isEditable: values.draftDefaults.objectAssignee.isEditable ?? false,
-              isRequired: (values.draftDefaults.objectAssignee.isEditable ?? false) && (values.draftDefaults.objectAssignee.isRequired ?? false),
+              isRequired:
+                (values.draftDefaults.objectAssignee.isEditable ?? false) &&
+                (values.draftDefaults.objectAssignee.isRequired ?? false),
               defaults: values.draftDefaults.objectAssignee.defaults ?? [],
             }
           : undefined,
         objectParticipant: values.draftDefaults.objectParticipant
           ? {
               isEditable: values.draftDefaults.objectParticipant.isEditable ?? false,
-              isRequired: (values.draftDefaults.objectParticipant.isEditable ?? false) && (values.draftDefaults.objectParticipant.isRequired ?? false),
+              isRequired:
+                (values.draftDefaults.objectParticipant.isEditable ?? false) &&
+                (values.draftDefaults.objectParticipant.isRequired ?? false),
               defaults: values.draftDefaults.objectParticipant.defaults ?? [],
             }
           : undefined,
@@ -553,7 +630,9 @@ export const convertFormBuilderDataToSchema = (
           ? {
               type: values.draftDefaults.author.type,
               isEditable: values.draftDefaults.author.isEditable ?? false,
-              isRequired: (values.draftDefaults.author.isEditable ?? false) && (values.draftDefaults.author.isRequired ?? false),
+              isRequired:
+                (values.draftDefaults.author.isEditable ?? false) &&
+                (values.draftDefaults.author.isRequired ?? false),
               defaultValue: values.draftDefaults.author.defaultValue,
               defaultValueLabel: values.draftDefaults.author.defaultValueLabel,
               defaultValueType: values.draftDefaults.author.defaultValueType,
@@ -561,7 +640,9 @@ export const convertFormBuilderDataToSchema = (
           : undefined,
         authorizedMembers: values.draftDefaults.authorizedMembers
           ? {
-              enabled: values.draftDefaults.authorizedMembers.enabled ?? hasNonEmptyArray(normalizedDraftAuthorizedMembersDefaults),
+              enabled:
+                values.draftDefaults.authorizedMembers.enabled ??
+                hasNonEmptyArray(normalizedDraftAuthorizedMembersDefaults),
               isEditable: values.draftDefaults.authorizedMembers.isEditable ?? false,
               isRequired: values.draftDefaults.authorizedMembers.isRequired ?? false,
               defaults: normalizedDraftAuthorizedMembersDefaults,

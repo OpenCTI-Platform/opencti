@@ -23,12 +23,7 @@ const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
 
   const getIcon = () => {
     if (showIcon && !isRelationship) {
-      return (
-        <ItemIcon
-          type={isRestricted ? 'Restricted' : entityType}
-          size="small"
-        />
-      );
+      return <ItemIcon type={isRestricted ? 'Restricted' : entityType} size="small" />;
     }
     return null;
   };

@@ -1,9 +1,7 @@
 import React from 'react';
 import Typography from '@mui/material/Typography';
 import { graphql } from 'react-relay';
-import {
-  RelatedContainersDetailsTableLinesPaginationQuery,
-} from '@components/common/containers/related_containers/__generated__/RelatedContainersDetailsTableLinesPaginationQuery.graphql';
+import { RelatedContainersDetailsTableLinesPaginationQuery } from '@components/common/containers/related_containers/__generated__/RelatedContainersDetailsTableLinesPaginationQuery.graphql';
 import { RelatedContainersDetailsTableLines_data$data } from '@components/common/containers/related_containers/__generated__/RelatedContainersDetailsTableLines_data.graphql';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../../components/i18n';
@@ -28,14 +26,14 @@ const relatedContainersDetailsTableLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...RelatedContainersDetailsTableLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -79,10 +77,7 @@ const relatedContainersDetailsTableLinesFragment = graphql`
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
-    orderBy: {
-      type: "StixCoreObjectsOrdering"
-      defaultValue: entity_type
-    }
+    orderBy: { type: "StixCoreObjectsOrdering", defaultValue: entity_type }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "FilterGroup" }
   )
@@ -115,7 +110,9 @@ interface RelatedContainersDetailsTableProps {
   filters: FilterGroup;
 }
 
-const RelatedContainersDetailsTable: React.FC<RelatedContainersDetailsTableProps> = ({ filters: queryFilters }) => {
+const RelatedContainersDetailsTable: React.FC<RelatedContainersDetailsTableProps> = ({
+  filters: queryFilters,
+}) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
 
@@ -128,19 +125,23 @@ const RelatedContainersDetailsTable: React.FC<RelatedContainersDetailsTableProps
       symbol: '',
     },
   };
-  const { viewStorage: { filters }, helpers, paginationOptions } = usePaginationLocalStorage<RelatedContainersDetailsTableLinesPaginationQuery>(
+  const {
+    viewStorage: { filters },
+    helpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<RelatedContainersDetailsTableLinesPaginationQuery>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
 
-  const userFilters = useBuildEntityTypeBasedFilterContext(['Stix-Cyber-Observable', 'Indicator'], filters);
+  const userFilters = useBuildEntityTypeBasedFilterContext(
+    ['Stix-Cyber-Observable', 'Indicator'],
+    filters,
+  );
   // Prefilter query by applying related observable & indicator filters, then merge with user-defined filters
   const mergedFilters = {
     ...queryFilters,
-    filterGroups: [
-      ...(queryFilters?.filterGroups ?? []),
-      ...(userFilters?.filterGroups ?? []),
-    ],
+    filterGroups: [...(queryFilters?.filterGroups ?? []), ...(userFilters?.filterGroups ?? [])],
   };
 
   const queryPaginationOptions = { ...paginationOptions, filters: mergedFilters };
@@ -154,12 +155,13 @@ const RelatedContainersDetailsTable: React.FC<RelatedContainersDetailsTableProps
     objectMarking: { percentWidth: 15 },
   };
 
-  const queryRef = useQueryLoading(
-    relatedContainersDetailsTableLinesQuery,
-    { ...queryPaginationOptions, count: 5 },
-  );
+  const queryRef = useQueryLoading(relatedContainersDetailsTableLinesQuery, {
+    ...queryPaginationOptions,
+    count: 5,
+  });
 
-  const preloadedPaginationProps = { // creators: {},
+  const preloadedPaginationProps = {
+    // creators: {},
     linesQuery: relatedContainersDetailsTableLinesQuery,
     linesFragment: relatedContainersDetailsTableLinesFragment,
     queryRef,
@@ -169,15 +171,13 @@ const RelatedContainersDetailsTable: React.FC<RelatedContainersDetailsTableProps
 
   return (
     <>
-      <Typography
-        variant="h4"
-      >
-        {t_i18n('Correlated indicators and observables')}
-      </Typography>
+      <Typography variant="h4">{t_i18n('Correlated indicators and observables')}</Typography>
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: RelatedContainersDetailsTableLines_data$data) => data.stixCoreObjects?.edges?.map((e) => e?.node)}
+          resolvePath={(data: RelatedContainersDetailsTableLines_data$data) =>
+            data.stixCoreObjects?.edges?.map((e) => e?.node)
+          }
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           lineFragment={relatedContainersDetailsTableLineFragment}

@@ -96,7 +96,11 @@ const computeBannerInfo = (
       message: (
         <>
           {t_i18n('Your OpenCTI Enterprise Edition free trial is active: ')}
-          <strong> {remainingDays} {remainingDays === 1 ? t_i18n('Day remaining') : t_i18n('Days remaining')}</strong>
+          <strong>
+            {' '}
+            {remainingDays}{' '}
+            {remainingDays === 1 ? t_i18n('Day remaining') : t_i18n('Days remaining')}
+          </strong>
         </>
       ),
       onButtonClick: showContactButton ? onButtonClick : undefined,
@@ -187,10 +191,7 @@ const LicenseBanner = () => {
                 >
                   {t_i18n('Cancel')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
+                <Button onClick={submitForm} disabled={isSubmitting}>
                   {t_i18n('Validate')}
                 </Button>
               </DialogActions>
@@ -208,9 +209,7 @@ const LicenseBanner = () => {
           {t_i18n("Thank you for reaching out, we'll get back to you shortly.")}
         </Typography>
         <DialogActions>
-          <Button onClick={() => setShowThankYouDialog(false)}>
-            {t_i18n('Close')}
-          </Button>
+          <Button onClick={() => setShowThankYouDialog(false)}>{t_i18n('Close')}</Button>
         </DialogActions>
       </Dialog>
     </>

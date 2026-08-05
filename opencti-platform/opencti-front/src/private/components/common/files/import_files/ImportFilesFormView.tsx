@@ -25,7 +25,10 @@ interface ImportFilesFormViewContentProps {
   onSuccess?: () => void;
 }
 
-const ImportFilesFormViewContent: React.FC<ImportFilesFormViewContentProps> = ({ queryRef, onSuccess }) => {
+const ImportFilesFormViewContent: React.FC<ImportFilesFormViewContentProps> = ({
+  queryRef,
+  onSuccess,
+}) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery<ImportFilesFormViewQuery>(importFilesFormViewQuery, queryRef);
   const { form } = data;
@@ -33,9 +36,7 @@ const ImportFilesFormViewContent: React.FC<ImportFilesFormViewContentProps> = ({
   if (!form) {
     return (
       <Box sx={{ p: 3, marginInline: -20 }}>
-        <Alert severity="error">
-          {t_i18n('Form not found')}
-        </Alert>
+        <Alert severity="error">{t_i18n('Form not found')}</Alert>
       </Box>
     );
   }
@@ -43,22 +44,21 @@ const ImportFilesFormViewContent: React.FC<ImportFilesFormViewContentProps> = ({
   if (!form.active) {
     return (
       <Box sx={{ p: 3, marginInline: -20 }}>
-        <Alert severity="warning">
-          {t_i18n('This form is currently inactive')}
-        </Alert>
+        <Alert severity="warning">{t_i18n('This form is currently inactive')}</Alert>
       </Box>
     );
   }
 
   // Use FormView component directly, embedded in the dialog
   return (
-    <Box sx={{
-      height: '100%',
-      overflow: 'auto',
-      '& .MuiPaper-root': {
-        boxShadow: 'none',
-      },
-    }}
+    <Box
+      sx={{
+        height: '100%',
+        overflow: 'auto',
+        '& .MuiPaper-root': {
+          boxShadow: 'none',
+        },
+      }}
     >
       <FormView formId={form.id} embedded onSuccess={onSuccess} />
     </Box>
@@ -83,10 +83,9 @@ const ImportFilesFormView: React.FC<ImportFilesFormViewProps> = ({ onSuccess }) 
     );
   }
 
-  const queryRef = useQueryLoading<ImportFilesFormViewQuery>(
-    importFilesFormViewQuery,
-    { id: selectedFormId },
-  );
+  const queryRef = useQueryLoading<ImportFilesFormViewQuery>(importFilesFormViewQuery, {
+    id: selectedFormId,
+  });
 
   if (!queryRef) {
     return (
@@ -98,11 +97,14 @@ const ImportFilesFormView: React.FC<ImportFilesFormViewProps> = ({ onSuccess }) 
 
   return (
     <div>
-      <React.Suspense fallback={(
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
-          <Loader />
-        </Box>
-      )}
+      <React.Suspense
+        fallback={
+          <Box
+            sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}
+          >
+            <Loader />
+          </Box>
+        }
       >
         <ImportFilesFormViewContent queryRef={queryRef} onSuccess={onSuccess} />
       </React.Suspense>

@@ -95,14 +95,12 @@ const NotifierField: FunctionComponent<NotifierFieldProps> = ({
         noOptionsText={t_i18n('No available options')}
         options={notifiersTemplates}
         onInputChange={searchNotifiers}
-        isOptionEqualToValue={(option: FieldOption, { value }: FieldOption) => option.value === value
+        isOptionEqualToValue={(option: FieldOption, { value }: FieldOption) =>
+          option.value === value
         }
         onChange={onChange}
         groupBy={(option: FieldOption) => option.type}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: FieldOption,
-        ) => (
+        renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: FieldOption) => (
           <li {...props} key={option.value}>
             <div className={classes.icon}>
               <ItemIcon type="Notifier" />

@@ -47,10 +47,7 @@ const containerHeaderSharedQuery = graphql`
 `;
 
 const containerHeaderSharedQueryGroupDeleteMutation = graphql`
-  mutation StixSightingRelationshipSharingGroupDeleteMutation(
-    $id: ID!
-    $organizationId: [ID!]!
-  ) {
+  mutation StixSightingRelationshipSharingGroupDeleteMutation($id: ID!, $organizationId: [ID!]!) {
     stixSightingRelationshipEdit(id: $id) {
       restrictionOrganizationDelete(organizationId: $organizationId) {
         id
@@ -64,10 +61,7 @@ const containerHeaderSharedQueryGroupDeleteMutation = graphql`
 `;
 
 const containerHeaderSharedGroupAddMutation = graphql`
-  mutation StixSightingRelationshipSharingGroupAddMutation(
-    $id: ID!
-    $organizationId: [ID!]!
-  ) {
+  mutation StixSightingRelationshipSharingGroupAddMutation($id: ID!, $organizationId: [ID!]!) {
     stixSightingRelationshipEdit(id: $id) {
       restrictionOrganizationAdd(organizationId: $organizationId) {
         id
@@ -80,17 +74,15 @@ const containerHeaderSharedGroupAddMutation = graphql`
   }
 `;
 
-const StixSightingRelationshipSharing: FunctionComponent<
-  ContainerHeaderSharedProps
-> = ({ elementId }) => {
+const StixSightingRelationshipSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
+  elementId,
+}) => {
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
   const disabledInDraft = !!draftContext;
   const [displaySharing, setDisplaySharing] = useState(false);
   const isEnterpriseEdition = useEnterpriseEdition();
-  const userIsOrganizationEditor = useGranted([
-    KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-  ]);
+  const userIsOrganizationEditor = useGranted([KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
   // If user not an organization organizer, return empty div
   if (!userIsOrganizationEditor) {
     return <div style={{ marginTop: -20 }} />;
@@ -131,24 +123,32 @@ const StixSightingRelationshipSharing: FunctionComponent<
       });
     }
   };
-  const render = ({
-    stixSightingRelationship,
-  }: StixSightingRelationshipSharingQuery$data) => {
+  const render = ({ stixSightingRelationship }: StixSightingRelationshipSharingQuery$data) => {
     const edges = stixSightingRelationship?.objectOrganization ?? [];
     return (
       <React.Fragment>
-        <Label action={(
-          <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Share with an organization')}>
-            <IconButton
-              color="primary"
-              aria-label="Label"
-              onClick={isEnterpriseEdition && !disabledInDraft ? handleOpenSharing : () => {}}
-              size="small"
+        <Label
+          action={
+            <EETooltip
+              title={
+                disabledInDraft
+                  ? t_i18n('Not available in draft')
+                  : t_i18n('Share with an organization')
+              }
             >
-              <BankPlus fontSize="small" color={isEnterpriseEdition && !disabledInDraft ? 'primary' : 'disabled'} />
-            </IconButton>
-          </EETooltip>
-        )}
+              <IconButton
+                color="primary"
+                aria-label="Label"
+                onClick={isEnterpriseEdition && !disabledInDraft ? handleOpenSharing : () => {}}
+                size="small"
+              >
+                <BankPlus
+                  fontSize="small"
+                  color={isEnterpriseEdition && !disabledInDraft ? 'primary' : 'disabled'}
+                />
+              </IconButton>
+            </EETooltip>
+          }
         >
           {t_i18n('Organizations sharing')}
         </Label>
@@ -188,10 +188,7 @@ const StixSightingRelationshipSharing: FunctionComponent<
                 <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Close')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
+                <Button onClick={submitForm} disabled={isSubmitting}>
                   {t_i18n('Share')}
                 </Button>
               </DialogActions>
@@ -205,9 +202,7 @@ const StixSightingRelationshipSharing: FunctionComponent<
     <QueryRenderer
       query={containerHeaderSharedQuery}
       variables={{ id: elementId }}
-      render={(result: {
-        props: StixSightingRelationshipSharingQuery$data;
-      }) => {
+      render={(result: { props: StixSightingRelationshipSharingQuery$data }) => {
         if (result.props) {
           return render(result.props);
         }

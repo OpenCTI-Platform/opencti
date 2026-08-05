@@ -28,25 +28,20 @@ export const up = async (next) => {
     refresh: true,
     wait_for_completion: true,
     body: updateEntityQuery,
-  })
-    .catch((err) => {
-      throw DatabaseError('Error updating elastic', { cause: err });
-    });
+  }).catch((err) => {
+    throw DatabaseError('Error updating elastic', { cause: err });
+  });
 
   const defaultVocabularies = new Map((openVocabularies.opinion_ov ?? []).map((v) => [v.key, v]));
-  const VocabularyFilters = [
-    'name',
-    'category',
-    'description',
-    'entity_types',
-    'aliases',
-  ];
+  const VocabularyFilters = ['name', 'category', 'description', 'entity_types', 'aliases'];
   const filters = {
     mode: 'and',
-    filters: [{
-      key: VocabularyFilters,
-      values: [VocabularyCategory.OpinionOv],
-    }],
+    filters: [
+      {
+        key: VocabularyFilters,
+        values: [VocabularyCategory.OpinionOv],
+      },
+    ],
     filterGroups: [],
   };
   const vocabularies = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_VOCABULARY], {
@@ -65,7 +60,9 @@ export const up = async (next) => {
 
   await Promise.map(vocabularies, updateVocabulary, { concurrency: ES_MAX_CONCURRENCY });
 
-  logApp.info(`[MIGRATION] Adding default order value to opinion open vocabulary done in ${new Date() - start} ms`);
+  logApp.info(
+    `[MIGRATION] Adding default order value to opinion open vocabulary done in ${new Date() - start} ms`,
+  );
   next();
 };
 

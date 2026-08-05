@@ -57,13 +57,7 @@ const OtpValidation: FunctionComponent<OtpValidationProps> = ({
     });
   }
 
-  return (
-    <OtpInputField
-      value={code}
-      onChange={setCode}
-      isDisabled={inputDisable}
-    />
-  );
+  return <OtpInputField value={code} onChange={setCode} isDisabled={inputDisable} />;
 };
 
 export default OtpValidation;

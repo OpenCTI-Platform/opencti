@@ -36,7 +36,13 @@ import {
   RELATION_GRANTED_TO,
   RELATION_OBJECT_MARKING,
 } from '../schema/stixRefRelationship';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
+import {
+  ENTITY_TYPE_EXTERNAL_REFERENCE,
+  ENTITY_TYPE_KILL_CHAIN_PHASE,
+  ENTITY_TYPE_LABEL,
+  ENTITY_TYPE_MARKING_DEFINITION,
+  isStixMetaObject,
+} from '../schema/stixMetaObject';
 import type * as S from '../types/stix-2-1-common';
 import type * as SDO from '../types/stix-2-1-sdo';
 import type * as SRO from '../types/stix-2-1-sro';
@@ -119,12 +125,31 @@ import {
   isStixCyberObservable,
 } from '../schema/stixCyberObservable';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-2-1-extensions';
-import { INPUT_ASSIGNEE, INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS, INPUT_PARTICIPANT } from '../schema/general';
+import {
+  INPUT_ASSIGNEE,
+  INPUT_CREATED_BY,
+  INPUT_EXTERNAL_REFS,
+  INPUT_GRANTED_REFS,
+  INPUT_KILLCHAIN,
+  INPUT_LABELS,
+  INPUT_MARKINGS,
+  INPUT_PARTICIPANT,
+} from '../schema/general';
 import { isRelationBuiltin, STIX_SPEC_VERSION } from './stix';
-import { isInternalRelationship, isStoreRelationPir, RELATION_IN_PIR } from '../schema/internalRelationship';
+import {
+  isInternalRelationship,
+  isStoreRelationPir,
+  RELATION_IN_PIR,
+} from '../schema/internalRelationship';
 import { isInternalObject } from '../schema/internalObject';
 import { isInternalId, isStixId } from '../schema/schemaUtils';
-import { assertType, cleanObject, convertObjectReferences, convertToStixDate, isValidStix } from './stix-converter-utils';
+import {
+  assertType,
+  cleanObject,
+  convertObjectReferences,
+  convertToStixDate,
+  isValidStix,
+} from './stix-converter-utils';
 import { type StoreRelationPir } from '../modules/pir/pir-types';
 import { pushAll } from '../utils/arrayUtil';
 import { flattenCustomFieldValuesForStix } from '../modules/customField/custom-field-stix-utils';
@@ -164,7 +189,9 @@ export const convertTypeToStixType = (type: string): string => {
 export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtension => {
   const builtCreatorIds: string[] = [];
   if (instance.creator_id) {
-    const arrayCreators = Array.isArray(instance.creator_id) ? instance.creator_id : [instance.creator_id];
+    const arrayCreators = Array.isArray(instance.creator_id)
+      ? instance.creator_id
+      : [instance.creator_id];
     pushAll(builtCreatorIds, arrayCreators);
   }
   const octiExtensions: S.StixOpenctiExtension = {
@@ -176,22 +203,31 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     updated_at: convertToStixDate(instance.updated_at),
     modified_at: convertToStixDate(instance.x_opencti_modified_at),
     aliases: instance.x_opencti_aliases ?? [],
-    files: (instance.x_opencti_files ?? []).map((file: StoreFileWithRefs) => (isNotEmptyField(file.data)
-      ? {
-          name: file.name,
-          version: file.version,
-          mime_type: file.mime_type,
-          object_marking_refs: (file[INPUT_MARKINGS] ?? []).filter((f) => f).map((f) => f.standard_id),
-          data: file.data,
-          uri: 'unknown',
-        } : {
-          name: file.name,
-          uri: `/storage/get/${file.id}`,
-          version: file.version,
-          mime_type: file.mime_type,
-          object_marking_refs: (file[INPUT_MARKINGS] ?? []).filter((f) => f).map((f) => f.standard_id),
-        })),
-    stix_ids: (instance.x_opencti_stix_ids ?? []).filter((stixId: string) => isTrustedStixId(stixId)),
+    files: (instance.x_opencti_files ?? []).map((file: StoreFileWithRefs) =>
+      isNotEmptyField(file.data)
+        ? {
+            name: file.name,
+            version: file.version,
+            mime_type: file.mime_type,
+            object_marking_refs: (file[INPUT_MARKINGS] ?? [])
+              .filter((f) => f)
+              .map((f) => f.standard_id),
+            data: file.data,
+            uri: 'unknown',
+          }
+        : {
+            name: file.name,
+            uri: `/storage/get/${file.id}`,
+            version: file.version,
+            mime_type: file.mime_type,
+            object_marking_refs: (file[INPUT_MARKINGS] ?? [])
+              .filter((f) => f)
+              .map((f) => f.standard_id),
+          },
+    ),
+    stix_ids: (instance.x_opencti_stix_ids ?? []).filter((stixId: string) =>
+      isTrustedStixId(stixId),
+    ),
     is_inferred: isInferredIndex(instance._index),
     // Refs
     granted_refs: (instance[INPUT_GRANTED_REFS] ?? []).map((m) => m.standard_id),
@@ -202,7 +238,9 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     participant_ids: (instance[INPUT_PARTICIPANT] ?? []).map((m) => m.internal_id),
     authorized_members: instance.restricted_members ?? undefined,
     workflow_id: instance.x_opencti_workflow_id,
-    labels_ids: (instance[INPUT_LABELS] ?? []).map((m) => m.internal_id).filter((id) => isNotEmptyField(id)),
+    labels_ids: (instance[INPUT_LABELS] ?? [])
+      .map((m) => m.internal_id)
+      .filter((id) => isNotEmptyField(id)),
     created_by_ref_id: instance[INPUT_CREATED_BY]?.internal_id,
     created_by_ref_type: instance[INPUT_CREATED_BY]?.entity_type,
     pir_information: instance.pir_information ?? [],
@@ -235,7 +273,9 @@ export const buildStixObject = (instance: StoreObject): S.StixObject => {
 };
 
 // Meta
-export const buildKillChainPhases = (instance: StoreEntity | StoreRelation): Array<SMO.StixInternalKillChainPhase> => {
+export const buildKillChainPhases = (
+  instance: StoreEntity | StoreRelation,
+): Array<SMO.StixInternalKillChainPhase> => {
   return (instance[INPUT_KILLCHAIN] ?? []).map((k) => {
     const data: SMO.StixInternalKillChainPhase = {
       kill_chain_name: k.kill_chain_name,
@@ -244,7 +284,9 @@ export const buildKillChainPhases = (instance: StoreEntity | StoreRelation): Arr
     return cleanObject(data);
   });
 };
-const buildExternalReferences = (instance: StoreObject): Array<SMO.StixInternalExternalReference> => {
+const buildExternalReferences = (
+  instance: StoreObject,
+): Array<SMO.StixInternalExternalReference> => {
   return (instance[INPUT_EXTERNAL_REFS] ?? []).map((e) => {
     const data: SMO.StixInternalExternalReference = {
       source_name: e.source_name,
@@ -256,7 +298,9 @@ const buildExternalReferences = (instance: StoreObject): Array<SMO.StixInternalE
     return cleanObject(data);
   });
 };
-const buildWindowsRegistryValueType = (instance: StoreCyberObservable): Array<SCO.StixInternalWindowsRegistryValueType> => {
+const buildWindowsRegistryValueType = (
+  instance: StoreCyberObservable,
+): Array<SCO.StixInternalWindowsRegistryValueType> => {
   return (instance[INPUT_VALUES] ?? []).map((k) => {
     const data: SCO.StixInternalWindowsRegistryValueType = {
       name: k.name,
@@ -266,7 +310,9 @@ const buildWindowsRegistryValueType = (instance: StoreCyberObservable): Array<SC
     return cleanObject(data);
   });
 };
-const buildEmailBodyMultipart = (instance: StoreCyberObservable): Array<SCO.StixInternalEmailBodyMultipart> => {
+const buildEmailBodyMultipart = (
+  instance: StoreCyberObservable,
+): Array<SCO.StixInternalEmailBodyMultipart> => {
   return (instance[INPUT_BODY_MULTIPART] ?? []).map((k) => {
     const data: SCO.StixInternalEmailBodyMultipart = {
       content_type: k.content_type,
@@ -283,7 +329,8 @@ export const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDo
   const stixObject = buildStixObject(instance);
   // custom_field_values only exists on StoreEntity (not StoreRelation); shared here so any entity
   // type adopting custom fields gets STIX flattening for free, without per-type converter wiring.
-  const customFieldValues = 'custom_field_values' in instance ? instance.custom_field_values : undefined;
+  const customFieldValues =
+    'custom_field_values' in instance ? instance.custom_field_values : undefined;
   return {
     ...stixObject,
     created: convertToStixDate(instance.created),
@@ -340,7 +387,9 @@ const buildStixCyberObservable = (instance: StoreCyberObservable): S.StixCyberOb
 // INTERNAL
 const convertInternalToStix = (instance: StoreEntity, type: string): S.StixInternal => {
   if (!isInternalObject(type)) {
-    throw UnsupportedError('Type not compatible with internal', { entity_type: instance.entity_type });
+    throw UnsupportedError('Type not compatible with internal', {
+      entity_type: instance.entity_type,
+    });
   }
   const internal = buildStixObject(instance);
   return {
@@ -349,9 +398,14 @@ const convertInternalToStix = (instance: StoreEntity, type: string): S.StixInter
   };
 };
 // SDO
-export const convertIdentityToStix = (instance: StoreEntityIdentity, type: string): SDO.StixIdentity => {
+export const convertIdentityToStix = (
+  instance: StoreEntityIdentity,
+  type: string,
+): SDO.StixIdentity => {
   if (!isStixDomainObjectIdentity(type)) {
-    throw UnsupportedError('Type not compatible with identity', { entity_type: instance.entity_type });
+    throw UnsupportedError('Type not compatible with identity', {
+      entity_type: instance.entity_type,
+    });
   }
   const identity = buildStixDomain(instance);
   return {
@@ -376,7 +430,9 @@ export const convertIdentityToStix = (instance: StoreEntityIdentity, type: strin
 };
 export const convertLocationToStix = (instance: StoreEntity, type: string): SDO.StixLocation => {
   if (!isStixDomainObjectLocation(type)) {
-    throw UnsupportedError('Type not compatible with location', { entity_type: instance.entity_type });
+    throw UnsupportedError('Type not compatible with location', {
+      entity_type: instance.entity_type,
+    });
   }
   const location = buildStixDomain(instance);
   return {
@@ -511,7 +567,10 @@ const convertVulnerabilityToStix = (instance: StoreEntity, type: string): SDO.St
     },
   };
 };
-const convertThreatActorGroupToStix = (instance: StoreEntity, type: string): SDO.StixThreatActor => {
+const convertThreatActorGroupToStix = (
+  instance: StoreEntity,
+  type: string,
+): SDO.StixThreatActor => {
   assertType(ENTITY_TYPE_THREAT_ACTOR_GROUP, type);
   return {
     ...buildStixDomain(instance),
@@ -530,7 +589,10 @@ const convertThreatActorGroupToStix = (instance: StoreEntity, type: string): SDO
     personal_motivations: instance.personal_motivations,
   };
 };
-const convertInfrastructureToStix = (instance: StoreEntity, type: string): SDO.StixInfrastructure => {
+const convertInfrastructureToStix = (
+  instance: StoreEntity,
+  type: string,
+): SDO.StixInfrastructure => {
   assertType(ENTITY_TYPE_INFRASTRUCTURE, type);
   return {
     ...buildStixDomain(instance),
@@ -559,7 +621,10 @@ const convertIntrusionSetToStix = (instance: StoreEntity, type: string): SDO.Sti
   };
 };
 
-const convertCourseOfActionToStix = (instance: StoreEntity, type: string): SDO.StixCourseOfAction => {
+const convertCourseOfActionToStix = (
+  instance: StoreEntity,
+  type: string,
+): SDO.StixCourseOfAction => {
   assertType(ENTITY_TYPE_COURSE_OF_ACTION, type);
   const domain = buildStixDomain(instance);
   return {
@@ -711,7 +776,10 @@ const convertArtifactToStix = (instance: StoreCyberObservable, type: string): SC
     },
   };
 };
-const convertAutonomousSystemToStix = (instance: StoreCyberObservable, type: string): SCO.StixAutonomousSystem => {
+const convertAutonomousSystemToStix = (
+  instance: StoreCyberObservable,
+  type: string,
+): SCO.StixAutonomousSystem => {
   assertType(ENTITY_AUTONOMOUS_SYSTEM, type);
   return {
     ...buildStixCyberObservable(instance),
@@ -720,7 +788,10 @@ const convertAutonomousSystemToStix = (instance: StoreCyberObservable, type: str
     rir: instance.rir,
   };
 };
-const convertCryptocurrencyWalletToStix = (instance: StoreCyberObservable, type: string): SCO.StixCryptocurrencyWallet => {
+const convertCryptocurrencyWalletToStix = (
+  instance: StoreCyberObservable,
+  type: string,
+): SCO.StixCryptocurrencyWallet => {
   assertType(ENTITY_CRYPTOGRAPHIC_WALLET, type);
   const stixCyberObject = buildStixCyberObservable(instance);
   return {
@@ -737,7 +808,10 @@ const convertCryptocurrencyWalletToStix = (instance: StoreCyberObservable, type:
     },
   };
 };
-const convertCryptographicKeyToStix = (instance: StoreCyberObservable, type: string): SCO.StixCryptographicKey => {
+const convertCryptographicKeyToStix = (
+  instance: StoreCyberObservable,
+  type: string,
+): SCO.StixCryptographicKey => {
   assertType(ENTITY_CRYPTOGRAPHIC_KEY, type);
   const stixCyberObject = buildStixCyberObservable(instance);
   return {
@@ -754,7 +828,10 @@ const convertCryptographicKeyToStix = (instance: StoreCyberObservable, type: str
     },
   };
 };
-const convertDirectoryToStix = (instance: StoreCyberObservable, type: string): SCO.StixDirectory => {
+const convertDirectoryToStix = (
+  instance: StoreCyberObservable,
+  type: string,
+): SCO.StixDirectory => {
   assertType(ENTITY_DIRECTORY, type);
   return {
     ...buildStixCyberObservable(instance),
@@ -766,7 +843,10 @@ const convertDirectoryToStix = (instance: StoreCyberObservable, type: string): S
     contains_refs: (instance[INPUT_CONTAINS] ?? []).map((m) => m.standard_id),
   };
 };
-const convertDomainNameToStix = (instance: StoreCyberObservable, type: string): SCO.StixDomainName => {
+const convertDomainNameToStix = (
+  instance: StoreCyberObservable,
+  type: string,
+): SCO.StixDomainName => {
   assertType(ENTITY_DOMAIN_NAME, type);
   return {
     ...buildStixCyberObservable(instance),
@@ -774,7 +854,10 @@ const convertDomainNameToStix = (instance: StoreCyberObservable, type: string): 
     resolves_to_refs: (instance[INPUT_RESOLVES_TO] ?? []).map((m) => m.standard_id),
   };
 };
-const convertEmailAddressToStix = (instance: StoreCyberObservable, type: string): SCO.StixEmailAddress => {
+const convertEmailAddressToStix = (
+  instance: StoreCyberObservable,
+  type: string,
+): SCO.StixEmailAddress => {
   assertType(ENTITY_EMAIL_ADDR, type);
   return {
     ...buildStixCyberObservable(instance),
@@ -783,7 +866,10 @@ const convertEmailAddressToStix = (instance: StoreCyberObservable, type: string)
     belongs_to_ref: (instance[INPUT_BELONGS_TO] ?? [])[0]?.standard_id,
   };
 };
-const convertEmailMessageToStix = (instance: StoreCyberObservable, type: string): SCO.StixEmailMessage => {
+const convertEmailMessageToStix = (
+  instance: StoreCyberObservable,
+  type: string,
+): SCO.StixEmailMessage => {
   assertType(ENTITY_EMAIL_MESSAGE, type);
   const stixCyberObject = buildStixCyberObservable(instance);
   return {
@@ -855,7 +941,10 @@ const convertHostnameToStix = (instance: StoreCyberObservable, type: string): SC
     },
   };
 };
-const convertIPv4AddressToStix = (instance: StoreCyberObservable, type: string): SCO.StixIPv4Address => {
+const convertIPv4AddressToStix = (
+  instance: StoreCyberObservable,
+  type: string,
+): SCO.StixIPv4Address => {
   assertType(ENTITY_IPV4_ADDR, type);
   return {
     ...buildStixCyberObservable(instance),
@@ -864,7 +953,10 @@ const convertIPv4AddressToStix = (instance: StoreCyberObservable, type: string):
     belongs_to_refs: (instance[INPUT_BELONGS_TO] ?? []).map((m) => m.standard_id),
   };
 };
-const convertIPv6AddressToStix = (instance: StoreCyberObservable, type: string): SCO.StixIPv6Address => {
+const convertIPv6AddressToStix = (
+  instance: StoreCyberObservable,
+  type: string,
+): SCO.StixIPv6Address => {
   assertType(ENTITY_IPV6_ADDR, type);
   return {
     ...buildStixCyberObservable(instance),
@@ -873,7 +965,10 @@ const convertIPv6AddressToStix = (instance: StoreCyberObservable, type: string):
     belongs_to_refs: (instance[INPUT_BELONGS_TO] ?? []).map((m) => m.standard_id),
   };
 };
-const convertMacAddressToStix = (instance: StoreCyberObservable, type: string): SCO.StixMacAddress => {
+const convertMacAddressToStix = (
+  instance: StoreCyberObservable,
+  type: string,
+): SCO.StixMacAddress => {
   assertType(ENTITY_MAC_ADDR, type);
   return {
     ...buildStixCyberObservable(instance),
@@ -887,7 +982,10 @@ const convertMutexToStix = (instance: StoreCyberObservable, type: string): SCO.S
     name: instance.name,
   };
 };
-const convertNetworkTrafficToStix = (instance: StoreCyberObservable, type: string): SCO.StixNetworkTraffic => {
+const convertNetworkTrafficToStix = (
+  instance: StoreCyberObservable,
+  type: string,
+): SCO.StixNetworkTraffic => {
   assertType(ENTITY_NETWORK_TRAFFIC, type);
   return {
     ...buildStixCyberObservable(instance),
@@ -987,7 +1085,10 @@ const convertTextToStix = (instance: StoreCyberObservable, type: string): SCO.St
     },
   };
 };
-const convertBankAccountToStix = (instance: StoreCyberObservable, type: string): SCO.StixBankAccount => {
+const convertBankAccountToStix = (
+  instance: StoreCyberObservable,
+  type: string,
+): SCO.StixBankAccount => {
   assertType(ENTITY_BANK_ACCOUNT, type);
   const stixCyberObject = buildStixCyberObservable(instance);
   return {
@@ -1006,7 +1107,10 @@ const convertBankAccountToStix = (instance: StoreCyberObservable, type: string):
     },
   };
 };
-const convertCredentialToStix = (instance: StoreCyberObservable, type: string): SCO.StixCredential => {
+const convertCredentialToStix = (
+  instance: StoreCyberObservable,
+  type: string,
+): SCO.StixCredential => {
   assertType(ENTITY_CREDENTIAL, type);
   const stixCyberObject = buildStixCyberObservable(instance);
   return {
@@ -1023,7 +1127,10 @@ const convertCredentialToStix = (instance: StoreCyberObservable, type: string): 
     },
   };
 };
-const convertTrackingNumberToStix = (instance: StoreCyberObservable, type: string): SCO.StixTrackingNumber => {
+const convertTrackingNumberToStix = (
+  instance: StoreCyberObservable,
+  type: string,
+): SCO.StixTrackingNumber => {
   assertType(ENTITY_TRACKING_NUMBER, type);
   const stixCyberObject = buildStixCyberObservable(instance);
   return {
@@ -1040,7 +1147,10 @@ const convertTrackingNumberToStix = (instance: StoreCyberObservable, type: strin
     },
   };
 };
-const convertPhoneNumberToStix = (instance: StoreCyberObservable, type: string): SCO.StixPhoneNumber => {
+const convertPhoneNumberToStix = (
+  instance: StoreCyberObservable,
+  type: string,
+): SCO.StixPhoneNumber => {
   assertType(ENTITY_PHONE_NUMBER, type);
   const stixCyberObject = buildStixCyberObservable(instance);
   return {
@@ -1057,7 +1167,10 @@ const convertPhoneNumberToStix = (instance: StoreCyberObservable, type: string):
     },
   };
 };
-const convertMediaContentToStix = (instance: StoreCyberObservable, type: string): SCO.StixMediaContent => {
+const convertMediaContentToStix = (
+  instance: StoreCyberObservable,
+  type: string,
+): SCO.StixMediaContent => {
   assertType(ENTITY_MEDIA_CONTENT, type);
   const stixCyberObject = buildStixCyberObservable(instance);
   return {
@@ -1078,7 +1191,10 @@ const convertMediaContentToStix = (instance: StoreCyberObservable, type: string)
     },
   };
 };
-const convertPaymentCardToStix = (instance: StoreCyberObservable, type: string): SCO.StixPaymentCard => {
+const convertPaymentCardToStix = (
+  instance: StoreCyberObservable,
+  type: string,
+): SCO.StixPaymentCard => {
   assertType(ENTITY_PAYMENT_CARD, type);
   const stixCyberObject = buildStixCyberObservable(instance);
   return {
@@ -1106,7 +1222,10 @@ const convertURLToStix = (instance: StoreCyberObservable, type: string): SCO.Sti
     score: instance.x_opencti_score,
   };
 };
-const convertUserAgentToStix = (instance: StoreCyberObservable, type: string): SCO.StixUserAgent => {
+const convertUserAgentToStix = (
+  instance: StoreCyberObservable,
+  type: string,
+): SCO.StixUserAgent => {
   assertType(ENTITY_USER_AGENT, type);
   const stixCyberObject = buildStixCyberObservable(instance);
   return {
@@ -1123,7 +1242,10 @@ const convertUserAgentToStix = (instance: StoreCyberObservable, type: string): S
     },
   };
 };
-const convertUserAccountToStix = (instance: StoreCyberObservable, type: string): SCO.StixUserAccount => {
+const convertUserAccountToStix = (
+  instance: StoreCyberObservable,
+  type: string,
+): SCO.StixUserAccount => {
   assertType(ENTITY_USER_ACCOUNT, type);
   return {
     ...buildStixCyberObservable(instance),
@@ -1143,7 +1265,10 @@ const convertUserAccountToStix = (instance: StoreCyberObservable, type: string):
     account_last_login: convertToStixDate(instance.account_last_login),
   };
 };
-const convertWindowsRegistryKeyToStix = (instance: StoreCyberObservable, type: string): SCO.StixWindowsRegistryKey => {
+const convertWindowsRegistryKeyToStix = (
+  instance: StoreCyberObservable,
+  type: string,
+): SCO.StixWindowsRegistryKey => {
   assertType(ENTITY_WINDOWS_REGISTRY_KEY, type);
   return {
     ...buildStixCyberObservable(instance),
@@ -1154,7 +1279,10 @@ const convertWindowsRegistryKeyToStix = (instance: StoreCyberObservable, type: s
     number_of_subkeys: instance.number_of_subkeys,
   };
 };
-const convertX509CertificateToStix = (instance: StoreCyberObservable, type: string): SCO.StixX509Certificate => {
+const convertX509CertificateToStix = (
+  instance: StoreCyberObservable,
+  type: string,
+): SCO.StixX509Certificate => {
   assertType(ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE, type);
   return {
     ...buildStixCyberObservable(instance),
@@ -1183,8 +1311,12 @@ const convertX509CertificateToStix = (instance: StoreCyberObservable, type: stri
       subject_directory_attributes: instance.subject_directory_attributes,
       crl_distribution_points: instance.crl_distribution_points,
       inhibit_any_policy: instance.inhibit_any_policy,
-      private_key_usage_period_not_before: convertToStixDate(instance.private_key_usage_period_not_before),
-      private_key_usage_period_not_after: convertToStixDate(instance.private_key_usage_period_not_after),
+      private_key_usage_period_not_before: convertToStixDate(
+        instance.private_key_usage_period_not_before,
+      ),
+      private_key_usage_period_not_after: convertToStixDate(
+        instance.private_key_usage_period_not_after,
+      ),
       certificate_policies: instance.certificate_policies,
       policy_mappings: instance.policy_mappings,
     }),
@@ -1464,7 +1596,9 @@ const convertKillChainPhaseToStix = (instance: StoreEntity): SMO.StixKillChainPh
     },
   };
 };
-export const convertExternalReferenceToStix = (instance: StoreEntity): SMO.StixExternalReference => {
+export const convertExternalReferenceToStix = (
+  instance: StoreEntity,
+): SMO.StixExternalReference => {
   const reference = buildStixObject(instance);
   return {
     ...reference,
@@ -1483,7 +1617,9 @@ export const convertExternalReferenceToStix = (instance: StoreEntity): SMO.StixE
 };
 
 // SMO - SCO
-const convertWindowsRegistryValueToStix = (instance: StoreCyberObservable): SCO.StixWindowsRegistryValueType => {
+const convertWindowsRegistryValueToStix = (
+  instance: StoreCyberObservable,
+): SCO.StixWindowsRegistryValueType => {
   const stixCyberObject = buildStixCyberObservable(instance);
   return {
     ...stixCyberObject,
@@ -1525,10 +1661,16 @@ const convertEmailMimePartToStix = (instance: StoreCyberObservable): SCO.StixEma
 export type ConvertFn<T extends StoreEntity, Z extends S.StixObject> = (instance: T) => Z;
 const stixDomainConverters = new Map<string, ConvertFn<any, any>>();
 const stixMetaConverters = new Map<string, ConvertFn<any, any>>();
-export const registerStixDomainConverter = <T extends StoreEntity, Z extends S.StixObject>(type: string, convertFn: ConvertFn<T, Z>) => {
+export const registerStixDomainConverter = <T extends StoreEntity, Z extends S.StixObject>(
+  type: string,
+  convertFn: ConvertFn<T, Z>,
+) => {
   stixDomainConverters.set(type, convertFn);
 };
-export const registerStixMetaConverter = <T extends StoreEntity, Z extends S.StixObject>(type: string, convertFn: ConvertFn<T, Z>) => {
+export const registerStixMetaConverter = <T extends StoreEntity, Z extends S.StixObject>(
+  type: string,
+  convertFn: ConvertFn<T, Z>,
+) => {
   stixMetaConverters.set(type, convertFn);
 };
 
@@ -1774,14 +1916,20 @@ export const convertStoreToStix_2_1 = (instance: StoreCommon): S.StixObject => {
   const converted = convertToStix_2_1(instance);
   const stix = cleanObject(converted);
   if (!isValidStix(stix)) {
-    throw FunctionalError('Invalid stix data conversion', { id: instance.standard_id, type: instance.entity_type });
+    throw FunctionalError('Invalid stix data conversion', {
+      id: instance.standard_id,
+      type: instance.entity_type,
+    });
   }
   return stix;
 };
 
 export type RepresentativeFn<T extends S.StixObject> = (instance: T) => string;
 const stixRepresentativeConverters = new Map<string, RepresentativeFn<any>>();
-export const registerStixRepresentativeConverter = (type: string, convertFn: RepresentativeFn<any>) => {
+export const registerStixRepresentativeConverter = (
+  type: string,
+  convertFn: RepresentativeFn<any>,
+) => {
   stixRepresentativeConverters.set(type, convertFn);
 };
 
@@ -1790,26 +1938,32 @@ export const getStixRepresentativeConverters = (type: string) => {
 };
 
 export const buildStixBundle = (stixObjects: S.StixObject[]): S.StixBundle => {
-  return ({
+  return {
     id: `bundle--${uuidv4()}`,
     spec_version: STIX_SPEC_VERSION,
     type: 'bundle',
     objects: stixObjects,
-  });
+  };
 };
 
-export const idsValuesRemap = (ids: string[], resolvedMap: { [k: string]: BasicStoreObject }, from: 'internal' | 'stix', removeNotFoundStixIds = false) => {
-  return ids.map((id) => {
-    if (from === 'internal' && isInternalId(id)) {
-      return resolvedMap[id]?.standard_id ?? id;
-    }
-    if (from === 'stix' && isStixId(id)) {
-      if (removeNotFoundStixIds) {
-        return resolvedMap[id]?.internal_id ?? null;
+export const idsValuesRemap = (
+  ids: string[],
+  resolvedMap: { [k: string]: BasicStoreObject },
+  from: 'internal' | 'stix',
+  removeNotFoundStixIds = false,
+) => {
+  return ids
+    .map((id) => {
+      if (from === 'internal' && isInternalId(id)) {
+        return resolvedMap[id]?.standard_id ?? id;
       }
-      return resolvedMap[id]?.internal_id ?? id;
-    }
-    return id;
-  })
+      if (from === 'stix' && isStixId(id)) {
+        if (removeNotFoundStixIds) {
+          return resolvedMap[id]?.internal_id ?? null;
+        }
+        return resolvedMap[id]?.internal_id ?? id;
+      }
+      return id;
+    })
     .filter((id) => !!id); // remove null values
 };

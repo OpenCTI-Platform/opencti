@@ -59,18 +59,27 @@ export interface FormFieldRendererProps {
   touched: Record<string, boolean>;
   setFieldValue: (
     field: string,
-    value: string | number | boolean | string[] | Date | null | FieldOption[] | { name?: string; data?: string }[] | {
-      label?: string;
-      value: string;
-      entity?: {
-        created: string;
-        description?: string | null;
-        external_id?: string | null;
-        id: string;
-        source_name: string;
-        url?: string | null;
-      };
-    }[],
+    value:
+      | string
+      | number
+      | boolean
+      | string[]
+      | Date
+      | null
+      | FieldOption[]
+      | { name?: string; data?: string }[]
+      | {
+          label?: string;
+          value: string;
+          entity?: {
+            created: string;
+            description?: string | null;
+            external_id?: string | null;
+            id: string;
+            source_name: string;
+            url?: string | null;
+          };
+        }[],
   ) => void;
   entitySettings?: {
     edges: ReadonlyArray<{
@@ -118,7 +127,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
     }
     return current;
   };
-  const fieldValue = fieldPrefix ? getNestedValue(values, fieldName) : (values[field.name] || '');
+  const fieldValue = fieldPrefix ? getNestedValue(values, fieldName) : values[field.name] || '';
   const displayLabel = field.label || field.attributeMapping.attributeName;
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -139,8 +148,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
           reader.readAsDataURL(file);
         });
       });
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+      // @ts-expect-error filePromises resolved type isn't inferred correctly across the array map
       Promise.all(filePromises).then((fileData: { name?: string; data?: string }[]) => {
         // multiple defaults to false (single file mode)
         // Set multiple=true explicitly to allow multiple files
@@ -158,7 +166,9 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
 
   const handleFileRemove = (index: number) => {
     const currentFiles = (fieldValue || []) as { name?: string; data?: string }[];
-    const newFiles = currentFiles.filter((_: { name?: string; data?: string }, i: number) => i !== index);
+    const newFiles = currentFiles.filter(
+      (_: { name?: string; data?: string }, i: number) => i !== index,
+    );
     setFieldValue(field.name, newFiles);
   };
 
@@ -223,17 +233,27 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
       case 'checkbox':
         return (
           <Field name={fieldName}>
-            {({ field: formikField, form }: { field: FieldInputProps<boolean | string>; form: FormikProps<Record<string, unknown>> }) => (
+            {({
+              field: formikField,
+              form,
+            }: {
+              field: FieldInputProps<boolean | string>;
+              form: FormikProps<Record<string, unknown>>;
+            }) => (
               <FormControlLabel
-                control={(
+                control={
                   <Checkbox
                     {...formikField}
-                    checked={formikField.value === true || formikField.value === 'true' || formikField.value === '1'}
+                    checked={
+                      formikField.value === true ||
+                      formikField.value === 'true' ||
+                      formikField.value === '1'
+                    }
                     onChange={(e) => {
                       form.setFieldValue(fieldName, e.target.checked);
                     }}
                   />
-                )}
+                }
                 label={displayLabel}
                 style={fieldSpacingContainerStyle}
               />
@@ -244,10 +264,20 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
       case 'toggle':
         return (
           <Field name={fieldName}>
-            {({ field: formikField, form }: { field: FieldInputProps<boolean | string>; form: FormikProps<Record<string, unknown>> }) => (
+            {({
+              field: formikField,
+              form,
+            }: {
+              field: FieldInputProps<boolean | string>;
+              form: FormikProps<Record<string, unknown>>;
+            }) => (
               <SwitchField
                 label={displayLabel}
-                checked={formikField.value === true || formikField.value === 'true' || formikField.value === '1'}
+                checked={
+                  formikField.value === true ||
+                  formikField.value === 'true' ||
+                  formikField.value === '1'
+                }
                 onChange={(value: boolean) => {
                   form.setFieldValue(fieldName, value);
                 }}
@@ -412,18 +442,20 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             name={fieldName}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
-            values={fieldValue as {
-              label?: string;
-              value: string;
-              entity?: {
-                created: string;
-                description?: string | null;
-                external_id?: string | null;
-                id: string;
-                source_name: string;
-                url?: string | null;
-              };
-            }[]}
+            values={
+              fieldValue as {
+                label?: string;
+                value: string;
+                entity?: {
+                  created: string;
+                  description?: string | null;
+                  external_id?: string | null;
+                  id: string;
+                  source_name: string;
+                  url?: string | null;
+                };
+              }[]
+            }
             required={field.isMandatory}
           />
         );
@@ -450,11 +482,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
                     onChange={handleFileUpload}
                   />
                   <label htmlFor={`file-upload-${fieldName}`}>
-                    <IconButton
-                      aria-label={t_i18n('Upload')}
-                      color="primary"
-                      component="span"
-                    >
+                    <IconButton aria-label={t_i18n('Upload')} color="primary" component="span">
                       <CloudUploadOutlined />
                     </IconButton>
                   </label>
@@ -464,19 +492,19 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             </div>
             {hasExistingFile ? (
               <div className={classes.fileList}>
-                {(fieldValue as Array<{ name?: string; url?: string }>).map((file, index: number) => (
-                  <Chip
-                    key={index}
-                    label={file.name}
-                    onDelete={() => handleFileRemove(index)}
-                    className={classes.fileChip}
-                  />
-                ))}
+                {(fieldValue as Array<{ name?: string; url?: string }>).map(
+                  (file, index: number) => (
+                    <Chip
+                      key={index}
+                      label={file.name}
+                      onDelete={() => handleFileRemove(index)}
+                      className={classes.fileChip}
+                    />
+                  ),
+                )}
               </div>
             ) : null}
-            {field.description && (
-              <FormHelperText>{field.description}</FormHelperText>
-            )}
+            {field.description && <FormHelperText>{field.description}</FormHelperText>}
           </div>
         );
       }
@@ -522,7 +550,13 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
           variant="outlined"
           color="warning"
           label={t_i18n('Read-Only')}
-          style={{ position: 'absolute', top: -10, right: 0, zIndex: 1, backgroundColor: theme.palette.background.paper }}
+          style={{
+            position: 'absolute',
+            top: -10,
+            right: 0,
+            zIndex: 1,
+            backgroundColor: theme.palette.background.paper,
+          }}
         />
         {fieldContent}
       </div>,

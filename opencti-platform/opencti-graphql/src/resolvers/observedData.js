@@ -47,7 +47,12 @@ const observedDataResolvers = {
       return [];
     },
     observedDataContainsStixObjectOrStixRelationship: (_, args, context) => {
-      return observedDataContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
+      return observedDataContainsStixObjectOrStixRelationship(
+        context,
+        context.user,
+        args.id,
+        args.stixObjectOrStixRelationshipId,
+      );
     },
   },
   ObservedData: {
@@ -55,12 +60,15 @@ const observedDataResolvers = {
   },
   Mutation: {
     observedDataEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_CONTAINER_OBSERVED_DATA),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      delete: () =>
+        stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_CONTAINER_OBSERVED_DATA),
+      fieldPatch: ({ input, commitMessage, references }) =>
+        stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
     observedDataAdd: (_, { input }, context) => addObservedData(context, context.user, input),
   },

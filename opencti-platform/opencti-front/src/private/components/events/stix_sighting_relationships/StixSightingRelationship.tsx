@@ -6,8 +6,14 @@ import { useFormatter } from 'src/components/i18n';
 import Security from 'src/utils/Security';
 import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
 import StixSightingRelationshipHeader from '@components/events/stix_sighting_relationships/StixSightingRelationshipHeader';
-import StixSightingRelationshipEdition, { stixSightingRelationshipEditionDeleteMutation } from './StixSightingRelationshipEdition';
-import { commitMutation, defaultCommitMutation, QueryRenderer } from '../../../../relay/environment';
+import StixSightingRelationshipEdition, {
+  stixSightingRelationshipEditionDeleteMutation,
+} from './StixSightingRelationshipEdition';
+import {
+  commitMutation,
+  defaultCommitMutation,
+  QueryRenderer,
+} from '../../../../relay/environment';
 import { StixSightingRelationshipQuery$data } from './__generated__/StixSightingRelationshipQuery.graphql';
 import Loader from '../../../../components/Loader';
 import StixSightingRelationshipOverview from './StixSightingRelationshipOverview';
@@ -34,9 +40,10 @@ interface StixSightingRelationshipProps {
   paddingRight: boolean;
 }
 
-const StixSightingRelationship: FunctionComponent<
-  StixSightingRelationshipProps
-> = ({ entityId, paddingRight }) => {
+const StixSightingRelationship: FunctionComponent<StixSightingRelationshipProps> = ({
+  entityId,
+  paddingRight,
+}) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
 
@@ -73,14 +80,17 @@ const StixSightingRelationship: FunctionComponent<
         variables={{ id: sightingId }}
         render={(result: { props: StixSightingRelationshipQuery$data }) => {
           if (result.props && result.props.stixSightingRelationship) {
-            const headerName = result.props.stixSightingRelationship.from?.representative?.main ?? t_i18n('Restricted');
+            const headerName =
+              result.props.stixSightingRelationship.from?.representative?.main ??
+              t_i18n('Restricted');
             return (
               <>
-                <Breadcrumbs elements={[
-                  { label: t_i18n('Events') },
-                  { label: t_i18n('Sightings'), link: '/dashboard/events/sightings' },
-                  { label: t_i18n('Sighting'), current: true },
-                ]}
+                <Breadcrumbs
+                  elements={[
+                    { label: t_i18n('Events') },
+                    { label: t_i18n('Sightings'), link: '/dashboard/events/sightings' },
+                    { label: t_i18n('Sighting'), current: true },
+                  ]}
                 />
                 <StixSightingRelationshipHeader
                   headerName={headerName}

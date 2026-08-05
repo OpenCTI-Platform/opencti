@@ -59,9 +59,7 @@ const ReportDetails = ({ report }) => {
           },
           {
             key: 'relationship_type',
-            values: [
-              'object',
-            ],
+            values: ['object'],
             operator: 'eq',
             mode: 'or',
           },
@@ -92,21 +90,14 @@ const ReportDetails = ({ report }) => {
             <FieldOrEmpty source={reportData.report_types}>
               <Stack direction="row" flexWrap="wrap" gap={1}>
                 {reportData.report_types?.map((reportType) => (
-                  <Tag
-                    key={reportType}
-                    label={reportType}
-                  />
+                  <Tag key={reportType} label={reportType} />
                 ))}
               </Stack>
             </FieldOrEmpty>
             <Label sx={{ mt: 2 }}>{t_i18n('Publication date')}</Label>
             {fldt(reportData.published)}
           </Grid>
-          <Grid
-            item
-            xs={6}
-            style={{ minHeight: 200, maxHeight: height }}
-          >
+          <Grid item xs={6} style={{ minHeight: 200, maxHeight: height }}>
             <StixRelationshipsHorizontalBars
               config={{
                 startDate: null,

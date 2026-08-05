@@ -6,13 +6,19 @@ import {
 import makeStyles from '@mui/styles/makeStyles';
 import { EntityStixSightingRelationshipLineDummy } from '@components/events/stix_sighting_relationships/EntityStixSightingRelationshipLine';
 import ListLines from '../../../../components/list_lines/ListLines';
-import EntityStixSightingRelationshipsLines, { entityStixSightingRelationshipsLinesQuery } from './EntityStixSightingRelationshipsLines';
+import EntityStixSightingRelationshipsLines, {
+  entityStixSightingRelationshipsLinesQuery,
+} from './EntityStixSightingRelationshipsLines';
 import StixSightingRelationshipCreationFromEntity from './StixSightingRelationshipCreationFromEntity';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  isFilterGroupNotEmpty,
+  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
+} from '../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { useInitCreateRelationshipContext } from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
 
@@ -97,26 +103,22 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
   disableExport,
 }) => {
   const classes = useStyles();
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<EntityStixSightingRelationshipsLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    {
-      searchTerm: '',
-      sortBy: 'first_seen',
-      orderAsc: false,
-      openExports: false,
-      filters: emptyFilterGroup,
-    },
-  );
-  const {
-    sortBy,
-    orderAsc,
-    openExports,
-    filters,
-    searchTerm,
-    numberOfElements,
-  } = viewStorage;
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<EntityStixSightingRelationshipsLinesPaginationQuery$variables>(
+      LOCAL_STORAGE_KEY,
+      {
+        searchTerm: '',
+        sortBy: 'first_seen',
+        orderAsc: false,
+        openExports: false,
+        filters: emptyFilterGroup,
+      },
+    );
+  const { sortBy, orderAsc, openExports, filters, searchTerm, numberOfElements } = viewStorage;
 
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['stix-sighting-relationship']);
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, [
+    'stix-sighting-relationship',
+  ]);
 
   useInitCreateRelationshipContext();
 
@@ -212,7 +214,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
           secondaryAction={true}
           paginationOptions={finalPaginationOptions}
           numberOfElements={numberOfElements}
-          createButton={(
+          createButton={
             <SightingCreationComponent
               isTo={isTo}
               entityId={entityId}
@@ -221,19 +223,22 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
               stixCoreObjectTypes={stixCoreObjectTypes}
               variant="controlledDial"
             />
-          )}
+          }
         >
           {queryRef && (
             <React.Suspense
-              fallback={(
+              fallback={
                 <>
                   {Array(20)
                     .fill(0)
                     .map((_, idx) => (
-                      <EntityStixSightingRelationshipLineDummy key={idx} dataColumns={dataColumns} />
+                      <EntityStixSightingRelationshipLineDummy
+                        key={idx}
+                        dataColumns={dataColumns}
+                      />
                     ))}
                 </>
-              )}
+              }
             >
               <EntityStixSightingRelationshipsLines
                 queryRef={queryRef}
@@ -251,11 +256,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
     );
   };
 
-  return (
-    <div className={classes.container}>
-      {renderLines()}
-    </div>
-  );
+  return <div className={classes.container}>{renderLines()}</div>;
 };
 
 export default EntityStixSightingRelationships;

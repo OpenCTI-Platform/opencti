@@ -9,7 +9,10 @@ import { graphql, useFragment } from 'react-relay';
 import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
-import { NotifierLine_node$data, NotifierLine_node$key } from './__generated__/NotifierLine_node.graphql';
+import {
+  NotifierLine_node$data,
+  NotifierLine_node$key,
+} from './__generated__/NotifierLine_node.graphql';
 import { NotifiersLinesPaginationQuery$variables } from './__generated__/NotifiersLinesPaginationQuery.graphql';
 import NotifierPopover from './NotifierPopover';
 
@@ -70,7 +73,9 @@ const NotifierLineFragment = graphql`
   }
 `;
 
-const isNotifierData = (node: NotifierLine_node$key | NotifierLine_node$data): node is NotifierLine_node$data => !!(node as NotifierLine_node$data).id;
+const isNotifierData = (
+  node: NotifierLine_node$key | NotifierLine_node$data,
+): node is NotifierLine_node$data => !!(node as NotifierLine_node$data).id;
 
 export const NotifierLine: FunctionComponent<NotifierLineProps> = ({
   dataColumns,
@@ -78,7 +83,9 @@ export const NotifierLine: FunctionComponent<NotifierLineProps> = ({
   paginationOptions,
 }) => {
   const classes = useStyles();
-  const data = useFragment(NotifierLineFragment, !isNotifierData(node) ? node : null) ?? node as NotifierLine_node$data;
+  const data =
+    useFragment(NotifierLineFragment, !isNotifierData(node) ? node : null) ??
+    (node as NotifierLine_node$data);
 
   return (
     <>
@@ -87,23 +94,19 @@ export const NotifierLine: FunctionComponent<NotifierLineProps> = ({
           <ItemIcon type="Notifier" />
         </ListItemIcon>
         <ListItemText
-          primary={(
+          primary={
             <div>
               <div className={classes.bodyItem} style={{ width: dataColumns.connector.width }}>
                 <Tag label={data.notifier_connector.name} />
               </div>
               <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
-                <span className={classes.bodyItemText}>
-                  {data.name}
-                </span>
+                <span className={classes.bodyItemText}>{data.name}</span>
               </div>
               <div className={classes.bodyItem} style={{ width: dataColumns.description.width }}>
-                <span className={classes.bodyItemText}>
-                  {data.description}
-                </span>
+                <span className={classes.bodyItemText}>{data.description}</span>
               </div>
             </div>
-          )}
+          }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
           <NotifierPopover data={data} paginationOptions={paginationOptions} />
@@ -121,34 +124,19 @@ export const NotifierLineDummy = ({ dataColumns }: { dataColumns: DataColumns })
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
             <div className={classes.bodyItem} style={{ width: dataColumns.connector.width }}>
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
             <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
             <div className={classes.bodyItem} style={{ width: dataColumns.description.width }}>
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
           </div>
-        )}
+        }
       />
     </ListItem>
   );

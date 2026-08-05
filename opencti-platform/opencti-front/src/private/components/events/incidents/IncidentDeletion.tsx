@@ -10,23 +10,29 @@ import DeleteDialog from '../../../../components/DeleteDialog';
 const IncidentDeletionDeleteMutation = graphql`
   mutation IncidentDeletionDeleteMutation($id: ID!) {
     incidentEdit(id: $id) {
-        delete
-      }
+      delete
     }
-  `;
+  }
+`;
 
-const IncidentDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boolean; handleClose: () => void }) => {
+const IncidentDeletion = ({
+  id,
+  isOpen,
+  handleClose,
+}: {
+  id: string;
+  isOpen: boolean;
+  handleClose: () => void;
+}) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
     values: { entity_type: t_i18n('entity_Incident') },
   });
-  const [commit] = useApiMutation(
-    IncidentDeletionDeleteMutation,
-    undefined,
-    { successMessage: deleteSuccessMessage },
-  );
+  const [commit] = useApiMutation(IncidentDeletionDeleteMutation, undefined, {
+    successMessage: deleteSuccessMessage,
+  });
   const deletion = useDeletion({ handleClose });
   const { setDeleting } = deletion;
   const submitDelete = () => {

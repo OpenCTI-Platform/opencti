@@ -48,11 +48,8 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
       <div style={{ height: '100%' }}>
         <Card
           title={t('Linked entities')}
-          action={(
-            <Security
-              needs={[KNOWLEDGE_KNUPDATE]}
-              placeholder={<div style={{ height: 29 }} />}
-            >
+          action={
+            <Security needs={[KNOWLEDGE_KNUPDATE]} placeholder={<div style={{ height: 29 }} />}>
               <StixCoreRelationshipCreationFromRelation
                 entityId={entityId}
                 paddingRight={true}
@@ -60,71 +57,55 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
                 paginationOptions={paginationOptions}
               />
             </Security>
-          )}
+          }
         >
           <List classes={{ root: classes.list }}>
-            {data.stixCoreRelationships.edges.map(
-              (stixCoreRelationshipEdge) => {
-                const stixCoreRelationship = stixCoreRelationshipEdge.node;
-                const remoteNode = stixCoreRelationship.from
-                  && stixCoreRelationship.from.id === entityId
+            {data.stixCoreRelationships.edges.map((stixCoreRelationshipEdge) => {
+              const stixCoreRelationship = stixCoreRelationshipEdge.node;
+              const remoteNode =
+                stixCoreRelationship.from && stixCoreRelationship.from.id === entityId
                   ? stixCoreRelationship.to
                   : stixCoreRelationship.from;
-                const restricted = stixCoreRelationship.from === null || remoteNode === null;
-                const link = `${resolveLink(remoteNode.entity_type)}/${
-                  remoteNode.id
-                }`;
-                return (
-                  <ListItem
-                    key={stixCoreRelationship.id}
-                    dense={true}
-                    divider={true}
-                    disablePadding
-                    secondaryAction={stixCoreRelationship.is_inferred ? (
+              const restricted = stixCoreRelationship.from === null || remoteNode === null;
+              const link = `${resolveLink(remoteNode.entity_type)}/${remoteNode.id}`;
+              return (
+                <ListItem
+                  key={stixCoreRelationship.id}
+                  dense={true}
+                  divider={true}
+                  disablePadding
+                  secondaryAction={
+                    stixCoreRelationship.is_inferred ? (
                       <Tooltip
                         title={
-                          t('Inferred knowledge based on the rule ')
-                          + R.head(stixCoreRelationship.x_opencti_inferences)
-                            .rule.name
+                          t('Inferred knowledge based on the rule ') +
+                          R.head(stixCoreRelationship.x_opencti_inferences).rule.name
                         }
                       >
-                        <AutoFix
-                          fontSize="small"
-                          style={{ marginLeft: -30 }}
-                          color="secondary"
-                        />
+                        <AutoFix fontSize="small" style={{ marginLeft: -30 }} color="secondary" />
                       </Tooltip>
                     ) : (
                       <StixCoreRelationshipPopover
                         stixCoreRelationshipId={stixCoreRelationship.id}
                         paginationOptions={paginationOptions}
                       />
-                    )}
-                  >
-                    <ListItemButton
-                      component={Link}
-                      to={link}
-                    >
-                      <ListItemIcon>
-                        <ItemIcon
-                          type={
-                            !restricted ? remoteNode.entity_type : 'restricted'
-                          }
-                        />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={
-                          remoteNode.observable_value
-                            ? remoteNode.observable_value
-                            : remoteNode.name
-                        }
-                        secondary={t(`entity_${remoteNode.entity_type}`)}
-                      />
-                    </ListItemButton>
-                  </ListItem>
-                );
-              },
-            )}
+                    )
+                  }
+                >
+                  <ListItemButton component={Link} to={link}>
+                    <ListItemIcon>
+                      <ItemIcon type={!restricted ? remoteNode.entity_type : 'restricted'} />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        remoteNode.observable_value ? remoteNode.observable_value : remoteNode.name
+                      }
+                      secondary={t(`entity_${remoteNode.entity_type}`)}
+                    />
+                  </ListItemButton>
+                </ListItem>
+              );
+            })}
           </List>
         </Card>
       </div>
@@ -167,220 +148,217 @@ const StixCoreRelationshipStixCoreRelationshipsLines = createPaginationContainer
   StixCoreRelationshipStixCoreRelationshipsLinesContainer,
   {
     data: graphql`
-        fragment StixCoreRelationshipStixCoreRelationshipsLines_data on Query
-        @argumentDefinitions(
-          fromOrToId: { type: "[String]" }
-          relationship_type: { type: "[String]" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: {
-            type: "StixCoreRelationshipsOrdering"
-            defaultValue: start_time
-          }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-        ) {
-          stixCoreRelationships(
-            fromOrToId: $fromOrToId
-            relationship_type: $relationship_type
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-          ) @connection(key: "Pagination_stixCoreRelationships") {
-            edges {
-              node {
-                id
-                is_inferred
-                x_opencti_inferences {
-                  rule {
-                    id
+      fragment StixCoreRelationshipStixCoreRelationshipsLines_data on Query
+      @argumentDefinitions(
+        fromOrToId: { type: "[String]" }
+        relationship_type: { type: "[String]" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "StixCoreRelationshipsOrdering", defaultValue: start_time }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
+        stixCoreRelationships(
+          fromOrToId: $fromOrToId
+          relationship_type: $relationship_type
+          first: $count
+          after: $cursor
+          orderBy: $orderBy
+          orderMode: $orderMode
+        ) @connection(key: "Pagination_stixCoreRelationships") {
+          edges {
+            node {
+              id
+              is_inferred
+              x_opencti_inferences {
+                rule {
+                  id
+                  name
+                }
+              }
+              from {
+                ... on StixDomainObject {
+                  id
+                  entity_type
+                  parent_types
+                  ... on AttackPattern {
+                    name
+                  }
+                  ... on Opinion {
+                    opinion
+                  }
+                  ... on Report {
+                    name
+                  }
+                  ... on Grouping {
+                    name
+                    description
+                  }
+                  ... on Note {
+                    attribute_abstract
+                    content
+                  }
+                  ... on Campaign {
+                    name
+                  }
+                  ... on CourseOfAction {
+                    name
+                  }
+                  ... on Individual {
+                    name
+                  }
+                  ... on Organization {
+                    name
+                  }
+                  ... on Sector {
+                    name
+                  }
+                  ... on System {
+                    name
+                  }
+                  ... on Indicator {
+                    name
+                  }
+                  ... on Infrastructure {
+                    name
+                  }
+                  ... on IntrusionSet {
+                    name
+                  }
+                  ... on Position {
+                    name
+                  }
+                  ... on City {
+                    name
+                  }
+                  ... on AdministrativeArea {
+                    name
+                  }
+                  ... on Country {
+                    name
+                  }
+                  ... on Region {
+                    name
+                  }
+                  ... on Malware {
+                    name
+                  }
+                  ... on ThreatActor {
+                    name
+                  }
+                  ... on Tool {
+                    name
+                  }
+                  ... on Vulnerability {
+                    name
+                  }
+                  ... on Incident {
                     name
                   }
                 }
-                from {
-                  ... on StixDomainObject {
-                    id
-                    entity_type
-                    parent_types
-                    ... on AttackPattern {
-                      name
-                    }
-                    ... on Opinion {
-                      opinion
-                    }
-                    ... on Report {
-                      name
-                    }
-                    ... on Grouping {
-                      name
-                      description
-                    }
-                    ... on Note {
-                      attribute_abstract
-                      content
-                    }
-                    ... on Campaign {
-                      name
-                    }
-                    ... on CourseOfAction {
-                      name
-                    }
-                    ... on Individual {
-                      name
-                    }
-                    ... on Organization {
-                      name
-                    }
-                    ... on Sector {
-                      name
-                    }
-                    ... on System {
-                      name
-                    }
-                    ... on Indicator {
-                      name
-                    }
-                    ... on Infrastructure {
-                      name
-                    }
-                    ... on IntrusionSet {
-                      name
-                    }
-                    ... on Position {
-                      name
-                    }
-                    ... on City {
-                      name
-                    }
-                    ... on AdministrativeArea {
-                      name
-                    }
-                    ... on Country {
-                      name
-                    }
-                    ... on Region {
-                      name
-                    }
-                    ... on Malware {
-                      name
-                    }
-                    ... on ThreatActor {
-                      name
-                    }
-                    ... on Tool {
-                      name
-                    }
-                    ... on Vulnerability {
-                      name
-                    }
-                    ... on Incident {
-                      name
-                    }
+                ... on StixCyberObservable {
+                  id
+                  entity_type
+                  parent_types
+                  observable_value
+                }
+              }
+              to {
+                ... on StixDomainObject {
+                  id
+                  entity_type
+                  parent_types
+                  ... on AttackPattern {
+                    name
                   }
-                  ... on StixCyberObservable {
-                    id
-                    entity_type
-                    parent_types
-                    observable_value
+                  ... on Opinion {
+                    opinion
+                  }
+                  ... on Report {
+                    name
+                  }
+                  ... on Grouping {
+                    name
+                    description
+                  }
+                  ... on Note {
+                    attribute_abstract
+                    content
+                  }
+                  ... on Campaign {
+                    name
+                  }
+                  ... on CourseOfAction {
+                    name
+                  }
+                  ... on Individual {
+                    name
+                  }
+                  ... on Organization {
+                    name
+                  }
+                  ... on Sector {
+                    name
+                  }
+                  ... on System {
+                    name
+                  }
+                  ... on Indicator {
+                    name
+                  }
+                  ... on Infrastructure {
+                    name
+                  }
+                  ... on IntrusionSet {
+                    name
+                  }
+                  ... on Position {
+                    name
+                  }
+                  ... on City {
+                    name
+                  }
+                  ... on AdministrativeArea {
+                    name
+                  }
+                  ... on Country {
+                    name
+                  }
+                  ... on Region {
+                    name
+                  }
+                  ... on Malware {
+                    name
+                  }
+                  ... on ThreatActor {
+                    name
+                  }
+                  ... on Tool {
+                    name
+                  }
+                  ... on Vulnerability {
+                    name
+                  }
+                  ... on Incident {
+                    name
                   }
                 }
-                to {
-                  ... on StixDomainObject {
-                    id
-                    entity_type
-                    parent_types
-                    ... on AttackPattern {
-                      name
-                    }
-                    ... on Opinion {
-                      opinion
-                    }
-                    ... on Report {
-                      name
-                    }
-                    ... on Grouping {
-                      name
-                      description
-                    }
-                    ... on Note {
-                      attribute_abstract
-                      content
-                    }
-                    ... on Campaign {
-                      name
-                    }
-                    ... on CourseOfAction {
-                      name
-                    }
-                    ... on Individual {
-                      name
-                    }
-                    ... on Organization {
-                      name
-                    }
-                    ... on Sector {
-                      name
-                    }
-                    ... on System {
-                      name
-                    }
-                    ... on Indicator {
-                      name
-                    }
-                    ... on Infrastructure {
-                      name
-                    }
-                    ... on IntrusionSet {
-                      name
-                    }
-                    ... on Position {
-                      name
-                    }
-                    ... on City {
-                      name
-                    }
-                    ... on AdministrativeArea {
-                      name
-                    }
-                    ... on Country {
-                      name
-                    }
-                    ... on Region {
-                      name
-                    }
-                    ... on Malware {
-                      name
-                    }
-                    ... on ThreatActor {
-                      name
-                    }
-                    ... on Tool {
-                      name
-                    }
-                    ... on Vulnerability {
-                      name
-                    }
-                    ... on Incident {
-                      name
-                    }
-                  }
-                  ... on StixCyberObservable {
-                    id
-                    entity_type
-                    parent_types
-                    observable_value
-                  }
+                ... on StixCyberObservable {
+                  id
+                  entity_type
+                  parent_types
+                  observable_value
                 }
               }
             }
-            pageInfo {
-              endCursor
-              hasNextPage
-              globalCount
-            }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+            globalCount
           }
         }
-      `,
+      }
+    `,
   },
   {
     direction: 'forward',

@@ -28,14 +28,7 @@ interface AddThreatActorIndividualDemographicComponentProps {
 
 const AddThreatActorIndividualDemographicComponent: FunctionComponent<
   AddThreatActorIndividualDemographicComponentProps
-> = ({
-  threatActorIndividual,
-  relType,
-  title,
-  queryRef,
-  onSearch,
-  paginationOptions,
-}) => {
+> = ({ threatActorIndividual, relType, title, queryRef, onSearch, paginationOptions }) => {
   const [open, setOpen] = useState<boolean>(false);
   const { t_i18n } = useFormatter();
 
@@ -49,11 +42,7 @@ const AddThreatActorIndividualDemographicComponent: FunctionComponent<
 
   return (
     <div>
-      <IconButton
-        aria-label={t_i18n('Add')}
-        color="primary"
-        onClick={handleOpen}
-      >
+      <IconButton aria-label={t_i18n('Add')} color="primary" onClick={handleOpen}>
         <Add fontSize="small" />
       </IconButton>
       <Drawer
@@ -61,19 +50,8 @@ const AddThreatActorIndividualDemographicComponent: FunctionComponent<
         onClose={handleClose}
         title={title}
         subHeader={{
-          right: [(
-            <CountryCreation
-              paginationOptions={paginationOptions}
-              key="rightButton"
-            />
-          )],
-          left: [(
-            <SearchInput
-              variant="inDrawer"
-              onSubmit={onSearch}
-              key="leftInput"
-            />
-          )],
+          right: [<CountryCreation paginationOptions={paginationOptions} key="rightButton" />],
+          left: [<SearchInput variant="inDrawer" onSubmit={onSearch} key="leftInput" />],
         }}
       >
         <AddThreatActorIndividualDemographicLines
@@ -92,7 +70,9 @@ interface AddThreatActorIndividualDemographicProps {
   title: string;
 }
 
-const AddThreatActorIndividualDemographic: FunctionComponent<AddThreatActorIndividualDemographicProps> = (props) => {
+const AddThreatActorIndividualDemographic: FunctionComponent<
+  AddThreatActorIndividualDemographicProps
+> = (props) => {
   const [paginationOptions, setPaginationOptions] = useState({ count: 50, search: '' });
   const queryRef = useQueryLoading<AddThreatActorIndividualDemographicLinesQuery>(
     addIndividualsThreatActorIndividualLinesQuery,

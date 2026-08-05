@@ -8,9 +8,7 @@ import type { WidgetColumn } from '../../../utils/widget/widget';
 
 export const widgetAttributesInputInstanceQuery = graphql`
   query WidgetAttributesInputContainerInstanceQuery($id: String!) {
-    stixCoreObject(
-      id: $id
-    ) {
+    stixCoreObject(id: $id) {
       entity_type
       id
       representative {

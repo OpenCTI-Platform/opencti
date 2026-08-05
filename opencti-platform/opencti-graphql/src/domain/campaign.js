@@ -23,7 +23,11 @@ export const campaignsTimeSeries = (context, user, args) => {
 
 export const campaignsTimeSeriesByEntity = (context, user, args) => {
   const { relationship_type, objectId } = args;
-  const filters = addFilter(args.filters, relationship_type.map((n) => buildRefRelationKey(n, '*')), objectId);
+  const filters = addFilter(
+    args.filters,
+    relationship_type.map((n) => buildRefRelationKey(n, '*')),
+    objectId,
+  );
   return timeSeriesEntities(context, user, [ENTITY_TYPE_CAMPAIGN], { ...args, filters });
 };
 // endregion

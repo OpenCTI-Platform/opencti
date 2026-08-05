@@ -24,7 +24,12 @@ import {
   xOpenctiType,
 } from '../schema/attribute-definition';
 
-export const IDS_ATTRIBUTES = [internalId.name, standardId.name, xOpenctiStixIds.name, iAliasedIds.name];
+export const IDS_ATTRIBUTES = [
+  internalId.name,
+  standardId.name,
+  xOpenctiStixIds.name,
+  iAliasedIds.name,
+];
 
 export const KEYWORD_TERMS_ATTRIBUTES = ['contact_information'];
 
@@ -134,6 +139,4 @@ export const INTERNAL_ATTRIBUTES = [
   'opinions_metrics',
 ];
 
-export const INTERNAL_REFS = [
-  'objectOrganization',
-];
+export const INTERNAL_REFS = ['objectOrganization'];

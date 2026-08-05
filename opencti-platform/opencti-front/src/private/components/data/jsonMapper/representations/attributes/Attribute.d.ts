@@ -1,10 +1,15 @@
 import { JsonMapperEditionContainerFragment_jsonMapper$data } from '@components/data/jsonMapper/__generated__/JsonMapperEditionContainerFragment_jsonMapper.graphql';
 import { DefaultValues } from '../../../../../../utils/defaultValues';
 
-type Mutable<T> = { -readonly [P in keyof T]: T[P]; };
-export type JsonMapperRepresentationAttribute = Mutable<JsonMapperEditionContainerFragment_jsonMapper$data['representations'][number]['attributes'][number]>;
+type Mutable<T> = { -readonly [P in keyof T]: T[P] };
+export type JsonMapperRepresentationAttribute = Mutable<
+  JsonMapperEditionContainerFragment_jsonMapper$data['representations'][number]['attributes'][number]
+>;
 
-export type JsonMapperRepresentationAttributeEdit = Omit<JsonMapperRepresentationAttribute, 'default_values'> & {
+export type JsonMapperRepresentationAttributeEdit = Omit<
+  JsonMapperRepresentationAttribute,
+  'default_values'
+> & {
   default_values: string[] | null;
 };
 

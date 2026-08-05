@@ -5,7 +5,9 @@ import { FintelDesign } from '@components/common/form/FintelDesignField';
 import { useFintelTemplateContext } from './FintelTemplateContext';
 import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
-import FintelTemplatePreviewForm, { FintelTemplatePreviewFormInputs } from './FintelTemplatePreviewForm';
+import FintelTemplatePreviewForm, {
+  FintelTemplatePreviewFormInputs,
+} from './FintelTemplatePreviewForm';
 import useFileFromTemplate from '../../../../../utils/outcome_template/engine/useFileFromTemplate';
 import { htmlToPdfReport } from '../../../../../utils/htmlToPdf/htmlToPdf';
 import PdfViewer from '../../../../../components/PdfViewer';
@@ -49,10 +51,7 @@ interface FintelTemplatePreviewProps {
   isTabActive: boolean;
 }
 
-const FintelTemplatePreview = ({
-  data,
-  isTabActive,
-}: FintelTemplatePreviewProps) => {
+const FintelTemplatePreview = ({ data, isTabActive }: FintelTemplatePreviewProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { buildFileFromTemplate } = useFileFromTemplate();
@@ -104,17 +103,16 @@ const FintelTemplatePreview = ({
   }, [formValues, editorValue, isTabActive]);
 
   return (
-    <div style={{
-      height: 'calc(100vh - 280px)',
-      display: 'flex',
-      gap: theme.spacing(3),
-    }}
+    <div
+      style={{
+        height: 'calc(100vh - 280px)',
+        display: 'flex',
+        gap: theme.spacing(3),
+      }}
     >
       <div style={{ flex: 2, display: 'flex', flexDirection: 'column' }}>
         <Card title={t_i18n('Configuration')}>
-          <FintelTemplatePreviewForm
-            onChange={(values) => setFormValues(values)}
-          />
+          <FintelTemplatePreviewForm onChange={(values) => setFormValues(values)} />
         </Card>
       </div>
 
@@ -123,12 +121,13 @@ const FintelTemplatePreview = ({
           {pdf ? (
             <PdfViewer pdf={pdf} />
           ) : (
-            <div style={{
-              display: 'flex',
-              height: '100%',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
+            <div
+              style={{
+                display: 'flex',
+                height: '100%',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
             >
               {t_i18n('Please select an entity on the left form to preview the template')}
             </div>

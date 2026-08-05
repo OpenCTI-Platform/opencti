@@ -11,15 +11,11 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const fintelDesignFieldQuery = graphql`
   query FintelDesignFieldQuery(
-    $orderMode: OrderingMode,
+    $orderMode: OrderingMode
     $orderBy: FintelDesignOrdering
     $filters: FilterGroup
   ) {
-    fintelDesigns(
-      orderMode: $orderMode
-      orderBy: $orderBy
-      filters: $filters
-    ) {
+    fintelDesigns(orderMode: $orderMode, orderBy: $orderBy, filters: $filters) {
       edges {
         node {
           id
@@ -68,7 +64,8 @@ const FintelDesignFieldComponent: FunctionComponent<FintelDesignFieldComponentPr
   queryRef,
 }) => {
   const { t_i18n } = useFormatter();
-  const { values, setFieldValue } = useFormikContext<Record<string, FintelDesignFieldOption | null>>();
+  const { values, setFieldValue } =
+    useFormikContext<Record<string, FintelDesignFieldOption | null>>();
 
   const data = usePreloadedQuery<FintelDesignFieldQuery>(fintelDesignFieldQuery, queryRef);
   const fintelDesigns = data.fintelDesigns?.edges?.map(({ node }) => {
@@ -106,10 +103,7 @@ const FintelDesignFieldComponent: FunctionComponent<FintelDesignFieldComponentPr
         style={fieldSpacingContainerStyle ?? style}
         noOptionsText={t_i18n('No available options')}
         options={fintelDesigns}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: { label: string },
-        ) => (
+        renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: { label: string }) => (
           <li {...props} style={{ display: 'flex', alignItems: 'center' }}>
             <ItemIcon type="Fintel-Design" />
             <div style={{ flexGrow: 1, marginLeft: 10 }}>{option.label}</div>
@@ -127,19 +121,20 @@ const FintelDesignField = ({ ...props }: FintelDesignFieldProps) => {
   const queryRef = useQueryLoading<FintelDesignFieldQuery>(fintelDesignFieldQuery);
   const { name, label } = props;
   return queryRef ? (
-    <React.Suspense fallback={(
-      <Field
-        component={AutocompleteField}
-        name={name}
-        disabled={true}
-        fullWidth={true}
-        options={[]}
-        renderOption={() => null}
-        textfieldprops={{
-          label,
-        }}
-      />
-    )}
+    <React.Suspense
+      fallback={
+        <Field
+          component={AutocompleteField}
+          name={name}
+          disabled={true}
+          fullWidth={true}
+          options={[]}
+          renderOption={() => null}
+          textfieldprops={{
+            label,
+          }}
+        />
+      }
     >
       <FintelDesignFieldComponent {...props} queryRef={queryRef} />
     </React.Suspense>

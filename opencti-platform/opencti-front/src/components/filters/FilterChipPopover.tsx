@@ -1,7 +1,13 @@
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import FilterDate from '@components/common/lists/FilterDate';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
-import { Autocomplete, AutocompleteChangeReason, AutocompleteInputChangeReason, MenuItem, Select } from '@mui/material';
+import {
+  Autocomplete,
+  AutocompleteChangeReason,
+  AutocompleteInputChangeReason,
+  MenuItem,
+  Select,
+} from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import Chip from '@mui/material/Chip';
 import Popover from '@mui/material/Popover';
@@ -61,7 +67,9 @@ export interface FilterChipsParameter {
   anchorPosition?: { top: number; left: number };
 }
 
-const AUTOCOMPLETE_KEY_ACTIONS: { [k: string]: AutocompleteChangeReason | AutocompleteInputChangeReason } = {
+const AUTOCOMPLETE_KEY_ACTIONS: {
+  [k: string]: AutocompleteChangeReason | AutocompleteInputChangeReason;
+} = {
   SELECT_OPTION: 'selectOption',
   REMOVE_OPTION: 'removeOption',
   CLEAR: 'clear',
@@ -118,13 +126,17 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
   const filterLabel = filterKey ? t_i18n(filterDefinition?.label ?? filterKey) : '';
   const { typesWithFintelTemplates } = useAttributes();
-  const [autocompleteInputValues, setAutocompleteInputValues] = useState<Record<string, string>>({});
+  const [autocompleteInputValues, setAutocompleteInputValues] = useState<Record<string, string>>(
+    {},
+  );
 
-  const [inputValues, setInputValues] = useState<{
-    key: string;
-    values: string[];
-    operator?: string;
-  }[]>(filter ? [filter] : []);
+  const [inputValues, setInputValues] = useState<
+    {
+      key: string;
+      values: string[];
+      operator?: string;
+    }[]
+  >(filter ? [filter] : []);
 
   const [cacheEntities, setCacheEntities] = useState<Record<string, FilterOptionValue[]>>({});
   const [searchScope, setSearchScope] = useState<Record<string, string[]>>(
@@ -149,15 +161,20 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     availableEntityTypes,
     availableRelationshipTypes,
     setInputValues,
-    searchContext: { ...searchContext, entityTypes: [...(searchContext?.entityTypes ?? []), ...(entityTypes ?? [])] },
+    searchContext: {
+      ...searchContext,
+      entityTypes: [...(searchContext?.entityTypes ?? []), ...(entityTypes ?? [])],
+    },
     searchScope,
-  }) as [Record<string, FilterOptionValue[]>, (
-    filterKey: string,
-    cacheEntities: Record<string, FilterOptionValue[]>,
-    setCacheEntities: Dispatch<Record<string, FilterOptionValue[]>>,
-    event: SyntheticEvent,
-    isSubKey?: boolean,
-  ) => Record<string, FilterOptionValue[]>,
+  }) as [
+    Record<string, FilterOptionValue[]>,
+    (
+      filterKey: string,
+      cacheEntities: Record<string, FilterOptionValue[]>,
+      setCacheEntities: Dispatch<Record<string, FilterOptionValue[]>>,
+      event: SyntheticEvent,
+      isSubKey?: boolean,
+    ) => Record<string, FilterOptionValue[]>,
   ];
 
   const handleChange = (checked: boolean, value: string | null, childKey?: string) => {
@@ -172,7 +189,8 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       } else {
         const cleanedValues = alreadySelectedValues.filter((val) => val !== value);
         // the representation to add = the former values - the removed value
-        representationToAdd = cleanedValues.length > 0 ? { key: childKey, values: cleanedValues } : undefined;
+        representationToAdd =
+          cleanedValues.length > 0 ? { key: childKey, values: cleanedValues } : undefined;
       }
       helpers?.handleChangeRepresentationFilter(filter?.id ?? '', childFilter, representationToAdd);
     } else if (checked) {
@@ -189,12 +207,20 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     if (filterType === 'date' && filter && filter.values.length > 0) {
       const formerOperator = filter?.operator;
       const formerDate = filter.values[0]; // dates filters have a single value
-      if (formerOperator && ['lte', 'gt'].includes(formerOperator) && ['lt', 'gte'].includes(newOperator)) {
+      if (
+        formerOperator &&
+        ['lte', 'gt'].includes(formerOperator) &&
+        ['lt', 'gte'].includes(newOperator)
+      ) {
         const newDate = subDays(new Date(formerDate), -1).toISOString();
         const newInputValue = { key: filterKey, values: [newDate], newOperator };
         setInputValues([newInputValue]);
         helpers?.handleAddSingleValueFilter(filter?.id ?? '', newDate);
-      } else if (formerOperator && ['lt', 'gte'].includes(formerOperator) && ['lte', 'gt'].includes(newOperator)) {
+      } else if (
+        formerOperator &&
+        ['lt', 'gte'].includes(formerOperator) &&
+        ['lte', 'gt'].includes(newOperator)
+      ) {
         const newDate = addDays(new Date(formerDate), 1).toISOString();
         const newInputValue = { key: filterKey, values: [newDate], newOperator };
         setInputValues([newInputValue]);
@@ -209,7 +235,8 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     // convert the date to handle comparison with a timestamp
     const date = new Date(value);
     let filterDate = date;
-    if (filter?.operator === 'lte' || filter?.operator === 'gt') { // lte date <=> lte (date+1 0:0:0)  /// gt date <=> gt (date+1 0:0:0)
+    if (filter?.operator === 'lte' || filter?.operator === 'gt') {
+      // lte date <=> lte (date+1 0:0:0)  /// gt date <=> gt (date+1 0:0:0)
       filterDate = addDays(date, 1);
     }
     helpers?.handleAddSingleValueFilter(filter?.id ?? '', filterDate.toISOString());
@@ -218,10 +245,10 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   const isSpecificFilter = (fDef?: FilterDefinition) => {
     const filterType = fDef?.type;
     return (
-      filterType === 'date'
-      || filterType === 'filters'
-      || isNumericFilter(filterType)
-      || isBasicTextFilter(fDef)
+      filterType === 'date' ||
+      filterType === 'filters' ||
+      isNumericFilter(filterType) ||
+      isBasicTextFilter(fDef)
     );
   };
 
@@ -246,16 +273,33 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     />
   );
 
-  const buildAutocompleteFilter = (fKey: string, fLabel?: string, subKey?: string, disabled = false): ReactNode => {
+  const buildAutocompleteFilter = (
+    fKey: string,
+    fLabel?: string,
+    subKey?: string,
+    disabled = false,
+  ): ReactNode => {
     const getEntitiesOptions = getOptionsFromEntities(entities, searchScope, fKey);
-    const optionsValues = subKey ? (filterValues.find((f) => f.key === subKey)?.values ?? []) : filterValues;
+    const optionsValues = subKey
+      ? (filterValues.find((f) => f.key === subKey)?.values ?? [])
+      : filterValues;
 
-    const completedTypesWithFintelTemplates = typesWithFintelTemplates.concat(['Container', 'Stix-Domain-Object', 'Stix-Core-Object']);
-    const shouldAddSelfIdInFintelTemplates = host?.kind === 'fintelTemplate'
-      && (filterDefinition?.type === 'id' || (filterDefinition?.filterKey === 'regardingOf' && subKey === 'id'))
-      && (filterDefinition?.elementsForFilterValuesSearch ?? []).every((type) => completedTypesWithFintelTemplates.includes(type));
-    const shouldAddSelfIdInCustomViews = host?.kind === 'custom-view'
-      && (filterDefinition?.type === 'id' || (filterDefinition?.filterKey === 'regardingOf' && subKey === 'id'));
+    const completedTypesWithFintelTemplates = typesWithFintelTemplates.concat([
+      'Container',
+      'Stix-Domain-Object',
+      'Stix-Core-Object',
+    ]);
+    const shouldAddSelfIdInFintelTemplates =
+      host?.kind === 'fintelTemplate' &&
+      (filterDefinition?.type === 'id' ||
+        (filterDefinition?.filterKey === 'regardingOf' && subKey === 'id')) &&
+      (filterDefinition?.elementsForFilterValuesSearch ?? []).every((type) =>
+        completedTypesWithFintelTemplates.includes(type),
+      );
+    const shouldAddSelfIdInCustomViews =
+      host?.kind === 'custom-view' &&
+      (filterDefinition?.type === 'id' ||
+        (filterDefinition?.filterKey === 'regardingOf' && subKey === 'id'));
     const shouldAddSelfId = shouldAddSelfIdInFintelTemplates || shouldAddSelfIdInCustomViews;
 
     const getOptions = shouldAddSelfId
@@ -273,7 +317,12 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       : getEntitiesOptions;
 
     const entitiesOptions = getOptions.filter((option) => !optionsValues.includes(option.value));
-    const selectedOptions: FilterOptionValue[] = getSelectedOptions(getOptions, optionsValues, filtersRepresentativesMap, t_i18n);
+    const selectedOptions: FilterOptionValue[] = getSelectedOptions(
+      getOptions,
+      optionsValues,
+      filtersRepresentativesMap,
+      t_i18n,
+    );
 
     const options = [...selectedOptions, ...entitiesOptions];
 
@@ -281,12 +330,18 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       return t_i18n(option?.group ? option?.group : label);
     };
 
-    const handleAutocompleteChange = (_event: SyntheticEvent, newValue: FilterOptionValue[], reason: AutocompleteChangeReason) => {
+    const handleAutocompleteChange = (
+      _event: SyntheticEvent,
+      newValue: FilterOptionValue[],
+      reason: AutocompleteChangeReason,
+    ) => {
       const newValues = newValue.map((v) => v.value);
 
       if (reason === AUTOCOMPLETE_KEY_ACTIONS.CLEAR) {
         if (subKey) {
-          const childFilters = (filter?.values ?? []).filter((val) => val.key === subKey) as Filter[];
+          const childFilters = (filter?.values ?? []).filter(
+            (val) => val.key === subKey,
+          ) as Filter[];
           const childFilter = childFilters.length > 0 ? childFilters[0] : undefined;
           helpers?.handleChangeRepresentationFilter(filter?.id ?? '', childFilter, undefined);
         } else {
@@ -295,7 +350,10 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         return;
       }
 
-      if (reason !== AUTOCOMPLETE_KEY_ACTIONS.SELECT_OPTION && reason !== AUTOCOMPLETE_KEY_ACTIONS.REMOVE_OPTION) {
+      if (
+        reason !== AUTOCOMPLETE_KEY_ACTIONS.SELECT_OPTION &&
+        reason !== AUTOCOMPLETE_KEY_ACTIONS.REMOVE_OPTION
+      ) {
         return;
       }
 
@@ -304,7 +362,8 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       }
 
       const actualFilterValues: FilterValue[] = subKey
-        ? filterValues.filter((filterValue) => filterValue && filterValue.key === subKey).at(0)?.values ?? []
+        ? (filterValues.filter((filterValue) => filterValue && filterValue.key === subKey).at(0)
+            ?.values ?? [])
         : filterValues;
 
       const added = newValues.filter((v) => !actualFilterValues.includes(v));
@@ -312,7 +371,8 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
 
       if (added.length === 1) {
         const value = added[0];
-        const disabledOption = disabled && actualFilterValues.length === 1 && actualFilterValues.includes(value);
+        const disabledOption =
+          disabled && actualFilterValues.length === 1 && actualFilterValues.includes(value);
         if (!disabledOption) {
           handleChange(true, value, subKey);
         }
@@ -336,11 +396,16 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         options={options}
         groupBy={(option) => groupByEntities(option, fLabel)}
         onInputChange={(event, newInputValue, reason: AutocompleteInputChangeReason) => {
-          if (reason === AUTOCOMPLETE_KEY_ACTIONS.INPUT || reason === AUTOCOMPLETE_KEY_ACTIONS.CLEAR) {
+          if (
+            reason === AUTOCOMPLETE_KEY_ACTIONS.INPUT ||
+            reason === AUTOCOMPLETE_KEY_ACTIONS.CLEAR
+          ) {
             setAutocompleteInputValues((prev) => ({ ...prev, [fKey]: newInputValue }));
           }
           if (event && reason === AUTOCOMPLETE_KEY_ACTIONS.INPUT) {
-            const syntheticEvent = { target: { value: newInputValue } } as unknown as SyntheticEvent;
+            const syntheticEvent = {
+              target: { value: newInputValue },
+            } as unknown as SyntheticEvent;
             searchEntities(fKey, cacheEntities, setCacheEntities, syntheticEvent, !!subKey);
           }
         }}
@@ -364,18 +429,14 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             fullWidth={true}
             autoFocus={true}
             onFocus={(event) => {
-              searchEntities(
-                fKey,
-                cacheEntities,
-                setCacheEntities,
-                event,
-                !!subKey,
-              );
+              searchEntities(fKey, cacheEntities, setCacheEntities, event, !!subKey);
             }}
           />
         )}
         renderOption={(props, option) => {
-          const actualFilterValues = subKey ? filterValues.filter((fVal) => fVal && fVal.key === subKey).at(0)?.values ?? [] : filterValues;
+          const actualFilterValues = subKey
+            ? (filterValues.filter((fVal) => fVal && fVal.key === subKey).at(0)?.values ?? [])
+            : filterValues;
           const checked = actualFilterValues.includes(option.value);
           const disabledOptions = disabled && checked && actualFilterValues.length === 1;
 
@@ -398,9 +459,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
               >
                 <Checkbox checked={checked} disabled={disabledOptions} />
                 <ItemIcon type={option.type} color={option.color} />
-                <span style={{ padding: '0 4px 0 4px' }}>
-                  {option.label}
-                </span>
+                <span style={{ padding: '0 4px 0 4px' }}>{option.label}</span>
               </li>
             </Tooltip>
           );
@@ -408,8 +467,13 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       />
     );
   };
-  const getSpecificFilter = (fDefinition?: FilterDefinition, subKey?: string, disabled = false): ReactNode => {
-    const computedValues = filterValues.find((f) => f.key === fDefinition?.filterKey)?.values ?? filterValues;
+  const getSpecificFilter = (
+    fDefinition?: FilterDefinition,
+    subKey?: string,
+    disabled = false,
+  ): ReactNode => {
+    const computedValues =
+      filterValues.find((f) => f.key === fDefinition?.filterKey)?.values ?? filterValues;
     if (fDefinition?.type === 'date') {
       if (filterOperator === 'within') {
         const values = computedValues.length > 0 ? computedValues : DEFAULT_WITHIN_FILTER_VALUES;
@@ -466,11 +530,13 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
 
   const displayOperatorAndFilter = (fKey: string, subKey?: string, disabled = false) => {
     const isStixFiltering = entityTypes?.includes('Stix-Filtering');
-    const availableOperators = getAvailableOperatorForFilter(filterDefinition, subKey, { isStixFiltering });
+    const availableOperators = getAvailableOperatorForFilter(filterDefinition, subKey, {
+      isStixFiltering,
+    });
     const finalFilterDefinition = useFilterDefinition(fKey, entityTypes, subKey);
     return (
       <>
-        { availableOperators.length > 0 && (
+        {availableOperators.length > 0 && (
           <Select
             labelId="change-operator-select-label"
             id="change-operator-select"
@@ -492,7 +558,14 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           <>{getSpecificFilter(finalFilterDefinition, subKey, disabled)}</>
         )}
         {isOperatorRequiringValue && !isSpecificFilter(finalFilterDefinition) && (
-          <>{buildAutocompleteFilter(subKey ?? fKey, finalFilterDefinition?.label ?? t_i18n(fKey), subKey, disabled)}</>
+          <>
+            {buildAutocompleteFilter(
+              subKey ?? fKey,
+              finalFilterDefinition?.label ?? t_i18n(fKey),
+              subKey,
+              disabled,
+            )}
+          </>
         )}
       </>
     );
@@ -500,16 +573,19 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
 
   let disableSubfilter1 = false;
   let disableSubfilter2 = false;
-  if (filterDefinition?.subFilters
-    && filterDefinition.subFilters.length > 1
-    && filterDefinition?.subFilters[1].filterKey === 'dynamic'
-    && filter?.values.filter((f) => f.key === 'relationship_type').length === 0
+  if (
+    filterDefinition?.subFilters &&
+    filterDefinition.subFilters.length > 1 &&
+    filterDefinition?.subFilters[1].filterKey === 'dynamic' &&
+    filter?.values.filter((f) => f.key === 'relationship_type').length === 0
   ) {
     disableSubfilter2 = true;
-  } else if (filterDefinition?.subFilters
-    && filterDefinition.subFilters.length > 1
-    && filterDefinition?.subFilters[1].filterKey === 'dynamic'
-    && (filter?.values.filter((f) => f.key === 'dynamic')?.length ?? 0) > 0) {
+  } else if (
+    filterDefinition?.subFilters &&
+    filterDefinition.subFilters.length > 1 &&
+    filterDefinition?.subFilters[1].filterKey === 'dynamic' &&
+    (filter?.values.filter((f) => f.key === 'dynamic')?.length ?? 0) > 0
+  ) {
     disableSubfilter1 = true;
   }
   return (
@@ -529,53 +605,61 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         },
       }}
     >
-      {filterDefinition?.subFilters && filterDefinition.subFilters.length > 1
-        ? (
-            <div
-              style={{
-                width: 250,
-                padding: 8,
-              }}
-            >
-              {displayOperatorAndFilter(filterKey, filterDefinition?.subFilters[0].filterKey, disableSubfilter1)}
-              <Chip
-                style={{
-                  fontFamily: 'Consolas, monaco, monospace',
-                  margin: '10px 10px 15px 0',
-                }}
-                label={t_i18n('WITH')}
-              />
-              {displayOperatorAndFilter(filterKey, filterDefinition.subFilters[1].filterKey, disableSubfilter2)}
-            </div>
-          )
-        : (
-            <div style={{ display: 'inline-flex' }}>
+      {filterDefinition?.subFilters && filterDefinition.subFilters.length > 1 ? (
+        <div
+          style={{
+            width: 250,
+            padding: 8,
+          }}
+        >
+          {displayOperatorAndFilter(
+            filterKey,
+            filterDefinition?.subFilters[0].filterKey,
+            disableSubfilter1,
+          )}
+          <Chip
+            style={{
+              fontFamily: 'Consolas, monaco, monospace',
+              margin: '10px 10px 15px 0',
+            }}
+            label={t_i18n('WITH')}
+          />
+          {displayOperatorAndFilter(
+            filterKey,
+            filterDefinition.subFilters[1].filterKey,
+            disableSubfilter2,
+          )}
+        </div>
+      ) : (
+        <div style={{ display: 'inline-flex' }}>
+          <div
+            style={{
+              width: 250,
+              padding: 8,
+            }}
+          >
+            {displayOperatorAndFilter(filterKey)}
+          </div>
+          {filterOperator === 'within' && (
+            <div style={{ width: 150, display: 'inline-flex' }}>
               <div
                 style={{
-                  width: 250,
-                  padding: 8,
+                  color: theme.palette.text.disabled,
+                  borderLeft: '0.5px solid',
+                  marginLeft: '10px',
+                  marginTop: '10px',
+                  marginBottom: '10px',
                 }}
-              >
-                {displayOperatorAndFilter(filterKey)}
-              </div>
-              {filterOperator === 'within'
-                && (
-                  <div style={{ width: 150, display: 'inline-flex' }}>
-                    <div style={{
-                      color: theme.palette.text.disabled,
-                      borderLeft: '0.5px solid',
-                      marginLeft: '10px',
-                      marginTop: '10px',
-                      marginBottom: '10px',
-                    }}
-                    />
-                    <QuickRelativeDateFiltersButtons filter={filter} helpers={helpers} handleClose={handleClose} />
-                  </div>
-                )
-              }
+              />
+              <QuickRelativeDateFiltersButtons
+                filter={filter}
+                helpers={helpers}
+                handleClose={handleClose}
+              />
             </div>
-          )
-      }
+          )}
+        </div>
+      )}
     </Popover>
   );
 };

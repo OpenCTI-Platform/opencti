@@ -45,12 +45,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
       disabledSteps={disabledSteps ?? []}
       open={open}
     >
-      <WidgetUpsert
-        open={open}
-        onCancel={close}
-        onSubmit={onSubmit}
-        isUpdate={!!widget}
-      />
+      <WidgetUpsert open={open} onCancel={close} onSubmit={onSubmit} isUpdate={!!widget} />
     </WidgetConfigProvider>
   );
 };

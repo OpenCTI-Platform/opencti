@@ -80,13 +80,9 @@ export const FormLineComponent: FunctionComponent<FormLineComponentProps> = ({
     <ListItem
       divider={true}
       disablePadding
-      secondaryAction={(
-        <FormPopover
-          formId={data.id}
-          formName={data.name}
-          paginationOptions={paginationOptions}
-        />
-      )}
+      secondaryAction={
+        <FormPopover formId={data.id} formName={data.name} paginationOptions={paginationOptions} />
+      }
     >
       <ListItemButton
         classes={{ root: classes.item }}
@@ -97,7 +93,7 @@ export const FormLineComponent: FunctionComponent<FormLineComponentProps> = ({
           <ItemIcon type={mainEntityType} />
         </ListItemIcon>
         <ListItemText
-          primary={(
+          primary={
             <div>
               <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
                 {data.name}
@@ -118,16 +114,14 @@ export const FormLineComponent: FunctionComponent<FormLineComponentProps> = ({
                 {fd(data.updated_at)}
               </div>
             </div>
-          )}
+          }
         />
       </ListItemButton>
     </ListItem>
   );
 };
 
-export const FormLineDummy: FunctionComponent<{ dataColumns: DataColumns }> = ({
-  dataColumns,
-}) => {
+export const FormLineDummy: FunctionComponent<{ dataColumns: DataColumns }> = ({ dataColumns }) => {
   const classes = useStyles();
 
   return (
@@ -137,32 +131,18 @@ export const FormLineDummy: FunctionComponent<{ dataColumns: DataColumns }> = ({
       secondaryAction={<MoreVert className={classes.itemIconDisabled} />}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <Skeleton
-          animation="wave"
-          variant="circular"
-          width={30}
-          height={30}
-        />
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
             {Object.entries(dataColumns).map(([key, column]) => (
-              <div
-                key={key}
-                className={classes.bodyItem}
-                style={{ width: column.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
+              <div key={key} className={classes.bodyItem} style={{ width: column.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
               </div>
             ))}
           </div>
-        )}
+        }
       />
     </ListItem>
   );

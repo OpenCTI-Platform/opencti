@@ -1,8 +1,9 @@
 import { CsvMapperEdit, CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
-import { csvMapperRepresentationToFormData, formDataToCsvMapperRepresentation } from '@components/data/csvMapper/representations/RepresentationUtils';
 import {
-  CsvMapperRepresentationAttributesForm_allSchemaAttributes$data,
-} from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
+  csvMapperRepresentationToFormData,
+  formDataToCsvMapperRepresentation,
+} from '@components/data/csvMapper/representations/RepresentationUtils';
+import { CsvMapperRepresentationAttributesForm_allSchemaAttributes$data } from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
 import { CsvMapperEditionContainerFragment_csvMapper$data } from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerFragment_csvMapper.graphql';
 import { isNotEmptyField } from '../../../../utils/utils';
 import { useComputeDefaultValues } from '../../../../utils/hooks/useDefaultValues';
@@ -56,9 +57,7 @@ export const csvMapperToFormData = (
  *
  * @returns Data in backend format.
  */
-export const formDataToCsvMapper = (
-  data: CsvMapperFormData,
-): CsvMapperEdit => {
+export const formDataToCsvMapper = (data: CsvMapperFormData): CsvMapperEdit => {
   return {
     id: data.id,
     name: data.name ?? '',

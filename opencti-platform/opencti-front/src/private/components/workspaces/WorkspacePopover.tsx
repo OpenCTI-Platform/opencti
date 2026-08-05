@@ -12,7 +12,12 @@ import Drawer from '../common/drawer/Drawer';
 import { useFormatter } from '../../../components/i18n';
 import WorkspaceEditionContainer from './WorkspaceEditionContainer';
 import Security from '../../../utils/Security';
-import { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_EXDELETE, EXPLORE_EXUPDATE_PUBLISH, INVESTIGATION_INUPDATE_INDELETE } from '../../../utils/hooks/useGranted';
+import {
+  EXPLORE_EXUPDATE,
+  EXPLORE_EXUPDATE_EXDELETE,
+  EXPLORE_EXUPDATE_PUBLISH,
+  INVESTIGATION_INUPDATE_INDELETE,
+} from '../../../utils/hooks/useGranted';
 import { deleteNode, insertNode } from '../../../utils/store';
 import useWorkspaceHandleExportJson from './useWorkspaceHandleExportJson';
 import WorkspaceDuplicationDialog from './WorkspaceDuplicationDialog';
@@ -47,11 +52,7 @@ const WorkspacePopover = ({ data, paginationOptions }: WorkspacePopoverProps) =>
   const { workspaceHandleExportJson } = useWorkspaceHandleExportJson();
 
   const workspace = useFragment(workspacePopoverFragment, data);
-  const {
-    id,
-    type,
-    currentUserAccessRight,
-  } = workspace;
+  const { id, type, currentUserAccessRight } = workspace;
 
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [displayEdit, setDisplayEdit] = useState(false);
@@ -129,12 +130,14 @@ const WorkspacePopover = ({ data, paginationOptions }: WorkspacePopoverProps) =>
     const filter = {
       mode: 'and',
       filterGroups: [],
-      filters: [{
-        key: 'dashboard_id',
-        values: [id],
-        mode: 'or',
-        operator: 'eq',
-      }],
+      filters: [
+        {
+          key: 'dashboard_id',
+          values: [id],
+          mode: 'or',
+          operator: 'eq',
+        },
+      ],
     };
     navigate(`/dashboard/workspaces/dashboards_public?filters=${JSON.stringify(filter)}`);
   };
@@ -167,7 +170,12 @@ const WorkspacePopover = ({ data, paginationOptions }: WorkspacePopoverProps) =>
       >
         <MoreVert />
       </IconButton>
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose} aria-label="Workspace menu">
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+        aria-label="Workspace menu"
+      >
         <Security needs={[EXPLORE_EXUPDATE]} hasAccess={canEdit}>
           <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
         </Security>
@@ -187,7 +195,9 @@ const WorkspacePopover = ({ data, paginationOptions }: WorkspacePopoverProps) =>
                 {t_i18n('View associated public dashboards')}
               </MenuItem>
               <Security needs={[EXPLORE_EXUPDATE_PUBLISH]} hasAccess={canManage}>
-                <MenuItem onClick={handleOpenCreation}>{t_i18n('Create a public dashboard')}</MenuItem>
+                <MenuItem onClick={handleOpenCreation}>
+                  {t_i18n('Create a public dashboard')}
+                </MenuItem>
               </Security>
             </Box>
           </Box>
@@ -223,9 +233,11 @@ const WorkspacePopover = ({ data, paginationOptions }: WorkspacePopoverProps) =>
       <DeleteDialog
         deletion={deletion}
         submitDelete={submitDelete}
-        message={type === 'investigation'
-          ? t_i18n('Do you want to delete this investigation?')
-          : t_i18n('Do you want to delete this dashboard?')}
+        message={
+          type === 'investigation'
+            ? t_i18n('Do you want to delete this investigation?')
+            : t_i18n('Do you want to delete this dashboard?')
+        }
       />
       <WorkspaceEditionContainer
         workspace={workspace}

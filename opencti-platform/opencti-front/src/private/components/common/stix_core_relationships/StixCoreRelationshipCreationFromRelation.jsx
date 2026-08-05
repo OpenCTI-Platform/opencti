@@ -312,10 +312,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
       R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc(
-        'externalReferences',
-        R.pluck('value', values.externalReferences),
-      ),
+      R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
     )(values);
     commitMutation({
       mutation: isRelationReversed
@@ -327,12 +324,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
           const payload = store.getRootField('stixCoreRelationshipAdd');
           const newEdge = payload.setLinkedRecord(payload, 'node');
           const container = store.getRoot();
-          sharedUpdater(
-            store,
-            container.getDataID(),
-            this.props.paginationOptions,
-            newEdge,
-          );
+          sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge);
         }
       },
       setSubmitting,
@@ -362,15 +354,10 @@ class StixCoreRelationshipCreationFromRelation extends Component {
         {Array.from(Array(20), (e, i) => (
           <ListItem key={i} divider={true}>
             <ListItemIcon>
-              <Skeleton
-                animation="wave"
-                variant="circular"
-                width={30}
-                height={30}
-              />
+              <Skeleton animation="wave" variant="circular" width={30} height={30} />
             </ListItemIcon>
             <ListItemText
-              primary={(
+              primary={
                 <Skeleton
                   animation="wave"
                   variant="rectangular"
@@ -378,15 +365,10 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                   height={15}
                   style={{ marginBottom: 10 }}
                 />
-              )}
-              secondary={(
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height={15}
-                />
-              )}
+              }
+              secondary={
+                <Skeleton animation="wave" variant="rectangular" width="90%" height={15} />
+              }
             />
           </ListItem>
         ))}
@@ -409,9 +391,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
       <Stack>
         {!onlyObservables ? (
           <QueryRenderer
-            query={
-              stixCoreRelationshipCreationFromRelationStixDomainObjectsLinesQuery
-            }
+            query={stixCoreRelationshipCreationFromRelationStixDomainObjectsLinesQuery}
             variables={{ count: 25, ...stixDomainObjectsPaginationOptions }}
             render={({ props }) => {
               if (props) {
@@ -429,9 +409,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
           ''
         )}
         <QueryRenderer
-          query={
-            stixCoreRelationshipCreationFromRelationStixCyberObservablesLinesQuery
-          }
+          query={stixCoreRelationshipCreationFromRelationStixCyberObservablesLinesQuery}
           variables={{
             search: this.state.search,
             types: stixCoreObjectTypes,
@@ -448,12 +426,11 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                 />
               );
             }
-            return !stixCoreObjectTypes
-              || stixCoreObjectTypes.length === 0 ? (
-                  this.renderFakeList()
-                ) : (
-                  <div> &nbsp; </div>
-                );
+            return !stixCoreObjectTypes || stixCoreObjectTypes.length === 0 ? (
+              this.renderFakeList()
+            ) : (
+              <div> &nbsp; </div>
+            );
           }}
         />
         <Stack direction="row" alignSelf="flex-end">
@@ -481,17 +458,20 @@ class StixCoreRelationshipCreationFromRelation extends Component {
     return (
       <UserContext.Consumer>
         {({ schema }) => {
-          const relationshipTypes = R.uniq(resolveRelationsTypes(
-            fromEntity.parent_types.includes('Stix-Cyber-Observable')
-              ? 'observable'
-              : fromEntity.entity_type,
-            toEntity.entity_type,
-            schema.schemaRelationsTypesMapping,
-          ).filter(
-            (n) => R.isNil(allowedRelationshipTypes)
-              || allowedRelationshipTypes.length === 0
-              || allowedRelationshipTypes.includes(n),
-          ));
+          const relationshipTypes = R.uniq(
+            resolveRelationsTypes(
+              fromEntity.parent_types.includes('Stix-Cyber-Observable')
+                ? 'observable'
+                : fromEntity.entity_type,
+              toEntity.entity_type,
+              schema.schemaRelationsTypesMapping,
+            ).filter(
+              (n) =>
+                R.isNil(allowedRelationshipTypes) ||
+                allowedRelationshipTypes.length === 0 ||
+                allowedRelationshipTypes.includes(n),
+            ),
+          );
           return (
             <>
               <div className={classes.header}>
@@ -554,11 +534,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
             onClick={this.handleOpen.bind(this)}
             color="primary"
             aria-label="Add"
-            className={
-              paddingRight
-                ? classes.createButtonWithPadding
-                : classes.createButton
-            }
+            className={paddingRight ? classes.createButtonWithPadding : classes.createButton}
           >
             <Add />
           </Fab>
@@ -568,13 +544,13 @@ class StixCoreRelationshipCreationFromRelation extends Component {
           onClose={this.handleClose.bind(this)}
           title={t('Create a relationship')}
           subHeader={{
-            left: [(
+            left: [
               <SearchInput
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
                 key="leftInput"
-              />
-            )],
+              />,
+            ],
           }}
         >
           <QueryRenderer
@@ -585,9 +561,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                 return (
                   <div>
                     {step === 0 ? this.renderSelectEntity() : ''}
-                    {step === 1
-                      ? this.renderForm(props.stixCoreRelationship)
-                      : ''}
+                    {step === 1 ? this.renderForm(props.stixCoreRelationship) : ''}
                   </div>
                 );
               }
@@ -615,7 +589,4 @@ StixCoreRelationshipCreationFromRelation.propTypes = {
   paddingRight: PropTypes.bool,
 };
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreRelationshipCreationFromRelation);
+export default R.compose(inject18n, withStyles(styles))(StixCoreRelationshipCreationFromRelation);

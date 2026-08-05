@@ -17,18 +17,12 @@ interface UseGraphPainterArgs {
 
 const useGraphPainter = (args?: UseGraphPainterArgs) => {
   const theme = useTheme<Theme>();
-  const {
-    selectedLinks = [],
-    selectedNodes = [],
-    detailsPreviewSelected,
-    search,
-  } = args ?? {};
+  const { selectedLinks = [], selectedNodes = [], detailsPreviewSelected, search } = args ?? {};
 
   const DEFAULT_COLOR = '#0fbcff'; // Normally never used (all colors are defined).
   const colors = {
     selected: theme.palette.secondary.main ?? DEFAULT_COLOR,
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+    // @ts-expect-error palette.warning is not declared as optional in the augmented Theme type
     inferred: theme.palette.warning?.main ?? DEFAULT_COLOR,
     numbersBackground: theme.palette.background.default ?? DEFAULT_COLOR,
     text: theme.palette.text?.secondary ?? DEFAULT_COLOR,
@@ -42,12 +36,9 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
    * @param data Data associated to the node.
    * @param opts Options to change drawing.
    */
-  const nodePaint = (
-    data: GraphNode,
-    ctx: CanvasRenderingContext2D,
-    opts: PaintOptions = {},
-  ) => {
-    const { label, img, x, y, numberOfConnectedElement, color, disabled, isNestedInferred, id } = data;
+  const nodePaint = (data: GraphNode, ctx: CanvasRenderingContext2D, opts: PaintOptions = {}) => {
+    const { label, img, x, y, numberOfConnectedElement, color, disabled, isNestedInferred, id } =
+      data;
     const { showNbConnectedElements } = opts;
 
     const hasSelection = selectedNodes.length > 0;
@@ -86,7 +77,8 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     ctx.fillText(label, x, y + 9);
     ctx.fillStyle = disabled ? colors.disabled : color;
 
-    const validConnectedElements = numberOfConnectedElement === undefined || numberOfConnectedElement > 0;
+    const validConnectedElements =
+      numberOfConnectedElement === undefined || numberOfConnectedElement > 0;
     if (showNbConnectedElements && validConnectedElements) {
       ctx.beginPath();
       ctx.arc(x + 4, y - 3, 2, 0, 2 * Math.PI, false);
@@ -115,11 +107,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
    * @param color The color to use.
    * @param ctx Context of the canvas.
    */
-  const nodePointerAreaPaint = (
-    data: GraphNode,
-    color: string,
-    ctx: CanvasRenderingContext2D,
-  ) => {
+  const nodePointerAreaPaint = (data: GraphNode, color: string, ctx: CanvasRenderingContext2D) => {
     const { name, x, y } = data;
 
     ctx.beginPath();
@@ -154,20 +142,18 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
    * @param link Link object from the lib of graphs.
    * @param ctx Context of the canvas.
    */
-  const linkLabelPaint = (
-    link: GraphLink,
-    ctx: CanvasRenderingContext2D,
-  ) => {
+  const linkLabelPaint = (link: GraphLink, ctx: CanvasRenderingContext2D) => {
     const start = link.source;
     const end = link.target;
     if (
-      link.disabled
-      || typeof start !== 'object'
-      || typeof end !== 'object'
-      || start.x === undefined
-      || end.x === undefined
-      || start.y === undefined
-      || end.y === undefined) {
+      link.disabled ||
+      typeof start !== 'object' ||
+      typeof end !== 'object' ||
+      start.x === undefined ||
+      end.x === undefined ||
+      start.y === undefined ||
+      end.y === undefined
+    ) {
       return;
     }
 

@@ -1,6 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
-import AdministrativeAreasLines, { administrativeAreasLinesQuery } from './administrative_areas/AdministrativeAreasLines';
+import AdministrativeAreasLines, {
+  administrativeAreasLinesQuery,
+} from './administrative_areas/AdministrativeAreasLines';
 import AdministrativeAreaCreation from './administrative_areas/AdministrativeAreaCreation';
 import Security from '../../../utils/Security';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -22,29 +24,23 @@ const AdministrativeAreas: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Administrative Areas | Locations'));
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<AdministrativeAreasLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    {
-      searchTerm: '',
-      sortBy: 'name',
-      orderAsc: true,
-      openExports: false,
-      filters: emptyFilterGroup,
-      numberOfElements: {
-        number: 0,
-        symbol: '',
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<AdministrativeAreasLinesPaginationQuery$variables>(
+      LOCAL_STORAGE_KEY,
+      {
+        searchTerm: '',
+        sortBy: 'name',
+        orderAsc: true,
+        openExports: false,
+        filters: emptyFilterGroup,
+        numberOfElements: {
+          number: 0,
+          symbol: '',
+        },
       },
-    },
-  );
+    );
   const renderLines = () => {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-    } = viewStorage;
+    const { sortBy, orderAsc, searchTerm, filters, openExports, numberOfElements } = viewStorage;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -85,27 +81,24 @@ const AdministrativeAreas: FunctionComponent = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        createButton={(
+        createButton={
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <AdministrativeAreaCreation paginationOptions={paginationOptions} />
           </Security>
-        )}
+        }
         iconExtension
       >
         {queryRef && (
           <React.Suspense
-            fallback={(
+            fallback={
               <>
                 {Array(20)
                   .fill(0)
                   .map((_, idx) => (
-                    <AdministrativeAreaLineDummy
-                      key={idx}
-                      dataColumns={dataColumns}
-                    />
+                    <AdministrativeAreaLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            )}
+            }
           >
             <AdministrativeAreasLines
               queryRef={queryRef}
@@ -120,7 +113,12 @@ const AdministrativeAreas: FunctionComponent = () => {
   };
   return (
     <div data-testid="administrative-area-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Administrative areas'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Locations') },
+          { label: t_i18n('Administrative areas'), current: true },
+        ]}
+      />
       {renderLines()}
     </div>
   );

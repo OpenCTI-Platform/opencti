@@ -17,7 +17,13 @@ import { getDraftContext } from '../utils/draftContext';
 import { INPUT_OBJECTS } from '../schema/general';
 import { doYield } from '../utils/eventloop-utils';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { BasicNodeEdge, BasicStoreCommon, InternalEditInput, StoreCommon, BasicConnection } from '../types/store';
+import type {
+  BasicNodeEdge,
+  BasicStoreCommon,
+  InternalEditInput,
+  StoreCommon,
+  BasicConnection,
+} from '../types/store';
 import type { AttributeDefinition, BasicObjectDefinition } from '../schema/attribute-definition';
 import { pushAll } from '../utils/arrayUtil';
 import { lockResources } from '../lock/master-lock';
@@ -78,15 +84,14 @@ export const READ_INDEX_INFERRED_RELATIONSHIPS = `${INDEX_INFERRED_RELATIONSHIPS
 export const INDEX_DRAFT_OBJECTS = `${ES_INDEX_PREFIX}_draft_objects`;
 export const READ_INDEX_DRAFT_OBJECTS = `${INDEX_DRAFT_OBJECTS}*`;
 
-export const isInferredIndex = (
-  index: string | undefined | null,
-): boolean => !!index && (index.startsWith(INDEX_INFERRED_ENTITIES) || index.startsWith(INDEX_INFERRED_RELATIONSHIPS));
-export const isDraftIndex = (index: string | undefined | null): boolean => !!index && index.startsWith(INDEX_DRAFT_OBJECTS);
+export const isInferredIndex = (index: string | undefined | null): boolean =>
+  !!index &&
+  (index.startsWith(INDEX_INFERRED_ENTITIES) || index.startsWith(INDEX_INFERRED_RELATIONSHIPS));
+export const isDraftIndex = (index: string | undefined | null): boolean =>
+  !!index && index.startsWith(INDEX_DRAFT_OBJECTS);
 
 // indices that we only use as read only, not created anymore on new platforms
-export const DEPRECATED_INDICES = [
-  INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
-];
+export const DEPRECATED_INDICES = [INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS];
 export const WRITE_PLATFORM_INDICES = [
   INDEX_DELETED_OBJECTS,
   INDEX_FILES,
@@ -134,10 +139,7 @@ export const READ_DATA_INDICES = [
   ...READ_DATA_INDICES_INFERRED,
 ];
 
-export const READ_STIX_DATA_WITH_INFERRED = [
-  ...READ_STIX_INDICES,
-  ...READ_DATA_INDICES_INFERRED,
-];
+export const READ_STIX_DATA_WITH_INFERRED = [...READ_STIX_INDICES, ...READ_DATA_INDICES_INFERRED];
 export const READ_PLATFORM_INDICES = [READ_INDEX_HISTORY, ...READ_DATA_INDICES];
 export const READ_ENTITIES_INDICES_WITHOUT_INFERRED = [
   READ_INDEX_INTERNAL_OBJECTS,
@@ -164,9 +166,13 @@ export const READ_RELATIONSHIPS_INDICES = [
 export const isNotEmptyField = (field: any): boolean => !R.isEmpty(field) && !R.isNil(field);
 export const isEmptyField = (field: any): boolean => !isNotEmptyField(field);
 
-export const getIndicesToQuery = (context: AuthContext, user: AuthUser, index: string | string[] | undefined | null): string => {
+export const getIndicesToQuery = (
+  context: AuthContext,
+  user: AuthUser,
+  index: string | string[] | undefined | null,
+): string => {
   const draftContext = getDraftContext(context, user);
-  return index + (!draftContext ? '' : (`,${READ_INDEX_DRAFT_OBJECTS}`));
+  return index + (!draftContext ? '' : `,${READ_INDEX_DRAFT_OBJECTS}`);
 };
 
 const getMonday = (d: Date): Date => {
@@ -190,8 +196,12 @@ export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string,
     /* v8 ignore next */
     case 'week':
       dateFormat = 'YYYY-MM-DD';
-      startDateParsed = moment.parseZone(getMonday(new Date(startDateParsed.format(dateFormat))).toISOString());
-      endDateParsed = moment.parseZone(getMonday(new Date(endDateParsed.format(dateFormat))).toISOString());
+      startDateParsed = moment.parseZone(
+        getMonday(new Date(startDateParsed.format(dateFormat))).toISOString(),
+      );
+      endDateParsed = moment.parseZone(
+        getMonday(new Date(endDateParsed.format(dateFormat))).toISOString(),
+      );
       break;
     case 'hour':
       dateFormat = 'YYYY-MM-DD HH:mm:ss';
@@ -214,7 +224,10 @@ export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string,
         dataValue = data[j].value;
       }
     }
-    const intervalDate = moment(workDate).startOf(interval as moment.unitOfTime.StartOf).utc().toISOString();
+    const intervalDate = moment(workDate)
+      .startOf(interval as moment.unitOfTime.StartOf)
+      .utc()
+      .toISOString();
     newData[i] = {
       date: intervalDate,
       value: dataValue,
@@ -268,7 +281,7 @@ export const buildPaginationFromEdges = <T>(
 ): BasicConnection<T> => {
   // Because of stateless approach its difficult to know if its finish
   // this test could lead to an extra round trip sometimes
-  const hasNextPage = (edges.length + filteredCount) === limit;
+  const hasNextPage = edges.length + filteredCount === limit;
   // For same reason its difficult to know if a previous page exists.
   // Considering for now that if user specific an offset, it should exists a previous page.
   const hasPreviousPage = searchAfter !== undefined && searchAfter !== null;
@@ -284,7 +297,7 @@ export const buildPaginationFromEdges = <T>(
   return { edges, pageInfo };
 };
 
-export const buildPagination = <T> (
+export const buildPagination = <T>(
   limit: number,
   searchAfter: string | undefined | null,
   instances: { node: T; sort?: estypes.SortResults; types?: string[] }[],
@@ -343,7 +356,7 @@ export const computeAverage = (numbers: number[]): number => {
   return Math.round(sum / numbers.length || 0);
 };
 
-export const wait = <T> (ms: number, resolveResult?: T): Promise<void | T> => {
+export const wait = <T>(ms: number, resolveResult?: T): Promise<void | T> => {
   return new Promise((resolve) => setTimeout(() => resolve(resolveResult), ms));
 };
 
@@ -378,7 +391,9 @@ export const runFunctionAsLongRunning = async (
         await lock?.unlock();
       };
       const fullRuleApplyPromise = fullFunctionRun();
-      const raceResult = await Promise.race([fullRuleApplyPromise, timeoutPromise]) as { timeout?: boolean };
+      const raceResult = (await Promise.race([fullRuleApplyPromise, timeoutPromise])) as {
+        timeout?: boolean;
+      };
       return !raceResult?.timeout;
     }
   } catch (err: any) {
@@ -400,12 +415,17 @@ export const extractIdsFromStoreObject = (instance: BasicStoreCommon): string[] 
   return ids;
 };
 
-export const extractObjectsPirsFromInputs = (inputs: InternalEditInput[], entityType: string): { pir_ids: string[] } => {
+export const extractObjectsPirsFromInputs = (
+  inputs: InternalEditInput[],
+  entityType: string,
+): { pir_ids: string[] } => {
   const pir_ids: string[] = [];
   if (isStixDomainObjectContainer(entityType)) {
     inputs.forEach((input) => {
       if (input && input.key === INPUT_OBJECTS && input.value?.length > 0) {
-        const pirIds = input.value.flatMap((value) => (value as Record<string, any>)[RELATION_IN_PIR] ?? []);
+        const pirIds = input.value.flatMap(
+          (value) => (value as Record<string, any>)[RELATION_IN_PIR] ?? [],
+        );
         pushAll(pir_ids, pirIds);
       }
     });
@@ -413,12 +433,17 @@ export const extractObjectsPirsFromInputs = (inputs: InternalEditInput[], entity
   return { pir_ids };
 };
 
-export const extractObjectsRestrictionsFromInputs = (inputs: InternalEditInput[], entityType: string): { markings: string [] } => {
+export const extractObjectsRestrictionsFromInputs = (
+  inputs: InternalEditInput[],
+  entityType: string,
+): { markings: string[] } => {
   const markings: string[] = [];
   if (isStixDomainObjectContainer(entityType)) {
     inputs.forEach((input) => {
       if (input && input.key === INPUT_OBJECTS && input.value?.length > 0) {
-        const objectMarking = input.value.flatMap((value) => (value as Record<string, any>)[RELATION_OBJECT_MARKING] ?? []);
+        const objectMarking = input.value.flatMap(
+          (value) => (value as Record<string, any>)[RELATION_OBJECT_MARKING] ?? [],
+        );
         pushAll(markings, objectMarking);
       }
     });
@@ -428,7 +453,10 @@ export const extractObjectsRestrictionsFromInputs = (inputs: InternalEditInput[]
   };
 };
 
-export const isObjectPathTargetMultipleAttribute = (instance: BasicStoreCommon, object_path: string): boolean => {
+export const isObjectPathTargetMultipleAttribute = (
+  instance: BasicStoreCommon,
+  object_path: string,
+): boolean => {
   const preparedPath = object_path.startsWith('/') ? object_path : `/${object_path}`;
   const pathArray = preparedPath.split('/').filter((p) => isNotEmptyField(p));
   let currentAttr: AttributeDefinition | undefined;
@@ -453,9 +481,10 @@ export const isObjectPathTargetMultipleAttribute = (instance: BasicStoreCommon, 
   throw UnsupportedError('Invalid schema pointer for partial update', { path: object_path });
 };
 
-export const asyncListTransformation = async <T> (
+export const asyncListTransformation = async <T>(
   elements: StoreCommon[],
-  preparatoryFunction: (instance: StoreCommon) => T): Promise<T[]> => {
+  preparatoryFunction: (instance: StoreCommon) => T,
+): Promise<T[]> => {
   const preparedElements = [];
   for (let n = 0; n < elements.length; n += 1) {
     await doYield();

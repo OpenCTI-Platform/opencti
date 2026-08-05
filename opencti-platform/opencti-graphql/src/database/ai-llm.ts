@@ -96,17 +96,32 @@ if (AI_ENABLED && AI_TOKEN) {
       break;
 
     default:
-      throw UnsupportedError('Not supported AI type (currently support: mistralai, openai, azureopenai)', { type: AI_TYPE });
+      throw UnsupportedError(
+        'Not supported AI type (currently support: mistralai, openai, azureopenai)',
+        { type: AI_TYPE },
+      );
   }
 }
 
 // Query MistralAI (Streaming)
-export const queryMistralAi = async (busId: string | null, systemMessage: string, userMessage: string, user: AuthUser) => {
+export const queryMistralAi = async (
+  busId: string | null,
+  systemMessage: string,
+  userMessage: string,
+  user: AuthUser,
+) => {
   if (!client) {
-    throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
+    throw UnsupportedError('Incorrect AI configuration', {
+      enabled: AI_ENABLED,
+      type: AI_TYPE,
+      endpoint: AI_ENDPOINT,
+      model: AI_MODEL,
+    });
   }
   try {
-    logApp.debug('[AI] Querying MistralAI with prompt', { questionStart: userMessage.substring(0, 100) });
+    logApp.debug('[AI] Querying MistralAI with prompt', {
+      questionStart: userMessage.substring(0, 100),
+    });
     const request: ChatCompletionStreamRequest = {
       model: AI_MODEL,
       temperature: 0,
@@ -133,30 +148,39 @@ export const queryMistralAi = async (busId: string | null, systemMessage: string
     return 'No response from MistralAI';
   } catch (err) {
     logApp.error('[AI] Cannot query MistralAI', { cause: err });
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // oxlint-disable-next-line typescript/ban-ts-comment
     // @ts-expect-error
     return `An error occurred: ${err.toString()}`;
   }
 };
 
 // Query OpenAI (Streaming)
-export const queryChatGpt = async (busId: string | null, developerMessage: string, userMessage: string, user: AuthUser) => {
+export const queryChatGpt = async (
+  busId: string | null,
+  developerMessage: string,
+  userMessage: string,
+  user: AuthUser,
+) => {
   if (!client) {
-    throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
+    throw UnsupportedError('Incorrect AI configuration', {
+      enabled: AI_ENABLED,
+      type: AI_TYPE,
+      endpoint: AI_ENDPOINT,
+      model: AI_MODEL,
+    });
   }
   try {
     logApp.info('[AI] Querying OpenAI with prompt', { type: AI_TYPE });
     const response = await (client as OpenAI)?.chat.completions.create({
       model: AI_MODEL,
       messages: [
-        { role: (AI_TYPE === 'azureopenai') ? 'system' : 'developer', content: developerMessage },
+        { role: AI_TYPE === 'azureopenai' ? 'system' : 'developer', content: developerMessage },
         { role: 'user', content: truncate(userMessage, AI_MAX_TOKENS, false) },
       ],
       stream: true,
     });
     let content = '';
     if (response) {
-      // eslint-disable-next-line no-restricted-syntax
       for await (const chunk of response) {
         if (chunk.choices[0]?.delta.content !== undefined) {
           const streamText = chunk.choices[0].delta.content;
@@ -172,15 +196,22 @@ export const queryChatGpt = async (busId: string | null, developerMessage: strin
     return 'No response from OpenAI';
   } catch (err) {
     logApp.error('[AI] Cannot query OpenAI', { cause: err });
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // oxlint-disable-next-line typescript/ban-ts-comment
     // @ts-expect-error
     return `An error occurred: ${err.toString()}`;
   }
 };
 
 // Generic AI Query Handler
-export const queryAi = async (busId: string | null, developerMessage: string | null, userMessage: string, user: AuthUser) => {
-  const finalDeveloperMessage = developerMessage || 'You are an assistant helping a cyber threat intelligence analyst to better understand cyber threat intelligence data.';
+export const queryAi = async (
+  busId: string | null,
+  developerMessage: string | null,
+  userMessage: string,
+  user: AuthUser,
+) => {
+  const finalDeveloperMessage =
+    developerMessage ||
+    'You are an assistant helping a cyber threat intelligence analyst to better understand cyber threat intelligence data.';
   switch (AI_TYPE) {
     case 'mistralai':
       return queryMistralAi(busId, finalDeveloperMessage, userMessage, user);

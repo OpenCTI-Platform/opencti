@@ -52,7 +52,10 @@ const RootSubType = () => {
       <Routes>
         <Route path="/" element={<SubType />}>
           <Route index element={<SubTypeIndexRedirect />} />
-          <Route path={SUBTYPE_TAB_WORKFLOW} element={isDraftWorkspaceType ? <SubTypeWorkflow /> : <GlobalWorkflowSettingsCard />} />
+          <Route
+            path={SUBTYPE_TAB_WORKFLOW}
+            element={isDraftWorkspaceType ? <SubTypeWorkflow /> : <GlobalWorkflowSettingsCard />}
+          />
           <Route path={SUBTYPE_TAB_TEMPLATES} element={<FintelTemplatesManager />} />
           <Route path={SUBTYPE_TAB_ATTRIBUTES} element={<EntitySettingAttributesCard />} />
           <Route path={SUBTYPE_TAB_OVERVIEW_LAYOUT} element={<EntitySettingCustomOverview />} />
@@ -60,11 +63,11 @@ const RootSubType = () => {
         </Route>
         <Route
           path={`/${SUBTYPE_TAB_TEMPLATES}/:templateId`}
-          element={(
+          element={
             <EEGuard redirect={`/dashboard/settings/customization/entity_types/${subTypeId}`}>
               <FintelTemplate />
             </EEGuard>
-          )}
+          }
         />
         <Route
           path={`/${SUBTYPE_TAB_CUSTOM_VIEWS}/:customViewId`}

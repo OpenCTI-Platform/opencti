@@ -30,7 +30,9 @@ interface OrganizationDetailsComponentProps {
   organizationData: OrganizationDetails_organization$key;
 }
 
-const OrganizationDetails: FunctionComponent<OrganizationDetailsComponentProps> = ({ organizationData }) => {
+const OrganizationDetails: FunctionComponent<OrganizationDetailsComponentProps> = ({
+  organizationData,
+}) => {
   const { t_i18n } = useFormatter();
   const organization = useFragment(organizationDetailsFragment, organizationData);
 
@@ -39,38 +41,23 @@ const OrganizationDetails: FunctionComponent<OrganizationDetailsComponentProps> 
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
           <Grid item xs={12}>
-            <Label>
-              {t_i18n('Description')}
-            </Label>
-            <ExpandableMarkdown
-              source={organization.description}
-              limit={400}
-            />
+            <Label>{t_i18n('Description')}</Label>
+            <ExpandableMarkdown source={organization.description} limit={400} />
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Organization type')}
-            </Label>
+            <Label>{t_i18n('Organization type')}</Label>
             <FieldOrEmpty source={organization.x_opencti_organization_type}>
-              <Tag
-                label={organization.x_opencti_organization_type}
-              />
+              <Tag label={organization.x_opencti_organization_type} />
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Contact information')}
-            </Label>
+            <Label>{t_i18n('Contact information')}</Label>
             <MarkdownDisplay
               content={organization.contact_information}
               remarkGfmPlugin={true}
               commonmark={true}
             />
-            <Label
-              sx={{ marginTop: 2 }}
-            >
-              {t_i18n('Score')}
-            </Label>
+            <Label sx={{ marginTop: 2 }}>{t_i18n('Score')}</Label>
             <ItemScore score={organization.x_opencti_score} />
           </Grid>
         </Grid>

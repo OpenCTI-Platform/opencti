@@ -47,12 +47,7 @@ const NodeCard = ({ data }: NodeProps) => {
       <Typography variant="h3" gutterBottom={true}>
         {t_i18n('Type')}
       </Typography>
-      <Handle
-        className={classes.handle}
-        type="target"
-        position={position}
-        isConnectable={false}
-      />
+      <Handle className={classes.handle} type="target" position={position} isConnectable={false} />
     </div>
   );
 };

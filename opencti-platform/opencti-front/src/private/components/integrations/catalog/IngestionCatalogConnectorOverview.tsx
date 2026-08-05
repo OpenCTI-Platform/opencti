@@ -24,9 +24,7 @@ const IngestionCatalogConnectorOverview = ({ connector }: { connector: Ingestion
         <Card title={t_i18n('Basic information')}>
           <Grid container spacing={2.5}>
             <Grid size={12}>
-              <Label>
-                {t_i18n('Integration documentation and code')}
-              </Label>
+              <Label>{t_i18n('Integration documentation and code')}</Label>
               <Button
                 variant="tertiary"
                 startIcon={<LibraryBooksOutlined />}
@@ -39,9 +37,7 @@ const IngestionCatalogConnectorOverview = ({ connector }: { connector: Ingestion
             </Grid>
 
             <Grid size={12}>
-              <Label>
-                {t_i18n('Visit the vendor\'s page to learn more and get in touch')}
-              </Label>
+              <Label>{t_i18n("Visit the vendor's page to learn more and get in touch")}</Label>
               <Button
                 variant="tertiary"
                 startIcon={<Launch />}
@@ -55,9 +51,7 @@ const IngestionCatalogConnectorOverview = ({ connector }: { connector: Ingestion
             </Grid>
 
             <Grid size={12}>
-              <Label>
-                {t_i18n('Last verified')}
-              </Label>
+              <Label>{t_i18n('Last verified')}</Label>
               {connector.last_verified_date || EMPTY_VALUE}
             </Grid>
           </Grid>

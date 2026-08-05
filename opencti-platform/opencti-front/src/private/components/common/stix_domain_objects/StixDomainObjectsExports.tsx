@@ -1,7 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import Drawer from '@components/common/drawer/Drawer';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixDomainObjectsExportsContent, { stixDomainObjectsExportsContentQuery } from './StixDomainObjectsExportsContent';
+import StixDomainObjectsExportsContent, {
+  stixDomainObjectsExportsContentQuery,
+} from './StixDomainObjectsExportsContent';
 import {
   StixDomainObjectsExportsContentRefetchQuery$data,
   StixDomainObjectsExportsContentRefetchQuery$variables,
@@ -15,25 +17,19 @@ interface StixDomainObjectsExportsProps {
   handleToggle: () => void;
 }
 
-const StixDomainObjectsExports: FunctionComponent<
-  StixDomainObjectsExportsProps
-> = ({ exportContext, paginationOptions, open, handleToggle }) => {
+const StixDomainObjectsExports: FunctionComponent<StixDomainObjectsExportsProps> = ({
+  exportContext,
+  paginationOptions,
+  open,
+  handleToggle,
+}) => {
   const { t_i18n } = useFormatter();
   return (
-    <Drawer
-      open={open}
-      onClose={handleToggle}
-      title={t_i18n('Exports list')}
-      size="medium"
-    >
+    <Drawer open={open} onClose={handleToggle} title={t_i18n('Exports list')} size="medium">
       <QueryRenderer
         query={stixDomainObjectsExportsContentQuery}
         variables={{ count: 25, exportContext }}
-        render={({
-          props,
-        }: {
-          props: StixDomainObjectsExportsContentRefetchQuery$data;
-        }) => (
+        render={({ props }: { props: StixDomainObjectsExportsContentRefetchQuery$data }) => (
           <StixDomainObjectsExportsContent
             handleToggle={handleToggle}
             data={props}

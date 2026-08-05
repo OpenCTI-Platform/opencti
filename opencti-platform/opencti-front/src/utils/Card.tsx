@@ -4,7 +4,9 @@ import { Stack, Tooltip, Typography } from '@mui/material';
 import { findFlagUrl } from '../utils/flags';
 
 export interface toEdgesLocated {
-  edges: ReadonlyArray<{ node: { to: { x_opencti_aliases?: ReadonlyArray<string | null> | null; name?: string } | null } }>;
+  edges: ReadonlyArray<{
+    node: { to: { x_opencti_aliases?: ReadonlyArray<string | null> | null; name?: string } | null };
+  }>;
 }
 
 interface EntityCard {
@@ -34,16 +36,10 @@ export const renderCardTitle = (entity: EntityCard) => {
       </Typography>
       {country && flagUrl && (
         <Tooltip title={country.name}>
-          <img
-            style={{ width: 20 }}
-            src={flagUrl}
-            alt={country.name}
-          />
+          <img style={{ width: 20 }} src={flagUrl} alt={country.name} />
         </Tooltip>
       )}
-      {entity.draftVersion && (
-        <DraftChip />
-      )}
+      {entity.draftVersion && <DraftChip />}
     </Stack>
   );
 };

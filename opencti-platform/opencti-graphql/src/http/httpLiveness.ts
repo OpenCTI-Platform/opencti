@@ -27,7 +27,10 @@ export const startLivenessServer = (): void => {
     }
   });
   livenessServer.on('error', (error: NodeJS.ErrnoException) => {
-    logApp.error(`[OPENCTI] Failed to start liveness probe on port ${livenessPort} at ${livenessPath}`, { error });
+    logApp.error(
+      `[OPENCTI] Failed to start liveness probe on port ${livenessPort} at ${livenessPath}`,
+      { error },
+    );
     if (livenessServer && !livenessServer.listening) {
       livenessServer = undefined;
     }

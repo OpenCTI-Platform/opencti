@@ -29,10 +29,13 @@ export type AuthorizedMembers = ReadonlyArray<{
   readonly id: string;
   readonly member_id: string;
   readonly name: string;
-  readonly groups_restriction: ReadonlyArray<{
-    readonly id: string;
-    readonly name: string;
-  }> | null | undefined;
+  readonly groups_restriction:
+    | ReadonlyArray<{
+        readonly id: string;
+        readonly name: string;
+      }>
+    | null
+    | undefined;
 }> | null;
 
 export type Creator = {
@@ -51,21 +54,20 @@ export const authorizedMembersToOptions = (
 ): AuthorizedMemberOption[] | null => {
   if (!authorizedMembers) return null;
 
-  return authorizedMembers
-    .map((member) => {
-      return {
-        label: member.name,
-        type: member.entity_type,
-        value: member.member_id || member.id,
-        accessRight: member.access_right as AccessRight,
-        groupsRestriction: (member.groups_restriction ?? []).map((o) => {
-          return {
-            label: o.name,
-            value: o.id,
-          };
-        }),
-      };
-    });
+  return authorizedMembers.map((member) => {
+    return {
+      label: member.name,
+      type: member.entity_type,
+      value: member.member_id || member.id,
+      accessRight: member.access_right as AccessRight,
+      groupsRestriction: (member.groups_restriction ?? []).map((o) => {
+        return {
+          label: o.name,
+          value: o.id,
+        };
+      }),
+    };
+  });
 };
 
 export const useGetCurrentUserAccessRight = (userAccessRight: string | null | undefined) => {

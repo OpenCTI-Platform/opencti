@@ -29,11 +29,12 @@ const useSettingsFallbackUrl = (): string => {
   const isGrantedToKillChainPhases = useGranted([SETTINGS_SETKILLCHAINPHASES]);
   const isGrantedToCaseTemplates = useGranted([SETTINGS_SETCASETEMPLATES]);
   const isGrantedToStatusTemplates = useGranted([SETTINGS_SETSTATUSTEMPLATES]);
-  const isGrantedToTaxonomies = isGrantedToLabels
-    || isGrantedToVocabularies
-    || isGrantedToKillChainPhases
-    || isGrantedToCaseTemplates
-    || isGrantedToStatusTemplates;
+  const isGrantedToTaxonomies =
+    isGrantedToLabels ||
+    isGrantedToVocabularies ||
+    isGrantedToKillChainPhases ||
+    isGrantedToCaseTemplates ||
+    isGrantedToStatusTemplates;
   const isGrantedToActivity = useGranted([SETTINGS_SECURITYACTIVITY]);
   const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
   const isGrantedToExperience = useGranted([SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]);

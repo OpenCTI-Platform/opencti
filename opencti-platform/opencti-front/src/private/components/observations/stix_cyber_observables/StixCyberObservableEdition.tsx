@@ -35,11 +35,9 @@ interface StixCyberObservableEditionContentProps {
   handleClose: () => void;
 }
 
-const StixCyberObservableEditionContent: FunctionComponent<StixCyberObservableEditionContentProps> = ({
-  stixCyberObservable,
-  open,
-  handleClose,
-}) => {
+const StixCyberObservableEditionContent: FunctionComponent<
+  StixCyberObservableEditionContentProps
+> = ({ stixCyberObservable, open, handleClose }) => {
   const { t_i18n } = useFormatter();
 
   return (

@@ -19,9 +19,7 @@ const InvestigationRollBackExpandDialog = ({
   const { workspaceId } = useParams();
   const { t_i18n, fldt } = useFormatter();
 
-  const {
-    getLastExpandOp,
-  } = useInvestigationState(workspaceId ?? '');
+  const { getLastExpandOp } = useInvestigationState(workspaceId ?? '');
 
   const handleSubmit = () => {
     handleRollBackToPreExpansionState();
@@ -35,15 +33,19 @@ const InvestigationRollBackExpandDialog = ({
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={closeDialog}
-      title={t_i18n('Revert to Pre-Expansion State')}
-    >
-      <p>{t_i18n('Last expansion')}: {getLastRollBackExpandDate()}</p>
-      <p>{t_i18n('All add or remove actions done on the graph after the last expansion will be lost.')}</p>
+    <Dialog open={isOpen} onClose={closeDialog} title={t_i18n('Revert to Pre-Expansion State')}>
+      <p>
+        {t_i18n('Last expansion')}: {getLastRollBackExpandDate()}
+      </p>
+      <p>
+        {t_i18n(
+          'All add or remove actions done on the graph after the last expansion will be lost.',
+        )}
+      </p>
       <DialogActions>
-        <Button variant="secondary" onClick={closeDialog}>{t_i18n('Cancel')}</Button>
+        <Button variant="secondary" onClick={closeDialog}>
+          {t_i18n('Cancel')}
+        </Button>
         <Button onClick={handleSubmit}>{t_i18n('Validate')}</Button>
       </DialogActions>
     </Dialog>

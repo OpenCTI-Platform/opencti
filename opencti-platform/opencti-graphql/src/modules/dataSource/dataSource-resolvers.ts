@@ -1,5 +1,12 @@
 import type { Resolvers } from '../../generated/graphql';
-import { dataComponentsPaginated, dataSourceAdd, dataSourceDataComponentAdd, dataSourceDataComponentDelete, findDatasourcePaginated, findById } from './dataSource-domain';
+import {
+  dataComponentsPaginated,
+  dataSourceAdd,
+  dataSourceDataComponentAdd,
+  dataSourceDataComponentDelete,
+  findDatasourcePaginated,
+  findById,
+} from './dataSource-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -17,7 +24,13 @@ const dataSourceResolvers: Resolvers = {
     dataSources: (_, args, context) => findDatasourcePaginated(context, context.user, args),
   },
   DataSource: {
-    dataComponents: (dataSource, args, context) => dataComponentsPaginated<BasicStoreEntityDataComponent>(context, context.user, dataSource.id, args),
+    dataComponents: (dataSource, args, context) =>
+      dataComponentsPaginated<BasicStoreEntityDataComponent>(
+        context,
+        context.user,
+        dataSource.id,
+        args,
+      ),
   },
   Mutation: {
     dataSourceAdd: (_, { input }, context) => {
@@ -27,7 +40,10 @@ const dataSourceResolvers: Resolvers = {
       return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_DATA_SOURCE);
     },
     dataSourceFieldPatch: (_, { id, input, commitMessage, references }, context) => {
-      return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
+      return stixDomainObjectEditField(context, context.user, id, input, {
+        commitMessage,
+        references,
+      });
     },
     dataSourceContextPatch: (_, { id, input }, context) => {
       return stixDomainObjectEditContext(context, context.user, id, input);

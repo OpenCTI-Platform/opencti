@@ -46,15 +46,11 @@ interface DraftToolbarComponentProps {
   draftId: string;
 }
 
-const DraftToolbarComponent = ({
-  queryRef,
-  loadQuery,
-  draftId,
-}: DraftToolbarComponentProps) => {
+const DraftToolbarComponent = ({ queryRef, loadQuery, draftId }: DraftToolbarComponentProps) => {
   const theme = useTheme<Theme>();
 
   const { draftWorkspace } = usePreloadedQuery(draftQuery, queryRef);
-  if (!draftWorkspace) return (<ErrorNotFound />);
+  if (!draftWorkspace) return <ErrorNotFound />;
 
   const draft = useFragment<DraftToolbarFragment$key>(draftFragment, draftWorkspace);
 
@@ -81,10 +77,7 @@ const DraftToolbarComponent = ({
         zIndex: theme.zIndex.appBar + 1,
       }}
     >
-      <Typography
-        variant="h6"
-        sx={{ textTransform: 'none' }}
-      >
+      <Typography variant="h6" sx={{ textTransform: 'none' }}>
         {draft.name}
       </Typography>
       <DraftProcessingStatus forceRefetch={() => loadQuery({ id: draftId })} />
@@ -94,7 +87,7 @@ const DraftToolbarComponent = ({
       <WorkflowStatus data={draft} />
       <DraftAuthorizedMembers data={draft} />
       <DraftExit data={draft} />
-      { showApprove ? (<WorkflowTransitions data={draft} />) : (<DraftApprove data={draft} />) }
+      {showApprove ? <WorkflowTransitions data={draft} /> : <DraftApprove data={draft} />}
     </Stack>
   );
 };
@@ -104,19 +97,16 @@ interface DraftToolbarWrapperProps {
 }
 
 const DraftToolbarWrapper = ({ draftId }: DraftToolbarWrapperProps) => {
-  const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<DraftToolbarQuery>(
-    draftQuery,
-    { id: draftId },
-  );
+  const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<DraftToolbarQuery>(draftQuery, {
+    id: draftId,
+  });
 
-  return queryRef && (
-    <Suspense>
-      <DraftToolbarComponent
-        queryRef={queryRef}
-        loadQuery={loadQuery}
-        draftId={draftId}
-      />
-    </Suspense>
+  return (
+    queryRef && (
+      <Suspense>
+        <DraftToolbarComponent queryRef={queryRef} loadQuery={loadQuery} draftId={draftId} />
+      </Suspense>
+    )
   );
 };
 

@@ -68,29 +68,18 @@ interface SectorProps {
   sectorData: Sector_sector$key;
 }
 
-const Sector: React.FC<SectorProps> = ({
-  sectorData,
-}) => {
+const Sector: React.FC<SectorProps> = ({ sectorData }) => {
   useInitCreateRelationshipContext();
 
-  const sector = useFragment<Sector_sector$key>(
-    sectorFragment,
-    sectorData,
-  );
+  const sector = useFragment<Sector_sector$key>(sectorFragment, sectorData);
   return (
     <div data-testid="sector-details-page">
-      <Grid
-        container={true}
-        spacing={3}
-        style={{ marginBottom: 20 }}
-      >
+      <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
         <Grid item xs={6}>
           <SectorDetails sector={sector} />
         </Grid>
         <Grid item xs={6}>
-          <StixDomainObjectOverview
-            stixDomainObject={sector}
-          />
+          <StixDomainObjectOverview stixDomainObject={sector} />
         </Grid>
         <Grid item xs={6}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships

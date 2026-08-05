@@ -23,9 +23,15 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
-import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS,
+} from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -35,7 +41,10 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { GroupingCreationMutation, GroupingCreationMutation$variables } from './__generated__/GroupingCreationMutation.graphql';
+import {
+  GroupingCreationMutation,
+  GroupingCreationMutation$variables,
+} from './__generated__/GroupingCreationMutation.graphql';
 
 const groupingMutation = graphql`
   mutation GroupingCreationMutation($input: GroupingAddInput!) {
@@ -67,14 +76,17 @@ interface GroupingAddInput {
   objectLabel: FieldOption[];
   externalReferences: { value: string }[];
   file: File | undefined;
-  authorized_members: {
-    value: string;
-    accessRight: string;
-    groupsRestriction: {
-      label: string;
-      value: string;
-      type: string;
-    }[]; }[] | undefined;
+  authorized_members:
+    | {
+        value: string;
+        accessRight: string;
+        groupsRestriction: {
+          label: string;
+          value: string;
+          type: string;
+        }[];
+      }[]
+    | undefined;
 }
 
 interface GroupingFormProps {
@@ -105,28 +117,27 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
   const canEditAuthorizedMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
   const isEnterpriseEdition = useEnterpriseEdition();
 
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    confidence: Yup.number().nullable(),
-    context: Yup.string(),
-    description: Yup.string().nullable(),
-    content: Yup.string().nullable(),
-    createdBy: Yup.object().nullable(),
-    objectMarking: Yup.array().nullable(),
-    file: Yup.mixed().nullable(),
-    authorized_members: Yup.array().nullable(),
-  }, mandatoryAttributes);
-  const validator = useDynamicSchemaCreationValidation(
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      confidence: Yup.number().nullable(),
+      context: Yup.string(),
+      description: Yup.string().nullable(),
+      content: Yup.string().nullable(),
+      createdBy: Yup.object().nullable(),
+      objectMarking: Yup.array().nullable(),
+      file: Yup.mixed().nullable(),
+      authorized_members: Yup.array().nullable(),
+    },
     mandatoryAttributes,
-    basicShape,
   );
-  const [commit] = useApiMutation<GroupingCreationMutation>(
-    groupingMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Grouping')} ${t_i18n('successfully created')}` },
-  );
+  const validator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
+  const [commit] = useApiMutation<GroupingCreationMutation>(groupingMutation, undefined, {
+    successMessage: `${t_i18n('entity_Grouping')} ${t_i18n('successfully created')}`,
+  });
 
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
 
   const onSubmit: FormikConfig<GroupingAddInput>['onSubmit'] = (
     values,
@@ -143,13 +154,19 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
-      ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
-        authorized_members: values.authorized_members.map(({ value, accessRight, groupsRestriction }) => ({
-          id: value,
-          access_right: accessRight,
-          groups_restriction_ids: groupsRestriction ? groupsRestriction.map((g) => g.value) : [],
-        })),
-      }),
+      ...(isEnterpriseEdition &&
+        canEditAuthorizedMembers &&
+        values.authorized_members && {
+          authorized_members: values.authorized_members.map(
+            ({ value, accessRight, groupsRestriction }) => ({
+              id: value,
+              access_right: accessRight,
+              groups_restriction_ids: groupsRestriction
+                ? groupsRestriction.map((g) => g.value)
+                : [],
+            }),
+          ),
+        }),
     };
     commit({
       variables: {
@@ -171,9 +188,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
           onClose();
         }
         if (mapAfter) {
-          navigate(
-            `/dashboard/analyses/groupings/${response.groupingAdd?.id}/content/mapping`,
-          );
+          navigate(`/dashboard/analyses/groupings/${response.groupingAdd?.id}/content/mapping`);
         }
       },
     });
@@ -215,10 +230,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             fullWidth={true}
             askAi={true}
           />
-          <ConfidenceField
-            entityType="Grouping"
-            containerStyle={fieldSpacingContainerStyle}
-          />
+          <ConfidenceField entityType="Grouping" containerStyle={fieldSpacingContainerStyle} />
           <OpenVocabField
             label={t_i18n('Context')}
             type="grouping-context-ov"
@@ -283,9 +295,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
           {isEnterpriseEdition && (
-            <Security
-              needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-            >
+            <Security needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}>
               <div style={fieldSpacingContainerStyle}>
                 <Accordion>
                   <AccordionSummary id="accordion-panel">
@@ -307,17 +317,10 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             </Security>
           )}
           <FormButtonContainer>
-            <Button
-              variant="secondary"
-              onClick={handleReset}
-              disabled={isSubmitting}
-            >
+            <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitForm}
-              disabled={isSubmitting}
-            >
+            <Button onClick={submitForm} disabled={isSubmitting}>
               {t_i18n('Create')}
             </Button>
             {values.content.length > 0 && (
@@ -344,15 +347,13 @@ const GroupingCreation = ({
   paginationOptions: GroupingsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_groupings', paginationOptions, 'groupingAdd');
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_groupings', paginationOptions, 'groupingAdd');
   const CreateGroupingControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="Grouping" {...props} />
   );
   return (
-    <Drawer
-      title={t_i18n('Create a grouping')}
-      controlledDial={CreateGroupingControlledDial}
-    >
+    <Drawer title={t_i18n('Create a grouping')} controlledDial={CreateGroupingControlledDial}>
       <GroupingCreationForm updater={updater} />
     </Drawer>
   );

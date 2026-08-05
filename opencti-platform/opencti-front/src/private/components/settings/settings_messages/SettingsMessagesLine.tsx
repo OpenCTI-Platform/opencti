@@ -88,21 +88,15 @@ const SettingsMessagesLine = ({
         <MessageOutlined />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div style={{ display: 'flex' }}>
             {Object.values(dataColumns ?? {}).map((value) => (
-              <div
-                key={value.label}
-                className={classes.bodyItem}
-                style={{ width: value.width }}
-              >
-                <span className={classes.bodyItemText}>
-                  {value.render?.(message)}
-                </span>
+              <div key={value.label} className={classes.bodyItem} style={{ width: value.width }}>
+                <span className={classes.bodyItemText}>{value.render?.(message)}</span>
               </div>
             ))}
           </div>
-        )}
+        }
       />
     </ListItem>
   );
@@ -110,46 +104,33 @@ const SettingsMessagesLine = ({
 
 export default SettingsMessagesLine;
 
-export const SettingsMessagesLineDummy = ({
-  dataColumns,
-}: {
-  dataColumns: DataColumns;
-}) => {
+export const SettingsMessagesLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   return (
     <ListItem
       divider={true}
       classes={{ root: classes.item }}
-      secondaryAction={(
+      secondaryAction={
         <Box sx={{ root: classes.itemIconDisabled }}>
           <IconButton aria-label={t_i18n('Open menu')} disabled={true} aria-haspopup="true">
             <MoreVert />
           </IconButton>
         </Box>
-      )}
+      }
     >
       <ListItemText
-        primary={(
+        primary={
           <div style={{ display: 'flex' }}>
             {Object.values(dataColumns).map((value) => (
-              <div
-                key={value.label}
-                className={classes.bodyItem}
-                style={{ width: value.width }}
-              >
+              <div key={value.label} className={classes.bodyItem} style={{ width: value.width }}>
                 <span className={classes.bodyItemText}>
-                  <Skeleton
-                    animation="wave"
-                    variant="rectangular"
-                    width="90%"
-                    height={20}
-                  />
+                  <Skeleton animation="wave" variant="rectangular" width="90%" height={20} />
                 </span>
               </div>
             ))}
           </div>
-        )}
+        }
       />
     </ListItem>
   );

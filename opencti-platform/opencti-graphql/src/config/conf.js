@@ -26,7 +26,11 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import pjson from '../../package.json';
 import { ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
-import { ENTITY_TYPE_NOTIFICATION, ENTITY_TYPE_TRIGGER, NOTIFICATION_NUMBER } from '../modules/notification/notification-types';
+import {
+  ENTITY_TYPE_NOTIFICATION,
+  ENTITY_TYPE_TRIGGER,
+  NOTIFICATION_NUMBER,
+} from '../modules/notification/notification-types';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
@@ -45,7 +49,10 @@ import { ENTITY_TYPE_FINTEL_DESIGN } from '../modules/fintelDesign/fintelDesign-
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
 import { ENTITY_TYPE_AUTHENTICATION_PROVIDER } from '../modules/authenticationProvider/authenticationProvider-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
-import { ENTITY_TYPE_NEWS_FEED_ITEM, NEWS_FEED_NUMBER } from '../modules/xtm/hub/news-feed/news-feed-types';
+import {
+  ENTITY_TYPE_NEWS_FEED_ITEM,
+  NEWS_FEED_NUMBER,
+} from '../modules/xtm/hub/news-feed/news-feed-types';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -75,10 +82,11 @@ export const booleanConf = (key, defaultValue = true) => {
 const envSeparator = '__';
 nconf.env({ separator: envSeparator, lowerCase: true, parseValues: true });
 
-export const confNameToEnvName = (confName) => nconf
-  .path(confName, ':')
-  .map((part) => part.toUpperCase())
-  .join(envSeparator);
+export const confNameToEnvName = (confName) =>
+  nconf
+    .path(confName, ':')
+    .map((part) => part.toUpperCase())
+    .join(envSeparator);
 
 // Environment from "-e" command line parameter
 nconf.add('argv', {
@@ -95,7 +103,8 @@ nconf.add('argv', {
 const { timestamp } = format;
 const currentPath = process.env.INIT_CWD || process.cwd();
 const resolvePath = (relativePath) => path.join(currentPath, relativePath);
-export const environment = nconf.get('env') || nconf.get('node_env') || process.env.NODE_ENV || DEFAULT_ENV;
+export const environment =
+  nconf.get('env') || nconf.get('node_env') || process.env.NODE_ENV || DEFAULT_ENV;
 const resolveEnvFile = (env) => {
   const filePath = path.join(resolvePath('config'), `${env.toLowerCase()}.json`);
   if (env.toLowerCase() === 'dev' && !existsSync(filePath)) {
@@ -143,7 +152,13 @@ const convertErrorObject = (error, acc, current_depth) => {
     const extensions = error.extensions ?? {};
     const extensionsData = extensions.data ?? {};
     const attributes = prepareLogMetadataComplexityWrapper(extensionsData, acc, current_depth);
-    return { name: extensions.code ?? error.name, code: extensions.code, message: error.message, stack: error.stack, attributes };
+    return {
+      name: extensions.code ?? error.name,
+      code: extensions.code,
+      message: error.message,
+      stack: error.stack,
+      attributes,
+    };
   }
   if (error instanceof Error) {
     return { name: error.name, code: UNKNOWN_ERROR, message: error.message, stack: error.stack };
@@ -243,12 +258,17 @@ const appLogger = winston.createLogger({
 // Setup audit log logApp
 const auditLogFileTransport = booleanConf('app:audit_logs:logs_files', true);
 const auditLogConsoleTransport = booleanConf('app:audit_logs:logs_console', true);
-export const auditRequestHeaderToKeep = nconf.get('app:audit_logs:trace_request_headers') ?? ['user-agent', 'x-forwarded-for'];
+export const auditRequestHeaderToKeep = nconf.get('app:audit_logs:trace_request_headers') ?? [
+  'user-agent',
+  'x-forwarded-for',
+];
 
 // Gather all request header that are configured to be added to audit or activity logs.
 export const getRequestAuditHeaders = (req) => {
   const sourceIp = req.ip;
-  const allHeadersRequested = R.mergeAll((auditRequestHeaderToKeep).map((header) => ({ [header]: req.header(header) })));
+  const allHeadersRequested = R.mergeAll(
+    auditRequestHeaderToKeep.map((header) => ({ [header]: req.header(header) })),
+  );
   return { ...allHeadersRequested, ip: sourceIp };
 };
 
@@ -280,25 +300,29 @@ export const SUPPORT_LOG_FILE_PREFIX = 'support';
 const supportLogger = winston.createLogger({
   level: 'info',
   format: format.combine(timestamp(), format.errors({ stack: true }), format.json()),
-  transports: [new DailyRotateFile({
-    filename: SUPPORT_LOG_FILE_PREFIX,
-    dirname: SUPPORT_LOG_RELATIVE_LOCAL_DIR,
-    maxFiles: 3,
-    maxSize: '10m',
-    level: 'info',
-  })],
+  transports: [
+    new DailyRotateFile({
+      filename: SUPPORT_LOG_FILE_PREFIX,
+      dirname: SUPPORT_LOG_RELATIVE_LOCAL_DIR,
+      maxFiles: 3,
+      maxSize: '10m',
+      level: 'info',
+    }),
+  ],
 });
 
 // Setup telemetry logs
 export const TELEMETRY_LOG_RELATIVE_LOCAL_DIR = './telemetry';
 export const TELEMETRY_LOG_FILE_PREFIX = 'telemetry';
-const telemetryLogTransports = [new DailyRotateFile({
-  dirname: TELEMETRY_LOG_RELATIVE_LOCAL_DIR,
-  filename: TELEMETRY_LOG_FILE_PREFIX,
-  maxFiles: 3,
-  maxSize: '1m',
-  level: 'info',
-})];
+const telemetryLogTransports = [
+  new DailyRotateFile({
+    dirname: TELEMETRY_LOG_RELATIVE_LOCAL_DIR,
+    filename: TELEMETRY_LOG_FILE_PREFIX,
+    maxFiles: 3,
+    maxSize: '1m',
+    level: 'info',
+  }),
+];
 const telemetryLogger = winston.createLogger({
   level: 'info',
   format: format.printf((info) => {
@@ -368,7 +392,8 @@ export const logTelemetry = {
 export const PORT = nconf.get('app:port');
 const BasePathConfig = nconf.get('app:base_path')?.trim() ?? '';
 const AppBasePath = BasePathConfig.endsWith('/') ? BasePathConfig.slice(0, -1) : BasePathConfig;
-export const basePath = isEmpty(AppBasePath) || AppBasePath.startsWith('/') ? AppBasePath : `/${AppBasePath}`;
+export const basePath =
+  isEmpty(AppBasePath) || AppBasePath.startsWith('/') ? AppBasePath : `/${AppBasePath}`;
 
 const BasePathUrl = nconf.get('app:base_url')?.trim() ?? '';
 const baseUrl = BasePathUrl.endsWith('/') ? BasePathUrl.slice(0, -1) : BasePathUrl;
@@ -442,7 +467,8 @@ const escapeRegex = (string) => {
 export const isUriProxyExcluded = (hostname, exclusions) => {
   for (let index = 0; index < exclusions.length; index += 1) {
     const exclusion = exclusions[index];
-    if (exclusion.includes('*')) { // Test regexp
+    if (exclusion.includes('*')) {
+      // Test regexp
       const pattern = escapeRegex(exclusion).replaceAll('\\*', '.*');
       const regexp = new RegExp(pattern, 'g');
       const isRegexpMatch = regexp.test(hostname);
@@ -482,20 +508,22 @@ export const getPlatformHttpProxies = () => {
   const dispatchers = {};
   if (https) {
     agents['https:'] = {
-      build: () => new HttpsProxyAgent(https, {
-        rejectUnauthorized: booleanConf('https_proxy_reject_unauthorized', false),
-        ...configureCA(proxyCA),
-      }),
+      build: () =>
+        new HttpsProxyAgent(https, {
+          rejectUnauthorized: booleanConf('https_proxy_reject_unauthorized', false),
+          ...configureCA(proxyCA),
+        }),
       isExcluded: (hostname) => isUriProxyExcluded(hostname, exclusions),
     };
     dispatchers['https:'] = {
-      build: () => new ProxyAgent({
-        uri: https,
-        proxyTls: {
-          rejectUnauthorized: booleanConf('https_proxy_reject_unauthorized', false),
-          ...configureCA(proxyCA),
-        },
-      }),
+      build: () =>
+        new ProxyAgent({
+          uri: https,
+          proxyTls: {
+            rejectUnauthorized: booleanConf('https_proxy_reject_unauthorized', false),
+            ...configureCA(proxyCA),
+          },
+        }),
       isExcluded: (hostname) => isUriProxyExcluded(hostname, exclusions),
     };
   }
@@ -532,7 +560,9 @@ export const ENABLED_UI = booleanConf('app:enabled_ui', true);
 
 // Playground
 export const ENABLED_DEMO_MODE = booleanConf('demo_mode', false);
-export const PLAYGROUND_INTROSPECTION_DISABLED = DEV_MODE ? false : (!ENABLED_UI || booleanConf('app:graphql:playground:force_disabled_introspection', true));
+export const PLAYGROUND_INTROSPECTION_DISABLED = DEV_MODE
+  ? false
+  : !ENABLED_UI || booleanConf('app:graphql:playground:force_disabled_introspection', true);
 export const PLAYGROUND_ENABLED = ENABLED_UI && booleanConf('app:graphql:playground:enabled', true);
 export const GRAPHQL_ARMOR_DISABLED = booleanConf('app:graphql:armor_protection:disabled', true);
 
@@ -561,7 +591,8 @@ export const computeAccountStatusChoices = () => {
   const statusesDefinition = nconf.get('app:locked_account_statuses');
   return {
     [ACCOUNT_STATUS_ACTIVE]: 'All good folks',
-    [ACCOUNT_STATUS_EXPIRED]: 'Your account has expired. If you would like to reactivate your account, please contact your administrator.',
+    [ACCOUNT_STATUS_EXPIRED]:
+      'Your account has expired. If you would like to reactivate your account, please contact your administrator.',
     ...statusesDefinition,
   };
 };
@@ -573,7 +604,10 @@ export const computeDefaultAccountStatus = () => {
     if (accountStatus) {
       return defaultConf;
     }
-    throw UnsupportedError('Invalid default_initialize_account_status configuration', { default: defaultConf, statuses: ACCOUNT_STATUSES });
+    throw UnsupportedError('Invalid default_initialize_account_status configuration', {
+      default: defaultConf,
+      statuses: ACCOUNT_STATUSES,
+    });
   }
   return ACCOUNT_STATUS_ACTIVE;
 };
@@ -590,7 +624,8 @@ export const setStoppingState = (state) => {
 export const ENABLED_FEATURE_FLAGS = nconf.get('app:enabled_dev_features') ?? [];
 // a special flag name allows to enable all feature flags at once
 export const FEATURE_FLAG_ALL = '*';
-export const isFeatureEnabled = (feature) => ENABLED_FEATURE_FLAGS.includes(FEATURE_FLAG_ALL) || ENABLED_FEATURE_FLAGS.includes(feature);
+export const isFeatureEnabled = (feature) =>
+  ENABLED_FEATURE_FLAGS.includes(FEATURE_FLAG_ALL) || ENABLED_FEATURE_FLAGS.includes(feature);
 
 // Custom fields feature flag (use isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG) to check activation)
 export const CUSTOM_FIELDS_FEATURE_FLAG = 'CUSTOM_FIELDS';

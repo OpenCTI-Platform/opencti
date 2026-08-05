@@ -51,9 +51,11 @@ interface CaseTemplateTasksLineProps {
   paginationOptions: CaseTemplateTasksLinesPaginationQuery$data;
 }
 
-export const CaseTemplateTasksLine: FunctionComponent<
-  CaseTemplateTasksLineProps
-> = ({ node, dataColumns, paginationOptions }) => {
+export const CaseTemplateTasksLine: FunctionComponent<CaseTemplateTasksLineProps> = ({
+  node,
+  dataColumns,
+  paginationOptions,
+}) => {
   const classes = useStyles();
   const task = useFragment(CaseTemplateTasksLineFragment, node);
 
@@ -61,30 +63,23 @@ export const CaseTemplateTasksLine: FunctionComponent<
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={(
-        <CaseTemplateTasksPopover
-          paginationOptions={paginationOptions}
-          task={task}
-        />
-      )}
+      secondaryAction={
+        <CaseTemplateTasksPopover paginationOptions={paginationOptions} task={task} />
+      }
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <ItemIcon type="Task" />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
-                key={value.label}
-                className={classes.bodyItem}
-                style={{ width: value.width }}
-              >
+              <div key={value.label} className={classes.bodyItem} style={{ width: value.width }}>
                 {value.render?.(task)}
               </div>
             ))}
           </div>
-        )}
+        }
       />
     </ListItem>
   );
@@ -94,37 +89,29 @@ interface CaseTemplateLineDummyProps {
   dataColumns: DataColumns;
 }
 
-export const CaseTemplateTasksLineDummy: FunctionComponent<
-  CaseTemplateLineDummyProps
-> = ({ dataColumns }) => {
+export const CaseTemplateTasksLineDummy: FunctionComponent<CaseTemplateLineDummyProps> = ({
+  dataColumns,
+}) => {
   const classes = useStyles();
 
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
-      <ListItemIcon
-        classes={{ root: classes.itemIconDisabled }}
-        style={{ minWidth: 40 }}
-      >
+      <ListItemIcon classes={{ root: classes.itemIconDisabled }} style={{ minWidth: 40 }}>
         <Checkbox edge="start" disabled={true} disableRipple={true} />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
             {Object.values(dataColumns).map(({ label, width }) => (
               <div key={label} className={classes.bodyItem} style={{ width }}>
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={width}
-                  height="100%"
-                />
+                <Skeleton animation="wave" variant="rectangular" width={width} height="100%" />
               </div>
             ))}
           </div>
-        )}
+        }
       />
     </ListItem>
   );

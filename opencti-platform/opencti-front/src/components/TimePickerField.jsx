@@ -72,14 +72,18 @@ const TimePickerField = (props) => {
     }
   }, [setFieldTouched, onSubmit, name]);
   const views = ['hours'];
-  if (withSeconds) { // 'hours', 'minutes', 'seconds'
+  if (withSeconds) {
+    // 'hours', 'minutes', 'seconds'
     views.push('minutes');
     views.push('seconds');
-  } else if (withMinutes) { // 'hours', 'minutes'
+  } else if (withMinutes) {
+    // 'hours', 'minutes'
     views.push('minutes');
   }
-  const inputFormat = (withMinutes || withSeconds) ? (timeFormatsMapWithSeconds[intl.locale] || 'hh:mm:ss a')
-    : (timeFormatsMap[intl.locale] || 'hh:mm a');
+  const inputFormat =
+    withMinutes || withSeconds
+      ? timeFormatsMapWithSeconds[intl.locale] || 'hh:mm:ss a'
+      : timeFormatsMap[intl.locale] || 'hh:mm a';
   return (
     <TimePicker
       {...fieldToTimePicker(props)}

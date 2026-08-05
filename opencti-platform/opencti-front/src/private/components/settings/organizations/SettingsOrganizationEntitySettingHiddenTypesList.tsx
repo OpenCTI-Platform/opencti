@@ -1,6 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import EntitySettingHiddenTypesList, { Entity } from '../sub_types/entity_setting/EntitySettingHiddenTypesList';
+import EntitySettingHiddenTypesList, {
+  Entity,
+} from '../sub_types/entity_setting/EntitySettingHiddenTypesList';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
@@ -23,12 +25,12 @@ const settingsOrganizationEntitySettingHiddenTypesListQuery = graphql`
 const SettingsOrganizationEntitySettingHiddenTypesListComponent: FunctionComponent<{
   targetType: string;
   queryRef: PreloadedQuery<SettingsOrganizationEntitySettingHiddenTypesListQuery>;
-}> = ({
-  targetType,
-  queryRef,
-}) => {
+}> = ({ targetType, queryRef }) => {
   const { t_i18n } = useFormatter();
-  const data = usePreloadedQuery<SettingsOrganizationEntitySettingHiddenTypesListQuery>(settingsOrganizationEntitySettingHiddenTypesListQuery, queryRef);
+  const data = usePreloadedQuery<SettingsOrganizationEntitySettingHiddenTypesListQuery>(
+    settingsOrganizationEntitySettingHiddenTypesListQuery,
+    queryRef,
+  );
   const organizations: Entity[] = data.organizations?.edges?.map((e) => e?.node) ?? [];
 
   return (
@@ -41,13 +43,21 @@ const SettingsOrganizationEntitySettingHiddenTypesListComponent: FunctionCompone
     />
   );
 };
-const SettingsOrganizationEntitySettingHiddenTypesList: FunctionComponent<{ targetType: string }> = ({ targetType }) => {
-  const queryRef = useQueryLoading<SettingsOrganizationEntitySettingHiddenTypesListQuery>(settingsOrganizationEntitySettingHiddenTypesListQuery, {});
+const SettingsOrganizationEntitySettingHiddenTypesList: FunctionComponent<{
+  targetType: string;
+}> = ({ targetType }) => {
+  const queryRef = useQueryLoading<SettingsOrganizationEntitySettingHiddenTypesListQuery>(
+    settingsOrganizationEntitySettingHiddenTypesListQuery,
+    {},
+  );
   return (
     <>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <SettingsOrganizationEntitySettingHiddenTypesListComponent queryRef={queryRef} targetType={targetType} />
+          <SettingsOrganizationEntitySettingHiddenTypesListComponent
+            queryRef={queryRef}
+            targetType={targetType}
+          />
         </React.Suspense>
       )}
     </>

@@ -1,137 +1,140 @@
 enum TaxiiVersion {
-    v1
-    v2
-    v21
+  v1
+  v2
+  v21
 }
 
 enum IngestionAuthType {
-    none
-    basic
-    bearer
-    certificate
+  none
+  basic
+  bearer
+  certificate
 }
 
 type IngestionTaxii implements InternalObject & BasicObject {
-    id: ID!
-    entity_type: String!
-    representative: Representative!
-    standard_id: String!
-    parent_types: [String!]!
-    metrics:[Metric]
-    created_at: DateTime
-    updated_at: DateTime
-    refreshed_at: DateTime
-    name: String!
-    description: String
-    scheduling_period: String
-    uri: String!
-    collection: String!
-    version: TaxiiVersion!
-    authentication_type: IngestionAuthType!
-    authentication_value: String
-    user_id: String
-    user: Creator
-    current_state_cursor: String
-    added_after_start: DateTime
-    ingestion_running: Boolean
-    last_execution_date: DateTime
-    last_execution_status: String
-    ingestionLogs: [IngestionEntry] @ff(flags: ["INGESTION_FEED_LOGS"])
-    confidence_to_score: Boolean
-    ssl_verify: Boolean
-    toConfigurationExport: String!
+  id: ID!
+  entity_type: String!
+  representative: Representative!
+  standard_id: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  created_at: DateTime
+  updated_at: DateTime
+  refreshed_at: DateTime
+  name: String!
+  description: String
+  scheduling_period: String
+  uri: String!
+  collection: String!
+  version: TaxiiVersion!
+  authentication_type: IngestionAuthType!
+  authentication_value: String
+  user_id: String
+  user: Creator
+  current_state_cursor: String
+  added_after_start: DateTime
+  ingestion_running: Boolean
+  last_execution_date: DateTime
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry] @ff(flags: ["INGESTION_FEED_LOGS"])
+  confidence_to_score: Boolean
+  ssl_verify: Boolean
+  toConfigurationExport: String!
 }
 enum IngestionTaxiiOrdering {
-    name
-    created_at
-    updated_at
-    uri
-    version
-    _score
+  name
+  created_at
+  updated_at
+  uri
+  version
+  _score
 }
 type IngestionTaxiiConnection {
-    pageInfo: PageInfo!
-    edges: [IngestionTaxiiEdge!]!
+  pageInfo: PageInfo!
+  edges: [IngestionTaxiiEdge!]!
 }
 type IngestionTaxiiEdge {
-    cursor: String!
-    node: IngestionTaxii!
+  cursor: String!
+  node: IngestionTaxii!
 }
 
 type TaxiiFeedAddInputFromImport {
-    name: String!
-    description: String!
-    scheduling_period: String
-    uri: String!
-    version: String!
-    collection: String!
-    authentication_type: String!
-    authentication_value: String!
-    added_after_start: String
+  name: String!
+  description: String!
+  scheduling_period: String
+  uri: String!
+  version: String!
+  collection: String!
+  authentication_type: String!
+  authentication_value: String!
+  added_after_start: String
 }
 
 enum IngestionLogLevel {
-    success
-    info
-    warn
-    error
+  success
+  info
+  warn
+  error
 }
 
 type IngestionEntry {
-    timestamp: DateTime!
-    level: IngestionLogLevel!
-    type: String!
-    identifier: String!
-    message: String!
-    meta: JSON
+  timestamp: DateTime!
+  level: IngestionLogLevel!
+  type: String!
+  identifier: String!
+  message: String!
+  meta: JSON
 }
 
 # Queries
 type Query {
-    ingestionTaxii(id: String!): IngestionTaxii @auth(for: [INGESTION])
-    ingestionTaxiis(
-        first: Int
-        after: ID
-        orderBy: IngestionTaxiiOrdering
-        orderMode: OrderingMode
-        filters: FilterGroup
-        includeAuthorities: Boolean
-        search: String
-    ): IngestionTaxiiConnection @auth(for: [INGESTION])
-    taxiiFeedAddInputFromImport(
-        file: Upload!
-    ): TaxiiFeedAddInputFromImport! @auth(for: [INGESTION])
-    ingestionTaxiiLogs(id: String!): [IngestionEntry] @auth(for: [INGESTION]) @ff(flags: ["INGESTION_FEED_LOGS"])
+  ingestionTaxii(id: String!): IngestionTaxii @auth(for: [INGESTION])
+  ingestionTaxiis(
+    first: Int
+    after: ID
+    orderBy: IngestionTaxiiOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    includeAuthorities: Boolean
+    search: String
+  ): IngestionTaxiiConnection @auth(for: [INGESTION])
+  taxiiFeedAddInputFromImport(file: Upload!): TaxiiFeedAddInputFromImport! @auth(for: [INGESTION])
+  ingestionTaxiiLogs(id: String!): [IngestionEntry]
+    @auth(for: [INGESTION])
+    @ff(flags: ["INGESTION_FEED_LOGS"])
 }
 
 # Mutations
 input IngestionTaxiiAddInput {
-    name: String! @constraint(minLength: 2, format: "not-blank")
-    description: String
-    scheduling_period: String
-    version: TaxiiVersion!
-    authentication_type: IngestionAuthType!
-    authentication_value: String
-    uri: String! @constraint(minLength: 5)
-    collection: String! @constraint(minLength: 5)
-    added_after_start: DateTime
-    ingestion_running: Boolean
-    confidence_to_score: Boolean
-    ssl_verify: Boolean
-    user_id: String!
-    automatic_user: Boolean
-    confidence_level: Int
+  name: String! @constraint(minLength: 2, format: "not-blank")
+  description: String
+  scheduling_period: String
+  version: TaxiiVersion!
+  authentication_type: IngestionAuthType!
+  authentication_value: String
+  uri: String! @constraint(minLength: 5)
+  collection: String! @constraint(minLength: 5)
+  added_after_start: DateTime
+  ingestion_running: Boolean
+  confidence_to_score: Boolean
+  ssl_verify: Boolean
+  user_id: String!
+  automatic_user: Boolean
+  confidence_level: Int
 }
 
 input IngestionTaxiiAddAutoUserInput {
-    user_name: String!
-    confidence_level: Int!
+  user_name: String!
+  confidence_level: Int!
 }
 
 type Mutation {
-    ingestionTaxiiAdd(input: IngestionTaxiiAddInput!): IngestionTaxii @auth(for: [INGESTION_SETINGESTIONS])
-    ingestionTaxiiDelete(id: ID!): ID @auth(for: [INGESTION_SETINGESTIONS])
-    ingestionTaxiiResetState(id: ID!): IngestionTaxii @auth(for: [INGESTION_SETINGESTIONS])
-    ingestionTaxiiFieldPatch(id: ID!, input: [EditInput!]!): IngestionTaxii @auth(for: [INGESTION_SETINGESTIONS])
-    ingestionTaxiiAddAutoUser(id: ID!, input: IngestionTaxiiAddAutoUserInput!): IngestionTaxii @auth(for: [INGESTION_SETINGESTIONS])
+  ingestionTaxiiAdd(input: IngestionTaxiiAddInput!): IngestionTaxii
+    @auth(for: [INGESTION_SETINGESTIONS])
+  ingestionTaxiiDelete(id: ID!): ID @auth(for: [INGESTION_SETINGESTIONS])
+  ingestionTaxiiResetState(id: ID!): IngestionTaxii @auth(for: [INGESTION_SETINGESTIONS])
+  ingestionTaxiiFieldPatch(id: ID!, input: [EditInput!]!): IngestionTaxii
+    @auth(for: [INGESTION_SETINGESTIONS])
+  ingestionTaxiiAddAutoUser(id: ID!, input: IngestionTaxiiAddAutoUserInput!): IngestionTaxii
+    @auth(for: [INGESTION_SETINGESTIONS])
 }

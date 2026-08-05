@@ -2,13 +2,13 @@ import { graphql } from 'react-relay';
 import { commitMutation } from '../relay/environment';
 
 const investigationAddFromContainerMutation = graphql`
-    mutation InvestigationUtilsInvestigationAddFromContainerMutation($id: ID!) {
-        containerEdit(id: $id) {
-            investigationAdd {
-                id
-            }
-        }
+  mutation InvestigationUtilsInvestigationAddFromContainerMutation($id: ID!) {
+    containerEdit(id: $id) {
+      investigationAdd {
+        id
+      }
     }
+  }
 `;
 
 const investigationAddFromContainer = (groupingId, navigate) => {

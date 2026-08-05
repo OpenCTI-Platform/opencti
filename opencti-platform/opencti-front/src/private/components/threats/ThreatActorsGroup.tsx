@@ -12,11 +12,17 @@ import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
 import ListCards from '../../../components/list_cards/ListCards';
-import ThreatActorsGroupCards, { ThreatActorsGroupCardsFragment, threatActorsGroupCardsQuery } from './threat_actors_group/ThreatActorsGroupCards';
+import ThreatActorsGroupCards, {
+  ThreatActorsGroupCardsFragment,
+  threatActorsGroupCardsQuery,
+} from './threat_actors_group/ThreatActorsGroupCards';
 import ThreatActorGroupCreation from './threat_actors_group/ThreatActorGroupCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -39,12 +45,16 @@ const ThreatActorsGroup = () => {
   };
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Threat Actors (Group) | Threats'));
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ThreatActorsGroupCardsPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    initialValues,
-  );
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<ThreatActorsGroupCardsPaginationQuery$variables>(
+      LOCAL_STORAGE_KEY,
+      initialValues,
+    );
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext('Threat-Actor-Group', viewStorage.filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext(
+    'Threat-Actor-Group',
+    viewStorage.filters,
+  );
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -56,14 +66,7 @@ const ThreatActorsGroup = () => {
   );
 
   const renderCards = () => {
-    const {
-      numberOfElements,
-      filters,
-      searchTerm,
-      sortBy,
-      orderAsc,
-      openExports,
-    } = viewStorage;
+    const { numberOfElements, filters, searchTerm, sortBy, orderAsc, openExports } = viewStorage;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -100,29 +103,25 @@ const ThreatActorsGroup = () => {
             <StixCoreObjectForms entityType="Threat-Actor-Group" />
           </Security>,
         ]}
-        createButton={(
+        createButton={
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <ThreatActorGroupCreation paginationOptions={queryPaginationOptions} />
           </Security>
-        )}
+        }
       >
         {queryRef && (
           <React.Suspense
-            fallback={(
+            fallback={
               <Grid container={true} spacing={3} style={{ paddingLeft: 17 }}>
                 {Array(20)
                   .fill(0)
                   .map((_, idx) => (
-                    <Grid
-                      item
-                      xs={3}
-                      key={idx}
-                    >
+                    <Grid item xs={3} key={idx}>
                       <GenericAttackCardDummy />
                     </Grid>
                   ))}
               </Grid>
-            )}
+            }
           >
             <ThreatActorsGroupCards
               queryRef={queryRef}
@@ -165,7 +164,9 @@ const ThreatActorsGroup = () => {
         {queryRef && (
           <DataTable
             dataColumns={dataColumns}
-            resolvePath={(data: ThreatActorsGroupCards_data$data) => data.threatActorsGroup?.edges?.map((n) => n?.node)}
+            resolvePath={(data: ThreatActorsGroupCards_data$data) =>
+              data.threatActorsGroup?.edges?.map((n) => n?.node)
+            }
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
             contextFilters={contextFilters}
@@ -189,11 +190,11 @@ const ThreatActorsGroup = () => {
                 </ToggleButton>
               </Tooltip>,
             ]}
-            createButton={(
+            createButton={
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <ThreatActorGroupCreation paginationOptions={queryPaginationOptions} />
               </Security>
-            )}
+            }
           />
         )}
       </>
@@ -202,7 +203,12 @@ const ThreatActorsGroup = () => {
 
   return (
     <div data-testid="threat-actor-group-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Threat actors (group)'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Threats') },
+          { label: t_i18n('Threat actors (group)'), current: true },
+        ]}
+      />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
     </div>
   );

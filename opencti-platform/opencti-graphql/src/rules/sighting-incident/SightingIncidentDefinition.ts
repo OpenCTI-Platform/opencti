@@ -50,12 +50,20 @@ const display = {
 };
 
 // For rescan
-const scan = { types: [STIX_SIGHTING_RELATIONSHIP], fromTypes: [ENTITY_TYPE_INDICATOR], toTypes: [ENTITY_TYPE_IDENTITY] };
+const scan = {
+  types: [STIX_SIGHTING_RELATIONSHIP],
+  fromTypes: [ENTITY_TYPE_INDICATOR],
+  toTypes: [ENTITY_TYPE_IDENTITY],
+};
 
 // For live
 const scopes = [
   {
-    filters: { types: [STIX_SIGHTING_RELATIONSHIP], fromTypes: [ENTITY_TYPE_INDICATOR], toTypes: [ENTITY_TYPE_IDENTITY] },
+    filters: {
+      types: [STIX_SIGHTING_RELATIONSHIP],
+      fromTypes: [ENTITY_TYPE_INDICATOR],
+      toTypes: [ENTITY_TYPE_IDENTITY],
+    },
     attributes: [{ name: 'first_seen' }, { name: 'last_seen' }],
   },
   {

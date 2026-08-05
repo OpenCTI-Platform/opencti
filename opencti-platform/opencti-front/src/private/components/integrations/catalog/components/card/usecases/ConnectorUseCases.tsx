@@ -47,19 +47,17 @@ const ConnectorUseCases = ({ useCases }: ConnectorUseCasesProps) => {
         })
       }
 
-      {
-        hasOverflow && (
-          <Box sx={{ flexShrink: 0 }}>
-            <IngestionCatalogChip
-              withTooltip={true}
-              isInTooltip
-              label={`+${hiddenCount}`}
-              tooltipLabel={hiddenUseCases.join(', ')}
-              color="primary"
-            />
-          </Box>
-        )
-      }
+      {hasOverflow && (
+        <Box sx={{ flexShrink: 0 }}>
+          <IngestionCatalogChip
+            withTooltip={true}
+            isInTooltip
+            label={`+${hiddenCount}`}
+            tooltipLabel={hiddenUseCases.join(', ')}
+            color="primary"
+          />
+        </Box>
+      )}
     </Stack>
   );
 };

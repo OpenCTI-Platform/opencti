@@ -2,7 +2,12 @@ import type { Resolvers } from '../../../generated/graphql';
 import { buildRefRelationKey } from '../../../schema/general';
 import { RELATION_OBJECT_ASSIGNEE } from '../../../schema/stixRefRelationship';
 import { stixDomainObjectDelete } from '../../../domain/stixDomainObject';
-import { addCaseIncident, caseIncidentContainsStixObjectOrStixRelationship, findCaseIncidentPaginated, findById } from './case-incident-domain';
+import {
+  addCaseIncident,
+  caseIncidentContainsStixObjectOrStixRelationship,
+  findCaseIncidentPaginated,
+  findById,
+} from './case-incident-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from './case-incident-types';
 import { findSecurityCoverageByCoveredId } from '../../securityCoverage/securityCoverage-domain';
 
@@ -11,11 +16,17 @@ const caseIncidentResolvers: Resolvers = {
     caseIncident: (_, { id }, context) => findById(context, context.user, id),
     caseIncidents: (_, args, context) => findCaseIncidentPaginated(context, context.user, args),
     caseIncidentContainsStixObjectOrStixRelationship: (_, args, context) => {
-      return caseIncidentContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
+      return caseIncidentContainsStixObjectOrStixRelationship(
+        context,
+        context.user,
+        args.id,
+        args.stixObjectOrStixRelationshipId,
+      );
     },
   },
   CaseIncident: {
-    securityCoverage: (caseIncident, _, context) => findSecurityCoverageByCoveredId(context, context.user, caseIncident.id),
+    securityCoverage: (caseIncident, _, context) =>
+      findSecurityCoverageByCoveredId(context, context.user, caseIncident.id),
     customFieldValues: (caseIncident) => caseIncident.custom_field_values ?? [],
   },
   CaseIncidentsOrdering: {

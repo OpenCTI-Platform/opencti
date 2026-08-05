@@ -18,7 +18,10 @@ import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
-import useGranted, { KNOWLEDGE_KNUPDATE, SETTINGS_SETLABELS } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE,
+  SETTINGS_SETLABELS,
+} from '../../../../utils/hooks/useGranted';
 import { labelsSearchQuery } from '../../settings/LabelsQuery';
 import LabelCreation from '../../settings/labels/LabelCreation';
 import CommitMessage from '../form/CommitMessage';
@@ -149,7 +152,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
   return (
     <Box sx={sx}>
       <Label
-        action={(
+        action={
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <IconButton
               size="small"
@@ -161,11 +164,14 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
               <Add fontSize="small" />
             </IconButton>
           </Security>
-        )}
+        }
       >
         {t_i18n('Labels')}
       </Label>
-      <div className={classes.objectLabel} style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '8px' }}>
+      <div
+        className={classes.objectLabel}
+        style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '8px' }}
+      >
         <FieldOrEmpty source={labels}>
           {map(
             (label) => (
@@ -173,29 +179,23 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                 key={label.id}
                 label={label.value}
                 color={label.color}
-                onDelete={canUpdateKnowledge ? () => (
-                  enableReferences
-                    ? handleOpenCommitDelete(label)
-                    : handleRemoveLabel(label.id)
-                ) : undefined
+                onDelete={
+                  canUpdateKnowledge
+                    ? () =>
+                        enableReferences
+                          ? handleOpenCommitDelete(label)
+                          : handleRemoveLabel(label.id)
+                    : undefined
                 }
               />
             ),
-            (labels ? R.take(12, labels) : []),
+            labels ? R.take(12, labels) : [],
           )}
           {labels && labels.length > 12 && (
-            <Tag
-              tooltipTitle={t_i18n('See more')}
-              label="..."
-              onClick={handleOpenLabels}
-            />
+            <Tag tooltipTitle={t_i18n('See more')} label="..." onClick={handleOpenLabels} />
           )}
           {labels && labels.length > 12 && (
-            <Dialog
-              open={openLabels}
-              onClose={handleCloseLabels}
-              title={t_i18n('All labels')}
-            >
+            <Dialog open={openLabels} onClose={handleCloseLabels} title={t_i18n('All labels')}>
               <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1 }}>
                 {map(
                   (label) => (
@@ -203,11 +203,13 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                       key={label.id}
                       label={label.value}
                       color={label.color}
-                      onDelete={canUpdateKnowledge ? () => (
-                        enableReferences
-                          ? handleOpenCommitDelete(label)
-                          : handleRemoveLabel(label.id)
-                      ) : undefined
+                      onDelete={
+                        canUpdateKnowledge
+                          ? () =>
+                              enableReferences
+                                ? handleOpenCommitDelete(label)
+                                : handleRemoveLabel(label.id)
+                          : undefined
                       }
                     />
                   ),
@@ -215,9 +217,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                 )}
               </Stack>
               <DialogActions>
-                <Button onClick={handleCloseLabels}>
-                  {t_i18n('Close')}
-                </Button>
+                <Button onClick={handleCloseLabels}>{t_i18n('Close')}</Button>
               </DialogActions>
             </Dialog>
           )}
@@ -240,11 +240,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
           </Formik>
         )}
       </div>
-      <Formik
-        initialValues={{ new_labels: [] }}
-        onSubmit={onSubmit}
-        onReset={onReset}
-      >
+      <Formik initialValues={{ new_labels: [] }} onSubmit={onSubmit} onReset={onReset}>
         {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
           <Dialog
             slotProps={{ paper: { elevation: 1 } }}
@@ -271,10 +267,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                 openCreate={isLabelManager ? handleOpenCreate : null}
                 renderOption={(optionsProps, option) => (
                   <li {...optionsProps}>
-                    <div
-                      className={classes.icon}
-                      style={{ color: option.color }}
-                    >
+                    <div className={classes.icon} style={{ color: option.color }}>
                       <MdiLabel />
                     </div>
                     <div className={classes.text}>{option.label}</div>

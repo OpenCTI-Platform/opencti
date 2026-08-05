@@ -12,10 +12,7 @@ import { ExternalReferenceEditionOverview_externalReference$data } from './__gen
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 export const externalReferenceMutationFieldPatch = graphql`
-  mutation ExternalReferenceEditionOverviewFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-  ) {
+  mutation ExternalReferenceEditionOverviewFieldPatchMutation($id: ID!, $input: [EditInput]!) {
     externalReferenceEdit(id: $id) {
       fieldPatch(input: $input) {
         ...ExternalReferenceEditionOverview_externalReference
@@ -26,10 +23,7 @@ export const externalReferenceMutationFieldPatch = graphql`
 `;
 
 export const externalReferenceEditionOverviewFocus = graphql`
-  mutation ExternalReferenceEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation ExternalReferenceEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     externalReferenceEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -38,17 +32,15 @@ export const externalReferenceEditionOverviewFocus = graphql`
   }
 `;
 
-const externalReferenceValidation = (t: (value: string) => string) => Yup.object().shape({
-  source_name: Yup.string().required(t('This field is required')),
-  external_id: Yup.string().nullable(),
-  url: Yup.string()
-    .nullable()
-    .matches(
-      /^https?:\/\/[^\s/$.?#].[^\s]*$/,
-      t('The value must be an URL'),
-    ),
-  description: Yup.string().nullable(),
-});
+const externalReferenceValidation = (t: (value: string) => string) =>
+  Yup.object().shape({
+    source_name: Yup.string().required(t('This field is required')),
+    external_id: Yup.string().nullable(),
+    url: Yup.string()
+      .nullable()
+      .matches(/^https?:\/\/[^\s/$.?#].[^\s]*$/, t('The value must be an URL')),
+    description: Yup.string().nullable(),
+  });
 
 interface ExternalReferenceEditionOverviewComponentProps {
   externalReference: ExternalReferenceEditionOverview_externalReference$data;
@@ -115,9 +107,7 @@ const ExternalReferenceEditionOverviewComponent: FunctionComponent<
               fullWidth={true}
               onFocus={handleChangeFocus}
               onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="source_name" />
-              }
+              helperText={<SubscriptionFocus context={context} fieldName="source_name" />}
             />
             <Field
               component={TextField}
@@ -127,9 +117,7 @@ const ExternalReferenceEditionOverviewComponent: FunctionComponent<
               style={{ marginTop: 20 }}
               onFocus={handleChangeFocus}
               onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="external_id" />
-              }
+              helperText={<SubscriptionFocus context={context} fieldName="external_id" />}
             />
             <Field
               component={TextField}
@@ -140,9 +128,7 @@ const ExternalReferenceEditionOverviewComponent: FunctionComponent<
               style={{ marginTop: 20 }}
               onFocus={handleChangeFocus}
               onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="url" />
-              }
+              helperText={<SubscriptionFocus context={context} fieldName="url" />}
             />
             <Field
               component={MarkdownField}
@@ -155,9 +141,7 @@ const ExternalReferenceEditionOverviewComponent: FunctionComponent<
               onFocus={handleChangeFocus}
               onSubmit={handleSubmitField}
               uploadEntityId={externalReference.id}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="description" />
-              }
+              helperText={<SubscriptionFocus context={context} fieldName="description" />}
             />
           </Form>
         </div>

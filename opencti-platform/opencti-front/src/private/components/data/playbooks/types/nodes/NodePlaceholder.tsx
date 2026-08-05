@@ -13,13 +13,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
         : '1px dashed rgba(0, 0, 0, 0.05)',
     borderRadius: 4,
     backgroundColor:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, 0.04)'
-        : 'rgba(0, 0, 0, 0.04)',
-    color:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, 0.04)'
-        : 'rgba(0, 0, 0, 0.04)',
+      theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)',
+    color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)',
     width: 160,
     height: 50,
     padding: '11px 5px 5px 5px',

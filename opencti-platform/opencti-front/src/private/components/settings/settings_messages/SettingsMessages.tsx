@@ -30,10 +30,9 @@ const SettingsMessages = ({
 }) => {
   const { t_i18n } = useFormatter();
   const ref = useRef(null);
-  const messages = useFragment<SettingsMessages_settingsMessages$key>(
-    settingsMessagesFragment,
-    settings,
-  )?.messages_administration ?? [];
+  const messages =
+    useFragment<SettingsMessages_settingsMessages$key>(settingsMessagesFragment, settings)
+      ?.messages_administration ?? [];
   const dataColumns: DataColumns = {
     color: {
       label: 'Color',
@@ -110,22 +109,14 @@ const SettingsMessages = ({
     <>
       <Card
         title={t_i18n('Platform announcement')}
-        action={(
-          <IconButton
-            color="primary"
-            aria-label="Add"
-            onClick={handleOpenCreate}
-            size="small"
-          >
+        action={
+          <IconButton color="primary" aria-label="Add" onClick={handleOpenCreate} size="small">
             <Add fontSize="small" />
           </IconButton>
-        )}
+        }
       >
         <div ref={ref}>
-          <ColumnsLinesTitles
-            dataColumns={dataColumns}
-            secondaryAction={true}
-          />
+          <ColumnsLinesTitles dataColumns={dataColumns} secondaryAction={true} />
           <SettingsMessagesLines
             settingsId={settings.id}
             datas={datas}

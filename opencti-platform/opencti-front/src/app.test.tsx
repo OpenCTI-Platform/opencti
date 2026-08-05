@@ -26,29 +26,39 @@ const me = {
   },
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const UserContextValue: any = { me, settings: {}, bannerSettings: {}, entitySettings: {}, platformModuleHelpers: {}, schema: {}, about: {}, themes: {}, queryData: {} };
+const UserContextValue: any = {
+  me,
+  settings: {},
+  bannerSettings: {},
+  entitySettings: {},
+  platformModuleHelpers: {},
+  schema: {},
+  about: {},
+  themes: {},
+  queryData: {},
+};
 
 describe('App', () => {
   afterEach(cleanup);
 
   it('renders without crashing', async () => {
     const environment = createMockEnvironment();
-    const profileMockOperation = (operation: OperationDescriptor) => MockGen.generate(operation, {
-      MeUser() {
-        return me;
-      },
-      AppInfo() {
-        return { version: '5.4.0' };
-      },
-      Settings() {
-        return {
-          platform_modules: [],
-          otp_mandatory: false,
-          xtm_hub_available_news_feed_types: [],
-        };
-      },
-    });
+    const profileMockOperation = (operation: OperationDescriptor) =>
+      MockGen.generate(operation, {
+        MeUser() {
+          return me;
+        },
+        AppInfo() {
+          return { version: '5.4.0' };
+        },
+        Settings() {
+          return {
+            platform_modules: [],
+            otp_mandatory: false,
+            xtm_hub_available_news_feed_types: [],
+          };
+        },
+      });
     environment.mock.queueOperationResolver((operation) => profileMockOperation(operation));
     environment.mock.queuePendingOperation(profileQuery, {});
     const { getByDisplayValue } = render(

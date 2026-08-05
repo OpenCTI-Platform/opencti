@@ -15,7 +15,9 @@ interface MappingFields {
   title: string;
   field: SupportedFields;
   path: string;
-  AddComponent: React.FunctionComponent<{ threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data }>;
+  AddComponent: React.FunctionComponent<{
+    threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data;
+  }>;
 }
 
 const typeMappings: Record<SupportedTypes, MappingFields> = {
@@ -40,19 +42,20 @@ interface ThreatActorIndividualDetailsChipsProps {
 
 const ThreatActorIndividualDetailsChips: FunctionComponent<
   ThreatActorIndividualDetailsChipsProps
-> = ({
-  data,
-  relType,
-}) => {
+> = ({ data, relType }) => {
   const { title, field, path, AddComponent } = typeMappings[relType];
 
   const getRelationshipsOfType = (rel_type: SupportedTypes) => {
     const seen_persona_id_set = new Set<string>();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line typescript/no-explicit-any
     const relations: any[] = [];
     for (const { node } of data.stixCoreRelationships?.edges ?? []) {
       const { relationship_type } = node ?? {};
-      if (relationship_type === rel_type && node.to?.id !== undefined && !(seen_persona_id_set.has(node.to.id))) {
+      if (
+        relationship_type === rel_type &&
+        node.to?.id !== undefined &&
+        !seen_persona_id_set.has(node.to.id)
+      ) {
         relations.push(node);
         seen_persona_id_set.add(node.to.id);
       }
@@ -68,11 +71,12 @@ const ThreatActorIndividualDetailsChips: FunctionComponent<
 
   return (
     <div style={{ marginBottom: '20px' }}>
-      <Label action={(
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <AddComponent threatActorIndividual={data} />
-        </Security>
-      )}
+      <Label
+        action={
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <AddComponent threatActorIndividual={data} />
+          </Security>
+        }
       >
         {title}
       </Label>

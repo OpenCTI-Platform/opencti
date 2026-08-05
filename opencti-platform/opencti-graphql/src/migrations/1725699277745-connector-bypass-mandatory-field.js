@@ -11,12 +11,24 @@ export const up = async (next) => {
   const context = executionContext('migration');
 
   // Resolve the role "Connector" based on standard ID
-  const connectorRole = await elLoadById(context, SYSTEM_USER, 'role--b375ed46-a11c-56d5-a2d4-0c654f61eeee');
+  const connectorRole = await elLoadById(
+    context,
+    SYSTEM_USER,
+    'role--b375ed46-a11c-56d5-a2d4-0c654f61eeee',
+  );
 
   // Add the capability
   if (isNotEmptyField(connectorRole)) {
-    const byPassMandatoryAttributeCapability = await elLoadById(context, SYSTEM_USER, 'capability--767be0e4-3b1f-5073-bfea-f23f785a36d1');
-    const input = { fromId: connectorRole.id, toId: byPassMandatoryAttributeCapability.id, relationship_type: 'has-capability' };
+    const byPassMandatoryAttributeCapability = await elLoadById(
+      context,
+      SYSTEM_USER,
+      'capability--767be0e4-3b1f-5073-bfea-f23f785a36d1',
+    );
+    const input = {
+      fromId: connectorRole.id,
+      toId: byPassMandatoryAttributeCapability.id,
+      relationship_type: 'has-capability',
+    };
     await createRelation(context, SYSTEM_USER, input);
   }
 

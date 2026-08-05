@@ -22,9 +22,7 @@ export const getDashboardExportHandler = ({
       const blob = new Blob([exportedDashboard], {
         type: 'text/json',
       });
-      const [day, month, year] = new Date()
-        .toLocaleDateString('fr-FR')
-        .split('/');
+      const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
       const fileName = `${year}${month}${day}_octi_${configType}_${entity.name}.json`;
       fileDownload(blob, fileName);
     } catch (error) {

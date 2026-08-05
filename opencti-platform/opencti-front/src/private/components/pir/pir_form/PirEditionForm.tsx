@@ -44,7 +44,8 @@ const PirEditionForm = ({ onSubmitField, pir }: PirEditionFormProps) => {
   };
 
   const updateField = async (field: PirEditionFormInputKeys, value: unknown) => {
-    validation.validateAt(field, { [field]: value })
+    validation
+      .validateAt(field, { [field]: value })
       .then(() => onSubmitField(field, value))
       .catch(() => false);
   };

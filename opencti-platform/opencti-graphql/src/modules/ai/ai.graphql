@@ -1,54 +1,85 @@
 enum Tone {
-    tactical
-    operational
-    strategic
+  tactical
+  operational
+  strategic
 }
 
 enum Format {
-    text
-    html
-    markdown
-    json
+  text
+  html
+  markdown
+  json
 }
 
 enum IndicatorFormat {
-    stix
-    sigma
-    yara
+  stix
+  sigma
+  yara
 }
 
 type AIBus {
-    bus_id: String!
-    content: String!
+  bus_id: String!
+  content: String!
 }
 
 type NLQResponse {
-    filters: String!
-    notResolvedValues: [String!]!
+  filters: String!
+  notResolvedValues: [String!]!
 }
 
 type Mutation {
-    # Based on knowledge
-    aiContainerGenerateReport(id: ID!, containerId: String!, paragraphs: Int, tone: Tone, format: Format, language: String): String @auth(for: [KNOWLEDGE_KNUPDATE])
-    aiThreatGenerateReport(id: ID!, threatId: String!, paragraphs: Int, tone: Tone, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
-    aiVictimGenerateReport(id: ID!, victimId: String!, paragraphs: Int, tone: Tone, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
-    aiSummarizeFiles(id: ID!, elementId: String!, paragraphs: Int, tone: Tone, format: Format, language: String, fileIds: [String]): String @auth(for: [KNOWLEDGE_KNUPDATE])
-    aiConvertFilesToStix(id: ID!, elementId: String!, fileIds: [String]): String @auth(for: [KNOWLEDGE_KNUPDATE])
+  # Based on knowledge
+  aiContainerGenerateReport(
+    id: ID!
+    containerId: String!
+    paragraphs: Int
+    tone: Tone
+    format: Format
+    language: String
+  ): String @auth(for: [KNOWLEDGE_KNUPDATE])
+  aiThreatGenerateReport(
+    id: ID!
+    threatId: String!
+    paragraphs: Int
+    tone: Tone
+    format: Format
+  ): String @auth(for: [KNOWLEDGE_KNUPDATE])
+  aiVictimGenerateReport(
+    id: ID!
+    victimId: String!
+    paragraphs: Int
+    tone: Tone
+    format: Format
+  ): String @auth(for: [KNOWLEDGE_KNUPDATE])
+  aiSummarizeFiles(
+    id: ID!
+    elementId: String!
+    paragraphs: Int
+    tone: Tone
+    format: Format
+    language: String
+    fileIds: [String]
+  ): String @auth(for: [KNOWLEDGE_KNUPDATE])
+  aiConvertFilesToStix(id: ID!, elementId: String!, fileIds: [String]): String
+    @auth(for: [KNOWLEDGE_KNUPDATE])
 
-    # Indicators
-    aiConvertIndicator(id: ID!, indicatorId: String!, format: IndicatorFormat!): String @auth(for: [KNOWLEDGE_KNUPDATE])
+  # Indicators
+  aiConvertIndicator(id: ID!, indicatorId: String!, format: IndicatorFormat!): String
+    @auth(for: [KNOWLEDGE_KNUPDATE])
 
-    # Generic text
-    aiImproveWriting(id: ID!, content: String!, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
-    aiFixSpelling(id: ID!, content: String!, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
-    aiMakeShorter(id: ID!, content: String!, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
-    aiMakeLonger(id: ID!, content: String!, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
-    aiChangeTone(id: ID!, content: String!, format: Format, tone: Tone): String @auth(for: [KNOWLEDGE_KNUPDATE])
-    aiSummarize(id: ID!, content: String!, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
-    aiExplain(id: ID!, content: String!): String @auth(for: [KNOWLEDGE])
-    aiNLQ(search: String!): NLQResponse @auth(for: [KNOWLEDGE])
+  # Generic text
+  aiImproveWriting(id: ID!, content: String!, format: Format): String
+    @auth(for: [KNOWLEDGE_KNUPDATE])
+  aiFixSpelling(id: ID!, content: String!, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
+  aiMakeShorter(id: ID!, content: String!, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
+  aiMakeLonger(id: ID!, content: String!, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
+  aiChangeTone(id: ID!, content: String!, format: Format, tone: Tone): String
+    @auth(for: [KNOWLEDGE_KNUPDATE])
+  aiSummarize(id: ID!, content: String!, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
+  aiExplain(id: ID!, content: String!): String @auth(for: [KNOWLEDGE])
+  aiNLQ(search: String!): NLQResponse @auth(for: [KNOWLEDGE])
 }
 
 type Subscription {
-    aiBus(id: ID!): AIBus @auth(for: [KNOWLEDGE_KNUPDATE])
+  aiBus(id: ID!): AIBus @auth(for: [KNOWLEDGE_KNUPDATE])
 }

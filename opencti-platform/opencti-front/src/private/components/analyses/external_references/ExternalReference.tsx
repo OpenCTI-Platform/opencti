@@ -35,27 +35,24 @@ interface ExternalReferenceComponentProps {
   }[];
 }
 
-const ExternalReferenceComponent: FunctionComponent<
-  ExternalReferenceComponentProps
-> = ({ externalReference, connectorsImport }) => {
+const ExternalReferenceComponent: FunctionComponent<ExternalReferenceComponentProps> = ({
+  externalReference,
+  connectorsImport,
+}) => {
   const classes = useStyles();
   const overviewLayoutCustomization = useOverviewLayoutCustomization('External-Reference');
   return (
     <div className={classes.container} data-testid="external-reference-details-page">
       <ExternalReferenceHeader
         externalReference={externalReference}
-        EditComponent={(
+        EditComponent={
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <ExternalReferenceEdition externalReferenceId={externalReference.id} />
           </Security>
-        )}
+        }
         enableEnrollPlaybook={true}
       />
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-      >
+      <Grid container={true} spacing={3} classes={{ container: classes.gridContainer }}>
         {overviewLayoutCustomization.map(({ key, width }) => {
           switch (key) {
             case 'basicInformation':
@@ -73,9 +70,7 @@ const ExternalReferenceComponent: FunctionComponent<
             case 'linkedObjects':
               return (
                 <Grid key={key} item xs={width}>
-                  <ExternalReferenceStixCoreObjects
-                    externalReference={externalReference}
-                  />
+                  <ExternalReferenceStixCoreObjects externalReference={externalReference} />
                 </Grid>
               );
             case 'uploadedFiles':
@@ -90,8 +85,7 @@ const ExternalReferenceComponent: FunctionComponent<
             default:
               return null;
           }
-        })
-        }
+        })}
       </Grid>
     </div>
   );
@@ -109,8 +103,7 @@ const ExternalReference = createFragmentContainer(ExternalReferenceComponent, {
     }
   `,
   connectorsImport: graphql`
-    fragment ExternalReference_connectorsImport on Connector
-    @relay(plural: true) {
+    fragment ExternalReference_connectorsImport on Connector @relay(plural: true) {
       ...ExternalReferenceFileImportViewer_connectorsImport
     }
   `,

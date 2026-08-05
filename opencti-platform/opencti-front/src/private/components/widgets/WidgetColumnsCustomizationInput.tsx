@@ -1,6 +1,16 @@
 import React, { FunctionComponent } from 'react';
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
-import { List, ListItem, ListItemIcon, ListItemText, IconButton, Checkbox, Typography, Box, AccordionDetails } from '@mui/material';
+import {
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  IconButton,
+  Checkbox,
+  Typography,
+  Box,
+  AccordionDetails,
+} from '@mui/material';
 import { Close, DragIndicatorOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import Button from '@common/button/Button';
@@ -26,11 +36,8 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
-  const { handleDragEndSingleColumn, handleToggleColumn, formatColumnName } = useWidgetColumnsCustomization(
-    availableColumns,
-    value,
-    onChange,
-  );
+  const { handleDragEndSingleColumn, handleToggleColumn, formatColumnName } =
+    useWidgetColumnsCustomization(availableColumns, value, onChange);
 
   return (
     <Accordion sx={{ width: '100%' }}>
@@ -42,17 +49,14 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
           {/* Available Columns */}
           <Box sx={{ flex: 1 }}>
             <Typography variant="h4">{`${t_i18n('Available columns')} (${availableColumns.length})`}</Typography>
-            <List sx={{
-              border: `1px solid ${theme.palette.common.white}`,
-              borderRadius: `${theme.borderRadius}px`,
-            }}
+            <List
+              sx={{
+                border: `1px solid ${theme.palette.common.white}`,
+                borderRadius: `${theme.borderRadius}px`,
+              }}
             >
               {availableColumns.map((column) => (
-                <ListItem
-                  disablePadding
-                  key={column.attribute}
-                  sx={{ height: 42 }}
-                >
+                <ListItem disablePadding key={column.attribute} sx={{ height: 42 }}>
                   <Checkbox
                     checked={value.some((col) => col.attribute === column.attribute)}
                     onChange={() => handleToggleColumn(column.attribute)}
@@ -79,7 +83,11 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
                     }}
                   >
                     {value.map((column, index) => (
-                      <Draggable key={column.attribute} draggableId={column.attribute ?? ''} index={index}>
+                      <Draggable
+                        key={column.attribute}
+                        draggableId={column.attribute ?? ''}
+                        index={index}
+                      >
                         {(providedDrag, snapshotDrag) => (
                           <ListItem
                             ref={providedDrag.innerRef}
@@ -87,14 +95,19 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
                             divider={index < value.length - 1}
                             sx={{
                               ...providedDrag.draggableProps.style,
-                              background: snapshotDrag.isDragging ? 'rgba(0, 0, 0, 0.05)' : 'inherit',
+                              background: snapshotDrag.isDragging
+                                ? 'rgba(0, 0, 0, 0.05)'
+                                : 'inherit',
                               height: 42,
                             }}
-                            secondaryAction={(
-                              <IconButton aria-label={t_i18n('Close')} onClick={() => handleToggleColumn(column.attribute)}>
+                            secondaryAction={
+                              <IconButton
+                                aria-label={t_i18n('Close')}
+                                onClick={() => handleToggleColumn(column.attribute)}
+                              >
                                 <Close />
                               </IconButton>
-                            )}
+                            }
                           >
                             <ListItemIcon {...providedDrag.dragHandleProps}>
                               <DragIndicatorOutlined />

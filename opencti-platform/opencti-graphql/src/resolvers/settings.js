@@ -17,7 +17,10 @@ import {
   settingsEditField,
 } from '../domain/settings';
 import { fetchEditContext } from '../database/redis';
-import { subscribeToInstanceEvents, subscribeToPlatformSettingsEvents } from '../graphql/subscriptionWrapper';
+import {
+  subscribeToInstanceEvents,
+  subscribeToPlatformSettingsEvents,
+} from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { elAggregationCount } from '../database/engine';
 import { findById } from '../modules/organization/organization-domain';
@@ -38,19 +41,31 @@ const settingsResolvers = {
     publicSettings: (_, __, context) => getPublicSettings(context),
   },
   AppDebugStatistics: {
-    objects: (_, __, context) => elAggregationCount(context, context.user, READ_DATA_INDICES, { types: ['Stix-Object'], field: 'entity_type' }),
-    relationships: (_, __, context) => elAggregationCount(context, context.user, READ_DATA_INDICES, { types: ['stix-relationship'], field: 'entity_type' }),
+    objects: (_, __, context) =>
+      elAggregationCount(context, context.user, READ_DATA_INDICES, {
+        types: ['Stix-Object'],
+        field: 'entity_type',
+      }),
+    relationships: (_, __, context) =>
+      elAggregationCount(context, context.user, READ_DATA_INDICES, {
+        types: ['stix-relationship'],
+        field: 'entity_type',
+      }),
   },
   Settings: {
     platform_type: () => (IS_LTS_PLATFORM ? PlatformType.Lts : PlatformType.Standard),
     platform_session_idle_timeout: () => Number(nconf.get('app:session_idle_timeout')),
     platform_session_timeout: () => Number(nconf.get('app:session_timeout')),
-    platform_organization: (settings, __, context) => findById(context, context.user, settings.platform_organization),
+    platform_organization: (settings, __, context) =>
+      findById(context, context.user, settings.platform_organization),
     platform_critical_alerts: (_, __, context) => getCriticalAlerts(context, context.user),
-    platform_protected_sensitive_config: (_, __, context) => getProtectedSensitiveConfig(context, context.user),
-    activity_listeners: (settings, __, context) => internalFindByIds(context, context.user, settings.activity_listeners_ids),
+    platform_protected_sensitive_config: (_, __, context) =>
+      getProtectedSensitiveConfig(context, context.user),
+    activity_listeners: (settings, __, context) =>
+      internalFindByIds(context, context.user, settings.activity_listeners_ids),
     platform_ip_whitelist_enabled: (settings) => settings.platform_ip_whitelist_enabled ?? false,
-    platform_ip_whitelist_exclusions: (settings, __, context) => internalFindByIds(context, context.user, settings.platform_ip_whitelist_exclusion_ids),
+    platform_ip_whitelist_exclusions: (settings, __, context) =>
+      internalFindByIds(context, context.user, settings.platform_ip_whitelist_exclusion_ids),
     otp_mandatory: (settings) => settings.otp_mandatory ?? false,
     platform_email: (settings) => smtpConfiguredEmail(settings),
     platform_email_configurable: () => isEmailRewriteAllowed(),
@@ -63,14 +78,18 @@ const settingsResolvers = {
     password_policy_min_uppercase: (settings) => settings.password_policy_min_uppercase ?? 0,
     password_policy_validity_days: (settings) => settings.password_policy_validity_days ?? 0,
     editContext: (settings) => fetchEditContext(settings.id),
-    platform_messages: (settings, _, context) => getMessagesFilteredByRecipients(context.user, settings),
+    platform_messages: (settings, _, context) =>
+      getMessagesFilteredByRecipients(context.user, settings),
     messages_administration: (settings) => JSON.parse(settings.platform_messages ?? '[]'),
     platform_enterprise_edition: (settings) => getEnterpriseEditionInfo(settings),
     request_access_enabled: (_, __, context) => isRequestAccessEnabled(context, context.user),
     platform_ai_enabled: (settings) => settings.platform_ai_enabled ?? true,
-    platform_notifier_auto_trigger_assignee: (settings) => settings.platform_notifier_auto_trigger_assignee ?? true,
-    filigran_chatbot_ai_cgu_status: (settings) => settings.filigran_chatbot_ai_cgu_status ?? CguStatus.Pending,
-    platform_https_enabled: () => !!(nconf.get('app:https_cert:key') && nconf.get('app:https_cert:crt')),
+    platform_notifier_auto_trigger_assignee: (settings) =>
+      settings.platform_notifier_auto_trigger_assignee ?? true,
+    filigran_chatbot_ai_cgu_status: (settings) =>
+      settings.filigran_chatbot_ai_cgu_status ?? CguStatus.Pending,
+    platform_https_enabled: () =>
+      !!(nconf.get('app:https_cert:key') && nconf.get('app:https_cert:crt')),
     caller_ip: (_, __, context) => context.req?.ip ?? null,
     metrics_definition: () => getEntityMetricsConfiguration(),
     is_authentication_by_env: () => isAuthenticationForcedFromEnv(),
@@ -80,10 +99,12 @@ const settingsResolvers = {
     dependencies: (_, __, context) => getApplicationDependencies(context),
   },
   SettingsMessage: {
-    recipients: (message, _, context) => internalFindByIds(context, context.user, message.recipients),
+    recipients: (message, _, context) =>
+      internalFindByIds(context, context.user, message.recipients),
   },
   Mutation: {
-    setupEnterpriseLicense: (_, { input }, context) => setupEnterpriseLicense(context, context.user, input),
+    setupEnterpriseLicense: (_, { input }, context) =>
+      setupEnterpriseLicense(context, context.user, input),
     settingsEdit: (_, { id }, context) => ({
       fieldPatch: ({ input }) => settingsEditField(context, context.user, id, input),
       contextPatch: ({ input }) => settingsEditContext(context, context.user, id, input),
@@ -102,7 +123,11 @@ const settingsResolvers = {
         const preFn = () => settingsEditContext(context, context.user, id);
         const cleanFn = () => settingsCleanContext(context, context.user, id);
         const bus = BUS_TOPICS[ENTITY_TYPE_SETTINGS];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_SETTINGS, preFn, cleanFn });
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], {
+          type: ENTITY_TYPE_SETTINGS,
+          preFn,
+          cleanFn,
+        });
       },
     },
     settingsMessages: {

@@ -21,13 +21,14 @@ import { NoteEditionOverview_note$data } from './__generated__/NoteEditionOvervi
 import SliderField from '../../../../components/fields/SliderField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 
 export const noteMutationFieldPatch = graphql`
-  mutation NoteEditionOverviewFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-  ) {
+  mutation NoteEditionOverviewFieldPatchMutation($id: ID!, $input: [EditInput]!) {
     noteEdit(id: $id) {
       fieldPatch(input: $input) {
         ...NoteEditionOverview_note
@@ -48,10 +49,7 @@ export const noteEditionOverviewFocus = graphql`
 `;
 
 const noteMutationRelationAdd = graphql`
-  mutation NoteEditionOverviewRelationAddMutation(
-    $id: ID!
-    $input: StixRefRelationshipAddInput!
-  ) {
+  mutation NoteEditionOverviewRelationAddMutation($id: ID!, $input: StixRefRelationshipAddInput!) {
     noteEdit(id: $id) {
       relationAdd(input: $input) {
         from {
@@ -84,28 +82,35 @@ interface NoteEditionOverviewProps {
 
 const NOTE_TYPE = 'Note';
 
-const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> = ({ note, context }) => {
+const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> = ({
+  note,
+  context,
+}) => {
   const { t_i18n } = useFormatter();
 
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(NOTE_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    content: Yup.string().trim().min(2),
-    created: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    attribute_abstract: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
-    note_types: Yup.array().nullable(),
-    likelihood: Yup.number()
-      .min(0)
-      .max(100)
-      .transform((value) => (Number.isNaN(value) ? null : value))
-      .nullable(),
-    x_opencti_workflow_id: Yup.object(),
-    createdBy: Yup.object().nullable(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      content: Yup.string().trim().min(2),
+      created: Yup.date().typeError(
+        t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'),
+      ),
+      attribute_abstract: Yup.string().nullable(),
+      confidence: Yup.number().nullable(),
+      note_types: Yup.array().nullable(),
+      likelihood: Yup.number()
+        .min(0)
+        .max(100)
+        .transform((value) => (Number.isNaN(value) ? null : value))
+        .nullable(),
+      x_opencti_workflow_id: Yup.object(),
+      createdBy: Yup.object().nullable(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
+  );
   const noteValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
@@ -156,7 +161,7 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
       validationSchema={noteValidator}
       validateOnChange={true}
       validateOnBlur={true}
-      onSubmit={() => { }}
+      onSubmit={() => {}}
     >
       {({ setFieldValue }) => (
         <Form>
@@ -170,9 +175,7 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
               label: t_i18n('Publication date'),
               variant: 'standard',
               fullWidth: true,
-              helperText: (
-                <SubscriptionFocus context={context} fieldName="created" />
-              ),
+              helperText: <SubscriptionFocus context={context} fieldName="created" />,
               required: mandatoryAttributes.includes('created'),
             }}
           />
@@ -180,24 +183,19 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
             component={TextField}
             name="attribute_abstract"
             label={t_i18n('Abstract')}
-            required={(mandatoryAttributes.includes('attribute_abstract'))}
+            required={mandatoryAttributes.includes('attribute_abstract')}
             fullWidth={true}
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             askAi={true}
-            helperText={(
-              <SubscriptionFocus
-                context={context}
-                fieldName="attribute_abstract"
-              />
-            )}
+            helperText={<SubscriptionFocus context={context} fieldName="attribute_abstract" />}
           />
           <Field
             component={MarkdownField}
             name="content"
             label={t_i18n('Content')}
-            required={(mandatoryAttributes.includes('content'))}
+            required={mandatoryAttributes.includes('content')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -206,15 +204,13 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
             onSubmit={handleSubmitField}
             askAi={true}
             uploadEntityId={note.id}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="content" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="content" />}
           />
           <OpenVocabField
             label={t_i18n('Note types')}
             type="note_types_ov"
             name="note_types"
-            required={(mandatoryAttributes.includes('note_types'))}
+            required={mandatoryAttributes.includes('note_types')}
             onSubmit={handleSubmitField}
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}
@@ -233,21 +229,19 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
           <Field
             component={SliderField}
             name="likelihood"
-            required={(mandatoryAttributes.includes('likelihood'))}
+            required={mandatoryAttributes.includes('likelihood')}
             type="number"
             label={t_i18n('Likelihood')}
             fullWidth={true}
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="likelihood" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldName="likelihood" />}
           />
           {userIsKnowledgeEditor && (
             <CreatedByField
               name="createdBy"
-              required={(mandatoryAttributes.includes('createdBy'))}
+              required={mandatoryAttributes.includes('createdBy')}
               style={{ marginTop: 10, width: '100%' }}
               setFieldValue={setFieldValue}
               onChange={editor.changeCreated}
@@ -261,25 +255,17 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: userIsKnowledgeEditor ? 20 : 10 }}
-              helpertext={(
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_workflow_id"
-                />
-              )}
+              helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />}
             />
           )}
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={{
-              marginTop:
-                note.workflowEnabled || userIsKnowledgeEditor ? 20 : 10,
+              marginTop: note.workflowEnabled || userIsKnowledgeEditor ? 20 : 10,
               width: '100%',
             }}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
@@ -289,42 +275,39 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
   );
 };
 
-const NoteEditionOverview = createFragmentContainer(
-  NoteEditionOverviewComponent,
-  {
-    note: graphql`
-      fragment NoteEditionOverview_note on Note {
+const NoteEditionOverview = createFragmentContainer(NoteEditionOverviewComponent, {
+  note: graphql`
+    fragment NoteEditionOverview_note on Note {
+      id
+      created
+      attribute_abstract
+      entity_type
+      content
+      note_types
+      confidence
+      likelihood
+      objectMarking {
         id
-        created
-        attribute_abstract
-        entity_type
-        content
-        note_types
-        confidence
-        likelihood
-        objectMarking {
-          id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-        createdBy {
-          id
-          name
-        }
-        status {
-          id
-          order
-          template {
-            name
-            color
-          }
-        }
-        workflowEnabled
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
-    `,
-  },
-);
+      createdBy {
+        id
+        name
+      }
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
+    }
+  `,
+});
 
 export default NoteEditionOverview;

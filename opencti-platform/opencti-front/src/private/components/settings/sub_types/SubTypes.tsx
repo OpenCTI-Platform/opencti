@@ -5,7 +5,10 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import SubTypesLines, { subTypesLinesQuery } from './SubTypesLines';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { SubTypeLineDummy } from './SubTypesLine';
-import { SubTypesLinesQuery, SubTypesLinesQuery$variables } from './__generated__/SubTypesLinesQuery.graphql';
+import {
+  SubTypesLinesQuery,
+  SubTypesLinesQuery$variables,
+} from './__generated__/SubTypesLinesQuery.graphql';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import ToolBar from './ToolBar';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -28,10 +31,10 @@ const SubTypes = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Entity Types | Customization | Settings'));
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<SubTypesLinesQuery$variables>(
-    LOCAL_STORAGE_KEY_SUB_TYPES,
-    { searchTerm: '' },
-  );
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<SubTypesLinesQuery$variables>(LOCAL_STORAGE_KEY_SUB_TYPES, {
+      searchTerm: '',
+    });
   const dataColumns = {
     entity_type: {
       label: 'Entity type',
@@ -60,10 +63,7 @@ const SubTypes = () => {
     },
   };
   const { searchTerm } = viewStorage;
-  const queryRef = useQueryLoading<SubTypesLinesQuery>(
-    subTypesLinesQuery,
-    paginationOptions,
-  );
+  const queryRef = useQueryLoading<SubTypesLinesQuery>(subTypesLinesQuery, paginationOptions);
   const {
     onToggleEntity,
     numberOfSelectedElements,
@@ -75,7 +75,13 @@ const SubTypes = () => {
   } = useEntityToggle(LOCAL_STORAGE_KEY_SUB_TYPES);
   return (
     <div className={classes.container} data-testid="subtypes-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Entity types'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Customization') },
+          { label: t_i18n('Entity types'), current: true },
+        ]}
+      />
       <ListLines
         handleSearch={helpers.handleSearch}
         keyword={searchTerm}
@@ -86,13 +92,13 @@ const SubTypes = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={(
+            fallback={
               <>
                 {Array.from(Array(20).keys()).map((idx) => (
                   <SubTypeLineDummy key={idx} dataColumns={dataColumns} />
                 ))}
               </>
-            )}
+            }
           >
             <SubTypesLines
               queryRef={queryRef}

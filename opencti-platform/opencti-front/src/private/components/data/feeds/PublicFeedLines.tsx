@@ -57,11 +57,7 @@ const publicFeedLinesFragment = graphql`
 const publicFeedLinesQuery = graphql`
   query PublicFeedLinesQuery {
     feeds(
-      filters: {
-        mode: and
-        filters: [{ key: "feed_public", values: ["true"] }]
-        filterGroups: []
-      }
+      filters: { mode: and, filters: [{ key: "feed_public", values: ["true"] }], filterGroups: [] }
     ) {
       edges {
         node {
@@ -72,11 +68,7 @@ const publicFeedLinesQuery = graphql`
   }
 `;
 
-const queryRef = loadQuery<PublicFeedLinesQuery>(
-  environment,
-  publicFeedLinesQuery,
-  {},
-);
+const queryRef = loadQuery<PublicFeedLinesQuery>(environment, publicFeedLinesQuery, {});
 const dataColumns: DataColumns = {
   name: {
     label: 'Name',
@@ -120,7 +112,7 @@ const PublicFeedLine = ({ node }: { node: PublicFeedLines_node$key }) => {
       classes={{ root: classes.item }}
       color="primary"
       divider={true}
-      secondaryAction={(
+      secondaryAction={
         <>
           <Tooltip title={t_i18n('Copy uri to clipboard for your csv client')}>
             <IconButton onClick={copyClick} color="primary">
@@ -133,35 +125,28 @@ const PublicFeedLine = ({ node }: { node: PublicFeedLines_node$key }) => {
             </IconButton>
           </Tooltip>
         </>
-      )}
+      }
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <ItemIcon type="feed" />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
-                key={value.label}
-                className={classes.bodyItem}
-                style={{ width: value.width }}
-              >
+              <div key={value.label} className={classes.bodyItem} style={{ width: value.width }}>
                 {value.render?.(feed, { t: t_i18n, classes })}
               </div>
             ))}
           </div>
-        )}
+        }
       />
     </ListItem>
   );
 };
 
 const PublicFeedLines = () => {
-  const { feeds } = usePreloadedQuery<PublicFeedLinesQuery>(
-    publicFeedLinesQuery,
-    queryRef,
-  );
+  const { feeds } = usePreloadedQuery<PublicFeedLinesQuery>(publicFeedLinesQuery, queryRef);
   const { t_i18n } = useFormatter();
   return feeds && feeds.edges.length > 0 ? (
     <>
@@ -184,12 +169,7 @@ const PublicFeedLines = () => {
       <Typography variant="h2" gutterBottom={true}>
         {t_i18n('Public CSV feeds')}
       </Typography>
-      <Typography
-        variant="h5"
-        gutterBottom={true}
-        color="error"
-        style={{ marginTop: 20 }}
-      >
+      <Typography variant="h5" gutterBottom={true} color="error" style={{ marginTop: 20 }}>
         {t_i18n('No available public CSV feeds on this platform')}
       </Typography>
     </>

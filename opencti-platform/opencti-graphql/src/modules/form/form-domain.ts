@@ -1,27 +1,57 @@
 import { v4 as uuidv4 } from 'uuid';
 import Ajv from 'ajv';
 import type { FileHandle } from 'fs/promises';
-import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
-import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import {
+  createEntity,
+  deleteElementById,
+  patchAttribute,
+  updateAttribute,
+} from '../../database/middleware';
+import {
+  fullEntitiesList,
+  pageEntitiesConnection,
+  storeLoadById,
+} from '../../database/middleware-loader';
 import type { BasicStoreEntityForm, FormSchemaDefinition, StoreEntityForm } from './form-types';
 import { ENTITY_TYPE_FORM, FormFieldType, FormSchemaDefinitionSchema } from './form-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { FunctionalError } from '../../config/errors';
-import { connectorIdFromIngestId, registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
+import {
+  connectorIdFromIngestId,
+  registerConnectorForIngestion,
+  unregisterConnectorForIngestion,
+} from '../../domain/connector';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { logApp } from '../../config/conf';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
-import { ConnectorPriorityGroup, ConnectorType, FilterMode, type DraftWorkspaceAddInput, type FormSubmissionInput, type MemberAccessInput } from '../../generated/graphql';
+import {
+  ConnectorPriorityGroup,
+  ConnectorType,
+  FilterMode,
+  type DraftWorkspaceAddInput,
+  type FormSubmissionInput,
+  type MemberAccessInput,
+} from '../../generated/graphql';
 import { now, nowTime } from '../../utils/format';
 import { BYPASS, isUserHasCapability, SYSTEM_USER } from '../../utils/access';
 import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import pjson from '../../../package.json';
 import { extractContentFrom } from '../../utils/fileToContent';
-import { addFormIntakeCreatedCount, addFormIntakeDeletedCount, addFormIntakeSubmittedCount, addFormIntakeUpdatedCount } from '../../manager/telemetryManager';
+import {
+  addFormIntakeCreatedCount,
+  addFormIntakeDeletedCount,
+  addFormIntakeSubmittedCount,
+  addFormIntakeUpdatedCount,
+} from '../../manager/telemetryManager';
 import { validateFormSubmission } from './form-validation';
-import { buildMainStixEntities, buildAdditionalEntities, buildRelationships, wrapInContainerOrPush } from './form-bundle-builder';
+import {
+  buildMainStixEntities,
+  buildAdditionalEntities,
+  buildRelationships,
+  wrapInContainerOrPush,
+} from './form-bundle-builder';
 export { completeEntity } from './form-entity-builder';
 
 const ajv = new Ajv();
@@ -56,7 +86,9 @@ export const addForm = async (
   });
 
   if (existingForms.length > 0) {
-    throw FunctionalError(`A form with the name "${input.name}" already exists for entity type "${parsedSchema.mainEntityType}"`);
+    throw FunctionalError(
+      `A form with the name "${input.name}" already exists for entity type "${parsedSchema.mainEntityType}"`,
+    );
   }
 
   const formToCreate: Partial<BasicStoreEntityForm> = {
@@ -91,7 +123,11 @@ export const addForm = async (
       event_scope: 'create',
       event_access: 'administration',
       message: `creates form intake \`${input.name}\``,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_FORM, input: { name: input.name, mainEntityType: parsedSchema.mainEntityType } },
+      context_data: {
+        id: element.id,
+        entity_type: ENTITY_TYPE_FORM,
+        input: { name: input.name, mainEntityType: parsedSchema.mainEntityType },
+      },
     });
 
     await addFormIntakeCreatedCount();
@@ -108,19 +144,11 @@ export const findById = async (
   return storeLoadById<BasicStoreEntityForm>(context, user, formId, ENTITY_TYPE_FORM);
 };
 
-export const findFormPaginated = async (
-  context: AuthContext,
-  user: AuthUser,
-  opts = {},
-) => {
+export const findFormPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
   return pageEntitiesConnection<BasicStoreEntityForm>(context, user, [ENTITY_TYPE_FORM], opts);
 };
 
-export const findAllForms = async (
-  context: AuthContext,
-  user: AuthUser,
-  opts = {},
-) => {
+export const findAllForms = async (context: AuthContext, user: AuthUser, opts = {}) => {
   return fullEntitiesList<BasicStoreEntityForm>(context, user, [ENTITY_TYPE_FORM], opts);
 };
 
@@ -156,11 +184,19 @@ export const formEditField = async (
     return { key, value: Array.isArray(value) ? value : [value] };
   });
 
-  const { element } = await updateAttribute<StoreEntityForm>(context, user, formId, ENTITY_TYPE_FORM, updates);
+  const { element } = await updateAttribute<StoreEntityForm>(
+    context,
+    user,
+    formId,
+    ENTITY_TYPE_FORM,
+    updates,
+  );
 
   const activeUpdate = input.find(({ key }) => key === 'active');
   if (activeUpdate) {
-    const isActive = activeUpdate.value === 'true' || (Array.isArray(activeUpdate.value) && activeUpdate.value[0] === 'true');
+    const isActive =
+      activeUpdate.value === 'true' ||
+      (Array.isArray(activeUpdate.value) && activeUpdate.value[0] === 'true');
     await registerConnectorForIngestion(context, {
       id: element.id,
       type: 'FORM',
@@ -184,11 +220,7 @@ export const formEditField = async (
   return element;
 };
 
-export const formDelete = async (
-  context: AuthContext,
-  user: AuthUser,
-  formId: string,
-) => {
+export const formDelete = async (context: AuthContext, user: AuthUser, formId: string) => {
   const form = await findById(context, user, formId);
 
   await unregisterConnectorForIngestion(context, formId);
@@ -216,7 +248,9 @@ export interface FormParsed extends Omit<StoreEntityForm, 'form_schema'> {
 
 const normalizeOptionId = (option: unknown): string | undefined => {
   if (typeof option === 'object' && option !== null) {
-    const optionValue = (option as { value?: string; id?: string }).value || (option as { value?: string; id?: string }).id;
+    const optionValue =
+      (option as { value?: string; id?: string }).value ||
+      (option as { value?: string; id?: string }).id;
     return typeof optionValue === 'string' && optionValue.length > 0 ? optionValue : undefined;
   }
   return typeof option === 'string' && option.length > 0 ? option : undefined;
@@ -227,11 +261,13 @@ export const resolveMainEntityAuthorFromValues = (
   values: Record<string, any>,
 ): string | null => {
   const createdByField = schema.fields.find((f) => f.type === FormFieldType.CreatedBy);
-  const createdByKeys = Array.from(new Set([
-    createdByField?.name,
-    createdByField?.attributeMapping?.attributeName,
-    'createdBy',
-  ].filter((k): k is string => typeof k === 'string' && k.length > 0)));
+  const createdByKeys = Array.from(
+    new Set(
+      [createdByField?.name, createdByField?.attributeMapping?.attributeName, 'createdBy'].filter(
+        (k): k is string => typeof k === 'string' && k.length > 0,
+      ),
+    ),
+  );
   const resolveIn = (container: any): string | undefined => {
     for (let i = 0; i < createdByKeys.length; i += 1) {
       const id = normalizeOptionId(container?.[createdByKeys[i]]);
@@ -240,10 +276,10 @@ export const resolveMainEntityAuthorFromValues = (
     return undefined;
   };
   return (
-    resolveIn(values)
-    || resolveIn(values.mainEntityFields)
-    || resolveIn(Array.isArray(values.mainEntityGroups) ? values.mainEntityGroups[0] : undefined)
-    || null
+    resolveIn(values) ||
+    resolveIn(values.mainEntityFields) ||
+    resolveIn(Array.isArray(values.mainEntityGroups) ? values.mainEntityGroups[0] : undefined) ||
+    null
   );
 };
 
@@ -256,15 +292,23 @@ export const resolveDraftFieldDefaults = (
   const explicitDraftName = typeof values.draftName === 'string' ? values.draftName.trim() : '';
   const draftNameDefaultValue = (draftDefaults?.name?.defaultValue ?? '').trim();
   const defaultDraftName = draftNameDefaultValue.length > 0 ? draftNameDefaultValue : '';
-  const canOverrideDraftName = isBypass || (draftDefaults?.name?.isEditable !== false);
-  const finalDraftName = (canOverrideDraftName ? explicitDraftName : '') || defaultDraftName || `${formName} - ${nowTime()}`;
+  const canOverrideDraftName = isBypass || draftDefaults?.name?.isEditable !== false;
+  const finalDraftName =
+    (canOverrideDraftName ? explicitDraftName : '') ||
+    defaultDraftName ||
+    `${formName} - ${nowTime()}`;
 
   const hasExplicitDraftDescription = Object.hasOwn(values, 'draftDescription');
-  const explicitDraftDescription = typeof values.draftDescription === 'string' ? values.draftDescription.trim() : '';
+  const explicitDraftDescription =
+    typeof values.draftDescription === 'string' ? values.draftDescription.trim() : '';
   const draftDescriptionDefaultValue = (draftDefaults?.description?.defaultValue ?? '').trim();
-  const defaultDraftDescription = draftDescriptionDefaultValue.length > 0 ? draftDescriptionDefaultValue : '';
-  const canOverrideDraftDescription = isBypass || (draftDefaults?.description?.isEditable !== false);
-  const finalDraftDescription = (canOverrideDraftDescription && hasExplicitDraftDescription) ? explicitDraftDescription : defaultDraftDescription;
+  const defaultDraftDescription =
+    draftDescriptionDefaultValue.length > 0 ? draftDescriptionDefaultValue : '';
+  const canOverrideDraftDescription = isBypass || draftDefaults?.description?.isEditable !== false;
+  const finalDraftDescription =
+    canOverrideDraftDescription && hasExplicitDraftDescription
+      ? explicitDraftDescription
+      : defaultDraftDescription;
 
   const hasExplicitDraftAssignees = Object.hasOwn(values, 'draftObjectAssignee');
   const explicitDraftAssignees = Array.isArray(values.draftObjectAssignee)
@@ -274,8 +318,11 @@ export const resolveDraftFieldDefaults = (
     .map(normalizeOptionId)
     .filter((id): id is string => !!id);
   const defaultDraftAssignees = draftAssigneeDefaults.length > 0 ? draftAssigneeDefaults : [];
-  const canOverrideDraftAssignees = isBypass || (draftDefaults?.objectAssignee?.isEditable !== false);
-  const finalDraftAssignees = (canOverrideDraftAssignees && hasExplicitDraftAssignees) ? explicitDraftAssignees : defaultDraftAssignees;
+  const canOverrideDraftAssignees = isBypass || draftDefaults?.objectAssignee?.isEditable !== false;
+  const finalDraftAssignees =
+    canOverrideDraftAssignees && hasExplicitDraftAssignees
+      ? explicitDraftAssignees
+      : defaultDraftAssignees;
 
   const hasExplicitDraftParticipants = Object.hasOwn(values, 'draftObjectParticipant');
   const explicitDraftParticipants = Array.isArray(values.draftObjectParticipant)
@@ -284,9 +331,14 @@ export const resolveDraftFieldDefaults = (
   const draftParticipantDefaults = (draftDefaults?.objectParticipant?.defaults ?? [])
     .map(normalizeOptionId)
     .filter((id): id is string => !!id);
-  const defaultDraftParticipants = draftParticipantDefaults.length > 0 ? draftParticipantDefaults : [];
-  const canOverrideDraftParticipants = isBypass || (draftDefaults?.objectParticipant?.isEditable !== false);
-  const finalDraftParticipants = (canOverrideDraftParticipants && hasExplicitDraftParticipants) ? explicitDraftParticipants : defaultDraftParticipants;
+  const defaultDraftParticipants =
+    draftParticipantDefaults.length > 0 ? draftParticipantDefaults : [];
+  const canOverrideDraftParticipants =
+    isBypass || draftDefaults?.objectParticipant?.isEditable !== false;
+  const finalDraftParticipants =
+    canOverrideDraftParticipants && hasExplicitDraftParticipants
+      ? explicitDraftParticipants
+      : defaultDraftParticipants;
 
   return {
     finalDraftName,
@@ -312,7 +364,9 @@ type NormalizedDraftAuthorizedMemberRule = {
   groupsRestrictionIds?: string[];
 };
 
-const normalizeDraftAuthorizedMemberRule = (rule: unknown): NormalizedDraftAuthorizedMemberRule | null => {
+const normalizeDraftAuthorizedMemberRule = (
+  rule: unknown,
+): NormalizedDraftAuthorizedMemberRule | null => {
   if (rule === null || rule === undefined) {
     return null;
   }
@@ -326,7 +380,9 @@ const normalizeDraftAuthorizedMemberRule = (rule: unknown): NormalizedDraftAutho
       return {
         value: 'AUTHOR',
         accessRight: 'admin',
-        groupsRestrictionIds: legacyRule.intersectionGroup ? [legacyRule.intersectionGroup] : undefined,
+        groupsRestrictionIds: legacyRule.intersectionGroup
+          ? [legacyRule.intersectionGroup]
+          : undefined,
       };
     }
   }
@@ -336,16 +392,18 @@ const normalizeDraftAuthorizedMemberRule = (rule: unknown): NormalizedDraftAutho
     return null;
   }
 
-  const accessRight = (typeof rule === 'object' && (rule as { accessRight?: string }).accessRight)
-    ? (rule as { accessRight: string }).accessRight
-    : 'admin';
+  const accessRight =
+    typeof rule === 'object' && (rule as { accessRight?: string }).accessRight
+      ? (rule as { accessRight: string }).accessRight
+      : 'admin';
 
   return {
     value,
     accessRight,
-    groupsRestrictionIds: typeof rule === 'object'
-      ? normalizeGroupsRestrictionIds((rule as { groupsRestriction?: unknown }).groupsRestriction)
-      : undefined,
+    groupsRestrictionIds:
+      typeof rule === 'object'
+        ? normalizeGroupsRestrictionIds((rule as { groupsRestriction?: unknown }).groupsRestriction)
+        : undefined,
   };
 };
 
@@ -368,8 +426,10 @@ export const resolveAuthorizedMembersForDraft = (
 
     const { value, accessRight, groupsRestrictionIds } = normalizedRule;
     if (value === 'CREATORS') {
-      const existing = authorizedMembersMap.get(user.id)
-        || { id: user.id, access_right: accessRight };
+      const existing = authorizedMembersMap.get(user.id) || {
+        id: user.id,
+        access_right: accessRight,
+      };
 
       authorizedMembersMap.set(user.id, {
         ...existing,
@@ -421,7 +481,7 @@ export const formSubmit = async (
     throw FunctionalError('Form not found', { id: input.formId });
   }
 
-  // eslint-disable-next-line no-useless-assignment
+  // oxlint-disable-next-line no-useless-assignment
   let values = {} as Record<string, any>;
   try {
     values = JSON.parse(input.values);
@@ -450,19 +510,52 @@ export const formSubmit = async (
 
   const { mainEntityType } = schema;
 
-  const { mainStixEntities, mainEntityStixId } = await buildMainStixEntities(context, user, schema, values, mainEntityType, isBypass);
+  const { mainStixEntities, mainEntityStixId } = await buildMainStixEntities(
+    context,
+    user,
+    schema,
+    values,
+    mainEntityType,
+    isBypass,
+  );
 
-  const additionalEntitiesMap = await buildAdditionalEntities(context, user, schema, values, bundle, isBypass);
+  const additionalEntitiesMap = await buildAdditionalEntities(
+    context,
+    user,
+    schema,
+    values,
+    bundle,
+    isBypass,
+  );
 
-  await buildRelationships(context, user, schema, values, mainStixEntities, additionalEntitiesMap, bundle);
+  await buildRelationships(
+    context,
+    user,
+    schema,
+    values,
+    mainStixEntities,
+    additionalEntitiesMap,
+    bundle,
+  );
   wrapInContainerOrPush(mainEntityType, mainStixEntities, bundle, schema.includeInContainer);
-  logApp.info('[FORM] STIX Bundle generated', { bundleId: bundle.id, objectCount: bundle.objects.length, bundle });
+  logApp.info('[FORM] STIX Bundle generated', {
+    bundleId: bundle.id,
+    objectCount: bundle.objects.length,
+    bundle,
+  });
 
   try {
     const connectorId = connectorIdFromIngestId(form.id);
     const connector = { internal_id: connectorId, connector_type: ConnectorType.ExternalImport };
     const workName = `Form submission @ ${now()}`;
-    const work: any = await createWork(context, SYSTEM_USER, connector, workName, connector.internal_id, { receivedTime: now() });
+    const work: any = await createWork(
+      context,
+      SYSTEM_USER,
+      connector,
+      workName,
+      connector.internal_id,
+      { receivedTime: now() },
+    );
 
     const stixBundle = JSON.stringify(bundle);
     const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
@@ -474,20 +567,21 @@ export const formSubmit = async (
     let draftId = null;
     if (finalIsDraft) {
       let createdBy: string | null = null;
-      const {
-        finalDraftName,
-        finalDraftDescription,
-        finalDraftAssignees,
-        finalDraftParticipants,
-      } = resolveDraftFieldDefaults(form.name, values, schema.draftDefaults, isBypass);
+      const { finalDraftName, finalDraftDescription, finalDraftAssignees, finalDraftParticipants } =
+        resolveDraftFieldDefaults(form.name, values, schema.draftDefaults, isBypass);
 
       // Apply draft defaults for author
-      const canOverrideDraftAuthor = isBypass || (schema.draftDefaults?.author?.isEditable !== false);
+      const canOverrideDraftAuthor = isBypass || schema.draftDefaults?.author?.isEditable !== false;
       const isAuthorRequired = schema.draftDefaults?.author?.isRequired === true;
       const hasExplicitDraftAuthor = Object.hasOwn(values, 'draftAuthor');
       if (canOverrideDraftAuthor && values.draftAuthor) {
         createdBy = normalizeOptionId(values.draftAuthor) || null;
-      } else if (canOverrideDraftAuthor && hasExplicitDraftAuthor && !isAuthorRequired && schema.draftDefaults?.author?.type !== 'main_entity_author') {
+      } else if (
+        canOverrideDraftAuthor &&
+        hasExplicitDraftAuthor &&
+        !isAuthorRequired &&
+        schema.draftDefaults?.author?.type !== 'main_entity_author'
+      ) {
         // User explicitly cleared the field; it's editable and not required → honour the opt-out
         // Exception: main_entity_author type — empty means "inherit from main entity", not opt-out
         createdBy = null;
@@ -503,12 +597,24 @@ export const formSubmit = async (
 
       // Apply explicit authorized members from form submission
       // Bypass users can always override; non-bypass users can override when the field is editable
-      const canOverrideAuthorizedMembers = isBypass || schema.draftDefaults?.authorizedMembers?.isEditable;
+      const canOverrideAuthorizedMembers =
+        isBypass || schema.draftDefaults?.authorizedMembers?.isEditable;
       let authorized_members: MemberAccessInput[] = [];
       if (canOverrideAuthorizedMembers && Array.isArray(values.draftAuthorizedMembers)) {
-        authorized_members = resolveAuthorizedMembersForDraft(user, values.draftAuthorizedMembers, createdBy);
-      } else if (schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults.authorizedMembers.defaults) {
-        authorized_members = resolveAuthorizedMembersForDraft(user, schema.draftDefaults.authorizedMembers.defaults, createdBy);
+        authorized_members = resolveAuthorizedMembersForDraft(
+          user,
+          values.draftAuthorizedMembers,
+          createdBy,
+        );
+      } else if (
+        schema.draftDefaults?.authorizedMembers?.enabled &&
+        schema.draftDefaults.authorizedMembers.defaults
+      ) {
+        authorized_members = resolveAuthorizedMembersForDraft(
+          user,
+          schema.draftDefaults.authorizedMembers.defaults,
+          createdBy,
+        );
       }
 
       const draftInput: DraftWorkspaceAddInput & { bypassMandatoryAttributes?: boolean } = {
@@ -525,7 +631,9 @@ export const formSubmit = async (
       const draft = await addDraftWorkspace(context, SYSTEM_USER, draftInput);
       draftId = draft.id;
       // Patch creator_id to the actual submitter since the draft was created with SYSTEM_USER
-      await patchAttribute(context, SYSTEM_USER, draft.id, ENTITY_TYPE_DRAFT_WORKSPACE, { creator_id: [user.id] });
+      await patchAttribute(context, SYSTEM_USER, draft.id, ENTITY_TYPE_DRAFT_WORKSPACE, {
+        creator_id: [user.id],
+      });
     }
     await pushToWorkerForConnector(connectorId, {
       type: 'bundle',
@@ -537,7 +645,11 @@ export const formSubmit = async (
       no_split: true,
     });
 
-    logApp.info('[FORM] Bundle sent to connector queue', { formId: form.id, workId: work.id, bundleId: bundle.id });
+    logApp.info('[FORM] Bundle sent to connector queue', {
+      formId: form.id,
+      workId: work.id,
+      bundleId: bundle.id,
+    });
 
     await addFormIntakeSubmittedCount();
 
@@ -553,9 +665,7 @@ export const formSubmit = async (
   }
 };
 
-export const generateFormExportConfiguration = async (
-  form: BasicStoreEntityForm,
-) => {
+export const generateFormExportConfiguration = async (form: BasicStoreEntityForm) => {
   const exportConfiguration = {
     openCTI_version: pjson.version,
     type: 'form',
@@ -576,7 +686,10 @@ export const importFormConfiguration = async (
 ) => {
   const parsedData = await extractContentFrom(file);
   if (parsedData.type !== 'form') {
-    throw FunctionalError('Invalid import file type', { expected: 'form', received: parsedData.type });
+    throw FunctionalError('Invalid import file type', {
+      expected: 'form',
+      received: parsedData.type,
+    });
   }
   const { configuration } = parsedData;
   const formToCreate = {

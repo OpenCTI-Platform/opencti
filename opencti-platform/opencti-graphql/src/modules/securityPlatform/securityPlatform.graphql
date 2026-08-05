@@ -1,9 +1,13 @@
-type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {
+type SecurityPlatform implements BasicObject &
+  StixObject &
+  StixCoreObject &
+  StixDomainObject &
+  Identity {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
   parent_types: [String!]!
-  metrics:[Metric]
+  metrics: [Metric]
   # StixObject
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -214,12 +218,23 @@ input SecurityPlatformAddInput {
 }
 
 type Mutation {
-  securityPlatformAdd(input: SecurityPlatformAddInput!): SecurityPlatform @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityPlatformAdd(input: SecurityPlatformAddInput!): SecurityPlatform
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   securityPlatformDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  securityPlatformFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): SecurityPlatform @auth(for: [KNOWLEDGE_KNUPDATE])
-  securityPlatformContextPatch(id: ID!, input: EditContext!): SecurityPlatform @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityPlatformFieldPatch(
+    id: ID!
+    input: [EditInput]!
+    commitMessage: String
+    references: [String]
+  ): SecurityPlatform @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityPlatformContextPatch(id: ID!, input: EditContext!): SecurityPlatform
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   securityPlatformContextClean(id: ID!): SecurityPlatform @auth(for: [KNOWLEDGE_KNUPDATE])
-  securityPlatformRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  securityPlatformRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityPlatform @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityPlatformRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
+    @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityPlatformRelationDelete(
+    id: ID!
+    toId: StixRef!
+    relationship_type: String!
+  ): SecurityPlatform @auth(for: [KNOWLEDGE_KNUPDATE])
 }
-

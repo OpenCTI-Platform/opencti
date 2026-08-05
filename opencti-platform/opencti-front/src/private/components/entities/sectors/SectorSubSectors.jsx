@@ -43,14 +43,12 @@ const SectorSubSectorsComponent = ({ sector }) => {
 
   return (
     <div style={{ height: '100%' }}>
-      <Label action={(
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <AddSubSector
-            sector={sector}
-            sectorSubSectors={sector.subSectors.edges}
-          />
-        </Security>
-      )}
+      <Label
+        action={
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <AddSubSector sector={sector} sectorSubSectors={sector.subSectors.edges} />
+          </Security>
+        }
       >
         {t_i18n('Subsectors')}
       </Label>
@@ -63,23 +61,21 @@ const SectorSubSectorsComponent = ({ sector }) => {
             dense={true}
             divider={true}
             disablePadding
-            secondaryAction={types.includes('manual') ? (
-              <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <Tooltip title={t_i18n('Delete relationship')}>
-                  <IconButton
-                    aria-label="Remove"
-                    onClick={() => removeSubSector(subSectorEdge)}
-                  >
-                    <Delete />
-                  </IconButton>
-                </Tooltip>
-              </Security>
-            ) : <AutoFix fontSize="small" style={{ marginRight: 13 }} />}
+            secondaryAction={
+              types.includes('manual') ? (
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <Tooltip title={t_i18n('Delete relationship')}>
+                    <IconButton aria-label="Remove" onClick={() => removeSubSector(subSectorEdge)}>
+                      <Delete />
+                    </IconButton>
+                  </Tooltip>
+                </Security>
+              ) : (
+                <AutoFix fontSize="small" style={{ marginRight: 13 }} />
+              )
+            }
           >
-            <ListItemButton
-              component={Link}
-              to={`/dashboard/entities/sectors/${subSector.id}`}
-            >
+            <ListItemButton component={Link} to={`/dashboard/entities/sectors/${subSector.id}`}>
               <ListItemIcon>
                 <Domain color="primary" />
               </ListItemIcon>

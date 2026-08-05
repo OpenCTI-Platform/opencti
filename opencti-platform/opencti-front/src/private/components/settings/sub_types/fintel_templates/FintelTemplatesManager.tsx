@@ -24,7 +24,7 @@ const fintelTemplatesFragment = graphql`
   fragment FintelTemplatesManager_templates on EntitySetting {
     id
     target_type
-    fintelTemplates (orderBy: name, orderMode: asc) {
+    fintelTemplates(orderBy: name, orderMode: asc) {
       edges {
         node {
           id
@@ -54,7 +54,10 @@ const FintelTemplatesManager = () => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const [templateToEdit, setTemplateToEdit] = useState<{ id: string } & FintelTemplateFormInputs>();
 
-  const dataResolved = useFragment<FintelTemplatesManager_templates$key>(fintelTemplatesFragment, subType.settings);
+  const dataResolved = useFragment<FintelTemplatesManager_templates$key>(
+    fintelTemplatesFragment,
+    subType.settings,
+  );
   if (!dataResolved) return null;
   const { target_type, fintelTemplates, id: entitySettingId } = dataResolved;
 
@@ -101,38 +104,42 @@ const FintelTemplatesManager = () => {
         onChange={onUpload}
       />
       <Card
-        title={<>{t_i18n('FINTEL Templates')} <EEChip /></>}
-        action={isEnterpriseEdition && (
-          <div>
-            <Tooltip title={t_i18n('Create a new template')}>
-              <IconButton
-                onClick={() => setDrawerOpen(true)}
-                size="small"
-              >
-                <AddIcon fontSize="small" color="primary" />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title={t_i18n('Import a template')}>
-              <IconButton
-                disabled={importMutating}
-                onClick={() => inputFileRef.current?.click()}
-                size="small"
-              >
-                <CloudUploadOutlined fontSize="small" color="primary" />
-              </IconButton>
-            </Tooltip>
-          </div>
-        )}
+        title={
+          <>
+            {t_i18n('FINTEL Templates')} <EEChip />
+          </>
+        }
+        action={
+          isEnterpriseEdition && (
+            <div>
+              <Tooltip title={t_i18n('Create a new template')}>
+                <IconButton onClick={() => setDrawerOpen(true)} size="small">
+                  <AddIcon fontSize="small" color="primary" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title={t_i18n('Import a template')}>
+                <IconButton
+                  disabled={importMutating}
+                  onClick={() => inputFileRef.current?.click()}
+                  size="small"
+                >
+                  <CloudUploadOutlined fontSize="small" color="primary" />
+                </IconButton>
+              </Tooltip>
+            </div>
+          )
+        }
       >
         <div style={{ height: '100%', width: '100%' }} ref={(r) => setDataTableRef(r)}>
           {!isEnterpriseEdition && (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '100%',
-              textAlign: 'center',
-            }}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100%',
+                textAlign: 'center',
+              }}
             >
               {t_i18n('FINTEL templates are available with an Enterprise Edition subscription')}
             </div>

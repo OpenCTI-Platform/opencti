@@ -248,13 +248,9 @@ const ENTITY_TYPE_TO_FAMILY: Record<string, keyof typeof COLOR_FAMILIES> = {
   Capability: 'restricted',
 };
 
-export const itemColor = (
-  type: string | null | undefined,
-  reversed: boolean = false,
-): string => {
-  const normalizedType = (type === 'Dynamic from context' || type === 'Dynamic from draft')
-    ? 'Dynamic options'
-    : type;
+export const itemColor = (type: string | null | undefined, reversed: boolean = false): string => {
+  const normalizedType =
+    type === 'Dynamic from context' || type === 'Dynamic from draft' ? 'Dynamic options' : type;
   const family = normalizedType ? ENTITY_TYPE_TO_FAMILY[normalizedType] : null;
 
   // SCO colors are generated based on their type to differentiate them
@@ -304,11 +300,7 @@ export const parseRGBtoHex = (rgb: string) => {
 };
 
 const adjustColor = (color: string, amount: number = 1) => {
-  return `#${color
-    .replace(/^#/, '')
-    .replace(/../g, (c) => `0${Math.min(255, Math.max(0, parseInt(c, 16) + amount)).toString(
-      16,
-    )}`.substr(-2))}`;
+  return `#${color.replace(/^#/, '').replace(/../g, (c) => `0${Math.min(255, Math.max(0, parseInt(c, 16) + amount)).toString(16)}`.substr(-2))}`;
 };
 
 export const isColorCloseToWhite = (hex: string, threshold: number = 0.9) => {

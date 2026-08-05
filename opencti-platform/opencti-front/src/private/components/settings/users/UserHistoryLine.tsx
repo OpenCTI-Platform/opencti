@@ -3,7 +3,18 @@ import Dialog from '@common/dialog/Dialog';
 import { UserHistoryLine_node$key } from '@components/settings/users/__generated__/UserHistoryLine_node.graphql';
 import { DeleteOutlined, LinkOffOutlined, LinkOutlined } from '@mui/icons-material';
 import Avatar from '@mui/material/Avatar';
-import { deepOrange, deepPurple, green, indigo, lightGreen, orange, pink, red, teal, yellow } from '@mui/material/colors';
+import {
+  deepOrange,
+  deepPurple,
+  green,
+  indigo,
+  lightGreen,
+  orange,
+  pink,
+  red,
+  teal,
+  yellow,
+} from '@mui/material/colors';
 import DialogActions from '@mui/material/DialogActions';
 import Paper from '@mui/material/Paper';
 import Tooltip from '@mui/material/Tooltip';
@@ -108,7 +119,12 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
   const handleClose = () => {
     setOpen(false);
   };
-  const renderIcon = (eventScope: string | null | undefined, isRelation: boolean, eventMessage: string | undefined, commit: string | null | undefined) => {
+  const renderIcon = (
+    eventScope: string | null | undefined,
+    isRelation: boolean,
+    eventMessage: string | undefined,
+    commit: string | null | undefined,
+  ) => {
     if (isRelation) {
       if (eventScope === 'create') {
         return (
@@ -181,8 +197,8 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
         );
       }
       if (
-        eventScope === 'update'
-        && (eventMessage?.includes('replaces') || eventMessage?.includes('updates'))
+        eventScope === 'update' &&
+        (eventMessage?.includes('replaces') || eventMessage?.includes('updates'))
       ) {
         return (
           <Avatar
@@ -329,24 +345,24 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
         className={classes.content}
         style={{
           height:
-              log.context_data
-              && log.context_data.external_references
-              && log.context_data.external_references.length > 0
-                ? 'auto'
-                : 40,
+            log.context_data &&
+            log.context_data.external_references &&
+            log.context_data.external_references.length > 0
+              ? 'auto'
+              : 40,
         }}
       >
         <Paper classes={{ root: classes.paper }}>
           <div className={classes.date}>{nsdt(log.timestamp)}</div>
           <Tooltip
             classes={{ tooltip: classes.tooltip }}
-            title={(
+            title={
               <MarkdownDisplay
                 content={`\`${log.user?.name}\` ${log.context_data?.message}`}
                 remarkGfmPlugin={true}
                 commonmark={true}
               />
-            )}
+            }
           >
             <div className={classes.description}>
               <MarkdownDisplay
@@ -359,20 +375,14 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
         </Paper>
       </div>
       <div className={classes.line} />
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        title={t_i18n('Commit message')}
-      >
+      <Dialog open={open} onClose={handleClose} title={t_i18n('Commit message')}>
         <MarkdownDisplay
           content={log.context_data?.message}
           remarkGfmPlugin={true}
           commonmark={true}
         />
         <DialogActions>
-          <Button onClick={handleClose}>
-            {t_i18n('Close')}
-          </Button>
+          <Button onClick={handleClose}>{t_i18n('Close')}</Button>
         </DialogActions>
       </Dialog>
     </div>

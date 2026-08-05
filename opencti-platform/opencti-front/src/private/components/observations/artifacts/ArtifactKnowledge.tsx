@@ -13,29 +13,20 @@ const ArtifactKnowledge = ({ artifact, connectorsForImport }: ArtifactKnowledgeP
   <Routes>
     <Route
       index
-      element={(
+      element={
         <StixCyberObservableKnowledge
           stixCyberObservable={artifact}
           connectorsForImport={connectorsForImport}
         />
-      )}
+      }
     />
     <Route
       path="/relations/:relationId"
-      element={(
-        <StixCoreRelationship
-          entityId={artifact.id}
-        />
-      )}
+      element={<StixCoreRelationship entityId={artifact.id} />}
     />
     <Route
       path="/sightings/:sightingId"
-      element={(
-        <StixSightingRelationship
-          entityId={artifact.id}
-          paddingRight
-        />
-      )}
+      element={<StixSightingRelationship entityId={artifact.id} paddingRight />}
     />
   </Routes>
 );

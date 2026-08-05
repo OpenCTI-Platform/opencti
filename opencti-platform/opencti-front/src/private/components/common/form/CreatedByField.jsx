@@ -61,16 +61,18 @@ const CreatedByField = (props) => {
     };
   }, [keyword]);
 
-  const [identities, setIdentities] = useState(defaultCreatedBy
-    ? [
-        {
-          label: defaultCreatedBy.name,
-          value: defaultCreatedBy.id,
-          type: defaultCreatedBy.entity_type,
-          entity: defaultCreatedBy,
-        },
-      ]
-    : []);
+  const [identities, setIdentities] = useState(
+    defaultCreatedBy
+      ? [
+          {
+            label: defaultCreatedBy.name,
+            value: defaultCreatedBy.id,
+            type: defaultCreatedBy.entity_type,
+            entity: defaultCreatedBy,
+          },
+        ]
+      : [],
+  );
 
   const searchIdentities = () => {
     fetchQuery(identitySearchIdentitiesSearchQuery, {
@@ -83,7 +85,14 @@ const CreatedByField = (props) => {
         if (featureFlagAccessRestriction) {
           const resultIdentities = pipe(
             pathOr([], ['identities', 'edges']),
-            filter((n) => !('currentUserAccessRight' in n.node) || canUse([n.node.currentUserAccessRight, ...(n.node.organizations?.edges.map((o) => o.node.currentUserAccessRight)) ?? []])),
+            filter(
+              (n) =>
+                !('currentUserAccessRight' in n.node) ||
+                canUse([
+                  n.node.currentUserAccessRight,
+                  ...(n.node.organizations?.edges.map((o) => o.node.currentUserAccessRight) ?? []),
+                ]),
+            ),
             map((n) => ({
               label: n.node.name,
               value: n.node.id,

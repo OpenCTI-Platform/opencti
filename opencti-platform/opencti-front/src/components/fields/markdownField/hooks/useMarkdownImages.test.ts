@@ -55,7 +55,9 @@ describe('Hook: useMarkdownImages', () => {
   it('removes finalized token from pending cleanup map and temp registry', async () => {
     vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:token');
     vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
-    vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue('11111111-1111-1111-1111-111111111111');
+    vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue(
+      '11111111-1111-1111-1111-111111111111',
+    );
 
     const args = buildHookArgs();
     const { hook } = testRenderHook(() => useMarkdownImages(args));
@@ -71,14 +73,16 @@ describe('Hook: useMarkdownImages', () => {
       hook.result.current.pendingCleanupTimeoutRef.current.set(token, timeoutId);
     });
 
-    finalizeTempImageUrlsMock.mockImplementationOnce(async (
-      markdown: string,
-      _registry: unknown,
-      onTokenFinalized: (tokenValue: string) => void,
-    ) => {
-      onTokenFinalized(token);
-      return markdown;
-    });
+    finalizeTempImageUrlsMock.mockImplementationOnce(
+      async (
+        markdown: string,
+        _registry: unknown,
+        onTokenFinalized: (tokenValue: string) => void,
+      ) => {
+        onTokenFinalized(token);
+        return markdown;
+      },
+    );
 
     await act(async () => {
       await hook.result.current.finalizeMarkdown('prefix');

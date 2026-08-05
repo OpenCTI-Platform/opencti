@@ -62,10 +62,7 @@ const PirPopover = ({ data }: PirPopoverProps) => {
       </ToggleButton>
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onCloseMenu}>
-        <PirDeletion
-          pirId={id}
-          onDeleteComplete={() => navigate('/dashboard/pirs')}
-        >
+        <PirDeletion pirId={id} onDeleteComplete={() => navigate('/dashboard/pirs')}>
           {({ handleOpenDelete, deleting }) => (
             <MenuItem onClick={handleOpenDelete} disabled={deleting}>
               {t_i18n('Delete')}

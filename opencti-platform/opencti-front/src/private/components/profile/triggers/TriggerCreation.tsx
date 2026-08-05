@@ -40,18 +40,13 @@ const TriggerCreation: FunctionComponent<TriggerCreationProps> = ({
   };
   return (
     <>
-      <Button
-        sx={{ marginRight: theme.spacing(1) }}
-        onClick={handleOpenCreateDigest}
-      >
+      <Button sx={{ marginRight: theme.spacing(1) }} onClick={handleOpenCreateDigest}>
         {t_i18n('', {
           id: 'Create ...',
           values: { entity_type: t_i18n('Regular digest') },
         })}
       </Button>
-      <Button
-        onClick={handleOpenCreateLive}
-      >
+      <Button onClick={handleOpenCreateLive}>
         {t_i18n('', {
           id: 'Create ...',
           values: { entity_type: t_i18n('Live trigger') },

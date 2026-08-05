@@ -46,12 +46,28 @@ import { getEntityFromCache } from '../database/cache';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_HISTORY, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS_TEMPLATE, ENTITY_TYPE_USER } from '../schema/internalObject';
+import {
+  ENTITY_TYPE_ACTIVITY,
+  ENTITY_TYPE_GROUP,
+  ENTITY_TYPE_HISTORY,
+  ENTITY_TYPE_SETTINGS,
+  ENTITY_TYPE_STATUS_TEMPLATE,
+  ENTITY_TYPE_USER,
+} from '../schema/internalObject';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../schema/stixCyberObservable';
-import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_IDENTITY_SYSTEM, isStixObjectAliased } from '../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+  ENTITY_TYPE_IDENTITY_SECTOR,
+  ENTITY_TYPE_IDENTITY_SYSTEM,
+  isStixObjectAliased,
+} from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../modules/malwareAnalysis/malwareAnalysis-types';
-import { isBasicRelationship, isStixRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
+import {
+  isBasicRelationship,
+  isStixRelationship,
+  isStixRelationshipExceptRef,
+} from '../schema/stixRelationship';
 import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
@@ -74,7 +90,10 @@ export type FilterDefinition = {
 // build the FilterDefinition object that is saved in the filterKeysShema
 // by removing some useless attributes of AttributeDefinition
 // and adding the subEntityTypes (usage in the subtypes)
-const buildFilterDefinitionFromAttributeDefinition = (attributeDefinition: AttributeDefinition, subEntityTypes: string[]) => {
+const buildFilterDefinitionFromAttributeDefinition = (
+  attributeDefinition: AttributeDefinition,
+  subEntityTypes: string[],
+) => {
   let type = attributeDefinition.type as string;
   let elementsForFilterValuesSearch = [] as string[];
   // construct the filter type (and eventually fill elementsForFilterValuesSearch)
@@ -100,7 +119,9 @@ const buildFilterDefinitionFromAttributeDefinition = (attributeDefinition: Attri
       type = 'enum';
       elementsForFilterValuesSearch = (attributeDefinition as EnumAttribute).values;
     } else {
-      throw Error(`A string attribute definition format can be 'id', 'short', 'text' or 'json', but not ${attributeDefinition.format}`);
+      throw Error(
+        `A string attribute definition format can be 'id', 'short', 'text' or 'json', but not ${attributeDefinition.format}`,
+      );
     }
   }
   // return the filter definition
@@ -117,7 +138,10 @@ const buildFilterDefinitionFromAttributeDefinition = (attributeDefinition: Attri
 // build the FilterDefinition object that is saved in the filterKeysShema
 // by removing some useless attributes of RelationRefDefinition
 // and adding the subEntityTypes (usage in the subtypes)
-const buildFilterDefinitionFromRelationRefDefinition = (refDefinition: RefAttribute, subEntityTypes: string[]) => {
+const buildFilterDefinitionFromRelationRefDefinition = (
+  refDefinition: RefAttribute,
+  subEntityTypes: string[],
+) => {
   return {
     filterKey: refDefinition.name,
     type: 'id',
@@ -139,15 +163,24 @@ const completeFilterDefinitionMapWithElement = (
   elementDefinitionType: string, // 'attribute' or 'relationRef'
 ) => {
   const filterDefinition = filterKeyDefinitionMap.get(elementName);
-  if (!filterDefinition) { // case 1.2.2: the attribute is in the types but not in the map
-    const newFilterDefinition = elementDefinitionType === 'attribute'
-      ? buildFilterDefinitionFromAttributeDefinition(elementDefinition as AttributeDefinition, types)
-      : buildFilterDefinitionFromRelationRefDefinition(elementDefinition as RefAttribute, types);
-    filterKeyDefinitionMap.set( // add it in the map
+  if (!filterDefinition) {
+    // case 1.2.2: the attribute is in the types but not in the map
+    const newFilterDefinition =
+      elementDefinitionType === 'attribute'
+        ? buildFilterDefinitionFromAttributeDefinition(
+            elementDefinition as AttributeDefinition,
+            types,
+          )
+        : buildFilterDefinitionFromRelationRefDefinition(elementDefinition as RefAttribute, types);
+    filterKeyDefinitionMap.set(
+      // add it in the map
       elementName,
       newFilterDefinition,
     );
-  } else if (filterDefinition && !types.every((type) => filterDefinition.subEntityTypes.includes(type))) {
+  } else if (
+    filterDefinition &&
+    !types.every((type) => filterDefinition.subEntityTypes.includes(type))
+  ) {
     // 1.2.1 the filter definition is in the map but all the types are not in subEntityTypes
     filterKeyDefinitionMap.set(
       elementName,
@@ -164,21 +197,42 @@ const completeFilterDefinitionMapWithObjectAttributeWithMappings = (
   const { mappings } = objectAttributeDefinition;
   mappings.forEach((mappingAttributeDefinition) => {
     if (mappingAttributeDefinition.isFilterable) {
-      if (mappingAttributeDefinition.type === 'object' && ['nested', 'standard'].includes(mappingAttributeDefinition.format)) { // case 1: object attribute with mappings
+      if (
+        mappingAttributeDefinition.type === 'object' &&
+        ['nested', 'standard'].includes(mappingAttributeDefinition.format)
+      ) {
+        // case 1: object attribute with mappings
         const composedMappingName = `${objectAttributeDefinition.name}.${mappingAttributeDefinition.name}`;
         completeFilterDefinitionMapWithObjectAttributeWithMappings(
           attributesMapWithFilterDefinition,
-          { ...mappingAttributeDefinition, name: composedMappingName } as ComplexAttributeWithMappings,
+          {
+            ...mappingAttributeDefinition,
+            name: composedMappingName,
+          } as ComplexAttributeWithMappings,
           types,
         );
-      } else if (mappingAttributeDefinition.associatedFilterKeys) { // case 2: attribute with no mappings and associatedFilterKeys is set
+      } else if (mappingAttributeDefinition.associatedFilterKeys) {
+        // case 2: attribute with no mappings and associatedFilterKeys is set
         // the keys to add are the ones in associatedFilterKeys
         mappingAttributeDefinition.associatedFilterKeys.forEach(({ key, label }) => {
-          completeFilterDefinitionMapWithElement(attributesMapWithFilterDefinition, types, key, { ...mappingAttributeDefinition, name: key, label }, 'attribute');
+          completeFilterDefinitionMapWithElement(
+            attributesMapWithFilterDefinition,
+            types,
+            key,
+            { ...mappingAttributeDefinition, name: key, label },
+            'attribute',
+          );
         });
-      } else { // case 3: attribute with no mappings and the key to add is composed with the attribute name and the mapping attribute name
+      } else {
+        // case 3: attribute with no mappings and the key to add is composed with the attribute name and the mapping attribute name
         const composedMappingName = `${objectAttributeDefinition.name}.${mappingAttributeDefinition.name}`;
-        completeFilterDefinitionMapWithElement(attributesMapWithFilterDefinition, types, composedMappingName, { ...mappingAttributeDefinition, name: composedMappingName }, 'attribute');
+        completeFilterDefinitionMapWithElement(
+          attributesMapWithFilterDefinition,
+          types,
+          composedMappingName,
+          { ...mappingAttributeDefinition, name: composedMappingName },
+          'attribute',
+        );
       }
     }
   });
@@ -193,11 +247,27 @@ const completeFilterDefinitionMapForType = (
   const attributesMap = schemaAttributesDefinition.getAttributes(type);
   const types = subTypes ? subTypes.concat(type) : [type];
   attributesMap.forEach((attributeDefinition, attributeName) => {
-    if (attributeDefinition.isFilterable) { // if it is filterable
-      if (attributeDefinition.type === 'object' && ['nested', 'standard'].includes(attributeDefinition.format)) { // case 1.1: attribute with mappings
-        completeFilterDefinitionMapWithObjectAttributeWithMappings(filterDefinitionMap, attributeDefinition as ComplexAttributeWithMappings, types);
-      } else { // case 1.2: attribute with no mappings
-        completeFilterDefinitionMapWithElement(filterDefinitionMap, types, attributeName, attributeDefinition, 'attribute');
+    if (attributeDefinition.isFilterable) {
+      // if it is filterable
+      if (
+        attributeDefinition.type === 'object' &&
+        ['nested', 'standard'].includes(attributeDefinition.format)
+      ) {
+        // case 1.1: attribute with mappings
+        completeFilterDefinitionMapWithObjectAttributeWithMappings(
+          filterDefinitionMap,
+          attributeDefinition as ComplexAttributeWithMappings,
+          types,
+        );
+      } else {
+        // case 1.2: attribute with no mappings
+        completeFilterDefinitionMapWithElement(
+          filterDefinitionMap,
+          types,
+          attributeName,
+          attributeDefinition,
+          'attribute',
+        );
       }
     }
   });
@@ -206,7 +276,13 @@ const completeFilterDefinitionMapForType = (
     const relationRefs = schemaRelationsRefDefinition.getRelationsRef(type);
     relationRefs.forEach((ref) => {
       if (ref.isFilterable) {
-        completeFilterDefinitionMapWithElement(filterDefinitionMap, types, ref.name, ref, 'relationRef');
+        completeFilterDefinitionMapWithElement(
+          filterDefinitionMap,
+          types,
+          ref.name,
+          ref,
+          'relationRef',
+        );
       }
     });
   }
@@ -225,18 +301,15 @@ const completeFilterDefinitionMapWithSpecialKeys = async (
     if (type.toLowerCase() === allEntityMetrics[i].entity_type) {
       const currentMetricAttributes = allEntityMetrics[i].metrics;
       for (let j = 0; j < currentMetricAttributes.length; j += 1) {
-        filterDefinitionsMap.set(
-          currentMetricAttributes[j].attribute,
-          {
-            filterKey: currentMetricAttributes[j].attribute,
-            type: 'float',
-            label: currentMetricAttributes[j].name,
-            multiple: false,
-            elementsForFilterValuesSearch: [],
-            subEntityTypes,
-            subFilters: [],
-          },
-        );
+        filterDefinitionsMap.set(currentMetricAttributes[j].attribute, {
+          filterKey: currentMetricAttributes[j].attribute,
+          type: 'float',
+          label: currentMetricAttributes[j].name,
+          multiple: false,
+          elementsForFilterValuesSearch: [],
+          subEntityTypes,
+          subFilters: [],
+        });
       }
     }
   }
@@ -250,25 +323,21 @@ const completeFilterDefinitionMapWithSpecialKeys = async (
       if (cfDef.field_type === 'integer') filterType = 'integer';
       else if (cfDef.field_type === 'boolean') filterType = 'boolean';
       else if (cfDef.field_type === 'date') filterType = 'date';
-      else if (cfDef.field_type === 'select' || cfDef.field_type === 'multi_select') filterType = 'enum';
+      else if (cfDef.field_type === 'select' || cfDef.field_type === 'multi_select')
+        filterType = 'enum';
 
       const isSelectLike = cfDef.field_type === 'select' || cfDef.field_type === 'multi_select';
-      const elementsForSearch = isSelectLike && cfDef.select_options
-        ? cfDef.select_options
-        : [];
+      const elementsForSearch = isSelectLike && cfDef.select_options ? cfDef.select_options : [];
 
-      filterDefinitionsMap.set(
-        cfDef.name,
-        {
-          filterKey: cfDef.name,
-          type: filterType,
-          label: cfDef.label,
-          multiple: cfDef.multiple ?? false,
-          elementsForFilterValuesSearch: elementsForSearch,
-          subEntityTypes,
-          subFilters: [],
-        },
-      );
+      filterDefinitionsMap.set(cfDef.name, {
+        filterKey: cfDef.name,
+        type: filterType,
+        label: cfDef.label,
+        multiple: cfDef.multiple ?? false,
+        elementsForFilterValuesSearch: elementsForSearch,
+        subEntityTypes,
+        subFilters: [],
+      });
     }
   }
 
@@ -410,7 +479,12 @@ const completeFilterDefinitionMapWithSpecialKeys = async (
       label: 'Author of related entity',
       multiple: false,
       subEntityTypes,
-      elementsForFilterValuesSearch: [ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_IDENTITY_SYSTEM, ENTITY_TYPE_IDENTITY_ORGANIZATION],
+      elementsForFilterValuesSearch: [
+        ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+        ENTITY_TYPE_IDENTITY_SECTOR,
+        ENTITY_TYPE_IDENTITY_SYSTEM,
+        ENTITY_TYPE_IDENTITY_ORGANIZATION,
+      ],
     });
     filterDefinitionsMap.set(CONTEXT_ENTITY_TYPE_FILTER, {
       filterKey: CONTEXT_ENTITY_TYPE_FILTER,
@@ -426,7 +500,11 @@ const completeFilterDefinitionMapWithSpecialKeys = async (
       label: 'Related entity',
       multiple: true,
       subEntityTypes,
-      elementsForFilterValuesSearch: [ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_USER, ENTITY_TYPE_GROUP],
+      elementsForFilterValuesSearch: [
+        ABSTRACT_STIX_CORE_OBJECT,
+        ENTITY_TYPE_USER,
+        ENTITY_TYPE_GROUP,
+      ],
     });
     // add members filters
     filterDefinitionsMap.set(MEMBERS_USER_FILTER, {
@@ -536,7 +614,11 @@ const completeFilterDefinitionMapWithSpecialKeys = async (
   }
 };
 
-const handleRemoveSpecialKeysFromFilterDefinitionsMap = (filterDefinitionsMap: Map<string, FilterDefinition>, type: string, isNotEnterpriseEdition: boolean) => {
+const handleRemoveSpecialKeysFromFilterDefinitionsMap = (
+  filterDefinitionsMap: Map<string, FilterDefinition>,
+  type: string,
+  isNotEnterpriseEdition: boolean,
+) => {
   // Shared with (remove if not EE)
   if (isNotEnterpriseEdition) {
     filterDefinitionsMap.delete(INPUT_GRANTED_REFS);
@@ -547,13 +629,30 @@ const handleRemoveSpecialKeysFromFilterDefinitionsMap = (filterDefinitionsMap: M
   }
 };
 
-const completeFilterDefinitionsMapForTypeAndSubtypes = async (context: AuthContext, user: AuthUser, filterDefinitionsMap: Map<string, FilterDefinition>, type: string) => {
+const completeFilterDefinitionsMapForTypeAndSubtypes = async (
+  context: AuthContext,
+  user: AuthUser,
+  filterDefinitionsMap: Map<string, FilterDefinition>,
+  type: string,
+) => {
   const subTypes = schemaTypesDefinition.hasChildren(type) ? schemaTypesDefinition.get(type) : []; // fetch the subtypes
   completeFilterDefinitionMapForType(filterDefinitionsMap, type, subTypes); // add attributes and relations refs of type
-  await completeFilterDefinitionMapWithSpecialKeys(context, user, type, filterDefinitionsMap, subTypes.concat([type])); // add or remove some special keys
-  if (subTypes.length > 0) { // handle the filter definitions of the subtypes
+  await completeFilterDefinitionMapWithSpecialKeys(
+    context,
+    user,
+    type,
+    filterDefinitionsMap,
+    subTypes.concat([type]),
+  ); // add or remove some special keys
+  if (subTypes.length > 0) {
+    // handle the filter definitions of the subtypes
     for (const subType of subTypes) {
-      await completeFilterDefinitionsMapForTypeAndSubtypes(context, user, filterDefinitionsMap, subType);
+      await completeFilterDefinitionsMapForTypeAndSubtypes(
+        context,
+        user,
+        filterDefinitionsMap,
+        subType,
+      );
     }
   }
 };
@@ -561,44 +660,80 @@ const completeFilterDefinitionsMapForTypeAndSubtypes = async (context: AuthConte
 export const generateFilterKeysSchema = async () => {
   const filterKeysSchema: Map<string, Map<string, FilterDefinition>> = new Map();
   const context = executionContext('filterKeysSchema');
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const settings = await getEntityFromCache<BasicStoreSettings>(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_SETTINGS,
+  );
   const isNotEnterpriseEdition = !isEnterpriseEditionFromSettings(settings);
   // A. build filterKeysSchema map for each entity type
   const registeredTypes = schemaAttributesDefinition.getRegisteredTypes();
   for (const type of registeredTypes) {
     const filterDefinitionsMap: Map<string, FilterDefinition> = new Map(); // map that will contain the filterKeys schema for the entity type
-    await completeFilterDefinitionsMapForTypeAndSubtypes(context, SYSTEM_USER, filterDefinitionsMap, type);
-    handleRemoveSpecialKeysFromFilterDefinitionsMap(filterDefinitionsMap, type, isNotEnterpriseEdition);
+    await completeFilterDefinitionsMapForTypeAndSubtypes(
+      context,
+      SYSTEM_USER,
+      filterDefinitionsMap,
+      type,
+    );
+    handleRemoveSpecialKeysFromFilterDefinitionsMap(
+      filterDefinitionsMap,
+      type,
+      isNotEnterpriseEdition,
+    );
     filterKeysSchema.set(type, filterDefinitionsMap);
   }
   // B. add special types
   // connectedToId special key (for instance triggers)
-  filterKeysSchema.set('Instance', new Map([[CONNECTED_TO_INSTANCE_FILTER, {
-    filterKey: CONNECTED_TO_INSTANCE_FILTER,
-    type: 'id',
-    label: 'Related entity',
-    multiple: true,
-    subEntityTypes: [],
-    elementsForFilterValuesSearch: [ABSTRACT_STIX_CORE_OBJECT],
-  }]]));
+  filterKeysSchema.set(
+    'Instance',
+    new Map([
+      [
+        CONNECTED_TO_INSTANCE_FILTER,
+        {
+          filterKey: CONNECTED_TO_INSTANCE_FILTER,
+          type: 'id',
+          label: 'Related entity',
+          multiple: true,
+          subEntityTypes: [],
+          elementsForFilterValuesSearch: [ABSTRACT_STIX_CORE_OBJECT],
+        },
+      ],
+    ]),
+  );
   // representative and pir score (for stix filtering)
-  filterKeysSchema.set('Stix-Filtering', new Map([[REPRESENTATIVE_FILTER, {
-    filterKey: REPRESENTATIVE_FILTER,
-    type: 'string',
-    label: 'Representation',
-    multiple: true,
-    subEntityTypes: [],
-    elementsForFilterValuesSearch: [],
-  }], [PIR_SCORE_FILTER, {
-    filterKey: PIR_SCORE_FILTER,
-    type: 'integer',
-    label: 'PIR Score',
-    multiple: false,
-    subEntityTypes: [],
-    elementsForFilterValuesSearch: [],
-  }]]));
+  filterKeysSchema.set(
+    'Stix-Filtering',
+    new Map([
+      [
+        REPRESENTATIVE_FILTER,
+        {
+          filterKey: REPRESENTATIVE_FILTER,
+          type: 'string',
+          label: 'Representation',
+          multiple: true,
+          subEntityTypes: [],
+          elementsForFilterValuesSearch: [],
+        },
+      ],
+      [
+        PIR_SCORE_FILTER,
+        {
+          filterKey: PIR_SCORE_FILTER,
+          type: 'integer',
+          label: 'PIR Score',
+          multiple: false,
+          subEntityTypes: [],
+          elementsForFilterValuesSearch: [],
+        },
+      ],
+    ]),
+  );
   // C. transform the filterKeysSchema map in { key, values }[]
-  const flattenFilterKeysSchema: { entity_type: string; filters_schema: { filterDefinition: FilterDefinition; filterKey: string }[] }[] = [];
+  const flattenFilterKeysSchema: {
+    entity_type: string;
+    filters_schema: { filterDefinition: FilterDefinition; filterKey: string }[];
+  }[] = [];
   filterKeysSchema.forEach((filtersMap, entity_type) => {
     const filters_schema: { filterDefinition: FilterDefinition; filterKey: string }[] = [];
     filtersMap.forEach((filterDefinition, filterKey) => {

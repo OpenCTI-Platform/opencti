@@ -17,16 +17,13 @@ const CaseRfiEdition: FunctionComponent<{ caseId: string }> = ({ caseId }) => {
       },
     });
   };
-  const queryRef = useQueryLoading<CaseRfiEditionContainerCaseQuery>(
-    caseRfiEditionQuery,
-    { id: caseId },
-  );
+  const queryRef = useQueryLoading<CaseRfiEditionContainerCaseQuery>(caseRfiEditionQuery, {
+    id: caseId,
+  });
   return (
     <>
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inline} />}
-        >
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
           <CaseRfiEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}

@@ -18,18 +18,14 @@ const XtmHubPermissionRequiredDialog: FunctionComponent = () => {
   }, []);
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={() => setIsOpen(false)}
-      title={t_i18n('Permission required')}
-    >
+    <Dialog open={isOpen} onClose={() => setIsOpen(false)} title={t_i18n('Permission required')}>
       <DialogContentText>
-        {t_i18n('You do not have permission to connect this product. Please contact your product administrator to connect the product on your behalf.')}
+        {t_i18n(
+          'You do not have permission to connect this product. Please contact your product administrator to connect the product on your behalf.',
+        )}
       </DialogContentText>
       <DialogActions>
-        <Button onClick={() => setIsOpen(false)}>
-          {t_i18n('Close')}
-        </Button>
+        <Button onClick={() => setIsOpen(false)}>{t_i18n('Close')}</Button>
       </DialogActions>
     </Dialog>
   );

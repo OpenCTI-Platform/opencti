@@ -1,4 +1,9 @@
-import { addIntrusionSet, findById, findIntrusionSetPaginated, locationsPaginated } from '../domain/intrusionSet';
+import {
+  addIntrusionSet,
+  findById,
+  findIntrusionSetPaginated,
+  locationsPaginated,
+} from '../domain/intrusionSet';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -16,17 +21,21 @@ const intrusionSetResolvers = {
     intrusionSets: (_, args, context) => findIntrusionSetPaginated(context, context.user, args),
   },
   IntrusionSet: {
-    locations: (intrusionSet, args, context) => locationsPaginated(context, context.user, intrusionSet.id, args),
-    securityCoverage: (intrusionSet, _, context) => findSecurityCoverageByCoveredId(context, context.user, intrusionSet.id),
+    locations: (intrusionSet, args, context) =>
+      locationsPaginated(context, context.user, intrusionSet.id, args),
+    securityCoverage: (intrusionSet, _, context) =>
+      findSecurityCoverageByCoveredId(context, context.user, intrusionSet.id),
   },
   Mutation: {
     intrusionSetEdit: (_, { id }, context) => ({
       delete: () => stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_INTRUSION_SET),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      fieldPatch: ({ input, commitMessage, references }) =>
+        stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
     intrusionSetAdd: (_, { input }, context) => addIntrusionSet(context, context.user, input),
   },

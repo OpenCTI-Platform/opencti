@@ -15,7 +15,9 @@ interface JsonMapperRepresentationAttributeOptionsProps {
   form: FormikProps<JsonMapperFormData>;
 }
 
-const JsonMapperRepresentationAttributeOptions: FunctionComponent<JsonMapperRepresentationAttributeOptionsProps> = (args) => {
+const JsonMapperRepresentationAttributeOptions: FunctionComponent<
+  JsonMapperRepresentationAttributeOptionsProps
+> = (args) => {
   const { t_i18n } = useFormatter();
   const { schemaAttribute, baseAttributeName, configurationAttributeName, form } = args;
   const { setFieldValue, getFieldProps } = form;
@@ -52,9 +54,7 @@ const JsonMapperRepresentationAttributeOptions: FunctionComponent<JsonMapperRepr
       {schemaAttribute.editDefault && (
         <>
           {schemaAttribute.name === 'objectMarking' ? (
-            <JsonMapperDefaultMarking
-              name={`${baseAttributeName}.default_values`}
-            />
+            <JsonMapperDefaultMarking name={`${baseAttributeName}.default_values`} />
           ) : (
             <DefaultValueField
               attribute={schemaAttribute}
@@ -64,18 +64,13 @@ const JsonMapperRepresentationAttributeOptions: FunctionComponent<JsonMapperRepr
             />
           )}
 
-          {settingsDefaultValues
-            ? (
-                <DialogContentText>
-                  {t_i18n('Settings default values usage...')}
-                </DialogContentText>
-              )
-            : (
-                <DialogContentText sx={{ width: 450, mt: '8px' }}>
-                  {t_i18n('No default value set in Settings...')}
-                </DialogContentText>
-              )
-          }
+          {settingsDefaultValues ? (
+            <DialogContentText>{t_i18n('Settings default values usage...')}</DialogContentText>
+          ) : (
+            <DialogContentText sx={{ width: 450, mt: '8px' }}>
+              {t_i18n('No default value set in Settings...')}
+            </DialogContentText>
+          )}
         </>
       )}
     </>

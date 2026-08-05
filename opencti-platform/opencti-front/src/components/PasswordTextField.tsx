@@ -7,7 +7,7 @@ import { fieldSpacingContainerStyle } from '../utils/field';
 import TextField from './TextField';
 
 // TODO remove any when component TextField is typescript
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any
 type PasswordTextFieldProps = any & {
   isSecret?: boolean;
   onToggle?: (isVisible: boolean) => void;
@@ -39,7 +39,7 @@ const PasswordTextField: FunctionComponent<PasswordTextFieldProps> = ({
         fullWidth={true}
         style={fieldSpacingContainerStyle}
         {...textFieldProps}
-        {...(isSecret && ({
+        {...(isSecret && {
           onSubmit: (name: string, value: string) => {
             if (textFieldProps?.onSubmit && dirty) {
               textFieldProps.onSubmit(name, value);
@@ -49,7 +49,7 @@ const PasswordTextField: FunctionComponent<PasswordTextFieldProps> = ({
           InputLabelProps: {
             shrink: isUndefinedCredential ? true : undefined,
           },
-        }))}
+        })}
       />
       {!isUndefinedCredential && (
         <IconButton

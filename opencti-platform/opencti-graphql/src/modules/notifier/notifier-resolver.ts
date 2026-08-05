@@ -1,6 +1,15 @@
 import type { Resolvers } from '../../generated/graphql';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
-import { addNotifier, getNotifierConnector, notifierDelete, notifierEdit, notifierGet, notifiersFind, testNotifier, usableNotifiers } from './notifier-domain';
+import {
+  addNotifier,
+  getNotifierConnector,
+  notifierDelete,
+  notifierEdit,
+  notifierGet,
+  notifiersFind,
+  testNotifier,
+  usableNotifiers,
+} from './notifier-domain';
 
 const notifierResolvers: Resolvers = {
   Query: {
@@ -10,8 +19,10 @@ const notifierResolvers: Resolvers = {
     notifierTest: (_, { input }, context) => testNotifier(context, context.user, input),
   },
   Notifier: {
-    notifier_connector: (notifier, _, context) => getNotifierConnector(context, context.user, notifier.notifier_connector_id),
-    authorized_members: (notifier, _, context) => getAuthorizedMembers(context, context.user, notifier),
+    notifier_connector: (notifier, _, context) =>
+      getNotifierConnector(context, context.user, notifier.notifier_connector_id),
+    authorized_members: (notifier, _, context) =>
+      getAuthorizedMembers(context, context.user, notifier),
   },
   NotifierOrdering: {
     connector: 'notifier_connector_id',
@@ -19,7 +30,8 @@ const notifierResolvers: Resolvers = {
   Mutation: {
     notifierAdd: (_, { input }, context) => addNotifier(context, context.user, input),
     notifierDelete: (_, { id }, context) => notifierDelete(context, context.user, id),
-    notifierFieldPatch: (_, { id, input }, context) => notifierEdit(context, context.user, id, input),
+    notifierFieldPatch: (_, { id, input }, context) =>
+      notifierEdit(context, context.user, id, input),
   },
 };
 

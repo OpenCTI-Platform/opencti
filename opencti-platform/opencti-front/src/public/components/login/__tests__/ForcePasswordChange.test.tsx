@@ -31,9 +31,7 @@ const renderWithLoginContext = (ui: React.ReactNode) => {
     <BrowserRouter>
       <AppIntlProvider settings={{ platform_language: 'auto', platform_translations: '{}' }}>
         <ThemeProvider theme={createTheme(ThemeDark() as ThemeOptions)}>
-          <LoginContextProvider>
-            {ui}
-          </LoginContextProvider>
+          <LoginContextProvider>{ui}</LoginContextProvider>
         </ThemeProvider>
       </AppIntlProvider>
     </BrowserRouter>,
@@ -77,11 +75,13 @@ describe('ForcePasswordChange (public login)', () => {
     await user.type(screen.getByLabelText('Confirmation'), 'NewPass1!');
     await user.click(screen.getByRole('button', { name: 'Update' }));
 
-    expect(commitFnMock).toHaveBeenCalledWith(expect.objectContaining({
-      variables: {
-        input: [{ key: 'password', value: ['NewPass1!'] }],
-      },
-    }));
+    expect(commitFnMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        variables: {
+          input: [{ key: 'password', value: ['NewPass1!'] }],
+        },
+      }),
+    );
   });
 
   it('calls window.location.reload on success', async () => {

@@ -57,9 +57,9 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
     setDisplayUpdate(false);
   };
   let deleteLabel = t_i18n('Delete');
-  const deletable = !vocab.builtIn
-    && (!vocab.category.fields.some(({ required }) => required)
-      || vocab.usages === 0);
+  const deletable =
+    !vocab.builtIn &&
+    (!vocab.category.fields.some(({ required }) => required) || vocab.usages === 0);
   if (!deletable) {
     if (vocab.builtIn) {
       deleteLabel = t_i18n('This item is built-in');
@@ -77,12 +77,7 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
         id: vocab.id,
       },
       updater: (store) => {
-        deleteNode(
-          store,
-          'Pagination_vocabularies',
-          paginationOptions,
-          vocab.id,
-        );
+        deleteNode(store, 'Pagination_vocabularies', paginationOptions, vocab.id);
       },
       onCompleted: () => {
         setDeleting(false);
@@ -93,7 +88,12 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
   };
   return (
     <div className={classes.container}>
-      <IconButton aria-label={t_i18n('Open menu')} onClick={handleOpen} aria-haspopup="true" color="primary">
+      <IconButton
+        aria-label={t_i18n('Open menu')}
+        onClick={handleOpen}
+        aria-haspopup="true"
+        color="primary"
+      >
         <MoreVertOutlined />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>

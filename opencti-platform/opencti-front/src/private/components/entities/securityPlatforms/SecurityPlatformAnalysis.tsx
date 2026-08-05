@@ -7,14 +7,16 @@ interface SecurityPlatformAnalysisComponentProps {
   securityPlatform: SecurityPlatformAnalysis_securityPlatform$key;
 }
 const SecurityPlatformAnalysisFragment = graphql`
-    fragment SecurityPlatformAnalysis_securityPlatform on SecurityPlatform {
-        id
-        name
-        x_opencti_aliases
-        x_opencti_graph_data
-    }
+  fragment SecurityPlatformAnalysis_securityPlatform on SecurityPlatform {
+    id
+    name
+    x_opencti_aliases
+    x_opencti_graph_data
+  }
 `;
-const SecurityPlatformAnalysis: FunctionComponent<SecurityPlatformAnalysisComponentProps> = ({ securityPlatform }) => {
+const SecurityPlatformAnalysis: FunctionComponent<SecurityPlatformAnalysisComponentProps> = ({
+  securityPlatform,
+}) => {
   const securityPlatformAnalysis = useFragment(SecurityPlatformAnalysisFragment, securityPlatform);
 
   return (

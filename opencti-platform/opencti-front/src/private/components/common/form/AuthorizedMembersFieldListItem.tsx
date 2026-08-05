@@ -49,9 +49,7 @@ const AuthorizedMembersFieldListItem = ({
   // Construct the list of available access levels based on
   // if generic option or not.
   const getAccessList = (memberId: string) => {
-    return isGenericOption(memberId)
-      ? [noAccess, ...accessRights]
-      : accessRights;
+    return isGenericOption(memberId) ? [noAccess, ...accessRights] : accessRights;
   };
 
   return (
@@ -71,39 +69,30 @@ const AuthorizedMembersFieldListItem = ({
       </ListItemIcon>
 
       <ListItemText
-        primary={(
+        primary={
           <>
             {authorizedMember.label && authorizedMember.type ? (
               authorizedMember.label
             ) : (
-              <span style={smallText}>
-                {t_i18n('Deleted or restricted member')}
-              </span>
+              <span style={smallText}>{t_i18n('Deleted or restricted member')}</span>
             )}
-            {authorizedMember.value === me.id && (
-              <span style={smallText}>
-                {' '}({t_i18n('you')})
-              </span>
-            )}
+            {authorizedMember.value === me.id && <span style={smallText}> ({t_i18n('you')})</span>}
             {authorizedMember.value === ownerId && (
-              <span style={smallText}>
-                {' '}({t_i18n('Creator')})
-              </span>
+              <span style={smallText}> ({t_i18n('Creator')})</span>
             )}
-            {authorizedMember.groupsRestriction && authorizedMember.groupsRestriction.length > 0 && (
-              <>
-                <span style={smallText}>
-                  {' '}({t_i18n('Groups restriction')})
-                </span>
-                <Tooltip title={`Groups restriction: ${groupsLabel}`}>
-                  <IconButton size="small" color="primary">
-                    <InfoOutlined fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </>
-            )}
+            {authorizedMember.groupsRestriction &&
+              authorizedMember.groupsRestriction.length > 0 && (
+                <>
+                  <span style={smallText}> ({t_i18n('Groups restriction')})</span>
+                  <Tooltip title={`Groups restriction: ${groupsLabel}`}>
+                    <IconButton size="small" color="primary">
+                      <InfoOutlined fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </>
+              )}
           </>
-        )}
+        }
       />
 
       <Field
@@ -111,39 +100,30 @@ const AuthorizedMembersFieldListItem = ({
         name={name}
         sx={{ m: 1, minWidth: 120 }}
         inputProps={{ 'aria-label': 'Without label' }}
-        disabled={
-          disabled || authorizedMember.value === me.id || !authorizedMember.label
-        }
+        disabled={disabled || authorizedMember.value === me.id || !authorizedMember.label}
         size="small"
         disableUnderline
         onChange={(_: string, val: AccessRight) => onChange?.(val)}
       >
         {getAccessList(authorizedMember.value).map((accessRight) => (
-          <MenuItem
-            value={accessRight.value}
-            key={accessRight.value}
-          >
+          <MenuItem value={accessRight.value} key={accessRight.value}>
             {accessRight.label}
           </MenuItem>
         ))}
       </Field>
 
-      {(
-        authorizedMember.value !== me.id
-        && !isGenericOption(authorizedMember.value)
-      )
-        ? (
-            <IconButton
-              color="primary"
-              aria-label={t_i18n('Delete')}
-              onClick={() => onRemove?.()}
-              disabled={disabled}
-            >
-              <Delete fontSize="small" />
-            </IconButton>
-          )
-        : <div style={{ width: 36 }}></div>
-      }
+      {authorizedMember.value !== me.id && !isGenericOption(authorizedMember.value) ? (
+        <IconButton
+          color="primary"
+          aria-label={t_i18n('Delete')}
+          onClick={() => onRemove?.()}
+          disabled={disabled}
+        >
+          <Delete fontSize="small" />
+        </IconButton>
+      ) : (
+        <div style={{ width: 36 }}></div>
+      )}
     </ListItem>
   );
 };

@@ -10,8 +10,8 @@ export const useStixRelationshipsMultiHorizontalBars = (
   const { t_i18n } = useFormatter();
   const DEFAULT_SUBSELECTION_NUMBER = 15;
   const subSelectionNumber = subSelection.number ?? DEFAULT_SUBSELECTION_NUMBER;
-  const distributionKey
-    = subSelection.perspective === 'entities'
+  const distributionKey =
+    subSelection.perspective === 'entities'
       ? 'stixCoreObjectsDistribution'
       : 'stixCoreRelationshipsDistribution';
 
@@ -32,17 +32,15 @@ export const useStixRelationshipsMultiHorizontalBars = (
       return getMainRepresentative(distribution.entity, t_i18n('Restricted'));
     }
 
-    return distribution.entity.name
-      || distribution.entity.label
-      || distribution.label;
+    return distribution.entity.name || distribution.entity.label || distribution.label;
   };
 
   const entitiesMapping = {};
   for (const distrib of stixRelationshipsDistribution) {
     for (const subDistrib of distrib.entity[distributionKey]) {
       const subDistributionKey = getDistributionKey(subDistrib);
-      entitiesMapping[subDistributionKey]
-        = (entitiesMapping[subDistributionKey] || 0) + subDistrib.value;
+      entitiesMapping[subDistributionKey] =
+        (entitiesMapping[subDistributionKey] || 0) + subDistrib.value;
     }
   }
 
@@ -52,10 +50,11 @@ export const useStixRelationshipsMultiHorizontalBars = (
 
   const categoriesValues = {};
   for (const distrib of stixRelationshipsDistribution) {
-    const distribMap = new Map(distrib.entity?.[distributionKey].map((entityDistrib) => [
-      getDistributionKey(entityDistrib),
-      entityDistrib,
-    ]),
+    const distribMap = new Map(
+      distrib.entity?.[distributionKey].map((entityDistrib) => [
+        getDistributionKey(entityDistrib),
+        entityDistrib,
+      ]),
     );
 
     for (const sortedEntity of sortedEntityMapping) {
@@ -71,7 +70,10 @@ export const useStixRelationshipsMultiHorizontalBars = (
     }
 
     const mainRepresentative = getMainRepresentative(distrib.entity);
-    const sum = (categoriesValues[mainRepresentative] || []).reduce((partialSum, a) => partialSum + a, 0);
+    const sum = (categoriesValues[mainRepresentative] || []).reduce(
+      (partialSum, a) => partialSum + a,
+      0,
+    );
 
     (categoriesValues[mainRepresentative] ??= []).push(distrib.value - sum);
   }
@@ -88,15 +90,12 @@ export const useStixRelationshipsMultiHorizontalBars = (
     .filter((entity) => entity.data.some((data) => data > 0));
 
   let subSectionIdsOrder = [];
-  if (
-    finalField === 'internal_id'
-    && finalSubDistributionField === 'internal_id'
-  ) {
+  if (finalField === 'internal_id' && finalSubDistributionField === 'internal_id') {
     // find subbars orders for entity subbars redirection
     for (const distrib of stixRelationshipsDistribution) {
       for (const subDistrib of distrib.entity[distributionKey]) {
-        subSectionIdsOrder[subDistrib.label]
-          = (subSectionIdsOrder[subDistrib.label] || 0) + subDistrib.value;
+        subSectionIdsOrder[subDistrib.label] =
+          (subSectionIdsOrder[subDistrib.label] || 0) + subDistrib.value;
       }
     }
     subSectionIdsOrder = Object.entries(subSectionIdsOrder)
@@ -105,16 +104,14 @@ export const useStixRelationshipsMultiHorizontalBars = (
       .slice(0, subSelectionNumber);
   }
 
-  const redirectionUtils
-    = finalField === 'internal_id'
+  const redirectionUtils =
+    finalField === 'internal_id'
       ? stixRelationshipsDistribution.map((n) => ({
           id: n.label,
           entity_type: n.entity?.entity_type,
           series: subSectionIdsOrder.map((subSectionId) => {
-            const [entity]
-              = n.entity[distributionKey]?.filter(
-                (e) => e.label === subSectionId,
-              ) ?? [];
+            const [entity] =
+              n.entity[distributionKey]?.filter((e) => e.label === subSectionId) ?? [];
             return {
               id: subSectionId,
               entity_type: entity ? entity.entity?.entity_type : null,

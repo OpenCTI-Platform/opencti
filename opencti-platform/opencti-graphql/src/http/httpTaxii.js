@@ -7,10 +7,27 @@ import express from 'express';
 import { parse as parseContentType } from 'content-type';
 import { findById as findWorkById } from '../domain/work';
 import { basePath, getBaseUrl, logApp } from '../config/conf';
-import { AuthRequired, error, ForbiddenAccess, UNSUPPORTED_ERROR, UnsupportedError } from '../config/errors';
+import {
+  AuthRequired,
+  error,
+  ForbiddenAccess,
+  UNSUPPORTED_ERROR,
+  UnsupportedError,
+} from '../config/errors';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import { findById, restAllCollections, restBuildCollection, restCollectionManifest, restCollectionStix } from '../modules/dataSharing/taxiiCollection-domain';
-import { executionContext, isUserHasCapability, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
+import {
+  findById,
+  restAllCollections,
+  restBuildCollection,
+  restCollectionManifest,
+  restCollectionStix,
+} from '../modules/dataSharing/taxiiCollection-domain';
+import {
+  executionContext,
+  isUserHasCapability,
+  isUserInPlatformOrganization,
+  SYSTEM_USER,
+} from '../utils/access';
 import { resolvePublicUser } from '../modules/dataSharing/dataSharing-utils';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -23,7 +40,10 @@ import { TAXIIAPI } from '../domain/user';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { pushBundleToConnectorQueue } from '../manager/ingestionManager/ingestionManagerPushToQueue';
 
-const TAXII_REQUEST_ALLOWED_CONTENT_TYPE = ['application/taxii+json', 'application/vnd.oasis.stix+json'];
+const TAXII_REQUEST_ALLOWED_CONTENT_TYPE = [
+  'application/taxii+json',
+  'application/vnd.oasis.stix+json',
+];
 const TAXII_VERSION = '2.1';
 const TAXII_RESPONSE_CONTENT_TYPE = `application/taxii+json;version=${TAXII_VERSION}`;
 
@@ -75,7 +95,10 @@ export const extractUserAndCollection = async (req, res, id) => {
   if (findCollection.taxii_public) {
     const publicUser = await resolvePublicUser(taxiiContext, findCollection.taxii_public_user_id);
     const settings = await getEntityFromCache(taxiiContext, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    taxiiContext.user_inside_platform_organization = isUserInPlatformOrganization(publicUser, settings);
+    taxiiContext.user_inside_platform_organization = isUserInPlatformOrganization(
+      publicUser,
+      settings,
+    );
     return { context: taxiiContext, user: publicUser, collection: findCollection };
   }
   const context = await checkAuthenticationFromRequest(req, res);
@@ -88,7 +111,10 @@ export const extractUserAndCollection = async (req, res, id) => {
 
 const isValidTaxiiPostContentType = (req) => {
   const contentTypeFromRequest = parseContentType(req.headers['content-type']);
-  return (TAXII_REQUEST_ALLOWED_CONTENT_TYPE.includes(contentTypeFromRequest.type) && contentTypeFromRequest.parameters.version === TAXII_VERSION);
+  return (
+    TAXII_REQUEST_ALLOWED_CONTENT_TYPE.includes(contentTypeFromRequest.type) &&
+    contentTypeFromRequest.parameters.version === TAXII_VERSION
+  );
 };
 
 const JsonTaxiiMiddleware = express.json({
@@ -96,7 +122,9 @@ const JsonTaxiiMiddleware = express.json({
     try {
       return isValidTaxiiPostContentType(req);
     } catch (_e) {
-      logApp.info('[Taxii] Content-Type from incoming request is missing or invalid', { contentType: req?.headers['content-type'] });
+      logApp.info('[Taxii] Content-Type from incoming request is missing or invalid', {
+        contentType: req?.headers['content-type'],
+      });
       return false;
     }
   },
@@ -152,7 +180,10 @@ const initTaxiiApi = (app) => {
     const { id } = req.params;
     try {
       const { collection } = await extractUserAndCollection(req, res, id);
-      if (collection.entity_type === ENTITY_TYPE_INGESTION_TAXII_COLLECTION && collection.ingestion_running !== true) {
+      if (
+        collection.entity_type === ENTITY_TYPE_INGESTION_TAXII_COLLECTION &&
+        collection.ingestion_running !== true
+      ) {
         throw TaxiiError('Collection not found', 404);
       }
       sendJsonResponse(res, restBuildCollection(collection));
@@ -216,85 +247,98 @@ const initTaxiiApi = (app) => {
       res.status(errorDetail.http_status).send(errorDetail);
     }
   });
-  app.get(`${basePath}/taxii2/root/collections/:id/objects/:object_id/versions/`, async (req, res) => {
-    const { id, object_id } = req.params;
-    try {
-      const { context, user, collection } = await extractUserAndCollection(req, res, id);
-      if (collection.entity_type === ENTITY_TYPE_INGESTION_TAXII_COLLECTION) {
-        throw TaxiiError('The client does not have access to this objects resource', 403);
+  app.get(
+    `${basePath}/taxii2/root/collections/:id/objects/:object_id/versions/`,
+    async (req, res) => {
+      const { id, object_id } = req.params;
+      try {
+        const { context, user, collection } = await extractUserAndCollection(req, res, id);
+        if (collection.entity_type === ENTITY_TYPE_INGESTION_TAXII_COLLECTION) {
+          throw TaxiiError('The client does not have access to this objects resource', 403);
+        }
+        const args = rebuildParamsForObject(object_id, req);
+        const stix = await restCollectionStix(context, user, collection, args);
+        const data = R.head(stix.objects);
+        const updatedAt = getUpdatedAt(data);
+        res.set('X-TAXII-Date-Added-First', updatedAt);
+        res.set('X-TAXII-Date-Added-Last', updatedAt);
+        const versions = data ? [updatedAt] : [];
+        sendJsonResponse(res, { versions });
+      } catch (e) {
+        const errorDetail = errorConverter(e);
+        res.status(errorDetail.http_status).send(errorDetail);
       }
-      const args = rebuildParamsForObject(object_id, req);
-      const stix = await restCollectionStix(context, user, collection, args);
-      const data = R.head(stix.objects);
-      const updatedAt = getUpdatedAt(data);
-      res.set('X-TAXII-Date-Added-First', updatedAt);
-      res.set('X-TAXII-Date-Added-Last', updatedAt);
-      const versions = data ? [updatedAt] : [];
-      sendJsonResponse(res, { versions });
-    } catch (e) {
-      const errorDetail = errorConverter(e);
-      res.status(errorDetail.http_status).send(errorDetail);
-    }
-  });
-  app.post(`${basePath}/taxii2/root/collections/:id/objects/`, async (req, res, next) => {
-    try {
-      // Verify authentication
-      req.taxiiContext = await checkAuthenticationFromRequest(req, res);
+    },
+  );
+  app.post(
+    `${basePath}/taxii2/root/collections/:id/objects/`,
+    async (req, res, next) => {
+      try {
+        // Verify authentication
+        req.taxiiContext = await checkAuthenticationFromRequest(req, res);
 
-      // Verify content type
-      if (!isValidTaxiiPostContentType(req)) {
-        throw TaxiiError('Content-Type in request is missing or invalid', 400);
+        // Verify content type
+        if (!isValidTaxiiPostContentType(req)) {
+          throw TaxiiError('Content-Type in request is missing or invalid', 400);
+        }
+
+        // Find and validate the collection
+        const { id } = req.params;
+        const context = req.taxiiContext;
+        const ingestion = await findTaxiiCollection(context, context.user, id);
+        if (!ingestion) {
+          throw TaxiiError('Collection not found', 404);
+        }
+        if (ingestion.ingestion_running !== true) {
+          throw TaxiiError('Collection not found', 404);
+        }
+
+        // Store ingestion data to avoid a second lookup
+        res.locals.ingestion = ingestion;
+
+        // Then parse json body
+        return next();
+      } catch (e) {
+        const errorDetail = errorConverter(e);
+        res.status(errorDetail.http_status).send(errorDetail);
       }
+    },
+    JsonTaxiiMiddleware,
+    async (req, res) => {
+      try {
+        const context = req.taxiiContext;
+        const { ingestion } = res.locals;
+        const { objects = [] } = req.body;
 
-      // Find and validate the collection
-      const { id } = req.params;
-      const context = req.taxiiContext;
-      const ingestion = await findTaxiiCollection(context, context.user, id);
-      if (!ingestion) {
-        throw TaxiiError('Collection not found', 404);
+        if (objects.length === 0) {
+          throw UnsupportedError('Objects required');
+        }
+
+        const stixObjects = handleConfidenceToScoreTransformation(ingestion, objects);
+        // Push the bundle in queue, return the job id
+        const bundle = {
+          type: 'bundle',
+          spec_version: '2.1',
+          id: `bundle--${uuidv4()}`,
+          objects: stixObjects,
+        };
+        // Push the bundle to absorption queue
+        const workId = await pushBundleToConnectorQueue(context, ingestion, bundle);
+        sendJsonResponse(res, {
+          id: workId,
+          status: 'pending',
+          request_timestamp: now(),
+          total_count: objects.length,
+          success_count: 0,
+          failure_count: 0,
+          pending_count: objects.length,
+        });
+      } catch (e) {
+        const errorDetail = errorConverter(e);
+        res.status(errorDetail.http_status).send(errorDetail);
       }
-      if (ingestion.ingestion_running !== true) {
-        throw TaxiiError('Collection not found', 404);
-      }
-
-      // Store ingestion data to avoid a second lookup
-      res.locals.ingestion = ingestion;
-
-      // Then parse json body
-      return next();
-    } catch (e) {
-      const errorDetail = errorConverter(e);
-      res.status(errorDetail.http_status).send(errorDetail);
-    }
-  }, JsonTaxiiMiddleware, async (req, res) => {
-    try {
-      const context = req.taxiiContext;
-      const { ingestion } = res.locals;
-      const { objects = [] } = req.body;
-
-      if (objects.length === 0) {
-        throw UnsupportedError('Objects required');
-      }
-
-      const stixObjects = handleConfidenceToScoreTransformation(ingestion, objects);
-      // Push the bundle in queue, return the job id
-      const bundle = { type: 'bundle', spec_version: '2.1', id: `bundle--${uuidv4()}`, objects: stixObjects };
-      // Push the bundle to absorption queue
-      const workId = await pushBundleToConnectorQueue(context, ingestion, bundle);
-      sendJsonResponse(res, {
-        id: workId,
-        status: 'pending',
-        request_timestamp: now(),
-        total_count: objects.length,
-        success_count: 0,
-        failure_count: 0,
-        pending_count: objects.length,
-      });
-    } catch (e) {
-      const errorDetail = errorConverter(e);
-      res.status(errorDetail.http_status).send(errorDetail);
-    }
-  });
+    },
+  );
   // Status api
   app.get(`${basePath}/taxii2/root/status/:status_id/`, async (req, res) => {
     const { status_id } = req.params;
@@ -306,7 +350,9 @@ const initTaxiiApi = (app) => {
       if (!stats) throw UnsupportedError('Work not found', { status_id });
       const failure_count = (work.errors ?? []).length;
       const total_count = parseInt(stats.import_expected_number, 10);
-      const processed_number = stats.import_processed_number ? parseInt(stats.import_processed_number, 10) : 0;
+      const processed_number = stats.import_processed_number
+        ? parseInt(stats.import_processed_number, 10)
+        : 0;
       const success_count = processed_number - failure_count;
       const pending_count = total_count - processed_number;
       sendJsonResponse(res, {

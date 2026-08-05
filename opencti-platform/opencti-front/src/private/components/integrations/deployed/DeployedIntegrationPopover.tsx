@@ -7,7 +7,11 @@ import { MoreVert } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
-import { connectorDeletionMutation, connectorResetStateMutation, connectorWorkDeleteMutation } from '@components/data/connectors/Connector';
+import {
+  connectorDeletionMutation,
+  connectorResetStateMutation,
+  connectorWorkDeleteMutation,
+} from '@components/data/connectors/Connector';
 import canDeleteConnector from '@components/data/connectors/utils/canDeleteConnector';
 import { Connector_connector$data } from '@components/data/connectors/__generated__/Connector_connector.graphql';
 import { FEED_MUTATIONS } from '@components/integrations/feeds/feedMutations';
@@ -16,7 +20,10 @@ import { DeployedIntegrationItem } from '@components/integrations/deployed/useDe
 import handleExportJson from '@components/data/forms/FormExportHandler';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
-import useGranted, { INGESTION_SETINGESTIONS, MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  INGESTION_SETINGESTIONS,
+  MODULES_MODMANAGE,
+} from '../../../../utils/hooks/useGranted';
 import stopEvent from '../../../../utils/domEvent';
 
 interface DeployedIntegrationPopoverProps {
@@ -178,8 +185,8 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
   const canManageConnector = isConnector && isGrantedToModules;
   // Deletion has extra conditions (e.g. built-in or active connectors cannot
   // be deleted): like the legacy popover, it only disables the Delete item.
-  const canDeleteThisConnector = canManageConnector
-    && canDeleteConnector(item.connector as unknown as Connector_connector$data);
+  const canDeleteThisConnector =
+    canManageConnector && canDeleteConnector(item.connector as unknown as Connector_connector$data);
   const canManageFeed = !isConnector && isGrantedToIngestion;
 
   // Opening the card already navigates to the details: without any granted
@@ -199,11 +206,7 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
       >
         <MoreVert fontSize="small" />
       </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={() => setAnchorEl(null)}
-      >
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
         {canManageFeed && (
           <MenuItem onClick={handleToggleRunning} disabled={submitting}>
             {item.running ? t_i18n('Stop') : t_i18n('Start')}
@@ -220,9 +223,7 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
           </MenuItem>
         )}
         {canManageFeed && isForm && (
-          <MenuItem onClick={handleExportForm}>
-            {t_i18n('Export')}
-          </MenuItem>
+          <MenuItem onClick={handleExportForm}>{t_i18n('Export')}</MenuItem>
         )}
         {canManageConnector && (
           <MenuItem
@@ -302,11 +303,7 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
             : t_i18n('Do you want to delete this integration instance?')}
         </DialogContentText>
         <DialogActions>
-          <Button
-            variant="secondary"
-            onClick={() => setDisplayDelete(false)}
-            disabled={submitting}
-          >
+          <Button variant="secondary" onClick={() => setDisplayDelete(false)} disabled={submitting}>
             {t_i18n('Cancel')}
           </Button>
           <Button onClick={submitDelete} disabled={submitting}>
@@ -327,11 +324,7 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
           {t_i18n('Number of messages: ') + (item.messagesCount ?? 0)}
         </DialogContentText>
         <DialogActions>
-          <Button
-            variant="secondary"
-            onClick={() => setDisplayReset(false)}
-            disabled={submitting}
-          >
+          <Button variant="secondary" onClick={() => setDisplayReset(false)} disabled={submitting}>
             {t_i18n('Cancel')}
           </Button>
           <Button onClick={submitReset} disabled={submitting}>

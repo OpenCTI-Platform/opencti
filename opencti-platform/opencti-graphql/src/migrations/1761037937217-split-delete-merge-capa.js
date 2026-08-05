@@ -8,32 +8,43 @@ import { roleCapabilities } from '../domain/user';
 import { createRelation } from '../database/middleware';
 import { generateStandardId } from '../schema/identifier';
 
-const message = '[MIGRATION] Split "Delete / Merge knowledge" capability in two separated capabilities';
+const message =
+  '[MIGRATION] Split "Delete / Merge knowledge" capability in two separated capabilities';
 
 export const up = async (next) => {
   logMigration.info(`${message} > started`);
   const context = executionContext('migration');
   // Rename Delete knowledge capability
-  const deleteCapaStandardId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: 'KNOWLEDGE_KNUPDATE_KNDELETE' });
+  const deleteCapaStandardId = generateStandardId(ENTITY_TYPE_CAPABILITY, {
+    name: 'KNOWLEDGE_KNUPDATE_KNDELETE',
+  });
   const deleteCapability = await elLoadById(context, SYSTEM_USER, deleteCapaStandardId);
   if (deleteCapability) {
     const deleteCapabilityPatch = { description: 'Delete knowledge' };
-    await elReplace(context, deleteCapability._index, deleteCapability.internal_id, { doc: deleteCapabilityPatch });
+    await elReplace(context, deleteCapability._index, deleteCapability.internal_id, {
+      doc: deleteCapabilityPatch,
+    });
   }
   // Add Merge knowledge capability
-  const mergeKnowledgeCapa = await addCapability(
-    context,
-    SYSTEM_USER,
-    { name: 'KNOWLEDGE_KNUPDATE_KNMERGE', description: 'Merge knowledge', attribute_order: 305 },
-  );
+  const mergeKnowledgeCapa = await addCapability(context, SYSTEM_USER, {
+    name: 'KNOWLEDGE_KNUPDATE_KNMERGE',
+    description: 'Merge knowledge',
+    attribute_order: 305,
+  });
   // Add merge knowledge capability to roles having former delete/merge capability
   const roles = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_ROLE]);
   for (let i = 0; i < roles.length; i += 1) {
     const role = roles[i].id;
     const getRoleCapabilities = await roleCapabilities(context, SYSTEM_USER, role);
-    const hasDeleteMergeCapa = getRoleCapabilities.some((capability) => capability.name === 'KNOWLEDGE_KNUPDATE_KNDELETE');
+    const hasDeleteMergeCapa = getRoleCapabilities.some(
+      (capability) => capability.name === 'KNOWLEDGE_KNUPDATE_KNDELETE',
+    );
     if (hasDeleteMergeCapa) {
-      await createRelation(context, SYSTEM_USER, { fromId: role, toId: mergeKnowledgeCapa.id, relationship_type: 'has-capability' });
+      await createRelation(context, SYSTEM_USER, {
+        fromId: role,
+        toId: mergeKnowledgeCapa.id,
+        relationship_type: 'has-capability',
+      });
     }
   }
 

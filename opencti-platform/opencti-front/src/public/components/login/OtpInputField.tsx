@@ -10,9 +10,7 @@ export const OTP_CODE_SIZE = 6;
 const useStyles = makeStyles<Theme>((theme) => ({
   inputStyle: {
     outline: 'none',
-    border: `1px solid rgba(${
-      theme.palette.mode === 'dark' ? '255,255,255' : '0,0,0'
-    },.15)`,
+    border: `1px solid rgba(${theme.palette.mode === 'dark' ? '255,255,255' : '0,0,0'},.15)`,
     borderRadius: 4,
     minWidth: '42px',
     height: '54px',
@@ -32,11 +30,7 @@ interface OtpInputFieldProps {
   isDisabled: boolean;
 }
 
-const OtpInputField: FunctionComponent<OtpInputFieldProps> = ({
-  value,
-  onChange,
-  isDisabled,
-}) => {
+const OtpInputField: FunctionComponent<OtpInputFieldProps> = ({ value, onChange, isDisabled }) => {
   const classes = useStyles();
   return (
     <OtpInput

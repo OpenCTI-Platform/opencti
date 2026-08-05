@@ -9,7 +9,7 @@ import { useFormatter } from './i18n';
 interface CreateEntityControlledDialProps extends DrawerControlledDialProps {
   entityType: string;
   size?: ButtonSize;
-  variant?: ButtonVariant;// 'text' | 'contained' | 'outlined';
+  variant?: ButtonVariant; // 'text' | 'contained' | 'outlined';
   style?: React.CSSProperties;
 }
 

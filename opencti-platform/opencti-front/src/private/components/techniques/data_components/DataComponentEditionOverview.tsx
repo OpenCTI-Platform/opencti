@@ -16,7 +16,11 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { adaptFieldValue } from '../../../../utils/String';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
@@ -40,10 +44,7 @@ const dataComponentMutationFieldPatch = graphql`
 `;
 
 export const dataComponentEditionOverviewFocus = graphql`
-  mutation DataComponentEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation DataComponentEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     dataComponentContextPatch(id: $id, input: $input) {
       id
     }
@@ -69,11 +70,7 @@ const dataComponentMutationRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    dataComponentRelationDelete(
-      id: $id
-      toId: $toId
-      relationship_type: $relationship_type
-    ) {
+    dataComponentRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
       ...DataComponentEditionOverview_dataComponent
     }
   }
@@ -118,10 +115,11 @@ interface DataComponentEditionOverviewComponentProps {
   data: DataComponentEditionOverview_dataComponent$key;
   context:
     | readonly ({
-      readonly focusOn: string | null | undefined;
-      readonly name: string;
-    } | null)[]
-    | null | undefined;
+        readonly focusOn: string | null | undefined;
+        readonly name: string;
+      } | null)[]
+    | null
+    | undefined;
   enableReferences?: boolean;
   handleClose: () => void;
 }
@@ -144,15 +142,18 @@ const DataComponentEditionOverview: FunctionComponent<
   const dataComponent = useFragment(DataComponentEditionOverviewFragment, data);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(DATA_COMPONENT_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
-    description: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
-    references: Yup.array(),
-    x_opencti_workflow_id: Yup.object(),
-    createdBy: Yup.object().nullable(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+      description: Yup.string().nullable(),
+      confidence: Yup.number().nullable(),
+      references: Yup.array(),
+      x_opencti_workflow_id: Yup.object(),
+      createdBy: Yup.object().nullable(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
+  );
   const dataComponentValidator = useDynamicSchemaEditionValidation(
     mandatoryAttributes,
     basicShape,
@@ -188,8 +189,7 @@ const DataComponentEditionOverview: FunctionComponent<
       variables: {
         id: dataComponent.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {
@@ -240,27 +240,18 @@ const DataComponentEditionOverview: FunctionComponent<
       validateOnBlur={true}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <Form>
           <AlertConfidenceForEntity entity={dataComponent} />
           <Field
             component={TextField}
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="name" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="name" />}
           />
           <ConfidenceField
             onFocus={editor.changeFocus}
@@ -274,7 +265,7 @@ const DataComponentEditionOverview: FunctionComponent<
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -282,44 +273,33 @@ const DataComponentEditionOverview: FunctionComponent<
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
           />
           {dataComponent.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
-              required={(mandatoryAttributes.includes('x_opencti_workflow_id'))}
+              required={mandatoryAttributes.includes('x_opencti_workflow_id')}
               type="Data-Component"
               onFocus={editor.changeFocus}
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={(
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_workflow_id"
-                />
-              )}
+              helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />}
             />
           )}
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="createdBy" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />

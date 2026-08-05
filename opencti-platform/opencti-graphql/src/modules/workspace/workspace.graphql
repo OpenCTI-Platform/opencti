@@ -1,119 +1,127 @@
 type Workspace implements InternalObject & BasicObject {
-    id: ID!
-    entity_type: String!
-    representative: Representative!
-    standard_id: String!
-    parent_types: [String!]!
-    metrics:[Metric]
-    # Workspace
-    type: String
-    name: String!
-    description: String
-    owner: Creator
-    tags: [String!]
-    manifest: String
-    created_at: DateTime
-    updated_at: DateTime
-    refreshed_at: DateTime
-    refresh_interval: Int
-    editContext: [EditUserContext!]
-    investigated_entities_ids: [String]
-    objects(
-        first: Int
-        after: ID
-        orderBy: StixObjectOrStixRelationshipsOrdering
-        orderMode: OrderingMode
-        filters: FilterGroup
-        search: String
-        types: [String]
-        all: Boolean
-    ): StixObjectOrStixRelationshipRefConnection
-    graph_data: String
-    authorizedMembers: [MemberAccess!]!
-    currentUserAccessRight: String
-    toStixReportBundle: String
-    toConfigurationExport: String!
-    toWidgetExport(widgetId: ID!): String!
-    isShared: Boolean
+  id: ID!
+  entity_type: String!
+  representative: Representative!
+  standard_id: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  # Workspace
+  type: String
+  name: String!
+  description: String
+  owner: Creator
+  tags: [String!]
+  manifest: String
+  created_at: DateTime
+  updated_at: DateTime
+  refreshed_at: DateTime
+  refresh_interval: Int
+  editContext: [EditUserContext!]
+  investigated_entities_ids: [String]
+  objects(
+    first: Int
+    after: ID
+    orderBy: StixObjectOrStixRelationshipsOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+    types: [String]
+    all: Boolean
+  ): StixObjectOrStixRelationshipRefConnection
+  graph_data: String
+  authorizedMembers: [MemberAccess!]!
+  currentUserAccessRight: String
+  toStixReportBundle: String
+  toConfigurationExport: String!
+  toWidgetExport(widgetId: ID!): String!
+  isShared: Boolean
 }
 
 # Ordering
 enum WorkspacesOrdering {
-    name
-    created_at
-    updated_at
-    creator
-    _score
+  name
+  created_at
+  updated_at
+  creator
+  _score
 }
 
 # Relay connections
 type WorkspaceConnection {
-    pageInfo: PageInfo!
-    edges: [WorkspaceEdge!]!
+  pageInfo: PageInfo!
+  edges: [WorkspaceEdge!]!
 }
 
 # Queries
 type Query {
-    workspace(id: String!): Workspace @auth(for: [EXPLORE, SETTINGS_SETACCESSES, INVESTIGATION])
-    workspaces(
-        first: Int
-        after: ID
-        orderBy: WorkspacesOrdering
-        orderMode: OrderingMode
-        filters: FilterGroup
-        includeAuthorities: Boolean
-        search: String
-    ): WorkspaceConnection @auth(for: [EXPLORE, SETTINGS_SETACCESSES, INVESTIGATION])
+  workspace(id: String!): Workspace @auth(for: [EXPLORE, SETTINGS_SETACCESSES, INVESTIGATION])
+  workspaces(
+    first: Int
+    after: ID
+    orderBy: WorkspacesOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    includeAuthorities: Boolean
+    search: String
+  ): WorkspaceConnection @auth(for: [EXPLORE, SETTINGS_SETACCESSES, INVESTIGATION])
 }
 
 type WorkspaceEdge {
-    cursor: String!
-    node: Workspace!
+  cursor: String!
+  node: Workspace!
 }
 
 # Mutations
 input WorkspaceAddInput {
-    type: String!
-    name: String! @constraint(minLength: 2, format: "not-blank")
-    description: String
-    tags: [String!]
-    authorized_members: [MemberAccessInput!]
-    investigated_entities_ids: [String]
-    refresh_interval: Int
+  type: String!
+  name: String! @constraint(minLength: 2, format: "not-blank")
+  description: String
+  tags: [String!]
+  authorized_members: [MemberAccessInput!]
+  investigated_entities_ids: [String]
+  refresh_interval: Int
 }
 
 input WorkspaceDuplicateInput {
-    type: String!
-    name: String! @constraint(minLength: 2, format: "not-blank")
-    description: String
-    manifest: String
-    tags: [String!]
+  type: String!
+  name: String! @constraint(minLength: 2, format: "not-blank")
+  description: String
+  manifest: String
+  tags: [String!]
 }
 
 input ImportConfigurationInput {
-    importType: String!
-    file: Upload!
-    dashboardManifest: String
+  importType: String!
+  file: Upload!
+  dashboardManifest: String
 }
 
 input ImportWidgetInput {
-    file: Upload!
-    dashboardManifest: String
+  file: Upload!
+  dashboardManifest: String
 }
 
 type Mutation {
-    workspaceAdd(input: WorkspaceAddInput!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
-    workspaceDuplicate(input: WorkspaceDuplicateInput!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
-    workspaceDelete(id: ID!): ID @auth(for: [EXPLORE_EXUPDATE_EXDELETE, INVESTIGATION_INUPDATE_INDELETE])
-    workspaceFieldPatch(id: ID!, input: [EditInput!]!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
-    workspaceEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
-    workspaceContextPatch(id: ID!, input: EditContext!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
-    workspaceContextClean(id: ID!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
-    workspaceConfigurationImport(file: Upload!): String! @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
-    workspaceWidgetConfigurationImport(id: ID!, input: ImportConfigurationInput!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
+  workspaceAdd(input: WorkspaceAddInput!): Workspace
+    @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
+  workspaceDuplicate(input: WorkspaceDuplicateInput!): Workspace
+    @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
+  workspaceDelete(id: ID!): ID
+    @auth(for: [EXPLORE_EXUPDATE_EXDELETE, INVESTIGATION_INUPDATE_INDELETE])
+  workspaceFieldPatch(id: ID!, input: [EditInput!]!): Workspace
+    @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
+  workspaceEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]!): Workspace
+    @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
+  workspaceContextPatch(id: ID!, input: EditContext!): Workspace
+    @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
+  workspaceContextClean(id: ID!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
+  workspaceConfigurationImport(file: Upload!): String!
+    @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
+  workspaceWidgetConfigurationImport(id: ID!, input: ImportConfigurationInput!): Workspace
+    @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
 }
 
 # Subscriptions
 type Subscription {
-    workspace(id: ID!): Workspace @auth(for: [EXPLORE, INVESTIGATION])
+  workspace(id: ID!): Workspace @auth(for: [EXPLORE, INVESTIGATION])
 }

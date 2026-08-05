@@ -27,7 +27,11 @@ import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
 import Security from '../../../../utils/Security';
-import { authorizedMembersToOptions, CAN_USE_ENTITY_TYPES, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import {
+  authorizedMembersToOptions,
+  CAN_USE_ENTITY_TYPES,
+  useGetCurrentUserAccessRight,
+} from '../../../../utils/authorizedMembers';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
@@ -64,11 +68,7 @@ export const stixDomainObjectMutation = graphql`
     $references: [String]
   ) {
     stixDomainObjectEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         x_opencti_stix_ids
         ... on AttackPattern {
           aliases
@@ -246,12 +246,13 @@ export const stixDomainObjectMutation = graphql`
   }
 `;
 
-const aliasValidation = (t) => Yup.object().shape({
-  references: Yup.array().required(t('This field is required')),
-});
+const aliasValidation = (t) =>
+  Yup.object().shape({
+    references: Yup.array().required(t('This field is required')),
+  });
 
 const stixDomainObjectHeaderEditAuthorizedMembersMutation = graphql`
-  mutation  StixDomainObjectHeaderEditAuthorizedMembersMutation(
+  mutation StixDomainObjectHeaderEditAuthorizedMembersMutation(
     $id: ID!
     $input: [MemberAccessInput!]
   ) {
@@ -259,15 +260,15 @@ const stixDomainObjectHeaderEditAuthorizedMembersMutation = graphql`
       editAuthorizedMembers(input: $input) {
         ... on Organization {
           authorized_members {
+            id
+            member_id
+            name
+            entity_type
+            access_right
+            groups_restriction {
               id
-              member_id
               name
-              entity_type
-              access_right
-              groups_restriction {
-                  id
-                  name
-              }
+            }
           }
         }
       }
@@ -302,7 +303,9 @@ const StixDomainObjectHeader = (props) => {
 
   // Remove CRUD button in Draft context without the minimal right access "canEdit"
   const draftContext = useDraftContext();
-  const currentDraftAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
+  const currentDraftAccessRight = useGetCurrentUserAccessRight(
+    draftContext?.currentUserAccessRight,
+  );
   const canEdit = currentAccessRight.canEdit && (!draftContext || currentDraftAccessRight.canEdit);
 
   const openAliasesCreate = false;
@@ -365,27 +368,22 @@ const StixDomainObjectHeader = (props) => {
   const handleChangeNewAlias = (_, value) => setNewAlias(value);
 
   const getCurrentAliases = () => {
-    return isOpenctiAlias
-      ? stixDomainObject.x_opencti_aliases
-      : stixDomainObject.aliases;
+    return isOpenctiAlias ? stixDomainObject.x_opencti_aliases : stixDomainObject.aliases;
   };
 
   const onSubmitCreateAlias = (values, { resetForm, setSubmitting }) => {
     const currentAliases = getCurrentAliases();
-    const normalizeNameEntity = (stixDomainObject.name).toLowerCase().trim();
+    const normalizeNameEntity = stixDomainObject.name.toLowerCase().trim();
     const normalizeNewAlias = newAlias.toLowerCase().trim();
     if (normalizeNameEntity === normalizeNewAlias) {
       setOpenAlias(false);
       setOpenCommitCreate(false);
       setNewAlias('');
       resetForm();
-      MESSAGING$.notifyError(t_i18n('You can\'t add the same alias as the name'));
+      MESSAGING$.notifyError(t_i18n("You can't add the same alias as the name"));
       return;
     }
-    if (
-      (currentAliases === null || !currentAliases.includes(newAlias))
-      && newAlias !== ''
-    ) {
+    if ((currentAliases === null || !currentAliases.includes(newAlias)) && newAlias !== '') {
       commitMutation({
         mutation: stixDomainObjectMutation,
         variables: {
@@ -433,11 +431,7 @@ const StixDomainObjectHeader = (props) => {
     resetForm();
   };
 
-  const aliases = R.propOr(
-    [],
-    isOpenctiAlias ? 'x_opencti_aliases' : 'aliases',
-    stixDomainObject,
-  );
+  const aliases = R.propOr([], isOpenctiAlias ? 'x_opencti_aliases' : 'aliases', stixDomainObject);
   const enableReferences = useIsEnforceReference(entityType);
 
   const triggersPaginationOptions = {
@@ -461,16 +455,20 @@ const StixDomainObjectHeader = (props) => {
       ],
     },
   };
-  const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
+  const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, {
+    first: 20,
+    ...triggersPaginationOptions,
+  });
 
   let initialNumberOfButtons = 1 + (isKnowledgeUpdater ? 1 : 0) + (enableQuickSubscription ? 1 : 0);
   const displayEnrollPlaybookButton = enableEnrollPlaybook && initialNumberOfButtons < 3;
   if (displayEnrollPlaybookButton) initialNumberOfButtons += 1;
   const displaySharingButton = disableSharing !== true && initialNumberOfButtons < 3;
-  const displayPopoverMenu = (disableSharing !== true && !displaySharingButton && isSharingGranted)
-    || (enableEnrollPlaybook && !displayEnrollPlaybookButton && isEnrichPlaybookGranted)
-    || (enableEnricher && isKnowledgeEnricher)
-    || isKnowledgeDeleter;
+  const displayPopoverMenu =
+    (disableSharing !== true && !displaySharingButton && isSharingGranted) ||
+    (enableEnrollPlaybook && !displayEnrollPlaybookButton && isEnrichPlaybookGranted) ||
+    (enableEnricher && isKnowledgeEnricher) ||
+    isKnowledgeDeleter;
 
   const title = getMainRepresentative(stixDomainObject);
 
@@ -481,9 +479,7 @@ const StixDomainObjectHeader = (props) => {
         titleRight={
           typeof onViewAs === 'function' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.5) }}>
-              <InputLabel>
-                {t_i18n('Display as')}
-              </InputLabel>
+              <InputLabel>{t_i18n('Display as')}</InputLabel>
               <FormControl variant="outlined">
                 <Select
                   size="small"
@@ -503,7 +499,7 @@ const StixDomainObjectHeader = (props) => {
             </div>
           )
         }
-        rightActions={(
+        rightActions={
           <>
             {disableSharing !== true && (
               <StixCoreObjectSharing
@@ -521,9 +517,7 @@ const StixDomainObjectHeader = (props) => {
                 onExportCompleted={handleExportCompleted}
               />
             </Security>
-            {isKnowledgeUpdater && (
-              <StixCoreObjectContainer elementId={stixDomainObject.id} />
-            )}
+            {isKnowledgeUpdater && <StixCoreObjectContainer elementId={stixDomainObject.id} />}
             {enableQuickSubscription && (
               <StixCoreObjectQuickSubscription
                 title={title}
@@ -533,7 +527,7 @@ const StixDomainObjectHeader = (props) => {
                 triggerData={triggerData}
               />
             )}
-            {(enableEnricher && isKnowledgeEnricher) && (
+            {enableEnricher && isKnowledgeEnricher && (
               <StixCoreObjectEnrichment
                 onClose={handleCloseEnrichment}
                 isOpen={isEnrichmentOpen}
@@ -551,13 +545,15 @@ const StixDomainObjectHeader = (props) => {
               <FormAuthorizedMembersDialog
                 id={stixDomainObject.id}
                 owner={stixDomainObject.creators?.[0]}
-                authorizedMembers={authorizedMembersToOptions(
-                  stixDomainObject.authorized_members,
-                )}
+                authorizedMembers={authorizedMembersToOptions(stixDomainObject.authorized_members)}
                 mutation={stixDomainObjectHeaderEditAuthorizedMembersMutation}
                 open={openAccessRestriction}
                 handleClose={handleCloseAccessRestriction}
-                customAccessRights={CAN_USE_ENTITY_TYPES.includes(stixDomainObject.entity_type) ? ['view', 'use', 'edit', 'admin'] : undefined}
+                customAccessRights={
+                  CAN_USE_ENTITY_TYPES.includes(stixDomainObject.entity_type)
+                    ? ['view', 'use', 'edit', 'admin']
+                    : undefined
+                }
                 canDeactivate={true}
               />
             )}
@@ -583,11 +579,12 @@ const StixDomainObjectHeader = (props) => {
                         needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
                       />
                     )}
-                    {(enableEnricher && isKnowledgeEnricher) && (
-                      <MenuItem onClick={() => {
-                        handleOpenEnrichment();
-                        closeMenu();
-                      }}
+                    {enableEnricher && isKnowledgeEnricher && (
+                      <MenuItem
+                        onClick={() => {
+                          handleOpenEnrichment();
+                          closeMenu();
+                        }}
                       >
                         {t_i18n('Enrichment')}
                       </MenuItem>
@@ -602,10 +599,11 @@ const StixDomainObjectHeader = (props) => {
                       />
                     )}
                     {isKnowledgeDeleter && (
-                      <MenuItem onClick={() => {
-                        handleOpenDelete();
-                        closeMenu();
-                      }}
+                      <MenuItem
+                        onClick={() => {
+                          handleOpenDelete();
+                          closeMenu();
+                        }}
                       >
                         {t_i18n('Delete')}
                       </MenuItem>
@@ -618,12 +616,10 @@ const StixDomainObjectHeader = (props) => {
             {EditComponent}
             <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
           </>
-        )}
-        leftTags={(
+        }
+        leftTags={
           <>
-            {stixDomainObject.draftVersion && (
-              <DraftChip />
-            )}
+            {stixDomainObject.draftVersion && <DraftChip />}
 
             {!noAliases && (
               <TagsOverflow
@@ -662,12 +658,8 @@ const StixDomainObjectHeader = (props) => {
               </TagsOverflow>
             )}
           </>
-        )}
-        rightTags={
-          disableSharing !== true && (
-            <StixCoreObjectSharingList data={stixDomainObject} />
-          )
         }
+        rightTags={disableSharing !== true && <StixCoreObjectSharingList data={stixDomainObject} />}
       />
 
       {!noAliases && (
@@ -680,7 +672,9 @@ const StixDomainObjectHeader = (props) => {
           <Formik
             initialValues={{ new_alias: '' }}
             onSubmit={onSubmitCreateAlias}
-            validationSchema={enableReferences && !isBypassEnforcedRef ? aliasValidation(t_i18n) : null}
+            validationSchema={
+              enableReferences && !isBypassEnforcedRef ? aliasValidation(t_i18n) : null
+            }
           >
             {({ submitForm, isSubmitting, setFieldValue, values }) => (
               <Form>
@@ -718,33 +712,30 @@ const StixDomainObjectHeader = (props) => {
           </Formik>
 
           <List>
-            {R.propOr(
-              [],
-              isOpenctiAlias ? 'x_opencti_aliases' : 'aliases',
-              stixDomainObject,
-            ).map(
-              (label) => label.length > 0 && (
-                <ListItem
-                  key={label}
-                  disableGutters={true}
-                  dense={true}
-                  secondaryAction={(
-                    <IconButton
-                      edge="end"
-                      aria-label="delete"
-                      onClick={
-                        enableReferences
-                          ? () => handleOpenCommitDelete(label)
-                          : () => deleteAlias(label)
-                      }
-                    >
-                      <Delete />
-                    </IconButton>
-                  )}
-                >
-                  <ListItemText primary={label} />
-                </ListItem>
-              ),
+            {R.propOr([], isOpenctiAlias ? 'x_opencti_aliases' : 'aliases', stixDomainObject).map(
+              (label) =>
+                label.length > 0 && (
+                  <ListItem
+                    key={label}
+                    disableGutters={true}
+                    dense={true}
+                    secondaryAction={
+                      <IconButton
+                        edge="end"
+                        aria-label="delete"
+                        onClick={
+                          enableReferences
+                            ? () => handleOpenCommitDelete(label)
+                            : () => deleteAlias(label)
+                        }
+                      >
+                        <Delete />
+                      </IconButton>
+                    }
+                  >
+                    <ListItemText primary={label} />
+                  </ListItem>
+                ),
             )}
           </List>
           <div
@@ -755,7 +746,9 @@ const StixDomainObjectHeader = (props) => {
             <Formik
               initialValues={{ new_alias: '' }}
               onSubmit={onSubmitCreateAlias}
-              validationSchema={enableReferences && !isBypassEnforcedRef ? aliasValidation(t_i18n) : null}
+              validationSchema={
+                enableReferences && !isBypassEnforcedRef ? aliasValidation(t_i18n) : null
+              }
             >
               {({ submitForm, isSubmitting, setFieldValue, values }) => (
                 <Form>
@@ -799,9 +792,7 @@ const StixDomainObjectHeader = (props) => {
           </div>
 
           <DialogActions>
-            <Button onClick={handleToggleOpenAliases}>
-              {t_i18n('Close')}
-            </Button>
+            <Button onClick={handleToggleOpenAliases}>{t_i18n('Close')}</Button>
           </DialogActions>
         </Dialog>
       )}

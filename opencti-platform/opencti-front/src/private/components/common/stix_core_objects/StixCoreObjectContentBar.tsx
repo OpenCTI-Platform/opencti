@@ -15,14 +15,16 @@ import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../../../utils/hooks/u
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>(() => createStyles({
-  bottomNav: {
-    zIndex: 1,
-    display: 'flex',
-    overflow: 'hidden',
-    paddingBottom: ({ bannerHeightNumber }) => `${bannerHeightNumber}px`,
-  },
-}));
+const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>(() =>
+  createStyles({
+    bottomNav: {
+      zIndex: 1,
+      display: 'flex',
+      overflow: 'hidden',
+      paddingBottom: ({ bannerHeightNumber }) => `${bannerHeightNumber}px`,
+    },
+  }),
+);
 
 const Transition = React.forwardRef((props: SlideProps, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -38,9 +40,7 @@ interface StixCoreObjectContentBarProps {
   navOpen: boolean;
 }
 
-const StixCoreObjectContentBar: FunctionComponent<
-  StixCoreObjectContentBarProps
-> = ({
+const StixCoreObjectContentBar: FunctionComponent<StixCoreObjectContentBarProps> = ({
   handleZoomIn,
   handleZoomOut,
   currentZoom,
@@ -95,7 +95,7 @@ const StixCoreObjectContentBar: FunctionComponent<
           {handleSave && (
             <FormGroup>
               <FormControlLabel
-                control={(
+                control={
                   <IconButton
                     color="primary"
                     onClick={handleSave}
@@ -104,13 +104,15 @@ const StixCoreObjectContentBar: FunctionComponent<
                   >
                     <SaveOutlined />
                   </IconButton>
-                )}
-                label={changed
-                  ? (
-                      <span style={{ color: theme.palette.warn.main }}>
-                        {t_i18n('You have unsaved changes')}
-                      </span>
-                    ) : t_i18n('No changes detected')
+                }
+                label={
+                  changed ? (
+                    <span style={{ color: theme.palette.warn.main }}>
+                      {t_i18n('You have unsaved changes')}
+                    </span>
+                  ) : (
+                    t_i18n('No changes detected')
+                  )
                 }
               />
             </FormGroup>

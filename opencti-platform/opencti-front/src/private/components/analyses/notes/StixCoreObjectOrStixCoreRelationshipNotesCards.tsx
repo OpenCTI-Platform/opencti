@@ -12,7 +12,10 @@ import { insertNode } from '../../../../utils/store';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
-import useGranted, { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNPARTICIPATE,
+  KNOWLEDGE_KNUPDATE,
+} from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNoteCard from './StixCoreObjectOrStixCoreRelationshipNoteCard';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
@@ -35,7 +38,11 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { convertMarking } from '../../../../utils/edition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import AddNotes from './AddNotes';
-import { yupShapeConditionalRequired, useDynamicSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
+import {
+  yupShapeConditionalRequired,
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+} from '../../../../utils/hooks/useEntitySettings';
 import CardTitle from '../../../../components/common/card/CardTitle';
 import CardAccordion from '../../../../components/common/card/CardAccordion';
 import { DefaultMarking } from './../../settings/marking_definitions/markingDefinition.types';
@@ -49,12 +56,7 @@ export const stixCoreObjectOrStixCoreRelationshipNotesCardsQuery = graphql`
     $filters: FilterGroup
   ) {
     ...StixCoreObjectOrStixCoreRelationshipNotesCards_data
-      @arguments(
-        count: $count
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-      )
+      @arguments(count: $count, orderBy: $orderBy, orderMode: $orderMode, filters: $filters)
   }
 `;
 
@@ -66,12 +68,8 @@ const stixCoreObjectOrStixCoreRelationshipNotesCardsFragment = graphql`
     orderMode: { type: "OrderingMode" }
     filters: { type: "FilterGroup" }
   ) {
-    notes(
-      first: $count
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    ) @connection(key: "Pagination_notes") {
+    notes(first: $count, orderBy: $orderBy, orderMode: $orderMode, filters: $filters)
+      @connection(key: "Pagination_notes") {
       edges {
         node {
           id
@@ -102,9 +100,8 @@ const toFinalValues = (values: NoteAddInput, id: string) => {
   };
 };
 
-const toOptions = (
-  objectMarkings: readonly DefaultMarking[] | undefined = [],
-) => (objectMarkings ?? []).map(convertMarking);
+const toOptions = (objectMarkings: readonly DefaultMarking[] | undefined = []) =>
+  (objectMarkings ?? []).map(convertMarking);
 
 export interface NoteAddInput {
   attribute_abstract: string;
@@ -141,11 +138,7 @@ const Header = ({ title, id, data, paginationOptions }: HeaderProps) => {
     </Security>
   );
 
-  return (
-    <CardTitle action={actions}>
-      {title}
-    </CardTitle>
-  );
+  return <CardTitle action={actions}>{title}</CardTitle>;
 };
 
 type NoteFormProps = {
@@ -176,20 +169,22 @@ const NoteForm = ({
     objectLabel: [],
   });
 
-  const basicShape = yupShapeConditionalRequired({
-    content: Yup.string().trim().min(2),
-    attribute_abstract: Yup.string().nullable(),
-    confidence: Yup.number(),
-    note_types: Yup.array(),
-    likelihood: Yup.number().min(0).max(100),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      content: Yup.string().trim().min(2),
+      attribute_abstract: Yup.string().nullable(),
+      confidence: Yup.number(),
+      note_types: Yup.array(),
+      likelihood: Yup.number().min(0).max(100),
+    },
+    mandatoryAttributes,
+  );
 
   // created & createdBy must be excluded from the validation, it will be handled directly by the backend
-  const noteValidator = useDynamicSchemaCreationValidation(
-    mandatoryAttributes,
-    basicShape,
-    ['created', 'createdBy'],
-  );
+  const noteValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape, [
+    'created',
+    'createdBy',
+  ]);
 
   const handleToggleMore = () => {
     setMore((oldValue) => {
@@ -206,20 +201,14 @@ const NoteForm = ({
       onSubmit={onSubmit}
       onReset={onCancel}
     >
-      {({
-        submitForm,
-        handleReset,
-        setFieldValue,
-        values,
-        isSubmitting,
-      }) => (
+      {({ submitForm, handleReset, setFieldValue, values, isSubmitting }) => (
         <Stack gap={2}>
           <Box>
             <Field
               component={MarkdownField}
               name="content"
               label={t_i18n('Content')}
-              required={(mandatoryAttributes.includes('content'))}
+              required={mandatoryAttributes.includes('content')}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -229,51 +218,46 @@ const NoteForm = ({
             />
             <ObjectMarkingField
               name="objectMarking"
-              required={(mandatoryAttributes.includes('objectMarking'))}
+              required={mandatoryAttributes.includes('objectMarking')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
-            {
-              more && (
-                <>
-                  <Field
-                    component={TextField}
-                    name="attribute_abstract"
-                    label={t_i18n('Abstract')}
-                    required={(mandatoryAttributes.includes('attribute_abstract'))}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  <OpenVocabField
-                    label={t_i18n('Note types')}
-                    type="note_types_ov"
-                    name="note_types"
-                    required={(mandatoryAttributes.includes('note_types'))}
-                    onChange={(name, value) => setFieldValue(name, value)}
-                    containerStyle={fieldSpacingContainerStyle}
-                    multiple={true}
-                  />
-                  <ConfidenceField
-                    entityType="Note"
-                    containerStyle={fieldSpacingContainerStyle}
-                  />
-                  <Field
-                    component={SliderField}
-                    name="likelihood"
-                    label={t_i18n('Likelihood')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  <ObjectLabelField
-                    name="objectLabel"
-                    required={(mandatoryAttributes.includes('objectLabel'))}
-                    style={{ marginTop: 10, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
-                  />
-                </>
-              )
-            }
+            {more && (
+              <>
+                <Field
+                  component={TextField}
+                  name="attribute_abstract"
+                  label={t_i18n('Abstract')}
+                  required={mandatoryAttributes.includes('attribute_abstract')}
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                />
+                <OpenVocabField
+                  label={t_i18n('Note types')}
+                  type="note_types_ov"
+                  name="note_types"
+                  required={mandatoryAttributes.includes('note_types')}
+                  onChange={(name, value) => setFieldValue(name, value)}
+                  containerStyle={fieldSpacingContainerStyle}
+                  multiple={true}
+                />
+                <ConfidenceField entityType="Note" containerStyle={fieldSpacingContainerStyle} />
+                <Field
+                  component={SliderField}
+                  name="likelihood"
+                  label={t_i18n('Likelihood')}
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                />
+                <ObjectLabelField
+                  name="objectLabel"
+                  required={mandatoryAttributes.includes('objectLabel')}
+                  style={{ marginTop: 10, width: '100%' }}
+                  setFieldValue={setFieldValue}
+                  values={values.objectLabel}
+                />
+              </>
+            )}
           </Box>
 
           <Stack direction="row" justifyContent="space-between">
@@ -281,9 +265,7 @@ const NoteForm = ({
               onClick={handleToggleMore}
               disabled={isSubmitting}
               size="small"
-              endIcon={
-                more ? <ExpandLessOutlined /> : <ExpandMoreOutlined />
-              }
+              endIcon={more ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
             >
               {more ? t_i18n('Less fields') : t_i18n('More fields')}
             </Button>
@@ -297,11 +279,7 @@ const NoteForm = ({
               >
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-                size="small"
-              >
+              <Button onClick={submitForm} disabled={isSubmitting} size="small">
                 {t_i18n('Create')}
               </Button>
             </Stack>
@@ -314,14 +292,7 @@ const NoteForm = ({
 
 const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
   StixCoreObjectOrStixCoreRelationshipNotesCardsProps
-> = ({
-  id,
-  marginTop = 0,
-  queryRef,
-  paginationOptions,
-  defaultMarkings,
-  title,
-}) => {
+> = ({ id, marginTop = 0, queryRef, paginationOptions, defaultMarkings, title }) => {
   const { t_i18n } = useFormatter();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -372,9 +343,12 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
   };
 
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
-  const [commit] = useApiMutation(userIsKnowledgeEditor ? noteCreationMutation : noteCreationUserMutation);
+  const [commit] = useApiMutation(
+    userIsKnowledgeEditor ? noteCreationMutation : noteCreationUserMutation,
+  );
   const markdownControllerRef = useRef<MarkdownImagesController | null>(null);
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildMarkdownFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
 
   const registerMarkdownController = (controller: MarkdownImagesController) => {
     markdownControllerRef.current = controller;
@@ -387,7 +361,7 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
   ) => {
     const content = userIsKnowledgeEditor
       ? values.content
-      : (await markdownControllerRef.current?.persistTempImages(id) ?? values.content);
+      : ((await markdownControllerRef.current?.persistTempImages(id)) ?? values.content);
 
     const finalValues = {
       ...toFinalValues({ ...values, content }, id),
@@ -398,7 +372,12 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
         input: finalValues,
       },
       updater: (store) => {
-        insertNode(store, 'Pagination_notes', paginationOptions, userIsKnowledgeEditor ? 'noteAdd' : 'userNoteAdd');
+        insertNode(
+          store,
+          'Pagination_notes',
+          paginationOptions,
+          userIsKnowledgeEditor ? 'noteAdd' : 'userNoteAdd',
+        );
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -413,12 +392,7 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
 
   return (
     <div style={{ marginTop, marginBottom: 20 }} ref={containerRef}>
-      <Header
-        data={data}
-        id={id}
-        paginationOptions={paginationOptions}
-        title={title}
-      />
+      <Header data={data} id={id} paginationOptions={paginationOptions} title={title} />
 
       <Stack spacing={2}>
         {notes.map(({ node }) => (
@@ -437,12 +411,12 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
                 scrollToBottom();
               }
             }}
-            preview={(
+            preview={
               <Stack direction="row" spacing={1}>
                 <RateReviewOutlined />
                 <Typography>{t_i18n('Write a note')}</Typography>
               </Stack>
-            )}
+            }
           >
             {({ changeState }) => (
               <NoteForm

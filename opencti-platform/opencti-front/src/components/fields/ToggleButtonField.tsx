@@ -13,11 +13,7 @@ interface Item {
   content: ReactNode;
 }
 
-const ToggleButtonField = ({
-  form,
-  field,
-  items,
-}: ToggleButtonFieldProps) => {
+const ToggleButtonField = ({ form, field, items }: ToggleButtonFieldProps) => {
   const { t_i18n } = useFormatter();
   const { setFieldValue } = form;
   const { value, name } = field;
@@ -29,7 +25,7 @@ const ToggleButtonField = ({
           <ToggleButton
             value={item.value}
             key={index}
-            onClick={() => setFieldValue(name, (item.value === value) ? null : item.value)}
+            onClick={() => setFieldValue(name, item.value === value ? null : item.value)}
           >
             {item.content}
           </ToggleButton>

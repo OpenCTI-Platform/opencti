@@ -17,7 +17,8 @@ export interface BasicStoreEntityOrganization extends BasicIdentityEntity {
   [RELATION_PARTICIPATE_TO]: string[];
 }
 
-export interface StoreEntityOrganization extends StoreEntityIdentity, BasicStoreEntityOrganization {}
+export interface StoreEntityOrganization
+  extends StoreEntityIdentity, BasicStoreEntityOrganization {}
 // endregion
 
 // region Stix type

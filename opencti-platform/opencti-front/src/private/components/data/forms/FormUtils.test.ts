@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { convertFormBuilderDataToSchema, getAttributesForEntityType, getInitialMandatoryFields, normalizeDraftAuthorizedMembersDefaults } from './FormUtils';
+import {
+  convertFormBuilderDataToSchema,
+  getAttributesForEntityType,
+  getInitialMandatoryFields,
+  normalizeDraftAuthorizedMembersDefaults,
+} from './FormUtils';
 import type { FormBuilderData } from './Form.d';
 import type { AuthorizedMemberOption } from '../../../../utils/authorizedMembers';
 
@@ -181,7 +186,9 @@ describe('convertFormBuilderDataToSchema', () => {
         },
       },
     });
-    expect(schema.draftDefaults?.objectParticipant?.defaults).toEqual([{ value: 'p-1', label: 'Participant 1' }]);
+    expect(schema.draftDefaults?.objectParticipant?.defaults).toEqual([
+      { value: 'p-1', label: 'Participant 1' },
+    ]);
   });
 
   it('should include static author config in schema', () => {
@@ -285,7 +292,12 @@ describe('container content attribute mapping', () => {
   ];
 
   it('should not expose content as an open vocabulary attribute', () => {
-    const openVocabAttributes = getAttributesForEntityType('Case-Incident', 'openvocab', entityTypes, t_i18n);
+    const openVocabAttributes = getAttributesForEntityType(
+      'Case-Incident',
+      'openvocab',
+      entityTypes,
+      t_i18n,
+    );
 
     expect(openVocabAttributes).toEqual([]);
   });

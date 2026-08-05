@@ -29,7 +29,17 @@ const DataTableWithoutFragmentToolBar = ({
   const numberOfElements = selectedValues.length;
   return (
     <>
-      <Toolbar style={{ minHeight: 40, display: 'flex', justifyContent: 'space-between', height: '100%', paddingRight: 12, paddingLeft: 8 }} data-testid="opencti-toolbar">
+      <Toolbar
+        style={{
+          minHeight: 40,
+          display: 'flex',
+          justifyContent: 'space-between',
+          height: '100%',
+          paddingRight: 12,
+          paddingLeft: 8,
+        }}
+        data-testid="opencti-toolbar"
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <Typography
             style={{
@@ -52,23 +62,21 @@ const DataTableWithoutFragmentToolBar = ({
             <ClearOutlined fontSize="small" />
           </IconButton>
         </div>
-        {taskScope === 'UNKNOWN_ENTITIES'
-          && (
-            <Tooltip title={t_i18n('Create unknown entities')}>
-              <span>
-                <IconButton
-                  aria-label={t_i18n('Create unknown entities')}
-                  disabled={numberOfElements === 0}
-                  onClick={handleLaunchCreateUnknownEntities}
-                  color="primary"
-                  size="small"
-                >
-                  <AddBoxOutlined fontSize="small" />
-                </IconButton>
-              </span>
-            </Tooltip>
-          )
-        }
+        {taskScope === 'UNKNOWN_ENTITIES' && (
+          <Tooltip title={t_i18n('Create unknown entities')}>
+            <span>
+              <IconButton
+                aria-label={t_i18n('Create unknown entities')}
+                disabled={numberOfElements === 0}
+                onClick={handleLaunchCreateUnknownEntities}
+                color="primary"
+                size="small"
+              >
+                <AddBoxOutlined fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
+        )}
       </Toolbar>
       <ImportFilesDialog
         open={unknownValues.length > 0}

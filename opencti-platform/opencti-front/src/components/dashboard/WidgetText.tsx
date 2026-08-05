@@ -13,12 +13,7 @@ interface WidgetTextProps {
   } | null;
 }
 
-const WidgetText = ({
-  variant,
-  height = undefined,
-  parameters = {},
-  popover,
-}: WidgetTextProps) => {
+const WidgetText = ({ variant, height = undefined, parameters = {}, popover }: WidgetTextProps) => {
   return (
     <WidgetContainer
       height={height}
@@ -28,16 +23,13 @@ const WidgetText = ({
     >
       <Box
         sx={{
-          '& h1:first-child, & h2:first-child, & h3:first-child, & h4:first-child, & h5:first-child, & h6:first-child': {
-            marginTop: 0,
-          },
+          '& h1:first-child, & h2:first-child, & h3:first-child, & h4:first-child, & h5:first-child, & h6:first-child':
+            {
+              marginTop: 0,
+            },
         }}
       >
-        <MarkdownDisplay
-          content={parameters?.content}
-          remarkGfmPlugin={true}
-          commonmark={true}
-        />
+        <MarkdownDisplay content={parameters?.content} remarkGfmPlugin={true} commonmark={true} />
       </Box>
     </WidgetContainer>
   );

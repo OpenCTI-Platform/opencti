@@ -12,11 +12,7 @@ const stixSightingRelationshipMutationRelationsAdd = graphql`
     $references: [String]
   ) {
     stixSightingRelationshipEdit(id: $id) {
-      relationsAdd(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      relationsAdd(input: $input, commitMessage: $commitMessage, references: $references) {
         objectLabel {
           id
           value

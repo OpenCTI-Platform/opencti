@@ -22,7 +22,14 @@ import { findStixCoreRelationshipsPaginated } from './stixCoreRelationship';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { storeUpdateEvent } from '../database/stream/stream-handler';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
-import { ForbiddenAccess, FunctionalError, LockTimeoutError, ResourceNotFoundError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
+import {
+  ForbiddenAccess,
+  FunctionalError,
+  LockTimeoutError,
+  ResourceNotFoundError,
+  TYPE_LOCK_ERROR,
+  UnsupportedError,
+} from '../config/errors';
 import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
@@ -35,7 +42,12 @@ import {
   INPUT_EXTERNAL_REFS,
   INPUT_MARKINGS,
 } from '../schema/general';
-import { RELATION_CREATED_BY, RELATION_EXTERNAL_REFERENCE, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import {
+  RELATION_CREATED_BY,
+  RELATION_EXTERNAL_REFERENCE,
+  RELATION_OBJECT,
+  RELATION_OBJECT_MARKING,
+} from '../schema/stixRefRelationship';
 import {
   ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_CONTAINER_NOTE,
@@ -53,14 +65,26 @@ import {
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   isStixDomainObjectContainer,
 } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import {
+  ENTITY_TYPE_EXTERNAL_REFERENCE,
+  ENTITY_TYPE_MARKING_DEFINITION,
+} from '../schema/stixMetaObject';
 import { createWork, worksForSource, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { minutesAgo, monthsAgo, now, utcDate } from '../utils/format';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import { defaultValidationMode, deleteFile, loadFile, storeFileConverter, uploadToStorage } from '../database/file-storage';
+import {
+  defaultValidationMode,
+  deleteFile,
+  loadFile,
+  storeFileConverter,
+  uploadToStorage,
+} from '../database/file-storage';
 import { getFileContent } from '../database/raw-file-storage';
-import { findById as documentFindById, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
+import {
+  findById as documentFindById,
+  paginatedForPathWithEnrichment,
+} from '../modules/internal/document/document-domain';
 import { elCount, elFindByIds, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
@@ -75,13 +99,40 @@ import {
 } from '../database/utils';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
-import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
-import { buildContextDataForFile, completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
-import { extractEntityRepresentativeName, extractRepresentative } from '../database/entity-representative';
-import { addFilter, emptyFilterGroup, findFiltersFromKey } from '../utils/filtering/filtering-utils';
-import { BULK_SEARCH_KEYWORDS_FILTER, BULK_SEARCH_KEYWORDS_FILTER_KEYS, INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
+import {
+  stixObjectOrRelationshipAddRefRelation,
+  stixObjectOrRelationshipAddRefRelations,
+  stixObjectOrRelationshipDeleteRefRelation,
+} from './stixObjectOrStixRelationship';
+import {
+  buildContextDataForFile,
+  completeContextDataForEntity,
+  publishUserAction,
+} from '../listener/UserActionListener';
+import {
+  extractEntityRepresentativeName,
+  extractRepresentative,
+} from '../database/entity-representative';
+import {
+  addFilter,
+  emptyFilterGroup,
+  findFiltersFromKey,
+} from '../utils/filtering/filtering-utils';
+import {
+  BULK_SEARCH_KEYWORDS_FILTER,
+  BULK_SEARCH_KEYWORDS_FILTER_KEYS,
+  INSTANCE_REGARDING_OF,
+} from '../utils/filtering/filtering-constants';
 import { getEntitiesMapFromCache } from '../database/cache';
-import { AccessOperation, BYPASS, isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
+import {
+  AccessOperation,
+  BYPASS,
+  isBypassUser,
+  isUserCanAccessStoreElement,
+  isUserHasCapabilities,
+  SYSTEM_USER,
+  validateUserAccessOperation,
+} from '../utils/access';
 import { connectorsForAnalysis } from '../database/repository';
 import { getDraftContext } from '../utils/draftContext';
 import { FilterOperator, ValidationMode } from '../generated/graphql';
@@ -118,7 +169,13 @@ import { addAskAiQueryCount } from '../manager/telemetryManager';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
-const threats = [ENTITY_TYPE_THREAT_ACTOR_GROUP, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_MALWARE];
+const threats = [
+  ENTITY_TYPE_THREAT_ACTOR_GROUP,
+  ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL,
+  ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_CAMPAIGN,
+  ENTITY_TYPE_MALWARE,
+];
 // const arsenal = [ENTITY_TYPE_TOOL, ENTITY_TYPE_ATTACK_PATTERN];
 const victims = [
   ENTITY_TYPE_LOCATION_REGION,
@@ -165,7 +222,13 @@ export const findStixCoreObjectPaginated = async (context, user, args) => {
 
 export const globalSearchPaginated = async (context, user, args) => {
   const context_data = { input: args, search: args.search };
-  await publishUserAction({ user, event_type: 'command', event_scope: 'search', event_access: 'extended', context_data });
+  await publishUserAction({
+    user,
+    event_type: 'command',
+    event_scope: 'search',
+    event_access: 'extended',
+    context_data,
+  });
   return findStixCoreObjectPaginated(context, user, args);
 };
 
@@ -187,11 +250,14 @@ export const findUnknownStixCoreObjects = async (context, user, args) => {
   const knownNodes = knownScos.edges.map((n) => n.node) ?? [];
 
   const isStixObjectMatchWithSearchValue = (stixObject, value) => {
-    const representativeMatch = value.toLowerCase() === extractRepresentative(stixObject).main.toLowerCase();
+    const representativeMatch =
+      value.toLowerCase() === extractRepresentative(stixObject).main.toLowerCase();
     if (!representativeMatch) {
       // try to find in hashes
       if (stixObject.hashes) {
-        const hashMatch = Object.values(stixObject.hashes).filter((h) => !!h).some((h) => h === value);
+        const hashMatch = Object.values(stixObject.hashes)
+          .filter((h) => !!h)
+          .some((h) => h === value);
         if (hashMatch) return hashMatch;
       }
       // try to find in attributes of bulk search filter
@@ -224,7 +290,12 @@ export const findStixCoreObjectRestrictedPaginated = async (context, user, args)
     throw ForbiddenAccess();
   }
   const types = extractStixCoreObjectTypesFromArgs(args);
-  const filters = addFilter(args.filters, `${authorizedMembers.name}.id`, [], FilterOperator.NotNil);
+  const filters = addFilter(
+    args.filters,
+    `${authorizedMembers.name}.id`,
+    [],
+    FilterOperator.NotNil,
+  );
   const finalArgs = {
     ...args,
     includeAuthorities: true,
@@ -248,22 +319,46 @@ export const batchInternalRels = async (context, user, elements) => {
   for (let index = 0; index < elements.length; index += 1) {
     const { element, definition } = elements[index];
     if (isNotEmptyField(element[definition.databaseName])) {
-      const ids = Array.isArray(element[definition.databaseName]) ? element[definition.databaseName] : [element[definition.databaseName]];
+      const ids = Array.isArray(element[definition.databaseName])
+        ? element[definition.databaseName]
+        : [element[definition.databaseName]];
       ids.filter((id) => isNotEmptyField(id)).forEach(relIds.add, relIds);
       definition.toTypes.forEach(relTypes.add, relTypes);
     }
   }
   // Get all rel resolutions with system user
   // The visibility will be restricted in the data preparation
-  const resolvedElements = await internalFindByIds(context, SYSTEM_USER, Array.from(relIds), { type: Array.from(relTypes), toMap: true });
-  return await Promise.all(elements.map(async ({ element, definition }) => {
-    const relId = element[definition.databaseName];
-    if (definition.multiple) {
-      const relElements = await Promise.all((relId ?? []).map(async (id) => {
-        const resolve = resolvedElements[id];
+  const resolvedElements = await internalFindByIds(context, SYSTEM_USER, Array.from(relIds), {
+    type: Array.from(relTypes),
+    toMap: true,
+  });
+  return await Promise.all(
+    elements.map(async ({ element, definition }) => {
+      const relId = element[definition.databaseName];
+      if (definition.multiple) {
+        const relElements = await Promise.all(
+          (relId ?? []).map(async (id) => {
+            const resolve = resolvedElements[id];
+            // If resolution is empty the database is inconsistent, an error must be thrown
+            if (isEmptyField(resolve)) {
+              logApp.warn('Invalid loading of batched elements', { ids: relId });
+              return undefined;
+            }
+            // If user have correct access right, return the element
+            if (await isUserCanAccessStoreElement(context, user, resolve)) {
+              return resolve;
+            }
+            // If access is not possible, return a restricted entity
+            return buildRestrictedEntity(resolve);
+          }),
+        );
+        return relElements.filter((e) => e);
+      }
+      if (relId) {
+        const resolve = resolvedElements[relId];
         // If resolution is empty the database is inconsistent, an error must be thrown
         if (isEmptyField(resolve)) {
-          logApp.warn('Invalid loading of batched elements', { ids: relId });
+          logApp.warn('Invalid loading of batched element', { id: relId });
           return undefined;
         }
         // If user have correct access right, return the element
@@ -272,31 +367,22 @@ export const batchInternalRels = async (context, user, elements) => {
         }
         // If access is not possible, return a restricted entity
         return buildRestrictedEntity(resolve);
-      }));
-      return relElements.filter((e) => e);
-    }
-    if (relId) {
-      const resolve = resolvedElements[relId];
-      // If resolution is empty the database is inconsistent, an error must be thrown
-      if (isEmptyField(resolve)) {
-        logApp.warn('Invalid loading of batched element', { id: relId });
-        return undefined;
       }
-      // If user have correct access right, return the element
-      if (await isUserCanAccessStoreElement(context, user, resolve)) {
-        return resolve;
-      }
-      // If access is not possible, return a restricted entity
-      return buildRestrictedEntity(resolve);
-    }
-    return undefined;
-  }));
+      return undefined;
+    }),
+  );
 };
 
 export const batchMarkingDefinitions = async (context, user, stixCoreObjects) => {
-  const markingsFromCache = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
+  const markingsFromCache = await getEntitiesMapFromCache(
+    context,
+    user,
+    ENTITY_TYPE_MARKING_DEFINITION,
+  );
   return stixCoreObjects.map((s) => {
-    const markings = (s[RELATION_OBJECT_MARKING] ?? []).map((id) => markingsFromCache.get(id)).filter((m) => m);
+    const markings = (s[RELATION_OBJECT_MARKING] ?? [])
+      .map((id) => markingsFromCache.get(id))
+      .filter((m) => m);
     return R.sortWith([
       R.ascend(R.propOr('TLP', 'definition_type')),
       R.descend(R.propOr(0, 'x_opencti_order')),
@@ -310,35 +396,99 @@ export const containersPaginated = async (context, user, stixCoreObjectId, opts)
   if (!finalEntityTypes.every((t) => isStixDomainObjectContainer(t))) {
     throw FunctionalError(`Only ${ENTITY_TYPE_CONTAINER} can be query through this method.`);
   }
-  return pageRegardingEntitiesConnection(context, user, stixCoreObjectId, RELATION_OBJECT, finalEntityTypes, true, opts);
+  return pageRegardingEntitiesConnection(
+    context,
+    user,
+    stixCoreObjectId,
+    RELATION_OBJECT,
+    finalEntityTypes,
+    true,
+    opts,
+  );
 };
 
 export const reportsPaginated = async (context, user, stixCoreObjectId, opts) => {
-  return pageRegardingEntitiesConnection(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT, true, opts);
+  return pageRegardingEntitiesConnection(
+    context,
+    user,
+    stixCoreObjectId,
+    RELATION_OBJECT,
+    ENTITY_TYPE_CONTAINER_REPORT,
+    true,
+    opts,
+  );
 };
 
 export const groupingsPaginated = async (context, user, stixCoreObjectId, opts) => {
-  return pageRegardingEntitiesConnection(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_GROUPING, true, opts);
+  return pageRegardingEntitiesConnection(
+    context,
+    user,
+    stixCoreObjectId,
+    RELATION_OBJECT,
+    ENTITY_TYPE_CONTAINER_GROUPING,
+    true,
+    opts,
+  );
 };
 
 export const casesPaginated = async (context, user, stixCoreObjectId, opts) => {
-  return pageRegardingEntitiesConnection(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_CASE, true, opts);
+  return pageRegardingEntitiesConnection(
+    context,
+    user,
+    stixCoreObjectId,
+    RELATION_OBJECT,
+    ENTITY_TYPE_CONTAINER_CASE,
+    true,
+    opts,
+  );
 };
 
 export const notesPaginated = async (context, user, stixCoreObjectId, opts) => {
-  return pageRegardingEntitiesConnection(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE, true, opts);
+  return pageRegardingEntitiesConnection(
+    context,
+    user,
+    stixCoreObjectId,
+    RELATION_OBJECT,
+    ENTITY_TYPE_CONTAINER_NOTE,
+    true,
+    opts,
+  );
 };
 
 export const opinionsPaginated = async (context, user, stixCoreObjectId, opts) => {
-  return pageRegardingEntitiesConnection(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION, true, opts);
+  return pageRegardingEntitiesConnection(
+    context,
+    user,
+    stixCoreObjectId,
+    RELATION_OBJECT,
+    ENTITY_TYPE_CONTAINER_OPINION,
+    true,
+    opts,
+  );
 };
 
 export const observedDataPaginated = async (context, user, stixCoreObjectId, opts) => {
-  return pageRegardingEntitiesConnection(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, true, opts);
+  return pageRegardingEntitiesConnection(
+    context,
+    user,
+    stixCoreObjectId,
+    RELATION_OBJECT,
+    ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
+    true,
+    opts,
+  );
 };
 
 export const externalReferencesPaginated = async (context, user, stixCoreObjectId, opts) => {
-  return pageRegardingEntitiesConnection(context, user, stixCoreObjectId, RELATION_EXTERNAL_REFERENCE, ENTITY_TYPE_EXTERNAL_REFERENCE, false, opts);
+  return pageRegardingEntitiesConnection(
+    context,
+    user,
+    stixCoreObjectId,
+    RELATION_EXTERNAL_REFERENCE,
+    ENTITY_TYPE_EXTERNAL_REFERENCE,
+    false,
+    opts,
+  );
 };
 
 export const stixCoreRelationshipsPaginated = (context, user, stixCoreObjectId, args) => {
@@ -348,36 +498,91 @@ export const stixCoreRelationshipsPaginated = (context, user, stixCoreObjectId, 
 
 // region relation ref
 export const stixCoreObjectAddRelation = async (context, user, stixCoreObjectId, input) => {
-  return stixObjectOrRelationshipAddRefRelation(context, user, stixCoreObjectId, input, ABSTRACT_STIX_CORE_OBJECT);
+  return stixObjectOrRelationshipAddRefRelation(
+    context,
+    user,
+    stixCoreObjectId,
+    input,
+    ABSTRACT_STIX_CORE_OBJECT,
+  );
 };
-export const stixCoreObjectAddRelations = async (context, user, stixCoreObjectId, input, opts = {}) => {
-  return stixObjectOrRelationshipAddRefRelations(context, user, stixCoreObjectId, input, ABSTRACT_STIX_CORE_OBJECT, opts);
+export const stixCoreObjectAddRelations = async (
+  context,
+  user,
+  stixCoreObjectId,
+  input,
+  opts = {},
+) => {
+  return stixObjectOrRelationshipAddRefRelations(
+    context,
+    user,
+    stixCoreObjectId,
+    input,
+    ABSTRACT_STIX_CORE_OBJECT,
+    opts,
+  );
 };
-export const stixCoreObjectDeleteRelation = async (context, user, stixCoreObjectId, toId, relationshipType, opts = {}) => {
-  return stixObjectOrRelationshipDeleteRefRelation(context, user, stixCoreObjectId, toId, relationshipType, ABSTRACT_STIX_CORE_OBJECT, opts);
+export const stixCoreObjectDeleteRelation = async (
+  context,
+  user,
+  stixCoreObjectId,
+  toId,
+  relationshipType,
+  opts = {},
+) => {
+  return stixObjectOrRelationshipDeleteRefRelation(
+    context,
+    user,
+    stixCoreObjectId,
+    toId,
+    relationshipType,
+    ABSTRACT_STIX_CORE_OBJECT,
+    opts,
+  );
 };
 // endregion
 
 export const stixCoreObjectDelete = async (context, user, stixCoreObjectId) => {
-  const stixCoreObject = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+  const stixCoreObject = await storeLoadById(
+    context,
+    user,
+    stixCoreObjectId,
+    ABSTRACT_STIX_CORE_OBJECT,
+  );
   if (!stixCoreObject) {
-    throw FunctionalError('Cannot delete the object, Stix-Core-Object cannot be found.', { stixCoreObjectId });
+    throw FunctionalError('Cannot delete the object, Stix-Core-Object cannot be found.', {
+      stixCoreObjectId,
+    });
   }
   await deleteElementById(context, user, stixCoreObjectId, stixCoreObject.entity_type);
   return stixCoreObjectId;
 };
 
 export const stixCoreObjectRemoveFromDraft = async (context, user, stixCoreObjectId) => {
-  const stixCoreObject = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT, { includeDeletedInDraft: true });
+  const stixCoreObject = await storeLoadById(
+    context,
+    user,
+    stixCoreObjectId,
+    ABSTRACT_STIX_CORE_OBJECT,
+    { includeDeletedInDraft: true },
+  );
   if (!stixCoreObject) {
-    throw FunctionalError('Cannot remove the object from draft, Stix-Core-Object cannot be found.', { stixCoreObjectId });
+    throw FunctionalError(
+      'Cannot remove the object from draft, Stix-Core-Object cannot be found.',
+      { stixCoreObjectId },
+    );
   }
   // TODO currently not locked, but might need to be
   await elRemoveElementFromDraft(context, user, stixCoreObject);
   return stixCoreObject.id;
 };
 
-export const askElementEnrichmentForConnectors = async (context, user, enrichedId, connectorIds) => {
+export const askElementEnrichmentForConnectors = async (
+  context,
+  user,
+  enrichedId,
+  connectorIds,
+) => {
   const connectors = await storeLoadByIds(context, user, connectorIds, ENTITY_TYPE_CONNECTOR);
   const element = await storeLoadByIdWithRefs(context, user, enrichedId);
   if (!element) {
@@ -387,16 +592,30 @@ export const askElementEnrichmentForConnectors = async (context, user, enrichedI
   const draftContext = getDraftContext(context, user);
   const contextOutOfDraft = { ...context, draft_context: '' };
   let stix_objects;
-  const workMessage = draftContext ? `Manual enrichment in draft ${draftContext}` : 'Manual enrichment';
+  const workMessage = draftContext
+    ? `Manual enrichment in draft ${draftContext}`
+    : 'Manual enrichment';
   const stix_entity = JSON.stringify(convertStoreToStix_2_1(element));
   const works = [];
   for (let index = 0; index < connectors.length; index += 1) {
     const connector = connectors[index];
     const stixResolutionMode = connector.enrichment_resolution ?? 'stix_bundle';
     if (stixResolutionMode === 'stix_bundle' && stix_objects === undefined) {
-      stix_objects = await stixBundleByIdStringify(context, user, element.entity_type, element.internal_id);
+      stix_objects = await stixBundleByIdStringify(
+        context,
+        user,
+        element.entity_type,
+        element.internal_id,
+      );
     }
-    const work = await createWork(contextOutOfDraft, user, connector, workMessage, element.standard_id, { draftContext });
+    const work = await createWork(
+      contextOutOfDraft,
+      user,
+      connector,
+      workMessage,
+      element.standard_id,
+      { draftContext },
+    );
     const message = {
       internal: {
         work_id: work.id, // Related action for history
@@ -448,39 +667,67 @@ export const stixCoreObjectsTimeSeries = (context, user, args) => {
 export const stixCoreObjectsTimeSeriesByAuthor = (context, user, args) => {
   const { authorId, types } = args;
   const filters = addFilter(args.filters, buildRefRelationKey(RELATION_CREATED_BY, '*'), authorId);
-  return timeSeriesEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], { ...args, filters });
+  return timeSeriesEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], {
+    ...args,
+    filters,
+  });
 };
 
 export const stixCoreObjectsMultiTimeSeries = (context, user, args) => {
-  return Promise.all(args.timeSeriesParameters.map((timeSeriesParameter) => {
-    const types = extractStixCoreObjectTypesFromArgs(timeSeriesParameter);
-    return { data: timeSeriesEntities(context, user, types, { ...args, ...timeSeriesParameter }) };
-  }));
+  return Promise.all(
+    args.timeSeriesParameters.map((timeSeriesParameter) => {
+      const types = extractStixCoreObjectTypesFromArgs(timeSeriesParameter);
+      return {
+        data: timeSeriesEntities(context, user, types, { ...args, ...timeSeriesParameter }),
+      };
+    }),
+  );
 };
 
 export const stixCoreObjectsNumber = (context, user, args) => {
   const types = extractStixCoreObjectTypesFromArgs(args);
   return {
-    count: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, { ...args, types }),
-    total: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, { ...R.dissoc('endDate', args), types }),
+    count: elCount(
+      context,
+      user,
+      args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES,
+      { ...args, types },
+    ),
+    total: elCount(
+      context,
+      user,
+      args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES,
+      { ...R.dissoc('endDate', args), types },
+    ),
   };
 };
 
 export const stixCoreObjectsMultiNumber = (context, user, args) => {
-  return Promise.all(args.numberParameters.map((numberParameter) => {
-    const types = extractStixCoreObjectTypesFromArgs(numberParameter);
-    return {
-      count: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES
-        : READ_ENTITIES_INDICES, { ...args, ...numberParameter, types }),
-      total: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES
-        : READ_ENTITIES_INDICES, R.dissoc('endDate', { ...args, ...numberParameter, types })),
-    };
-  }));
+  return Promise.all(
+    args.numberParameters.map((numberParameter) => {
+      const types = extractStixCoreObjectTypesFromArgs(numberParameter);
+      return {
+        count: elCount(
+          context,
+          user,
+          args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES,
+          { ...args, ...numberParameter, types },
+        ),
+        total: elCount(
+          context,
+          user,
+          args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES,
+          R.dissoc('endDate', { ...args, ...numberParameter, types }),
+        ),
+      };
+    }),
+  );
 };
 
 export const stixCoreObjectsConnectedNumber = async (context, user, stixCoreObject) => {
   const idsBatchLoaderArgs = { id: stixCoreObject.internal_id, type: stixCoreObject.entity_type };
-  const reloadedObjectWithCount = await context.batch.idsBatchLoaderWithCount.load(idsBatchLoaderArgs);
+  const reloadedObjectWithCount =
+    await context.batch.idsBatchLoaderWithCount.load(idsBatchLoaderArgs);
   return reloadedObjectWithCount.script_field_denormalization_count[0];
 };
 
@@ -498,29 +745,40 @@ export const stixCoreObjectsDistributionByEntity = async (context, user, args) =
   if (findFiltersFromKey(filters.filters ?? [], INSTANCE_REGARDING_OF).length > 0) {
     finalFilters = {
       ...filters,
-      filters: finalFilters.filters.map((n) => (n.key === INSTANCE_REGARDING_OF ? {
-        ...n,
-        values: [
-          ...n.values.filter((i) => i.key !== 'id'),
-          { key: 'id', values: objectIds },
-        ],
-      } : n)),
+      filters: finalFilters.filters.map((n) =>
+        n.key === INSTANCE_REGARDING_OF
+          ? {
+              ...n,
+              values: [...n.values.filter((i) => i.key !== 'id'), { key: 'id', values: objectIds }],
+            }
+          : n,
+      ),
     };
-  // If not present, adding it
+    // If not present, adding it
   } else {
     finalFilters = addFilter(filters, INSTANCE_REGARDING_OF, [
       { key: 'id', values: objectIds },
       { key: 'type', values: [ABSTRACT_STIX_CORE_RELATIONSHIP] },
     ]);
   }
-  return distributionEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], { ...args, filters: finalFilters });
+  return distributionEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], {
+    ...args,
+    filters: finalFilters,
+  });
 };
 
 export const stixCoreObjectsMultiDistribution = (context, user, args) => {
-  return Promise.all(args.distributionParameters.map((distributionParameter) => {
-    const { types } = distributionParameter;
-    return { data: distributionEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], { ...args, ...distributionParameter }) };
-  }));
+  return Promise.all(
+    args.distributionParameters.map((distributionParameter) => {
+      const { types } = distributionParameter;
+      return {
+        data: distributionEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], {
+          ...args,
+          ...distributionParameter,
+        }),
+      };
+    }),
+  );
 };
 // endregion
 
@@ -534,7 +792,17 @@ export const stixCoreObjectsExportAsk = async (context, user, args) => {
   const argsFilters = { search, orderBy, orderMode, filters };
   const ordersOpts = stixCoreObjectOptions.StixCoreObjectsOrdering;
   const listParams = await exportTransformFilters(context, user, argsFilters, ordersOpts, user.id);
-  const works = await askListExport(context, user, exportContext, format, selectedIds, listParams, exportType, contentMaxMarkings, fileMarkings);
+  const works = await askListExport(
+    context,
+    user,
+    exportContext,
+    format,
+    selectedIds,
+    listParams,
+    exportType,
+    contentMaxMarkings,
+    fileMarkings,
+  );
   return works.map((w) => workToExportFile(w));
 };
 export const stixCoreObjectExportAsk = async (context, user, stixCoreObjectId, input) => {
@@ -543,15 +811,37 @@ export const stixCoreObjectExportAsk = async (context, user, stixCoreObjectId, i
   }
   const { format, exportType, contentMaxMarkings, fileMarkings } = input;
   const entity = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
-  const works = await askEntityExport(context, user, format, entity, exportType, contentMaxMarkings, fileMarkings);
+  const works = await askEntityExport(
+    context,
+    user,
+    format,
+    entity,
+    exportType,
+    contentMaxMarkings,
+    fileMarkings,
+  );
   return works.map((w) => workToExportFile(w));
 };
 
-export const stixCoreObjectsExportPush = async (context, user, entity_id, entity_type, file, file_markings, listFilters) => {
+export const stixCoreObjectsExportPush = async (
+  context,
+  user,
+  entity_id,
+  entity_type,
+  file,
+  file_markings,
+  listFilters,
+) => {
   const meta = { list_filters: listFilters };
   const entity = entity_id ? await internalLoadById(context, user, entity_id) : undefined;
   const opts = { entity, meta, file_markings };
-  await uploadToStorage(context, user, `export/${entity_type}${entity_id ? `/${entity_id}` : ''}`, file, opts);
+  await uploadToStorage(
+    context,
+    user,
+    `export/${entity_type}${entity_id ? `/${entity_id}` : ''}`,
+    file,
+    opts,
+  );
   return true;
 };
 
@@ -561,7 +851,10 @@ export const stixCoreObjectExportPush = async (context, user, entityId, args) =>
     throw UnsupportedError('Cant upload a file an none existing element', { entityId });
   }
   const path = `export/${previous.entity_type}/${entityId}`;
-  const { upload: up } = await uploadToStorage(context, user, path, args.file, { entity: previous, file_markings: args.file_markings });
+  const { upload: up } = await uploadToStorage(context, user, path, args.file, {
+    entity: previous,
+    file_markings: args.file_markings,
+  });
   const contextData = buildContextDataForFile(previous, path, up.name);
   await publishUserAction({
     user,
@@ -576,20 +869,43 @@ export const stixCoreObjectExportPush = async (context, user, entityId, args) =>
 export const CONTENT_TYPE_FIELDS = 'fields';
 export const CONTENT_TYPE_FILE = 'file';
 
-export const askElementAnalysisForConnector = async (context, user, analyzedId, contentSource, contentType, connectorId) => {
+export const askElementAnalysisForConnector = async (
+  context,
+  user,
+  analyzedId,
+  contentSource,
+  contentType,
+  connectorId,
+) => {
   if (getDraftContext(context, user)) {
     throw UnsupportedError('Cannot ask for analysis in draft');
   }
-  logApp.debug(`[JOBS] ask analysis for content type ${contentType} and content source ${contentSource}`);
+  logApp.debug(
+    `[JOBS] ask analysis for content type ${contentType} and content source ${contentSource}`,
+  );
 
-  if (contentType === CONTENT_TYPE_FIELDS) return await askFieldsAnalysisForConnector(context, user, analyzedId, contentSource, connectorId);
-  if (contentType === CONTENT_TYPE_FILE) return await askFileAnalysisForConnector(context, user, analyzedId, contentSource, connectorId);
+  if (contentType === CONTENT_TYPE_FIELDS)
+    return await askFieldsAnalysisForConnector(
+      context,
+      user,
+      analyzedId,
+      contentSource,
+      connectorId,
+    );
+  if (contentType === CONTENT_TYPE_FILE)
+    return await askFileAnalysisForConnector(context, user, analyzedId, contentSource, connectorId);
   throw FunctionalError('Content type not recognized', { contentType });
 };
 
 export const CONTENT_SOURCE_CONTENT_MAPPING = 'content_mapping';
 
-const askFieldsAnalysisForConnector = async (context, user, analyzedId, contentSource, connectorId) => {
+const askFieldsAnalysisForConnector = async (
+  context,
+  user,
+  analyzedId,
+  contentSource,
+  connectorId,
+) => {
   let connectors = await connectorsForAnalysis(context, user);
   if (connectorId) {
     connectors = R.filter((n) => n.id === connectorId, connectors);
@@ -598,7 +914,13 @@ const askFieldsAnalysisForConnector = async (context, user, analyzedId, contentS
     // If a connectorId was specified, we use it, otherwise we get the first available connector by default. This way query can be called even without specifiying connectorId
     const connector = connectors[0];
     const element = await internalLoadById(context, user, analyzedId);
-    const work = await createWork(context, user, connector, 'Content fields analysis', element.standard_id);
+    const work = await createWork(
+      context,
+      user,
+      connector,
+      'Content fields analysis',
+      element.standard_id,
+    );
 
     if (contentSource !== CONTENT_SOURCE_CONTENT_MAPPING) {
       throw FunctionalError('Fields content source not handled', { contentSource });
@@ -632,7 +954,13 @@ const askFieldsAnalysisForConnector = async (context, user, analyzedId, contentS
   throw ResourceNotFoundError('No connector found for analysis', { analyzedId, connectorId });
 };
 
-const askFileAnalysisForConnector = async (context, user, analyzedId, contentSource, connectorId) => {
+const askFileAnalysisForConnector = async (
+  context,
+  user,
+  analyzedId,
+  contentSource,
+  connectorId,
+) => {
   const file = await loadFile(context, user, contentSource);
 
   let connectors = await connectorsForAnalysis(context, user, file.metaData.mimetype);
@@ -642,7 +970,13 @@ const askFileAnalysisForConnector = async (context, user, analyzedId, contentSou
   if (connectors.length > 0) {
     const connector = connectors[0];
     const element = await internalLoadById(context, user, analyzedId);
-    const work = await createWork(context, user, connector, 'Content file analysis', element.standard_id);
+    const work = await createWork(
+      context,
+      user,
+      connector,
+      'Content file analysis',
+      element.standard_id,
+    );
 
     const message = {
       internal: {
@@ -699,7 +1033,11 @@ export const stixCoreObjectAnalysisPush = async (context, user, entityId, args) 
     throw UnsupportedError('Cant upload a file an none existing element', { entityId });
   }
   const { file, contentSource, contentType, analysisType } = args;
-  const meta = { analysis_content_source: contentSource, analysis_content_type: contentType, analysis_type: analysisType };
+  const meta = {
+    analysis_content_source: contentSource,
+    analysis_content_type: contentType,
+    analysis_type: analysisType,
+  };
   const path = `analysis/${entity.entity_type}/${entity.id}`;
   const { upload: up } = await uploadToStorage(context, user, path, file, { entity, meta });
   const contextData = buildContextDataForFile(entity, path, up.name);
@@ -719,11 +1057,19 @@ export const analysisClear = async (context, user, entityId, contentSource, cont
     throw UnsupportedError('Cant clear analysis on none existing element', { entityId });
   }
   const analysisFilePath = `analysis/${entity.entity_type}/${entity.id}`;
-  const analysisFilesPagination = await paginatedForPathWithEnrichment(context, context.user, analysisFilePath, entityId);
+  const analysisFilesPagination = await paginatedForPathWithEnrichment(
+    context,
+    context.user,
+    analysisFilePath,
+    entityId,
+  );
   const analysisFilesNodes = analysisFilesPagination.edges.map(({ node }) => node);
   for (let i = 0; i < analysisFilesNodes.length; i += 1) {
     const analysisFile = analysisFilesNodes[i];
-    if (analysisFile?.metaData?.analysis_content_source === contentSource && analysisFile?.metaData?.analysis_content_type === contentType) {
+    if (
+      analysisFile?.metaData?.analysis_content_source === contentSource &&
+      analysisFile?.metaData?.analysis_content_type === contentType
+    ) {
       const upDelete = await deleteFile(context, context.user, analysisFile?.id);
       const contextData = buildContextDataForFile(entity, analysisFile?.id, upDelete.name);
       await publishUserAction({
@@ -747,34 +1093,53 @@ export const stixCoreAnalysis = async (context, user, entityId, contentSource, c
 
   // Get ongoing work if any. If work is ongoing, we don't need to look for analysis
   // TODO:  need to add content_source and content_type to work attributes to be able to correct filter works
-  const works = await worksForSource(context, user, entity.standard_id, { type: CONNECTOR_INTERNAL_ANALYSIS });
-  const filterCompletedWorks = works.filter((w) => w.status !== 'complete' && w.errors.length === 0);
+  const works = await worksForSource(context, user, entity.standard_id, {
+    type: CONNECTOR_INTERNAL_ANALYSIS,
+  });
+  const filterCompletedWorks = works.filter(
+    (w) => w.status !== 'complete' && w.errors.length === 0,
+  );
   if (filterCompletedWorks.length > 0) {
     return { analysisType: 'mapping_analysis', analysisStatus: filterCompletedWorks[0].status };
   }
 
   // Retrieve analysis file for given contentSource and contentType
   const analysisFilePath = `analysis/${entity.entity_type}/${entity.id}`;
-  const analysisFilesPagination = await paginatedForPathWithEnrichment(context, context.user, analysisFilePath, entityId);
+  const analysisFilesPagination = await paginatedForPathWithEnrichment(
+    context,
+    context.user,
+    analysisFilePath,
+    entityId,
+  );
   const analysisFilesNodes = analysisFilesPagination.edges.map(({ node }) => node);
-  const analysis = analysisFilesNodes.find((a) => a.metaData?.analysis_content_source === contentSource && a.metaData?.analysis_content_type === contentType);
+  const analysis = analysisFilesNodes.find(
+    (a) =>
+      a.metaData?.analysis_content_source === contentSource &&
+      a.metaData?.analysis_content_type === contentType,
+  );
   if (!analysis) return null;
 
   // Get analysis file content as json data
   const analysisType = analysis.metaData.analysis_type;
-  if (analysisType !== 'mapping_analysis') throw UnsupportedError('Analysis type not supported', { analysisType }); // We currently only handle one analysis type
+  if (analysisType !== 'mapping_analysis')
+    throw UnsupportedError('Analysis type not supported', { analysisType }); // We currently only handle one analysis type
   const analysisContent = await getFileContent(analysis.id);
   if (!analysisContent) throw UnsupportedError('Couldnt retrieve file', { analysis });
   const analysisParsedContent = JSON.parse(analysisContent);
 
   // Parse json data and transform it into MappedAnalysis object
   const entitiesToResolve = Object.values(analysisParsedContent).filter((i) => isNotEmptyField(i));
-  const entitiesResolved = await elFindByIds(context, user, entitiesToResolve, { toMap: true, mapWithAllIds: true });
+  const entitiesResolved = await elFindByIds(context, user, entitiesToResolve, {
+    toMap: true,
+    mapWithAllIds: true,
+  });
   const analysisDataConverted = (analysisKey) => {
     const analysisId = analysisParsedContent[analysisKey];
     const entityResolved = entitiesResolved[analysisId];
     const entityContainers = entityResolved?.[buildRefRelationKey(RELATION_OBJECT)];
-    const isEntityInContainer = entityContainers ? entityContainers.some((c) => c === entity.id) : false;
+    const isEntityInContainer = entityContainers
+      ? entityContainers.some((c) => c === entity.id)
+      : false;
     return { matchedString: analysisKey, matchedEntity: entityResolved, isEntityInContainer };
   };
 
@@ -782,7 +1147,12 @@ export const stixCoreAnalysis = async (context, user, entityId, contentSource, c
     .map((d) => analysisDataConverted(d))
     .filter((e) => e.matchedEntity);
 
-  return { analysisType, mappedEntities, analysisStatus: 'complete', analysisDate: analysis.lastModified };
+  return {
+    analysisType,
+    mappedEntities,
+    analysisStatus: 'complete',
+    analysisDate: analysis.lastModified,
+  };
 };
 
 export const executeRemoveAuthMembers = async (context, user, element) => {
@@ -819,18 +1189,25 @@ export const stixCoreObjectImportFile = async (context, user, id, file, args = {
   });
 
   const canAskImport = isUserHasCapabilities(user, ['KNOWLEDGE_KNASKIMPORT']);
-  const canAskImportInDraft = isUserHasCapabilities(user, ['KNOWLEDGE_KNASKIMPORT'], { forceCapabilityInDraft: true });
+  const canAskImportInDraft = isUserHasCapabilities(user, ['KNOWLEDGE_KNASKIMPORT'], {
+    forceCapabilityInDraft: true,
+  });
 
-  if (connectors && (canAskImport || (canAskImportInDraft && validationMode === ValidationMode.Draft))) {
-    await Promise.all(connectors.map(async ({ connectorId, configuration }) => (
-      askJobImport(contextInDraft, user, {
-        fileName: uploadedFile.id,
-        connectorId,
-        configuration,
-        validationMode,
-        forceValidation: true,
-      })
-    )));
+  if (
+    connectors &&
+    (canAskImport || (canAskImportInDraft && validationMode === ValidationMode.Draft))
+  ) {
+    await Promise.all(
+      connectors.map(async ({ connectorId, configuration }) =>
+        askJobImport(contextInDraft, user, {
+          fileName: uploadedFile.id,
+          connectorId,
+          configuration,
+          validationMode,
+          forceValidation: true,
+        }),
+      ),
+    );
   }
 
   return uploadedFile;
@@ -838,7 +1215,14 @@ export const stixCoreObjectImportFile = async (context, user, id, file, args = {
 
 export const stixCoreObjectImportPush = async (context, user, id, file, args = {}) => {
   let lock;
-  const { noTriggerImport, version: fileVersion, fileMarkings: file_markings, importContextEntities, fromTemplate = false, embedded = false } = args;
+  const {
+    noTriggerImport,
+    version: fileVersion,
+    fileMarkings: file_markings,
+    importContextEntities,
+    fromTemplate = false,
+    embedded = false,
+  } = args;
   const previous = await storeLoadByIdWithRefs(context, user, id);
   if (!previous) {
     throw UnsupportedError('Cant upload a file an none existing element', { id });
@@ -868,9 +1252,17 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     const meta = { version: fileVersion?.toISOString() };
     if (isAutoExternal) {
       const key = `${filePath}/${filename}`;
-      meta.external_reference_id = generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` });
+      meta.external_reference_id = generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, {
+        url: `/storage/get/${key}`,
+      });
     }
-    const { upload: up, untouched } = await uploadToStorage(context, user, filePath, file, { meta, noTriggerImport, entity: previous, file_markings, importContextEntities });
+    const { upload: up, untouched } = await uploadToStorage(context, user, filePath, file, {
+      meta,
+      noTriggerImport,
+      entity: previous,
+      file_markings,
+      importContextEntities,
+    });
     if (untouched) {
       // When synchronizing the version can be the same.
       // If it's the case, just return without any x_opencti_files modifications
@@ -881,17 +1273,29 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     if (isAutoExternal) {
       // Create external ref + link to current entity
       const createExternal = { source_name: filename, url: `/storage/get/${up.id}`, fileId: up.id };
-      const externalRef = await createEntity(context, user, createExternal, ENTITY_TYPE_EXTERNAL_REFERENCE);
-      const relInput = { fromId: id, toId: externalRef.id, relationship_type: RELATION_EXTERNAL_REFERENCE };
+      const externalRef = await createEntity(
+        context,
+        user,
+        createExternal,
+        ENTITY_TYPE_EXTERNAL_REFERENCE,
+      );
+      const relInput = {
+        fromId: id,
+        toId: externalRef.id,
+        relationship_type: RELATION_EXTERNAL_REFERENCE,
+      };
       const opts = { publishStreamEvent: false, locks: participantIds };
       await createRelationRaw(context, user, relInput, opts);
       addedExternalRef = externalRef;
     }
     // Patch the updated_at to force live stream evolution
     const eventFile = storeFileConverter(user, up);
-    const currentFiles = [...(previous.x_opencti_files ?? []).filter((f) => f.id !== up.id), eventFile];
+    const currentFiles = [
+      ...(previous.x_opencti_files ?? []).filter((f) => f.id !== up.id),
+      eventFile,
+    ];
     const nonResolvedFiles = currentFiles.map((f) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // oxlint-disable-next-line no-unused-vars
       const { [INPUT_MARKINGS]: markingInput, ...nonResolvedFile } = f;
       return nonResolvedFile;
     });
@@ -904,12 +1308,18 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     };
     if (getDraftContext(context, user)) {
       elementWithUpdatedFiles._id = previous._id;
-      const eventFileInput = { key: fileAttribute.name, value: [up.id], operation: UPDATE_OPERATION_ADD };
+      const eventFileInput = {
+        key: fileAttribute.name,
+        value: [up.id],
+        operation: UPDATE_OPERATION_ADD,
+      };
       elementWithUpdatedFiles.draft_change = getDraftChanges(previous, [eventFileInput]);
     }
     await elUpdateElement(context, user, elementWithUpdatedFiles);
     // Stream event generation
-    const fileMarkings = R.uniq(R.flatten(currentFiles.filter((f) => f.file_markings).map((f) => f.file_markings)));
+    const fileMarkings = R.uniq(
+      R.flatten(currentFiles.filter((f) => f.file_markings).map((f) => f.file_markings)),
+    );
     let fileMarkingsPromise = Promise.resolve();
     if (fileMarkings.length > 0) {
       const argsMarkings = { type: ENTITY_TYPE_MARKING_DEFINITION, toMap: true, baseData: true };
@@ -919,7 +1329,10 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     const resolvedFiles = [];
     currentFiles.forEach((f) => {
       if (isNotEmptyField(f.file_markings)) {
-        resolvedFiles.push({ ...f, [INPUT_MARKINGS]: f.file_markings.map((m) => fileMarkingsMap[m]).filter((fm) => fm) });
+        resolvedFiles.push({
+          ...f,
+          [INPUT_MARKINGS]: f.file_markings.map((m) => fileMarkingsMap[m]).filter((fm) => fm),
+        });
       } else {
         resolvedFiles.push(f);
       }
@@ -935,15 +1348,29 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     // store the update event
     const newExternalRefs = [...(previous[INPUT_EXTERNAL_REFS] ?? [])];
     if (addedExternalRef) newExternalRefs.push(addedExternalRef);
-    const instance = { ...previous, x_opencti_files: resolvedFiles, [INPUT_EXTERNAL_REFS]: newExternalRefs };
+    const instance = {
+      ...previous,
+      x_opencti_files: resolvedFiles,
+      [INPUT_EXTERNAL_REFS]: newExternalRefs,
+    };
     const translated = buildTranslatedIdsMap(eventFile.file_markings ?? [], fileMarkingsMap);
-    const changes = [{
-      field: previous.entity_type + '--' + fileAttribute.name,
-      changes_added: [{ raw: JSON.stringify(eventFile), translated }],
-    }];
-    await storeUpdateEvent(context, user, previous, instance, changes, { noHistory: embedded ?? false });
+    const changes = [
+      {
+        field: previous.entity_type + '--' + fileAttribute.name,
+        changes_added: [{ raw: JSON.stringify(eventFile), translated }],
+      },
+    ];
+    await storeUpdateEvent(context, user, previous, instance, changes, {
+      noHistory: embedded ?? false,
+    });
     // Add in activity only for notifications
-    const contextData = buildContextDataForFile(previous, filePath, up.name, up.metaData.file_markings, { is_upsert });
+    const contextData = buildContextDataForFile(
+      previous,
+      filePath,
+      up.name,
+      up.metaData.file_markings,
+      { is_upsert },
+    );
     await publishUserAction({
       user,
       event_type: 'file',
@@ -1011,7 +1438,7 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
       return;
     }
     const nonResolvedFiles = files.map((f) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // oxlint-disable-next-line no-unused-vars
       const { [INPUT_MARKINGS]: markingInput, ...nonResolvedFile } = f;
       return nonResolvedFile;
     });
@@ -1024,17 +1451,23 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     };
     if (getDraftContext(context, user)) {
       elementWithUpdatedFiles._id = previous._id;
-      const eventFileInput = { key: fileAttribute.name, value: [fileId], operation: UPDATE_OPERATION_REMOVE };
+      const eventFileInput = {
+        key: fileAttribute.name,
+        value: [fileId],
+        operation: UPDATE_OPERATION_REMOVE,
+      };
       elementWithUpdatedFiles.draft_change = getDraftChanges(previous, [eventFileInput]);
     }
     await elUpdateElement(context, user, elementWithUpdatedFiles);
     // Stream event generation
     const instance = { ...previous, x_opencti_files: files };
     const eventFile = storeFileConverter(user, baseDocument);
-    const changes = [{
-      field: previous.entity_type + '--' + fileAttribute.name,
-      changes_removed: [{ raw: JSON.stringify(eventFile) }],
-    }];
+    const changes = [
+      {
+        field: previous.entity_type + '--' + fileAttribute.name,
+        changes_removed: [{ raw: JSON.stringify(eventFile) }],
+      },
+    ];
     await storeUpdateEvent(context, user, previous, instance, changes, []);
     // Add in activity only for notifications
     const contextData = buildContextDataForFile(previous, fileId, baseDocument.name);
@@ -1060,16 +1493,20 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
 // region context
 export const stixCoreObjectCleanContext = async (context, user, stixCoreObjectId) => {
   await delEditContext(user, stixCoreObjectId);
-  return storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT).then((stixCoreObject) => {
-    return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, stixCoreObject, user);
-  });
+  return storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT).then(
+    (stixCoreObject) => {
+      return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, stixCoreObject, user);
+    },
+  );
 };
 
 export const stixCoreObjectEditContext = async (context, user, stixCoreObjectId, input) => {
   await setEditContext(user, stixCoreObjectId, input);
-  return storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT).then((stixCoreObject) => {
-    return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, stixCoreObject, user);
-  });
+  return storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT).then(
+    (stixCoreObject) => {
+      return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, stixCoreObject, user);
+    },
+  );
 };
 // endregion
 
@@ -1081,8 +1518,16 @@ export const aiActivity = async (context, user, args) => {
   const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
   const identifier = `${id}-activity`;
-  if (!forceRefresh && aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
-    await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: identifier, content: aiResponseCache[identifier].result }, user);
+  if (
+    !forceRefresh &&
+    aiResponseCache[identifier] &&
+    utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))
+  ) {
+    await notify(
+      BUS_TOPICS[AI_BUS].EDIT_TOPIC,
+      { bus_id: identifier, content: aiResponseCache[identifier].result },
+      user,
+    );
     return aiResponseCache[identifier];
   }
   // Resolve the entity
@@ -1122,7 +1567,11 @@ export const aiForecast = async (context, user, args) => {
   const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
   const identifier = `${id}-forecast`;
-  if (!forceRefresh && aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
+  if (
+    !forceRefresh &&
+    aiResponseCache[identifier] &&
+    utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))
+  ) {
     return aiResponseCache[identifier];
   }
   // Resolve the entity
@@ -1153,7 +1602,11 @@ export const aiHistory = async (context, user, args) => {
   const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
   const identifier = `${id}-history`;
-  if (!forceRefresh && aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
+  if (
+    !forceRefresh &&
+    aiResponseCache[identifier] &&
+    utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))
+  ) {
     return aiResponseCache[identifier];
   }
   // Resolve the entity
@@ -1195,22 +1648,55 @@ export const aiHistory = async (context, user, args) => {
 
 // region prompts for threats
 export const aiActivityForThreats = async (context, user, stixCoreObject, language) => {
-  const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
-  const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
+  const indicatorsStats = await getIndicatorsStats(
+    context,
+    user,
+    stixCoreObject.id,
+    monthsAgo(24),
+    now(),
+  );
+  const victimologyStats = await getVictimologyStats(
+    context,
+    user,
+    stixCoreObject.id,
+    monthsAgo(24),
+    now(),
+  );
   const topSectors = {};
 
   for (let i = 0; i < 8; i++) {
-    topSectors[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_IDENTITY_SECTOR], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+    topSectors[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(
+      context,
+      user,
+      stixCoreObject.id,
+      [ENTITY_TYPE_IDENTITY_SECTOR],
+      monthsAgo(i * 3 + 3),
+      monthsAgo(i * 3),
+    );
   }
   const topCountries = {};
 
   for (let i = 0; i < 8; i++) {
-    topCountries[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_COUNTRY], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+    topCountries[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(
+      context,
+      user,
+      stixCoreObject.id,
+      [ENTITY_TYPE_LOCATION_COUNTRY],
+      monthsAgo(i * 3 + 3),
+      monthsAgo(i * 3),
+    );
   }
   const topRegions = {};
 
   for (let i = 0; i < 8; i++) {
-    topRegions[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_REGION], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+    topRegions[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(
+      context,
+      user,
+      stixCoreObject.id,
+      [ENTITY_TYPE_LOCATION_REGION],
+      monthsAgo(i * 3 + 3),
+      monthsAgo(i * 3),
+    );
   }
 
   const userPrompt = `
@@ -1267,8 +1753,20 @@ export const aiActivityForThreats = async (context, user, stixCoreObject, langua
 };
 
 export const aiActivityTrendForThreats = async (context, user, stixCoreObject) => {
-  const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
-  const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
+  const indicatorsStats = await getIndicatorsStats(
+    context,
+    user,
+    stixCoreObject.id,
+    monthsAgo(24),
+    now(),
+  );
+  const victimologyStats = await getVictimologyStats(
+    context,
+    user,
+    stixCoreObject.id,
+    monthsAgo(24),
+    now(),
+  );
 
   const userPrompt = `
   # Context
@@ -1311,22 +1809,55 @@ export const aiActivityTrendForThreats = async (context, user, stixCoreObject) =
 };
 
 export const aiForecastForThreats = async (context, user, stixCoreObject, language) => {
-  const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
-  const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
+  const indicatorsStats = await getIndicatorsStats(
+    context,
+    user,
+    stixCoreObject.id,
+    monthsAgo(24),
+    now(),
+  );
+  const victimologyStats = await getVictimologyStats(
+    context,
+    user,
+    stixCoreObject.id,
+    monthsAgo(24),
+    now(),
+  );
   const topSectors = {};
 
   for (let i = 0; i < 8; i++) {
-    topSectors[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_IDENTITY_SECTOR], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+    topSectors[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(
+      context,
+      user,
+      stixCoreObject.id,
+      [ENTITY_TYPE_IDENTITY_SECTOR],
+      monthsAgo(i * 3 + 3),
+      monthsAgo(i * 3),
+    );
   }
   const topCountries = {};
 
   for (let i = 0; i < 8; i++) {
-    topCountries[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_COUNTRY], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+    topCountries[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(
+      context,
+      user,
+      stixCoreObject.id,
+      [ENTITY_TYPE_LOCATION_COUNTRY],
+      monthsAgo(i * 3 + 3),
+      monthsAgo(i * 3),
+    );
   }
   const topRegions = {};
 
   for (let i = 0; i < 8; i++) {
-    topRegions[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_REGION], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+    topRegions[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(
+      context,
+      user,
+      stixCoreObject.id,
+      [ENTITY_TYPE_LOCATION_REGION],
+      monthsAgo(i * 3 + 3),
+      monthsAgo(i * 3),
+    );
   }
 
   const userPrompt = `
@@ -1384,17 +1915,43 @@ export const aiForecastForThreats = async (context, user, stixCoreObject, langua
 
 // region prompts for victims
 export const aiActivityForVictims = async (context, user, stixCoreObject, language) => {
-  const targetingStats = await getTargetingStats(context, user, stixCoreObject.id, monthsAgo(24), now());
-  const containersStats = await getContainersStats(context, user, stixCoreObject.id, monthsAgo(24), now());
+  const targetingStats = await getTargetingStats(
+    context,
+    user,
+    stixCoreObject.id,
+    monthsAgo(24),
+    now(),
+  );
+  const containersStats = await getContainersStats(
+    context,
+    user,
+    stixCoreObject.id,
+    monthsAgo(24),
+    now(),
+  );
   const topIntrusionSets = {};
 
   for (let i = 0; i < 8; i++) {
-    topIntrusionSets[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_INTRUSION_SET], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+    topIntrusionSets[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(
+      context,
+      user,
+      stixCoreObject.id,
+      [ENTITY_TYPE_INTRUSION_SET],
+      monthsAgo(i * 3 + 3),
+      monthsAgo(i * 3),
+    );
   }
   const topMalwares = {};
 
   for (let i = 0; i < 8; i++) {
-    topMalwares[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_MALWARE], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+    topMalwares[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(
+      context,
+      user,
+      stixCoreObject.id,
+      [ENTITY_TYPE_MALWARE],
+      monthsAgo(i * 3 + 3),
+      monthsAgo(i * 3),
+    );
   }
 
   const userPrompt = `
@@ -1447,8 +2004,20 @@ export const aiActivityForVictims = async (context, user, stixCoreObject, langua
 };
 
 export const aiActivityTrendForVictims = async (context, user, stixCoreObject) => {
-  const targetingStats = await getTargetingStats(context, user, stixCoreObject.id, monthsAgo(24), now());
-  const containersStats = await getContainersStats(context, user, stixCoreObject.id, monthsAgo(24), now());
+  const targetingStats = await getTargetingStats(
+    context,
+    user,
+    stixCoreObject.id,
+    monthsAgo(24),
+    now(),
+  );
+  const containersStats = await getContainersStats(
+    context,
+    user,
+    stixCoreObject.id,
+    monthsAgo(24),
+    now(),
+  );
 
   const userPrompt = `
   # Context
@@ -1491,17 +2060,43 @@ export const aiActivityTrendForVictims = async (context, user, stixCoreObject) =
 };
 
 export const aiForecastForVictims = async (context, user, stixCoreObject, language) => {
-  const targetingStats = await getTargetingStats(context, user, stixCoreObject.id, monthsAgo(24), now());
-  const containersStats = await getContainersStats(context, user, stixCoreObject.id, monthsAgo(24), now());
+  const targetingStats = await getTargetingStats(
+    context,
+    user,
+    stixCoreObject.id,
+    monthsAgo(24),
+    now(),
+  );
+  const containersStats = await getContainersStats(
+    context,
+    user,
+    stixCoreObject.id,
+    monthsAgo(24),
+    now(),
+  );
   const topIntrusionSets = {};
 
   for (let i = 0; i < 8; i++) {
-    topIntrusionSets[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_INTRUSION_SET], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+    topIntrusionSets[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(
+      context,
+      user,
+      stixCoreObject.id,
+      [ENTITY_TYPE_INTRUSION_SET],
+      monthsAgo(i * 3 + 3),
+      monthsAgo(i * 3),
+    );
   }
   const topMalwares = {};
 
   for (let i = 0; i < 8; i++) {
-    topMalwares[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_MALWARE], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+    topMalwares[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(
+      context,
+      user,
+      stixCoreObject.id,
+      [ENTITY_TYPE_MALWARE],
+      monthsAgo(i * 3 + 3),
+      monthsAgo(i * 3),
+    );
   }
 
   const userPrompt = `

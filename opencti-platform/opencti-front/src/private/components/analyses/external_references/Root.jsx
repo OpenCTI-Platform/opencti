@@ -9,23 +9,23 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const subscription = graphql`
-    subscription RootExternalReferenceSubscription($id: ID!) {
-        externalReference(id: $id) {
-            ...ExternalReference_externalReference
-        }
+  subscription RootExternalReferenceSubscription($id: ID!) {
+    externalReference(id: $id) {
+      ...ExternalReference_externalReference
     }
+  }
 `;
 
 const externalReferenceQuery = graphql`
-    query RootExternalReferenceQuery($id: String!) {
-        externalReference(id: $id) {
-            standard_id
-            ...ExternalReference_externalReference
-        }
-        connectorsForImport {
-            ...ExternalReference_connectorsImport
-        }
+  query RootExternalReferenceQuery($id: String!) {
+    externalReference(id: $id) {
+      standard_id
+      ...ExternalReference_externalReference
     }
+    connectorsForImport {
+      ...ExternalReference_connectorsImport
+    }
+  }
 `;
 
 const RootExternalReference = () => {
@@ -51,10 +51,14 @@ const RootExternalReference = () => {
             if (props.externalReference && props.connectorsForImport) {
               return (
                 <>
-                  <Breadcrumbs elements={[
-                    { label: t_i18n('Analyses') },
-                    { label: t_i18n('External references'), link: '/dashboard/analyses/external_references' },
-                  ]}
+                  <Breadcrumbs
+                    elements={[
+                      { label: t_i18n('Analyses') },
+                      {
+                        label: t_i18n('External references'),
+                        link: '/dashboard/analyses/external_references',
+                      },
+                    ]}
                   />
                   <ExternalReference
                     externalReference={props.externalReference}

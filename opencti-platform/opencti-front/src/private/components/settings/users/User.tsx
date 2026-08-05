@@ -32,7 +32,12 @@ import { areaChartOptions } from '../../../../utils/Charts';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import useGranted, { BYPASS, KNOWLEDGE, SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  BYPASS,
+  KNOWLEDGE,
+  SETTINGS_SECURITYACTIVITY,
+  SETTINGS_SETACCESSES,
+} from '../../../../utils/hooks/useGranted';
 
 import { simpleNumberFormat } from '../../../../utils/Number';
 import Security from '../../../../utils/Security';
@@ -163,16 +168,32 @@ const UserFragment = graphql`
         source {
           type
           object {
-            ... on User { entity_type id name }
-            ... on Group { entity_type id name }
+            ... on User {
+              entity_type
+              id
+              name
+            }
+            ... on Group {
+              entity_type
+              id
+              name
+            }
           }
         }
       }
       source {
         type
         object {
-          ... on User { entity_type id name }
-          ... on Group { entity_type id name }
+          ... on User {
+            entity_type
+            id
+            name
+          }
+          ... on Group {
+            entity_type
+            id
+            name
+          }
         }
       }
     }
@@ -223,15 +244,16 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToAudit = useGranted([SETTINGS_SECURITYACTIVITY]);
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
-  const [commitUserSessionKill] = useApiMutation<UserSessionKillMutation>(
-    userSessionKillMutation,
+  const [commitUserSessionKill] = useApiMutation<UserSessionKillMutation>(userSessionKillMutation);
+  const [commitUserUserSessionsKill] = useApiMutation<UserUserSessionsKillMutation>(
+    userUserSessionsKillMutation,
   );
-  const [commitUserUserSessionsKill] = useApiMutation<UserUserSessionsKillMutation>(userUserSessionsKillMutation);
   const [commitUserOtpDeactivation] = useApiMutation<UserOtpDeactivationMutation>(
     userOtpDeactivationMutation,
   );
   const userCapabilities = (me.capabilities ?? []).map((c) => c.name);
-  const userHasSettingsCapability = userCapabilities.includes(SETTINGS_SETACCESSES) || userCapabilities.includes(BYPASS);
+  const userHasSettingsCapability =
+    userCapabilities.includes(SETTINGS_SETACCESSES) || userCapabilities.includes(BYPASS);
   const handleOpenKillSession = (sessionId: string) => {
     setDisplayKillSession(true);
     setSessionToKill(sessionId);
@@ -299,11 +321,10 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
       id: s?.id ?? '',
       ttl: s?.ttl ?? 0,
     }))
-    .sort(
-      (a: Session, b: Session) => (timestamp(a.created) ?? 0) - (timestamp(b.created) ?? 0),
-    );
+    .sort((a: Session, b: Session) => (timestamp(a.created) ?? 0) - (timestamp(b.created) ?? 0));
   const accountExpireDate = fldt(user.account_lock_after_date);
-  const passwordValidUntil = (user as { password_valid_until?: string | null }).password_valid_until;
+  const passwordValidUntil = (user as { password_valid_until?: string | null })
+    .password_valid_until;
   const passwordValidUntilDate = passwordValidUntil ? fd(passwordValidUntil) : EMPTY_VALUE;
   const isServiceAccount = user.user_service_account;
   const creationDate = fldt(user.created_at);
@@ -330,22 +351,23 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
               {!isServiceAccount && (
                 <>
                   <Grid item xs={8}>
-                    <Label>
-                      {t_i18n('Email address')}
-                    </Label>
+                    <Label>{t_i18n('Email address')}</Label>
                     <pre style={{ margin: 0 }}>{user.user_email}</pre>
                   </Grid>
                   <Grid item xs={4}>
-                    <Label action={user.otp_activated && (
-                      <IconButton
-                        color="primary"
-                        onClick={otpUserDeactivation}
-                        aria-label="Delete all"
-                        size="small"
-                      >
-                        <DeleteForeverOutlined fontSize="small" />
-                      </IconButton>
-                    )}
+                    <Label
+                      action={
+                        user.otp_activated && (
+                          <IconButton
+                            color="primary"
+                            onClick={otpUserDeactivation}
+                            aria-label="Delete all"
+                            size="small"
+                          >
+                            <DeleteForeverOutlined fontSize="small" />
+                          </IconButton>
+                        )
+                      }
                     >
                       {t_i18n('2FA state')}
                     </Label>
@@ -354,9 +376,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     </pre>
                   </Grid>
                   <Grid item xs={4}>
-                    <Label>
-                      {t_i18n('Password valid until')}
-                    </Label>
+                    <Label>{t_i18n('Password valid until')}</Label>
                     {passwordValidUntilDate}
                   </Grid>
                 </>
@@ -364,18 +384,15 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
               {isServiceAccount && (
                 <>
                   <Grid item xs={4}>
-                    <Label>
-                      {t_i18n('Account type')}
-                    </Label>
-                    {user.user_service_account
-                      ? <Tag label={t_i18n('Service account')} />
-                      : EMPTY_VALUE
-                    }
+                    <Label>{t_i18n('Account type')}</Label>
+                    {user.user_service_account ? (
+                      <Tag label={t_i18n('Service account')} />
+                    ) : (
+                      EMPTY_VALUE
+                    )}
                   </Grid>
                   <Grid item xs={4}>
-                    <Label>
-                      {t_i18n('Account status')}
-                    </Label>
+                    <Label>{t_i18n('Account status')}</Label>
                     <FieldOrEmpty source={user.account_status}>
                       <ItemAccountStatus
                         account_status={user.account_status}
@@ -385,9 +402,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     </FieldOrEmpty>
                   </Grid>
                   <Grid item xs={4}>
-                    <Label>
-                      {t_i18n('Account expiration date')}
-                    </Label>
+                    <Label>{t_i18n('Account expiration date')}</Label>
                     {accountExpireDate || EMPTY_VALUE}
                   </Grid>
                 </>
@@ -395,7 +410,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
               <Grid item xs={12}>
                 <Stack gap={1}>
                   <Label
-                    action={(
+                    action={
                       <Button
                         variant="tertiary"
                         size="small"
@@ -405,8 +420,9 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                       >
                         {t_i18n('Generate Token')}
                       </Button>
-                    )}
-                  >{t_i18n('API Tokens')}
+                    }
+                  >
+                    {t_i18n('API Tokens')}
                   </Label>
 
                   <UserTokenList
@@ -419,21 +435,15 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
               {!isServiceAccount && (
                 <>
                   <Grid item xs={6}>
-                    <Label>
-                      {t_i18n('Firstname')}
-                    </Label>
+                    <Label>{t_i18n('Firstname')}</Label>
                     {user.firstname || EMPTY_VALUE}
                   </Grid>
                   <Grid item xs={6}>
-                    <Label>
-                      {t_i18n('Lastname')}
-                    </Label>
+                    <Label>{t_i18n('Lastname')}</Label>
                     {user.lastname || EMPTY_VALUE}
                   </Grid>
                   <Grid item xs={6}>
-                    <Label>
-                      {t_i18n('Account status')}
-                    </Label>
+                    <Label>{t_i18n('Account status')}</Label>
                     <FieldOrEmpty source={user.account_status}>
                       <ItemAccountStatus
                         account_status={user.account_status}
@@ -443,9 +453,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     </FieldOrEmpty>
                   </Grid>
                   <Grid item xs={6}>
-                    <Label>
-                      {t_i18n('Account expiration date')}
-                    </Label>
+                    <Label>{t_i18n('Account expiration date')}</Label>
                     {accountExpireDate || EMPTY_VALUE}
                   </Grid>
                 </>
@@ -453,15 +461,11 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
               {isServiceAccount && (
                 <>
                   <Grid item xs={6}>
-                    <Label>
-                      {t_i18n('Created by')}
-                    </Label>
+                    <Label>{t_i18n('Created by')}</Label>
                     {creatorName}
                   </Grid>
                   <Grid item xs={6}>
-                    <Label>
-                      {t_i18n('Creation date')}
-                    </Label>
+                    <Label>{t_i18n('Creation date')}</Label>
                     {creationDate || EMPTY_VALUE}
                   </Grid>
                 </>
@@ -473,73 +477,67 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
           <Card title={t_i18n('Permissions')}>
             <Grid container={true} spacing={2}>
               <Grid item xs={6}>
-                <Label>
-                  {t_i18n('Roles')}
-                </Label>
+                <Label>{t_i18n('Roles')}</Label>
                 <FieldOrEmpty source={user.roles ?? []}>
                   <List sx={{ py: 0 }}>
-                    {(user.roles ?? []).map((role) => (userHasSettingsCapability ? (
-                      <ListItemButton
-                        key={role?.id}
-                        dense={true}
-                        divider={true}
-                        component={Link}
-                        to={`/dashboard/settings/accesses/roles/${role?.id}`}
-                      >
-                        <ListItemIcon>
-                          <ItemIcon type="Role" />
-                        </ListItemIcon>
-                        <ListItemText primary={role?.name} />
-                      </ListItemButton>
-                    ) : (
-                      <ListItem key={role?.id} dense={true} divider={true}>
-                        <ListItemIcon>
-                          <ItemIcon type="Role" />
-                        </ListItemIcon>
-                        <ListItemText primary={role?.name} />
-                      </ListItem>
-                    )))}
+                    {(user.roles ?? []).map((role) =>
+                      userHasSettingsCapability ? (
+                        <ListItemButton
+                          key={role?.id}
+                          dense={true}
+                          divider={true}
+                          component={Link}
+                          to={`/dashboard/settings/accesses/roles/${role?.id}`}
+                        >
+                          <ListItemIcon>
+                            <ItemIcon type="Role" />
+                          </ListItemIcon>
+                          <ListItemText primary={role?.name} />
+                        </ListItemButton>
+                      ) : (
+                        <ListItem key={role?.id} dense={true} divider={true}>
+                          <ListItemIcon>
+                            <ItemIcon type="Role" />
+                          </ListItemIcon>
+                          <ListItemText primary={role?.name} />
+                        </ListItem>
+                      ),
+                    )}
                   </List>
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={6}>
-                <Label>
-                  {t_i18n('Groups')}
-                </Label>
+                <Label>{t_i18n('Groups')}</Label>
                 <FieldOrEmpty source={user.groups?.edges}>
                   <List sx={{ py: 0 }}>
-                    {(user.groups?.edges ?? []).map((groupEdge) => (userHasSettingsCapability ? (
-                      <ListItemButton
-                        key={groupEdge?.node.id}
-                        dense={true}
-                        divider={true}
-                        component={Link}
-                        to={`/dashboard/settings/accesses/groups/${groupEdge?.node.id}`}
-                      >
-                        <ListItemIcon>
-                          <ItemIcon type="Group" />
-                        </ListItemIcon>
-                        <ListItemText primary={groupEdge?.node.name} />
-                      </ListItemButton>
-                    ) : (
-                      <ListItem
-                        key={groupEdge?.node.id}
-                        dense={true}
-                        divider={true}
-                      >
-                        <ListItemIcon>
-                          <ItemIcon type="Group" />
-                        </ListItemIcon>
-                        <ListItemText primary={groupEdge?.node.name} />
-                      </ListItem>
-                    )))}
+                    {(user.groups?.edges ?? []).map((groupEdge) =>
+                      userHasSettingsCapability ? (
+                        <ListItemButton
+                          key={groupEdge?.node.id}
+                          dense={true}
+                          divider={true}
+                          component={Link}
+                          to={`/dashboard/settings/accesses/groups/${groupEdge?.node.id}`}
+                        >
+                          <ListItemIcon>
+                            <ItemIcon type="Group" />
+                          </ListItemIcon>
+                          <ListItemText primary={groupEdge?.node.name} />
+                        </ListItemButton>
+                      ) : (
+                        <ListItem key={groupEdge?.node.id} dense={true} divider={true}>
+                          <ListItemIcon>
+                            <ItemIcon type="Group" />
+                          </ListItemIcon>
+                          <ListItemText primary={groupEdge?.node.name} />
+                        </ListItem>
+                      ),
+                    )}
                   </List>
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={6}>
-                <Label>
-                  {t_i18n('Organizations')}
-                </Label>
+                <Label>{t_i18n('Organizations')}</Label>
                 <FieldOrEmpty source={user.objectOrganization?.edges}>
                   <List>
                     {user.objectOrganization?.edges.map((organizationEdge) => (
@@ -554,14 +552,8 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                           <ItemIcon
                             type="Organization"
                             color={
-                              (
-                                organizationEdge.node.authorized_authorities
-                                ?? []
-                              ).includes(user.id)
-                                ? (
-                                    theme.palette
-                                      .warning as SimplePaletteColorOptions
-                                  ).main
+                              (organizationEdge.node.authorized_authorities ?? []).includes(user.id)
+                                ? (theme.palette.warning as SimplePaletteColorOptions).main
                                 : theme.palette.primary.main
                             }
                           />
@@ -573,32 +565,33 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={6}>
-                <Label action={(
-                  <Security needs={[SETTINGS_SETACCESSES]}>
-                    <Tooltip title={t_i18n('Kill all sessions')}>
-                      <IconButton
-                        color="primary"
-                        aria-label={t_i18n('Delete all')}
-                        onClick={handleOpenKillSessions}
-                        size="small"
-                      >
-                        <DeleteForeverOutlined fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </Security>
-                )}
+                <Label
+                  action={
+                    <Security needs={[SETTINGS_SETACCESSES]}>
+                      <Tooltip title={t_i18n('Kill all sessions')}>
+                        <IconButton
+                          color="primary"
+                          aria-label={t_i18n('Delete all')}
+                          onClick={handleOpenKillSessions}
+                          size="small"
+                        >
+                          <DeleteForeverOutlined fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Security>
+                  }
                 >
                   {t_i18n('Sessions')}
                 </Label>
                 <FieldOrEmpty source={orderedSessions}>
                   <List sx={{ py: 0, width: '100%', maxHeight: 400, overflowY: 'auto' }}>
-                    {orderedSessions
-                      && orderedSessions.map((session: Session) => (
+                    {orderedSessions &&
+                      orderedSessions.map((session: Session) => (
                         <ListItem
                           key={session.id}
                           dense={true}
                           divider={true}
-                          secondaryAction={(
+                          secondaryAction={
                             <IconButton
                               aria-label="Kill"
                               onClick={() => handleOpenKillSession(session.id)}
@@ -606,25 +599,23 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                             >
                               <DeleteOutlined fontSize="small" />
                             </IconButton>
-                          )}
+                          }
                         >
                           <ListItemIcon>
                             <ItemIcon type="Session" />
                           </ListItemIcon>
                           <ListItemText
-                            primary={(
+                            primary={
                               <>
                                 <div style={{ float: 'left', width: '50%' }}>
                                   {nsdt(session.created)}
                                 </div>
                                 <div style={{ float: 'left', width: '20%' }}>
-                                  {session.ttl
-                                    ? Math.round(session.ttl / 60)
-                                    : 0}{' '}
+                                  {session.ttl ? Math.round(session.ttl / 60) : 0}{' '}
                                   {t_i18n('minutes')}
                                 </div>
                               </>
-                            )}
+                            }
                           />
                         </ListItem>
                       ))}
@@ -633,28 +624,19 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
               </Grid>
               {!isServiceAccount && (
                 <Grid item xs={6}>
-                  <HiddenTypesChipList
-                    hiddenTypes={user.default_hidden_types ?? []}
-                  />
+                  <HiddenTypesChipList hiddenTypes={user.default_hidden_types ?? []} />
                 </Grid>
               )}
               <Grid item xs={6}>
-                <Label>
-                  {t_i18n('Max Confidence Level')}
-                </Label>
+                <Label>{t_i18n('Max Confidence Level')}</Label>
                 <UserConfidenceLevel user={user} />
               </Grid>
             </Grid>
           </Card>
         </Grid>
-        {!isServiceAccount && (
-          <Triggers recipientId={user.id} filterKey="authorized_members.id" />
-        )}
+        {!isServiceAccount && <Triggers recipientId={user.id} filterKey="authorized_members.id" />}
         <Grid item xs={6} style={{ marginTop: 10 }}>
-          <Card
-            title={t_i18n('Operations')}
-            sx={{ minHeight: 500 }}
-          >
+          <Card title={t_i18n('Operations')} sx={{ minHeight: 500 }}>
             {!isEnterpriseEdition ? (
               <div style={{ display: 'table', height: '100%', width: '100%' }}>
                 <span
@@ -664,9 +646,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     textAlign: 'center',
                   }}
                 >
-                  {t_i18n(
-                    'This feature is only available in OpenCTI Enterprise Edition.',
-                  )}
+                  {t_i18n('This feature is only available in OpenCTI Enterprise Edition.')}
                 </span>
               </div>
             ) : (
@@ -687,11 +667,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     filterGroups: [],
                   },
                 }}
-                render={({
-                  props,
-                }: {
-                  props: UserAuditsTimeSeriesQuery$data;
-                }) => {
+                render={({ props }: { props: UserAuditsTimeSeriesQuery$data }) => {
                   if (props && props.auditsTimeSeries) {
                     const chartData = props.auditsTimeSeries.map((entry) => ({
                       x: new Date(entry?.date),
@@ -750,17 +726,12 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         onClose={handleCloseKillSession}
         title={t_i18n('Are you sure?')}
       >
-        <DialogContentText>
-          {t_i18n('Do you want to kill this session?')}
-        </DialogContentText>
+        <DialogContentText>{t_i18n('Do you want to kill this session?')}</DialogContentText>
         <DialogActions>
           <Button variant="secondary" onClick={handleCloseKillSession} disabled={killing}>
             {t_i18n('Cancel')}
           </Button>
-          <Button
-            onClick={submitKillSession}
-            disabled={killing}
-          >
+          <Button onClick={submitKillSession} disabled={killing}>
             {t_i18n('Confirm')}
           </Button>
         </DialogActions>
@@ -777,10 +748,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
           <Button variant="secondary" onClick={handleCloseKillSessions} disabled={killing}>
             {t_i18n('Cancel')}
           </Button>
-          <Button
-            onClick={submitKillSessions}
-            disabled={killing}
-          >
+          <Button onClick={submitKillSessions} disabled={killing}>
             {t_i18n('Confirm')}
           </Button>
         </DialogActions>

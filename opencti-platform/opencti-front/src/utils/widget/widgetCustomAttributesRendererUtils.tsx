@@ -27,9 +27,7 @@ type EntityRenderers = Partial<Record<string, AttributeRenderer>>;
 const getField = <T,>(data: unknown, key: string): T | undefined =>
   (data as Record<string, unknown>)[key] as T | undefined;
 
-const empty = () => (
-  <Typography>{EMPTY_VALUE}</Typography>
-);
+const empty = () => <Typography>{EMPTY_VALUE}</Typography>;
 
 const getCvssCriticity = (score: number | null | undefined): string | null => {
   if (typeof score !== 'number' || score < 0 || score > 10) return null;
@@ -45,7 +43,7 @@ const makeScoreRenderer = (scoreKey: string, severityKey?: string) => {
     const score = getField<number>(data, scoreKey);
     const severity = severityKey
       ? getField<string>(data, severityKey)
-      : getCvssCriticity(score ?? null) ?? undefined;
+      : (getCvssCriticity(score ?? null) ?? undefined);
     return (
       <Stack direction="row" gap={1}>
         <ItemCvssScore score={score ?? 0} />
@@ -58,7 +56,9 @@ const makeScoreRenderer = (scoreKey: string, severityKey?: string) => {
 };
 
 const ValueCopy = ({ value }: { value: string }) => (
-  <pre><ItemCopy content={value} /></pre>
+  <pre>
+    <ItemCopy content={value} />
+  </pre>
 );
 
 const makeHashRenderer = (algorithm: string) => {
@@ -131,7 +131,10 @@ const threatActorIndividualRenderers: EntityRenderers = {
     );
   },
   height: (data, t_i18n, fldt) => {
-    const heights = getField<ReadonlyArray<{ measure?: number | null; date_seen?: string | null }>>(data, 'height');
+    const heights = getField<ReadonlyArray<{ measure?: number | null; date_seen?: string | null }>>(
+      data,
+      'height',
+    );
     return (
       <FieldOrEmpty source={heights}>
         <List sx={{ py: 0 }}>
@@ -148,7 +151,10 @@ const threatActorIndividualRenderers: EntityRenderers = {
     );
   },
   weight: (data, t_i18n, fldt) => {
-    const weights = getField<ReadonlyArray<{ measure?: number | null; date_seen?: string | null }>>(data, 'weight');
+    const weights = getField<ReadonlyArray<{ measure?: number | null; date_seen?: string | null }>>(
+      data,
+      'weight',
+    );
     return (
       <FieldOrEmpty source={weights}>
         <List sx={{ py: 0 }}>
@@ -168,9 +174,15 @@ const threatActorIndividualRenderers: EntityRenderers = {
 
 // ─── Vulnerability
 const vulnerabilityRenderers: EntityRenderers = {
-  x_opencti_cvss_base_score: makeScoreRenderer('x_opencti_cvss_base_score', 'x_opencti_cvss_base_severity'),
+  x_opencti_cvss_base_score: makeScoreRenderer(
+    'x_opencti_cvss_base_score',
+    'x_opencti_cvss_base_severity',
+  ),
   x_opencti_cvss_v2_base_score: makeScoreRenderer('x_opencti_cvss_v2_base_score'),
-  x_opencti_cvss_v4_base_score: makeScoreRenderer('x_opencti_cvss_v4_base_score', 'x_opencti_cvss_v4_base_severity'),
+  x_opencti_cvss_v4_base_score: makeScoreRenderer(
+    'x_opencti_cvss_v4_base_score',
+    'x_opencti_cvss_v4_base_severity',
+  ),
   x_opencti_cvss_temporal_score: makeScoreRenderer('x_opencti_cvss_temporal_score'),
   x_opencti_cvss_v2_temporal_score: makeScoreRenderer('x_opencti_cvss_v2_temporal_score'),
   x_opencti_cwe: (data) => <TextList list={getField<string[]>(data, 'x_opencti_cwe')} />,
@@ -179,8 +191,8 @@ const vulnerabilityRenderers: EntityRenderers = {
 // ─── Stix Cyber Observable
 const stixCyberObservableRenderers: EntityRenderers = {
   modified: (_data, _t_i18n, fldt) => {
-    const value = getField<string>(_data, 'x_opencti_modified_at')
-      ?? getField<string>(_data, 'updated_at');
+    const value =
+      getField<string>(_data, 'x_opencti_modified_at') ?? getField<string>(_data, 'updated_at');
     if (!value) return empty();
     return <Typography variant="body2">{fldt(value)}</Typography>;
   },
@@ -204,7 +216,9 @@ const artifactRenderers: EntityRenderers = {
     const values = getField<string[]>(data, 'x_opencti_additional_names');
     return (
       <FieldOrEmpty source={values}>
-        {values?.map((v) => <ValueCopy key={v} value={v} />)}
+        {values?.map((v) => (
+          <ValueCopy key={v} value={v} />
+        ))}
       </FieldOrEmpty>
     );
   },
@@ -222,9 +236,10 @@ const securityCoverageRenderers: EntityRenderers = {
       representative?: { main?: string };
     }>(data, 'objectCovered');
 
-    const isPreview = host?.kind === 'custom-view'
-      && Boolean(host.customViewTargetEntityId)
-      && host.previewMode === true;
+    const isPreview =
+      host?.kind === 'custom-view' &&
+      Boolean(host.customViewTargetEntityId) &&
+      host.previewMode === true;
     const isClickable = !isPreview;
 
     return (
@@ -255,16 +270,15 @@ const securityCoverageRenderers: EntityRenderers = {
   },
 
   coverage_information: (data) => {
-    const coverageInformation = getField<ReadonlyArray<{
-      coverage_name: string;
-      coverage_score: number;
-    }>>(data, 'coverage_information');
+    const coverageInformation = getField<
+      ReadonlyArray<{
+        coverage_name: string;
+        coverage_score: number;
+      }>
+    >(data, 'coverage_information');
 
     return (
-      <SecurityCoverageScores
-        coverage_information={coverageInformation ?? []}
-        variant="details"
-      />
+      <SecurityCoverageScores coverage_information={coverageInformation ?? []} variant="details" />
     );
   },
 };

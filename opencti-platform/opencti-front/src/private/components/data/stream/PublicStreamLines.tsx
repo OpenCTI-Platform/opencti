@@ -72,11 +72,7 @@ const publicStreamLinesQuery = graphql`
   }
 `;
 
-const queryRef = loadQuery<PublicStreamLinesQuery>(
-  environment,
-  publicStreamLinesQuery,
-  {},
-);
+const queryRef = loadQuery<PublicStreamLinesQuery>(environment, publicStreamLinesQuery, {});
 const dataColumns: DataColumns = {
   name: {
     label: 'Name',
@@ -120,12 +116,10 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
       classes={{ root: classes.item }}
       color="primary"
       divider={true}
-      secondaryAction={(
+      secondaryAction={
         <>
           <Tooltip
-            title={t_i18n(
-              'Copy uri to clipboard for your OpenCTI synchronizer configuration',
-            )}
+            title={t_i18n('Copy uri to clipboard for your OpenCTI synchronizer configuration')}
           >
             <IconButton onClick={copyClick} color="primary">
               <ContentCopy />
@@ -137,25 +131,21 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
             </IconButton>
           </Tooltip>
         </>
-      )}
+      }
     >
       <ListItemIcon>
         <ItemIcon type="streamcollection" />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
-                key={value.label}
-                className={classes.bodyItem}
-                style={{ width: value.width }}
-              >
+              <div key={value.label} className={classes.bodyItem} style={{ width: value.width }}>
                 {value.render?.(stream, { t: t_i18n, classes })}
               </div>
             ))}
           </div>
-        )}
+        }
       />
     </ListItem>
   );

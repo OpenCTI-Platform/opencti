@@ -18,7 +18,10 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import DataSourceEdition from './DataSourceEdition';
 import DataSourceDeletion from './DataSourceDeletion';
 import { PATH_DATA_SOURCE, PATH_DATA_SOURCES } from '@components/common/routes/paths';
@@ -74,9 +77,7 @@ interface RootDataSourceComponentProps {
 }
 
 const RootDataSourceComponent = ({ queryRef, dataSourceId }: RootDataSourceComponentProps) => {
-  const subConfig = useMemo<
-    GraphQLSubscriptionConfig<RootDataSourcesSubscription>
-  >(
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootDataSourcesSubscription>>(
     () => ({
       subscription,
       variables: { id: dataSourceId },
@@ -94,21 +95,22 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }: RootDataSourceCompo
     <>
       {dataSource ? (
         <div style={{ paddingRight }}>
-          <Breadcrumbs elements={[
-            { label: t_i18n('Techniques') },
-            { label: t_i18n('Data sources'), link: PATH_DATA_SOURCES },
-            { label: dataSource.name, current: true },
-          ]}
+          <Breadcrumbs
+            elements={[
+              { label: t_i18n('Techniques') },
+              { label: t_i18n('Data sources'), link: PATH_DATA_SOURCES },
+              { label: dataSource.name, current: true },
+            ]}
           />
           <StixDomainObjectHeader
             entityType="Data-Source"
             noAliases={true}
             stixDomainObject={dataSource}
-            EditComponent={(
+            EditComponent={
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <DataSourceEdition dataSourceId={dataSource.id} />
               </Security>
-            )}
+            }
             DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
               <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                 <DataSourceDeletion id={dataSource.id} isOpen={isOpen} handleClose={onClose} />
@@ -121,13 +123,8 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }: RootDataSourceCompo
             entity={dataSource}
             basePath={basePath}
             pages={{
-              overview:
-                <DataSource dataSourceData={dataSource} />,
-              content: (
-                <StixCoreObjectContentRoot
-                  stixCoreObject={dataSource}
-                />
-              ),
+              overview: <DataSource dataSourceData={dataSource} />,
+              content: <StixCoreObjectContentRoot stixCoreObject={dataSource} />,
               files: (
                 <FileManager
                   id={dataSourceId}
@@ -136,22 +133,19 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }: RootDataSourceCompo
                   entity={dataSource}
                 />
               ),
-              history:
-                <StixCoreObjectHistory stixCoreObjectId={dataSourceId} />,
+              history: <StixCoreObjectHistory stixCoreObjectId={dataSourceId} />,
             }}
-            extraRoutes={(
+            extraRoutes={
               <>
                 <Route
                   path="/knowledge/*"
-                  element={(
-                    <DataSourceKnowledgeComponent
-                      data={dataSource}
-                      enableReferences={false}
-                    />
-                  )}
-                />,
+                  element={
+                    <DataSourceKnowledgeComponent data={dataSource} enableReferences={false} />
+                  }
+                />
+                ,
               </>
-            )}
+            }
           />
         </div>
       ) : (
@@ -170,10 +164,7 @@ const RootDataSource = () => {
     <>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-          <RootDataSourceComponent
-            queryRef={queryRef}
-            dataSourceId={dataSourceId}
-          />
+          <RootDataSourceComponent queryRef={queryRef} dataSourceId={dataSourceId} />
         </React.Suspense>
       )}
     </>

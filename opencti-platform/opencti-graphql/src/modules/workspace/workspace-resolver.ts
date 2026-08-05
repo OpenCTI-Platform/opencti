@@ -32,16 +32,21 @@ const workspaceResolvers: Resolvers = {
     workspaces: (_, args, context) => findWorkspacePaginated(context, context.user, args),
   },
   Workspace: {
-    authorizedMembers: (workspace, _, context) => getAuthorizedMembers(context, context.user, workspace),
-    currentUserAccessRight: (workspace, _, context) => getCurrentUserAccessRight(context.user, workspace),
+    authorizedMembers: (workspace, _, context) =>
+      getAuthorizedMembers(context, context.user, workspace),
+    currentUserAccessRight: (workspace, _, context) =>
+      getCurrentUserAccessRight(context.user, workspace),
     owner: (workspace, _, context) => loadCreator(context, context.user, getOwnerId(workspace)),
     objects: (workspace, args, context) => {
       return objects(context, context.user, workspace, args) as any;
     },
     editContext: (workspace) => fetchEditContext(workspace.id),
-    toStixReportBundle: (workspace, _, context) => toStixReportBundle(context, context.user, workspace),
-    toConfigurationExport: (workspace, _, context) => generateWorkspaceExportConfiguration(context, context.user, workspace),
-    toWidgetExport: (workspace, { widgetId }, context) => generateWidgetExportConfiguration(context, context.user, workspace, widgetId),
+    toStixReportBundle: (workspace, _, context) =>
+      toStixReportBundle(context, context.user, workspace),
+    toConfigurationExport: (workspace, _, context) =>
+      generateWorkspaceExportConfiguration(context, context.user, workspace),
+    toWidgetExport: (workspace, { widgetId }, context) =>
+      generateWidgetExportConfiguration(context, context.user, workspace, widgetId),
     isShared: (workspace, _, context) => isDashboardShared(context, workspace),
   },
   Mutation: {
@@ -78,7 +83,9 @@ const workspaceResolvers: Resolvers = {
       resolve: /* v8 ignore next */ (payload: any) => payload.instance,
       subscribe: /* v8 ignore next */ (_, { id }, context) => {
         const bus = BUS_TOPICS[ENTITY_TYPE_WORKSPACE];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_WORKSPACE });
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], {
+          type: ENTITY_TYPE_WORKSPACE,
+        });
       },
     },
   },

@@ -43,9 +43,14 @@ const SmtpRefreshTokenBannerContent = ({ queryRef }: SmtpRefreshTokenBannerConte
 
   if (!isVisible) return null;
 
-  const bannerText = bannerState === 'expired'
-    ? t_i18n('The SMTP OAuth2 refresh token has expired. Email sending is likely interrupted, renew it as soon as possible.')
-    : t_i18n('The SMTP OAuth2 refresh token is about to expire. Renew it to avoid interrupting email sending.');
+  const bannerText =
+    bannerState === 'expired'
+      ? t_i18n(
+          'The SMTP OAuth2 refresh token has expired. Email sending is likely interrupted, renew it as soon as possible.',
+        )
+      : t_i18n(
+          'The SMTP OAuth2 refresh token is about to expire. Renew it to avoid interrupting email sending.',
+        );
 
   return (
     <TopBanner
@@ -62,7 +67,9 @@ const SmtpRefreshTokenBannerContent = ({ queryRef }: SmtpRefreshTokenBannerConte
 // firing an unnecessary (and error-producing) request for users without the capability.
 const SmtpRefreshTokenBanner = () => {
   const isGranted = useGranted([SETTINGS_SETACCESSES]);
-  const [queryRef, loadQuery] = useQueryLoader<SmtpRefreshTokenBannerQuery>(smtpRefreshTokenBannerQuery);
+  const [queryRef, loadQuery] = useQueryLoader<SmtpRefreshTokenBannerQuery>(
+    smtpRefreshTokenBannerQuery,
+  );
 
   useEffect(() => {
     if (isGranted) {

@@ -3,7 +3,9 @@ import { graphql, useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import RulesListItem from '@components/settings/rules/RulesListItem';
 import { useTheme } from '@mui/material/styles';
-import RulesStatusChangeDialog, { RulesStatusChangeDialogProps } from '@components/settings/rules/RulesStatusChangeDialog';
+import RulesStatusChangeDialog, {
+  RulesStatusChangeDialogProps,
+} from '@components/settings/rules/RulesStatusChangeDialog';
 import { RulesList_data$data, RulesList_data$key } from './__generated__/RulesList_data.graphql';
 import { RULES_LOCAL_STORAGE_KEY } from './rules-utils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -11,8 +13,12 @@ import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 
 export type Rule = NonNullable<RulesList_data$data['rules']>[number];
-export type Task = NonNullable<NonNullable<NonNullable<RulesList_data$data['backgroundTasks']>['edges']>[number]>['node'];
-export type Work = NonNullable<NonNullable<NonNullable<RulesList_data$data['backgroundTasks']>['edges']>[number]>['node']['work'];
+export type Task = NonNullable<
+  NonNullable<NonNullable<RulesList_data$data['backgroundTasks']>['edges']>[number]
+>['node'];
+export type Work = NonNullable<
+  NonNullable<NonNullable<RulesList_data$data['backgroundTasks']>['edges']>[number]
+>['node']['work'];
 
 const fragmentData = graphql`
   fragment RulesList_data on Query {
@@ -48,11 +54,7 @@ const fragmentData = graphql`
     backgroundTasks(
       orderBy: created_at
       orderMode: desc
-      filters: {
-        mode: and,
-        filters: [{ key: "type", values: ["RULE"] }]
-        filterGroups: []
-      }
+      filters: { mode: and, filters: [{ key: "type", values: ["RULE"] }], filterGroups: [] }
     ) {
       edges {
         node {
@@ -117,10 +119,11 @@ const RulesList = ({ data }: RulesListProps) => {
   const { rules, backgroundTasks } = useFragment(fragmentData, data);
 
   const filteredRules = useMemo(() => {
-    const filterByKeyword = (p: Rule) => keyword === ''
-      || p?.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-      || p?.description.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-      || p?.category?.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
+    const filterByKeyword = (p: Rule) =>
+      keyword === '' ||
+      p?.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1 ||
+      p?.description.toLowerCase().indexOf(keyword.toLowerCase()) !== -1 ||
+      p?.category?.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
     return (rules ?? []).flatMap((r) => (!r || !filterByKeyword(r) ? [] : r));
   }, [rules, viewStorage]);
 
@@ -129,10 +132,10 @@ const RulesList = ({ data }: RulesListProps) => {
     return Array.from(setOfCategories).sort();
   }, [filteredRules]);
 
-  const getRulesByCategory = (cat: string) => filteredRules
-    .filter((r) => r.category === cat).sort((a, b) => a.name.localeCompare(b.name));
-  const getTasksByRuleId = (ruleId: string) => (backgroundTasks?.edges ?? [])
-    .flatMap((e) => (e?.node.rule === ruleId ? e.node : []));
+  const getRulesByCategory = (cat: string) =>
+    filteredRules.filter((r) => r.category === cat).sort((a, b) => a.name.localeCompare(b.name));
+  const getTasksByRuleId = (ruleId: string) =>
+    (backgroundTasks?.edges ?? []).flatMap((e) => (e?.node.rule === ruleId ? e.node : []));
 
   return (
     <div style={{ marginTop: theme.spacing(3) }}>

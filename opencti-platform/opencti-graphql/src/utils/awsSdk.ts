@@ -32,6 +32,8 @@ const addProxyToConfiguration = <T>(config: T) => {
   return config;
 };
 
-export const getRoleAssumerWithWebIdentity = (stsOptions?: Parameters<typeof getDefaultRoleAssumerWithWebIdentity>[0]) => {
+export const getRoleAssumerWithWebIdentity = (
+  stsOptions?: Parameters<typeof getDefaultRoleAssumerWithWebIdentity>[0],
+) => {
   return getDefaultRoleAssumerWithWebIdentity(addProxyToConfiguration(stsOptions));
 };

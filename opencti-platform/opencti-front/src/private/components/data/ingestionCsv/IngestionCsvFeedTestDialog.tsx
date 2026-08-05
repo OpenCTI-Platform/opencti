@@ -50,8 +50,12 @@ const IngestionCsvFeedTestDialog: FunctionComponent<ingestionCsvFeedTestDialogPr
   setIsCreateDisabled,
 }) => {
   const { t_i18n } = useFormatter();
-  const [result, setResult] = useState<IngestionCsvFeedTestDialogMutation$data | undefined>(undefined);
-  const [commitTest] = useApiMutation(ingestionCsvFeedTestMutation, undefined, { errorMessage: 'Something went wrong. Please check the configuration.' });
+  const [result, setResult] = useState<IngestionCsvFeedTestDialogMutation$data | undefined>(
+    undefined,
+  );
+  const [commitTest] = useApiMutation(ingestionCsvFeedTestMutation, undefined, {
+    errorMessage: 'Something went wrong. Please check the configuration.',
+  });
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleClose = () => {
@@ -73,8 +77,11 @@ const IngestionCsvFeedTestDialog: FunctionComponent<ingestionCsvFeedTestDialogPr
           uri: values.uri,
           ingestion_running: values.ingestion_running,
           user_id: typeof values.user_id === 'string' ? values.user_id : values.user_id.value,
-          csv_mapper_id: typeof values.csv_mapper_id === 'string' ? values.csv_mapper_id : values.csv_mapper_id?.value,
-          csv_mapper: values.csv_mapper ? JSON.stringify((values.csv_mapper)) : undefined,
+          csv_mapper_id:
+            typeof values.csv_mapper_id === 'string'
+              ? values.csv_mapper_id
+              : values.csv_mapper_id?.value,
+          csv_mapper: values.csv_mapper ? JSON.stringify(values.csv_mapper) : undefined,
           csv_mapper_type: values.csv_mapper_type,
           markings: values.markings.map((marking) => marking.value),
         },
@@ -97,24 +104,21 @@ const IngestionCsvFeedTestDialog: FunctionComponent<ingestionCsvFeedTestDialogPr
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      title={t_i18n('Testing CSV Feed')}
-    >
+    <Dialog open={open} onClose={handleClose} title={t_i18n('Testing CSV Feed')}>
       <Box>
         <div style={{ width: '100%', marginTop: 10 }}>
-          <Alert
-            severity="info"
-            variant="outlined"
-            style={{ padding: '0px 10px 0px 10px' }}
-          >
+          <Alert severity="info" variant="outlined" style={{ padding: '0px 10px 0px 10px' }}>
             {t_i18n('Please, note that the test will be run on the 10 first lines')}
           </Alert>
         </div>
       </Box>
       <Box
-        sx={{ display: 'inline-flex', textAlign: 'center', marginTop: '8px', alignItems: 'baseline' }}
+        sx={{
+          display: 'inline-flex',
+          textAlign: 'center',
+          marginTop: '8px',
+          alignItems: 'baseline',
+        }}
       >
         <Button
           color={result?.ingestionCsvTester?.nbEntities ? 'primary' : 'secondary'}
@@ -127,28 +131,34 @@ const IngestionCsvFeedTestDialog: FunctionComponent<ingestionCsvFeedTestDialogPr
             <Loader variant={LoaderVariant.inElement} />
           </Box>
         )}
-        {result
-          && (
-            <Box
-              sx={{
-                paddingTop: '8px',
-                marginLeft: '12px',
-                fontSize: '1rem',
-                gap: '8px',
-                justifyContent: 'center',
-                display: 'flex',
-              }}
-            >
-              <span>{t_i18n('Objects found')} : </span>
-              <span><strong>{result?.ingestionCsvTester?.nbEntities} </strong> {t_i18n('Entities')}</span>
-              <span><strong>{result?.ingestionCsvTester?.nbRelationships}</strong> {t_i18n('Relationships')}</span>
-            </Box>
-          )
-        }
+        {result && (
+          <Box
+            sx={{
+              paddingTop: '8px',
+              marginLeft: '12px',
+              fontSize: '1rem',
+              gap: '8px',
+              justifyContent: 'center',
+              display: 'flex',
+            }}
+          >
+            <span>{t_i18n('Objects found')} : </span>
+            <span>
+              <strong>{result?.ingestionCsvTester?.nbEntities} </strong> {t_i18n('Entities')}
+            </span>
+            <span>
+              <strong>{result?.ingestionCsvTester?.nbRelationships}</strong>{' '}
+              {t_i18n('Relationships')}
+            </span>
+          </Box>
+        )}
       </Box>
       <Box sx={{ marginTop: '8px' }}>
         <CodeBlock
-          code={result?.ingestionCsvTester?.objects || t_i18n('You will find here the result in JSON format.')}
+          code={
+            result?.ingestionCsvTester?.objects ||
+            t_i18n('You will find here the result in JSON format.')
+          }
           language="json"
         />
       </Box>

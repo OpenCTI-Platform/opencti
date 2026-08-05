@@ -21,7 +21,7 @@ it('should report ids stable', () => {
   ]);
   expect(isContributing).toBeTruthy();
   for (let i = 0; i < 100; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     const reportStandardId = generateStandardId(ENTITY_TYPE_CONTAINER_REPORT, data);
     expect(reportStandardId).toEqual('report--f3e554eb-60f5-587c-9191-4f25e9ba9f32');
   }

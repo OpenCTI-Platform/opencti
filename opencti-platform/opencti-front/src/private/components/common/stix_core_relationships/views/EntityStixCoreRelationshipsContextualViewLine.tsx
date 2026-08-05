@@ -97,9 +97,7 @@ interface ContextualViewLineProps {
   index: number;
 }
 
-const EntityStixCoreRelationshipsContextualViewLine: FunctionComponent<
-  ContextualViewLineProps
-> = ({
+const EntityStixCoreRelationshipsContextualViewLine: FunctionComponent<ContextualViewLineProps> = ({
   node,
   dataColumns,
   onToggleEntity,
@@ -110,10 +108,7 @@ const EntityStixCoreRelationshipsContextualViewLine: FunctionComponent<
   index,
 }) => {
   const classes = useStyles();
-  const stixCoreObject = useFragment(
-    contextualViewLineFragment,
-    node,
-  );
+  const stixCoreObject = useFragment(contextualViewLineFragment, node);
   return (
     <ListItemButton
       key={stixCoreObject.id}
@@ -125,16 +120,17 @@ const EntityStixCoreRelationshipsContextualViewLine: FunctionComponent<
       <ListItemIcon
         classes={{ root: classes.itemIcon }}
         style={{ minWidth: 40 }}
-        onClick={(event) => (event.shiftKey
-          ? onToggleShiftEntity(index, stixCoreObject)
-          : onToggleEntity(stixCoreObject, event))
+        onClick={(event) =>
+          event.shiftKey
+            ? onToggleShiftEntity(index, stixCoreObject)
+            : onToggleEntity(stixCoreObject, event)
         }
       >
         <Checkbox
           edge="start"
           checked={
-            (selectAll && !(stixCoreObject.id in (deSelectedElements || {})))
-            || stixCoreObject.id in (selectedElements || {})
+            (selectAll && !(stixCoreObject.id in (deSelectedElements || {}))) ||
+            stixCoreObject.id in (selectedElements || {})
           }
           disableRipple={true}
         />
@@ -143,19 +139,15 @@ const EntityStixCoreRelationshipsContextualViewLine: FunctionComponent<
         <ItemIcon type={stixCoreObject.entity_type} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
-                key={value.label}
-                className={classes.bodyItem}
-                style={{ width: value.width }}
-              >
+              <div key={value.label} className={classes.bodyItem} style={{ width: value.width }}>
                 {value.render?.(stixCoreObject)}
               </div>
             ))}
           </div>
-        )}
+        }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRight />

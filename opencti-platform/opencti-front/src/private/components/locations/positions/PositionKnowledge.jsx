@@ -18,13 +18,8 @@ const positionKnowledgeFragment = graphql`
   }
 `;
 
-const PositionKnowledgeComponent = ({
-  positionData,
-}) => {
-  const position = useFragment(
-    positionKnowledgeFragment,
-    positionData,
-  );
+const PositionKnowledgeComponent = ({ positionData }) => {
+  const position = useFragment(positionKnowledgeFragment, positionData);
   const location = useLocation();
   const link = `/dashboard/locations/positions/${position.id}/knowledge`;
   const { schema } = useAuth();
@@ -34,34 +29,24 @@ const PositionKnowledgeComponent = ({
       <Routes>
         <Route
           path="/relations/:relationId"
-          element={(
-            <StixCoreRelationship
-              entityId={position.id}
-              paddingRight={true}
-            />
-          )}
+          element={<StixCoreRelationship entityId={position.id} paddingRight={true} />}
         />
         <Route
           path="/sightings/:sightingId"
-          element={(
-            <StixSightingRelationship
-              entityId={position.id}
-              paddingRight={true}
-            />
-          )}
+          element={<StixSightingRelationship entityId={position.id} paddingRight={true} />}
         />
         <Route
           path="/overview"
-          element={(
+          element={
             <StixDomainObjectKnowledge
               stixDomainObjectId={position.id}
               stixDomainObjectType="Position"
             />
-          )}
+          }
         />
         <Route
           path="/all"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={position.id}
@@ -71,11 +56,11 @@ const PositionKnowledgeComponent = ({
               defaultStopTime={position.stopTime}
               allDirections
             />
-          )}
+          }
         />
         <Route
           path="/threats"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={position.id}
@@ -92,11 +77,11 @@ const PositionKnowledgeComponent = ({
                 'Tool',
               ]}
             />
-          )}
+          }
         />
         <Route
           path="/related"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={position.id}
@@ -120,11 +105,11 @@ const PositionKnowledgeComponent = ({
               entityLink={link}
               allDirections={true}
             />
-          )}
+          }
         />
         <Route
           path="/regions"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={position.id}
@@ -133,11 +118,11 @@ const PositionKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route
           path="/countries"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={position.id}
@@ -146,11 +131,11 @@ const PositionKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route
           path="/areas"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={position.id}
@@ -159,11 +144,11 @@ const PositionKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route
           path="/cities"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={position.id}
@@ -172,11 +157,11 @@ const PositionKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route
           path="/organizations"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={position.id}
@@ -185,11 +170,11 @@ const PositionKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-          )}
+          }
         />
         <Route
           path="/threat_actors"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={position.id}
@@ -198,11 +183,11 @@ const PositionKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-          )}
+          }
         />
         <Route
           path="/intrusion_sets"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={position.id}
@@ -211,11 +196,11 @@ const PositionKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-          )}
+          }
         />
         <Route
           path="/campaigns"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={position.id}
@@ -224,11 +209,11 @@ const PositionKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-          )}
+          }
         />
         <Route
           path="/incidents"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={position.id}
@@ -237,11 +222,11 @@ const PositionKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-          )}
+          }
         />
         <Route
           path="/malwares"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={position.id}
@@ -250,11 +235,11 @@ const PositionKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-          )}
+          }
         />
         <Route
           path="/attack_patterns"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={position.id}
@@ -263,11 +248,11 @@ const PositionKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-          )}
+          }
         />
         <Route
           path="/tools"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={position.id}
@@ -276,11 +261,11 @@ const PositionKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-          )}
+          }
         />
         <Route
           path="/observables"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={position.id}
@@ -290,18 +275,18 @@ const PositionKnowledgeComponent = ({
               allDirections={true}
               isRelationReversed={true}
             />
-          )}
+          }
         />
         <Route
           path="/sightings"
-          element={(
+          element={
             <EntityStixSightingRelationships
               entityId={position.id}
               entityLink={link}
               noRightBar={true}
               isTo={true}
             />
-          )}
+          }
         />
         <Route index element={<Navigate replace={true} to="overview" />} />
       </Routes>

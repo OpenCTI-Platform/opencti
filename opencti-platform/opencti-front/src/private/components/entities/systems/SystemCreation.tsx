@@ -14,10 +14,17 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { SystemCreationMutation, SystemCreationMutation$variables } from './__generated__/SystemCreationMutation.graphql';
+import {
+  SystemCreationMutation,
+  SystemCreationMutation$variables,
+} from './__generated__/SystemCreationMutation.graphql';
 import { SystemsLinesPaginationQuery$variables } from './__generated__/SystemsLinesPaginationQuery.graphql';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
@@ -90,37 +97,33 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(SYSTEM_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().min(2),
-    description: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
-    x_opencti_reliability: Yup.string()
-      .nullable(),
-    createdBy: Yup.object().nullable(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().min(2),
+      description: Yup.string().nullable(),
+      confidence: Yup.number().nullable(),
+      x_opencti_reliability: Yup.string().nullable(),
+      createdBy: Yup.object().nullable(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
+  );
   const systemValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 
-  const [commit] = useApiMutation<SystemCreationMutation>(
-    systemMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_System')} ${t_i18n('successfully created')}` },
-  );
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
-  const {
-    bulkCommit,
-    bulkCount,
-    bulkCurrentCount,
-    BulkResult,
-    resetBulk,
-  } = useBulkCommit<SystemCreationMutation>({
-    commit,
-    relayUpdater: (store) => {
-      if (updater) {
-        updater(store, 'systemAdd');
-      }
-    },
+  const [commit] = useApiMutation<SystemCreationMutation>(systemMutation, undefined, {
+    successMessage: `${t_i18n('entity_System')} ${t_i18n('successfully created')}`,
   });
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
+  const { bulkCommit, bulkCount, bulkCurrentCount, BulkResult, resetBulk } =
+    useBulkCommit<SystemCreationMutation>({
+      commit,
+      relayUpdater: (store) => {
+        if (updater) {
+          updater(store, 'systemAdd');
+        }
+      },
+    });
 
   useEffect(() => {
     if (bulkCount > 1) {
@@ -130,11 +133,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
 
   const onSubmit: FormikConfig<SystemAddInput>['onSubmit'] = (
     values,
-    {
-      setSubmitting,
-      setErrors,
-      resetForm,
-    },
+    { setSubmitting, setErrors, resetForm },
   ) => {
     const allNames = splitMultilines(values.name);
     const variables: SystemCreationMutation$variables[] = allNames.map((name) => ({
@@ -166,20 +165,17 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
     });
   };
 
-  const initialValues = useDefaultValues(
-    SYSTEM_TYPE,
-    {
-      name: inputValue ?? '',
-      description: '',
-      confidence: null,
-      x_opencti_reliability: undefined,
-      createdBy: defaultCreatedBy ?? undefined, // undefined for Require Fields Flagging, if Configured Mandatory Field
-      objectMarking: defaultMarkingDefinitions ?? [],
-      objectLabel: [],
-      externalReferences: [],
-      file: null,
-    },
-  );
+  const initialValues = useDefaultValues(SYSTEM_TYPE, {
+    name: inputValue ?? '',
+    description: '',
+    confidence: null,
+    x_opencti_reliability: undefined,
+    createdBy: defaultCreatedBy ?? undefined, // undefined for Require Fields Flagging, if Configured Mandatory Field
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: null,
+  });
 
   return (
     <Formik<SystemAddInput>
@@ -190,14 +186,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({
-        submitForm,
-        handleReset,
-        isSubmitting,
-        setFieldValue,
-        values,
-        resetForm,
-      }) => (
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values, resetForm }) => (
         <>
           <BulkTextModal
             open={bulkModalOpen}
@@ -230,7 +219,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
               variant="standard"
               name="name"
               label={t_i18n('Name')}
-              required={(mandatoryAttributes.includes('name'))}
+              required={mandatoryAttributes.includes('name')}
               fullWidth={true}
               detectDuplicate={['User']}
             />
@@ -238,7 +227,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
-              required={(mandatoryAttributes.includes('description'))}
+              required={mandatoryAttributes.includes('description')}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -247,41 +236,38 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
               registerMarkdownImagesController={registerMarkdownImagesController}
               uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
-            <ConfidenceField
-              entityType="System"
-              containerStyle={fieldSpacingContainerStyle}
-            />
+            <ConfidenceField entityType="System" containerStyle={fieldSpacingContainerStyle} />
             <OpenVocabField
               label={t_i18n('Reliability')}
               type="reliability_ov"
               name="x_opencti_reliability"
-              required={(mandatoryAttributes.includes('x_opencti_reliability'))}
+              required={mandatoryAttributes.includes('x_opencti_reliability')}
               containerStyle={fieldSpacingContainerStyle}
               multiple={false}
               onChange={setFieldValue}
             />
             <CreatedByField
               name="createdBy"
-              required={(mandatoryAttributes.includes('createdBy'))}
+              required={mandatoryAttributes.includes('createdBy')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
-              required={(mandatoryAttributes.includes('objectLabel'))}
+              required={mandatoryAttributes.includes('objectLabel')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
-              required={(mandatoryAttributes.includes('objectMarking'))}
+              required={mandatoryAttributes.includes('objectMarking')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ExternalReferencesField
               name="externalReferences"
-              required={(mandatoryAttributes.includes('externalReferences'))}
+              required={mandatoryAttributes.includes('externalReferences')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
@@ -291,23 +277,17 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
               name="file"
               setFieldValue={setFieldValue}
               disabled={splitMultilines(values.name).length > 1}
-              noFileSelectedLabel={splitMultilines(values.name).length > 1
-                ? t_i18n('File upload not allowed in bulk creation')
-                : undefined
+              noFileSelectedLabel={
+                splitMultilines(values.name).length > 1
+                  ? t_i18n('File upload not allowed in bulk creation')
+                  : undefined
               }
             />
             <FormButtonContainer>
-              <Button
-                variant="secondary"
-                onClick={handleReset}
-                disabled={isSubmitting}
-              >
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>
@@ -325,7 +305,8 @@ const SystemCreation = ({
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_systems', paginationOptions, 'systemAdd');
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_systems', paginationOptions, 'systemAdd');
   const CreateSystemControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="System" {...props} />
   );

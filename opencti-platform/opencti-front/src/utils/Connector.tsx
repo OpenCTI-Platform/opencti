@@ -28,7 +28,8 @@ export const getConnectorTriggerStatus = (connector: Connector): ConnectorStatus
   if (!connector.connector_type || !connectorsWithTrigger.includes(connector.connector_type)) {
     return { status: null, label: CONNECTOR_STATUS_NOT_APPLICABLE };
   }
-  if (connector.auto || connector.connector_trigger_filters) { // automatic is either auto or trigger with filters
+  if (connector.auto || connector.connector_trigger_filters) {
+    // automatic is either auto or trigger with filters
     return { status: true, label: CONNECTOR_TRIGGER_AUTO };
   }
   return { status: false, label: CONNECTOR_TRIGGER_MANUAL };
@@ -47,9 +48,13 @@ export const getConnectorOnlyContextualStatus = (connector: Connector): Connecto
 export const useGetConnectorFilterEntityTypes = (connector: Connector): string[] => {
   const { allEntityTypes } = useSchema();
   // keep the scopes that are entity types (remove scope like 'text/csv')
-  const entityTypesScopes = (connector.connector_scope ?? []).filter((scope) => allEntityTypes.includes(scope));
+  const entityTypesScopes = (connector.connector_scope ?? []).filter((scope) =>
+    allEntityTypes.includes(scope),
+  );
   // return the entity types scopes
-  return entityTypesScopes.length > 0 ? [...entityTypesScopes] : ['Stix-Core-Object', 'Stix-Filtering'];
+  return entityTypesScopes.length > 0
+    ? [...entityTypesScopes]
+    : ['Stix-Core-Object', 'Stix-Filtering'];
 };
 
 export const useGetConnectorAvailableFilterKeys = (connector: Connector): string[] => {
@@ -70,7 +75,8 @@ export const computeConnectorStatus = ({
 }: Partial<ConnectorsStateQuery$data['connectors'][0]>) => {
   if (manager_requested_status) {
     // On connector created, manager_current_status is null
-    const isTransitioning = (manager_current_status ?? '').slice(0, 5) !== manager_requested_status.slice(0, 5);
+    const isTransitioning =
+      (manager_current_status ?? '').slice(0, 5) !== manager_requested_status.slice(0, 5);
 
     if (isTransitioning) {
       const isProcessing = ['starting', 'stopping'].includes(manager_requested_status);

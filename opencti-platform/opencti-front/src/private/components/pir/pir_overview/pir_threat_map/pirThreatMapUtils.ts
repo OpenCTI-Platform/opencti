@@ -22,13 +22,15 @@ export interface PirThreatMapMarker {
 }
 
 export type ApexPirThreatMapSeries = {
-  data: [{
-    x: Date;
-    y: number;
-    fillColor: string;
-    meta: {
-      size: number;
-      group: PirThreatMapMarker[];
-    };
-  }];
+  data: [
+    {
+      x: Date;
+      y: number;
+      fillColor: string;
+      meta: {
+        size: number;
+        group: PirThreatMapMarker[];
+      };
+    },
+  ];
 }[];

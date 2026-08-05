@@ -7,7 +7,12 @@ import { SYSTEM_USER } from '../../utils/access';
 import type { BasicGroupEntity } from '../../types/store';
 import { findDefaultIngestionGroups } from '../../domain/group';
 import { FunctionalError, ValidationError } from '../../config/errors';
-import { EditOperation, TokenDuration, type UserAddInput, type UserTokenAddInput } from '../../generated/graphql';
+import {
+  EditOperation,
+  TokenDuration,
+  type UserAddInput,
+  type UserTokenAddInput,
+} from '../../generated/graphql';
 import { getEntityFromCache } from '../../database/cache';
 import type { BasicStoreSettings } from '../../types/settings';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../schema/internalObject';
@@ -41,20 +46,41 @@ export const userAlreadyExists = async (context: AuthContext, name: string) => {
   return users.edges.length > 0;
 };
 
-type OnTheFlyInput = { userName: string; serviceAccount: boolean; confidenceLevel: number | null | undefined };
-export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, input: OnTheFlyInput) => {
-  const defaultIngestionGroups: BasicGroupEntity[] = await findDefaultIngestionGroups(context, user) as BasicGroupEntity[];
+type OnTheFlyInput = {
+  userName: string;
+  serviceAccount: boolean;
+  confidenceLevel: number | null | undefined;
+};
+export const createOnTheFlyUser = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: OnTheFlyInput,
+) => {
+  const defaultIngestionGroups: BasicGroupEntity[] = (await findDefaultIngestionGroups(
+    context,
+    user,
+  )) as BasicGroupEntity[];
   if (defaultIngestionGroups.length < 1) {
     throw FunctionalError('You have not defined a default group for ingestion users', {});
   }
   const isUserAlreadyExisting = await userAlreadyExists(context, input.userName);
   if (isUserAlreadyExisting) {
     if (input.serviceAccount) {
-      throw FunctionalError('This service account already exists. Change the instance name to change the automatically created service account name', { name: input.userName });
+      throw FunctionalError(
+        'This service account already exists. Change the instance name to change the automatically created service account name',
+        { name: input.userName },
+      );
     }
-    throw FunctionalError('This user already exists. Change the feed\'s name to change the automatically created user\'s name', { name: input.userName });
+    throw FunctionalError(
+      "This user already exists. Change the feed's name to change the automatically created user's name",
+      { name: input.userName },
+    );
   }
-  const { platform_organization } = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const { platform_organization } = await getEntityFromCache<BasicStoreSettings>(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_SETTINGS,
+  );
 
   let userInput: UserAddInput = {
     password: uuid(),
@@ -62,16 +88,23 @@ export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, i
     name: input.userName,
     prevent_default_groups: true,
     groups: [defaultIngestionGroups[0].id],
-    objectOrganization: platform_organization && !input.serviceAccount ? [platform_organization] : [],
+    objectOrganization:
+      platform_organization && !input.serviceAccount ? [platform_organization] : [],
     user_service_account: input.serviceAccount,
   };
 
   if (input.confidenceLevel) {
     const userConfidence = input.confidenceLevel;
     if (userConfidence < 0 || userConfidence > 100 || !Number.isInteger(userConfidence)) {
-      throw ValidationError('The confidence_level should be an integer between 0 and 100', 'confidence_level');
+      throw ValidationError(
+        'The confidence_level should be an integer between 0 and 100',
+        'confidence_level',
+      );
     }
-    userInput = { ...userInput, user_confidence_level: { max_confidence: userConfidence, overrides: [] } };
+    userInput = {
+      ...userInput,
+      user_confidence_level: { max_confidence: userConfidence, overrides: [] },
+    };
   }
   return await addUser(context, user, userInput);
 };
@@ -84,7 +117,13 @@ export interface GeneratedToken {
 }
 
 // Add token
-const addToken = async (context: AuthContext, user: AuthUser, targetUser: AuthUser, input: UserTokenAddInput, auditMessage: (token: UserApiToken) => string) => {
+const addToken = async (
+  context: AuthContext,
+  user: AuthUser,
+  targetUser: AuthUser,
+  input: UserTokenAddInput,
+  auditMessage: (token: UserApiToken) => string,
+) => {
   const { duration, name } = input;
   let expires_at = null;
   if (duration && duration !== TokenDuration.Unlimited) {
@@ -111,8 +150,16 @@ const addToken = async (context: AuthContext, user: AuthUser, targetUser: AuthUs
     expires_at,
     masked_token,
   };
-  const updates = [{ key: apiTokens.name, value: [newToken], operation: UPDATE_OPERATION_ADD as EditOperation }];
-  const { element } = await updateAttribute(context, user, targetUser.id, ENTITY_TYPE_USER, updates);
+  const updates = [
+    { key: apiTokens.name, value: [newToken], operation: UPDATE_OPERATION_ADD as EditOperation },
+  ];
+  const { element } = await updateAttribute(
+    context,
+    user,
+    targetUser.id,
+    ENTITY_TYPE_USER,
+    updates,
+  );
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -138,27 +185,66 @@ const addToken = async (context: AuthContext, user: AuthUser, targetUser: AuthUs
     expires_at,
   };
 };
-export const addUserToken = async (context: AuthContext, user: AuthUser, input: UserTokenAddInput) => {
-  return await addToken(context, user, user, input, (token) => `generated a new API token '${token.name}'`);
+export const addUserToken = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: UserTokenAddInput,
+) => {
+  return await addToken(
+    context,
+    user,
+    user,
+    input,
+    (token) => `generated a new API token '${token.name}'`,
+  );
 };
-export const addUserTokenByAdmin = async (context: AuthContext, user: AuthUser, userId: string, input: UserTokenAddInput) => {
+export const addUserTokenByAdmin = async (
+  context: AuthContext,
+  user: AuthUser,
+  userId: string,
+  input: UserTokenAddInput,
+) => {
   // Load target user
-  const userToEdit = await internalLoadById(context, user, userId) as unknown as AuthUser;
+  const userToEdit = (await internalLoadById(context, user, userId)) as unknown as AuthUser;
   if (!userToEdit) {
     throw FunctionalError('User not found', { userId });
   }
-  return await addToken(context, user, userToEdit, input, (token) => `generated a new API token '${token.name}' for user '${userToEdit.user_email}'`);
+  return await addToken(
+    context,
+    user,
+    userToEdit,
+    input,
+    (token) => `generated a new API token '${token.name}' for user '${userToEdit.user_email}'`,
+  );
 };
 
 // Revoke token
-const revokeToken = async (context: AuthContext, user: AuthUser, targetUser: AuthUser, tokenId: string, auditMessage: (token: UserApiToken) => string) => {
+const revokeToken = async (
+  context: AuthContext,
+  user: AuthUser,
+  targetUser: AuthUser,
+  tokenId: string,
+  auditMessage: (token: UserApiToken) => string,
+) => {
   const tokens = targetUser.api_tokens || [];
   const tokenToRemove = tokens.find((t: any) => t.id === tokenId);
   if (!tokenToRemove) {
     throw FunctionalError('Token not found', { tokenId });
   }
-  const updates = [{ key: apiTokens.name, value: [tokenToRemove], operation: UPDATE_OPERATION_REMOVE as EditOperation }];
-  const { element } = await updateAttribute(context, user, targetUser.id, ENTITY_TYPE_USER, updates);
+  const updates = [
+    {
+      key: apiTokens.name,
+      value: [tokenToRemove],
+      operation: UPDATE_OPERATION_REMOVE as EditOperation,
+    },
+  ];
+  const { element } = await updateAttribute(
+    context,
+    user,
+    targetUser.id,
+    ENTITY_TYPE_USER,
+    updates,
+  );
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -178,14 +264,31 @@ const revokeToken = async (context: AuthContext, user: AuthUser, targetUser: Aut
   return tokenId;
 };
 export const revokeUserToken = async (context: AuthContext, user: AuthUser, tokenId: string) => {
-  return await revokeToken(context, user, user, tokenId, (token) => `revoked API token '${token.name}'`);
+  return await revokeToken(
+    context,
+    user,
+    user,
+    tokenId,
+    (token) => `revoked API token '${token.name}'`,
+  );
 };
-export const revokeUserTokenByAdmin = async (context: AuthContext, user: AuthUser, targetUserId: string, tokenId: string) => {
-  const userToEdit = await internalLoadById(context, user, targetUserId) as unknown as AuthUser;
+export const revokeUserTokenByAdmin = async (
+  context: AuthContext,
+  user: AuthUser,
+  targetUserId: string,
+  tokenId: string,
+) => {
+  const userToEdit = (await internalLoadById(context, user, targetUserId)) as unknown as AuthUser;
   if (!userToEdit) {
     throw FunctionalError('User not found', { targetUserId });
   }
-  return await revokeToken(context, user, userToEdit, tokenId, (token) => `revoked API token '${token.name}' for user '${userToEdit.user_email}'`);
+  return await revokeToken(
+    context,
+    user,
+    userToEdit,
+    tokenId,
+    (token) => `revoked API token '${token.name}' for user '${userToEdit.user_email}'`,
+  );
 };
 
 /**

@@ -11,15 +11,29 @@ interface HtmlDisplayProps {
 }
 
 const SANITIZE_CONFIG = {
-  ADD_ATTR: ['data-type', 'data-checked', 'title', 'class', 'href', 'src', 'alt', 'width', 'height', 'data-caption', 'data-href', 'data-title', 'colspan', 'rowspan', 'style'],
+  ADD_ATTR: [
+    'data-type',
+    'data-checked',
+    'title',
+    'class',
+    'href',
+    'src',
+    'alt',
+    'width',
+    'height',
+    'data-caption',
+    'data-href',
+    'data-title',
+    'colspan',
+    'rowspan',
+    'style',
+  ],
   ADD_TAGS: ['figure', 'figcaption', 'th', 'colgroup', 'col'],
 };
 
 const HtmlDisplay: FunctionComponent<HtmlDisplayProps> = ({ content, limit }) => {
   if (isEmptyField(content)) {
-    return (
-      <FieldOrEmpty source={content}>{content}</FieldOrEmpty>
-    );
+    return <FieldOrEmpty source={content}>{content}</FieldOrEmpty>;
   }
 
   const sanitize = (html: string) => purify.sanitize(html, SANITIZE_CONFIG);

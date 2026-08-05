@@ -17,18 +17,16 @@ interface DataSourceKnowledgeComponentProps {
   enableReferences: boolean;
 }
 
-const DataSourceKnowledgeComponent: FunctionComponent<
-  DataSourceKnowledgeComponentProps
-> = ({ data }) => {
+const DataSourceKnowledgeComponent: FunctionComponent<DataSourceKnowledgeComponentProps> = ({
+  data,
+}) => {
   const dataSource = useFragment(DataSourceKnowledgeFragment, data);
   return (
     <>
       <Routes>
         <Route
           path="/relations/:relationId"
-          element={
-            <StixCoreRelationship entityId={dataSource.id} />
-          }
+          element={<StixCoreRelationship entityId={dataSource.id} />}
         />
       </Routes>
     </>

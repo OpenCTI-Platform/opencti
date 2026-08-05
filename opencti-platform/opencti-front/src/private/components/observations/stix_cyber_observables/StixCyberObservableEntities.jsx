@@ -10,7 +10,9 @@ import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import Card from '@common/card/Card';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import StixCyberObservableEntitiesLines, { stixCyberObservableEntitiesLinesQuery } from './StixCyberObservableEntitiesLines';
+import StixCyberObservableEntitiesLines, {
+  stixCyberObservableEntitiesLinesQuery,
+} from './StixCyberObservableEntitiesLines';
 import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
@@ -212,7 +214,7 @@ class StixCyberObservableEntities extends Component {
       <div style={{ height: '100%' }}>
         <Card
           title={t('Relations')}
-          action={(
+          action={
             <Stack direction="row" gap={1}>
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <StixCoreRelationshipCreationFromEntity
@@ -233,7 +235,7 @@ class StixCyberObservableEntities extends Component {
                 keyword={searchTerm}
               />
             </Stack>
-          )}
+          }
         >
           <List style={{ marginTop: -10 }}>
             <ListItem
@@ -254,7 +256,7 @@ class StixCyberObservableEntities extends Component {
                 </span>
               </ListItemIcon>
               <ListItemText
-                primary={(
+                primary={
                   <div>
                     {this.SortHeader('relationship_type', 'Relationship', true)}
                     {this.SortHeader('entity_tyoe', 'Entity type', false)}
@@ -265,7 +267,7 @@ class StixCyberObservableEntities extends Component {
                     {this.SortHeader('stop_time', 'Stop time', true)}
                     {this.SortHeader('confidence', 'Confidence level', true)}
                   </div>
-                )}
+                }
               />
             </ListItem>
             <QueryRenderer
@@ -297,7 +299,4 @@ StixCyberObservableEntities.propTypes = {
   defaultStopTime: PropTypes.string,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCyberObservableEntities);
+export default compose(inject18n, withStyles(styles))(StixCyberObservableEntities);

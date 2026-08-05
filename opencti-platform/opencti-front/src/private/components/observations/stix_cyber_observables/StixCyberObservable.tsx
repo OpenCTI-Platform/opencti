@@ -54,29 +54,19 @@ interface StixCyberObservableProps {
   stixCyberObservableData: StixCyberObservable_stixCyberObservable$key;
 }
 
-const StixCyberObservable: React.FC<StixCyberObservableProps> = ({
-  stixCyberObservableData,
-}) => {
+const StixCyberObservable: React.FC<StixCyberObservableProps> = ({ stixCyberObservableData }) => {
   const stixCyberObservable = useFragment<StixCyberObservable_stixCyberObservable$key>(
     stixCyberObservableFragment,
     stixCyberObservableData,
   );
   return (
     <div data-testid="observable-details-page">
-      <Grid
-        container={true}
-        spacing={3}
-        style={{ marginBottom: 20 }}
-      >
+      <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
         <Grid item xs={6}>
-          <StixCyberObservableDetails
-            data={stixCyberObservable}
-          />
+          <StixCyberObservableDetails data={stixCyberObservable} />
         </Grid>
         <Grid item xs={6}>
-          <StixCyberObservableOverview
-            stixCyberObservable={stixCyberObservable}
-          />
+          <StixCyberObservableOverview stixCyberObservable={stixCyberObservable} />
         </Grid>
         <Grid item xs={6}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
@@ -90,14 +80,10 @@ const StixCyberObservable: React.FC<StixCyberObservableProps> = ({
           />
         </Grid>
         <Grid item xs={6}>
-          <StixCoreObjectExternalReferences
-            stixCoreObjectId={stixCyberObservable.id}
-          />
+          <StixCoreObjectExternalReferences stixCoreObjectId={stixCyberObservable.id} />
         </Grid>
         <Grid item xs={6}>
-          <StixCoreObjectLatestHistory
-            stixCoreObjectId={stixCyberObservable.id}
-          />
+          <StixCoreObjectLatestHistory stixCoreObjectId={stixCyberObservable.id} />
         </Grid>
         <Grid item xs={12}>
           <StixCoreObjectOrStixCoreRelationshipNotes

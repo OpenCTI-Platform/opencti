@@ -9,7 +9,14 @@ export const CUSTOM_FIELD_PREFIX = 'x_opencti_cf_';
 
 // Field types supported by custom fields
 // `markdown` reuses the string value channel; `multi_select` reuses select_options but stores an array (select_values).
-export type CustomFieldType = 'integer' | 'string' | 'markdown' | 'boolean' | 'date' | 'select' | 'multi_select';
+export type CustomFieldType =
+  | 'integer'
+  | 'string'
+  | 'markdown'
+  | 'boolean'
+  | 'date'
+  | 'select'
+  | 'multi_select';
 
 export interface CustomFieldValue {
   field_id: string;

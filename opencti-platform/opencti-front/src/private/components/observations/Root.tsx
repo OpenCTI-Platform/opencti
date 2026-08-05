@@ -32,34 +32,16 @@ const Root = () => {
           path="/"
           element={<Navigate to={`/dashboard/observations/${redirect}`} replace={true} />}
         />
-        <Route
-          path="/observables"
-          element={boundaryWrapper(StixCyberObservables)}
-        />
+        <Route path="/observables" element={boundaryWrapper(StixCyberObservables)} />
         <Route
           path="/observables/:observableId/*"
           element={boundaryWrapper(RootStixCyberObservable)}
         />
-        <Route
-          path="/artifacts"
-          element={boundaryWrapper(Artifacts)}
-        />
-        <Route
-          path="/artifacts/:observableId/*"
-          element={boundaryWrapper(RootArtifact)}
-        />
-        <Route
-          path="/indicators"
-          element={boundaryWrapper(Indicators)}
-        />
-        <Route
-          path="/indicators/:indicatorId/*"
-          element={boundaryWrapper(RootIndicator)}
-        />
-        <Route
-          path="/infrastructures"
-          element={boundaryWrapper(Infrastructures)}
-        />
+        <Route path="/artifacts" element={boundaryWrapper(Artifacts)} />
+        <Route path="/artifacts/:observableId/*" element={boundaryWrapper(RootArtifact)} />
+        <Route path="/indicators" element={boundaryWrapper(Indicators)} />
+        <Route path="/indicators/:indicatorId/*" element={boundaryWrapper(RootIndicator)} />
+        <Route path="/infrastructures" element={boundaryWrapper(Infrastructures)} />
         <Route
           path="/infrastructures/:infrastructureId/*"
           element={boundaryWrapper(RootInfrastructure)}

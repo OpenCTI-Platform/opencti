@@ -17,16 +17,13 @@ const FeedbackEdition: FunctionComponent<{ feedbackId: string }> = ({ feedbackId
       },
     });
   };
-  const queryRef = useQueryLoading<FeedbackEditionContainerQuery>(
-    feedbackEditionQuery,
-    { id: feedbackId },
-  );
+  const queryRef = useQueryLoading<FeedbackEditionContainerQuery>(feedbackEditionQuery, {
+    id: feedbackId,
+  });
   return (
     <>
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inline} />}
-        >
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
           <FeedbackEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}

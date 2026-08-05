@@ -21,7 +21,11 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetWordCloud from '../../../../components/dashboard/WidgetWordCloud';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import type {
+  WidgetDataSelection,
+  WidgetHost,
+  WidgetParameters,
+} from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import AuditsWidgetRenderContent from '../../../../components/dashboard/AuditsWidgetRenderContent';
@@ -94,12 +98,7 @@ const AuditsWordCloudComponent: FunctionComponent<AuditsWordCloudComponentProps>
   );
 
   if (data.auditsDistribution && data.auditsDistribution.length > 0) {
-    return (
-      <WidgetWordCloud
-        data={data.auditsDistribution}
-        groupBy={selection.attribute!}
-      />
-    );
+    return <WidgetWordCloud data={data.auditsDistribution} groupBy={selection.attribute!} />;
   }
   return <WidgetNoData />;
 };
@@ -131,29 +130,38 @@ const AuditsWordCloud: FunctionComponent<AuditsWordCloudProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
 
-  const buildQueryVariables = useCallback((
-    resolvedDataSelection: WidgetDataSelection[],
-    _config: DashboardConfig,
-    _parameters?: WidgetParameters,
-  ): AuditsWordCloudDistributionQuery['variables'] => {
-    const selection = resolvedDataSelection[0];
-    const field = selection.attribute;
-    return {
-      types: ['History', 'Activity'],
-      field: field!,
-      operation: 'count' as const,
-      startDate: startDate ?? undefined,
-      endDate: endDate ?? undefined,
-      dateAttribute:
-        selection.date_attribute && selection.date_attribute.length > 0
-          ? selection.date_attribute
-          : 'timestamp',
-      filters: normalizeFilterGroupForBackend(selection.filters),
-      limit: selection.number ?? 10,
-    };
-  }, [startDate, endDate]);
+  const buildQueryVariables = useCallback(
+    (
+      resolvedDataSelection: WidgetDataSelection[],
+      _config: DashboardConfig,
+      _parameters?: WidgetParameters,
+    ): AuditsWordCloudDistributionQuery['variables'] => {
+      const selection = resolvedDataSelection[0];
+      const field = selection.attribute;
+      return {
+        types: ['History', 'Activity'],
+        field: field!,
+        operation: 'count' as const,
+        startDate: startDate ?? undefined,
+        endDate: endDate ?? undefined,
+        dateAttribute:
+          selection.date_attribute && selection.date_attribute.length > 0
+            ? selection.date_attribute
+            : 'timestamp',
+        filters: normalizeFilterGroupForBackend(selection.filters),
+        limit: selection.number ?? 10,
+      };
+    },
+    [startDate, endDate],
+  );
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsWordCloudDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<AuditsWordCloudDistributionQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -179,10 +187,7 @@ const AuditsWordCloud: FunctionComponent<AuditsWordCloudProps> = ({
         queryRef={queryRef}
         host={host}
       >
-        <AuditsWordCloudComponent
-          queryRef={queryRef!}
-          selection={selection}
-        />
+        <AuditsWordCloudComponent queryRef={queryRef!} selection={selection} />
       </AuditsWidgetRenderContent>
     </WidgetContainer>
   );

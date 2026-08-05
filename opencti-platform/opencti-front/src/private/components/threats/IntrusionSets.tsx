@@ -7,13 +7,22 @@ import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import { IntrusionSetCardFragment } from '@components/threats/intrusion_sets/IntrusionSetCard';
 import { IntrusionSetsCards_data$data } from '@components/threats/intrusion_sets/__generated__/IntrusionSetsCards_data.graphql';
 import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
-import { IntrusionSetsCardsPaginationQuery, IntrusionSetsCardsPaginationQuery$variables } from './intrusion_sets/__generated__/IntrusionSetsCardsPaginationQuery.graphql';
+import {
+  IntrusionSetsCardsPaginationQuery,
+  IntrusionSetsCardsPaginationQuery$variables,
+} from './intrusion_sets/__generated__/IntrusionSetsCardsPaginationQuery.graphql';
 import ListCards from '../../../components/list_cards/ListCards';
-import IntrusionSetsCards, { intrusionSetsCardsFragment, intrusionSetsCardsQuery } from './intrusion_sets/IntrusionSetsCards';
+import IntrusionSetsCards, {
+  intrusionSetsCardsFragment,
+  intrusionSetsCardsQuery,
+} from './intrusion_sets/IntrusionSetsCards';
 import IntrusionSetCreation from './intrusion_sets/IntrusionSetCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
@@ -36,10 +45,11 @@ const IntrusionSets = () => {
   };
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Intrusion Sets | Threats'));
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<IntrusionSetsCardsPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    initialValues,
-  );
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<IntrusionSetsCardsPaginationQuery$variables>(
+      LOCAL_STORAGE_KEY,
+      initialValues,
+    );
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Intrusion-Set', viewStorage.filters);
   const queryPaginationOptions = {
@@ -47,14 +57,7 @@ const IntrusionSets = () => {
     filters: contextFilters,
   } as unknown as IntrusionSetsCardsPaginationQuery$variables;
 
-  const {
-    sortBy,
-    orderAsc,
-    searchTerm,
-    filters,
-    openExports,
-    numberOfElements,
-  } = viewStorage;
+  const { sortBy, orderAsc, searchTerm, filters, openExports, numberOfElements } = viewStorage;
 
   const queryRef = useQueryLoading<IntrusionSetsCardsPaginationQuery>(
     intrusionSetsCardsQuery,
@@ -98,29 +101,25 @@ const IntrusionSets = () => {
             <StixCoreObjectForms entityType="Intrusion-Set" />
           </Security>,
         ]}
-        createButton={(
+        createButton={
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
           </Security>
-        )}
+        }
       >
         {queryRef && (
           <React.Suspense
-            fallback={(
+            fallback={
               <Grid container={true} spacing={3} style={{ paddingLeft: 17 }}>
                 {Array(20)
                   .fill(0)
                   .map((_, idx) => (
-                    <Grid
-                      item
-                      xs={3}
-                      key={idx}
-                    >
+                    <Grid item xs={3} key={idx}>
                       <GenericAttackCardDummy />
                     </Grid>
                   ))}
               </Grid>
-            )}
+            }
           >
             <IntrusionSetsCards
               queryRef={queryRef}
@@ -160,7 +159,9 @@ const IntrusionSets = () => {
         {queryRef && (
           <DataTable
             dataColumns={dataColumns}
-            resolvePath={(data: IntrusionSetsCards_data$data) => data.intrusionSets?.edges?.map((n) => n?.node)}
+            resolvePath={(data: IntrusionSetsCards_data$data) =>
+              data.intrusionSets?.edges?.map((n) => n?.node)
+            }
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
             contextFilters={contextFilters}
@@ -184,11 +185,11 @@ const IntrusionSets = () => {
                 <StixCoreObjectForms entityType="Intrusion-Set" />
               </Security>,
             ]}
-            createButton={(
+            createButton={
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
               </Security>
-            )}
+            }
           />
         )}
       </>
@@ -197,7 +198,12 @@ const IntrusionSets = () => {
 
   return (
     <div data-testid="instrusion-set-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Intrusion sets'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Threats') },
+          { label: t_i18n('Intrusion sets'), current: true },
+        ]}
+      />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
     </div>
   );

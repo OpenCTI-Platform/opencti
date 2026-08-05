@@ -12,7 +12,11 @@ import { UserContext } from '../../../../utils/hooks/useAuth';
 import { FieldOption } from '../../../../utils/field';
 
 export const objectParticipantFieldMembersSearchQuery = graphql`
-  query ObjectParticipantFieldMembersSearchQuery($search: String, $first: Int, $entityTypes: [MemberType!]) {
+  query ObjectParticipantFieldMembersSearchQuery(
+    $search: String
+    $first: Int
+    $entityTypes: [MemberType!]
+  ) {
     members(search: $search, first: $first, entityTypes: $entityTypes) {
       edges {
         node {
@@ -81,7 +85,7 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const { me } = useContext((UserContext));
+  const { me } = useContext(UserContext);
   const [participants, setParticipants] = useState<OptionParticipant[]>([]);
 
   const searchParticipants = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -105,7 +109,13 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
         });
         // Add current user if is not in the only first results displayed
         const isMeDisplayed = newParticipants.find((participant) => participant.value === me?.id);
-        if (me && !isMeDisplayed) newParticipants.unshift({ label: me.name, value: me.id, type: 'User', group: t_i18n('Current User') });
+        if (me && !isMeDisplayed)
+          newParticipants.unshift({
+            label: me.name,
+            value: me.id,
+            type: 'User',
+            group: t_i18n('Current User'),
+          });
         newParticipants.sort((a, b) => {
           // Display first the current user
           if (a.value === me?.id) return -1;

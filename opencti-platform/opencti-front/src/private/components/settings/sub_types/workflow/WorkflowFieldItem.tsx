@@ -33,7 +33,10 @@ const WorkflowFieldItem = ({ field, isCondition }: WorkflowFieldItemProps) => {
     );
   }
 
-  if (value.type === WorkflowActionType.shareWithOrganizations || value.type === WorkflowActionType.unshareFromOrganizations) {
+  if (
+    value.type === WorkflowActionType.shareWithOrganizations ||
+    value.type === WorkflowActionType.unshareFromOrganizations
+  ) {
     return null;
   }
 

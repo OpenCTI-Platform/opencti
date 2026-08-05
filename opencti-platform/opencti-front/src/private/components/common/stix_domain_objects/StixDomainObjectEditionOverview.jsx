@@ -35,11 +35,7 @@ export const stixDomainObjectMutationFieldPatch = graphql`
     $references: [String]
   ) {
     stixDomainObjectEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         ...StixDomainObjectEditionOverview_stixDomainObject
       }
     }
@@ -47,10 +43,7 @@ export const stixDomainObjectMutationFieldPatch = graphql`
 `;
 
 export const stixDomainObjectEditionFocus = graphql`
-  mutation StixDomainObjectEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation StixDomainObjectEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     stixDomainObjectEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -88,14 +81,15 @@ const stixDomainObjectMutationRelationDelete = graphql`
   }
 `;
 
-const stixDomainObjectValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  aliases: Yup.string().nullable(),
-  x_opencti_aliases: Yup.string().nullable(),
-  references: Yup.array(),
-  confidence: Yup.number().nullable(),
-});
+const stixDomainObjectValidation = (t) =>
+  Yup.object().shape({
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    aliases: Yup.string().nullable(),
+    x_opencti_aliases: Yup.string().nullable(),
+    references: Yup.array(),
+    confidence: Yup.number().nullable(),
+  });
 
 const StixDomainObjectEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
@@ -150,8 +144,7 @@ const StixDomainObjectEditionContainer = (props) => {
       variables: {
         id: stixDomainObject.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       setSubmitting,
@@ -174,9 +167,7 @@ const StixDomainObjectEditionContainer = (props) => {
               input: {
                 key: name,
                 value:
-                  name === 'aliases' || name === 'x_opencti_aliases'
-                    ? R.split(',', value)
-                    : value,
+                  name === 'aliases' || name === 'x_opencti_aliases' ? R.split(',', value) : value,
               },
             },
           });
@@ -248,12 +239,13 @@ const StixDomainObjectEditionContainer = (props) => {
   };
 
   const { editContext } = stixDomainObject;
-  const createdBy = R.pathOr(null, ['createdBy', 'name'], stixDomainObject) === null
-    ? ''
-    : {
-        label: R.pathOr(null, ['createdBy', 'name'], stixDomainObject),
-        value: R.pathOr(null, ['createdBy', 'id'], stixDomainObject),
-      };
+  const createdBy =
+    R.pathOr(null, ['createdBy', 'name'], stixDomainObject) === null
+      ? ''
+      : {
+          label: R.pathOr(null, ['createdBy', 'name'], stixDomainObject),
+          value: R.pathOr(null, ['createdBy', 'id'], stixDomainObject),
+        };
   const objectMarking = convertMarkings(stixDomainObject);
   let initialValues = R.pipe(
     R.assoc('createdBy', createdBy),
@@ -270,9 +262,7 @@ const StixDomainObjectEditionContainer = (props) => {
   if ('x_opencti_aliases' in stixDomainObject && stixDomainObject.x_opencti_aliases !== undefined) {
     initialValues = R.assoc(
       'x_opencti_aliases',
-      stixDomainObject.x_opencti_aliases
-        ? R.join(',', stixDomainObject.x_opencti_aliases)
-        : '',
+      stixDomainObject.x_opencti_aliases ? R.join(',', stixDomainObject.x_opencti_aliases) : '',
       initialValues,
     );
   }
@@ -301,27 +291,23 @@ const StixDomainObjectEditionContainer = (props) => {
                   fullWidth={true}
                   onFocus={handleChangeFocus}
                   onSubmit={handleResultName}
-                  helperText={
-                    <SubscriptionFocus context={editContext} fieldName="result_name" />
-                  }
+                  helperText={<SubscriptionFocus context={editContext} fieldName="result_name" />}
                 />
-              ) : ('name' in stixDomainObject && (
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="name"
-                  label={t_i18n('Name')}
-                  fullWidth={true}
-                  disabled={typesWithoutName.includes(
-                    stixDomainObject.entity_type,
-                  )}
-                  onFocus={handleChangeFocus}
-                  onSubmit={handleSubmitField}
-                  helperText={
-                    <SubscriptionFocus context={editContext} fieldName="name" />
-                  }
-                />
-              ))}
+              ) : (
+                'name' in stixDomainObject && (
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="name"
+                    label={t_i18n('Name')}
+                    fullWidth={true}
+                    disabled={typesWithoutName.includes(stixDomainObject.entity_type)}
+                    onFocus={handleChangeFocus}
+                    onSubmit={handleSubmitField}
+                    helperText={<SubscriptionFocus context={editContext} fieldName="name" />}
+                  />
+                )
+              )}
               {'aliases' in stixDomainObject && stixDomainObject.aliases !== undefined && (
                 <Field
                   component={TextField}
@@ -332,32 +318,25 @@ const StixDomainObjectEditionContainer = (props) => {
                   style={{ marginTop: 20 }}
                   onFocus={handleChangeFocus}
                   onSubmit={handleSubmitField}
-                  helperText={(
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="aliases"
-                    />
-                  )}
+                  helperText={<SubscriptionFocus context={editContext} fieldName="aliases" />}
                 />
               )}
-              {'x_opencti_aliases' in stixDomainObject && stixDomainObject.x_opencti_aliases !== undefined && (
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="x_opencti_aliases"
-                  label={t_i18n('Aliases separated by commas')}
-                  fullWidth={true}
-                  style={{ marginTop: 20 }}
-                  onFocus={handleChangeFocus}
-                  onSubmit={handleSubmitField}
-                  helperText={(
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="x_opencti_aliases"
-                    />
-                  )}
-                />
-              )}
+              {'x_opencti_aliases' in stixDomainObject &&
+                stixDomainObject.x_opencti_aliases !== undefined && (
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="x_opencti_aliases"
+                    label={t_i18n('Aliases separated by commas')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                    onFocus={handleChangeFocus}
+                    onSubmit={handleSubmitField}
+                    helperText={
+                      <SubscriptionFocus context={editContext} fieldName="x_opencti_aliases" />
+                    }
+                  />
+                )}
               <ConfidenceField
                 variant="edit"
                 name="confidence"
@@ -378,35 +357,20 @@ const StixDomainObjectEditionContainer = (props) => {
                   style={{ marginTop: 20 }}
                   onFocus={handleChangeFocus}
                   onSubmit={handleSubmitField}
-                  helperText={(
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="description"
-                    />
-                  )}
+                  helperText={<SubscriptionFocus context={editContext} fieldName="description" />}
                 />
               )}
               <CreatedByField
                 name="createdBy"
                 style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
-                helpertext={(
-                  <SubscriptionFocus
-                    context={editContext}
-                    fieldName="createdBy"
-                  />
-                )}
+                helpertext={<SubscriptionFocus context={editContext} fieldName="createdBy" />}
                 onChange={handleChangeCreatedBy}
               />
               <ObjectMarkingField
                 name="objectMarking"
                 style={fieldSpacingContainerStyle}
-                helpertext={(
-                  <SubscriptionFocus
-                    context={editContext}
-                    fieldname="objectMarking"
-                  />
-                )}
+                helpertext={<SubscriptionFocus context={editContext} fieldname="objectMarking" />}
                 setFieldValue={setFieldValue}
                 onChange={handleChangeObjectMarking}
               />
@@ -429,147 +393,144 @@ const StixDomainObjectEditionContainer = (props) => {
   );
 };
 
-const StixDomainObjectEditionFragment = createFragmentContainer(
-  StixDomainObjectEditionContainer,
-  {
-    stixDomainObject: graphql`
-      fragment StixDomainObjectEditionOverview_stixDomainObject on StixDomainObject {
-        id
-        entity_type
-        parent_types
-        confidence
-        ... on AttackPattern {
-          name
-          description
-          aliases
-        }
-        ... on Campaign {
-          name
-          description
-          aliases
-        }
-        ... on CourseOfAction {
-          name
-          description
-          x_opencti_aliases
-        }
-        ... on ObservedData {
-          name
-        }
-        ... on Report {
-          name
-          description
-        }
-        ... on Grouping {
-          name
-          description
-        }
-        ... on Individual {
-          name
-          description
-          x_opencti_aliases
-        }
-        ... on Organization {
-          name
-          description
-          x_opencti_aliases
-        }
-        ... on Sector {
-          name
-          description
-          x_opencti_aliases
-        }
-        ... on System {
-          name
-          description
-          x_opencti_aliases
-        }
-        ... on Indicator {
-          name
-          description
-        }
-        ... on Infrastructure {
-          name
-          description
-        }
-        ... on IntrusionSet {
-          name
-          description
-          aliases
-        }
-        ... on Position {
-          name
-          description
-          x_opencti_aliases
-        }
-        ... on City {
-          name
-          description
-          x_opencti_aliases
-        }
-        ... on AdministrativeArea {
-          name
-          description
-          x_opencti_aliases
-        }
-        ... on Country {
-          name
-          description
-          x_opencti_aliases
-        }
-        ... on Region {
-          name
-          description
-          x_opencti_aliases
-        }
-        ... on Malware {
-          name
-          description
-          aliases
-        }
-        ... on MalwareAnalysis {
-          result_name
-        }
-        ... on ThreatActor {
-          name
-          description
-          aliases
-        }
-        ... on Tool {
-          name
-          description
-          aliases
-        }
-        ... on Vulnerability {
-          name
-          description
-        }
-        ... on Incident {
-          name
-          description
-          aliases
-        }
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
+const StixDomainObjectEditionFragment = createFragmentContainer(StixDomainObjectEditionContainer, {
+  stixDomainObject: graphql`
+    fragment StixDomainObjectEditionOverview_stixDomainObject on StixDomainObject {
+      id
+      entity_type
+      parent_types
+      confidence
+      ... on AttackPattern {
+        name
+        description
+        aliases
+      }
+      ... on Campaign {
+        name
+        description
+        aliases
+      }
+      ... on CourseOfAction {
+        name
+        description
+        x_opencti_aliases
+      }
+      ... on ObservedData {
+        name
+      }
+      ... on Report {
+        name
+        description
+      }
+      ... on Grouping {
+        name
+        description
+      }
+      ... on Individual {
+        name
+        description
+        x_opencti_aliases
+      }
+      ... on Organization {
+        name
+        description
+        x_opencti_aliases
+      }
+      ... on Sector {
+        name
+        description
+        x_opencti_aliases
+      }
+      ... on System {
+        name
+        description
+        x_opencti_aliases
+      }
+      ... on Indicator {
+        name
+        description
+      }
+      ... on Infrastructure {
+        name
+        description
+      }
+      ... on IntrusionSet {
+        name
+        description
+        aliases
+      }
+      ... on Position {
+        name
+        description
+        x_opencti_aliases
+      }
+      ... on City {
+        name
+        description
+        x_opencti_aliases
+      }
+      ... on AdministrativeArea {
+        name
+        description
+        x_opencti_aliases
+      }
+      ... on Country {
+        name
+        description
+        x_opencti_aliases
+      }
+      ... on Region {
+        name
+        description
+        x_opencti_aliases
+      }
+      ... on Malware {
+        name
+        description
+        aliases
+      }
+      ... on MalwareAnalysis {
+        result_name
+      }
+      ... on ThreatActor {
+        name
+        description
+        aliases
+      }
+      ... on Tool {
+        name
+        description
+        aliases
+      }
+      ... on Vulnerability {
+        name
+        description
+      }
+      ... on Incident {
+        name
+        description
+        aliases
+      }
+      createdBy {
+        ... on Identity {
           id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-        editContext {
           name
-          focusOn
+          entity_type
         }
       }
-    `,
-  },
-);
+      objectMarking {
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
+      }
+      editContext {
+        name
+        focusOn
+      }
+    }
+  `,
+});
 
 export default StixDomainObjectEditionFragment;

@@ -1,9 +1,18 @@
 import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import React, { useEffect, useState } from 'react';
-import { graphql, PreloadedQuery, useFragment, useLazyLoadQuery, usePreloadedQuery } from 'react-relay';
+import {
+  graphql,
+  PreloadedQuery,
+  useFragment,
+  useLazyLoadQuery,
+  usePreloadedQuery,
+} from 'react-relay';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../../utils/filters/filtersUtils';
 import { useQueryLoadingWithLoadQuery } from '../../../../utils/hooks/useQueryLoading';
 import AuthProviderLogsDrawer from '@components/settings/sso_definitions/AuthProviderLogsDrawer';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
@@ -29,7 +38,10 @@ import ListOutlined from '@mui/icons-material/ListOutlined';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import SSODefinitionEdition from '@components/settings/sso_definitions/SSODefinitionEdition';
-import { SSODefinitionEditionFragment$data, SSODefinitionEditionFragment$key } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionFragment.graphql';
+import {
+  SSODefinitionEditionFragment$data,
+  SSODefinitionEditionFragment$key,
+} from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionFragment.graphql';
 import useAuth from '../../../../utils/hooks/useAuth';
 import Alert from '@mui/material/Alert';
 import { SSODefinitionsAvailableSecretsQuery } from '@components/settings/sso_definitions/__generated__/SSODefinitionsAvailableSecretsQuery.graphql';
@@ -55,23 +67,23 @@ export const ssoDefinitionsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...SSODefinitionsLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
     ...SSODefinitionsPolling_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -95,10 +107,7 @@ const ssoDefinitionsLinesFragment = graphql`
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
-    orderBy: {
-        type: "AuthenticationProviderOrdering"
-        defaultValue: name
-    }
+    orderBy: { type: "AuthenticationProviderOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "FilterGroup" }
   )
@@ -164,34 +173,48 @@ const POST_UPDATE_WINDOW_MS = 5000;
 
 type SSODefinitionsPollingProps = {
   queryRef: PreloadedQuery<SSODefinitionsLinesPaginationQueryType>;
-  loadQuery: (variables: SSODefinitionsLinesPaginationQuery$variables, opts?: { fetchPolicy?: 'store-and-network' }) => void;
+  loadQuery: (
+    variables: SSODefinitionsLinesPaginationQuery$variables,
+    opts?: { fetchPolicy?: 'store-and-network' },
+  ) => void;
   queryPaginationOptions: SSODefinitionsLinesPaginationQuery$variables;
   lastProviderUpdateAt: number | null;
   onRefreshQuery: () => void;
 };
 
-const SSODefinitionsPolling = ({ queryRef, loadQuery, queryPaginationOptions, lastProviderUpdateAt, onRefreshQuery }: SSODefinitionsPollingProps) => {
+const SSODefinitionsPolling = ({
+  queryRef,
+  loadQuery,
+  queryPaginationOptions,
+  lastProviderUpdateAt,
+  onRefreshQuery,
+}: SSODefinitionsPollingProps) => {
   const queryData = usePreloadedQuery(ssoDefinitionsLinesQuery, queryRef);
-  const pollingData = useFragment(ssoDefinitionsPollingFragment, queryData) as SSODefinitionsPolling_data$data | null;
+  const pollingData = useFragment(
+    ssoDefinitionsPollingFragment,
+    queryData,
+  ) as SSODefinitionsPolling_data$data | null;
   const edges = pollingData?.authenticationProviders?.edges ?? [];
-  const hasAnyStarting = edges.some(
-    (e: { node: { runtime_status: string } }) => {
-      const status = e?.node?.runtime_status;
-      return status === 'STARTING' || status === 'INITIALIZING';
-    },
-  );
+  const hasAnyStarting = edges.some((e: { node: { runtime_status: string } }) => {
+    const status = e?.node?.runtime_status;
+    return status === 'STARTING' || status === 'INITIALIZING';
+  });
   const lastSlowFetchRef = React.useRef(0);
 
   useEffect(() => {
     const id = setInterval(() => {
       const now = Date.now();
-      const inPostUpdateWindow = lastProviderUpdateAt != null && now - lastProviderUpdateAt < POST_UPDATE_WINDOW_MS;
+      const inPostUpdateWindow =
+        lastProviderUpdateAt != null && now - lastProviderUpdateAt < POST_UPDATE_WINDOW_MS;
       const shouldFetchFast = inPostUpdateWindow || hasAnyStarting;
       if (shouldFetchFast) {
         lastSlowFetchRef.current = 0;
         onRefreshQuery();
         loadQuery(queryPaginationOptions, { fetchPolicy: 'store-and-network' });
-      } else if (lastSlowFetchRef.current === 0 || now - lastSlowFetchRef.current >= POLL_INTERVAL_SLOW_MS) {
+      } else if (
+        lastSlowFetchRef.current === 0 ||
+        now - lastSlowFetchRef.current >= POLL_INTERVAL_SLOW_MS
+      ) {
         lastSlowFetchRef.current = now;
         onRefreshQuery();
         loadQuery(queryPaginationOptions, { fetchPolicy: 'store-and-network' });
@@ -211,7 +234,9 @@ const SSODefinitions = () => {
   const [editingSSO, setEditingSSO] = useState<EditingSSO | null>(null);
   const [logsDrawerProviderId, setLogsDrawerProviderId] = useState<string | null>(null);
   const [lastProviderUpdateAt, setLastProviderUpdateAt] = useState<number | null>(null);
-  const [providerIdsShowingAsStarting, setProviderIdsShowingAsStarting] = useState<Set<string>>(new Set());
+  const [providerIdsShowingAsStarting, setProviderIdsShowingAsStarting] = useState<Set<string>>(
+    new Set(),
+  );
   const { settings } = useAuth();
 
   const handleProviderUpdated = React.useCallback((providerId: string) => {
@@ -229,7 +254,11 @@ const SSODefinitions = () => {
     orderAsc: true,
     filters: emptyFilterGroup,
   };
-  const { viewStorage: { filters }, helpers, paginationOptions } = usePaginationLocalStorage<SSODefinitionsLinesPaginationQuery>(
+  const {
+    viewStorage: { filters },
+    helpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<SSODefinitionsLinesPaginationQuery>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
@@ -265,7 +294,11 @@ const SSODefinitions = () => {
       label: t_i18n('Status'),
       percentWidth: 15,
       isSortable: true,
-      render: (node: { id: string; runtime_status: 'ACTIVE' | 'DISABLED' | 'ERROR' | 'STARTING'; enabled: boolean }) => {
+      render: (node: {
+        id: string;
+        runtime_status: 'ACTIVE' | 'DISABLED' | 'ERROR' | 'STARTING';
+        enabled: boolean;
+      }) => {
         const status = providerIdsShowingAsStarting.has(node.id) ? 'STARTING' : node.runtime_status;
         return (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -294,19 +327,28 @@ const SSODefinitions = () => {
                   : undefined
               }
             />
-            {!isEnterpriseEdition && <span onClick={(e) => e.stopPropagation()}><EEChip /></span>}
+            {!isEnterpriseEdition && (
+              <span onClick={(e) => e.stopPropagation()}>
+                <EEChip />
+              </span>
+            )}
           </Box>
         );
       },
     },
   };
 
-  const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<SSODefinitionsLinesPaginationQueryType>(
-    ssoDefinitionsLinesQuery,
-    queryPaginationOptions as unknown as SSODefinitionsLinesPaginationQuery$variables,
-  );
+  const [queryRef, loadQuery] =
+    useQueryLoadingWithLoadQuery<SSODefinitionsLinesPaginationQueryType>(
+      ssoDefinitionsLinesQuery,
+      queryPaginationOptions as unknown as SSODefinitionsLinesPaginationQuery$variables,
+    );
 
-  const availableSecretsData = useLazyLoadQuery<SSODefinitionsAvailableSecretsQuery>(availableSecretsQuery, {}, { fetchPolicy: 'store-or-network' });
+  const availableSecretsData = useLazyLoadQuery<SSODefinitionsAvailableSecretsQuery>(
+    availableSecretsQuery,
+    {},
+    { fetchPolicy: 'store-or-network' },
+  );
   const availableSecrets = availableSecretsData?.availableSecrets ?? [];
 
   const preloadedPaginationProps = {
@@ -319,10 +361,12 @@ const SSODefinitions = () => {
 
   return (
     <div style={{ paddingRight: '200px' }}>
-      <Breadcrumbs elements={[
-        { label: t_i18n('Settings') },
-        { label: t_i18n('Security') },
-        { label: t_i18n('Authentications'), current: true }]}
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Security') },
+          { label: t_i18n('Authentications'), current: true },
+        ]}
       />
       {settings.is_authentication_by_env && (
         <>
@@ -330,7 +374,9 @@ const SSODefinitions = () => {
           <IpWhitelistSettings />
           <SSOSingletonStrategies />
           <Alert severity="info" variant="outlined" sx={{ mt: 2 }}>
-            {t_i18n('Your platform is currently using environment variables to define authentication strategies. As a result, any update on any strategies (except password policy or 2FA) won\'t be taken into account.')}
+            {t_i18n(
+              "Your platform is currently using environment variables to define authentication strategies. As a result, any update on any strategies (except password policy or 2FA) won't be taken into account.",
+            )}
           </Alert>
         </>
       )}
@@ -343,14 +389,23 @@ const SSODefinitions = () => {
             <>
               <SSODefinitionsPolling
                 queryRef={queryRef as PreloadedQuery<SSODefinitionsLinesPaginationQueryType>}
-                loadQuery={loadQuery as (vars: SSODefinitionsLinesPaginationQuery$variables, opts?: { fetchPolicy?: 'store-and-network' }) => void}
-                queryPaginationOptions={queryPaginationOptions as unknown as SSODefinitionsLinesPaginationQuery$variables}
+                loadQuery={
+                  loadQuery as (
+                    vars: SSODefinitionsLinesPaginationQuery$variables,
+                    opts?: { fetchPolicy?: 'store-and-network' },
+                  ) => void
+                }
+                queryPaginationOptions={
+                  queryPaginationOptions as unknown as SSODefinitionsLinesPaginationQuery$variables
+                }
                 lastProviderUpdateAt={lastProviderUpdateAt}
                 onRefreshQuery={clearProviderIdsShowingAsStarting}
               />
               <DataTable
                 dataColumns={dataColumns}
-                resolvePath={(data: SSODefinitionsLines_data$data) => data.authenticationProviders?.edges?.map((e) => e?.node)}
+                resolvePath={(data: SSODefinitionsLines_data$data) =>
+                  data.authenticationProviders?.edges?.map((e) => e?.node)
+                }
                 storageKey={LOCAL_STORAGE_KEY}
                 initialValues={initialValues}
                 contextFilters={contextFilters}
@@ -383,7 +438,12 @@ const SSODefinitions = () => {
                     </Tooltip>
                   </>
                 )}
-                createButton={<SSODefinitionCreation paginationOptions={queryPaginationOptions} availableSecrets={availableSecrets} />}
+                createButton={
+                  <SSODefinitionCreation
+                    paginationOptions={queryPaginationOptions}
+                    availableSecrets={availableSecrets}
+                  />
+                }
               />
             </>
           )}

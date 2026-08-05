@@ -20,26 +20,31 @@ export const up = async (next) => {
       return {
         id: edge.node.id,
         name: edge.node.name,
-        theme_secondary: edge.node.theme_secondary === '#00f1bd'
-          ? DARK_DEFAULTS.theme_secondary
-          : edge.node.theme_secondary,
-        theme_text_color: edge.node.theme_text_color === '#ffffff'
-          ? DARK_DEFAULTS.theme_text_color
-          : edge.node.theme_text_color,
+        theme_secondary:
+          edge.node.theme_secondary === '#00f1bd'
+            ? DARK_DEFAULTS.theme_secondary
+            : edge.node.theme_secondary,
+        theme_text_color:
+          edge.node.theme_text_color === '#ffffff'
+            ? DARK_DEFAULTS.theme_text_color
+            : edge.node.theme_text_color,
       };
     } else if (edge.node.name === 'Light') {
       return {
         id: edge.node.id,
         name: edge.node.name,
-        theme_primary: edge.node.theme_primary === '#001bda'
-          ? LIGHT_DEFAULTS.theme_primary
-          : edge.node.theme_primary,
-        theme_secondary: edge.node.theme_secondary === '#0c7e69'
-          ? LIGHT_DEFAULTS.theme_secondary
-          : edge.node.theme_secondary,
-        theme_text_color: edge.node.theme_text_color === '#000000'
-          ? LIGHT_DEFAULTS.theme_text_color
-          : edge.node.theme_text_color,
+        theme_primary:
+          edge.node.theme_primary === '#001bda'
+            ? LIGHT_DEFAULTS.theme_primary
+            : edge.node.theme_primary,
+        theme_secondary:
+          edge.node.theme_secondary === '#0c7e69'
+            ? LIGHT_DEFAULTS.theme_secondary
+            : edge.node.theme_secondary,
+        theme_text_color:
+          edge.node.theme_text_color === '#000000'
+            ? LIGHT_DEFAULTS.theme_text_color
+            : edge.node.theme_text_color,
       };
     }
   });

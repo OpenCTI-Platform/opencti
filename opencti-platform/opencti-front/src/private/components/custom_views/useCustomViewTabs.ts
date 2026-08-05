@@ -24,7 +24,10 @@ interface UseCustomViewTabsResult {
   currentCustomViewMenuItem: string | undefined;
 }
 
-const useCustomViewTabs = ({ basePath, entityType }: UseCustomViewTabsParams): UseCustomViewTabsResult => {
+const useCustomViewTabs = ({
+  basePath,
+  entityType,
+}: UseCustomViewTabsParams): UseCustomViewTabsResult => {
   const location = useLocation();
   const { customViews, getCurrentCustomViewTab } = useCustomViews(entityType);
   const currentCustomViewTab = getCurrentCustomViewTab(location.pathname, basePath);

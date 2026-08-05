@@ -15,25 +15,14 @@ const CsvMapperDefaultMarking = ({ name }: CsvMapperDefaultMarkingProps) => {
 
   return (
     <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginTop: '10px' }}>
-      <Field
-        component={SelectField}
-        name={name}
-        containerstyle={{ width: '100%' }}
-        displayEmpty
-      >
-        <MenuItem value="user-choice">
-          {t_i18n('Let the user choose marking definitions')}
-        </MenuItem>
+      <Field component={SelectField} name={name} containerstyle={{ width: '100%' }} displayEmpty>
+        <MenuItem value="user-choice">{t_i18n('Let the user choose marking definitions')}</MenuItem>
         <MenuItem value="user-default">
           {t_i18n('Use default marking definitions of the user')}
         </MenuItem>
       </Field>
       <Tooltip title={t_i18n("Option 'Let the user choose marking definitions'...")}>
-        <InformationOutline
-          fontSize="small"
-          color="primary"
-          style={{ cursor: 'default' }}
-        />
+        <InformationOutline fontSize="small" color="primary" style={{ cursor: 'default' }} />
       </Tooltip>
     </div>
   );

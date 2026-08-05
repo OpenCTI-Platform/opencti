@@ -1,6 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
-import { graphql, PreloadedQuery, useLazyLoadQuery, usePreloadedQuery, useQueryLoader, useSubscription } from 'react-relay';
+import {
+  graphql,
+  PreloadedQuery,
+  useLazyLoadQuery,
+  usePreloadedQuery,
+  useQueryLoader,
+  useSubscription,
+} from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -14,7 +21,11 @@ import ConvertUser from './ConvertUser';
 import UserDeletionDialog from './UserDeletionDialog';
 import UserEmailSend from './UserEmailSend';
 import Security from '../../../../utils/Security';
-import useGranted, { KNOWLEDGE_KNUPDATE_KNDELETE, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+  SETTINGS_SETACCESSES,
+  VIRTUAL_ORGANIZATION_ADMIN,
+} from '../../../../utils/hooks/useGranted';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import User from './User';
@@ -44,19 +55,19 @@ const subscription = graphql`
   ) {
     user(id: $id) {
       ...User_user
-      @arguments(
-        groupsOrderBy: $groupsOrderBy
-        groupsOrderMode: $groupsOrderMode
-        organizationsOrderBy: $organizationsOrderBy
-        organizationsOrderMode: $organizationsOrderMode
-      )
+        @arguments(
+          groupsOrderBy: $groupsOrderBy
+          groupsOrderMode: $groupsOrderMode
+          organizationsOrderBy: $organizationsOrderBy
+          organizationsOrderMode: $organizationsOrderMode
+        )
       ...UserEdition_user
-      @arguments(
-        groupsOrderBy: $groupsOrderBy
-        groupsOrderMode: $groupsOrderMode
-        organizationsOrderBy: $organizationsOrderBy
-        organizationsOrderMode: $organizationsOrderMode
-      )
+        @arguments(
+          groupsOrderBy: $groupsOrderBy
+          groupsOrderMode: $groupsOrderMode
+          organizationsOrderBy: $organizationsOrderBy
+          organizationsOrderMode: $organizationsOrderMode
+        )
     }
   }
 `;
@@ -75,12 +86,12 @@ const userQuery = graphql`
       user_email
       user_service_account
       ...User_user
-      @arguments(
-        groupsOrderBy: $groupsOrderBy
-        groupsOrderMode: $groupsOrderMode
-        organizationsOrderBy: $organizationsOrderBy
-        organizationsOrderMode: $organizationsOrderMode
-      )
+        @arguments(
+          groupsOrderBy: $groupsOrderBy
+          groupsOrderMode: $groupsOrderMode
+          organizationsOrderBy: $organizationsOrderBy
+          organizationsOrderMode: $organizationsOrderMode
+        )
       ...UserAnalytics_user
       ...UserHistoryTab_user
     }
@@ -108,10 +119,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }: RootUserComponentProps
 
   useSubscription(subConfig);
   const { user: data } = usePreloadedQuery<RootUserQuery>(userQuery, queryRef);
-  const userEditionData = useLazyLoadQuery<RootUserEditionQuery>(
-    userEditionQuery,
-    { id: userId },
-  );
+  const userEditionData = useLazyLoadQuery<RootUserEditionQuery>(userEditionQuery, { id: userId });
   const [openDelete, setOpenDelete] = useState(false);
   const handleOpenDelete = () => setOpenDelete(true);
   const handleCloseDelete = () => setOpenDelete(false);
@@ -120,31 +128,27 @@ const RootUserComponent = ({ queryRef, userId, refetch }: RootUserComponentProps
     <Security needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}>
       {data ? (
         <div style={{ paddingRight: 200 }}>
-          <Breadcrumbs elements={[
-            { label: t_i18n('Settings') },
-            { label: t_i18n('Security') },
-            { label: t_i18n('Users'), link: '/dashboard/settings/accesses/users' },
-            { label: data.name || data.user_email, current: true },
-          ]}
+          <Breadcrumbs
+            elements={[
+              { label: t_i18n('Settings') },
+              { label: t_i18n('Security') },
+              { label: t_i18n('Users'), link: '/dashboard/settings/accesses/users' },
+              { label: data.name || data.user_email, current: true },
+            ]}
           />
           <Stack direction="row" alignItems="center" marginBottom={3}>
-            <TitleMainEntity sx={{ flex: 1 }}>
-              {data.name}
-            </TitleMainEntity>
+            <TitleMainEntity sx={{ flex: 1 }}>{data.name}</TitleMainEntity>
             <div style={{ display: 'flex', gap: theme.spacing(0.5) }}>
-              <UserEmailSend
-                outlined
-                userId={userId}
-                onClose={() => {}}
-              />
+              <UserEmailSend outlined userId={userId} onClose={() => {}} />
               {canDelete && (
                 <PopoverMenu>
                   {({ closeMenu }) => (
                     <Box>
-                      <MenuItem onClick={() => {
-                        handleOpenDelete();
-                        closeMenu();
-                      }}
+                      <MenuItem
+                        onClick={() => {
+                          handleOpenDelete();
+                          closeMenu();
+                        }}
                       >
                         {t_i18n('Delete')}
                       </MenuItem>
@@ -166,9 +170,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }: RootUserComponentProps
           </Stack>
 
           <div className="clearfix" />
-          <Box
-            sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 3 }}
-          >
+          <Box sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 3 }}>
             <Tabs value={location.pathname}>
               <Tab
                 component={Link}
@@ -191,24 +193,9 @@ const RootUserComponent = ({ queryRef, userId, refetch }: RootUserComponentProps
             </Tabs>
           </Box>
           <Routes>
-            <Route
-              path="/"
-              element={
-                <User data={data} refetch={refetch} />
-              }
-            />
-            <Route
-              path="/analytics"
-              element={(
-                <UserAnalytics data={data} />
-              )}
-            />
-            <Route
-              path="/history"
-              element={(
-                <UserHistoryTab data={data} />
-              )}
-            />
+            <Route path="/" element={<User data={data} refetch={refetch} />} />
+            <Route path="/analytics" element={<UserAnalytics data={data} />} />
+            <Route path="/history" element={<UserHistoryTab data={data} />} />
           </Routes>
         </div>
       ) : (
@@ -239,11 +226,7 @@ const RootUser = () => {
     <>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-          <RootUserComponent
-            queryRef={queryRef}
-            userId={userId}
-            refetch={refetch}
-          />
+          <RootUserComponent queryRef={queryRef} userId={userId} refetch={refetch} />
         </React.Suspense>
       )}
     </>

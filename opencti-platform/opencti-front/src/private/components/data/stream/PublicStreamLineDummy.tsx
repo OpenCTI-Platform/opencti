@@ -29,66 +29,31 @@ const PublicStreamLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) =>
       secondaryAction={<MoreVert style={{ color: theme.palette.grey?.[700] }} />}
     >
       <ListItemIcon style={{ color: theme.palette.primary.main }}>
-        <Skeleton
-          animation="wave"
-          variant="circular"
-          width={30}
-          height={30}
-        />
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
             <div style={{ ...bodyItemStyle, width: dataColumns.name.width }}>
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="50%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="50%" />
             </div>
             <div style={{ ...bodyItemStyle, width: dataColumns.description.width }}>
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="50%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="50%" />
             </div>
             <div style={{ ...bodyItemStyle, width: dataColumns.id.width }}>
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="50%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="50%" />
             </div>
             <div style={{ ...bodyItemStyle, width: dataColumns.stream_public.width }}>
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="50%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="50%" />
             </div>
             <div style={{ ...bodyItemStyle, width: dataColumns.stream_live.width }}>
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="50%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="50%" />
             </div>
             <div style={{ ...bodyItemStyle, width: dataColumns.consumers.width }}>
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="50%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="50%" />
             </div>
           </div>
-        )}
+        }
       />
     </ListItem>
   );

@@ -40,28 +40,49 @@ describe('middleware filterTargetByExisting merge algorithm complexity', () => {
 
     for (let i = 0; i < sizes.length; i += 1) {
       const size = sizes[i];
-      const sourcesDependencies = { i_relations_from: buildDependencies(size, 'source'), i_relations_to: [] } as any;
+      const sourcesDependencies = {
+        i_relations_from: buildDependencies(size, 'source'),
+        i_relations_to: [],
+      } as any;
       // Target relations disjoint from sources so every source hits the "no match" path (worst case for the old O(n x m) scan).
-      const targetDependencies = { i_relations_from: buildDependencies(size / 4, 'target'), i_relations_to: [] } as any;
+      const targetDependencies = {
+        i_relations_from: buildDependencies(size / 4, 'target'),
+        i_relations_to: [],
+      } as any;
 
       const start = performance.now();
-      const { redirects } = await filterTargetByExisting(testContext, targetEntity, 'from', sourcesDependencies, targetDependencies);
+      const { redirects } = await filterTargetByExisting(
+        testContext,
+        targetEntity,
+        'from',
+        sourcesDependencies,
+        targetDependencies,
+      );
       const elapsed = performance.now() - start;
       timingsMs.push(elapsed);
 
       expect(redirects.length).toEqual(size);
     }
 
-    // eslint-disable-next-line no-console
-    console.log('[BENCHMARK] filterTargetByExisting timings (ms) for sizes', sizes, '=>', timingsMs);
+    // oxlint-disable-next-line no-console
+    console.log(
+      '[BENCHMARK] filterTargetByExisting timings (ms) for sizes',
+      sizes,
+      '=>',
+      timingsMs,
+    );
 
     // With an O(n x m) algorithm, quadrupling n (2000 -> 8000 -> 32000) would multiply the runtime by ~16x at each step.
     // With the O(n+m) fix, runtime should grow roughly linearly with n (a few x, not ~16x).
     const growthFactor1 = timingsMs[1] / Math.max(timingsMs[0], 1);
     const growthFactor2 = timingsMs[2] / Math.max(timingsMs[1], 1);
 
-    // eslint-disable-next-line no-console
-    console.log('[BENCHMARK] growth factors (should be well under 16x if the fix is effective):', growthFactor1, growthFactor2);
+    // oxlint-disable-next-line no-console
+    console.log(
+      '[BENCHMARK] growth factors (should be well under 16x if the fix is effective):',
+      growthFactor1,
+      growthFactor2,
+    );
 
     expect(growthFactor1).toBeLessThan(10);
     expect(growthFactor2).toBeLessThan(10);
@@ -69,15 +90,29 @@ describe('middleware filterTargetByExisting merge algorithm complexity', () => {
 
   it('should complete a 78k-relation merge filter (production-scale) in well under a second', async () => {
     const size = 78000;
-    const sourcesDependencies = { i_relations_from: buildDependencies(size, 'source'), i_relations_to: [] } as any;
-    const targetDependencies = { i_relations_from: buildDependencies(5000, 'target'), i_relations_to: [] } as any;
+    const sourcesDependencies = {
+      i_relations_from: buildDependencies(size, 'source'),
+      i_relations_to: [],
+    } as any;
+    const targetDependencies = {
+      i_relations_from: buildDependencies(5000, 'target'),
+      i_relations_to: [],
+    } as any;
 
     const start = performance.now();
-    const { redirects } = await filterTargetByExisting(testContext, targetEntity, 'from', sourcesDependencies, targetDependencies);
+    const { redirects } = await filterTargetByExisting(
+      testContext,
+      targetEntity,
+      'from',
+      sourcesDependencies,
+      targetDependencies,
+    );
     const elapsed = performance.now() - start;
 
-    // eslint-disable-next-line no-console
-    console.log(`[BENCHMARK] 78k-relation filterTargetByExisting completed in ${elapsed.toFixed(2)}ms`);
+    // oxlint-disable-next-line no-console
+    console.log(
+      `[BENCHMARK] 78k-relation filterTargetByExisting completed in ${elapsed.toFixed(2)}ms`,
+    );
 
     expect(redirects.length).toEqual(size);
     // Previously this kind of volume was observed to hang for hours (O(n x m) with n=78k, m in the thousands).

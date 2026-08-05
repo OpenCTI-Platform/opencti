@@ -40,68 +40,74 @@ const useAgentStream = (options?: UseAgentStreamOptions): UseAgentStreamReturn =
   const contentBufferRef = useRef('');
   const rafRef = useRef<number | null>(null);
 
-  useEffect(() => () => {
-    abortRef.current?.abort();
-    if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-  }, []);
+  useEffect(
+    () => () => {
+      abortRef.current?.abort();
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    },
+    [],
+  );
 
   const abort = useCallback(() => {
     abortRef.current?.abort();
   }, []);
 
-  const execute = useCallback((agentSlug: string, prompt: string, forceRefresh?: boolean) => {
-    abortRef.current?.abort();
-    if (rafRef.current !== null) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
-    const controller = new AbortController();
-    abortRef.current = controller;
+  const execute = useCallback(
+    (agentSlug: string, prompt: string, forceRefresh?: boolean) => {
+      abortRef.current?.abort();
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+      const controller = new AbortController();
+      abortRef.current = controller;
 
-    contentBufferRef.current = '';
-    setLoading(true);
-    setContent('');
-    setError(undefined);
-    setGeneratedAt(null);
+      contentBufferRef.current = '';
+      setLoading(true);
+      setContent('');
+      setError(undefined);
+      setGeneratedAt(null);
 
-    callAgentStream(
-      agentSlug,
-      prompt,
-      (partial) => {
-        contentBufferRef.current = transform(partial);
-        if (rafRef.current === null) {
-          rafRef.current = requestAnimationFrame(() => {
-            setContent(contentBufferRef.current);
+      callAgentStream(
+        agentSlug,
+        prompt,
+        (partial) => {
+          contentBufferRef.current = transform(partial);
+          if (rafRef.current === null) {
+            rafRef.current = requestAnimationFrame(() => {
+              setContent(contentBufferRef.current);
+              rafRef.current = null;
+            });
+          }
+        },
+        controller.signal,
+        forceRefresh,
+      )
+        .then((result) => {
+          if (rafRef.current !== null) {
+            cancelAnimationFrame(rafRef.current);
             rafRef.current = null;
-          });
-        }
-      },
-      controller.signal,
-      forceRefresh,
-    )
-      .then((result) => {
-        if (rafRef.current !== null) {
-          cancelAnimationFrame(rafRef.current);
-          rafRef.current = null;
-        }
-        if (result.status === 'error') {
-          setError(result.error ?? 'An unknown error occurred');
-        } else {
-          setContent(transform(result.content));
-          // Prefer the backend-provided timestamp (set on cache hits) so the
-          // UI shows when the response was originally generated rather than
-          // the time it was replayed from cache.
-          setGeneratedAt(result.generatedAt ?? new Date().toISOString());
-        }
-        setLoading(false);
-      })
-      .catch((err: Error) => {
-        if (err.name !== 'AbortError') {
-          setError(err.toString());
+          }
+          if (result.status === 'error') {
+            setError(result.error ?? 'An unknown error occurred');
+          } else {
+            setContent(transform(result.content));
+            // Prefer the backend-provided timestamp (set on cache hits) so the
+            // UI shows when the response was originally generated rather than
+            // the time it was replayed from cache.
+            setGeneratedAt(result.generatedAt ?? new Date().toISOString());
+          }
           setLoading(false);
-        }
-      });
-  }, [transform]);
+        })
+        .catch((err: Error) => {
+          if (err.name !== 'AbortError') {
+            setError(err.toString());
+            setLoading(false);
+          }
+        });
+    },
+    [transform],
+  );
 
   return { content, setContent, loading, error, generatedAt, execute, abort };
 };

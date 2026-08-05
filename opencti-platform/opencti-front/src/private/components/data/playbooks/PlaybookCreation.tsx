@@ -138,10 +138,7 @@ const PlaybookCreation = () => {
           {t_i18n('Import from Hub')}
         </Button>
       )}
-      <CreateEntityControlledDial
-        entityType="Playbook"
-        {...props}
-      />
+      <CreateEntityControlledDial entityType="Playbook" {...props} />
     </>
   );
 
@@ -153,10 +150,7 @@ const PlaybookCreation = () => {
         accept="application/JSON"
         onChange={handleImport}
       />
-      <Drawer
-        title={t_i18n('Create a playbook')}
-        controlledDial={CreatePlaybookControlledDial}
-      >
+      <Drawer title={t_i18n('Create a playbook')} controlledDial={CreatePlaybookControlledDial}>
         {({ onClose }) => (
           <Formik<PlaybookCreationForm>
             initialValues={initialValues}
@@ -185,18 +179,10 @@ const PlaybookCreation = () => {
                   fullWidth
                 />
                 <FormButtonContainer>
-                  <Button
-                    variant="secondary"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                  >
+                  <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t_i18n('Cancel')}
                   </Button>
-                  <Button
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
+                  <Button color="secondary" onClick={submitForm} disabled={isSubmitting}>
                     {t_i18n('Create')}
                   </Button>
                 </FormButtonContainer>

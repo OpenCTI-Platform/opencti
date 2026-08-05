@@ -139,8 +139,13 @@ const NewsFeedToastManager: FunctionComponent = () => {
             width: NEWS_FEED_TOAST_WIDTH,
           }}
         >
-          <Typography variant="caption" sx={{ fontWeight: 700, flex: 1, color: 'primary.main', ml: 1 }}>
-            {t_i18n('(+{count}) Click to view all the new resources on the Hub', { values: { count: hiddenCount } })}
+          <Typography
+            variant="caption"
+            sx={{ fontWeight: 700, flex: 1, color: 'primary.main', ml: 1 }}
+          >
+            {t_i18n('(+{count}) Click to view all the new resources on the Hub', {
+              values: { count: hiddenCount },
+            })}
           </Typography>
           <Tooltip title={t_i18n('View all on XTM Hub')}>
             <IconButton

@@ -11,9 +11,7 @@ const knowledgeGraphRelationDelete = graphql`
 `;
 
 const useKnowledgeGraphDeleteRelation = () => {
-  return useApiMutation<useKnowledgeGraphDeleteRelationMutation>(
-    knowledgeGraphRelationDelete,
-  );
+  return useApiMutation<useKnowledgeGraphDeleteRelationMutation>(knowledgeGraphRelationDelete);
 };
 
 export default useKnowledgeGraphDeleteRelation;

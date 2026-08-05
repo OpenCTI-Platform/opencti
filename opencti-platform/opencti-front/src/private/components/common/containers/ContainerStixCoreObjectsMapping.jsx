@@ -1,7 +1,9 @@
 import React from 'react';
 import { ContainerStixCoreObjectsMappingLineDummy } from './ContainerStixCoreObjectsMappingLine';
 import ListLines from '../../../../components/list_lines/ListLines';
-import ContainerStixCoreObjectsMappingLines, { containerStixCoreObjectsMappingLinesQuery } from './ContainerStixCoreObjectsMappingLines';
+import ContainerStixCoreObjectsMappingLines, {
+  containerStixCoreObjectsMappingLinesQuery,
+} from './ContainerStixCoreObjectsMappingLines';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -20,11 +22,7 @@ const ContainerStixCoreObjectsMapping = ({
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
 
   const LOCAL_STORAGE_KEY = `container-${container.id}-stixCoreObjectsMapping`;
-  const {
-    viewStorage,
-    paginationOptions,
-    helpers,
-  } = usePaginationLocalStorage(
+  const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
     {
       id: container.id,
@@ -38,13 +36,7 @@ const ContainerStixCoreObjectsMapping = ({
     },
     true,
   );
-  const {
-    numberOfElements,
-    filters,
-    searchTerm,
-    sortBy,
-    orderAsc,
-  } = viewStorage;
+  const { numberOfElements, filters, searchTerm, sortBy, orderAsc } = viewStorage;
   const {
     handleRemoveFilter,
     handleSearch,
@@ -88,10 +80,7 @@ const ContainerStixCoreObjectsMapping = ({
     },
   };
 
-  const queryRef = useQueryLoading(
-    containerStixCoreObjectsMappingLinesQuery,
-    paginationOptions,
-  );
+  const queryRef = useQueryLoading(containerStixCoreObjectsMappingLinesQuery, paginationOptions);
 
   return (
     <div>
@@ -117,18 +106,15 @@ const ContainerStixCoreObjectsMapping = ({
       >
         {queryRef && (
           <React.Suspense
-            fallback={(
+            fallback={
               <>
                 {Array(20)
                   .fill(0)
                   .map((_, idx) => (
-                    <ContainerStixCoreObjectsMappingLineDummy
-                      key={idx}
-                      dataColumns={dataColumns}
-                    />
+                    <ContainerStixCoreObjectsMappingLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            )}
+            }
           >
             <ContainerStixCoreObjectsMappingLines
               container={container}

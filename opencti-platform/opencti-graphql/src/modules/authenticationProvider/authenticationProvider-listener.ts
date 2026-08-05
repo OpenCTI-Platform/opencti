@@ -1,4 +1,7 @@
-import { type BasicStoreEntityAuthenticationProvider, ENTITY_TYPE_AUTHENTICATION_PROVIDER } from './authenticationProvider-types';
+import {
+  type BasicStoreEntityAuthenticationProvider,
+  ENTITY_TYPE_AUTHENTICATION_PROVIDER,
+} from './authenticationProvider-types';
 import { refreshStrategy, registerStrategy, unregisterStrategy } from './providers';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import { pubSubSubscription } from '../../database/redis';
@@ -13,44 +16,71 @@ let authenticationPuSubDelete: { topic: string; unsubscribe: () => void };
  */
 
 export const onAuthenticationMessageEdit = async (event: { instance: BasicStoreEntity }) => {
-  logApp.info(`[OPENCTI-MODULE] Authentication got edit event. ${event.instance.id} on node ${NODE_INSTANCE_ID}`);
+  logApp.info(
+    `[OPENCTI-MODULE] Authentication got edit event. ${event.instance.id} on node ${NODE_INSTANCE_ID}`,
+  );
   try {
     if (event.instance.entity_type === ENTITY_TYPE_AUTHENTICATION_PROVIDER) {
       const providerEntity = event.instance as BasicStoreEntityAuthenticationProvider;
       await refreshStrategy(providerEntity);
     } else {
-      logApp.warn('Entity cannot be sent to Authentication PubSubListener', { type: event.instance.entity_type });
+      logApp.warn('Entity cannot be sent to Authentication PubSubListener', {
+        type: event.instance.entity_type,
+      });
     }
   } catch (error) {
-    logApp.error('Error updating authentication ', { cause: error, from: 'authenticationProviderListener', nodeId: NODE_INSTANCE_ID, providerId: event.instance.id });
+    logApp.error('Error updating authentication ', {
+      cause: error,
+      from: 'authenticationProviderListener',
+      nodeId: NODE_INSTANCE_ID,
+      providerId: event.instance.id,
+    });
   }
 };
 
 export const onAuthenticationMessageDelete = async (event: { instance: BasicStoreEntity }) => {
-  logApp.info(`[OPENCTI-MODULE] Authentication got delete event. ${event.instance.id} on node ${NODE_INSTANCE_ID}`);
+  logApp.info(
+    `[OPENCTI-MODULE] Authentication got delete event. ${event.instance.id} on node ${NODE_INSTANCE_ID}`,
+  );
   try {
     if (event.instance.entity_type === ENTITY_TYPE_AUTHENTICATION_PROVIDER) {
       const providerEntity = event.instance as BasicStoreEntityAuthenticationProvider;
       await unregisterStrategy(providerEntity);
     } else {
-      logApp.warn('Entity cannot be sent to Authentication PubSubListener', { type: event.instance.entity_type });
+      logApp.warn('Entity cannot be sent to Authentication PubSubListener', {
+        type: event.instance.entity_type,
+      });
     }
   } catch (error) {
-    logApp.error('Error updating authentication ', { cause: error, from: 'authenticationProviderListener', nodeId: NODE_INSTANCE_ID, providerId: event.instance.id });
+    logApp.error('Error updating authentication ', {
+      cause: error,
+      from: 'authenticationProviderListener',
+      nodeId: NODE_INSTANCE_ID,
+      providerId: event.instance.id,
+    });
   }
 };
 
 export const onAuthenticationMessageAdd = async (event: { instance: BasicStoreEntity }) => {
-  logApp.info(`[OPENCTI-MODULE] Authentication got add event. ${event.instance.id} on node ${NODE_INSTANCE_ID}`);
+  logApp.info(
+    `[OPENCTI-MODULE] Authentication got add event. ${event.instance.id} on node ${NODE_INSTANCE_ID}`,
+  );
   try {
     if (event.instance.entity_type === ENTITY_TYPE_AUTHENTICATION_PROVIDER) {
       const providerEntity = event.instance as BasicStoreEntityAuthenticationProvider;
       await registerStrategy(providerEntity);
     } else {
-      logApp.warn('Entity cannot be sent to Authentication PubSubListener', { type: event.instance.entity_type });
+      logApp.warn('Entity cannot be sent to Authentication PubSubListener', {
+        type: event.instance.entity_type,
+      });
     }
   } catch (error) {
-    logApp.error('Error updating authentication ', { cause: error, from: 'authenticationProviderListener', nodeId: NODE_INSTANCE_ID, providerId: event.instance.id });
+    logApp.error('Error updating authentication ', {
+      cause: error,
+      from: 'authenticationProviderListener',
+      nodeId: NODE_INSTANCE_ID,
+      providerId: event.instance.id,
+    });
   }
 };
 
@@ -58,9 +88,18 @@ const initAuthenticationListener = () => {
   return {
     init: () => {}, // Use for testing
     start: async () => {
-      authenticationPuSubAdd = await pubSubSubscription<{ instance: StoreEntity }>(`${TOPIC_PREFIX}ENTITY_TYPE_AUTHENTICATION_PROVIDER_ADD_TOPIC`, onAuthenticationMessageAdd);
-      authenticationPuSubEdit = await pubSubSubscription<{ instance: StoreEntity }>(`${TOPIC_PREFIX}ENTITY_TYPE_AUTHENTICATION_PROVIDER_EDIT_TOPIC`, onAuthenticationMessageEdit);
-      authenticationPuSubDelete = await pubSubSubscription<{ instance: StoreEntity }>(`${TOPIC_PREFIX}ENTITY_TYPE_AUTHENTICATION_PROVIDER_DELETE_TOPIC`, onAuthenticationMessageDelete);
+      authenticationPuSubAdd = await pubSubSubscription<{ instance: StoreEntity }>(
+        `${TOPIC_PREFIX}ENTITY_TYPE_AUTHENTICATION_PROVIDER_ADD_TOPIC`,
+        onAuthenticationMessageAdd,
+      );
+      authenticationPuSubEdit = await pubSubSubscription<{ instance: StoreEntity }>(
+        `${TOPIC_PREFIX}ENTITY_TYPE_AUTHENTICATION_PROVIDER_EDIT_TOPIC`,
+        onAuthenticationMessageEdit,
+      );
+      authenticationPuSubDelete = await pubSubSubscription<{ instance: StoreEntity }>(
+        `${TOPIC_PREFIX}ENTITY_TYPE_AUTHENTICATION_PROVIDER_DELETE_TOPIC`,
+        onAuthenticationMessageDelete,
+      );
       logApp.info('[OPENCTI-MODULE] Authentication pub sub listener initialized');
     },
     shutdown: async () => {
@@ -69,7 +108,9 @@ const initAuthenticationListener = () => {
         authenticationPuSubAdd.unsubscribe();
         authenticationPuSubEdit.unsubscribe();
         authenticationPuSubDelete.unsubscribe();
-      } catch { /* dont care */ }
+      } catch {
+        /* dont care */
+      }
       return true;
     },
   };

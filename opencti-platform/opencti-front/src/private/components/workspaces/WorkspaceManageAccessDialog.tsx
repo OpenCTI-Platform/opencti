@@ -1,7 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { FormikHelpers } from 'formik/dist/types';
 import { graphql, useFragment } from 'react-relay';
-import FormAuthorizedMembers, { FormAuthorizedMembersInputs } from '@components/common/form/FormAuthorizedMembers';
+import FormAuthorizedMembers, {
+  FormAuthorizedMembersInputs,
+} from '@components/common/form/FormAuthorizedMembers';
 import { InvestigationGraph_fragment$data } from '@components/workspaces/investigations/__generated__/InvestigationGraph_fragment.graphql';
 import { WorkspaceManageAccessDialog_authorizedMembers$key } from './__generated__/WorkspaceManageAccessDialog_authorizedMembers.graphql';
 import { handleErrorInForm } from '../../../relay/environment';
@@ -45,14 +47,16 @@ interface WorkspaceManageAccessDialogProps {
   open: boolean;
 }
 
-const WorkspaceManageAccessDialog: FunctionComponent<
-  WorkspaceManageAccessDialogProps
-> = ({ workspaceId, authorizedMembersData, owner, handleClose, open }) => {
+const WorkspaceManageAccessDialog: FunctionComponent<WorkspaceManageAccessDialogProps> = ({
+  workspaceId,
+  authorizedMembersData,
+  owner,
+  handleClose,
+  open,
+}) => {
   const { t_i18n } = useFormatter();
 
-  const [commit] = useApiMutation(
-    workspaceManageAccessDialogEditAuthorizedMembersMutation,
-  );
+  const [commit] = useApiMutation(workspaceManageAccessDialogEditAuthorizedMembersMutation);
   const data = useFragment<WorkspaceManageAccessDialog_authorizedMembers$key>(
     workspaceManageAccessDialogAuthorizedMembersFragment,
     authorizedMembersData,
@@ -76,18 +80,12 @@ const WorkspaceManageAccessDialog: FunctionComponent<
   };
   const onSubmitForm = (
     values: FormAuthorizedMembersInputs,
-    {
-      setSubmitting,
-      resetForm,
-      setErrors,
-    }: FormikHelpers<FormAuthorizedMembersInputs>,
+    { setSubmitting, resetForm, setErrors }: FormikHelpers<FormAuthorizedMembersInputs>,
   ) => {
     const finalValues = (values.authorizedMembers ?? [])
       .filter((v) => v.accessRight !== 'none')
       .filter((item, index, array) => {
-        return (
-          array.findIndex((member) => member.value === item.value) === index
-        );
+        return array.findIndex((member) => member.value === item.value) === index;
       })
       .map((member) => {
         return {

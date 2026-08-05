@@ -47,7 +47,10 @@ const TokenCreationForm: FunctionComponent<TokenCreationFormProps> = ({
     duration: Yup.string().required(t_i18n('This field is required')),
   });
 
-  const onSubmit = (values: typeof initialValues, { setSubmitting }: FormikHelpers<typeof initialValues>) => {
+  const onSubmit = (
+    values: typeof initialValues,
+    { setSubmitting }: FormikHelpers<typeof initialValues>,
+  ) => {
     let durationInput;
     switch (values.duration) {
       case '30':
@@ -101,7 +104,10 @@ const TokenCreationForm: FunctionComponent<TokenCreationFormProps> = ({
       },
       optimisticUpdater: undefined,
       optimisticResponse: undefined,
-      onCompleted: (response: TokenCreationFormMutation$data, errors: readonly PayloadError[] | null | undefined) => {
+      onCompleted: (
+        response: TokenCreationFormMutation$data,
+        errors: readonly PayloadError[] | null | undefined,
+      ) => {
         setSubmitting(false);
         if (errors) {
           MESSAGING$.notifyError(errors[0].message);
@@ -120,11 +126,7 @@ const TokenCreationForm: FunctionComponent<TokenCreationFormProps> = ({
   };
 
   return (
-    <Formik
-      initialValues={initialValues}
-      validationSchema={validationSchema}
-      onSubmit={onSubmit}
-    >
+    <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={onSubmit}>
       {({ submitForm, isSubmitting }) => (
         <Form>
           <Field
@@ -149,17 +151,10 @@ const TokenCreationForm: FunctionComponent<TokenCreationFormProps> = ({
             <MenuItem value="legacy">{t_i18n('Unlimited')}</MenuItem>
           </Field>
           <FormButtonContainer>
-            <Button
-              variant="secondary"
-              onClick={onClose}
-              disabled={isSubmitting}
-            >
+            <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitForm}
-              disabled={isSubmitting}
-            >
+            <Button onClick={submitForm} disabled={isSubmitting}>
               {t_i18n('Generate')}
             </Button>
           </FormButtonContainer>

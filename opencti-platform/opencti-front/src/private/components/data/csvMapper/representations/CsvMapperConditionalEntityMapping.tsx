@@ -2,7 +2,10 @@ import React, { FunctionComponent } from 'react';
 import MuiTextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
 import { Field, FieldProps } from 'formik';
-import { CsvMapperColumnBasedFormData, CsvMapperRepresentationFormData } from '@components/data/csvMapper/representations/Representation';
+import {
+  CsvMapperColumnBasedFormData,
+  CsvMapperRepresentationFormData,
+} from '@components/data/csvMapper/representations/Representation';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import { alphabet } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
@@ -14,8 +17,7 @@ import SwitchField from '../../../../../components/fields/SwitchField';
 import type { Theme } from '../../../../../components/Theme';
 import { FieldOption } from '../../../../../utils/field';
 
-interface CsvMapperConditionalEntityMappingProps
-  extends FieldProps<CsvMapperColumnBasedFormData> {
+interface CsvMapperConditionalEntityMappingProps extends FieldProps<CsvMapperColumnBasedFormData> {
   representation: CsvMapperRepresentationFormData;
   representationName: string;
 }
@@ -30,7 +32,8 @@ const CsvMapperConditionalEntityMapping: FunctionComponent<
   const columnOptions = alphabet(26);
   const operatorOptions: FieldOption[] = [
     { label: t_i18n('Equal'), value: 'eq' },
-    { label: t_i18n('Not equal'), value: 'not_eq' }];
+    { label: t_i18n('Not equal'), value: 'not_eq' },
+  ];
   const { setFieldValue } = form;
 
   const columnBased = representation.column_based;
@@ -51,25 +54,30 @@ const CsvMapperConditionalEntityMapping: FunctionComponent<
       await setFieldValue(`${representationName}.column_based.column_reference`, null);
       await setFieldValue(`${representationName}.column_based.operator`, null);
     } else {
-      await setFieldValue(`${representationName}.column_based.column_reference`, dynamicMappingColumn ?? null);
+      await setFieldValue(
+        `${representationName}.column_based.column_reference`,
+        dynamicMappingColumn ?? null,
+      );
       await setFieldValue(`${representationName}.column_based.operator`, 'eq');
     }
   };
 
   return (
-    <div style={{
-      width: '100%',
-      display: 'grid',
-      gridTemplateColumns: '1.3fr 1fr 1fr 1fr',
-      alignItems: 'center',
-      marginTop: `${theme.spacing(3)} 0 `,
-      gap: theme.spacing(1),
-    }}
-    >
-      <div style={{
-        display: 'flex',
+    <div
+      style={{
+        width: '100%',
+        display: 'grid',
+        gridTemplateColumns: '1.3fr 1fr 1fr 1fr',
         alignItems: 'center',
+        marginTop: `${theme.spacing(3)} 0 `,
+        gap: theme.spacing(1),
       }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+        }}
       >
         <Field
           component={SwitchField}
@@ -83,11 +91,7 @@ const CsvMapperConditionalEntityMapping: FunctionComponent<
             'If this option is selected, we will dynamically map the column value that you provide to the entity.',
           )}
         >
-          <InformationOutline
-            fontSize="small"
-            color="primary"
-            style={{ cursor: 'default' }}
-          />
+          <InformationOutline fontSize="small" color="primary" style={{ cursor: 'default' }} />
         </Tooltip>
       </div>
       <MUIAutocomplete
@@ -111,7 +115,7 @@ const CsvMapperConditionalEntityMapping: FunctionComponent<
                 ...params.InputProps,
                 sx: {
                   '& fieldset': {
-                    borderColor: (!columnBased?.column_reference)
+                    borderColor: !columnBased?.column_reference
                       ? theme.palette.designSystem.tertiary.red[400]
                       : '',
                   },
@@ -143,7 +147,7 @@ const CsvMapperConditionalEntityMapping: FunctionComponent<
                 ...params.InputProps,
                 sx: {
                   '& fieldset': {
-                    borderColor: (!columnBased?.operator)
+                    borderColor: !columnBased?.operator
                       ? theme.palette.designSystem.tertiary.red[400]
                       : '',
                   },

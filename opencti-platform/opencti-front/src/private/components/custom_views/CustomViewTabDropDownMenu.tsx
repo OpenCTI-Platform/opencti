@@ -11,7 +11,12 @@ interface CustomViewTabDropDownMenuProps {
   currentCustomViewMenuItem?: string;
 }
 
-const CustomViewTabDropDownMenu = ({ displayMode, otherCustomViews: customViews, dropDownMenuState, currentCustomViewMenuItem }: CustomViewTabDropDownMenuProps) => {
+const CustomViewTabDropDownMenu = ({
+  displayMode,
+  otherCustomViews: customViews,
+  dropDownMenuState,
+  currentCustomViewMenuItem,
+}: CustomViewTabDropDownMenuProps) => {
   const { anchorEl, isOpen, onClose, close } = dropDownMenuState;
   if (displayMode.others !== 'dropdown') {
     return null;
@@ -21,33 +26,35 @@ const CustomViewTabDropDownMenu = ({ displayMode, otherCustomViews: customViews,
       anchorEl={anchorEl}
       isOpen={isOpen}
       onClose={onClose}
-      renderMenuItems={() => customViews.map(({ id, name, path }) => {
-        const isSelected = currentCustomViewMenuItem === path;
-        return (
-          <MenuItem
-            key={id}
-            selected={isSelected}
-            role="link"
-            component={Link}
-            to={path}
-            onClick={close}
-            sx={{
-              '&.Mui-selected': {
-                boxShadow: 'none',
-                background: 'none',
-                color: 'primary.main',
-              },
-              '&.Mui-selected:hover': {
-                boxShadow: 'none',
-                background: 'none',
-                color: 'primary.main',
-              },
-            }}
-          >
-            {name}
-          </MenuItem>
-        );
-      })}
+      renderMenuItems={() =>
+        customViews.map(({ id, name, path }) => {
+          const isSelected = currentCustomViewMenuItem === path;
+          return (
+            <MenuItem
+              key={id}
+              selected={isSelected}
+              role="link"
+              component={Link}
+              to={path}
+              onClick={close}
+              sx={{
+                '&.Mui-selected': {
+                  boxShadow: 'none',
+                  background: 'none',
+                  color: 'primary.main',
+                },
+                '&.Mui-selected:hover': {
+                  boxShadow: 'none',
+                  background: 'none',
+                  color: 'primary.main',
+                },
+              }}
+            >
+              {name}
+            </MenuItem>
+          );
+        })
+      }
     />
   );
 };
