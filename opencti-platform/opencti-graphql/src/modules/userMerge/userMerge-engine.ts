@@ -4,6 +4,7 @@ import { UnsupportedError } from '../../config/errors';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { handlerDryRun, planFingerprint, type UserMergeHandler, type UserMergeHandlerContext, type UserMergeHandlerOutcome } from './userMerge-handler';
 import { withJournalEntry, readJournalEntries } from './userMerge-journal';
+import { buildApiUserMergeCoverage, type UserMergeCoverage } from './userMerge-coverage';
 import { USER_MERGE_REGISTRY_VERSION } from './userMerge-register';
 import { assertHandlersAreDisjoint, userMergeHandlers } from './userMerge-registry';
 import { type UserMergeJournalEntry, type UserMergeOptions, type UserMergeResult, UserMergeStatus } from './userMerge-types';
@@ -15,6 +16,11 @@ export interface UserMergeExecutionReport {
   registry_version: string;
   handlers: UserMergeHandlerOutcome[];
   total_updated: number;
+  /**
+   * Attached to every report, not only on demand. A report showing three handlers that
+   * succeeded reads as a complete merge unless it also says what the register still holds.
+   */
+  coverage: UserMergeCoverage;
 }
 
 const buildReport = (mergeId: string, outcomes: UserMergeHandlerOutcome[]): UserMergeExecutionReport => ({
@@ -22,6 +28,7 @@ const buildReport = (mergeId: string, outcomes: UserMergeHandlerOutcome[]): User
   registry_version: USER_MERGE_REGISTRY_VERSION,
   handlers: outcomes,
   total_updated: outcomes.reduce((total, outcome) => total + outcome.updated, 0),
+  coverage: buildApiUserMergeCoverage(),
 });
 
 /**
