@@ -127,7 +127,7 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
           onSubmit={onSubmit}
           onReset={onClose}
         >
-          {({ submitForm, handleReset, isSubmitting, values, setFieldValue }) => (
+          {({ submitForm, handleReset, isSubmitting, values, setFieldValue, setFieldTouched, touched, errors, submitCount }) => (
             <Form>
               <Field
                 component={SelectField}
@@ -200,20 +200,26 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                         options={[]}
                         value={values.select_options}
                         onChange={(_, newValue) => setFieldValue('select_options', newValue)}
+                        onBlur={() => setFieldTouched('select_options', true)}
                         renderTags={(tagValue, getTagProps) => tagValue.map((option: string, index: number) => (
                           <Chip label={option} {...getTagProps({ index })} key={option} />
                         ))}
-                        renderInput={(params) => (
-                          <MuiTextField
-                            {...params}
-                            variant="standard"
-                            label={t_i18n('Select options')}
-                            placeholder={values.select_options.length === 0
-                              ? t_i18n('Type and press Enter to add items')
-                              : t_i18n('Add more items...')}
-                            style={{ marginTop: 20 }}
-                          />
-                        )}
+                        renderInput={(params) => {
+                          const selectOptionsError = (touched.select_options || submitCount > 0) ? errors.select_options : undefined;
+                          return (
+                            <MuiTextField
+                              {...params}
+                              variant="standard"
+                              label={t_i18n('Select options')}
+                              placeholder={values.select_options.length === 0
+                                ? t_i18n('Type and press Enter to add items')
+                                : t_i18n('Add more items...')}
+                              error={Boolean(selectOptionsError)}
+                              helperText={selectOptionsError}
+                              style={{ marginTop: 20 }}
+                            />
+                          );
+                        }}
                       />
                     </>
                   )}
