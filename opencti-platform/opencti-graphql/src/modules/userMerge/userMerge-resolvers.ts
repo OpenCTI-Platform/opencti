@@ -1,5 +1,5 @@
 import type { AuthContext } from '../../types/user';
-import { userMerge, userMergeJournal, type UserMergeOptionsInput } from './userMerge-domain';
+import { userMerge, userMergeCoverage, userMergeJournal, type UserMergeOptionsInput } from './userMerge-domain';
 
 const userMergeResolvers = {
   Query: {
@@ -8,6 +8,11 @@ const userMergeResolvers = {
       { mergeId, first }: { mergeId?: string | null; first?: number | null },
       context: AuthContext,
     ) => userMergeJournal(context, context.user!, mergeId, first),
+    userMergeCoverage: (
+      _: unknown,
+      { disposition }: { disposition?: string | null },
+      context: AuthContext,
+    ) => userMergeCoverage(context, context.user!, disposition),
   },
   Mutation: {
     userMerge: (
