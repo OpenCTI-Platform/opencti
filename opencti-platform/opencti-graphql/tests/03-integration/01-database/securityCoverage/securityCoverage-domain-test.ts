@@ -25,7 +25,20 @@ describe('SecurityCoverage domain', () => {
   });
 
   describe('Function addSecurityCoverage()', () => {
-    it('should create coverage result if contains coverage information', async () => {
+    it('should create coverage result if explicitly asked for', async () => {
+      const input = {
+        ...BASE_INPUT(),
+        add_related_entities: true,
+      };
+      const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
+      const results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
+      expect(results.length).toEqual(1);
+      // Name should be the external_uri when it is defined
+      expect(results[0].name).toEqual('Result of sc1');
+      await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
+    });
+
+    it('should create coverage result if contains eternal uri', async () => {
       const externalUri = 'http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a131';
       const input = {
         ...BASE_INPUT(),
@@ -43,7 +56,7 @@ describe('SecurityCoverage domain', () => {
       await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
     });
 
-    it('should create coverage result if contains no information but external_uri', async () => {
+    it('should create coverage result if contains external_uri without coverage info', async () => {
       const input = {
         ...BASE_INPUT(),
         tenant_name: 'Super Coverage',
@@ -57,7 +70,7 @@ describe('SecurityCoverage domain', () => {
       await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
     });
 
-    it('should not create coverage result if no coverage info neither external_uri', async () => {
+    it('should not create coverage result if no manual neither external_uri', async () => {
       const input = {
         ...BASE_INPUT(),
       };
@@ -77,6 +90,7 @@ describe('SecurityCoverage domain', () => {
           coverage_name: 'prevention',
           coverage_score: 10,
         }],
+        add_related_entities: true,
       };
       const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
       let results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
