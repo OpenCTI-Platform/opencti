@@ -21,7 +21,7 @@ on:
         description: Use client-python from this branch instead of the released pycti
         type: boolean
         required: false
-        default: true
+        default: false
 
 jobs:
   wf-build-image:

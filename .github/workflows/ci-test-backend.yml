@@ -179,6 +179,8 @@ jobs:
     steps:
     - name: OpenCTI checkout
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        ref: ${{ inputs.checkout_ref }}
 
     - name: Runner information
       continue-on-error: true
@@ -234,7 +236,6 @@ jobs:
           -e "APP__ENTERPRISE_EDITION_LICENSE=${{ env.EE_LICENSE }}" \
           filigran/builder:${{ github.sha }} \
           sh -c 'set -eux
-
               cd /home/workspace/opencti-platform/opencti-graphql 
               mkdir -p ../../opencti-connectors/stream/backup-files/src
               wget -O ../../opencti-connectors/stream/backup-files/src/backup-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/stream/backup-files/src/backup-files.py
@@ -284,6 +285,8 @@ jobs:
     steps:
     - name: OpenCTI checkout
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        ref: ${{ inputs.checkout_ref }}
 
     - name: Runner information
       continue-on-error: true
