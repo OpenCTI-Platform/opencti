@@ -18,7 +18,7 @@ import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { notify, setEditContext } from '../../database/redis';
 import { buildStixBundle } from '../../database/stix-2-1-converter';
 import { buildPagination, computeSumOfList, cursorToOffset, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
-import { createWork, updateExpectationsNumber } from '../../domain/work';
+import { createWork } from '../../domain/work';
 import {
   DraftChangeType,
   type DraftWorkspaceAddInput,
@@ -789,10 +789,6 @@ export const validateDraftWorkspace = async (context: AuthContext, user: AuthUse
 
   const contextOutOfDraft = { ...context, draft_context: '' };
   const work: any = await createWork(contextOutOfDraft, SYSTEM_USER, DRAFT_VALIDATION_CONNECTOR, `Draft validation ${draftWorkspace.name} (${draft_id})`, DRAFT_VALIDATION_CONNECTOR.internal_id, { receivedTime: now() });
-  if (stixBundle.objects.length === 1) {
-    // Only add explicit expectation if the worker will not split anything
-    await updateExpectationsNumber(contextOutOfDraft, context.user, work.id, stixBundle.objects.length);
-  }
   await pushToWorkerForConnector(DRAFT_VALIDATION_CONNECTOR.id, { type: 'bundle', applicant_id: user.internal_id, content, update: true, work_id: work.id, draft_id: '' });
   const draftValidationInput = [{ key: 'draft_status', value: [DRAFT_STATUS_VALIDATED] }, { key: 'validation_work_id', value: [work.id] }];
   const { element } = await updateAttribute(context, user, draft_id, ENTITY_TYPE_DRAFT_WORKSPACE, draftValidationInput);

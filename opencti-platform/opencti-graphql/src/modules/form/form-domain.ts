@@ -11,7 +11,7 @@ import { connectorIdFromIngestId, registerConnectorForIngestion, unregisterConne
 import { publishUserAction } from '../../listener/UserActionListener';
 import { logApp } from '../../config/conf';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
-import { createWork, updateExpectationsNumber } from '../../domain/work';
+import { createWork } from '../../domain/work';
 import { ConnectorPriorityGroup, ConnectorType, FilterMode, type DraftWorkspaceAddInput, type FormSubmissionInput, type MemberAccessInput } from '../../generated/graphql';
 import { now, nowTime } from '../../utils/format';
 import { BYPASS, isUserHasCapability, SYSTEM_USER } from '../../utils/access';
@@ -466,10 +466,6 @@ export const formSubmit = async (
 
     const stixBundle = JSON.stringify(bundle);
     const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
-
-    if (bundle.objects.length > 0) {
-      await updateExpectationsNumber(context, SYSTEM_USER, work.id, bundle.objects.length);
-    }
 
     let draftId = null;
     if (finalIsDraft) {
