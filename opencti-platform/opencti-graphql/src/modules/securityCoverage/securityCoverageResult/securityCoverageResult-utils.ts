@@ -1,10 +1,18 @@
 import { logApp } from '../../../config/conf';
-import { FunctionalError } from '../../../config/errors';
-import { type StixCoreRelationshipAddInput } from '../../../generated/graphql';
-import { RELATION_HAS_COVERED } from '../../../schema/stixCoreRelationship';
+import { createEntity } from '../../../database/middleware';
+import type { SecurityCoverageResultAddInput } from '../../../generated/graphql';
+import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../../schema/stixCyberObservable';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_VULNERABILITY } from '../../../schema/stixDomainObject';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { findById, listSecurityCoverageResults } from '../securityCoverage-domain';
-import type { StoreEntitySecurityCoverageResult } from './securityCoverageResult-types';
+import { ENTITY_TYPE_INDICATOR } from '../../indicator/indicator-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT, type BasicStoreEntitySecurityCoverageResult, type StoreEntitySecurityCoverageResult } from './securityCoverageResult-types';
+
+export const HAS_COVERED_TARGETS_TYPE = [
+  ENTITY_TYPE_ATTACK_PATTERN,
+  ENTITY_TYPE_VULNERABILITY,
+  ENTITY_HASHED_OBSERVABLE_ARTIFACT,
+  ENTITY_TYPE_INDICATOR,
+];
 
 /**
  * Compute the average coverage information of an array of securityCoverageResult.
@@ -42,50 +50,26 @@ export const getMostRecentLastCoverageResult = async (results: StoreEntitySecuri
 };
 
 /**
- * Checks if the relationship fromId should be changed.
- * If the rel is 'has-covered' with a fromId of a securityCoverage,
- * Then changes fromId to the id of the associated securityCoverageResult.
+ * Internal function to create a security coverage result.
  *
- * @param relInput Relationship input to check.
- * @returns True if the fromId of the input should be changed.
- */
-export const shouldHandleHasCoveredRel = (relInput: StixCoreRelationshipAddInput): boolean => {
-  return relInput.relationship_type === RELATION_HAS_COVERED
-    && relInput.fromId.startsWith('security-coverage--');
-};
-
-/**
- * Replaces securityCoverage fromId to ID of associated securityCoverageResult.
+ * /!\ This function is not directly available through the API.
+ * The API one is making extra checks, this one exists to avoid duplicating code.
  *
- * @param context To make the request to engine.
- * @param user To make the request to engine.
- * @param relInput Relationship input to manipulate.
- * @returns Transformed input.
+ * @param context
+ * @param user user making the request.
+ * @param securityCoverageResultInput Input to create the security coverage result.
  */
-export const transformHasCoveredFromId = async (
+export const internalCreateSecurityCoverageResult = async (
   context: AuthContext,
   user: AuthUser,
-  relInput: StixCoreRelationshipAddInput,
+  securityCoverageResultInput: SecurityCoverageResultAddInput,
 ) => {
-  const securityCoverage = await findById(context, user, relInput.fromId);
-  const securityCoverageResults = await listSecurityCoverageResults(context, user, securityCoverage);
-  const matchingSCR = relInput.external_uri
-    ? securityCoverageResults.filter((scr) => scr.external_uri === relInput.external_uri)
-    // Retro compatibility : only for old OEAV version without external_uri
-    : securityCoverageResults;
-
-  if (matchingSCR.length !== 1) {
-    logApp.error(
-      `[SECURITY-COVERAGE-RESULT] Invalid number of SCR found: ${relInput.external_uri}`,
-      {
-        relInput,
-        matchingSCRStandardIds: matchingSCR.map((scr) => scr.standard_id),
-      },
-    );
-    throw FunctionalError('Cannot find SecurityCoverageResult for this has-covered relationship');
-  }
-  return {
-    ...relInput,
-    fromId: matchingSCR[0].standard_id,
-  };
+  const result: BasicStoreEntitySecurityCoverageResult = await createEntity(
+    context,
+    user,
+    securityCoverageResultInput,
+    ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
+  );
+  logApp.info(`[SECURITY-COVERAGE-RESULT][${securityCoverageResultInput.resultOf}] SCR created: ${result.standard_id}`);
+  return result;
 };
