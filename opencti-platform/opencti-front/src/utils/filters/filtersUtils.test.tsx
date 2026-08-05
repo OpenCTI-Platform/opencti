@@ -3,6 +3,7 @@ import {
   buildFiltersAndOptionsForWidgets,
   buildFiltersForCustomView,
   emptyFilterGroup,
+  findFilterFromKey,
   findFiltersFromKeys,
   formatFiltersInPirContext,
   getEntityTypeThreeFirstLevelsFilterValues,
@@ -11,6 +12,7 @@ import {
   isRegardingOfFilterWarning,
   normalizeFilterGroupForBackend,
   normalizeFilterGroupForFrontend,
+  removeEmptyFiltersFromList,
   removeFrontendIdAndEmptyFiltersFromFilterGroupObject,
   removeIdAndIncorrectKeysFromFilterGroupObject,
   serializeFilterGroupForBackend,
@@ -23,6 +25,41 @@ import filterKeysSchema from '../tests/FilterUtilsConstants';
 import { FilterGroup } from './filtersHelpers-types';
 
 describe('Filters utils', () => {
+  describe('removeEmptyFiltersFromList', () => {
+    it('should remove filters with empty values when operator requires values', () => {
+      const filtersList = [
+        { key: 'name', values: [], operator: 'eq' },
+        { key: 'entity_type', values: ['Malware'], operator: 'eq' },
+      ];
+
+      expect(removeEmptyFiltersFromList(filtersList)).toEqual([
+        { key: 'entity_type', values: ['Malware'], operator: 'eq' },
+      ]);
+    });
+
+    it('should keep filters with no-value operators even when values are empty', () => {
+      const filtersList = [
+        { key: 'description', values: [], operator: 'nil' },
+        { key: 'objectMarking', values: [], operator: 'not_nil' },
+        { key: 'confidence', values: [], operator: 'has_changed' },
+        { key: 'workflow_id', values: [], operator: 'not_has_changed' },
+      ];
+
+      expect(removeEmptyFiltersFromList(filtersList)).toEqual(filtersList);
+    });
+
+    it('should treat missing operator as eq and remove empty filter', () => {
+      const filtersList = [
+        { key: 'name', values: [] },
+        { key: 'entity_type', values: ['Report'] },
+      ];
+
+      expect(removeEmptyFiltersFromList(filtersList)).toEqual([
+        { key: 'entity_type', values: ['Report'] },
+      ]);
+    });
+  });
+
   describe('useBuildFilterKeysMapFromEntityType', () => {
     it('should list filter definitions by given entity types attributes', () => {
       const stixCoreObjectKey = 'Stix-Core-Object';
@@ -669,8 +706,37 @@ describe('Filters utils', () => {
   });
 });
 
-describe('Function findFilterFromKey: should return the filters of the specified keys among a filters list', () => {
-  it('findFilterFromKey without specifying an operator', () => {
+describe('Function findFilterFromKey', () => {
+  it('findFilterFromKey should return the first filter matching key and operator', () => {
+    const filtersList = [
+      { key: 'name', values: ['name1'], operator: 'eq' },
+      { key: 'name', values: ['name2'], operator: 'eq' },
+      { key: 'name', values: ['name3'], operator: 'not_eq' },
+    ];
+    const result = findFilterFromKey(filtersList, 'name');
+    expect(result).toEqual({ key: 'name', values: ['name1'], operator: 'eq' });
+  });
+
+  it('findFilterFromKey should return null when key is not found', () => {
+    const filtersList = [
+      { key: 'value', values: ['value1'], operator: 'eq' },
+    ];
+    const result = findFilterFromKey(filtersList, 'name');
+    expect(result).toBeNull();
+  });
+
+  it('findFilterFromKey should treat missing operator as eq', () => {
+    const filtersList = [
+      { key: 'name', values: ['name1'] },
+      { key: 'name', values: ['name2'], operator: 'not_eq' },
+    ];
+    const result = findFilterFromKey(filtersList, 'name');
+    expect(result).toEqual({ key: 'name', values: ['name1'] });
+  });
+});
+
+describe('Function findFiltersFromKeys: should return the filters of the specified keys among a filters list', () => {
+  it('findFiltersFromKeys without specifying an operator', () => {
     const filtersList = [
       { key: 'value', values: [], operator: 'nil' },
       { key: 'name', values: ['name1', 'name2'], operator: 'eq' },
@@ -678,7 +744,7 @@ describe('Function findFilterFromKey: should return the filters of the specified
     const result = findFiltersFromKeys(filtersList, ['value']);
     expect(result).toEqual([]);
   });
-  it('findFilterFromKey with several results', () => {
+  it('findFiltersFromKeys with several results', () => {
     const filtersList = [
       { key: 'value', values: [], operator: 'nil' },
       { key: 'name', values: ['name1', 'name2'], operator: 'eq' },
@@ -688,7 +754,7 @@ describe('Function findFilterFromKey: should return the filters of the specified
     expect(result).toEqual([{ key: 'name', values: ['name1', 'name2'], operator: 'eq' },
       { key: 'name', values: ['name3'], operator: 'eq' }]);
   });
-  it('findFilterFromKey with operator specified', () => {
+  it('findFiltersFromKeys with operator specified', () => {
     const filtersList = [
       { key: 'value', values: [], operator: 'nil' },
       { key: 'name', values: ['name1', 'name2'], operator: 'eq' },
@@ -696,7 +762,7 @@ describe('Function findFilterFromKey: should return the filters of the specified
     const result = findFiltersFromKeys(filtersList, ['value'], 'nil');
     expect(result).toEqual([{ key: 'value', values: [], operator: 'nil' }]);
   });
-  it('findFilterFromKey with several keys', () => {
+  it('findFiltersFromKeys with several keys', () => {
     const filtersList = [
       { key: 'value', values: ['value1'], operator: 'eq' },
       { key: 'created_at', values: ['XX', 'YY'], mode: 'or' },
