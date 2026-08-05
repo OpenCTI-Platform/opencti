@@ -1,6 +1,5 @@
 import { INDEX_DELETED_OBJECTS, READ_INDEX_DRAFT_OBJECTS, READ_PLATFORM_INDICES } from '../../database/utils';
 import type { AuthContext } from '../../types/user';
-import { ENTITY_TYPE_USER_MERGE_JOURNAL } from './userMergeJournal-types';
 import type { UserMergeOptions } from './userMerge-types';
 
 /**
@@ -16,18 +15,6 @@ import type { UserMergeOptions } from './userMerge-types';
  * under the same names: the handler queries and scripts apply to them unchanged.
  */
 export const USER_MERGE_TARGET_INDICES = [...READ_PLATFORM_INDICES, INDEX_DELETED_OBJECTS, READ_INDEX_DRAFT_OBJECTS];
-
-/**
- * Entity types the handlers must never touch, subtracted from the scope above.
- *
- * The journal lives in a live index and carries a creator_id of its own, and later chunks
- * rewrite exactly that field across every live index. Left in scope, a merge would rewrite
- * its own trace. The effect stays benign as long as the operator is not themselves a merge
- * source, but the loop is closed explicitly rather than left to chance.
- *
- * The audit record joins this list when it lands.
- */
-export const USER_MERGE_EXCLUDED_ENTITY_TYPES = [ENTITY_TYPE_USER_MERGE_JOURNAL];
 
 /** One planned or applied change, as it appears in the report. */
 export interface UserMergePlannedChange {
