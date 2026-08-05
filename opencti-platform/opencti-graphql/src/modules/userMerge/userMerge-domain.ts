@@ -113,11 +113,11 @@ export const resolveUserMergeJournalFirst = (first?: number | null): number => {
 };
 
 export const userMergeJournal = async (
-  context: AuthContext,
+  _context: AuthContext,
   user: AuthUser,
   mergeId?: string | null,
   first?: number | null,
 ): Promise<UserMergeJournalEntry[]> => {
   assertUserMergeAllowed(user);
-  return readUserMergeJournal(context, user, mergeId ?? undefined, resolveUserMergeJournalFirst(first));
+  return readUserMergeJournal(mergeId ?? undefined, resolveUserMergeJournalFirst(first));
 };
