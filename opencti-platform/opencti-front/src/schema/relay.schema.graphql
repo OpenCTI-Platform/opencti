@@ -9656,6 +9656,7 @@ type Query {
   dataSanityExecutions: [DataSanityExecution!]!
   dataSanityOperationDryRun(operation_name: String!): DataSanityDryRunOutput!
   userMergeJournal(mergeId: ID, first: Int): [UserMergeJournalEntry!]!
+  userMergeCoverage(disposition: UserMergeDisposition): UserMergeCoverage!
   customFieldDefinition(id: String!): CustomFieldDefinition
   customFieldDefinitions(first: Int, after: ID, orderBy: CustomFieldDefinitionsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): CustomFieldDefinitionConnection
   customFieldDefinitionsForEntityType(entityType: String!): CustomFieldDefinitionConnection
@@ -17068,6 +17069,61 @@ input UserMergeOptions {
   rightsStrategy: UserMergeRightsStrategy = STRICT
 }
 
+enum UserMergeDisposition {
+  TRANSFER
+  INVALIDATE
+  CONDITIONAL
+  RETAIN
+  OUT_OF_SCOPE
+}
+
+type UserMergePlannedChange {
+  register_row_id: String!
+  entity_type: String!
+  count: Int!
+  exact: Boolean!
+  detail: String
+}
+
+type UserMergeRightsAlert {
+  register_row_id: String!
+  kind: String!
+  message: String!
+}
+
+type UserMergeHandlerOutcome {
+  handler: String!
+  changes: [UserMergePlannedChange!]!
+  alerts: [UserMergeRightsAlert!]!
+  updated: Int!
+}
+
+type UserMergeExecutionReport {
+  merge_id: ID!
+  registry_version: String!
+  handlers: [UserMergeHandlerOutcome!]!
+  total_updated: Int!
+  coverage: UserMergeCoverage!
+}
+
+type UserMergeCoverageRow {
+  row_id: String!
+  entity: String!
+  path: String!
+  disposition: UserMergeDisposition!
+  covered: Boolean!
+  handler: String
+}
+
+type UserMergeCoverage {
+  registry_version: String!
+  total: Int!
+  covered_count: Int!
+  uncovered_count: Int!
+  is_complete: Boolean!
+  rows: [UserMergeCoverageRow!]!
+}
+
 type UserMergeResult {
   id: ID!
   source_id: ID!
@@ -17078,6 +17134,7 @@ type UserMergeResult {
   started_at: DateTime!
   completed_at: DateTime
   message: String
+  report: UserMergeExecutionReport
 }
 
 type UserMergeJournalEntry {

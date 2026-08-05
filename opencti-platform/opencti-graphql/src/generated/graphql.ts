@@ -25064,6 +25064,7 @@ export type Query = {
   unknownStixCoreObjects: Array<Scalars['String']['output']>;
   user?: Maybe<User>;
   userAlreadyExists?: Maybe<Scalars['Boolean']['output']>;
+  userMergeCoverage: UserMergeCoverage;
   userMergeJournal: Array<UserMergeJournalEntry>;
   users?: Maybe<UserConnection>;
   vocabularies?: Maybe<VocabularyConnection>;
@@ -28194,6 +28195,11 @@ export type QueryUserArgs = {
 
 export type QueryUserAlreadyExistsArgs = {
   name: Scalars['String']['input'];
+};
+
+
+export type QueryUserMergeCoverageArgs = {
+  disposition?: InputMaybe<UserMergeDisposition>;
 };
 
 
@@ -37285,6 +37291,52 @@ export type UserLoginInput = {
   password: Scalars['String']['input'];
 };
 
+export type UserMergeCoverage = {
+  __typename?: 'UserMergeCoverage';
+  covered_count: Scalars['Int']['output'];
+  gating_uncovered_count: Scalars['Int']['output'];
+  is_complete: Scalars['Boolean']['output'];
+  registry_version: Scalars['String']['output'];
+  rows: Array<UserMergeCoverageRow>;
+  total: Scalars['Int']['output'];
+  uncovered_count: Scalars['Int']['output'];
+};
+
+export type UserMergeCoverageRow = {
+  __typename?: 'UserMergeCoverageRow';
+  covered: Scalars['Boolean']['output'];
+  disposition: UserMergeDisposition;
+  entity: Scalars['String']['output'];
+  handler?: Maybe<Scalars['String']['output']>;
+  path: Scalars['String']['output'];
+  row_id: Scalars['String']['output'];
+};
+
+export enum UserMergeDisposition {
+  Conditional = 'CONDITIONAL',
+  Invalidate = 'INVALIDATE',
+  OutOfScope = 'OUT_OF_SCOPE',
+  Retain = 'RETAIN',
+  Transfer = 'TRANSFER'
+}
+
+export type UserMergeExecutionReport = {
+  __typename?: 'UserMergeExecutionReport';
+  coverage: UserMergeCoverage;
+  handlers: Array<UserMergeHandlerOutcome>;
+  merge_id: Scalars['ID']['output'];
+  registry_version: Scalars['String']['output'];
+  total_updated: Scalars['Int']['output'];
+};
+
+export type UserMergeHandlerOutcome = {
+  __typename?: 'UserMergeHandlerOutcome';
+  alerts: Array<UserMergeRightsAlert>;
+  changes: Array<UserMergePlannedChange>;
+  handler: Scalars['String']['output'];
+  updated: Scalars['Int']['output'];
+};
+
 export type UserMergeJournalEntry = {
   __typename?: 'UserMergeJournalEntry';
   completed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -37304,17 +37356,34 @@ export type UserMergeOptions = {
   rightsStrategy?: InputMaybe<UserMergeRightsStrategy>;
 };
 
+export type UserMergePlannedChange = {
+  __typename?: 'UserMergePlannedChange';
+  count: Scalars['Int']['output'];
+  detail?: Maybe<Scalars['String']['output']>;
+  entity_type: Scalars['String']['output'];
+  exact: Scalars['Boolean']['output'];
+  register_row_id: Scalars['String']['output'];
+};
+
 export type UserMergeResult = {
   __typename?: 'UserMergeResult';
   completed_at?: Maybe<Scalars['DateTime']['output']>;
   dry_run: Scalars['Boolean']['output'];
   id: Scalars['ID']['output'];
   message?: Maybe<Scalars['String']['output']>;
+  report?: Maybe<UserMergeExecutionReport>;
   rights_strategy: UserMergeRightsStrategy;
   source_id: Scalars['ID']['output'];
   started_at: Scalars['DateTime']['output'];
   status: UserMergeStatus;
   target_id: Scalars['ID']['output'];
+};
+
+export type UserMergeRightsAlert = {
+  __typename?: 'UserMergeRightsAlert';
+  kind: Scalars['String']['output'];
+  message: Scalars['String']['output'];
+  register_row_id: Scalars['String']['output'];
 };
 
 export enum UserMergeRightsStrategy {
@@ -40994,9 +41063,16 @@ export type ResolversTypes = ResolversObject<{
   UserInfoMapping: ResolverTypeWrapper<UserInfoMapping>;
   UserInfoMappingInput: UserInfoMappingInput;
   UserLoginInput: UserLoginInput;
+  UserMergeCoverage: ResolverTypeWrapper<UserMergeCoverage>;
+  UserMergeCoverageRow: ResolverTypeWrapper<UserMergeCoverageRow>;
+  UserMergeDisposition: UserMergeDisposition;
+  UserMergeExecutionReport: ResolverTypeWrapper<UserMergeExecutionReport>;
+  UserMergeHandlerOutcome: ResolverTypeWrapper<UserMergeHandlerOutcome>;
   UserMergeJournalEntry: ResolverTypeWrapper<UserMergeJournalEntry>;
   UserMergeOptions: UserMergeOptions;
+  UserMergePlannedChange: ResolverTypeWrapper<UserMergePlannedChange>;
   UserMergeResult: ResolverTypeWrapper<UserMergeResult>;
+  UserMergeRightsAlert: ResolverTypeWrapper<UserMergeRightsAlert>;
   UserMergeRightsStrategy: UserMergeRightsStrategy;
   UserMergeStatus: UserMergeStatus;
   UserOTPActivationInput: UserOtpActivationInput;
@@ -42005,9 +42081,15 @@ export type ResolversParentTypes = ResolversObject<{
   UserInfoMapping: UserInfoMapping;
   UserInfoMappingInput: UserInfoMappingInput;
   UserLoginInput: UserLoginInput;
+  UserMergeCoverage: UserMergeCoverage;
+  UserMergeCoverageRow: UserMergeCoverageRow;
+  UserMergeExecutionReport: UserMergeExecutionReport;
+  UserMergeHandlerOutcome: UserMergeHandlerOutcome;
   UserMergeJournalEntry: UserMergeJournalEntry;
   UserMergeOptions: UserMergeOptions;
+  UserMergePlannedChange: UserMergePlannedChange;
   UserMergeResult: UserMergeResult;
+  UserMergeRightsAlert: UserMergeRightsAlert;
   UserOTPActivationInput: UserOtpActivationInput;
   UserOTPLoginInput: UserOtpLoginInput;
   UserSession: UserSession;
@@ -50316,6 +50398,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   unknownStixCoreObjects?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryUnknownStixCoreObjectsArgs, 'values'>>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
   userAlreadyExists?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryUserAlreadyExistsArgs, 'name'>>;
+  userMergeCoverage?: Resolver<ResolversTypes['UserMergeCoverage'], ParentType, ContextType, Partial<QueryUserMergeCoverageArgs>>;
   userMergeJournal?: Resolver<Array<ResolversTypes['UserMergeJournalEntry']>, ParentType, ContextType, Partial<QueryUserMergeJournalArgs>>;
   users?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType, Partial<QueryUsersArgs>>;
   vocabularies?: Resolver<Maybe<ResolversTypes['VocabularyConnection']>, ParentType, ContextType, Partial<QueryVocabulariesArgs>>;
@@ -53303,6 +53386,40 @@ export type UserInfoMappingResolvers<ContextType = any, ParentType extends Resol
   name_expr?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type UserMergeCoverageResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserMergeCoverage'] = ResolversParentTypes['UserMergeCoverage']> = ResolversObject<{
+  covered_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  gating_uncovered_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  is_complete?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  registry_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  rows?: Resolver<Array<ResolversTypes['UserMergeCoverageRow']>, ParentType, ContextType>;
+  total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  uncovered_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type UserMergeCoverageRowResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserMergeCoverageRow'] = ResolversParentTypes['UserMergeCoverageRow']> = ResolversObject<{
+  covered?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  disposition?: Resolver<ResolversTypes['UserMergeDisposition'], ParentType, ContextType>;
+  entity?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  handler?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  row_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type UserMergeExecutionReportResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserMergeExecutionReport'] = ResolversParentTypes['UserMergeExecutionReport']> = ResolversObject<{
+  coverage?: Resolver<ResolversTypes['UserMergeCoverage'], ParentType, ContextType>;
+  handlers?: Resolver<Array<ResolversTypes['UserMergeHandlerOutcome']>, ParentType, ContextType>;
+  merge_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  registry_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  total_updated?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type UserMergeHandlerOutcomeResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserMergeHandlerOutcome'] = ResolversParentTypes['UserMergeHandlerOutcome']> = ResolversObject<{
+  alerts?: Resolver<Array<ResolversTypes['UserMergeRightsAlert']>, ParentType, ContextType>;
+  changes?: Resolver<Array<ResolversTypes['UserMergePlannedChange']>, ParentType, ContextType>;
+  handler?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  updated?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
 export type UserMergeJournalEntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserMergeJournalEntry'] = ResolversParentTypes['UserMergeJournalEntry']> = ResolversObject<{
   completed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   dry_run?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -53316,16 +53433,31 @@ export type UserMergeJournalEntryResolvers<ContextType = any, ParentType extends
   target_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
 }>;
 
+export type UserMergePlannedChangeResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserMergePlannedChange'] = ResolversParentTypes['UserMergePlannedChange']> = ResolversObject<{
+  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  detail?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  exact?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  register_row_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type UserMergeResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserMergeResult'] = ResolversParentTypes['UserMergeResult']> = ResolversObject<{
   completed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   dry_run?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  report?: Resolver<Maybe<ResolversTypes['UserMergeExecutionReport']>, ParentType, ContextType>;
   rights_strategy?: Resolver<ResolversTypes['UserMergeRightsStrategy'], ParentType, ContextType>;
   source_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   started_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   status?: Resolver<ResolversTypes['UserMergeStatus'], ParentType, ContextType>;
   target_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+}>;
+
+export type UserMergeRightsAlertResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserMergeRightsAlert'] = ResolversParentTypes['UserMergeRightsAlert']> = ResolversObject<{
+  kind?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  register_row_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type UserSessionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserSession'] = ResolversParentTypes['UserSession']> = ResolversObject<{
@@ -54669,8 +54801,14 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   UserEdge?: UserEdgeResolvers<ContextType>;
   UserEditMutations?: UserEditMutationsResolvers<ContextType>;
   UserInfoMapping?: UserInfoMappingResolvers<ContextType>;
+  UserMergeCoverage?: UserMergeCoverageResolvers<ContextType>;
+  UserMergeCoverageRow?: UserMergeCoverageRowResolvers<ContextType>;
+  UserMergeExecutionReport?: UserMergeExecutionReportResolvers<ContextType>;
+  UserMergeHandlerOutcome?: UserMergeHandlerOutcomeResolvers<ContextType>;
   UserMergeJournalEntry?: UserMergeJournalEntryResolvers<ContextType>;
+  UserMergePlannedChange?: UserMergePlannedChangeResolvers<ContextType>;
   UserMergeResult?: UserMergeResultResolvers<ContextType>;
+  UserMergeRightsAlert?: UserMergeRightsAlertResolvers<ContextType>;
   UserSession?: UserSessionResolvers<ContextType>;
   UserStatus?: UserStatusResolvers<ContextType>;
   VerifyOtp?: VerifyOtpResolvers<ContextType>;

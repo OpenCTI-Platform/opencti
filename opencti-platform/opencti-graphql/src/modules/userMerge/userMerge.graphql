@@ -18,6 +18,67 @@ input UserMergeOptions {
     rightsStrategy: UserMergeRightsStrategy = STRICT
 }
 
+enum UserMergeDisposition {
+    TRANSFER
+    INVALIDATE
+    CONDITIONAL
+    RETAIN
+    OUT_OF_SCOPE
+}
+
+type UserMergePlannedChange {
+    register_row_id: String!
+    entity_type: String!
+    count: Int!
+    # False when the count is an estimate. Anything affecting the security posture is exact.
+    exact: Boolean!
+    detail: String
+}
+
+type UserMergeRightsAlert {
+    register_row_id: String!
+    kind: String!
+    message: String!
+}
+
+type UserMergeHandlerOutcome {
+    handler: String!
+    changes: [UserMergePlannedChange!]!
+    alerts: [UserMergeRightsAlert!]!
+    # Always 0 in dry mode.
+    updated: Int!
+}
+
+type UserMergeExecutionReport {
+    merge_id: ID!
+    registry_version: String!
+    handlers: [UserMergeHandlerOutcome!]!
+    total_updated: Int!
+    coverage: UserMergeCoverage!
+}
+
+type UserMergeCoverageRow {
+    row_id: String!
+    entity: String!
+    path: String!
+    disposition: UserMergeDisposition!
+    covered: Boolean!
+    handler: String
+}
+
+type UserMergeCoverage {
+    registry_version: String!
+    total: Int!
+    covered_count: Int!
+    uncovered_count: Int!
+    # Uncovered rows among those a handler must claim. Differs from uncovered_count, which
+    # also counts the retained and out-of-scope rows no handler will ever claim.
+    gating_uncovered_count: Int!
+    # True when no transfer or conditional row is left uncovered.
+    is_complete: Boolean!
+    rows: [UserMergeCoverageRow!]!
+}
+
 type UserMergeResult {
     id: ID!
     source_id: ID!
@@ -28,6 +89,8 @@ type UserMergeResult {
     started_at: DateTime!
     completed_at: DateTime
     message: String
+    # Absent when the execution failed before any handler ran.
+    report: UserMergeExecutionReport
 }
 
 type UserMergeJournalEntry {
@@ -47,6 +110,8 @@ extend type Query {
     # mergeId is optional: an operator who lost the connection also lost the id returned by
     # the mutation, so requiring it would defeat the point of the query.
     userMergeJournal(mergeId: ID, first: Int): [UserMergeJournalEntry!]! @auth(for: [BYPASS]) @ff(flags: ["MERGE_USERS"])
+    # Counts always cover the whole register; disposition only narrows the returned rows.
+    userMergeCoverage(disposition: UserMergeDisposition): UserMergeCoverage! @auth(for: [BYPASS]) @ff(flags: ["MERGE_USERS"])
 }
 
 extend type Mutation {

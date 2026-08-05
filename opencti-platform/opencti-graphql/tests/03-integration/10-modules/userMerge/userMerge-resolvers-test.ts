@@ -15,6 +15,40 @@ const USER_MERGE_MUTATION = gql`
       started_at
       completed_at
       message
+      report {
+        merge_id
+        registry_version
+        total_updated
+        handlers {
+          handler
+          updated
+        }
+        coverage {
+          total
+          covered_count
+          is_complete
+        }
+      }
+    }
+  }
+`;
+
+const USER_MERGE_COVERAGE_QUERY = gql`
+  query UserMergeCoverage($disposition: UserMergeDisposition) {
+    userMergeCoverage(disposition: $disposition) {
+      registry_version
+      total
+      covered_count
+      uncovered_count
+      is_complete
+      rows {
+        row_id
+        entity
+        path
+        disposition
+        covered
+        handler
+      }
     }
   }
 `;
@@ -108,6 +142,19 @@ describe('User merge resolvers', () => {
       expect(dry.data.userMerge.dry_run).toBe(true);
     });
 
+    it('should carry the coverage in the report of every execution', async () => {
+      const { data } = await queryAsAdminWithSuccess({
+        query: USER_MERGE_MUTATION,
+        variables: { sourceId: USER_PARTICIPATE.id, targetId: USER_EDITOR.id, options: { dryRun: true } },
+      });
+      expect(data.userMerge.report.merge_id).toEqual(data.userMerge.id);
+      expect(data.userMerge.report.total_updated).toEqual(0);
+      // Three handlers succeeding reads as a complete merge unless the report also says
+      // what the register still holds.
+      expect(data.userMerge.report.coverage.is_complete).toBe(false);
+      expect(data.userMerge.report.coverage.total).toEqual(101);
+    });
+
     it('should carry the requested rights strategy', async () => {
       const { data } = await queryAsAdminWithSuccess({
         query: USER_MERGE_MUTATION,
@@ -125,6 +172,31 @@ describe('User merge resolvers', () => {
       });
       expect(await readUser(USER_PARTICIPATE.id)).toEqual(sourceBefore);
       expect(await readUser(USER_EDITOR.id)).toEqual(targetBefore);
+    });
+  });
+
+  describe('Coverage query', () => {
+    it('should name what no handler covers', async () => {
+      const { data } = await queryAsAdminWithSuccess({ query: USER_MERGE_COVERAGE_QUERY, variables: {} });
+      expect(data.userMergeCoverage.total).toEqual(101);
+      expect(data.userMergeCoverage.rows.length).toEqual(101);
+      // No handler ships in this chunk, so nothing may be reported as covered.
+      expect(data.userMergeCoverage.covered_count).toEqual(0);
+      expect(data.userMergeCoverage.is_complete).toBe(false);
+    });
+
+    it('should keep the counts on the whole register when filtering', async () => {
+      const { data } = await queryAsAdminWithSuccess({
+        query: USER_MERGE_COVERAGE_QUERY,
+        variables: { disposition: 'TRANSFER' },
+      });
+      expect(data.userMergeCoverage.rows.length).toEqual(40);
+      expect(data.userMergeCoverage.total).toEqual(101);
+      expect(data.userMergeCoverage.is_complete).toBe(false);
+    });
+
+    it('should be refused without BYPASS', async () => {
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, { query: USER_MERGE_COVERAGE_QUERY, variables: {} });
     });
   });
 
