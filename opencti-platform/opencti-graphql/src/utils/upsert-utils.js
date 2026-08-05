@@ -126,6 +126,25 @@ export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch
     }
   }
   if (type === ENTITY_TYPE_INDICATOR) {
+    if (!isConfidenceMatch) {
+      logApp.debug(
+        '[OPENCTI][DECAY] on upsert indicator with insufficient confidence, preserve lifecycle and validity metadata',
+        {
+          elementScore: resolvedElement.x_opencti_score,
+          patchScore: updatePatch.x_opencti_score,
+        },
+      );
+      updatePatch.x_opencti_score = resolvedElement.x_opencti_score;
+      updatePatch.valid_from = resolvedElement.valid_from;
+      updatePatch.valid_until = resolvedElement.valid_until;
+      updatePatch.revoked = resolvedElement.revoked;
+      updatePatch.decay_base_score = resolvedElement.decay_base_score;
+      updatePatch.decay_base_score_date = resolvedElement.decay_base_score_date;
+      updatePatch.decay_applied_rule = resolvedElement.decay_applied_rule;
+      updatePatch.decay_history = [];
+      updatePatch.decay_next_reaction_date = resolvedElement.decay_next_reaction_date;
+      updatePatch.decay_exclusion_applied_rule = resolvedElement.decay_exclusion_applied_rule;
+    }
     // Guard for decay-excluded indicators: when the score is unchanged, preserve valid_until,
     // revoked and x_opencti_score. Mirrors the editField early-return in indicator-domain.ts
     // for excluded indicators (asymmetry reported in issue #16365).
