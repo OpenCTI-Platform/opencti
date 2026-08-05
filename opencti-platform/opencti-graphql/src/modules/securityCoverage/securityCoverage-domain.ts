@@ -41,7 +41,9 @@ import {
 } from './securityCoverageResult/securityCoverageResult-types';
 import { loadThroughDenormalized } from '../../resolvers/stix';
 import { stixCoreRelationshipsPaginated } from '../../domain/stixCoreObject';
-import { getAverageCoverageInformation, getMostRecentLastCoverageResult } from './securityCoverageResult/securityCoverageResult-utils';
+import { getAverageCoverageInformation, getMostRecentLastCoverageResult, internalCreateSecurityCoverageResult } from './securityCoverageResult/securityCoverageResult-utils';
+import { splitSecurityCoverageInput } from './securityCoverage-utils';
+import { addRelatedCoveredEntities } from './securityCoverageResult/securityCoverageResult-domain';
 
 export const COVERED_ENTITIES_TYPE = [
   ENTITY_TYPE_INTRUSION_SET,
@@ -82,70 +84,49 @@ export const findSecurityCoverageByCoveredId = async (context: AuthContext, user
 export const addSecurityCoverage = async (
   context: AuthContext,
   user: AuthUser,
-  securityCoverageInput: SecurityCoverageAddInput,
+  input: SecurityCoverageAddInput,
 ): Promise<BasicStoreEntitySecurityCoverage> => {
   const {
-    coverage_information,
-    coverage_last_result,
-    coverage_valid_from,
-    coverage_valid_to,
-    external_uri,
-    tenant_name,
-    tenant_id,
-    ...onlySecurityCoverageInput
-  } = securityCoverageInput;
+    securityCoverageInput,
+    securityCoverageResultInput,
+    add_related_entities,
+    shouldCreateResult,
+  } = splitSecurityCoverageInput(input);
+
+  // 1. Create the SecurityCoverage entity.
   const createdSecurityCoverage: BasicStoreEntitySecurityCoverage = await createEntity(
     context,
     user,
-    onlySecurityCoverageInput,
+    securityCoverageInput,
     ENTITY_TYPE_SECURITY_COVERAGE,
   );
 
-  if (external_uri || (coverage_information ?? []).length > 0) {
-    const {
-      confidence,
-      created,
-      createdBy,
-      fileMarkings,
-      filesMarkings,
-      modified,
-      objectLabel,
-      objectMarking,
-      x_opencti_modified_at,
-    } = onlySecurityCoverageInput;
-    const securityCoverageResultInput = {
-      name: tenant_name || external_uri || tenant_id || `Result of ${createdSecurityCoverage.name}`,
+  // 2. Create an associated SecurityCoverageResult if we also
+  // have data for it (when receiving bundles from OpenAEV) or manual creation.
+  let result: BasicStoreEntitySecurityCoverageResult | undefined;
+  if (shouldCreateResult) {
+    result = await internalCreateSecurityCoverageResult(context, user, {
+      ...securityCoverageResultInput,
+      // Add extra attributes based on created SecurityCoverage
       [INPUT_RESULT_OF]: createdSecurityCoverage.id,
-      coverage_information,
-      coverage_last_result,
-      coverage_valid_from,
-      coverage_valid_to,
-      external_uri,
-      confidence,
-      created,
-      createdBy,
-      fileMarkings,
-      filesMarkings,
-      modified,
-      objectLabel,
-      objectMarking,
-      x_opencti_modified_at,
-    };
-    const result: BasicStoreEntitySecurityCoverageResult = await createEntity(
-      context,
-      user,
-      securityCoverageResultInput,
-      ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
-    );
-    // Manually add it here to be able to resolve dynamic attributes
-    createdSecurityCoverage['result-of'] = [result.id];
-    logApp.info(
-      `[SECURITY-COVERAGE-RESULT][${createdSecurityCoverage.id}] SCR created: ${result.standard_id}`,
-      {
-        result: JSON.stringify(result),
-        input: JSON.stringify(securityCoverageInput),
-      },
-    );
+      name: `${securityCoverageResultInput.name ?? ''} Result of ${createdSecurityCoverage.name}`.trim(),
+    });
+    // Manually add the ref here to be able to resolve dynamic attributes in GraphQL response
+    createdSecurityCoverage[RELATION_RESULT_OF] = [result.id];
+  }
+
+  // 3. In case of manual creation, need to create associated has-covered relationships.
+  if (add_related_entities) {
+    if (!result) {
+      // We should not arrive here. If asked to add related entities, a SecurityCoverageResult
+      // should have been created, otherwise there was an error.
+      logApp.error(
+        `[SECURITY-COVERAGE] Error while trying to add related entities to the created SecurityCoverage ${createdSecurityCoverage.id}, no SecurityCoverageResult was created.`,
+        { securityCoverageResultInput, shouldCreateResult },
+      );
+    } else {
+      await addRelatedCoveredEntities(context, user, result.id);
+    }
   }
 
   return notify(

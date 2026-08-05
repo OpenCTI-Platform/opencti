@@ -17,7 +17,7 @@ import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefR
 import { addDynamicFromAndToToFilters, addFilter } from '../utils/filtering/filtering-utils';
 import { stixRelationshipsDistribution } from './stixRelationship';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
-import { shouldHandleHasCoveredRel, transformHasCoveredFromId } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-utils';
+import { shouldHandleHasCoveredRel, transformHasCoveredFromId } from '../modules/securityCoverage/securityCoverage-utils';
 
 export const findStixCoreRelationshipsPaginated = async (context, user, args) => {
   const filters = addDynamicFromAndToToFilters(args);
