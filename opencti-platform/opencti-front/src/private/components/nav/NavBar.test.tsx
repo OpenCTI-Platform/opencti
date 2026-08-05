@@ -104,6 +104,22 @@ describe('NavBarView', () => {
     // different mechanism. Filed as library feedback.
   });
 
+  it('renders a parent whose submenu was emptied by permissions as a plain link', () => {
+    // Iso-functionality: `LeftBarItem`'s "No Subitems" branch rendered such a
+    // parent as a navigable row. A user granted only INGESTION matches
+    // `canSeeData` but none of the eight Data sub-items, and must still be able
+    // to reach /dashboard/data.
+    const gutted: NavGroup[] = [{
+      id: 'data',
+      items: [{
+        id: 'data', label: 'Data', icon: null, link: '/dashboard/data', subItems: [],
+      }],
+    }];
+    renderNav({ groups: gutted });
+    expect(screen.getByRole('link', { name: 'Data' })).toHaveAttribute('href', '/dashboard/data');
+    expect(screen.queryByRole('button', { name: /Data/ })).not.toBeInTheDocument();
+  });
+
   it('hides submenu icons when the user preference is off', () => {
     const withIcons: NavGroup[] = [{
       id: 'g',

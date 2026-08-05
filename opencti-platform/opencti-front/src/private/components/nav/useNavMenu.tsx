@@ -440,7 +440,9 @@ const useNavMenu = (): NavGroup[] => {
  * Drops every falsy entry produced by the conditional expressions above, then
  * applies the row-level `granted` flag and the hidden-entity filter, and
  * finally removes groups that ended up empty so no separator is rendered
- * against nothing. Exported for unit testing without a React tree.
+ * against nothing. A parent whose submenu is emptied by those filters is kept
+ * and degrades to a plain link, matching the component this replaced.
+ * Exported for unit testing without a React tree.
  */
 export const filterNavGroups = (
   groups: (RawNavGroup | false)[],
@@ -456,12 +458,18 @@ export const filterNavGroups = (
         const subItems = item.subItems.filter(
           (sub) => sub.granted !== false && (!sub.type || !hiddenEntities.includes(sub.type)),
         );
+        // A parent whose submenu rows were ALL filtered out keeps its own row
+        // and degrades to a plain link: the legacy `LeftBarItem` did exactly
+        // that in its "No Subitems" branch (`hasSubItems === false` rendered a
+        // navigable `MenuItem`, it did not remove the entry). Removing it here
+        // would delete a navigable entry for real permission sets — a user
+        // granted only `INGESTION` satisfies `canSeeData` but none of the eight
+        // `Data` sub-item grants, and an administrator hiding the `Dashboard`
+        // entity type empties the `Dashboards` submenu. `NavBar.renderItem`
+        // already renders an empty `subItems` as a leaf, so no chevron ever
+        // opens on nothing.
         return { ...item, subItems };
-      })
-      // A parent declared with a submenu whose rows were all filtered out
-      // would render a chevron opening on nothing; drop it entirely, which
-      // is what the legacy `hasSubItems` guard did per row.
-      .filter((item) => !(item.subItems && item.subItems.length === 0)),
+      }),
   }))
   .filter((group) => group.items.length > 0);
 

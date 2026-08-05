@@ -64,15 +64,22 @@ describe('filterNavGroups', () => {
     expect(filterNavGroups(groups, ['Campaign'])[0].items[0].subItems?.map((s) => s.link)).toEqual(['/b']);
   });
 
-  it('drops a parent whose submenu ended up empty rather than opening on nothing', () => {
+  it('keeps a parent whose submenu ended up empty, as a leaf entry', () => {
+    // The component this replaced rendered such a parent as a plain navigable
+    // link (`LeftBarItem`'s "No Subitems" branch). Removing the entry instead
+    // would lose a destination: `canSeeData` is granted by `INGESTION` alone,
+    // which grants none of the eight `Data` sub-items.
     const groups: RawNavGroup[] = [{
       id: 'g',
       items: [
         item('kept'),
-        item('gutted', { subItems: [{ link: '/a', label: 'A', type: 'Campaign' }] }),
+        item('gutted', { link: '/gutted', subItems: [{ link: '/a', label: 'A', type: 'Campaign' }] }),
       ],
     }];
-    expect(filterNavGroups(groups, ['Campaign'])[0].items.map((i) => i.id)).toEqual(['kept']);
+    const items = filterNavGroups(groups, ['Campaign'])[0].items;
+    expect(items.map((i) => i.id)).toEqual(['kept', 'gutted']);
+    expect(items[1].link).toEqual('/gutted');
+    expect(items[1].subItems).toEqual([]);
   });
 
   it('keeps a leaf entry that never declared a submenu', () => {

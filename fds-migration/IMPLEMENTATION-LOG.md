@@ -111,3 +111,50 @@ diagnosis and its category (host style, product code, or library gap).
    now derives its offsets from `bannerHeightNumber` instead. The shell's own
    declaration is left alone: it is not this pull request's subject. Fix
    belongs in its own change — make the `'0'` branch return `'0px'`.
+
+### 2026-08-05 — Independent review convergence (two defects fixed, one dated)
+
+Findings of an independent review of this pull request at
+`d4688bba9d43fa764f66c0663dc5014370e8790b`, fixed on the same branch.
+
+1. **An image-build entry point was left without the BuildKit secret** — CI
+   wiring, fixed. `.github/workflows/ci-docker-build.yml` builds the whole
+   `opencti-platform/Dockerfile` (no `target:`, so it reaches `builder-front`
+   and its `RUN --mount=type=secret,id=fds_git_token`) and passed no `secrets:`
+   to `docker/build-push-action`. An unprovided BuildKit secret is not an empty
+   file, it is no file, so the step dies on `can't open
+   /run/secrets/fds_git_token: No such file or directory` — reproduced locally
+   on a two-line Dockerfile. Its three callers are `deploy-design-system.yml`
+   (**push to `design-system/current`**, i.e. this pull request's own target
+   branch), `deploy-testing-xtm-one.yml` and `test-feature-branch.yml`, none of
+   which run on a pull request, which is why every check here is green. Fixed,
+   and `opencti-front/src/ciDesignSystemSecret.test.ts` now performs the
+   enumeration instead of a human: every `docker/build-push-action` step whose
+   Dockerfile requires the secret, and which does not stop at an earlier
+   `target:`, must declare it.
+
+2. **A navigation parent whose submenu was emptied by permissions disappeared**
+   — iso-functionality, fixed. `filterNavGroups` removed such a parent; the
+   component it replaces rendered it as a plain navigable row (`LeftBarItem`'s
+   `hasSubItems === false` branch). Two reachable cases: a user granted only
+   `INGESTION` satisfies `canSeeData` but none of the eight `Data` sub-item
+   grants and lost `/dashboard/data`; hiding the `Dashboard` entity type empties
+   the `Dashboards` submenu and lost `/dashboard/workspaces/dashboards`.
+   `NavBar.renderItem` already rendered an empty `subItems` as a leaf, so the
+   fix is to stop dropping the row. Covered in `useNavMenu.test.tsx` and
+   `NavBar.test.tsx`.
+
+#### Pre-existing issue found, dated and deliberately NOT fixed here
+
+- **2026-08-05 — Layout offsets computed from the old 55px rail.** The rail is
+  48px collapsed since this change, and the constants in `navBarConstants.ts`
+  follow, but three files hardcode the old geometry instead of importing them:
+  `attack_patterns_matrix/AttackPatternsMatrixColumns.tsx` (`BASE_WIDTH: 110`
+  and `NAV_WIDTH: 125` — the pair encodes 55 collapsed / 180 expanded, so the
+  collapsed offset is now 7px too wide), and the `calc(100vw - 455px)` /
+  `calc(100vw - 580px)` families in
+  `common/stix_core_objects/StixCoreObjectContent.jsx` and
+  `StixCoreObjectMappableContent.tsx` (same 125px delta, same 7px collapsed
+  error). Cosmetic, not functional, and the magic numbers pre-date this change.
+  Fix belongs in its own change: import `SMALL_BAR_WIDTH` / `OPEN_BAR_WIDTH`
+  instead of restating them.
