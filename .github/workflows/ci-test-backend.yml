@@ -15,6 +15,10 @@ on:
       run-id:
         required: true
         type: string
+    secrets:
+      CODECOV_TOKEN:
+        description: "Token used to upload coverage reports to Codecov"
+        required: false
 
 jobs:
   run-opencti-integration-test:
