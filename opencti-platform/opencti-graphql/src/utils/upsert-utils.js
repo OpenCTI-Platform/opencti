@@ -552,7 +552,7 @@ const generateRefsInputsForUpsert = (context, user, resolvedElement, _type, upda
           // OR the confidence matches
           // To prevent too much flickering on multi sources the created-by will be replaced only for strict upper confidence
           const isProtectedCreatedBy = relDef.databaseName === RELATION_CREATED_BY && !isCurrentEmptyData && !isConfidenceUpper;
-          const updatable = ((isInputWithData && isCurrentEmptyData) || isConfidenceMatch) && !isProtectedCreatedBy;
+          const updatable = isInputWithData && (isCurrentEmptyData || isConfidenceMatch) && !isProtectedCreatedBy;
           if (isInputDifferentFromCurrent && (isUpsertSynchro || updatable)) {
             inputs.push({ key: inputField, value: [patchInputData] });
           }
