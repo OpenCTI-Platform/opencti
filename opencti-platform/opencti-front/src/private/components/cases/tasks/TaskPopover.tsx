@@ -122,12 +122,15 @@ const TaskPopover = ({
       <Menu
         slotProps={{
           list: {
-            onClick: (e) => { e.stopPropagation() }
-          }
+            onClick: (e) => {
+              e.stopPropagation();
+            },
+          },
         }}
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
-        onClose={handleClose}>
+        onClose={handleClose}
+      >
         <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
         <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
           <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>

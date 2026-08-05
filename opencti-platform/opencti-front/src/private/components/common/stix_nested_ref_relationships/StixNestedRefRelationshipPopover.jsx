@@ -132,10 +132,12 @@ class StixNestedRefRelationshipPopover extends Component {
         </IconButton>
         <Menu
           slotProps={{
-              list:{
-                onClick: (e) => {e.stopPropagation()}
-              }
-            }}
+            list: {
+              onClick: (e) => {
+                e.stopPropagation();
+              },
+            },
+          }}
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}

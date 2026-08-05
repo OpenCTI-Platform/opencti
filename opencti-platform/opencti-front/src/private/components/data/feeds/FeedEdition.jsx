@@ -698,7 +698,7 @@ const FeedEditionContainer = (props) => {
                                                       return (
                                                         <Select
                                                           inputProps={{
-                                                            'id': `attribute-select-${typeIndex}`
+                                                            id: `attribute-select-${typeIndex}`,
                                                           }}
                                                           value={currentMapping?.attribute || ''}
                                                           onChange={(event) => handleChangeAttributeMapping(i, selectedType, event.target.value)}
@@ -709,10 +709,10 @@ const FeedEditionContainer = (props) => {
                                                         </Select>
                                                       );
                                                     }
-                                                    return <Select inputProps={{ 'id': `attribute-select-${typeIndex}` }} disabled value="" />;
+                                                    return <Select inputProps={{ id: `attribute-select-${typeIndex}` }} disabled value="" />;
                                                   }}
                                                 />
-                                              ) : <Select inputProps={{ 'id': `attribute-select-${typeIndex}` }} disabled value="" />}
+                                              ) : <Select inputProps={{ id: `attribute-select-${typeIndex}` }} disabled value="" />}
                                             </FormControl>
                                           </Grid>
                                         </Grid>
@@ -740,7 +740,7 @@ const FeedEditionContainer = (props) => {
                                                 return (
                                                   <Select
                                                     inputProps={{
-                                                      'id': `attribute-select-${typeIndex}`
+                                                      id: `attribute-select-${typeIndex}`,
                                                     }}
                                                     value={currentMapping?.attribute || ''}
                                                     onChange={(event) => handleChangeAttributeMapping(i, selectedType, event.target.value)}
@@ -751,7 +751,7 @@ const FeedEditionContainer = (props) => {
                                                   </Select>
                                                 );
                                               }
-                                              return <Select inputProps={{ 'id': `attribute-select-${typeIndex}` }} disabled value="" />;
+                                              return <Select inputProps={{ id: `attribute-select-${typeIndex}` }} disabled value="" />;
                                             }}
                                           />
                                         </FormControl>

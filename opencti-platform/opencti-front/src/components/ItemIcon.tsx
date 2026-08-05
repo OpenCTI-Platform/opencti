@@ -622,7 +622,7 @@ const iconSelector = (
     case 'default':
       return <CircleOutlined style={style} fontSize={fontSize} role="img" aria-label={type} />;
     default:
-      return <AutoAwesomeMotion style={style} fontSize={fontSize} role="img" aria-label={"item"} />;
+      return <AutoAwesomeMotion style={style} fontSize={fontSize} role="img" aria-label="item" />;
   }
 };
 

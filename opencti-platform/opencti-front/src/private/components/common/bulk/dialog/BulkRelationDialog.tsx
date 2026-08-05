@@ -500,7 +500,10 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
                   <Select
                     labelId="bulk-relation-type-label"
                     label={t_i18n('Relationship Type')}
-                    disabled={isSubmitting} onChange={handleChangeSelectedRelationType} value={selectedRelationType}>
+                    disabled={isSubmitting}
+                    onChange={handleChangeSelectedRelationType}
+                    value={selectedRelationType}
+                  >
                     {relationListArray.sort((a, b) => (t_i18n(`relationship_${a}`) < t_i18n(`relationship_${b}`) ? -1 : 1)).map((relation) => (
                       <MenuItem key={relation} value={relation}>
                         {t_i18n(`relationship_${relation}`)}

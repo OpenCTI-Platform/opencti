@@ -43,8 +43,9 @@ const EmailTemplateComponent = ({ queryRef }: EmailTemplateProps) => {
             <div
               role="tabpanel"
               hidden={index !== 0}
-              id={`email-templates-tabpanel-0`}
-              aria-labelledby={`email-templates-tab-0`}>
+              id="email-templates-tabpanel-0"
+              aria-labelledby="email-templates-tab-0"
+            >
               <EmailTemplateContentEditor data={emailTemplate} />
             </div>
           )}

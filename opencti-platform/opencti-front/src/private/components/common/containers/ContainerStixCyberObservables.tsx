@@ -352,16 +352,16 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
             )}
             actions={(row) => {
               return (
-                  <ContainerStixCoreObjectPopover
-                    containerId={container.id}
-                    toId={row.id}
-                    relationshipType="object"
-                    paginationKey="Pagination_objects"
-                    paginationOptions={queryPaginationOptions}
-                    selectedElements={selectedElements}
-                    setSelectedElements={setSelectedElements}
-                    enableReferences={enableReferences}
-                  />
+                <ContainerStixCoreObjectPopover
+                  containerId={container.id}
+                  toId={row.id}
+                  relationshipType="object"
+                  paginationKey="Pagination_objects"
+                  paginationOptions={queryPaginationOptions}
+                  selectedElements={selectedElements}
+                  setSelectedElements={setSelectedElements}
+                  enableReferences={enableReferences}
+                />
               );
             }}
           />

@@ -41,11 +41,10 @@ const AttackPatternsMatrixColumnsElement = ({
   const getAvgCoverageScore = (): number => {
     if (coverage) {
       return coverage.reduce((sum, c) => sum + c.coverage_score, 0) / coverage.length;
+    } else {
+      return -1;
     }
-    else {
-      return -1
-    }
-  }
+  };
 
   // Calculate colors based on coverage score for active/covered boxes
   const getCoverageColors = () => {
@@ -69,7 +68,7 @@ const AttackPatternsMatrixColumnsElement = ({
     }
 
     // Get the average coverage score if there are multiple coverages
-    const avgScore = getAvgCoverageScore()
+    const avgScore = getAvgCoverageScore();
 
     // Calculate color based on score (0-100)
     // Green to red gradient

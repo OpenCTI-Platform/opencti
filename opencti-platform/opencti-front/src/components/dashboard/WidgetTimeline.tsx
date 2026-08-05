@@ -27,7 +27,6 @@ const WidgetTimeline = ({ data, dateAttribute = 'created_at' }: WidgetTimelinePr
   const { fldt } = useFormatter();
   const theme = useTheme<Theme>();
 
-
   return (
     <div
       id="container"

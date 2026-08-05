@@ -117,8 +117,10 @@ const StreamCollectionPopover: FunctionComponent<StreamCollectionPopoverProps> =
       <Menu
         slotProps={{
           list: {
-            onClick: (e:React.MouseEvent<HTMLUListElement>) => { e.stopPropagation() }
-          }
+            onClick: (e: React.MouseEvent<HTMLUListElement>) => {
+              e.stopPropagation();
+            },
+          },
         }}
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}

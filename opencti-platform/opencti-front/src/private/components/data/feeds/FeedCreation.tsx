@@ -185,9 +185,9 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
 
   const feedAttributesInitialState = feed && feed.feed_attributes
     ? feed.feed_attributes.map((n) => ({
-      ...n,
-      mappings: R.indexBy(R.prop('type'), n.mappings),
-    }))
+        ...n,
+        mappings: R.indexBy(R.prop('type'), n.mappings),
+      }))
     : { 0: {} };
 
   // TODO: typing this state properly implies deep refactoring
@@ -729,7 +729,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                             </Grid>
                                             <Grid item xs={4}>
                                               <FormControl variant="standard" fullWidth disabled={!currentMapping?.target_entity_type}>
-                                                <InputLabel id={`attribute-select-${typeIndex}`} >{t_i18n('Attribute')}</InputLabel>
+                                                <InputLabel id={`attribute-select-${typeIndex}`}>{t_i18n('Attribute')}</InputLabel>
                                                 {currentMapping?.target_entity_type ? (
                                                   <QueryRenderer
                                                     query={stixCyberObservablesLinesAttributesQuery}

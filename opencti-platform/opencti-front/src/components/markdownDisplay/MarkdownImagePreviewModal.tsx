@@ -194,7 +194,7 @@ const MarkdownImagePreviewModal: FunctionComponent<MarkdownImagePreviewModalProp
           )
         )}
       </Box>
-    </Modal >
+    </Modal>
   );
 };
 

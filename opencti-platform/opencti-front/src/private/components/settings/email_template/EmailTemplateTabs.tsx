@@ -53,7 +53,7 @@ const EmailTemplateTabs = ({ children, data }: EmailTemplateTabsProps) => {
       }}
       >
         <Tabs value={index} onChange={(_, i) => setIndex(i)}>
-          <Tab label={t_i18n('Template Editor')}  {...a11yProps(0)} />
+          <Tab label={t_i18n('Template Editor')} {...a11yProps(0)} />
         </Tabs>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>

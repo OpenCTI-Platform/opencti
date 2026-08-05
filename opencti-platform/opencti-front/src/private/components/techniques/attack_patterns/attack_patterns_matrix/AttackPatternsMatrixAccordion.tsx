@@ -48,9 +48,9 @@ const AccordionAttackPattern = ({
   // Get coverage information if in coverage mode
   const coverage = isCoverage && coverageMap ? coverageMap.get(attackPattern.attack_pattern_id) : null;
 
-  const getAvgCoverageScore = (): { avg: number, count: number } => {
+  const getAvgCoverageScore = (): { avg: number; count: number } => {
     if (!isCoverage) {
-      return { avg: -1, count: 0 }
+      return { avg: -1, count: 0 };
     }
     // Calculate coverage including sub-techniques
     const parentCoverage = attackPattern.isCovered ? coverage : null;
@@ -64,8 +64,8 @@ const AccordionAttackPattern = ({
     // Get the average coverage score from all coverages (parent + sub-techniques)
     const avgScore = allCoverages.reduce((sum, c) => sum + (c?.coverage_score || 0), 0) / allCoverages.length;
 
-    return { avg: avgScore, count: allCoverages.length }
-  }
+    return { avg: avgScore, count: allCoverages.length };
+  };
   // Calculate colors based on coverage score for active/covered boxes
   const getCoverageColors = () => {
     if (!isCoverage) {
@@ -83,7 +83,7 @@ const AccordionAttackPattern = ({
       return { backgroundColor: defaultStyles.backgroundColor, border: defaultStyles.border };
     }
 
-    const avgCoverageScore = getAvgCoverageScore()
+    const avgCoverageScore = getAvgCoverageScore();
     // Box is covered and we're in coverage mode
     if (avgCoverageScore?.count === 0) {
       // No coverage data but box is covered - use blue for unknown

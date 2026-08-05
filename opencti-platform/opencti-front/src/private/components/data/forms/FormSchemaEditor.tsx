@@ -1165,14 +1165,14 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
                 const newMandatoryFields = shouldAddMandatoryFields
                   ? getInitialMandatoryFields(newEntityType, entityTypes, t_i18n)
-                    .map((field) => ({
-                      ...field,
-                      attributeMapping: {
-                        ...field.attributeMapping,
-                        entity: entity.id,
-                        mappingType: 'nested' as const,
-                      },
-                    }))
+                      .map((field) => ({
+                        ...field,
+                        attributeMapping: {
+                          ...field.attributeMapping,
+                          entity: entity.id,
+                          mappingType: 'nested' as const,
+                        },
+                      }))
                   : [];
 
                 // Remove old fields for this entity and add new mandatory fields
@@ -1613,8 +1613,9 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         <div
           className={classes.tabPanel}
           role="tabpanel"
-          id={`form-schema-editor-tabpanel-0`}
-          aria-labelledby={`form-schema-editor-tab-0`}>
+          id="form-schema-editor-tabpanel-0"
+          aria-labelledby="form-schema-editor-tab-0"
+        >
           <FormControl fullWidth variant="standard">
             <InputLabel>{t_i18n('Main Entity Type')}</InputLabel>
             <Select
@@ -1785,10 +1786,10 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                   objectParticipant: formData.draftDefaults?.objectParticipant?.defaults || [],
                   authorDefaultIdentity: (formData.draftDefaults?.author?.type === 'static' && formData.draftDefaults.author.defaultValue)
                     ? {
-                      value: formData.draftDefaults.author.defaultValue,
-                      label: formData.draftDefaults.author.defaultValueLabel || formData.draftDefaults.author.defaultValue,
-                      type: formData.draftDefaults.author.defaultValueType,
-                    }
+                        value: formData.draftDefaults.author.defaultValue,
+                        label: formData.draftDefaults.author.defaultValueLabel || formData.draftDefaults.author.defaultValue,
+                        type: formData.draftDefaults.author.defaultValueType,
+                      }
                     : null,
                 }}
                 onSubmit={() => { }}
@@ -1888,11 +1889,11 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                       <Box
                         style={formData.draftDefaults?.author?.type === 'static'
                           ? {
-                            border: '1px solid rgba(255, 255, 255, 0.12)',
-                            borderRadius: 4,
-                            padding: '12px',
-                            marginBottom: 20,
-                          }
+                              border: '1px solid rgba(255, 255, 255, 0.12)',
+                              borderRadius: 4,
+                              padding: '12px',
+                              marginBottom: 20,
+                            }
                           : { marginBottom: 20 }}
                       >
                         <FormControl fullWidth variant="standard" style={{ marginBottom: formData.draftDefaults?.author?.type === 'static' ? 8 : 0 }}>
@@ -2148,17 +2149,17 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 'X509-Certificate', 'Cryptocurrency-Wallet', 'Hostname', 'Text', 'User-Agent', 'Bank-Account',
                 'Phone-Number', 'Payment-Card', 'Media-Content',
               ].includes(formData.mainEntityType) && (
-                  <FormControlLabel
-                    control={(
-                      <Switch
-                        checked={formData.autoCreateIndicatorFromObservable || false}
-                        onChange={() => handleFieldChange('autoCreateIndicatorFromObservable', !formData.autoCreateIndicatorFromObservable)}
-                      />
-                    )}
-                    label={t_i18n('Automatically create indicators from observables')}
-                    style={{ marginTop: 20 }}
-                  />
-                )}
+                <FormControlLabel
+                  control={(
+                    <Switch
+                      checked={formData.autoCreateIndicatorFromObservable || false}
+                      onChange={() => handleFieldChange('autoCreateIndicatorFromObservable', !formData.autoCreateIndicatorFromObservable)}
+                    />
+                  )}
+                  label={t_i18n('Automatically create indicators from observables')}
+                  style={{ marginTop: 20 }}
+                />
+              )}
             </>
           )}
 
@@ -2224,8 +2225,9 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         <div
           className={classes.tabPanel}
           role="tabpanel"
-          id={`form-schema-editor-tabpanel-1`}
-          aria-labelledby={`form-schema-editor-tab-1`}>
+          id="form-schema-editor-tabpanel-1"
+          aria-labelledby="form-schema-editor-tab-1"
+        >
           {formData.additionalEntities.map((entity, idx) => renderAdditionalEntity(entity, idx))}
           <Button
             variant="secondary"
@@ -2242,8 +2244,9 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         <div
           className={classes.tabPanel}
           role="tabpanel"
-          id={`form-schema-editor-tabpanel-2`}
-          aria-labelledby={`form-schema-editor-tab-2`}>
+          id="form-schema-editor-tabpanel-2"
+          aria-labelledby="form-schema-editor-tab-2"
+        >
           <Typography variant="h6" gutterBottom>
             {t_i18n('Relationships')}
           </Typography>

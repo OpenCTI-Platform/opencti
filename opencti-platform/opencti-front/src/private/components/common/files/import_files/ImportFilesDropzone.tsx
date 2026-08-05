@@ -94,7 +94,7 @@ const ImportFilesDropzone = ({
         {t_i18n('Drag and drop files to import')}
       </Typography>
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-        <Button component="label" role={undefined} tabIndex={-1} size='small'>
+        <Button component="label" role={undefined} tabIndex={-1} size="small">
           {t_i18n('Browse files')}
           <VisuallyHiddenInput
             type="file"
