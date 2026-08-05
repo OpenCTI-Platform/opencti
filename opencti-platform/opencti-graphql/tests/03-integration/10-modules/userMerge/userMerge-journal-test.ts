@@ -1,85 +1,87 @@
 import { describe, expect, it } from 'vitest';
-import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { closeJournalEntry, openJournalEntry, readJournalEntries, withJournalEntry } from '../../../../src/modules/userMerge/userMerge-journal';
-import { ENTITY_TYPE_USER_MERGE_JOURNAL } from '../../../../src/modules/userMerge/userMergeJournal-types';
 import { UserMergeStatus } from '../../../../src/modules/userMerge/userMerge-types';
-import { deleteElementById } from '../../../../src/database/middleware';
-import { wait } from '../../../../src/database/utils';
 
 const newMergeId = () => `test-merge-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-const cleanup = async (mergeId: string) => {
-  const entries = await readJournalEntries(testContext, ADMIN_USER, mergeId);
-  for (let i = 0; i < entries.length; i += 1) {
-    await deleteElementById(testContext, ADMIN_USER, entries[i].internal_id, ENTITY_TYPE_USER_MERGE_JOURNAL);
-  }
-};
-
 describe('userMerge journal', () => {
-  it('should make an entry readable while the handler is still running', async () => {
+  it('should make an entry readable straight away, while the handler is still running', async () => {
     const mergeId = newMergeId();
-    await openJournalEntry(testContext, ADMIN_USER, {
+    await openJournalEntry({
       mergeId,
       sourceId: 'source-id',
       targetId: 'target-id',
       handler: 'test-handler',
       dryRun: false,
     });
-    await wait(2000);
-    const entries = await readJournalEntries(testContext, ADMIN_USER, mergeId);
+    // No wait: unlike an indexed write, the entry is visible as soon as it is written, which
+    // is what makes the follow-up query usable during a run.
+    const entries = await readJournalEntries(mergeId);
     expect(entries.length).toEqual(1);
     expect(entries[0].status).toEqual(UserMergeStatus.Running);
     expect(entries[0].completed_at).toBeUndefined();
-    await cleanup(mergeId);
   });
 
   it('should record the outcome when the entry is closed', async () => {
     const mergeId = newMergeId();
-    const entryId = await openJournalEntry(testContext, ADMIN_USER, {
+    const entryId = await openJournalEntry({
       mergeId,
       sourceId: 'source-id',
       targetId: 'target-id',
       handler: 'test-handler',
       dryRun: false,
     });
-    await closeJournalEntry(testContext, ADMIN_USER, entryId, {
+    await closeJournalEntry(entryId, mergeId, {
       status: UserMergeStatus.Success,
       outcome: { handler: 'test-handler', changes: [], alerts: [], updated: 42 },
     });
-    await wait(2000);
-    const entries = await readJournalEntries(testContext, ADMIN_USER, mergeId);
+    const entries = await readJournalEntries(mergeId);
     expect(entries.length).toEqual(1);
     expect(entries[0].status).toEqual(UserMergeStatus.Success);
     expect(entries[0].updated_count).toEqual(42);
     expect(entries[0].completed_at).toBeDefined();
-    await cleanup(mergeId);
+    // Closing must not lose what opening recorded.
+    expect(entries[0].handler).toEqual('test-handler');
+    expect(entries[0].started_at).toBeDefined();
   });
 
   it('should leave a failed entry when the handler throws', async () => {
     const mergeId = newMergeId();
     const input = { mergeId, sourceId: 'source-id', targetId: 'target-id', handler: 'exploding-handler', dryRun: false };
-    await expect(withJournalEntry(testContext, ADMIN_USER, input, async () => {
+    await expect(withJournalEntry(input, async () => {
       throw new Error('handler exploded');
     })).rejects.toThrow('handler exploded');
-    await wait(2000);
-    const entries = await readJournalEntries(testContext, ADMIN_USER, mergeId);
+    const entries = await readJournalEntries(mergeId);
     expect(entries.length).toEqual(1);
     expect(entries[0].status).toEqual(UserMergeStatus.Failed);
     expect(entries[0].message).toEqual('handler exploded');
-    await cleanup(mergeId);
   });
 
   it('should isolate entries per merge id', async () => {
     const firstMergeId = newMergeId();
     const secondMergeId = newMergeId();
     const base = { sourceId: 'source-id', targetId: 'target-id', handler: 'test-handler', dryRun: true };
-    await openJournalEntry(testContext, ADMIN_USER, { ...base, mergeId: firstMergeId });
-    await openJournalEntry(testContext, ADMIN_USER, { ...base, mergeId: secondMergeId });
-    await wait(2000);
-    const firstEntries = await readJournalEntries(testContext, ADMIN_USER, firstMergeId);
+    await openJournalEntry({ ...base, mergeId: firstMergeId });
+    await openJournalEntry({ ...base, mergeId: secondMergeId });
+    const firstEntries = await readJournalEntries(firstMergeId);
     expect(firstEntries.length).toEqual(1);
     expect(firstEntries[0].merge_id).toEqual(firstMergeId);
-    await cleanup(firstMergeId);
-    await cleanup(secondMergeId);
+  });
+
+  it('should be readable without a merge id, across runs', async () => {
+    const mergeId = newMergeId();
+    const base = { sourceId: 'source-id', targetId: 'target-id', handler: 'test-handler', dryRun: true };
+    await openJournalEntry({ ...base, mergeId });
+    const all = await readJournalEntries();
+    expect(all.some((entry) => entry.merge_id === mergeId)).toBe(true);
+  });
+
+  it('should cap the returned entries when a page size is given', async () => {
+    const mergeId = newMergeId();
+    const base = { sourceId: 'source-id', targetId: 'target-id', dryRun: true, mergeId };
+    await openJournalEntry({ ...base, handler: 'handler-a' });
+    await openJournalEntry({ ...base, handler: 'handler-b' });
+    expect((await readJournalEntries(mergeId)).length).toEqual(2);
+    expect((await readJournalEntries(mergeId, 1)).length).toEqual(1);
   });
 });

@@ -1,12 +1,9 @@
-import { createEntity, updateAttribute } from '../../database/middleware';
-import { fullEntitiesList } from '../../database/middleware-loader';
-import { FilterMode, FilterOperator } from '../../generated/graphql';
+import { v4 as uuidv4 } from 'uuid';
+import { redisUserMergeJournalRead, redisUserMergeJournalUpsert } from '../../database/redis';
 import { utcDate } from '../../utils/format';
 import { logApp } from '../../config/conf';
-import type { AuthContext, AuthUser } from '../../types/user';
 import { UserMergeStatus } from './userMerge-types';
 import type { UserMergeHandlerOutcome } from './userMerge-handler';
-import { type BasicStoreEntityUserMergeJournal, ENTITY_TYPE_USER_MERGE_JOURNAL } from './userMergeJournal-types';
 
 export interface JournalEntryInput {
   mergeId: string;
@@ -16,13 +13,31 @@ export interface JournalEntryInput {
   dryRun: boolean;
 }
 
+export interface UserMergeJournalRecord {
+  id: string;
+  merge_id: string;
+  source_user_id: string;
+  target_user_id: string;
+  handler: string;
+  dry_run: boolean;
+  status: UserMergeStatus;
+  started_at: string;
+  completed_at?: string;
+  message?: string;
+  /** JSON-serialized UserMergeHandlerOutcome. */
+  output?: string;
+  updated_count?: number;
+}
+
 /**
  * Opens an entry before the handler runs, so that an execution killed mid-handler still
  * leaves a trace naming where it stopped. Writing only on completion would lose exactly the
  * case the journal exists for.
  */
-export const openJournalEntry = async (context: AuthContext, user: AuthUser, input: JournalEntryInput): Promise<string> => {
-  const created = await createEntity(context, user, {
+export const openJournalEntry = async (input: JournalEntryInput): Promise<string> => {
+  const entryId = uuidv4();
+  await redisUserMergeJournalUpsert(entryId, input.mergeId, {
+    id: entryId,
     merge_id: input.mergeId,
     source_user_id: input.sourceId,
     target_user_id: input.targetId,
@@ -30,23 +45,22 @@ export const openJournalEntry = async (context: AuthContext, user: AuthUser, inp
     dry_run: input.dryRun,
     status: UserMergeStatus.Running,
     started_at: utcDate().toISOString(),
-  }, ENTITY_TYPE_USER_MERGE_JOURNAL);
-  return created.internal_id;
+  });
+  return entryId;
 };
 
 export const closeJournalEntry = async (
-  context: AuthContext,
-  user: AuthUser,
   entryId: string,
+  mergeId: string,
   result: { status: UserMergeStatus; message?: string; outcome?: UserMergeHandlerOutcome },
 ): Promise<void> => {
-  await updateAttribute(context, user, entryId, ENTITY_TYPE_USER_MERGE_JOURNAL, [
-    { key: 'status', value: [result.status] },
-    { key: 'completed_at', value: [utcDate().toISOString()] },
-    { key: 'message', value: [result.message ?? ''] },
-    { key: 'output', value: [result.outcome ? JSON.stringify(result.outcome) : ''] },
-    { key: 'updated_count', value: [result.outcome?.updated ?? 0] },
-  ]);
+  await redisUserMergeJournalUpsert(entryId, mergeId, {
+    status: result.status,
+    completed_at: utcDate().toISOString(),
+    message: result.message,
+    output: result.outcome ? JSON.stringify(result.outcome) : undefined,
+    updated_count: result.outcome?.updated ?? 0,
+  });
 };
 
 /**
@@ -55,42 +69,24 @@ export const closeJournalEntry = async (
  * RUNNING that is indistinguishable from a node that died.
  */
 export const withJournalEntry = async <T extends UserMergeHandlerOutcome>(
-  context: AuthContext,
-  user: AuthUser,
   input: JournalEntryInput,
   execute: () => Promise<T>,
 ): Promise<T> => {
-  const entryId = await openJournalEntry(context, user, input);
+  const entryId = await openJournalEntry(input);
   try {
     const outcome = await execute();
-    await closeJournalEntry(context, user, entryId, { status: UserMergeStatus.Success, outcome });
+    await closeJournalEntry(entryId, input.mergeId, { status: UserMergeStatus.Success, outcome });
     return outcome;
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    await closeJournalEntry(context, user, entryId, { status: UserMergeStatus.Failed, message });
+    await closeJournalEntry(entryId, input.mergeId, { status: UserMergeStatus.Failed, message });
     logApp.error('[MERGE_USERS] handler failed', { handler: input.handler, merge_id: input.mergeId, cause: message });
     throw err;
   }
 };
 
-export const readJournalEntries = async (
-  context: AuthContext,
-  user: AuthUser,
-  mergeId?: string,
-  first?: number,
-): Promise<BasicStoreEntityUserMergeJournal[]> => {
-  const filters = mergeId
-    ? {
-        mode: FilterMode.And,
-        filters: [{ key: ['merge_id'], values: [mergeId], operator: FilterOperator.Eq, mode: FilterMode.Or }],
-        filterGroups: [],
-      }
-    : undefined;
-  const entries = await fullEntitiesList<BasicStoreEntityUserMergeJournal>(
-    context,
-    user,
-    [ENTITY_TYPE_USER_MERGE_JOURNAL],
-    { filters, orderBy: 'started_at', orderMode: 'desc' as never },
-  );
-  return first ? entries.slice(0, first) : entries;
+export const readJournalEntries = async (mergeId?: string, first?: number): Promise<UserMergeJournalRecord[]> => {
+  const entries = await redisUserMergeJournalRead(mergeId) as UserMergeJournalRecord[];
+  const sorted = [...entries].sort((a, b) => b.started_at.localeCompare(a.started_at));
+  return first ? sorted.slice(0, first) : sorted;
 };

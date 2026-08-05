@@ -1049,3 +1049,35 @@ export const redisSetXtmAgentResponse = async (cacheKey: string, content: string
   }
 };
 // endregion - XTM agent response cache
+
+// region user merge journal
+/**
+ * The merge journal is diagnostic, not evidential: what authorizes deleting the source
+ * account is the coverage manifest, derived from the register and the registered handlers.
+ * So it does not need to be an indexed entity — and it should not be one, because every new
+ * entity type spends from a mapping budget shared by all indices and already largely
+ * consumed, permanently, for a feature meant to run once.
+ *
+ * Keeping it out of the indices also removes a self-reference: the journal would otherwise
+ * live in a live index and carry a creator_id, the very field a merge rewrites.
+ */
+const USER_MERGE_JOURNAL_TTL = 30 * 24 * 60 * 60; // 30 days
+const USER_MERGE_JOURNAL_LIST = 'user_merge_journal_entries';
+const userMergeEntryKey = (entryId: string) => `user_merge_journal_entry_${entryId}`;
+const userMergeJournalList = (mergeId: string) => `${USER_MERGE_JOURNAL_LIST}_${mergeId}`;
+
+export const redisUserMergeJournalUpsert = async (entryId: string, mergeId: string, patch: object) => {
+  const key = userMergeEntryKey(entryId);
+  const existing = await getClientBase().get(key);
+  const entry = { ...(existing ? JSON.parse(existing) : {}), ...patch };
+  // Indexed both globally and per merge: an operator who lost the id returned by the
+  // mutation also lost the only way to name the run they need to follow.
+  await setKeyWithList(key, [USER_MERGE_JOURNAL_LIST, userMergeJournalList(mergeId)], entry, USER_MERGE_JOURNAL_TTL);
+  return entry;
+};
+
+export const redisUserMergeJournalRead = async (mergeId?: string) => {
+  const listId = mergeId ? userMergeJournalList(mergeId) : USER_MERGE_JOURNAL_LIST;
+  return keysFromList(listId, USER_MERGE_JOURNAL_TTL);
+};
+// endregion - user merge journal

@@ -100,11 +100,11 @@ export const userMergeCoverage = async (
 };
 
 export const userMergeJournal = async (
-  context: AuthContext,
+  _context: AuthContext,
   user: AuthUser,
   mergeId?: string | null,
   first?: number | null,
 ): Promise<UserMergeJournalEntry[]> => {
   assertUserMergeAllowed(user);
-  return readUserMergeJournal(context, user, mergeId ?? undefined, first ?? undefined);
+  return readUserMergeJournal(mergeId ?? undefined, first ?? undefined);
 };

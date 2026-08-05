@@ -83,7 +83,6 @@ import './authenticationProvider/authenticationProvider';
 import './customView/customView';
 import './retentionRules/retentionRules';
 import './dataSanity/dataSanity';
-import './userMerge/userMergeJournal';
 import './xtm/hub/news-feed/news-feed';
 
 // incomplete modules

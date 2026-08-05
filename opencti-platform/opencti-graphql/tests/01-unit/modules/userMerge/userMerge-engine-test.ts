@@ -7,7 +7,7 @@ import { UserMergeRightsStrategy, UserMergeStatus } from '../../../../src/module
 const openedEntries: { handler: string; dryRun: boolean }[] = [];
 
 vi.mock('../../../../src/modules/userMerge/userMerge-journal', () => ({
-  withJournalEntry: async (_context: unknown, _user: unknown, input: { handler: string; dryRun: boolean }, execute: () => Promise<unknown>) => {
+  withJournalEntry: async (input: { handler: string; dryRun: boolean }, execute: () => Promise<unknown>) => {
     openedEntries.push({ handler: input.handler, dryRun: input.dryRun });
     return execute();
   },
