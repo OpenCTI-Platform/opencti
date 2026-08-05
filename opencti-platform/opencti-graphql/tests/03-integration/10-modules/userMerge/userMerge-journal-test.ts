@@ -44,7 +44,7 @@ describe('userMerge journal', () => {
     });
     await closeJournalEntry(testContext, ADMIN_USER, entryId, {
       status: UserMergeStatus.Success,
-      outcome: { rows: ['user.password'], updated: 42, details: {} },
+      outcome: { handler: 'test-handler', changes: [], alerts: [], updated: 42 },
     });
     await wait(2000);
     const entries = await readJournalEntries(testContext, ADMIN_USER, mergeId);

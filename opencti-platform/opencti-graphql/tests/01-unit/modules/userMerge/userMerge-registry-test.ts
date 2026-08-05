@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { handlerDryRun, handlerRun, type UserMergeHandler, type UserMergeHandlerContext, USER_MERGE_TARGET_INDICES } from '../../../../src/modules/userMerge/userMerge-handler';
+import {
+  handlerDryRun,
+  planFingerprint,
+  type UserMergeHandler,
+  type UserMergeHandlerContext,
+  USER_MERGE_TARGET_INDICES,
+} from '../../../../src/modules/userMerge/userMerge-handler';
 import { assertHandlersAreDisjoint, registerUserMergeHandler, resetUserMergeHandlers, userMergeHandlers } from '../../../../src/modules/userMerge/userMerge-registry';
 import { USER_MERGE_REGISTRY_VERSION } from '../../../../src/modules/userMerge/userMerge-register';
 import { UserMergeRightsStrategy } from '../../../../src/modules/userMerge/userMerge-types';
@@ -41,24 +47,23 @@ describe('Handler execution modes', () => {
     expect(outcome.updated).toBe(0);
   });
 
-  it('should derive both modes from a single computation', async () => {
-    const compute = vi.fn(async () => ({ handler: 'mock', changes: [], alerts: [] }));
-    const handler = mockHandler({ compute, apply: async () => 7 });
-    const dry = await handlerDryRun(handler, handlerContext);
-    const real = await handlerRun(handler, handlerContext);
-    expect(compute).toHaveBeenCalledTimes(2);
-    // Same shape, same planned content: the run is the dry-run plus the writes.
-    expect(real.changes).toEqual(dry.changes);
-    expect(real.alerts).toEqual(dry.alerts);
-    expect(real.updated).toBe(7);
+  it('should give the same fingerprint whatever the order of the plan entries', async () => {
+    const first = {
+      handler: 'mock',
+      changes: [
+        { register_row_id: 'activity.user-id', entity_type: 'Activity', count: 3, exact: true },
+        { register_row_id: 'user.password', entity_type: 'User', count: 1, exact: true },
+      ],
+      alerts: [],
+    };
+    const second = { ...first, changes: [...first.changes].reverse() };
+    expect(planFingerprint(first)).toEqual(planFingerprint(second));
   });
 
-  it('should apply exactly what was computed, never a re-derived selection', async () => {
-    const plan = { handler: 'mock', changes: [{ register_row_id: 'activity.user-id', entity_type: 'Activity', count: 3, exact: true }], alerts: [] };
-    const apply = vi.fn(async () => 3);
-    const handler = mockHandler({ compute: async () => plan, apply });
-    await handlerRun(handler, handlerContext);
-    expect(apply).toHaveBeenCalledWith(handlerContext, plan);
+  it('should give a different fingerprint when a count moves', async () => {
+    const base = { handler: 'mock', changes: [{ register_row_id: 'user.password', entity_type: 'User', count: 1, exact: true }], alerts: [] };
+    const moved = { ...base, changes: [{ ...base.changes[0], count: 2 }] };
+    expect(planFingerprint(base)).not.toEqual(planFingerprint(moved));
   });
 });
 
