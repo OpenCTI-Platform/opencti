@@ -6,7 +6,6 @@ import { Link, useLocation } from 'react-router-dom';
 import { useFormatter } from '../../../components/i18n';
 import { Theme } from '../../../components/Theme';
 import { THEME_DARK_DEFAULT_BACKGROUND } from '../../../components/ThemeDark';
-import logoFiligran from '../../../static/images/logo_filigran_full.svg';
 import logoOpenAEVDark from '../../../static/images/logo_open_aev_dark.svg';
 import logoOpenAEVLight from '../../../static/images/logo_open_aev_light.svg';
 import logoXTMHubDark from '../../../static/images/logo_xtm_hub_dark.svg';
@@ -14,10 +13,12 @@ import logoXTMHubLight from '../../../static/images/logo_xtm_hub_light.svg';
 import LogoCollapsedOrange from '../../../static/images/logo_orange.svg';
 import LogoTextOrange from '../../../static/images/logo_text_orange.svg';
 import useAuth from '../../../utils/hooks/useAuth';
+import useTopBanner from '../../../utils/hooks/useTopBanner';
 import useGranted, { SETTINGS_SETMANAGEXTMHUB } from '../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { isNotEmptyField } from '../../../utils/utils';
 import { NavBarQuery } from './__generated__/NavBarQuery.graphql';
+import MadeByFiligran from './MadeByFiligran';
 import { readNavOpen, readSelectedMenu, writeNavOpen, writeSelectedMenu } from './navBarConstants';
 import useNavMenu, { NavGroup, NavItem, NavSubItem } from './useNavMenu';
 
@@ -61,6 +62,10 @@ export interface NavBarViewProps {
   customBackground?: string;
   /** Inline accent, overriding the library's fixed brand token. */
   accentColor?: string;
+  /** Space the banners take at the top of the viewport, as a CSS length. */
+  topOffset: string;
+  /** Space the banners take at the bottom of the viewport, as a CSS length. */
+  bottomOffset: string;
   header: React.ReactNode;
   footer: React.ReactNode;
   navLabel: string;
@@ -76,11 +81,31 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
   submenuShowIcons,
   customBackground,
   accentColor,
+  topOffset,
+  bottomOffset,
   header,
   footer,
   navLabel,
 }) => {
-  const navStyle: React.CSSProperties & Record<string, string | undefined> = {};
+  /**
+   * Geometry of the rail inside the app shell.
+   *
+   * The library lays its `<nav>` out in normal flow and sizes it with `h-full`,
+   * a percentage that resolves against a shell with no definite height: the
+   * rail ended up shorter than the viewport and scrolled away with the page.
+   * The MUI Drawer it replaces was fixed-positioned and full height. Sticking
+   * the rail to the viewport, below the banners, and giving it a definite
+   * height restores both properties — same technique as the OpenAEV pilot
+   * (openaev-front/src/components/common/menu/navbar/AppNavbar.tsx).
+   * `flex-shrink` is supplied by the host stylesheet, next to its own removal
+   * test.
+   */
+  const navStyle: React.CSSProperties & Record<string, string | undefined> = {
+    position: 'sticky',
+    top: topOffset,
+    alignSelf: 'flex-start',
+    height: `calc(100dvh - ${topOffset} - ${bottomOffset})`,
+  };
   if (customBackground) navStyle.background = customBackground;
   if (accentColor) {
     navStyle['--color-filigran-brand-primary'] = accentColor;
@@ -150,8 +175,18 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
         key={item.id}
         label={item.label}
         icon={item.icon}
-        open={openSubmenus.includes(item.id)}
-        onOpenChange={(open) => onSubmenuOpenChange(item.id, open)}
+        // Bound ONLY while the rail is expanded. Collapsed, the same prop pair
+        // drives the hover flyout, and controlling it from product state makes
+        // the flyout unusable: leaving a row schedules a delayed close (150ms)
+        // that lands after the next row has asked to open, and both callbacks
+        // resolve against the same state snapshot, so the last one wins and
+        // closes the flyout that just opened — only the first hovered submenu
+        // ever appeared. It also wrote hover into the persisted menu state,
+        // which pointing at a row never did before.
+        // See fds-migration/LIBRARY-FEEDBACK.md, "Accordion state and hover
+        // flyout state share one controlled prop".
+        open={collapsed ? undefined : openSubmenus.includes(item.id)}
+        onOpenChange={collapsed ? undefined : (open) => onSubmenuOpenChange(item.id, open)}
         // `to` makes the parent row navigable ONLY while the rail is
         // collapsed, which is exactly what the previous `handleParentClick`
         // did: expanded, a click toggled the accordion; collapsed, it
@@ -199,7 +234,17 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
       platform_xtmhub_url: xtmhubUrl,
       xtm_hub_registration_status: xtmhubStatus,
     },
+    bannerSettings: { bannerHeightNumber },
   } = useAuth();
+  const { height: topBannerHeight } = useTopBanner();
+  // Mirrors the app shell's own offsets (private/Index.tsx): the classification
+  // banners take the banner height at the top and at the bottom, the
+  // notification banner `topBannerHeight` at the top only. The numeric form of
+  // the banner height is the one used here: its string form is `'0'` — no unit —
+  // when no banner is displayed, which makes any `calc()` containing it invalid,
+  // and an invalid declaration is dropped in silence.
+  const topOffset = `${topBannerHeight + bannerHeightNumber}px`;
+  const bottomOffset = `${bannerHeightNumber}px`;
   const hasXtmHubAccess = useGranted([SETTINGS_SETMANAGEXTMHUB]);
   const data = usePreloadedQuery<NavBarQuery>(navBarQuery, queryRef);
   const groups = useNavMenu();
@@ -291,6 +336,8 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
       submenuShowIcons={submenuShowIcons ?? false}
       customBackground={customBackground}
       accentColor={accentColor}
+      topOffset={topOffset}
+      bottomOffset={bottomOffset}
       navLabel={t_i18n('Main navigation')}
       header={(
         <ProductSwitcher
@@ -325,10 +372,7 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
         />
       )}
       footer={!data?.settings?.platform_whitemark && (
-        <div className="app-navbar-made-by">
-          {navOpen && <span>{t_i18n('Made by')}</span>}
-          <img alt="" src={logoFiligran} width={navOpen ? 48 : 12} height="12" />
-        </div>
+        <MadeByFiligran collapsed={!navOpen} />
       )}
     />
   );

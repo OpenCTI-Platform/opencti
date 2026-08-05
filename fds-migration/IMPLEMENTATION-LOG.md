@@ -65,3 +65,49 @@ the navigation, are older than this change, and are left untouched.
   run 30958977348 green, run 30958981411 red. This change touches no back-end
   file. Dated here rather than investigated: it is not this pull request's
   subject.
+
+### 2026-08-05 — Four checkpoint findings from the running product
+
+Reported after a hands-on pass on the running platform. Each is stated with its
+diagnosis and its category (host style, product code, or library gap).
+
+1. **The rail was neither full height nor fixed** — host layout. The library's
+   `<nav>` is laid out in flow and sized with `h-full`; OpenCTI's shell has no
+   definite height, so the rail measured 776px in an 800px viewport and scrolled
+   away with the page. The MUI Drawer it replaces was fixed-positioned. Restored
+   with the OpenAEV pilot's own recipe: `position: sticky`, `top` at the banner
+   offset, `align-self: flex-start` and a height of `100dvh` minus the banners.
+   Filed as observation 11 in `LIBRARY-FEEDBACK.md` — two consumers out of two
+   had to write the same block.
+
+2. **The "Made by Filigran" signature was mis-sized, and showed the wordmark
+   when collapsed** — product code. The replaced footer used a `div` with an
+   `.app-navbar-made-by` class that matches no rule anywhere: OpenCTI has no
+   Tailwind build, so only the utilities the design system itself emits exist at
+   runtime. Rewritten as `MadeByFiligran.tsx`, ported from the OpenAEV pilot:
+   inline geometry, library caption tokens for the label, and — collapsed — a
+   12×12 box with `object-fit: cover` and a left origin, which crops the
+   wordmark down to the Filigran emblem alone. One asset, one accessible name
+   (`alt="Filigran"`) in both states. Non-interactive, exactly like the row it
+   replaces.
+
+3. **Collapsed, hovering from one submenu row to the next opened nothing** —
+   library behaviour, compensated in the product. Reproduced deterministically:
+   the first hovered row opens its flyout, every subsequent hover opens and
+   immediately closes, and `localStorage.selectedMenu` ends up emptied. Cause:
+   collapsed, the library drives the hover flyout from the same
+   `open`/`onOpenChange` pair as the expanded accordion, and its 150 ms delayed
+   close of the previous row resolves against the same state snapshot as the
+   next row's open. The product now passes those props only when expanded.
+   Filed as entry 10 in `LIBRARY-FEEDBACK.md`, with its removal test.
+
+4. **A pre-existing trap, dated and NOT fixed here: `bannerHeight` is the
+   unitless string `'0'`.** `private/Root.tsx` builds
+   `bannerHeight = bannerHeightNumber !== 0 ? `${n}px` : '0'`. Any `calc()`
+   containing it is therefore invalid CSS when no banner is displayed, and an
+   invalid declaration is dropped in silence — including OpenCTI's own
+   `marginTop: calc(${topBannerHeight}px + ${bannerHeight})` in
+   `private/Index.tsx`, which is how this rail first lost its offsets. The rail
+   now derives its offsets from `bannerHeightNumber` instead. The shell's own
+   declaration is left alone: it is not this pull request's subject. Fix
+   belongs in its own change — make the `'0'` branch return `'0px'`.

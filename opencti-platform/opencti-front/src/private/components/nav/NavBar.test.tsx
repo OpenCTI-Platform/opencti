@@ -4,6 +4,7 @@ import { createRequire } from 'node:module';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import testRender from '../../../utils/tests/test-render';
+import MadeByFiligran from './MadeByFiligran';
 import { isRouteSelected, NavBarView, NavBarViewProps } from './NavBar';
 import { NavGroup } from './useNavMenu';
 
@@ -38,6 +39,8 @@ const renderNav = (overrides: Partial<NavBarViewProps> = {}, route = '/dashboard
     openSubmenus={[]}
     onSubmenuOpenChange={vi.fn()}
     submenuShowIcons={false}
+    topOffset="0px"
+    bottomOffset="0px"
     header={null}
     footer={null}
     navLabel="Main navigation"
@@ -123,6 +126,59 @@ describe('NavBarView', () => {
     const { container } = renderNav();
     // Two groups, therefore exactly one separator between them.
     expect(container.querySelectorAll('hr')).toHaveLength(1);
+  });
+
+  it('pins the rail to the viewport, full height, below the banners', () => {
+    // The library lays its <nav> out in flow and sizes it with a percentage
+    // height; the fixed-position drawer it replaces was full height and did
+    // not scroll away with the page. Regression seen in the product.
+    const { container } = renderNav({ topOffset: '50px', bottomOffset: '20px' });
+    const nav = container.querySelector('nav') as HTMLElement;
+    expect(nav.style.position).toBe('sticky');
+    expect(nav.style.top).toBe('50px');
+    // jsdom reorders the terms of a calc(), so assert on its parts: the rail
+    // is one viewport tall minus the space the banners take.
+    expect(nav.style.height).toContain('100dvh');
+    expect(nav.style.height).toContain('50px');
+    expect(nav.style.height).toContain('20px');
+    expect(nav.style.alignSelf).toBe('flex-start');
+  });
+
+  it('does not drive the hover flyout from the persisted submenu state', () => {
+    // Collapsed, `open`/`onOpenChange` drive the hover flyout, not an
+    // accordion. Binding them to product state made the flyout unusable
+    // (only the first hovered submenu ever opened) and wrote hover into the
+    // persisted menu state. Collapsed, the library owns that state.
+    const onSubmenuOpenChange = vi.fn();
+    renderNav({ collapsed: true, openSubmenus: ['threats'], onSubmenuOpenChange });
+    expect(screen.queryByRole('link', { name: 'Campaigns' })).not.toBeInTheDocument();
+    expect(onSubmenuOpenChange).not.toHaveBeenCalled();
+  });
+});
+
+describe('MadeByFiligran', () => {
+  it('keeps one accessible name in both rail states', () => {
+    const { unmount } = testRender(<MadeByFiligran collapsed={false} />, { route: '/dashboard' });
+    expect(screen.getByAltText('Filigran')).toBeInTheDocument();
+    expect(screen.getByText('Made by')).toBeInTheDocument();
+    unmount();
+    testRender(<MadeByFiligran collapsed />, { route: '/dashboard' });
+    expect(screen.getByAltText('Filigran')).toBeInTheDocument();
+    // Collapsed, the label goes: the rail is 48px wide and the emblem alone
+    // stands for the signature, as in the OpenAEV pilot.
+    expect(screen.queryByText('Made by')).not.toBeInTheDocument();
+  });
+
+  it('shows the emblem alone when collapsed, by cropping the wordmark', () => {
+    testRender(<MadeByFiligran collapsed />, { route: '/dashboard' });
+    const logo = screen.getByAltText('Filigran');
+    // A square box cropped from the left edge of the wordmark asset: the
+    // emblem survives, the lettering is cut. Squashing the whole wordmark
+    // into 12px instead is what the rail showed before.
+    expect(logo.style.width).toBe('12px');
+    expect(logo.style.height).toBe('12px');
+    expect(logo.style.objectFit).toBe('cover');
+    expect(logo.style.objectPosition).toBe('left center');
   });
 });
 

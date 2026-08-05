@@ -245,3 +245,63 @@ consumers can anchor tests on it deliberately.
 
 **Removal test.** At such a pin, use `getByRole('link', …)` in the collapsed
 branch of `clickOnMenu`; `dashboard.spec.ts` must still pass.
+
+---
+
+## 10. Accordion state and hover flyout state share one controlled prop
+
+**Needed.** A product needs to persist which submenus the user left open —
+OpenCTI stores that in `localStorage` — so it controls `open`/`onOpenChange` on
+`NavbarSubmenu`. The same props must not also drive transient hover behaviour.
+
+**Today.** `NavbarSubmenu` resolves `isOpen = open ?? uncontrolledOpen` for both
+of its two very different modes: expanded, `open` is the accordion's persisted
+state; collapsed, the very same `open` is what shows or hides the hover flyout.
+Leaving a row schedules `setOpen(false)` after `HOVER_CLOSE_DELAY_MS` (150 ms);
+when the pointer has already reached the next row, that late callback and the
+next row's `true` both resolve against the same state snapshot, so the last one
+wins.
+
+**Consequence.** Controlling the prop makes the collapsed rail unusable: the
+first hovered submenu opens, every later one opens and closes immediately, and
+hovering silently rewrites the persisted "open submenus" state. The product now
+passes `open`/`onOpenChange` only when expanded, and lets the library own the
+collapsed flyout — which means the persisted state is deliberately ignored in
+the collapsed rail.
+
+**Ask.** Separate the two states: keep `open`/`onOpenChange` for the accordion
+and expose the flyout through its own prop (or keep the flyout uncontrolled by
+construction), so a consumer can persist accordion state without breaking hover.
+
+**Removal test.** Pass `open`/`onOpenChange` unconditionally in `NavBar.tsx`,
+collapse the rail, then hover three submenu rows in a row: each flyout must open
+and stay open while the pointer is on its row, and `localStorage.selectedMenu`
+must be unchanged.
+
+---
+
+## 11. The rail is laid out in flow and sized by percentage
+
+**Needed.** A left rail is expected to hold the full height of its shell and to
+stay put while the content scrolls. Both products replace a fixed-position
+drawer with the library `Navbar`.
+
+**Today.** The library's `<nav>` participates in normal flow and sizes itself
+with `h-full`, a percentage that only resolves against a parent with a definite
+height. In an app shell whose height comes from its content — OpenCTI's — the
+rail ends up shorter than the viewport and scrolls away with the page.
+
+**Consequence.** Every host has to restore the two properties itself. Both
+pilots landed on the same inline geometry (`position: sticky`, `top`, a definite
+`height` computed from the viewport minus the shell's banners, and
+`align-self: flex-start`). This is arguably the host's responsibility, so it is
+filed as an observation rather than a defect — but two out of two consumers hit
+it, which is the point.
+
+**Ask.** Either document the layout contract the `<nav>` expects from its host
+(definite-height parent), or let the component take the height it is given
+(`min-h-0` + `self-stretch` on the `<nav>`, or an opt-in sticky mode).
+
+**Removal test.** Delete the `navStyle` geometry block in `NavBar.tsx`; at a
+1500×800 viewport the rail must still measure the full viewport height and keep
+its position while an inner container scrolls.
