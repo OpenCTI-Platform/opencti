@@ -3,7 +3,7 @@ import { logApp } from '../../config/conf';
 import { UnsupportedError } from '../../config/errors';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { handlerDryRun, planFingerprint, type UserMergeHandler, type UserMergeHandlerContext, type UserMergeHandlerOutcome } from './userMerge-handler';
-import { withJournalEntry, readJournalEntries } from './userMerge-journal';
+import { readJournalEntries, withJournalEntry } from './userMerge-journal';
 import { buildApiUserMergeCoverage, type UserMergeCoverage } from './userMerge-coverage';
 import { assertHandlersAreDisjoint, userMergeHandlers } from './userMerge-registry';
 import { type UserMergeJournalEntry, type UserMergeOptions, type UserMergeResult, UserMergeStatus } from './userMerge-types';
@@ -89,8 +89,6 @@ export const executeUserMerge = async (
     for (let i = 0; i < handlers.length; i += 1) {
       const handler = handlers[i];
       const outcome = await withJournalEntry(
-        context,
-        user,
         { ...journalInput, handler: handler.identifier, dryRun: true },
         () => handlerDryRun(handler, handlerContext),
       );
@@ -104,8 +102,6 @@ export const executeUserMerge = async (
     for (let i = 0; i < handlers.length; i += 1) {
       const handler = handlers[i];
       const outcome = await withJournalEntry(
-        context,
-        user,
         { ...journalInput, handler: handler.identifier, dryRun: false },
         () => applyHandler(handler, handlerContext, dryOutcomes[i]),
       );
@@ -122,22 +118,20 @@ export const executeUserMerge = async (
 };
 
 export const readUserMergeJournal = async (
-  context: AuthContext,
-  user: AuthUser,
   mergeId?: string,
   first?: number,
 ): Promise<UserMergeJournalEntry[]> => {
-  const entries = await readJournalEntries(context, user, mergeId, first);
+  const entries = await readJournalEntries(mergeId, first);
   return entries.map((entry) => ({
-    id: entry.internal_id,
+    id: entry.id,
     merge_id: entry.merge_id,
     source_id: entry.source_user_id,
     target_id: entry.target_user_id,
     handler: entry.handler,
     dry_run: entry.dry_run,
-    status: entry.status as UserMergeStatus,
-    started_at: entry.started_at,
-    completed_at: entry.completed_at,
+    status: entry.status,
+    started_at: new Date(entry.started_at),
+    completed_at: entry.completed_at ? new Date(entry.completed_at) : undefined,
     message: entry.message,
   }));
 };
