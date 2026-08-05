@@ -19,6 +19,9 @@ import { UnsupportedError } from '../config/errors';
 import { asyncMap } from '../utils/data-processing';
 import { roundRate } from '../utils/consumer-metrics';
 import { getFileContent, rawUpload } from './raw-file-storage';
+// Self namespace import: referencing isEventTooLarge through the module namespace (instead of a direct
+// local call) allows it to be spied/mocked in tests (e.g. vi.spyOn(redisStream, 'isEventTooLarge')).
+import * as redisStreamSelf from './redis-stream';
 
 // region opencti data stream
 const REDIS_LIVE_STREAM_NAME = `${REDIS_PREFIX}${LIVE_STREAM_NAME}`;
@@ -62,12 +65,15 @@ const mapStreamToJS = ([id, data]: any): SseEvent<any> => {
 };
 
 export const STREAM_FILE_DIRECTORY = `streams/${REDIS_LIVE_STREAM_NAME}/`;
+export const isEventTooLarge = (eventStreamData: any) => {
+  const eventStreamDataBlob = new Blob(eventStreamData);
+  const totalStreamEventSize = eventStreamDataBlob.size;
+  return streamMaxEventSize > 0 && totalStreamEventSize > streamMaxEventSize;
+};
 export const rawPushToStream = async <T extends BaseEvent> (event: T) => {
   const redisClient = getClientBase();
   let eventStreamData = mapJSToStream(event);
-  const eventStreamDataBlob = new Blob(eventStreamData);
-  const totalStreamEventSize = eventStreamDataBlob.size;
-  if (streamMaxEventSize > 0 && totalStreamEventSize > streamMaxEventSize) {
+  if (redisStreamSelf.isEventTooLarge(eventStreamData)) {
     // Add salt to prevent time collision
     const randomSalt = Math.floor(Math.random() * 1000);
     const eventId = streamEventId(null, randomSalt);
