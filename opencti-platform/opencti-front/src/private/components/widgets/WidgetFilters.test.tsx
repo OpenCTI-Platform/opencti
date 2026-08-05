@@ -16,12 +16,6 @@ vi.mock('@components/widgets/WidgetConfigContext', () => ({
   useWidgetConfigContext: () => ({ host: { kind: 'workspace' } }),
 }));
 
-vi.mock('../../../utils/hooks/useHelper', () => ({
-  default: () => ({
-    isFeatureEnable: (feature: string) => feature === 'DASHBOARD_SAVED_FILTERS',
-  }),
-}));
-
 vi.mock('../../../utils/filters/useFiltersState', async () => {
   const ReactLib = await import('react');
   const emptyGroup = { mode: 'and', filters: [], filterGroups: [] };
