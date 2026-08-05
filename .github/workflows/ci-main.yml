@@ -50,6 +50,7 @@ jobs:
       needs:  [wf-build-platform-image,wf-build-worker-image,wf-build-builder-image]
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
+        client_python_local: true
         run-id: ${{ github.run_id }}
       secrets: inherit
 

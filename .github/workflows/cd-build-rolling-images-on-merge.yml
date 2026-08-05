@@ -40,6 +40,9 @@ jobs:
       - name: Load builder image
         run: docker load --input /tmp/opencti-builder.tar
 
+      - name: Use client-python in OpenCTI from same branch
+        run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ github.sha }}#subdirectory=client-python|' ./opencti-platform/opencti-graphql/src/python/requirements.txt
+
       - name: Build graphql production and prune devDependencies
         run: |
           docker run --rm \
