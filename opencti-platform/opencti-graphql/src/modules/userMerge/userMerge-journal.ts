@@ -8,18 +8,6 @@ import { UserMergeStatus } from './userMerge-types';
 import type { UserMergeHandlerOutcome } from './userMerge-handler';
 import { type BasicStoreEntityUserMergeJournal, ENTITY_TYPE_USER_MERGE_JOURNAL } from './userMergeJournal-types';
 
-/**
- * Entity types the handlers must never touch.
- *
- * The journal lives in a live index, carries a creator_id and i_attributes of its own, and
- * later chunks rewrite exactly those fields across every live index. Left in scope, a merge
- * would rewrite its own trace. The effect stays benign as long as the operator is not
- * themselves a merge source, but the loop is closed explicitly rather than left to chance.
- *
- * The audit record joins this list when it lands.
- */
-export const USER_MERGE_EXCLUDED_ENTITY_TYPES = [ENTITY_TYPE_USER_MERGE_JOURNAL];
-
 export interface JournalEntryInput {
   mergeId: string;
   sourceId: string;
