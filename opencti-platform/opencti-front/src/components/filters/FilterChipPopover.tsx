@@ -114,6 +114,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   const filterKey = filter?.key ?? '';
   const filterOperator = filter?.operator ?? '';
   const filterValues = filter?.values ?? [];
+  const isOperatorRequiringValue = !NO_VALUES_FILTER_OPERATORS.includes(filterOperator);
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
   const filterLabel = filterKey ? t_i18n(filterDefinition?.label ?? filterKey) : '';
   const { typesWithFintelTemplates } = useAttributes();
@@ -236,7 +237,6 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     />
   );
 
-  const noValueOperator = !NO_VALUES_FILTER_OPERATORS.includes(filterOperator);
   const renderSearchScopeSelection = (key: string) => (
     <SearchScopeElement
       name={key}
@@ -488,10 +488,10 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             ))}
           </Select>
         )}
-        {noValueOperator && isSpecificFilter(finalFilterDefinition) && (
+        {isOperatorRequiringValue && isSpecificFilter(finalFilterDefinition) && (
           <>{getSpecificFilter(finalFilterDefinition, subKey, disabled)}</>
         )}
-        {noValueOperator && !isSpecificFilter(finalFilterDefinition) && (
+        {isOperatorRequiringValue && !isSpecificFilter(finalFilterDefinition) && (
           <>{buildAutocompleteFilter(subKey ?? fKey, finalFilterDefinition?.label ?? t_i18n(fKey), subKey, disabled)}</>
         )}
       </>

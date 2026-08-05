@@ -736,7 +736,7 @@ describe('Function findFilterFromKey', () => {
 });
 
 describe('Function findFiltersFromKeys: should return the filters of the specified keys among a filters list', () => {
-  it('findFiltersFromKey without specifying an operator', () => {
+  it('findFiltersFromKeys without specifying an operator', () => {
     const filtersList = [
       { key: 'value', values: [], operator: 'nil' },
       { key: 'name', values: ['name1', 'name2'], operator: 'eq' },
@@ -744,7 +744,7 @@ describe('Function findFiltersFromKeys: should return the filters of the specifi
     const result = findFiltersFromKeys(filtersList, ['value']);
     expect(result).toEqual([]);
   });
-  it('findFiltersFromKey with several results', () => {
+  it('findFiltersFromKeys with several results', () => {
     const filtersList = [
       { key: 'value', values: [], operator: 'nil' },
       { key: 'name', values: ['name1', 'name2'], operator: 'eq' },
@@ -754,7 +754,7 @@ describe('Function findFiltersFromKeys: should return the filters of the specifi
     expect(result).toEqual([{ key: 'name', values: ['name1', 'name2'], operator: 'eq' },
       { key: 'name', values: ['name3'], operator: 'eq' }]);
   });
-  it('findFiltersFromKey with operator specified', () => {
+  it('findFiltersFromKeys with operator specified', () => {
     const filtersList = [
       { key: 'value', values: [], operator: 'nil' },
       { key: 'name', values: ['name1', 'name2'], operator: 'eq' },
@@ -762,7 +762,7 @@ describe('Function findFiltersFromKeys: should return the filters of the specifi
     const result = findFiltersFromKeys(filtersList, ['value'], 'nil');
     expect(result).toEqual([{ key: 'value', values: [], operator: 'nil' }]);
   });
-  it('findFiltersFromKey with several keys', () => {
+  it('findFiltersFromKeys with several keys', () => {
     const filtersList = [
       { key: 'value', values: ['value1'], operator: 'eq' },
       { key: 'created_at', values: ['XX', 'YY'], mode: 'or' },

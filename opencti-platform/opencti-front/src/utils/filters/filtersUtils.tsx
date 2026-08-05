@@ -41,7 +41,7 @@ export const SELF_ID_VALUE = 'CURRENT ENTITY';
 
 export const ME_FILTER_VALUE = '@me';
 
-// filter operator requiring nothing in filter values
+// Filter operators that do not require any values in filter.values
 export const NO_VALUES_FILTER_OPERATORS = ['nil', 'not_nil', 'has_changed', 'not_has_changed'];
 
 // 'within' operator filter constants
