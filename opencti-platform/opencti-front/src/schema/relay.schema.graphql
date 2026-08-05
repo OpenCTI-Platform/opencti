@@ -16106,6 +16106,7 @@ input SecurityCoverageAddInput {
   coverage_information: [SecurityCoverageExpectation!]
   tenant_id: String
   tenant_name: String
+  add_related_entities: Boolean
 }
 
 type CoverageResult {

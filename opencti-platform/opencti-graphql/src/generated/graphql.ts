@@ -30328,6 +30328,7 @@ export type SecurityCoverageToStixArgs = {
 };
 
 export type SecurityCoverageAddInput = {
+  add_related_entities?: InputMaybe<Scalars['Boolean']['input']>;
   auto_enrichment_disable: Scalars['Boolean']['input'];
   confidence?: InputMaybe<Scalars['Int']['input']>;
   coverage_information?: InputMaybe<Array<SecurityCoverageExpectation>>;
