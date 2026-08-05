@@ -4,6 +4,7 @@ import { useTheme } from '@mui/styles';
 import { Field, FieldProps } from 'formik';
 import { useFormatter } from '../i18n';
 import { isEmptyField } from '../../utils/utils';
+import type { Theme } from '../Theme';
 
 interface PeriodicityFieldProps {
   name: string;
@@ -47,7 +48,7 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
   setFieldValue,
 }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
 
   return (
     <Box style={style}>
