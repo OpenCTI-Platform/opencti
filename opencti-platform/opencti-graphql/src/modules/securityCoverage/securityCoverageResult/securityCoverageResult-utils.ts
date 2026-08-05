@@ -70,12 +70,6 @@ export const internalCreateSecurityCoverageResult = async (
     securityCoverageResultInput,
     ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
   );
-  logApp.info(
-    `[SECURITY-COVERAGE-RESULT][${securityCoverageResultInput.resultOf}] SCR created: ${result.standard_id}`,
-    {
-      result: JSON.stringify(result),
-      input: JSON.stringify(securityCoverageResultInput),
-    },
-  );
+  logApp.info(`[SECURITY-COVERAGE-RESULT][${securityCoverageResultInput.resultOf}] SCR created: ${result.standard_id}`);
   return result;
 };

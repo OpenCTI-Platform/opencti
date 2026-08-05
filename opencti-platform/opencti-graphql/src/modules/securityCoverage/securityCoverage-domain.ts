@@ -22,7 +22,7 @@ import { BUS_TOPICS, logApp } from '../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { createEntity, deleteElementById, storeLoadByIdsWithRefs, storeLoadByIdWithRefs } from '../../database/middleware';
 import { type SecurityCoverageAddInput } from '../../generated/graphql';
-import type { BasicStoreEntity, BasicStoreObject, BasicStoreRelation, StoreEntity, StoreObject, StoreRelation } from '../../types/store';
+import type { BasicStoreEntity, BasicStoreObject, BasicStoreRelation, StoreObject, StoreRelation } from '../../types/store';
 import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { STIX_SPEC_VERSION } from '../../database/stix';
 import { RELATION_HAS_COVERED, RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
@@ -47,25 +47,17 @@ import {
 } from './securityCoverageResult/securityCoverageResult-types';
 import { loadThroughDenormalized } from '../../resolvers/stix';
 import { stixCoreRelationshipsPaginated } from '../../domain/stixCoreObject';
-import {
-  getAverageCoverageInformation,
-  getMostRecentLastCoverageResult,
-  HAS_COVERED_TARGETS_TYPE,
-  internalCreateSecurityCoverageResult,
-} from './securityCoverageResult/securityCoverageResult-utils';
+import { getAverageCoverageInformation, getMostRecentLastCoverageResult, internalCreateSecurityCoverageResult } from './securityCoverageResult/securityCoverageResult-utils';
 import { splitSecurityCoverageInput } from './securityCoverage-utils';
-import { addStixCoreRelationship } from '../../domain/stixCoreRelationship';
+import { addRelatedCoveredEntities } from './securityCoverageResult/securityCoverageResult-domain';
 
-const COVERED_CONTAINERS_TYPE = [
-  ENTITY_TYPE_CONTAINER_REPORT,
-  ENTITY_TYPE_CONTAINER_GROUPING,
-  ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
-];
 export const COVERED_ENTITIES_TYPE = [
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_INCIDENT,
-  ...COVERED_CONTAINERS_TYPE,
+  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_CONTAINER_GROUPING,
+  ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
 ];
 
 // region CRUD
@@ -129,48 +121,17 @@ export const addSecurityCoverage = async (
     createdSecurityCoverage[RELATION_RESULT_OF] = [result.id];
   }
 
-  // In case of manual creation, need to create associated has-covered relationships.
+  // 3. In case of manual creation, need to create associated has-covered relationships.
   if (add_related_entities) {
     if (!result) {
-      // We should not arrive here, if asked to add related entities a SecurityCoverageResult
+      // We should not arrive here. If asked to add related entities, a SecurityCoverageResult
       // should have been created, otherwise there was an error.
       logApp.error(
         `[SECURITY-COVERAGE] Error while trying to add related entities to the created SecurityCoverage ${createdSecurityCoverage.id}, no SecurityCoverageResult was created.`,
         { securityCoverageResultInput, shouldCreateResult },
       );
     } else {
-      const coveredEntity = await storeLoadByIdWithRefs<StoreEntity>(context, user, securityCoverageInput.objectCovered);
-      if (coveredEntity) {
-        const isContainer = COVERED_CONTAINERS_TYPE.includes(coveredEntity.entity_type);
-        let targets: string[] = [];
-        if (isContainer) {
-          // In case of containers add entities from the ones contained.
-          targets = (coveredEntity.objects ?? []).flatMap((o) => {
-            if (!HAS_COVERED_TARGETS_TYPE.includes(o.entity_type)) return [];
-            return o.id;
-          });
-        } else {
-          // In case of non-containers add entities from targets and uses relationships.
-          await fullRelationsList(context, user, [RELATION_TARGETS, RELATION_USES], {
-            fromId: coveredEntity.id,
-            toTypes: HAS_COVERED_TARGETS_TYPE,
-            callback: async (relationships: StoreRelation[]) => {
-              targets.push(...relationships.map((r) => r.toId));
-            },
-          });
-        }
-        logApp.info(`[SECURITY-COVERAGE] addSecurityCoverage: Manual creation, ${targets.length} entities found for has-covered relationships`, { targets });
-        await Promise.all(
-          targets.map((target) => {
-            return addStixCoreRelationship(context, user, {
-              relationship_type: RELATION_HAS_COVERED,
-              fromId: result.id,
-              toId: target,
-              coverage_information: [],
-            });
-          }),
-        );
-      }
+      await addRelatedCoveredEntities(context, user, result.id, securityCoverageInput.objectCovered);
     }
   }
 
