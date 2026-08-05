@@ -2207,6 +2207,19 @@ class OpenCTIStix2:
             del entity["dataSource"]
             del entity["dataSourceId"]
 
+        security_coverage_results = []
+        security_coverage_result_of = None
+        if entity["type"] == "security-coverage":
+            security_coverage_results = entity.get("results") or []
+            if "results" in entity:
+                del entity["results"]
+            if "objectCovered" in entity:
+                del entity["objectCovered"]
+        if entity["type"] == "security-coverage-result":
+            security_coverage_result_of = entity.get("resultOf")
+            if "resultOf" in entity:
+                del entity["resultOf"]
+
         # Dates
         if "first_seen" in entity and entity["first_seen"].startswith("1970"):
             del entity["first_seen"]
@@ -2520,6 +2533,25 @@ class OpenCTIStix2:
             uuids = [entity["id"]]
             for y in result:
                 uuids.append(y["id"])
+            # Get security coverage neighbours, with their explicit type so the right reader is
+            # used. Declared before the generic refs loop, which would resolve the coverage as a
+            # plain Stix-Domain-Object and win the deduplication.
+            for security_coverage_result in security_coverage_results:
+                objects_to_get.append(
+                    {
+                        "id": security_coverage_result["id"],
+                        "entity_type": "Security-Coverage-Result",
+                        "parent_types": ["Stix-Domain-Object"],
+                    }
+                )
+            if security_coverage_result_of is not None:
+                objects_to_get.append(
+                    {
+                        "id": security_coverage_result_of["id"],
+                        "entity_type": "Security-Coverage",
+                        "parent_types": ["Stix-Domain-Object"],
+                    }
+                )
             # Get extra refs
             for key in entity.keys():
                 if key.endswith("_ref"):
