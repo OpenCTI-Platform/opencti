@@ -6,7 +6,7 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { patchSync } from '../domain/connector';
-import { findStatusByTypeScopeAndTemplateName } from '../domain/status';
+import { resolveSyncedWorkflowId } from '../domain/status';
 import { lockResources } from '../lock/master-lock';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { utcDate } from '../utils/format';
@@ -149,11 +149,9 @@ const syncManagerInstance = (syncId) => {
     const remoteWorkflowStatusName = processingData.extensions[STIX_EXT_OCTI].workflow_status_name;
     const remoteWorkflowStatusScope = processingData.extensions[STIX_EXT_OCTI].workflow_status_scope;
     if (remoteWorkflowId) {
-      const localStatus = remoteWorkflowStatusName
-        ? await findStatusByTypeScopeAndTemplateName(executionContext('sync_manager'), SYSTEM_USER, octiExtension.type, remoteWorkflowStatusScope, remoteWorkflowStatusName)
-        : undefined;
-      if (localStatus) {
-        processingData.extensions[STIX_EXT_OCTI].workflow_id = localStatus.id;
+      const localWorkflowId = await resolveSyncedWorkflowId(executionContext('sync_manager'), SYSTEM_USER, octiExtension.type, remoteWorkflowStatusScope, remoteWorkflowStatusName);
+      if (localWorkflowId) {
+        processingData.extensions[STIX_EXT_OCTI].workflow_id = localWorkflowId;
       } else {
         delete processingData.extensions[STIX_EXT_OCTI].workflow_id;
       }
