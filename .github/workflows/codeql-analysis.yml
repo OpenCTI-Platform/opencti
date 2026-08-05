@@ -4,12 +4,12 @@ on:
   push:
     branches:
       - master
-      - 'release/current'
+      - lts/*
   pull_request:
     # The branches below must be a subset of the branches above
     branches:
       - master
-      - 'release/current'
+      - lts/*
     paths-ignore:
       - '**/*.md'
       - '**/*.txt'
