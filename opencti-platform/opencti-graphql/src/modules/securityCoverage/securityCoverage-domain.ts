@@ -131,7 +131,7 @@ export const addSecurityCoverage = async (
         { securityCoverageResultInput, shouldCreateResult },
       );
     } else {
-      await addRelatedCoveredEntities(context, user, result.id, securityCoverageInput.objectCovered);
+      await addRelatedCoveredEntities(context, user, result.id);
     }
   }
 

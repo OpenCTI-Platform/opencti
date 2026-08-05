@@ -125,26 +125,21 @@ export const deleteSecurityCoverageResult = async (
  * @param context
  * @param user User making the request.
  * @param securityCoverageResultId ID of the security coverage result to populate.
- * @param coveredEntityId ID of the entity covered by the security coverage.
  */
 export const addRelatedCoveredEntities = async (
   context: AuthContext,
   user: AuthUser,
   securityCoverageResultId: string,
-  coveredEntityId: string,
 ) => {
   const securityCoverageResult = await storeLoadByIdWithRefs<StoreEntitySecurityCoverageResult>(context, user, securityCoverageResultId);
-  const coveredEntity = await storeLoadByIdWithRefs<StoreEntity>(context, user, coveredEntityId);
-
-  // Verify the given IDs.
   if (!securityCoverageResult) {
     throw FunctionalError(`No security coverage result found for the id ${securityCoverageResultId}`);
   }
+
+  const coveredId = securityCoverageResult[INPUT_RESULT_OF][RELATION_COVERED];
+  const coveredEntity = await storeLoadByIdWithRefs<StoreEntity>(context, user, coveredId);
   if (!coveredEntity) {
-    throw FunctionalError(`No covered entity found for the id ${coveredEntityId}`);
-  }
-  if (securityCoverageResult[INPUT_RESULT_OF][RELATION_COVERED] !== coveredEntity.id) {
-    throw FunctionalError(`Entity ${coveredEntityId} is not covered by the security coverage result ${securityCoverageResultId}`);
+    throw FunctionalError(`No covered entity found for the id ${coveredId}`);
   }
 
   let targets: string[] = [];
