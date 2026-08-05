@@ -3,7 +3,7 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { graphql, useQueryLoader, usePreloadedQuery } from 'react-relay';
 import type { GraphQLTaggedNode, PreloadedQuery } from 'react-relay';
 import type { OperationType } from 'relay-runtime';
-import { Box, Button, Grid2 as Grid, Stack, Tab, Tabs, Tooltip, Typography } from '@mui/material';
+import { Box, Grid2 as Grid, Stack, Tab, Tabs, Tooltip, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import SyncPopover from '@components/data/sync/SyncPopover';
 import IngestionRssPopover from '@components/data/ingestionRss/IngestionRssPopover';
@@ -13,7 +13,6 @@ import IngestionCsvPopover from '@components/data/ingestionCsv/IngestionCsvPopov
 import IngestionJsonPopover from '@components/data/ingestionJson/IngestionJsonPopover';
 import FormView from '@components/data/forms/view/FormView';
 import { BuiltInIntegrationKind, getBuiltInIntegration, isBuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
-import IngestionTaxiiLogsDrawer from '@components/data/ingestionTaxii/IngestionTaxiiLogsDrawer';
 import IngestionTaxiiLogsTab from '@components/data/ingestionTaxii/IngestionTaxiiLogsTab';
 import { ConnectorWorksSection } from '@components/data/connectors/Connector';
 import { connectorIdFromIngestId } from '@components/integrations/deployed/useDeployedIntegrations';
@@ -285,7 +284,6 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
   const { setTitle } = useConnectedDocumentModifier();
   const { isFeatureEnable } = useHelper();
   const definition = getBuiltInIntegration(kind);
-  const [logsDrawerOpen, setLogsDrawerOpen] = useState(false);
   // Only TAXII feeds get the Overview / Works / Logs tabs, mirroring the
   // connector detail page. Other feed kinds keep the single-page layout.
   const [tabValue, setTabValue] = useState(0);
@@ -553,18 +551,6 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
                     {nsdt(node.updated_at)}
                   </DetailField>
                 )}
-                {isIngestionFeedLogsEnabled && kind === 'taxii' && (
-                  <Grid size={{ xs: 12 }}>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      color="primary"
-                      onClick={() => setLogsDrawerOpen(true)}
-                    >
-                      {t_i18n('View logs')}
-                    </Button>
-                  </Grid>
-                )}
               </Grid>
             </Card>
           </Grid>
@@ -579,20 +565,9 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
         <ConnectorWorksSection connectorId={connectorIdFromIngestId(node.id)} />
       )}
 
-      {/* "Logs" tab content, TAXII feeds only. The "View logs" button and
-          its drawer above are kept for now and will be cleaned up in a
-          follow-up commit once this tab is validated. */}
+      {/* "Logs" tab content, TAXII feeds only. */}
       {isIngestionFeedLogsEnabled && kind === 'taxii' && tabValue === 2 && (
         <IngestionTaxiiLogsTab feedId={node.id} feedName={node.name} />
-      )}
-
-      {isIngestionFeedLogsEnabled && kind === 'taxii' && (
-        <IngestionTaxiiLogsDrawer
-          feedId={node.id}
-          feedName={node.name}
-          isOpen={logsDrawerOpen}
-          onClose={() => setLogsDrawerOpen(false)}
-        />
       )}
     </PageContainer>
   );

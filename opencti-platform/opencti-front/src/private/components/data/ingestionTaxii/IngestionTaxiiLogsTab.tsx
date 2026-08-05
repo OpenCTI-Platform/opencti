@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, useState } from 'react';
-import { PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -7,9 +7,21 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { RefreshOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
-import type { IngestionTaxiiLogsDrawerQuery } from './__generated__/IngestionTaxiiLogsDrawerQuery.graphql';
-import { ingestionTaxiiLogsDrawerQuery } from './IngestionTaxiiLogsDrawer';
+import type { IngestionTaxiiLogsTabQuery } from './__generated__/IngestionTaxiiLogsTabQuery.graphql';
 import IngestionLogTab from '../IngestionLogTab';
+
+export const ingestionTaxiiLogsTabQuery = graphql`
+  query IngestionTaxiiLogsTabQuery($id: String!) {
+    ingestionTaxiiLogs(id: $id) {
+      timestamp
+      level
+      type
+      identifier
+      message
+      meta
+    }
+  }
+`;
 
 interface IngestionTaxiiLogsTabProps {
   feedId: string;
@@ -17,20 +29,19 @@ interface IngestionTaxiiLogsTabProps {
 }
 
 const IngestionTaxiiLogsTabBody: React.FC<{
-  queryRef: PreloadedQuery<IngestionTaxiiLogsDrawerQuery>;
+  queryRef: PreloadedQuery<IngestionTaxiiLogsTabQuery>;
   feedName: string;
 }> = ({ queryRef, feedName }) => {
-  const data = usePreloadedQuery(ingestionTaxiiLogsDrawerQuery, queryRef);
+  const data = usePreloadedQuery(ingestionTaxiiLogsTabQuery, queryRef);
   const logs = (data?.ingestionTaxiiLogs ?? []).filter((e): e is NonNullable<typeof e> => e != null);
 
   return <IngestionLogTab name={feedName} logHistory={logs} />;
 };
 
-// Same log content as the IngestionTaxiiLogsDrawer, displayed directly in
-// the feed detail page's "Logs" tab instead of a side drawer.
+// Displays the TAXII feed ingestion logs directly in the feed detail page's "Logs" tab.
 const IngestionTaxiiLogsTab: React.FC<IngestionTaxiiLogsTabProps> = ({ feedId, feedName }) => {
   const { t_i18n } = useFormatter();
-  const [queryRef, loadQuery] = useQueryLoader<IngestionTaxiiLogsDrawerQuery>(ingestionTaxiiLogsDrawerQuery);
+  const [queryRef, loadQuery] = useQueryLoader<IngestionTaxiiLogsTabQuery>(ingestionTaxiiLogsTabQuery);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
