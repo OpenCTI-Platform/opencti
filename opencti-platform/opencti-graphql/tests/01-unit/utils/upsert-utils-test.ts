@@ -53,11 +53,11 @@ describe('buildUpdatePatchForUpsert - indicator confidence gating', () => {
     expect(result.decay_base_score_date).toBe(existingIndicator.decay_base_score_date);
     expect(result.decay_applied_rule).toEqual(existingIndicator.decay_applied_rule);
     expect(result.decay_next_reaction_date).toBe(existingIndicator.decay_next_reaction_date);
-    expect(result.decay_history).toEqual([]);
+    expect(result).not.toHaveProperty('decay_history');
     expect(result.confidence).toBe(50);
   });
 
-  it('should keep incoming indicator lifecycle and metadata fields when confidence matches', () => {
+  it('should keep incoming indicator lifecycle and metadata fields when confidence is sufficient', () => {
     const existingIndicator = {
       entity_type: ENTITY_TYPE_INDICATOR,
       standard_id: 'indicator--existing',

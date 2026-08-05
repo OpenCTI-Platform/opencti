@@ -151,6 +151,8 @@ export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch
         },
       );
       preserveIndicatorLifecycleAndValidityMetadata(updatePatch, resolvedElement);
+      updatePatch.confidence = confidenceLevelToApply;
+      return updatePatch;
     }
     // Guard for decay-excluded indicators: when the score is unchanged, preserve valid_until,
     // revoked and x_opencti_score. Mirrors the editField early-return in indicator-domain.ts
