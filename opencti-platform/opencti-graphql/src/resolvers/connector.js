@@ -33,6 +33,7 @@ import {
   updateConnectorRequestedStatus,
   syncAddInputFromImport,
 } from '../domain/connector';
+import { stixObjectsBatchImport } from '../domain/stixBatchImport';
 import {
   addDraftContext,
   createWork,
@@ -150,6 +151,7 @@ const connectorResolvers = {
     registerConnector: (_, { input }, context) => registerConnector(context, context.user, input),
     resetStateConnector: (_, { id }, context) => resetStateConnector(context, context.user, id),
     pingConnector: (_, { id, state, connectorInfo }, context) => pingConnector(context, context.user, id, state, connectorInfo),
+    stixObjectsBatchImport: (_, { items }, context) => stixObjectsBatchImport(context, context.user, items),
     updateConnectorTrigger: (_, { id, input }, context) => connectorTriggerUpdate(context, context.user, id, input),
     // region new managed connectors
     managedConnectorAdd: (_, { input }, context) => {

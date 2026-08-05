@@ -7,3 +7,8 @@ scrape_configs:
       - targets: ['host.docker.internal:14269']
         labels:
           app: 'opencti'
+  - job_name: 'opencti-dev-worker-telemetry-prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:14270']
+        labels:
+          app: 'opencti-worker'

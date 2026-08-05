@@ -167,10 +167,14 @@ services:
   opencti-dev-telemetry-grafana:
     image: grafana/grafana:13.1.0-25893932881
     container_name: opencti-dev-telemetry-grafana
+    restart: unless-stopped
     ports:
       - "3100:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - "./grafana/provisioning:/etc/grafana/provisioning"
+      - grafanadata:/var/lib/grafana
     depends_on:
       - opencti-dev-telemetry-prometheus
     profiles:
@@ -216,4 +220,6 @@ volumes:
   ossnapshots:
     driver: local
   keycloakdata:
+    driver: local
+  grafanadata:
     driver: local
