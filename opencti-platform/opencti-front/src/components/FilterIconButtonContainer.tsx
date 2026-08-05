@@ -5,8 +5,13 @@ import Tooltip from '@mui/material/Tooltip';
 import React, { CSSProperties, Fragment, FunctionComponent, useContext, useEffect, useRef } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import {
-  convertOperatorToIcon, filterOperatorsWithIcon, FilterSearchContext, FiltersRestrictions, isFilterEditable,
-  NO_VALUES_FILTER_OPERATORS, useFilterDefinition
+  convertOperatorToIcon,
+  filterOperatorsWithIcon,
+  FilterSearchContext,
+  FiltersRestrictions,
+  isFilterEditable,
+  NO_VALUES_FILTER_OPERATORS,
+  useFilterDefinition,
 } from '../utils/filters/filtersUtils';
 import { truncate } from '../utils/String';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
