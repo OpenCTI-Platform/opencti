@@ -22,7 +22,11 @@ export type SavedFiltersAutocompleteOptionType = {
   isOwner: boolean;
   ownerName?: string;
   canManage: boolean;
+  scope?: string;
+  disabled?: boolean;
 };
+
+export type WidgetSavedFilterScope = 'Stix-Core-Object' | 'stix-core-relationship' | 'History';
 
 const SavedFilterSelection = ({
   isDisabled,

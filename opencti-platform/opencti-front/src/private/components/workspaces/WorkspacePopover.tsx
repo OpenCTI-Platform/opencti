@@ -14,7 +14,7 @@ import WorkspaceEditionContainer from './WorkspaceEditionContainer';
 import Security from '../../../utils/Security';
 import { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_EXDELETE, EXPLORE_EXUPDATE_PUBLISH, INVESTIGATION_INUPDATE_INDELETE } from '../../../utils/hooks/useGranted';
 import { deleteNode, insertNode } from '../../../utils/store';
-import handleExportJson from './workspaceExportHandler';
+import useWorkspaceHandleExportJson from './useWorkspaceHandleExportJson';
 import WorkspaceDuplicationDialog from './WorkspaceDuplicationDialog';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
@@ -44,6 +44,7 @@ interface WorkspacePopoverProps {
 const WorkspacePopover = ({ data, paginationOptions }: WorkspacePopoverProps) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
+  const { workspaceHandleExportJson } = useWorkspaceHandleExportJson();
 
   const workspace = useFragment(workspacePopoverFragment, data);
   const {
@@ -152,7 +153,7 @@ const WorkspacePopover = ({ data, paginationOptions }: WorkspacePopoverProps) =>
 
   const handleExport = (event: UIEvent) => {
     stopEvent(event);
-    handleExportJson(workspace);
+    workspaceHandleExportJson(workspace);
   };
 
   return (

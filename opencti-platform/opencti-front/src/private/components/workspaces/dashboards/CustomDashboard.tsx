@@ -16,7 +16,7 @@ import Security from 'src/utils/Security';
 import { CustomDashboard_workspace$key } from './__generated__/CustomDashboard_workspace.graphql';
 import { CustomDashboardWidgetExportQuery$data } from './__generated__/CustomDashboardWidgetExportQuery.graphql';
 import { WIDGET_WORKSPACE_HOST } from './custom-dashboards-utils';
-import { CustomDashboardExportQuery$data } from './__generated__/CustomDashboardExportQuery.graphql';
+import { CustomDashboardExportQuery } from './__generated__/CustomDashboardExportQuery.graphql';
 import { Box } from '@mui/material';
 import { useFormatter } from 'src/components/i18n';
 
@@ -94,11 +94,12 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     try {
       const data = await fetchQuery(dashboardExportWidgetQuery, { id, widgetId: widget.id })
         .toPromise() as CustomDashboardWidgetExportQuery$data;
-      if (!data.workspace) {
+      const exportString = data.workspace?.toWidgetExport;
+      if (!exportString) {
         MESSAGING$.notifyError(t_i18n('Failed to export widget'));
         return null;
       }
-      return data.workspace.toWidgetExport;
+      return exportString;
     } catch (e) {
       MESSAGING$.notifyRelayError(e);
       return null;
@@ -106,12 +107,17 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   };
 
   const onExport = async (id: string) => {
-    const data = await fetchQuery(dashboardExportQuery, { id })
-      .toPromise() as CustomDashboardExportQuery$data;
-    if (!data.workspace) {
+    try {
+      const data = await fetchQuery<CustomDashboardExportQuery>(dashboardExportQuery, { id })
+        .toPromise();
+      if (!data?.workspace) {
+        return null;
+      }
+      return data.workspace.toConfigurationExport;
+    } catch (e) {
+      MESSAGING$.notifyRelayError(e);
       return null;
     }
-    return data.workspace.toConfigurationExport;
   };
 
   const onSave = (id: string, newManifestEncoded: string, noRefresh: boolean, onCompleted: () => void) => {

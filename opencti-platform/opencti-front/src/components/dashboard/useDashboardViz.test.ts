@@ -1,6 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import useDashboardViz from './useDashboardViz';
+import { WidgetDataSelection } from 'src/utils/widget/widget';
 
 const loadMocks: Array<ReturnType<typeof vi.fn>> = [];
 const disposeMocks: Array<ReturnType<typeof vi.fn>> = [];
@@ -249,6 +250,46 @@ describe('useDashboardViz', () => {
 
     expect(loadSpy).toHaveBeenCalledTimes(mountCalls + 1);
     expect(disposeSpy).not.toHaveBeenCalled();
+
+    hook.unmount();
+  });
+
+  it('reloads with the freshly resolved data selection when refresh token changes', () => {
+    // resolveDataSelection mock echoes dataSelection into resolvedDataSelection,
+    // so buildQueryVariables receives the resolved selection as its first argument.
+    const buildQueryVariables = vi.fn((resolvedDataSelection: WidgetDataSelection[]) => ({
+      field: resolvedDataSelection[0]?.field?.toUpperCase() ?? null,
+    }));
+
+    const hook = renderHook(({ dataSelection }: { dataSelection: WidgetDataSelection[] }) => useDashboardViz({
+      dataSelection,
+      perspective: 'entities',
+      refreshRate: null,
+      query: {} as never,
+      config: {},
+      parameters: {},
+      buildQueryVariables,
+    }), {
+      initialProps: { dataSelection: [{ field: 'selection1' }] },
+    });
+
+    const [loadSpy] = loadMocks;
+
+    // The load triggered by the initial call must use the resolved data selection.
+    let lastLoadVariables = loadSpy.mock.calls.at(-1)?.[0];
+    expect(lastLoadVariables).toEqual({ field: 'SELECTION1' });
+
+    // Change both the data selection and the refresh token in the same rerender.
+    refreshTokenMockValue = 2;
+    hook.rerender({ dataSelection: [{ field: 'selection2' }] });
+
+    act(() => {
+      vi.advanceTimersByTime(1_000);
+    });
+
+    // The reload triggered by the refresh token must use the new resolved data selection.
+    lastLoadVariables = loadSpy.mock.calls.at(-1)?.[0];
+    expect(lastLoadVariables).toEqual({ field: 'SELECTION2' });
 
     hook.unmount();
   });

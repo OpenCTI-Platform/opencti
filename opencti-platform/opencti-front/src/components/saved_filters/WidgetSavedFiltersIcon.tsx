@@ -6,19 +6,30 @@ import { useFormatter } from '../../components/i18n';
 
 interface WidgetSavedFiltersIconProps {
   onClick: () => void;
+  disabled?: boolean;
 }
 
-const WidgetSavedFiltersIcon = ({ onClick }: WidgetSavedFiltersIconProps) => {
+const WidgetSavedFiltersIcon = ({
+  onClick,
+  disabled = false,
+}: WidgetSavedFiltersIconProps) => {
   const { t_i18n } = useFormatter();
   return (
-    <Tooltip title={t_i18n('Use a saved filter')}>
-      <Button
-        size="small"
-        onClick={onClick}
-        sx={{ minWidth: 'unset', padding: '4px' }}
-      >
-        <Bookmarks fontSize="small" />
-      </Button>
+    <Tooltip
+      title={disabled
+        ? t_i18n('No saved filters compatible with this perspective')
+        : t_i18n('Use a saved filter')}
+    >
+      <span>
+        <Button
+          size="small"
+          onClick={onClick}
+          sx={{ minWidth: 'unset', padding: '4px' }}
+          disabled={disabled}
+        >
+          <Bookmarks fontSize="small" />
+        </Button>
+      </span>
     </Tooltip>
   );
 };

@@ -11,6 +11,7 @@ import { fromB64, toB64 } from '../../../../src/utils/base64';
 import { fileToReadStream } from '../../../../src/database/file-storage';
 import { redisClearTelemetryGauge, redisGetTelemetry } from '../../../../src/database/redis';
 import { TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED, TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED } from '../../../../src/manager/telemetryManager';
+import { addSavedFilter, deleteSavedFilter } from '../../../../src/modules/savedFilter/savedFilter-domain';
 import { CUSTOM_VIEW_ENTITY_1, CUSTOM_VIEW_ENTITY_2, CUSTOM_VIEW_ENTITY_INVALID, DASHBOARD_MANIFEST, DASHBOARD_MANIFEST_OBJECT } from './customView-fixtures';
 
 const READ_CUSTOM_VIEW_QUERY = gql`
@@ -191,6 +192,7 @@ const createUploadFile = (filePath: string, fileName: string) => {
 describe('CustomView resolvers', () => {
   let customView1: StoreEntityCustomView | undefined;
   let customView2: StoreEntityCustomView | undefined;
+  let savedFilterId: string | undefined;
   beforeAll(async () => {
     customView1 = await createEntity(
       testContext,
@@ -210,6 +212,16 @@ describe('CustomView resolvers', () => {
       CUSTOM_VIEW_ENTITY_INVALID,
       'CustomView',
     );
+    const savedFilter = await addSavedFilter(testContext, ADMIN_USER, {
+      name: 'custom-view-widget-saved-filter',
+      filters: JSON.stringify({
+        mode: 'and',
+        filters: [{ key: 'objectLabel', values: ['custom-view-label'] }],
+        filterGroups: [],
+      }),
+      scope: 'Stix-Core-Object',
+    });
+    savedFilterId = savedFilter.id;
   });
   afterAll(async () => {
     await redisClearTelemetryGauge(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED);
@@ -226,6 +238,9 @@ describe('CustomView resolvers', () => {
         ENTITY_TYPE_CUSTOM_VIEW,
       ),
     ));
+    if (savedFilterId) {
+      await deleteSavedFilter(testContext, ADMIN_USER, savedFilterId);
+    }
   });
 
   describe('display use cases', () => {
@@ -364,8 +379,39 @@ describe('CustomView resolvers', () => {
       it('should allow editing a custom view', async () => {
         const updatedDescription = 'Updated description';
         const updatedAtBefore = customView1?.updated_at;
+        expect(savedFilterId).toBeDefined();
         const updatedManifest = toB64({
-          widgets: {},
+          widgets: {
+            'widget-with-saved-filter-id': {
+              id: 'widget-with-saved-filter-id',
+              type: 'list',
+              perspective: 'entities',
+              parameters: {
+                title: 'Widget with saved filter id',
+              },
+              dataSelection: [
+                {
+                  label: 'saved-filter-selection',
+                  number: 10,
+                  sort_by: 'created_at',
+                  sort_mode: 'desc',
+                  attribute: 'entity_type',
+                  date_attribute: 'created_at',
+                  perspective: 'entities',
+                  filters_id: savedFilterId,
+                },
+              ],
+              layout: {
+                i: 'widget-with-saved-filter-id',
+                x: 0,
+                y: 0,
+                w: 6,
+                h: 4,
+                moved: false,
+                static: false,
+              },
+            },
+          },
           config: {
             relativeDate: 'months-3',
             startDate: null,
@@ -596,8 +642,29 @@ describe('CustomView resolvers', () => {
           openCTI_version: expect.stringMatching(/[0-9]{1}\.[0-9]{6}\.[0-9]{1}/),
           configuration: {
             name: result.data.customView.name,
-            manifest: result.data.customView.manifest,
           },
+        });
+      });
+
+      it('should resolve widget saved filters id in custom view export', async () => {
+        const exportResult = await queryAsAdminWithSuccess({
+          query: EXPORT_CUSTOM_VIEW_QUERY,
+          variables: {
+            id: customView1?.id,
+          },
+        });
+
+        const parsedExport = JSON.parse(exportResult.data.customView.toConfigurationExport);
+        const exportedManifest = fromB64(parsedExport.configuration.manifest);
+        const exportedWidget = exportedManifest.widgets['widget-with-saved-filter-id'];
+
+        expect(exportedWidget).toBeDefined();
+        const selection = exportedWidget.dataSelection[0];
+        expect(selection.filters_id).toBeUndefined();
+        expect(selection.filters).toEqual({
+          mode: 'and',
+          filters: [{ key: 'objectLabel', values: ['custom-view-label'] }],
+          filterGroups: [],
         });
       });
 
