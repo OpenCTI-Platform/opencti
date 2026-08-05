@@ -1,3 +1,6 @@
+[settings]
+lockfile = true
+
 [tools]
 python = "3.12"
 node = { version = "22.22.3", corepack = true }
