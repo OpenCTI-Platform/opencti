@@ -12,44 +12,39 @@ export interface GlobalExportBundleCategory {
   items?: GlobalExportBundleItem[];
 }
 
-export interface GlobalExportBundleSelection {
-  bundleName: string;
-  categories: Record<string, string[]>;
-}
-
 export const EXPORT_CATEGORIES: GlobalExportBundleCategory[] = [
   {
     key: 'ingestion',
     label: 'Ingestion',
     kind: 'children',
     items: [
-      { key: 'playbooks', label: 'Playbooks' },
-      { key: 'form_intakes', label: 'Forms' },
+      { key: 'Playbook', label: 'Playbooks' },
+      { key: 'Form', label: 'Forms' },
     ],
   },
   {
-    key: 'dashboards',
+    key: 'Workspace',
     label: 'Custom Dashboards',
     kind: 'flat',
   },
   {
-    key: 'custom',
+    key: 'CustomView',
     label: 'Custom Views',
     kind: 'flat',
   },
   {
-    key: 'feeds',
+    key: 'Feed',
     label: 'Feeds',
     kind: 'children',
     items: [
-      { key: 'feeds_csv', label: 'CSV Feeds' },
-      { key: 'feeds_taxii', label: 'Taxii Feeds' },
-      { key: 'feeds_json', label: 'JSON Feeds' },
-      { key: 'feeds_rss', label: 'RSS Feeds' },
+      { key: 'IngestionCsv', label: 'CSV Feeds' },
+      { key: 'IngestionTaxii', label: 'Taxii Feeds' },
+      { key: 'IngestionJson', label: 'JSON Feeds' },
+      { key: 'IngestionRss', label: 'RSS Feeds' },
     ],
   },
   {
-    key: 'fintel_templates',
+    key: 'FintelTemplate',
     label: 'Fintel Templates',
     kind: 'flat',
   },
@@ -59,9 +54,9 @@ export const getDefaultCheckedCategoryItems = (): Record<string, string[]> => {
   return Object.fromEntries(
     EXPORT_CATEGORIES
       .filter((category) => category.kind !== 'placeholder')
-      .map((category) => [
-        category.key,
-        category.kind === 'flat' ? [category.key] : (category.items ?? []).map((item) => item.key),
-      ]),
+      .map((category) => {
+        const keys = category.kind === 'flat' ? [category.key] : (category.items ?? []).map((item) => item.key);
+        return [category.key, keys];
+      }),
   );
 };
