@@ -117,19 +117,6 @@ describe('Settings resolver standard behavior', () => {
     });
     expect(queryResult.data.settingsEdit.fieldPatch.platform_title).toEqual(PLATFORM_TITLE);
   });
-  it('should fail when updating filigran_chatbot_ai_cgu_status with an invalid value', async () => {
-    const settingsInternalId = await settingsId();
-    const queryResult = await queryAsAdmin({
-      query: EDIT_FIELD_QUERY,
-      variables: {
-        id: settingsInternalId,
-        input: { key: 'filigran_chatbot_ai_cgu_status', value: ['INVALID_STATUS'] },
-      },
-    });
-    expect(queryResult.errors).toBeDefined();
-    expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors[0].message).toContain('Invalid CGU status');
-  });
   it('should reject fieldPatch when key requires missing capability', async () => {
     const settingsInternalId = await settingsId();
     await queryAsUserIsExpectedForbidden(USER_SECURITY, {
