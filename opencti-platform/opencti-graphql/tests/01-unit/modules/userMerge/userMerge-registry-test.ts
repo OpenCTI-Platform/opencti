@@ -21,7 +21,7 @@ const handlerContext = {
   context: {} as never,
   sourceId: 'source',
   targetId: 'target',
-  options: { dryRun: true, rightsStrategy: UserMergeRightsStrategy.Strict },
+  options: { dryRun: true, rightsStrategy: UserMergeRightsStrategy.Strict, acknowledgeExposureChange: false },
 } as UserMergeHandlerContext;
 
 const mockHandler = (overrides: Partial<UserMergeHandler> = {}): UserMergeHandler => ({
