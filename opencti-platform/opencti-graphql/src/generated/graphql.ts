@@ -25920,7 +25920,7 @@ export type QueryFormsArgs = {
 
 
 export type QueryGlobalConfigurationExportArgs = {
-  categories: Array<Scalars['String']['input']>;
+  entityTypes: Array<Scalars['String']['input']>;
 };
 
 
@@ -49849,7 +49849,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   fintelTemplate?: Resolver<Maybe<ResolversTypes['FintelTemplate']>, ParentType, ContextType, RequireFields<QueryFintelTemplateArgs, 'id'>>;
   form?: Resolver<Maybe<ResolversTypes['Form']>, ParentType, ContextType, RequireFields<QueryFormArgs, 'id'>>;
   forms?: Resolver<Maybe<ResolversTypes['FormConnection']>, ParentType, ContextType, Partial<QueryFormsArgs>>;
-  globalConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<QueryGlobalConfigurationExportArgs, 'categories'>>;
+  globalConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<QueryGlobalConfigurationExportArgs, 'entityTypes'>>;
   globalSearch?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryGlobalSearchArgs>>;
   group?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<QueryGroupArgs, 'id'>>;
   grouping?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<QueryGroupingArgs, 'id'>>;
