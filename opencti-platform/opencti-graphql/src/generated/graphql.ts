@@ -17534,6 +17534,7 @@ export type Mutation = {
   securityCoverageRelationAdd?: Maybe<StixRefRelationship>;
   securityCoverageRelationDelete?: Maybe<SecurityCoverage>;
   securityCoverageResultAdd?: Maybe<SecurityCoverageResult>;
+  securityCoverageResultAddRelatedCoveredEntities?: Maybe<Array<Maybe<StixCoreRelationship>>>;
   securityCoverageResultDelete?: Maybe<Scalars['ID']['output']>;
   securityCoverageResultRelationAdd?: Maybe<StixRefRelationship>;
   securityCoverageResultRelationDelete?: Maybe<SecurityCoverage>;
@@ -19654,6 +19655,11 @@ export type MutationSecurityCoverageRelationDeleteArgs = {
 
 export type MutationSecurityCoverageResultAddArgs = {
   input: SecurityCoverageResultAddInput;
+};
+
+
+export type MutationSecurityCoverageResultAddRelatedCoveredEntitiesArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -48625,6 +48631,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   securityCoverageRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageRelationAddArgs, 'id' | 'input'>>;
   securityCoverageRelationDelete?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   securityCoverageResultAdd?: Resolver<Maybe<ResolversTypes['SecurityCoverageResult']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageResultAddArgs, 'input'>>;
+  securityCoverageResultAddRelatedCoveredEntities?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixCoreRelationship']>>>, ParentType, ContextType, RequireFields<MutationSecurityCoverageResultAddRelatedCoveredEntitiesArgs, 'id'>>;
   securityCoverageResultDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageResultDeleteArgs, 'id'>>;
   securityCoverageResultRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageResultRelationAddArgs, 'id' | 'input'>>;
   securityCoverageResultRelationDelete?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageResultRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;

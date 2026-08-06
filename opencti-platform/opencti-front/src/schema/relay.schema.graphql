@@ -10762,6 +10762,7 @@ type Mutation {
   securityCoverageResultDelete(id: ID!): ID
   securityCoverageResultRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   securityCoverageResultRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage
+  securityCoverageResultAddRelatedCoveredEntities(id: ID!): [StixCoreRelationship]
   askSendOtp(input: AskSendOtpInput!): String
   verifyOtp(input: VerifyOtpInput!): VerifyOtp
   verifyMfa(input: VerifyMfaInput!): Boolean

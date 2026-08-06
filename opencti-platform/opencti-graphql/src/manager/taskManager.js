@@ -66,7 +66,6 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
 import { objects as getContainerObjects } from '../domain/container';
 import { doYield } from '../utils/eventloop-utils';
-import { addRelatedCoveredEntities } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-domain';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -219,6 +218,10 @@ export const baseOperationBuilder = (actionType, operations, element) => {
     baseOperationObject.opencti_operation = 'unshare';
     baseOperationObject.sharing_organization_ids = operations[0].context.values;
     baseOperationObject.sharing_direct_container = false;
+  }
+  // Has-covered relationships task
+  if (actionType === ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES) {
+    baseOperationObject.opencti_operation = 'add_related_covered_entities';
   }
   // Access management
   if (actionType === ACTION_TYPE_REMOVE_AUTH_MEMBERS) {
@@ -587,42 +590,6 @@ const customFieldValuesRemoveOperationCallback = async (context, user, task, ope
   };
 };
 
-/**
- * Specific callback for the task to create multiple has-covered relationships for security coverages.
- * We use background tasks for those creations to avoid blocking for too long the mutation creating security coverage.
- *
- * (No sendResultToQueue call needed since the relationships are created directly by the domain function).
- *
- * @param {AuthContext} context
- * @param {AuthUser} user User making the operations
- * @param task The task to execute.
- */
-const addRelatedCoveredEntitiesOperationCallback = async (context, user, task) => {
-  let totalProcessed = task.task_processed_number;
-  return async (elements) => {
-    for (let index = 0; index < elements.length; index += 1) {
-      const element = elements[index];
-      try {
-        await addRelatedCoveredEntities(context, user, element.internal_id);
-      } catch (error) {
-        logApp.error('[OPENCTI-MODULE][TASK-MANAGER] Task manager error during add has-covered relationships, skipping element', {
-          cause: error,
-          taskId: task.internal_id,
-          workId: task.work_id,
-          elementId: element.internal_id,
-          elementType: element.entity_type,
-        });
-      }
-    }
-    // Update task
-    totalProcessed += elements.length;
-    await updateTask(context, task.id, {
-      task_processed_number: totalProcessed,
-      completed: true,
-    });
-  };
-};
-
 const computeOperationCallback = async (context, user, task, actionType, operations) => {
   // Handle specific case of adding elements in container
   if (actionType === 'KNOWLEDGE_CONTAINER') {
@@ -643,10 +610,6 @@ const computeOperationCallback = async (context, user, task, actionType, operati
   // Handle specific sharing operation, as container must share inner object
   if (isShareAction(actionType) || isUnshareAction(actionType)) {
     return sharingOperationCallback(context, user, task, actionType, operations);
-  }
-  // Handle specific operation for security coverage to create has-covered relationships
-  if (actionType === ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES) {
-    return addRelatedCoveredEntitiesOperationCallback(context, user, task);
   }
   // If not, return standard callback
   return standardOperationCallback(context, user, task, actionType, operations);

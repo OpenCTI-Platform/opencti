@@ -240,6 +240,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                         | "rules_rescan"  # Rescan a rule (massive operation in UI)
                         | "enrichment"  # Ask for enrichment (massive operation in UI)
                         | "clear_access_restriction"  # Clear access members (massive operation in UI)
+                        | "add_related_covered_entities"  # Create has-covered relationships
                         | "revert_draft"  # Cancel draft modification (massive operation in UI)
                     ):
                         data_object = content["data"]
