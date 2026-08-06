@@ -31,7 +31,9 @@ jobs:
         image_tag: ${{ github.ref_name }}
         client_python_local: ${{ inputs.client_python_local }}
         publish_to_registry: true
-      secrets: inherit
+      secrets:
+        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   deploy:
     name: deploy

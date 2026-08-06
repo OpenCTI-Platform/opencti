@@ -26,7 +26,9 @@ runs:
     - name: Use client-python in OpenCTI from same branch
       shell: bash
       if: ${{ inputs.client_python_local == 'true' }}
-      run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ inputs.checkout_ref }}#subdirectory=client-python|' ./opencti-platform/opencti-graphql/src/python/requirements.txt
+      env:
+        CHECKOUT_REF: ${{ inputs.checkout_ref }}
+      run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@'"$CHECKOUT_REF"'#subdirectory=client-python|' ./opencti-platform/opencti-graphql/src/python/requirements.txt
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c #v4.2.0
