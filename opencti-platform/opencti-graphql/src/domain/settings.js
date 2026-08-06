@@ -275,7 +275,7 @@ const SETTINGS_SET_AUTH_KEYS = [
   'platform_ip_whitelist_exclusion_ids',
 ];
 
-const SETTINGS_KEYS_BY_CAPABILITY = {
+const ALLOWED_SETTINGS_KEYS_BY_CAPABILITY = {
   [SETTINGS_SET_ACCESSES]: SETTINGS_SET_ACCESS_KEYS,
   [SETTINGS_SETPARAMETERS]: SETTINGS_SET_PARAMETERS_KEYS,
   [SETTINGS_SETCUSTOMIZATION]: SETTINGS_SET_CUSTOMIZATION_KEYS,
@@ -286,7 +286,7 @@ const SETTINGS_KEYS_BY_CAPABILITY = {
 
 const buildAuthorizedSettingsKeys = (user) => {
   const allowed = new Set(PUBLIC_SETTINGS_KEYS);
-  Object.entries(SETTINGS_KEYS_BY_CAPABILITY).forEach(([capability, keys]) => {
+  Object.entries(ALLOWED_SETTINGS_KEYS_BY_CAPABILITY).forEach(([capability, keys]) => {
     if (isUserHasCapability(user, capability)) {
       keys.forEach((key) => allowed.add(key));
     }
