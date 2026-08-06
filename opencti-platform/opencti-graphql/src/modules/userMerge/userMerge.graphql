@@ -16,6 +16,8 @@ enum UserMergeStatus {
 input UserMergeOptions {
     dryRun: Boolean = true
     rightsStrategy: UserMergeRightsStrategy = STRICT
+    # Required to run for real when the dry-run reported a blocking alert.
+    acknowledgeExposureChange: Boolean = false
 }
 
 enum UserMergeDisposition {
@@ -39,6 +41,8 @@ type UserMergeRightsAlert {
     register_row_id: String!
     kind: String!
     message: String!
+    # True when the real pass refuses to run until acknowledgeExposureChange is set.
+    blocking: Boolean
 }
 
 type UserMergeHandlerOutcome {
