@@ -1,10 +1,11 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { head } from 'ramda';
-import { queryAsAdmin, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQuery';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
 import { USER_EDITOR, USER_SECURITY } from '../../utils/testQuery';
+import { queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 
 const ABOUT_QUERY = gql`
   query about {
