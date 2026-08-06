@@ -1,5 +1,5 @@
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
-import { alpha, Collapse, List, ListItem, ListItemButton, ListItemIcon, ListItemText, MenuItem, MenuList, Popover, SxProps, Tooltip } from '@mui/material';
+import { alpha, Collapse, List, ListItemButton, ListItemIcon, ListItemText, MenuItem, MenuList, Popover, SxProps, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import React, { useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -52,7 +52,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
   const location = useLocation();
   const theme = useTheme<Theme>();
   const draftContext = useDraftContext();
-  const anchorRef = useRef<HTMLLIElement | null>(null);
+  const anchorRef = useRef<HTMLDivElement | null>(null);
 
   const visibleSubItems = subItems.filter(
     (item) => item.granted !== false && (!item.type || !hiddenEntities.includes(item.type)),
@@ -271,19 +271,18 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
   // Nav Closed, show popover with subitems
   return (
     <>
-      <span ref={anchorRef}>
-        <ListItemButton
-          tabIndex={0}
-          id={`nav-${label}`}
-          aria-expanded={isMenuOpen}
-          aria-haspopup="menu"
-          aria-controls={isMenuOpen ? `${label}-sub-menu` : undefined}
-          onClick={handleParentClick}
-          sx={getMenuStyles(isParentSelected)}
-        >
-          {renderMenuItem(label, isParentSelected, undefined, undefined, undefined, icon)}
-        </ListItemButton>
-      </span>
+      <ListItemButton
+        ref={anchorRef}
+        tabIndex={0}
+        id={`nav-${label}`}
+        aria-expanded={isMenuOpen}
+        aria-haspopup="menu"
+        aria-controls={isMenuOpen ? `${label}-sub-menu` : undefined}
+        onClick={handleParentClick}
+        sx={getMenuStyles(isParentSelected)}
+      >
+        {renderMenuItem(label, isParentSelected, undefined, undefined, undefined, icon)}
+      </ListItemButton>
       <Popover
         open={isMenuOpen}
         anchorEl={anchorRef.current}
