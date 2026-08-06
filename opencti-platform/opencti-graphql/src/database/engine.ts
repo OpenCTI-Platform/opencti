@@ -2718,7 +2718,7 @@ export const buildLocalMustFilter = (validFilter: any) => {
               script: {
                 script: {
                   source: `
-                    def fieldValues = doc['${buildFieldForScriptQuery(headKey)}'];
+                    def fieldValues = doc[params.field];
                     if (fieldValues == null || fieldValues.length == 0) return false;
                     def filterValues = params.values;
                     if (params.mode == 'and') {
@@ -2729,6 +2729,7 @@ export const buildLocalMustFilter = (validFilter: any) => {
                     return false;
                   `,
                   params: {
+                    field: buildFieldForScriptQuery(headKey),
                     values,
                     mode: localFilterMode,
                   },
@@ -2744,9 +2745,10 @@ export const buildLocalMustFilter = (validFilter: any) => {
             });
           } else if (operator === 'wildcard' || operator === 'not_wildcard') {
             const targets = operator === 'wildcard' ? valuesFiltering : noValuesFiltering;
+            const val = specialElasticCharsEscape(values[i].toString());
             targets.push({
               query_string: {
-                query: values[i] === '*' ? values[i] : `"${values[i].toString()}"`,
+                query: values[i] === '*' ? values[i] : `"${val}"`,
                 fields: arrayKeys,
               },
             });
@@ -2780,16 +2782,15 @@ export const buildLocalMustFilter = (validFilter: any) => {
                 fields: arrayKeys.map((k) => `${k}.keyword`),
               },
             });
-          } else if (operator === 'script' || operator === 'internal_script') {
-            if (operator === 'script' && !isEsScriptFilterEnabled()) {
+          } else if (operator === 'script') {
+            if (!isEsScriptFilterEnabled()) {
               throw UnsupportedError('Filter script is not allowed', { filter: validFilter });
-            } else {
-              valuesFiltering.push({
-                script: {
-                  script: values[i].toString(),
-                },
-              });
             }
+            valuesFiltering.push({
+              script: {
+                script: values[i].toString(),
+              },
+            });
           } else if (operator === 'search') {
             const shouldSearch = elGenerateFieldTextSearchShould(values[i].toString(), arrayKeys);
             const bool = {
@@ -2799,7 +2800,7 @@ export const buildLocalMustFilter = (validFilter: any) => {
               },
             };
             valuesFiltering.push(bool);
-          } else { // range operators
+          } else if (RANGE_OPERATORS.includes(operator)) { // range operators
             if (arrayKeys.length > 1) {
               throw UnsupportedError('Range filter must have only one field', { keys: arrayKeys });
             }
@@ -2808,6 +2809,8 @@ export const buildLocalMustFilter = (validFilter: any) => {
                 [headKey]: { [operator]: values[i] },
               },
             });
+          } else {
+            throw UnsupportedError('Not supported filter operator', { filter: validFilter, filterOperator: operator });
           }
         }
       }
@@ -3113,6 +3116,11 @@ type QueryBodyBuilderOpts = ProcessSearchArgs & BuildDraftFilterOpts & {
   endDate?: any;
   dateAttribute?: string | null;
   includeAuthorities?: boolean | null;
+  /**
+   * Trusted, internal-only raw Painless script clauses (ANDed with the rest of the query).
+   * MUST NEVER be populated from user/GraphQL/JSON input.
+   */
+  internalScriptFilters?: string[];
 };
 const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options: QueryBodyBuilderOpts) => {
   const {
@@ -3136,6 +3144,7 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
     dateAttribute = null,
     includeAuthorities = false,
     noRegardingOfFilterIdsCheck = false,
+    internalScriptFilters = [],
   } = options;
   const elFindByIdsToMap = async (c: AuthContext, u: AuthUser, i: string[], o: any) => {
     return elFindByIds<BasicStoreObject>(c, u, i, { ...o, toMap: true }) as Promise<Record<string, BasicStoreObject>>;
@@ -3148,6 +3157,12 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
   const accessMust = markingRestrictions.must;
   const accessMustNot = markingRestrictions.must_not;
   const mustFilters = [];
+  // Trusted, internal-only raw Painless script clauses. These never go through the filter
+  // grammar (buildLocalMustFilter / checkAndConvertFilters): they can only be populated by
+  // hardcoded backend TS code, never by user/GraphQL/JSON input.
+  internalScriptFilters.forEach((source) => {
+    mustFilters.push({ script: { script: { source } } });
+  });
   // Add special keys to filters
   const specialFiltersContent: any = [];
   if (ids.length > 0 || startDate || endDate || (types !== null && types.length > 0)) {
