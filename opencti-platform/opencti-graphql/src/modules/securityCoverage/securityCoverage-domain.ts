@@ -20,7 +20,7 @@ import {
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
-import { createEntity, deleteElementById, storeLoadByIdsWithRefs, storeLoadByIdWithRefs } from '../../database/middleware';
+import { createEntity, deleteElementById, distributionRelations, storeLoadByIdsWithRefs, storeLoadByIdWithRefs } from '../../database/middleware';
 import { type SecurityCoverageAddInput } from '../../generated/graphql';
 import type { BasicStoreEntity, BasicStoreObject, BasicStoreRelation, StoreObject, StoreRelation } from '../../types/store';
 import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
@@ -50,6 +50,7 @@ import { stixCoreRelationshipsPaginated } from '../../domain/stixCoreObject';
 import { getAverageCoverageInformation, getMostRecentLastCoverageResult, internalCreateSecurityCoverageResult } from './securityCoverageResult/securityCoverageResult-utils';
 import { splitSecurityCoverageInput } from './securityCoverage-utils';
 import { addRelatedCoveredEntities } from './securityCoverageResult/securityCoverageResult-domain';
+import { emptyPaginationResult } from '../../database/utils';
 
 export const COVERED_ENTITIES_TYPE = [
   ENTITY_TYPE_INTRUSION_SET,
@@ -226,12 +227,42 @@ export const deleteSecurityCoverageResultsByResultOf = async (
   return deletedIds;
 };
 
+export const getSecurityCoverageResultIds = (securityCoverage: BasicStoreEntitySecurityCoverage): string[] => {
+  return securityCoverage[RELATION_RESULT_OF] ?? [];
+};
+
+export const findCoveredEntitiesDistribution = async (
+  context: AuthContext,
+  user: AuthUser,
+  securityCoverage: BasicStoreEntitySecurityCoverage,
+  args: Record<string, unknown>,
+) => {
+  const resultIds = getSecurityCoverageResultIds(securityCoverage);
+  if (resultIds.length === 0) {
+    return [];
+  }
+  return distributionRelations(context, user, { ...args, fromOrToId: resultIds } as never);
+};
+
+export const findResultsRelationshipsPaginated = (
+  context: AuthContext,
+  user: AuthUser,
+  securityCoverage: BasicStoreEntitySecurityCoverage,
+  args: EntityOptions<BasicStoreRelation>,
+): ReturnType<typeof stixCoreRelationshipsPaginated> => {
+  const resultIds = getSecurityCoverageResultIds(securityCoverage);
+  if (resultIds.length === 0) {
+    return Promise.resolve(emptyPaginationResult<BasicStoreRelation>());
+  }
+  return stixCoreRelationshipsPaginated(context, user, resultIds, args);
+};
+
 export const listSecurityCoverageResults = (
   context: AuthContext,
   user: AuthUser,
   securityCoverage: BasicStoreEntitySecurityCoverage,
 ): Promise<BasicStoreEntitySecurityCoverageResult[]> => {
-  return internalFindByIds(context, user, securityCoverage[RELATION_RESULT_OF]) as Promise<BasicStoreEntitySecurityCoverageResult[]>;
+  return internalFindByIds(context, user, getSecurityCoverageResultIds(securityCoverage)) as Promise<BasicStoreEntitySecurityCoverageResult[]>;
 };
 
 export const loadSecurityCoverageResults = async (
@@ -250,7 +281,11 @@ export const findCoveredEntities = async (
   toType: string,
   args: EntityOptions<BasicStoreEntity>,
 ): Promise<{ count: number; entities: CoveredEntity[] }> => {
-  const relationships = await stixCoreRelationshipsPaginated(context, user, securityCoverage[RELATION_RESULT_OF], {
+  const resultIds = getSecurityCoverageResultIds(securityCoverage);
+  if (resultIds.length === 0) {
+    return { count: 0, entities: [] };
+  }
+  const relationships = await stixCoreRelationshipsPaginated(context, user, resultIds, {
     ...args,
     relationship_type: RELATION_HAS_COVERED,
     toTypes: [toType],
