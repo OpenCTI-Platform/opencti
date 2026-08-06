@@ -84,13 +84,15 @@ describe('Component: Chart', () => {
 
     it('should escape markup in a series name', () => {
       const options = renderChart({});
-      const name = callFormatter(options.tooltip?.y?.title?.formatter, '<b>ACME</b>');
+      const tooltipY = Array.isArray(options.tooltip?.y) ? options.tooltip?.y[0] : options.tooltip?.y;
+      const name = callFormatter(tooltipY?.title?.formatter, '<b>ACME</b>');
       expect(name).toEqual('&lt;b&gt;ACME&lt;/b&gt;: ');
     });
 
     it('should keep an empty series name empty', () => {
       const options = renderChart({});
-      expect(callFormatter(options.tooltip?.y?.title?.formatter, '')).toEqual('');
+      const tooltipY = Array.isArray(options.tooltip?.y) ? options.tooltip?.y[0] : options.tooltip?.y;
+      expect(callFormatter(tooltipY?.title?.formatter, '')).toEqual('');
     });
   });
 });
