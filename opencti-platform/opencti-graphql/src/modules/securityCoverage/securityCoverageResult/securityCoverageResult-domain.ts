@@ -3,6 +3,7 @@ import { FunctionalError } from '../../../config/errors';
 import { deleteElementById, storeLoadByIdWithRefs } from '../../../database/middleware';
 import { fullRelationsList, pageEntitiesConnection, storeLoadById, type EntityOptions } from '../../../database/middleware-loader';
 import { notify } from '../../../database/redis';
+import { ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES, createListTask } from '../../../domain/backgroundTask-common';
 import { addStixCoreRelationship } from '../../../domain/stixCoreRelationship';
 import { type SecurityCoverageResultAddInput } from '../../../generated/graphql';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../schema/general';
@@ -175,4 +176,26 @@ export const addRelatedCoveredEntities = async (
       });
     }),
   );
+};
+
+/**
+ * Create a background task that will create has-covered relationships between
+ * a security coverage result and its covered entities.
+ *
+ * @param context
+ * @param user User making the request.
+ * @param securityCoverageResultId ID of the security coverage result to populate.
+ * @returns The created abckground task.
+ */
+export const createHasCoveredRelTask = async (
+  context: AuthContext,
+  user: AuthUser,
+  securityCoverageResultId: string,
+) => {
+  return createListTask(context, user, {
+    description: `Create has-covered relationships with related covered entities for SCR ${securityCoverageResultId}`,
+    scope: 'KNOWLEDGE',
+    ids: [securityCoverageResultId],
+    actions: [{ type: ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES }],
+  });
 };
