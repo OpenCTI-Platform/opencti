@@ -28,8 +28,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
     bundles_global_counter: Any
     bundles_processing_time_gauge: Any
     objects_max_refs: int
-    # Proposal D v1 - batching telemetry (see worker.py's meter definitions for why
-    # these are separate from the generic per-GraphQL-operation metrics).
+    # Batch import telemetry, optional/unused when batching is disabled.
     batch_size_histogram: Any = None
     batch_items_counter: Any = None
     batch_fallback_counter: Any = None
@@ -85,25 +84,16 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 self.logger.debug("Unable to send bundle error", {"error": str(err)})
                 time.sleep(10)
 
-    # STIX object types whose creation is cheap and idempotent enough that a
-    # reference to them never needs to gate batching: they are always emitted by the
-    # splitter in an earlier (lower nb_deps) bundle and, since the consumer processes
-    # messages strictly in queue order, are guaranteed to already exist (created
-    # individually, synchronously) by the time a later message referencing them is
-    # captured for the batch window. Almost every real-world STIX object carries a
-    # created_by_ref/object_marking_refs pointing to bundle-included identity/marking
-    # objects, so without this allowance x_opencti_seq is virtually never 1 in
-    # practice and v1 batching would never engage on realistic connector data.
+    # STIX object types whose creation is cheap/idempotent enough that a reference to
+    # them never needs to gate batching: always pre-existing, never a same-batch
+    # dependency (unlike a ref to another leaf object created in the same window).
     FREE_REF_TYPE_PREFIXES = ("identity--", "marking-definition--")
 
-    # The only *_ref/*_refs keys that OpenCTIStix2.import_observable() resolves purely
-    # through the create() mutation's own input variables (createdBy/objectMarking/...).
-    # Any other *_ref/*_refs key on an observable (e.g. a custom x_opencti_*_ref) is
-    # instead resolved via a *separate* stix_nested_ref_relationship.create() mutation
-    # call made *after* the observable is created, using its real id - a call that is
-    # not on the batchable allow-list and would be unsafe to let fire against the fake
-    # id used during capture-mode's dry run. Keep this in sync with the exclusion list
-    # in import_observable (client-python/pycti/utils/opencti_stix2.py).
+    # *_ref/*_refs keys that OpenCTIStix2.import_observable() resolves inline via the
+    # create() mutation's own input variables. Any other *_ref/*_refs key requires a
+    # separate follow-up mutation using the object's real id, which capture-mode's
+    # dry run (fake id) cannot safely trigger. Keep in sync with the exclusion list in
+    # import_observable (client-python/pycti/utils/opencti_stix2.py).
     SAFE_OBSERVABLE_REF_KEYS = (
         "created_by_ref",
         "object_marking_refs",
@@ -113,13 +103,9 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
 
     @classmethod
     def _has_only_free_refs(cls, stix_object: Dict[str, Any]) -> bool:
-        """True when the only `*_ref`/`*_refs` fields on this object (if any) are the
-        ones import_observable resolves inline (SAFE_OBSERVABLE_REF_KEYS) and each
-        points only to an identity/marking-definition object (FREE_REF_TYPE_PREFIXES).
-        Any other ref key, a ref to any other object type, or a malformed
-        (non-string) ref value keeps the item off the batching fast path - fail
-        closed, since a false positive here would let an unsafe extra mutation call
-        fire against the fake id used during capture-mode's dry run."""
+        """True when every `*_ref`/`*_refs` field on this object (if any) is in
+        SAFE_OBSERVABLE_REF_KEYS and points only to a FREE_REF_TYPE_PREFIXES object.
+        Fails closed on anything else (unknown key, wrong ref type, malformed value)."""
         for key, value in stix_object.items():
             if not (key.endswith("_ref") or key.endswith("_refs")) or not value:
                 continue
@@ -138,18 +124,11 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         data: Dict[str, Any], content: Dict[str, Any]
     ) -> Optional[Tuple[Dict[str, Any], bool]]:
         """Return (stix_object, needs_free_ref_check) for the single STIX object this
-        message would create/update, or None if the message isn't a single-object
-        candidate at all. Two message shapes are recognized:
-        - type == "bundle" holding exactly one object: the common shape for
-          connector-pushed bundles (x_opencti_seq absent) and for leaf bundles
-          produced by the worker's own splitter (x_opencti_seq == 1, or > 1 solely
-          because of identity/marking-definition refs - see FREE_REF_TYPE_PREFIXES).
-        - type == "event" with content.type in ("create", "update"): the shape used
-          by OpenCTI's built-in Synchronizer/sync manager (pushToWorkerForConnector in
-          opencti-graphql/src/manager/syncManager.js), which publishes one object per
-          event message instead of STIX bundles when relaying a remote stream. There
-          is no nb_deps/x_opencti_seq computed for this shape, so the free-ref check
-          is always required here.
+        message would create/update, or None if not a single-object candidate:
+        - type == "bundle" holding exactly one object.
+        - type == "event" with content.type in ("create", "update"), the shape used
+          by opencti-graphql's syncManager.js; always needs the free-ref check since
+          no x_opencti_seq is computed for it.
         """
         event_type = data.get("type", "bundle")
         if event_type == "bundle":
@@ -166,9 +145,9 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         return None
 
     def is_batchable(self, body: str) -> bool:
-        """Structural pre-filter for Proposal D v1 batching: only messages that
-        resolve to a single dependency-free STIX object (see _extract_batch_candidate)
-        are candidates for accumulation. Whether the STIX type itself is actually
+        """Structural pre-filter: only messages that resolve to a single
+        dependency-free STIX object (see _extract_batch_candidate) are candidates for
+        accumulation. Whether the STIX type itself is actually
         supported for batching is decided later, in bulk, at flush time (see
         handle_message_batch / OpenCTIStix2.try_capture_batchable_item) - this keeps
         the per-message check on the hot path cheap.
@@ -238,10 +217,10 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         self,
         bodies: List[str],
     ) -> List[Literal["ack", "nack", "requeue"]]:
-        """Proposal D v1 - process an accumulated window of leaf (dependency-free)
-        messages with a single stixObjectsBatchImport call instead of N separate
-        GraphQL calls. Index-aligned with `bodies`: every message still gets its own
-        ack/nack/requeue decision and its own work expectation report, exactly as today.
+        """Process an accumulated window of leaf (dependency-free) messages with a
+        single stixObjectsBatchImport call instead of N separate GraphQL calls.
+        Index-aligned with `bodies`: every message still gets its own ack/nack/requeue
+        decision and its own work expectation report, exactly as today.
         A message whose item turns out not to be batchable falls back to the normal,
         unchanged handle_message() path so it is never silently dropped.
         """
@@ -313,14 +292,11 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                         work_id,
                         {
                             "error": item_result.get("error"),
-                            "source": "Batch import (Proposal D v1)",
+                            "source": "Batch import",
                         },
                     )
-            # v1 does not replicate import_item_with_retries' full per-error-type
-            # retry/backoff policy for batched items: any per-item failure is reported
-            # and the message is acked (matching today's terminal/non-retryable-error
-            # behaviour), not retried with backoff. See kickoff doc gap #4 - revisit in
-            # a later iteration once real batch failure rates are measured.
+            # Per-item failures are reported and acked (no retry/backoff), matching
+            # today's terminal/non-retryable-error behaviour.
             results[entry["index"]] = "ack"
         return results
 

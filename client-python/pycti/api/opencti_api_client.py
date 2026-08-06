@@ -157,10 +157,8 @@ class File:
         self.mime = mime
 
 
-# Proposal D v1 - GraphQL mutation field names that are safe to defer/batch through
-# stixObjectsBatchImport: each maps to exactly one query() call per create(), with no
-# identity_class / location_type style subtype branching (see kickoff doc §7/§9).
-# Any other mutation is left completely untouched and sent to the API as today.
+# GraphQL mutation field name -> kind, for mutations safe to defer/batch through
+# stixObjectsBatchImport. Any other mutation is sent to the API as today.
 BATCHABLE_MUTATIONS = {
     "StixCyberObservableAdd": "stix_cyber_observable",
     "MalwareAdd": "malware",
@@ -289,13 +287,10 @@ class OpenCTIApiClient:
         )
         self.session = requests.session()
         self.session_requests_timeout = requests_timeout
-        # Proposal D v1 - batch capture state (see start_batch_capture/stop_batch_capture
-        # below). This client instance is shared across every queue's consumer thread
-        # (the worker creates a single OpenCTIApiClient and passes it to every
-        # PushHandler), and concurrent queues genuinely run in parallel on the shared
-        # execution thread pool - so this MUST be thread-local, not a plain instance
-        # attribute, or two queues capturing at the same time would interleave their
-        # payloads into a single shared list.
+        # Batch capture state (see start_batch_capture/stop_batch_capture below). This
+        # client is shared across every queue's consumer thread, which run in parallel,
+        # so this MUST be thread-local or concurrent captures would interleave into a
+        # single shared list.
         self._batch_capture_state = threading.local()
         # Define the dependencies
         self.work = OpenCTIApiWork(self)
@@ -658,7 +653,7 @@ class OpenCTIApiClient:
 
     def start_batch_capture(self) -> None:
         """Start intercepting batchable Add mutations (see BATCHABLE_MUTATIONS) instead of
-        sending them to the API - Proposal D v1. Used to "dry-run" import_item() for a single
+        sending them to the API. Used to "dry-run" import_item() for a single
         STIX object and collect the (kind, input) payload it would have sent, without any
         network call/side effect, so it can be resubmitted later as part of a batch.
 

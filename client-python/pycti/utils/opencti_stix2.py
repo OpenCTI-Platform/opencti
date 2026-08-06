@@ -145,10 +145,8 @@ class OpenCTIStix2:
         :param data: Data to cache
         :type data: dict
         """
-        # Defensive no-op: data_id is None only during Proposal D v1's batch-capture
-        # dry run (see OpenCTIApiClient.try_capture_batchable_item), where the real id
-        # isn't known yet. A real API response never returns a None id, so this never
-        # affects normal (non-capture) behavior.
+        # Defensive no-op: data_id is None only during batch-capture's dry run (see
+        # OpenCTIApiClient.try_capture_batchable_item), before the real id is known.
         if data_id is None:
             return
         api_draft_id = self.opencti.get_draft_id()
@@ -3390,9 +3388,8 @@ class OpenCTIStix2:
         types: List = None,
         bundle_id: str = None,
     ):
-        """Proposal D v1 - attempt to build the batch mutation payload for a single leaf
-        STIX item (x_opencti_seq == 1, i.e. no intra-bundle dependency) without sending
-        anything to the API.
+        """Attempt to build the batch mutation payload for a single leaf STIX item
+        (dependency-free) without sending anything to the API.
 
         Runs the exact same import_item() path used today (no duplicated conversion
         logic), with the API client's GraphQL mutations intercepted
@@ -3403,7 +3400,7 @@ class OpenCTIStix2:
 
         :return: the single {"kind": ..., "input": ...} payload captured, ready to be
             sent through the stixObjectsBatchImport mutation, or None if this item's type
-            is not on the v1 batchable allow-list (or needed more than one mutation call,
+            is not on the batchable allow-list (or needed more than one mutation call,
             e.g. Windows-Registry-Key sub-values or Artifact payload_bin uploads) - in
             which case the caller must fall back to the normal, unchanged
             import_item_with_retries() path for this item.

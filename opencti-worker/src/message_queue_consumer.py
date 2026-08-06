@@ -16,9 +16,7 @@ class MessageQueueConsumer:  # pylint: disable=too-many-instance-attributes
     pika_parameters: pika.ConnectionParameters
     submit_fn: Callable[[Callable[[], None]], Future[None]]
     handle_message: Callable[[str], Literal["ack", "nack", "requeue"]]
-    # Proposal D v1 (leaf-only batching) - all optional/unused by default so existing
-    # single-message consumers (listen queues, or push queues with batching disabled)
-    # are completely unaffected.
+    # Optional/unused by default: existing single-message consumers are unaffected.
     handle_message_batch: Optional[
         Callable[[List[str]], List[Literal["ack", "nack", "requeue"]]]
     ] = field(default=None, hash=False)
@@ -31,7 +29,7 @@ class MessageQueueConsumer:  # pylint: disable=too-many-instance-attributes
         self.pika_connection = pika.BlockingConnection(self.pika_parameters)
         self.channel = self.pika_connection.channel()
         # Batching needs enough in-flight messages for RabbitMQ to actually deliver a
-        # full window before an ack is sent back (see kickoff doc gap #5).
+        # full window before an ack is sent back.
         batching_enabled = (
             self.handle_message_batch is not None and self.is_batchable is not None
         )
@@ -89,9 +87,8 @@ class MessageQueueConsumer:  # pylint: disable=too-many-instance-attributes
             self.pika_connection.sleep(0.05)
 
     def consume_queue(self) -> None:
-        # Proposal D v1 - in-memory accumulator, scoped to this consumer/queue instance
-        # only (no Redis/shared state - see kickoff doc §6). Lost on crash, but that is
-        # fine: messages stay unacked and AMQP redelivery will resend them.
+        # In-memory accumulator, scoped to this consumer/queue instance only. Lost on
+        # crash, but that's fine: messages stay unacked and AMQP redelivery resends them.
         pending: List[Tuple[int, str]] = []
         pending_started_at: Optional[float] = None
         batching_enabled = (

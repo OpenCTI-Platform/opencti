@@ -43,15 +43,8 @@ running_ingestion_units_gauge = meter.create_gauge(
     name="opencti_running_ingestion_units",
     description="Number of running ingestion units",
 )
-# Proposal D v1 - batching-specific telemetry. Complements the generic per-operation
-# opencti_api_requests/opencti_api_errors/opencti_api_latency metrics already exported
-# by the backend (labelled by GraphQL operation name, e.g. StixObjectsBatchImportWorker
-# vs StixCyberObservableAdd - see opencti-graphql's telemetryPlugin.js), which already
-# give call-level counts/latency for the batch mutation itself. What's missing there,
-# and only observable worker-side, is: how many items actually made it into each batch
-# call, how many candidates fell back to individual processing, and the per-item (not
-# per-call) success/failure outcome of a batch call that itself succeeded at the
-# GraphQL level.
+# Batch import telemetry: per-item outcome and batch-size visibility, which the
+# existing per-GraphQL-operation metrics don't provide.
 batch_size_histogram = meter.create_histogram(
     name="opencti_worker_batch_size",
     description="Number of items included in each batch import call actually sent",
@@ -193,9 +186,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             True,
             0,
         )
-        # Proposal D v1 - opt-in leaf-only batching (see kickoff doc). Disabled by
-        # default so it can be A/B tested against today's per-item path without a
-        # hard cutover.
+        # Opt-in leaf-only batching, disabled by default.
         self.batch_import_enabled = get_config_variable(
             "WORKER_BATCH_IMPORT_ENABLED",
             ["worker", "batch_import_enabled"],

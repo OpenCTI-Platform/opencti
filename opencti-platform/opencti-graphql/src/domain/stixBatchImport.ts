@@ -4,16 +4,9 @@ import { addVulnerability } from './vulnerability';
 import { addStixCyberObservable } from './stixCyberObservable';
 import type { AuthContext, AuthUser } from '../types/user';
 
-// v1 (leaf-only) slice of Proposal D - batching of dependency-free STIX objects.
-// Scope is intentionally narrowed to entity kinds that have an unambiguous,
-// subtype-free STIX -> internal input mapping (no identity_class / location_type
-// style branching): STIX cyber observables (dispatch already generic on `type`),
-// Malware, Vulnerability and Tool. Each item is still created through the exact
-// same domain function used by the single-object mutations (addMalware,
-// addStixCyberObservable, ...) - business logic is untouched, only invoked in a
-// loop from a single GraphQL call instead of N separate calls. Locking, ES bulk
-// chunking and other throughput optimizations are intentionally deferred to a
-// later iteration (see Proposal D v2).
+// Batching of dependency-free STIX objects only (no relationships/refs between
+// items in the same batch): observables, Malware, Vulnerability, Tool. Each item
+// is created through the same domain function as the single-object mutations.
 export const STIX_BATCH_IMPORT_KINDS = ['stix_cyber_observable', 'malware', 'vulnerability', 'tool'] as const;
 export type StixBatchImportItemKind = typeof STIX_BATCH_IMPORT_KINDS[number];
 
