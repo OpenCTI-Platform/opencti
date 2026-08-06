@@ -1,5 +1,5 @@
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
-import { alpha, Collapse, ListItem, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, MenuList, Popover, SxProps, Tooltip } from '@mui/material';
+import { alpha, Collapse, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, MenuList, Popover, SxProps, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import React, { useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -170,9 +170,25 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
   // Render submenu item
   const renderSubMenuItem = (item: SubMenuItem, inCollapse: boolean, index: number) => {
     const itemSelected = isSelected(item.link, item.exact);
-    return (
+    return inCollapse ? (
+      <ListItemButton
+        key={`sub-menu-${index}`}
+        component={Link}
+        to={item.link}
+        dense
+        onClick={inCollapse ? undefined : onMenuClose}
+        sx={{
+          px: 2.5,
+          py: 1,
+          '&:hover': {
+            backgroundColor: theme.palette.leftBar.hover,
+          },
+        }}
+      >
+        {renderMenuItem(item.label, itemSelected, submenuShowIcons, 'small', !inCollapse, item.icon)}
+      </ListItemButton>
+    ) : (
       <MenuItem
-        tabIndex={0}
         key={`sub-menu-${index}`}
         component={Link}
         to={item.link}
@@ -244,11 +260,11 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
         </ListItemButton>
 
         <Collapse in={isMenuOpen} timeout="auto" unmountOnExit>
-          <MenuList
+          <List
             disablePadding
             sx={{ backgroundColor: theme.palette.designSystem.background.main }}>
             {visibleSubItems.map((item, i) => renderSubMenuItem(item, true, i))}
-          </MenuList>
+          </List>
         </Collapse>
       </>
     );
@@ -256,49 +272,50 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
 
   // Nav Closed, show popover with subitems
   return (
-    <ListItem disablePadding disableGutters dense ref={anchorRef}>
-      <ListItemButton
-        tabIndex={0}
-        id={`nav-${label}`}
-        aria-haspopup="true"
-        aria-controls={isMenuOpen ? `${label}-sub-menu` : undefined}
-        onClick={handleParentClick}
-        onMouseLeave={handleMenuHoverLeave}
-        sx={getMenuStyles(isParentSelected)}
-      >
-        {renderMenuItem(label, isParentSelected, undefined, undefined, undefined, icon)}
-        <Popover
-          open={isMenuOpen}
-          anchorEl={anchorRef.current}
-          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-          onClose={onMenuClose}
-          disableScrollLock
-          elevation={0}
-          slotProps={{
-            paper: {
-              onMouseLeave: onMenuClose,
-              sx: {
-                pointerEvents: 'auto',
-                width: 180,
-                backgroundColor: theme.palette.leftBar.popoverItem,
-              },
-            },
-          }}
+    <>
+      <span ref={anchorRef}>
+        <ListItemButton
+          tabIndex={0}
+          id={`nav-${label}`}
+          aria-expanded={isMenuOpen}
+          aria-haspopup="menu"
+          aria-controls={isMenuOpen ? `${label}-sub-menu` : undefined}
+          onClick={handleParentClick}
+          sx={getMenuStyles(isParentSelected)}
         >
-          <MenuList
-            variant='menu'
-            autoFocusItem={isMenuOpen}
-            component="nav"
-            disablePadding
-            id={`${label}-sub-menu`}
-            onKeyDown={handleListKeyDown}
-          >
-            {visibleSubItems.map((item, i) => renderSubMenuItem(item, false, i))}
-          </MenuList>
-        </Popover>
-      </ListItemButton>
-    </ListItem>
+          {renderMenuItem(label, isParentSelected, undefined, undefined, undefined, icon)}
+        </ListItemButton >
+      </span>
+      <Popover
+        open={isMenuOpen}
+        anchorEl={anchorRef.current}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        onClose={onMenuClose}
+        disableScrollLock
+        elevation={0}
+        slotProps={{
+          paper: {
+
+            sx: {
+              pointerEvents: 'auto',
+              width: 180,
+              backgroundColor: theme.palette.leftBar.popoverItem,
+            },
+          },
+        }}
+      >
+        <MenuList
+          variant='menu'
+          autoFocusItem={isMenuOpen}
+          disablePadding
+          id={`${label}-sub-menu`}
+          onKeyDown={handleListKeyDown}
+        >
+          {visibleSubItems.map((item, i) => renderSubMenuItem(item, false, i))}
+        </MenuList>
+      </Popover>
+    </>
   );
 };
 

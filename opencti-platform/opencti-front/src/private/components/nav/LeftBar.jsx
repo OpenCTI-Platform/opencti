@@ -38,7 +38,6 @@ import {
 } from '@mui/icons-material';
 import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
-import MenuList from '@mui/material/MenuList';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { createStyles, makeStyles, useTheme } from '@mui/styles';
@@ -121,6 +120,7 @@ import LeftBarItem from './LeftBarItem';
 import LogoTextOrange from '../../../static/images/logo_text_orange.svg';
 import LogoCollapsedOrange from '../../../static/images/logo_orange.svg';
 import { shouldOpenInNewTabMouseEvent } from 'src/utils/domEvent';
+import { List } from '@mui/material';
 
 export const SMALL_BAR_WIDTH = 55;
 export const OPEN_BAR_WIDTH = 180;
@@ -467,7 +467,7 @@ const LeftBarComponent = ({ queryRef }) => {
           backgroundColor: 'transparent',
         }}
       >
-        <MenuList disablePadding component="nav">
+        <List disablePadding component="nav">
           {!draftContext && (
             <LeftBarItem
               {...itemProps}
@@ -536,12 +536,12 @@ const LeftBarComponent = ({ queryRef }) => {
               />
             )}
           </Security>
-        </MenuList>
+        </List>
 
         <Separator />
 
         <Security needs={[KNOWLEDGE]}>
-          <MenuList component="nav">
+          <List component="nav">
             {!hideAnalyses && (
               <LeftBarItem
                 {...itemProps}
@@ -607,11 +607,11 @@ const LeftBarComponent = ({ queryRef }) => {
                 ]}
               />
             )}
-          </MenuList>
+          </List>
 
           <Separator />
 
-          <MenuList component="nav">
+          <List component="nav">
             {!hideThreats && (
               <LeftBarItem
                 {...itemProps}
@@ -702,13 +702,13 @@ const LeftBarComponent = ({ queryRef }) => {
                 ]}
               />
             )}
-          </MenuList>
+          </List>
         </Security>
 
         <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
           <Separator />
 
-          <MenuList component="nav">
+          <List component="nav">
             <Security needs={[MODULES, INGESTION, INGESTION_SETINGESTIONS]}>
               {!draftContext && (
                 <LeftBarItem
@@ -740,7 +740,7 @@ const LeftBarComponent = ({ queryRef }) => {
                 ]}
               />
             </Security>
-          </MenuList>
+          </List>
         </Security>
 
         <Security needs={[
@@ -764,7 +764,7 @@ const LeftBarComponent = ({ queryRef }) => {
         >
           <Separator />
           {!draftContext && (
-            <MenuList component="nav" style={{ marginBottom: 48 }}>
+            <List component="nav" style={{ marginBottom: 48 }}>
               <LeftBarItem
                 {...itemProps}
                 id="settings"
@@ -781,7 +781,7 @@ const LeftBarComponent = ({ queryRef }) => {
                   { granted: isGrantedToExperience, link: '/dashboard/settings/experience', label: t_i18n('Filigran Experience') },
                 ]}
               />
-            </MenuList>
+            </List>
           )}
         </Security>
       </div>
@@ -796,7 +796,7 @@ const LeftBarComponent = ({ queryRef }) => {
           width: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
         }}
       >
-        <MenuList
+        <List
           sx={{
             display: 'flex',
             flexDirection: 'column',
@@ -847,7 +847,7 @@ const LeftBarComponent = ({ queryRef }) => {
               />
             </Stack>
           )}
-        </MenuList>
+        </List>
       </div>
     </Drawer>
   );
