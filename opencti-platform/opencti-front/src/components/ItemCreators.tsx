@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Security from '../utils/Security';
+import { shouldOpenInNewTabMouseEvent } from '../utils/domEvent';
 import { SETTINGS_SETACCESSES } from '../utils/hooks/useGranted';
 import { Stack } from '@mui/material';
 import Tag from '@common/tag/Tag';
@@ -23,6 +24,17 @@ interface ItemCreatorsProps {
 const ItemCreators = ({ creators }: ItemCreatorsProps) => {
   const navigate = useNavigate();
 
+  // Chips cannot be real anchors without losing the Tag styling: honor
+  // ctrl/cmd click manually so the user page can open in a new tab.
+  const goToUser = (event: React.MouseEvent, creatorId: string) => {
+    const link = `/dashboard/settings/accesses/users/${creatorId}`;
+    if (shouldOpenInNewTabMouseEvent(event)) {
+      window.open(link, '_blank');
+    } else {
+      navigate(link);
+    }
+  };
+
   return (
     <Stack direction="row" gap={1} flexWrap="wrap">
       {creators.map((creator) => {
@@ -40,7 +52,7 @@ const ItemCreators = ({ creators }: ItemCreatorsProps) => {
               <Tag
                 key={creator.id}
                 label={creator.name}
-                onClick={() => navigate(`/dashboard/settings/accesses/users/${creator.id}`)}
+                onClick={(event) => goToUser(event, creator.id)}
               />
             )}
           </Security>
