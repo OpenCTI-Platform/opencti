@@ -414,7 +414,7 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={tabValue} onChange={handleTabChange}>
             <Tab label={t_i18n('Overview')} />
-            <Tab label={t_i18n('Works')} />
+            <Tab label={t_i18n('Works')} disabled={!isConnectorReader} />
             {isIngestionFeedLogsEnabled && <Tab label={t_i18n('Logs')} />}
           </Tabs>
         </Box>
