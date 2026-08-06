@@ -296,7 +296,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
         elevation={0}
         slotProps={{
           paper: {
-
+            onMouseLeave: onMenuClose,
             sx: {
               pointerEvents: 'auto',
               width: 180,
