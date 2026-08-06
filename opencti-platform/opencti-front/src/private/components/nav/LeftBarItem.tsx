@@ -1,5 +1,5 @@
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
-import { alpha, Collapse, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, MenuList, Popover, SxProps, Tooltip } from '@mui/material';
+import { alpha, Collapse, List, ListItem, ListItemButton, ListItemIcon, ListItemText, MenuItem, MenuList, Popover, SxProps, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import React, { useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -45,10 +45,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
   selectedMenu,
   onClick,
   onMenuToggle,
-  onMenuOpen,
   onMenuClose,
-  onGoToPage,
-  isMobile,
   submenuShowIcons = false,
   hiddenEntities = [],
 }) => {
@@ -90,15 +87,11 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
   const handleListKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'Tab') {
       event.preventDefault();
-      onMenuClose()
+      onMenuClose();
     } else if (event.key === 'Escape') {
-      onMenuClose()
+      onMenuClose();
     }
-  }
-  const handleMenuHoverLeave = (e: React.MouseEvent) => {
-    anchorRef.current?.blur()
-    onMenuClose()
-  }
+  };
 
   const renderMenuItem = (
     itemLabel: string,
@@ -268,7 +261,8 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
             aria-labelledby={`nav-button-${label}`}
             role="region"
             disablePadding
-            sx={{ backgroundColor: theme.palette.designSystem.background.main }}>
+            sx={{ backgroundColor: theme.palette.designSystem.background.main }}
+          >
             {visibleSubItems.map((item, i) => renderSubMenuItem(item, true, i))}
           </List>
         </Collapse>
@@ -290,7 +284,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
           sx={getMenuStyles(isParentSelected)}
         >
           {renderMenuItem(label, isParentSelected, undefined, undefined, undefined, icon)}
-        </ListItemButton >
+        </ListItemButton>
       </span>
       <Popover
         open={isMenuOpen}
@@ -312,7 +306,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
         }}
       >
         <MenuList
-          variant='menu'
+          variant="menu"
           autoFocusItem={isMenuOpen}
           disablePadding
           id={`${label}-sub-menu`}
