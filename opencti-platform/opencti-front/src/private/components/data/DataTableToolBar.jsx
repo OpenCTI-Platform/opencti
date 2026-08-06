@@ -989,6 +989,7 @@ class DataTableToolBar extends Component {
       && entityTypeFilterValues.every((type) => typesList.includes(type));
     const hasTemporalRangeField = entityTypeFilterValues.some((type) => typesWithTemporalRange.includes(type))
       || (this.props.types ?? []).some((type) => typesWithTemporalRange.includes(type))
+      || typesWithTemporalRange.includes(this.props.type)
       || checkTypes(typesWithTemporalRange);
 
     let options = [];
