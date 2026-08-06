@@ -47,8 +47,8 @@ runs:
         cp -a ./opencti-platform/.yarnrc.yml release/opencti/
         cp -a ./opencti-worker/src release/opencti/worker
         cd release/opencti/
-        git clone --depth 1 --single-branch --branch master https://github.com/OpenCTI-Platform/docker
-        git clone --depth 1 --single-branch --branch master https://github.com/OpenCTI-Platform/connectors
+        git clone --depth 1 --single-branch --branch master https://github.com/OpenCTI-Platform/docker release/docker
+        git clone --depth 1 --single-branch --branch master https://github.com/OpenCTI-Platform/connectors release/connectors
         cd release && tar -zcvf /tmp/opencti-musl.tar.gz opencti
 
     - name: Upload musl tar artifact
