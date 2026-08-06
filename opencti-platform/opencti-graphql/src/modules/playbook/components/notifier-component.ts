@@ -1,7 +1,6 @@
 import type { JSONSchemaType } from 'ajv';
 import * as R from 'ramda';
 import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, type PlaybookComponent } from '../playbook-types';
-import { executionContext, isUserCanAccessStixElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../../utils/access';
 import { usableNotifiers } from '../../notifier/notifier-domain';
 import { storeLoadById } from '../../../database/middleware-loader';
 import { getEntityFromCache } from '../../../database/cache';
