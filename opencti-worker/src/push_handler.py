@@ -1,8 +1,6 @@
 import base64
 import datetime
 import json
-import os
-import threading
 import time
 from dataclasses import dataclass
 from typing import Any, Dict, List, Literal, Optional, Tuple, Union
@@ -167,37 +165,6 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             return obj, True
         return None
 
-    # --- Temporary debugging aid (Proposal D v1) ---------------------------------
-    # Opt-in (OPENCTI_BATCH_FIXTURE_DUMP=<path>) capture of raw push-queue messages to
-    # a JSONL file, so batching logic can be iterated on offline against real message
-    # shapes instead of requiring a fresh live import for every test. Safe to leave
-    # in place: no-op unless the env var is set, and failures here never affect
-    # message processing. Remove once no longer needed.
-    _fixture_dump_count = 0
-    _fixture_dump_lock = threading.Lock()
-
-    def _dump_fixture_if_enabled(
-        self, data: Dict[str, Any], content: Dict[str, Any]
-    ) -> None:
-        fixture_path = os.environ.get("OPENCTI_BATCH_FIXTURE_DUMP")
-        if not fixture_path:
-            return
-        max_count = int(os.environ.get("OPENCTI_BATCH_FIXTURE_DUMP_MAX", "200"))
-        # Guard the shared counter/file: multiple queues can call this concurrently
-        # from different consumer pool threads.
-        with PushHandler._fixture_dump_lock:
-            if PushHandler._fixture_dump_count >= max_count:
-                return
-            try:
-                with open(fixture_path, "a", encoding="utf-8") as fixture_file:
-                    fixture_file.write(
-                        json.dumps({"data": data, "content": content}) + "\n"
-                    )
-                PushHandler._fixture_dump_count += 1
-            except Exception:  # pylint: disable=broad-except
-                # Never let fixture capture break real message processing.
-                pass
-
     def is_batchable(self, body: str) -> bool:
         """Structural pre-filter for Proposal D v1 batching: only messages that
         resolve to a single dependency-free STIX object (see _extract_batch_candidate)
@@ -231,7 +198,6 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             content = json.loads(raw_content)
         except Exception:  # pylint: disable=broad-except
             return None
-        self._dump_fixture_if_enabled(data, content)
         candidate = self._extract_batch_candidate(data, content)
         if candidate is None:
             return None
