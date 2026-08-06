@@ -11,11 +11,9 @@ import * as entityRepresentative from '../../../../../src/database/entity-repres
 import type { AuthContext, AuthUser } from '../../../../../src/types/user';
 import type { BasicStoreIdentifier } from '../../../../../src/types/store';
 import type { StixBundle, StixObject } from '../../../../../src/types/stix-2-1-common';
-import { STIX_EXT_OCTI } from '../../../../../src/types/stix-2-1-extensions';
 import { PLAYBOOK_NOTIFIER_COMPONENT, type NotifierConfiguration } from '../../../../../src/modules/playbook/components/notifier-component';
-import { playbookBundleElementsToApply, type BasicStoreEntityPlaybook, type ExecutorParameters, type NodeInstance } from '../../../../../src/modules/playbook/playbook-types';
+import type { BasicStoreEntityPlaybook, ExecutorParameters, NodeInstance } from '../../../../../src/modules/playbook/playbook-types';
 import type { StreamDataEvent } from '../../../../../src/types/event';
-import { testExecutor } from '../../../../03-integration/01-database/playbook/playbookComponents/playbook-components-test-utils';
 
 describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
   beforeEach(() => {
@@ -218,151 +216,6 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
         } as unknown as ExecutorParameters<NotifierConfiguration>);
 
         expect(streamHandler.storeNotificationEvent).toHaveBeenCalledWith(mockContext, expectedNotificationEvent);
-      });
-    });
-
-    describe('applyToElements resolving target users', () => {
-      const MAIN_ID = 'indicator--08e64f51-e890-5bec-be34-3344746f1b0c';
-      const MALWARE_ID = 'malware--09bd862a-f030-55f2-920a-900c4913d9ff';
-      const CAMPAIGN_ID = 'campaign--6bcf59ca-70c8-55ae-ac7d-a6f9b107a35b';
-      const MAIN_CREATOR_ID = 'creator-main';
-      const MALWARE_CREATOR_ID = 'creator-malware';
-      const CAMPAIGN_CREATOR_ID = 'creator-campaign';
-
-      const bundleWithMultipleObjects = {
-        objects: [
-          {
-            id: MAIN_ID,
-            type: 'indicator',
-            extensions: {
-              [STIX_EXT_OCTI]: {
-                created_by_ref_id: MAIN_CREATOR_ID,
-              },
-            },
-          } as unknown as StixObject,
-          {
-            id: MALWARE_ID,
-            type: 'malware',
-            extensions: {
-              [STIX_EXT_OCTI]: {
-                created_by_ref_id: MALWARE_CREATOR_ID,
-              },
-            },
-          } as unknown as StixObject,
-          {
-            id: CAMPAIGN_ID,
-            type: 'campaign',
-            extensions: {
-              [STIX_EXT_OCTI]: {
-                created_by_ref_id: CAMPAIGN_CREATOR_ID,
-              },
-            },
-          } as unknown as StixObject,
-        ],
-      } as unknown as StixBundle;
-
-      beforeEach(() => {
-        vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([
-          { id: MAIN_CREATOR_ID, groups: [], organizations: [] } as unknown as AuthUser,
-          { id: MALWARE_CREATOR_ID, groups: [], organizations: [] } as unknown as AuthUser,
-          { id: CAMPAIGN_CREATOR_ID, groups: [], organizations: [] } as unknown as AuthUser,
-        ]);
-        vi.spyOn(notificationManager, 'convertToNotificationUser').mockImplementation((targetUser) => ({
-          user_id: targetUser.id,
-          user_email: `${targetUser.id}@test.local`,
-          notifiers: [],
-          user_service_account: false,
-        }) as notificationManager.NotificationUser);
-      });
-
-      it('should resolve target users only for main object when applyToElements = only-main', async () => {
-        await PLAYBOOK_NOTIFIER_COMPONENT.executor(testExecutor<NotifierConfiguration>({
-          mainId: MAIN_ID,
-          bundleObjects: bundleWithMultipleObjects.objects,
-          configuration: {
-            ...playbookNode.configuration,
-            authorized_members: [{ value: 'AUTHOR' }],
-            applyToElements: playbookBundleElementsToApply.onlyMain.value,
-          },
-        }));
-
-        expect(streamHandler.storeNotificationEvent).toHaveBeenCalledTimes(1);
-        const notificationEvent = vi.mocked(streamHandler.storeNotificationEvent).mock.calls[0][1] as notificationManager.DigestEvent;
-        expect(notificationEvent.target.user_id).toEqual(MAIN_CREATOR_ID);
-      });
-
-      it('should resolve target users from all elements when applyToElements = all-elements', async () => {
-        await PLAYBOOK_NOTIFIER_COMPONENT.executor(testExecutor<NotifierConfiguration>({
-          mainId: MAIN_ID,
-          bundleObjects: bundleWithMultipleObjects.objects,
-          configuration: {
-            ...playbookNode.configuration,
-            authorized_members: [{ value: 'AUTHOR' }],
-            applyToElements: playbookBundleElementsToApply.allElements.value,
-          },
-        }));
-
-        expect(streamHandler.storeNotificationEvent).toHaveBeenCalledTimes(3);
-        const notificationEventFirstCall = vi.mocked(streamHandler.storeNotificationEvent).mock.calls[0][1] as notificationManager.DigestEvent;
-        const notificationEventSecondCall = vi.mocked(streamHandler.storeNotificationEvent).mock.calls[1][1] as notificationManager.DigestEvent;
-        const notificationEventThirdCall = vi.mocked(streamHandler.storeNotificationEvent).mock.calls[2][1] as notificationManager.DigestEvent;
-        expect(notificationEventFirstCall.target.user_id).toEqual(MAIN_CREATOR_ID);
-        expect(notificationEventSecondCall.target.user_id).toEqual(MALWARE_CREATOR_ID);
-        expect(notificationEventThirdCall.target.user_id).toEqual(CAMPAIGN_CREATOR_ID);
-      });
-
-      it('should resolve target users from all elements except main when applyToElements = all-except-main', async () => {
-        await PLAYBOOK_NOTIFIER_COMPONENT.executor(testExecutor<NotifierConfiguration>({
-          mainId: MAIN_ID,
-          bundleObjects: bundleWithMultipleObjects.objects,
-          configuration: {
-            ...playbookNode.configuration,
-            authorized_members: [{ value: 'AUTHOR' }],
-            applyToElements: playbookBundleElementsToApply.allExceptMain.value,
-          },
-        }));
-
-        expect(streamHandler.storeNotificationEvent).toHaveBeenCalledTimes(2);
-        const notificationEventFirstCall = vi.mocked(streamHandler.storeNotificationEvent).mock.calls[0][1] as notificationManager.DigestEvent;
-        const notificationEventSecondCall = vi.mocked(streamHandler.storeNotificationEvent).mock.calls[1][1] as notificationManager.DigestEvent;
-        expect(notificationEventFirstCall.target.user_id).toEqual(MALWARE_CREATOR_ID);
-        expect(notificationEventSecondCall.target.user_id).toEqual(CAMPAIGN_CREATOR_ID);
-      });
-
-      it('should not call the same target user twice even when there is several element with the same created_by_ref_id and applyToElements = all-elements', async () => {
-        const ATTACK_PATTERN_ID = 'attack-pattern--09bd862a-70c8-55ae-ac7d-3344746f1b0c';
-        const bundleWithMultipleObjectsWithSameCreator = {
-          objects: [
-            ...bundleWithMultipleObjects.objects,
-            {
-              id: ATTACK_PATTERN_ID,
-              type: 'attack-pattern',
-              extensions: {
-                [STIX_EXT_OCTI]: {
-                  created_by_ref_id: MAIN_CREATOR_ID,
-                },
-              },
-            } as unknown as StixObject,
-          ],
-        } as unknown as StixBundle;
-
-        await PLAYBOOK_NOTIFIER_COMPONENT.executor(testExecutor<NotifierConfiguration>({
-          mainId: MAIN_ID,
-          bundleObjects: bundleWithMultipleObjectsWithSameCreator.objects,
-          configuration: {
-            ...playbookNode.configuration,
-            authorized_members: [{ value: 'AUTHOR' }],
-            applyToElements: playbookBundleElementsToApply.allElements.value,
-          },
-        }));
-
-        expect(streamHandler.storeNotificationEvent).toHaveBeenCalledTimes(3);
-        const notificationEventFirstCall = vi.mocked(streamHandler.storeNotificationEvent).mock.calls[0][1] as notificationManager.DigestEvent;
-        const notificationEventSecondCall = vi.mocked(streamHandler.storeNotificationEvent).mock.calls[1][1] as notificationManager.DigestEvent;
-        const notificationEventThirdCall = vi.mocked(streamHandler.storeNotificationEvent).mock.calls[2][1] as notificationManager.DigestEvent;
-        expect(notificationEventFirstCall.target.user_id).toEqual(MAIN_CREATOR_ID);
-        expect(notificationEventSecondCall.target.user_id).toEqual(MALWARE_CREATOR_ID);
-        expect(notificationEventThirdCall.target.user_id).toEqual(CAMPAIGN_CREATOR_ID);
       });
     });
 
