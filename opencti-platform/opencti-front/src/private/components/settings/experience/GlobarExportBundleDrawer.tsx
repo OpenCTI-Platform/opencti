@@ -19,31 +19,32 @@ import Button from '@common/button/Button';
 import { useFormatter } from 'src/components/i18n';
 import type { Theme } from 'src/components/Theme';
 import Drawer from '@components/common/drawer/Drawer';
-import { EXPORT_CATEGORIES, getDefaultCheckedCategoryItems } from '@components/settings/experience/globalExportBundleDrawer-utils';
-import { fetchQuery } from 'src/relay/environment';
-import { PlatformBundleDrawerExportQuery$data } from '@components/settings/experience/__generated__/PlatformBundleDrawerExportQuery.graphql';
+import { fetchQuery } from '../../../../relay/environment';
+import { EXPORT_CATEGORIES, getDefaultCheckedCategoryItems } from './globalExportBundleDrawer-utils';
+import type { PlatformBundleDrawerExportQuery$data } from './__generated__/PlatformBundleDrawerExportQuery.graphql';
 
 const platformBundleDrawerExportQuery = graphql`
-  query PlatformBundleDrawerExportQuery($categories: [String!]!) {
-    globalConfigurationExport(categories: $categories)
+  query PlatformBundleDrawerExportQuery($entityTypes: [String!]!) {
+    globalConfigurationExport(entityTypes: $entityTypes)
   }
 `;
 
-const base64ToBytes = (base64: string): Uint8Array => {
+const base64ToBytes = (base64: string): Uint8Array<ArrayBuffer> => {
   const binary = atob(base64);
-  const bytes = new Uint8Array(binary.length);
+  const buffer = new ArrayBuffer(binary.length);
+  const bytes = new Uint8Array(buffer);
   for (let i = 0; i < binary.length; i += 1) {
     bytes[i] = binary.charCodeAt(i);
   }
   return bytes;
 };
 
-interface GlobarExportBundleDrawerProps {
+interface GlobalExportBundleDrawerProps {
   open: boolean;
   onClose: () => void;
 }
 
-const GlobalExportBundleDrawer: FunctionComponent<GlobarExportBundleDrawerProps> = ({ open, onClose }) => {
+const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps> = ({ open, onClose }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
@@ -70,19 +71,18 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobarExportBundleDrawerProps>
   };
 
   const exportConfiguration = async () => {
-    const categories = Array.from(new Set(Object.values(checkedCategoryItems).flat()));
+    const entityTypes = Array.from(new Set(Object.values(checkedCategoryItems).flat()));
     setExporting(true);
     try {
-      const { globalConfigurationExport } = await fetchQuery(
+      const result = await fetchQuery(
         platformBundleDrawerExportQuery,
-        { categories },
+        { entityTypes },
       ).toPromise() as PlatformBundleDrawerExportQuery$data;
-      if (globalConfigurationExport) {
-        const blob = new Blob([base64ToBytes(globalConfigurationExport)], { type: 'application/zip' });
-        const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
+      if (result?.globalConfigurationExport) {
+        const blob = new Blob([base64ToBytes(result.globalConfigurationExport)], { type: 'application/zip' });
         const suffix = bundleName ? `_${bundleName}` : '';
-        const fileName = `${year}${month}${day}_opencti_config_export${suffix}.zip`;
-        fileDownload(blob, fileName);
+        const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
+        fileDownload(blob, `${year}${month}${day}_opencti_config_export${suffix}.zip`);
       }
     } finally {
       setExporting(false);
@@ -117,18 +117,6 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobarExportBundleDrawerProps>
             </Typography>
 
             {EXPORT_CATEGORIES.map((category) => {
-              if (category.kind === 'flat') {
-                const checked = checkedCategoryItems[category.key]?.includes(category.key) ?? false;
-                return (
-                  <Box key={category.key} sx={{ ...accordionSx, px: 2, py: 1.5 }}>
-                    <FormControlLabel
-                      control={<Checkbox checked={checked} onChange={handleToggleFlatCategory(category.key)} />}
-                      label={<Typography fontWeight="bold">{t_i18n(category.label)}</Typography>}
-                    />
-                  </Box>
-                );
-              }
-
               if (category.kind === 'placeholder') {
                 return (
                   <Accordion key={category.key} disableGutters expanded={false} sx={{ ...accordionSx, opacity: 0.5 }}>
@@ -139,6 +127,18 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobarExportBundleDrawerProps>
                       />
                     </AccordionSummary>
                   </Accordion>
+                );
+              }
+
+              if (category.kind === 'flat') {
+                const checked = checkedCategoryItems[category.key]?.includes(category.key) ?? false;
+                return (
+                  <Box key={category.key} sx={{ ...accordionSx, px: 2, py: 1.5 }}>
+                    <FormControlLabel
+                      control={<Checkbox checked={checked} onChange={handleToggleFlatCategory(category.key)} />}
+                      label={<Typography fontWeight="bold">{t_i18n(category.label)}</Typography>}
+                    />
+                  </Box>
                 );
               }
 
