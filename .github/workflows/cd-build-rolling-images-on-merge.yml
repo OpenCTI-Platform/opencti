@@ -129,7 +129,7 @@ jobs:
         with:
           name: opencti-app-sbom
           path: sbom-staging/
-          retention-days: 7
+          retention-days: ${{ vars.CI_ARTIFACT_RETENTION_DAYS }}
 
   # -----------------------
   # Build platform images
@@ -316,7 +316,7 @@ jobs:
           name: sbom-opencti-platform-${{ needs.app-sbom.outputs.app_version }}${{ matrix.suffix }}
           path: sbom-work/sbom-opencti-platform-*.cdx.json
           overwrite: true
-          retention-days: 7
+          retention-days: ${{ vars.CI_ARTIFACT_RETENTION_DAYS }}
 
       - name: Validate merged SBOM
         working-directory: sbom-work
@@ -352,4 +352,4 @@ jobs:
         with:
           name: opencti-rolling
           path: artifacts/
-          retention-days: 10
+          retention-days: ${{ vars.ROLLING_ARTIFACT_RETENTION_DAYS }}
