@@ -199,7 +199,7 @@ export const LockTimeoutError = (data: any, reason?: string) => error(TYPE_LOCK,
 // failure: the engine is never reached, so it must not be logged/alerted on
 // with the same severity as a real DATABASE_ERROR.
 export const CLIENT_ABORT_ERROR = 'CLIENT_ABORT_ERROR';
-export const ClientAbortError = (reason, data) => error(CLIENT_ABORT_ERROR, reason || 'Client disconnected before the operation completed', {
+export const ClientAbortError = (reason?: string, data?: any) => error(CLIENT_ABORT_ERROR, reason || 'Client disconnected before the operation completed', {
   http_status: 499, // Conventionally used (nginx) for "Client Closed Request"
   genre: CATEGORY_BUSINESS,
   ...data,
