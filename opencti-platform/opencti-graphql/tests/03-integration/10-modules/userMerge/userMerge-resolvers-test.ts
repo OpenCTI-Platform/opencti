@@ -1,7 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { ADMIN_USER, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../utils/testQueryHelper';
+import { resetCacheForEntity } from '../../../../src/database/cache';
+import { addUser, userDelete } from '../../../../src/domain/user';
+import { ENTITY_TYPE_USER } from '../../../../src/schema/internalObject';
+import { SYSTEM_USER } from '../../../../src/utils/access';
 
 const USER_MERGE_MUTATION = gql`
   mutation UserMerge($sourceId: ID!, $targetId: ID!, $options: UserMergeOptions) {
@@ -78,7 +82,38 @@ const readUser = async (userId: string) => {
   return data.user;
 };
 
+const SUFFIX = 'userMergeResolvers';
+
+// The engine writes for real in these tests, so it is given two accounts of its own rather than
+// the shared fixtures: what the rest of the suite hangs on USER_PARTICIPATE would otherwise be
+// rewritten here, and the "nothing was touched" assertions would depend on the run order. The
+// default groups are declined so that the two accounts own strictly nothing, which is what makes
+// a write of zero the expected outcome.
+let mergeSourceId: string;
+let mergeTargetId: string;
+
 describe('User merge resolvers', () => {
+  beforeAll(async () => {
+    const account = (role: string) => ({
+      name: `${SUFFIX}-${role}`,
+      password: SUFFIX,
+      user_email: `${SUFFIX}-${role}@opencti.invalid`,
+      prevent_default_groups: true,
+    });
+    const source = await addUser(testContext, SYSTEM_USER, account('source'));
+    const target = await addUser(testContext, SYSTEM_USER, account('target'));
+    mergeSourceId = source.id;
+    mergeTargetId = target.id;
+    // The engine resolves both users from the platform cache, which the stream only refreshes
+    // asynchronously.
+    resetCacheForEntity(ENTITY_TYPE_USER);
+  });
+
+  afterAll(async () => {
+    await userDelete(testContext, ADMIN_USER, mergeSourceId);
+    await userDelete(testContext, ADMIN_USER, mergeTargetId);
+  });
+
   describe('Access control - BYPASS capability required', () => {
     it('should refuse the mutation to a user without BYPASS', async () => {
       await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
@@ -122,7 +157,7 @@ describe('User merge resolvers', () => {
     it('should default to a dry-run when no option is provided', async () => {
       const { data } = await queryAsAdminWithSuccess({
         query: USER_MERGE_MUTATION,
-        variables: { sourceId: USER_PARTICIPATE.id, targetId: USER_EDITOR.id },
+        variables: { sourceId: mergeSourceId, targetId: mergeTargetId },
       });
       expect(data.userMerge.dry_run).toBe(true);
       expect(data.userMerge.rights_strategy).toBe('STRICT');
@@ -131,21 +166,24 @@ describe('User merge resolvers', () => {
     it('should return the same shape in dry and in real mode', async () => {
       const dry = await queryAsAdminWithSuccess({
         query: USER_MERGE_MUTATION,
-        variables: { sourceId: USER_PARTICIPATE.id, targetId: USER_EDITOR.id, options: { dryRun: true } },
+        variables: { sourceId: mergeSourceId, targetId: mergeTargetId, options: { dryRun: true } },
       });
       const real = await queryAsAdminWithSuccess({
         query: USER_MERGE_MUTATION,
-        variables: { sourceId: USER_PARTICIPATE.id, targetId: USER_EDITOR.id, options: { dryRun: false } },
+        variables: { sourceId: mergeSourceId, targetId: mergeTargetId, options: { dryRun: false } },
       });
       expect(Object.keys(real.data.userMerge).sort()).toEqual(Object.keys(dry.data.userMerge).sort());
       expect(real.data.userMerge.dry_run).toBe(false);
       expect(dry.data.userMerge.dry_run).toBe(true);
+      // The two accounts are created empty by this file, so a real merge that writes anything
+      // is a handler reaching outside what the source actually owns.
+      expect(real.data.userMerge.report.total_updated).toEqual(0);
     });
 
     it('should carry the coverage in the report of every execution', async () => {
       const { data } = await queryAsAdminWithSuccess({
         query: USER_MERGE_MUTATION,
-        variables: { sourceId: USER_PARTICIPATE.id, targetId: USER_EDITOR.id, options: { dryRun: true } },
+        variables: { sourceId: mergeSourceId, targetId: mergeTargetId, options: { dryRun: true } },
       });
       expect(data.userMerge.report.merge_id).toEqual(data.userMerge.id);
       expect(data.userMerge.report.total_updated).toEqual(0);
@@ -158,20 +196,20 @@ describe('User merge resolvers', () => {
     it('should carry the requested rights strategy', async () => {
       const { data } = await queryAsAdminWithSuccess({
         query: USER_MERGE_MUTATION,
-        variables: { sourceId: USER_PARTICIPATE.id, targetId: USER_EDITOR.id, options: { rightsStrategy: 'UNION' } },
+        variables: { sourceId: mergeSourceId, targetId: mergeTargetId, options: { rightsStrategy: 'UNION' } },
       });
       expect(data.userMerge.rights_strategy).toBe('UNION');
     });
 
-    it('should leave both users untouched while no handler covers them', async () => {
-      const sourceBefore = await readUser(USER_PARTICIPATE.id);
-      const targetBefore = await readUser(USER_EDITOR.id);
+    it('should leave the user entities themselves untouched', async () => {
+      const sourceBefore = await readUser(mergeSourceId);
+      const targetBefore = await readUser(mergeTargetId);
       await queryAsAdminWithSuccess({
         query: USER_MERGE_MUTATION,
-        variables: { sourceId: USER_PARTICIPATE.id, targetId: USER_EDITOR.id, options: { dryRun: false } },
+        variables: { sourceId: mergeSourceId, targetId: mergeTargetId, options: { dryRun: false } },
       });
-      expect(await readUser(USER_PARTICIPATE.id)).toEqual(sourceBefore);
-      expect(await readUser(USER_EDITOR.id)).toEqual(targetBefore);
+      expect(await readUser(mergeSourceId)).toEqual(sourceBefore);
+      expect(await readUser(mergeTargetId)).toEqual(targetBefore);
     });
   });
 
@@ -180,8 +218,9 @@ describe('User merge resolvers', () => {
       const { data } = await queryAsAdminWithSuccess({ query: USER_MERGE_COVERAGE_QUERY, variables: {} });
       expect(data.userMergeCoverage.total).toEqual(101);
       expect(data.userMergeCoverage.rows.length).toEqual(101);
-      // No handler ships in this chunk, so nothing may be reported as covered.
-      expect(data.userMergeCoverage.covered_count).toEqual(0);
+      // The register is what says the merge is incomplete, whatever the handlers claim.
+      expect(data.userMergeCoverage.covered_count).toBeGreaterThan(0);
+      expect(data.userMergeCoverage.uncovered_count).toEqual(101 - data.userMergeCoverage.covered_count);
       expect(data.userMergeCoverage.is_complete).toBe(false);
     });
 
