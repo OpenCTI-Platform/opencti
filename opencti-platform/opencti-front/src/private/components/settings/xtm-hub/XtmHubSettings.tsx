@@ -227,7 +227,7 @@ const XtmHubSettings: React.FC = () => {
         setIsCheckDone(true);
       },
       onError: () => {
-        // Avoid infinite loading when the connectivity check fails (e.g. SMTP error).
+        // Avoid infinite loading when the connectivity check mutation fails.
         setCheckError(true);
         setIsCheckDone(true);
       },
@@ -246,7 +246,7 @@ const XtmHubSettings: React.FC = () => {
           variant="outlined"
           style={{ width: '100%', marginBottom: theme.spacing(2) }}
         >
-          {t_i18n('Unable to check XTM Hub connectivity. Please try again later or verify your platform configuration (including SMTP).')}
+          {t_i18n('Unable to check XTM Hub connectivity. Please try again later.')}
         </Alert>
       )}
       <XtmHubSettingsComponent />
