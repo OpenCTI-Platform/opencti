@@ -181,8 +181,8 @@ const handleLostConnectivityEmail = async (context: AuthContext, settings: Basic
       attributeUpdates.push({ key: 'xtm_hub_should_send_connectivity_email', value: [false] });
     } catch (e) {
       // SMTP misconfiguration (or any mail failure) must not abort the connectivity check.
-      // Keep xtm_hub_should_send_connectivity_email=true so the next successful check can retry.
-      logApp.error(e, { message: '[XTMH] Failed to send lost-connectivity email; continuing connectivity check' });
+      // Keep xtm_hub_should_send_connectivity_email=true so the next connectivity check can retry.
+      logApp.error('[XTMH] Failed to send lost-connectivity email; continuing connectivity check', { cause: e });
     }
   }
 
