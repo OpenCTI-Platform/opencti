@@ -24,6 +24,7 @@ class SecurityCoverage:
         self.opencti = opencti
         self.properties = """
             id
+            name
             standard_id
             entity_type
             parent_types

@@ -103,6 +103,21 @@ const COVERED_ENTITIES_QUERY = gql`
     }
   }
 `;
+const RESULTS_RELATIONSHIPS_QUERY = gql`
+  query ResultsRelationships($id: String!) {
+    securityCoverage(id: $id) {
+      coveredEntitiesDistribution(field: "entity_type", relationship_type: ["has-covered"], operation: count) {
+        label
+        value
+      }
+      stixCoreRelationshipsFromResults(first: 100, relationship_type: "has-covered") {
+        pageInfo { globalCount }
+      }
+      coveredAttackPatterns(first: 100) { count }
+      coveredVulnerabilities(first: 100) { count }
+    }
+  }
+`;
 const GENERIC_DELETE = gql`
   mutation GenericDelete($id: ID!) {
     stixCoreObjectEdit(id: $id) { delete }
@@ -123,15 +138,21 @@ describe('SecurityCoverage covered entities resolvers', () => {
   let coverageId: string;
   let resultId: string;
   let malwareId: string;
+  let malwareWithoutResultId: string;
   let attackPatternId: string;
   let vulnerabilityId: string;
   let attackPatternRelId: string;
   let vulnerabilityRelId: string;
+  let coverageWithoutResultId: string;
 
   beforeAll(async () => {
     malwareId = (await queryAsAdmin({
       query: MALWARE_ADD,
       variables: { input: { name: 'SC covered-entities malware' } },
+    })).data?.malwareAdd.id;
+    malwareWithoutResultId = (await queryAsAdmin({
+      query: MALWARE_ADD,
+      variables: { input: { name: 'SC covered-entities malware without result' } },
     })).data?.malwareAdd.id;
     attackPatternId = (await queryAsAdmin({
       query: ATTACK_PATTERN_ADD,
@@ -158,6 +179,11 @@ describe('SecurityCoverage covered entities resolvers', () => {
       query: HAS_COVERED_ADD,
       variables: { input: { fromId: resultId, toId: vulnerabilityId, relationship_type: 'has-covered', coverage_information: [{ coverage_name: 'detection', coverage_score: 7 }] } },
     })).data?.stixCoreRelationshipAdd.id;
+
+    coverageWithoutResultId = (await queryAsAdmin({
+      query: SECURITY_COVERAGE_ADD,
+      variables: { input: { name: 'SC covered-entities coverage without result', objectCovered: malwareWithoutResultId, auto_enrichment_disable: true } },
+    })).data?.securityCoverageAdd.id;
   });
 
   afterAll(async () => {
@@ -166,7 +192,10 @@ describe('SecurityCoverage covered entities resolvers', () => {
     }
     if (resultId) await queryAsAdmin({ query: SECURITY_COVERAGE_RESULT_DELETE, variables: { id: resultId } });
     if (coverageId) await queryAsAdmin({ query: SECURITY_COVERAGE_DELETE, variables: { id: coverageId } });
-    if (malwareId) await queryAsAdmin({ query: GENERIC_DELETE, variables: { id: malwareId } });
+    if (coverageWithoutResultId) await queryAsAdmin({ query: SECURITY_COVERAGE_DELETE, variables: { id: coverageWithoutResultId } });
+    for (const id of [malwareId, malwareWithoutResultId]) {
+      if (id) await queryAsAdmin({ query: GENERIC_DELETE, variables: { id } });
+    }
   });
 
   it('should return covered attack patterns with concrete node and relationship_id', async () => {
@@ -190,6 +219,25 @@ describe('SecurityCoverage covered entities resolvers', () => {
     const [entity] = vulnerabilities.entities;
     expect(entity.relationship_id).toEqual(vulnerabilityRelId);
     expect(entity.to.id).toEqual(vulnerabilityId);
+  });
+
+  it('should return the has-covered relationships of a coverage that has a result', async () => {
+    const { data } = await queryAsAdmin({ query: RESULTS_RELATIONSHIPS_QUERY, variables: { id: coverageId } });
+    const coverage = data?.securityCoverage;
+    expect(coverage.stixCoreRelationshipsFromResults.pageInfo.globalCount).toEqual(2);
+    expect(coverage.coveredAttackPatterns.count).toEqual(1);
+    expect(coverage.coveredVulnerabilities.count).toEqual(1);
+    const distributionTotal = coverage.coveredEntitiesDistribution.reduce((sum: number, d: { value: number }) => sum + d.value, 0);
+    expect(distributionTotal).toEqual(2);
+  });
+
+  it('should return no has-covered relationship for a coverage without result', async () => {
+    const { data } = await queryAsAdmin({ query: RESULTS_RELATIONSHIPS_QUERY, variables: { id: coverageWithoutResultId } });
+    const coverage = data?.securityCoverage;
+    expect(coverage.stixCoreRelationshipsFromResults.pageInfo.globalCount).toEqual(0);
+    expect(coverage.coveredAttackPatterns.count).toEqual(0);
+    expect(coverage.coveredVulnerabilities.count).toEqual(0);
+    expect(coverage.coveredEntitiesDistribution).toEqual([]);
   });
 });
 // endregion

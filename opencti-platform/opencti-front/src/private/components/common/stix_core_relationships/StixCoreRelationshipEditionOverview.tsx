@@ -201,7 +201,17 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
     description: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
+    coverage_information: Yup.array().of(
+      Yup.object().shape({
+        coverage_name: Yup.string().required(t_i18n('This field is required')),
+        coverage_score: Yup.number()
+          .required(t_i18n('This field is required'))
+          .min(0, t_i18n('Score must be at least 0'))
+          .max(100, t_i18n('Score must be at most 100')),
+      }),
+    ),
   };
+
   const stixCoreRelationshipValidator = useSchemaEditionValidation(
     'stix-core-relationship',
     basicShape,
@@ -265,6 +275,7 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
       },
     });
   };
+
   const initialValues: StixCoreRelationshipAddInput = {
     confidence: stixCoreRelationship.confidence ?? null,
     start_time: buildDate(stixCoreRelationship.start_time),
@@ -277,6 +288,7 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
     references: [],
     ...(displayCoverage ? { coverage_information: stixCoreRelationship.coverage_information || [] } : {}),
   };
+
   return (
     <Stack>
       <Formik

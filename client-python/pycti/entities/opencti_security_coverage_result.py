@@ -24,6 +24,7 @@ class SecurityCoverageResult:
         self.opencti = opencti
         self.properties = """
             id
+            name
             standard_id
             entity_type
             parent_types
@@ -217,6 +218,8 @@ class SecurityCoverageResult:
              """
             )
             result = self.opencti.query(query, {"id": id})
+            print("=====================================================")
+            print(result)
             return self.opencti.process_multiple_fields(
                 result["data"]["securityCoverageResult"]
             )
