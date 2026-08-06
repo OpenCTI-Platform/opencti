@@ -158,3 +158,56 @@ Findings of an independent review of this pull request at
   error). Cosmetic, not functional, and the magic numbers pre-date this change.
   Fix belongs in its own change: import `SMALL_BAR_WIDTH` / `OPEN_BAR_WIDTH`
   instead of restating them.
+
+## 2026-08-06 — library pin bumped to `486cec92c3ab`
+
+Bumped `@filigran/design-system` from `56f7e59823ca` to `486cec92c3ab`, the head
+of the library's `main`. Four commits: `Menu` sub-menu primitives with
+`ProductSwitcher` adopting them (#81), a docs `/status` correction (#83), the
+pointer-cursor fix on rail rows (#84), and the new `Header` component (#85).
+
+**What the bump fixed, measured in the running platform.** Before it, every
+button-rendered row of the rail resolved to `cursor: default` — 14 of them in
+the expanded rail, 1 in the collapsed one — while link rows had the hand cursor
+for free from the UA sheet. After it, 13/14 and 1/1. **This pilot had not
+reported that regression**; the OpenAEV pilot had, and PR #84 credits it. It was
+shipped here unnoticed for the same reason the four checkpoint findings were:
+the parity pass compared structure and geometry, never pointer affordance.
+
+**What the bump did not fix.** The `ProductSwitcher` trigger is not a
+`NavbarItem`, so it keeps `cursor: default`. Filed as entry 12 in
+`LIBRARY-FEEDBACK.md`. Deliberately **not** compensated product-side: a host
+rule would hide the gap from every other consumer.
+
+**Compensations re-checked, none retired.** `Navbar.tsx` and `NavbarSubmenu.tsx`
+are byte-identical between the two pins — only `NavbarItem.tsx` changed — so the
+removal conditions of compensations 1 (accent), 2 and 3 (`asChild`), 4 (shared
+`open` prop), 5 (flow layout), 6 (`shrink-0`) and 7 (portal z-index) are all
+still unmet. `NavbarProps` still exposes no accent prop; `NavbarSubmenuProps`
+still exposes a single `open`/`onOpenChange` pair.
+
+**Nothing my rail depends on moved.** Set-diffing the compiled `dist/index.css`
+between the two pins: 641 → 689 class selectors and 414 → 420 custom properties,
+with **zero removals** on either. The accent guard in `NavBar.test.tsx`, which
+reads the installed stylesheet, therefore still passes — as does the whole
+nav-scoped suite (41 tests) and `tsc`/`lint`.
+
+**One intentional visual change, inside the product dropdown.** `#81` moved
+`ProductSwitcher`'s panel onto `Menu`: row padding-right 8px → 16px, panel
+min-width 192px → 200px with a new 300px cap and a bounded max-height, divider
+margin 2px → 4px, group header band 24px → 32px, and disabled rows painted with
+the disabled tokens instead of `opacity-60`. Row height (36px) and label size
+(14px) are unchanged — verified in the running platform. Accepted as-is: it is a
+checkpointed library decision, not drift.
+
+**Package size: the expected reduction did not happen, and could not have.**
+The install grew from 3 384 759 to 3 637 106 bytes (+252 347, +7.5%); the
+downloaded cache archive grew from 3 388 999 to 3 641 346 bytes (+252 347,
++7.4%; the cache holds two archives of the old build whose entries are
+byte-identical and whose sizes differ by 92 bytes of archive metadata, so read
+that figure ±92). The package has shipped `files: ["dist"]` since the initial monorepo
+scaffold, which is an ancestor of both pins, so the documentation was never in
+the tarball to begin with — the 12 packed files are `dist` plus `README`,
+`CHANGELOG` and `package.json`. The growth is `Header` and the `Menu`
+primitives, and it is almost entirely source maps and typings: `index.js.map`
++76 160 and `index.mjs.map` +75 315 bytes together account for 60% of it.

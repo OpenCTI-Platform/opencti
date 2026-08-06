@@ -10,7 +10,8 @@ Every workaround in the code references this file by entry number, so the two
 cannot drift apart.
 
 Raised during: the navigation pilot (replacing `LeftBar.jsx` with `Navbar`),
-library pin `56f7e59823cae7d815a451206e3cb4cb1d31022d`.
+library pin `56f7e59823cae7d815a451206e3cb4cb1d31022d`, then re-checked at
+pin `486cec92c3abf006997ac269d34ff0fcc23f178f` (2026-08-06).
 
 ---
 
@@ -305,3 +306,38 @@ it, which is the point.
 **Removal test.** Delete the `navStyle` geometry block in `NavBar.tsx`; at a
 1500×800 viewport the rail must still measure the full viewport height and keep
 its position while an inner container scrolls.
+---
+
+## 12. The pointer-cursor fix stopped at `NavbarItem` and left `ProductSwitcher` behind
+
+**Found at pin `486cec92c3abf006997ac269d34ff0fcc23f178f`,** re-checking the rail
+after library PR #84 (`fix(navbar-item): give button-rendered rail rows the
+pointer cursor`) landed.
+
+**Needed.** Every interactive row of the rail should show the hand cursor. The
+MUI navigation this pilot replaces did, on all of them, and the loss is visible
+on first use.
+
+**Today.** PR #84 declares `cursor-pointer` once on `NavbarItem`'s shared row
+class, which fixes both of that component's render paths. Measured in the
+running platform, that took OpenCTI's rail from 0/14 to 13/14 button-rendered
+rows carrying `cursor: pointer` — collapsed, 1/1. The remaining row is the
+`ProductSwitcher` trigger, which is a sibling component and therefore not a
+`NavbarItem`: it renders its own `<button>`, declares no cursor, and still
+resolves to `cursor: default`.
+
+**Consequence.** The rail is inconsistent again, in exactly the way PR #84 set
+out to end — one arrow cursor among fourteen hands, at the top of the rail where
+it is most visible. No product compensation was added: this pilot files it
+rather than papering over it, because a host-side rule would hide the gap from
+every other consumer.
+
+**Ask.** Declare the same `cursor-pointer` on `ProductSwitcher`'s trigger. More
+generally, PR #84's own reasoning ("a browser gives `<a href>` a hand cursor for
+free and gives `<button>` nothing") applies to every button the library renders,
+not only to rail rows — the fix is worth generalising rather than repeating.
+
+**Removal test.** At a pin where it is fixed: open the expanded rail in the
+running platform and read the computed `cursor` of every `<a>` and `<button>`
+inside `nav.app-navbar`; all of them must be `pointer`, with no exception for
+the switcher.
