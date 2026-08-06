@@ -54,7 +54,7 @@ runs:
     - name: Upload musl tar artifact
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
       with:
-        name: opencti-platform-musl
+        name: tar-opencti-platform-musl
         path: /tmp/opencti-musl.tar.gz
         retention-days: ${{ vars.CI_ARTIFACT_RETENTION_DAYS }}
 

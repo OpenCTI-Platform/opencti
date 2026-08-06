@@ -38,7 +38,7 @@ runs:
             yarn build
           '
 
-    - name: Package musl tar.gz
+    - name: Package tar.gz
       shell: bash
       run: |
         mkdir -p release
@@ -51,10 +51,10 @@ runs:
         git clone --depth 1 --single-branch --branch master https://github.com/OpenCTI-Platform/connectors
         cd release && tar -zcvf /tmp/opencti-musl.tar.gz opencti
 
-    - name: Upload musl tar artifact
+    - name: Upload tar artifact
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
       with:
-        name: opencti-platform-musl
-        path: /tmp/opencti-musl.tar.gz
+        name: tar-opencti-platform
+        path: /tmp/opencti.tar.gz
         retention-days: ${{ vars.CI_ARTIFACT_RETENTION_DAYS }}
 
