@@ -1,5 +1,5 @@
 import React, { FunctionComponent, ReactElement } from 'react';
-import { Field, FieldArray } from 'formik';
+import { Field, FieldArray, useField } from 'formik';
 import Button from '@common/button/Button';
 import { IconButton } from '@filigran/design-system';
 import { DeleteOutlined } from '@mui/icons-material';
@@ -167,6 +167,7 @@ export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformation
   mode,
   editContext = [],
 }): ReactElement => {
+  const [, { error }] = useField(name);
   const { t_i18n } = useFormatter();
   const coverageInformationMutation = mode === 'entity'
     ? coverageEntityInformationMutation : coverageRelationInformationMutation;
@@ -256,7 +257,7 @@ export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformation
                       min={0}
                       max={100}
                       onSubmit={(_: string, score: string) => {
-                        if (isNotEmptyField(score)) {
+                        if (isNotEmptyField(score) && !error) {
                           commitMutation({
                             ...defaultCommitMutation,
                             mutation: coverageInformationMutation,

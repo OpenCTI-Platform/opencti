@@ -10,6 +10,8 @@ import {
   loadMostRecentLastCoverageResult,
   loadSecurityCoverageResults,
   findCoveredEntities,
+  findCoveredEntitiesDistribution,
+  findResultsRelationshipsPaginated,
 } from './securityCoverage-domain';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_VULNERABILITY } from '../../schema/stixDomainObject';
 import {
@@ -23,9 +25,6 @@ import type { Resolvers } from '../../generated/graphql';
 import { BUS_TOPICS } from '../../config/conf';
 import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from './securityCoverage-types';
-import { distributionRelations } from '../../database/middleware';
-import { RELATION_RESULT_OF } from './securityCoverageResult/securityCoverageResult-types';
-import { stixCoreRelationshipsPaginated } from '../../domain/stixCoreObject';
 
 const SecurityCoverageResolvers: Resolvers = {
   Query: {
@@ -41,9 +40,8 @@ const SecurityCoverageResolvers: Resolvers = {
     coverage_valid_from: (securityCoverage, _, context) => loadSecurityCoverageResultProperty(context, context.user, securityCoverage, 'coverage_valid_from'),
     coverage_valid_to: (securityCoverage, _, context) => loadSecurityCoverageResultProperty(context, context.user, securityCoverage, 'coverage_valid_to'),
     coverage_information: (securityCoverage, _, context) => loadAverageCoverageInformation(context, context.user, securityCoverage),
-    coveredEntitiesDistribution: (securityCoverage, args, context) =>
-      distributionRelations(context, context.user, { ...args, fromOrToId: securityCoverage[RELATION_RESULT_OF] } as any),
-    stixCoreRelationshipsFromResults: (securityCoverage, args, context) => stixCoreRelationshipsPaginated(context, context.user, securityCoverage[RELATION_RESULT_OF], args),
+    coveredEntitiesDistribution: (securityCoverage, args, context) => findCoveredEntitiesDistribution(context, context.user, securityCoverage, args),
+    stixCoreRelationshipsFromResults: (securityCoverage, args, context) => findResultsRelationshipsPaginated(context, context.user, securityCoverage, args as any),
     coveredAttackPatterns: (securityCoverage, args, context) =>
       findCoveredEntities(context, context.user, securityCoverage, ENTITY_TYPE_ATTACK_PATTERN, args),
     coveredVulnerabilities: (securityCoverage, args, context) =>
