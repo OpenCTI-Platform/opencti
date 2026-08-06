@@ -30,7 +30,10 @@ const SECURITY_COVERAGE_RESULT_DEFINITION: ModuleDefinition<StoreEntitySecurityC
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_SECURITY_COVERAGE_RESULT]: [{ src: 'name' }, { src: 'external_uri' }, { src: INPUT_RESULT_OF }],
+      [ENTITY_TYPE_SECURITY_COVERAGE_RESULT]: [
+        [{ src: 'external_uri' }, { src: INPUT_RESULT_OF, dependencies: ['external_uri'] }],
+        [{ src: 'name' }, { src: INPUT_RESULT_OF, dependencies: ['name'] }],
+      ],
     },
     resolvers: {
       name(data: object) {
