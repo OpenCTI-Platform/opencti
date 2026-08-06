@@ -2142,6 +2142,19 @@ class DataTableToolBar extends Component {
           />
         );
       case 'account_lock_after_date':
+        return (
+          <DateTimePicker
+            disabled={disabled}
+            variant="inline"
+            disableToolbar={false}
+            autoOk={true}
+            allowKeyboardControl={true}
+            onChange={this.handleChangeDate.bind(this, i)}
+            onAccept={this.handleAcceptDate.bind(this, i)}
+            views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
+            format="yyyy-MM-dd hh:mm:ss a"
+          />
+        );
       case 'start_time':
       case 'stop_time':
         return (
@@ -2923,6 +2936,16 @@ class DataTableToolBar extends Component {
                           <Grid item xs={6} style={{ display: 'flex', flexDirection: 'column-reverse' }}>
                             {this.renderValuesOptions(i, selectedTypes, settings.platform_user_statuses)}
                           </Grid>
+                          {['start_time', 'stop_time'].includes(actionsInputs[i]?.field) && actionsInputs[i]?.type !== 'REMOVE' && (
+                            <Grid item xs={12}>
+                              <Alert
+                                severity="info"
+                                variant="outlined"
+                              >
+                                {t('The "start time" must be earlier than the "stop time".')}
+                              </Alert>
+                            </Grid>
+                          )}
                         </Grid>
                       </div>
                     ))}
