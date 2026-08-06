@@ -1,4 +1,5 @@
 // region registration attributes, need to be imported before any other modules
+import { registerUserMergeHandlers } from './userMerge/userMerge-handlers';
 import './attributes/basicObject-registrationAttributes';
 import './attributes/stixObject-registrationAttributes';
 import './attributes/stixCoreObject-registrationAttributes';
@@ -173,3 +174,7 @@ import './userMerge/userMerge-graphql';
 import './workflow/api/workflow-graphql';
 import './customField/custom-field-graphql';
 // endregion
+
+// The scalar handler derives its targets from the schema, so it can only be registered once
+// every module above has declared its attributes.
+registerUserMergeHandlers();
