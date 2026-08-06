@@ -39,10 +39,24 @@ export default class DashboardWidgetsPageModel {
   }
 
   selectPerspective(perspective: WidgetPerspective) {
-    if (perspective === 'Entities') this.labelPerspective = 'entities';
-    if (perspective === 'Knowledge graph') this.labelPerspective = 'relationships';
-    if (perspective === 'Activity & history') this.labelPerspective = 'audits';
-    return this.page.getByLabel(perspective, { exact: true }).click();
+    let testId: string | undefined = undefined;
+    if (perspective === 'Entities') {
+      testId = 'entities-widget-perspective';
+      this.labelPerspective = 'entities';
+    }
+    if (perspective === 'Knowledge graph') {
+      testId = 'relationships-widget-perspective';
+      this.labelPerspective = 'relationships';
+    }
+    if (perspective === 'Activity & history') {
+      testId = 'audits-widget-perspective';
+      this.labelPerspective = 'audits';
+    }
+    if (testId) {
+      return this.page.getByTestId(testId).click();
+    } else {
+      return undefined;
+    }
   }
 
   fillLabel(label: string) {
