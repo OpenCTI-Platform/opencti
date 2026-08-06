@@ -205,6 +205,9 @@ const filtersStixCoreObjectsSearchQuery = graphql`
           ... on SecurityCoverage {
             name
           }
+          ... on SecurityCoverageResult {
+            name
+          }
           createdBy {
             ... on Identity {
               id

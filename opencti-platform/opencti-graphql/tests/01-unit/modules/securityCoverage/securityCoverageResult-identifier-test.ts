@@ -27,29 +27,17 @@ describe('SecurityCoverageResult identifier', () => {
 
   it('should generate all different identifiers', () => {
     const identifiers = [
-      generateId(SC_1, null, null),
-      generateId(SC_2, null, null),
-      generateId(null, NAME_1, null),
-      generateId(null, NAME_2, null),
-      generateId(null, null, URI_1),
-      generateId(null, null, URI_2),
+      // different names, different SC & names, no uri
       generateId(SC_1, NAME_1, null),
       generateId(SC_1, NAME_2, null),
+      generateId(SC_2, NAME_1, null),
+      generateId(SC_2, NAME_2, null),
+      // same SC, different uris, no name
       generateId(SC_1, null, URI_1),
       generateId(SC_1, null, URI_2),
-      generateId(SC_2, NAME_1, null),
-      generateId(null, NAME_1, URI_1),
-      generateId(null, NAME_1, URI_2),
-      generateId(SC_2, null, URI_1),
-      generateId(null, NAME_2, URI_1),
-      generateId(SC_1, NAME_1, URI_1),
-      generateId(SC_1, NAME_2, URI_1),
-      generateId(SC_1, NAME_1, URI_2),
+      // Same SC different uris, same name
       generateId(SC_2, NAME_1, URI_1),
-      generateId(SC_2, NAME_2, URI_1),
       generateId(SC_2, NAME_1, URI_2),
-      generateId(SC_1, NAME_2, URI_2),
-      generateId(SC_2, NAME_2, URI_2),
     ];
     expect(identifiers.length).toEqual(new Set(identifiers).size);
   });
@@ -65,6 +53,14 @@ describe('SecurityCoverageResult identifier', () => {
       const standardId1 = generateId(SC_1, null, URI_1);
       const standardId2 = generateId(SC_1, null, URI_1);
       expect(standardId1).toEqual(standardId2);
+    });
+
+    it('should have same ID if given same external_uri & different names', () => {
+      const standardId1 = generateId(SC_1, NAME_1, URI_1);
+      const standardId2 = generateId(SC_1, NAME_2, URI_1);
+      const standardId3 = generateId(SC_1, null, URI_1);
+      expect(standardId1).toEqual(standardId2);
+      expect(standardId1).toEqual(standardId3);
     });
 
     it('should have same ID if given same couple (name/external_uri)', () => {

@@ -193,6 +193,14 @@ export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment =
       description
       security_platform_type
     }
+    ... on SecurityCoverage {
+      name
+      description
+    }
+    ... on SecurityCoverageResult {
+      name
+      description
+    }
     ... on Sector {
       name
       description
