@@ -160,6 +160,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   # Cases
   name: String!
   description: String

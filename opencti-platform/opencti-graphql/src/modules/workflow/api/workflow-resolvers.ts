@@ -130,6 +130,30 @@ const workflowResolvers = {
       return getWorkflowInstance(context, context.user!, draftId);
     },
   },
+  StixDomainObject: {
+    workflowInstance: (entity: any, _: any, context: AuthContext) => {
+      const entityId = entity.id || entity.internal_id;
+      return getWorkflowInstance(context, context.user!, entityId);
+    },
+  },
+  Container: {
+    workflowInstance: (entity: any, _: any, context: AuthContext) => {
+      const entityId = entity.id || entity.internal_id;
+      return getWorkflowInstance(context, context.user!, entityId);
+    },
+  },
+  StixCoreRelationship: {
+    workflowInstance: (entity: any, _: any, context: AuthContext) => {
+      const entityId = entity.id || entity.internal_id;
+      return getWorkflowInstance(context, context.user!, entityId);
+    },
+  },
+  StixSightingRelationship: {
+    workflowInstance: (entity: any, _: any, context: AuthContext) => {
+      const entityId = entity.id || entity.internal_id;
+      return getWorkflowInstance(context, context.user!, entityId);
+    },
+  },
   WorkflowDefinitionMutationResult: {
     errors: (result: any) => result.errors ?? [],
     published: (result: any) => result.published ?? false,

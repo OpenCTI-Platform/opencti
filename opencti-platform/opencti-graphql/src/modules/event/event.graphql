@@ -143,6 +143,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
     jobs(first: Int): [Work]
     status: Status
     workflowEnabled: Boolean
+    workflowInstance: WorkflowInstance
     pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 
