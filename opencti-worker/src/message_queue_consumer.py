@@ -47,9 +47,12 @@ class MessageQueueConsumer:  # pylint: disable=too-many-instance-attributes
         try:
             result = self.handle_message(body)
         except Exception as e:
+            # Truncate to avoid flooding logs / leaking large payloads; enough
+            # to identify the message (ids, type) without dumping full content.
+            body_excerpt = body[:2000] if isinstance(body, str) else str(body)[:2000]
             self.logger.error(
                 "Unhandled exception while processing message, acking to avoid stalling the queue",
-                {"exception": e},
+                {"exception": e, "body_excerpt": body_excerpt},
             )
             result = "ack"
         match result:
