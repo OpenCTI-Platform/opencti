@@ -44,7 +44,14 @@ class MessageQueueConsumer:  # pylint: disable=too-many-instance-attributes
             )
 
     def consume_message(self, delivery_tag: int, body: str) -> None:
-        result = self.handle_message(body)
+        try:
+            result = self.handle_message(body)
+        except Exception as e:
+            self.logger.error(
+                "Unhandled exception while processing message, acking to avoid stalling the queue",
+                {"exception": e},
+            )
+            result = "ack"
         match result:
             case "ack":
                 cb = functools.partial(self.ack_message, delivery_tag)
