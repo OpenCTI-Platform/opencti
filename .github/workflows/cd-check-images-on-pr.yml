@@ -33,6 +33,7 @@ jobs:
           checkout_ref: ${{ github.sha }}
           client_python_local: true
           docker_image_suffix: ${{ matrix.suffix }}
+          map_file_url: ${{ vars.MAP_FILE_URL }}
 
   # -----------------------
   # Build worker images

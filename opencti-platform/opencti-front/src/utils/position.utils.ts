@@ -2,19 +2,25 @@
 export const DEFAULT_CENTER_COORDINATES: [number, number] = [48.8566969, 2.3514616];
 
 // Validate latitude is within valid range
-export const isValidLatitude = (lat: number | null | undefined): boolean => {
+export const isValidLatitude = (lat: number | null | undefined): lat is number => {
   return lat !== null && lat !== undefined && lat >= -90 && lat <= 90;
 };
 
 // Validate longitude is within valid range
-export const isValidLongitude = (lng: number | null | undefined): boolean => {
+export const isValidLongitude = (lng: number | null | undefined): lng is number => {
   return lng !== null && lng !== undefined && lng >= -180 && lng <= 180;
+};
+
+export const isValidCoordinates = (
+  coordinates: { longitude?: number | null; latitude?: number | null } | undefined | null,
+): coordinates is { longitude: number; latitude: number } => {
+  return isValidLongitude(coordinates?.longitude) && isValidLatitude(coordinates?.latitude);
 };
 
 // Get validated coordinates, fallback to default if invalid
 export const getValidatedCenter = (position: { latitude?: number | null; longitude?: number | null }): [number, number] => {
-  if (isValidLatitude(position.latitude) && isValidLongitude(position.longitude)) {
-    return [position.latitude as number, position.longitude as number];
+  if (isValidCoordinates(position)) {
+    return [position.latitude, position.longitude];
   }
   return DEFAULT_CENTER_COORDINATES;
 };

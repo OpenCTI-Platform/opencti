@@ -40,6 +40,7 @@ import { SettingsQuery } from './__generated__/SettingsQuery.graphql';
 import HiddenTypesField from './hidden_types/HiddenTypesField';
 import SettingsAnalytics from './settings_analytics/SettingsAnalytics';
 import SettingsMessages from './settings_messages/SettingsMessages';
+import SettingsMapSource from './settings_map_source/SettingsMapSource';
 import { useChatbot } from '@components/chatbox/ChatbotContext';
 
 const AI_TYPE_MAP: Record<string, string> = {
@@ -74,8 +75,6 @@ const settingsQuery = graphql`
       platform_login_message
       platform_banner_text
       platform_banner_level
-      platform_map_tile_server_dark
-      platform_map_tile_server_light
       platform_ai_enabled
       platform_ai_type
       platform_ai_model
@@ -115,6 +114,10 @@ const settingsQuery = graphql`
       ...SettingsMessages_settingsMessages
       analytics_google_analytics_v4
       filigran_chatbot_ai_cgu_status
+      platform_map_custom_file {
+        name
+        size
+      }
     }
     about {
       version
@@ -163,8 +166,6 @@ export const settingsMutationFieldPatch = graphql`
         platform_login_message
         platform_banner_text
         platform_banner_level
-        platform_map_tile_server_dark
-        platform_map_tile_server_light
         analytics_google_analytics_v4
       }
     }
@@ -209,8 +210,6 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
     platform_login_message: settings.platform_login_message,
     platform_banner_text: settings.platform_banner_text,
     platform_banner_level: settings.platform_banner_level,
-    platform_map_tile_server_dark: settings.platform_map_tile_server_dark,
-    platform_map_tile_server_light: settings.platform_map_tile_server_light,
   };
 
   const modules = settings.platform_modules;
@@ -691,10 +690,19 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
         </Grid>
 
         <Grid size={6}>
-          <ThemeManager
-            handleRefetch={handleRefetch}
-            defaultTheme={settings.platform_theme}
-          />
+          <Grid container={true} spacing={3}>
+            <Grid size={12}>
+              <ThemeManager
+                handleRefetch={handleRefetch}
+                defaultTheme={settings.platform_theme}
+              />
+            </Grid>
+            <Grid size={12}>
+              <SettingsMapSource
+                settings={settings}
+              />
+            </Grid>
+          </Grid>
         </Grid>
 
         <Grid size={6}>

@@ -114,9 +114,8 @@ const TargetedCountriesComponent = ({ queryRef }) => {
   return (
     <LocationMiniMapTargets
       title={t_i18n('Targeted countries (Last 3 months)')}
-      center={[48.8566969, 2.3514616]}
-      countries={countries}
       zoom={2}
+      countries={countries}
     />
   );
 };
@@ -416,7 +415,6 @@ const DefaultDashboard = ({ timeField }) => {
             fallback={(
               <LocationMiniMapTargets
                 title={t_i18n('Targeted countries (Last 3 months)')}
-                center={[48.8566969, 2.3514616]}
                 zoom={2}
               />
             )}
