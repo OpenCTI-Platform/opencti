@@ -33,6 +33,11 @@ export interface UserMergeOptions {
    */
   dryRun: boolean;
   rightsStrategy: UserMergeRightsStrategy;
+  /**
+   * Lets the real pass proceed despite a blocking alert. Defaults to false: a merge that
+   * widens what the source's data is exposed under has to be decided, not discovered.
+   */
+  acknowledgeExposureChange: boolean;
 }
 
 /**

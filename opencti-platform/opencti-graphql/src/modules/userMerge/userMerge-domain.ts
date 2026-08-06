@@ -17,6 +17,7 @@ import { type UserMergeJournalEntry, type UserMergeOptions, type UserMergeResult
 export interface UserMergeOptionsInput {
   dryRun?: boolean | null;
   rightsStrategy?: UserMergeRightsStrategy | null;
+  acknowledgeExposureChange?: boolean | null;
 }
 
 /**
@@ -27,6 +28,7 @@ export const resolveUserMergeOptions = (options?: UserMergeOptionsInput | null):
   return {
     dryRun: options?.dryRun ?? true,
     rightsStrategy: options?.rightsStrategy ?? UserMergeRightsStrategy.Strict,
+    acknowledgeExposureChange: options?.acknowledgeExposureChange ?? false,
   };
 };
 

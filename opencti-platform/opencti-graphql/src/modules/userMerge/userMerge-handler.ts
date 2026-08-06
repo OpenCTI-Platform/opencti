@@ -32,6 +32,15 @@ export interface UserMergeRightsAlert {
   register_row_id: string;
   kind: 'rights' | 'marking' | 'organization' | 'exposure';
   message: string;
+  /**
+   * When true, the real pass refuses to write until the operator acknowledges the change.
+   *
+   * The refusal belongs to the engine rather than to `apply()`: raising it there would stop
+   * the merge after earlier handlers already wrote, and raising it in `compute()` would keep
+   * the difference out of the dry-run report — which is the one place the operator can read
+   * it before deciding.
+   */
+  blocking?: boolean;
 }
 
 /**
@@ -108,7 +117,7 @@ export const planFingerprint = (plan: UserMergeHandlerPlan): string => {
     .map((change) => `${change.register_row_id}|${change.entity_type}|${change.count}|${change.exact}`)
     .sort();
   const alerts = [...plan.alerts]
-    .map((alert) => `${alert.register_row_id}|${alert.kind}|${alert.message}`)
+    .map((alert) => `${alert.register_row_id}|${alert.kind}|${alert.message}|${alert.blocking === true}`)
     .sort();
   return JSON.stringify({ handler: plan.handler, changes, alerts });
 };
