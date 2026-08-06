@@ -41,14 +41,19 @@ runs:
     - name: Package tar.gz
       shell: bash
       run: |
+        set -eux
         mkdir -p release
+        ls -lart
         rm -rf ./opencti-platform/opencti-graphql/.yarn/cache
         cp -a ./opencti-platform/opencti-graphql release/opencti
         cp -a ./opencti-platform/.yarnrc.yml release/opencti/
         cp -a ./opencti-worker/src release/opencti/worker
-        git clone --depth 1 --single-branch --branch master https://github.com/OpenCTI-Platform/docker release/docker
-        git clone --depth 1 --single-branch --branch master https://github.com/OpenCTI-Platform/connectors release/connectors
-        cd release && tar -zcvf /tmp/opencti-musl.tar.gz opencti
+        git clone --depth 1 --single-branch --branch master https://github.com/OpenCTI-Platform/docker release/opencti/docker
+        git clone --depth 1 --single-branch --branch master https://github.com/OpenCTI-Platform/connectors release/opencti/connectors
+        ls -lart release
+        pwd
+        ls -lart
+        cd release && tar -zcvf /tmp/opencti.tar.gz opencti
 
     - name: Upload tar artifact
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
