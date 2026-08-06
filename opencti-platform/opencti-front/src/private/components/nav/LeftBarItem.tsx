@@ -251,7 +251,10 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
     return (
       <>
         <ListItemButton
+          id={`nav-button-${label}`}
           dense
+          aria-expanded={isMenuOpen}
+          aria-controls={`nav-${label}-collapse`}
           onClick={handleParentClick}
           sx={getMenuStyles(isParentSelected)}
         >
@@ -261,6 +264,9 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
 
         <Collapse in={isMenuOpen} timeout="auto" unmountOnExit>
           <List
+            id={`nav-${label}-collapse`}
+            aria-labelledby={`nav-button-${label}`}
+            role="region"
             disablePadding
             sx={{ backgroundColor: theme.palette.designSystem.background.main }}>
             {visibleSubItems.map((item, i) => renderSubMenuItem(item, true, i))}
