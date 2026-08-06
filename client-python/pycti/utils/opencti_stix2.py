@@ -66,6 +66,14 @@ STIX_EXT_OCTI_SCO: str = "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd56
 STIX_EXT_MITRE: str = "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
 PROCESSING_COUNT: int = 4
 MAX_PROCESSING_COUNT: int = 100
+# Missing-reference retry schedule: fast-first exponential with +-50% jitter. Most missing
+# references are a short race (the referenced entity lands well under a second later), so the
+# first retry comes quickly; later steps grow so the total wait budget stays ~7.5s and slow
+# dependencies keep their chances. Delays (mean): 0.5s, 1s, 2s, 4s.
+MISSING_REF_RETRY_INITIAL_DELAY: float = float(
+    os.getenv("OPENCTI_MISSING_REF_RETRY_INITIAL_DELAY", "0.5")
+)
+MISSING_REF_RETRY_FACTOR: float = float(os.getenv("OPENCTI_MISSING_REF_RETRY_FACTOR", "2"))
 MARKDOWN_EXPORT_FIELDS: Tuple[str, ...] = (
     "description",
     "x_opencti_description",
@@ -3577,8 +3585,15 @@ class OpenCTIStix2:
                     processing_count += 1
                 # Platform detects a missing reference and have to retry
                 elif ERROR_TYPE_MISSING_REFERENCE in error_msg and in_retry:
-                    bundles_missing_reference_error_counter.add(1)
-                    sleep_jitter = round(random.uniform(1, 3), 2)
+                    bundles_missing_reference_error_counter.add(
+                        1, {"attempt": processing_count}
+                    )
+                    base_delay = MISSING_REF_RETRY_INITIAL_DELAY * (
+                        MISSING_REF_RETRY_FACTOR**processing_count
+                    )
+                    sleep_jitter = round(
+                        random.uniform(base_delay * 0.5, base_delay * 1.5), 2
+                    )
                     time.sleep(sleep_jitter)
                     processing_count += 1
                 # A bad gateway error occurs
