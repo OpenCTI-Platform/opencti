@@ -223,19 +223,17 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
   // No Subitems
   if (!hasSubItems) {
     return (
-      <ListItem disableGutters disablePadding dense>
-        <Tooltip title={!navOpen ? label : ''} placement="right">
-          <ListItemButton
-            component={Link}
-            to={link}
-            dense
-            onClick={onClick}
-            sx={getMenuStyles(isParentSelected)}
-          >
-            {renderMenuItem(label, isParentSelected, undefined, undefined, undefined, icon)}
-          </ListItemButton>
-        </Tooltip>
-      </ListItem>
+      <Tooltip title={!navOpen ? label : ''} placement="right">
+        <ListItemButton
+          component={Link}
+          to={link}
+          dense
+          onClick={onClick}
+          sx={getMenuStyles(isParentSelected)}
+        >
+          {renderMenuItem(label, isParentSelected, undefined, undefined, undefined, icon)}
+        </ListItemButton>
+      </Tooltip>
     );
   }
 
@@ -257,9 +255,9 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
 
         <Collapse in={isMenuOpen} timeout="auto" unmountOnExit>
           <List
+            component="nav"
             id={`nav-${label}-collapse`}
             aria-labelledby={`nav-button-${label}`}
-            role="region"
             disablePadding
             sx={{ backgroundColor: theme.palette.designSystem.background.main }}
           >

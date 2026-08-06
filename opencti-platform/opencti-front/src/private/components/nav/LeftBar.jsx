@@ -797,6 +797,7 @@ const LeftBarComponent = ({ queryRef }) => {
         }}
       >
         <List
+          component="nav"
           sx={{
             display: 'flex',
             flexDirection: 'column',
