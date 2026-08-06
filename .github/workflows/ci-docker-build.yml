@@ -81,7 +81,7 @@ jobs:
       with:
         name: docker-image-opencti-builder
         path: /tmp/opencti-builder.tar
-        retention-days: ${{ vars.CI_ARTIFACT_RETENTION_DAYS }}
+        retention-days: 10
 
     - name: Docker meta
       id: meta
@@ -106,7 +106,7 @@ jobs:
       with:
         name: docker-image-opencti-platform
         path: /tmp/opencti-platform.tar
-        retention-days: ${{ vars.CI_ARTIFACT_RETENTION_DAYS }}
+        retention-days: 10
 
   build-opencti-worker:
     name: Build OpenCTI Worker image
@@ -158,4 +158,4 @@ jobs:
       with:
         name: docker-image-opencti-worker
         path: /tmp/opencti-worker.tar
-        retention-days: ${{ vars.CI_ARTIFACT_RETENTION_DAYS }}
+        retention-days: 10

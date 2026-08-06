@@ -56,5 +56,5 @@ runs:
       with:
         name: tar-opencti-platform-musl
         path: /tmp/opencti-musl.tar.gz
-        retention-days: ${{ vars.CI_ARTIFACT_RETENTION_DAYS }}
+        retention-days: 10
 
