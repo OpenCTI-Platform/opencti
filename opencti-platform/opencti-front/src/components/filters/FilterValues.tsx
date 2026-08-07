@@ -17,9 +17,7 @@ import FilterValuesForDynamicSubKey from './FilterValuesForDynamicSubKey';
 import { useTheme } from '@mui/material/styles';
 import { Stack } from '@mui/material';
 import type { WidgetHost } from '../../utils/widget/widget';
-import makeStyles from '@mui/styles/makeStyles';
-import clsx from 'clsx';
-import type { Theme } from '../Theme';
+import Button from '@common/button/Button';
 
 interface FilterValuesProps {
   label: string | React.JSX.Element;
@@ -37,23 +35,7 @@ interface FilterValuesProps {
   filtersRestrictions?: FiltersRestrictions;
   host?: WidgetHost;
 }
-const useStyles = makeStyles((theme: Theme) => ({
-  label: {
-    background: 'none',
-    border: 'none',
-    padding: 0,
-    font: 'inherit',
-    color: 'inherit',
-  },
-  pointer: {
-    cursor: 'pointer',
-  },
-  underlineHover: {
-    '&:hover': {
-      textDecorationLine: 'underline',
-    },
-  },
-}));
+
 const FilterValues: FunctionComponent<FilterValuesProps> = ({
   label,
   tooltip,
@@ -73,7 +55,6 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const { schema: { scos } } = useSchema();
-  const classes = useStyles();
 
   const filterKey = currentFilter.key;
   const filterOperator = currentFilter.operator;
@@ -83,49 +64,58 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const deactivatePopoverMenu = !isFilterEditable(filtersRestrictions, filterKey, filterValues) || !isReadWriteFilter;
   const onCLick = deactivatePopoverMenu ? () => { } : onClickLabel;
 
+  const buttonStyles = {
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    font: 'inherit',
+    color: 'inherit',
+    backgroundColor: 'inherit !important',
+    ...(!deactivatePopoverMenu && {
+      cursor: 'pointer',
+      '&:hover': {
+        textDecorationLine: 'underline',
+      },
+    })
+  }
+
   // special case for nil/not_nil
   if (isOperatorNil) {
     return (
-      <>
-        <button
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <Button
           type="button"
-          className={clsx(classes.label, {
-            [classes.pointer]: !deactivatePopoverMenu,
-            [classes.underlineHover]: !deactivatePopoverMenu,
-          })}
+          sx={buttonStyles}
           onClick={onCLick}
         >
           <strong>
             {label}
           </strong>
-        </button>{' '}
+        </Button>{' '}
         <span>
           {filterOperator === 'nil' ? t_i18n('is empty') : t_i18n('is not empty')}
         </span>
-      </>
+      </div>
     );
   }
 
   // special case for has_changed/not_has_changed
   if (isOperatorChange) {
     return (
-      <>
-        <button
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <Button
           type="button"
-          className={clsx(classes.label, {
-            [classes.pointer]: !deactivatePopoverMenu,
-            [classes.underlineHover]: !deactivatePopoverMenu,
-          })}
+          sx={buttonStyles}
           onClick={onCLick}
         >
           <strong>
             {label}
           </strong>
-        </button>{' '}
+        </Button>{' '}
         <span>
           {filterOperator === 'has_changed' ? t_i18n('has changed') : t_i18n('has not changed')}
         </span>
-      </>
+      </div>
     );
   }
 
@@ -135,23 +125,20 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   ) {
     const relativeValue = translateDateInterval(filterValues, t_i18n);
     return (
-      <>
-        <button
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <Button
           type="button"
-          className={clsx(classes.label, {
-            [classes.pointer]: !deactivatePopoverMenu,
-            [classes.underlineHover]: !deactivatePopoverMenu,
-          })}
+          sx={buttonStyles}
           onClick={onCLick}
         >
           <strong>
             {label}
           </strong>
-        </button>{' '}
+        </Button>{' '}
         <span>
           {relativeValue}
         </span>
-      </>
+      </div>
     );
   }
 
@@ -164,32 +151,32 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       && isFilterEditable(filtersRestrictions, filterKey, filterValues);
     const localModeStyle = isLocalModeSwitchable
       ? {
-          background: 'none',
-          color: 'inherit',
-          display: 'inline-block',
-          height: '100%',
-          borderRadius: 0,
-          margin: '0 5px 0 5px',
-          padding: '0 5px 0 5px',
-          cursor: 'pointer',
-          backgroundColor: theme.palette.action?.disabled,
-          fontFamily: 'Consolas, monaco, monospace',
-          '&:hover': {
-            textDecorationLine: 'underline',
-            backgroundColor: theme.palette.text?.disabled,
-          },
-        }
+        background: 'none',
+        color: 'inherit',
+        display: 'inline-block',
+        height: '100%',
+        borderRadius: 0,
+        margin: '0 5px 0 5px',
+        padding: '0 5px 0 5px',
+        cursor: 'pointer',
+        backgroundColor: theme.palette.action?.disabled,
+        fontFamily: 'Consolas, monaco, monospace',
+        '&:hover': {
+          textDecorationLine: 'underline',
+          backgroundColor: theme.palette.text?.disabled,
+        },
+      }
       : {
-          background: 'none',
-          color: 'inherit',
-          display: 'inline-block',
-          height: '100%',
-          borderRadius: 0,
-          margin: '0 5px 0 5px',
-          padding: '0 5px 0 5px',
-          backgroundColor: theme.palette.action?.disabled,
-          fontFamily: 'Consolas, monaco, monospace',
-        };
+        background: 'none',
+        color: 'inherit',
+        display: 'inline-block',
+        height: '100%',
+        borderRadius: 0,
+        margin: '0 5px 0 5px',
+        padding: '0 5px 0 5px',
+        backgroundColor: theme.palette.action?.disabled,
+        fontFamily: 'Consolas, monaco, monospace',
+      };
     const operatorOnClick = isLocalModeSwitchable ? () => handleSwitchLocalMode(currentFilter) : undefined;
     const value = filtersRepresentativesMap.get(id) ? filtersRepresentativesMap.get(id)?.value : id;
     const isRegardingOfFilter = parentFilter?.key === 'regardingOf' || parentFilter?.key === 'dynamicRegardingOf';
@@ -197,64 +184,64 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       <Fragment key={id}>
         {filterOperator === 'within'
           ? (
-              <>
-                {filterValues[0] === id && <span>[</span>}
-                <FilterValuesContent
-                  isFilterTooltip={!!tooltip}
-                  filterKey={filterKey}
-                  id={id}
-                  value={value}
-                  filterDefinition={filterDefinition}
-                  filterOperator={filterOperator}
-                  host={host}
-                />
-                <span>
-                  {last(filterValues) === id ? ']' : ', '}
-                </span>
-              </>
-            )
+            <>
+              {filterValues[0] === id && <span>[</span>}
+              <FilterValuesContent
+                isFilterTooltip={!!tooltip}
+                filterKey={filterKey}
+                id={id}
+                value={value}
+                filterDefinition={filterDefinition}
+                filterOperator={filterOperator}
+                host={host}
+              />
+              <span>
+                {last(filterValues) === id ? ']' : ', '}
+              </span>
+            </>
+          )
           : (
-              <>
-                <FilterValuesContent
-                  redirection={tooltip ? false : redirection}
-                  isFilterTooltip={!!tooltip}
-                  filterKey={filterKey}
-                  id={id}
-                  value={value}
-                  filterDefinition={filterDefinition}
-                  filterOperator={filterOperator}
-                  host={host}
-                />
-                {last(filterValues) !== id && isRegardingOfFilter
-                  && (
-                    <button
-                      type="button"
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        padding: 0,
-                        color: 'inherit',
-                        display: 'inline-block',
-                        height: '100%',
-                        borderRadius: 0,
-                        margin: '0 2px 0 0',
-                        fontFamily: 'Consolas, monaco, monospace',
-                      }}
-                      onClick={operatorOnClick}
-                    >
-                      ,
-                    </button>
-                  )
-                }
-                {last(filterValues) !== id && !isRegardingOfFilter
-                  && (
-                    <button type="button" style={localModeStyle} onClick={operatorOnClick}>
-                      {t_i18n((currentFilter.mode ?? 'or').toUpperCase())}
-                    </button>
-                  )
-                }
-              </>
-            )
+            <>
+              <FilterValuesContent
+                redirection={tooltip ? false : redirection}
+                isFilterTooltip={!!tooltip}
+                filterKey={filterKey}
+                id={id}
+                value={value}
+                filterDefinition={filterDefinition}
+                filterOperator={filterOperator}
+                host={host}
+              />
+              {last(filterValues) !== id && isRegardingOfFilter
+                && (
+                  <button
+                    type="button"
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      color: 'inherit',
+                      display: 'inline-block',
+                      height: '100%',
+                      borderRadius: 0,
+                      margin: '0 2px 0 0',
+                      fontFamily: 'Consolas, monaco, monospace',
+                    }}
+                    onClick={operatorOnClick}
+                  >
+                    ,
+                  </button>
+                )
+              }
+              {last(filterValues) !== id && !isRegardingOfFilter
+                && (
+                  <button type="button" style={localModeStyle} onClick={operatorOnClick}>
+                    {t_i18n((currentFilter.mode ?? 'or').toUpperCase())}
+                  </button>
+                )
+              }
+            </>
+          )
         }
       </Fragment>
     );
@@ -267,7 +254,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     const isWarning = isRegardingOfFilterWarning(currentFilter, scos.map((n) => n.id), filtersRepresentativesMap);
 
     return (
-      <Stack direction="row">
+      <Stack direction="row" sx={{ alignItems: 'center' }}>
         {isWarning && (
           <Tooltip title={
             t_i18n('', {
@@ -288,18 +275,15 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
             />
           </Tooltip>
         )}
-        <button
+        <Button
           type="button"
-          className={clsx(classes.label, {
-            [classes.pointer]: !deactivatePopoverMenu,
-            [classes.underlineHover]: !deactivatePopoverMenu,
-          })}
+          sx={buttonStyles}
           onClick={onCLick}
         >
           <strong>
             {label}
           </strong>
-        </button>{' '}
+        </Button>{' '}
         <Box sx={{ display: 'flex', flexDirection: 'row', overflow: 'hidden' }}>
           {sortedFilterValues
             .map((val) => {
@@ -369,42 +353,36 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   }
   if (filterKey === 'dynamicFrom' || filterKey === 'dynamicTo') {
     return (
-      <>
-        <button
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <Button
           type="button"
-          className={clsx(classes.label, {
-            [classes.pointer]: !deactivatePopoverMenu,
-            [classes.underlineHover]: !deactivatePopoverMenu,
-          })}
+          sx={buttonStyles}
           onClick={onCLick}
         >
           <strong>
             {label}
           </strong>
-        </button>{' '}
+        </Button>{' '}
         <Chip
           label={t_i18n('Dynamic filter')}
           color={chipColor}
         />
-      </>
+      </div>
     );
   }
   return (
-    <>
-      <button
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      <Button
         type="button"
-        className={clsx(classes.label, {
-          [classes.pointer]: !deactivatePopoverMenu,
-          [classes.underlineHover]: !deactivatePopoverMenu,
-        })}
+        sx={buttonStyles}
         onClick={onCLick}
       >
         <strong>
           {label}
         </strong>
-      </button>{' '}
+      </Button>{' '}
       {values}
-    </>
+    </div>
   );
 };
 
