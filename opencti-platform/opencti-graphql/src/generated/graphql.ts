@@ -1789,6 +1789,7 @@ export enum BackgroundTaskActionType {
   Add = 'ADD',
   AddGroups = 'ADD_GROUPS',
   AddOrganizations = 'ADD_ORGANIZATIONS',
+  AddRelatedCoveredEntities = 'ADD_RELATED_COVERED_ENTITIES',
   CompleteDelete = 'COMPLETE_DELETE',
   Delete = 'DELETE',
   Enrichment = 'ENRICHMENT',
