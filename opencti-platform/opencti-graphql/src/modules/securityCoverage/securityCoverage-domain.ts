@@ -43,8 +43,8 @@ import { loadThroughDenormalized } from '../../resolvers/stix';
 import { stixCoreRelationshipsPaginated } from '../../domain/stixCoreObject';
 import { getAverageCoverageInformation, getMostRecentLastCoverageResult, internalCreateSecurityCoverageResult } from './securityCoverageResult/securityCoverageResult-utils';
 import { splitSecurityCoverageInput } from './securityCoverage-utils';
-import { addRelatedCoveredEntities } from './securityCoverageResult/securityCoverageResult-domain';
 import { emptyPaginationResult } from '../../database/utils';
+import { createHasCoveredRelTask } from './securityCoverageResult/securityCoverageResult-domain';
 
 export const COVERED_ENTITIES_TYPE = [
   ENTITY_TYPE_INTRUSION_SET,
@@ -126,7 +126,7 @@ export const addSecurityCoverage = async (
         { securityCoverageResultInput, shouldCreateResult },
       );
     } else {
-      await addRelatedCoveredEntities(context, user, result.id);
+      await createHasCoveredRelTask(context, user, result.id);
     }
   }
 
