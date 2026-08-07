@@ -9824,6 +9824,7 @@ type Query {
   dataSanityOperations: [DataSanityOperation!]!
   dataSanityExecutions: [DataSanityExecution!]!
   dataSanityOperationDryRun(operation_name: String!): DataSanityDryRunOutput!
+  userMergeJournal(mergeId: ID, first: Int): [UserMergeJournalEntry!]!
   customFieldDefinition(id: String!): CustomFieldDefinition
   customFieldDefinitions(first: Int, after: ID, orderBy: CustomFieldDefinitionsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): CustomFieldDefinitionConnection
   customFieldDefinitionsForEntityType(entityType: String!): CustomFieldDefinitionConnection
@@ -10800,6 +10801,7 @@ type Mutation {
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations
   dataSanityOperationRequestRun(operation_name: String!): ID
   dataSanityOperationStop(operation_name: String!): ID
+  userMerge(sourceId: ID!, targetId: ID!, options: UserMergeOptions): UserMergeResult!
   customFieldDefinitionAdd(input: CustomFieldDefinitionAddInput!): CustomFieldDefinition
   customFieldDefinitionDelete(id: ID!): ID
   customFieldDefinitionFieldPatch(id: ID!, input: [EditInput!]!): CustomFieldDefinition
@@ -16971,6 +16973,47 @@ type DataSanityImpactedElement {
 
 type DataSanityDryRunOutput {
   estimated_impact: [DataSanityImpactedElement!]!
+}
+
+enum UserMergeRightsStrategy {
+  STRICT
+  UNION
+}
+
+enum UserMergeStatus {
+  RUNNING
+  SUCCESS
+  FAILED
+}
+
+input UserMergeOptions {
+  dryRun: Boolean = true
+  rightsStrategy: UserMergeRightsStrategy = STRICT
+}
+
+type UserMergeResult {
+  id: ID!
+  source_id: ID!
+  target_id: ID!
+  dry_run: Boolean!
+  rights_strategy: UserMergeRightsStrategy!
+  status: UserMergeStatus!
+  started_at: DateTime!
+  completed_at: DateTime
+  message: String
+}
+
+type UserMergeJournalEntry {
+  id: ID!
+  merge_id: ID!
+  source_id: ID!
+  target_id: ID!
+  handler: String!
+  dry_run: Boolean!
+  status: UserMergeStatus!
+  started_at: DateTime!
+  completed_at: DateTime
+  message: String
 }
 
 type CustomFieldValue {
