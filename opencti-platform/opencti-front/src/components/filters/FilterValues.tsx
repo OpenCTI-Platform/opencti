@@ -162,6 +162,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       backgroundColor: theme.palette.action?.disabled,
       fontWeight: 'unset',
       fontFamily: 'Consolas, monaco, monospace',
+      textTransform: 'inherit',
       ...(isLocalModeSwitchable && {
         '&:hover': {
           textDecorationLine: 'underline',
