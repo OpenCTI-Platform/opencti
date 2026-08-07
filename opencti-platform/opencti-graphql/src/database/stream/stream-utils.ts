@@ -148,15 +148,35 @@ export const buildStixUpdateEvent = (
     },
   };
 };
-export const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: StoreObject, changes: Change[], opts: UpdateEventOpts): UpdateEvent => {
+export const buildUpdateEvent = (
+  user: AuthUser,
+  previous: StoreObject,
+  instance: StoreObject,
+  changes: Change[],
+  opts: UpdateEventOpts,
+  workflowStatuses?: { previous?: { name: string; scope: string }; current?: { name: string; scope: string } },
+): UpdateEvent => {
   // Build and send the event
   const stix = convertStoreToStix_2_1(instance) as StixCoreObject;
   const previousStix = convertStoreToStix_2_1(previous) as StixCoreObject;
+  // Stamp both sides so the diff only reflects an actual status change, not the mere presence of the name
+  if (workflowStatuses?.current) {
+    stix.extensions[STIX_EXT_OCTI].workflow_status_name = workflowStatuses.current.name;
+    stix.extensions[STIX_EXT_OCTI].workflow_status_scope = workflowStatuses.current.scope;
+  }
+  if (workflowStatuses?.previous) {
+    previousStix.extensions[STIX_EXT_OCTI].workflow_status_name = workflowStatuses.previous.name;
+    previousStix.extensions[STIX_EXT_OCTI].workflow_status_scope = workflowStatuses.previous.scope;
+  }
   return buildStixUpdateEvent(user, previousStix, stix, changes, opts);
 };
 // Create
-export const buildCreateEvent = (user: AuthUser, instance: StoreObject, message: string): StreamDataEvent => {
+export const buildCreateEvent = (user: AuthUser, instance: StoreObject, message: string, workflowStatus?: { name: string; scope: string }): StreamDataEvent => {
   const stix = convertStoreToStix_2_1(instance) as StixCoreObject;
+  if (workflowStatus) {
+    stix.extensions[STIX_EXT_OCTI].workflow_status_name = workflowStatus.name;
+    stix.extensions[STIX_EXT_OCTI].workflow_status_scope = workflowStatus.scope;
+  }
   return {
     version: EVENT_CURRENT_VERSION,
     type: EVENT_TYPE_CREATE,

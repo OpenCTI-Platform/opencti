@@ -51,6 +51,30 @@ export const findByType = async (context: AuthContext, user: AuthUser, statusTyp
   const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
   return platformStatuses.filter((status) => status.type === statusType);
 };
+// Used by the sync manager to map a remote workflow status onto the equivalent locally configured one (matched by name, not by id).
+export const findStatusByTypeScopeAndTemplateName = async (
+  context: AuthContext,
+  user: AuthUser,
+  type: string,
+  scope: string | undefined | null,
+  templateName: string,
+): Promise<BasicWorkflowStatus | undefined> => {
+  // The cached status entities already carry the associated template name (merged in by the cache manager), no separate template lookup needed.
+  const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
+  return platformStatuses.find((status) => status.type === type && status.scope === scope && status.name === templateName);
+};
+// Used by the sync manager: resolves the local status id for a remote status name/scope, or undefined if not configured locally.
+export const resolveSyncedWorkflowId = async (
+  context: AuthContext,
+  user: AuthUser,
+  type: string,
+  scope: string | undefined | null,
+  templateName: string | undefined,
+): Promise<string | undefined> => {
+  if (!templateName) return undefined;
+  const status = await findStatusByTypeScopeAndTemplateName(context, user, type, scope, templateName);
+  return status?.id;
+};
 export const findStatusPaginated = (context: AuthContext, user: AuthUser, args: QueryStatusesArgs) => {
   return pageEntitiesConnection<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
 };

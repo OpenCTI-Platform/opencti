@@ -1,6 +1,6 @@
 import { ATTR_DB_NAMESPACE, SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { StoreObject, StoreRelation } from '../../types/store';
+import type { BasicWorkflowStatus, StoreObject, StoreRelation } from '../../types/store';
 import type { ActivityStreamEvent, BaseEvent, Change, CreateEventOpts, EventOpts, SseEvent, StreamDataEvent, StreamNotifEvent, UpdateEventOpts } from '../../types/event';
 import { isStixExportableInStreamData } from '../../schema/stixCoreObject';
 import { generateCreateMessage, generateDeleteMessage, generateRestoreMessage } from '../data-changes';
@@ -23,11 +23,29 @@ import { getDraftContext } from '../../utils/draftContext';
 import { rawRedisStreamClient } from '../redis-stream';
 import { telemetry } from '../../config/tracing';
 import { logApp } from '../../config/conf';
+import { getEntitiesMapFromCache } from '../cache';
+import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
 
 const streamClient: RawStreamClient = rawRedisStreamClient;
 export const initializeStreamStack = async () => {
   if (streamClient.initializeStreams) {
     await streamClient.initializeStreams();
+  }
+};
+
+// Resolve the human-readable status template name/scope for an instance's x_opencti_workflow_id, so the wire event stays self-sufficient
+const resolveWorkflowStatusName = async (context: AuthContext, user: AuthUser, instance: StoreObject): Promise<{ name: string; scope: string } | undefined> => {
+  const workflowId = instance.x_opencti_workflow_id;
+  if (!workflowId) return undefined;
+  try {
+    // The cached status entities already carry the associated template name (merged in by the cache manager), no separate template lookup needed.
+    const platformStatuses = await getEntitiesMapFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
+    const status = platformStatuses.get(workflowId);
+    return status?.name ? { name: status.name, scope: status.scope } : undefined;
+  } catch (e) {
+    // Enrichment for sync only, must never fail the write itself (e.g. cache not warmed up yet)
+    logApp.warn('[OPENCTI] Unable to resolve workflow status name for stream event', { error: e });
+    return undefined;
   }
 };
 
@@ -79,7 +97,12 @@ export const storeUpdateEvent = async (
 ) => {
   try {
     if (isStixExportableInStreamData(instance)) {
-      const event = buildUpdateEvent(user, previous, instance, changes, opts);
+      const [previousStatus, currentStatus] = await Promise.all([
+        resolveWorkflowStatusName(context, user, previous),
+        resolveWorkflowStatusName(context, user, instance),
+      ]);
+      const workflowStatuses = { previous: previousStatus, current: currentStatus };
+      const event = buildUpdateEvent(user, previous, instance, changes, opts, workflowStatuses);
       await pushToStream(context, user, event, opts);
       return event;
     }
@@ -97,7 +120,8 @@ export const storeCreateRelationEvent = async (context: AuthContext, user: AuthU
       if (!withoutMessage) {
         message = restore ? generateRestoreMessage(instance) : generateCreateMessage(instance);
       }
-      const event = buildCreateEvent(user, instance, message);
+      const workflowStatus = await resolveWorkflowStatusName(context, user, instance);
+      const event = buildCreateEvent(user, instance, message, workflowStatus);
       await pushToStream(context, user, event, opts);
       return event;
     }
@@ -110,7 +134,8 @@ export const storeCreateRelationEvent = async (context: AuthContext, user: AuthU
 export const storeCreateEntityEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, message: string, opts: CreateEventOpts = {}) => {
   try {
     if (isStixExportableInStreamData(instance)) {
-      const event = buildCreateEvent(user, instance, message);
+      const workflowStatus = await resolveWorkflowStatusName(context, user, instance);
+      const event = buildCreateEvent(user, instance, message, workflowStatus);
       await pushToStream(context, user, event, opts);
       return event;
     }
