@@ -170,15 +170,7 @@ export const baseOperationBuilder = (actionType, operations, element) => {
       if (isStixCyberObservable(element.entity_type) && attrKey === 'description') {
         attrKey = 'x_opencti_description';
       }
-      let operation = action.type.toLowerCase();
-      let value = action.context.values;
-      // For single-valued temporal bounds, REMOVE must clear the field.
-      // Converting to REPLACE [null] makes the update deterministic regardless of displayed/input format.
-      if (action.type === ACTION_TYPE_REMOVE && ['start_time', 'stop_time'].includes(attrKey)) {
-        operation = 'replace';
-        value = [null];
-      }
-      return { key: attrKey, value, operation };
+      return { key: attrKey, value: action.context.values, operation: action.type.toLowerCase() };
     });
   }
   if (actionType === 'KNOWLEDGE_TRASH') {

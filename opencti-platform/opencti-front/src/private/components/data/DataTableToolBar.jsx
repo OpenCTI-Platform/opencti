@@ -614,8 +614,6 @@ class DataTableToolBar extends Component {
     const { value } = event.target;
     const { actionsInputs } = this.state;
     const currentActionInput = actionsInputs[i] || {};
-    const previousType = currentActionInput.type;
-    const previousField = currentActionInput.field;
 
     actionsInputs[i] = R.assoc(key, value, currentActionInput);
     if (key === 'field') {
@@ -648,14 +646,6 @@ class DataTableToolBar extends Component {
           'ATTRIBUTE',
           actionsInputs[i] || {},
         );
-      }
-    }
-    if (key === 'type') {
-      if (value === 'REMOVE' && ['start_time', 'stop_time'].includes(previousField)) {
-        actionsInputs[i] = R.assoc('values', [''], actionsInputs[i] || {});
-      }
-      if (previousType === 'REMOVE' && value !== 'REMOVE' && ['start_time', 'stop_time'].includes(previousField)) {
-        actionsInputs[i] = R.assoc('values', [], actionsInputs[i] || {});
       }
     }
     this.setState({ actionsInputs });
