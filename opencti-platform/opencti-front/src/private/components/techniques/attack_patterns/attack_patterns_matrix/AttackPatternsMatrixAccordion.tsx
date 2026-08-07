@@ -48,6 +48,24 @@ const AccordionAttackPattern = ({
   // Get coverage information if in coverage mode
   const coverage = isCoverage && coverageMap ? coverageMap.get(attackPattern.attack_pattern_id) : null;
 
+  const getAvgCoverageScore = (): { avg: number; count: number } => {
+    if (!isCoverage) {
+      return { avg: -1, count: 0 };
+    }
+    // Calculate coverage including sub-techniques
+    const parentCoverage = attackPattern.isCovered ? coverage : null;
+    const subCoverages = attackPattern.subAttackPatterns
+      ?.filter((sub) => (sub as FilteredSubAttackPattern).isCovered)
+      ?.map((sub) => coverageMap?.get((sub as FilteredSubAttackPattern).attack_pattern_id))
+      .filter(Boolean)
+      .flat() || [];
+
+    const allCoverages = [...(parentCoverage || []), ...subCoverages];
+    // Get the average coverage score from all coverages (parent + sub-techniques)
+    const avgScore = allCoverages.reduce((sum, c) => sum + (c?.coverage_score || 0), 0) / allCoverages.length;
+
+    return { avg: avgScore, count: allCoverages.length };
+  };
   // Calculate colors based on coverage score for active/covered boxes
   const getCoverageColors = () => {
     if (!isCoverage) {
@@ -65,18 +83,9 @@ const AccordionAttackPattern = ({
       return { backgroundColor: defaultStyles.backgroundColor, border: defaultStyles.border };
     }
 
-    // Calculate coverage including sub-techniques
-    const parentCoverage = attackPattern.isCovered ? coverage : null;
-    const subCoverages = attackPattern.subAttackPatterns
-      ?.filter((sub) => (sub as FilteredSubAttackPattern).isCovered)
-      ?.map((sub) => coverageMap?.get((sub as FilteredSubAttackPattern).attack_pattern_id))
-      .filter(Boolean)
-      .flat() || [];
-
-    const allCoverages = [...(parentCoverage || []), ...subCoverages];
-
+    const avgCoverageScore = getAvgCoverageScore();
     // Box is covered and we're in coverage mode
-    if (allCoverages.length === 0) {
+    if (avgCoverageScore?.count === 0) {
       // No coverage data but box is covered - use blue for unknown
       const bgColor = isHovered
         ? hexToRGB(theme.palette.primary.main, 0.3)
@@ -88,13 +97,10 @@ const AccordionAttackPattern = ({
       };
     }
 
-    // Get the average coverage score from all coverages (parent + sub-techniques)
-    const avgScore = allCoverages.reduce((sum, c) => sum + (c?.coverage_score || 0), 0) / allCoverages.length;
-
     // Calculate color based on score (0-100)
     // Green to red gradient
-    const red = Math.round(255 * (1 - avgScore / 100));
-    const green = Math.round(255 * (avgScore / 100));
+    const red = Math.round(255 * (1 - avgCoverageScore.avg / 100));
+    const green = Math.round(255 * (avgCoverageScore.avg / 100));
     const bgOpacity = isHovered ? 0.25 : 0.15;
 
     return {
@@ -145,6 +151,7 @@ const AccordionAttackPattern = ({
             />
           </IconButton>
         )}
+        aria-label={getAvgCoverageScore().avg === -1 ? undefined : `${Math.round(getAvgCoverageScore().avg)}% ${t_i18n('Coverage')}`}
         sx={{
           minHeight: 0,
           paddingLeft: 0,

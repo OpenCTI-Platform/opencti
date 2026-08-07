@@ -11,6 +11,7 @@ import {
 import type { Theme } from '../../../../../components/Theme';
 import { hexToRGB } from '../../../../../utils/Colors';
 import SecurityCoverageScores from '../../../analyses/security_coverages/SecurityCoverageScores';
+import { useFormatter } from '../../../../../components/i18n';
 
 interface AttackPatternsMatrixColumnsElementProps {
   attackPattern: FilteredAttackPattern | FilteredSubAttackPattern;
@@ -32,9 +33,18 @@ const AttackPatternsMatrixColumnsElement = ({
 }: AttackPatternsMatrixColumnsElementProps) => {
   const theme = useTheme<Theme>();
   const [isHovered, setIsHovered] = useState(false);
+  const { t_i18n } = useFormatter();
 
   // Get coverage information if in coverage mode
   const coverage = isCoverage && coverageMap ? coverageMap.get(attackPattern.attack_pattern_id) : null;
+
+  const getAvgCoverageScore = (): number => {
+    if (coverage) {
+      return coverage.reduce((sum, c) => sum + c.coverage_score, 0) / coverage.length;
+    } else {
+      return -1;
+    }
+  };
 
   // Calculate colors based on coverage score for active/covered boxes
   const getCoverageColors = () => {
@@ -58,7 +68,7 @@ const AttackPatternsMatrixColumnsElement = ({
     }
 
     // Get the average coverage score if there are multiple coverages
-    const avgScore = coverage.reduce((sum, c) => sum + c.coverage_score, 0) / coverage.length;
+    const avgScore = getAvgCoverageScore();
 
     // Calculate color based on score (0-100)
     // Green to red gradient
@@ -83,6 +93,7 @@ const AttackPatternsMatrixColumnsElement = ({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={(e) => handleOpen(attackPattern, e)}
+      aria-label={getAvgCoverageScore() === -1 ? undefined : `${Math.round(getAvgCoverageScore())}% ${t_i18n('Coverage')}`}
       sx={{
         display: 'flex',
         cursor: 'pointer',

@@ -17,7 +17,7 @@
   scrollbar-width: thin;
 }
 
-#root{
+#root {
   max-height: 100vh;
   height: 100vh;
 }
@@ -87,7 +87,8 @@ div.markdown p:last-child {
 }
 
 /* .mde-preview .mde-preview-content table th, .mde-preview .mde-preview-content table td */
-div.markdown table th, div.markdown table td {
+div.markdown table th,
+div.markdown table td {
   padding: 6px 13px;
   border: 1px solid #c8ccd0;
 }
@@ -123,18 +124,21 @@ div.markdown table {
   border-radius: 3px;
   color: #eee;
   background: rgba(0, 0, 0, 0.65);
-  visibility: hidden; /* by default */
+  visibility: hidden;
+  /* by default */
   display: block;
   unicode-bidi: embed;
   white-space: pre;
 }
 
 .hide-scrollbar {
-  scrollbar-width: none; /* Firefox */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 .hide-scrollbar::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
+  /* Chrome, Safari, Opera */
 }
 
 input[type="file"] {
@@ -145,10 +149,23 @@ input[type="file"] {
   background-color: rgb(255, 255, 0) !important;
 }
 
-.marker-blue, .flexible-marker-blue {
+.marker-blue,
+.flexible-marker-blue {
   background-color: rgb(15, 188, 255) !important;
 }
 
 .paper-for-grid {
-  height: calc(100% - 25px); /* H4 size + 10 margin in MOST case, should be override sometimes */
+  height: calc(100% - 25px);
+  /* H4 size + 10 margin in MOST case, should be override sometimes */
+}
+
+.sr-only {
+  clip: rect(1px, 1px, 1px, 1px);
+  clip-path: inset(50%);
+  height: 1px;
+  width: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
 }

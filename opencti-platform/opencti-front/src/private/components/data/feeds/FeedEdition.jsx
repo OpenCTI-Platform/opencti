@@ -675,7 +675,7 @@ const FeedEditionContainer = (props) => {
                                           </Grid>
                                           <Grid item xs={4}>
                                             <FormControl variant="standard" fullWidth disabled={!currentMapping?.target_entity_type}>
-                                              <InputLabel>{t_i18n('Attribute')}</InputLabel>
+                                              <InputLabel htmlFor={`attribute-select-${typeIndex}`}>{t_i18n('Attribute')}</InputLabel>
                                               {currentMapping?.target_entity_type ? (
                                                 <QueryRenderer
                                                   query={stixCyberObservablesLinesAttributesQuery}
@@ -697,6 +697,9 @@ const FeedEditionContainer = (props) => {
                                                       }
                                                       return (
                                                         <Select
+                                                          inputProps={{
+                                                            id: `attribute-select-${typeIndex}`,
+                                                          }}
                                                           value={currentMapping?.attribute || ''}
                                                           onChange={(event) => handleChangeAttributeMapping(i, selectedType, event.target.value)}
                                                         >
@@ -706,16 +709,16 @@ const FeedEditionContainer = (props) => {
                                                         </Select>
                                                       );
                                                     }
-                                                    return <Select disabled value="" />;
+                                                    return <Select inputProps={{ id: `attribute-select-${typeIndex}` }} disabled value="" />;
                                                   }}
                                                 />
-                                              ) : <Select disabled value="" />}
+                                              ) : <Select inputProps={{ id: `attribute-select-${typeIndex}` }} disabled value="" />}
                                             </FormControl>
                                           </Grid>
                                         </Grid>
                                       ) : (
                                         <FormControl variant="standard" fullWidth>
-                                          <InputLabel>{t_i18n('Attribute')}</InputLabel>
+                                          <InputLabel htmlFor={`attribute-select-${typeIndex}`}>{t_i18n('Attribute')}</InputLabel>
                                           <QueryRenderer
                                             query={stixCyberObservablesLinesAttributesQuery}
                                             variables={{ elementType: [selectedType] }}
@@ -736,6 +739,9 @@ const FeedEditionContainer = (props) => {
                                                 }
                                                 return (
                                                   <Select
+                                                    inputProps={{
+                                                      id: `attribute-select-${typeIndex}`,
+                                                    }}
                                                     value={currentMapping?.attribute || ''}
                                                     onChange={(event) => handleChangeAttributeMapping(i, selectedType, event.target.value)}
                                                   >
@@ -745,7 +751,7 @@ const FeedEditionContainer = (props) => {
                                                   </Select>
                                                 );
                                               }
-                                              return <Select disabled value="" />;
+                                              return <Select inputProps={{ id: `attribute-select-${typeIndex}` }} disabled value="" />;
                                             }}
                                           />
                                         </FormControl>

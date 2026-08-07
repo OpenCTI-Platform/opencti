@@ -63,11 +63,21 @@ const FintelTemplateComponent = ({ queryRef }: FintelTemplateProps) => {
         <FintelTemplateTabs data={fintelTemplate}>
           {({ index }) => (
             <>
-              <div role="tabpanel" hidden={index !== 0}>
+              <div
+                role="tabpanel"
+                hidden={index !== 0}
+                id="fintel-templates-tabpanel-0"
+                aria-labelledby="fintel-templates-tab-0"
+              >
                 <FintelTemplateContentEditor data={fintelTemplate} />
               </div>
               <Security needs={[KNOWLEDGE]}>
-                <div role="tabpanel" hidden={index !== 1}>
+                <div
+                  role="tabpanel"
+                  hidden={index !== 1}
+                  id="fintel-templates-tabpanel-1"
+                  aria-labelledby="fintel-templates-tab-1"
+                >
                   <FintelTemplatePreview
                     isTabActive={index === 1}
                     data={fintelTemplate}

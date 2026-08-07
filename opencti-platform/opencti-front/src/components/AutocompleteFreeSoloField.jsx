@@ -91,7 +91,7 @@ const AutocompleteFreeSoloField = (props) => {
           onClick={() => openCreate()}
           edge="end"
           style={{ position: 'absolute', top: 5, right: 35 }}
-          title={t_i18n('Add')}
+          aria-label={t_i18n('Add')}
         >
           <Add />
         </IconButton>
