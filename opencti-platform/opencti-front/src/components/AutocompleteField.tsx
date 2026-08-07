@@ -95,13 +95,14 @@ const AutocompleteField = <
 
   const defaultRenderTags: MuiProps['renderTags'] = (values, getTagProps) => (
     values.map((option, index) => {
-      const { label, value } = getOptionData(option);
+      const { label, value, color } = getOptionData(option);
       return (
         <Tag
           {...getTagProps({ index })}
           labelTextTransform={preserveCase ? 'none' : 'capitalize'}
           key={value}
           label={label}
+          color={color}
         />
       );
     })
@@ -109,8 +110,8 @@ const AutocompleteField = <
 
   const getOptionData = (option: Value) => {
     return typeof option === 'object' && option !== null
-      ? { label: option.label, value: option.value }
-      : { label: String(option), value: String(option) };
+      ? { label: option.label, value: option.value, color: option.color }
+      : { label: String(option), value: String(option), color: undefined };
   };
 
   const helperText = textfieldprops?.helperText;
