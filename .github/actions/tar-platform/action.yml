@@ -1,4 +1,4 @@
-name: build-platform-musl
+name: build-platform-tar
 description: Build the opencti platform and produce a tar.gz artifact
 
 inputs:
@@ -31,10 +31,10 @@ runs:
           -w /workspace \
           nikolaik/python-nodejs:python3.11-nodejs22 \
           sh -c '
-            apt-get update --allow-insecure-repositories --allow-unauthenticated && apt-get install -y build-essential libffi-dev curl g++ make python3 python3-dev &&
+            apt-get update && apt-get install -y --no-install-recommends build-essential libffi-dev curl g++ make python3 python3-dev && rm -rf /var/lib/apt/lists/* &&
             npm install -g node-gyp &&
             cd /workspace/opencti-platform/opencti-graphql &&
-            yarn install &&
+            yarn install --immutable &&
             yarn build
           '
 
