@@ -78,7 +78,7 @@ export const connector = async (context, user, id) => {
 };
 
 export const computeManagerConnectorContract = async (_context, _user, cn) => {
-  const contracts = await getSupportedContractsByImage();
+  const contracts = await getSupportedContractsByImage(_context, _user);
   const contract = contracts.get(cn.manager_contract_image);
   return contract ? JSON.stringify(contract) : contract;
 };
@@ -88,7 +88,7 @@ export const computeManagerConnectorExcerpt = async (_context, _user, cn) => {
     return null;
   }
 
-  const contracts = await getSupportedContractsByImage();
+  const contracts = await getSupportedContractsByImage(_context, _user);
   const contract = contracts.get(cn.manager_contract_image);
 
   if (!contract) {
@@ -172,15 +172,29 @@ export const computeManagerConnectorConfiguration = async (context, _, cn, { wit
   return configWithProxy.sort();
 };
 
-export const computeManagerConnectorImage = async (cn) => {
-  const contracts = await getSupportedContractsByImage();
+export const computeManagerConnectorImage = async (context, user, cn) => {
+  if (!cn) {
+    logApp.warn('[OPENCTI-MODULE] Cannot compute manager connector image: missing connector payload');
+    return null;
+  }
+  if (isEmptyField(cn.manager_contract_image)) {
+    if (isNotEmptyField(cn.catalog_id)) {
+      logApp.warn('[OPENCTI-MODULE] Cannot compute manager connector image: managed connector is missing manager_contract_image', {
+        connectorId: cn.id,
+        connectorInternalId: cn.internal_id,
+        catalogId: cn.catalog_id,
+      });
+    }
+    return null;
+  }
+  const contracts = await getSupportedContractsByImage(context, user);
   const contract = contracts.get(cn.manager_contract_image);
   if (!contract) return '';
   return isNotEmptyField(cn.manager_contract_image) ? `${cn.manager_contract_image}:${contract.container_version}` : null;
 };
 
 export const computeManagerContractHash = async (context, user, cn) => {
-  const image = await computeManagerConnectorImage(cn);
+  const image = await computeManagerConnectorImage(context, user, cn);
   const config = await computeManagerConnectorConfiguration(context, user, cn, { withEncrypted: true });
   const subHash = config.map((c) => `${c.key}|${c.value}`);
   return shortHash({ image, subHash, state: cn.connector_state_timestamp });
