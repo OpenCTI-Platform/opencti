@@ -13,13 +13,14 @@ const TRASH_ENABLED = booleanConf('app:trash:enabled', true);
 const GARBAGE_COLLECTION_MANAGER_KEY = conf.get('garbage_collection_manager:lock_key') || 'garbage_collection_manager_lock';
 const SCHEDULE_TIME = conf.get('garbage_collection_manager:interval') || 60000; // 1 minute
 const BATCH_SIZE = conf.get('garbage_collection_manager:batch_size') || 10000;
+const REDIS_STREAM_GARBAGE_FREQUENCY = conf.get('garbage_collection_manager:redis_stream_garbage_frequency') || 86400000;
 const DELETED_RETENTION_DAYS = conf.get('garbage_collection_manager:deleted_retention_days') || 7;
 
 let nextRedisStreamFilesGarbageTime = new Date().getTime();
 const garbageCollectRedisStreamFiles = async (context: AuthContext) => {
   const currentTime = new Date().getTime();
   if (nextRedisStreamFilesGarbageTime < currentTime) {
-    nextRedisStreamFilesGarbageTime += 86400000;
+    nextRedisStreamFilesGarbageTime += REDIS_STREAM_GARBAGE_FREQUENCY;
 
     const { firstEventId } = await rawFetchStreamInfo();
     const timestamp = firstEventId.split('-')[0];
