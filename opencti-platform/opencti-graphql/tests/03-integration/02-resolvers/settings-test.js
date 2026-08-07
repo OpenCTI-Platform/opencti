@@ -120,7 +120,7 @@ describe('Settings resolver standard behavior', () => {
   });
   it('should reject fieldPatch when key requires missing capability', async () => {
     const settingsInternalId = await settingsId();
-    await queryAsUserIsExpectedForbidden(USER_SECURITY, {
+    await queryAsUserIsExpectedForbidden(USER_SECURITY.client, {
       query: EDIT_FIELD_QUERY,
       variables: { id: settingsInternalId, input: { key: 'platform_title', value: ['forbidden-update'] } },
     });
@@ -128,7 +128,7 @@ describe('Settings resolver standard behavior', () => {
   it('should allow updating local_auth with SETTINGS_SETAUTH capability', async () => {
     const settingsInternalId = await settingsId();
 
-    await queryAsUserWithSuccess(USER_SECURITY, {
+    await queryAsUserWithSuccess(USER_SECURITY.client, {
       query: EDIT_FIELD_QUERY,
       variables: { id: settingsInternalId, input: { key: 'local_auth', value: [{ enabled: true }] } },
     });
@@ -141,7 +141,7 @@ describe('Settings resolver standard behavior', () => {
   });
   it('should reject updating local_auth without SETTINGS_SETAUTH capability', async () => {
     const settingsInternalId = await settingsId();
-    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
       query: EDIT_FIELD_QUERY,
       variables: { id: settingsInternalId, input: { key: 'local_auth', value: [{ enabled: true }] } },
     });
