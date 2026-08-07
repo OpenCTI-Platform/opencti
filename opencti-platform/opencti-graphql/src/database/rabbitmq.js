@@ -509,15 +509,25 @@ export const getConnectorQueueSize = async (context, user, connectorId) => {
   }
   return targetQueues.length > 0 ? targetQueues.reduce((a, b) => (a.messages ?? 0) + (b.messages ?? 0)) : 0;
 };
+// Return the queues holding the fewest messages among the given candidates.
+// Exported for testing.
+export const filterLeastUsedQueues = (queues) => {
+  const minMessages = Math.min(...queues.map((queue) => queue.messages ?? 0));
+  return queues.filter((queue) => (queue.messages ?? 0) === minMessages);
+};
 export const getBestBackgroundConnectorId = async (context, user) => {
   let stats = metricsCache.get('cached_metrics');
   if (!stats) {
     stats = await metrics(context, user);
     metricsCache.set('cached_metrics', stats);
   }
-  // Find the least used push queue
+  // Find the least used push queues
   const targetQueues = stats.queues.filter((queue) => queue.name.startsWith(`${RABBIT_QUEUE_PREFIX}push_background-task`));
-  const bestQueue = targetQueues.sort((a, b) => (a.messages ?? 0) - (b.messages ?? 0))[0];
+  const leastUsedQueues = filterLeastUsedQueues(targetQueues);
+  // Pick one at random among the least used queues. The metrics are cached for a short window,
+  // so a burst of tasks created within that window would otherwise all be routed to the first
+  // queue (sort index 0) and pile up on a single queue while the others stay idle.
+  const bestQueue = leastUsedQueues[Math.floor(Math.random() * leastUsedQueues.length)];
   return bestQueue.name.substring(`${RABBIT_QUEUE_PREFIX}push_`.length);
 };
 
