@@ -151,6 +151,12 @@ const graphContainerKnowledgeObjectsFragment = graphql`
             ... on Grouping {
               name
             }
+            ... on SecurityCoverage {
+              name
+            }
+            ... on SecurityCoverageResult {
+              name
+            }
             ... on Individual {
               name
             }
