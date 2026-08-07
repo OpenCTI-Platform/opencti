@@ -1087,8 +1087,8 @@ export const userEditField = async (context, user, userId, rawInputs) => {
       throw FunctionalError('Cannot force password change for external user', { userId });
     }
     if (input.key === 'password') {
-      // orgs admins can't update passwords
-      if (isOnlyOrgaAdmin(user) && user.id !== userId) {
+      // orgs admins can't update other users passwords
+      if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && user.id !== userId) {
         throw ForbiddenAccess();
       }
       const userServiceAccountInput = rawInputs.find((x) => x.key === 'user_service_account');

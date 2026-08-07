@@ -6,7 +6,7 @@ import { Stack, useTheme } from '@mui/material';
 import FormHelperText from '@mui/material/FormHelperText';
 import Button from '@common/button/Button';
 import { commitMutation, handleError, MESSAGING$ } from '../../../../../relay/environment';
-import useAuth from '../../../../../utils/hooks/useAuth.ts';
+import useAuth from '../../../../../utils/hooks/useAuth';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../../utils/hooks/useGranted';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
