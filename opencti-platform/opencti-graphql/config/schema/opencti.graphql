@@ -951,6 +951,7 @@ enum BackgroundTaskActionType {
   REMOVE_GROUPS
   SEND_EMAIL
   ENROLL_PLAYBOOK
+  ADD_RELATED_COVERED_ENTITIES
 }
 enum BackgroundTaskContextType {
   ATTRIBUTE
