@@ -2,12 +2,99 @@ import datetime
 
 import pytest
 
+from pycti import OpenCTIApiClient
 from pycti.utils.opencti_stix2 import OpenCTIStix2
 
 
 @pytest.fixture
 def opencti_stix2(api_client):
     return OpenCTIStix2(api_client)
+
+
+@pytest.fixture
+def offline_opencti_stix2():
+    api_client = OpenCTIApiClient(
+        "http://localhost:4000",
+        "test-token",
+        perform_health_check=False,
+    )
+    yield OpenCTIStix2(api_client)
+    api_client.session.close()
+
+
+def export_entity(opencti_stix2, monkeypatch, entity):
+    monkeypatch.setattr(
+        opencti_stix2,
+        "get_reader",
+        lambda _entity_type: lambda **_kwargs: entity,
+    )
+    monkeypatch.setattr(
+        opencti_stix2.opencti.stix_nested_ref_relationship,
+        "list",
+        lambda **_kwargs: [],
+    )
+
+    return opencti_stix2.get_stix_bundle_or_object_from_entity_id(
+        entity_type=entity["entity_type"],
+        entity_id=entity["id"],
+    )
+
+
+def test_export_empty_report_preserves_object_refs(
+    offline_opencti_stix2: OpenCTIStix2, monkeypatch
+):
+    report = {
+        "id": "internal-report-id",
+        "standard_id": "report--11111111-1111-4111-8111-111111111111",
+        "entity_type": "Report",
+        "parent_types": ["Stix-Domain-Object", "Stix-Core-Object"],
+        "objects": [],
+        "objectsIds": [],
+    }
+
+    bundle = export_entity(offline_opencti_stix2, monkeypatch, report)
+
+    assert bundle["objects"][0]["object_refs"] == []
+
+
+def test_export_populated_report_preserves_object_refs(
+    offline_opencti_stix2: OpenCTIStix2, monkeypatch
+):
+    object_standard_id = "indicator--22222222-2222-4222-8222-222222222222"
+    report = {
+        "id": "internal-report-id",
+        "standard_id": "report--11111111-1111-4111-8111-111111111111",
+        "entity_type": "Report",
+        "parent_types": ["Stix-Domain-Object", "Stix-Core-Object"],
+        "objects": [
+            {
+                "id": "internal-indicator-id",
+                "standard_id": object_standard_id,
+                "entity_type": "Indicator",
+                "parent_types": ["Stix-Domain-Object", "Stix-Core-Object"],
+            }
+        ],
+        "objectsIds": ["internal-indicator-id"],
+    }
+
+    bundle = export_entity(offline_opencti_stix2, monkeypatch, report)
+
+    assert bundle["objects"][0]["object_refs"] == [object_standard_id]
+
+
+def test_export_non_container_does_not_add_object_refs(
+    offline_opencti_stix2: OpenCTIStix2, monkeypatch
+):
+    indicator = {
+        "id": "internal-indicator-id",
+        "standard_id": "indicator--22222222-2222-4222-8222-222222222222",
+        "entity_type": "Indicator",
+        "parent_types": ["Stix-Domain-Object", "Stix-Core-Object"],
+    }
+
+    bundle = export_entity(offline_opencti_stix2, monkeypatch, indicator)
+
+    assert "object_refs" not in bundle["objects"][0]
 
 
 def test_unknown_type(opencti_stix2: OpenCTIStix2, caplog):
