@@ -44,6 +44,7 @@ export interface DecayModel {
 
 export interface DecayRuleConfiguration extends DecayModel {
   id?: string;
+  internal_id?: string;
   name: string;
   description: string;
   decay_filters?: string;
@@ -76,6 +77,11 @@ export interface DecayLiveDetails {
   live_points: DecayHistoryChart[];
 }
 
+export const DECAY_RULE_FALLBACK_ID = 'e0f02a98-2aa9-436d-bcb6-409de471f90d';
+export const DECAY_RULE_FILE_ARTEFACT_ID = '574ff611-27b3-4c86-a193-5fc9323dd771';
+export const DECAY_RULE_IP_URL_ID = '8e9cfa29-cd44-4a89-a992-01d8e5eaf6a9';
+export const DECAY_RULE_DOMAIN_NAME_ID = '94790a5d-3b94-4004-9344-adb7bc311ae7';
+
 export const dayToMs = (days: number) => {
   return days * 24 * 60 * 60 * 1000;
 };
@@ -88,7 +94,7 @@ export const findDecayRulePaginated = (context: AuthContext, user: AuthUser, arg
   return pageEntitiesConnection<BasicStoreEntityDecayRule>(context, user, [ENTITY_TYPE_DECAY_RULE], args);
 };
 
-export const addDecayRule = async (context: AuthContext, user: AuthUser, input: DecayRuleAddInput, builtIn?: boolean) => {
+export const addDecayRule = async (context: AuthContext, user: AuthUser, input: DecayRuleAddInput & { internal_id?: string }, builtIn?: boolean) => {
   const defaultOps = {
     created_at: now(),
     updated_at: now(),
@@ -268,6 +274,7 @@ export const getDecaySettingsChartData = async (context: AuthContext, user: Auth
 
 // region init built-in decay rules
 export const FALLBACK_DECAY_RULE: DecayRuleConfiguration = {
+  internal_id: DECAY_RULE_FALLBACK_ID,
   name: 'Built-in default',
   description: 'Built-in decay rule for all indicators that do not match any other decay rule.',
   decay_lifetime: 470, // 1 year
@@ -279,6 +286,7 @@ export const FALLBACK_DECAY_RULE: DecayRuleConfiguration = {
   active: true,
 };
 export const BUILT_IN_DECAY_RULE_FILE_ARTEFACT: DecayRuleConfiguration = {
+  internal_id: DECAY_RULE_FILE_ARTEFACT_ID,
   name: 'Built-in files and artifact',
   description: 'Built-in decay rule for indicators with files or artefact as main observable type.',
   decay_lifetime: 460,
@@ -302,6 +310,7 @@ export const BUILT_IN_DECAY_RULE_FILE_ARTEFACT: DecayRuleConfiguration = {
 };
 
 export const BUILT_IN_DECAY_RULE_IP_URL: DecayRuleConfiguration = {
+  internal_id: DECAY_RULE_IP_URL_ID,
   name: 'Built-in IP and URL',
   description: 'Built-in decay rule for indicators with IP or URL as main observable type.',
   decay_lifetime: 47,
@@ -325,6 +334,7 @@ export const BUILT_IN_DECAY_RULE_IP_URL: DecayRuleConfiguration = {
 };
 
 export const BUILT_IN_DECAY_RULE_DOMAIN_NAME: DecayRuleConfiguration = {
+  internal_id: DECAY_RULE_DOMAIN_NAME_ID,
   name: 'Built-in domain name',
   description: 'Built-in decay rule for indicators with domain name as main observable type.',
   decay_lifetime: 300,

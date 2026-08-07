@@ -35,6 +35,8 @@ import { buildAvailableProviders } from './setting-auth';
 import { CguStatus } from '../generated/graphql';
 import { getXtmOneRegistrationVersion } from '../modules/xtm/one/xtm-one';
 
+export const OPENCTI_PLATFORM_INTERNAL_ID = '409ba29b-57aa-4954-9ee0-b87d97f0365c';
+
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
 };
@@ -167,7 +169,13 @@ export const getPublicSettings = async (context) => {
 };
 
 export const addSettings = async (context, user, settings) => {
-  const created = await createEntity(context, user, settings, ENTITY_TYPE_SETTINGS);
+  const created = await createEntity(
+    context,
+    user,
+    settings,
+    { internal_id: OPENCTI_PLATFORM_INTERNAL_ID, ...settings },
+    ENTITY_TYPE_SETTINGS,
+  );
   return notify(BUS_TOPICS.Settings.ADDED_TOPIC, created, user);
 };
 
