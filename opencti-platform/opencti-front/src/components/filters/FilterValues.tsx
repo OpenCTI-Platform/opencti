@@ -61,26 +61,32 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator ?? 'eq');
   const isOperatorChange = ['has_changed', 'not_has_changed'].includes(filterOperator ?? 'eq');
   const deactivatePopoverMenu = !isFilterEditable(filtersRestrictions, filterKey, filterValues) || !isReadWriteFilter;
-  const onCLick = deactivatePopoverMenu ? () => {} : onClickLabel;
-  const labelStyle = deactivatePopoverMenu
-    ? undefined
-    : {
-        cursor: 'pointer',
-        '&:hover': {
-          textDecorationLine: 'underline',
-        },
-      };
+  const onClick = deactivatePopoverMenu ? undefined : onClickLabel;
+  const labelButtonStyle = {
+    all: 'unset',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+  } as const;
+  const renderLabel = () => {
+    if (!onClick) {
+      return <strong>{label}</strong>;
+    }
+    return (
+      <button
+        type="button"
+        style={labelButtonStyle}
+        onClick={onClick}
+      >
+        {label}
+      </button>
+    );
+  };
 
   // special case for nil/not_nil
   if (isOperatorNil) {
     return (
       <>
-        <strong
-          style={labelStyle}
-          onClick={onCLick}
-        >
-          {label}
-        </strong>{' '}
+        {renderLabel()}{' '}
         <span>
           {filterOperator === 'nil' ? t_i18n('is empty') : t_i18n('is not empty')}
         </span>
@@ -92,12 +98,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   if (isOperatorChange) {
     return (
       <>
-        <strong
-          style={labelStyle}
-          onClick={onCLick}
-        >
-          {label}
-        </strong>{' '}
+        {renderLabel()}{' '}
         <span>
           {filterOperator === 'has_changed' ? t_i18n('has changed') : t_i18n('has not changed')}
         </span>
@@ -112,12 +113,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     const relativeValue = translateDateInterval(filterValues, t_i18n);
     return (
       <>
-        <strong
-          style={labelStyle}
-          onClick={onCLick}
-        >
-          {label}
-        </strong>{' '}
+        {renderLabel()}{' '}
         <span>
           {relativeValue}
         </span>
@@ -193,25 +189,40 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                 />
                 {last(filterValues) !== id && isRegardingOfFilter
                   && (
-                    <div
+                    <button
+                      type="button"
+                      disabled={!operatorOnClick}
                       style={{
                         display: 'inline-block',
                         height: '100%',
                         borderRadius: 0,
                         margin: '0 2px 0 0',
                         fontFamily: 'Consolas, monaco, monospace',
+                        background: 'none',
+                        border: 'none',
+                        padding: 0,
+                        cursor: operatorOnClick ? 'pointer' : 'default',
                       }}
                       onClick={operatorOnClick}
                     >
                       ,
-                    </div>
+                    </button>
                   )
                 }
                 {last(filterValues) !== id && !isRegardingOfFilter
                   && (
-                    <div style={localModeStyle} onClick={operatorOnClick}>
+                    <button
+                      type="button"
+                      disabled={!operatorOnClick}
+                      style={{
+                        ...localModeStyle,
+                        border: 'none',
+                        cursor: operatorOnClick ? 'pointer' : 'default',
+                      }}
+                      onClick={operatorOnClick}
+                    >
                       {t_i18n((currentFilter.mode ?? 'or').toUpperCase())}
-                    </div>
+                    </button>
                   )
                 }
               </>
@@ -249,12 +260,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
             />
           </Tooltip>
         )}
-        <strong
-          style={labelStyle}
-          onClick={onCLick}
-        >
-          {label}
-        </strong>{' '}
+        {renderLabel()}{' '}
         <Box sx={{ display: 'flex', flexDirection: 'row', overflow: 'hidden' }}>
           {sortedFilterValues
             .map((val) => {
@@ -325,12 +331,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   if (filterKey === 'dynamicFrom' || filterKey === 'dynamicTo') {
     return (
       <>
-        <strong
-          style={labelStyle}
-          onClick={onCLick}
-        >
-          {label}
-        </strong>{' '}
+        {renderLabel()}{' '}
         <Chip
           label={t_i18n('Dynamic filter')}
           color={chipColor}
@@ -340,12 +341,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   }
   return (
     <>
-      <strong
-        style={labelStyle}
-        onClick={onCLick}
-      >
-        {label}
-      </strong>{' '}
+      {renderLabel()}{' '}
       {values}
     </>
   );

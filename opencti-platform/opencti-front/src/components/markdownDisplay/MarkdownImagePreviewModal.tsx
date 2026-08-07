@@ -150,15 +150,15 @@ const MarkdownImagePreviewModal: FunctionComponent<MarkdownImagePreviewModalProp
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
+                onClickCapture={(event) => event.stopPropagation()}
               >
                 <img
                   src={image.src}
                   alt={image.alt}
                   style={{ maxWidth: '90vw', maxHeight: image.alt ? '74vh' : '80vh' }}
-                  onClick={(event) => event.stopPropagation()}
                 />
                 {image.alt && (
-                  <Box sx={captionStyle} onClick={(event) => event.stopPropagation()}>
+                  <Box sx={captionStyle}>
                     {image.alt}
                   </Box>
                 )}
@@ -176,15 +176,15 @@ const MarkdownImagePreviewModal: FunctionComponent<MarkdownImagePreviewModalProp
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
+              onClickCapture={(event) => event.stopPropagation()}
             >
               <img
                 src={images[0].src}
                 alt={images[0].alt}
                 style={{ maxWidth: '90vw', maxHeight: images[0].alt ? '74vh' : '80vh' }}
-                onClick={(event) => event.stopPropagation()}
               />
               {images[0].alt && (
-                <Box sx={captionStyle} onClick={(event) => event.stopPropagation()}>
+                <Box sx={captionStyle}>
                   {images[0].alt}
                 </Box>
               )}

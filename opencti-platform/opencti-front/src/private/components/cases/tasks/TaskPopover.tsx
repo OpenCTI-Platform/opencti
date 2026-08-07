@@ -99,7 +99,7 @@ const TaskPopover = ({
   };
 
   return (
-    <div className={classes.container} onClick={(e) => e.stopPropagation()}>
+    <div className={classes.container} onClickCapture={(e) => e.stopPropagation()}>
       {variant === 'inLine' ? (
         <IconButton
           onClick={handleOpen}

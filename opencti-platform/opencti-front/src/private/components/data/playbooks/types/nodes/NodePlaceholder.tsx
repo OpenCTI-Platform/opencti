@@ -41,7 +41,18 @@ const NodePlaceholder = ({ id, data }: NodeProps) => {
   const classes = useStyles();
   const { getNode } = useReactFlow();
   return (
-    <div className={classes.node} onClick={() => data.openConfig(getNode(id))}>
+    <div
+      className={classes.node}
+      onClick={() => data.openConfig(getNode(id))}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          data.openConfig(getNode(id));
+        }
+      }}
+    >
       {data.name}
       <Handle
         className={classes.handle}

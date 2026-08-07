@@ -44,6 +44,11 @@ const EntitySelectWithTypes: FunctionComponent<EntitySelectWithTypesProps> = ({
       noOptionsText={t_i18n('No available options')}
       options={options}
       value={value}
+      onChange={(_, newValue) => {
+        if (newValue) {
+          handleChange(newValue);
+        }
+      }}
       groupBy={(option) => t_i18n(option?.group ? option?.group : label)}
       onInputChange={(event) => searchEntities('id', cacheEntities, setCacheEntities, event)}
       isOptionEqualToValue={(option, val) => option.value === val.value}
@@ -83,12 +88,6 @@ const EntitySelectWithTypes: FunctionComponent<EntitySelectWithTypesProps> = ({
         <Tooltip title={option.label} key={option.label} followCursor>
           <li
             {...props}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.stopPropagation();
-              }
-            }}
-            onClick={() => handleChange(option)}
             style={{
               whiteSpace: 'nowrap',
               overflow: 'hidden',
