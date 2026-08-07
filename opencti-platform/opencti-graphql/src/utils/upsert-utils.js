@@ -82,6 +82,22 @@ const buildAttributeUpdate = (isFullSync, attribute, currentData, inputData) => 
   return inputs;
 };
 
+const preserveIndicatorLifecycleAndValidityMetadata = (updatePatch, resolvedElement) => {
+  Object.assign(updatePatch, {
+    x_opencti_score: resolvedElement.x_opencti_score,
+    valid_from: resolvedElement.valid_from,
+    valid_until: resolvedElement.valid_until,
+    revoked: resolvedElement.revoked,
+    decay_base_score: resolvedElement.decay_base_score,
+    decay_base_score_date: resolvedElement.decay_base_score_date,
+    decay_applied_rule: resolvedElement.decay_applied_rule,
+    decay_next_reaction_date: resolvedElement.decay_next_reaction_date,
+    decay_exclusion_applied_rule: resolvedElement.decay_exclusion_applied_rule,
+  });
+  // Do not include decay_history in this guard to avoid accidental replace-to-empty in synchronized upsert.
+  delete updatePatch.decay_history;
+};
+
 export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch, confidenceForUpsert) => {
   const updatePatch = { ...basePatch };
   const { confidenceLevelToApply, isConfidenceMatch } = confidenceForUpsert;
@@ -126,6 +142,18 @@ export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch
     }
   }
   if (type === ENTITY_TYPE_INDICATOR) {
+    if (!isConfidenceMatch) {
+      logApp.debug(
+        '[OPENCTI][DECAY] on upsert indicator with insufficient confidence, preserve lifecycle and validity metadata',
+        {
+          elementScore: resolvedElement.x_opencti_score,
+          patchScore: updatePatch.x_opencti_score,
+        },
+      );
+      preserveIndicatorLifecycleAndValidityMetadata(updatePatch, resolvedElement);
+      updatePatch.confidence = confidenceLevelToApply;
+      return updatePatch;
+    }
     // Guard for decay-excluded indicators: when the score is unchanged, preserve valid_until,
     // revoked and x_opencti_score. Mirrors the editField early-return in indicator-domain.ts
     // for excluded indicators (asymmetry reported in issue #16365).
