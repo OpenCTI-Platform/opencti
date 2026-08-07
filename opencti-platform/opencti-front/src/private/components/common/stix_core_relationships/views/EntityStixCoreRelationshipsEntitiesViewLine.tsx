@@ -189,6 +189,12 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
     ... on SecurityPlatform{
         name
     }
+    ... on SecurityCoverage {
+        name
+    }
+    ... on SecurityCoverageResult {
+        name
+    }
     ... on StixCyberObservable {
       observable_value
     }
