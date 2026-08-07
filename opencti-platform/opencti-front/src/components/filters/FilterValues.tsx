@@ -149,34 +149,26 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       && handleSwitchLocalMode
       && !filtersRestrictions?.preventLocalModeSwitchingFor?.includes(filterKey)
       && isFilterEditable(filtersRestrictions, filterKey, filterValues);
-    const localModeStyle = isLocalModeSwitchable
-      ? {
-        background: 'none',
-        color: 'inherit',
-        display: 'inline-block',
-        height: '100%',
-        borderRadius: 0,
-        margin: '0 5px 0 5px',
-        padding: '0 5px 0 5px',
-        cursor: 'pointer',
-        backgroundColor: theme.palette.action?.disabled,
-        fontFamily: 'Consolas, monaco, monospace',
+    const localModeStyle = {
+      minWidth: 'unset',
+      background: 'none',
+      color: 'inherit',
+      display: 'inline-block',
+      height: '100%',
+      borderRadius: 0,
+      margin: '0 5px 0 5px',
+      padding: '0 5px 0 5px',
+      cursor: 'pointer',
+      backgroundColor: theme.palette.action?.disabled,
+      fontWeight: 'unset',
+      fontFamily: 'Consolas, monaco, monospace',
+      ...(isLocalModeSwitchable && {
         '&:hover': {
           textDecorationLine: 'underline',
           backgroundColor: theme.palette.text?.disabled,
-        },
-      }
-      : {
-        background: 'none',
-        color: 'inherit',
-        display: 'inline-block',
-        height: '100%',
-        borderRadius: 0,
-        margin: '0 5px 0 5px',
-        padding: '0 5px 0 5px',
-        backgroundColor: theme.palette.action?.disabled,
-        fontFamily: 'Consolas, monaco, monospace',
-      };
+        }
+      }),
+    };
     const operatorOnClick = isLocalModeSwitchable ? () => handleSwitchLocalMode(currentFilter) : undefined;
     const value = filtersRepresentativesMap.get(id) ? filtersRepresentativesMap.get(id)?.value : id;
     const isRegardingOfFilter = parentFilter?.key === 'regardingOf' || parentFilter?.key === 'dynamicRegardingOf';
@@ -214,9 +206,9 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
               />
               {last(filterValues) !== id && isRegardingOfFilter
                 && (
-                  <button
+                  <Button
                     type="button"
-                    style={{
+                    sx={{
                       background: 'none',
                       border: 'none',
                       padding: 0,
@@ -230,14 +222,14 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                     onClick={operatorOnClick}
                   >
                     ,
-                  </button>
+                  </Button>
                 )
               }
               {last(filterValues) !== id && !isRegardingOfFilter
                 && (
-                  <button type="button" style={localModeStyle} onClick={operatorOnClick}>
+                  <Button type="button" sx={localModeStyle} onClick={operatorOnClick}>
                     {t_i18n((currentFilter.mode ?? 'or').toUpperCase())}
-                  </button>
+                  </Button>
                 )
               }
             </>
