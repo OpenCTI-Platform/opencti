@@ -135,7 +135,7 @@ jobs:
       with:
         name: backend-test-results-integration
         path: ${{ github.workspace }}/opencti-platform/opencti-graphql/test-results
-        retention-days: 15
+        retention-days: 10
 
     # Output all logs used during the job
     - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
