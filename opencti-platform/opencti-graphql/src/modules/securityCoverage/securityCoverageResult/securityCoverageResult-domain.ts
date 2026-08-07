@@ -3,10 +3,10 @@ import { FunctionalError } from '../../../config/errors';
 import { deleteElementById, storeLoadByIdWithRefs } from '../../../database/middleware';
 import { fullRelationsList, pageEntitiesConnection, storeLoadById, type EntityOptions } from '../../../database/middleware-loader';
 import { notify } from '../../../database/redis';
-import { addStixCoreRelationship } from '../../../domain/stixCoreRelationship';
+import { ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES, createListTask } from '../../../domain/backgroundTask-common';
 import { type SecurityCoverageResultAddInput } from '../../../generated/graphql';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../schema/general';
-import { RELATION_HAS_COVERED, RELATION_TARGETS, RELATION_USES } from '../../../schema/stixCoreRelationship';
+import { RELATION_TARGETS, RELATION_USES } from '../../../schema/stixCoreRelationship';
 import { isStixDomainObjectContainer } from '../../../schema/stixDomainObject';
 import type { StoreEntity } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
@@ -117,21 +117,24 @@ export const deleteSecurityCoverageResult = async (
 };
 
 /**
- * /!\ This function could take quite a long time to execute, better to use it with background tasks.
- *
- * Creates a has-covered relationship between a security coverage result and each entities of
- * a covered entity.
+ * Create a background task that will create has-covered relationships between
+ * a security coverage result and its covered entities.
  *
  * @param context
  * @param user User making the request.
  * @param securityCoverageResultId ID of the security coverage result to populate.
+ * @returns The created background task.
  */
-export const addRelatedCoveredEntities = async (
+export const createHasCoveredRelTask = async (
   context: AuthContext,
   user: AuthUser,
   securityCoverageResultId: string,
 ) => {
-  const securityCoverageResult = await storeLoadByIdWithRefs<StoreEntitySecurityCoverageResult>(context, user, securityCoverageResultId);
+  const securityCoverageResult = await storeLoadByIdWithRefs<StoreEntitySecurityCoverageResult>(
+    context,
+    user,
+    securityCoverageResultId,
+  );
   if (!securityCoverageResult) {
     throw FunctionalError(`No security coverage result found for the id ${securityCoverageResultId}`);
   }
@@ -164,15 +167,12 @@ export const addRelatedCoveredEntities = async (
     `[SECURITY-COVERAGE] addSecurityCoverage: Manual creation, ${targets.length} entities found for has-covered relationships`,
     { targets },
   );
-  // Create all the has-covered relationships.
-  return Promise.all(
-    targets.map((target) => {
-      return addStixCoreRelationship(context, user, {
-        relationship_type: RELATION_HAS_COVERED,
-        fromId: securityCoverageResultId,
-        toId: target,
-        coverage_information: [],
-      });
-    }),
-  );
+
+  return createListTask(context, user, {
+    description: `Create has-covered relationships with related covered entities for SCR ${securityCoverageResultId}`,
+    scope: 'KNOWLEDGE',
+    ids: targets,
+    actions: [{ type: ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES, id: securityCoverageResultId }],
+    orderMode: 'asc',
+  });
 };
