@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { baseOperationBuilder, buildContainersElementsBundle, sendResultToQueue } from '../../../src/manager/taskManager';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
-import { pushToWorkerForConnector } from '../../../src/database/rabbitmq';
+import { pushBundleToWorker } from '../../../src/database/rabbitmq';
 import { updateExpectationsNumber } from '../../../src/domain/work';
 import {
   ACTION_TYPE_ADD_GROUPS,
@@ -25,7 +25,7 @@ vi.mock('../../../src/database/rabbitmq', async (importOriginal) => {
   const actual: object = await importOriginal();
   return {
     ...actual,
-    pushToWorkerForConnector: vi.fn(),
+    pushBundleToWorker: vi.fn(),
   };
 });
 
@@ -124,24 +124,30 @@ describe('TaskManager sendResultToQueue tests', () => {
     await sendResultToQueue(context, user, task, objects);
 
     // Each object should be sent in its own bundle call
-    expect(pushToWorkerForConnector).toHaveBeenCalledTimes(3);
+    expect(pushBundleToWorker).toHaveBeenCalledTimes(3);
 
     // Each call should have exactly 1 object in the bundle
     for (let i = 0; i < 3; i += 1) {
-      const call = vi.mocked(pushToWorkerForConnector).mock.calls[i];
-      expect(call[0]).toBe('connector-456');
-      const message = call[1] as { type: string; content: string; work_id: string; no_split: boolean };
+      const call = vi.mocked(pushBundleToWorker).mock.calls[i];
+      expect(call[0]).toBe(context);
+      expect(call[1]).toBe(user);
+      expect(call[2]).toBe('connector-456');
+      const message = call[3] as { type: string; content: string; work_id: string; no_split: boolean; trackExpectations: boolean };
       expect(message.type).toBe('bundle');
       expect(message.work_id).toBe('work-123');
       expect(message.no_split).toBe(false);
+      // A single-object bundle is never split further, so this call is responsible
+      // for tracking its own expectation (delegated to pushBundleToWorker itself).
+      expect(message.trackExpectations).toBe(true);
       const bundle = JSON.parse(Buffer.from(message.content, 'base64').toString('utf-8'));
       expect(bundle.type).toBe('bundle');
       expect(bundle.objects).toHaveLength(1);
       expect(bundle.objects[0].id).toBe(objects[i].id);
     }
 
-    // updateExpectationsNumber should be called for each single-object bundle
-    expect(updateExpectationsNumber).toHaveBeenCalledTimes(3);
+    // Expectations are now tracked inside pushBundleToWorker itself (mocked here),
+    // so taskManager no longer calls updateExpectationsNumber directly.
+    expect(updateExpectationsNumber).not.toHaveBeenCalled();
   });
 
   it('should send all objects in a single bundle when forceNoSplit is true', async () => {
@@ -153,15 +159,19 @@ describe('TaskManager sendResultToQueue tests', () => {
 
     await sendResultToQueue(context, user, task, objects, { forceNoSplit: true });
 
-    // Only one call to pushToWorkerForConnector
-    expect(pushToWorkerForConnector).toHaveBeenCalledTimes(1);
+    // Only one call to pushBundleToWorker
+    expect(pushBundleToWorker).toHaveBeenCalledTimes(1);
 
-    const call = vi.mocked(pushToWorkerForConnector).mock.calls[0];
-    expect(call[0]).toBe('connector-456');
-    const message = call[1] as { type: string; content: string; work_id: string; no_split: boolean };
+    const call = vi.mocked(pushBundleToWorker).mock.calls[0];
+    expect(call[0]).toBe(context);
+    expect(call[1]).toBe(user);
+    expect(call[2]).toBe('connector-456');
+    const message = call[3] as { type: string; content: string; work_id: string; no_split: boolean; trackExpectations: boolean };
     expect(message.type).toBe('bundle');
     expect(message.work_id).toBe('work-123');
     expect(message.no_split).toBe(true);
+    // Splitting is explicitly disabled here, so this call must still track its own expectation.
+    expect(message.trackExpectations).toBe(true);
 
     // All objects should be in the single bundle
     const bundle = JSON.parse(Buffer.from(message.content, 'base64').toString('utf-8'));
@@ -169,15 +179,14 @@ describe('TaskManager sendResultToQueue tests', () => {
     expect(bundle.objects).toHaveLength(3);
     expect(bundle.objects.map((o: { id: string }) => o.id)).toEqual(['object-1', 'object-2', 'object-3']);
 
-    // updateExpectationsNumber should be called once with the total count
-    expect(updateExpectationsNumber).toHaveBeenCalledTimes(1);
-    expect(updateExpectationsNumber).toHaveBeenCalledWith(context, user, 'work-123', 3);
+    // Expectations are tracked inside pushBundleToWorker itself (mocked here).
+    expect(updateExpectationsNumber).not.toHaveBeenCalled();
   });
 
-  it('should not call pushToWorkerForConnector when objects array is empty', async () => {
+  it('should not call pushBundleToWorker when objects array is empty', async () => {
     await sendResultToQueue(context, user, task, []);
 
-    expect(pushToWorkerForConnector).not.toHaveBeenCalled();
+    expect(pushBundleToWorker).not.toHaveBeenCalled();
     expect(updateExpectationsNumber).not.toHaveBeenCalled();
   });
 
@@ -187,7 +196,7 @@ describe('TaskManager sendResultToQueue tests', () => {
 
     await sendResultToQueue(context, user, taskWithDraft, objects);
 
-    const message = vi.mocked(pushToWorkerForConnector).mock.calls[0][1] as { draft_id: string };
+    const message = vi.mocked(pushBundleToWorker).mock.calls[0][3] as { draft_id: string };
     expect(message.draft_id).toBe('draft-789');
   });
 
@@ -196,7 +205,7 @@ describe('TaskManager sendResultToQueue tests', () => {
 
     await sendResultToQueue(context, user, task, objects);
 
-    const message = vi.mocked(pushToWorkerForConnector).mock.calls[0][1] as { draft_id: string | null };
+    const message = vi.mocked(pushBundleToWorker).mock.calls[0][3] as { draft_id: string | null };
     expect(message.draft_id).toBeNull();
   });
 
@@ -205,7 +214,7 @@ describe('TaskManager sendResultToQueue tests', () => {
 
     await sendResultToQueue(context, user, task, objects);
 
-    const message = vi.mocked(pushToWorkerForConnector).mock.calls[0][1] as { applicant_id: string };
+    const message = vi.mocked(pushBundleToWorker).mock.calls[0][3] as { applicant_id: string };
     expect(message.applicant_id).toBe(user.id);
   });
 });
