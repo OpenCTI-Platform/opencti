@@ -357,17 +357,26 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
         with:
           pattern: tar-opencti-platform
-          path: artifacts/
+          path: tar-artifacts/
 
       - name: Download musl tar artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
         with:
           pattern: tar-opencti-platform-musl
-          path: artifacts/
+          path: tar-artifacts/
 
-      - name: Upload consolidated artifacts
+      # Persist main artifact for longer and other automations
+      # Split in 2 part because tarball are heavy and there is less usage than docker images
+      - name: Upload consolidated artifacts except tarballs
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: opencti-rolling
           path: artifacts/
+          retention-days: 30
+
+      - name: Upload consolidated tarballs artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: tarball-opencti-rolling
+          path: tar-artifacts/
           retention-days: 30
