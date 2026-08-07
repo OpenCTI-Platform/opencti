@@ -5,6 +5,9 @@ import {
   BULK_SEARCH_KEYWORDS_FILTER,
   BULK_SEARCH_KEYWORDS_FILTER_KEYS,
   COMPUTED_RELIABILITY_FILTER,
+  COVERAGE_SCORE_FILTER,
+  COVERAGE_SCORE_NAME_SUBFILTER,
+  COVERAGE_SCORE_VALUE_SUBFILTER,
   CUSTOM_FIELD_BOOLEAN_VALUE_SUBFILTER,
   CUSTOM_FIELD_DATE_VALUE_SUBFILTER,
   CUSTOM_FIELD_INT_VALUE_SUBFILTER,
@@ -564,6 +567,23 @@ const adaptFilterToPirFilterKeys = async (context: AuthContext, user: AuthUser, 
   return { newFilter, newFilterGroup: undefined };
 };
 
+const adaptFilterToCoverageScoreFilterKey = (filter: Filter) => {
+  const coverageNames: string[] = filter.values.find((v) => v.key === COVERAGE_SCORE_NAME_SUBFILTER)?.values ?? [];
+  if (coverageNames.length === 0) {
+    throw FunctionalError('Coverage score filter requires a coverage name', { filter });
+  }
+  const scoreSubFilter = filter.values.find((v) => v.key === COVERAGE_SCORE_VALUE_SUBFILTER);
+  const newFilter = {
+    key: ['coverage_information'],
+    values: [],
+    nested: [
+      { key: 'coverage_name', values: coverageNames, operator: FilterOperator.Eq },
+      { ...scoreSubFilter, key: 'coverage_score' },
+    ],
+  };
+  return { newFilter, newFilterGroup: undefined };
+};
+
 const adaptFilterToServiceAccountFilterKey = (filter: Filter) => {
   const { operator, mode, values } = filter;
   let newFilter;
@@ -908,6 +928,10 @@ export const completeSpecialFilterKeys = async (
       }
       if (filterKey === PIR_SCORE_FILTER || filterKey === LAST_PIR_SCORE_DATE_FILTER) {
         const { newFilter } = await adaptFilterToPirFilterKeys(context, user, filterKey, filter);
+        finalFilters.push(newFilter);
+      }
+      if (filterKey === COVERAGE_SCORE_FILTER) {
+        const { newFilter } = adaptFilterToCoverageScoreFilterKey(filter);
         finalFilters.push(newFilter);
       }
       if (filterKey === USER_SERVICE_ACCOUNT_FILTER) {
