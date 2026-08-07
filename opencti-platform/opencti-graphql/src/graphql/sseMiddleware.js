@@ -26,11 +26,13 @@ import {
 } from '../database/utils';
 import {
   BYPASS,
+  checkOTPValidationStatus,
   computeUserMemberAccessIds,
   isUserCanAccessStixElement,
   isUserHasCapability,
   isUserInPlatformOrganization,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
+  OTPValidationStatus,
   SYSTEM_USER,
 } from '../utils/access';
 import { FROM_START_STR, streamEventId, utcDate } from '../utils/format';
@@ -93,10 +95,26 @@ const createBroadcastClient = (channel) => {
   };
 };
 
-const authenticate = async (req, res, next) => {
+export const authenticate = async (req, res, next) => {
   try {
     const context = await createAuthenticatedContext(req, res, 'stream');
     if (context.user) {
+      const otpStatus = checkOTPValidationStatus(context);
+      if (otpStatus !== OTPValidationStatus.VALID) {
+        switch (otpStatus) {
+          case OTPValidationStatus.ACTIVATION_REQUIRED:
+            res.statusMessage = 'You must activate your two-factor authentication to access this resource';
+            break;
+          case OTPValidationStatus.VALIDATION_REQUIRED:
+            res.statusMessage = 'You must validate your two-factor authentication to access this resource';
+            break;
+          default:
+            res.statusMessage = 'You are not authenticated, please check your credentials';
+            break;
+        }
+        sendErrorStatus(req, res, 401);
+        return;
+      }
       req.context = context;
       req.userId = context.user.id;
       req.user = context.user;
@@ -186,8 +204,22 @@ export const authenticateForPublic = async (req, res, next) => {
     user: context.user ?? SYSTEM_USER,
     id: req.params.id,
   });
+  const otpValidationStatus = checkOTPValidationStatus(context);
   if (error || (!collection?.stream_public && !context.user)) {
     res.statusMessage = 'You are not authenticated, please check your credentials';
+    sendErrorStatus(req, res, 401);
+  } else if (!collection?.stream_public && otpValidationStatus !== OTPValidationStatus.VALID) {
+    switch (otpValidationStatus) {
+      case OTPValidationStatus.ACTIVATION_REQUIRED:
+        res.statusMessage = 'You must activate your two-factor authentication to access this resource';
+        break;
+      case OTPValidationStatus.VALIDATION_REQUIRED:
+        res.statusMessage = 'You must validate your two-factor authentication to access this resource';
+        break;
+      default:
+        res.statusMessage = 'You are not authenticated, please check your credentials';
+        break;
+    }
     sendErrorStatus(req, res, 401);
   } else {
     try {
