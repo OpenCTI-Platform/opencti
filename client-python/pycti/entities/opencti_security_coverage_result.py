@@ -439,28 +439,3 @@ class SecurityCoverageResult:
                 "[opencti_security_coverage_result] Missing parameters: stixObject"
             )
             return None
-
-    def add_related_covered_entities(self, **kwargs):
-        """Creates has-covered relationships between the SCR and related covered entities.
-
-        :param id: the Security-Coverage-Result id
-        :type id: str
-        """
-        id = kwargs.get("id", None)
-        if id is not None:
-            self.opencti.app_logger.info(
-                "Creating has-covered relationships", {"id": id}
-            )
-            query = """
-                mutation SecurityCoverageResultAddRelatedCoveredEntities($id: ID!) {
-                    securityCoverageResultAddRelatedCoveredEntities(id: $id) {
-                        id
-                    }
-                }
-            """
-            self.opencti.query(query, {"id": id})
-        else:
-            self.opencti.app_logger.error(
-                "[opencti_security_coverage_result] Missing parameters: id"
-            )
-            return None

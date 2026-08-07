@@ -3389,8 +3389,13 @@ class OpenCTIStix2:
                 element_id=item["id"]
             )
         elif operation == "add_related_covered_entities":
-            self.opencti.security_coverage_result.add_related_covered_entities(
-                id=item["id"]
+            security_coverage_result_id = self.opencti.get_attribute_in_extension(
+                "security_coverage_result_id", item
+            )
+            self.opencti.stix_core_relationship.create(
+                fromId=security_coverage_result_id,
+                toId=item["id"],
+                relationship_type="has-covered",
             )
         elif operation == "enrichment":
             connector_ids = self.opencti.get_attribute_in_extension(
