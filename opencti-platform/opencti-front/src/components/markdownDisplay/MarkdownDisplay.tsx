@@ -13,6 +13,7 @@ import { TEMP_IMAGE_SCHEME } from '../fields/markdownField/core/markdownImagePre
 import MarkdownImagePreviewModal from './MarkdownImagePreviewModal';
 import { normalizeEmbeddedImageDestinations, resolveAndNormalizeMarkdownImageUrl } from './markdownDisplayHelpers';
 import { extractMarkdownPreviewImages, isAllowedUploadedImageUrl } from './markdownPreviewImageUtils';
+import { Link } from '@mui/material';
 
 const markdownStyle: React.CSSProperties = {
   overflowWrap: 'break-word',
@@ -267,9 +268,12 @@ const MarkdownDisplay: FunctionComponent<MarkdownWithRedirectionWarningProps> = 
   } else {
     markdownDisplayContent = (
       <>
-        <div onClick={(event) => browseLinkWarning(event)}>
+        <Link
+          component="button"
+          onClick={(event) => browseLinkWarning(event)}
+        >
           {markdownRender}
-        </div>
+        </Link>
         <ExternalLinkPopover
           displayExternalLink={displayExternalLink}
           externalLink={externalLink}
