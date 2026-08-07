@@ -82,3 +82,50 @@ The workers can have more or less verbose outputs:
 !!! warning "TOO_MANY_REQUESTS/12/disk usage exceeded flood-stage watermark..."
     
     Disk full, no space left on the device for ElasticSearch.
+
+## Redis state management
+
+OpenCTI stores critical runtime state in Redis, not only a disposable cache. Among other things, Redis holds:
+
+* **Work tracking** — every connector ingestion job is tracked through work identifiers stored in Redis.
+* **Distributed locks** — used to prevent duplicate entity creation during concurrent ingestion.
+* **Stream coordination** — live stream and TAXII data-sharing positions.
+* **Caching and session data** — API caching and user sessions.
+
+!!! warning "Never run `FLUSHDB` or `FLUSHALL` on a live OpenCTI Redis"
+
+    Flushing Redis destroys all of the state above. RabbitMQ queues, however, live in a separate system and **survive the flush**, which leaves bundles in the queue that reference work identifiers that no longer exist. Workers then dequeue those bundles, try to update their (now missing) work, and the platform raises `WORK_NOT_ALIVE` errors (`Work is no longer alive, no request can be done within the context of this work`). The result is ingest nodes burning CPU on retries while ElasticSearch stays idle and the queue backlog never drains.
+
+### Symptoms of a flushed Redis
+
+* `WORK_NOT_ALIVE` errors in the platform and worker logs.
+* A growing RabbitMQ backlog that does not drain despite healthy infrastructure.
+* ElasticSearch idle (no write rejections, no active merges) while the queue is large.
+* Uneven ingest-node CPU — some workers hot in retry loops, others idle.
+* Works stuck "In progress" with no completed operations.
+
+### Recovery after a flush
+
+If `FLUSHDB`/`FLUSHALL` has already been run, the orphaned queues must be cleared so connectors can recreate fresh work:
+
+1. Purge the stale connector queues in RabbitMQ (the bundles referencing dead work identifiers).
+2. Reset the affected connector state in OpenCTI.
+3. Restart the ingest/worker pods.
+4. Restart the platform pods.
+5. Restart the connectors so they create new work identifiers.
+6. Monitor the logs until the `WORK_NOT_ALIVE` errors stop.
+
+### Safe alternatives when Redis memory is high
+
+High Redis memory is usually a symptom (often a connector queue backlog), so address the cause instead of flushing:
+
+* Identify what is consuming memory with `redis-cli --bigkeys`.
+* Purge the specific **RabbitMQ** connector queues that are backed up — not Redis.
+* Trim the event stream if stream growth is the issue.
+* Delete a specific stuck lock key surgically rather than flushing the whole database.
+
+### Recommended Redis configuration
+
+* Set `maxmemory` explicitly rather than relying on the container being OOM-killed.
+* Use `maxmemory-policy noeviction` so Redis never silently evicts the critical state listed above (a write will fail loudly instead of corrupting platform state).
+* Monitor memory usage, blocked clients and the slowlog.
