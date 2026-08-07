@@ -65,12 +65,16 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const onCLick = deactivatePopoverMenu ? () => { } : onClickLabel;
 
   const buttonStyles = {
+    minWidth: 'unset',
     background: 'none',
     border: 'none',
     padding: 0,
     font: 'inherit',
     color: 'inherit',
     backgroundColor: 'inherit !important',
+    ...(tooltip && {
+      pointerEvents: 'none',
+    }),
     ...(!deactivatePopoverMenu && {
       cursor: 'pointer',
       '&:hover': {
@@ -82,7 +86,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   // special case for nil/not_nil
   if (isOperatorNil) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center' }}>
+      <>
         <Button
           type="button"
           sx={buttonStyles}
@@ -95,14 +99,14 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
         <span>
           {filterOperator === 'nil' ? t_i18n('is empty') : t_i18n('is not empty')}
         </span>
-      </div>
+      </>
     );
   }
 
   // special case for has_changed/not_has_changed
   if (isOperatorChange) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center' }}>
+      <>
         <Button
           type="button"
           sx={buttonStyles}
@@ -115,7 +119,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
         <span>
           {filterOperator === 'has_changed' ? t_i18n('has changed') : t_i18n('has not changed')}
         </span>
-      </div>
+      </>
     );
   }
 
@@ -125,7 +129,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   ) {
     const relativeValue = translateDateInterval(filterValues, t_i18n);
     return (
-      <div style={{ display: 'flex', alignItems: 'center' }}>
+      <>
         <Button
           type="button"
           sx={buttonStyles}
@@ -138,7 +142,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
         <span>
           {relativeValue}
         </span>
-      </div>
+      </>
     );
   }
 
@@ -154,7 +158,6 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       background: 'none',
       color: 'inherit',
       display: 'inline-block',
-      height: '100%',
       borderRadius: 0,
       margin: '0 5px 0 5px',
       padding: '0 5px 0 5px',
@@ -163,6 +166,9 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       fontWeight: 'unset',
       fontFamily: 'Consolas, monaco, monospace',
       textTransform: 'inherit',
+      ...(tooltip && {
+        pointerEvents: 'none',
+      }),
       ...(isLocalModeSwitchable && {
         '&:hover': {
           textDecorationLine: 'underline',
@@ -346,7 +352,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   }
   if (filterKey === 'dynamicFrom' || filterKey === 'dynamicTo') {
     return (
-      <div style={{ display: 'flex', alignItems: 'center' }}>
+      <>
         <Button
           type="button"
           sx={buttonStyles}
@@ -360,11 +366,11 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
           label={t_i18n('Dynamic filter')}
           color={chipColor}
         />
-      </div>
+      </>
     );
   }
   return (
-    <div style={{ display: 'flex', alignItems: 'center' }}>
+    <>
       <Button
         type="button"
         sx={buttonStyles}
@@ -375,7 +381,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
         </strong>
       </Button>{' '}
       {values}
-    </div>
+    </>
   );
 };
 
