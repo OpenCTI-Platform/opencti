@@ -1,20 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import * as middlewareLoader from '../../../../src/database/middleware-loader';
-import * as cache from '../../../../src/database/cache';
-import * as utils from '../../../../src/utils/access';
-import * as playbookUtils from '../../../../src/modules/playbook/playbook-utils';
-import * as streamHandler from '../../../../src/database/stream/stream-handler';
-import * as notificationManager from '../../../../src/manager/notificationManager';
-import * as schemaUtils from '../../../../src/schema/schemaUtils';
-import * as generateMessage from '../../../../src/database/data-changes';
-import * as playbookManagerUtils from '../../../../src/manager/playbookManager/playbookManagerUtils';
-import * as entityRepresentative from '../../../../src/database/entity-representative';
-import type { AuthContext, AuthUser } from '../../../../src/types/user';
-import type { BasicStoreIdentifier } from '../../../../src/types/store';
-import type { StixBundle, StixObject } from '../../../../src/types/stix-2-1-common';
-import { PLAYBOOK_NOTIFIER_COMPONENT, type NotifierConfiguration } from '../../../../src/modules/playbook/components/notifier-component';
-import type { BasicStoreEntityPlaybook, ExecutorParameters, NodeInstance } from '../../../../src/modules/playbook/playbook-types';
-import type { StreamDataEvent } from '../../../../src/types/event';
+import * as middlewareLoader from '../../../../../src/database/middleware-loader';
+import * as cache from '../../../../../src/database/cache';
+import * as utils from '../../../../../src/utils/access';
+import * as playbookUtils from '../../../../../src/modules/playbook/playbook-utils';
+import * as streamHandler from '../../../../../src/database/stream/stream-handler';
+import * as notificationManager from '../../../../../src/manager/notificationManager';
+import * as schemaUtils from '../../../../../src/schema/schemaUtils';
+import * as generateMessage from '../../../../../src/database/data-changes';
+import * as playbookManagerUtils from '../../../../../src/manager/playbookManager/playbookManagerUtils';
+import * as entityRepresentative from '../../../../../src/database/entity-representative';
+import type { AuthContext, AuthUser } from '../../../../../src/types/user';
+import type { BasicStoreIdentifier } from '../../../../../src/types/store';
+import type { StixBundle, StixObject } from '../../../../../src/types/stix-2-1-common';
+import { PLAYBOOK_NOTIFIER_COMPONENT, type NotifierConfiguration } from '../../../../../src/modules/playbook/components/notifier-component';
+import type { BasicStoreEntityPlaybook, ExecutorParameters, NodeInstance } from '../../../../../src/modules/playbook/playbook-types';
+import type { StreamDataEvent } from '../../../../../src/types/event';
 
 describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
   beforeEach(() => {
@@ -43,7 +43,7 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
     vi.spyOn(playbookUtils, 'extractBundleBaseElement').mockReturnValue(mockBundle.objects[0]);
     vi.spyOn(playbookUtils, 'convertMembersToUsers').mockResolvedValue([mockUser]);
     vi.spyOn(utils, 'isUserInPlatformOrganization').mockReturnValue(true);
-    vi.spyOn(utils, 'isUserCanAccessStixElement').mockResolvedValue(true);
+    vi.spyOn(utils, 'checkUserCanAccessStixElement').mockReturnValue(true);
     vi.spyOn(notificationManager, 'convertToNotificationUser').mockReturnValue(mockNotificationUser);
     vi.spyOn(schemaUtils, 'convertStixToInternalTypes').mockReturnValue('Indicator');
     vi.spyOn(generateMessage, 'generateCreateMessage').mockReturnValue('generated create message');
@@ -208,6 +208,61 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
       } as unknown as ExecutorParameters<NotifierConfiguration>);
 
       expect(streamHandler.storeNotificationEvent).toHaveBeenCalledWith(mockContext, expectedNotificationEvent);
+    });
+  });
+  describe('access-based STIX filtering', () => {
+    const bundleWithTwoObjects = {
+      objects: [
+        { id: 'indicator--1', type: 'indicator' } as unknown as StixObject,
+        { id: 'malware--1', type: 'malware' } as unknown as StixObject,
+      ],
+    } as unknown as StixBundle;
+
+    const mockUser = {
+      id: 'user-1',
+      name: 'Alice',
+      groups: [{ internal_id: 'group-1' }],
+      organizations: [],
+    } as unknown as AuthUser;
+
+    beforeEach(() => {
+      vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([mockUser]);
+      vi.spyOn(notificationManager, 'convertToNotificationUser').mockReturnValue({ id: 'notif-user' } as unknown as notificationManager.NotificationUser);
+      vi.spyOn(playbookUtils, 'extractBundleBaseElement').mockReturnValue(bundleWithTwoObjects.objects[0]);
+      vi.spyOn(generateMessage, 'generateCreateMessage').mockReturnValue('generated create message');
+    });
+
+    it('should include only accessible elements in notification data', async () => {
+      vi.spyOn(utils, 'checkUserCanAccessStixElement')
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+
+      await PLAYBOOK_NOTIFIER_COMPONENT.executor({
+        dataInstanceId: 'instance-id',
+        playbookId: 'playbook-id',
+        playbookNode,
+        bundle: bundleWithTwoObjects,
+        event: undefined,
+      } as unknown as ExecutorParameters<NotifierConfiguration>);
+
+      expect(streamHandler.storeNotificationEvent).toHaveBeenCalledTimes(1);
+      const notificationEvent = vi.mocked(streamHandler.storeNotificationEvent).mock.calls[0][1] as notificationManager.DigestEvent;
+      expect(notificationEvent.data).toHaveLength(1);
+      expect(notificationEvent.data[0].instance.id).toEqual('indicator--1');
+    });
+
+    it('should skip notification when user cannot access any bundle object', async () => {
+      vi.spyOn(utils, 'checkUserCanAccessStixElement').mockReturnValue(false);
+
+      await PLAYBOOK_NOTIFIER_COMPONENT.executor({
+        dataInstanceId: 'instance-id',
+        playbookId: 'playbook-id',
+        playbookNode,
+        bundle: bundleWithTwoObjects,
+        event: undefined,
+      } as unknown as ExecutorParameters<NotifierConfiguration>);
+
+      expect(streamHandler.storeNotificationEvent).not.toHaveBeenCalled();
     });
   });
 });

@@ -1,11 +1,11 @@
 import type { JSONSchemaType } from 'ajv';
 import * as R from 'ramda';
 import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, type PlaybookComponent } from '../playbook-types';
-import { executionContext, isUserCanAccessStixElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../../utils/access';
 import { usableNotifiers } from '../../notifier/notifier-domain';
 import { storeLoadById } from '../../../database/middleware-loader';
 import { getEntityFromCache } from '../../../database/cache';
 import type { BasicStoreSettings } from '../../../types/settings';
+import { checkUserCanAccessStixElement, executionContext, isUserInPlatformOrganization, SYSTEM_USER } from '../../../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../../../schema/internalObject';
 import { convertToNotificationUser, type DigestEvent, EVENT_NOTIFICATION_VERSION } from '../../../manager/notificationManager';
 import { generateCreateMessage, generateDeleteMessage } from '../../../database/data-changes';
@@ -54,6 +54,7 @@ export const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguratio
   executor: async ({ dataInstanceId, playbookId, playbookNode, bundle, event }) => {
     const context = executionContext('playbook_components');
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    const hasPlatformOrg = !!settings.platform_organization;
     const playbook = await storeLoadById<BasicStoreEntityPlaybook>(context, SYSTEM_USER, playbookId, ENTITY_TYPE_PLAYBOOK);
     const { notifiers, authorized_members } = playbookNode.configuration;
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
@@ -69,7 +70,10 @@ export const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguratio
       const targetUser = targetUsers[index];
       const user_inside_platform_organization = isUserInPlatformOrganization(targetUser, settings);
       const userContext = { ...context, user_inside_platform_organization };
-      const stixElements = bundle.objects.filter((o) => isUserCanAccessStixElement(userContext, targetUser, o));
+      const stixElements = bundle.objects.filter((o) => checkUserCanAccessStixElement(userContext, targetUser, o, hasPlatformOrg));
+      if (stixElements.length === 0) {
+        continue;
+      }
 
       const notificationEvent: DigestEvent = {
         version: EVENT_NOTIFICATION_VERSION,
