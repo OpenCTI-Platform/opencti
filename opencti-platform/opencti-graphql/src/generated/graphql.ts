@@ -37262,6 +37262,7 @@ export type UserMergeJournalEntry = {
 };
 
 export type UserMergeOptions = {
+  acknowledgeExposureChange?: InputMaybe<Scalars['Boolean']['input']>;
   dryRun?: InputMaybe<Scalars['Boolean']['input']>;
   rightsStrategy?: InputMaybe<UserMergeRightsStrategy>;
 };
@@ -37291,6 +37292,7 @@ export type UserMergeResult = {
 
 export type UserMergeRightsAlert = {
   __typename?: 'UserMergeRightsAlert';
+  blocking?: Maybe<Scalars['Boolean']['output']>;
   kind: Scalars['String']['output'];
   message: Scalars['String']['output'];
   register_row_id: Scalars['String']['output'];
@@ -53297,6 +53299,7 @@ export type UserMergeResultResolvers<ContextType = any, ParentType extends Resol
 }>;
 
 export type UserMergeRightsAlertResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserMergeRightsAlert'] = ResolversParentTypes['UserMergeRightsAlert']> = ResolversObject<{
+  blocking?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   kind?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   register_row_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
