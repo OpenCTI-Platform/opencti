@@ -21,7 +21,6 @@ import convertDisseminationListToStix from './disseminationList-converter';
 
 const DISSEMINATION_LIST_DEFINITION: ModuleDefinition<StoreEntityDisseminationList, StixDisseminationList> = {
   type: {
-    id: 'disseminationList',
     name: ENTITY_TYPE_DISSEMINATION_LIST,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

@@ -8,7 +8,6 @@ import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
 const TAXII_COLLECTION_DEFINITION: ModuleDefinition<StoreEntityTaxiiCollection, StixTaxiiCollection> = {
   type: {
-    id: 'taxii-collection',
     name: ENTITY_TYPE_TAXII_COLLECTION,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

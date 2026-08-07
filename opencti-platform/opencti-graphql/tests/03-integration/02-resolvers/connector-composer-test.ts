@@ -3,12 +3,14 @@ import gql from 'graphql-tag';
 import { v4 as uuidv4 } from 'uuid';
 import { fileURLToPath } from 'node:url';
 import { queryAsAdminWithError, awaitUntilCondition, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
-import { USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { wait } from '../../../src/database/utils';
 import { XTMComposerMock } from '../../utils/XTMComposerMock';
 import type { ApiConnector } from '../../utils/XTMComposerMock';
 import { catalogHelper } from '../../utils/catalogHelper';
 import { resetCatalogs } from '../../../src/modules/catalog/catalog-domain';
+import { patchAttribute } from '../../../src/database/middleware';
+import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
 
 const TEST_COMPOSER_ID = uuidv4();
 const TEST_USER_CONNECTOR_ID: string = USER_CONNECTOR.id; // Initialize with default value
@@ -50,6 +52,7 @@ const ADD_MANAGED_CONNECTOR_MUTATION = gql`
             name
             connector_user_id
             manager_contract_image
+            manager_upgrade_strategy
             manager_requested_status
             manager_contract_configuration {
                 key
@@ -66,6 +69,7 @@ const EDIT_MANAGED_CONNECTOR_MUTATION = gql`
             id
             name
             connector_user_id
+            manager_upgrade_strategy
             manager_contract_configuration {
                 key
                 value
@@ -160,6 +164,19 @@ const GET_CONNECTOR_EXCERPT_QUERY = gql`
         title
         slug
         logo
+      }
+    }
+  }
+`;
+
+const GET_CONNECTOR_RUNTIME_QUERY = gql`
+  query GetConnectorRuntime($id: String!) {
+    connector(id: $id) {
+      id
+      manager_upgrade_strategy
+      manager_contract_image
+      manager_contract_excerpt {
+        title
       }
     }
   }
@@ -659,11 +676,12 @@ describe('Connector Composer and Managed Connectors', () => {
         name: 'Log Level Test Connector',
         title: 'Log Level Test Connector',
         connector_user_id: TEST_USER_CONNECTOR_ID,
-        manager_contract_configuration: [
-          { key: 'IPINFO_TOKEN', value: 'log-level-test-token' },
-          { key: 'CONNECTOR_LOG_LEVEL', value: 'debug' }, // Changed from 'info' to 'debug'
-          ...ipinfoListProperties,
-        ],
+        manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
+          IPINFO_TOKEN: 'log-level-test-token',
+          IPINFO_MAX_TLP: 'TLP:AMBER',
+          CONNECTOR_LOG_LEVEL: 'debug', // Changed from 'info' to 'debug'
+          ...ipinfoProperties,
+        }),
       };
 
       const updateResult = await queryAsAdminWithSuccess({
@@ -722,11 +740,12 @@ describe('Connector Composer and Managed Connectors', () => {
         name: 'Log Level Test Connector',
         title: 'Log Level Test Connector',
         connector_user_id: TEST_USER_CONNECTOR_ID,
-        manager_contract_configuration: [
-          { key: 'IPINFO_TOKEN', value: 'log-level-test-token' },
-          { key: 'CONNECTOR_LOG_LEVEL', value: 'error' }, // Changed from 'debug' to 'error'
-          ...ipinfoListProperties,
-        ],
+        manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
+          IPINFO_TOKEN: 'log-level-test-token',
+          IPINFO_MAX_TLP: 'TLP:AMBER',
+          CONNECTOR_LOG_LEVEL: 'error', // Changed from 'debug' to 'error'
+          ...ipinfoProperties,
+        }),
       };
 
       await queryAsAdminWithSuccess({
@@ -770,11 +789,12 @@ describe('Connector Composer and Managed Connectors', () => {
         name: 'Log Level Test Connector - Updated Name Only',
         title: 'Log Level Test Connector - Updated Name Only',
         connector_user_id: TEST_USER_CONNECTOR_ID,
-        manager_contract_configuration: [
-          { key: 'IPINFO_TOKEN', value: 'log-level-test-token' },
-          { key: 'CONNECTOR_LOG_LEVEL', value: 'error' }, // Same log level as before
-          ...ipinfoListProperties,
-        ],
+        manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
+          IPINFO_TOKEN: 'log-level-test-token',
+          IPINFO_MAX_TLP: 'TLP:AMBER',
+          CONNECTOR_LOG_LEVEL: 'error', // Same log level as before
+          ...ipinfoProperties,
+        }),
       };
 
       // Clear logs before the name-only update
@@ -1245,6 +1265,7 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(managedConnectorAdd.name).toEqual('test-ipinfo-connector');
       expect(managedConnectorAdd.connector_user_id).toBeDefined();
       expect(managedConnectorAdd.manager_requested_status).toEqual('stopped');
+      expect(managedConnectorAdd.manager_upgrade_strategy).toEqual('latest');
       expect(managedConnectorAdd.manager_contract_hash).toBeDefined();
       expect(managedConnectorAdd.manager_contract_configuration).toBeDefined();
       expect(managedConnectorAdd.manager_contract_configuration.length).toBeGreaterThan(0);
@@ -1265,17 +1286,19 @@ describe('Connector Composer and Managed Connectors', () => {
     });
 
     it('should edit managed connector', async () => {
+      const testConnector = catalogHelper.getTestSafeConnector();
       const input = {
         id: managedConnectorId,
         name: 'Updated IpInfo Connector',
         title: 'Updated IpInfo Connector',
         connector_user_id: TEST_USER_CONNECTOR_ID,
-        manager_contract_configuration: [
-          { key: 'IPINFO_TOKEN', value: 'updated-token-456' },
-          { key: 'CONNECTOR_AUTO', value: 'false' },
-          { key: 'CONNECTOR_LOG_LEVEL', value: 'debug' },
-          ...ipinfoListProperties,
-        ],
+        manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
+          IPINFO_TOKEN: 'updated-token-456',
+          IPINFO_MAX_TLP: 'TLP:AMBER',
+          CONNECTOR_AUTO: 'false',
+          CONNECTOR_LOG_LEVEL: 'debug',
+          ...ipinfoProperties,
+        }),
       };
 
       const result = await queryAsAdminWithSuccess({
@@ -1285,10 +1308,62 @@ describe('Connector Composer and Managed Connectors', () => {
 
       expect(result.data).toBeDefined();
       expect(result.data?.managedConnectorEdit.name).toEqual('Updated IpInfo Connector');
+      expect(result.data?.managedConnectorEdit.manager_upgrade_strategy).toEqual('latest');
       expect(result.data?.managedConnectorEdit.manager_contract_configuration).toBeDefined();
       const autoConfig = result.data?.managedConnectorEdit.manager_contract_configuration
         .find((c: any) => c.key === 'CONNECTOR_AUTO');
       expect(autoConfig.value).toEqual('false');
+    });
+
+    it('should use connector contract snapshot for runtime fields when strategy is enabled', async () => {
+      await patchAttribute(
+        testContext,
+        ADMIN_USER,
+        managedConnectorId,
+        ENTITY_TYPE_CONNECTOR,
+        {
+          manager_contract: {
+            title: 'Snapshot Contract Title',
+            slug: 'snapshot-contract',
+            description: 'snapshot description',
+            short_description: 'snapshot short description',
+            logo: 'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=',
+            use_cases: [],
+            verified: true,
+            last_verified_date: '2026-01-01',
+            playbook_supported: false,
+            max_confidence_level: 100,
+            subscription_link: '',
+            source_code: '',
+            manager_supported: true,
+            container_version: '99.99.99',
+            container_image: 'opencti/connector-ipinfo',
+            container_type: 'EXTERNAL_IMPORT',
+            config_schema: {
+              $schema: 'https://json-schema.org/draft/2020-12/schema',
+              $id: 'connector',
+              type: 'object',
+              properties: {},
+              required: [],
+              additionalProperties: true,
+            },
+          },
+        },
+      );
+
+      const result = await queryAsAdminWithSuccess({
+        query: GET_CONNECTOR_RUNTIME_QUERY,
+        variables: { id: managedConnectorId },
+      });
+
+      const connector = result.data?.connector;
+      expect(connector).toBeDefined();
+      if (connector?.manager_upgrade_strategy === 'latest') {
+        expect(connector.manager_contract_image).toEqual('opencti/connector-ipinfo:99.99.99');
+        expect(connector.manager_contract_excerpt?.title).toEqual('Snapshot Contract Title');
+      } else {
+        expect(connector?.manager_upgrade_strategy).toBeNull();
+      }
     });
 
     it('should prevent creating managed connector with duplicate name', async () => {

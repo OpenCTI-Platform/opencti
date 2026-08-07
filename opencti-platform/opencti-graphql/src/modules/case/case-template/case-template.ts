@@ -27,7 +27,6 @@ const CaseTemplateToTaskTemplateRelation: RefAttribute = {
 
 const CASE_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityCaseTemplate, StixCaseTemplate> = {
   type: {
-    id: 'case-template',
     name: ENTITY_TYPE_CASE_TEMPLATE,
     category: ABSTRACT_INTERNAL_OBJECT,
   },

@@ -37,7 +37,6 @@ export const modules = new Map();
 
 export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject, Z0 extends S20.StixObject = S20.StixObject> {
   type: {
-    id: string;
     name: string;
     aliased?: boolean;
     category: 'Case' | 'Container' | 'Location' | 'Identity' | 'Stix-Domain-Object' | 'Stix-Meta-Object' | 'Internal-Object' | 'Threat-Actor';

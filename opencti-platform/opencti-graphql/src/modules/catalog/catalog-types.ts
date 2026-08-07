@@ -16,6 +16,8 @@ type TypedProperty<K extends keyof TypeMap = keyof TypeMap> = {
 };
 
 export interface CatalogContract {
+  id?: string | null;
+  integration_name?: string;
   title: string;
   slug: string;
   description: string;
@@ -43,6 +45,28 @@ export interface CatalogContract {
     required: string[];
     additionalProperties: boolean;
   };
+}
+
+export type ManagerUpgradeStrategy = 'latest' | 'pinned';
+
+export interface ConnectorManagerContract {
+  title: string;
+  slug: string;
+  description: string;
+  short_description: string;
+  logo: string;
+  use_cases: string[];
+  verified: boolean;
+  last_verified_date: string;
+  playbook_supported: boolean;
+  max_confidence_level: number;
+  subscription_link: string;
+  source_code: string;
+  manager_supported: boolean;
+  container_version: string;
+  container_image: string;
+  container_type: IngestionConnectorType;
+  config_schema: CatalogContract['config_schema'];
 }
 
 export interface CatalogDefinition {

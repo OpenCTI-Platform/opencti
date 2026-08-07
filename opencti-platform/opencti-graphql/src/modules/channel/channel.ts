@@ -48,7 +48,6 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-
 
 export const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChannel, Stix2Channel> = {
   type: {
-    id: 'channels',
     name: ENTITY_TYPE_CHANNEL,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: true,

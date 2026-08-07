@@ -6,7 +6,6 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../../../schema/general';
 
 const NEWS_FEED_DEFINITION: ModuleDefinition<StoreEntityNewsFeedItem, StixNewsFeedItem> = {
   type: {
-    id: 'news-feed-item',
     name: ENTITY_TYPE_NEWS_FEED_ITEM,
     category: ABSTRACT_INTERNAL_OBJECT,
   },

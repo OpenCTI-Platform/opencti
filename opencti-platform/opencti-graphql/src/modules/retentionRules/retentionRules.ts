@@ -7,7 +7,6 @@ import { RETENTION_SCOPE_VALUES, RETENTION_UNIT_VALUES } from '../../manager/ret
 
 const RETENTION_RULE_DEFINITION: ModuleDefinition<StoreEntityRetentionRule, StixRetentionRule> = {
   type: {
-    id: 'retention-rule',
     name: ENTITY_TYPE_RETENTION_RULE,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

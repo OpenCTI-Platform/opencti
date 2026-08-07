@@ -10,7 +10,6 @@ const AuthenticationProviderTypeList = Object.values(AuthenticationProviderType)
 
 const AUTHENTICATION_PROVIDER_DEFINITION: ModuleDefinition<StoreEntityAuthenticationProvider, StixAuthenticationProvider> = {
   type: {
-    id: 'authenticationProvider',
     name: ENTITY_TYPE_AUTHENTICATION_PROVIDER,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

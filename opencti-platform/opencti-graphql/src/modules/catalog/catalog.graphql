@@ -16,6 +16,40 @@ type ExtendedContract {
   contract: String!
 }
 
+type CatalogConnector {
+  slug: String!
+  title: String!
+  description: String
+  short_description: String
+  logo: String
+  use_cases: [String!]
+  verified: Boolean
+  last_verified_date: String
+  playbook_supported: Boolean
+  manager_supported: Boolean
+  subscription_link: String
+  source_code: String
+}
+
+type CatalogConnectorContract {
+  slug: String!
+  version: String!
+  config_schema: JSON
+  container_type: String
+  container_version: String
+  container_image: String
+  support_version: String
+  max_confidence_level: Int
+  is_latest: Boolean
+  format_version: String
+}
+
+type CatalogVersionInfo {
+  status: String!
+  revision: String
+  updated_at: String
+}
+
 # Ordering
 enum CatalogsOrdering {
   name
@@ -36,5 +70,14 @@ type CatalogEdge {
 type Query {
   catalog(id: String!): Catalog @auth(for: [INGESTION])
   catalogs: [Catalog!]! @auth(for: [INGESTION])
+  catalogVersionInfo: CatalogVersionInfo! @auth(for: [INGESTION])
   contract(slug: String!): ExtendedContract @auth(for: [INGESTION])
+  catalogConnectors: [CatalogConnector!]! @auth(for: [INGESTION])
+  catalogConnector(slug: String!): CatalogConnector @auth(for: [INGESTION])
+  catalogConnectorContract(slug: String!, version: String): CatalogConnectorContract @auth(for: [INGESTION])
+}
+
+# Mutations
+type Mutation {
+  refreshCatalog: Boolean! @auth(for: [INGESTION])
 }

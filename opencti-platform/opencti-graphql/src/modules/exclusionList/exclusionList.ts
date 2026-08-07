@@ -6,7 +6,6 @@ import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 
 const EXCLUSION_LIST_DEFINITION: ModuleDefinition<StoreEntityExclusionList, StixExclusionList> = {
   type: {
-    id: 'exclusion-list',
     name: ENTITY_TYPE_EXCLUSION_LIST,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

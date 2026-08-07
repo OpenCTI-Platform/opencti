@@ -9,7 +9,6 @@ import { authorizedMembers } from '../../schema/attribute-definition';
 
 const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxiiCollection, StixIngestionTaxiiCollection> = {
   type: {
-    id: 'ingestion-taxii-collection',
     name: ENTITY_TYPE_INGESTION_TAXII_COLLECTION,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

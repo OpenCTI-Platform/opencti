@@ -9,7 +9,6 @@ import { authorizedMembers, authorizedMembersActivationDate } from '../../../sch
 
 const CASE_INCIDENT_DEFINITION: ModuleDefinition<StoreEntityCaseIncident, StixCaseIncident, Stix2CaseIncident> = {
   type: {
-    id: 'case-incident',
     name: ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
     category: ENTITY_TYPE_CONTAINER_CASE,
     aliased: false,

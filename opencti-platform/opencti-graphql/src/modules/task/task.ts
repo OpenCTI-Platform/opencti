@@ -9,7 +9,6 @@ import { workflowId } from '../attributes/stixDomainObject-registrationAttribute
 
 const CASE_TASK_DEFINITION: ModuleDefinition<StoreEntityTask, StixTask, Stix2Task> = {
   type: {
-    id: 'task',
     name: ENTITY_TYPE_CONTAINER_TASK,
     category: ENTITY_TYPE_CONTAINER,
   },

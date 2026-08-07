@@ -10,7 +10,6 @@ import { authorizedMembers, authorizedMembersActivationDate } from '../../../sch
 
 const CASE_RFT_DEFINITION: ModuleDefinition<StoreEntityCaseRft, StixCaseRft, Stix2CaseRft> = {
   type: {
-    id: 'case-rft',
     name: ENTITY_TYPE_CONTAINER_CASE_RFT,
     category: ENTITY_TYPE_CONTAINER_CASE,
     aliased: false,
