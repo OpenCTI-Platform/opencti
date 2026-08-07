@@ -7,7 +7,7 @@ import { boundaryWrapper, NoMatch } from '@components/Error';
 import PlatformCriticalAlertDialog from '@components/settings/platform_alerts/PlatformCriticalAlertDialog';
 import TopBannersManager from '@components/TopBannersManager';
 import TopBar from './components/nav/TopBar';
-import LeftBar from './components/nav/LeftBar';
+import NavBar from './components/nav/NavBar';
 import Message from '../components/Message';
 import NewsFeedToastManager from './components/nav/NewsFeedToastManager';
 import SystemBanners from '../public/components/SystemBanners';
@@ -114,7 +114,7 @@ const Index = ({ settings }: IndexProps) => {
       >
         <CssBaseline />
         {!isForcePasswordChangeRoute && <TopBar />}
-        {!isForcePasswordChangeRoute && <LeftBar />}
+        {!isForcePasswordChangeRoute && <NavBar />}
         <Message />
         <NewsFeedToastManager />
         <Stack component="main" sx={mainSx}>

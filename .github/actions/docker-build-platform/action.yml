@@ -15,6 +15,9 @@ inputs:
   docker_image_suffix:
     description: "Dockerfile image suffix such as _ubi9 or _fips"
     default: ""
+  fds_git_token:
+    description: "GitHub token used to install @filigran/design-system, a private git dependency. Composite actions cannot read the secrets context, so callers must pass it explicitly."
+    required: true
 
 runs:
   using: "composite"
@@ -50,6 +53,8 @@ runs:
         outputs: type=docker,dest=/tmp/opencti-platform${{ inputs.docker_image_suffix }}.tar
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+        secrets: |
+          fds_git_token=${{ inputs.fds_git_token }}
 
     - name: Upload platform docker image artifact
       uses: actions/upload-artifact@v7
