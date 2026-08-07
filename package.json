@@ -13,11 +13,6 @@
     "test": "nx run-many --tuiAutoExit --target test,e2e",
     "lint": "nx run-many --tuiAutoExit --target lint",
     "graphql": "nx run-many --tuiAutoExit --target graphql",
-    "with-python-venv": "node scripts/with_python_virtual_env.mjs",
-    "deps:venv": "yarn with-python-venv yarn deps",
-    "build:venv": "yarn with-python-venv yarn build",
-    "dev:venv": "yarn with-python-venv yarn dev",
-    "test:venv": "yarn with-python-venv yarn test",
     "build:ubi9": "nx run-many --tuiAutoExit --target build-ubi9",
     "push:ubi9": "nx run-many --tuiAutoExit --target push-ubi9",
     "renovate:dry-run": "LOG_LEVEL=debug yarn dlx renovate --dry-run --platform=local"
