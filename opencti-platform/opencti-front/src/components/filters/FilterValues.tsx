@@ -66,6 +66,8 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
 
   const buttonStyles = {
     minWidth: 'unset',
+    minHeight: 'unset',
+    height: 'unset',
     background: 'none',
     border: 'none',
     padding: 0,
@@ -155,6 +157,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       && isFilterEditable(filtersRestrictions, filterKey, filterValues);
     const localModeStyle = {
       minWidth: 'unset',
+      minHeight: 'unset',
       background: 'none',
       color: 'inherit',
       display: 'inline-block',
@@ -167,6 +170,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       fontFamily: 'Consolas, monaco, monospace',
       textTransform: 'inherit',
       ...(tooltip && {
+        height: '100%',
         pointerEvents: 'none',
       }),
       ...(isLocalModeSwitchable && {
