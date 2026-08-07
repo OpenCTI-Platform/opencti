@@ -87,19 +87,7 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
   footer,
   navLabel,
 }) => {
-  /**
-   * Geometry of the rail inside the app shell.
-   *
-   * The library lays its `<nav>` out in normal flow and sizes it with `h-full`,
-   * a percentage that resolves against a shell with no definite height: the
-   * rail ended up shorter than the viewport and scrolled away with the page.
-   * The MUI Drawer it replaces was fixed-positioned and full height. Sticking
-   * the rail to the viewport, below the banners, and giving it a definite
-   * height restores both properties — same technique as the OpenAEV pilot
-   * (openaev-front/src/components/common/menu/navbar/AppNavbar.tsx).
-   * `flex-shrink` is supplied by the host stylesheet, next to its own removal
-   * test.
-   */
+  // FDS-WORKAROUND #11: sticky, definite-height rail geometry — remove when the <nav> takes the height it is given — see fds-migration/LIBRARY-FEEDBACK.md #11
   const navStyle: React.CSSProperties & Record<string, string | undefined> = {
     position: 'sticky',
     top: topOffset,
@@ -109,26 +97,12 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
   if (customBackground) navStyle.background = customBackground;
   if (accentColor) {
     navStyle['--color-filigran-brand-primary'] = accentColor;
-    // The library derives the selected-row tint from a SECOND token, and
-    // declares it on `:root` as a `color-mix` of the first. Custom properties
-    // are substituted where they are declared, not where they are used, so
-    // that derived token is frozen against the root brand colour and an
-    // override placed here would never reach it: the left border followed the
-    // custom accent while the row tint stayed Filigran blue. Re-deriving it
-    // with the library's own formula is what makes the override complete.
+    // FDS-WORKAROUND #6: re-derive the brand tint tokens — remove when derived tokens follow a subtree override — see fds-migration/LIBRARY-FEEDBACK.md #6
     navStyle['--color-filigran-brand-primary-transparency'] = `color-mix(in srgb, ${accentColor} 10%, transparent)`;
     navStyle['--color-filigran-brand-primary-transparency-50'] = `color-mix(in srgb, ${accentColor} 50%, transparent)`;
   }
 
-  /**
-   * Submenu rows are real anchors so Ctrl/Cmd-click and "open in new tab"
-   * work, which means `asChild`. `asChild` slots our own element in and makes
-   * the library's `icon`/`showIcon` props no-ops, so the `submenu_show_icons`
-   * user preference has to be honoured here instead of by the ambient
-   * `Navbar submenuShowIcons`. That prop is still passed to `Navbar` so the
-   * context stays correct, and so this composition can be deleted unchanged
-   * the day the library can inject an icon into a slotted child.
-   */
+  // FDS-WORKAROUND #2: submenu icons composed product-side — remove when a slotted child keeps icon handling — see fds-migration/LIBRARY-FEEDBACK.md #2
   const renderSubItem = (sub: NavSubItem) => (
     <NavbarSubmenuItem key={sub.link} asChild>
       <Link
@@ -141,15 +115,7 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
     </NavbarSubmenuItem>
   );
 
-  /**
-   * `asChild` slots our anchor in place of the library's own <button>, so the
-   * row's internal layout is ours to reproduce: the library hides the label
-   * with `sr-only` while the rail is collapsed and shows the tooltip instead.
-   * Reproduced verbatim here — dropping the label instead of hiding it would
-   * strip the accessible name the collapsed rail is navigated by.
-   * See fds-migration/LIBRARY-FEEDBACK.md, "asChild rows must re-implement the
-   * row body, including the collapsed label".
-   */
+  // FDS-WORKAROUND #7: row body re-implemented for asChild — remove when asChild composes the row body — see fds-migration/LIBRARY-FEEDBACK.md #7
   const renderRowBody = (icon: React.ReactNode, label: string) => (
     <>
       <span className="inline-flex shrink-0" aria-hidden="true">{icon}</span>
@@ -175,16 +141,7 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
         key={item.id}
         label={item.label}
         icon={item.icon}
-        // Bound ONLY while the rail is expanded. Collapsed, the same prop pair
-        // drives the hover flyout, and controlling it from product state makes
-        // the flyout unusable: leaving a row schedules a delayed close (150ms)
-        // that lands after the next row has asked to open, and both callbacks
-        // resolve against the same state snapshot, so the last one wins and
-        // closes the flyout that just opened — only the first hovered submenu
-        // ever appeared. It also wrote hover into the persisted menu state,
-        // which pointing at a row never did before.
-        // See fds-migration/LIBRARY-FEEDBACK.md, "Accordion state and hover
-        // flyout state share one controlled prop".
+        // FDS-WORKAROUND #10: accordion state bound only when expanded — remove when the flyout gets its own prop — see fds-migration/LIBRARY-FEEDBACK.md #10
         open={collapsed ? undefined : openSubmenus.includes(item.id)}
         onOpenChange={collapsed ? undefined : (open) => onSubmenuOpenChange(item.id, open)}
         // `to` makes the parent row navigable ONLY while the rail is
@@ -303,20 +260,7 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
     return `linear-gradient(100deg, ${start} 0%, ${end} 100%)`;
   })();
 
-  /**
-   * Selected-row accent.
-   *
-   * COMPENSATION — see LIBRARY-FEEDBACK entries 1 and 6. `NavbarItem` paints
-   * its `aria-current="page"` state from the fixed brand token
-   * `--color-filigran-brand-primary`, and fills the row from a token derived
-   * from it. OpenCTI lets an administrator set `theme_primary`, and swaps the
-   * accent to the warning colour inside a draft. The colour is resolved here
-   * and the tokens are overridden on the `<nav>` (see `navStyle` in the view,
-   * which has to re-derive the tint token as well).
-   * REMOVAL TEST: at a pin where `Navbar` exposes an accent prop, delete this
-   * block, pass the same colour to that prop, and confirm `NavBar.test.tsx`
-   * still passes — it asserts the resolved accent, not the mechanism.
-   */
+  // FDS-WORKAROUND #1: selected-row accent resolved product-side — remove when Navbar exposes an accent prop — see fds-migration/LIBRARY-FEEDBACK.md #1
   const accentColor = draftContext
     ? theme.palette.designSystem?.alert?.warning?.primary
     : theme.palette.primary?.main;

@@ -1,45 +1,25 @@
 /* Host prerequisites for @filigran/design-system.
-   Every rule here is TEMPORARY BY DEFAULT and carries its own removal test.
+   Rules marked FDS-WORKAROUND are TEMPORARY: each one names the condition that
+   retires it, and the matching numbered entry in fds-migration/LIBRARY-FEEDBACK.md
+   carries the full rationale and the removal test.
    Loaded after the library stylesheet and after the product's index.css. */
 
-/* 1. HOST CONCERN, not library debt. The product's navigation icons come from
-      MUI, which renders them at 24px; the library's navigation rows are
-      designed around 16px glyphs. Scoped to the navigation so no other MUI
-      icon in the application is affected.
-      REMOVAL TEST: none — this is permanent for as long as MUI icons are fed
-      into library slots. It disappears with the icons, not with a pin bump. */
+/* HOST CONCERN, not library debt, and not a workaround: the product's
+   navigation icons come from MUI, which renders them at 24px; the library's
+   navigation rows are designed around 16px glyphs. Scoped to the navigation so
+   no other MUI icon in the application is affected. Permanent for as long as
+   MUI icons are fed into library slots — it disappears with the icons, not with
+   a pin bump. */
 .app-navbar .MuiSvgIcon-root {
   font-size: 16px;
 }
 
-/* 2. COMPENSATION for library feedback: the library's <nav> carries its width
-      utility but no `shrink-0`. The private layout is a flex row whose main
-      region is content-sized, so the row overflows and the browser shrinks
-      every shrinkable item. The MUI Drawer this rail replaces was immune
-      because MUI ships `flex: 0 0 auto` on the Drawer root, so the rail was
-      silently shrinking from 48px to 22px and every offset the seven floating
-      bars compute from the width constants was wrong.
-      REMOVAL TEST: at a pin where the library adds `shrink-0` to the <nav>,
-      delete this rule, then measure the running rail at a 1500px viewport:
-        document.querySelector('nav.app-navbar').getBoundingClientRect().width
-      must be 48 collapsed and 180 expanded. */
+/* FDS-WORKAROUND #8: the rail does not defend its width — remove when the <nav> carries shrink-0 — see fds-migration/LIBRARY-FEEDBACK.md #8 */
 .app-navbar {
   flex: 0 0 auto;
 }
 
-/* 3. COMPENSATION for library feedback: floating surfaces are fixed at
-      Tailwind's `z-50`, and Radix copies that value inline onto the portal
-      wrapper it appends to <body>. This application's top bar sits at
-      `theme.zIndex.drawer - 1` = 1199, so every library menu, flyout and
-      tooltip would paint underneath it. 1300 is MUI's own `zIndex.modal` —
-      the level the MUI popovers being replaced already used.
-      `!important` is required: the value Radix writes is inline.
-      REMOVAL TEST: at a pin exposing a stacking hook (the ask is a
-      `--fds-z-overlay` custom property), delete this rule, set the variable
-      on :root, then open a collapsed-rail submenu flyout over the top bar in
-      both themes and confirm the wrapper computes above 1199:
-        [...document.querySelectorAll('body > [data-radix-popper-content-wrapper]')]
-          .map(w => getComputedStyle(w).zIndex)  // must be > 1199 */
+/* FDS-WORKAROUND #5: raise portalled surfaces above the app bar — remove when the library exposes a stacking hook — see fds-migration/LIBRARY-FEEDBACK.md #5 */
 body > [data-radix-popper-content-wrapper] {
   z-index: 1300 !important;
 }

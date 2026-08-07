@@ -6,8 +6,10 @@ missing or awkward library capability is reported, never forked or worked
 around inside the library. Each entry states what the product needed, what the
 library offers today, what the product did instead, and the concrete ask.
 
-Every workaround in the code references this file by entry number, so the two
-cannot drift apart.
+Every workaround in the code is reduced to a single `FDS-WORKAROUND #N` marker
+naming its removal condition and pointing here by entry number, so the two
+cannot drift apart. The full rationale, the code shape and the removal test
+live in the entry, not in the source — one place to read, one place to update.
 
 Raised during: the navigation pilot (replacing `LeftBar.jsx` with `Navbar`),
 library pin `56f7e59823cae7d815a451206e3cb4cb1d31022d`, then re-checked at
@@ -30,12 +32,15 @@ a row tint derived from it through
 There is no prop, no CSS-variable contract and no documented override.
 
 **Consequence.** The product sets that custom property inline on the `<nav>`
-element, which recolours both utilities at once through the cascade. See
-`opencti-front/src/private/components/nav/NavBar.tsx` (`accentColor`). The
-workaround is one line, but it depends on a private token name: if the library
-renames it, nothing breaks at build or at runtime — the accent silently falls
-back to Filigran blue and the administrator's `theme_primary` is lost. That is
-why `NavBar.test.tsx` carries a guard that reads the installed
+element, which recolours both utilities at once through the cascade. The colour
+is resolved in the data component (`accentColor` in
+`opencti-front/src/private/components/nav/NavBar.tsx`: `theme.palette.primary.main`,
+or the warning colour when `draftContext` is set) and applied by the view
+through `navStyle` — which additionally has to re-derive the tint token, see
+entry 6. The workaround is one line, but it depends on a private token name: if
+the library renames it, nothing breaks at build or at runtime — the accent
+silently falls back to Filigran blue and the administrator's `theme_primary` is
+lost. That is why `NavBar.test.tsx` carries a guard that reads the installed
 `dist/index.css` and fails if no `aria-current=page` rule references the token
 any more.
 
@@ -66,10 +71,12 @@ makes `icon` and `showIcon` no-ops (Radix's `Slot` cannot inject elements
 inside an arbitrary child). So the product can have real links or the library's
 icon handling, never both.
 
-**Consequence.** `NavBar.tsx` composes the icon into its own `<Link>` and
-re-implements the `submenu_show_icons` gate product-side, while still passing
-`submenuShowIcons` to `Navbar` so the ambient context stays correct. The prop
-the product was supposed to consume is inert on every row it renders.
+**Consequence.** `NavBar.tsx` composes the icon into its own `<Link>` in
+`renderSubItem` and re-implements the `submenu_show_icons` gate product-side
+(`{submenuShowIcons && sub.icon}`), while still passing `submenuShowIcons` to
+`Navbar` so the ambient context stays correct — and so this composition can be
+deleted unchanged the day the library can inject an icon into a slotted child.
+The prop the product was supposed to consume is inert on every row it renders.
 
 **Ask.** Either give `NavbarItem` / `NavbarSubmenuItem` `href` / `to` props so a
 link row stays library-owned (this is OpenAEV's entry 1, still open at this
@@ -139,16 +146,37 @@ reload disappears.
 **Needed.** Submenu flyouts and tooltips from the collapsed rail must render
 above the top bar.
 
-**Today.** The library portals them to `document.body` with `z-50`. OpenCTI's
-top bar sits at MUI's `theme.zIndex.drawer - 1`, i.e. 1199.
+**Today.** The library portals them to `document.body` with `z-50`, and Radix
+copies that value *inline* onto the `[data-radix-popper-content-wrapper]` it
+appends to `<body>`. OpenCTI's top bar sits at MUI's `theme.zIndex.drawer - 1`,
+i.e. 1199, so every library menu, flyout and tooltip paints underneath it.
 
 **Consequence.** One host rule in
 `opencti-front/src/static/css/design-system-host.css` raises the portalled
-wrapper above the app bar. It carries its own removal test in a comment.
+wrapper above the app bar:
 
-**Ask.** Either a documented, overridable z-index token for portalled surfaces,
-or a `container` prop so the product can portal them into its own stacking
-context.
+```css
+body > [data-radix-popper-content-wrapper] { z-index: 1300 !important; }
+```
+
+1300 is MUI's own `zIndex.modal` — the level the MUI popovers being replaced
+already used, so this is iso-functional with the rail it succeeds rather than a
+new stacking choice. `!important` is not stylistic: the value Radix writes is
+inline, and an inline declaration cannot be overridden by a normal rule.
+
+**Ask.** Either a documented, overridable z-index token for portalled surfaces
+(the concrete ask is a `--fds-z-overlay` custom property, so a host can set it
+once on `:root`), or a `container` prop so the product can portal them into its
+own stacking context.
+
+**Removal test.** At a pin exposing a stacking hook: delete the host rule, set
+the variable on `:root`, then open a collapsed-rail submenu flyout over the top
+bar in both themes and confirm the wrapper computes above 1199:
+
+```js
+[...document.querySelectorAll('body > [data-radix-popper-content-wrapper]')]
+  .map((w) => getComputedStyle(w).zIndex) // must be > 1199
+```
 
 ---
 
@@ -166,8 +194,19 @@ that derived token is frozen against the root brand colour: an override on the
 `<nav>` moves the left border and leaves the fill Filigran blue.
 
 **Consequence.** `NavBar.tsx` re-derives both `-transparency` and
-`-transparency-50` inline, duplicating the library's own formula. If the ratio
-changes in the library, the product silently disagrees with it.
+`-transparency-50` inline in `navStyle`, duplicating the library's own formula:
+
+```ts
+navStyle['--color-filigran-brand-primary'] = accentColor;
+navStyle['--color-filigran-brand-primary-transparency'] = `color-mix(in srgb, ${accentColor} 10%, transparent)`;
+navStyle['--color-filigran-brand-primary-transparency-50'] = `color-mix(in srgb, ${accentColor} 50%, transparent)`;
+```
+
+The observed symptom without the last two lines: under a custom accent the left
+border followed the custom colour while the row tint stayed Filigran blue — a
+half-applied accent, which reads as a rendering bug rather than a missing
+feature. If the ratio changes in the library, the product silently disagrees
+with it; that drift is what the token-name guard in `NavBar.test.tsx` watches.
 
 **Ask.** Either declare the derived tokens with the same scope as the base one
 (so a subtree override cascades into them), or expose the accent as a prop on
@@ -188,13 +227,22 @@ should still render like a library row.
 **Today.** `asChild` replaces the library's `<button>` with the consumer's
 element, so besides the `icon`/`showIcon` props of entry 2, the internal body —
 the icon wrapper, and the label span the library switches to `sr-only` while
-the rail is collapsed — is not rendered either. A consumer that simply puts an
-icon and a label inside its anchor gets labels overflowing a 48px rail; a
-consumer that drops the label instead loses the accessible name the collapsed
-rail is navigated by.
+the rail is collapsed, showing its tooltip instead — is not rendered either. A
+consumer that simply puts an icon and a label inside its anchor gets labels
+overflowing a 48px rail; a consumer that drops the label instead loses the
+accessible name the collapsed rail is navigated by.
 
 **Consequence.** `NavBar.tsx` reproduces the library's own body markup and its
-`sr-only` switch, which couples the product to internal utility class names.
+`sr-only` switch verbatim, in `renderRowBody`:
+
+```tsx
+<span className="inline-flex shrink-0" aria-hidden="true">{icon}</span>
+<span className={collapsed ? 'sr-only' : 'flex-1 truncate text-left'}>{label}</span>
+```
+
+Hiding the label rather than dropping it is the whole point: it is what keeps
+the collapsed rail navigable by screen reader and keeps the e2e page object's
+name lookups working. This couples the product to internal utility class names.
 
 **Ask.** Either a `render`/`asChild` variant that keeps the library body and
 only swaps the outer element, or an exported `NavbarItemBody` the consumer can
@@ -211,18 +259,31 @@ accessible name must still pass.
 **Needed.** The rail must occupy exactly the width it advertises, since the
 product positions seven floating toolbars against that number.
 
-**Today.** The `<nav>` carries `w-12` / `w-45` but no `shrink-0`. Dropped into
-a flex row whose sibling is content-sized — which is what the MUI Drawer it
-replaces lived in — it shrank to 22px, silently invalidating every offset
+**Today.** The `<nav>` carries `w-12` / `w-45` but no `shrink-0`. The private
+layout is a flex row whose main region is content-sized, so the row overflows
+and the browser shrinks every shrinkable item. The MUI Drawer this rail replaces
+was immune because MUI ships `flex: 0 0 auto` on the Drawer root — which is why
+the defect appears only on migration. Dropped into that same flex row, the
+library `<nav>` shrank from 48px to 22px, silently invalidating every offset
 computed from the constants.
 
-**Consequence.** One host rule (`.app-navbar { flex: 0 0 auto }`).
+**Consequence.** One host rule (`.app-navbar { flex: 0 0 auto }`) in
+`opencti-front/src/static/css/design-system-host.css`. Silent is the operative
+word: nothing throws, and the only visible symptom is that the seven floating
+toolbars aligned on `SMALL_BAR_WIDTH` / `OPEN_BAR_WIDTH` sit at the wrong
+offset.
 
 **Ask.** Add `shrink-0` to the `<nav>`'s own class list, as the library already
 does on the rows inside it.
 
-**Removal test.** Delete the host rule; the rail must still measure 48px
-collapsed and 180px expanded at a 1500px viewport.
+**Removal test.** At a pin where the library adds `shrink-0` to the `<nav>`,
+delete the host rule, then measure the running rail at a 1500px viewport:
+
+```js
+document.querySelector('nav.app-navbar').getBoundingClientRect().width
+```
+
+must be 48 collapsed and 180 expanded.
 
 ---
 
@@ -264,11 +325,22 @@ next row's `true` both resolve against the same state snapshot, so the last one
 wins.
 
 **Consequence.** Controlling the prop makes the collapsed rail unusable: the
-first hovered submenu opens, every later one opens and closes immediately, and
-hovering silently rewrites the persisted "open submenus" state. The product now
-passes `open`/`onOpenChange` only when expanded, and lets the library own the
-collapsed flyout — which means the persisted state is deliberately ignored in
-the collapsed rail.
+first hovered submenu opens, every later one opens and closes immediately —
+because the late `false` and the next row's `true` resolve against the same
+snapshot and the last one wins, closing the flyout that just opened. It also
+wrote hover into the persisted menu state, which merely *pointing at* a row
+never did before: simply sweeping the pointer down a collapsed rail rewrote
+what the user would find open on next login. The product now binds the pair
+only while expanded, and lets the library own the collapsed flyout:
+
+```tsx
+open={collapsed ? undefined : openSubmenus.includes(item.id)}
+onOpenChange={collapsed ? undefined : (open) => onSubmenuOpenChange(item.id, open)}
+```
+
+The trade-off is deliberate and worth stating: the persisted state is ignored
+in the collapsed rail, which is acceptable because a flyout is transient by
+nature, whereas an unusable rail is not.
 
 **Ask.** Separate the two states: keep `open`/`onOpenChange` for the accordion
 and expose the flyout through its own prop (or keep the flyout uncontrolled by
@@ -292,12 +364,28 @@ with `h-full`, a percentage that only resolves against a parent with a definite
 height. In an app shell whose height comes from its content — OpenCTI's — the
 rail ends up shorter than the viewport and scrolls away with the page.
 
-**Consequence.** Every host has to restore the two properties itself. Both
-pilots landed on the same inline geometry (`position: sticky`, `top`, a definite
-`height` computed from the viewport minus the shell's banners, and
-`align-self: flex-start`). This is arguably the host's responsibility, so it is
-filed as an observation rather than a defect — but two out of two consumers hit
-it, which is the point.
+**Consequence.** Every host has to restore the two properties itself. Measured
+in OpenCTI before the fix: the rail rendered 776px tall in an 800px viewport and
+scrolled away with the page, where the MUI Drawer it replaces was
+fixed-positioned and full height — so this is a functional regression, not a
+styling preference. Both pilots landed on the same inline geometry, applied to
+the `<nav>` via `style` in
+`opencti-front/src/private/components/nav/NavBar.tsx` (`navStyle`):
+
+```ts
+position: 'sticky',
+top: topOffset,                                        // banners at the top
+alignSelf: 'flex-start',
+height: `calc(100dvh - ${topOffset} - ${bottomOffset})`,
+```
+
+The OpenAEV pilot solved it identically, in
+`openaev-front/src/components/common/menu/navbar/AppNavbar.tsx` — the reference
+implementation to read before touching this. Note the division of labour:
+`flex-shrink` is *not* part of this block, it is supplied by the host stylesheet
+and tracked separately as entry 8, so the two can be retired independently.
+This is arguably the host's responsibility, so it is filed as an observation
+rather than a defect — but two out of two consumers hit it, which is the point.
 
 **Ask.** Either document the layout contract the `<nav>` expects from its host
 (definite-height parent), or let the component take the height it is given
@@ -306,6 +394,7 @@ it, which is the point.
 **Removal test.** Delete the `navStyle` geometry block in `NavBar.tsx`; at a
 1500×800 viewport the rail must still measure the full viewport height and keep
 its position while an inner container scrolls.
+
 ---
 
 ## 12. The pointer-cursor fix stopped at `NavbarItem` and left `ProductSwitcher` behind
