@@ -2743,14 +2743,22 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
           }
         }
         if (operation === UPDATE_OPERATION_ADD) {
-          const filteredList = (updatedInstance[key] || []).filter((d: any) => !isInferredIndex(d.i_relation._index));
-          const currentIds = filteredList.map((o: any) => [o.id, o.standard_id]).flat();
-          const refsToCreate = refs.filter((r) => !currentIds.includes(r.internal_id));
+          // fresh post-lock check to avoid diffing against a stale pre-lock snapshot;
+          // scoped to only the candidate targets (toId) and base fields, instead of listing every existing relation
+          const candidateIds = refs.map((r) => r.internal_id);
+          const currentRels = await fullRelationsList(context, user, relType, {
+            indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+            fromId: initial.internal_id,
+            toId: candidateIds,
+            baseData: true,
+          });
+          const currentIds = new Set(currentRels.map((n: BasicStoreRelation) => n.toId));
+          const refsToCreate = refs.filter((r) => !currentIds.has(r.internal_id));
           if (refsToCreate.length > 0) {
             const newRelations = buildInstanceRelTo(refsToCreate, relType);
             pushAll(relationsToCreate, newRelations);
             updatedInputs.push({ key, value: refsToCreate, operation: operation as unknown as any, previous: updatedInstance[key] });
-            updatedInstance[key] = [...(updatedInstance[key] || []), ...refsToCreate];
+            updatedInstance[key] = R.uniqBy((r: any) => r.internal_id, [...(updatedInstance[key] || []), ...refsToCreate]);
             updatedInstance[relType] = updatedInstance[key].map((u: any) => u.internal_id);
           }
         }
