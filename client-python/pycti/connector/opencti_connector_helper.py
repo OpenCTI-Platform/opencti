@@ -945,7 +945,7 @@ class PingAlive(threading.Thread):
     :param get_state: Function to retrieve current connector state
     :type get_state: Callable[[], Optional[Dict]]
     :param set_state: Function to update connector state
-    :type set_state: Callable[[str], None]
+    :type set_state: Callable[[Optional[Dict]], None]
     :param metric: Metric handler for recording ping statistics
     :type metric: OpenCTIMetricHandler
     :param connector_info: ConnectorInfo instance with runtime details
@@ -958,9 +958,12 @@ class PingAlive(threading.Thread):
         connector_id: str,
         api,
         get_state: Callable[[], Optional[Dict]],
-        set_state: Callable[[str], None],
+        set_state: Callable[[Optional[Dict]], None],
         metric,
         connector_info,
+        get_state_last_write: Optional[
+            Callable[[], Optional[datetime.datetime]]
+        ] = None,
     ) -> None:
         """Initialize the PingAlive daemon thread.
 
@@ -973,11 +976,14 @@ class PingAlive(threading.Thread):
         :param get_state: Function to retrieve current connector state
         :type get_state: Callable[[], Optional[Dict]]
         :param set_state: Function to update connector state
-        :type set_state: Callable[[str], None]
+        :type set_state: Callable[[Optional[Dict]], None]
         :param metric: Metric handler for recording ping statistics
         :type metric: OpenCTIMetricHandler
         :param connector_info: ConnectorInfo instance with runtime details
         :type connector_info: ConnectorInfo
+        :param get_state_last_write: Returns the connector's last local state
+            write as a timezone-aware UTC datetime (or None)
+        :type get_state_last_write: Callable[[], Optional[datetime.datetime]]
         """
         threading.Thread.__init__(self, daemon=True)
         self.connector_logger = connector_logger
@@ -989,6 +995,7 @@ class PingAlive(threading.Thread):
         self.exit_event = threading.Event()
         self.metric = metric
         self.connector_info = connector_info
+        self.get_state_last_write = get_state_last_write or (lambda: None)
 
     def ping(self) -> None:
         """Execute the ping loop to maintain connector heartbeat.
@@ -1020,12 +1027,52 @@ class PingAlive(threading.Thread):
                     and len(result["connector_state"]) > 0
                     else None
                 )
+                # A divergent platform state is only adopted when it is a genuine
+                # reset: an empty state whose reset timestamp is newer than our
+                # last local write. This prevents a delayed/stale ping echo
+                # (frequent under high platform latency) from overwriting the
+                # connector's own freshly written state.
+                raw_timestamp = result.get("connector_state_timestamp")
+                reset_timestamp = None
+                if raw_timestamp:
+                    try:
+                        reset_timestamp = datetime.datetime.fromisoformat(
+                            raw_timestamp.replace("Z", "+00:00")
+                        )
+                        if reset_timestamp.tzinfo is None:
+                            reset_timestamp = reset_timestamp.replace(
+                                tzinfo=datetime.timezone.utc
+                            )
+                    except (TypeError, ValueError):
+                        self.connector_logger.debug(
+                            "Invalid connector_state_timestamp received from platform; ignoring reset timestamp",
+                            {"connector_state_timestamp": raw_timestamp},
+                        )
+                        reset_timestamp = datetime.datetime.min.replace(
+                            tzinfo=datetime.timezone.utc
+                        )
+                last_local_write = self.get_state_last_write()
+                is_genuine_reset = remote_state is None and (
+                    reset_timestamp is None
+                    or last_local_write is None
+                    or reset_timestamp > last_local_write
+                )
                 if initial_state != remote_state:
-                    self.set_state(result["connector_state"])
-                    self.connector_logger.info(
-                        "Connector state has been remotely reset",
-                        {"state": self.get_state()},
-                    )
+                    if is_genuine_reset:
+                        self.set_state(None)
+                        self.connector_logger.info(
+                            "Connector state has been remotely reset",
+                            {"state": self.get_state()},
+                        )
+                    else:
+                        self.connector_logger.debug(
+                            "Ignoring divergent platform state (stale echo), "
+                            "keeping local state",
+                            {
+                                "local_state": initial_state,
+                                "remote_state": remote_state,
+                            },
+                        )
 
                 if self.in_error:
                     self.in_error = False
@@ -2502,6 +2549,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                     self.set_state,
                     self.metric,
                     self.connector_info,
+                    self.get_state_last_write,
                 )
                 self.ping.start()
 
@@ -2834,6 +2882,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self.connector_state = json.dumps(state)
         else:
             self.connector_state = None
+        self.connector_state_last_write = datetime.datetime.now(datetime.timezone.utc)
+
+    def get_state_last_write(self) -> Optional[datetime.datetime]:
+        """returns the timestamp of the last local state write, or None"""
+        return getattr(self, "connector_state_last_write", None)
 
     def get_state(self) -> Optional[Dict]:
         """Get the connector state.
@@ -3702,13 +3755,15 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             expectations_number = 1
         else:
             stix2_splitter = OpenCTIStix2Splitter()
-            expectations_number, _, bundles = (
-                stix2_splitter.split_bundle_with_expectations(
-                    bundle=bundle,
-                    use_json=True,
-                    event_version=event_version,
-                    cleanup_inconsistent_bundle=cleanup_inconsistent_bundle,
-                )
+            (
+                expectations_number,
+                _,
+                bundles,
+            ) = stix2_splitter.split_bundle_with_expectations(
+                bundle=bundle,
+                use_json=True,
+                event_version=event_version,
+                cleanup_inconsistent_bundle=cleanup_inconsistent_bundle,
             )
 
         if len(bundles) == 0:

@@ -124,6 +124,7 @@ class OpenCTIApiConnector:
                 pingConnector(id: $id, state: $state, connectorInfo: $connectorInfo) {
                     id
                     connector_state
+                    connector_state_timestamp
                     connector_info {
                         run_and_terminate
                         buffering
