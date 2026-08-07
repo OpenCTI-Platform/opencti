@@ -47,7 +47,7 @@ const Preprocessing: FunctionComponent = () => {
               <TableRow><TableCell colSpan={4} align="center">{t_i18n('No pre-processing rules defined yet')}</TableCell></TableRow>
             )}
             {rules.map((rule) => (
-              <TableRow key={rule.id} hover style={{ cursor: 'pointer' }} onClick={() => navigate(/dashboard/data/preprocessing/${rule.id})}>
+              <TableRow key={rule.id} hover style={{ cursor: 'pointer' }} onClick={() => navigate(`/dashboard/data/preprocessing/${rule.id}`)}>
                 <TableCell>{rule.name}</TableCell>
                 <TableCell>{rule.creator}</TableCell>
                 <TableCell>

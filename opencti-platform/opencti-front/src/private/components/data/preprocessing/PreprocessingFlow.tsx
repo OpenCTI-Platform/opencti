@@ -59,8 +59,8 @@ const PreprocessingFlow: FunctionComponent<PreprocessingFlowProps> = ({ ruleId }
     const parentNodeId = activePlaceholder.replace(/^placeholder-/, '');
     const parentNode = currentDef.nodes.find((n) => n.id === parentNodeId);
     const parentPos = parentNode?.position ?? { x: 0, y: 0 };
-    const newNodeId = node-${component.id}-${Date.now()};
-    saveDefinition(ruleId, { nodes: [...currentDef.nodes, { id: newNodeId, componentId: component.id, name: component.name, position: { x: parentPos.x, y: parentPos.y + NODE_Y_SPACING } }], edges: [...currentDef.edges, { id: e-${parentNodeId}-${newNodeId}, source: parentNodeId, target: newNodeId }] });
+    const newNodeId = `node-${component.id}-${Date.now()}`;
+    saveDefinition(ruleId, { nodes: [...currentDef.nodes, { id: newNodeId, componentId: component.id, name: component.name, position: { x: parentPos.x, y: parentPos.y + NODE_Y_SPACING } }], edges: [...currentDef.edges, { id: `e-${parentNodeId}-${newNodeId}`, source: parentNodeId, target: newNodeId }] });
     setActivePlaceholder(null); setTick((v) => v + 1);
   }, [activePlaceholder, ruleId]);
   const currentDef = getDefinition(ruleId);
