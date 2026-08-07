@@ -233,3 +233,45 @@ export const rawListObjects = async (directory: string, recursive: boolean, cont
   }
   return s3Client.send(new s3.ListObjectsV2Command(requestParams));
 };
+
+const STORAGE_USED_SIZE_CACHE_INTERVAL_MS = 300_000;
+let storageUsedSizeCacheInBytes = 0;
+let storageUsedSizeCacheDate = 0;
+let storageUsedSizeCachePromise: Promise<number> | null = null;
+
+const fetchStorageUsedSize = async (): Promise<number> => {
+  let totalSize = 0;
+  let truncated = true;
+  let continuationToken: string | undefined;
+  while (truncated) {
+    const response = await rawListObjects('', true, continuationToken);
+    totalSize += (response.Contents ?? []).reduce((sum, object) => sum + (object.Size ?? 0), 0);
+    truncated = response.IsTruncated ?? false;
+    continuationToken = truncated ? response.NextContinuationToken : undefined;
+  }
+  return totalSize;
+};
+
+export const getStorageUsedSize = async (): Promise<number> => {
+  const now = Date.now();
+  if (storageUsedSizeCacheDate > 0 && now - storageUsedSizeCacheDate < STORAGE_USED_SIZE_CACHE_INTERVAL_MS) {
+    return storageUsedSizeCacheInBytes;
+  }
+  if (storageUsedSizeCachePromise) {
+    return storageUsedSizeCachePromise;
+  }
+  storageUsedSizeCachePromise = fetchStorageUsedSize()
+    .then((sizeInBytes) => {
+      storageUsedSizeCacheInBytes = sizeInBytes;
+      storageUsedSizeCacheDate = Date.now();
+      return sizeInBytes;
+    })
+    .catch((error) => {
+      logApp.warn('[FILE STORAGE] Unable to fetch used size for health endpoint, returning last cached value', { cause: error });
+      return storageUsedSizeCacheInBytes;
+    })
+    .finally(() => {
+      storageUsedSizeCachePromise = null;
+    });
+  return storageUsedSizeCachePromise;
+};

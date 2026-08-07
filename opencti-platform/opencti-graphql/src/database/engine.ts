@@ -5169,6 +5169,44 @@ export const getStats = (indices = READ_PLATFORM_INDICES) => {
   return retryElOperations(statsOperation);
 };
 
+const ENGINE_USED_SIZE_CACHE_INTERVAL_MS = 300_000;
+let engineUsedSizeCacheInBytes = 0;
+let engineUsedSizeCacheDate = 0;
+let engineUsedSizeCachePromise: Promise<number> | null = null;
+
+const fetchEngineUsedSize = async (): Promise<number> => {
+  if (engine instanceof ElkClient) {
+    const engineIndicesStats = await engine.indices.stats({ index: '*', metric: ['store'], expand_wildcards: 'all' as any });
+    return Number(oebp(engineIndicesStats)?._all?.primaries?.store?.size_in_bytes ?? 0);
+  }
+  const engineIndicesStats = await engine.indices.stats({ index: '*', metric: 'store', expand_wildcards: 'all' as any });
+  return Number(oebp(engineIndicesStats)?._all?.primaries?.store?.size_in_bytes ?? 0);
+};
+
+export const getEngineUsedSize = async (): Promise<number> => {
+  const now = Date.now();
+  if (engineUsedSizeCacheDate > 0 && now - engineUsedSizeCacheDate < ENGINE_USED_SIZE_CACHE_INTERVAL_MS) {
+    return engineUsedSizeCacheInBytes;
+  }
+  if (engineUsedSizeCachePromise) {
+    return engineUsedSizeCachePromise;
+  }
+  engineUsedSizeCachePromise = retryElOperations(fetchEngineUsedSize)
+    .then((sizeInBytes) => {
+      engineUsedSizeCacheInBytes = sizeInBytes;
+      engineUsedSizeCacheDate = Date.now();
+      return sizeInBytes;
+    })
+    .catch((error) => {
+      logApp.warn('[SEARCH] Unable to fetch used size for health endpoint, returning last cached value', { cause: error });
+      return engineUsedSizeCacheInBytes;
+    })
+    .finally(() => {
+      engineUsedSizeCachePromise = null;
+    });
+  return engineUsedSizeCachePromise;
+};
+
 export const isEngineAlive = async () => {
   const context = executionContext('healthcheck');
   const options = { types: [ENTITY_TYPE_MIGRATION_STATUS], connectionFormat: false };
