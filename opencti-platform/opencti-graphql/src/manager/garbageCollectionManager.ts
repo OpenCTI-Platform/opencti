@@ -28,14 +28,17 @@ const garbageCollectRedisStreamFiles = async (context: AuthContext) => {
     if (!allRedisLargeEventFiles || !allRedisLargeEventFiles.KeyCount || !allRedisLargeEventFiles.Contents) {
       return;
     }
-    for (let i = 0; i < allRedisLargeEventFiles?.KeyCount; i += 1) {
-      const file = allRedisLargeEventFiles?.Contents[i];
+    const allFileContents = allRedisLargeEventFiles.Contents.sort();
+    for (let i = 0; i < allFileContents.length; i += 1) {
+      const file = allFileContents[i];
       if (!file.Key) {
         continue;
       }
       const currentTimestamp = file.Key.slice(STREAM_FILE_DIRECTORY.length).split('-')[0];
       if (currentTimestamp < timestamp) {
         await deleteFileFromStorage(file.Key);
+      } else {
+        break;
       }
     }
   }
