@@ -8,3 +8,8 @@ worker:
   log_level: 'info'
   telemetry_enabled: false
   objects_max_refs: 0
+  # Opt-in batching of dependency-free STIX objects into a single
+  # stixObjectsBatchImport mutation call. Disabled by default.
+  batch_import_enabled: false
+  batch_import_size: 50
+  batch_import_timeout: 1.0

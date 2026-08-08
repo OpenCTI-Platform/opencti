@@ -568,6 +568,21 @@ input WorkErrorInput {
   error: String
   source: String
 }
+enum StixBatchImportItemKind {
+  stix_cyber_observable
+  malware
+  vulnerability
+  tool
+}
+input StixBatchImportItemInput {
+  kind: StixBatchImportItemKind!
+  input: JSON!
+}
+type StixBatchImportItemResult {
+  id: String
+  success: Boolean!
+  error: String
+}
 
 
 ############## SubTypes
@@ -16512,6 +16527,7 @@ type Mutation {
   userSessionsKill(id: ID!): [ID] @auth(for: [SETTINGS_SETACCESSES])
   roleEdit(id: ID!): RoleEditMutations @auth(for: [SETTINGS_SETACCESSES])
   pingConnector(id: ID!, state: String, connectorInfo: ConnectorInfoInput): Connector @auth(for: [CONNECTORAPI])
+  stixObjectsBatchImport(items: [StixBatchImportItemInput!]!): [StixBatchImportItemResult!]! @auth(for: [CONNECTORAPI])
   registerConnector(input: RegisterConnectorInput): Connector @auth(for: [CONNECTORAPI])
   managedConnectorEdit(input: EditManagedConnectorInput): ManagedConnector @auth(for: [CONNECTORAPI])
   managedConnectorAdd(input: AddManagedConnectorInput): ManagedConnector @auth(for: [CONNECTORAPI])

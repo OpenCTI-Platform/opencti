@@ -157,6 +157,26 @@ class File:
         self.mime = mime
 
 
+# GraphQL mutation field name -> kind, for mutations safe to defer/batch through
+# stixObjectsBatchImport. Any other mutation is sent to the API as today.
+BATCHABLE_MUTATIONS = {
+    "StixCyberObservableAdd": "stix_cyber_observable",
+    "MalwareAdd": "malware",
+    "VulnerabilityAdd": "vulnerability",
+    "ToolAdd": "tool",
+}
+
+# entity_type stub for the capture-mode fake response (see query()'s start_batch_capture
+# branch) - fixed per mutation for the non-subtyped kinds; StixCyberObservableAdd has no
+# entry here because its entity_type varies per observable and is instead read directly
+# from the captured input's own "type" field.
+FAKE_ENTITY_TYPE_BY_MUTATION = {
+    "MalwareAdd": "Malware",
+    "VulnerabilityAdd": "Vulnerability",
+    "ToolAdd": "Tool",
+}
+
+
 class OpenCTIApiClient:
     """Main API client for OpenCTI
 
@@ -267,6 +287,11 @@ class OpenCTIApiClient:
         )
         self.session = requests.session()
         self.session_requests_timeout = requests_timeout
+        # Batch capture state (see start_batch_capture/stop_batch_capture below). This
+        # client is shared across every queue's consumer thread, which run in parallel,
+        # so this MUST be thread-local or concurrent captures would interleave into a
+        # single shared list.
+        self._batch_capture_state = threading.local()
         # Define the dependencies
         self.work = OpenCTIApiWork(self)
         self.notification = OpenCTIApiNotification(self)
@@ -626,6 +651,24 @@ class OpenCTIApiClient:
 
         return obj, []
 
+    def start_batch_capture(self) -> None:
+        """Start intercepting batchable Add mutations (see BATCHABLE_MUTATIONS) instead of
+        sending them to the API. Used to "dry-run" import_item() for a single
+        STIX object and collect the (kind, input) payload it would have sent, without any
+        network call/side effect, so it can be resubmitted later as part of a batch.
+
+        Thread-local: safe to call concurrently from different threads (e.g. two different
+        queue consumers capturing at the same time on this same, shared API client
+        instance) without one call's capture bleeding into another's."""
+        self._batch_capture_state.items = []
+
+    def stop_batch_capture(self) -> list:
+        """Stop intercepting mutations and return everything captured since the matching
+        start_batch_capture() call on *this* thread (see start_batch_capture)."""
+        captured = getattr(self._batch_capture_state, "items", None) or []
+        self._batch_capture_state.items = None
+        return captured
+
     def query(self, query, variables=None, disable_impersonate=False):
         """Submit a query to the OpenCTI GraphQL API.
 
@@ -640,6 +683,46 @@ class OpenCTIApiClient:
         :raises ValueError: if the API returns an error or non-200 status code
         """
         variables = variables or {}
+        capture_list = getattr(self._batch_capture_state, "items", None)
+        if capture_list is not None:
+            mutation_match = re.match(r"\s*mutation\s+(\w+)", query)
+            mutation_name = mutation_match.group(1) if mutation_match else None
+            kind = BATCHABLE_MUTATIONS.get(mutation_name)
+            if kind is not None:
+                # StixCyberObservableAdd takes its fields directly as top-level variables,
+                # while the other batchable mutations wrap them under an "input" variable.
+                item_input = (
+                    variables
+                    if mutation_name == "StixCyberObservableAdd"
+                    else variables.get("input", {})
+                )
+                capture_list.append({"kind": kind, "input": item_input})
+                field_name = mutation_name[0].lower() + mutation_name[1:]
+                # Fake success response: never sent over the network, so no real id is
+                # known yet (the real id/success/error come back from the batched
+                # stixObjectsBatchImport call once the caller actually submits the
+                # captured items). entity_type is stubbed from the input itself (fixed
+                # per-kind for Malware/Vulnerability/Tool, taken from the observable's
+                # own "type" field for StixCyberObservableAdd) because downstream
+                # post-processing in import_observable/import_item (e.g. caching this
+                # item's id/type to resolve refs of later objects in the same
+                # import_item() call) reads it from the mutation response and would
+                # otherwise raise a KeyError - harmless here since a leaf/no-dependency
+                # capture never has a later object in the same call needing that cache
+                # entry, but the crash must not be allowed to prevent this item's
+                # mutation payload (already safely captured above) from being returned.
+                fake_entity_type = FAKE_ENTITY_TYPE_BY_MUTATION.get(mutation_name)
+                if fake_entity_type is None and isinstance(item_input, dict):
+                    fake_entity_type = item_input.get("type")
+                return {
+                    "data": {
+                        field_name: {
+                            "id": None,
+                            "standard_id": None,
+                            "entity_type": fake_entity_type,
+                        }
+                    }
+                }
         # Implementation of spec https://github.com/jaydenseric/graphql-multipart-request-spec
         # Support for single or multiple upload
         # Batching or mixed upload or not supported

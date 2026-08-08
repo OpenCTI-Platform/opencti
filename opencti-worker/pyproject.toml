@@ -1,6 +1,12 @@
 [tool.isort]
 profile = "black"
 
+[tool.pytest.ini_options]
+# "src" is not a package (no __init__.py) - add it to sys.path so tests can
+# `import push_handler`/`import message_queue_consumer` the same way worker.py does.
+pythonpath = ["src"]
+testpaths = ["tests"]
+
 [tool.mypy]
 check_untyped_defs = true
 disallow_any_generics = true

@@ -605,6 +605,24 @@ input WorkErrorInput {
   source: String
 }
 
+enum StixBatchImportItemKind {
+  stix_cyber_observable
+  malware
+  vulnerability
+  tool
+}
+
+input StixBatchImportItemInput {
+  kind: StixBatchImportItemKind!
+  input: JSON!
+}
+
+type StixBatchImportItemResult {
+  id: String
+  success: Boolean!
+  error: String
+}
+
 enum SubTypesOrdering {
   label
   _score
@@ -10380,6 +10398,7 @@ type Mutation {
   userSessionsKill(id: ID!): [ID]
   roleEdit(id: ID!): RoleEditMutations
   pingConnector(id: ID!, state: String, connectorInfo: ConnectorInfoInput): Connector
+  stixObjectsBatchImport(items: [StixBatchImportItemInput!]!): [StixBatchImportItemResult!]!
   registerConnector(input: RegisterConnectorInput): Connector
   managedConnectorEdit(input: EditManagedConnectorInput): ManagedConnector
   managedConnectorAdd(input: AddManagedConnectorInput): ManagedConnector

@@ -17557,6 +17557,7 @@ export type Mutation = {
   stixDomainObjectsExportAsk?: Maybe<Array<File>>;
   stixDomainObjectsExportPush?: Maybe<Scalars['Boolean']['output']>;
   stixEdit?: Maybe<StixEditMutations>;
+  stixObjectsBatchImport: Array<StixBatchImportItemResult>;
   stixRefRelationshipAdd?: Maybe<StixRefRelationship>;
   stixRefRelationshipEdit?: Maybe<StixRefRelationshipEditMutations>;
   stixRelationshipEdit?: Maybe<StixRelationshipEditMutations>;
@@ -19912,6 +19913,11 @@ export type MutationStixDomainObjectsExportPushArgs = {
 
 export type MutationStixEditArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationStixObjectsBatchImportArgs = {
+  items: Array<StixBatchImportItemInput>;
 };
 
 
@@ -31076,6 +31082,25 @@ export enum StatusTemplateOrdering {
   Name = 'name'
 }
 
+export type StixBatchImportItemInput = {
+  input: Scalars['JSON']['input'];
+  kind: StixBatchImportItemKind;
+};
+
+export enum StixBatchImportItemKind {
+  Malware = 'malware',
+  StixCyberObservable = 'stix_cyber_observable',
+  Tool = 'tool',
+  Vulnerability = 'vulnerability'
+}
+
+export type StixBatchImportItemResult = {
+  __typename?: 'StixBatchImportItemResult';
+  error?: Maybe<Scalars['String']['output']>;
+  id?: Maybe<Scalars['String']['output']>;
+  success: Scalars['Boolean']['output'];
+};
+
 export type StixCoreObject = {
   cases?: Maybe<CaseConnection>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -40653,6 +40678,9 @@ export type ResolversTypes = ResolversObject<{
   StatusTemplateConnection: ResolverTypeWrapper<Omit<StatusTemplateConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['StatusTemplateEdge']>>> }>;
   StatusTemplateEdge: ResolverTypeWrapper<Omit<StatusTemplateEdge, 'node'> & { node: ResolversTypes['StatusTemplate'] }>;
   StatusTemplateOrdering: StatusTemplateOrdering;
+  StixBatchImportItemInput: StixBatchImportItemInput;
+  StixBatchImportItemKind: StixBatchImportItemKind;
+  StixBatchImportItemResult: ResolverTypeWrapper<StixBatchImportItemResult>;
   StixCoreObject: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['StixCoreObject']>;
   StixCoreObjectConnection: ResolverTypeWrapper<Omit<StixCoreObjectConnection, 'edges'> & { edges: Array<ResolversTypes['StixCoreObjectEdge']> }>;
   StixCoreObjectEdge: ResolverTypeWrapper<Omit<StixCoreObjectEdge, 'node'> & { node: ResolversTypes['StixCoreObject'] }>;
@@ -41688,6 +41716,8 @@ export type ResolversParentTypes = ResolversObject<{
   StatusTemplateAddInput: StatusTemplateAddInput;
   StatusTemplateConnection: Omit<StatusTemplateConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['StatusTemplateEdge']>>> };
   StatusTemplateEdge: Omit<StatusTemplateEdge, 'node'> & { node: ResolversParentTypes['StatusTemplate'] };
+  StixBatchImportItemInput: StixBatchImportItemInput;
+  StixBatchImportItemResult: StixBatchImportItemResult;
   StixCoreObject: ResolversInterfaceTypes<ResolversParentTypes>['StixCoreObject'];
   StixCoreObjectConnection: Omit<StixCoreObjectConnection, 'edges'> & { edges: Array<ResolversParentTypes['StixCoreObjectEdge']> };
   StixCoreObjectEdge: Omit<StixCoreObjectEdge, 'node'> & { node: ResolversParentTypes['StixCoreObject'] };
@@ -48206,6 +48236,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   stixDomainObjectsExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsExportAskArgs, 'exportType' | 'format'>>;
   stixDomainObjectsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsExportPushArgs, 'entity_type' | 'file' | 'file_markings'>>;
   stixEdit?: Resolver<Maybe<ResolversTypes['StixEditMutations']>, ParentType, ContextType, RequireFields<MutationStixEditArgs, 'id'>>;
+  stixObjectsBatchImport?: Resolver<Array<ResolversTypes['StixBatchImportItemResult']>, ParentType, ContextType, RequireFields<MutationStixObjectsBatchImportArgs, 'items'>>;
   stixRefRelationshipAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationStixRefRelationshipAddArgs, 'input'>>;
   stixRefRelationshipEdit?: Resolver<Maybe<ResolversTypes['StixRefRelationshipEditMutations']>, ParentType, ContextType, RequireFields<MutationStixRefRelationshipEditArgs, 'id'>>;
   stixRelationshipEdit?: Resolver<Maybe<ResolversTypes['StixRelationshipEditMutations']>, ParentType, ContextType, RequireFields<MutationStixRelationshipEditArgs, 'id'>>;
@@ -51170,6 +51201,12 @@ export type StatusTemplateConnectionResolvers<ContextType = any, ParentType exte
 export type StatusTemplateEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StatusTemplateEdge'] = ResolversParentTypes['StatusTemplateEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType>;
+}>;
+
+export type StixBatchImportItemResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixBatchImportItemResult'] = ResolversParentTypes['StixBatchImportItemResult']> = ResolversObject<{
+  error?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
 export type StixCoreObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCoreObject'] = ResolversParentTypes['StixCoreObject']> = ResolversObject<{
@@ -54300,6 +54337,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   StatusTemplate?: StatusTemplateResolvers<ContextType>;
   StatusTemplateConnection?: StatusTemplateConnectionResolvers<ContextType>;
   StatusTemplateEdge?: StatusTemplateEdgeResolvers<ContextType>;
+  StixBatchImportItemResult?: StixBatchImportItemResultResolvers<ContextType>;
   StixCoreObject?: StixCoreObjectResolvers<ContextType>;
   StixCoreObjectConnection?: StixCoreObjectConnectionResolvers<ContextType>;
   StixCoreObjectEdge?: StixCoreObjectEdgeResolvers<ContextType>;

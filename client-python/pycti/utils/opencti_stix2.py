@@ -145,6 +145,10 @@ class OpenCTIStix2:
         :param data: Data to cache
         :type data: dict
         """
+        # Defensive no-op: data_id is None only during batch-capture's dry run (see
+        # OpenCTIApiClient.try_capture_batchable_item), before the real id is known.
+        if data_id is None:
+            return
         api_draft_id = self.opencti.get_draft_id()
         self.mapping_cache[data_id + api_draft_id] = data
 
@@ -3376,6 +3380,58 @@ class OpenCTIStix2:
                 "Not supported opencti_operation",
                 {"operation": operation},
             )
+
+    def try_capture_batchable_item(
+        self,
+        item,
+        update: bool = False,
+        types: List = None,
+        bundle_id: str = None,
+    ):
+        """Attempt to build the batch mutation payload for a single leaf STIX item
+        (dependency-free) without sending anything to the API.
+
+        Runs the exact same import_item() path used today (no duplicated conversion
+        logic), with the API client's GraphQL mutations intercepted
+        (see OpenCTIApiClient.start_batch_capture). work_id is deliberately not passed
+        through so the usual `work.report_expectation()` call at the end of import_item
+        does not fire during this dry-run - the caller is responsible for reporting the
+        real expectation once the batched call actually returns a result.
+
+        :return: the single {"kind": ..., "input": ...} payload captured, ready to be
+            sent through the stixObjectsBatchImport mutation, or None if this item's type
+            is not on the batchable allow-list (or needed more than one mutation call,
+            e.g. Windows-Registry-Key sub-values or Artifact payload_bin uploads) - in
+            which case the caller must fall back to the normal, unchanged
+            import_item_with_retries() path for this item.
+        :rtype: dict or None
+        """
+        # Bail out *before* even attempting a dry run for shapes known to trigger more
+        # than the single expected StixCyberObservableAdd mutation inside import_item()
+        # (Windows-Registry-Key sub-values, Artifact file upload): those follow-on calls
+        # would use this item's (still unknown) real id, which the capture-mode fake
+        # response cannot provide safely - attempting it could fire a real mutation
+        # against a fake/None id.
+        if item.get("type") == "windows-registry-key" and item.get("values"):
+            return None
+        if (
+            item.get("type") == "artifact"
+            and item.get("payload_bin")
+            and item.get("mime_type")
+        ):
+            return None
+        self.opencti.start_batch_capture()
+        try:
+            self.import_item(item, update, types, None, bundle_id)
+        except Exception:  # pylint: disable=broad-except
+            # Building the mutation payload failed (e.g. missing required field): let the
+            # normal, unchanged single-item path raise (and retry-classify) it for real.
+            self.opencti.stop_batch_capture()
+            return None
+        captured = self.opencti.stop_batch_capture()
+        if len(captured) == 1:
+            return captured[0]
+        return None
 
     def import_item(
         self,

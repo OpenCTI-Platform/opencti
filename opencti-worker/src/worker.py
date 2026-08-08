@@ -32,7 +32,8 @@ bundles_global_counter = meter.create_counter(
 )
 bundles_processing_time_gauge = meter.create_histogram(
     name="opencti_bundles_processing_time_gauge",
-    description="processing time of bundles",
+    description="processing time of a single bundle/message, in milliseconds",
+    unit="ms",
 )
 max_ingestion_units_count = meter.create_gauge(
     name="opencti_max_ingestion_units",
@@ -41,6 +42,26 @@ max_ingestion_units_count = meter.create_gauge(
 running_ingestion_units_gauge = meter.create_gauge(
     name="opencti_running_ingestion_units",
     description="Number of running ingestion units",
+)
+# Batch import telemetry: per-item outcome and batch-size visibility, which the
+# existing per-GraphQL-operation metrics don't provide.
+batch_size_histogram = meter.create_histogram(
+    name="opencti_worker_batch_size",
+    description="Number of items included in each batch import call actually sent",
+)
+batch_items_counter = meter.create_counter(
+    name="opencti_worker_batch_items_total",
+    description=(
+        "Number of items processed via the batch import path, by outcome "
+        "(success/item_failed/call_failed)"
+    ),
+)
+batch_fallback_counter = meter.create_counter(
+    name="opencti_worker_batch_fallback_total",
+    description=(
+        "Number of batch-eligible items that fell back to individual "
+        "processing instead of being sent in a batch"
+    ),
 )
 
 
@@ -165,6 +186,28 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             True,
             0,
         )
+        # Opt-in leaf-only batching, disabled by default.
+        self.batch_import_enabled = get_config_variable(
+            "WORKER_BATCH_IMPORT_ENABLED",
+            ["worker", "batch_import_enabled"],
+            config,
+            False,
+            False,
+        )
+        self.batch_import_size = get_config_variable(
+            "WORKER_BATCH_IMPORT_SIZE",
+            ["worker", "batch_import_size"],
+            config,
+            True,
+            50,
+        )
+        self.batch_import_timeout = get_config_variable(
+            "WORKER_BATCH_IMPORT_TIMEOUT",
+            ["worker", "batch_import_timeout"],
+            config,
+            False,
+            1.0,
+        )
         # Telemetry
         if self.telemetry_enabled:
             self.prom_httpd, self.prom_t = start_http_server(
@@ -287,6 +330,9 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             bundles_global_counter,
                             bundles_processing_time_gauge,
                             self.objects_max_refs,
+                            batch_size_histogram,
+                            batch_items_counter,
+                            batch_fallback_counter,
                         )
                         is_realtime = is_priority_connector(
                             connector["connector_priority_group"]
@@ -301,6 +347,18 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 push_thread_pool_selector.submit, is_realtime
                             ),
                             push_handler.handle_message,
+                            handle_message_batch=(
+                                push_handler.handle_message_batch
+                                if self.batch_import_enabled
+                                else None
+                            ),
+                            is_batchable=(
+                                push_handler.is_batchable
+                                if self.batch_import_enabled
+                                else None
+                            ),
+                            batch_size=self.batch_import_size,
+                            batch_timeout=self.batch_import_timeout,
                         )
 
                     # Listen for webhook message
