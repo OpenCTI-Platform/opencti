@@ -1,6 +1,7 @@
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import React, { useEffect, useState, useContext } from 'react';
 import { HubOutlined, MapOutlined, RocketLaunchOutlined, VideoLibraryOutlined, WidgetsOutlined } from '@mui/icons-material';
+import Alert from '@mui/material/Alert';
 import Typography from '@mui/material/Typography';
 import XtmHubTab from '@components/settings/xtm-hub/XtmHubTab';
 import Button from '@common/button/Button';
@@ -213,21 +214,44 @@ const XtmHubSettingsComponent = () => {
 };
 
 const XtmHubSettings: React.FC = () => {
+  const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const [commitCheckConnectivity] = useApiMutation(checkHubConnectivity);
   const [isCheckDone, setIsCheckDone] = useState(false);
+  const [checkError, setCheckError] = useState(false);
 
   useEffect(() => {
-    commitCheckConnectivity({ variables: {},
+    commitCheckConnectivity({
+      variables: {},
       onCompleted: () => {
         setIsCheckDone(true);
-      } });
+      },
+      onError: () => {
+        // Avoid infinite loading when the connectivity check mutation fails.
+        setCheckError(true);
+        setIsCheckDone(true);
+      },
+    });
   }, []);
 
   if (!isCheckDone) {
     return <Loader variant={LoaderVariant.inElement} />;
   }
 
-  return <XtmHubSettingsComponent />;
+  return (
+    <>
+      {checkError && (
+        <Alert
+          severity="error"
+          variant="outlined"
+          style={{ width: '100%', marginBottom: theme.spacing(2) }}
+        >
+          {t_i18n('Unable to check XTM Hub connectivity. Please try again later.')}
+        </Alert>
+      )}
+      <XtmHubSettingsComponent />
+    </>
+  );
 };
 
 export default XtmHubSettings;
