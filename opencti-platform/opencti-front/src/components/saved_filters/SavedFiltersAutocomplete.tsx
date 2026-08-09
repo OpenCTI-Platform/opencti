@@ -56,11 +56,14 @@ const SavedFiltersAutocomplete = ({
 
   const renderOption = (params: React.HTMLAttributes<HTMLLIElement> & { key: string }, option: SavedFiltersAutocompleteOptionType) => {
     const filterLabel = option.ownerName ? `${option.label} (${option.ownerName})` : option.label;
+    const filterLabelWithScope = localStorageKey
+      ? filterLabel // if localStorageKey, the scope is the same for every saved filters of the list
+      : `${filterLabel} - ${t_i18n('Scope')}: ${option.scope}`; // in widgets
     const canManage = option.canManage && (hasSharingSavedFiltersCapability || option.isOwner);
     return (
       <li {...params} key={params.key}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <Tooltip title={filterLabel} enterDelay={500}>
+          <Tooltip title={filterLabelWithScope} enterDelay={500}>
             <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
               <Typography component="span">{filterLabel}</Typography>
             </div>
@@ -106,6 +109,7 @@ const SavedFiltersAutocomplete = ({
         value={value}
         disabled={isDisabled}
         isOptionEqualToValue={(option, v) => option?.value.id === v.value.id}
+        getOptionDisabled={(option) => !!option.disabled}
         inputValue={inputValue}
         options={options ?? []}
         groupBy={(option) => handleFiltersGroupBy(option.isOwner)}

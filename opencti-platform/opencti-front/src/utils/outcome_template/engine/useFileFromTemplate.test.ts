@@ -36,7 +36,7 @@ describe('Hook: useFileFromTemplate', () => {
   it('should replace attribute widgets with the associated data', async () => {
     const { hook, relayEnv } = testRenderHook(() => useFileFromTemplate());
     // We want fetchQuery function to use the test env of Relay.
-    vi.spyOn(env, 'fetchQuery').mockImplementation((q, a) => fetchQuery(relayEnv, q, a));
+    vi.spyOn(env, 'fetchQuery').mockImplementation((q, a) => fetchQuery(relayEnv, q, a ?? {}));
     const { buildFileFromTemplate } = hook.result.current;
 
     // Fake data returned by the query.
@@ -67,7 +67,7 @@ describe('Hook: useFileFromTemplate', () => {
   it('should replace attribute lists with corresponding data', async () => {
     const { hook, relayEnv } = testRenderHook(() => useFileFromTemplate());
     // We want fetchQuery function to use the test env of Relay.
-    vi.spyOn(env, 'fetchQuery').mockImplementation((q, a) => fetchQuery(relayEnv, q, a));
+    vi.spyOn(env, 'fetchQuery').mockImplementation((q, a) => fetchQuery(relayEnv, q, a ?? {}));
     const { buildFileFromTemplate } = hook.result.current;
 
     // Fake data returned by the query.

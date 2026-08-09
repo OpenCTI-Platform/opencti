@@ -3,7 +3,7 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { graphql, useQueryLoader, usePreloadedQuery } from 'react-relay';
 import type { GraphQLTaggedNode, PreloadedQuery } from 'react-relay';
 import type { OperationType } from 'relay-runtime';
-import { Box, Button, Grid2 as Grid, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Grid2 as Grid, Stack, Tab, Tabs, Tooltip, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import SyncPopover from '@components/data/sync/SyncPopover';
 import IngestionRssPopover from '@components/data/ingestionRss/IngestionRssPopover';
@@ -13,7 +13,7 @@ import IngestionCsvPopover from '@components/data/ingestionCsv/IngestionCsvPopov
 import IngestionJsonPopover from '@components/data/ingestionJson/IngestionJsonPopover';
 import FormView from '@components/data/forms/view/FormView';
 import { BuiltInIntegrationKind, getBuiltInIntegration, isBuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
-import IngestionTaxiiLogsDrawer from '@components/data/ingestionTaxii/IngestionTaxiiLogsDrawer';
+import IngestionTaxiiLogsTab from '@components/data/ingestionTaxii/IngestionTaxiiLogsTab';
 import { ConnectorWorksSection } from '@components/data/connectors/Connector';
 import { connectorIdFromIngestId } from '@components/integrations/deployed/useDeployedIntegrations';
 import useHelper from '../../../../utils/hooks/useHelper';
@@ -284,7 +284,12 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
   const { setTitle } = useConnectedDocumentModifier();
   const { isFeatureEnable } = useHelper();
   const definition = getBuiltInIntegration(kind);
-  const [logsDrawerOpen, setLogsDrawerOpen] = useState(false);
+  // Only TAXII feeds get the Overview / Works / Logs tabs, mirroring the
+  // connector detail page. Other feed kinds keep the single-page layout.
+  const [tabValue, setTabValue] = useState(0);
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+  };
   // The works API is gated by the MODULES capability, like connector pages.
   const isConnectorReader = useGranted([MODULES]);
 
@@ -405,167 +410,164 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
         </Stack>
       </Stack>
 
-      <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 7 }}>
-          <Card title={t_i18n('Configuration')}>
-            <Grid container spacing={3}>
-              {node.uri && (
-                <DetailField label={t_i18n('URL')}>
-                  <Tooltip title={node.uri}>
-                    <span><ItemCopy content={node.uri} /></span>
-                  </Tooltip>
+      {kind === 'taxii' && (
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs value={tabValue} onChange={handleTabChange}>
+            <Tab label={t_i18n('Overview')} />
+            <Tab label={t_i18n('Works')} disabled={!isConnectorReader} />
+            {isIngestionFeedLogsEnabled && <Tab label={t_i18n('Logs')} />}
+          </Tabs>
+        </Box>
+      )}
+
+      {(kind !== 'taxii' || tabValue === 0) && (
+        <Grid container spacing={3}>
+          <Grid size={{ xs: 12, md: 7 }}>
+            <Card title={t_i18n('Configuration')}>
+              <Grid container spacing={3}>
+                {node.uri && (
+                  <DetailField label={t_i18n('URL')}>
+                    <Tooltip title={node.uri}>
+                      <span><ItemCopy content={node.uri} /></span>
+                    </Tooltip>
+                  </DetailField>
+                )}
+                {node.stream_id && (
+                  <DetailField label={t_i18n('Stream ID')}>
+                    <ItemCopy content={node.stream_id} />
+                  </DetailField>
+                )}
+                {node.collection && (
+                  <DetailField label={t_i18n('Collection')}>
+                    {node.collection}
+                  </DetailField>
+                )}
+                {node.version && (
+                  <DetailField label={t_i18n('TAXII version')}>
+                    {node.version}
+                  </DetailField>
+                )}
+                {node.verb && (
+                  <DetailField label={t_i18n('HTTP verb')}>
+                    {node.verb.toUpperCase()}
+                  </DetailField>
+                )}
+                {node.csv_mapper_type && (
+                  <DetailField label={t_i18n('CSV mapper type')}>
+                    {node.csv_mapper_type}
+                  </DetailField>
+                )}
+                {node.authentication_type && (
+                  <DetailField label={t_i18n('Authentication type')}>
+                    {node.authentication_type}
+                  </DetailField>
+                )}
+                {node.scheduling_period != null && (
+                  <DetailField label={t_i18n('Scheduling period')}>
+                    <FieldOrEmpty source={node.scheduling_period}>{node.scheduling_period}</FieldOrEmpty>
+                  </DetailField>
+                )}
+                {(node.report_types?.length ?? 0) > 0 && (
+                  <DetailField label={t_i18n('Report types')}>
+                    {(node.report_types ?? []).join(', ')}
+                  </DetailField>
+                )}
+                <DetailField label={t_i18n('User responsible for data creation')}>
+                  <FieldOrEmpty source={node.user?.name}>{node.user?.name}</FieldOrEmpty>
                 </DetailField>
-              )}
-              {node.stream_id && (
-                <DetailField label={t_i18n('Stream ID')}>
-                  <ItemCopy content={node.stream_id} />
-                </DetailField>
-              )}
-              {node.collection && (
-                <DetailField label={t_i18n('Collection')}>
-                  {node.collection}
-                </DetailField>
-              )}
-              {node.version && (
-                <DetailField label={t_i18n('TAXII version')}>
-                  {node.version}
-                </DetailField>
-              )}
-              {node.verb && (
-                <DetailField label={t_i18n('HTTP verb')}>
-                  {node.verb.toUpperCase()}
-                </DetailField>
-              )}
-              {node.csv_mapper_type && (
-                <DetailField label={t_i18n('CSV mapper type')}>
-                  {node.csv_mapper_type}
-                </DetailField>
-              )}
-              {node.authentication_type && (
-                <DetailField label={t_i18n('Authentication type')}>
-                  {node.authentication_type}
-                </DetailField>
-              )}
-              {node.scheduling_period != null && (
-                <DetailField label={t_i18n('Scheduling period')}>
-                  <FieldOrEmpty source={node.scheduling_period}>{node.scheduling_period}</FieldOrEmpty>
-                </DetailField>
-              )}
-              {(node.report_types?.length ?? 0) > 0 && (
-                <DetailField label={t_i18n('Report types')}>
-                  {(node.report_types ?? []).join(', ')}
-                </DetailField>
-              )}
-              <DetailField label={t_i18n('User responsible for data creation')}>
-                <FieldOrEmpty source={node.user?.name}>{node.user?.name}</FieldOrEmpty>
-              </DetailField>
-              {node.ssl_verify != null && (
-                <DetailField label={t_i18n('Verify SSL certificate')}>
-                  <ItemBoolean status={!!node.ssl_verify} label={node.ssl_verify ? t_i18n('Yes') : t_i18n('No')} />
-                </DetailField>
-              )}
-              {node.listen_deletion != null && (
-                <DetailField label={t_i18n('Take deletions into account')}>
-                  <ItemBoolean status={!!node.listen_deletion} label={node.listen_deletion ? t_i18n('Yes') : t_i18n('No')} />
-                </DetailField>
-              )}
-              {node.no_dependencies != null && (
-                <DetailField label={t_i18n('Do not insert dependencies')}>
-                  <ItemBoolean status={!!node.no_dependencies} label={node.no_dependencies ? t_i18n('Yes') : t_i18n('No')} />
-                </DetailField>
-              )}
-              {node.synchronized != null && (
-                <DetailField label={t_i18n('Use perfect synchronization')}>
-                  <ItemBoolean status={!!node.synchronized} label={node.synchronized ? t_i18n('Yes') : t_i18n('No')} />
-                </DetailField>
-              )}
-              {node.confidence_to_score != null && (
-                <DetailField label={t_i18n('Copy confidence level to OpenCTI scores for indicators')}>
-                  <ItemBoolean status={!!node.confidence_to_score} label={node.confidence_to_score ? t_i18n('Yes') : t_i18n('No')} />
-                </DetailField>
-              )}
-            </Grid>
-          </Card>
+                {node.ssl_verify != null && (
+                  <DetailField label={t_i18n('Verify SSL certificate')}>
+                    <ItemBoolean status={!!node.ssl_verify} label={node.ssl_verify ? t_i18n('Yes') : t_i18n('No')} />
+                  </DetailField>
+                )}
+                {node.listen_deletion != null && (
+                  <DetailField label={t_i18n('Take deletions into account')}>
+                    <ItemBoolean status={!!node.listen_deletion} label={node.listen_deletion ? t_i18n('Yes') : t_i18n('No')} />
+                  </DetailField>
+                )}
+                {node.no_dependencies != null && (
+                  <DetailField label={t_i18n('Do not insert dependencies')}>
+                    <ItemBoolean status={!!node.no_dependencies} label={node.no_dependencies ? t_i18n('Yes') : t_i18n('No')} />
+                  </DetailField>
+                )}
+                {node.synchronized != null && (
+                  <DetailField label={t_i18n('Use perfect synchronization')}>
+                    <ItemBoolean status={!!node.synchronized} label={node.synchronized ? t_i18n('Yes') : t_i18n('No')} />
+                  </DetailField>
+                )}
+                {node.confidence_to_score != null && (
+                  <DetailField label={t_i18n('Copy confidence level to OpenCTI scores for indicators')}>
+                    <ItemBoolean status={!!node.confidence_to_score} label={node.confidence_to_score ? t_i18n('Yes') : t_i18n('No')} />
+                  </DetailField>
+                )}
+              </Grid>
+            </Card>
+          </Grid>
+          <Grid size={{ xs: 12, md: 5 }}>
+            <Card title={t_i18n('Activity')}>
+              <Grid container spacing={3}>
+                {node.queue_messages != null && (
+                  <DetailField label={t_i18n('Queued bundles')}>
+                    {n(node.queue_messages)}
+                  </DetailField>
+                )}
+                {node.last_execution_date !== undefined && (
+                  <DetailField label={t_i18n('Last run')}>
+                    <FieldOrEmpty source={node.last_execution_date}>{nsdt(node.last_execution_date)}</FieldOrEmpty>
+                  </DetailField>
+                )}
+                {node.scheduling_period !== undefined && (
+                  <DetailField label={t_i18n('Next run')}>
+                    <FieldOrEmpty source={nextRunDisplay}>{nextRunDisplay}</FieldOrEmpty>
+                  </DetailField>
+                )}
+                {node.current_state_date !== undefined && (
+                  <DetailField label={t_i18n('Current state')}>
+                    <FieldOrEmpty source={node.current_state_date}>{nsdt(node.current_state_date)}</FieldOrEmpty>
+                  </DetailField>
+                )}
+                {node.current_state_cursor !== undefined && (
+                  <DetailField label={t_i18n('Current state cursor')}>
+                    <FieldOrEmpty source={node.current_state_cursor}>{node.current_state_cursor}</FieldOrEmpty>
+                  </DetailField>
+                )}
+                {node.current_state_hash !== undefined && (
+                  <DetailField label={t_i18n('Current state hash')}>
+                    <FieldOrEmpty source={node.current_state_hash}>{node.current_state_hash}</FieldOrEmpty>
+                  </DetailField>
+                )}
+                {node.added_after_start !== undefined && (
+                  <DetailField label={t_i18n('Import from date')}>
+                    <FieldOrEmpty source={node.added_after_start}>{nsdt(node.added_after_start)}</FieldOrEmpty>
+                  </DetailField>
+                )}
+                {node.created_at && (
+                  <DetailField label={t_i18n('Creation date')}>
+                    {nsdt(node.created_at)}
+                  </DetailField>
+                )}
+                {node.updated_at && (
+                  <DetailField label={t_i18n('Modification date')}>
+                    {nsdt(node.updated_at)}
+                  </DetailField>
+                )}
+              </Grid>
+            </Card>
+          </Grid>
         </Grid>
-        <Grid size={{ xs: 12, md: 5 }}>
-          <Card title={t_i18n('Activity')}>
-            <Grid container spacing={3}>
-              {node.queue_messages != null && (
-                <DetailField label={t_i18n('Queued bundles')}>
-                  {n(node.queue_messages)}
-                </DetailField>
-              )}
-              {node.last_execution_date !== undefined && (
-                <DetailField label={t_i18n('Last run')}>
-                  <FieldOrEmpty source={node.last_execution_date}>{nsdt(node.last_execution_date)}</FieldOrEmpty>
-                </DetailField>
-              )}
-              {node.scheduling_period !== undefined && (
-                <DetailField label={t_i18n('Next run')}>
-                  <FieldOrEmpty source={nextRunDisplay}>{nextRunDisplay}</FieldOrEmpty>
-                </DetailField>
-              )}
-              {node.current_state_date !== undefined && (
-                <DetailField label={t_i18n('Current state')}>
-                  <FieldOrEmpty source={node.current_state_date}>{nsdt(node.current_state_date)}</FieldOrEmpty>
-                </DetailField>
-              )}
-              {node.current_state_cursor !== undefined && (
-                <DetailField label={t_i18n('Current state cursor')}>
-                  <FieldOrEmpty source={node.current_state_cursor}>{node.current_state_cursor}</FieldOrEmpty>
-                </DetailField>
-              )}
-              {node.current_state_hash !== undefined && (
-                <DetailField label={t_i18n('Current state hash')}>
-                  <FieldOrEmpty source={node.current_state_hash}>{node.current_state_hash}</FieldOrEmpty>
-                </DetailField>
-              )}
-              {node.added_after_start !== undefined && (
-                <DetailField label={t_i18n('Import from date')}>
-                  <FieldOrEmpty source={node.added_after_start}>{nsdt(node.added_after_start)}</FieldOrEmpty>
-                </DetailField>
-              )}
-              {node.created_at && (
-                <DetailField label={t_i18n('Creation date')}>
-                  {nsdt(node.created_at)}
-                </DetailField>
-              )}
-              {node.updated_at && (
-                <DetailField label={t_i18n('Modification date')}>
-                  {nsdt(node.updated_at)}
-                </DetailField>
-              )}
-              {isIngestionFeedLogsEnabled && kind === 'taxii' && (
-                <Grid size={{ xs: 12 }}>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    color="primary"
-                    onClick={() => setLogsDrawerOpen(true)}
-                  >
-                    {t_i18n('View logs')}
-                  </Button>
-                </Grid>
-              )}
-            </Grid>
-          </Card>
-        </Grid>
-      </Grid>
+      )}
 
       {/* Works of the feed's technical queue connector (in progress and
           completed), exactly like the connector detail pages. Synchronizers
-          consume streams directly and never register works. */}
-      {isConnectorReader && kind !== 'sync' && (
+          consume streams directly and never register works. For TAXII feeds
+          this now lives in its own "Works" tab instead of the single page. */}
+      {isConnectorReader && kind !== 'sync' && (kind !== 'taxii' || tabValue === 1) && (
         <ConnectorWorksSection connectorId={connectorIdFromIngestId(node.id)} />
       )}
 
-      {isIngestionFeedLogsEnabled && kind === 'taxii' && (
-        <IngestionTaxiiLogsDrawer
-          feedId={node.id}
-          feedName={node.name}
-          isOpen={logsDrawerOpen}
-          onClose={() => setLogsDrawerOpen(false)}
-        />
+      {/* "Logs" tab content, TAXII feeds only. */}
+      {isIngestionFeedLogsEnabled && kind === 'taxii' && tabValue === 2 && (
+        <IngestionTaxiiLogsTab feedId={node.id} feedName={node.name} />
       )}
     </PageContainer>
   );

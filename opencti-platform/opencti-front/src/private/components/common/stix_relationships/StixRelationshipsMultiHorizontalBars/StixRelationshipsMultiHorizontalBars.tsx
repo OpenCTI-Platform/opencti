@@ -11,7 +11,7 @@ import WidgetNoData from '../../../../../components/dashboard/WidgetNoData';
 import WidgetHorizontalBars from '../../../../../components/dashboard/WidgetHorizontalBars';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import useDashboardViz from '../../../../../components/dashboard/useDashboardViz';
-import { computeStartEndDates } from '../../../../../components/dashboard/dashboardVizUtils';
+import { computeWidgetFiltersForSelection } from '../../../../../components/dashboard/dashboardVizUtils';
 import WidgetNoHostEntity from '../../../../../components/dashboard/WidgetNoHostEntity';
 import WidgetNoSavedFilters from '../../../../../components/dashboard/WidgetNoSavedFilters';
 import { useStixRelationshipsMultiHorizontalBars } from './useStixRelationshipsMultiHorizontalBars';
@@ -375,12 +375,10 @@ const buildQueryVariables = (
   const selection = resolvedDataSelection[0];
   const subSelection = resolvedDataSelection.length > 1 ? resolvedDataSelection[1] : undefined;
 
-  const { startDate, endDate } = computeStartEndDates(config);
-
   const finalField = selection.attribute || 'entity_type';
   const finalSubDistributionField = subSelection?.attribute || 'entity_type';
 
-  const filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters, { isKnowledgeRelationshipWidget: true });
+  const { startDate, endDate, dateAttribute, filters } = computeWidgetFiltersForSelection(selection, config, { isKnowledgeRelationshipWidget: true });
   const subDistributionFiltersAndOptions = subSelection
     ? buildFiltersAndOptionsForWidgets(subSelection.filters)
     : undefined;
@@ -390,9 +388,9 @@ const buildQueryVariables = (
     operation: 'count' as const,
     startDate,
     endDate,
-    dateAttribute: selection.date_attribute ?? 'created_at',
+    dateAttribute,
     limit: selection.number ?? 10,
-    filters: normalizeFilterGroupForBackend(filtersAndOptions?.filters),
+    filters,
     isTo: selection.isTo,
     dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
     dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),

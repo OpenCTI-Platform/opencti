@@ -6,7 +6,7 @@ import { redisInit } from './database/redis';
 import { executionContext, SYSTEM_USER } from './utils/access';
 import { checkPythonAvailability } from './python/pythonBridge';
 import { smtpIsAlive } from './database/smtp';
-import { rabbitMQIsAlive } from './database/rabbitmq';
+import { rabbitMQInit } from './database/rabbitmq';
 
 export const checkSystemDependencies = async () => {
   logApp.info('[OPENCTI] Checking dependencies statuses');
@@ -14,7 +14,7 @@ export const checkSystemDependencies = async () => {
   const checkDependenciesPromises = [];
   checkDependenciesPromises.push(searchEngineInit());
   checkDependenciesPromises.push(storageInit());
-  checkDependenciesPromises.push(rabbitMQIsAlive());
+  checkDependenciesPromises.push(rabbitMQInit());
   checkDependenciesPromises.push(redisInit());
   checkDependenciesPromises.push(checkPythonAvailability(context, SYSTEM_USER));
   await Promise.all(checkDependenciesPromises);

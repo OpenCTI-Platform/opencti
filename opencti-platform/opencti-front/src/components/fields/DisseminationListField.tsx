@@ -35,9 +35,7 @@ const DisseminationListField: FunctionComponent = () => {
   const [lists, setLists] = useState<DisseminationListFieldQuery$data['disseminationLists'] | null>(null);
 
   const fetchDisseminationLists = async () => {
-    return await fetchQuery(disseminationListFieldQuery, {
-    })
-      .toPromise() as Promise<DisseminationListFieldQuery$data>;
+    return await fetchQuery(disseminationListFieldQuery, {}).toPromise() as Promise<DisseminationListFieldQuery$data>;
   };
 
   useEffect(() => {

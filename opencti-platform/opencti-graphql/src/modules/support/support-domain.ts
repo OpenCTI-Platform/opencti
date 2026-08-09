@@ -76,13 +76,21 @@ export const findAllSupportFiles = (files: string[], prefix: string): string[] =
   return allSupportFiles;
 };
 
-const archiveFolderToZip = async (zipLocalFolder: string, zipFullpath: string) => {
+/**
+ * Archive all files of a local folder into a single zip file written on the filesystem.
+ * The archive is finalized asynchronously; this function waits until the write stream is
+ * closed, an error occurs, or ZIP_TIMEOUT_MS is reached.
+ * @param zipLocalFolder the local folder whose files should be added to the archive.
+ * @param zipFullpath the full path (including filename) of the zip file to create.
+ */
+export const archiveFolderToZip = async (zipLocalFolder: string, zipFullpath: string) => {
   const archive = new ZipArchive();
   const output = fs.createWriteStream(zipFullpath);
 
   let closed = false;
+  let streamError: Error | undefined;
   output.on('error', (error) => {
-    throw FilesystemError(error, { zipFullpath });
+    streamError = error;
   });
   output.on('close', () => {
     closed = true;
@@ -93,11 +101,18 @@ const archiveFolderToZip = async (zipLocalFolder: string, zipFullpath: string) =
   archive.directory('subdir/', 'new-subdir');
   await archive.finalize();
 
-  // Wait until zip is complete, or timeout.
+  // Wait until zip is complete, an error occurs, or timeout.
   let initWaitingTime = ZIP_TIMEOUT_MS;
-  while (!closed && initWaitingTime > 0) {
+  while (!closed && !streamError && initWaitingTime > 0) {
     await wait(500);
     initWaitingTime -= 500;
+  }
+
+  if (streamError) {
+    throw FilesystemError(streamError.message, { zipFullpath });
+  }
+  if (!closed) {
+    throw FilesystemError('Zip creation timed out before completion', { zipFullpath, timeout: ZIP_TIMEOUT_MS });
   }
 };
 

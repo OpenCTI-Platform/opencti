@@ -71,6 +71,13 @@ export interface ListFilter<T extends BasicStoreCommon> {
   noFiltersChecking?: boolean;
   noRegardingOfFilterIdsCheck?: boolean;
   callback?: (result: Array<T>) => Promise<boolean | void>;
+  /**
+   * Trusted, internal-only raw Painless script clauses (ANDed with the rest of the query).
+   * MUST NEVER be populated from user/GraphQL/JSON input: it bypasses the filter grammar
+   * entirely (no key/operator validation, no isFilterFormatCorrect gate). Only set this from
+   * hardcoded backend TS code (e.g. report.js orphan-object detection).
+   */
+  internalScriptFilters?: string[];
 }
 
 // entities

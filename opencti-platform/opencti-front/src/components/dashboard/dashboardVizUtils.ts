@@ -1,11 +1,18 @@
-import type { WidgetHost, WidgetDataSelection, WidgetPerspective } from 'src/utils/widget/widget';
+import { WidgetDataSelection, WidgetHost, WidgetParameters, WidgetPerspective } from 'src/utils/widget/widget';
 import { graphql } from 'react-relay';
-import { buildFiltersForCustomView, removeIdAndIncorrectKeysFromFilterGroupObject, getAvailableFilterKeysForEntityTypes } from 'src/utils/filters/filtersUtils';
+import {
+  buildFiltersAndOptionsForWidgets,
+  buildFiltersForCustomView,
+  getAvailableFilterKeysForEntityTypes,
+  normalizeFilterGroupForBackend,
+  removeIdAndIncorrectKeysFromFilterGroupObject,
+} from 'src/utils/filters/filtersUtils';
 import { type FilterDefinition } from 'src/utils/hooks/useAuth';
-import { computeRelativeDate, dayStartDate, formatDate } from 'src/utils/Time';
+import { computeRelativeDate, dayStartDate, formatDate, monthsAgo, now } from 'src/utils/Time';
 import { fetchQuery } from 'src/relay/environment';
 import { DashboardConfig } from './dashboard-types';
 import { dashboardVizUtilsSavedFilterQuery$data } from './__generated__/dashboardVizUtilsSavedFilterQuery.graphql';
+import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
 
 export const savedFilterQuery = graphql`
   query dashboardVizUtilsSavedFilterQuery($id: ID!) {
@@ -17,6 +24,20 @@ export const savedFilterQuery = graphql`
     }
   }
 `;
+
+/**
+ * Fetches a saved filter by ID and returns its parsed filters content.
+ * Returns null if the filter could not be resolved.
+ */
+const fetchSavedFilterContent = async (filterId: string) => {
+  try {
+    const result = await fetchQuery(savedFilterQuery, { id: filterId }).toPromise() as dashboardVizUtilsSavedFilterQuery$data | undefined;
+    if (!result?.savedFilter) return null;
+    return JSON.parse(result.savedFilter.filters);
+  } catch {
+    return null;
+  }
+};
 
 /**
  * Resolves widget data selections by cleaning filters based on the widget perspective,
@@ -48,40 +69,16 @@ export const resolveDataSelection = async ({
     dataSelection.map(async (data) => {
       const filters = [data.filters, data.dynamicFrom, data.dynamicTo];
       // Handle eventual saved filters
-      if (data.filters_id) {
-        try {
-          const result = await fetchQuery(savedFilterQuery, { id: data.filters_id }).toPromise() as dashboardVizUtilsSavedFilterQuery$data | undefined;
-          if (!result?.savedFilter) {
+      const savedFilterIds = [data.filters_id, data.dynamicFrom_id, data.dynamicTo_id];
+      for (let i = 0; i < savedFilterIds.length; i += 1) {
+        const savedFilterId = savedFilterIds[i];
+        if (savedFilterId) { // if a saved filter id is defined
+          const resolved = await fetchSavedFilterContent(savedFilterId); // fetch the saved filter content
+          if (!resolved) { // the saved filter is missing or not accessible
             isMissingSavedFilters = true;
           } else {
-            filters[0] = JSON.parse(result.savedFilter.filters);
+            filters[i] = resolved; // replace the associated filter by the saved filter content
           }
-        } catch {
-          isMissingSavedFilters = true;
-        }
-      }
-      if (data.dynamicFrom_id) {
-        try {
-          const result = await fetchQuery(savedFilterQuery, { id: data.dynamicFrom_id }).toPromise() as dashboardVizUtilsSavedFilterQuery$data | undefined;
-          if (!result?.savedFilter) {
-            isMissingSavedFilters = true;
-          } else {
-            filters[1] = JSON.parse(result.savedFilter.filters);
-          }
-        } catch {
-          isMissingSavedFilters = true;
-        }
-      }
-      if (data.dynamicTo_id) {
-        try {
-          const result = await fetchQuery(savedFilterQuery, { id: data.dynamicTo_id }).toPromise() as dashboardVizUtilsSavedFilterQuery$data | undefined;
-          if (!result?.savedFilter) {
-            isMissingSavedFilters = true;
-          } else {
-            filters[2] = JSON.parse(result.savedFilter.filters);
-          }
-        } catch {
-          isMissingSavedFilters = true;
         }
       }
       // For custom-view widgets, resolve SELF_ID placeholders with the actual host entity ID
@@ -109,7 +106,12 @@ export const resolveDataSelection = async ({
   };
 };
 
-export const computeStartEndDates = (config?: DashboardConfig) => {
+/**
+ * Computes the start and end dates from the dashboard config.
+ * Handles relative dates (e.g. "last 7 days") and absolute dates.
+ * If no dates are configured and `fallbackToDefaultDates` is true, falls back to the last 12 months.
+ */
+export const computeStartEndDates = (config?: DashboardConfig, fallbackToDefaultDates = false) => {
   const startDate = config?.relativeDate
     ? computeRelativeDate(config.relativeDate)
     : config?.startDate;
@@ -118,5 +120,134 @@ export const computeStartEndDates = (config?: DashboardConfig) => {
     ? formatDate(dayStartDate(null, false))
     : config?.endDate;
 
-  return { startDate, endDate };
+  return fallbackToDefaultDates
+    ? {
+        startDate: startDate ?? monthsAgo(12),
+        endDate: endDate ?? now(),
+      }
+    : { startDate, endDate };
+};
+
+/**
+ * Resolves the dateAttribute, computes start/end dates from the dashboard config,
+ * and builds the widget filters for a single data selection.
+ *
+ * This is the low-level building block used by higher-level helpers and by widgets
+ * that need to customize the returned query variables beyond the common pattern.
+ */
+export const computeWidgetFiltersForSelection = (
+  selection?: WidgetDataSelection,
+  config?: DashboardConfig,
+  opts: {
+    isKnowledgeRelationshipWidget?: boolean;
+    fallbackToDefaultDates?: boolean;
+  } = {},
+) => {
+  const dateAttribute = selection?.date_attribute?.length
+    ? selection.date_attribute
+    : 'created_at';
+  const { startDate, endDate } = computeStartEndDates(config, opts.fallbackToDefaultDates);
+  const { filters } = buildFiltersAndOptionsForWidgets(
+    selection?.filters,
+    {
+      startDate,
+      endDate,
+      dateAttribute,
+      isKnowledgeRelationshipWidget: opts.isKnowledgeRelationshipWidget ?? undefined,
+    },
+  );
+
+  return {
+    dateAttribute,
+    startDate,
+    endDate,
+    filters: normalizeFilterGroupForBackend(filters),
+  };
+};
+
+/**
+ * Resolves the dateAttribute, computes start/end dates from the dashboard config,
+ * and builds the widget filters for a multiple data selection.
+ */
+export const computeWidgetFiltersForMultiSelection = (
+  dataSelection: WidgetDataSelection[],
+  config: DashboardConfig,
+  types: string[],
+  opts: {
+    isKnowledgeRelationshipWidget?: boolean;
+    fallbackToDefaultDates?: boolean;
+  } = {},
+) => {
+  const { startDate, endDate } = computeStartEndDates(config, opts.fallbackToDefaultDates);
+  const timeSeriesParameters = dataSelection.map((selection) => {
+    const { dateAttribute, filters } = computeWidgetFiltersForSelection(selection, config, opts);
+    return {
+      field: dateAttribute,
+      types,
+      filters,
+    };
+  });
+  return { startDate, endDate, timeSeriesParameters };
+};
+
+/**
+ * Builds the common base query variables for relationship widgets supporting multiple data selection.
+ * Computes start/end dates from config, resolves dateAttribute,
+ * builds and normalizes filters (including dynamicFrom/dynamicTo).
+ *
+ * Each widget can destructure the result and add its own specific fields.
+ */
+export const buildRelationshipMultiWidgetBaseQueryVariables = (
+  dataSelection: WidgetDataSelection[],
+  config: DashboardConfig,
+  parameters?: WidgetParameters,
+) => {
+  const opts = {
+    isKnowledgeRelationshipWidget: true,
+    fallbackToDefaultDates: true,
+  };
+  const { startDate, endDate } = computeStartEndDates(config, opts.fallbackToDefaultDates);
+
+  const timeSeriesParameters = dataSelection.map((selection) => {
+    const { dateAttribute, filters } = computeWidgetFiltersForSelection(selection, config, opts);
+
+    return {
+      field: dateAttribute,
+      filters,
+      dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
+      dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
+    };
+  });
+
+  return {
+    operation: 'count',
+    startDate,
+    endDate,
+    interval: getWidgetInterval(parameters),
+    timeSeriesParameters,
+  };
+};
+
+/**
+ * Builds the common base query variables for relationship widgets using a single data selection.
+ * Computes start/end dates from config, resolves dateAttribute,
+ * builds and normalizes filters (including dynamicFrom/dynamicTo),
+ * and provides default ordering and pagination.
+ *
+ * Used by widgets like Timeline, Number, etc. that operate on a single selection.
+ */
+export const buildRelationshipSingleWidgetBaseQueryVariables = (
+  selection: WidgetDataSelection,
+  config: DashboardConfig,
+) => {
+  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(selection, config, { isKnowledgeRelationshipWidget: true });
+
+  return {
+    startDate,
+    endDate,
+    dateAttribute,
+    filters,
+    dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
+    dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
+  };
 };

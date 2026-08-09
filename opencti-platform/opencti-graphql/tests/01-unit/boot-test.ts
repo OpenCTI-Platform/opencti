@@ -21,7 +21,7 @@ describe('Initialization unit test', () => {
     // We don't want to init twice (see globalSetup.js) so Mocking them
     vi.spyOn(engineMock, 'searchEngineInit').mockResolvedValue(true);
     vi.spyOn(fileStorageMock, 'storageInit').mockResolvedValue(true);
-    vi.spyOn(rabbitMqMock, 'rabbitMQIsAlive').mockResolvedValue(true);
+    vi.spyOn(rabbitMqMock, 'rabbitMQInit').mockResolvedValue(true);
     vi.spyOn(redisMock, 'redisInit').mockResolvedValue(true);
     vi.spyOn(SMTPMock, 'smtpIsAlive').mockResolvedValue(true);
     vi.spyOn(pythonMock, 'checkPythonAvailability').mockResolvedValue(true);
@@ -32,7 +32,7 @@ describe('Initialization unit test', () => {
   it('should storageInit check throwing exception be rethrow and stop', async () => {
     vi.spyOn(engineMock, 'searchEngineInit').mockResolvedValue(true);
     vi.spyOn(fileStorageMock, 'storageInit').mockRejectedValue('Storage error for testing purpose');
-    vi.spyOn(rabbitMqMock, 'rabbitMQIsAlive').mockResolvedValue(true);
+    vi.spyOn(rabbitMqMock, 'rabbitMQInit').mockResolvedValue(true);
     vi.spyOn(redisMock, 'redisInit').mockResolvedValue(true);
     vi.spyOn(SMTPMock, 'smtpIsAlive').mockResolvedValue(true);
     vi.spyOn(pythonMock, 'checkPythonAvailability').mockResolvedValue(true);

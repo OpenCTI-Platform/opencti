@@ -180,6 +180,7 @@ const StixCoreObjectFilesAndHistory = ({
 
   const onSubmitImport = (values, { setSubmitting, resetForm }) => {
     const { connector_id, configuration, objectMarking, validation_mode, authorizedMembers } = values;
+    const shouldCreateDraft = validation_mode === 'draft' && !draftContext;
     let config = configuration;
     // Dynamically inject the markings chosen by the user into the csv mapper.
     const isCsvConnector = selectedConnector?.name === 'ImportCsv';
@@ -191,7 +192,7 @@ const StixCoreObjectFilesAndHistory = ({
       }
     }
     commitMutation({
-      mutation: validation_mode === 'draft' ? fileManagerCreateDraftAskJobImportMutation : stixCoreObjectFilesAndHistoryAskJobImportMutation,
+      mutation: shouldCreateDraft ? fileManagerCreateDraftAskJobImportMutation : stixCoreObjectFilesAndHistoryAskJobImportMutation,
       variables: {
         fileName: fileToImport.id,
         connectorId: connector_id,
@@ -299,7 +300,6 @@ const StixCoreObjectFilesAndHistory = ({
     createdBy: undefined,
     authorized_members: undefined,
   });
-
   return (
     <div className={classes.container} data-testid="sco-data-file-and-history">
       <Grid
@@ -399,7 +399,7 @@ const StixCoreObjectFilesAndHistory = ({
                   </MenuItem>
                 </Field>
               )}
-              {values.validation_mode === 'draft' && (
+              {values.validation_mode === 'draft' && !draftContext && (
                 <>
                   <Field
                     component={MarkdownField}

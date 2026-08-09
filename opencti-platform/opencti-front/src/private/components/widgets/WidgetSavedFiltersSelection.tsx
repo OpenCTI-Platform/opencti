@@ -2,7 +2,7 @@ import React, { Suspense, SyntheticEvent, useCallback, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useQueryLoadingWithLoadQuery } from 'src/utils/hooks/useQueryLoading';
 import SavedFiltersAutocomplete from 'src/components/saved_filters/SavedFiltersAutocomplete';
-import { type SavedFiltersAutocompleteOptionType } from 'src/components/saved_filters/SavedFilterSelection';
+import { type SavedFiltersAutocompleteOptionType, WidgetSavedFilterScope } from 'src/components/saved_filters/SavedFilterSelection';
 import { type WidgetSavedFiltersSelectionQuery } from './__generated__/WidgetSavedFiltersSelectionQuery.graphql';
 import useBuildSavedFiltersOptions from 'src/components/saved_filters/useBuildSavedFiltersOptions';
 import type { AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
@@ -10,7 +10,7 @@ import ClearFiltersIcon from 'src/components/filters/ClearFiltersIcon';
 import WidgetCustomFiltersIcon from 'src/components/saved_filters/WidgetCustomFiltersIcon';
 import Divider from '@mui/material/Divider';
 
-const widgetSavedFiltersSelectionQuery = graphql`
+export const widgetSavedFiltersSelectionQuery = graphql`
   query WidgetSavedFiltersSelectionQuery($filters: FilterGroup) {
     savedFilters(first: 100, filters: $filters) {
       edges {
@@ -41,6 +41,7 @@ interface WidgetSavedFiltersComponentProps {
   onClear: () => void;
   selectedFilterId?: string | null;
   onRefetch: () => void;
+  scope: WidgetSavedFilterScope;
 }
 
 const WidgetSavedFiltersComponent = ({
@@ -50,11 +51,12 @@ const WidgetSavedFiltersComponent = ({
   onClear,
   selectedFilterId,
   onRefetch,
+  scope,
 }: WidgetSavedFiltersComponentProps) => {
   const { savedFilters } = usePreloadedQuery(widgetSavedFiltersSelectionQuery, queryRef);
   const data = savedFilters?.edges?.map(({ node }) => node) ?? [];
 
-  const options = useBuildSavedFiltersOptions(data);
+  const options = useBuildSavedFiltersOptions(data, scope);
 
   const selectedOption = selectedFilterId
     ? options.find((o) => o.value.id === selectedFilterId)
@@ -98,7 +100,7 @@ const WidgetSavedFiltersComponent = ({
 };
 
 interface WidgetSavedFiltersSelectionProps {
-  scope: string;
+  scope: WidgetSavedFilterScope;
   onSelect: (savedFilterId: string) => void;
   onDeselect: () => void;
   onClear: () => void;
@@ -137,6 +139,7 @@ const WidgetSavedFiltersSelection = ({
               onClear={onClear}
               selectedFilterId={selectedFilterId}
               onRefetch={handleRefetch}
+              scope={scope}
             />
           </Suspense>
         )

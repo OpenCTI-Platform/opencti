@@ -1,8 +1,7 @@
 import React, { CSSProperties, ReactNode, useRef } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
+import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
@@ -88,22 +87,15 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): DraftsListQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { startDate, endDate } = computeStartEndDates(config);
   const orderBy = (selection.sort_by && selection.sort_by.length > 0
     ? selection.sort_by
     : 'created_at') as DraftsListQuery['variables']['orderBy'];
-  const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-    ? selection.date_attribute
-    : 'created_at';
-  const { filters } = buildFiltersAndOptionsForWidgets(
-    selection.filters,
-    { startDate, endDate, dateAttribute },
-  );
+  const { filters } = computeWidgetFiltersForSelection(selection, config);
   return {
     first: selection.number ?? 10,
     orderBy,
     orderMode: (selection.sort_mode ?? 'desc') as DraftsListQuery['variables']['orderMode'],
-    filters: normalizeFilterGroupForBackend(filters),
+    filters,
   };
 };
 

@@ -1,9 +1,10 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { head } from 'ramda';
-import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { queryAsAdmin, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
+import { USER_EDITOR, USER_SECURITY } from '../../utils/testQuery';
 
 const ABOUT_QUERY = gql`
   query about {
@@ -46,6 +47,40 @@ const READ_QUERY = gql`
   }
 `;
 
+const EDIT_FIELD_QUERY = gql`
+  mutation SettingsEdit($id: ID!, $input: [EditInput]!) {
+    settingsEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+        platform_title
+        local_auth {
+            enabled
+          }
+      }
+    }
+  }
+`;
+
+const CONTEXT_PATCH_QUERY = gql`
+  mutation SettingsEdit($id: ID!, $input: EditContext) {
+    settingsEdit(id: $id) {
+      contextPatch(input: $input) {
+        id
+      }
+    }
+  }
+`;
+
+const CONTEXT_CLEAN_QUERY = gql`
+  mutation SettingsEdit($id: ID!) {
+    settingsEdit(id: $id) {
+      contextClean {
+        id
+      }
+    }
+  }
+`;
+
 describe('Settings resolver standard behavior', () => {
   const PLATFORM_TITLE = 'OpenCTI - Cyber Threat Intelligence Platform';
   const settingsId = async () => {
@@ -76,25 +111,15 @@ describe('Settings resolver standard behavior', () => {
     expect(settings.editContext.length).toEqual(0);
   });
   it('should update settings', async () => {
-    const UPDATE_QUERY = gql`
-      mutation SettingsEdit($id: ID!, $input: [EditInput]!) {
-        settingsEdit(id: $id) {
-          fieldPatch(input: $input) {
-            id
-            platform_title
-          }
-        }
-      }
-    `;
     const settingsInternalId = await settingsId();
     let queryResult = await queryAsAdmin({
-      query: UPDATE_QUERY,
+      query: EDIT_FIELD_QUERY,
       variables: { id: settingsInternalId, input: { key: 'platform_title', value: ['Cyber'] } },
     });
     expect(queryResult.data.settingsEdit.fieldPatch.platform_title).toEqual('Cyber');
     // Back to previous value
     queryResult = await queryAsAdmin({
-      query: UPDATE_QUERY,
+      query: EDIT_FIELD_QUERY,
       variables: {
         id: settingsInternalId,
         input: { key: 'platform_title', value: [PLATFORM_TITLE] },
@@ -103,18 +128,9 @@ describe('Settings resolver standard behavior', () => {
     expect(queryResult.data.settingsEdit.fieldPatch.platform_title).toEqual(PLATFORM_TITLE);
   });
   it('should fail when updating filigran_chatbot_ai_cgu_status with an invalid value', async () => {
-    const UPDATE_QUERY = gql`
-      mutation SettingsEdit($id: ID!, $input: [EditInput]!) {
-        settingsEdit(id: $id) {
-          fieldPatch(input: $input) {
-            id
-          }
-        }
-      }
-    `;
     const settingsInternalId = await settingsId();
     const queryResult = await queryAsAdmin({
-      query: UPDATE_QUERY,
+      query: EDIT_FIELD_QUERY,
       variables: {
         id: settingsInternalId,
         input: { key: 'filigran_chatbot_ai_cgu_status', value: ['INVALID_STATUS'] },
@@ -124,16 +140,35 @@ describe('Settings resolver standard behavior', () => {
     expect(queryResult.errors.length).toEqual(1);
     expect(queryResult.errors[0].message).toContain('Invalid CGU status');
   });
+  it('should reject fieldPatch when key requires missing capability', async () => {
+    const settingsInternalId = await settingsId();
+    await queryAsUserIsExpectedForbidden(USER_SECURITY, {
+      query: EDIT_FIELD_QUERY,
+      variables: { id: settingsInternalId, input: { key: 'platform_title', value: ['forbidden-update'] } },
+    });
+  });
+  it('should allow updating local_auth with SETTINGS_SETAUTH capability', async () => {
+    const settingsInternalId = await settingsId();
+
+    await queryAsUserWithSuccess(USER_SECURITY, {
+      query: EDIT_FIELD_QUERY,
+      variables: { id: settingsInternalId, input: { key: 'local_auth', value: [{ enabled: true }] } },
+    });
+
+    // Restore default test value.
+    await queryAsAdmin({
+      query: EDIT_FIELD_QUERY,
+      variables: { id: settingsInternalId, input: { key: 'local_auth', value: [{ enabled: true }] } },
+    });
+  });
+  it('should reject updating local_auth without SETTINGS_SETAUTH capability', async () => {
+    const settingsInternalId = await settingsId();
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: EDIT_FIELD_QUERY,
+      variables: { id: settingsInternalId, input: { key: 'local_auth', value: [{ enabled: true }] } },
+    });
+  });
   it('should context patch settings', async () => {
-    const CONTEXT_PATCH_QUERY = gql`
-      mutation SettingsEdit($id: ID!, $input: EditContext) {
-        settingsEdit(id: $id) {
-          contextPatch(input: $input) {
-            id
-          }
-        }
-      }
-    `;
     const settingsInternalId = await settingsId();
     const queryResult = await queryAsAdmin({
       query: CONTEXT_PATCH_QUERY,
@@ -146,18 +181,9 @@ describe('Settings resolver standard behavior', () => {
     expect(head(editContext).focusOn).toEqual('platform_title');
   });
   it('should context clean settings', async () => {
-    const CONTEXT_PATCH_QUERY = gql`
-      mutation SettingsEdit($id: ID!) {
-        settingsEdit(id: $id) {
-          contextClean {
-            id
-          }
-        }
-      }
-    `;
     const settingsInternalId = await settingsId();
     const queryResult = await queryAsAdmin({
-      query: CONTEXT_PATCH_QUERY,
+      query: CONTEXT_CLEAN_QUERY,
       variables: { id: settingsInternalId },
     });
     expect(queryResult.data.settingsEdit.contextClean.id).toEqual(settingsInternalId);

@@ -30,6 +30,7 @@ const labelContextualMutation = graphql`
     labelAdd(input: $input) {
       id
       value
+      color
     }
   }
 `;
@@ -75,69 +76,36 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
     value: contextual ? inputValueContextual : '',
     color: '',
   };
-  const onSubmit = (
-    values: typeof initialValues,
-    { setSubmitting, resetForm }: {
-      setSubmitting: (flag: boolean) => void;
-      resetForm: () => void;
-    },
-  ) => {
-    const finalValues = {
-      ...values,
-    };
-    commitMutation({
-      ...defaultCommitMutation,
-      mutation: contextual
-        ? labelContextualMutation
-        : labelMutation,
-      variables: { input: finalValues },
-      updater: (store: RecordSourceSelectorProxy) => {
-        insertNode(
-          store,
-          'Pagination_labels',
-          paginationOptions,
-          'labelAdd',
-        );
-      },
-      setSubmitting,
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-      },
-    });
-  };
-
-  const onSubmitContextual: FormikConfig<LabelAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues = {
-      ...values,
-    };
+  const onSubmit: FormikConfig<LabelAddInput>['onSubmit'] = async (values, { setSubmitting, setErrors, resetForm }) => {
     if (dryrun && contextual) {
-      creationCallback({
-        labelAdd: values,
-      } as LabelCreationContextualMutation$data);
+      creationCallback({ labelAdd: values } as LabelCreationContextualMutation$data);
       handleClose();
       return;
     }
     commitMutation({
       ...defaultCommitMutation,
-      mutation: labelContextualMutation,
-      variables: { input: finalValues },
+      mutation: contextual ? labelContextualMutation : labelMutation,
+      variables: { input: values },
+      updater: contextual ? undefined : (store: RecordSourceSelectorProxy) => {
+        insertNode(store, 'Pagination_labels', paginationOptions, 'labelAdd');
+      },
+      setSubmitting,
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: (
-        response: LabelCreationContextualMutation$data,
-      ) => {
+      onCompleted: (response: LabelCreationContextualMutation$data) => {
         setSubmitting(false);
         resetForm();
-        creationCallback(response);
-        handleClose();
+        if (contextual) {
+          creationCallback(response);
+          handleClose();
+        }
       },
     });
   };
 
-  const onResetContextual = () => handleClose();
+  const onReset = () => handleClose();
 
   const renderClassic = () => {
     return (
@@ -199,8 +167,8 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
           initialValues={initialValues}
           required={required}
           validationSchema={labelValidation}
-          onSubmit={onSubmitContextual}
-          onReset={onResetContextual}
+          onSubmit={onSubmit}
+          onReset={onReset}
         >
           {({ submitForm, handleReset, isSubmitting }) => (
             <Form>

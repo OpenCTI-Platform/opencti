@@ -40,11 +40,29 @@ const useDashboardViz = <TQuery extends OperationType>({
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isMissingSavedFilters, setIsMissingSavedFilters] = useState(false);
 
+  // refreshToken is an integer provided via context by DashboardContent and incremented
+  // by CustomDashboard on manual or auto refresh. When it changes, we force-reload
+  // regardless of whether query variables changed, so fresh data is always fetched.
+  // prevRefreshTokenRef guards against triggering on the initial mount.
+  const refreshToken = useDashboardRefreshToken();
+  const prevRefreshTokenRef = useRef(refreshToken);
+
   // Stabilize the dataSelection dependency to avoid re-triggering the effect
   // on every render when the parent passes a new array reference with the same content.
   const dataSelectionSignature = useMemo(() => JSON.stringify(dataSelection), [dataSelection]);
 
-  useEffect(() => {
+  /**
+   * Resolve raw data selection into a query-ready form.
+   *
+   * Hydrates saved filters, injects host entity context, and updates edge-case flags
+   * (`isMissingHostEntity`, `isPreviewMode`, `isMissingSavedFilters`).
+   *
+   * When provided, `onResolved` runs after state updates with the fresh resolution
+   * result so callers can avoid stale closure values.
+   */
+  const handleResolveDataSelection = useCallback((
+    onResolved?: (result: Awaited<ReturnType<typeof resolveDataSelection>>) => void,
+  ) => {
     let cancelled = false;
     resolveDataSelection({
       filterKeysSchema,
@@ -57,12 +75,17 @@ const useDashboardViz = <TQuery extends OperationType>({
         setIsMissingHostEntity(result.isMissingHostEntity);
         setIsPreviewMode(result.isPreviewMode);
         setIsMissingSavedFilters(result.isMissingSavedFilters);
+        onResolved?.(result);
       }
     });
     return () => {
       cancelled = true;
     };
   }, [filterKeysSchema, dataSelectionSignature, perspective, host]);
+
+  // Re-resolve selection inputs when schema, selection content, perspective, or host changes
+  // Because those changes make the result change
+  useEffect(handleResolveDataSelection, [handleResolveDataSelection]);
 
   const queryVariables = useMemo(
     () => (buildQueryVariables && config && resolvedDataSelection.length > 0
@@ -125,36 +148,42 @@ const useDashboardViz = <TQuery extends OperationType>({
     return () => setQueryPending(queryId, false);
   }, [isPending, setQueryPending]);
 
-  // Used by dashboard token refresh to rebuild variables from latest inputs
-  // before forcing the load.
-  const forceReloadWithFreshVariables = useCallback(() => {
-    if (!buildQueryVariables || !config || resolvedDataSelection.length === 0) {
+  /**
+   * Rebuild query variables from the latest resolved selection and force a reload.
+   *
+   * Used by dashboard token refresh to avoid relying on a possibly stale
+   * `resolvedDataSelection` closure value.
+   */
+  const forceReloadWithFreshVariables = useCallback((selection: WidgetDataSelection[] = resolvedDataSelection) => {
+    if (!buildQueryVariables || !config || selection.length === 0) {
       reloadData(true);
       return;
     }
 
-    const refreshedVariables = buildQueryVariables(resolvedDataSelection, config, parameters);
+    const refreshedVariables = buildQueryVariables(selection, config, parameters);
     const refreshedSignature = JSON.stringify(refreshedVariables);
     loadAndTrackSignature(refreshedVariables, refreshedSignature);
   }, [buildQueryVariables, config, resolvedDataSelection, parameters, reloadData, loadAndTrackSignature]);
 
-  // refreshToken is an integer provided via context by DashboardContent and incremented
-  // by CustomDashboard on manual or auto refresh. When it changes, we force-reload
-  // regardless of whether query variables changed, so fresh data is always fetched.
-  // prevRefreshTokenRef guards against triggering on the initial mount.
-  const refreshToken = useDashboardRefreshToken();
-  const prevRefreshTokenRef = useRef(refreshToken);
-
   useEffect(() => {
-    if (prevRefreshTokenRef.current === refreshToken) return;
+    if (prevRefreshTokenRef.current === refreshToken) return undefined;
     prevRefreshTokenRef.current = refreshToken;
 
     if (isMissingHostEntity || isMissingSavedFilters) {
-      return;
+      return undefined;
     }
 
-    forceReloadWithFreshVariables();
-  }, [refreshToken, isMissingHostEntity, isMissingSavedFilters, forceReloadWithFreshVariables]);
+    /**
+     * Re-resolve data selection on refresh, then force reload
+     * with the freshly resolved data selection.
+     */
+    return handleResolveDataSelection((result) => {
+      if (result.isMissingHostEntity || result.isMissingSavedFilters) {
+        return;
+      }
+      forceReloadWithFreshVariables(result.resolvedDataSelection);
+    });
+  }, [refreshToken, isMissingHostEntity, isMissingSavedFilters, forceReloadWithFreshVariables, handleResolveDataSelection]);
 
   return {
     queryRef,

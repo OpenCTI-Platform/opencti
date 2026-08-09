@@ -27,8 +27,20 @@ Also, using the `Advanced search` button, it is possible to directly put filters
 
 !!! info "Advanced filters"
 
-    You have access to advanced filters all across the UI, if you want to know more about how to use these 
+    You have access to advanced filters all across the UI, if you want to know more about how to use these
     filters with the API or the Python library, [don't hesitate to read the dedicated page](../reference/filters.md)
+
+### Search syntax
+
+Keyword search (global and contextual) supports a subset of Lucene syntax to refine matching:
+
+* **Quotes `"..."`**: exact phrase match. `"lazarus group"` only match this exact phrase, not each word separately.
+* **Wildcard `*`**: match any number of characters. Every keyword typed already get an implicit trailing `*`, so `apt2` also find `apt29`, `apt28`, etc. Add your own `*` anywhere in word for more control, e.g. `ap*9` match `apt29`.
+* **Fuzzy `~`**: match approximate/misspelled terms. `lazarous~` still find `lazarus`.
+
+!!! tip "Combine syntax"
+
+    Syntax can combine, e.g. `"lazarus"~2` for fuzzy phrase match, or `mal*~1` for wildcard + fuzzy.
 
 ### Full text search in files content
 
