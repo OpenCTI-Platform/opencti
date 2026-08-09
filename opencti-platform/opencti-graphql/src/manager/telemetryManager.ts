@@ -69,6 +69,8 @@ import { EnvStrategyType, isStrategyActivated } from '../modules/authenticationP
 import { listRules } from '../modules/retentionRules/retentionRules-domain';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { isSavedFilterShared } from '../modules/savedFilter/savedFilter-domain';
+import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
+import { RELATION_HAS_COVERED } from '../schema/stixCoreRelationship';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 
@@ -485,7 +487,9 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // region Connectors information
     const connectors = await getEntitiesListFromCache<BasicStoreEntityConnector>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_CONNECTOR);
     const activeConnectors = connectors.filter((c) => c.active);
+    const oaevConnectors = connectors.filter((c) => c.name.toLowerCase().startsWith('openaev coverage'));
     manager.setActiveConnectorsCount(activeConnectors.length);
+    manager.setOaevConnectorsCount(oaevConnectors.length);
     // Breakdown by catalog identity (see computeActiveConnectorsByIdentity):
     // composer-managed connectors resolve to the catalog contract slug
     // through their stored container image; manually registered connectors
@@ -546,10 +550,18 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // endregion SSO providers
 
     // region Security Coverages
-    const securityCoveragesCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
-      types: [ENTITY_TYPE_SECURITY_COVERAGE],
-    });
+    const [
+      securityCoveragesCount,
+      securityCoverageResultsCount,
+      relationshipsHasCoveredCount,
+    ] = await Promise.all([
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: [ENTITY_TYPE_SECURITY_COVERAGE] }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: [ENTITY_TYPE_SECURITY_COVERAGE_RESULT] }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, { types: [RELATION_HAS_COVERED] }),
+    ]);
     manager.setSecurityCoveragesCount(securityCoveragesCount);
+    manager.setSecurityCoverageResultsCount(securityCoverageResultsCount);
+    manager.setRelationshipsHasCoveredCount(relationshipsHasCoveredCount);
     // endregion
 
     // region Shared saved filters

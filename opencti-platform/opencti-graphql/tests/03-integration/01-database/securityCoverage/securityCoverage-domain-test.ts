@@ -1,0 +1,135 @@
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import {
+  addSecurityCoverage,
+  listSecurityCoverageResults,
+  securityCoverageDelete,
+  securityCoverageStixBundle,
+} from '../../../../src/modules/securityCoverage/securityCoverage-domain';
+import { ADMIN_USER, testContext } from '../../../utils/testQuery';
+import { addReport, reportDeleteWithElements } from '../../../../src/domain/report';
+import type { StoreEntityReport } from '../../../../src/types/store';
+import type { StixSecurityCoverage } from '../../../../src/modules/securityCoverage/securityCoverage-types';
+
+describe('SecurityCoverage domain', () => {
+  let report: StoreEntityReport;
+
+  const BASE_INPUT = () => ({
+    name: 'sc1',
+    objectCovered: report.standard_id,
+    auto_enrichment_disable: true,
+  });
+
+  beforeAll(async () => {
+    report = await addReport(testContext, ADMIN_USER, {
+      name: 'Report for SC tests',
+      published: '2026-04-24T19:15:00.000Z',
+    });
+  });
+
+  afterAll(async () => {
+    await reportDeleteWithElements(testContext, ADMIN_USER, report.standard_id);
+  });
+
+  describe('Function addSecurityCoverage()', () => {
+    it('should create coverage result if explicitly asked for', async () => {
+      const input = {
+        ...BASE_INPUT(),
+        add_related_entities: true,
+      };
+      const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
+      const results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
+      expect(results.length).toEqual(1);
+      // Name should be the external_uri when it is defined
+      expect(results[0].name).toEqual('Result of sc1');
+      await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
+    });
+
+    it('should create coverage result if contains eternal uri', async () => {
+      const externalUri = 'http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a131';
+      const input = {
+        ...BASE_INPUT(),
+        coverage_information: [{
+          coverage_name: 'prevention',
+          coverage_score: 10,
+        }],
+        external_uri: externalUri,
+      };
+      const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
+      const results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
+      expect(results.length).toEqual(1);
+      // Name should be the external_uri when it is defined
+      expect(results[0].name).toEqual(`${externalUri} Result of sc1`);
+      await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
+    });
+
+    it('should create coverage result if contains external_uri without coverage info', async () => {
+      const input = {
+        ...BASE_INPUT(),
+        tenant_name: 'Super Coverage',
+        external_uri: 'http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a132',
+      };
+      const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
+      const results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
+      expect(results.length).toEqual(1);
+      // Name should be the tenant_name when it is defined
+      expect(results[0].name).toEqual('Super Coverage Result of sc1');
+      await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
+    });
+
+    it('should not create coverage result if no manual neither external_uri', async () => {
+      const input = {
+        ...BASE_INPUT(),
+      };
+      const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
+      const results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
+      expect(results.length).toEqual(0);
+      await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
+    });
+  });
+
+  describe('Function securityCoverageStixBundle()', () => {
+    it('should return a bundle containing the coverage and the covered entity', async () => {
+      const input = {
+        ...BASE_INPUT(),
+        name: 'sc to export',
+        coverage_information: [{
+          coverage_name: 'prevention',
+          coverage_score: 10,
+        }],
+      };
+      const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
+      const bundle = JSON.parse(await securityCoverageStixBundle(testContext, ADMIN_USER, securityCoverage.id));
+      const bundleObjects = bundle.objects as unknown as StixSecurityCoverage[];
+
+      const stixCoverage = bundleObjects.find((o) => o.type === 'security-coverage');
+      expect(stixCoverage?.id).toEqual(securityCoverage.standard_id);
+      expect(stixCoverage?.covered_ref).toEqual(report.standard_id);
+      // The covered entity must be exported as a distinct object of the bundle
+      expect(bundleObjects.filter((o) => o.id === report.standard_id).length).toEqual(1);
+
+      await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
+    });
+  });
+
+  describe('Function securityCoverageDelete()', () => {
+    it('should delete security coverage results when deleting a security coverage', async () => {
+      const input = {
+        ...BASE_INPUT(),
+        name: 'sc to delete',
+        coverage_information: [{
+          coverage_name: 'prevention',
+          coverage_score: 10,
+        }],
+        add_related_entities: true,
+      };
+      const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
+      let results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
+      expect(results.length).toEqual(1);
+      // Name falls back to "Result of <name>" when no external_uri is provided
+      expect(results[0].name).toEqual(`Result of ${securityCoverage.name}`);
+      await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
+      results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
+      expect(results.length).toEqual(0);
+    });
+  });
+});

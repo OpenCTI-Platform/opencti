@@ -290,9 +290,7 @@ class IncidentKnowledgeComponent extends Component {
           <Route
             path="/relations/:relationId"
             element={(
-              <StixCoreRelationship
-                entityId={caseData.id}
-              />
+              <StixCoreRelationship />
             )}
           />
           <Route index element={<Navigate replace={true} to="graph" />} />

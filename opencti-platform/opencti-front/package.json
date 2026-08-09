@@ -147,6 +147,7 @@
     "@types/react-dom": "19.2.3",
     "@types/react-syntax-highlighter": "15.5.13",
     "@types/react-transition-group": "4.4.12",
+    "@types/react-virtualized": "9.22.3",
     "@vitejs/plugin-react": "6.0.4",
     "@vitest/coverage-v8": "4.1.10",
     "babel-plugin-relay": "21.0.1",

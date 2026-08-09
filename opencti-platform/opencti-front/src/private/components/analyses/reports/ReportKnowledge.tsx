@@ -384,9 +384,7 @@ const ReportKnowledgeComponent = (props: ReportKnowledgeComponentProps) => {
         <Route
           path="/relations/:relationId"
           element={(
-            <StixCoreRelationship
-              entityId={report.id}
-            />
+            <StixCoreRelationship />
           )}
         />
         <Route index element={<Navigate replace={true} to="graph" />} />

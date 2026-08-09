@@ -140,9 +140,7 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
             <Route
               path="/knowledge/relations/:relationId/"
               element={(
-                <StixCoreRelationship
-                  entityId={observedData.id}
-                />
+                <StixCoreRelationship />
               )}
             />
           )}
