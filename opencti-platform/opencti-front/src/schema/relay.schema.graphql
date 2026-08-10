@@ -9552,6 +9552,7 @@ type Query {
   csvFeedAddInputFromImport(file: Upload!): CSVFeedAddInputFromImport!
   defaultIngestionGroupCount: Int
   userAlreadyExists(name: String!): Boolean
+  ingestionCsvLogs(id: String!): [IngestionEntry]
   ingestionJson(id: String!): IngestionJson
   ingestionJsons(first: Int, after: ID, orderBy: IngestionJsonOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionJsonConnection
   indicator(id: String!): Indicator
@@ -13899,6 +13900,8 @@ type IngestionCsv implements InternalObject & BasicObject {
   current_state_hash: String
   current_state_date: DateTime
   last_execution_date: DateTime
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry]
   markings: [String!]
   toConfigurationExport: String!
   duplicateCsvMapper: CsvMapper!
