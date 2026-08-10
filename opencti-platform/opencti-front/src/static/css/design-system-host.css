@@ -1,0 +1,25 @@
+/* Host prerequisites for @filigran/design-system.
+   Rules marked FDS-WORKAROUND are TEMPORARY: each one names the condition that
+   retires it, and the matching numbered entry in fds-migration/LIBRARY-FEEDBACK.md
+   carries the full rationale and the removal test.
+   Loaded after the library stylesheet and after the product's index.css. */
+
+/* HOST CONCERN, not library debt, and not a workaround: the product's
+   navigation icons come from MUI, which renders them at 24px; the library's
+   navigation rows are designed around 16px glyphs. Scoped to the navigation so
+   no other MUI icon in the application is affected. Permanent for as long as
+   MUI icons are fed into library slots — it disappears with the icons, not with
+   a pin bump. */
+.app-navbar .MuiSvgIcon-root {
+  font-size: 16px;
+}
+
+/* FDS-WORKAROUND #8: the rail does not defend its width — remove when the <nav> carries shrink-0 — see fds-migration/LIBRARY-FEEDBACK.md #8 */
+.app-navbar {
+  flex: 0 0 auto;
+}
+
+/* FDS-WORKAROUND #5: raise portalled surfaces above the app bar — remove when the library exposes a stacking hook — see fds-migration/LIBRARY-FEEDBACK.md #5 */
+body > [data-radix-popper-content-wrapper] {
+  z-index: 1300 !important;
+}
