@@ -63,8 +63,8 @@ testCreatedCounter.tool = 5;
 testCreatedCounter['tracking-number'] = 1;
 testCreatedCounter.vocabulary = VOCABULARY_NUMBERS;
 testCreatedCounter.vulnerability = 10;
-testCreatedCounter['security-coverage'] = 12;
-testCreatedCounter['security-coverage-result'] = 11;
+testCreatedCounter['security-coverage'] = 13;
+testCreatedCounter['security-coverage-result'] = 12;
 
 export const testUpdatedCounter: Record<string, number> = {};
 testUpdatedCounter['marking-definition'] = 2;
