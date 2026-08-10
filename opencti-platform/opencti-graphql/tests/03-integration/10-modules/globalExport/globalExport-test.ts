@@ -199,6 +199,8 @@ describe('Global configuration export', () => {
 
       const buffer = Buffer.from(base64, 'base64');
       expect(buffer.subarray(0, 4)).toEqual(ZIP_MAGIC_BYTES);
+      expect(buffer.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]))).toBeGreaterThan(0);
+      expect(buffer.includes(Buffer.from('meta.json'))).toBe(true);
     });
 
     it('should deduplicate entity_types passed more than once', async () => {
