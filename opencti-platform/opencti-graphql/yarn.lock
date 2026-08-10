@@ -8327,10 +8327,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jose@npm:6.2.4, jose@npm:^6.2.2":
-  version: 6.2.4
-  resolution: "jose@npm:6.2.4"
-  checksum: 10c0/aaba866d71a8cd5bfd7c2c228367318df99f36318d7c6f1e7bca835c3bdd74ea3fe38783277f7bf7c9703ae24338bb3642a6ccdef6aa54c006d29a9711e6f782
+"jose@npm:6.2.8":
+  version: 6.2.8
+  resolution: "jose@npm:6.2.8"
+  checksum: 10c0/fe4c6a7197a1adab2251b000c1eaaa8b40b6cb7cfbef43dbc9e959dacd43bf2532827b2d5e0f4069731da79d26e4d9e4368ccb26559a42a884b3fe036927e6e1
   languageName: node
   linkType: hard
 
@@ -8338,6 +8338,13 @@ __metadata:
   version: 4.15.9
   resolution: "jose@npm:4.15.9"
   checksum: 10c0/4ed4ddf4a029db04bd167f2215f65d7245e4dc5f36d7ac3c0126aab38d66309a9e692f52df88975d99429e357e5fd8bab340ff20baab544d17684dd1d940a0f4
+  languageName: node
+  linkType: hard
+
+"jose@npm:^6.2.2":
+  version: 6.2.4
+  resolution: "jose@npm:6.2.4"
+  checksum: 10c0/aaba866d71a8cd5bfd7c2c228367318df99f36318d7c6f1e7bca835c3bdd74ea3fe38783277f7bf7c9703ae24338bb3642a6ccdef6aa54c006d29a9711e6f782
   languageName: node
   linkType: hard
 
@@ -9976,7 +9983,7 @@ __metadata:
     https-proxy-agent: "npm:9.1.0"
     ioredis: "npm:5.8.2"
     ipaddr.js: "npm:2.4.0"
-    jose: "npm:6.2.4"
+    jose: "npm:6.2.8"
     js-deep-equals: "npm:2.1.1"
     json-to-plain-text: "npm:1.2.0"
     jsonpath-plus: "npm:10.4.0"
