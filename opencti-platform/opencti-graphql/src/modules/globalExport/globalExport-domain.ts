@@ -154,7 +154,11 @@ export const generateGlobalConfigurationExport = async (
 
   const archive = new ZipArchive();
   const chunks: Buffer[] = [];
-  archive.on('data', (chunk: Buffer) => chunks.push(chunk));
+  const zipReady = new Promise<void>((resolve, reject) => {
+    archive.on('data', (chunk: Buffer) => chunks.push(chunk));
+    archive.on('end', resolve);
+    archive.on('error', reject);
+  });
 
   const counts: Record<string, number> = {};
   const uniqueEntityTypes = Array.from(new Set(entityTypes));
@@ -174,6 +178,7 @@ export const generateGlobalConfigurationExport = async (
   archive.append(JSON.stringify(meta, null, 2), { name: 'meta.json' });
 
   await archive.finalize();
+  await zipReady;
   const zipBuffer = Buffer.concat(chunks);
   return zipBuffer.toString('base64');
 };
