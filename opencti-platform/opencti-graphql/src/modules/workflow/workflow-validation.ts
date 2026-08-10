@@ -4,6 +4,7 @@ import { fullEntitiesList, storeLoadById, storeLoadByIds } from '../../database/
 import { FilterMode, FilterOperator } from '../../generated/graphql';
 import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../schema/internalObject';
 import { isBasicObject } from '../../schema/stixCoreObject';
+import { isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ActionDefinitions } from './registry/workflow-actions';
 import type { WorkflowValidationError } from './types/workflow-types';
@@ -151,12 +152,16 @@ export const validateWorkflowDefinitionData = async (
   }
 
   const definedStates = new Set<string>();
+  let hasUpdateAuthorizedMembersAction = false;
   states.forEach((state: z.infer<typeof workflowSerializedStateSchema>) => {
     if (state.name) definedStates.add(state.name);
     if (state.statusId) definedStates.add(state.statusId);
 
     [...(state.onEnter || []), ...(state.onExit || [])].forEach((action) => {
       validateAction(action, `state ${state.name || state.statusId}`);
+      if (action.type === 'updateAuthorizedMembers') {
+        hasUpdateAuthorizedMembersAction = true;
+      }
     });
   });
 
@@ -260,6 +265,9 @@ export const validateWorkflowDefinitionData = async (
         if (action.type === 'validateDraft') {
           hasValidateDraft = true;
         }
+        if (action.type === 'updateAuthorizedMembers') {
+          hasUpdateAuthorizedMembersAction = true;
+        }
       }
     }
   }
@@ -268,6 +276,13 @@ export const validateWorkflowDefinitionData = async (
     errors.push({
       type: 'MISSING_VALIDATE_DRAFT_ACTION',
       message: 'DraftWorkspace workflow must contain at least one validateDraft action',
+    });
+  }
+
+  if (isStixDomainObjectContainer(entityType) && hasUpdateAuthorizedMembersAction) {
+    errors.push({
+      type: 'AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED_FOR_CONTAINER',
+      message: 'Update authorized members action is not allowed for Container entity types',
     });
   }
 
