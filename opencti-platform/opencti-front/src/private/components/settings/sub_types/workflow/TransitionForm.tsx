@@ -12,7 +12,7 @@ import { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import WorkflowFieldList from './WorkflowFieldList';
 import { CommentMode, CommentModeType, FEATURE_NAME, WorkflowActionType, WorkflowDataType } from './utils';
 
-const TransitionForm = () => {
+const TransitionForm = ({ entityType: _entityType }: { entityType: string }) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { values, setFieldValue } = useFormikContext<WorkflowEditionFormValues>();
