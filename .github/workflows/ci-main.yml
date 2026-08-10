@@ -63,7 +63,7 @@ jobs:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
       secrets:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        FDS_GIT_TOKEN: ${{ secrets.FDS_GIT_TOKEN }} # FDS-WORKAROUND #1
+        FDS_GIT_TOKEN: ${{ secrets.FDS_GIT_TOKEN }} # FDS-CI-SECRET
 
   wf-frontend-test:
       name: Frontend e2e
@@ -73,7 +73,7 @@ jobs:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
         run-id: ${{ github.run_id }}
       secrets:
-        FDS_GIT_TOKEN: ${{ secrets.FDS_GIT_TOKEN }} # FDS-WORKAROUND #1
+        FDS_GIT_TOKEN: ${{ secrets.FDS_GIT_TOKEN }} # FDS-CI-SECRET
 
 
   wf-client-python-test:
@@ -91,4 +91,4 @@ jobs:
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
       secrets:
-        FDS_GIT_TOKEN: ${{ secrets.FDS_GIT_TOKEN }} # FDS-WORKAROUND #1
+        FDS_GIT_TOKEN: ${{ secrets.FDS_GIT_TOKEN }} # FDS-CI-SECRET
