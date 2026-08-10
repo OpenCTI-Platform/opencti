@@ -31,6 +31,10 @@ class StixCoreObject:
                 standard_id
                 name
             }
+            creators {
+                id
+                name
+            }
             createdBy {
                 ... on Identity {
                     id
@@ -718,6 +722,10 @@ class StixCoreObject:
             objectOrganization {
                 id
                 standard_id
+                name
+            }
+            creators {
+                id
                 name
             }
             createdBy {
