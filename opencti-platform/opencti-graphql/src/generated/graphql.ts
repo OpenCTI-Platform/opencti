@@ -24666,6 +24666,7 @@ export type Query = {
   csvMappers?: Maybe<CsvMapperConnection>;
   customFieldDefinition?: Maybe<CustomFieldDefinition>;
   customFieldDefinitions?: Maybe<CustomFieldDefinitionConnection>;
+  customFieldDefinitionsForEntityType?: Maybe<CustomFieldDefinitionConnection>;
   customView?: Maybe<CustomView>;
   customViews: CustomViewsConnection;
   customViewsSettings: CustomViewsSettings;
@@ -25499,6 +25500,11 @@ export type QueryCustomFieldDefinitionsArgs = {
   orderBy?: InputMaybe<CustomFieldDefinitionsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryCustomFieldDefinitionsForEntityTypeArgs = {
+  entityType: Scalars['String']['input'];
 };
 
 
@@ -49775,6 +49781,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   csvMappers?: Resolver<Maybe<ResolversTypes['CsvMapperConnection']>, ParentType, ContextType, Partial<QueryCsvMappersArgs>>;
   customFieldDefinition?: Resolver<Maybe<ResolversTypes['CustomFieldDefinition']>, ParentType, ContextType, RequireFields<QueryCustomFieldDefinitionArgs, 'id'>>;
   customFieldDefinitions?: Resolver<Maybe<ResolversTypes['CustomFieldDefinitionConnection']>, ParentType, ContextType, Partial<QueryCustomFieldDefinitionsArgs>>;
+  customFieldDefinitionsForEntityType?: Resolver<Maybe<ResolversTypes['CustomFieldDefinitionConnection']>, ParentType, ContextType, RequireFields<QueryCustomFieldDefinitionsForEntityTypeArgs, 'entityType'>>;
   customView?: Resolver<Maybe<ResolversTypes['CustomView']>, ParentType, ContextType, RequireFields<QueryCustomViewArgs, 'id'>>;
   customViews?: Resolver<ResolversTypes['CustomViewsConnection'], ParentType, ContextType, Partial<QueryCustomViewsArgs>>;
   customViewsSettings?: Resolver<ResolversTypes['CustomViewsSettings'], ParentType, ContextType, RequireFields<QueryCustomViewsSettingsArgs, 'entityType'>>;

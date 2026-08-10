@@ -50,15 +50,18 @@ jobs:
       needs:  [wf-build-platform-image,wf-build-worker-image,wf-build-builder-image]
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
+        client_python_local: true
         run-id: ${{ github.run_id }}
-      secrets: inherit
+      secrets:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   wf-frontend-quality:
       name: Frontend quality
       uses: ./.github/workflows/ci-test-frontend-quality.yml
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
-      secrets: inherit
+      secrets:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   wf-frontend-test:
       name: Frontend e2e
@@ -67,7 +70,6 @@ jobs:
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
         run-id: ${{ github.run_id }}
-      secrets: inherit
 
 
   wf-client-python-test:
@@ -76,11 +78,11 @@ jobs:
       needs: [wf-build-platform-image,wf-build-worker-image]
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
-      secrets: inherit
+      secrets:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   wf-license-check:
       name: License check
       uses: ./.github/workflows/ci-license-check.yml
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
-      secrets: inherit

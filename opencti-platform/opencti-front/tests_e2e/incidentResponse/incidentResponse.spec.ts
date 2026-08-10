@@ -262,11 +262,11 @@ test('Incident Response Creation', { tag: ['@ce', '@group1'] }, async ({ page })
   await expect(incidentResponseType).toBeVisible();
 
   await incidentResponseDetailsPage.openLabelsSelect();
-  await incidentResponseDetailsPage.labelsSelect.selectOption('covid-19');
+  await incidentResponseDetailsPage.labelsSelect.selectOption('COVID-19');
   await incidentResponseDetailsPage.addLabels();
   await expect(incidentResponseDetailsPage.overview.getLabel('campaign')).toBeVisible();
   await expect(incidentResponseDetailsPage.overview.getLabel('report')).toBeVisible();
-  await expect(incidentResponseDetailsPage.overview.getLabel('covid-19')).toBeVisible();
+  await expect(incidentResponseDetailsPage.overview.getLabel('COVID-19')).toBeVisible();
 
   // ---------
   // endregion
@@ -312,6 +312,7 @@ test('Incident response live entities creation and relationships', { tag: ['@ce'
 
   await incidentResponsePage.openNewIncidentResponseForm();
   const incidentResponseName = `Incident response with created entities - ${uuid()}`;
+  const labelName = `threat-${uuid()}`;
   await incidentResponseForm.nameField.fill(incidentResponseName);
 
   // region Check author labels and external references creation forms
@@ -335,12 +336,12 @@ test('Incident response live entities creation and relationships', { tag: ['@ce'
   await labelForm.getCreateButton().click();
   await expect(labelForm.valueField.getByText('This field is required')).toBeVisible();
   await expect(labelForm.colorField.getByText('This field is required')).toBeVisible();
-  await labelForm.valueField.fill('threat');
+  await labelForm.valueField.fill(labelName);
   await expect(labelForm.valueField.getByText('This field is required')).toBeHidden();
   await labelForm.colorField.fill('#9d3fb8');
   await expect(labelForm.colorField.getByText('This field is required')).toBeHidden();
   await labelForm.getCreateButton().click();
-  await expect(incidentResponseForm.labelsAutocomplete.getOption('threat')).toBeVisible();
+  await expect(incidentResponseForm.labelsAutocomplete.getOption(labelName)).toBeVisible();
 
   // Create external references
   await incidentResponseForm.externalReferencesAutocomplete.openAddOptionForm();
@@ -369,7 +370,7 @@ test('Incident response live entities creation and relationships', { tag: ['@ce'
   const author = incidentResponseDetailsPage.getTextForHeading('Author', 'Jeanne Mitchel');
   await expect(author).toBeVisible();
 
-  await expect(incidentResponseDetailsPage.overview.getLabel('threat')).toBeVisible();
+  await expect(incidentResponseDetailsPage.overview.getLabel(labelName)).toBeVisible();
 
   // ---------
   // endregion

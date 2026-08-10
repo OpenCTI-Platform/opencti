@@ -9,7 +9,6 @@ import { isDraftWorkspaceFilterGroup, isFilterGroupNotEmpty, useAvailableFilterK
 import FilterIconButton from '../../../components/FilterIconButton';
 import { useFormatter } from '../../../components/i18n';
 import type { WidgetDataSelection, WidgetPerspective } from '../../../utils/widget/widget';
-import useHelper from '../../../utils/hooks/useHelper';
 import WidgetSavedFiltersSelection, { widgetSavedFiltersSelectionQuery } from './WidgetSavedFiltersSelection';
 import WidgetSavedFilterChips from './WidgetSavedFilterChips';
 import WidgetSavedFiltersIcon from 'src/components/saved_filters/WidgetSavedFiltersIcon';
@@ -41,15 +40,12 @@ interface WidgetFiltersProps {
 const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, type, dataSelection, setDataSelection }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-
-  const isDashboardSavedFiltersFeatureEnabled = isFeatureEnable('DASHBOARD_SAVED_FILTERS');
 
   const [filters, helpers] = useFiltersState(dataSelection.filters);
   const [filtersDynamicFrom, helpersDynamicFrom] = useFiltersState(dataSelection.dynamicFrom);
   const [filtersDynamicTo, helpersDynamicTo] = useFiltersState(dataSelection.dynamicTo);
   const { host } = useWidgetConfigContext();
-  const isSavedFiltersAccessible = isDashboardSavedFiltersFeatureEnabled && (host.kind === 'workspace' || host.kind === 'custom-view');
+  const isSavedFiltersAccessible = host.kind === 'workspace' || host.kind === 'custom-view';
 
   const [isSavedFiltersMode, setIsSavedFiltersMode] = useState(!!dataSelection.filters_id);
   const [isSavedDynamicFromMode, setIsSavedDynamicFromMode] = useState(!!dataSelection.dynamicFrom_id);
