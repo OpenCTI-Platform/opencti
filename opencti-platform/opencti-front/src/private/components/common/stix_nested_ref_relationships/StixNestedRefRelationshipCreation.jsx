@@ -614,6 +614,14 @@ class StixNestedRefRelationshipCreation extends Component {
               key={relation.node.id}
               className={classes.relation}
               onClick={this.handleSelectRelation.bind(this, relation.node)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  this.handleSelectRelation(relation.node);
+                }
+              }}
             >
               <div
                 className={classes.item}
@@ -720,6 +728,14 @@ class StixNestedRefRelationshipCreation extends Component {
           <div
             className={classes.relationCreation}
             onClick={this.handleChangeStep.bind(this)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                this.handleChangeStep();
+              }
+            }}
           >
             <div
               className={classes.item}

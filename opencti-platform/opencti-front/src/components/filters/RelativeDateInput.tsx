@@ -105,7 +105,6 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
         label={label}
         value={dateInput[valueOrder]}
         onChange={(event) => handleChangeValue(event.target.value)}
-        autoFocus={true}
         onKeyDown={(event) => {
           if (event.key === 'Enter') {
             handleChangeRangeDateFilter((event.target as HTMLInputElement).value);

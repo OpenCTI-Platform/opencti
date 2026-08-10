@@ -362,7 +362,6 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             variant="outlined"
             size="small"
             fullWidth={true}
-            autoFocus={true}
             onFocus={(event) => {
               searchEntities(
                 fKey,
@@ -386,7 +385,6 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             <Tooltip title={option.label} key={key || option.value} followCursor>
               <li
                 {...otherProps}
-                aria-disabled={disabledOptions}
                 style={{
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',

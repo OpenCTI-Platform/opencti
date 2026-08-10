@@ -62,7 +62,6 @@ const ImportFilesFreeText = ({ onSubmit, onClose, initialContent }: ImportFilesF
               label={t_i18n('Content')}
               fullWidth
               multiline
-              autoFocus
               name="content"
               rows="10"
               variant="standard"

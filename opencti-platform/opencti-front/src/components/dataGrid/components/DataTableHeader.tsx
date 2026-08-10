@@ -107,7 +107,21 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
       className={classes.headerContainer}
       style={{ width: cellWidth }}
     >
-      <div className={classes.label} onClick={throttleSortColumn}>
+      <div
+        className={classes.label}
+        onClick={throttleSortColumn}
+        role={column.isSortable ? 'button' : undefined}
+        tabIndex={column.isSortable ? 0 : undefined}
+        onKeyDown={(event) => {
+          if (!column.isSortable) {
+            return;
+          }
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            onSort(column.id, !orderAsc);
+          }
+        }}
+      >
         <Tooltip title={t_i18n(column.label)}>
           <span>{t_i18n(column.label)}</span>
         </Tooltip>

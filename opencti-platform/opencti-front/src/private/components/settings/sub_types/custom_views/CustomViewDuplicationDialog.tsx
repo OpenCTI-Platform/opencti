@@ -112,7 +112,6 @@ const CustomViewDuplicationDialog: FunctionComponent<
     >
       <TextField
         error={!newName}
-        autoFocus
         margin="dense"
         id="duplicated_dashboard_name"
         label={t_i18n('New name')}

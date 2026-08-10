@@ -243,15 +243,13 @@ const MarkdownFieldBase = ({
           }
         }}
         generateMarkdownPreview={(markdown) => Promise.resolve(
-          <div onMouseUp={() => internalOnSelect()}>
-            <MarkdownDisplay
-              content={markdown}
-              remarkGfmPlugin={true}
-              commonmark={true}
-              resolveImageUrl={markdownPreviewResolver}
-              enableImagePreviewModal={true}
-            />
-          </div>,
+          <MarkdownDisplay
+            content={markdown}
+            remarkGfmPlugin={true}
+            commonmark={true}
+            resolveImageUrl={markdownPreviewResolver}
+            enableImagePreviewModal={true}
+          />,
         )}
         toolbarCommands={toolbarCommands}
         l18n={{
