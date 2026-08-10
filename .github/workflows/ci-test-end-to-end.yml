@@ -137,6 +137,10 @@ jobs:
           node build/script-insert-dataset.mjs --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy
 
     - name: e2e tests
+      # See ci-test-frontend-quality.yml for why the token is passed by name and
+      # the sh -c body stays single-quoted. node:22 already ships git.
+      env:
+        FDS_GIT_TOKEN: ${{ secrets.FDS_GIT_TOKEN }}
       run: |
         docker run --network runner-docker-network \
           --name frontend-e2e-tests \
@@ -144,10 +148,14 @@ jobs:
           -e BACK_END_URL=http://opencti-e2e-start:4100 \
           -e E2E_TEST=true \
           -e NODE_OPTIONS=--max_old_space_size=8192 \
+          -e FDS_GIT_TOKEN \
           node:22 \
           sh -c 'set -eux;
               cd /home/workspace/opencti-platform/opencti-front
               npm install -g corepack
+              set +x
+              git config --global url."https://x-access-token:${FDS_GIT_TOKEN}@github.com/".insteadOf "https://github.com/"
+              set -x
               yarn install
               yarn playwright install --with-deps chromium
               yarn test:e2e ${{ matrix.grep_args }}
