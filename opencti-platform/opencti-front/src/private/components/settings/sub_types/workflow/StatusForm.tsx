@@ -9,7 +9,7 @@ import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEditio
 import EEChip from '../../../common/entreprise_edition/EEChip';
 import { CREATOR_AUTHORIZED_CONFIG } from '../../../../../utils/authorizedMembers';
 
-const StatusForm = () => {
+const StatusForm = ({ entityType: _entityType }: { entityType: string }) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { values, setFieldValue } = useFormikContext<WorkflowEditionFormValues>();
