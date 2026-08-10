@@ -38,7 +38,7 @@ import ExperienceFeatureTile from './experience/ExperienceFeatureTile';
 import ValidateTermsOfUseDialog from './ValidateTermsOfUseDialog';
 import { useChatbot } from '@components/chatbox/ChatbotContext';
 import Divider from '@mui/material/Divider';
-import GlobalExportBundleDrawer, { GlobalExportBundleSelection } from '@components/settings/experience/GlobarExportBundleDrawer';
+import GlobalExportBundleDrawer from '@components/settings/experience/GlobarExportBundleDrawer';
 
 export enum CGUStatus {
   pending = 'pending',
@@ -163,11 +163,6 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
 
   const handleExportBootstrapPlatformBundle = () => {
     setOpenGlobalExport(true);
-  };
-
-  const handlePlatformBundleExport = (selection: GlobalExportBundleSelection) => {
-    // TODO: brancher l'appel réel (mutation/API) avec `selection`
-    setOpenGlobalExport(false);
   };
 
   const eeAccent = theme.palette.ee.main ?? '#00f18d';
@@ -425,7 +420,6 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
       <GlobalExportBundleDrawer
         open={openGlobalExport}
         onClose={() => setOpenGlobalExport(false)}
-        onExport={handlePlatformBundleExport}
       />
     </div>
   );
