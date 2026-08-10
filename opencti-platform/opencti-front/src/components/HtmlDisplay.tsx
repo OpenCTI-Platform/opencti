@@ -15,6 +15,32 @@ const SANITIZE_CONFIG = {
   ADD_TAGS: ['figure', 'figcaption', 'th', 'colgroup', 'col'],
 };
 
+// CSS properties that can be used to position an element outside of its normal
+// flow (e.g. a full-screen overlay) and are therefore disallowed in inline
+// `style` attributes coming from user-controlled content.
+const FORBIDDEN_STYLE_PROPERTIES = ['position', 'z-index', 'inset', 'top', 'right', 'bottom', 'left'];
+
+const sanitizeStyleAttribute = (styleValue: string) => {
+  return styleValue
+    .split(';')
+    .map((declaration) => declaration.trim())
+    .filter((declaration) => {
+      if (!declaration) return false;
+      const propertyName = declaration.split(':')[0]?.trim().toLowerCase();
+      return !FORBIDDEN_STYLE_PROPERTIES.includes(propertyName);
+    })
+    .join('; ');
+};
+
+// Strip dangerous positioning CSS properties from inline styles to prevent
+// UI redress / defacement attacks (see GHSA-mmcv-8hfj-hr5q) while still
+// allowing legitimate rich-text styling (colors, alignment, font-weight...).
+purify.addHook('uponSanitizeAttribute', (_node, data) => {
+  if (data.attrName === 'style' && data.attrValue) {
+    data.attrValue = sanitizeStyleAttribute(data.attrValue);
+  }
+});
+
 const HtmlDisplay: FunctionComponent<HtmlDisplayProps> = ({ content, limit }) => {
   if (isEmptyField(content)) {
     return (
