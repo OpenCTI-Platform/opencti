@@ -39,11 +39,11 @@ vi.mock('../../../common/form/ObjectOrganizationField', () => ({
 // ---------------------------------------------------------------------------
 // Helper: render TransitionForm inside a Formik context
 // ---------------------------------------------------------------------------
-const renderForm = (initialValues: Partial<WorkflowEditionFormValues>, onSubmit = vi.fn()) => {
+const renderForm = (initialValues: Partial<WorkflowEditionFormValues>, onSubmit = vi.fn(), entityType = 'DraftWorkspace') => {
   return testRender(
     <Formik initialValues={initialValues as WorkflowEditionFormValues} onSubmit={onSubmit}>
       <Form>
-        <TransitionForm entityType="DraftWorkspace" />
+        <TransitionForm entityType={entityType} />
       </Form>
     </Formik>,
   );
@@ -397,5 +397,34 @@ describe('TransitionForm – EE / CE gating', () => {
     // 'auto' is CSS default so it serializes as '' in jsdom; just confirm it's not 'none'
     expect(wrapper.style.pointerEvents).not.toBe('none');
     expect(wrapper.style.opacity).not.toBe('0.5');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// entityType-based section visibility
+// ---------------------------------------------------------------------------
+describe('TransitionForm – entityType-based section visibility', () => {
+  beforeEach(() => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(true);
+  });
+
+  it('renders "Draft validation" section for entityType DraftWorkspace', () => {
+    renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, vi.fn(), 'DraftWorkspace');
+    expect(screen.queryByText(/draft validation/i)).not.toBeNull();
+  });
+
+  it('hides "Draft validation" section for a non-DraftWorkspace entityType', () => {
+    renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, vi.fn(), 'Malware');
+    expect(screen.queryByText(/draft validation/i)).toBeNull();
+  });
+
+  it('renders "Authorized members" section for a non-container entityType', () => {
+    renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, vi.fn(), 'Malware');
+    expect(screen.queryByRole('heading', { name: /authorized members/i })).not.toBeNull();
+  });
+
+  it('hides "Authorized members" section for a Container entityType', () => {
+    renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, vi.fn(), 'Report');
+    expect(screen.queryByRole('heading', { name: /authorized members/i })).toBeNull();
   });
 });

@@ -31,11 +31,11 @@ vi.mock('../../../common/entreprise_edition/EEChip', () => ({
 // ---------------------------------------------------------------------------
 // Helper
 // ---------------------------------------------------------------------------
-const renderForm = (initialValues: Partial<WorkflowEditionFormValues>, onSubmit = vi.fn()) => {
+const renderForm = (initialValues: Partial<WorkflowEditionFormValues>, onSubmit = vi.fn(), entityType = 'DraftWorkspace') => {
   return testRender(
     <Formik initialValues={initialValues as WorkflowEditionFormValues} onSubmit={onSubmit}>
       <Form>
-        <StatusForm entityType="DraftWorkspace" />
+        <StatusForm entityType={entityType} />
       </Form>
     </Formik>,
   );
@@ -175,5 +175,26 @@ describe('StatusForm – EE / CE gating', () => {
         );
       });
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// entityType-based section visibility
+// ---------------------------------------------------------------------------
+describe('StatusForm – entityType-based section visibility', () => {
+  beforeEach(() => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(true);
+  });
+
+  it('renders "On enter actions" and "On exit actions" for a non-container entityType', () => {
+    renderForm({ onEnter: [], onExit: [] }, vi.fn(), 'Malware');
+    expect(screen.queryByText(/on enter actions/i)).not.toBeNull();
+    expect(screen.queryByText(/on exit actions/i)).not.toBeNull();
+  });
+
+  it('hides "On enter actions" and "On exit actions" for a Container entityType', () => {
+    renderForm({ onEnter: [], onExit: [] }, vi.fn(), 'Report');
+    expect(screen.queryByText(/on enter actions/i)).toBeNull();
+    expect(screen.queryByText(/on exit actions/i)).toBeNull();
   });
 });
