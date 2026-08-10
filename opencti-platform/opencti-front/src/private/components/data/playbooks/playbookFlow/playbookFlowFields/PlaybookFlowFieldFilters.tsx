@@ -17,7 +17,10 @@ import { Box, FormControl, FormLabel } from '@mui/material';
 import FilterIconButton from '../../../../../../components/FilterIconButton';
 import Filters from '../../../../common/lists/Filters';
 import useFiltersState from '../../../../../../utils/filters/useFiltersState';
-import { stixFilters, useAvailableFilterKeysForEntityTypes } from '../../../../../../utils/filters/filtersUtils';
+import {
+  stixFilters,
+  useAvailableFilterKeysForEntityTypes,
+} from '../../../../../../utils/filters/filtersUtils';
 import { useTheme } from '@mui/material/styles';
 
 interface PlaybookFlowFieldFiltersProps {
@@ -33,9 +36,10 @@ const PlaybookFlowFieldFilters = ({
 }: PlaybookFlowFieldFiltersProps) => {
   const theme = useTheme();
   const [filters, helpers] = filtersState;
-  const availableQueryFilterKeys = useAvailableFilterKeysForEntityTypes(
-    ['Stix-Core-Object', 'stix-core-relationship'],
-  );
+  const availableQueryFilterKeys = useAvailableFilterKeysForEntityTypes([
+    'Stix-Core-Object',
+    'stix-core-relationship',
+  ]);
 
   let availableFilterKeys = stixFilters;
   switch (componentId) {
@@ -49,28 +53,29 @@ const PlaybookFlowFieldFilters = ({
       break;
   }
 
-  const entityTypes = componentId === 'PLAYBOOK_INTERNAL_DATA_CRON'
-    ? ['Stix-Core-Object', 'stix-core-relationship']
-    : ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'];
+  const entityTypes =
+    componentId === 'PLAYBOOK_INTERNAL_DATA_CRON'
+      ? ['Stix-Core-Object', 'stix-core-relationship']
+      : ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'];
 
   const searchContext = {
     entityTypes,
-    elementType: componentId === 'PLAYBOOK_INTERNAL_DATA_CRON' ? undefined : 'Playbook-Stix-Component',
+    elementType:
+      componentId === 'PLAYBOOK_INTERNAL_DATA_CRON' ? undefined : 'Playbook-Stix-Component',
   };
 
   return (
     <FormControl sx={{ marginTop: 2 }}>
       {label && (
-        <FormLabel sx={{ fontSize: 12, marginBottom: theme.spacing(0.5) }}>
-          {label}
-        </FormLabel>
+        <FormLabel sx={{ fontSize: 12, marginBottom: theme.spacing(0.5) }}>{label}</FormLabel>
       )}
-      <Box sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: theme.spacing(1),
-        marginBottom: theme.spacing(1),
-      }}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: theme.spacing(1),
+          marginBottom: theme.spacing(1),
+        }}
       >
         <Filters
           helpers={helpers}

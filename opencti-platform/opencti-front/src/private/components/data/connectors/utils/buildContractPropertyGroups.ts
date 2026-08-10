@@ -1,6 +1,9 @@
 import { JsonSchema } from '@jsonforms/core';
 import { IngestionTypedProperty } from '@components/integrations/catalog/types';
-import { filterOutDeprecatedProperties, filterOutDeprecatedRequired } from '@components/integrations/catalog/utils/deprecatedFields';
+import {
+  filterOutDeprecatedProperties,
+  filterOutDeprecatedRequired,
+} from '@components/integrations/catalog/utils/deprecatedFields';
 import { ManagerContractProperty } from './reconcileManagedConnectorContractDataWithSchema';
 
 export interface ContractPropertyGroups {
@@ -18,7 +21,13 @@ export const augmentPasswordDescriptions = (
 ): ManagerContractProperty[] => {
   return properties.map(([key, value]) => {
     if (value.format !== 'password') return [key, value];
-    return [key, { ...value, description: `${value.description} Current value is hidden, but can still be replaced.` }];
+    return [
+      key,
+      {
+        ...value,
+        description: `${value.description} Current value is hidden, but can still be replaced.`,
+      },
+    ];
   });
 };
 

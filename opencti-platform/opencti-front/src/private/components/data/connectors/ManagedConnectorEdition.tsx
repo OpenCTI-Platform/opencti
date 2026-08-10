@@ -14,14 +14,28 @@ import { materialRenderers } from '@jsonforms/material-renderers';
 import { Validator } from '@cfworker/json-schema';
 import { IngestionConnector, IngestionTypedProperty } from '@components/integrations/catalog/types';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import JsonFormArrayRenderer, { jsonFormArrayTester } from '@components/integrations/catalog/utils/JsonFormArrayRenderer';
-import reconcileManagedConnectorContractDataWithSchema, { ManagerContractProperty } from '@components/data/connectors/utils/reconcileManagedConnectorContractDataWithSchema';
+import JsonFormArrayRenderer, {
+  jsonFormArrayTester,
+} from '@components/integrations/catalog/utils/JsonFormArrayRenderer';
+import reconcileManagedConnectorContractDataWithSchema, {
+  ManagerContractProperty,
+} from '@components/data/connectors/utils/reconcileManagedConnectorContractDataWithSchema';
 import buildContractConfiguration from '@components/data/connectors/utils/buildContractConfiguration';
-import { augmentPasswordDescriptions, buildContractPropertyGroups } from '@components/data/connectors/utils/buildContractPropertyGroups';
-import JsonFormUnsupportedType, { jsonFormUnsupportedTypeTester } from '@components/integrations/catalog/utils/JsonFormUnsupportedType';
+import {
+  augmentPasswordDescriptions,
+  buildContractPropertyGroups,
+} from '@components/data/connectors/utils/buildContractPropertyGroups';
+import JsonFormUnsupportedType, {
+  jsonFormUnsupportedTypeTester,
+} from '@components/integrations/catalog/utils/JsonFormUnsupportedType';
 import { Connector_connector$data } from '@components/data/connectors/__generated__/Connector_connector.graphql';
-import JsonFormDeprecatedRenderer, { jsonFormDeprecatedTester } from '@components/integrations/catalog/utils/JsonFormDeprecatedRenderer';
-import { JsonFormPasswordRenderer, jsonFormPasswordTester } from '@components/integrations/catalog/utils/JsonFormPasswordRenderer';
+import JsonFormDeprecatedRenderer, {
+  jsonFormDeprecatedTester,
+} from '@components/integrations/catalog/utils/JsonFormDeprecatedRenderer';
+import {
+  JsonFormPasswordRenderer,
+  jsonFormPasswordTester,
+} from '@components/integrations/catalog/utils/JsonFormPasswordRenderer';
 import TextField from '../../../../components/TextField';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -29,12 +43,19 @@ import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { MESSAGING$ } from '../../../../relay/environment';
-import { JsonFormVerticalLayout, jsonFormVerticalLayoutTester } from '@components/integrations/catalog/utils/JsonFormVerticalLayout';
-import { buildOptionalPropertiesWithDeprecated, computeDeprecatedEditionVisibility, filterValuesForEditionPayload } from '@components/integrations/catalog/utils/deprecatedFields';
+import {
+  JsonFormVerticalLayout,
+  jsonFormVerticalLayoutTester,
+} from '@components/integrations/catalog/utils/JsonFormVerticalLayout';
+import {
+  buildOptionalPropertiesWithDeprecated,
+  computeDeprecatedEditionVisibility,
+  filterValuesForEditionPayload,
+} from '@components/integrations/catalog/utils/deprecatedFields';
 
 const updateManagedConnector = graphql`
   mutation ManagedConnectorEditionMutation($input: EditManagedConnectorInput) {
-    managedConnectorEdit(input: $input){
+    managedConnectorEdit(input: $input) {
       id
       manager_requested_status
       manager_current_status
@@ -94,10 +115,10 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
 
   const [commitUpdate] = useApiMutation(updateManagedConnector);
 
-  const submitConnectorManagementCreation = (values: ManagedConnectorValues, {
-    setSubmitting,
-    resetForm,
-  }: Partial<FormikHelpers<ManagedConnectorValues>>) => {
+  const submitConnectorManagementCreation = (
+    values: ManagedConnectorValues,
+    { setSubmitting, resetForm }: Partial<FormikHelpers<ManagedConnectorValues>>,
+  ) => {
     const filteredValues = filterValuesForEditionPayload(
       values as unknown as Record<string, unknown>,
       contract.config_schema.properties,
@@ -120,7 +141,11 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
         setSubmitting?.(false);
       },
       onCompleted: () => {
-        MESSAGING$.notifySuccess(t_i18n('The connector instance has been modified, changes could take few minutes to take effect.'));
+        MESSAGING$.notifySuccess(
+          t_i18n(
+            'The connector instance has been modified, changes could take few minutes to take effect.',
+          ),
+        );
         setSubmitting?.(false);
         resetForm?.();
         onClose();
@@ -130,38 +155,35 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
 
   const compiledValidator = new Validator(contract);
 
-  const {
-    requiredProperties,
-    optionalProperties,
-    deprecatedProperties,
-    reconciledData,
-  } = useMemo(() => {
-    const managerContractProperties = Object.entries(contract.config_schema.properties) as ManagerContractProperty[];
-    const augmented = augmentPasswordDescriptions(managerContractProperties);
-    const {
-      requiredProperties: requiredProps,
-      optionalProperties: optionalProps,
-      deprecatedProperties: deprecatedProps,
-    } = buildContractPropertyGroups(augmented, contract.config_schema.required);
-    const reconciled = reconcileManagedConnectorContractDataWithSchema(contractValues, managerContractProperties);
+  const { requiredProperties, optionalProperties, deprecatedProperties, reconciledData } =
+    useMemo(() => {
+      const managerContractProperties = Object.entries(
+        contract.config_schema.properties,
+      ) as ManagerContractProperty[];
+      const augmented = augmentPasswordDescriptions(managerContractProperties);
+      const {
+        requiredProperties: requiredProps,
+        optionalProperties: optionalProps,
+        deprecatedProperties: deprecatedProps,
+      } = buildContractPropertyGroups(augmented, contract.config_schema.required);
+      const reconciled = reconcileManagedConnectorContractDataWithSchema(
+        contractValues,
+        managerContractProperties,
+      );
 
-    return {
-      requiredProperties: requiredProps,
-      optionalProperties: optionalProps,
-      deprecatedProperties: deprecatedProps,
-      reconciledData: reconciled,
-    };
-  }, [contract.config_schema.properties, contract.config_schema.required, contractValues]);
+      return {
+        requiredProperties: requiredProps,
+        optionalProperties: optionalProps,
+        deprecatedProperties: deprecatedProps,
+        reconciledData: reconciled,
+      };
+    }, [contract.config_schema.properties, contract.config_schema.required, contractValues]);
 
   const hasRequiredProperties = Object.keys(requiredProperties.properties || {}).length > 0;
   const hasOptionalProperties = Object.keys(optionalProperties.properties || {}).length > 0;
 
   return (
-    <Drawer
-      title={t_i18n('Update a connector')}
-      open={open}
-      onClose={onClose}
-    >
+    <Drawer title={t_i18n('Update a connector')} open={open} onClose={onClose}>
       <Formik<ManagedConnectorValues>
         onReset={onClose}
         validationSchema={Yup.object().shape({
@@ -169,27 +191,36 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
           creator: Yup.object().required(),
         })}
         initialValues={{
-          creator: connector.connector_user ? { value: connector.connector_user.id, label: connector.connector_user.name } : undefined,
+          creator: connector.connector_user
+            ? { value: connector.connector_user.id, label: connector.connector_user.name }
+            : undefined,
           display_name: connector.title,
           name: connector.name,
           ...reconciledData,
         }}
         onSubmit={() => {}}
       >
-        {({ values, initialValues, setFieldValue, isSubmitting, setSubmitting, resetForm, isValid, setValues }) => {
+        {({
+          values,
+          initialValues,
+          setFieldValue,
+          isSubmitting,
+          setSubmitting,
+          resetForm,
+          isValid,
+          setValues,
+        }) => {
           const errors = compiledValidator?.validate(values)?.errors;
 
           // Determine which deprecated fields are still relevant and whether to show the warning banner.
           // A deprecated field is visible when its current value differs from the schema default,
           // or when it was non-default on open and the user just cleared it in this session.
-          const {
-            showDeprecatedAlert,
-            visibleDeprecatedProperties,
-          } = computeDeprecatedEditionVisibility(
-            deprecatedProperties,
-            initialValues as unknown as Record<string, unknown>,
-            values as unknown as Record<string, unknown>,
-          );
+          const { showDeprecatedAlert, visibleDeprecatedProperties } =
+            computeDeprecatedEditionVisibility(
+              deprecatedProperties,
+              initialValues as unknown as Record<string, unknown>,
+              values as unknown as Record<string, unknown>,
+            );
 
           // Merge optional fields with any visible deprecated fields, preserving manifest order.
           const advancedProperties = buildOptionalPropertiesWithDeprecated(
@@ -206,11 +237,7 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
           return (
             <Form>
               {showDeprecatedAlert && (
-                <Alert
-                  severity="warning"
-                  variant="outlined"
-                  style={{ marginBottom: 8 }}
-                >
+                <Alert severity="warning" variant="outlined" style={{ marginBottom: 8 }}>
                   <div>{t_i18n('This connector has deprecated configuration fields:')}</div>
                   <ul style={{ margin: '6px 0 0 18px', padding: 0 }}>
                     {visibleDeprecatedFieldNames.map((fieldName) => (
@@ -306,7 +333,14 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
                 </>
               )}
 
-              <div style={{ marginTop: theme.spacing(2), gap: theme.spacing(1), display: 'flex', justifyContent: 'flex-end' }}>
+              <div
+                style={{
+                  marginTop: theme.spacing(2),
+                  gap: theme.spacing(1),
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                }}
+              >
                 <div style={{ display: 'flex', gap: theme.spacing(1) }}>
                   <Button
                     variant="secondary"

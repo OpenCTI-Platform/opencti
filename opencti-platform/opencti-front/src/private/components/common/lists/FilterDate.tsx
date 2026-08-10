@@ -26,15 +26,19 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
   filterLabel,
   filterValue,
 }) => {
-  const [dateState, setDateState] = useState<Date | null>(filterValue
-    ? new Date(dateFiltersValueForDisplay(filterValue, operator))
-    : null);
+  const [dateState, setDateState] = useState<Date | null>(
+    filterValue ? new Date(dateFiltersValueForDisplay(filterValue, operator)) : null,
+  );
 
-  const findFilterFromKey = (filters: {
-    key: string;
-    values: (string | Date)[];
-    operator?: string;
-  }[], key: string, op = 'eq') => {
+  const findFilterFromKey = (
+    filters: {
+      key: string;
+      values: (string | Date)[];
+      operator?: string;
+    }[],
+    key: string,
+    op = 'eq',
+  ) => {
     for (const filter of filters) {
       if (filter.key === key) {
         if (filter.operator === op) {
@@ -53,7 +57,9 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
     if (date && date.toISOString()) {
       // set new input values
       const newInputValue = { key: filterKey, values: [date.toString()], operator };
-      const newInputValues = inputValues.filter((f) => f.key !== filterKey || (operator && f.operator !== operator));
+      const newInputValues = inputValues.filter(
+        (f) => f.key !== filterKey || (operator && f.operator !== operator),
+      );
       setInputValues([...newInputValues, newInputValue]);
       // add the filter
       defaultHandleAddFilter(filterKey, date.toISOString(), operator);

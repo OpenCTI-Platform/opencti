@@ -15,19 +15,41 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import * as R from 'ramda';
 import type { JSONSchemaType } from 'ajv';
-import { ENTITY_TYPE_PLAYBOOK, playbookBundleElementsToApply, type BasicStoreEntityPlaybook, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
-import { convertMembersToUsersFromElements, extractBundleBaseElement, isBundleElementInScope } from '../playbook-utils';
+import {
+  ENTITY_TYPE_PLAYBOOK,
+  playbookBundleElementsToApply,
+  type BasicStoreEntityPlaybook,
+  type PlaybookBundleElementsToApply,
+  type PlaybookComponent,
+} from '../playbook-types';
+import {
+  convertMembersToUsersFromElements,
+  extractBundleBaseElement,
+  isBundleElementInScope,
+} from '../playbook-utils';
 import { getEntityFromCache } from '../../../database/cache';
 import type { BasicStoreSettings } from '../../../types/settings';
-import { checkUserCanAccessStixElement, executionContext, isUserInPlatformOrganization, SYSTEM_USER } from '../../../utils/access';
+import {
+  executionContext,
+  isUserCanAccessStixElement,
+  isUserInPlatformOrganization,
+  SYSTEM_USER,
+} from '../../../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../../../schema/internalObject';
-import { convertToNotificationUser, EVENT_NOTIFICATION_VERSION, type DigestEvent } from '../../../manager/notificationManager';
+import {
+  convertToNotificationUser,
+  EVENT_NOTIFICATION_VERSION,
+  type DigestEvent,
+} from '../../../manager/notificationManager';
 import { generateCreateMessage, generateDeleteMessage } from '../../../database/data-changes';
 import { convertStixToInternalTypes } from '../../../schema/schemaUtils';
 import { storeNotificationEvent } from '../../../database/stream/stream-handler';
 import { usableNotifiers } from '../../notifier/notifier-domain';
 import { storeLoadById } from '../../../database/middleware-loader';
-import { isEventInPirRelationship, StreamDataEventTypeEnum } from '../../../manager/playbookManager/playbookManagerUtils';
+import {
+  isEventInPirRelationship,
+  StreamDataEventTypeEnum,
+} from '../../../manager/playbookManager/playbookManagerUtils';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 
 export interface NotifierConfiguration {
@@ -63,9 +85,18 @@ const PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA: JSONSchemaType<NotifierConfiguration> 
       default: playbookBundleElementsToApply.onlyMain.value,
       $ref: 'Resolve dynamic targets from',
       oneOf: [
-        { const: playbookBundleElementsToApply.onlyMain.value, title: playbookBundleElementsToApply.onlyMain.title },
-        { const: playbookBundleElementsToApply.allElements.value, title: playbookBundleElementsToApply.allElements.title },
-        { const: playbookBundleElementsToApply.allExceptMain.value, title: playbookBundleElementsToApply.allExceptMain.title },
+        {
+          const: playbookBundleElementsToApply.onlyMain.value,
+          title: playbookBundleElementsToApply.onlyMain.title,
+        },
+        {
+          const: playbookBundleElementsToApply.allElements.value,
+          title: playbookBundleElementsToApply.allElements.title,
+        },
+        {
+          const: playbookBundleElementsToApply.allExceptMain.value,
+          title: playbookBundleElementsToApply.allExceptMain.title,
+        },
       ],
     },
   },
@@ -86,19 +117,32 @@ export const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguratio
     const notifiers = await usableNotifiers(context, SYSTEM_USER);
     const elements = notifiers.map((c) => ({ const: c.id, title: c.name }));
     const schemaElement = { properties: { notifiers: { items: { oneOf: elements } } } };
-    return R.mergeDeepRight<JSONSchemaType<NotifierConfiguration>, any>(PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA, schemaElement);
+    return R.mergeDeepRight<JSONSchemaType<NotifierConfiguration>, any>(
+      PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA,
+      schemaElement,
+    );
   },
   executor: async ({ dataInstanceId, playbookId, playbookNode, bundle, event }) => {
     const context = executionContext('playbook_components');
-    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    const hasPlatformOrg = !!settings.platform_organization;
-    const playbook = await storeLoadById<BasicStoreEntityPlaybook>(context, SYSTEM_USER, playbookId, ENTITY_TYPE_PLAYBOOK);
+    const settings = await getEntityFromCache<BasicStoreSettings>(
+      context,
+      SYSTEM_USER,
+      ENTITY_TYPE_SETTINGS,
+    );
+    const playbook = await storeLoadById<BasicStoreEntityPlaybook>(
+      context,
+      SYSTEM_USER,
+      playbookId,
+      ENTITY_TYPE_PLAYBOOK,
+    );
     const { notifiers, authorized_members, applyToElements } = playbookNode.configuration;
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
 
     // Resolve which elements to extract dynamic targets from
     const scope = applyToElements || playbookBundleElementsToApply.onlyMain.value;
-    const sourceElements = bundle.objects.filter((o) => isBundleElementInScope(o, scope as PlaybookBundleElementsToApply, dataInstanceId));
+    const sourceElements = bundle.objects.filter((o) =>
+      isBundleElementInScope(o, scope as PlaybookBundleElementsToApply, dataInstanceId),
+    );
 
     const targetUsers = await convertMembersToUsersFromElements(
       authorized_members as { value: string }[],
@@ -112,10 +156,9 @@ export const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguratio
       const targetUser = targetUsers[index];
       const user_inside_platform_organization = isUserInPlatformOrganization(targetUser, settings);
       const userContext = { ...context, user_inside_platform_organization };
-      const stixElements = bundle.objects.filter((o) => checkUserCanAccessStixElement(userContext, targetUser, o, hasPlatformOrg));
-      if (stixElements.length === 0) {
-        continue;
-      }
+      const stixElements = bundle.objects.filter((o) =>
+        isUserCanAccessStixElement(userContext, targetUser, o),
+      );
 
       const notificationEvent: DigestEvent = {
         version: EVENT_NOTIFICATION_VERSION,

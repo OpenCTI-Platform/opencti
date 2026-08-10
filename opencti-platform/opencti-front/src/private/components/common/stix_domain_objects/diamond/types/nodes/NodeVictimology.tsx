@@ -11,17 +11,23 @@ const NodeVictimology = ({ data }: NodeProps) => {
 
   const { stixDomainObject, entityLink } = data;
 
-  const targetedCountries = R.uniq((stixDomainObject.targetedCountries?.edges ?? [])
-    .map((n: { node: { to: { name: string } } }) => n?.node?.to?.name))
-    .join(', ');
+  const targetedCountries = R.uniq(
+    (stixDomainObject.targetedCountries?.edges ?? []).map(
+      (n: { node: { to: { name: string } } }) => n?.node?.to?.name,
+    ),
+  ).join(', ');
 
-  const targetedSectors = R.uniq((stixDomainObject.targetedSectors?.edges ?? [])
-    .map((n: { node: { to: { name: string } } }) => n?.node?.to?.name))
-    .join(', ');
+  const targetedSectors = R.uniq(
+    (stixDomainObject.targetedSectors?.edges ?? []).map(
+      (n: { node: { to: { name: string } } }) => n?.node?.to?.name,
+    ),
+  ).join(', ');
 
-  const targetedOrganizations = R.uniq((stixDomainObject.targetedOrganizations?.edges ?? [])
-    .map((n: { node: { to: { name: string } } }) => n?.node?.to?.name))
-    .join(', ');
+  const targetedOrganizations = R.uniq(
+    (stixDomainObject.targetedOrganizations?.edges ?? []).map(
+      (n: { node: { to: { name: string } } }) => n?.node?.to?.name,
+    ),
+  ).join(', ');
 
   return (
     <NodeContainer link={`${entityLink}/victimology`} position={Position.Top}>

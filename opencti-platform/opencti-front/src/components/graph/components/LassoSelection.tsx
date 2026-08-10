@@ -24,7 +24,9 @@ interface LassoSelectionProps {
   activated: boolean;
   setSelectedNodes: (nodes: Set<GraphNode>) => void;
   graphDataNodes: GraphNode[];
-  graph: MutableRefObject<ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>> | undefined>;
+  graph: MutableRefObject<
+    ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>> | undefined
+  >;
 }
 
 interface Coord {
@@ -44,7 +46,9 @@ interface ContextHandlerProps {
   setSelectedNodes?: (nodes: Set<GraphNode>) => void;
   activated?: boolean;
   storeFreeSelectionFunction?: (event: MouseEvent) => void;
-  graph?: MutableRefObject<ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>> | undefined>;
+  graph?: MutableRefObject<
+    ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>> | undefined
+  >;
 }
 
 const LassoSelection: FunctionComponent<LassoSelectionProps> = ({
@@ -59,7 +63,9 @@ const LassoSelection: FunctionComponent<LassoSelectionProps> = ({
   const theme = useTheme<Theme>();
   const lassoRef = useRef<HTMLCanvasElement>(null);
 
-  const currentContext = lassoRef.current?.getContext('2d') as CanvasRenderingContext2D & { reset: () => void };
+  const currentContext = lassoRef.current?.getContext('2d') as CanvasRenderingContext2D & {
+    reset: () => void;
+  };
 
   const contextHandler = useRef<ContextHandlerProps>({});
 
@@ -88,7 +94,8 @@ const LassoSelection: FunctionComponent<LassoSelectionProps> = ({
     currentContext.lineWidth = 1;
     currentContext.setLineDash([1, 3]);
     currentContext.lineCap = 'round';
-    currentContext.strokeStyle = (theme.palette.warning as SimplePaletteColorOptions)?.main ?? theme.palette.common.white;
+    currentContext.strokeStyle =
+      (theme.palette.warning as SimplePaletteColorOptions)?.main ?? theme.palette.common.white;
     currentContext.beginPath();
   };
 
@@ -122,15 +129,24 @@ const LassoSelection: FunctionComponent<LassoSelectionProps> = ({
     }
   };
 
-  const storeFreeSelectionFunction = useCallback((event: MouseEvent) => {
-    storeFreeSelection(event);
-  }, [graph, activated, graphDataNodes]);
-  const stopFreeHandFunction = useCallback((event: MouseEvent) => {
-    stopFreeHand(event, storeFreeSelectionFunction);
-  }, [graph, activated, graphDataNodes]);
-  const startFreeHandFunction = useCallback((event: MouseEvent) => {
-    startFreeHand(event, storeFreeSelectionFunction);
-  }, [graph, activated, graphDataNodes]);
+  const storeFreeSelectionFunction = useCallback(
+    (event: MouseEvent) => {
+      storeFreeSelection(event);
+    },
+    [graph, activated, graphDataNodes],
+  );
+  const stopFreeHandFunction = useCallback(
+    (event: MouseEvent) => {
+      stopFreeHand(event, storeFreeSelectionFunction);
+    },
+    [graph, activated, graphDataNodes],
+  );
+  const startFreeHandFunction = useCallback(
+    (event: MouseEvent) => {
+      startFreeHand(event, storeFreeSelectionFunction);
+    },
+    [graph, activated, graphDataNodes],
+  );
 
   useEffect(() => {
     if (lassoRef.current) {
@@ -167,7 +183,7 @@ const LassoSelection: FunctionComponent<LassoSelectionProps> = ({
   return (
     <canvas
       ref={lassoRef}
-      width={(width - 30)}
+      width={width - 30}
       height={height}
       className={classes.canvas}
       id="lasso-canvas"

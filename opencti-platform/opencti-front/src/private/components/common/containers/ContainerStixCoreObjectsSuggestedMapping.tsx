@@ -6,9 +6,7 @@ import {
 } from '@components/common/containers/ContainerStixCoreObjectsSuggestedMappingLine';
 import { ContainerStixCoreObjectsSuggestedMappingQuery$data } from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingQuery.graphql';
 import { ContainerMappingContent_container$data } from '@components/common/containers/__generated__/ContainerMappingContent_container.graphql';
-import {
-  ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$data,
-} from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity.graphql';
+import { ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$data } from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity.graphql';
 import ListLines from '../../../../components/list_lines/ListLines';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -32,7 +30,7 @@ export const containerStixCoreObjectsSuggestedMappingQuery = graphql`
           matchedString
           isEntityInContainer
           ...ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity
-          matchedEntity{
+          matchedEntity {
             id
             standard_id
           }
@@ -48,10 +46,18 @@ export const containerStixCoreObjectsSuggestedMappingQuery = graphql`
 interface ContainerStixCoreObjectsSuggestedMappingProps {
   container: ContainerMappingContent_container$data;
   suggestedMappingCount: Record<string, number>;
-  suggestedEntities: NonNullable<NonNullable<ContainerStixCoreObjectsSuggestedMappingQuery$data['stixCoreObjectAnalysis']>['mappedEntities']>;
+  suggestedEntities: NonNullable<
+    NonNullable<
+      ContainerStixCoreObjectsSuggestedMappingQuery$data['stixCoreObjectAnalysis']
+    >['mappedEntities']
+  >;
   height: number;
   askingSuggestion: boolean;
-  handleRemoveSuggestedMappingLine: (entity: NonNullable<ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$data['matchedEntity']>) => void;
+  handleRemoveSuggestedMappingLine: (
+    entity: NonNullable<
+      ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$data['matchedEntity']
+    >,
+  ) => void;
 }
 
 const ContainerStixCoreObjectsSuggestedMapping: FunctionComponent<
@@ -78,10 +84,7 @@ const ContainerStixCoreObjectsSuggestedMapping: FunctionComponent<
   }, [ref?.current, askingSuggestion]);
 
   const LOCAL_STORAGE_KEY = `container-${container.id}-stixCoreObjectsSuggestedMapping`;
-  const {
-    viewStorage,
-    helpers,
-  } = usePaginationLocalStorage(
+  const { viewStorage, helpers } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
     {
       id: container.id,
@@ -95,16 +98,8 @@ const ContainerStixCoreObjectsSuggestedMapping: FunctionComponent<
     },
     true,
   );
-  const {
-    numberOfElements,
-    filters,
-    searchTerm,
-    sortBy,
-    orderAsc,
-  } = viewStorage;
-  const {
-    handleSetNumberOfElements,
-  } = helpers;
+  const { numberOfElements, filters, searchTerm, sortBy, orderAsc } = viewStorage;
+  const { handleSetNumberOfElements } = helpers;
 
   const dataColumns = {
     entity_type: {
@@ -151,43 +146,42 @@ const ContainerStixCoreObjectsSuggestedMapping: FunctionComponent<
 
   return (
     <div ref={ref}>
-      {askingSuggestion
-        ? <Loader variant={LoaderVariant.inElement} />
-        : (
-            <ListLines
-              helpers={helpers}
-              sortBy={sortBy}
-              orderAsc={orderAsc}
-              dataColumns={dataColumns}
-              iconExtension={false}
-              filters={filters}
-              availableEntityTypes={['Stix-Core-Object']}
-              keyword={searchTerm}
-              secondaryAction={true}
-              numberOfElements={numberOfElements}
-              noPadding={true}
-              mappingCount={suggestedEntitiesWithNode.length}
-              enableMappingView
-              disableCards
-            >
-              <ListLinesContent
-                initialLoading={false}
-                loadMore={() => {}}
-                hasMore={() => {}}
-                isLoading={() => false}
-                dataList={suggestedEntitiesWithNode}
-                globalCount={suggestedEntitiesWithNode.length}
-                LineComponent={ContainerStixCoreObjectsSuggestedMappingLine}
-                DummyLineComponent={ContainerStixCoreObjectsSuggestedMappingLineDummy}
-                dataColumns={dataColumns}
-                contentMappingCount={suggestedMappingCount}
-                handleRemoveSuggestedMappingLine={handleRemoveSuggestedMappingLine}
-                height={height}
-                containerRef={ref}
-              />
-            </ListLines>
-          )
-      }
+      {askingSuggestion ? (
+        <Loader variant={LoaderVariant.inElement} />
+      ) : (
+        <ListLines
+          helpers={helpers}
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={dataColumns}
+          iconExtension={false}
+          filters={filters}
+          availableEntityTypes={['Stix-Core-Object']}
+          keyword={searchTerm}
+          secondaryAction={true}
+          numberOfElements={numberOfElements}
+          noPadding={true}
+          mappingCount={suggestedEntitiesWithNode.length}
+          enableMappingView
+          disableCards
+        >
+          <ListLinesContent
+            initialLoading={false}
+            loadMore={() => {}}
+            hasMore={() => {}}
+            isLoading={() => false}
+            dataList={suggestedEntitiesWithNode}
+            globalCount={suggestedEntitiesWithNode.length}
+            LineComponent={ContainerStixCoreObjectsSuggestedMappingLine}
+            DummyLineComponent={ContainerStixCoreObjectsSuggestedMappingLineDummy}
+            dataColumns={dataColumns}
+            contentMappingCount={suggestedMappingCount}
+            handleRemoveSuggestedMappingLine={handleRemoveSuggestedMappingLine}
+            height={height}
+            containerRef={ref}
+          />
+        </ListLines>
+      )}
     </div>
   );
 };

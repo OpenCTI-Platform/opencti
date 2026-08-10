@@ -1,6 +1,8 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import AuthorizedMembersField, { AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
+import AuthorizedMembersField, {
+  AuthorizedMembersFieldValue,
+} from '@components/common/form/AuthorizedMembersField';
 import DialogActions from '@mui/material/DialogActions';
 import { Field, Form, Formik } from 'formik';
 import { FormikHelpers } from 'formik/dist/types';
@@ -83,10 +85,7 @@ const FormAuthorizedMembers = ({
             >
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitForm}
-              disabled={isSubmitting || !dirty}
-            >
+            <Button onClick={submitForm} disabled={isSubmitting || !dirty}>
               {t_i18n('Save')}
             </Button>
           </DialogActions>

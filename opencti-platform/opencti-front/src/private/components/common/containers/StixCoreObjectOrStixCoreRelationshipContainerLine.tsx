@@ -79,68 +79,41 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: Functio
         <ItemIcon type={node.entity_type} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.entity_type.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.entity_type.width }}>
               <ItemEntityType entityType={node.entity_type} />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
               {getMainRepresentative(node)}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.createdBy.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.createdBy.width }}>
               {node.createdBy?.name ?? EMPTY_VALUE}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.creator.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.creator.width }}>
               {(node.creators ?? []).map((c) => c?.name).join(', ')}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectLabel.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.objectLabel.width }}>
               <StixCoreObjectLabels
                 variant="inList"
                 labels={node.objectLabel}
                 onClick={onLabelClick.bind(this)}
               />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.created.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.created.width }}>
               {fd(node.first_observed || node.published || node.created)}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.x_opencti_workflow_id.width }}
             >
-              <ItemStatus
-                status={node.status}
-                disabled={!node.workflowEnabled}
-              />
+              <ItemStatus status={node.status} disabled={!node.workflowEnabled} />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectMarking.width }}
-            >
-              <ItemMarkings
-                markingDefinitions={node.objectMarking ?? []}
-                limit={1}
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.objectMarking.width }}>
+              <ItemMarkings markingDefinitions={node.objectMarking ?? []} limit={1} />
             </div>
           </>
-        )}
+        }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -153,243 +126,244 @@ const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragment
   StixCoreObjectOrStixCoreRelationshipContainerLineComponent,
   {
     node: graphql`
-        fragment StixCoreObjectOrStixCoreRelationshipContainerLine_node on Container {
+      fragment StixCoreObjectOrStixCoreRelationshipContainerLine_node on Container {
+        id
+        workflowEnabled
+        entity_type
+        status {
           id
-          workflowEnabled
-          entity_type
-          status {
-            id
-            order
-            template {
-              name
-              color
-            }
-          }
-          creators {
-            id
+          order
+          template {
             name
-          }
-          ... on Note {
-            attribute_abstract
-            content
-            created
-          }
-          ... on Opinion {
-            opinion
-            created
-          }
-          ... on ObservedData {
-            name
-            first_observed
-            last_observed
-          }
-          ... on Report {
-            name
-            published
-          }
-          ... on Grouping {
-            name
-            created
-          }
-          ... on Case {
-            name
-            created
-          }
-          ... on Task {
-            name
-          }
-          createdBy {
-            ... on Identity {
-              id
-              name
-              entity_type
-            }
-          }
-          objectMarking {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-          objectLabel {
-            id
-            value
             color
           }
-          ... on ObservedData {
+        }
+        creators {
+          id
+          name
+        }
+        ... on Note {
+          attribute_abstract
+          content
+          created
+        }
+        ... on Opinion {
+          opinion
+          created
+        }
+        ... on ObservedData {
+          name
+          first_observed
+          last_observed
+        }
+        ... on Report {
+          name
+          published
+        }
+        ... on Grouping {
+          name
+          created
+        }
+        ... on Case {
+          name
+          created
+        }
+        ... on Task {
+          name
+        }
+        createdBy {
+          ... on Identity {
+            id
             name
-            objects(first: 1) {
-              edges {
-                node {
-                  ... on StixCoreObject {
-                    id
-                    entity_type
-                    parent_types
-                    created_at
-                    createdBy {
-                      ... on Identity {
-                        id
-                        name
-                        entity_type
-                      }
-                    }
-                    objectMarking {
+            entity_type
+          }
+        }
+        objectMarking {
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
+        }
+        objectLabel {
+          id
+          value
+          color
+        }
+        ... on ObservedData {
+          name
+          objects(first: 1) {
+            edges {
+              node {
+                ... on StixCoreObject {
+                  id
+                  entity_type
+                  parent_types
+                  created_at
+                  createdBy {
+                    ... on Identity {
                       id
-                      definition_type
-                      definition
-                      x_opencti_order
-                      x_opencti_color
+                      name
+                      entity_type
                     }
                   }
-                  ... on AttackPattern {
-                    name
-                    description
-                    x_mitre_id
+                  objectMarking {
+                    id
+                    definition_type
+                    definition
+                    x_opencti_order
+                    x_opencti_color
                   }
-                  ... on Campaign {
-                    name
-                    description
-                    first_seen
-                    last_seen
-                  }
-                  ... on Note {
-                    attribute_abstract
-                  }
-                  ... on ObservedData {
-                    name
-                    first_observed
-                    last_observed
-                  }
-                  ... on Opinion {
-                    opinion
-                  }
-                  ... on Report {
-                    name
-                    description
-                    published
-                  }
-                  ... on CourseOfAction {
-                    name
-                    description
-                  }
-                  ... on Individual {
-                    name
-                    description
-                  }
-                  ... on Organization {
-                    name
-                    description
-                  }
-                  ... on Sector {
-                    name
-                    description
-                  }
-                  ... on System {
-                    name
-                    description
-                  }
-                  ... on Indicator {
-                    name
-                    description
-                    valid_from
-                  }
-                  ... on Infrastructure {
-                    name
-                    description
-                  }
-                  ... on IntrusionSet {
-                    name
-                    description
-                    first_seen
-                    last_seen
-                  }
-                  ... on Position {
-                    name
-                    description
-                  }
-                  ... on City {
-                    name
-                    description
-                  }
-                  ... on AdministrativeArea {
-                    name
-                    description
-                  }
-                  ... on Country {
-                    name
-                    description
-                  }
-                  ... on Region {
-                    name
-                    description
-                  }
-                  ... on Malware {
-                    name
-                    description
-                    first_seen
-                    last_seen
-                  }
-                  ... on ThreatActor {
-                    name
-                    description
-                    first_seen
-                    last_seen
-                  }
-                  ... on Tool {
-                    name
-                    description
-                  }
-                  ... on Vulnerability {
-                    name
-                    description
-                  }
-                  ... on Incident {
-                    name
-                    description
-                    first_seen
-                    last_seen
-                  }
-                  ... on Event {
-                    name
-                    description
-                    start_time
-                    stop_time
-                  }
-                  ... on Channel {
-                    name
-                    description
-                  }
-                  ... on Narrative {
-                    name
-                    description
-                  }
-                  ... on Language {
-                    name
-                  }
-                  ... on DataComponent {
-                    name
-                  }
-                  ... on DataSource {
-                    name
-                  }
-                  ... on Case {
-                    name
-                  }
-                  ... on StixCyberObservable {
-                    observable_value
-                    x_opencti_description
-                  }
+                }
+                ... on AttackPattern {
+                  name
+                  description
+                  x_mitre_id
+                }
+                ... on Campaign {
+                  name
+                  description
+                  first_seen
+                  last_seen
+                }
+                ... on Note {
+                  attribute_abstract
+                }
+                ... on ObservedData {
+                  name
+                  first_observed
+                  last_observed
+                }
+                ... on Opinion {
+                  opinion
+                }
+                ... on Report {
+                  name
+                  description
+                  published
+                }
+                ... on CourseOfAction {
+                  name
+                  description
+                }
+                ... on Individual {
+                  name
+                  description
+                }
+                ... on Organization {
+                  name
+                  description
+                }
+                ... on Sector {
+                  name
+                  description
+                }
+                ... on System {
+                  name
+                  description
+                }
+                ... on Indicator {
+                  name
+                  description
+                  valid_from
+                }
+                ... on Infrastructure {
+                  name
+                  description
+                }
+                ... on IntrusionSet {
+                  name
+                  description
+                  first_seen
+                  last_seen
+                }
+                ... on Position {
+                  name
+                  description
+                }
+                ... on City {
+                  name
+                  description
+                }
+                ... on AdministrativeArea {
+                  name
+                  description
+                }
+                ... on Country {
+                  name
+                  description
+                }
+                ... on Region {
+                  name
+                  description
+                }
+                ... on Malware {
+                  name
+                  description
+                  first_seen
+                  last_seen
+                }
+                ... on ThreatActor {
+                  name
+                  description
+                  first_seen
+                  last_seen
+                }
+                ... on Tool {
+                  name
+                  description
+                }
+                ... on Vulnerability {
+                  name
+                  description
+                }
+                ... on Incident {
+                  name
+                  description
+                  first_seen
+                  last_seen
+                }
+                ... on Event {
+                  name
+                  description
+                  start_time
+                  stop_time
+                }
+                ... on Channel {
+                  name
+                  description
+                }
+                ... on Narrative {
+                  name
+                  description
+                }
+                ... on Language {
+                  name
+                }
+                ... on DataComponent {
+                  name
+                }
+                ... on DataSource {
+                  name
+                }
+                ... on Case {
+                  name
+                }
+                ... on StixCyberObservable {
+                  observable_value
+                  x_opencti_description
                 }
               }
             }
           }
         }
-      `,
+      }
+    `,
   },
 );
 
-export const StixCoreObjectOrStixCoreRelationshipContainerLine = StixCoreObjectOrStixCoreRelationshipContainerLineFragment;
+export const StixCoreObjectOrStixCoreRelationshipContainerLine =
+  StixCoreObjectOrStixCoreRelationshipContainerLineFragment;
 
 interface StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps {
   dataColumns: DataColumns;
@@ -406,87 +380,31 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineDummy: FunctionCom
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.entity_type.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.entity_type.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.createdBy.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.createdBy.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.creator.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.creator.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectLabel.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.objectLabel.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.created.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.created.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectMarking.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width={100}
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.objectMarking.width }}>
+              <Skeleton animation="wave" variant="rectangular" width={100} height="100%" />
             </div>
           </div>
-        )}
+        }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />

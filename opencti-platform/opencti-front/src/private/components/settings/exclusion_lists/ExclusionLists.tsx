@@ -3,7 +3,10 @@ import { graphql, useQueryLoader } from 'react-relay';
 import Badge from '@mui/material/Badge';
 import Grid from '@mui/material/Grid';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { ExclusionListsLinesPaginationQuery, ExclusionListsLinesPaginationQuery$variables } from './__generated__/ExclusionListsLinesPaginationQuery.graphql';
+import {
+  ExclusionListsLinesPaginationQuery,
+  ExclusionListsLinesPaginationQuery$variables,
+} from './__generated__/ExclusionListsLinesPaginationQuery.graphql';
 import { ExclusionListsLine_node$data } from './__generated__/ExclusionListsLine_node.graphql';
 import ExclusionListPopover from './ExclusionListPopover';
 import ExclusionListsStatus, { exclusionListsStatusQuery } from './ExclusionListsStatus';
@@ -16,7 +19,10 @@ import ItemEntityType from '../../../../components/ItemEntityType';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../../utils/filters/filtersUtils';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import DataTable from '../../../../components/dataGrid/DataTable';
@@ -34,14 +40,14 @@ export const exclusionListsQuery = graphql`
     $filters: FilterGroup
   ) {
     ...ExclusionListsLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -54,7 +60,8 @@ export const exclusionListsFragment = graphql`
     orderBy: { type: "ExclusionListOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: desc }
     filters: { type: "FilterGroup" }
-  ) @refetchable(queryName: "ExclusionListsLinesRefetchQuery") {
+  )
+  @refetchable(queryName: "ExclusionListsLinesRefetchQuery") {
     exclusionLists(
       search: $search
       first: $count
@@ -126,16 +133,20 @@ const ExclusionLists = () => {
     queryPaginationOptions,
   );
 
-  const renderEnrichedTooltip = (exclusionListEntityTypes: readonly string[], firstEntityType: string) => (
-    <EnrichedTooltip title={(
-      <Grid container spacing={2} sx={{ marginBottom: '10px' }}>
-        {exclusionListEntityTypes.map((type) => (
-          <Grid item key={type} xs={6}>
-            <ItemEntityType entityType={type} />
-          </Grid>
-        ))}
-      </Grid>
-    )}
+  const renderEnrichedTooltip = (
+    exclusionListEntityTypes: readonly string[],
+    firstEntityType: string,
+  ) => (
+    <EnrichedTooltip
+      title={
+        <Grid container spacing={2} sx={{ marginBottom: '10px' }}>
+          {exclusionListEntityTypes.map((type) => (
+            <Grid item key={type} xs={6}>
+              <ItemEntityType entityType={type} />
+            </Grid>
+          ))}
+        </Grid>
+      }
     >
       <div style={{ display: 'flex', margin: '10px 0' }}>
         <Badge variant="dot" color="primary">
@@ -149,9 +160,11 @@ const ExclusionLists = () => {
     const hasMultiple = exclusion_list_entity_types.length > 1;
     const firstEntityType = exclusion_list_entity_types[0];
 
-    return hasMultiple
-      ? renderEnrichedTooltip(exclusion_list_entity_types, firstEntityType)
-      : <ItemEntityType entityType={firstEntityType} />;
+    return hasMultiple ? (
+      renderEnrichedTooltip(exclusion_list_entity_types, firstEntityType)
+    ) : (
+      <ItemEntityType entityType={firstEntityType} />
+    );
   };
 
   const dataColumns: DataTableProps['dataColumns'] = {
@@ -172,7 +185,8 @@ const ExclusionLists = () => {
       label: t_i18n('Number of elements'),
       percentWidth: 15,
       isSortable: true,
-      render: (node: ExclusionListsLine_node$data) => node.exclusion_list_values_count || EMPTY_VALUE,
+      render: (node: ExclusionListsLine_node$data) =>
+        node.exclusion_list_values_count || EMPTY_VALUE,
     },
     created_at: {
       label: t_i18n('Creation date'),
@@ -185,10 +199,7 @@ const ExclusionLists = () => {
       percentWidth: 15,
       isSortable: true,
       render: (node: ExclusionListsLine_node$data) => (
-        <ItemBoolean
-          label={node.enabled ? t_i18n('Yes') : t_i18n('No')}
-          status={node.enabled}
-        />
+        <ItemBoolean label={node.enabled ? t_i18n('Yes') : t_i18n('No')} status={node.enabled} />
       ),
     },
     exclusion_list_entity_types: {
@@ -196,7 +207,8 @@ const ExclusionLists = () => {
       label: t_i18n('Entity type'),
       percentWidth: 15,
       isSortable: false,
-      render: (node: ExclusionListsLine_node$data) => renderExclusionListEntityTypes(node.exclusion_list_entity_types ?? []),
+      render: (node: ExclusionListsLine_node$data) =>
+        renderExclusionListEntityTypes(node.exclusion_list_entity_types ?? []),
     },
   };
 
@@ -208,9 +220,8 @@ const ExclusionLists = () => {
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<ExclusionListsLinesPaginationQuery>;
 
-  const [queryRefStatus, loadQueryStatus] = useQueryLoader<ExclusionListsStatusQuery>(
-    exclusionListsStatusQuery,
-  );
+  const [queryRefStatus, loadQueryStatus] =
+    useQueryLoader<ExclusionListsStatusQuery>(exclusionListsStatusQuery);
 
   const refetchStatus = React.useCallback(() => {
     loadQueryStatus({}, { fetchPolicy: 'store-and-network' });
@@ -221,16 +232,30 @@ const ExclusionLists = () => {
       <PageContainer withGap withRightMenu>
         <Breadcrumbs
           noMargin
-          elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Exclusion lists'), current: true }]}
+          elements={[
+            { label: t_i18n('Settings') },
+            { label: t_i18n('Customization') },
+            { label: t_i18n('Exclusion lists'), current: true },
+          ]}
         />
-        <ExclusionListsStatus refetch={refetchStatus} queryRef={queryRefStatus} loadQuery={loadQueryStatus} />
+        <ExclusionListsStatus
+          refetch={refetchStatus}
+          queryRef={queryRefStatus}
+          loadQuery={loadQueryStatus}
+        />
         <Alert
-          content={t_i18n('Exclusion lists can be used to prevent the import of indicators considered benign and legitimate. Exclusion lists only apply to indicators with a STIX pattern.')}
+          content={t_i18n(
+            'Exclusion lists can be used to prevent the import of indicators considered benign and legitimate. Exclusion lists only apply to indicators with a STIX pattern.',
+          )}
         />
         {queryRef && (
           <DataTable
             dataColumns={dataColumns}
-            resolvePath={(data) => data.exclusionLists?.edges?.map(({ node }: { node: ExclusionListsLine_node$data }) => node)}
+            resolvePath={(data) =>
+              data.exclusionLists?.edges?.map(
+                ({ node }: { node: ExclusionListsLine_node$data }) => node,
+              )
+            }
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
             contextFilters={contextFilters}
@@ -238,8 +263,19 @@ const ExclusionLists = () => {
             disableLineSelection
             disableNavigation
             preloadedPaginationProps={preloadedPaginationProps}
-            actions={(row) => <ExclusionListPopover data={row} paginationOptions={queryPaginationOptions} refetchStatus={refetchStatus} />}
-            createButton={<ExclusionListCreation paginationOptions={queryPaginationOptions} refetchStatus={refetchStatus} />}
+            actions={(row) => (
+              <ExclusionListPopover
+                data={row}
+                paginationOptions={queryPaginationOptions}
+                refetchStatus={refetchStatus}
+              />
+            )}
+            createButton={
+              <ExclusionListCreation
+                paginationOptions={queryPaginationOptions}
+                refetchStatus={refetchStatus}
+              />
+            }
             icon={() => <ItemIcon type="ExclusionList" />}
           />
         )}

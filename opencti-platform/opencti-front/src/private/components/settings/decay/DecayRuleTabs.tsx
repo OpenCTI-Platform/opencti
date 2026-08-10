@@ -33,11 +33,7 @@ const DecayRuleTabs = () => {
         ]}
       />
       <Box>
-        <Tabs
-          value={currentTab}
-          onChange={handleChangeTab}
-          style={{ marginBottom: '20px' }}
-        >
+        <Tabs value={currentTab} onChange={handleChangeTab} style={{ marginBottom: '20px' }}>
           <Tab label={t_i18n('Decay rules')} />
           <Tab label={t_i18n('Decay exclusion rules')} />
         </Tabs>

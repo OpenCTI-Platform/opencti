@@ -18,9 +18,16 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
-import { ToolCreationMutation, ToolCreationMutation$variables } from './__generated__/ToolCreationMutation.graphql';
+import {
+  ToolCreationMutation,
+  ToolCreationMutation$variables,
+} from './__generated__/ToolCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -69,7 +76,11 @@ interface ToolAddInput {
 }
 
 interface ToolFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string, response: ToolCreationMutation['response']['toolAdd']) => void;
+  updater: (
+    store: RecordSourceSelectorProxy,
+    key: string,
+    response: ToolCreationMutation['response']['toolAdd'],
+  ) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -94,39 +105,34 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
-  const { mandatoryAttributes } = useIsMandatoryAttribute(
-    TOOL_TYPE,
+  const { mandatoryAttributes } = useIsMandatoryAttribute(TOOL_TYPE);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      description: Yup.string().nullable(),
+      confidence: Yup.number().nullable(),
+      tool_types: Yup.array().nullable(),
+      tool_version: Yup.string().nullable(),
+    },
+    mandatoryAttributes,
   );
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    description: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
-    tool_types: Yup.array().nullable(),
-    tool_version: Yup.string().nullable(),
-  }, mandatoryAttributes);
   const validator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 
-  const [commit] = useApiMutation<ToolCreationMutation>(
-    toolMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Tool')} ${t_i18n('successfully created')}` },
-  );
-
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
-  const {
-    bulkCommit,
-    bulkCount,
-    bulkCurrentCount,
-    BulkResult,
-    resetBulk,
-  } = useBulkCommit<ToolCreationMutation>({
-    commit,
-    relayUpdater: (store, response) => {
-      if (updater) {
-        updater(store, 'toolAdd', response?.toolAdd);
-      }
-    },
+  const [commit] = useApiMutation<ToolCreationMutation>(toolMutation, undefined, {
+    successMessage: `${t_i18n('entity_Tool')} ${t_i18n('successfully created')}`,
   });
+
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
+  const { bulkCommit, bulkCount, bulkCurrentCount, BulkResult, resetBulk } =
+    useBulkCommit<ToolCreationMutation>({
+      commit,
+      relayUpdater: (store, response) => {
+        if (updater) {
+          updater(store, 'toolAdd', response?.toolAdd);
+        }
+      },
+    });
 
   useEffect(() => {
     if (bulkCount > 1) {
@@ -170,22 +176,19 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
     });
   };
 
-  const initialValues = useDefaultValues(
-    TOOL_TYPE,
-    {
-      name: inputValue ?? '',
-      description: '',
-      createdBy: defaultCreatedBy ?? null,
-      objectMarking: defaultMarkingDefinitions ?? [],
-      killChainPhases: [],
-      objectLabel: [],
-      externalReferences: [],
-      tool_types: [],
-      tool_version: '',
-      confidence: defaultConfidence ?? null,
-      file: null,
-    },
-  );
+  const initialValues = useDefaultValues(TOOL_TYPE, {
+    name: inputValue ?? '',
+    description: '',
+    createdBy: defaultCreatedBy ?? null,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    killChainPhases: [],
+    objectLabel: [],
+    externalReferences: [],
+    tool_types: [],
+    tool_version: '',
+    confidence: defaultConfidence ?? null,
+    file: null,
+  });
 
   return (
     <Formik<ToolAddInput>
@@ -229,7 +232,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
               variant="standard"
               name="name"
               label={t_i18n('Name')}
-              required={(mandatoryAttributes.includes('name'))}
+              required={mandatoryAttributes.includes('name')}
               fullWidth={true}
               detectDuplicate={['Tool', 'Malware']}
               askAi={true}
@@ -238,7 +241,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
-              required={(mandatoryAttributes.includes('description'))}
+              required={mandatoryAttributes.includes('description')}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -248,31 +251,28 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
               registerMarkdownImagesController={registerMarkdownImagesController}
               uploadFileMarkings={values.objectMarking.map((v) => v.value)}
             />
-            <ConfidenceField
-              entityType="Tool"
-              containerStyle={fieldSpacingContainerStyle}
-            />
+            <ConfidenceField entityType="Tool" containerStyle={fieldSpacingContainerStyle} />
             <KillChainPhasesField
               name="killChainPhases"
-              required={(mandatoryAttributes.includes('killChainPhases'))}
+              required={mandatoryAttributes.includes('killChainPhases')}
               style={fieldSpacingContainerStyle}
             />
             <CreatedByField
               name="createdBy"
-              required={(mandatoryAttributes.includes('createdBy'))}
+              required={mandatoryAttributes.includes('createdBy')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
-              required={(mandatoryAttributes.includes('objectLabel'))}
+              required={mandatoryAttributes.includes('objectLabel')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
-              required={(mandatoryAttributes.includes('objectMarking'))}
+              required={mandatoryAttributes.includes('objectMarking')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
@@ -280,7 +280,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
               type="tool_types_ov"
               name="tool_types"
               label={t_i18n('Tool types')}
-              required={(mandatoryAttributes.includes('tool_types'))}
+              required={mandatoryAttributes.includes('tool_types')}
               multiple={true}
               containerStyle={fieldSpacingContainerStyle}
               onChange={setFieldValue}
@@ -289,13 +289,13 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
               component={TextField}
               name="tool_version"
               label={t_i18n('Tool Version')}
-              required={(mandatoryAttributes.includes('tool_version'))}
+              required={mandatoryAttributes.includes('tool_version')}
               fullWidth={true}
               style={{ marginTop: 20 }}
             />
             <ExternalReferencesField
               name="externalReferences"
-              required={(mandatoryAttributes.includes('externalReferences'))}
+              required={mandatoryAttributes.includes('externalReferences')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
@@ -305,23 +305,17 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
               name="file"
               setFieldValue={setFieldValue}
               disabled={splitMultilines(values.name).length > 1}
-              noFileSelectedLabel={splitMultilines(values.name).length > 1
-                ? t_i18n('File upload not allowed in bulk creation')
-                : undefined
+              noFileSelectedLabel={
+                splitMultilines(values.name).length > 1
+                  ? t_i18n('File upload not allowed in bulk creation')
+                  : undefined
               }
             />
             <FormButtonContainer>
-              <Button
-                variant="secondary"
-                onClick={handleReset}
-                disabled={isSubmitting}
-              >
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>
@@ -343,7 +337,8 @@ const ToolCreation = ({
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_tools', paginationOptions, 'toolAdd');
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_tools', paginationOptions, 'toolAdd');
 
   return (
     <Drawer

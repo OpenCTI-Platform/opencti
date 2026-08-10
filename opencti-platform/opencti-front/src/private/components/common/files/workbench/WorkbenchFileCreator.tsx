@@ -59,9 +59,10 @@ const workbenchFileCreatorMutation = graphql`
   }
 `;
 
-const fileValidation = (t: (value: string) => string) => Yup.object().shape({
-  name: Yup.string().trim().required(t('This field is required')),
-});
+const fileValidation = (t: (value: string) => string) =>
+  Yup.object().shape({
+    name: Yup.string().trim().required(t('This field is required')),
+  });
 
 interface WorkbenchFileCreatorFormValues {
   name: string;
@@ -98,7 +99,10 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
     undefined,
   );
   const entityId = entity?.id;
-  const onSubmitCreate: FormikConfig<WorkbenchFileCreatorFormValues>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
+  const onSubmitCreate: FormikConfig<WorkbenchFileCreatorFormValues>['onSubmit'] = (
+    values,
+    { setSubmitting, resetForm },
+  ) => {
     let { name } = values;
     const finalLabels = values.labels.map((label) => label.value);
     const file_markings = values.fileMarkings.map(({ value }) => value);
@@ -119,12 +123,14 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
       handleCloseCreate();
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line typescript/no-explicit-any
     const objects: any = [];
     if (entityId) {
-      fetchQuery(workbenchFileCreatorStixCoreObjectQuery, { id: entityId }).toPromise()
+      fetchQuery(workbenchFileCreatorStixCoreObjectQuery, { id: entityId })
+        .toPromise()
         .then(async (entityData) => {
-          const { stixCoreObject: workbenchStixCoreObject } = entityData as WorkbenchFileCreatorStixCoreObjectQuery$data;
+          const { stixCoreObject: workbenchStixCoreObject } =
+            entityData as WorkbenchFileCreatorStixCoreObjectQuery$data;
           if (workbenchStixCoreObject?.toStix) {
             const stixEntity = JSON.parse(workbenchStixCoreObject.toStix);
             delete stixEntity.extensions;
@@ -204,10 +210,7 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
                 label: t_i18n('Labels'),
               }}
               options={[]}
-              renderOption={(
-                props: React.HTMLAttributes<HTMLLIElement>,
-                option: FieldOption,
-              ) => (
+              renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: FieldOption) => (
                 <li {...props}>
                   <div className={classes.icon}>
                     <ItemIcon type="Label" />
@@ -230,11 +233,7 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
               <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                type="submit"
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button type="submit" onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </DialogActions>

@@ -1,7 +1,11 @@
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixRefRelationship';
-import { distributionEntities, fullEntitiesOrRelationsList, timeSeriesEntities } from '../database/middleware';
+import {
+  distributionEntities,
+  fullEntitiesOrRelationsList,
+  timeSeriesEntities,
+} from '../database/middleware';
 import {
   internalFindByIds,
   internalLoadById,
@@ -21,9 +25,20 @@ import {
   ENTITY_TYPE_IDENTITY,
 } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
-import { buildPagination, READ_ENTITIES_INDICES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
+import {
+  buildPagination,
+  READ_ENTITIES_INDICES,
+  READ_INDEX_STIX_DOMAIN_OBJECTS,
+  READ_RELATIONSHIPS_INDICES,
+} from '../database/utils';
 import { minutesAgo, now, truncate, utcDate } from '../utils/format';
-import { elCount, elFindByIds, ES_DEFAULT_PAGINATION, MAX_RELATED_CONTAINER_OBJECT_RESOLUTION, MAX_RELATED_CONTAINER_RESOLUTION } from '../database/engine';
+import {
+  elCount,
+  elFindByIds,
+  ES_DEFAULT_PAGINATION,
+  MAX_RELATED_CONTAINER_OBJECT_RESOLUTION,
+  MAX_RELATED_CONTAINER_RESOLUTION,
+} from '../database/engine';
 import { findById as findInvestigationById } from '../modules/workspace/workspace-domain';
 import { stixCoreObjectAddRelations } from './stixCoreObject';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
@@ -48,7 +63,9 @@ export const findById = async (context, user, containerId) => {
 
 export const findContainerPaginated = async (context, user, args) => {
   const hasTypesArgs = args.types && args.types.length > 0;
-  const types = hasTypesArgs ? args.types.filter((type) => isStixDomainObjectContainer(type)) : [ENTITY_TYPE_CONTAINER];
+  const types = hasTypesArgs
+    ? args.types.filter((type) => isStixDomainObjectContainer(type))
+    : [ENTITY_TYPE_CONTAINER];
   return pageEntitiesConnection(context, user, types, args);
 };
 
@@ -56,18 +73,16 @@ export const numberOfContainersForObject = (context, user, args) => {
   const { objectId } = args;
   const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), objectId);
   return {
-    count: elCount(
-      context,
-      user,
-      READ_INDEX_STIX_DOMAIN_OBJECTS,
-      { ...args, filters, types: [ENTITY_TYPE_CONTAINER] },
-    ),
-    total: elCount(
-      context,
-      user,
-      READ_INDEX_STIX_DOMAIN_OBJECTS,
-      { ...R.dissoc('endDate', args), filters, types: [ENTITY_TYPE_CONTAINER] },
-    ),
+    count: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+      ...args,
+      filters,
+      types: [ENTITY_TYPE_CONTAINER],
+    }),
+    total: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+      ...R.dissoc('endDate', args),
+      filters,
+      types: [ENTITY_TYPE_CONTAINER],
+    }),
   };
 };
 
@@ -89,8 +104,20 @@ export const objects = async (context, user, containerId, args) => {
     const paginatedElements = {};
     while (hasNextPage) {
       // Force options to prevent connection format and manage search after
-      const paginateOpts = { ...baseOpts, first: args.first ?? ES_DEFAULT_PAGINATION, after: searchAfter };
-      const currentPagination = await pageRegardingEntitiesConnection(context, user, containerId, RELATION_OBJECT, types, false, paginateOpts);
+      const paginateOpts = {
+        ...baseOpts,
+        first: args.first ?? ES_DEFAULT_PAGINATION,
+        after: searchAfter,
+      };
+      const currentPagination = await pageRegardingEntitiesConnection(
+        context,
+        user,
+        containerId,
+        RELATION_OBJECT,
+        types,
+        false,
+        paginateOpts,
+      );
       const noMoreElements = currentPagination.edges.length < paginateOpts.first;
       if (noMoreElements) {
         hasNextPage = false;
@@ -105,18 +132,27 @@ export const objects = async (context, user, containerId, args) => {
     }
     return paginatedElements;
   }
-  return pageRegardingEntitiesConnection(context, user, containerId, RELATION_OBJECT, types, false, baseOpts);
+  return pageRegardingEntitiesConnection(
+    context,
+    user,
+    containerId,
+    RELATION_OBJECT,
+    types,
+    false,
+    baseOpts,
+  );
 };
 
 export const containersNumber = (context, user, args) => {
   return {
-    count: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, { ...args, types: [ENTITY_TYPE_CONTAINER] }),
-    total: elCount(
-      context,
-      user,
-      READ_INDEX_STIX_DOMAIN_OBJECTS,
-      { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_CONTAINER] },
-    ),
+    count: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+      ...args,
+      types: [ENTITY_TYPE_CONTAINER],
+    }),
+    total: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+      ...R.dissoc('endDate', args),
+      types: [ENTITY_TYPE_CONTAINER],
+    }),
   };
 };
 
@@ -136,18 +172,16 @@ export const containersNumberByEntity = (context, user, args) => {
   const { objectId } = args;
   const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), objectId);
   return {
-    count: elCount(
-      context,
-      user,
-      READ_INDEX_STIX_DOMAIN_OBJECTS,
-      { ...args, filters, types: [ENTITY_TYPE_CONTAINER] },
-    ),
-    total: elCount(
-      context,
-      user,
-      READ_INDEX_STIX_DOMAIN_OBJECTS,
-      { ...R.dissoc('endDate', args), filters, types: [ENTITY_TYPE_CONTAINER] },
-    ),
+    count: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+      ...args,
+      filters,
+      types: [ENTITY_TYPE_CONTAINER],
+    }),
+    total: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+      ...R.dissoc('endDate', args),
+      filters,
+      types: [ENTITY_TYPE_CONTAINER],
+    }),
   };
 };
 
@@ -155,18 +189,16 @@ export const containersNumberByAuthor = (context, user, args) => {
   const { authorId } = args;
   const filters = addFilter(args.filters, buildRefRelationKey(RELATION_CREATED_BY, '*'), authorId);
   return {
-    count: elCount(
-      context,
-      user,
-      READ_INDEX_STIX_DOMAIN_OBJECTS,
-      { ...args, filters, types: [ENTITY_TYPE_CONTAINER] },
-    ),
-    total: elCount(
-      context,
-      user,
-      READ_INDEX_STIX_DOMAIN_OBJECTS,
-      { ...R.dissoc('endDate', args), filters, types: [ENTITY_TYPE_CONTAINER] },
-    ),
+    count: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+      ...args,
+      filters,
+      types: [ENTITY_TYPE_CONTAINER],
+    }),
+    total: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+      ...R.dissoc('endDate', args),
+      filters,
+      types: [ENTITY_TYPE_CONTAINER],
+    }),
   };
 };
 
@@ -180,7 +212,11 @@ export const relatedContainers = async (context, user, containerId, args) => {
     filters: [{ key, values: [containerId] }],
     filterGroups: [],
   };
-  const elements = await fullEntitiesOrRelationsList(context, user, types, { filters, maxSize: MAX_RELATED_CONTAINER_RESOLUTION, baseData: true });
+  const elements = await fullEntitiesOrRelationsList(context, user, types, {
+    filters,
+    maxSize: MAX_RELATED_CONTAINER_RESOLUTION,
+    baseData: true,
+  });
   if (elements.length === 0) {
     return buildPagination(0, null, [], 0);
   }
@@ -192,11 +228,29 @@ export const relatedContainers = async (context, user, containerId, args) => {
 
 // Starting an object, get 1000 containers that have this object
 // Then get all objects for all of this containers
-export const containersObjectsOfObject = async (context, user, { id, types, filters = null, search = null }) => {
+export const containersObjectsOfObject = async (
+  context,
+  user,
+  { id, types, filters = null, search = null },
+) => {
   const element = await internalLoadById(context, user, id);
-  const queryFilters = addFilter(filters, buildRefRelationKey(RELATION_OBJECT), element.internal_id);
-  const args = { filters: queryFilters, maxSize: MAX_RELATED_CONTAINER_RESOLUTION, search, withoutRels: false };
-  const containers = await fullEntitiesOrRelationsList(context, user, [ENTITY_TYPE_CONTAINER], args);
+  const queryFilters = addFilter(
+    filters,
+    buildRefRelationKey(RELATION_OBJECT),
+    element.internal_id,
+  );
+  const args = {
+    filters: queryFilters,
+    maxSize: MAX_RELATED_CONTAINER_RESOLUTION,
+    search,
+    withoutRels: false,
+  };
+  const containers = await fullEntitiesOrRelationsList(
+    context,
+    user,
+    [ENTITY_TYPE_CONTAINER],
+    args,
+  );
   let objectIds = [];
   let hasMoreThanMaxObject = false;
   let loadedReportsCount = 0;
@@ -210,38 +264,60 @@ export const containersObjectsOfObject = async (context, user, { id, types, filt
       break;
     }
   }
-  const resolvedObjectsMap = await internalFindByIds(context, user, objectIds, { type: types, toMap: true });
+  const resolvedObjectsMap = await internalFindByIds(context, user, objectIds, {
+    type: types,
+    toMap: true,
+  });
   const resolvedObjects = Object.values(resolvedObjectsMap);
   resolvedObjects.push(
     ...containers,
-    ...(containers.map((c) => c[buildRefRelationKey(RELATION_OBJECT)].filter((toId) => resolvedObjectsMap[toId]).map((toId) => (
-      {
-        id: uuidv4(),
-        created_at: now(),
-        updated_at: now(),
-        parent_types: [ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP, ABSTRACT_STIX_REF_RELATIONSHIP],
-        entity_type: RELATION_OBJECT,
-        relationship_type: RELATION_OBJECT,
-        from: {
-          id: c.id,
-          standard_id: c.standard_id,
-          entity_type: c.entity_type,
-          parent_types: c.parent_types,
-          relationship_type: c.parent_types.includes(ABSTRACT_BASIC_RELATIONSHIP) ? c.entity_type : null,
-        },
-        to: {
-          id: toId,
-          standard_id: resolvedObjectsMap[toId].standard_id,
-          entity_type: resolvedObjectsMap[toId].entity_type,
-          parent_types: resolvedObjectsMap[toId].parent_types,
-          relationship_type: resolvedObjectsMap[toId].parent_types.includes(ABSTRACT_BASIC_RELATIONSHIP) ? resolvedObjectsMap[toId].entity_type : null,
-        },
-      }
-    ))).flat()),
+    ...containers
+      .map((c) =>
+        c[buildRefRelationKey(RELATION_OBJECT)]
+          .filter((toId) => resolvedObjectsMap[toId])
+          .map((toId) => ({
+            id: uuidv4(),
+            created_at: now(),
+            updated_at: now(),
+            parent_types: [
+              ABSTRACT_BASIC_RELATIONSHIP,
+              ABSTRACT_STIX_RELATIONSHIP,
+              ABSTRACT_STIX_REF_RELATIONSHIP,
+            ],
+            entity_type: RELATION_OBJECT,
+            relationship_type: RELATION_OBJECT,
+            from: {
+              id: c.id,
+              standard_id: c.standard_id,
+              entity_type: c.entity_type,
+              parent_types: c.parent_types,
+              relationship_type: c.parent_types.includes(ABSTRACT_BASIC_RELATIONSHIP)
+                ? c.entity_type
+                : null,
+            },
+            to: {
+              id: toId,
+              standard_id: resolvedObjectsMap[toId].standard_id,
+              entity_type: resolvedObjectsMap[toId].entity_type,
+              parent_types: resolvedObjectsMap[toId].parent_types,
+              relationship_type: resolvedObjectsMap[toId].parent_types.includes(
+                ABSTRACT_BASIC_RELATIONSHIP,
+              )
+                ? resolvedObjectsMap[toId].entity_type
+                : null,
+            },
+          })),
+      )
+      .flat(),
   );
   const limit = hasMoreThanMaxObject ? resolvedObjects.length : 0;
   const globalCount = hasMoreThanMaxObject ? loadedReportsCount : resolvedObjects.length;
-  return buildPagination(limit, null, resolvedObjects.map((r) => ({ node: r })), globalCount);
+  return buildPagination(
+    limit,
+    null,
+    resolvedObjects.map((r) => ({ node: r })),
+    globalCount,
+  );
 };
 
 export const filterUnwantedEntitiesOut = async ({ context, user, ids }) => {
@@ -255,7 +331,11 @@ export const filterUnwantedEntitiesOut = async ({ context, user, ids }) => {
   return filteredOutInvestigatedIds;
 };
 
-export const knowledgeAddFromInvestigation = async (context, user, { containerId, workspaceId }) => {
+export const knowledgeAddFromInvestigation = async (
+  context,
+  user,
+  { containerId, workspaceId },
+) => {
   const investigation = await findInvestigationById(context, user, workspaceId);
   const ids = investigation.investigated_entities_ids?.filter((id) => id !== containerId);
   const toIds = await filterUnwantedEntitiesOut({ context, user, ids });
@@ -286,12 +366,22 @@ export const aiSummary = async (context, user, args) => {
 
   const { busId = null, language = 'English', forceRefresh = false } = args;
   const hasTypesArgs = args.types && args.types.length > 0;
-  const types = hasTypesArgs ? args.types.filter((type) => isStixDomainObjectContainer(type)) : [ENTITY_TYPE_CONTAINER];
+  const types = hasTypesArgs
+    ? args.types.filter((type) => isStixDomainObjectContainer(type))
+    : [ENTITY_TYPE_CONTAINER];
   const finalArgs = { ...args, first: args.first && args.first <= 10 ? args.first : 10 };
   const identifier = toB64(R.dissoc('busId', finalArgs));
-  if (!forceRefresh && aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
+  if (
+    !forceRefresh &&
+    aiResponseCache[identifier] &&
+    utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))
+  ) {
     logApp.info('Response found in cache', { busId });
-    await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: busId, content: aiResponseCache[identifier].result }, user);
+    await notify(
+      BUS_TOPICS[AI_BUS].EDIT_TOPIC,
+      { bus_id: busId, content: aiResponseCache[identifier].result },
+      user,
+    );
     return aiResponseCache[identifier];
   }
   logApp.info('Response not found in cache, querying LLM', { busId });
@@ -300,22 +390,34 @@ export const aiSummary = async (context, user, args) => {
   if (!containers.length) {
     throw FunctionalError('Not enough data to summarize the containers attached to the entity.');
   }
-  // eslint-disable-next-line no-restricted-syntax
   for (const container of containers) {
-    const author = await fullEntitiesThroughRelationsToList(context, user, container.id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
+    const author = await fullEntitiesThroughRelationsToList(
+      context,
+      user,
+      container.id,
+      RELATION_CREATED_BY,
+      [ENTITY_TYPE_IDENTITY],
+    );
     const files = await resolveFiles(context, user, container);
-    const { relationshipsSentences, entitiesInvolved } = await getContainerKnowledge(context, user, container.id);
+    const { relationshipsSentences, entitiesInvolved } = await getContainerKnowledge(
+      context,
+      user,
+      container.id,
+    );
     content.push({
       title: container.name,
       date: container.published || container.created,
-      author: (author && author.length > 0 ? author.at(0).name : 'Unknown'),
-      content: container.content ? `${container.description}\n\n${container.content}` : container.description,
+      author: author && author.length > 0 ? author.at(0).name : 'Unknown',
+      content: container.content
+        ? `${container.description}\n\n${container.content}`
+        : container.description,
       long_content: truncate(files.map((n) => n.content).join(' '), 1000),
       knowledge: truncate(relationshipsSentences, 1000),
       entities: truncate(entitiesInvolved, 1000),
     });
   }
-  const systemPrompt = 'You are an assistant aimed to summarize and categorize cyber threat intelligence deliverables.';
+  const systemPrompt =
+    'You are an assistant aimed to summarize and categorize cyber threat intelligence deliverables.';
   const userPromptReport = `
   # Context
   - You are a cyber threat intelligence analyst. 

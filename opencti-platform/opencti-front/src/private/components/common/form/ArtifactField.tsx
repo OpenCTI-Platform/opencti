@@ -36,13 +36,14 @@ interface ArtifactFieldComponentProps {
   setSearch: Dispatch<SetStateAction<string | null>>;
 }
 
-const ArtifactFieldComponent: FunctionComponent<
-  ArtifactFieldComponentProps
-> = ({ queryRef, attributeName, attributeValue, onChange, setSearch }) => {
-  const data = usePreloadedQuery<ArtifactFieldGetQuery>(
-    artifactQuery,
-    queryRef,
-  );
+const ArtifactFieldComponent: FunctionComponent<ArtifactFieldComponentProps> = ({
+  queryRef,
+  attributeName,
+  attributeValue,
+  onChange,
+  setSearch,
+}) => {
+  const data = usePreloadedQuery<ArtifactFieldGetQuery>(artifactQuery, queryRef);
   const options = (data.stixCyberObservables?.edges ?? []).map(({ node }) => ({
     label: node.observable_value ?? node.id,
     value: node.id,
@@ -67,9 +68,7 @@ const ArtifactField: FunctionComponent<ArtifactFieldProps> = ({
   onChange,
 }) => {
   const [search, setSearch] = useState<string | null>(null);
-  const filtersContent = [
-    { key: 'entity_type', values: ['Artifact'], operator: 'eq', mode: 'or' },
-  ];
+  const filtersContent = [{ key: 'entity_type', values: ['Artifact'], operator: 'eq', mode: 'or' }];
   if (search) {
     filtersContent.push({ key: 'name', values: [search], operator: 'eq', mode: 'or' });
   }

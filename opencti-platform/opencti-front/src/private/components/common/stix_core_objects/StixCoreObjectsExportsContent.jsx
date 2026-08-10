@@ -42,21 +42,16 @@ const StixCoreObjectsExportsContentComponent = ({
   const stixCoreObjectsExportFiles = data?.stixCoreObjectsExportFiles?.edges ?? [];
 
   const connectorsExport = data?.connectorsForExport ?? [];
-  const exportScopes = R.uniq(
-    R.flatten(R.map((c) => c.connector_scope, connectorsExport)),
-  );
+  const exportScopes = R.uniq(R.flatten(R.map((c) => c.connector_scope, connectorsExport)));
   const exportConnsPerFormat = scopesConn(connectorsExport);
 
-  const isExportActive = (format) => R.filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
+  const isExportActive = (format) =>
+    R.filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
   const isExportPossible = R.filter((x) => isExportActive(x), exportScopes).length > 0;
 
   return (
     <>
-      <Stack
-        direction="row"
-        justifyContent="flex-end"
-        gap={1}
-      >
+      <Stack direction="row" justifyContent="flex-end" gap={1}>
         <Tooltip
           title={
             isExportPossible
@@ -65,26 +60,25 @@ const StixCoreObjectsExportsContentComponent = ({
           }
           aria-label="generate-export"
         >
-          <Button
-            onClick={() => setOpen(true)}
-            color="secondary"
-            disabled={!isExportPossible}
-          >
+          <Button onClick={() => setOpen(true)} color="secondary" disabled={!isExportPossible}>
             {t_i18n('Generate an export')}
           </Button>
         </Tooltip>
       </Stack>
       <List>
         {stixCoreObjectsExportFiles.length > 0 ? (
-          stixCoreObjectsExportFiles.map((file) => file?.node && (
-            <FileLine
-              key={file.node.id}
-              file={file.node}
-              dense={true}
-              disableImport={true}
-              directDownload={true}
-            />
-          ))
+          stixCoreObjectsExportFiles.map(
+            (file) =>
+              file?.node && (
+                <FileLine
+                  key={file.node.id}
+                  file={file.node}
+                  dense={true}
+                  disableImport={true}
+                  directDownload={true}
+                />
+              ),
+          )
         ) : (
           <div style={{ display: 'table', height: '100%', width: '100%' }}>
             <span
@@ -117,10 +111,7 @@ const StixCoreObjectsExportsContentComponent = ({
 };
 
 export const stixCoreObjectsExportsContentQuery = graphql`
-  query StixCoreObjectsExportsContentRefetchQuery(
-    $count: Int!
-    $exportContext: ExportContext!
-  ) {
+  query StixCoreObjectsExportsContentRefetchQuery($count: Int!, $exportContext: ExportContext!) {
     ...StixCoreObjectsExportsContent_data @arguments(count: $count, exportContext: $exportContext)
   }
 `;
@@ -135,7 +126,7 @@ export default createRefetchContainer(
         exportContext: { type: "ExportContext!" }
       ) {
         stixCoreObjectsExportFiles(first: $count, exportContext: $exportContext)
-        @connection(key: "Pagination_stixCoreObjectsExportFiles") {
+          @connection(key: "Pagination_stixCoreObjectsExportFiles") {
           edges {
             node {
               id

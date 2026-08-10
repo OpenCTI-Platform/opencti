@@ -37,7 +37,8 @@ const useSchema = () => {
     ];
   }, [schema]);
 
-  const availableAndAbstractEntityTypes = availableEntityTypes.map((e) => e.id)
+  const availableAndAbstractEntityTypes = availableEntityTypes
+    .map((e) => e.id)
     .concat(['Stix-Domain-Object', 'Stix-Core-Object', 'Stix-Cyber-Observable']);
 
   return {

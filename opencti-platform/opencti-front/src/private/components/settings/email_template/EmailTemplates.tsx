@@ -11,7 +11,10 @@ import DataTable from '../../../../components/dataGrid/DataTable';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
@@ -21,68 +24,69 @@ import PageContainer from '../../../../components/PageContainer';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 export const emailTemplatesQuery = graphql`
-    query EmailTemplatesLinesPaginationQuery(
-        $search: String
-        $count: Int!
-        $cursor: ID
-        $orderBy: EmailTemplateOrdering
-        $orderMode: OrderingMode
-        $filters: FilterGroup
-    ) {
-        ...EmailTemplatesLines_data
-        @arguments(
-            search: $search
-            count: $count
-            cursor: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        )
-    }
+  query EmailTemplatesLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: EmailTemplateOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...EmailTemplatesLines_data
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
+  }
 `;
 
 export const emailTemplatesFragment = graphql`
-    fragment EmailTemplatesLines_data on Query
-    @argumentDefinitions(
-        search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: { type: "EmailTemplateOrdering", defaultValue: name }
-        orderMode: { type: "OrderingMode", defaultValue: desc }
-        filters: { type: "FilterGroup" }
-    ) @refetchable(queryName: "EmailTemplatesLinesRefetchQuery") {
-        emailTemplates(
-            search: $search
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        ) @connection(key: "Pagination_emailTemplates") {
-            edges {
-                node {
-                    ...EmailTemplatesLine_node
-                }
-            }
-            pageInfo {
-                endCursor
-                hasNextPage
-                globalCount
-            }
+  fragment EmailTemplatesLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "EmailTemplateOrdering", defaultValue: name }
+    orderMode: { type: "OrderingMode", defaultValue: desc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "EmailTemplatesLinesRefetchQuery") {
+    emailTemplates(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_emailTemplates") {
+      edges {
+        node {
+          ...EmailTemplatesLine_node
         }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
     }
+  }
 `;
 
 const emailTemplatesLineFragment = graphql`
-    fragment EmailTemplatesLine_node on EmailTemplate {
-      id
-      entity_type
-      name
-      description
-      email_object
-      sender_email
-      template_body
-    }
+  fragment EmailTemplatesLine_node on EmailTemplate {
+    id
+    entity_type
+    name
+    description
+    email_object
+    sender_email
+    template_body
+  }
 `;
 
 const LOCAL_STORAGE_KEY = 'view-email-templates';
@@ -149,19 +153,31 @@ const EmailTemplates = () => {
   return (
     <div data-testid="email-templates-page">
       <PageContainer withRightMenu>
-        <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Email templates'), current: true }]} />
+        <Breadcrumbs
+          elements={[
+            { label: t_i18n('Settings') },
+            { label: t_i18n('Security') },
+            { label: t_i18n('Email templates'), current: true },
+          ]}
+        />
         {!isEnterpriseEdition ? (
           <EnterpriseEdition feature="Email templates" />
         ) : (
           <>
             <Alert
               style={{ marginBottom: '16px' }}
-              content={t_i18n('These template emails are only used for one time email, not for notifications or dissemination.')}
+              content={t_i18n(
+                'These template emails are only used for one time email, not for notifications or dissemination.',
+              )}
             />
             {queryRef && (
               <DataTable
                 dataColumns={dataColumns}
-                resolvePath={(data) => data.emailTemplates?.edges?.map(({ node }: { node: EmailTemplatesLine_node$data }) => node)}
+                resolvePath={(data) =>
+                  data.emailTemplates?.edges?.map(
+                    ({ node }: { node: EmailTemplatesLine_node$data }) => node,
+                  )
+                }
                 storageKey={LOCAL_STORAGE_KEY}
                 initialValues={initialValues}
                 contextFilters={contextFilters}

@@ -254,11 +254,13 @@ describe('widgetUtils', () => {
     });
 
     it('should return true when number is undefined', () => {
-      const dataSelection: WidgetDataSelection[] = [{
-        number: undefined,
-        perspective: 'entities',
-        filters: null,
-      }];
+      const dataSelection: WidgetDataSelection[] = [
+        {
+          number: undefined,
+          perspective: 'entities',
+          filters: null,
+        },
+      ];
       expect(isDataSelectionNumberValid('list', dataSelection)).toBe(true);
       expect(isDataSelectionNumberValid('donut', dataSelection)).toBe(true);
     });
@@ -357,9 +359,7 @@ describe('widgetUtils', () => {
       const dataSelection: WidgetDataSelection[] = [
         { unique: true, perspective: 'entities', filters: null },
       ];
-      const data: WidgetMultiTimeSeries[] = [
-        buildSeries([10, UNIQUE_COUNT_ESTIMATION_THRESHOLD]),
-      ];
+      const data: WidgetMultiTimeSeries[] = [buildSeries([10, UNIQUE_COUNT_ESTIMATION_THRESHOLD])];
       expect(showEstimationWarningForUniqCount(dataSelection, data)).toBe(false);
     });
 
@@ -440,22 +440,30 @@ describe('widgetUtils', () => {
 
   describe('useGetNumberWidgetTitle', () => {
     it('should return translated custom title when parameters.title is set', () => {
-      const { result } = renderHook(() => useGetNumberWidgetTitle({ title: 'My Custom Title' } as WidgetParameters, 'Default'));
+      const { result } = renderHook(() =>
+        useGetNumberWidgetTitle({ title: 'My Custom Title' } as WidgetParameters, 'Default'),
+      );
       expect(result.current).toBe('translated_My Custom Title');
     });
 
     it('should return translated default title when parameters.title is empty', () => {
-      const { result } = renderHook(() => useGetNumberWidgetTitle({ title: '' } as WidgetParameters, 'Fallback Title'));
+      const { result } = renderHook(() =>
+        useGetNumberWidgetTitle({ title: '' } as WidgetParameters, 'Fallback Title'),
+      );
       expect(result.current).toBe('translated_Fallback Title');
     });
 
     it('should return translated default title when parameters.title is null', () => {
-      const { result } = renderHook(() => useGetNumberWidgetTitle({ title: null } as WidgetParameters, 'Default Title'));
+      const { result } = renderHook(() =>
+        useGetNumberWidgetTitle({ title: null } as WidgetParameters, 'Default Title'),
+      );
       expect(result.current).toBe('translated_Default Title');
     });
 
     it('should return translated default title when parameters.title is undefined', () => {
-      const { result } = renderHook(() => useGetNumberWidgetTitle({} as WidgetParameters, 'Number of entities'));
+      const { result } = renderHook(() =>
+        useGetNumberWidgetTitle({} as WidgetParameters, 'Number of entities'),
+      );
       expect(result.current).toBe('translated_Number of entities');
     });
   });

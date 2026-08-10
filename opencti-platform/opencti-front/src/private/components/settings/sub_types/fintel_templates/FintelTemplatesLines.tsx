@@ -11,7 +11,9 @@ import { useTheme } from '@mui/material';
 import { EMPTY_VALUE } from 'src/utils/String';
 import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 
-export type TemplateType = NonNullable<FintelTemplatesManager_templates$data['fintelTemplates']>['edges'][0]['node'];
+export type TemplateType = NonNullable<
+  FintelTemplatesManager_templates$data['fintelTemplates']
+>['edges'][0]['node'];
 type TemplateEdges = FintelTemplatesManager_templates$data['fintelTemplates'];
 
 interface FintelTemplatesLinesProps {
@@ -58,22 +60,19 @@ const FintelTemplatesLines: FunctionComponent<FintelTemplatesLinesProps> = ({
       label: 'Default',
       percentWidth: 15,
       isSortable: true,
-      render: ({ default: isDefault }) => isDefault ? (
-        <Tag
-          color={theme.palette.success.main}
-          label={t_i18n('Default')}
-        />
-      ) : EMPTY_VALUE,
+      render: ({ default: isDefault }) =>
+        isDefault ? (
+          <Tag color={theme.palette.success.main} label={t_i18n('Default')} />
+        ) : (
+          EMPTY_VALUE
+        ),
     },
     start_date: {
       percentWidth: 15,
       isSortable: true,
       label: t_i18n('Published'),
       render: ({ start_date }: { start_date?: string }) => (
-        <ItemBoolean
-          status={!!start_date}
-          label={start_date ? t_i18n('Yes') : t_i18n('No')}
-        />
+        <ItemBoolean status={!!start_date} label={start_date ? t_i18n('Yes') : t_i18n('No')} />
       ),
     },
   };

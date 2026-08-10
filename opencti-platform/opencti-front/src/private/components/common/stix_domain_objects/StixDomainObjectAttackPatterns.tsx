@@ -33,21 +33,18 @@ const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPa
   entityType,
 }) => {
   const LOCAL_STORAGE_KEY = `attack-patterns-${stixDomainObjectId}`;
-  const {
-    viewStorage,
-    helpers,
-    paginationOptions,
-  } = usePaginationLocalStorage<StixDomainObjectAttackPatternsKillChainQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    {
-      searchTerm: '',
-      openExports: false,
-      filters: emptyFilterGroup,
-      view: 'matrix',
-      numberOfElements: { number: 0, symbol: '', original: 0 },
-    },
-    true,
-  );
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<StixDomainObjectAttackPatternsKillChainQuery$variables>(
+      LOCAL_STORAGE_KEY,
+      {
+        searchTerm: '',
+        openExports: false,
+        filters: emptyFilterGroup,
+        view: 'matrix',
+        numberOfElements: { number: 0, symbol: '', original: 0 },
+      },
+      true,
+    );
   const { searchTerm, filters, view, openExports } = viewStorage;
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Attack-Pattern']);
   const contextFilters = {
@@ -56,9 +53,7 @@ const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPa
       { key: 'entity_type', values: ['Attack-Pattern'], mode: 'or', operator: 'eq' },
       {
         key: 'regardingOf',
-        values: [
-          { key: 'id', values: [stixDomainObjectId] },
-        ],
+        values: [{ key: 'id', values: [stixDomainObjectId] }],
       },
     ],
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
@@ -66,7 +61,8 @@ const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPa
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
-    search: searchTerm } as unknown as StixDomainObjectAttackPatternsKillChainQuery$variables;
+    search: searchTerm,
+  } as unknown as StixDomainObjectAttackPatternsKillChainQuery$variables;
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Attack-Pattern']);
   const queryRef = useQueryLoading<StixDomainObjectAttackPatternsKillChainQuery>(
     stixDomainObjectAttackPatternsKillChainQuery,

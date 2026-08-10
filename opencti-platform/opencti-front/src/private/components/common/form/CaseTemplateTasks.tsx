@@ -7,7 +7,9 @@ import { FormikConfig } from 'formik/dist/types';
 import * as R from 'ramda';
 import { FunctionComponent, SyntheticEvent, useState } from 'react';
 import { graphql } from 'react-relay';
-import AutocompleteField, { AutocompleteFieldProps } from '../../../../components/AutocompleteField';
+import AutocompleteField, {
+  AutocompleteFieldProps,
+} from '../../../../components/AutocompleteField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -15,7 +17,10 @@ import TextField from '../../../../components/TextField';
 import { fetchQuery, handleErrorInForm } from '../../../../relay/environment';
 import Field, { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { CaseTemplateTasksCreationMutation, TaskTemplateAddInput } from './__generated__/CaseTemplateTasksCreationMutation.graphql';
+import {
+  CaseTemplateTasksCreationMutation,
+  TaskTemplateAddInput,
+} from './__generated__/CaseTemplateTasksCreationMutation.graphql';
 import { CaseTemplateTasksSearchQuery$data } from './__generated__/CaseTemplateTasksSearchQuery.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -66,17 +71,13 @@ const CaseTemplateTasksCreation = graphql`
   }
 `;
 
-const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
-  onChange,
-  values,
-}) => {
+const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({ onChange, values }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [tasks, setTasks] = useState<FieldOption[]>([...(values ?? [])]);
   const [openCreation, setOpenCreation] = useState(false);
-  const [commitTaskCreation] = useApiMutation<CaseTemplateTasksCreationMutation>(
-    CaseTemplateTasksCreation,
-  );
+  const [commitTaskCreation] =
+    useApiMutation<CaseTemplateTasksCreationMutation>(CaseTemplateTasksCreation);
 
   const searchTasks = (event?: SyntheticEvent<Element, Event>) => {
     if (event?.target instanceof HTMLInputElement) {
@@ -84,12 +85,11 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
       fetchQuery(CaseTemplateTasksQuery, { search })
         .toPromise()
         .then((data) => {
-          const newTasks = (
-            data as CaseTemplateTasksSearchQuery$data
-          )?.taskTemplates?.edges?.map(({ node }) => ({
-            value: node.id,
-            label: node.name,
-          })) ?? [];
+          const newTasks =
+            (data as CaseTemplateTasksSearchQuery$data)?.taskTemplates?.edges?.map(({ node }) => ({
+              value: node.id,
+              label: node.name,
+            })) ?? [];
           setTasks(R.uniq([...tasks, ...newTasks]));
         });
     }
@@ -153,10 +153,7 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
           </li>
         )}
       />
-      <Dialog
-        open={openCreation}
-        title={t_i18n('Create a task template')}
-      >
+      <Dialog open={openCreation} title={t_i18n('Create a task template')}>
         <Formik<TaskTemplateAddInput>
           initialValues={{ name: '', description: '' }}
           onSubmit={submitTaskCreation}
@@ -187,10 +184,7 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
                 >
                   {t_i18n('Cancel')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
+                <Button onClick={submitForm} disabled={isSubmitting}>
                   {t_i18n('Create')}
                 </Button>
               </DialogActions>

@@ -16,8 +16,15 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import { IntrusionSetCreationMutation, IntrusionSetCreationMutation$variables } from './__generated__/IntrusionSetCreationMutation.graphql';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
+import {
+  IntrusionSetCreationMutation,
+  IntrusionSetCreationMutation$variables,
+} from './__generated__/IntrusionSetCreationMutation.graphql';
 import { IntrusionSetsCardsPaginationQuery$variables } from './__generated__/IntrusionSetsCardsPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -63,7 +70,11 @@ interface IntrusionSetAddInput {
 }
 
 interface IntrusionSetFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string, response: IntrusionSetCreationMutation['response']['intrusionSetAdd']) => void;
+  updater: (
+    store: RecordSourceSelectorProxy,
+    key: string,
+    response: IntrusionSetCreationMutation['response']['intrusionSetAdd'],
+  ) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -74,9 +85,7 @@ interface IntrusionSetFormProps {
   onBulkModalClose: () => void;
 }
 
-export const IntrusionSetCreationForm: FunctionComponent<
-  IntrusionSetFormProps
-> = ({
+export const IntrusionSetCreationForm: FunctionComponent<IntrusionSetFormProps> = ({
   updater,
   onReset,
   onCompleted,
@@ -90,38 +99,30 @@ export const IntrusionSetCreationForm: FunctionComponent<
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
-  const { mandatoryAttributes } = useIsMandatoryAttribute(
-    INTRUSION_SET_TYPE,
-  );
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    confidence: Yup.number(),
-    description: Yup.string().nullable(),
-  }, mandatoryAttributes);
-  const intrusionSetValidator = useDynamicSchemaCreationValidation(
-    mandatoryAttributes,
-    basicShape,
-  );
-  const [commit] = useApiMutation<IntrusionSetCreationMutation>(
-    intrusionSetMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Intrusion-Set')} ${t_i18n('successfully created')}` },
-  );
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
-  const {
-    bulkCommit,
-    bulkCount,
-    bulkCurrentCount,
-    BulkResult,
-    resetBulk,
-  } = useBulkCommit<IntrusionSetCreationMutation>({
-    commit,
-    relayUpdater: (store, response) => {
-      if (updater) {
-        updater(store, 'intrusionSetAdd', response?.intrusionSetAdd);
-      }
+  const { mandatoryAttributes } = useIsMandatoryAttribute(INTRUSION_SET_TYPE);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      confidence: Yup.number(),
+      description: Yup.string().nullable(),
     },
+    mandatoryAttributes,
+  );
+  const intrusionSetValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
+  const [commit] = useApiMutation<IntrusionSetCreationMutation>(intrusionSetMutation, undefined, {
+    successMessage: `${t_i18n('entity_Intrusion-Set')} ${t_i18n('successfully created')}`,
   });
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
+  const { bulkCommit, bulkCount, bulkCurrentCount, BulkResult, resetBulk } =
+    useBulkCommit<IntrusionSetCreationMutation>({
+      commit,
+      relayUpdater: (store, response) => {
+        if (updater) {
+          updater(store, 'intrusionSetAdd', response?.intrusionSetAdd);
+        }
+      },
+    });
 
   useEffect(() => {
     if (bulkCount > 1) {
@@ -214,15 +215,10 @@ export const IntrusionSetCreationForm: FunctionComponent<
               component={BulkTextField}
               name="name"
               label={t_i18n('Name')}
-              required={(mandatoryAttributes.includes('name'))}
+              required={mandatoryAttributes.includes('name')}
               fullWidth={true}
               askAi={true}
-              detectDuplicate={[
-                'Threat-Actor',
-                'Intrusion-Set',
-                'Campaign',
-                'Malware',
-              ]}
+              detectDuplicate={['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Malware']}
             />
             <ConfidenceField
               entityType="Intrusion-Set"
@@ -232,7 +228,7 @@ export const IntrusionSetCreationForm: FunctionComponent<
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
-              required={(mandatoryAttributes.includes('description'))}
+              required={mandatoryAttributes.includes('description')}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -243,26 +239,26 @@ export const IntrusionSetCreationForm: FunctionComponent<
             />
             <CreatedByField
               name="createdBy"
-              required={(mandatoryAttributes.includes('createdBy'))}
+              required={mandatoryAttributes.includes('createdBy')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
-              required={(mandatoryAttributes.includes('objectLabel'))}
+              required={mandatoryAttributes.includes('objectLabel')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
-              required={(mandatoryAttributes.includes('objectMarking'))}
+              required={mandatoryAttributes.includes('objectMarking')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ExternalReferencesField
               name="externalReferences"
-              required={(mandatoryAttributes.includes('externalReferences'))}
+              required={mandatoryAttributes.includes('externalReferences')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
@@ -272,23 +268,17 @@ export const IntrusionSetCreationForm: FunctionComponent<
               name="file"
               setFieldValue={setFieldValue}
               disabled={splitMultilines(values.name).length > 1}
-              noFileSelectedLabel={splitMultilines(values.name).length > 1
-                ? t_i18n('File upload not allowed in bulk creation')
-                : undefined
+              noFileSelectedLabel={
+                splitMultilines(values.name).length > 1
+                  ? t_i18n('File upload not allowed in bulk creation')
+                  : undefined
               }
             />
             <FormButtonContainer>
-              <Button
-                variant="secondary"
-                onClick={handleReset}
-                disabled={isSubmitting}
-              >
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>
@@ -307,12 +297,8 @@ const IntrusionSetCreation = ({
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
 
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_intrusionSets',
-    paginationOptions,
-    'intrusionSetAdd',
-  );
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_intrusionSets', paginationOptions, 'intrusionSetAdd');
 
   const CreateIntrusionSetControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="Intrusion-Set" {...props} />

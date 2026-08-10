@@ -58,11 +58,7 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
   return (
     <LoginLayout settings={settings}>
       <Stack gap={1} sx={{ width: 500 }}>
-        <ConsentMessage
-          value={checked}
-          data={settings}
-          onToggle={handleChange}
-        />
+        <ConsentMessage value={checked} data={settings} onToggle={handleChange} />
 
         <AlertLogout />
         <AlertFlashError />
@@ -88,16 +84,13 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
               overflowY: isLoginMessageOverflowing ? 'auto' : undefined,
             }}
           >
-            <LoginMarkdown sx={{ mb: 2 }}>
-              {loginMessage}
-            </LoginMarkdown>
+            <LoginMarkdown sx={{ mb: 2 }}>{loginMessage}</LoginMarkdown>
           </Typography>
         )}
 
-        {consentOk
-          && providers.filter((p) => p.type === 'FORM').length > 0
-          && (showLoginForm || !!resetPwdStep || !!forcePasswordChange)
-          && (
+        {consentOk &&
+          providers.filter((p) => p.type === 'FORM').length > 0 &&
+          (showLoginForm || !!resetPwdStep || !!forcePasswordChange) && (
             <Card
               sx={{
                 display: 'flex',
@@ -136,10 +129,7 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
             </Card>
           )}
 
-        <ExternalAuths
-          data={settings}
-          consentValue={checked}
-        />
+        <ExternalAuths data={settings} consentValue={checked} />
       </Stack>
     </LoginLayout>
   );

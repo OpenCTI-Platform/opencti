@@ -3,7 +3,10 @@ import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
-import { DataSourceDetails_dataSource$data, DataSourceDetails_dataSource$key } from './__generated__/DataSourceDetails_dataSource.graphql';
+import {
+  DataSourceDetails_dataSource$data,
+  DataSourceDetails_dataSource$key,
+} from './__generated__/DataSourceDetails_dataSource.graphql';
 import DataSourceDataComponents from './DataSourceDataComponents';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Card from '../../../../components/common/card/Card';
@@ -30,9 +33,7 @@ interface DataSourceDetailsProps {
   dataSource: DataSourceDetails_dataSource$key;
 }
 
-const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
-  dataSource,
-}) => {
+const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({ dataSource }) => {
   const { t_i18n } = useFormatter();
 
   const data: DataSourceDetails_dataSource$data = useFragment(
@@ -45,23 +46,15 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={2}>
           <Grid item xs={12}>
-            <Label>
-              {t_i18n('Description')}
-            </Label>
+            <Label>{t_i18n('Description')}</Label>
             <FieldOrEmpty source={data.description}>
               <ExpandableMarkdown source={data.description} limit={300} />
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Platforms')}
-            </Label>
+            <Label>{t_i18n('Platforms')}</Label>
             <TextList list={data.x_mitre_platforms} />
-            <Label
-              sx={{ marginTop: 2 }}
-            >
-              {t_i18n('Layers')}
-            </Label>
+            <Label sx={{ marginTop: 2 }}>{t_i18n('Layers')}</Label>
             <TextList list={data.collection_layers} />
           </Grid>
           <Grid item xs={12}>

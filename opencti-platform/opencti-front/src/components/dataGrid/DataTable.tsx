@@ -14,25 +14,28 @@ import { FilterIconButtonProps } from '../FilterIconButton';
 import { isNotEmptyField } from '../../utils/utils';
 import type { Theme } from '../Theme';
 import { useDataTableContext } from './components/DataTableContext';
-import { FilterSearchContext, useAvailableFilterKeysForEntityTypes } from '../../utils/filters/filtersUtils';
+import {
+  FilterSearchContext,
+  useAvailableFilterKeysForEntityTypes,
+} from '../../utils/filters/filtersUtils';
 import useDraftContext from '../../utils/hooks/useDraftContext';
 import { useGetCurrentUserAccessRight } from '../../utils/authorizedMembers';
 
-type DataTableInternalFiltersProps = Pick<DataTableProps,
-  | 'contextFilters'
-  | 'entityTypes'
-  | 'hideSavedFilters'> & {
-    hideSearch?: boolean;
-    hideFilters?: boolean;
-    availableRelationFilterTypes?: FilterIconButtonProps['availableRelationFilterTypes'];
-    availableEntityTypes?: string[];
-    availableRelationshipTypes?: string[];
-    searchContextFinal?: FilterSearchContext;
-    additionalHeaderButtons?: ReactNode[];
-    additionalHeaderToggleButtons?: ReactNode[];
-    currentView?: string;
-    exportContext?: { entity_type: string; entity_id?: string };
-  };
+type DataTableInternalFiltersProps = Pick<
+  DataTableProps,
+  'contextFilters' | 'entityTypes' | 'hideSavedFilters'
+> & {
+  hideSearch?: boolean;
+  hideFilters?: boolean;
+  availableRelationFilterTypes?: FilterIconButtonProps['availableRelationFilterTypes'];
+  availableEntityTypes?: string[];
+  availableRelationshipTypes?: string[];
+  searchContextFinal?: FilterSearchContext;
+  additionalHeaderButtons?: ReactNode[];
+  additionalHeaderToggleButtons?: ReactNode[];
+  currentView?: string;
+  exportContext?: { entity_type: string; entity_id?: string };
+};
 
 const DataTableInternalFilters = ({
   contextFilters,
@@ -60,23 +63,25 @@ const DataTableInternalFilters = ({
     },
   } = useDataTableContext();
   const extendedExportContext = React.useMemo(
-    () => (exportContext
-      ? {
-          ...exportContext,
-          visible_columns: columns
-            .filter(({ id, visible }) => !['select', 'navigate', 'icon'].includes(id) && visible)
-            .map((c) => c.id),
-        }
-      : undefined),
+    () =>
+      exportContext
+        ? {
+            ...exportContext,
+            visible_columns: columns
+              .filter(({ id, visible }) => !['select', 'navigate', 'icon'].includes(id) && visible)
+              .map((c) => c.id),
+          }
+        : undefined,
     [exportContext, columns],
   );
-  const computedEntityTypes = entityTypes ?? (exportContext?.entity_type ? [exportContext.entity_type] : []);
+  const computedEntityTypes =
+    entityTypes ?? (exportContext?.entity_type ? [exportContext.entity_type] : []);
 
   return (
     <>
       {/* Wrap div in logic so if there are no filters and no search,
-        * there isn't an empty div block with 16px bottom margin.
-        */}
+       * there isn't an empty div block with 16px bottom margin.
+       */}
       {(!hideFilters || !hideSearch) && (
         <div
           style={{
@@ -86,11 +91,7 @@ const DataTableInternalFilters = ({
           }}
         >
           {!hideSearch && (
-            <SearchInput
-              variant="small"
-              onSubmit={helpers.handleSearch}
-              keyword={searchTerm}
-            />
+            <SearchInput variant="small" onSubmit={helpers.handleSearch} keyword={searchTerm} />
           )}
 
           {!hideFilters && (
@@ -124,7 +125,8 @@ const DataTableInternalFilters = ({
   );
 };
 
-type DataTableInternalToolbarProps = Pick<DataTableProps,
+type DataTableInternalToolbarProps = Pick<
+  DataTableProps,
   | 'contextFilters'
   | 'handleCopy'
   | 'removeAuthMembersEnabled'
@@ -178,7 +180,6 @@ const DataTableInternalToolbar = ({
         flex: 1,
       }}
     >
-
       <DataTableToolBar
         selectedElements={selectedElements}
         deSelectedElements={deSelectedElements}
@@ -203,7 +204,8 @@ const DataTableInternalToolbar = ({
   );
 };
 
-type OCTIDataTableProps = Pick<DataTableProps,
+type OCTIDataTableProps = Pick<
+  DataTableProps,
   | 'dataColumns'
   | 'resolvePath'
   | 'storageKey'
@@ -230,13 +232,15 @@ type OCTIDataTableProps = Pick<DataTableProps,
   | 'entityTypes'
   | 'actionsColumnWidth'
   | 'enableInfiniteScroll'
-  | 'container'> & {
-    lineFragment: GraphQLTaggedNode;
-    preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>;
-    exportContext?: { entity_type: string; entity_id?: string };
-    globalSearch?: string;
-    createButton?: ReactNode;
-  } & DataTableInternalFiltersProps & DataTableInternalToolbarProps;
+  | 'container'
+> & {
+  lineFragment: GraphQLTaggedNode;
+  preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>;
+  exportContext?: { entity_type: string; entity_id?: string };
+  globalSearch?: string;
+  createButton?: ReactNode;
+} & DataTableInternalFiltersProps &
+  DataTableInternalToolbarProps;
 
 const DataTable = (props: OCTIDataTableProps) => {
   const {
@@ -271,7 +275,8 @@ const DataTable = (props: OCTIDataTableProps) => {
 
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
-  const computedEntityTypes = entityTypes ?? (exportContext?.entity_type ? [exportContext.entity_type] : []);
+  const computedEntityTypes =
+    entityTypes ?? (exportContext?.entity_type ? [exportContext.entity_type] : []);
   const computedSearchContextFinal = searchContextFinal?.entityTypes
     ? searchContextFinal
     : { ...searchContextFinal, entityTypes: computedEntityTypes };
@@ -297,7 +302,7 @@ const DataTable = (props: OCTIDataTableProps) => {
         useLineData={useLineData(lineFragment)}
         settingsMessagesBannerHeight={settingsMessagesBannerHeight}
         searchTerm={globalSearch}
-        filtersComponent={(
+        filtersComponent={
           <DataTableInternalFilters
             entityTypes={entityTypes}
             contextFilters={contextFilters}
@@ -313,8 +318,8 @@ const DataTable = (props: OCTIDataTableProps) => {
             exportContext={exportContext}
             searchContextFinal={computedSearchContextFinal}
           />
-        )}
-        dataTableToolBarComponent={(
+        }
+        dataTableToolBarComponent={
           <DataTableInternalToolbar
             container={container}
             entityTypes={entityTypes}
@@ -330,7 +335,7 @@ const DataTable = (props: OCTIDataTableProps) => {
             disableBulkEnroll={disableBulkEnroll}
             deleteDisable={deleteDisable}
           />
-        )}
+        }
       />
     </>
   );

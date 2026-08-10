@@ -25,11 +25,7 @@ const GroupsLines: React.FC<GroupsLinesProps> = (props) => {
       hasMore={relay.hasMore.bind(this)}
       isLoading={relay.isLoading.bind(this)}
       dataList={pathOr([], ['groups', 'edges'], data)}
-      globalCount={pathOr(
-        nbOfRowsToLoad,
-        ['groups', 'pageInfo', 'globalCount'],
-        data,
-      )}
+      globalCount={pathOr(nbOfRowsToLoad, ['groups', 'pageInfo', 'globalCount'], data)}
       LineComponent={GroupLine}
       DummyLineComponent={GroupLineDummy}
       dataColumns={dataColumns}

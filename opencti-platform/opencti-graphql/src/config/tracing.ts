@@ -1,7 +1,10 @@
-import { MeterProvider, type IMetricReader, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
+import {
+  MeterProvider,
+  type IMetricReader,
+  PeriodicExportingMetricReader,
+} from '@opentelemetry/sdk-metrics';
 import { type Counter, type Histogram, ValueType, SpanKind } from '@opentelemetry/api';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
+// @ts-expect-error opentelemetry-node-metrics has no bundled type declarations
 import nodeMetrics from 'opentelemetry-node-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import nconf from 'nconf';
@@ -95,8 +98,15 @@ if (ENABLED_METRICS) {
   // OTLP - JAEGER ...
   const exporterOtlp = nconf.get('app:telemetry:metrics:exporter_otlp');
   if (exporterOtlp && exporterOtlp.length > 0) {
-    const metricExporter = new OTLPMetricExporter({ url: exporterOtlp, headers: {}, concurrencyLimit: 1 });
-    const metricReader = new PeriodicExportingMetricReader({ exporter: metricExporter, exportIntervalMillis: 1000 });
+    const metricExporter = new OTLPMetricExporter({
+      url: exporterOtlp,
+      headers: {},
+      concurrencyLimit: 1,
+    });
+    const metricReader = new PeriodicExportingMetricReader({
+      exporter: metricExporter,
+      exportIntervalMillis: 1000,
+    });
     metricReaders.push(metricReader);
   }
   // PROMETHEUS
@@ -113,7 +123,13 @@ export const meterManager = new MeterManager(meterProvider);
 // Register metrics
 meterManager.registerMetrics();
 
-export const telemetry = async (context: AuthContext, user: AuthUser, spanName: string, attrs: object, fn: any) => {
+export const telemetry = async (
+  context: AuthContext,
+  user: AuthUser,
+  spanName: string,
+  attrs: object,
+  fn: any,
+) => {
   // if tracing disabled or context is not correctly configured.
   if (!ENABLED_TRACING || !context) {
     return fn();
@@ -121,13 +137,18 @@ export const telemetry = async (context: AuthContext, user: AuthUser, spanName: 
   // if tracing enabled
   const tracer = context.tracing.getTracer();
   const ctx = context.tracing.getCtx();
-  const tracingSpan = tracer.startSpan(spanName, {
-    attributes: {
-      'enduser.type': context.source,
-      [ATTR_ENDUSER_ID]: user.id,
-      ...attrs,
+  const tracingSpan = tracer.startSpan(
+    spanName,
+    {
+      attributes: {
+        'enduser.type': context.source,
+        [ATTR_ENDUSER_ID]: user.id,
+        ...attrs,
+      },
+      kind: SpanKind.CLIENT,
     },
-    kind: SpanKind.CLIENT }, ctx);
+    ctx,
+  );
 
   try {
     const data = await fn();

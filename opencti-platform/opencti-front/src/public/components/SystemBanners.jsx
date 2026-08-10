@@ -10,7 +10,7 @@ const BANNER_Z_INDEX = 2000;
 /* Avoid auto-lint removal using --fix with false positive finding of: */
 /* Styled class is not used in component  custom-rules/classes-rule */
 /* for the banner classes below which are derived in bannerColorClassName() component */
-/* eslint-disable */
+/* oxlint-disable custom-rules/classes-rule */
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
@@ -55,9 +55,9 @@ const useStyles = makeStyles(() => ({
   classificationTextYellow: {
     color: '#000000',
   },
-  /* end banner classes needing eslint-disable */
+  /* end banner classes needing oxlint-disable */
 }));
-/* eslint-enable */
+/* oxlint-enable custom-rules/classes-rule */
 
 const bannerColorClassName = (color, prefix = 'banner') => {
   if (!R.is(String, color)) {
@@ -73,24 +73,12 @@ const SystemBanners = ({ settings }) => {
   const bannerLevel = settings.platform_banner_level;
   const bannerText = settings.platform_banner_text;
   const bannerColor = bannerColorClassName(bannerLevel);
-  const bannerTextColor = bannerColorClassName(
-    bannerLevel,
-    'classificationText',
+  const bannerTextColor = bannerColorClassName(bannerLevel, 'classificationText');
+  const topBannerClasses = [classes.banner, classes.bannerTop, classes[bannerColor]].join(' ');
+  const bottomBannerClasses = [classes.banner, classes.bannerBottom, classes[bannerColor]].join(
+    ' ',
   );
-  const topBannerClasses = [
-    classes.banner,
-    classes.bannerTop,
-    classes[bannerColor],
-  ].join(' ');
-  const bottomBannerClasses = [
-    classes.banner,
-    classes.bannerBottom,
-    classes[bannerColor],
-  ].join(' ');
-  const bannerTextClasses = [
-    classes.classificationText,
-    classes[bannerTextColor],
-  ].join(' ');
+  const bannerTextClasses = [classes.classificationText, classes[bannerTextColor]].join(' ');
   if (isEmptyField(bannerLevel) || isEmptyField(bannerText)) {
     return <></>;
   }

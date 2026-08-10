@@ -3,7 +3,8 @@ import type { RuleDefinition } from '../../types/rules';
 
 const id = 'belongs_to_attributed';
 const name = 'Belongs-to propagation via attribution';
-const description = 'If an entity belongs to another entity and that entity is attributed to a third entity, then the first entity also belongs to the third entity.';
+const description =
+  'If an entity belongs to another entity and that entity is attributed to a third entity, then the first entity also belongs to the third entity.';
 const category = 'Parent-child propagation';
 const display = {
   if: [

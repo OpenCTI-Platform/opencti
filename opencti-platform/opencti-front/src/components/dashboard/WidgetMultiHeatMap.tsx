@@ -35,7 +35,7 @@ const lightColors = [
 ];
 
 interface WidgetMultiHeatMapProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   data: any[];
   minValue: number;
   maxValue: number;
@@ -59,20 +59,16 @@ const WidgetMultiHeatMap = ({
       .fill(0)
       .map((_, i) => ({
         from:
-        minValue + (i + 1) * interval - interval === 0
-          ? 1
-          : minValue + (i + 1) * interval - interval,
+          minValue + (i + 1) * interval - interval === 0
+            ? 1
+            : minValue + (i + 1) * interval - interval,
         to: minValue + (i + 1) * interval,
-        color:
-        theme.palette.mode === 'dark'
-          ? darkColors[i + 1]
-          : lightColors[i + 1],
+        color: theme.palette.mode === 'dark' ? darkColors[i + 1] : lightColors[i + 1],
       }));
     colorRanges.push({
       from: 0,
       to: 0,
-      color:
-      theme.palette.mode === 'dark' ? darkColors[0] : lightColors[0],
+      color: theme.palette.mode === 'dark' ? darkColors[0] : lightColors[0],
     });
 
     return heatMapOptions(

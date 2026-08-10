@@ -5,7 +5,9 @@ import { Link } from 'react-router-dom';
 import { OpenInNewOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
 import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField, { AutocompleteFieldProps } from '../../../../components/AutocompleteField';
+import AutocompleteField, {
+  AutocompleteFieldProps,
+} from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import { CreatorFieldSearchQuery$data } from './__generated__/CreatorFieldSearchQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -69,10 +71,10 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
     if (showConfidence && node?.effective_confidence_level) {
       let textToShow = `${t_i18n('Max Confidence')} ${node.effective_confidence_level.max_confidence}`;
       if (node?.effective_confidence_level.overrides?.length) {
-        const overrides = t_i18n(
-          '',
-          { id: '+ N override(s)', values: { count: node.effective_confidence_level.overrides.length } },
-        );
+        const overrides = t_i18n('', {
+          id: '+ N override(s)',
+          values: { count: node.effective_confidence_level.overrides.length },
+        });
         textToShow = `${textToShow} ${overrides}`;
       }
       if (isGrantedToUsers) {
@@ -102,19 +104,17 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
       fetchQuery(CreatorFieldQuery, { search })
         .toPromise()
         .then((data) => {
-          const NewCreators = (
-            (data as CreatorFieldSearchQuery$data)?.members?.edges ?? []
-          ).map((n) => ({
-            label: n?.node.name ?? t_i18n('Unknown'),
-            value: n?.node.id,
-            extra: getExtraFromNode(n?.node),
-          }));
+          const NewCreators = ((data as CreatorFieldSearchQuery$data)?.members?.edges ?? []).map(
+            (n) => ({
+              label: n?.node.name ?? t_i18n('Unknown'),
+              value: n?.node.id,
+              extra: getExtraFromNode(n?.node),
+            }),
+          );
           const templateValues = [...creatorOptions, ...NewCreators];
           // Keep only the unique list of options
           const uniqTemplates = templateValues.filter((item, index) => {
-            return (
-              templateValues.findIndex((e) => e.value === item.value) === index
-            );
+            return templateValues.findIndex((e) => e.value === item.value) === index;
           });
           setCreatorOptions(uniqTemplates);
         });
@@ -138,12 +138,11 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
         style={containerStyle}
         noOptionsText={t_i18n('No available options')}
         options={creatorOptions}
-        isOptionEqualToValue={(option: CreatorOption, selected: CreatorOption) => option.value === selected.value}
+        isOptionEqualToValue={(option: CreatorOption, selected: CreatorOption) =>
+          option.value === selected.value
+        }
         onInputChange={searchCreators}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: CreatorOption,
-        ) => (
+        renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: CreatorOption) => (
           <li {...props}>
             <div
               style={{

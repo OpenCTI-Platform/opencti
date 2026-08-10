@@ -25,15 +25,21 @@ interface EntitySettingScaleTickLineProps {
   tick: Tick | UndefinedTick;
   tickLabel: string;
   deleteEnabled?: boolean;
-  validation: (t: (v: string) => string, min: number, max: number) => ObjectSchema<{ [p: string]: unknown }>;
-  handleUpdate: (validateForm: (values?: Tick | UndefinedTick) => Promise<FormikErrors<Tick | UndefinedTick>>, name: keyof Tick, value: number | string) => void;
+  validation: (
+    t: (v: string) => string,
+    min: number,
+    max: number,
+  ) => ObjectSchema<{ [p: string]: unknown }>;
+  handleUpdate: (
+    validateForm: (values?: Tick | UndefinedTick) => Promise<FormikErrors<Tick | UndefinedTick>>,
+    name: keyof Tick,
+    value: number | string,
+  ) => void;
   handleDelete?: () => void;
   noMargin?: boolean;
 }
 
-const ScaleConfigurationLine: FunctionComponent<
-  EntitySettingScaleTickLineProps
-> = ({
+const ScaleConfigurationLine: FunctionComponent<EntitySettingScaleTickLineProps> = ({
   tick,
   tickLabel,
   deleteEnabled,
@@ -64,7 +70,9 @@ const ScaleConfigurationLine: FunctionComponent<
                   name="value"
                   label={tickLabel}
                   fullWidth={true}
-                  onSubmit={(name: keyof Tick, value: string) => handleUpdate(validateForm, name, value !== '' ? Number.parseInt(value, 10) : '')}
+                  onSubmit={(name: keyof Tick, value: string) =>
+                    handleUpdate(validateForm, name, value !== '' ? Number.parseInt(value, 10) : '')
+                  }
                 />
               </Grid>
               <Grid item xs={4} style={{ paddingTop: noMargin ? 0 : 24 }}>
@@ -74,7 +82,9 @@ const ScaleConfigurationLine: FunctionComponent<
                   name="color"
                   label={t_i18n('Color')}
                   fullWidth={true}
-                  onSubmit={(name: keyof Tick, value: string) => handleUpdate(validateForm, name, value)}
+                  onSubmit={(name: keyof Tick, value: string) =>
+                    handleUpdate(validateForm, name, value)
+                  }
                 />
               </Grid>
               <Grid item xs={4} style={{ paddingTop: noMargin ? 0 : 24 }}>
@@ -84,7 +94,9 @@ const ScaleConfigurationLine: FunctionComponent<
                   name="label"
                   label={t_i18n('Label')}
                   fullWidth={true}
-                  onSubmit={(name: keyof Tick, value: string) => handleUpdate(validateForm, name, value)}
+                  onSubmit={(name: keyof Tick, value: string) =>
+                    handleUpdate(validateForm, name, value)
+                  }
                 />
               </Grid>
               {deleteEnabled && (

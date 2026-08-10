@@ -9,26 +9,14 @@ import NewsFeed from './NewsFeed';
 
 const Root = () => (
   <Routes>
-    <Route
-      path="/"
-      element={<Navigate to="/dashboard/profile/me" replace={true} />}
-    />
-    <Route
-      path="/me"
-      element={<Profile />}
-    />
-    <Route
-      path="/notifications"
-      element={boundaryWrapper(Notifications)}
-    >
+    <Route path="/" element={<Navigate to="/dashboard/profile/me" replace={true} />} />
+    <Route path="/me" element={<Profile />} />
+    <Route path="/notifications" element={boundaryWrapper(Notifications)}>
       <Route index element={<Navigate to="alerts" replace={true} />} />
       <Route path="alerts" element={boundaryWrapper(Alerts)} />
       <Route path="news-feed" element={boundaryWrapper(NewsFeed)} />
     </Route>
-    <Route
-      path="/triggers"
-      element={boundaryWrapper(Triggers)}
-    />
+    <Route path="/triggers" element={boundaryWrapper(Triggers)} />
   </Routes>
 );
 

@@ -25,7 +25,11 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export type CsvMapperFieldOption = FieldOption & { representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[] };
+export type CsvMapperFieldOption = FieldOption & {
+  representations: {
+    attributes: { key: string; default_values: { name: string }[] | string[] }[];
+  }[];
+};
 interface CsvMapperFieldComponentProps {
   name: string;
   isOptionEqualToValue: (option: FieldOption, value: FieldOption) => boolean;
@@ -87,10 +91,7 @@ const CsvMapperField: FunctionComponent<CsvMapperFieldComponentProps> = ({
         isOptionEqualToValue={isOptionEqualToValue}
         onChange={onChange}
         classes={{ clearIndicator: classes.autoCompleteIndicator }}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: FieldOption,
-        ) => (
+        renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: FieldOption) => (
           <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>
               <ItemIcon type="csvmapper" />

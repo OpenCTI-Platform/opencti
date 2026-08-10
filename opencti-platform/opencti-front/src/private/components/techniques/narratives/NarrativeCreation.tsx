@@ -23,7 +23,11 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import { splitMultilines } from '../../../../utils/String';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -31,7 +35,10 @@ import CreatedByField from '../../common/form/CreatedByField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import { NarrativeCreationMutation, NarrativeCreationMutation$variables } from './__generated__/NarrativeCreationMutation.graphql';
+import {
+  NarrativeCreationMutation,
+  NarrativeCreationMutation$variables,
+} from './__generated__/NarrativeCreationMutation.graphql';
 import { NarrativesLinesPaginationQuery$variables } from './__generated__/NarrativesLinesPaginationQuery.graphql';
 
 const narrativeMutation = graphql`
@@ -88,7 +95,11 @@ interface NarrativeAddInput {
 }
 
 interface NarrativeFormProps {
-  updater?: (store: RecordSourceSelectorProxy, key: string, response: NarrativeCreationMutation['response']['narrativeAdd']) => void;
+  updater?: (
+    store: RecordSourceSelectorProxy,
+    key: string,
+    response: NarrativeCreationMutation['response']['narrativeAdd'],
+  ) => void;
   onReset?: () => void;
   inputValue?: string;
   onCompleted?: () => void;
@@ -114,35 +125,29 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(NARRATIVE_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    description: Yup.string().nullable(),
-  }, mandatoryAttributes);
-  const narrativeValidator = useDynamicSchemaCreationValidation(
-    mandatoryAttributes,
-    basicShape,
-  );
-
-  const [commit] = useApiMutation<NarrativeCreationMutation>(
-    narrativeMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Narrative')} ${t_i18n('successfully created')}` },
-  );
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
-  const {
-    bulkCommit,
-    bulkCount,
-    bulkCurrentCount,
-    BulkResult,
-    resetBulk,
-  } = useBulkCommit<NarrativeCreationMutation>({
-    commit,
-    relayUpdater: (store, response) => {
-      if (updater) {
-        updater(store, 'narrativeAdd', response?.narrativeAdd);
-      }
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      description: Yup.string().nullable(),
     },
+    mandatoryAttributes,
+  );
+  const narrativeValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
+
+  const [commit] = useApiMutation<NarrativeCreationMutation>(narrativeMutation, undefined, {
+    successMessage: `${t_i18n('entity_Narrative')} ${t_i18n('successfully created')}`,
   });
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
+  const { bulkCommit, bulkCount, bulkCurrentCount, BulkResult, resetBulk } =
+    useBulkCommit<NarrativeCreationMutation>({
+      commit,
+      relayUpdater: (store, response) => {
+        if (updater) {
+          updater(store, 'narrativeAdd', response?.narrativeAdd);
+        }
+      },
+    });
 
   useEffect(() => {
     if (bulkCount > 1) {
@@ -183,19 +188,16 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
     });
   };
 
-  const initialValues = useDefaultValues(
-    NARRATIVE_TYPE,
-    {
-      name: inputValue ?? '',
-      description: '',
-      createdBy: defaultCreatedBy ?? null,
-      objectMarking: defaultMarkingDefinitions ?? [],
-      confidence: defaultConfidence ?? null,
-      objectLabel: [],
-      externalReferences: [],
-      file: null,
-    },
-  );
+  const initialValues = useDefaultValues(NARRATIVE_TYPE, {
+    name: inputValue ?? '',
+    description: '',
+    createdBy: defaultCreatedBy ?? null,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    confidence: defaultConfidence ?? null,
+    objectLabel: [],
+    externalReferences: [],
+    file: null,
+  });
 
   return (
     <Formik<NarrativeAddInput>
@@ -238,7 +240,7 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
               component={BulkTextField}
               name="name"
               label={t_i18n('Name')}
-              required={(mandatoryAttributes.includes('name'))}
+              required={mandatoryAttributes.includes('name')}
               fullWidth={true}
               detectDuplicate={['Narrative']}
             />
@@ -246,7 +248,7 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
-              required={(mandatoryAttributes.includes('description'))}
+              required={mandatoryAttributes.includes('description')}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -255,32 +257,29 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
               registerMarkdownImagesController={registerMarkdownImagesController}
               uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
-            <ConfidenceField
-              entityType="Narratives"
-              containerStyle={fieldSpacingContainerStyle}
-            />
+            <ConfidenceField entityType="Narratives" containerStyle={fieldSpacingContainerStyle} />
             <CreatedByField
               name="createdBy"
-              required={(mandatoryAttributes.includes('createdBy'))}
+              required={mandatoryAttributes.includes('createdBy')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
-              required={(mandatoryAttributes.includes('objectLabel'))}
+              required={mandatoryAttributes.includes('objectLabel')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
-              required={(mandatoryAttributes.includes('objectMarking'))}
+              required={mandatoryAttributes.includes('objectMarking')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ExternalReferencesField
               name="externalReferences"
-              required={(mandatoryAttributes.includes('externalReferences'))}
+              required={mandatoryAttributes.includes('externalReferences')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
@@ -290,23 +289,17 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
               name="file"
               setFieldValue={setFieldValue}
               disabled={splitMultilines(values.name).length > 1}
-              noFileSelectedLabel={splitMultilines(values.name).length > 1
-                ? t_i18n('File upload not allowed in bulk creation')
-                : undefined
+              noFileSelectedLabel={
+                splitMultilines(values.name).length > 1
+                  ? t_i18n('File upload not allowed in bulk creation')
+                  : undefined
               }
             />
             <FormButtonContainer>
-              <Button
-                variant="secondary"
-                onClick={handleReset}
-                disabled={isSubmitting}
-              >
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>
@@ -335,12 +328,8 @@ const NarrativeCreation: FunctionComponent<NarrativeCreationProps> = ({
   const [bulkOpen, setBulkOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_narratives',
-    paginationOptions,
-    'narrativeAdd',
-  );
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_narratives', paginationOptions, 'narrativeAdd');
 
   const CreateNarrativeControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="Narrative" {...props} />
@@ -377,12 +366,12 @@ const NarrativeCreation: FunctionComponent<NarrativeCreationProps> = ({
         <Dialog
           open={open}
           onClose={handleClose}
-          title={(
+          title={
             <Stack direction="row" justifyContent="space-between" alignContent="center">
               {t_i18n('Create a narrative')}
               <BulkTextModalButton onClick={() => setBulkOpen(true)} />
             </Stack>
-          )}
+          }
         >
           <NarrativeCreationForm
             inputValue={inputValue}

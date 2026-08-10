@@ -60,8 +60,14 @@ interface PlaybookEditionFormProps {
 }
 
 const PlaybookEditionForm: FunctionComponent<PlaybookEditionFormProps> = ({ queryRef }) => {
-  const { playbook } = usePreloadedQuery<PlaybookEditionFormQuery>(playbookEditionFormQuery, queryRef);
-  const playbookData = useFragment<PlaybookEditionForm_playbook$key>(playbookEditionFragment, playbook);
+  const { playbook } = usePreloadedQuery<PlaybookEditionFormQuery>(
+    playbookEditionFormQuery,
+    queryRef,
+  );
+  const playbookData = useFragment<PlaybookEditionForm_playbook$key>(
+    playbookEditionFragment,
+    playbook,
+  );
   if (!playbookData) return null;
 
   const { t_i18n } = useFormatter();

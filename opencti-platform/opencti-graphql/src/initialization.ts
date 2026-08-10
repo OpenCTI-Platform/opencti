@@ -2,14 +2,24 @@
 import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
 import { ENABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION } from './config/conf';
-import { elUpdateIndicesMappings, ES_INIT_MAPPING_MIGRATION, ES_IS_INIT_MIGRATION, initializeSchema } from './database/engine';
+import {
+  elUpdateIndicesMappings,
+  ES_INIT_MAPPING_MIGRATION,
+  ES_IS_INIT_MIGRATION,
+  initializeSchema,
+} from './database/engine';
 import { initializeBucket } from './database/raw-file-storage';
 import { enforceQueuesConsistency, initializeInternalQueues } from './database/rabbitmq';
 import { initDefaultNotifiers } from './modules/notifier/notifier-domain';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
 import { applyMigration, lastAvailableMigrationTime } from './database/migration';
 import { createEntity, loadEntity } from './database/middleware';
-import { ConfigurationError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from './config/errors';
+import {
+  ConfigurationError,
+  LockTimeoutError,
+  TYPE_LOCK_ERROR,
+  UnsupportedError,
+} from './config/errors';
 import { executionContext, SYSTEM_USER } from './utils/access';
 import { initCreateEntitySettings } from './modules/entitySetting/entitySetting-domain';
 import { initDecayRules } from './modules/decayRule/decayRule-domain';
@@ -53,14 +63,19 @@ const isExistingPlatform = async (context: AuthContext) => {
 };
 
 const isCompatiblePlatform = async (context: AuthContext) => {
-  const migration = await loadEntity<BasicStoreEntityMigrationStatus>(context, SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
+  const migration = await loadEntity<BasicStoreEntityMigrationStatus>(context, SYSTEM_USER, [
+    ENTITY_TYPE_MIGRATION_STATUS,
+  ]);
   const currentVersion = migration && migration.platformVersion;
   // For old platform, version is not set yet, continue
   if (!currentVersion) return;
   // Runtime version must be >= of the stored runtime
   const runtimeVersion = semver.coerce(PLATFORM_VERSION);
   if (runtimeVersion && semver.lt(runtimeVersion, currentVersion)) {
-    throw UnsupportedError('Your platform data are too recent to start on', { currentVersion, runtimeVersion });
+    throw UnsupportedError('Your platform data are too recent to start on', {
+      currentVersion,
+      runtimeVersion,
+    });
   }
 };
 
@@ -78,9 +93,11 @@ const platformInit = async (withMarkings = true) => {
       await initializeBucket();
       await initializeSchema();
       if (ES_IS_INIT_MIGRATION) {
-        logApp.warn(`Templates and indices created with ${ES_INIT_MAPPING_MIGRATION} compatible mapping protection. `
-          + 'This is only used to help indices reindex and migration. For retro option, please reindex, restart and then '
-          + 'trigger a rollover to secure the new indices');
+        logApp.warn(
+          `Templates and indices created with ${ES_INIT_MAPPING_MIGRATION} compatible mapping protection. ` +
+            'This is only used to help indices reindex and migration. For retro option, please reindex, restart and then ' +
+            'trigger a rollover to secure the new indices',
+        );
         process.exit(1);
       }
       await initializeMigration(context);
@@ -92,7 +109,9 @@ const platformInit = async (withMarkings = true) => {
       logApp.info('[INIT] Existing platform detected, initialization...');
       if (ES_IS_INIT_MIGRATION) {
         // noinspection ExceptionCaughtLocallyJS
-        throw ConfigurationError('Internal option internal_init_mapping_migration is only available for new platform init');
+        throw ConfigurationError(
+          'Internal option internal_init_mapping_migration is only available for new platform init',
+        );
       }
       await patchPlatformId(context);
       await refreshMappingsAndIndices();
@@ -115,7 +134,8 @@ const platformInit = async (withMarkings = true) => {
     loadEntityMetricsConfiguration();
   } catch (e) {
     if ((e as Error).name === TYPE_LOCK_ERROR) {
-      const reason = 'Platform cant get the lock for initialization (can be due to other instance currently migrating/initializing)';
+      const reason =
+        'Platform cant get the lock for initialization (can be due to other instance currently migrating/initializing)';
       throw LockTimeoutError({ participantIds: [PLATFORM_LOCK_ID] }, reason);
     } else {
       throw e;

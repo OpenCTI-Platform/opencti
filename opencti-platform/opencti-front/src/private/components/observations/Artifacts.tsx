@@ -1,6 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
-import { ArtifactsLinesPaginationQuery, ArtifactsLinesPaginationQuery$variables } from '@components/observations/__generated__/ArtifactsLinesPaginationQuery.graphql';
+import {
+  ArtifactsLinesPaginationQuery,
+  ArtifactsLinesPaginationQuery$variables,
+} from '@components/observations/__generated__/ArtifactsLinesPaginationQuery.graphql';
 import { ArtifactsLines_data$data } from '@components/observations/__generated__/ArtifactsLines_data.graphql';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
@@ -9,7 +12,10 @@ import ArtifactCreation from './artifacts/ArtifactCreation';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -79,15 +85,15 @@ const artifactsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...ArtifactsLines_data
-    @arguments(
-      types: $types
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        types: $types
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -98,10 +104,7 @@ const artifactsLinesFragment = graphql`
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
-    orderBy: {
-      type: "StixCyberObservablesOrdering"
-      defaultValue: created_at
-    }
+    orderBy: { type: "StixCyberObservablesOrdering", defaultValue: created_at }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "FilterGroup" }
   )
@@ -146,7 +149,11 @@ const Artifacts: FunctionComponent = () => {
     openExports: false,
     types: ['Artifact'],
   };
-  const { viewStorage: { filters }, paginationOptions, helpers: storageHelpers } = usePaginationLocalStorage<ArtifactsLinesPaginationQuery$variables>(
+  const {
+    viewStorage: { filters },
+    paginationOptions,
+    helpers: storageHelpers,
+  } = usePaginationLocalStorage<ArtifactsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
@@ -184,24 +191,29 @@ const Artifacts: FunctionComponent = () => {
   return (
     <div data-testid="artifact-page">
       <ExportContextProvider>
-        <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Artifacts'), current: true }]} />
+        <Breadcrumbs
+          elements={[
+            { label: t_i18n('Observations') },
+            { label: t_i18n('Artifacts'), current: true },
+          ]}
+        />
         {queryRef && (
           <DataTable
             dataColumns={dataColumns}
-            resolvePath={(data: ArtifactsLines_data$data) => data.stixCyberObservables?.edges?.map((n) => n?.node)}
+            resolvePath={(data: ArtifactsLines_data$data) =>
+              data.stixCyberObservables?.edges?.map((n) => n?.node)
+            }
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
             contextFilters={contextFilters}
             lineFragment={artifactLineFragment}
             preloadedPaginationProps={preloadedPaginationOptions}
             exportContext={{ entity_type: 'Artifact' }}
-            createButton={(
+            createButton={
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <ArtifactCreation
-                  paginationOptions={queryPaginationOptions}
-                />
+                <ArtifactCreation paginationOptions={queryPaginationOptions} />
               </Security>
-            )}
+            }
           />
         )}
       </ExportContextProvider>

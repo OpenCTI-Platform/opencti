@@ -22,21 +22,10 @@ vi.mock('../../../relay/environment', async () => {
   };
 });
 
-const renderMarkdownField = (
-  initialValue = '',
-  props: Record<string, unknown> = {},
-) => {
+const renderMarkdownField = (initialValue = '', props: Record<string, unknown> = {}) => {
   return testRender(
-    <Formik
-      initialValues={{ description: initialValue }}
-      onSubmit={() => { }}
-    >
-      <Field
-        name="description"
-        component={MarkdownField}
-        label="Description"
-        {...props}
-      />
+    <Formik initialValues={{ description: initialValue }} onSubmit={() => {}}>
+      <Field name="description" component={MarkdownField} label="Description" {...props} />
     </Formik>,
   );
 };
@@ -48,7 +37,10 @@ describe('Component: MarkdownField', () => {
     commitMutationMock.mockImplementation(({ onCompleted }) => {
       onCompleted?.({
         stixCoreObjectEdit: {
-          importPush: { id: 'import/global/default-uploaded-file', name: 'default-uploaded-file.png' },
+          importPush: {
+            id: 'import/global/default-uploaded-file',
+            name: 'default-uploaded-file.png',
+          },
         },
       });
     });
@@ -57,11 +49,13 @@ describe('Component: MarkdownField', () => {
   it('inserts image markdown at current cursor position from file picker', async () => {
     vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:picker');
     vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
-    vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue('00000000-0000-0000-0000-000000000001');
+    vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue(
+      '00000000-0000-0000-0000-000000000001',
+    );
 
     const { container } = renderMarkdownField('Hello world');
 
-    const textArea = await screen.findByRole('textbox') as HTMLTextAreaElement;
+    const textArea = (await screen.findByRole('textbox')) as HTMLTextAreaElement;
     textArea.focus();
     textArea.setSelectionRange(5, 5);
 
@@ -75,18 +69,22 @@ describe('Component: MarkdownField', () => {
     });
 
     await waitFor(() => {
-      expect(textArea.value).toBe('Hello![cat.png](opencti-image://temp/00000000-0000-0000-0000-000000000001) world');
+      expect(textArea.value).toBe(
+        'Hello![cat.png](opencti-image://temp/00000000-0000-0000-0000-000000000001) world',
+      );
     });
   });
 
   it('inserts dropped image files and ignores non-image files', async () => {
     vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:drop');
     vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
-    vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue('00000000-0000-0000-0000-000000000002');
+    vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue(
+      '00000000-0000-0000-0000-000000000002',
+    );
 
     renderMarkdownField('');
 
-    const textArea = await screen.findByRole('textbox') as HTMLTextAreaElement;
+    const textArea = (await screen.findByRole('textbox')) as HTMLTextAreaElement;
 
     fireEvent.drop(textArea, {
       dataTransfer: {
@@ -99,7 +97,9 @@ describe('Component: MarkdownField', () => {
     });
 
     await waitFor(() => {
-      expect(textArea.value).toContain('![image.png](opencti-image://temp/00000000-0000-0000-0000-000000000002)');
+      expect(textArea.value).toContain(
+        '![image.png](opencti-image://temp/00000000-0000-0000-0000-000000000002)',
+      );
       expect(textArea.value).not.toContain('notes.txt');
     });
   });
@@ -107,11 +107,13 @@ describe('Component: MarkdownField', () => {
   it('preserves typed text when dropping an image before deferred formik sync', async () => {
     vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:drop-typed');
     vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
-    vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue('00000000-0000-0000-0000-000000000009');
+    vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue(
+      '00000000-0000-0000-0000-000000000009',
+    );
 
     renderMarkdownField('');
 
-    const textArea = await screen.findByRole('textbox') as HTMLTextAreaElement;
+    const textArea = (await screen.findByRole('textbox')) as HTMLTextAreaElement;
     fireEvent.input(textArea, { target: { value: 'typed before drop' } });
 
     fireEvent.drop(textArea, {
@@ -123,15 +125,19 @@ describe('Component: MarkdownField', () => {
 
     await waitFor(() => {
       expect(textArea.value).toContain('typed before drop');
-      expect(textArea.value).toContain('![dropped.png](opencti-image://temp/00000000-0000-0000-0000-000000000009)');
-      expect(textArea.value).not.toBe('![dropped.png](opencti-image://temp/00000000-0000-0000-0000-000000000009)');
+      expect(textArea.value).toContain(
+        '![dropped.png](opencti-image://temp/00000000-0000-0000-0000-000000000009)',
+      );
+      expect(textArea.value).not.toBe(
+        '![dropped.png](opencti-image://temp/00000000-0000-0000-0000-000000000009)',
+      );
     });
   });
 
   it('shows and clears dashed outline indicator while dragging files over write textarea', async () => {
     renderMarkdownField('');
 
-    const textArea = await screen.findByRole('textbox') as HTMLTextAreaElement;
+    const textArea = (await screen.findByRole('textbox')) as HTMLTextAreaElement;
 
     fireEvent.dragEnter(textArea, {
       dataTransfer: {
@@ -153,11 +159,13 @@ describe('Component: MarkdownField', () => {
   it('inserts pasted clipboard image as temp markdown image link', async () => {
     vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:paste');
     vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
-    vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue('00000000-0000-0000-0000-000000000008');
+    vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue(
+      '00000000-0000-0000-0000-000000000008',
+    );
 
     renderMarkdownField('prefix ');
 
-    const textArea = await screen.findByRole('textbox') as HTMLTextAreaElement;
+    const textArea = (await screen.findByRole('textbox')) as HTMLTextAreaElement;
     textArea.focus();
     textArea.setSelectionRange(7, 7);
 
@@ -175,18 +183,22 @@ describe('Component: MarkdownField', () => {
     });
 
     await waitFor(() => {
-      expect(textArea.value).toBe('prefix ![screenshot.png](opencti-image://temp/00000000-0000-0000-0000-000000000008)');
+      expect(textArea.value).toBe(
+        'prefix ![screenshot.png](opencti-image://temp/00000000-0000-0000-0000-000000000008)',
+      );
     });
   });
 
   it('preserves typed text when pasting an image before deferred formik sync', async () => {
     vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:paste-typed');
     vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
-    vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue('00000000-0000-0000-0000-000000000010');
+    vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue(
+      '00000000-0000-0000-0000-000000000010',
+    );
 
     renderMarkdownField('');
 
-    const textArea = await screen.findByRole('textbox') as HTMLTextAreaElement;
+    const textArea = (await screen.findByRole('textbox')) as HTMLTextAreaElement;
     fireEvent.input(textArea, { target: { value: 'typed before paste' } });
 
     const pastedFile = new File(['clipboard-image'], 'pasted.png', { type: 'image/png' });
@@ -204,19 +216,25 @@ describe('Component: MarkdownField', () => {
 
     await waitFor(() => {
       expect(textArea.value).toContain('typed before paste');
-      expect(textArea.value).toContain('![pasted.png](opencti-image://temp/00000000-0000-0000-0000-000000000010)');
-      expect(textArea.value).not.toBe('![pasted.png](opencti-image://temp/00000000-0000-0000-0000-000000000010)');
+      expect(textArea.value).toContain(
+        '![pasted.png](opencti-image://temp/00000000-0000-0000-0000-000000000010)',
+      );
+      expect(textArea.value).not.toBe(
+        '![pasted.png](opencti-image://temp/00000000-0000-0000-0000-000000000010)',
+      );
     });
   });
 
   it('revokes object URL when temp image markdown is removed', async () => {
     vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:remove');
     const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
-    vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue('00000000-0000-0000-0000-000000000003');
+    vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue(
+      '00000000-0000-0000-0000-000000000003',
+    );
 
     const { container } = renderMarkdownField('');
 
-    const textArea = await screen.findByRole('textbox') as HTMLTextAreaElement;
+    const textArea = (await screen.findByRole('textbox')) as HTMLTextAreaElement;
     const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement;
 
     fireEvent.change(fileInput, {
@@ -241,11 +259,13 @@ describe('Component: MarkdownField', () => {
     vi.useFakeTimers();
     vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:move');
     const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
-    vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue('00000000-0000-0000-0000-000000000005');
+    vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue(
+      '00000000-0000-0000-0000-000000000005',
+    );
 
     try {
       const { container } = renderMarkdownField('prefix ');
-      const textArea = await screen.findByRole('textbox') as HTMLTextAreaElement;
+      const textArea = (await screen.findByRole('textbox')) as HTMLTextAreaElement;
       const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement;
 
       fireEvent.change(fileInput, {
@@ -277,11 +297,13 @@ describe('Component: MarkdownField', () => {
     vi.useFakeTimers();
     vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:preview-write-move');
     const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
-    vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue('00000000-0000-0000-0000-000000000006');
+    vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue(
+      '00000000-0000-0000-0000-000000000006',
+    );
 
     try {
       const { container } = renderMarkdownField('prefix ');
-      const textArea = await screen.findByRole('textbox') as HTMLTextAreaElement;
+      const textArea = (await screen.findByRole('textbox')) as HTMLTextAreaElement;
       const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement;
 
       fireEvent.change(fileInput, {
@@ -290,7 +312,8 @@ describe('Component: MarkdownField', () => {
         },
       });
 
-      const imageMarkdown = '![dashboard1 (2).png](opencti-image://temp/00000000-0000-0000-0000-000000000006)';
+      const imageMarkdown =
+        '![dashboard1 (2).png](opencti-image://temp/00000000-0000-0000-0000-000000000006)';
 
       await waitFor(() => {
         expect(textArea.value).toContain(imageMarkdown);
@@ -325,7 +348,7 @@ describe('Component: MarkdownField', () => {
     try {
       renderMarkdownField('Hello world');
 
-      const textArea = await screen.findByRole('textbox') as HTMLTextAreaElement;
+      const textArea = (await screen.findByRole('textbox')) as HTMLTextAreaElement;
       textArea.focus();
       textArea.setSelectionRange(5, 5);
 
@@ -355,7 +378,9 @@ describe('Component: MarkdownField', () => {
   it('revokes all temp object URLs on unmount', async () => {
     vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:unmount');
     const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
-    vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue('00000000-0000-0000-0000-000000000004');
+    vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue(
+      '00000000-0000-0000-0000-000000000004',
+    );
 
     const { container, unmount } = renderMarkdownField('');
 
@@ -368,7 +393,9 @@ describe('Component: MarkdownField', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByRole('textbox')).toHaveValue('![to-cleanup.png](opencti-image://temp/00000000-0000-0000-0000-000000000004)');
+      expect(screen.getByRole('textbox')).toHaveValue(
+        '![to-cleanup.png](opencti-image://temp/00000000-0000-0000-0000-000000000004)',
+      );
     });
 
     unmount();
@@ -379,7 +406,9 @@ describe('Component: MarkdownField', () => {
   it('finalizes temp image links to embedded URL on blur submit', async () => {
     vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:finalize');
     vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
-    vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue('00000000-0000-0000-0000-000000000007');
+    vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue(
+      '00000000-0000-0000-0000-000000000007',
+    );
     commitMutationMock.mockImplementationOnce(({ onCompleted }) => {
       onCompleted?.({
         stixCoreObjectEdit: {
@@ -394,7 +423,7 @@ describe('Component: MarkdownField', () => {
       uploadEntityId: 'entity--test',
     });
 
-    const textArea = await screen.findByRole('textbox') as HTMLTextAreaElement;
+    const textArea = (await screen.findByRole('textbox')) as HTMLTextAreaElement;
     const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement;
 
     fireEvent.change(fileInput, {
@@ -428,18 +457,16 @@ describe('Component: MarkdownField', () => {
           }
           return {};
         }}
-        onSubmit={() => { }}
+        onSubmit={() => {}}
       >
-        <Field
-          name="description"
-          component={MarkdownField}
-          label="Description"
-        />
+        <Field name="description" component={MarkdownField} label="Description" />
       </Formik>,
     );
 
     const textArea = await screen.findByRole('textbox');
-    const uploadButton = screen.getByRole('button', { name: 'Paste, drop, or click to add images' });
+    const uploadButton = screen.getByRole('button', {
+      name: 'Paste, drop, or click to add images',
+    });
     fireEvent.focus(textArea);
     fireEvent.blur(textArea, { relatedTarget: uploadButton });
     fireEvent.focus(uploadButton);
@@ -459,18 +486,16 @@ describe('Component: MarkdownField', () => {
           }
           return {};
         }}
-        onSubmit={() => { }}
+        onSubmit={() => {}}
       >
-        <Field
-          name="description"
-          component={MarkdownField}
-          label="Description"
-        />
+        <Field name="description" component={MarkdownField} label="Description" />
       </Formik>,
     );
 
     const textArea = await screen.findByRole('textbox');
-    const uploadButton = screen.getByRole('button', { name: 'Paste, drop, or click to add images' });
+    const uploadButton = screen.getByRole('button', {
+      name: 'Paste, drop, or click to add images',
+    });
 
     fireEvent.focus(textArea);
     fireEvent.mouseDown(uploadButton);

@@ -65,10 +65,7 @@ describe('FormFieldRenderer - isReadOnly', () => {
   });
 
   it('renders field with Read-Only chip overlay for bypass user', () => {
-    renderFieldInFormik(
-      { ...baseField, isReadOnly: true },
-      [{ name: BYPASS }],
-    );
+    renderFieldInFormik({ ...baseField, isReadOnly: true }, [{ name: BYPASS }]);
     expect(screen.getByText('Read-Only')).toBeTruthy();
     // The actual field label is still rendered beneath the chip
     expect(screen.getByText('Title')).toBeTruthy();

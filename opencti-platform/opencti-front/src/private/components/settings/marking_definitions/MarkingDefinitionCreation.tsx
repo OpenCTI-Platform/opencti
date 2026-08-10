@@ -15,31 +15,22 @@ import { insertNode } from '../../../../utils/store';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 
 const markingDefinitionMutation = graphql`
-  mutation MarkingDefinitionCreationMutation(
-    $input: MarkingDefinitionAddInput!
-  ) {
+  mutation MarkingDefinitionCreationMutation($input: MarkingDefinitionAddInput!) {
     markingDefinitionAdd(input: $input) {
       ...MarkingDefinitionsLine_node
     }
   }
 `;
 
-const CreateMarkingDefinitionControlledDial = (
-  props: DrawerControlledDialProps,
-) => (
-  <CreateEntityControlledDial
-    entityType="Marking-Definition"
-    {...props}
-  />
+const CreateMarkingDefinitionControlledDial = (props: DrawerControlledDialProps) => (
+  <CreateEntityControlledDial entityType="Marking-Definition" {...props} />
 );
 
 interface MarkingDefinitionCreationProps {
   paginationOptions: PaginationOptions;
 }
 
-const MarkingDefinitionCreation: FunctionComponent<
-  MarkingDefinitionCreationProps
-> = ({
+const MarkingDefinitionCreation: FunctionComponent<MarkingDefinitionCreationProps> = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
@@ -63,7 +54,10 @@ const MarkingDefinitionCreation: FunctionComponent<
 
   const onSubmit = (
     values: typeof initialValues,
-    { setSubmitting, resetForm }: {
+    {
+      setSubmitting,
+      resetForm,
+    }: {
       setSubmitting: (flag: boolean) => void;
       resetForm: () => void;
     },
@@ -138,17 +132,10 @@ const MarkingDefinitionCreation: FunctionComponent<
                 style={{ marginTop: 20 }}
               />
               <FormButtonContainer>
-                <Button
-                  variant="secondary"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                >
+                <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
+                <Button onClick={submitForm} disabled={isSubmitting}>
                   {t_i18n('Create')}
                 </Button>
               </FormButtonContainer>

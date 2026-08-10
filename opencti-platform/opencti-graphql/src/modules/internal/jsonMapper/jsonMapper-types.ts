@@ -58,7 +58,10 @@ export interface BasedRepresentationAttribute extends JsonMapperRepresentationAt
   based_on: AttributeBasedOn;
 }
 
-export type RepresentationAttribute = SimpleRepresentationAttribute | ComplexRepresentationAttribute | BasedRepresentationAttribute;
+export type RepresentationAttribute =
+  | SimpleRepresentationAttribute
+  | ComplexRepresentationAttribute
+  | BasedRepresentationAttribute;
 
 interface JsonMapperRepresentationTarget {
   entity_type: string;
@@ -102,7 +105,7 @@ export interface BasicStoreEntityJsonMapper extends BasicStoreEntity {
   user_chosen_markings?: string[];
 }
 
-export interface StoreEntityJsonMapper extends BasicStoreEntityJsonMapper, StoreEntity { }
+export interface StoreEntityJsonMapper extends BasicStoreEntityJsonMapper, StoreEntity {}
 
 export interface StixJsonMapper extends StixObject {
   name: string;

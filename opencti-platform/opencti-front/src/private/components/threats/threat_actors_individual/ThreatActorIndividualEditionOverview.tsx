@@ -13,10 +13,20 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
-import { convertAssignees, convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertAssignees,
+  convertCreatedBy,
+  convertKillChainPhases,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useFormatter } from '../../../../components/i18n';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { ThreatActorIndividualEditionOverview_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionOverview_ThreatActorIndividual.graphql';
@@ -44,10 +54,7 @@ const ThreatActorIndividualMutationFieldPatch = graphql`
 `;
 
 export const ThreatActorIndividualEditionOverviewFocus = graphql`
-  mutation ThreatActorIndividualEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation ThreatActorIndividualEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     threatActorIndividualContextPatch(id: $id, input: $input) {
       id
     }
@@ -149,16 +156,19 @@ const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<
   );
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(THREAT_ACTOR_INDIVIDUAL_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
-    threat_actor_types: Yup.array().nullable(),
-    confidence: Yup.number().nullable(),
-    description: Yup.string().nullable(),
-    references: Yup.array(),
-    createdBy: Yup.object().nullable(),
-    x_opencti_workflow_id: Yup.object(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+      threat_actor_types: Yup.array().nullable(),
+      confidence: Yup.number().nullable(),
+      description: Yup.string().nullable(),
+      references: Yup.array(),
+      createdBy: Yup.object().nullable(),
+      x_opencti_workflow_id: Yup.object(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
+  );
   const ThreatActorIndividualValidator = useDynamicSchemaEditionValidation(
     mandatoryAttributes,
     basicShape,
@@ -175,7 +185,10 @@ const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<
     queries,
     ThreatActorIndividualValidator,
   );
-  const onSubmit: FormikConfig<ThreatActorIndividualEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
+  const onSubmit: FormikConfig<ThreatActorIndividualEditionFormValues>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
@@ -185,16 +198,13 @@ const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<
       x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
       objectAssignee: (values.objectAssignee ?? []).map(({ value }) => value),
-      killChainPhases: (values.killChainPhases ?? []).map(
-        ({ value }) => value,
-      ),
+      killChainPhases: (values.killChainPhases ?? []).map(({ value }) => value),
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
     editor.fieldPatch({
       variables: {
         id: threatActorIndividual.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {
@@ -251,34 +261,25 @@ const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<
       validateOnBlur={true}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <Form style={{ marginTop: theme.spacing(2) }}>
           <AlertConfidenceForEntity entity={threatActorIndividual} />
           <Field
             component={TextField}
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="name" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="name" />}
           />
           <OpenVocabField
             variant="edit"
             type="threat-actor-individual-type-ov"
             name="threat_actor_types"
             label={t_i18n('Threat actor types')}
-            required={(mandatoryAttributes.includes('threat_actor_types'))}
+            required={mandatoryAttributes.includes('threat_actor_types')}
             containerStyle={{ width: '100%', marginTop: 20 }}
             multiple={true}
             onFocus={editor.changeFocus}
@@ -298,7 +299,7 @@ const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -306,9 +307,7 @@ const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
           />
           {threatActorIndividual.workflowEnabled && (
             <StatusField
@@ -318,31 +317,22 @@ const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={(
-                <SubscriptionFocus
-                  context={context}
-                  field="x_opencti_workflow_id"
-                />
-              )}
+              helpertext={<SubscriptionFocus context={context} field="x_opencti_workflow_id" />}
             />
           )}
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="createdBy" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />

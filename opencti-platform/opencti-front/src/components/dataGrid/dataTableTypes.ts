@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable typescript/no-explicit-any */
 import type { Dispatch, MutableRefObject, ReactNode, SetStateAction } from 'react';
 import React from 'react';
 import { GraphQLTaggedNode } from 'react-relay';
@@ -6,7 +6,11 @@ import { PopoverProps } from '@mui/material/Popover/Popover';
 import { UsePreloadedPaginationFragment } from 'src/utils/hooks/usePreloadedPaginationFragment';
 import { OperationType } from 'relay-runtime';
 import type { LocalStorage } from '../../utils/hooks/useLocalStorageModel';
-import { NumberOfElements, PaginationLocalStorage, UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
+import {
+  NumberOfElements,
+  PaginationLocalStorage,
+  UseLocalStorageHelpers,
+} from '../../utils/hooks/useLocalStorage';
 import { FilterGroup } from '../../utils/filters/filtersHelpers-types';
 import { FilterSearchContext } from '../../utils/filters/filtersUtils';
 
@@ -55,7 +59,9 @@ export interface DataTableContextProps {
   useDataTableToggle: ReturnType<DataTableProps['useDataTableToggle']>;
   getComputeLink: (entity: any) => string | undefined;
   useDataTableColumnsLocalStorage: ReturnType<DataTableProps['useDataTableColumnsLocalStorage']>;
-  useDataTablePaginationLocalStorage: ReturnType<DataTableProps['useDataTablePaginationLocalStorage']>;
+  useDataTablePaginationLocalStorage: ReturnType<
+    DataTableProps['useDataTablePaginationLocalStorage']
+  >;
   onAddFilter: DataTableProps['onAddFilter'];
   onSort: (sortBy: string, orderAsc: boolean) => void;
   formatter: DataTableProps['formatter'];
@@ -217,7 +223,11 @@ export interface DataTableHeaderProps {
 export interface DataTableLineProps {
   row: any;
   index: number;
-  onToggleShiftEntity: (currentIndex: number, currentEntity: { id: string }, event?: React.MouseEvent) => void;
+  onToggleShiftEntity: (
+    currentIndex: number,
+    currentEntity: { id: string },
+    event?: React.MouseEvent,
+  ) => void;
 }
 
 export interface DataTableCellProps {

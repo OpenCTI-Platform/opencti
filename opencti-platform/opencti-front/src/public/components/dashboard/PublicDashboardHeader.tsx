@@ -38,11 +38,7 @@ const PublicDashboardHeader = ({
       }}
     >
       <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-        <Typography
-          variant="h1"
-          gutterBottom={true}
-          sx={{ marginRight: '12px' }}
-        >
+        <Typography variant="h1" gutterBottom={true} sx={{ marginRight: '12px' }}>
           {title}
         </Typography>
 
@@ -57,7 +53,9 @@ const PublicDashboardHeader = ({
           label={t_i18n('Start date')}
           sx={{ width: 220 }}
           disableFuture
-          onChange={(value, context) => !context.validationError && onChangeStartDate(value?.toString() ?? null)}
+          onChange={(value, context) =>
+            !context.validationError && onChangeStartDate(value?.toString() ?? null)
+          }
           slotProps={{
             field: {
               clearable: true,
@@ -76,7 +74,9 @@ const PublicDashboardHeader = ({
           value={buildDate(endDate)}
           label={t_i18n('End date')}
           disableFuture
-          onChange={(value, context) => !context.validationError && onChangeEndDate(value?.toString() ?? null)}
+          onChange={(value, context) =>
+            !context.validationError && onChangeEndDate(value?.toString() ?? null)
+          }
           sx={{ width: 220 }}
           slotProps={{
             field: {

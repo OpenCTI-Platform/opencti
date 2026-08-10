@@ -27,7 +27,11 @@ import { commitMutation } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
 import { truncate } from '../../../../utils/String';
 import { FIVE_SECONDS } from '../../../../utils/Time';
-import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNENRICHMENT,
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../../utils/hooks/useGranted';
 import { isNotEmptyField } from '../../../../utils/utils';
 import FileLine from '../../common/files/FileLine';
 import FileUploader from '../../common/files/FileUploader';
@@ -61,23 +65,17 @@ const styles = (theme) => ({
     height: 25,
     color: theme.palette.primary.main,
     backgroundColor:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, .1)'
-        : 'rgba(0, 0, 0, .1)',
+      theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .1)' : 'rgba(0, 0, 0, .1)',
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
     '&:hover': {
       backgroundColor:
-        theme.palette.mode === 'dark'
-          ? 'rgba(255, 255, 255, .2)'
-          : 'rgba(0, 0, 0, .2)',
+        theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .2)' : 'rgba(0, 0, 0, .2)',
     },
   },
 });
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 class StixSightingRelationshipExternalReferencesLinesContainer extends Component {
@@ -151,10 +149,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
       },
       updater: (store) => {
         const entity = store.get(this.props.stixSightingRelationshipId);
-        const conn = ConnectionHandler.getConnection(
-          entity,
-          'Pagination_externalReferences',
-        );
+        const conn = ConnectionHandler.getConnection(entity, 'Pagination_externalReferences');
         ConnectionHandler.deleteNode(conn, externalReferenceEdge.node.id);
       },
       onCompleted: () => {
@@ -173,137 +168,75 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
       <div style={{ height: '100%' }}>
         <Card
           title={t('External references')}
-          action={(
+          action={
             <Security needs={[KNOWLEDGE_KNUPDATE]} placeholder={<div style={{ height: 29 }} />}>
               <AddExternalReferences
                 stixCoreObjectOrStixCoreRelationshipId={stixSightingRelationshipId}
-                stixCoreObjectOrStixCoreRelationshipReferences={data.stixSightingRelationship.externalReferences.edges}
+                stixCoreObjectOrStixCoreRelationshipReferences={
+                  data.stixSightingRelationship.externalReferences.edges
+                }
               />
             </Security>
-          )}
+          }
         >
           {externalReferencesEdges.length > 0 ? (
             <List style={{ marginBottom: 0 }}>
-              {R.take(expanded ? 200 : 7, externalReferencesEdges).map(
-                (externalReferenceEdge) => {
-                  const externalReference = externalReferenceEdge.node;
-                  const isFileAttached = isNotEmptyField(
-                    externalReference.fileId,
-                  );
-                  const externalReferenceId = externalReference.external_id
-                    ? `(${externalReference.external_id})`
-                    : '';
-                  let externalReferenceSecondary;
-                  if (
-                    externalReference.url
-                    && externalReference.url.length > 0
-                  ) {
-                    externalReferenceSecondary = externalReference.url;
-                  } else if (
-                    externalReference.description
-                    && externalReference.description.length > 0
-                  ) {
-                    externalReferenceSecondary = externalReference.description;
-                  } else {
-                    externalReferenceSecondary = t('No description');
-                  }
-                  if (externalReference.url) {
-                    return (
-                      <div key={externalReference.id}>
-                        <ListItem
-                          dense={true}
-                          divider={true}
-                          disablePadding
-                          secondaryAction={(
-                            <>
-                              <Tooltip title={t('Browse the link')}>
-                                <IconButton
-                                  onClick={this.handleOpenExternalLink.bind(
-                                    this,
-                                    externalReference.url,
-                                  )}
-                                  color="primary"
-                                >
-                                  <OpenInBrowserOutlined />
-                                </IconButton>
-                              </Tooltip>
-                              {!isFileAttached && (
-                                <Security needs={[KNOWLEDGE_KNUPLOAD]}>
-                                  <FileUploader
-                                    entityId={externalReference.id}
-                                    onUploadSuccess={() => this.props.relay.refetchConnection(200)
-                                    }
-                                  />
-                                </Security>
-                              )}
-                              {!isFileAttached && (
-                                <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-                                  <ExternalReferenceEnrichment
-                                    externalReferenceId={externalReference.id}
-                                  />
-                                </Security>
-                              )}
-                              <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                                <ExternalReferencePopover
-                                  id={externalReference.id}
-                                  objectId={stixSightingRelationshipId}
-                                  isExternalReferenceAttachment={isFileAttached}
-                                  handleRemove={this.handleOpenDialog.bind(
-                                    this,
-                                    externalReferenceEdge,
-                                  )}
-                                  variant="inLine"
-                                />
-                              </Security>
-                            </>
-                          )}
-                        >
-                          <ListItemButton
-                            component={Link}
-                            to={`/dashboard/analyses/external_references/${externalReference.id}`}
-                          >
-                            <ListItemIcon>
-                              <ItemIcon type="External-Reference" />
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={`${externalReference.source_name} ${externalReferenceId}`}
-                              secondary={truncate(externalReferenceSecondary, 90)}
-                            />
-                          </ListItemButton>
-                        </ListItem>
-                        {externalReference.importFiles.edges.length > 0 && (
-                          <List>
-                            {externalReference.importFiles.edges.map((file) => file?.node && (
-                              <FileLine
-                                key={file.node.id}
-                                dense={true}
-                                disableImport={true}
-                                file={file.node}
-                                nested={true}
-                              />
-                            ))}
-                          </List>
-                        )}
-                      </div>
-                    );
-                  }
+              {R.take(expanded ? 200 : 7, externalReferencesEdges).map((externalReferenceEdge) => {
+                const externalReference = externalReferenceEdge.node;
+                const isFileAttached = isNotEmptyField(externalReference.fileId);
+                const externalReferenceId = externalReference.external_id
+                  ? `(${externalReference.external_id})`
+                  : '';
+                let externalReferenceSecondary;
+                if (externalReference.url && externalReference.url.length > 0) {
+                  externalReferenceSecondary = externalReference.url;
+                } else if (
+                  externalReference.description &&
+                  externalReference.description.length > 0
+                ) {
+                  externalReferenceSecondary = externalReference.description;
+                } else {
+                  externalReferenceSecondary = t('No description');
+                }
+                if (externalReference.url) {
                   return (
                     <div key={externalReference.id}>
                       <ListItem
                         dense={true}
                         divider={true}
-                        secondaryAction={(
+                        disablePadding
+                        secondaryAction={
                           <>
-                            <Security needs={[KNOWLEDGE_KNUPLOAD]}>
-                              <FileUploader
-                                entityId={externalReference.id}
-                                onUploadSuccess={() => this.props.relay.refetchConnection(200)
-                                }
-                              />
-                            </Security>
+                            <Tooltip title={t('Browse the link')}>
+                              <IconButton
+                                onClick={this.handleOpenExternalLink.bind(
+                                  this,
+                                  externalReference.url,
+                                )}
+                                color="primary"
+                              >
+                                <OpenInBrowserOutlined />
+                              </IconButton>
+                            </Tooltip>
+                            {!isFileAttached && (
+                              <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+                                <FileUploader
+                                  entityId={externalReference.id}
+                                  onUploadSuccess={() => this.props.relay.refetchConnection(200)}
+                                />
+                              </Security>
+                            )}
+                            {!isFileAttached && (
+                              <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+                                <ExternalReferenceEnrichment
+                                  externalReferenceId={externalReference.id}
+                                />
+                              </Security>
+                            )}
                             <Security needs={[KNOWLEDGE_KNUPDATE]}>
                               <ExternalReferencePopover
                                 id={externalReference.id}
+                                objectId={stixSightingRelationshipId}
                                 isExternalReferenceAttachment={isFileAttached}
                                 handleRemove={this.handleOpenDialog.bind(
                                   this,
@@ -313,7 +246,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                               />
                             </Security>
                           </>
-                        )}
+                        }
                       >
                         <ListItemButton
                           component={Link}
@@ -324,30 +257,85 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                           </ListItemIcon>
                           <ListItemText
                             primary={`${externalReference.source_name} ${externalReferenceId}`}
-                            secondary={truncate(
-                              externalReference.description,
-                              120,
-                            )}
+                            secondary={truncate(externalReferenceSecondary, 90)}
                           />
                         </ListItemButton>
                       </ListItem>
                       {externalReference.importFiles.edges.length > 0 && (
                         <List>
-                          {externalReference.importFiles.edges.map((file) => file?.node && (
-                            <FileLine
-                              key={file.node.id}
-                              dense={true}
-                              disableImport={true}
-                              file={file.node}
-                              nested={true}
-                            />
-                          ))}
+                          {externalReference.importFiles.edges.map(
+                            (file) =>
+                              file?.node && (
+                                <FileLine
+                                  key={file.node.id}
+                                  dense={true}
+                                  disableImport={true}
+                                  file={file.node}
+                                  nested={true}
+                                />
+                              ),
+                          )}
                         </List>
                       )}
                     </div>
                   );
-                },
-              )}
+                }
+                return (
+                  <div key={externalReference.id}>
+                    <ListItem
+                      dense={true}
+                      divider={true}
+                      secondaryAction={
+                        <>
+                          <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+                            <FileUploader
+                              entityId={externalReference.id}
+                              onUploadSuccess={() => this.props.relay.refetchConnection(200)}
+                            />
+                          </Security>
+                          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                            <ExternalReferencePopover
+                              id={externalReference.id}
+                              isExternalReferenceAttachment={isFileAttached}
+                              handleRemove={this.handleOpenDialog.bind(this, externalReferenceEdge)}
+                              variant="inLine"
+                            />
+                          </Security>
+                        </>
+                      }
+                    >
+                      <ListItemButton
+                        component={Link}
+                        to={`/dashboard/analyses/external_references/${externalReference.id}`}
+                      >
+                        <ListItemIcon>
+                          <ItemIcon type="External-Reference" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={`${externalReference.source_name} ${externalReferenceId}`}
+                          secondary={truncate(externalReference.description, 120)}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                    {externalReference.importFiles.edges.length > 0 && (
+                      <List>
+                        {externalReference.importFiles.edges.map(
+                          (file) =>
+                            file?.node && (
+                              <FileLine
+                                key={file.node.id}
+                                dense={true}
+                                disableImport={true}
+                                file={file.node}
+                                nested={true}
+                              />
+                            ),
+                        )}
+                      </List>
+                    )}
+                  </div>
+                );
+              })}
             </List>
           ) : (
             <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -369,11 +357,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
               onClick={this.handleToggleExpand.bind(this)}
               classes={{ root: classes.buttonExpand }}
             >
-              {expanded ? (
-                <ExpandLessOutlined />
-              ) : (
-                <ExpandMoreOutlined />
-              )}
+              {expanded ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
             </IconButton>
           )}
         </Card>
@@ -393,10 +377,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
             >
               {t('Cancel')}
             </Button>
-            <Button
-              onClick={this.handleRemoval.bind(this)}
-              disabled={this.state.removing}
-            >
+            <Button onClick={this.handleRemoval.bind(this)} disabled={this.state.removing}>
               {t('Confirm')}
             </Button>
           </DialogActions>
@@ -406,17 +387,12 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           onClose={this.handleCloseExternalLink.bind(this)}
           title={t('Do you want to browse this external link?')}
         >
-          <DialogContentText>
-            {t('Do you want to browse this external link?')}
-          </DialogContentText>
+          <DialogContentText>{t('Do you want to browse this external link?')}</DialogContentText>
           <DialogActions>
             <Button variant="secondary" onClick={this.handleCloseExternalLink.bind(this)}>
               {t('Cancel')}
             </Button>
-            <Button
-              button={true}
-              onClick={this.handleBrowseExternalLink.bind(this)}
-            >
+            <Button button={true} onClick={this.handleBrowseExternalLink.bind(this)}>
               {t('Browse the link')}
             </Button>
           </DialogActions>
@@ -436,12 +412,8 @@ StixSightingRelationshipExternalReferencesLinesContainer.propTypes = {
 };
 
 export const stixSightingRelationshipExternalReferencesLinesQuery = graphql`
-  query StixSightingRelationshipExternalReferencesLinesQuery(
-    $count: Int!
-    $id: String!
-  ) {
-    ...StixSightingRelationshipExternalReferencesLines_data
-      @arguments(count: $count, id: $id)
+  query StixSightingRelationshipExternalReferencesLinesQuery($count: Int!, $id: String!) {
+    ...StixSightingRelationshipExternalReferencesLines_data @arguments(count: $count, id: $id)
   }
 `;
 
@@ -449,59 +421,54 @@ const StixSightingRelationshipExternalReferencesLines = createPaginationContaine
   StixSightingRelationshipExternalReferencesLinesContainer,
   {
     data: graphql`
-        fragment StixSightingRelationshipExternalReferencesLines_data on Query
-        @argumentDefinitions(
-          count: { type: "Int", defaultValue: 25 }
-          id: { type: "String!" }
-        ) {
-          stixSightingRelationship(id: $id) {
-            id
-            externalReferences(first: $count)
-              @connection(key: "Pagination_externalReferences") {
-              edges {
-                node {
+      fragment StixSightingRelationshipExternalReferencesLines_data on Query
+      @argumentDefinitions(count: { type: "Int", defaultValue: 25 }, id: { type: "String!" }) {
+        stixSightingRelationship(id: $id) {
+          id
+          externalReferences(first: $count) @connection(key: "Pagination_externalReferences") {
+            edges {
+              node {
+                id
+                source_name
+                entity_type
+                description
+                url
+                hash
+                fileId
+                external_id
+                jobs(first: 100) {
                   id
-                  source_name
-                  entity_type
-                  description
-                  url
-                  hash
-                  fileId
-                  external_id
-                  jobs(first: 100) {
+                  timestamp
+                  connector {
                     id
-                    timestamp
-                    connector {
-                      id
-                      name
-                    }
-                    messages {
-                      timestamp
-                      message
-                    }
-                    errors {
-                      timestamp
-                      message
-                    }
-                    status
-                  }
-                  connectors(onlyAlive: false) {
-                    id
-                    connector_type
                     name
-                    active
-                    updated_at
                   }
-                  importFiles(first: 500) {
-                    edges {
-                      node {
-                        id
-                        lastModified
-                        ...FileLine_file
-                        metaData {
-                          mimetype
-                          external_reference_id
-                        }
+                  messages {
+                    timestamp
+                    message
+                  }
+                  errors {
+                    timestamp
+                    message
+                  }
+                  status
+                }
+                connectors(onlyAlive: false) {
+                  id
+                  connector_type
+                  name
+                  active
+                  updated_at
+                }
+                importFiles(first: 500) {
+                  edges {
+                    node {
+                      id
+                      lastModified
+                      ...FileLine_file
+                      metaData {
+                        mimetype
+                        external_reference_id
                       }
                     }
                   }
@@ -510,14 +477,13 @@ const StixSightingRelationshipExternalReferencesLines = createPaginationContaine
             }
           }
         }
-      `,
+      }
+    `,
   },
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return (
-        props.data && props.data.stixSightingRelationship.externalReferences
-      );
+      return props.data && props.data.stixSightingRelationship.externalReferences;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {

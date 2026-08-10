@@ -17,8 +17,15 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import { PositionCreationMutation, PositionCreationMutation$variables } from './__generated__/PositionCreationMutation.graphql';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
+import {
+  PositionCreationMutation,
+  PositionCreationMutation$variables,
+} from './__generated__/PositionCreationMutation.graphql';
 import { PositionsLinesPaginationQuery$variables } from './__generated__/PositionsLinesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -93,27 +100,31 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(POSITION_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    description: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
-    latitude: Yup.number()
-      .typeError(t_i18n('This field must be a number'))
-      .nullable()
-      .min(-90, t_i18n('Latitude must be between -90 and 90 degrees'))
-      .max(90, t_i18n('Latitude must be between -90 and 90 degrees')),
-    longitude: Yup.number()
-      .typeError(t_i18n('This field must be a number'))
-      .nullable()
-      .min(-180, t_i18n('Longitude must be between -180 and 180 degrees'))
-      .max(180, t_i18n('Longitude must be between -180 and 180 degrees')),
-    street_address: Yup.string()
-      .nullable()
-      .max(1000, t_i18n('The value is too long')),
-    postal_code: Yup.string().nullable().max(1000, t_i18n('The value is too long')),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      description: Yup.string().nullable(),
+      confidence: Yup.number().nullable(),
+      latitude: Yup.number()
+        .typeError(t_i18n('This field must be a number'))
+        .nullable()
+        .min(-90, t_i18n('Latitude must be between -90 and 90 degrees'))
+        .max(90, t_i18n('Latitude must be between -90 and 90 degrees')),
+      longitude: Yup.number()
+        .typeError(t_i18n('This field must be a number'))
+        .nullable()
+        .min(-180, t_i18n('Longitude must be between -180 and 180 degrees'))
+        .max(180, t_i18n('Longitude must be between -180 and 180 degrees')),
+      street_address: Yup.string().nullable().max(1000, t_i18n('The value is too long')),
+      postal_code: Yup.string().nullable().max(1000, t_i18n('The value is too long')),
+    },
+    mandatoryAttributes,
+  );
 
-  const positionValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape).test(
+  const positionValidator = useDynamicSchemaCreationValidation(
+    mandatoryAttributes,
+    basicShape,
+  ).test(
     'coordinates-required-together',
     t_i18n('Both latitude and longitude must be provided together'),
     function validateCoordinates(values) {
@@ -139,26 +150,20 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
     },
   );
 
-  const [commit] = useApiMutation<PositionCreationMutation>(
-    positionMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Position')} ${t_i18n('successfully created')}` },
-  );
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
-  const {
-    bulkCommit,
-    bulkCount,
-    bulkCurrentCount,
-    BulkResult,
-    resetBulk,
-  } = useBulkCommit<PositionCreationMutation>({
-    commit,
-    relayUpdater: (store) => {
-      if (updater) {
-        updater(store, 'positionAdd');
-      }
-    },
+  const [commit] = useApiMutation<PositionCreationMutation>(positionMutation, undefined, {
+    successMessage: `${t_i18n('entity_Position')} ${t_i18n('successfully created')}`,
   });
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
+  const { bulkCommit, bulkCount, bulkCurrentCount, BulkResult, resetBulk } =
+    useBulkCommit<PositionCreationMutation>({
+      commit,
+      relayUpdater: (store) => {
+        if (updater) {
+          updater(store, 'positionAdd');
+        }
+      },
+    });
 
   useEffect(() => {
     if (bulkCount > 1) {
@@ -260,7 +265,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
               variant="standard"
               name="name"
               label={t_i18n('Name')}
-              required={(mandatoryAttributes.includes('name'))}
+              required={mandatoryAttributes.includes('name')}
               fullWidth={true}
               detectDuplicate={['Position']}
             />
@@ -268,7 +273,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
-              required={(mandatoryAttributes.includes('description'))}
+              required={mandatoryAttributes.includes('description')}
               fullWidth={true}
               multiline={true}
               rows={4}
@@ -277,16 +282,13 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
               registerMarkdownImagesController={registerMarkdownImagesController}
               uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
-            <ConfidenceField
-              entityType="Position"
-              containerStyle={fieldSpacingContainerStyle}
-            />
+            <ConfidenceField entityType="Position" containerStyle={fieldSpacingContainerStyle} />
             <Field
               component={TextField}
               variant="standard"
               name="latitude"
               label={t_i18n('Latitude')}
-              required={(mandatoryAttributes.includes('latitude'))}
+              required={mandatoryAttributes.includes('latitude')}
               fullWidth={true}
               style={fieldSpacingContainerStyle}
             />
@@ -295,7 +297,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
               variant="standard"
               name="longitude"
               label={t_i18n('Longitude')}
-              required={(mandatoryAttributes.includes('longitude'))}
+              required={mandatoryAttributes.includes('longitude')}
               fullWidth={true}
               style={fieldSpacingContainerStyle}
             />
@@ -304,7 +306,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
               variant="standard"
               name="street_address"
               label={t_i18n('Street address')}
-              required={(mandatoryAttributes.includes('street_address'))}
+              required={mandatoryAttributes.includes('street_address')}
               fullWidth={true}
               style={fieldSpacingContainerStyle}
             />
@@ -312,33 +314,33 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
               component={TextField}
               variant="standard"
               name="postal_code"
-              required={(mandatoryAttributes.includes('postal_code'))}
+              required={mandatoryAttributes.includes('postal_code')}
               label={t_i18n('Postal code')}
               fullWidth={true}
               style={fieldSpacingContainerStyle}
             />
             <CreatedByField
               name="createdBy"
-              required={(mandatoryAttributes.includes('createdBy'))}
+              required={mandatoryAttributes.includes('createdBy')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
-              required={(mandatoryAttributes.includes('objectLabel'))}
+              required={mandatoryAttributes.includes('objectLabel')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
-              required={(mandatoryAttributes.includes('objectMarking'))}
+              required={mandatoryAttributes.includes('objectMarking')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ExternalReferencesField
               name="externalReferences"
-              required={(mandatoryAttributes.includes('externalReferences'))}
+              required={mandatoryAttributes.includes('externalReferences')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
@@ -348,23 +350,17 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
               name="file"
               setFieldValue={setFieldValue}
               disabled={splitMultilines(values.name).length > 1}
-              noFileSelectedLabel={splitMultilines(values.name).length > 1
-                ? t_i18n('File upload not allowed in bulk creation')
-                : undefined
+              noFileSelectedLabel={
+                splitMultilines(values.name).length > 1
+                  ? t_i18n('File upload not allowed in bulk creation')
+                  : undefined
               }
             />
             <FormButtonContainer>
-              <Button
-                variant="secondary"
-                onClick={handleReset}
-                disabled={isSubmitting}
-              >
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>
@@ -382,7 +378,8 @@ const PositionCreation = ({
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_positions', paginationOptions, 'positionAdd');
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_positions', paginationOptions, 'positionAdd');
 
   const CreatePositionControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="Position" {...props} />

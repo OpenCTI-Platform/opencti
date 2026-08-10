@@ -9,8 +9,11 @@ export const up = async (next) => {
   const context = executionContext('migration');
   const markingId = `marking-definition--${MARKING_TLP_CLEAR}`;
   const whiteMarking = await internalLoadById(context, SYSTEM_USER, markingId);
-  if (whiteMarking) { // Could be deleted on some platforms
-    await patchAttribute(context, SYSTEM_USER, markingId, ENTITY_TYPE_MARKING_DEFINITION, { definition: 'TLP:CLEAR' });
+  if (whiteMarking) {
+    // Could be deleted on some platforms
+    await patchAttribute(context, SYSTEM_USER, markingId, ENTITY_TYPE_MARKING_DEFINITION, {
+      definition: 'TLP:CLEAR',
+    });
   }
   await addAllowedMarkingDefinition(context, SYSTEM_USER, {
     definition_type: 'TLP',

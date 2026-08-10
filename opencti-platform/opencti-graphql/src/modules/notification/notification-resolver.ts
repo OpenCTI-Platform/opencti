@@ -41,7 +41,8 @@ const notificationResolvers: Resolvers = {
     notification: (_, { id }, context) => notificationGet(context, context.user, id),
     notifications: (_, args, context) => notificationsFind(context, context.user, args),
     myNotifications: (_, args, context) => myNotificationsFind(context, context.user, args),
-    myUnreadNotificationsCount: (_, __, context) => myUnreadNotificationsCount(context, context.user),
+    myUnreadNotificationsCount: (_, __, context) =>
+      myUnreadNotificationsCount(context, context.user),
   },
   Trigger: {
     triggers: (trigger, _, context) => triggersGet(context, context.user, trigger.trigger_ids), // For Digest
@@ -52,18 +53,25 @@ const notificationResolvers: Resolvers = {
   },
   Mutation: {
     // Knowledge trigger
-    triggerKnowledgeFieldPatch: (_, { id, input }, context) => triggerEdit(context, context.user, id, input),
+    triggerKnowledgeFieldPatch: (_, { id, input }, context) =>
+      triggerEdit(context, context.user, id, input),
     triggerKnowledgeDelete: (_, { id }, context) => triggerDelete(context, context.user, id),
-    triggerKnowledgeLiveAdd: (_, { input }, context) => addTrigger(context, context.user, input, TriggerType.Live),
-    triggerKnowledgeDigestAdd: (_, { input }, context) => addTrigger(context, context.user, input, TriggerType.Digest),
+    triggerKnowledgeLiveAdd: (_, { input }, context) =>
+      addTrigger(context, context.user, input, TriggerType.Live),
+    triggerKnowledgeDigestAdd: (_, { input }, context) =>
+      addTrigger(context, context.user, input, TriggerType.Digest),
     // Activity trigger
-    triggerActivityFieldPatch: (_, { id, input }, context) => triggerActivityEdit(context, context.user, id, input),
+    triggerActivityFieldPatch: (_, { id, input }, context) =>
+      triggerActivityEdit(context, context.user, id, input),
     triggerActivityDelete: (_, { id }, context) => triggerDelete(context, context.user, id),
-    triggerActivityLiveAdd: (_, { input }, context) => addTriggerActivity(context, context.user, input, TriggerType.Live),
-    triggerActivityDigestAdd: (_, { input }, context) => addTriggerActivity(context, context.user, input, TriggerType.Digest),
+    triggerActivityLiveAdd: (_, { input }, context) =>
+      addTriggerActivity(context, context.user, input, TriggerType.Live),
+    triggerActivityDigestAdd: (_, { input }, context) =>
+      addTriggerActivity(context, context.user, input, TriggerType.Digest),
     // Notification
     notificationDelete: (_, { id }, context) => notificationDelete(context, context.user, id),
-    notificationMarkRead: (_, { id, read }, context) => notificationEditRead(context, context.user, id, read),
+    notificationMarkRead: (_, { id, read }, context) =>
+      notificationEditRead(context, context.user, id, read),
   },
   Subscription: {
     notificationsNumber: {

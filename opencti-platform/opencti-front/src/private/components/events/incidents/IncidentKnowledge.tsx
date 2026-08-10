@@ -22,11 +22,7 @@ const IncidentKnowledgeFragment = graphql`
   }
 `;
 
-const IncidentKnowledge = ({
-  incidentData,
-}: {
-  incidentData: IncidentKnowledge_incident$key;
-}) => {
+const IncidentKnowledge = ({ incidentData }: { incidentData: IncidentKnowledge_incident$key }) => {
   const incident = useFragment<IncidentKnowledge_incident$key>(
     IncidentKnowledgeFragment,
     incidentData,
@@ -40,36 +36,26 @@ const IncidentKnowledge = ({
       <Routes>
         <Route
           path="/relations/:relationId"
-          element={(
-            <StixCoreRelationship
-              entityId={incident.id}
-              paddingRight={true}
-            />
-          )}
+          element={<StixCoreRelationship entityId={incident.id} paddingRight={true} />}
         />
         <Route
           path="/sightings/:sightingId"
-          element={(
-            <StixSightingRelationship
-              entityId={incident.id}
-              paddingRight={true}
-            />
-          )}
+          element={<StixSightingRelationship entityId={incident.id} paddingRight={true} />}
         />
         <Route
           path="/overview"
-          element={(
+          element={
             <StixDomainObjectThreatKnowledge
               stixDomainObjectId={incident.id}
               stixDomainObjectName={incident.name}
               stixDomainObjectType="Incident"
               displayObservablesStats={true}
             />
-          )}
+          }
         />
         <Route
           path="/all"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={incident.id}
@@ -77,11 +63,11 @@ const IncidentKnowledge = ({
               entityLink={link}
               allDirections
             />
-          )}
+          }
         />
         <Route
           path="/related"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={incident.id}
@@ -91,41 +77,37 @@ const IncidentKnowledge = ({
               defaultStopTime={incident.last_seen}
               allDirections={true}
             />
-          )}
+          }
         />
         <Route
           path="/attribution"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={incident.id}
               relationshipTypes={['attributed-to']}
-              stixCoreObjectTypes={[
-                'Threat-Actor',
-                'Intrusion-Set',
-                'Campaign',
-              ]}
+              stixCoreObjectTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign']}
               entityLink={link}
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route
           path="/victimology"
-          element={(
+          element={
             <StixDomainObjectVictimology
               stixDomainObjectId={incident.id}
               entityLink={link}
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
             />
-          )}
+          }
         />
         <Route
           path="/attack_patterns"
-          element={(
+          element={
             <StixDomainObjectAttackPatterns
               stixDomainObjectId={incident.id}
               defaultStartTime={incident.first_seen}
@@ -133,11 +115,11 @@ const IncidentKnowledge = ({
               disableExport={false}
               entityType={incident.entity_type}
             />
-          )}
+          }
         />
         <Route
           path="/malwares"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={incident.id}
@@ -148,11 +130,11 @@ const IncidentKnowledge = ({
               defaultStopTime={incident.last_seen}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route
           path="/narratives"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={incident.id}
@@ -163,11 +145,11 @@ const IncidentKnowledge = ({
               defaultStopTime={incident.last_seen}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route
           path="/channels"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={incident.id}
@@ -178,11 +160,11 @@ const IncidentKnowledge = ({
               defaultStopTime={incident.last_seen}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route
           path="/tools"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={incident.id}
@@ -193,11 +175,11 @@ const IncidentKnowledge = ({
               defaultStopTime={incident.last_seen}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route
           path="/vulnerabilities"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={incident.id}
@@ -208,22 +190,22 @@ const IncidentKnowledge = ({
               defaultStopTime={incident.last_seen}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route
           path="/indicators"
-          element={(
+          element={
             <EntityStixCoreRelationshipsIndicators
               entityId={incident.id}
               entityLink={link}
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
             />
-          )}
+          }
         />
         <Route
           path="/observables"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={incident.id}
@@ -235,7 +217,7 @@ const IncidentKnowledge = ({
               allDirections={true}
               isRelationReversed={true}
             />
-          )}
+          }
         />
         <Route index element={<Navigate replace={true} to="overview" />} />
       </Routes>

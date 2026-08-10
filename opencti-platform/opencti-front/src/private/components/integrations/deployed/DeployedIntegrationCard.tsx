@@ -102,7 +102,8 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
         height: '100%',
         '& .MuiCard-root': {
           border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
-          transition: 'transform 0.3s ease-in-out, border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+          transition:
+            'transform 0.3s ease-in-out, border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
         },
         '&:hover .MuiCard-root': {
           transform: 'translateY(-2px)',
@@ -170,7 +171,9 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
               </Typography>
               {item.isManaged && (
                 <Tooltip title={t_i18n('Managed by the connector manager')}>
-                  <DeveloperBoardOutlined sx={{ fontSize: 15, color: theme.palette.primary.main }} />
+                  <DeveloperBoardOutlined
+                    sx={{ fontSize: 15, color: theme.palette.primary.main }}
+                  />
                 </Tooltip>
               )}
             </Stack>
@@ -235,21 +238,18 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
             {item.lastRunDate && (
               <Metric label={t_i18n('Last run')} value={nsdt(item.lastRunDate)} />
             )}
-            {!item.lastRunDate && item.updatedAt && (
-              // The connector updated_at is refreshed by pings: it is a last
-              // seen date, unlike the feed entities modification date.
-              <Metric
-                label={item.kind === 'connector' ? t_i18n('Last seen') : t_i18n('Modified')}
-                value={nsdt(item.updatedAt)}
-              />
-            )}
-            {item.userName && (
-              <Metric label={t_i18n('User')} value={item.userName} />
-            )}
+            {!item.lastRunDate &&
+              item.updatedAt && (
+                // The connector updated_at is refreshed by pings: it is a last
+                // seen date, unlike the feed entities modification date.
+                <Metric
+                  label={item.kind === 'connector' ? t_i18n('Last seen') : t_i18n('Modified')}
+                  value={nsdt(item.updatedAt)}
+                />
+              )}
+            {item.userName && <Metric label={t_i18n('User')} value={item.userName} />}
           </Stack>
-          <Box onClick={(event) => event.stopPropagation()}>
-            {statusChip}
-          </Box>
+          <Box onClick={(event) => event.stopPropagation()}>{statusChip}</Box>
         </Stack>
       </Card>
     </Box>

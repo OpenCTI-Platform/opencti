@@ -6,7 +6,9 @@ const DeployCustomDashboards = lazy(() => import('./DeployCustomDashboard'));
 const DeployCustomView = lazy(() => import('./DeployCustomView'));
 const DeployPlaybook = lazy(() => import('./DeployPlaybook'));
 const DeployBuiltInFeed = lazy(() => import('./DeployBuiltInFeed'));
-const IngestionCatalogConnector = lazy(() => import('../integrations/catalog/IngestionCatalogConnector'));
+const IngestionCatalogConnector = lazy(
+  () => import('../integrations/catalog/IngestionCatalogConnector'),
+);
 
 const Root = () => {
   return (

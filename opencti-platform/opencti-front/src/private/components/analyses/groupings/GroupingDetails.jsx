@@ -39,9 +39,7 @@ const GroupingDetailsComponent = (props) => {
           },
           {
             key: 'relationship_type',
-            values: [
-              'object',
-            ],
+            values: ['object'],
             operator: 'eq',
             mode: 'or',
           },
@@ -64,15 +62,11 @@ const GroupingDetailsComponent = (props) => {
       <Card title={t_i18n('Entity details')}>
         <Grid container={true} spacing={3}>
           <Grid item xs={12}>
-            <Label>
-              {t_i18n('Description')}
-            </Label>
+            <Label>{t_i18n('Description')}</Label>
             <ExpandableMarkdown source={grouping.description} limit={400} />
           </Grid>
           <Grid item xs={6} ref={ref}>
-            <Label>
-              {t_i18n('Context')}
-            </Label>
+            <Label>{t_i18n('Context')}</Label>
             <Tag label={grouping.context} />
           </Grid>
           <Grid item xs={6} style={{ minHeight: 200, maxHeight: height }}>
@@ -122,7 +116,7 @@ const GroupingDetails = createFragmentContainer(GroupingDetailsComponent, {
         ...RelatedContainersFragment_container_connection
       }
     }
-`,
+  `,
 });
 
 export default GroupingDetails;

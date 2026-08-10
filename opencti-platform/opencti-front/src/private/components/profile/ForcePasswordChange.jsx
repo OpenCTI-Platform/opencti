@@ -32,7 +32,8 @@ const ForcePasswordChange = () => {
         sx={{
           minWidth: 500,
           overflow: 'hidden',
-          background: theme.palette.designSystem?.background?.main ?? theme.palette.background.default,
+          background:
+            theme.palette.designSystem?.background?.main ?? theme.palette.background.default,
           boxShadow: '8px 0px 9px 0px #0000002F',
           zIndex: 2,
         }}
@@ -64,9 +65,10 @@ const ForcePasswordChange = () => {
       <Box
         flex={1}
         sx={{
-          background: theme.palette.mode === 'dark'
-            ? 'linear-gradient(100deg, #050A14 0%, #0C1728 100%)'
-            : 'linear-gradient(100deg, #EAEAED 0%, #FEFEFF 100%)',
+          background:
+            theme.palette.mode === 'dark'
+              ? 'linear-gradient(100deg, #050A14 0%, #0C1728 100%)'
+              : 'linear-gradient(100deg, #EAEAED 0%, #FEFEFF 100%)',
           position: 'relative',
           overflow: 'hidden',
         }}

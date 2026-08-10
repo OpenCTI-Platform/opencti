@@ -13,12 +13,9 @@ import type { SanityOperationRunOutput } from '../dataSanity-operations';
 const message = '[DATA_SANITY_MANAGER][caseSensitiveDuplicatedId]';
 
 export const computeCollisionGroup = async (context: AuthContext, entityType: string) => {
-  const allEntities = await fullEntitiesList(
-    context,
-    DATA_SANITY_MANAGER_USER,
-    [entityType],
-    { indices: [READ_INDEX_STIX_DOMAIN_OBJECTS] },
-  );
+  const allEntities = await fullEntitiesList(context, DATA_SANITY_MANAGER_USER, [entityType], {
+    indices: [READ_INDEX_STIX_DOMAIN_OBJECTS],
+  });
   if (allEntities.length === 0) {
     logApp.info(`${message} > no ${entityType} found, skipping`);
     return [];
@@ -28,7 +25,10 @@ export const computeCollisionGroup = async (context: AuthContext, entityType: st
   // Compute the new standard_id (with the now case-insensitive resolver) for each
   // entity and group by it. Groups with more than one element are duplicates that collide
   // under the new rule and must be merged.
-  const entitiesWithNewId = allEntities.map((entity) => ({ entity, newId: generateStandardId(entityType, entity) }));
+  const entitiesWithNewId = allEntities.map((entity) => ({
+    entity,
+    newId: generateStandardId(entityType, entity),
+  }));
   const groupedByNewId = R.groupBy((e) => e.newId, entitiesWithNewId);
   const groups = Object.values(groupedByNewId);
 
@@ -54,7 +54,10 @@ export const migrateEntityType = async (context: AuthContext, entityType: string
   const collidingEntities = collisionGroups.flat().map((e) => e?.entity);
   const relCountByInternalId = new Map();
   if (collidingEntities.length > 0) {
-    const batchInput = collidingEntities.map((e: any) => ({ id: e.internal_id, type: e.entity_type }));
+    const batchInput = collidingEntities.map((e: any) => ({
+      id: e.internal_id,
+      type: e.entity_type,
+    }));
     const reloaded = await elBatchIdsWithRelCount(context, DATA_SANITY_MANAGER_USER, batchInput);
     for (let i = 0; i < batchInput.length; i += 1) {
       const reloadedEntity = reloaded[i] as any;
@@ -85,19 +88,25 @@ export const migrateEntityType = async (context: AuthContext, entityType: string
         await elUpdate(context, target._index, target.internal_id, { doc: { standard_id: newId } });
       }
       const allSourcesIds: string[] = sources.map((s) => s.internal_id);
-      logApp.info(`${message} > merging ${JSON.stringify(allSourcesIds)} into ${target.internal_id}`);
+      logApp.info(
+        `${message} > merging ${JSON.stringify(allSourcesIds)} into ${target.internal_id}`,
+      );
       await mergeEntities(context, DATA_SANITY_MANAGER_USER, target.internal_id, allSourcesIds);
       mergedEntities += sources.length;
       // Use logApp.info so the operator can follow merge progress in the migration log channel.
       logApp.info(
-        `${message} > merged ${sources.length} ${entityType} into ${target.internal_id}`
-        + ` (target rel_count=${relCountByInternalId.get(target.internal_id) ?? 0},`
-        + ` sources rel_count=[${sources.map((s) => relCountByInternalId.get(s.internal_id) ?? 0).join(', ')}])`
-        + ` (${index + 1}/${collisionGroups.length}) in ${Date.now() - startMergeTime}`,
+        `${message} > merged ${sources.length} ${entityType} into ${target.internal_id}` +
+          ` (target rel_count=${relCountByInternalId.get(target.internal_id) ?? 0},` +
+          ` sources rel_count=[${sources.map((s) => relCountByInternalId.get(s.internal_id) ?? 0).join(', ')}])` +
+          ` (${index + 1}/${collisionGroups.length}) in ${Date.now() - startMergeTime}`,
       );
     } catch (err) {
       // Do not abort the whole migration if one group fails: log and keep going.
-      logApp.error(`${message} > failed to merge group for ${newId}`, { cause: err, targetId: target.internal_id, sourceIds: sources.map((s) => s.internal_id) });
+      logApp.error(`${message} > failed to merge group for ${newId}`, {
+        cause: err,
+        targetId: target.internal_id,
+        sourceIds: sources.map((s) => s.internal_id),
+      });
     }
   }
   return {
@@ -106,24 +115,28 @@ export const migrateEntityType = async (context: AuthContext, entityType: string
   };
 };
 
-export const caseSensitiveDuplicatedIdDryRun = (entityTypes: string[]) => async (context: AuthContext): Promise<SanityOperationRunOutput> => {
-  let total = 0;
-  const detail: Record<string, number> = {};
-  for (const entityType of entityTypes) {
-    const collisionGroups = await computeCollisionGroup(context, entityType);
-    detail[entityType] = collisionGroups.length;
-    total += collisionGroups.length;
-  }
-  return { impact: { total, detail } };
-};
+export const caseSensitiveDuplicatedIdDryRun =
+  (entityTypes: string[]) =>
+  async (context: AuthContext): Promise<SanityOperationRunOutput> => {
+    let total = 0;
+    const detail: Record<string, number> = {};
+    for (const entityType of entityTypes) {
+      const collisionGroups = await computeCollisionGroup(context, entityType);
+      detail[entityType] = collisionGroups.length;
+      total += collisionGroups.length;
+    }
+    return { impact: { total, detail } };
+  };
 
-export const caseSensitiveDuplicatedId = (entityTypes: string[]) => async (context: AuthContext): Promise<SanityOperationRunOutput> => {
-  let total = 0;
-  const detail: Record<string, number> = {};
-  for (const entityType of entityTypes) {
-    const stat = await migrateEntityType(context, entityType);
-    detail[entityType] = stat.merged;
-    total += stat.merged;
-  }
-  return { impact: { total, detail } };
-};
+export const caseSensitiveDuplicatedId =
+  (entityTypes: string[]) =>
+  async (context: AuthContext): Promise<SanityOperationRunOutput> => {
+    let total = 0;
+    const detail: Record<string, number> = {};
+    for (const entityType of entityTypes) {
+      const stat = await migrateEntityType(context, entityType);
+      detail[entityType] = stat.merged;
+      total += stat.merged;
+    }
+    return { impact: { total, detail } };
+  };

@@ -15,7 +15,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { getStats } from '../database/engine';
 import { READ_INDEX_FILES } from '../database/utils';
-import { getManagerConfigurationFromCache, managerConfigurationEditField } from '../modules/managerConfiguration/managerConfiguration-domain';
+import {
+  getManagerConfigurationFromCache,
+  managerConfigurationEditField,
+} from '../modules/managerConfiguration/managerConfiguration-domain';
 import { FunctionalError } from '../config/errors';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
@@ -31,16 +34,28 @@ export const indexedFilesMetrics = async () => {
   };
 };
 
-export const countIndexedFiles = async (context: AuthContext, user: AuthUser, args: QueryIndexedFilesCountArgs) => {
+export const countIndexedFiles = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: QueryIndexedFilesCountArgs,
+) => {
   return elCountFiles(context, context.user, args);
 };
 
-export const searchIndexedFiles = async (context: AuthContext, user: AuthUser, args: QueryIndexedFilesArgs) => {
+export const searchIndexedFiles = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: QueryIndexedFilesArgs,
+) => {
   return elSearchFiles(context, context.user, args);
 };
 
 export const resetFileIndexing = async (context: AuthContext, user: AuthUser) => {
-  const managerConfiguration = await getManagerConfigurationFromCache(context, user, 'FILE_INDEX_MANAGER');
+  const managerConfiguration = await getManagerConfigurationFromCache(
+    context,
+    user,
+    'FILE_INDEX_MANAGER',
+  );
   if (!managerConfiguration) {
     throw FunctionalError('No manager configuration found');
   }
@@ -49,7 +64,12 @@ export const resetFileIndexing = async (context: AuthContext, user: AuthUser) =>
     { key: 'last_run_start_date', value: [null] },
     { key: 'last_run_end_date', value: [null] },
   ];
-  await managerConfigurationEditField(context, user, managerConfiguration.id, managerConfigurationEditInput);
+  await managerConfigurationEditField(
+    context,
+    user,
+    managerConfiguration.id,
+    managerConfigurationEditInput,
+  );
   await elDeleteAllFiles();
   await publishUserAction({
     user,
@@ -57,7 +77,11 @@ export const resetFileIndexing = async (context: AuthContext, user: AuthUser) =>
     event_scope: 'update',
     event_access: 'administration',
     message: 'Reset file indexing',
-    context_data: { id: managerConfiguration.id, entity_type: ENTITY_TYPE_MANAGER_CONFIGURATION, input: {} },
+    context_data: {
+      id: managerConfiguration.id,
+      entity_type: ENTITY_TYPE_MANAGER_CONFIGURATION,
+      input: {},
+    },
   });
   return true;
 };

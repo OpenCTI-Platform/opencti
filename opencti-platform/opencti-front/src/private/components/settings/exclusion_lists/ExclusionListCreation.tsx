@@ -3,7 +3,10 @@ import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Dra
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { graphql } from 'react-relay';
 import { Field, Form, Formik, FormikConfig } from 'formik';
-import { availableEntityTypes, exclusionListCreationValidator } from '@components/settings/exclusion_lists/ExclusionListUtils';
+import {
+  availableEntityTypes,
+  exclusionListCreationValidator,
+} from '@components/settings/exclusion_lists/ExclusionListUtils';
 import Button from '@common/button/Button';
 import { ExclusionListsLinesPaginationQuery$variables } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLinesPaginationQuery.graphql';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
@@ -31,13 +34,8 @@ const exclusionListCreationFileMutation = graphql`
   }
 `;
 
-const CreateExclusionListControlledDial = (
-  props: DrawerControlledDialProps,
-) => (
-  <CreateEntityControlledDial
-    entityType="ExclusionList"
-    {...props}
-  />
+const CreateExclusionListControlledDial = (props: DrawerControlledDialProps) => (
+  <CreateEntityControlledDial entityType="ExclusionList" {...props} />
 );
 
 interface ExclusionListCreationFormData {
@@ -62,7 +60,9 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
   refetchStatus,
 }) => {
   const { t_i18n } = useFormatter();
-  const { schema: { scos } } = useSchema();
+  const {
+    schema: { scos },
+  } = useSchema();
   const entityTypes = scos.filter((item) => availableEntityTypes.includes(item.id));
   const [isUploadFileChecked, setIsUploadFileChecked] = useState<boolean>(true);
   const [commit] = useApiMutation(exclusionListCreationFileMutation);
@@ -73,11 +73,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
     let { file } = values;
     if (!file && values.content) {
       const blob = new Blob([values.content], { type: 'text/plain' });
-      file = new File(
-        [blob],
-        `${now()}_${values.name}.txt`,
-        { type: 'text/plain' },
-      );
+      file = new File([blob], `${now()}_${values.name}.txt`, { type: 'text/plain' });
     }
     const input = {
       name: values.name,
@@ -157,10 +153,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
             multiple
             style={fieldSpacingContainerStyle}
             options={entityTypesOptions}
-            renderOption={(
-              props: React.HTMLAttributes<HTMLLIElement>,
-              option: FieldOption,
-            ) => (
+            renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: FieldOption) => (
               <li key={option.value} {...props}>
                 <ItemIcon type={option.type} />
                 <span style={{ padding: '0 4px 0 4px' }}>{option.label}</span>
@@ -171,18 +164,23 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
           />
           <FormControlLabel
             style={fieldSpacingContainerStyle}
-            control={(
+            control={
               <Switch
                 defaultChecked
                 onChange={(_, isChecked) => {
                   setIsUploadFileChecked(isChecked);
                 }}
               />
-            )}
+            }
             label={t_i18n('Upload file')}
           />
           {isUploadFileChecked ? (
-            <CustomFileUploader setFieldValue={setFieldValue} formikErrors={errors} required={isUploadFileChecked} acceptMimeTypes="text/plain" />
+            <CustomFileUploader
+              setFieldValue={setFieldValue}
+              formikErrors={errors}
+              required={isUploadFileChecked}
+              acceptMimeTypes="text/plain"
+            />
           ) : (
             <Field
               style={fieldSpacingContainerStyle}
@@ -195,17 +193,10 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
             />
           )}
           <FormButtonContainer>
-            <Button
-              variant="secondary"
-              onClick={handleReset}
-              disabled={isSubmitting}
-            >
+            <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitForm}
-              disabled={isSubmitting}
-            >
+            <Button onClick={submitForm} disabled={isSubmitting}>
               {t_i18n('Create')}
             </Button>
           </FormButtonContainer>
@@ -226,12 +217,7 @@ const ExclusionListCreation: FunctionComponent<ExclusionListCreationProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy, rootField: string) => {
-    insertNode(
-      store,
-      'Pagination_exclusionLists',
-      paginationOptions,
-      rootField,
-    );
+    insertNode(store, 'Pagination_exclusionLists', paginationOptions, rootField);
   };
 
   return (

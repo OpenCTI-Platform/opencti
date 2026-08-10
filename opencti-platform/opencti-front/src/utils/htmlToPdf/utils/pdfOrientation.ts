@@ -20,9 +20,7 @@ const determineOrientation = () => {
       }
     });
   }
-  return pdfElementMaxWidth > MAX_WIDTH_PORTRAIT
-    ? 'landscape'
-    : 'portrait';
+  return pdfElementMaxWidth > MAX_WIDTH_PORTRAIT ? 'landscape' : 'portrait';
 };
 
 export default determineOrientation;

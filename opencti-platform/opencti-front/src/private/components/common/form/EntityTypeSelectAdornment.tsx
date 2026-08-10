@@ -49,10 +49,7 @@ const EntityTypeSelectAdornment = ({
         size="small"
         // edge="end"
       >
-        <PaletteOutlined
-          fontSize="small"
-          color={value.length > 0 ? 'secondary' : 'primary'}
-        />
+        <PaletteOutlined fontSize="small" color={value.length > 0 ? 'secondary' : 'primary'} />
       </IconButton>
       <Popover
         elevation={8}
@@ -76,10 +73,7 @@ const EntityTypeSelectAdornment = ({
               value={entityType.value}
               onClick={() => toggleEntityType(entityType.value)}
             >
-              <Checkbox
-                size="small"
-                checked={value.includes(entityType.value)}
-              />
+              <Checkbox size="small" checked={value.includes(entityType.value)} />
               <ListItemText primary={entityType.label} />
             </MenuItem>
           ))}

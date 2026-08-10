@@ -1,7 +1,13 @@
 import { UseMutationConfig } from 'react-relay';
 import type { GraphQLTaggedNode, MutationParameters } from 'relay-runtime';
 import { ObjectSchema, SchemaObjectDescription } from 'yup';
-import { convertAssignees, convertExternalReferences, convertKillChainPhases, convertMarkings, convertParticipants } from '../edition';
+import {
+  convertAssignees,
+  convertExternalReferences,
+  convertKillChainPhases,
+  convertMarkings,
+  convertParticipants,
+} from '../edition';
 import useConfidenceLevel from './useConfidenceLevel';
 import useApiMutation from './useApiMutation';
 import { FieldOption } from '../field';
@@ -86,12 +92,8 @@ const useFormEditor = (
     if (!enableReferences) {
       validate(name, values, () => {
         const currentValues: [FieldOption] = optionMapper(data);
-        const added = values.filter(
-          (v) => !currentValues.map((c) => c.value).includes(v.value),
-        );
-        const removed = currentValues.filter(
-          (c) => !values.map((v) => v.value).includes(c.value),
-        );
+        const added = values.filter((v) => !currentValues.map((c) => c.value).includes(v.value));
+        const removed = currentValues.filter((c) => !values.map((v) => v.value).includes(c.value));
         if (added.length > 0) {
           commitRelationAdd({
             variables: {
@@ -117,7 +119,12 @@ const useFormEditor = (
   };
   const changeMarking = (name: string, values: FieldOption[], operation: string | undefined) => {
     if (operation === 'replace') {
-      commitFieldPatch({ variables: { id: data.id, input: [{ key: name, value: values.map((m) => m.value), operation }] } });
+      commitFieldPatch({
+        variables: {
+          id: data.id,
+          input: [{ key: name, value: values.map((m) => m.value), operation }],
+        },
+      });
     } else changeMultiple(name, values, 'object-marking', convertMarkings);
   };
   const changeAssignee = (name: string, values: FieldOption[]) => {
@@ -130,19 +137,14 @@ const useFormEditor = (
     changeMultiple(name, values, 'kill-chain-phase', convertKillChainPhases);
   };
   const changeExternalReferences = (name: string, values: FieldOption[]) => {
-    changeMultiple(
-      name,
-      values,
-      'external-reference',
-      convertExternalReferences,
-    );
+    changeMultiple(name, values, 'external-reference', convertExternalReferences);
   };
 
   // Simple
   const changeCreated = (name: string, value: FieldOption | '') => {
     if (!enableReferences) {
       validate(name, value !== '' ? value : null, () => {
-        const finalValue = (value !== '' && value !== null) ? (value as FieldOption).value : null;
+        const finalValue = value !== '' && value !== null ? (value as FieldOption).value : null;
         commitFieldPatch({
           variables: {
             id: data.id,
@@ -167,7 +169,10 @@ const useFormEditor = (
       },
     });
   };
-  const changeField = (name: string, value: number | number[] | string | Date | FieldOption | FieldOption[]) => {
+  const changeField = (
+    name: string,
+    value: number | number[] | string | Date | FieldOption | FieldOption[],
+  ) => {
     if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
@@ -202,7 +207,10 @@ const useFormEditor = (
     commitFieldPatch(args);
   };
 
-  const checkAndCommitChangeField = (name: string, value: number | number[] | string | Date | FieldOption | FieldOption[]) => {
+  const checkAndCommitChangeField = (
+    name: string,
+    value: number | number[] | string | Date | FieldOption | FieldOption[],
+  ) => {
     if (!checkConfidenceForEntity(data, true)) return;
     changeField(name, value);
   };

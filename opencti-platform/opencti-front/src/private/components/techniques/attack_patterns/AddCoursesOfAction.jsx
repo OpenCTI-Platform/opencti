@@ -35,11 +35,7 @@ class AddCoursesOfAction extends Component {
     };
     return (
       <>
-        <IconButton
-          color="primary"
-          aria-label="Add"
-          onClick={this.handleOpen.bind(this)}
-        >
+        <IconButton color="primary" aria-label="Add" onClick={this.handleOpen.bind(this)}>
           <Add fontSize="small" />
         </IconButton>
         <Drawer
@@ -47,22 +43,22 @@ class AddCoursesOfAction extends Component {
           onClose={this.handleClose.bind(this)}
           title={t('Add courses of action')}
           subHeader={{
-            right: [(
+            right: [
               <CourseOfActionCreation
                 display={this.state.open}
                 contextual={true}
                 inputValue={this.state.search}
                 paginationOptions={paginationOptions}
                 key="rightButton"
-              />
-            )],
-            left: [(
+              />,
+            ],
+            left: [
               <SearchInput
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
                 key="leftInput"
-              />
-            )],
+              />,
+            ],
           }}
         >
           <QueryRenderer

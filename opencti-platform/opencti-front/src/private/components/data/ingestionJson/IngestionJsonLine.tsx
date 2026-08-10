@@ -74,7 +74,7 @@ export const IngestionJsonLineComponent: FunctionComponent<IngestionJsonLineProp
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={(
+      secondaryAction={
         <Security needs={[INGESTION_SETINGESTIONS]}>
           <IngestionJsonPopover
             ingestionJsonId={data.id}
@@ -82,24 +82,18 @@ export const IngestionJsonLineComponent: FunctionComponent<IngestionJsonLineProp
             running={data.ingestion_running}
           />
         </Security>
-      )}
+      }
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <TableViewIcon />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
               {data.name}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.uri.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.uri.width }}>
               {data.uri}
             </div>
             <div
@@ -111,19 +105,14 @@ export const IngestionJsonLineComponent: FunctionComponent<IngestionJsonLineProp
                 status={!!data.ingestion_running}
               />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.connector.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.connector.width }}>
               {fldt(data.last_execution_date) || EMPTY_VALUE}
             </div>
-            <div
-              className={classes.bodyItem}
-            >
+            <div className={classes.bodyItem}>
               <Link to={`/dashboard/integrations/connectors/${data.connector_id}`}>VIEW</Link>
             </div>
           </div>
-        )}
+        }
       />
     </ListItem>
   );
@@ -138,72 +127,31 @@ export const IngestionJsonLineDummy = ({ dataColumns }: { dataColumns: DataColum
       secondaryAction={<MoreVert classes={classes.itemIconDisabled} />}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <Skeleton
-          animation="wave"
-          variant="circular"
-          width={30}
-          height={30}
-        />
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.uri.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.uri.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.ingestion_running.width }}
             >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.connector.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width={100}
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.connector.width }}>
+              <Skeleton animation="wave" variant="rectangular" width={100} height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width={100}
-                height="100%"
-              />
+            <div className={classes.bodyItem}>
+              <Skeleton animation="wave" variant="rectangular" width={100} height="100%" />
             </div>
           </div>
-        )}
+        }
       />
     </ListItem>
   );

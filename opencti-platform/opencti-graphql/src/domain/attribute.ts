@@ -15,13 +15,23 @@ export interface DefaultValue {
 
 // -- ATTRIBUTES --
 
-export const getRuntimeAttributeValues = (context: AuthContext, user: AuthUser, opts: QueryRuntimeAttributesArgs = {} as QueryRuntimeAttributesArgs) => {
+export const getRuntimeAttributeValues = (
+  context: AuthContext,
+  user: AuthUser,
+  opts: QueryRuntimeAttributesArgs = {} as QueryRuntimeAttributesArgs,
+) => {
   const { attributeName } = opts;
   return elAttributeValues(context, user, attributeName, opts);
 };
 
-export const getSchemaAttributeNames = async (context: AuthContext, user: AuthUser, elementTypes: string[]) => {
-  const attributes = R.uniq(elementTypes.map((type) => schemaAttributesDefinition.getAttributeNames(type)).flat());
+export const getSchemaAttributeNames = async (
+  context: AuthContext,
+  user: AuthUser,
+  elementTypes: string[],
+) => {
+  const attributes = R.uniq(
+    elementTypes.map((type) => schemaAttributesDefinition.getAttributeNames(type)).flat(),
+  );
   const sortByLabel = R.sortBy(R.toLower);
   const finalResult = R.pipe(
     sortByLabel,
@@ -42,55 +52,63 @@ export const getSchemaAttributeNames = async (context: AuthContext, user: AuthUs
 export const getSchemaAttributes = async (context: AuthContext, user: AuthUser) => {
   const allTypes = schemaAttributesDefinition.getRegisteredTypes();
 
-  return Promise.all(allTypes.map(async (entityType) => {
-    const attributes = schemaAttributesDefinition.getAttributes(entityType);
-    const attributesArray = Array.from(attributes.values());
+  return Promise.all(
+    allTypes.map(async (entityType) => {
+      const attributes = schemaAttributesDefinition.getAttributes(entityType);
+      const attributesArray = Array.from(attributes.values());
 
-    // Map attributes to TypeAttribute format
-    const typeAttributes = attributesArray
-      .filter((attr) => !INTERNAL_ATTRIBUTES.includes(attr.name))
-      .map((attr) => ({
-        name: attr.name,
-        type: attr.type,
-        label: attr.label || attr.name,
-        mandatory: attr.mandatoryType === 'external',
-        mandatoryType: attr.mandatoryType,
-        editDefault: attr.editDefault,
-        multiple: attr.multiple || false,
-        upsert: attr.upsert || false,
-        // For numeric attributes with scalable property
-        scale: attr.type === 'numeric' && (attr as any).scalable ? 'default' : undefined,
-        // Default values would need to be fetched from entity settings if needed
-        defaultValues: undefined,
-      }));
+      // Map attributes to TypeAttribute format
+      const typeAttributes = attributesArray
+        .filter((attr) => !INTERNAL_ATTRIBUTES.includes(attr.name))
+        .map((attr) => ({
+          name: attr.name,
+          type: attr.type,
+          label: attr.label || attr.name,
+          mandatory: attr.mandatoryType === 'external',
+          mandatoryType: attr.mandatoryType,
+          editDefault: attr.editDefault,
+          multiple: attr.multiple || false,
+          upsert: attr.upsert || false,
+          // For numeric attributes with scalable property
+          scale: attr.type === 'numeric' && (attr as any).scalable ? 'default' : undefined,
+          // Default values would need to be fetched from entity settings if needed
+          defaultValues: undefined,
+        }));
 
-    // Inject custom field attributes dynamically
-    const customFieldDefs = await getCustomFieldDefinitionsForEntityType(context, user, entityType);
-    for (const cfDef of customFieldDefs) {
-      let attributeType: AttributeDefinition['type'] = 'string';
-      if (cfDef.field_type === 'integer') attributeType = 'numeric';
-      else if (cfDef.field_type === 'boolean') attributeType = 'boolean';
-      else if (cfDef.field_type === 'date') attributeType = 'date';
+      // Inject custom field attributes dynamically
+      const customFieldDefs = await getCustomFieldDefinitionsForEntityType(
+        context,
+        user,
+        entityType,
+      );
+      for (const cfDef of customFieldDefs) {
+        let attributeType: AttributeDefinition['type'] = 'string';
+        if (cfDef.field_type === 'integer') attributeType = 'numeric';
+        else if (cfDef.field_type === 'boolean') attributeType = 'boolean';
+        else if (cfDef.field_type === 'date') attributeType = 'date';
+        // mandatory / default_value are resolved per entity type (US.2)
+        const entitySetting = cfDef.entity_type_settings?.find(
+          (setting) => setting.entity_type === entityType,
+        );
+        const isMandatory = entitySetting?.mandatory ?? false;
+        typeAttributes.push({
+          name: cfDef.name,
+          type: attributeType,
+          label: cfDef.label,
+          mandatory: isMandatory,
+          mandatoryType: isMandatory ? 'external' : 'no',
+          editDefault: true,
+          multiple: cfDef.multiple ?? false,
+          upsert: true,
+          scale: undefined,
+          defaultValues: undefined,
+        });
+      }
 
-      const entitySetting = cfDef.entity_type_settings?.find((setting) => setting.entity_type === entityType);
-      const isMandatory = entitySetting?.mandatory ?? false;
-      typeAttributes.push({
-        name: cfDef.name,
-        type: attributeType,
-        label: cfDef.label,
-        mandatory: isMandatory,
-        mandatoryType: isMandatory ? 'external' : 'no',
-        editDefault: true,
-        multiple: cfDef.multiple ?? false,
-        upsert: true,
-        scale: undefined,
-        defaultValues: undefined,
-      });
-    }
-
-    return {
-      type: entityType,
-      attributes: typeAttributes,
-    };
-  }));
+      return {
+        type: entityType,
+        attributes: typeAttributes,
+      };
+    }),
+  );
 };

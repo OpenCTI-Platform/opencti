@@ -37,13 +37,14 @@ const customFieldMutationFieldPatch = graphql`
   }
 `;
 
-const customFieldValidation = (t: (name: string) => string) => Yup.object().shape({
-  label: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  min_value: Yup.number().nullable(),
-  max_value: Yup.number().nullable(),
-  select_options: Yup.array().of(Yup.string()).nullable(),
-});
+const customFieldValidation = (t: (name: string) => string) =>
+  Yup.object().shape({
+    label: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    min_value: Yup.number().nullable(),
+    max_value: Yup.number().nullable(),
+    select_options: Yup.array().of(Yup.string()).nullable(),
+  });
 
 interface CustomFieldEditionProps {
   handleClose: () => void;
@@ -55,7 +56,10 @@ const CustomFieldEdition: FunctionComponent<CustomFieldEditionProps> = ({
 }) => {
   const data = useFragment(CustomFieldEditionFragment, customFieldDefinition);
   const { t_i18n } = useFormatter();
-  const initialValues = pick(['name', 'label', 'field_type', 'description', 'min_value', 'max_value', 'select_options'], data);
+  const initialValues = pick(
+    ['name', 'label', 'field_type', 'description', 'min_value', 'max_value', 'select_options'],
+    data,
+  );
 
   const handleSubmitField = (name: string, value: string | string[] | number | null) => {
     customFieldValidation(t_i18n)
@@ -144,17 +148,21 @@ const CustomFieldEdition: FunctionComponent<CustomFieldEditionProps> = ({
               options={[]}
               value={values.select_options ? [...values.select_options] : []}
               onChange={(_, newValue) => handleSubmitField('select_options', newValue)}
-              renderTags={(tagValue, getTagProps) => tagValue.map((option: string, index: number) => (
-                <Chip label={option} {...getTagProps({ index })} key={option} />
-              ))}
+              renderTags={(tagValue, getTagProps) =>
+                tagValue.map((option: string, index: number) => (
+                  <Chip label={option} {...getTagProps({ index })} key={option} />
+                ))
+              }
               renderInput={(params) => (
                 <MuiTextField
                   {...params}
                   variant="standard"
                   label={t_i18n('Select options')}
-                  placeholder={(values.select_options ?? []).length === 0
-                    ? t_i18n('Type and press Enter to add items')
-                    : t_i18n('Add more items...')}
+                  placeholder={
+                    (values.select_options ?? []).length === 0
+                      ? t_i18n('Type and press Enter to add items')
+                      : t_i18n('Add more items...')
+                  }
                   style={{ marginTop: 20 }}
                 />
               )}

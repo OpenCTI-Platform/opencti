@@ -1,7 +1,21 @@
 import * as R from 'ramda';
 import moment from 'moment/moment';
-import { createEntity, createRelation, distributionEntities, inputResolveRefs, patchAttribute, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
-import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, pageRegardingEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import {
+  createEntity,
+  createRelation,
+  distributionEntities,
+  inputResolveRefs,
+  patchAttribute,
+  storeLoadByIdWithRefs,
+  timeSeriesEntities,
+} from '../../database/middleware';
+import {
+  type EntityOptions,
+  fullEntitiesList,
+  pageEntitiesConnection,
+  pageRegardingEntitiesConnection,
+  storeLoadById,
+} from '../../database/middleware-loader';
 import { BUS_TOPICS, extendedErrors, logApp } from '../../config/conf';
 import { notify } from '../../database/redis';
 import { checkIndicatorSyntax } from '../../python/pythonBridge';
@@ -20,11 +34,24 @@ import {
 } from '../../schema/general';
 import { elCount } from '../../database/engine';
 import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
-import { cleanupIndicatorPattern, extractObservablesFromIndicatorPattern, extractValidObservablesFromIndicatorPattern } from '../../utils/syntax';
-import { computeValidPeriod, hasSameSourceAlreadyUpdateThisScore, INDICATOR_DEFAULT_SCORE, isDecayEnabled } from './indicator-utils';
+import {
+  cleanupIndicatorPattern,
+  extractObservablesFromIndicatorPattern,
+  extractValidObservablesFromIndicatorPattern,
+} from '../../utils/syntax';
+import {
+  computeValidPeriod,
+  hasSameSourceAlreadyUpdateThisScore,
+  INDICATOR_DEFAULT_SCORE,
+  isDecayEnabled,
+} from './indicator-utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type BasicStoreEntityIndicator, ENTITY_TYPE_INDICATOR, type StoreEntityIndicator } from './indicator-types';
+import {
+  type BasicStoreEntityIndicator,
+  ENTITY_TYPE_INDICATOR,
+  type StoreEntityIndicator,
+} from './indicator-types';
 import {
   type EditInput,
   FilterMode,
@@ -56,7 +83,10 @@ import { checkScore, prepareDate, utcDate } from '../../utils/format';
 import { checkObservableValue, isCacheEmpty } from '../../database/exclusionListCache';
 import { stixHashesToInput } from '../../schema/fieldDataAdapter';
 import { REVOKED, VALID_FROM, VALID_UNTIL, X_DETECTION, X_SCORE } from '../../schema/identifier';
-import { checkDecayExclusionRules, getActiveDecayExclusionRules } from '../decayRule/exclusions/decayExclusionRule-domain';
+import {
+  checkDecayExclusionRules,
+  getActiveDecayExclusionRules,
+} from '../decayRule/exclusions/decayExclusionRule-domain';
 import { getEntitySettingFromCache } from '../../modules/entitySetting/entitySetting-utils';
 import { pushAll } from '../../utils/arrayUtil';
 import type { BasicStoreEntityEntitySetting } from '../entitySetting/entitySetting-types';
@@ -65,11 +95,25 @@ export const NO_DECAY_DEFAULT_VALID_PERIOD: number = dayToMs(90);
 export const NO_DECAY_DEFAULT_REVOKED_SCORE: number = 0;
 
 export const findById = (context: AuthContext, user: AuthUser, indicatorId: string) => {
-  return storeLoadById<BasicStoreEntityIndicator>(context, user, indicatorId, ENTITY_TYPE_INDICATOR);
+  return storeLoadById<BasicStoreEntityIndicator>(
+    context,
+    user,
+    indicatorId,
+    ENTITY_TYPE_INDICATOR,
+  );
 };
 
-export const findIndicatorPaginated = (context: AuthContext, user: AuthUser, args: QueryIndicatorsArgs) => {
-  return pageEntitiesConnection<BasicStoreEntityIndicator>(context, user, [ENTITY_TYPE_INDICATOR], args);
+export const findIndicatorPaginated = (
+  context: AuthContext,
+  user: AuthUser,
+  args: QueryIndicatorsArgs,
+) => {
+  return pageEntitiesConnection<BasicStoreEntityIndicator>(
+    context,
+    user,
+    [ENTITY_TYPE_INDICATOR],
+    args,
+  );
 };
 
 /**
@@ -77,10 +121,20 @@ export const findIndicatorPaginated = (context: AuthContext, user: AuthUser, arg
  * @param indicator
  */
 export const computeLiveScore = (indicator: BasicStoreEntityIndicator) => {
-  if (indicator.decay_base_score_date && indicator.decay_base_score && indicator.decay_applied_rule) {
+  if (
+    indicator.decay_base_score_date &&
+    indicator.decay_base_score &&
+    indicator.decay_applied_rule
+  ) {
     const decayRule = indicator.decay_applied_rule;
-    const daysSinceDecayStart = moment().diff(moment(indicator.decay_base_score_date), 'days', true);
-    return Math.round(computeScoreFromExpectedTime(indicator.decay_base_score, daysSinceDecayStart, decayRule));
+    const daysSinceDecayStart = moment().diff(
+      moment(indicator.decay_base_score_date),
+      'days',
+      true,
+    );
+    return Math.round(
+      computeScoreFromExpectedTime(indicator.decay_base_score, daysSinceDecayStart, decayRule),
+    );
   }
   // by default return current score
   return indicator.x_opencti_score;
@@ -92,15 +146,29 @@ export const computeLiveScore = (indicator: BasicStoreEntityIndicator) => {
  * @param indicator
  */
 export const computeLivePoints = (indicator: BasicStoreEntityIndicator) => {
-  if (indicator.decay_applied_rule && indicator.decay_applied_rule.decay_points && indicator.decay_base_score_date) {
+  if (
+    indicator.decay_applied_rule &&
+    indicator.decay_applied_rule.decay_points &&
+    indicator.decay_base_score_date
+  ) {
     const result: DecayHistoryChart[] = [];
-    const nextKeyPoints = [...indicator.decay_applied_rule.decay_points, indicator.decay_applied_rule.decay_revoke_score];
+    const nextKeyPoints = [
+      ...indicator.decay_applied_rule.decay_points,
+      indicator.decay_applied_rule.decay_revoke_score,
+    ];
     for (let i = 0; i < nextKeyPoints.length; i += 1) {
       const scorePoint = nextKeyPoints[i];
       if (scorePoint < indicator.x_opencti_score) {
-        const elapsedTimeInDays = computeTimeFromExpectedScore(indicator.decay_base_score, scorePoint, indicator.decay_applied_rule);
+        const elapsedTimeInDays = computeTimeFromExpectedScore(
+          indicator.decay_base_score,
+          scorePoint,
+          indicator.decay_applied_rule,
+        );
         const duration = moment.duration(elapsedTimeInDays, 'days');
-        const scoreDate = moment(indicator.decay_base_score_date).add(duration.asMilliseconds(), 'ms');
+        const scoreDate = moment(indicator.decay_base_score_date).add(
+          duration.asMilliseconds(),
+          'ms',
+        );
         result.push({ updated_at: scoreDate.toDate(), score: scorePoint });
       }
     }
@@ -115,7 +183,11 @@ export const computeLivePoints = (indicator: BasicStoreEntityIndicator) => {
  * @param user
  * @param indicator
  */
-export const getDecayDetails = async (context: AuthContext, user: AuthUser, indicator: BasicStoreEntityIndicator) => {
+export const getDecayDetails = async (
+  context: AuthContext,
+  user: AuthUser,
+  indicator: BasicStoreEntityIndicator,
+) => {
   if (!indicator.decay_applied_rule) {
     return null;
   }
@@ -126,7 +198,11 @@ export const getDecayDetails = async (context: AuthContext, user: AuthUser, indi
   return details;
 };
 
-export const getDecayChartData = async (context: AuthContext, user: AuthUser, indicator: BasicStoreEntityIndicator) => {
+export const getDecayChartData = async (
+  context: AuthContext,
+  user: AuthUser,
+  indicator: BasicStoreEntityIndicator,
+) => {
   if (!indicator.decay_applied_rule) {
     return null;
   }
@@ -167,7 +243,13 @@ export const findIndicatorsForDecay = (context: AuthContext, user: AuthUser, max
 export const createObservablesFromIndicator = async (
   context: AuthContext,
   user: AuthUser,
-  input: { objectLabel?: string[] | null; objectMarking?: string[] | null; objectOrganization?: string[] | null; createdBy?: string | null; externalReferences?: string[] | null },
+  input: {
+    objectLabel?: string[] | null;
+    objectMarking?: string[] | null;
+    objectOrganization?: string[] | null;
+    createdBy?: string | null;
+    externalReferences?: string[] | null;
+  },
   indicator: StoreEntityIndicator,
 ) => {
   const { pattern } = indicator;
@@ -189,10 +271,19 @@ export const createObservablesFromIndicator = async (
       update: true,
     };
     try {
-      const createdObservable: StixCyberObservable = await createEntity(context, user, observableInput, observable.type);
+      const createdObservable: StixCyberObservable = await createEntity(
+        context,
+        user,
+        observableInput,
+        observable.type,
+      );
       observablesToLink.push(createdObservable);
     } catch (err) {
-      logApp.error('[API] Create observable from indicator fail', { index, cause: err, ...extendedErrors({ input: observableInput }) });
+      logApp.error('[API] Create observable from indicator fail', {
+        index,
+        cause: err,
+        ...extendedErrors({ input: observableInput }),
+      });
     }
   }
   await Promise.all(
@@ -210,8 +301,16 @@ export const createObservablesFromIndicator = async (
   return observablesToLink;
 };
 
-export const promoteIndicatorToObservables = async (context: AuthContext, user: AuthUser, indicatorId: string) => {
-  const indicator: StoreEntityIndicator = await storeLoadByIdWithRefs(context, user, indicatorId) as StoreEntityIndicator;
+export const promoteIndicatorToObservables = async (
+  context: AuthContext,
+  user: AuthUser,
+  indicatorId: string,
+) => {
+  const indicator: StoreEntityIndicator = (await storeLoadByIdWithRefs(
+    context,
+    user,
+    indicatorId,
+  )) as StoreEntityIndicator;
   const objectLabel = (indicator[INPUT_LABELS] ?? []).map((n) => n.internal_id);
   const objectMarking = (indicator[INPUT_MARKINGS] ?? []).map((n) => n.internal_id);
   const objectOrganization = (indicator[INPUT_GRANTED_REFS] ?? []).map((n) => n.internal_id);
@@ -229,13 +328,20 @@ export const getObservableValuesFromPattern = (pattern: string, rawFormat = fals
   return observableValues.map((o) => (o.hashes ? { ...o, hashes: stixHashesToInput(o) } : o));
 };
 
-const validateIndicatorPattern = async (context: AuthContext, user: AuthUser, patternType: string, patternValue: string) => {
+const validateIndicatorPattern = async (
+  context: AuthContext,
+  user: AuthUser,
+  patternType: string,
+  patternValue: string,
+) => {
   // check indicator syntax
   const loweredPatternType = patternType.toLowerCase();
   const formattedPattern = cleanupIndicatorPattern(loweredPatternType, patternValue);
   const check = await checkIndicatorSyntax(context, user, loweredPatternType, formattedPattern);
   if (check === false) {
-    throw FunctionalError(`Indicator of type ${patternType} is not correctly formatted.`, { doc_code: 'INCORRECT_INDICATOR_FORMAT' });
+    throw FunctionalError(`Indicator of type ${patternType} is not correctly formatted.`, {
+      doc_code: 'INCORRECT_INDICATOR_FORMAT',
+    });
   }
 
   // Check that indicator is not excluded from an exclusion list
@@ -257,8 +363,14 @@ const validateIndicatorPattern = async (context: AuthContext, user: AuthUser, pa
   return { formattedPattern };
 };
 
-export const addIndicator = async (context: AuthContext, user: AuthUser, indicator: IndicatorAddInput) => {
-  let observableType: string = isEmptyField(indicator.x_opencti_main_observable_type) ? 'Unknown' : indicator.x_opencti_main_observable_type as string;
+export const addIndicator = async (
+  context: AuthContext,
+  user: AuthUser,
+  indicator: IndicatorAddInput,
+) => {
+  let observableType: string = isEmptyField(indicator.x_opencti_main_observable_type)
+    ? 'Unknown'
+    : (indicator.x_opencti_main_observable_type as string);
   if (observableType === 'File') {
     observableType = 'StixFile';
   }
@@ -270,7 +382,12 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
     throw FunctionalError(`Observable type ${observableType} is not supported.`);
   }
 
-  const { formattedPattern } = await validateIndicatorPattern(context, user, indicator.pattern_type, indicator.pattern);
+  const { formattedPattern } = await validateIndicatorPattern(
+    context,
+    user,
+    indicator.pattern_type,
+    indicator.pattern,
+  );
 
   const indicatorBaseScore = indicator.x_opencti_score ?? INDICATOR_DEFAULT_SCORE;
   checkScore(indicatorBaseScore);
@@ -291,13 +408,27 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   const isDecayActivated: boolean = await isDecayEnabled();
 
   const entitySetting = await getEntitySettingFromCache(context, ENTITY_TYPE_INDICATOR);
-  const resolvedIndicator = await inputResolveRefs(context, user, baseIndicator, ENTITY_TYPE_INDICATOR, entitySetting as BasicStoreEntityEntitySetting);
+  const resolvedIndicator = await inputResolveRefs(
+    context,
+    user,
+    baseIndicator,
+    ENTITY_TYPE_INDICATOR,
+    entitySetting as BasicStoreEntityEntitySetting,
+  );
 
   const decayRule = await checkDecayRules(context, user, resolvedIndicator);
-  const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(indicator, decayRule.decay_lifetime);
+  const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(
+    indicator,
+    decayRule.decay_lifetime,
+  );
 
   const activeDecayExclusionRuleList = await getActiveDecayExclusionRules(context, user);
-  const exclusionRule = await checkDecayExclusionRules(context, user, resolvedIndicator, activeDecayExclusionRuleList);
+  const exclusionRule = await checkDecayExclusionRules(
+    context,
+    user,
+    resolvedIndicator,
+    activeDecayExclusionRuleList,
+  );
   const indicatorToCreate = {
     ...resolvedIndicator,
     valid_from: validFrom.toISOString(),
@@ -325,14 +456,24 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
       decay_points: [...decayRule.decay_points],
       decay_revoke_score: decayRule.decay_revoke_score,
     };
-    const nextScoreReactionDate = computeNextScoreReactionDate(indicatorBaseScore, indicatorBaseScore, decayRule, validFrom);
+    const nextScoreReactionDate = computeNextScoreReactionDate(
+      indicatorBaseScore,
+      indicatorBaseScore,
+      decayRule,
+      validFrom,
+    );
     const decayHistory: DecayHistory[] = [];
     decayHistory.push({
       updated_at: validFrom.toDate(),
       score: indicatorBaseScore,
       updated_by: user.id,
     });
-    const revokeDate = computeDecayPointReactionDate(indicatorBaseScore, decayRule, validFrom, decayRule.decay_revoke_score);
+    const revokeDate = computeDecayPointReactionDate(
+      indicatorBaseScore,
+      decayRule,
+      validFrom,
+      decayRule.decay_revoke_score,
+    );
     finalIndicatorToCreate = {
       ...indicatorToCreate,
       decay_next_reaction_date: nextScoreReactionDate,
@@ -376,7 +517,10 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
 };
 
 export const MAX_DECAY_HISTORY_POINTS = 50;
-export const computeIndicatorDecayHistory = (currentHistory: DecayHistory[], newHistoryPoint: DecayHistory) => {
+export const computeIndicatorDecayHistory = (
+  currentHistory: DecayHistory[],
+  newHistoryPoint: DecayHistory,
+) => {
   const newHistory = currentHistory;
   newHistory.push(newHistoryPoint);
   // If decay history length is too large, we need to trim it to keep it at a manageable size in ES
@@ -398,7 +542,11 @@ export const computeIndicatorDecayHistory = (currentHistory: DecayHistory[], new
  * @param indicatorBeforeUpdate
  * @param userId
  */
-export const restartDecayComputationOnEdit = (fromScore: number, indicatorBeforeUpdate: BasicStoreEntityIndicator, userId: string): EditInput[] => {
+export const restartDecayComputationOnEdit = (
+  fromScore: number,
+  indicatorBeforeUpdate: BasicStoreEntityIndicator,
+  userId: string,
+): EditInput[] => {
   const indicatorDecayRule = indicatorBeforeUpdate.decay_applied_rule;
   const nowDate = new Date();
   const inputToAdd: EditInput[] = [];
@@ -406,11 +554,22 @@ export const restartDecayComputationOnEdit = (fromScore: number, indicatorBefore
   inputToAdd.push({ key: 'decay_base_score', value: [fromScore] });
   inputToAdd.push({ key: 'decay_base_score_date', value: [updateDate.toISOString()] });
   const newDecayHistoryPoint = { updated_at: nowDate, score: fromScore, updated_by: userId };
-  const decayHistory = computeIndicatorDecayHistory([...(indicatorBeforeUpdate.decay_history ?? [])], newDecayHistoryPoint);
+  const decayHistory = computeIndicatorDecayHistory(
+    [...(indicatorBeforeUpdate.decay_history ?? [])],
+    newDecayHistoryPoint,
+  );
   inputToAdd.push({ key: 'decay_history', value: decayHistory });
-  const nextScoreReactionDate = computeNextScoreReactionDate(fromScore, fromScore, indicatorDecayRule, updateDate);
+  const nextScoreReactionDate = computeNextScoreReactionDate(
+    fromScore,
+    fromScore,
+    indicatorDecayRule,
+    updateDate,
+  );
   if (nextScoreReactionDate) {
-    inputToAdd.push({ key: 'decay_next_reaction_date', value: [nextScoreReactionDate.toISOString()] });
+    inputToAdd.push({
+      key: 'decay_next_reaction_date',
+      value: [nextScoreReactionDate.toISOString()],
+    });
   }
 
   const newValidUntil = utcDate().add(indicatorDecayRule.decay_lifetime, 'days');
@@ -419,7 +578,13 @@ export const restartDecayComputationOnEdit = (fromScore: number, indicatorBefore
   return inputToAdd;
 };
 
-export const indicatorEditField = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[], opts = {}) => {
+export const indicatorEditField = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  input: EditInput[],
+  opts = {},
+) => {
   // Region Validation
   const indicatorBeforeUpdate = await findById(context, user, id);
   if (!indicatorBeforeUpdate) {
@@ -437,14 +602,23 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
 
   if (validUntilEditInput || validFromEditInput) {
     if (new Date(valid_until) < new Date(valid_from)) {
-      throw ValidationError('The valid until date must be greater than the valid from date', VALID_FROM, { input, valid_from, valid_until });
+      throw ValidationError(
+        'The valid until date must be greater than the valid from date',
+        VALID_FROM,
+        { input, valid_from, valid_until },
+      );
     }
   }
 
   // check indicator pattern syntax
   const patternEditInput = input.find((e) => e.key === 'pattern');
   if (patternEditInput) {
-    await validateIndicatorPattern(context, user, indicatorBeforeUpdate.pattern_type, patternEditInput.value[0]);
+    await validateIndicatorPattern(
+      context,
+      user,
+      indicatorBeforeUpdate.pattern_type,
+      patternEditInput.value[0],
+    );
   }
   const scoreEditInput = input.find((e) => e.key === X_SCORE);
   if (scoreEditInput) {
@@ -464,7 +638,9 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
     return editInput.key !== VALID_UNTIL && editInput.key !== X_SCORE && editInput.key !== REVOKED;
   });
 
-  const isDecayEnabledOnIndicator: boolean = indicatorBeforeUpdate.decay_applied_rule !== undefined && indicatorBeforeUpdate.decay_applied_rule.decay_revoke_score !== undefined;
+  const isDecayEnabledOnIndicator: boolean =
+    indicatorBeforeUpdate.decay_applied_rule !== undefined &&
+    indicatorBeforeUpdate.decay_applied_rule.decay_revoke_score !== undefined;
 
   const revokedEditInput = input.find((e) => e.key === REVOKED);
   const nowDate = new Date();
@@ -501,10 +677,16 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
     // the score as a string (e.g. "100") even though it is stored as a number (100) in the database.
     // Using strict equality (===) or Array.includes() would fail here due to this type mismatch.
     // We therefore convert both sides to Number before comparing to ensure correct behaviour.
-    if (scoreEditInput && !scoreEditInput.value.map((v) => Number(v)).includes(Number(baseScore)) && !validUntilEditInput) {
+    if (
+      scoreEditInput &&
+      !scoreEditInput.value.map((v) => Number(v)).includes(Number(baseScore)) &&
+      !validUntilEditInput
+    ) {
       const newScore = Number(scoreEditInput.value[0]);
       // First check if the same update by the same source exists
-      if (!hasSameSourceAlreadyUpdateThisScore(user.id, newScore, indicatorBeforeUpdate.decay_history)) {
+      if (
+        !hasSameSourceAlreadyUpdateThisScore(user.id, newScore, indicatorBeforeUpdate.decay_history)
+      ) {
         const allChanges = restartDecayComputationOnEdit(newScore, indicatorBeforeUpdate, user.id);
         pushAll(finalInput, allChanges);
         finalInput.push({ key: X_SCORE, value: [newScore] });
@@ -516,8 +698,15 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
         finalInput.push({ key: X_DETECTION, value: [false] });
         finalInput.push({ key: VALID_UNTIL, value: [nowDate.toISOString()] });
 
-        const newDecayHistoryPoint = { updated_at: nowDate, score: revokeScore, updated_by: user.id };
-        const decayHistory = computeIndicatorDecayHistory([...(indicatorBeforeUpdate.decay_history ?? [])], newDecayHistoryPoint);
+        const newDecayHistoryPoint = {
+          updated_at: nowDate,
+          score: revokeScore,
+          updated_by: user.id,
+        };
+        const decayHistory = computeIndicatorDecayHistory(
+          [...(indicatorBeforeUpdate.decay_history ?? [])],
+          newDecayHistoryPoint,
+        );
         finalInput.push({ key: 'decay_history', value: decayHistory });
       }
 
@@ -573,16 +762,29 @@ export interface IndicatorPatch {
   x_opencti_detection?: boolean;
 }
 
-export const computeIndicatorDecayPatch = (context: AuthContext, user: AuthUser, indicator: BasicStoreEntityIndicator) => {
+export const computeIndicatorDecayPatch = (
+  context: AuthContext,
+  user: AuthUser,
+  indicator: BasicStoreEntityIndicator,
+) => {
   let patch: IndicatorPatch | undefined;
   const model = indicator.decay_applied_rule;
   if (!model || !model.decay_points) {
     return null;
   }
-  const newStableScore = model.decay_points.find((p) => (p || indicator.x_opencti_score) < indicator.x_opencti_score) || model.decay_revoke_score;
+  const newStableScore =
+    model.decay_points.find((p) => (p || indicator.x_opencti_score) < indicator.x_opencti_score) ||
+    model.decay_revoke_score;
   if (newStableScore) {
-    const newDecayHistoryPoint: DecayHistory = { updated_at: new Date(), score: newStableScore, updated_by: user.id };
-    const decayHistory = computeIndicatorDecayHistory([...(indicator.decay_history ?? [])], newDecayHistoryPoint);
+    const newDecayHistoryPoint: DecayHistory = {
+      updated_at: new Date(),
+      score: newStableScore,
+      updated_by: user.id,
+    };
+    const decayHistory = computeIndicatorDecayHistory(
+      [...(indicator.decay_history ?? [])],
+      newDecayHistoryPoint,
+    );
     patch = {
       x_opencti_score: newStableScore,
       decay_history: decayHistory,
@@ -590,7 +792,12 @@ export const computeIndicatorDecayPatch = (context: AuthContext, user: AuthUser,
     if (newStableScore <= model.decay_revoke_score) {
       patch = { ...patch, revoked: true, x_opencti_detection: false };
     } else {
-      const nextScoreReactionDate = computeNextScoreReactionDate(indicator.decay_base_score, newStableScore, model, moment(indicator.valid_from));
+      const nextScoreReactionDate = computeNextScoreReactionDate(
+        indicator.decay_base_score,
+        newStableScore,
+        model,
+        moment(indicator.valid_from),
+      );
       if (nextScoreReactionDate) {
         patch = { ...patch, decay_next_reaction_date: nextScoreReactionDate };
       }
@@ -609,7 +816,11 @@ export const computeIndicatorDecayPatch = (context: AuthContext, user: AuthUser,
  * @param user
  * @param indicator
  */
-export const updateIndicatorDecayScore = async (context: AuthContext, user: AuthUser, indicator: BasicStoreEntityIndicator) => {
+export const updateIndicatorDecayScore = async (
+  context: AuthContext,
+  user: AuthUser,
+  indicator: BasicStoreEntityIndicator,
+) => {
   // update x_opencti_score
   const patch = computeIndicatorDecayPatch(context, user, indicator);
   if (!patch) {
@@ -629,47 +840,68 @@ export const indicatorsTimeSeriesByEntity = (context: AuthContext, user: AuthUse
   return timeSeriesEntities(context, user, [ENTITY_TYPE_INDICATOR], { ...args, filters });
 };
 
-export const indicatorsNumber = async (context: AuthContext, user: AuthUser, args: QueryIndicatorsNumberArgs): Promise<NumberResult> => {
+export const indicatorsNumber = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: QueryIndicatorsNumberArgs,
+): Promise<NumberResult> => {
   const countPromise = elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
     ...args,
     types: [ENTITY_TYPE_INDICATOR],
   }) as Promise<number>;
-  const totalPromise = elCount(
-    context,
-    user,
-    READ_INDEX_STIX_DOMAIN_OBJECTS,
-    { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_INDICATOR] },
-  ) as Promise<number>;
+  const totalPromise = elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+    ...R.dissoc('endDate', args),
+    types: [ENTITY_TYPE_INDICATOR],
+  }) as Promise<number>;
   const [count, total] = await Promise.all([countPromise, totalPromise]);
   return { count, total };
 };
 
-export const indicatorsNumberByEntity = async (context: AuthContext, user: AuthUser, args: QueryIndicatorsNumberArgs): Promise<NumberResult> => {
+export const indicatorsNumberByEntity = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: QueryIndicatorsNumberArgs,
+): Promise<NumberResult> => {
   const { objectId } = args;
   const filters = addFilter(null, buildRefRelationKey(RELATION_INDICATES, '*'), objectId);
-  const countPromise = elCount(
-    context,
-    user,
-    READ_INDEX_STIX_DOMAIN_OBJECTS,
-    { ...args, types: [ENTITY_TYPE_INDICATOR], filters },
-  );
-  const totalPromise = elCount(
-    context,
-    user,
-    READ_INDEX_STIX_DOMAIN_OBJECTS,
-    { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_INDICATOR], filters },
-  );
+  const countPromise = elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+    ...args,
+    types: [ENTITY_TYPE_INDICATOR],
+    filters,
+  });
+  const totalPromise = elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+    ...R.dissoc('endDate', args),
+    types: [ENTITY_TYPE_INDICATOR],
+    filters,
+  });
   const [count, total] = await Promise.all([countPromise, totalPromise]);
   return { count, total };
 };
 
-export const indicatorsDistributionByEntity = async (context: AuthContext, user: AuthUser, args: any) => {
+export const indicatorsDistributionByEntity = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: any,
+) => {
   const { objectId } = args;
   const filters = addFilter(args.filters, buildRefRelationKey(RELATION_INDICATES, '*'), objectId);
   return distributionEntities(context, user, [ENTITY_TYPE_INDICATOR], { ...args, filters });
 };
 // endregion
 
-export const observablesPaginated = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, indicatorId: string, args: EntityOptions<T>) => {
-  return pageRegardingEntitiesConnection<T>(context, user, indicatorId, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE, false, args);
+export const observablesPaginated = async <T extends BasicStoreEntity>(
+  context: AuthContext,
+  user: AuthUser,
+  indicatorId: string,
+  args: EntityOptions<T>,
+) => {
+  return pageRegardingEntitiesConnection<T>(
+    context,
+    user,
+    indicatorId,
+    RELATION_BASED_ON,
+    ABSTRACT_STIX_CYBER_OBSERVABLE,
+    false,
+    args,
+  );
 };

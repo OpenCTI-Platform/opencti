@@ -27,9 +27,7 @@ interface FileImportViewerComponentProps {
   directDownload?: boolean;
 }
 
-const FileImportViewerComponent: FunctionComponent<
-  FileImportViewerComponentProps
-> = ({
+const FileImportViewerComponent: FunctionComponent<FileImportViewerComponentProps> = ({
   entity,
   disableImport,
   handleOpenImport,
@@ -60,16 +58,18 @@ const FileImportViewerComponent: FunctionComponent<
       <Card
         padding="horizontal"
         title={t_i18n('Uploaded files')}
-        action={canDisplayUploadFileButton && (
-          <Security needs={[KNOWLEDGE_KNUPLOAD]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
-            <UploadImport
-              entityId={id}
-              size="small"
-              fontSize="small"
-              onSuccess={() => relay.refetch({ id })}
-            />
-          </Security>
-        )}
+        action={
+          canDisplayUploadFileButton && (
+            <Security needs={[KNOWLEDGE_KNUPLOAD]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
+              <UploadImport
+                entityId={id}
+                size="small"
+                fontSize="small"
+                onSuccess={() => relay.refetch({ id })}
+              />
+            </Security>
+          )
+        }
       >
         {importFiles?.edges?.length ? (
           <List>
@@ -81,10 +81,7 @@ const FileImportViewerComponent: FunctionComponent<
                     dense={true}
                     disableImport={disableImport}
                     file={file?.node}
-                    connectors={
-                      connectors
-                      && connectors[file?.node?.metaData?.mimetype ?? 0]
-                    }
+                    connectors={connectors && connectors[file?.node?.metaData?.mimetype ?? 0]}
                     handleOpenImport={handleOpenImport}
                     isArtifact={isArtifact}
                     directDownload={directDownload}

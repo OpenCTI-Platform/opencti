@@ -50,6 +50,7 @@ jobs:
             cd /home/workspace/opencti-platform/opencti-front
             yarn check-ts
             yarn lint
+            yarn fmt:check
             '
 
     - name: Frontend tests

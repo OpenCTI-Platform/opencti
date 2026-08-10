@@ -1,4 +1,9 @@
-import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import {
+  ATTR_DB_NAMESPACE,
+  ATTR_DB_OPERATION_NAME,
+  SEMATTRS_DB_NAME,
+  SEMATTRS_DB_OPERATION,
+} from '@opentelemetry/semantic-conventions';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { checkRelationshipRef, checkStixCoreRelationshipMapping } from '../database/stix';
 import { FunctionalError } from '../config/errors';
@@ -43,18 +48,26 @@ export const checkRelationConsistency = async (
         checkRelationshipRef(fromType, toType, relationshipType);
       } else if (!isCapabilityDraftRelationAllowed(relationshipType, name)) {
         // Only allowed had-capability-in-draft with defined CAPABILITIES_IN_DRAFT_NAMES
-        throw FunctionalError(`The relationship type ${relationshipType} is not allowed with the ${toType} ${name}`);
+        throw FunctionalError(
+          `The relationship type ${relationshipType} is not allowed with the ${toType} ${name}`,
+        );
       }
     });
   };
-  return telemetry(context, user, 'CONSISTENCY relation', {
-    [ATTR_DB_NAMESPACE]: 'search_engine',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_NAME]: 'search_engine',
-    [ATTR_DB_OPERATION_NAME]: 'read',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_OPERATION]: 'read',
-  }, checkRelationConsistencyFn);
+  return telemetry(
+    context,
+    user,
+    'CONSISTENCY relation',
+    {
+      [ATTR_DB_NAMESPACE]: 'search_engine',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_NAME]: 'search_engine',
+      [ATTR_DB_OPERATION_NAME]: 'read',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_OPERATION]: 'read',
+    },
+    checkRelationConsistencyFn,
+  );
 };
 export const isRelationConsistent = async (
   context: AuthContext,

@@ -22,7 +22,11 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetRadar from '../../../../components/dashboard/WidgetRadar';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import type {
+  WidgetDataSelection,
+  WidgetHost,
+  WidgetParameters,
+} from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import AuditsWidgetRenderContent from '../../../../components/dashboard/AuditsWidgetRenderContent';
@@ -147,24 +151,33 @@ const AuditsRadar: FunctionComponent<AuditsRadarProps> = ({
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
 
-  const buildQueryVariables = useCallback((resolvedDataSelection: WidgetDataSelection[]): AuditsRadarDistributionQuery['variables'] => {
-    const selection = resolvedDataSelection[0];
-    return {
-      types: ['History', 'Activity'],
-      field: selection.attribute as string,
-      operation: 'count',
-      startDate: startDate ?? undefined,
-      endDate: endDate ?? undefined,
-      dateAttribute:
-        selection.date_attribute && selection.date_attribute.length > 0
-          ? selection.date_attribute
-          : 'timestamp',
-      filters: normalizeFilterGroupForBackend(selection.filters),
-      limit: selection.number ?? 10,
-    };
-  }, [startDate, endDate]);
+  const buildQueryVariables = useCallback(
+    (resolvedDataSelection: WidgetDataSelection[]): AuditsRadarDistributionQuery['variables'] => {
+      const selection = resolvedDataSelection[0];
+      return {
+        types: ['History', 'Activity'],
+        field: selection.attribute as string,
+        operation: 'count',
+        startDate: startDate ?? undefined,
+        endDate: endDate ?? undefined,
+        dateAttribute:
+          selection.date_attribute && selection.date_attribute.length > 0
+            ? selection.date_attribute
+            : 'timestamp',
+        filters: normalizeFilterGroupForBackend(selection.filters),
+        limit: selection.number ?? 10,
+      };
+    },
+    [startDate, endDate],
+  );
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsRadarDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<AuditsRadarDistributionQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -192,11 +205,7 @@ const AuditsRadar: FunctionComponent<AuditsRadarProps> = ({
         queryRef={queryRef}
         host={host}
       >
-        <AuditsRadarComponent
-          queryRef={queryRef!}
-          selection={selection}
-          onMounted={setChart}
-        />
+        <AuditsRadarComponent queryRef={queryRef!} selection={selection} onMounted={setChart} />
       </AuditsWidgetRenderContent>
     </WidgetContainer>
   );

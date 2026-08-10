@@ -1,13 +1,19 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
-import type { SecurityCoveragesLinesPaginationQuery, SecurityCoveragesLinesPaginationQuery$variables } from './__generated__/SecurityCoveragesLinesPaginationQuery.graphql';
+import type {
+  SecurityCoveragesLinesPaginationQuery,
+  SecurityCoveragesLinesPaginationQuery$variables,
+} from './__generated__/SecurityCoveragesLinesPaginationQuery.graphql';
 import type { SecurityCoveragesLines_data$data } from './__generated__/SecurityCoveragesLines_data.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import SecurityCoverageCreation from './security_coverages/SecurityCoverageCreation';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import Breadcrumbs from '../../../components/Breadcrumbs';
@@ -87,14 +93,14 @@ const securityCoveragesLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...SecurityCoveragesLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -107,7 +113,8 @@ const securityCoveragesLinesFragment = graphql`
     orderBy: { type: "SecurityCoverageOrdering" }
     orderMode: { type: "OrderingMode" }
     filters: { type: "FilterGroup" }
-  ) @refetchable(queryName: "SecurityCoveragesLinesRefetchQuery") {
+  )
+  @refetchable(queryName: "SecurityCoveragesLinesRefetchQuery") {
     securityCoverages(
       search: $search
       first: $count
@@ -134,7 +141,9 @@ const securityCoveragesLinesFragment = graphql`
 const SecurityCoverages: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
   setTitle(t_i18n('Security coverages'));
   const initialValues = {
     searchTerm: '',
@@ -143,13 +152,15 @@ const SecurityCoverages: FunctionComponent = () => {
     openExports: false,
     filters: emptyFilterGroup,
   };
-  const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<SecurityCoveragesLinesPaginationQuery$variables>(
+  const {
+    viewStorage,
+    helpers: storageHelpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<SecurityCoveragesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
-  const {
-    filters,
-  } = viewStorage;
+  const { filters } = viewStorage;
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Security-Coverage', filters);
   const queryPaginationOptions = {
@@ -190,12 +201,19 @@ const SecurityCoverages: FunctionComponent = () => {
 
   return (
     <ExportContextProvider>
-      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Security coverages'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Analyses') },
+          { label: t_i18n('Security coverages'), current: true },
+        ]}
+      />
       {queryRef && (
         <div data-testid="security-coverages-page">
           <DataTable
             dataColumns={dataColumns}
-            resolvePath={(data: SecurityCoveragesLines_data$data) => data.securityCoverages?.edges?.map((n) => n.node)}
+            resolvePath={(data: SecurityCoveragesLines_data$data) =>
+              data.securityCoverages?.edges?.map((n) => n.node)
+            }
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
             contextFilters={contextFilters}
@@ -203,11 +221,11 @@ const SecurityCoverages: FunctionComponent = () => {
             lineFragment={securityCoverageFragment}
             exportContext={{ entity_type: 'Security-Coverage' }}
             redirectionModeEnabled
-            createButton={(
+            createButton={
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <SecurityCoverageCreation paginationOptions={queryPaginationOptions} />
               </Security>
-            )}
+            }
           />
         </div>
       )}

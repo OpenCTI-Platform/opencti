@@ -18,7 +18,10 @@ const useBuildListOutcome = () => {
   const { buildReadableAttribute } = useBuildReadableAttribute();
 
   const buildListOutcome = async (
-    dataSelection: Pick<Widget['dataSelection'][0], 'filters' | 'number' | 'columns' | 'sort_mode' | 'sort_by'>,
+    dataSelection: Pick<
+      Widget['dataSelection'][0],
+      'filters' | 'number' | 'columns' | 'sort_mode' | 'sort_by'
+    >,
     widgetPerspective?: WidgetPerspective | null,
   ) => {
     const variables = {
@@ -31,14 +34,24 @@ const useBuildListOutcome = () => {
     let nodes: ListItem[];
     if (widgetPerspective === 'entities') {
       const types = ['Stix-Core-Object'];
-      const data = await fetchQuery(stixCoreObjectsListQuery, { ...variables, types }).toPromise() as StixCoreObjectsListQuery$data;
+      const data = (await fetchQuery(stixCoreObjectsListQuery, {
+        ...variables,
+        types,
+      }).toPromise()) as StixCoreObjectsListQuery$data;
       nodes = (data.stixCoreObjects?.edges ?? []).map((n) => n.node) ?? [];
     } else if (widgetPerspective === 'relationships') {
       const types = RELATIONSHIP_WIDGETS_TYPES;
-      const data = await fetchQuery(stixRelationshipsListQuery, { ...variables, types }).toPromise() as StixRelationshipsListQuery$data;
+      const data = (await fetchQuery(stixRelationshipsListQuery, {
+        ...variables,
+        types,
+      }).toPromise()) as StixRelationshipsListQuery$data;
       nodes = (data.stixRelationships?.edges ?? []).flatMap((n) => (n ? n.node : [])) ?? [];
     } else {
-      throw Error(t_i18n('Perspective of fintel template list widget should be either "entities" or "relationships"'));
+      throw Error(
+        t_i18n(
+          'Perspective of fintel template list widget should be either "entities" or "relationships"',
+        ),
+      );
     }
     const columns = dataSelection.columns ?? [
       { label: t_i18n('Entity type'), attribute: 'entity_type' },

@@ -15,7 +15,11 @@ import CreateEntityControlledDial from '../../../../components/CreateEntityContr
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
-import { commitMutation, defaultCommitMutation, handleErrorInForm } from '../../../../relay/environment';
+import {
+  commitMutation,
+  defaultCommitMutation,
+  handleErrorInForm,
+} from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import { CustomFieldDefinitionAddInput } from './__generated__/CustomFieldCreationMutation.graphql';
 import { CustomFieldsLinesPaginationQuery$variables } from './__generated__/CustomFieldsLinesPaginationQuery.graphql';
@@ -31,10 +35,7 @@ const customFieldMutation = graphql`
 `;
 
 const CreateCustomFieldControlledDial = (props: DrawerControlledDialProps) => (
-  <CreateEntityControlledDial
-    entityType="CustomFieldDefinition"
-    {...props}
-  />
+  <CreateEntityControlledDial entityType="CustomFieldDefinition" {...props} />
 );
 
 interface CustomFieldCreationProps {
@@ -49,19 +50,27 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
   const customFieldValidation = Yup.object().shape({
     nameSuffix: Yup.string()
       .required(t_i18n('This field is required'))
-      .matches(/^[a-z][a-z0-9_]*$/, t_i18n('Only lowercase letters, numbers and underscores, starting with a letter')),
+      .matches(
+        /^[a-z][a-z0-9_]*$/,
+        t_i18n('Only lowercase letters, numbers and underscores, starting with a letter'),
+      ),
     label: Yup.string().required(t_i18n('This field is required')),
     field_type: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     min_value: Yup.number().nullable(),
-    max_value: Yup.number().nullable()
-      .when('min_value', ([minValue], schema) => (minValue != null
-        ? schema.min(minValue, t_i18n('Max value must be greater than min value'))
-        : schema)),
-    select_options: Yup.array().of(Yup.string()).when('field_type', {
-      is: (fieldType: string) => fieldType === 'select' || fieldType === 'multi_select',
-      then: (schema) => schema.min(1, t_i18n('At least one option is required')),
-    }),
+    max_value: Yup.number()
+      .nullable()
+      .when('min_value', ([minValue], schema) =>
+        minValue != null
+          ? schema.min(minValue, t_i18n('Max value must be greater than min value'))
+          : schema,
+      ),
+    select_options: Yup.array()
+      .of(Yup.string())
+      .when('field_type', {
+        is: (fieldType: string) => fieldType === 'select' || fieldType === 'multi_select',
+        then: (schema) => schema.min(1, t_i18n('At least one option is required')),
+      }),
   });
 
   const initialValues = {
@@ -76,7 +85,11 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
 
   const onSubmit = (
     values: typeof initialValues,
-    { setSubmitting, setErrors, resetForm }: {
+    {
+      setSubmitting,
+      setErrors,
+      resetForm,
+    }: {
       setSubmitting: (flag: boolean) => void;
       setErrors: (errors: Record<string, string>) => void;
       resetForm: () => void;
@@ -87,9 +100,22 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
       label: values.label,
       field_type: values.field_type,
       description: values.description || undefined,
-      min_value: values.field_type === 'integer' && values.min_value !== null && String(values.min_value) !== '' ? Number(values.min_value) : undefined,
-      max_value: values.field_type === 'integer' && values.max_value !== null && String(values.max_value) !== '' ? Number(values.max_value) : undefined,
-      select_options: (values.field_type === 'select' || values.field_type === 'multi_select') ? values.select_options : undefined,
+      min_value:
+        values.field_type === 'integer' &&
+        values.min_value !== null &&
+        String(values.min_value) !== ''
+          ? Number(values.min_value)
+          : undefined,
+      max_value:
+        values.field_type === 'integer' &&
+        values.max_value !== null &&
+        String(values.max_value) !== ''
+          ? Number(values.max_value)
+          : undefined,
+      select_options:
+        values.field_type === 'select' || values.field_type === 'multi_select'
+          ? values.select_options
+          : undefined,
     };
     commitMutation({
       ...defaultCommitMutation,
@@ -127,7 +153,17 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
           onSubmit={onSubmit}
           onReset={onClose}
         >
-          {({ submitForm, handleReset, isSubmitting, values, setFieldValue, setFieldTouched, touched, errors, submitCount }) => (
+          {({
+            submitForm,
+            handleReset,
+            isSubmitting,
+            values,
+            setFieldValue,
+            setFieldTouched,
+            touched,
+            errors,
+            submitCount,
+          }) => (
             <Form>
               <Field
                 component={SelectField}
@@ -137,7 +173,9 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                 fullWidth={true}
                 containerstyle={{ width: '100%' }}
               >
-                <MenuItem value="" disabled>{t_i18n('Select a type')}</MenuItem>
+                <MenuItem value="" disabled>
+                  {t_i18n('Select a type')}
+                </MenuItem>
                 <MenuItem value="string">{t_i18n('Text')}</MenuItem>
                 <MenuItem value="markdown">{t_i18n('Markdown')}</MenuItem>
                 <MenuItem value="integer">{t_i18n('Number')}</MenuItem>
@@ -201,19 +239,26 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                         value={values.select_options}
                         onChange={(_, newValue) => setFieldValue('select_options', newValue)}
                         onBlur={() => setFieldTouched('select_options', true)}
-                        renderTags={(tagValue, getTagProps) => tagValue.map((option: string, index: number) => (
-                          <Chip label={option} {...getTagProps({ index })} key={option} />
-                        ))}
+                        renderTags={(tagValue, getTagProps) =>
+                          tagValue.map((option: string, index: number) => (
+                            <Chip label={option} {...getTagProps({ index })} key={option} />
+                          ))
+                        }
                         renderInput={(params) => {
-                          const selectOptionsError = (touched.select_options || submitCount > 0) ? errors.select_options : undefined;
+                          const selectOptionsError =
+                            touched.select_options || submitCount > 0
+                              ? errors.select_options
+                              : undefined;
                           return (
                             <MuiTextField
                               {...params}
                               variant="standard"
                               label={t_i18n('Select options')}
-                              placeholder={values.select_options.length === 0
-                                ? t_i18n('Type and press Enter to add items')
-                                : t_i18n('Add more items...')}
+                              placeholder={
+                                values.select_options.length === 0
+                                  ? t_i18n('Type and press Enter to add items')
+                                  : t_i18n('Add more items...')
+                              }
                               error={Boolean(selectOptionsError)}
                               helperText={selectOptionsError}
                               style={{ marginTop: 20 }}
@@ -236,17 +281,10 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                 </>
               )}
               <FormButtonContainer>
-                <Button
-                  variant="secondary"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                >
+                <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
+                <Button onClick={submitForm} disabled={isSubmitting}>
                   {t_i18n('Create')}
                 </Button>
               </FormButtonContainer>

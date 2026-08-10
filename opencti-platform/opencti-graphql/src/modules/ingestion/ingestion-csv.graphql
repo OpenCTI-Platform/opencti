@@ -1,120 +1,121 @@
-
 type IngestionCsv implements InternalObject & BasicObject {
-    id: ID!
-    entity_type: String!
-    representative: Representative!
-    standard_id: String!
-    parent_types: [String!]!
-    metrics:[Metric]
-    created_at: DateTime
-    updated_at: DateTime
-    refreshed_at: DateTime
-    name: String!
-    description: String
-    scheduling_period: String
-    uri: String!
-    csv_mapper_type: IngestionCsvMapperType
-    csvMapper: CsvMapper!
-    authentication_type: IngestionAuthType!
-    authentication_value: String
-    user_id: String!
-    user: Creator
-    ingestion_running: Boolean
-    ssl_verify: Boolean
-    current_state_hash: String
-    current_state_date: DateTime
-    last_execution_date: DateTime
-    markings: [String!]
-    toConfigurationExport: String!
-    duplicateCsvMapper: CsvMapper!
+  id: ID!
+  entity_type: String!
+  representative: Representative!
+  standard_id: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  created_at: DateTime
+  updated_at: DateTime
+  refreshed_at: DateTime
+  name: String!
+  description: String
+  scheduling_period: String
+  uri: String!
+  csv_mapper_type: IngestionCsvMapperType
+  csvMapper: CsvMapper!
+  authentication_type: IngestionAuthType!
+  authentication_value: String
+  user_id: String!
+  user: Creator
+  ingestion_running: Boolean
+  ssl_verify: Boolean
+  current_state_hash: String
+  current_state_date: DateTime
+  last_execution_date: DateTime
+  markings: [String!]
+  toConfigurationExport: String!
+  duplicateCsvMapper: CsvMapper!
 }
 
 enum IngestionCsvOrdering {
-    name
-    created_at
-    updated_at
-    uri
-    mapper
-    _score
+  name
+  created_at
+  updated_at
+  uri
+  mapper
+  _score
 }
 
 enum IngestionCsvMapperType {
-    inline
-    id
+  inline
+  id
 }
 
 type IngestionCsvConnection {
-    pageInfo: PageInfo!
-    edges: [IngestionCsvEdge!]!
+  pageInfo: PageInfo!
+  edges: [IngestionCsvEdge!]!
 }
 
 type IngestionCsvEdge {
-    cursor: String!
-    node: IngestionCsv!
+  cursor: String!
+  node: IngestionCsv!
 }
 
 type CSVFeedAddInputFromImport {
-    name: String!
-    description: String!
-    uri: String!
-    authentication_type: String!
-    markings: [String!]!,
-    authentication_value: String!,
-    csvMapper: CsvMapperAddInputFromImport!
-    csv_mapper_type : IngestionCsvMapperType
-    scheduling_period: String
+  name: String!
+  description: String!
+  uri: String!
+  authentication_type: String!
+  markings: [String!]!
+  authentication_value: String!
+  csvMapper: CsvMapperAddInputFromImport!
+  csv_mapper_type: IngestionCsvMapperType
+  scheduling_period: String
 }
-
 
 # Queries
 type Query {
-    ingestionCsv(id: String!): IngestionCsv @auth(for: [INGESTION])
-    ingestionCsvs(
-        first: Int
-        after: ID
-        orderBy: IngestionCsvOrdering
-        orderMode: OrderingMode
-        filters: FilterGroup
-        includeAuthorities: Boolean
-        search: String
-    ): IngestionCsvConnection @auth(for: [INGESTION])
-    csvFeedAddInputFromImport(
-        file: Upload!
-    ): CSVFeedAddInputFromImport! @auth(for: [INGESTION, CSVMAPPERS])
-    defaultIngestionGroupCount: Int @auth(for: [INGESTION])
-    userAlreadyExists(name: String!): Boolean @auth(for: [INGESTION])
+  ingestionCsv(id: String!): IngestionCsv @auth(for: [INGESTION])
+  ingestionCsvs(
+    first: Int
+    after: ID
+    orderBy: IngestionCsvOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    includeAuthorities: Boolean
+    search: String
+  ): IngestionCsvConnection @auth(for: [INGESTION])
+  csvFeedAddInputFromImport(file: Upload!): CSVFeedAddInputFromImport!
+    @auth(for: [INGESTION, CSVMAPPERS])
+  defaultIngestionGroupCount: Int @auth(for: [INGESTION])
+  userAlreadyExists(name: String!): Boolean @auth(for: [INGESTION])
 }
 
 # Mutations
 input IngestionCsvAddInput {
-    name: String! @constraint(minLength: 2, format: "not-blank")
-    description: String
-    scheduling_period: String
-    authentication_type: IngestionAuthType!
-    authentication_value: String
-    current_state_date: DateTime
-    uri: String! @constraint(minLength: 5)
-    csv_mapper_id: String
-    csv_mapper: String
-    csv_mapper_type: IngestionCsvMapperType
-    ingestion_running: Boolean
-    user_id: String!
-    automatic_user: Boolean
-    confidence_level: Int
-    markings: [String!]
-    ssl_verify: Boolean
+  name: String! @constraint(minLength: 2, format: "not-blank")
+  description: String
+  scheduling_period: String
+  authentication_type: IngestionAuthType!
+  authentication_value: String
+  current_state_date: DateTime
+  uri: String! @constraint(minLength: 5)
+  csv_mapper_id: String
+  csv_mapper: String
+  csv_mapper_type: IngestionCsvMapperType
+  ingestion_running: Boolean
+  user_id: String!
+  automatic_user: Boolean
+  confidence_level: Int
+  markings: [String!]
+  ssl_verify: Boolean
 }
 
 input IngestionCsvAddAutoUserInput {
-    user_name: String!
-    confidence_level: Int!
+  user_name: String!
+  confidence_level: Int!
 }
 
 type Mutation {
-    ingestionCsvTester(input: IngestionCsvAddInput!): CsvMapperTestResult @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
-    ingestionCsvAdd(input: IngestionCsvAddInput!): IngestionCsv @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
-    ingestionCsvResetState(id: ID!): IngestionCsv @auth(for: [INGESTION_SETINGESTIONS])
-    ingestionCsvDelete(id: ID!): ID @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
-    ingestionCsvFieldPatch(id: ID!, input: [EditInput!]!): IngestionCsv @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
-    ingestionCsvAddAutoUser(id: ID!, input: IngestionCsvAddAutoUserInput!): IngestionCsv @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
+  ingestionCsvTester(input: IngestionCsvAddInput!): CsvMapperTestResult
+    @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
+  ingestionCsvAdd(input: IngestionCsvAddInput!): IngestionCsv
+    @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
+  ingestionCsvResetState(id: ID!): IngestionCsv @auth(for: [INGESTION_SETINGESTIONS])
+  ingestionCsvDelete(id: ID!): ID @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
+  ingestionCsvFieldPatch(id: ID!, input: [EditInput!]!): IngestionCsv
+    @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
+  ingestionCsvAddAutoUser(id: ID!, input: IngestionCsvAddAutoUserInput!): IngestionCsv
+    @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
 }

@@ -1,13 +1,19 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
-import { DataComponentsLinesPaginationQuery, DataComponentsLinesPaginationQuery$variables } from '@components/techniques/__generated__/DataComponentsLinesPaginationQuery.graphql';
+import {
+  DataComponentsLinesPaginationQuery,
+  DataComponentsLinesPaginationQuery$variables,
+} from '@components/techniques/__generated__/DataComponentsLinesPaginationQuery.graphql';
 import { DataComponentsLines_data$data } from '@components/techniques/__generated__/DataComponentsLines_data.graphql';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import DataComponentCreation from './data_components/DataComponentCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import {
+  useBuildEntityTypeBasedFilterContext,
+  emptyFilterGroup,
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -54,14 +60,14 @@ const dataComponentsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...DataComponentsLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -148,7 +154,12 @@ const DataComponents: FunctionComponent = () => {
 
   return (
     <div data-testid="data-component-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Data components'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Techniques') },
+          { label: t_i18n('Data components'), current: true },
+        ]}
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
@@ -156,14 +167,16 @@ const DataComponents: FunctionComponent = () => {
           initialValues={initialValues}
           storageKey={LOCAL_STORAGE_KEY_DATA_COMPONENTS}
           contextFilters={contextFilters}
-          resolvePath={(data: DataComponentsLines_data$data) => data.dataComponents?.edges?.map((n) => n?.node)}
+          resolvePath={(data: DataComponentsLines_data$data) =>
+            data.dataComponents?.edges?.map((n) => n?.node)
+          }
           lineFragment={dataComponentFragment}
           exportContext={{ entity_type: 'Data-Component' }}
-          createButton={(
+          createButton={
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <DataComponentCreation paginationOptions={queryPaginationOptions} />
             </Security>
-          )}
+          }
         />
       )}
     </div>

@@ -1,6 +1,12 @@
 import * as R from 'ramda';
 import { createEntity } from '../database/middleware';
-import { fullEntitiesThroughRelationsFromList, pageEntitiesConnection, pageRegardingEntitiesConnection, topRelationsList, storeLoadById } from '../database/middleware-loader';
+import {
+  fullEntitiesThroughRelationsFromList,
+  pageEntitiesConnection,
+  pageRegardingEntitiesConnection,
+  topRelationsList,
+  storeLoadById,
+} from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_IDENTITY_SECTOR } from '../schema/stixDomainObject';
@@ -18,11 +24,27 @@ export const findSectorPaginated = (context, user, args) => {
 };
 
 export const parentSectorsPaginated = async (context, user, groupId, args) => {
-  return pageRegardingEntitiesConnection(context, user, groupId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR, false, args);
+  return pageRegardingEntitiesConnection(
+    context,
+    user,
+    groupId,
+    RELATION_PART_OF,
+    ENTITY_TYPE_IDENTITY_SECTOR,
+    false,
+    args,
+  );
 };
 
 export const childSectorsPaginated = async (context, user, groupId, args) => {
-  return pageRegardingEntitiesConnection(context, user, groupId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR, true, args);
+  return pageRegardingEntitiesConnection(
+    context,
+    user,
+    groupId,
+    RELATION_PART_OF,
+    ENTITY_TYPE_IDENTITY_SECTOR,
+    true,
+    args,
+  );
 };
 
 export const isSubSector = async (context, user, sectorId) => {
@@ -31,9 +53,17 @@ export const isSubSector = async (context, user, sectorId) => {
 };
 
 export const targetedOrganizations = async (context, user, sectorId) => {
-  const organizations = await fullEntitiesThroughRelationsFromList(context, user, sectorId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+  const organizations = await fullEntitiesThroughRelationsFromList(
+    context,
+    user,
+    sectorId,
+    RELATION_PART_OF,
+    ENTITY_TYPE_IDENTITY_ORGANIZATION,
+  );
   const targets = await Promise.all(
-    organizations.map((organization) => topRelationsList(context, user, RELATION_TARGETS, { fromId: organization.id })),
+    organizations.map((organization) =>
+      topRelationsList(context, user, RELATION_TARGETS, { fromId: organization.id }),
+    ),
   );
   const finalTargets = R.pipe(
     R.map((n) => n.edges),
@@ -43,6 +73,11 @@ export const targetedOrganizations = async (context, user, sectorId) => {
 };
 
 export const addSector = async (context, user, sector) => {
-  const created = await createEntity(context, user, R.assoc('identity_class', 'class', sector), ENTITY_TYPE_IDENTITY_SECTOR);
+  const created = await createEntity(
+    context,
+    user,
+    R.assoc('identity_class', 'class', sector),
+    ENTITY_TYPE_IDENTITY_SECTOR,
+  );
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

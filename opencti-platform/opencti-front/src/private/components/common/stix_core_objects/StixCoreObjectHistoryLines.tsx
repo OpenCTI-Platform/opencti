@@ -48,7 +48,8 @@ export const StixCoreObjectHistoryLinesFragment = graphql`
               field
             }
           }
-          ...StixCoreObjectHistoryLine_node @arguments(tz: $tz, locale: $locale, unit_system: $unit_system)
+          ...StixCoreObjectHistoryLine_node
+            @arguments(tz: $tz, locale: $locale, unit_system: $unit_system)
         }
       }
     }
@@ -74,10 +75,10 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
   const [open, setOpen] = useState(false);
   const [selectedLog, setSelectedLog] = useState<string | undefined>(undefined);
   const queryData = usePreloadedQuery(stixCoreObjectHistoryLinesQuery, queryRef);
-  const [data, refetch] = useRefetchableFragment<StixCoreObjectHistoryLinesQuery, StixCoreObjectHistoryLines_data$key>(
-    StixCoreObjectHistoryLinesFragment,
-    queryData,
-  );
+  const [data, refetch] = useRefetchableFragment<
+    StixCoreObjectHistoryLinesQuery,
+    StixCoreObjectHistoryLines_data$key
+  >(StixCoreObjectHistoryLinesFragment, queryData);
   useInterval(() => {
     // Refresh the history every interval
     refetch(paginationOptions, { fetchPolicy: 'store-and-network' });
@@ -94,12 +95,7 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
   };
 
   return (
-    <Card
-      title={title}
-      action={action}
-      padding="horizontal"
-      titleAlignItems="end"
-    >
+    <Card title={title} action={action} padding="horizontal" titleAlignItems="end">
       <HistoryDrawer
         open={open}
         onClose={handleClose}
@@ -108,28 +104,33 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
       />
       {logs.length > 0 ? (
         <List>
-          {logs.filter((l) => !!l).map((logEdge) => {
-            const log = logEdge.node;
-            const hasChanges = (log.context_data?.changes ?? []).length > 0;
-            return (
-              <React.Fragment key={log.id}>
-                <ListItem dense={true} divider={true} disablePadding>
-                  <ListItemButton
-                    style={{ margin: 0, height: 60, cursor: hasChanges ? 'pointer' : 'default' }}
-                    disableRipple={!hasChanges}
-                    onClick={() => {
-                      if (hasChanges) {
-                        handleOpen(log.id);
-                      }
-                    }}
-                  >
-                    <StixCoreObjectHistoryLine key={log.id} node={log} isRelation={isRelationLog} />
-                  </ListItemButton>
-                </ListItem>
-              </React.Fragment>
-            );
-          })
-          }
+          {logs
+            .filter((l) => !!l)
+            .map((logEdge) => {
+              const log = logEdge.node;
+              const hasChanges = (log.context_data?.changes ?? []).length > 0;
+              return (
+                <React.Fragment key={log.id}>
+                  <ListItem dense={true} divider={true} disablePadding>
+                    <ListItemButton
+                      style={{ margin: 0, height: 60, cursor: hasChanges ? 'pointer' : 'default' }}
+                      disableRipple={!hasChanges}
+                      onClick={() => {
+                        if (hasChanges) {
+                          handleOpen(log.id);
+                        }
+                      }}
+                    >
+                      <StixCoreObjectHistoryLine
+                        key={log.id}
+                        node={log}
+                        isRelation={isRelationLog}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                </React.Fragment>
+              );
+            })}
         </List>
       ) : (
         <div

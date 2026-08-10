@@ -12,10 +12,17 @@ import CreateEntityControlledDial from '../../../../components/CreateEntityContr
 import { useFormatter } from '../../../../components/i18n';
 import { PaginationOptions } from '../../../../components/list_lines';
 import SimpleTextField from '../../../../components/SimpleTextField';
-import { commitMutation, defaultCommitMutation, handleErrorInForm } from '../../../../relay/environment';
+import {
+  commitMutation,
+  defaultCommitMutation,
+  handleErrorInForm,
+} from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
-import { LabelAddInput, LabelCreationContextualMutation$data } from './__generated__/LabelCreationContextualMutation.graphql';
+import {
+  LabelAddInput,
+  LabelCreationContextualMutation$data,
+} from './__generated__/LabelCreationContextualMutation.graphql';
 
 const labelMutation = graphql`
   mutation LabelCreationMutation($input: LabelAddInput!) {
@@ -30,27 +37,19 @@ const labelContextualMutation = graphql`
     labelAdd(input: $input) {
       id
       value
-      color
     }
   }
 `;
 
-const CreateLabelsControlledDial = (
-  props: DrawerControlledDialProps,
-) => (
-  <CreateEntityControlledDial
-    entityType="Label"
-    {...props}
-  />
+const CreateLabelsControlledDial = (props: DrawerControlledDialProps) => (
+  <CreateEntityControlledDial entityType="Label" {...props} />
 );
 
 interface LabelCreationProps {
   contextual: boolean;
   inputValueContextual: string;
   required: boolean;
-  creationCallback: (
-    data: LabelCreationContextualMutation$data,
-  ) => void;
+  creationCallback: (data: LabelCreationContextualMutation$data) => void;
   handleClose: () => void;
   open: boolean;
   paginationOptions?: PaginationOptions;
@@ -76,20 +75,52 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
     value: contextual ? inputValueContextual : '',
     color: '',
   };
-  const onSubmit: FormikConfig<LabelAddInput>['onSubmit'] = async (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmit = (
+    values: typeof initialValues,
+    {
+      setSubmitting,
+      resetForm,
+    }: {
+      setSubmitting: (flag: boolean) => void;
+      resetForm: () => void;
+    },
+  ) => {
+    const finalValues = {
+      ...values,
+    };
+    commitMutation({
+      ...defaultCommitMutation,
+      mutation: contextual ? labelContextualMutation : labelMutation,
+      variables: { input: finalValues },
+      updater: (store: RecordSourceSelectorProxy) => {
+        insertNode(store, 'Pagination_labels', paginationOptions, 'labelAdd');
+      },
+      setSubmitting,
+      onCompleted: () => {
+        setSubmitting(false);
+        resetForm();
+      },
+    });
+  };
+
+  const onSubmitContextual: FormikConfig<LabelAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
+    const finalValues = {
+      ...values,
+    };
     if (dryrun && contextual) {
-      creationCallback({ labelAdd: values } as LabelCreationContextualMutation$data);
+      creationCallback({
+        labelAdd: values,
+      } as LabelCreationContextualMutation$data);
       handleClose();
       return;
     }
     commitMutation({
       ...defaultCommitMutation,
-      mutation: contextual ? labelContextualMutation : labelMutation,
-      variables: { input: values },
-      updater: contextual ? undefined : (store: RecordSourceSelectorProxy) => {
-        insertNode(store, 'Pagination_labels', paginationOptions, 'labelAdd');
-      },
-      setSubmitting,
+      mutation: labelContextualMutation,
+      variables: { input: finalValues },
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
@@ -97,22 +128,17 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
       onCompleted: (response: LabelCreationContextualMutation$data) => {
         setSubmitting(false);
         resetForm();
-        if (contextual) {
-          creationCallback(response);
-          handleClose();
-        }
+        creationCallback(response);
+        handleClose();
       },
     });
   };
 
-  const onReset = () => handleClose();
+  const onResetContextual = () => handleClose();
 
   const renderClassic = () => {
     return (
-      <Drawer
-        title={t_i18n('Create a label')}
-        controlledDial={CreateLabelsControlledDial}
-      >
+      <Drawer title={t_i18n('Create a label')} controlledDial={CreateLabelsControlledDial}>
         {({ onClose }) => (
           <Formik
             initialValues={initialValues}
@@ -137,17 +163,10 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
                   style={{ marginTop: 20 }}
                 />
                 <FormButtonContainer>
-                  <Button
-                    variant="secondary"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                  >
+                  <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t_i18n('Cancel')}
                   </Button>
-                  <Button
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
+                  <Button onClick={submitForm} disabled={isSubmitting}>
                     {t_i18n('Create')}
                   </Button>
                 </FormButtonContainer>
@@ -167,16 +186,12 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
           initialValues={initialValues}
           required={required}
           validationSchema={labelValidation}
-          onSubmit={onSubmit}
-          onReset={onReset}
+          onSubmit={onSubmitContextual}
+          onReset={onResetContextual}
         >
           {({ submitForm, handleReset, isSubmitting }) => (
             <Form>
-              <Dialog
-                open={open}
-                onClose={handleClose}
-                title={t_i18n('Create a label')}
-              >
+              <Dialog open={open} onClose={handleClose} title={t_i18n('Create a label')}>
                 <Field
                   component={SimpleTextField}
                   variant="standard"
@@ -195,10 +210,7 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
                   <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t_i18n('Cancel')}
                   </Button>
-                  <Button
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
+                  <Button onClick={submitForm} disabled={isSubmitting}>
                     {t_i18n('Create')}
                   </Button>
                 </DialogActions>

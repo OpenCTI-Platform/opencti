@@ -4,7 +4,13 @@ import { BUS_TOPICS, logApp } from '../../config/conf';
 import { updateAttribute } from '../../database/middleware';
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
-import { type EditInput, FilterMode, FilterOperator, type QueryThemesArgs, type ThemeAddInput } from '../../generated/graphql';
+import {
+  type EditInput,
+  FilterMode,
+  FilterOperator,
+  type QueryThemesArgs,
+  type ThemeAddInput,
+} from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { ENTITY_TYPE_THEME } from '../../schema/internalObject';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -19,7 +25,11 @@ export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityTheme>(context, user, id, ENTITY_TYPE_THEME);
 };
 
-export const findThemePaginated = async (context: AuthContext, user: AuthUser, args: QueryThemesArgs) => {
+export const findThemePaginated = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: QueryThemesArgs,
+) => {
   return pageEntitiesConnection<BasicStoreEntityTheme>(context, user, [ENTITY_TYPE_THEME], args);
 };
 
@@ -123,12 +133,23 @@ export const deleteTheme = async (context: AuthContext, user: AuthUser, themeId:
   return deleteInternalObject(context, user, themeId, ENTITY_TYPE_THEME);
 };
 
-export const fieldPatchTheme = async (context: AuthContext, user: AuthUser, themeId: string, input: EditInput[]) => {
+export const fieldPatchTheme = async (
+  context: AuthContext,
+  user: AuthUser,
+  themeId: string,
+  input: EditInput[],
+) => {
   const theme = await findById(context, user, themeId);
   if (!theme) {
     throw FunctionalError(`Theme ${themeId} cannot be found`);
   }
-  const { element } = await updateAttribute<StoreEntityTheme>(context, user, themeId, ENTITY_TYPE_THEME, input);
+  const { element } = await updateAttribute<StoreEntityTheme>(
+    context,
+    user,
+    themeId,
+    ENTITY_TYPE_THEME,
+    input,
+  );
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -159,13 +180,19 @@ const themeImportSchema = z.object({
   theme_login_aside_image: z.string().nullable().optional().default(null),
 });
 
-export const themeImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
+export const themeImport = async (
+  context: AuthContext,
+  user: AuthUser,
+  file: Promise<FileHandle>,
+) => {
   const parsedData = await extractContentFrom(file);
 
   const validationResult = themeImportSchema.safeParse(parsedData);
 
   if (!validationResult.success) {
-    const errors = validationResult.error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
+    const errors = validationResult.error.issues
+      .map((e) => `${e.path.join('.')}: ${e.message}`)
+      .join(', ');
     throw FunctionalError('Invalid theme file', errors);
   }
 

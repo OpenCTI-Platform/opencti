@@ -216,15 +216,15 @@ export class ExportButtons extends Component {
         {({ me, themes }) => {
           const isInDraft = me.draftContext;
           return (
-            <div
-              className={classes.exportButtons}
-              id="export-buttons"
-              style={EXPORT_BUTTONS_STYLE}
-            >
+            <div className={classes.exportButtons} id="export-buttons" style={EXPORT_BUTTONS_STYLE}>
               {exportToImage && (
                 <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
                   <Tooltip title={t('Export to image')}>
-                    <ToggleButton size="small" onClick={this.handleOpenImage.bind(this)} value="Export-to-image">
+                    <ToggleButton
+                      size="small"
+                      onClick={this.handleOpenImage.bind(this)}
+                      value="Export-to-image"
+                    >
                       <ImageOutlined fontSize="small" color="primary" />
                     </ToggleButton>
                   </Tooltip>
@@ -233,7 +233,11 @@ export class ExportButtons extends Component {
               {exportToPdf && (
                 <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
                   <Tooltip title={t('Export to PDF')}>
-                    <ToggleButton size="small" onClick={this.handleOpenPdf.bind(this)} value="Export-to-PDF">
+                    <ToggleButton
+                      size="small"
+                      onClick={this.handleOpenPdf.bind(this)}
+                      value="Export-to-PDF"
+                    >
                       <FilePdfBox fontSize="small" color="primary" />
                     </ToggleButton>
                   </Tooltip>
@@ -251,15 +255,15 @@ export class ExportButtons extends Component {
                 </Tooltip>
               )}
               {investigationAddFromContainer && (
-                <Tooltip title={isInDraft ? t('Not available in draft') : t('Start an investigation')}>
+                <Tooltip
+                  title={isInDraft ? t('Not available in draft') : t('Start an investigation')}
+                >
                   <ToggleButton
                     size="small"
                     value={isInDraft ? 'Not available in draft' : 'Start-an-investigation'}
-                    onClick={!isInDraft && investigationAddFromContainer.bind(
-                      this,
-                      containerId,
-                      navigate,
-                    )}
+                    onClick={
+                      !isInDraft && investigationAddFromContainer.bind(this, containerId, navigate)
+                    }
                   >
                     <ExploreOutlined fontSize="small" color={!isInDraft ? 'primary' : 'disabled'} />
                   </ToggleButton>
@@ -267,14 +271,22 @@ export class ExportButtons extends Component {
               )}
               {type === 'investigation' && handleDownloadAsStixReport && (
                 <Tooltip title={t('Download as STIX report')}>
-                  <ToggleButton size="small" onClick={handleDownloadAsStixReport.bind(this)} value="Download-as-STIX-report">
+                  <ToggleButton
+                    size="small"
+                    onClick={handleDownloadAsStixReport.bind(this)}
+                    value="Download-as-STIX-report"
+                  >
                     <GetAppOutlined fontSize="small" color="primary" />
                   </ToggleButton>
                 </Tooltip>
               )}
               {csvData && (
                 <Tooltip title={t('Export to CSV')}>
-                  <ToggleButton size="small" onClick={() => this.csvLink.current.link.click()} value="Export-to-CSV">
+                  <ToggleButton
+                    size="small"
+                    onClick={() => this.csvLink.current.link.click()}
+                    value="Export-to-CSV"
+                  >
                     <FileDelimitedOutline fontSize="small" color="primary" />
                   </ToggleButton>
                 </Tooltip>
@@ -287,23 +299,27 @@ export class ExportButtons extends Component {
                 {themes.edges.flatMap(({ node }) => [
                   <MenuItem
                     key={`${node.id}-with-bg`}
-                    onClick={() => this.exportImage({
-                      domElementId,
-                      name,
-                      themeNode: node,
-                      background: true,
-                    })}
+                    onClick={() =>
+                      this.exportImage({
+                        domElementId,
+                        name,
+                        themeNode: node,
+                        background: true,
+                      })
+                    }
                   >
                     {node.name} {t('(with background)')}
                   </MenuItem>,
                   <MenuItem
                     key={`${node.id}-without-bg`}
-                    onClick={() => this.exportImage({
-                      domElementId,
-                      name,
-                      themeNode: node,
-                      background: false,
-                    })}
+                    onClick={() =>
+                      this.exportImage({
+                        domElementId,
+                        name,
+                        themeNode: node,
+                        background: false,
+                      })
+                    }
                   >
                     {node.name} {t('(without background)')}
                   </MenuItem>,
@@ -315,21 +331,21 @@ export class ExportButtons extends Component {
                 open={Boolean(anchorElPdf)}
                 onClose={this.handleClosePdf.bind(this)}
               >
-                {
-                  themes.edges.map(({ node }) => (
-                    <MenuItem
-                      key={node.id}
-                      onClick={() => this.exportPdf({
+                {themes.edges.map(({ node }) => (
+                  <MenuItem
+                    key={node.id}
+                    onClick={() =>
+                      this.exportPdf({
                         domElementId,
                         name,
                         themeNode: node,
                         background: true,
-                      })}
-                    >
-                      {node.name}
-                    </MenuItem>
-                  ))
-                }
+                      })
+                    }
+                  >
+                    {node.name}
+                  </MenuItem>
+                ))}
               </Menu>
               <Dialog
                 slotProps={{ paper: { elevation: 1 } }}

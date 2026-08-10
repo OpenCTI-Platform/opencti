@@ -15,12 +15,7 @@ const ProcessDialog: FunctionComponent<ProcessDialogProps> = ({
   children,
 }) => {
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      title={title}
-      showCloseButton
-    >
+    <Dialog open={open} onClose={onClose} title={title} showCloseButton>
       {children}
     </Dialog>
   );

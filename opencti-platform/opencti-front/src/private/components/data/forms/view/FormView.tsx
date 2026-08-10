@@ -12,7 +12,13 @@ import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, FieldArray, Form, Formik, FormikHelpers } from 'formik';
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { fetchQuery, graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import {
+  fetchQuery,
+  graphql,
+  PreloadedQuery,
+  usePreloadedQuery,
+  useQueryLoader,
+} from 'react-relay';
 import { useNavigate, useParams } from 'react-router-dom';
 import * as Yup from 'yup';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
@@ -136,10 +142,23 @@ interface EntityCheckResult {
 }
 
 interface FormInitialValues {
-  [key: string]: string | boolean | string[] | Date | Record<string, unknown> | Record<string, unknown>[] | number | FieldOption[] | null;
+  [key: string]:
+    | string
+    | boolean
+    | string[]
+    | Date
+    | Record<string, unknown>
+    | Record<string, unknown>[]
+    | number
+    | FieldOption[]
+    | null;
 }
 
-const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedded = false, onSuccess }) => {
+const FormViewInner: FunctionComponent<FormViewInnerProps> = ({
+  queryRef,
+  embedded = false,
+  onSuccess,
+}) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
@@ -181,37 +200,63 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
     const inits: FormInitialValues = {};
 
     // Initialize values for main entity fields
-    const mFields = parsedSchema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
+    const mFields = parsedSchema.fields.filter(
+      (field) => field.attributeMapping.entity === 'main_entity',
+    );
 
     // Initialize draft defaults.
     // A field should be registered in Formik if:
     // - the user can see and fill it (isEditable, or bypass who sees all fields), OR
     // - it has a default value to pre-populate silently on submission.
-    if (parsedSchema.draftDefaults?.name && (parsedSchema.draftDefaults.name.isEditable || isBypass || parsedSchema.draftDefaults.name.defaultValue)) {
+    if (
+      parsedSchema.draftDefaults?.name &&
+      (parsedSchema.draftDefaults.name.isEditable ||
+        isBypass ||
+        parsedSchema.draftDefaults.name.defaultValue)
+    ) {
       inits.draftName = parsedSchema.draftDefaults.name.defaultValue || '';
     }
 
-    if (parsedSchema.draftDefaults?.description && (parsedSchema.draftDefaults.description.isEditable || isBypass || parsedSchema.draftDefaults.description.defaultValue)) {
+    if (
+      parsedSchema.draftDefaults?.description &&
+      (parsedSchema.draftDefaults.description.isEditable ||
+        isBypass ||
+        parsedSchema.draftDefaults.description.defaultValue)
+    ) {
       inits.draftDescription = parsedSchema.draftDefaults.description.defaultValue || '';
     }
 
     const assigneeDef = parsedSchema.draftDefaults?.objectAssignee;
-    if (assigneeDef && (assigneeDef.isEditable || isBypass || (assigneeDef.defaults?.length ?? 0) > 0)) {
+    if (
+      assigneeDef &&
+      (assigneeDef.isEditable || isBypass || (assigneeDef.defaults?.length ?? 0) > 0)
+    ) {
       inits.draftObjectAssignee = assigneeDef.defaults || [];
     }
 
     const participantDef = parsedSchema.draftDefaults?.objectParticipant;
-    if (participantDef && (participantDef.isEditable || isBypass || (participantDef.defaults?.length ?? 0) > 0)) {
+    if (
+      participantDef &&
+      (participantDef.isEditable || isBypass || (participantDef.defaults?.length ?? 0) > 0)
+    ) {
       inits.draftObjectParticipant = participantDef.defaults || [];
     }
 
-    if (parsedSchema.draftDefaults?.author?.type === 'static' && parsedSchema.draftDefaults.author.defaultValue) {
+    if (
+      parsedSchema.draftDefaults?.author?.type === 'static' &&
+      parsedSchema.draftDefaults.author.defaultValue
+    ) {
       inits.draftAuthor = {
         value: parsedSchema.draftDefaults.author.defaultValue,
-        label: parsedSchema.draftDefaults.author.defaultValueLabel || parsedSchema.draftDefaults.author.defaultValue,
+        label:
+          parsedSchema.draftDefaults.author.defaultValueLabel ||
+          parsedSchema.draftDefaults.author.defaultValue,
         type: parsedSchema.draftDefaults.author.defaultValueType,
       };
-    } else if (parsedSchema.draftDefaults?.author && (parsedSchema.draftDefaults.author.isEditable || isBypass)) {
+    } else if (
+      parsedSchema.draftDefaults?.author &&
+      (parsedSchema.draftDefaults.author.isEditable || isBypass)
+    ) {
       inits.draftAuthor = null;
     }
 
@@ -236,7 +281,13 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
           fieldsObj[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
         } else if (field.name === 'is_family' && inits[field.name] === undefined) {
           inits[field.name] = false;
-        } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
+        } else if (
+          field.type === 'multiselect' ||
+          field.type === 'objectMarking' ||
+          field.type === 'objectLabel' ||
+          field.type === 'externalReferences' ||
+          field.type === 'files'
+        ) {
           fieldsObj[field.name] = field.defaultValue || [];
         } else if (field.type === 'datetime') {
           fieldsObj[field.name] = field.defaultValue || new Date().toISOString();
@@ -251,7 +302,13 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
       mFields.forEach((field) => {
         if (field.type === 'checkbox' || field.type === 'toggle') {
           fieldGroup[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
-        } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
+        } else if (
+          field.type === 'multiselect' ||
+          field.type === 'objectMarking' ||
+          field.type === 'objectLabel' ||
+          field.type === 'externalReferences' ||
+          field.type === 'files'
+        ) {
           fieldGroup[field.name] = field.defaultValue || [];
         } else if (field.type === 'datetime') {
           fieldGroup[field.name] = field.defaultValue || new Date().toISOString();
@@ -265,7 +322,13 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
       mFields.forEach((field) => {
         if (field.type === 'checkbox' || field.type === 'toggle') {
           inits[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
-        } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
+        } else if (
+          field.type === 'multiselect' ||
+          field.type === 'objectMarking' ||
+          field.type === 'objectLabel' ||
+          field.type === 'externalReferences' ||
+          field.type === 'files'
+        ) {
           inits[field.name] = field.defaultValue || [];
         } else if (field.type === 'datetime') {
           inits[field.name] = field.defaultValue || new Date().toISOString();
@@ -284,8 +347,14 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
           const relationshipFields: Record<string, unknown> = {};
           relationship.fields.forEach((field) => {
             if (field.type === 'checkbox' || field.type === 'toggle') {
-              relationshipFields[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
-            } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences') {
+              relationshipFields[field.name] =
+                field.defaultValue !== undefined ? field.defaultValue : false;
+            } else if (
+              field.type === 'multiselect' ||
+              field.type === 'objectMarking' ||
+              field.type === 'objectLabel' ||
+              field.type === 'externalReferences'
+            ) {
               relationshipFields[field.name] = field.defaultValue || [];
             } else if (field.type === 'datetime') {
               relationshipFields[field.name] = field.defaultValue || new Date().toISOString();
@@ -301,7 +370,9 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
     // Initialize values for additional entities if any
     if (parsedSchema.additionalEntities) {
       parsedSchema.additionalEntities.forEach((entity) => {
-        const entityFields = parsedSchema.fields.filter((field) => field.attributeMapping.entity === entity.id);
+        const entityFields = parsedSchema.fields.filter(
+          (field) => field.attributeMapping.entity === entity.id,
+        );
 
         if (entity.lookup) {
           // Lookup mode
@@ -318,7 +389,13 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
           entityFields.forEach((field) => {
             if (field.type === 'checkbox' || field.type === 'toggle') {
               fieldsObj[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
-            } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
+            } else if (
+              field.type === 'multiselect' ||
+              field.type === 'objectMarking' ||
+              field.type === 'objectLabel' ||
+              field.type === 'externalReferences' ||
+              field.type === 'files'
+            ) {
               fieldsObj[field.name] = field.defaultValue || [];
             } else if (field.type === 'datetime') {
               fieldsObj[field.name] = field.defaultValue || new Date().toISOString();
@@ -337,8 +414,15 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
             const fieldGroup: Record<string, unknown> = {};
             entityFields.forEach((field) => {
               if (field.type === 'checkbox' || field.type === 'toggle') {
-                fieldGroup[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
-              } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
+                fieldGroup[field.name] =
+                  field.defaultValue !== undefined ? field.defaultValue : false;
+              } else if (
+                field.type === 'multiselect' ||
+                field.type === 'objectMarking' ||
+                field.type === 'objectLabel' ||
+                field.type === 'externalReferences' ||
+                field.type === 'files'
+              ) {
                 fieldGroup[field.name] = field.defaultValue || [];
               } else if (field.type === 'datetime') {
                 fieldGroup[field.name] = field.defaultValue || new Date().toISOString();
@@ -359,7 +443,11 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
 
           entityFields.forEach((field) => {
             // Only initialize if field has a default value
-            if (field.defaultValue !== undefined && field.defaultValue !== null && field.defaultValue !== '') {
+            if (
+              field.defaultValue !== undefined &&
+              field.defaultValue !== null &&
+              field.defaultValue !== ''
+            ) {
               hasDefaultValues = true;
               entityValues[field.name] = field.defaultValue;
             } else if (field.name === 'is_family') {
@@ -377,8 +465,15 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
           const entityValues: Record<string, unknown> = {};
           entityFields.forEach((field) => {
             if (field.type === 'checkbox' || field.type === 'toggle') {
-              entityValues[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
-            } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
+              entityValues[field.name] =
+                field.defaultValue !== undefined ? field.defaultValue : false;
+            } else if (
+              field.type === 'multiselect' ||
+              field.type === 'objectMarking' ||
+              field.type === 'objectLabel' ||
+              field.type === 'externalReferences' ||
+              field.type === 'files'
+            ) {
               entityValues[field.name] = field.defaultValue || [];
             } else if (field.type === 'datetime') {
               entityValues[field.name] = field.defaultValue || new Date().toISOString();
@@ -402,28 +497,56 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
     const extraShapes: Record<string, Yup.AnySchema> = {};
     // Validate only when the user can see the field (isEditable) AND is not a bypass user.
     // Bypass users are never blocked by required validation.
-    if (!isBypass && isDraft && schema.draftDefaults?.name?.isEditable && schema.draftDefaults?.name?.isRequired) {
+    if (
+      !isBypass &&
+      isDraft &&
+      schema.draftDefaults?.name?.isEditable &&
+      schema.draftDefaults?.name?.isRequired
+    ) {
       extraShapes.draftName = Yup.string().trim().required(t_i18n('This field is required'));
     }
-    if (!isBypass && isDraft && schema.draftDefaults?.description?.isEditable && schema.draftDefaults?.description?.isRequired) {
+    if (
+      !isBypass &&
+      isDraft &&
+      schema.draftDefaults?.description?.isEditable &&
+      schema.draftDefaults?.description?.isRequired
+    ) {
       extraShapes.draftDescription = Yup.string().trim().required(t_i18n('This field is required'));
     }
-    if (!isBypass && isDraft && schema.draftDefaults?.objectAssignee?.isEditable && schema.draftDefaults?.objectAssignee?.isRequired) {
+    if (
+      !isBypass &&
+      isDraft &&
+      schema.draftDefaults?.objectAssignee?.isEditable &&
+      schema.draftDefaults?.objectAssignee?.isRequired
+    ) {
       extraShapes.draftObjectAssignee = Yup.array().min(1, t_i18n('This field is required'));
     }
-    if (!isBypass && isDraft && schema.draftDefaults?.objectParticipant?.isEditable && schema.draftDefaults?.objectParticipant?.isRequired) {
+    if (
+      !isBypass &&
+      isDraft &&
+      schema.draftDefaults?.objectParticipant?.isEditable &&
+      schema.draftDefaults?.objectParticipant?.isRequired
+    ) {
       extraShapes.draftObjectParticipant = Yup.array().min(1, t_i18n('This field is required'));
     }
     // main_entity_author: empty is always valid (backend inherits from main entity)
     const authorRequiresExplicitValue = schema.draftDefaults?.author?.type === 'none';
-    if (!isBypass && isDraft && schema.draftDefaults?.author?.isEditable && schema.draftDefaults?.author?.isRequired && authorRequiresExplicitValue) {
-      extraShapes.draftAuthor = Yup.object()
-        .nullable()
-        .required(t_i18n('This field is required'));
+    if (
+      !isBypass &&
+      isDraft &&
+      schema.draftDefaults?.author?.isEditable &&
+      schema.draftDefaults?.author?.isRequired &&
+      authorRequiresExplicitValue
+    ) {
+      extraShapes.draftAuthor = Yup.object().nullable().required(t_i18n('This field is required'));
     }
-    if (!isBypass && isDraft && schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults?.authorizedMembers?.isRequired) {
-      extraShapes.draftAuthorizedMembers = Yup.array()
-        .min(1, t_i18n('This field is required'));
+    if (
+      !isBypass &&
+      isDraft &&
+      schema.draftDefaults?.authorizedMembers?.enabled &&
+      schema.draftDefaults?.authorizedMembers?.isRequired
+    ) {
+      extraShapes.draftAuthorizedMembers = Yup.array().min(1, t_i18n('This field is required'));
     }
     if (Object.keys(extraShapes).length > 0) {
       baseSchema = baseSchema.shape(extraShapes);
@@ -437,16 +560,14 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
 
     const startTime = Date.now();
     const TIMEOUT = 30000; // 30 seconds timeout
-    // eslint-disable-next-line prefer-const
+    // oxlint-disable-next-line prefer-const
     let interval: NodeJS.Timeout;
 
     const checkEntity = async () => {
       try {
-        const result = await fetchQuery(
-          environment,
-          entityCheckQuery,
-          { id: pollingEntityId },
-        ).toPromise() as EntityCheckResult | null;
+        const result = (await fetchQuery(environment, entityCheckQuery, {
+          id: pollingEntityId,
+        }).toPromise()) as EntityCheckResult | null;
         if (result?.stixCoreObject?.id) {
           if (onSuccess) onSuccess(); // Close dialog before navigating
           navigate(`/dashboard/id/${pollingEntityId}`);
@@ -485,7 +606,10 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
     };
   }, [pollingEntityId, pollingEntityType, navigate, isConnectorReader, onSuccess]);
 
-  const handleSubmit = async (values: Record<string, string | string[] | { value: string } | { value: string }[]>, { setSubmitting }: FormikHelpers<Record<string, unknown>>) => {
+  const handleSubmit = async (
+    values: Record<string, string | string[] | { value: string } | { value: string }[]>,
+    { setSubmitting }: FormikHelpers<Record<string, unknown>>,
+  ) => {
     setSubmitError(null);
     try {
       const formattedData = formatFormDataForSubmission(values, schema);
@@ -497,7 +621,9 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
           },
           isDraft,
         },
-        onCompleted: (response: { formSubmit?: { success?: boolean; message?: string; entityId?: string } }) => {
+        onCompleted: (response: {
+          formSubmit?: { success?: boolean; message?: string; entityId?: string };
+        }) => {
           if (response?.formSubmit?.success) {
             setSubmitted(true);
             setSubmitting(false);
@@ -530,7 +656,9 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
       <div className={classes.pollingContainer} style={embedded ? { height: '400px' } : undefined}>
         <CircularProgress size={60} className={classes.pollingLoader} />
         <Typography variant="h6" gutterBottom>
-          {pollingTimeout ? t_i18n('Processing is taking longer than expected...') : t_i18n('Creating entities...')}
+          {pollingTimeout
+            ? t_i18n('Processing is taking longer than expected...')
+            : t_i18n('Creating entities...')}
         </Typography>
         <Typography variant="body2" color="textSecondary">
           {pollingTimeout
@@ -547,7 +675,10 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
         <Breadcrumbs
           elements={[
             { label: t_i18n('Integrations') },
-            { label: t_i18n('Deployed'), link: isGrantedIngestion ? '/dashboard/integrations/deployed?kind=form' : undefined },
+            {
+              label: t_i18n('Deployed'),
+              link: isGrantedIngestion ? '/dashboard/integrations/deployed?kind=form' : undefined,
+            },
             { label: form.name, current: true },
           ]}
         />
@@ -571,28 +702,54 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
-          onSubmit={handleSubmit as (values: FormInitialValues, formikHelpers: FormikHelpers<FormInitialValues>) => void | Promise<unknown>}
+          onSubmit={
+            handleSubmit as (
+              values: FormInitialValues,
+              formikHelpers: FormikHelpers<FormInitialValues>,
+            ) => void | Promise<unknown>
+          }
           validateOnChange={true}
           validateOnBlur={true}
         >
           {({ isSubmitting, isValid, values, errors, touched, setFieldValue }) => {
-            const showDraftName = isDraft && !!(schema.draftDefaults?.name && (isBypass || schema.draftDefaults.name.isEditable));
-            const showDraftDescription = isDraft && !!(schema.draftDefaults?.description
-              && (isBypass || schema.draftDefaults.description.isEditable));
-            const showDraftObjectAssignee = isDraft && !!(schema.draftDefaults?.objectAssignee
-              && (isBypass || schema.draftDefaults.objectAssignee.isEditable));
-            const showDraftObjectParticipant = isDraft && !!(schema.draftDefaults?.objectParticipant
-              && (isBypass || schema.draftDefaults.objectParticipant.isEditable));
-            const showDraftAuthor = isDraft && !!(schema.draftDefaults?.author && (isBypass || schema.draftDefaults.author.isEditable));
-            const showDraftAuthorizedMembers = isDraft
-              && schema.draftDefaults?.authorizedMembers?.enabled
-              && (isBypass || schema.draftDefaults.authorizedMembers.isEditable);
-            const showDraftSection = showDraftName
-              || showDraftDescription
-              || showDraftObjectAssignee
-              || showDraftObjectParticipant
-              || showDraftAuthor
-              || showDraftAuthorizedMembers;
+            const showDraftName =
+              isDraft &&
+              !!(schema.draftDefaults?.name && (isBypass || schema.draftDefaults.name.isEditable));
+            const showDraftDescription =
+              isDraft &&
+              !!(
+                schema.draftDefaults?.description &&
+                (isBypass || schema.draftDefaults.description.isEditable)
+              );
+            const showDraftObjectAssignee =
+              isDraft &&
+              !!(
+                schema.draftDefaults?.objectAssignee &&
+                (isBypass || schema.draftDefaults.objectAssignee.isEditable)
+              );
+            const showDraftObjectParticipant =
+              isDraft &&
+              !!(
+                schema.draftDefaults?.objectParticipant &&
+                (isBypass || schema.draftDefaults.objectParticipant.isEditable)
+              );
+            const showDraftAuthor =
+              isDraft &&
+              !!(
+                schema.draftDefaults?.author &&
+                (isBypass || schema.draftDefaults.author.isEditable)
+              );
+            const showDraftAuthorizedMembers =
+              isDraft &&
+              schema.draftDefaults?.authorizedMembers?.enabled &&
+              (isBypass || schema.draftDefaults.authorizedMembers.isEditable);
+            const showDraftSection =
+              showDraftName ||
+              showDraftDescription ||
+              showDraftObjectAssignee ||
+              showDraftObjectParticipant ||
+              showDraftAuthor ||
+              showDraftAuthorizedMembers;
             const draftAuthorInheritanceHelper = t_i18n('', {
               id: 'Default: Reuse {entityType} author (leave empty to inherit)',
               values: { entityType: t_i18n(schema.mainEntityType || 'main entity') },
@@ -611,7 +768,11 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                           name="mainEntityLookup"
                           types={[schema.mainEntityType]}
                           style={{ width: '100%', marginTop: 20 }}
-                          helpertext={schema.mainEntityMultiple ? t_i18n('Select one or more existing entities') : t_i18n('Select an existing entity')}
+                          helpertext={
+                            schema.mainEntityMultiple
+                              ? t_i18n('Select one or more existing entities')
+                              : t_i18n('Select an existing entity')
+                          }
                           multiple={schema.mainEntityMultiple}
                           disableCreation={schema.mainEntityDisableCreation}
                           deferCreation={isForcedImportToDraft}
@@ -621,10 +782,17 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                     if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'parsed') {
                       // Parsed mode - single text field to parse
                       let helperText;
-                      if (schema.mainEntityType === 'Indicator' && schema.mainEntityAutoConvertToStixPattern) {
-                        helperText = t_i18n('Enter simple observable values (e.g., IP addresses, domains, hashes). They will be automatically converted to STIX patterns.');
+                      if (
+                        schema.mainEntityType === 'Indicator' &&
+                        schema.mainEntityAutoConvertToStixPattern
+                      ) {
+                        helperText = t_i18n(
+                          'Enter simple observable values (e.g., IP addresses, domains, hashes). They will be automatically converted to STIX patterns.',
+                        );
                       } else if (schema.mainEntityType === 'Indicator') {
-                        helperText = t_i18n('Enter valid STIX patterns (e.g., [ipv4-addr:value = \'192.168.1.1\'])');
+                        helperText = t_i18n(
+                          "Enter valid STIX patterns (e.g., [ipv4-addr:value = '192.168.1.1'])",
+                        );
                       }
                       return (
                         <>
@@ -633,9 +801,11 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                               component={TextField}
                               className={classes.parsedField}
                               name="mainEntityParsed"
-                              placeholder={t_i18n(schema.mainEntityParseMode === 'line'
-                                ? 'Enter values separated by new lines'
-                                : 'Enter values separated by commas')}
+                              placeholder={t_i18n(
+                                schema.mainEntityParseMode === 'line'
+                                  ? 'Enter values separated by new lines'
+                                  : 'Enter values separated by commas',
+                              )}
                               rows={10}
                               multiline={true}
                               fullWidth={true}
@@ -648,9 +818,11 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                               component={TextField}
                               className={classes.parsedField}
                               name="mainEntityParsed"
-                              placeholder={t_i18n(schema.mainEntityParseMode === 'line'
-                                ? 'Enter values separated by new lines'
-                                : 'Enter values separated by commas')}
+                              placeholder={t_i18n(
+                                schema.mainEntityParseMode === 'line'
+                                  ? 'Enter values separated by new lines'
+                                  : 'Enter values separated by commas',
+                              )}
                               variant="standard"
                               fullWidth
                               helperText={helperText}
@@ -659,8 +831,13 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                           {mainEntityFields.length > 0 && (
                             <>
                               <Divider style={{ marginTop: 20, marginBottom: 10 }} />
-                              <Typography variant="subtitle2" style={{ marginTop: 10, marginBottom: 10 }}>
-                                {t_i18n('Additional fields (will be applied to all created entities)')}
+                              <Typography
+                                variant="subtitle2"
+                                style={{ marginTop: 10, marginBottom: 10 }}
+                              >
+                                {t_i18n(
+                                  'Additional fields (will be applied to all created entities)',
+                                )}
                               </Typography>
                               <FormFields
                                 fields={mainEntityFields}
@@ -668,9 +845,13 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                 errors={errors as Record<string, string>}
                                 touched={touched as Record<string, boolean>}
                                 setFieldValue={setFieldValue}
-                                entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
+                                entitySettings={
+                                  entitySettings as unknown as FormFieldRendererProps['entitySettings']
+                                }
                                 getFieldKey={(field) => `mainEntityFields.${field.name}`}
-                                getFieldOverride={(field) => ({ name: `mainEntityFields.${field.name}` })}
+                                getFieldOverride={(field) => ({
+                                  name: `mainEntityFields.${field.name}`,
+                                })}
                               />
                             </>
                           )}
@@ -683,7 +864,9 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                         <FieldArray name="mainEntityGroups">
                           {({ remove, push }) => (
                             <>
-                              {(values.mainEntityGroups as unknown as Record<string, unknown>[])?.map((group, index) => (
+                              {(
+                                values.mainEntityGroups as unknown as Record<string, unknown>[]
+                              )?.map((group, index) => (
                                 <div key={index} className={classes.fieldGroup}>
                                   {index > 0 && (
                                     <IconButton
@@ -705,13 +888,24 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                     errors={errors as Record<string, string>}
                                     touched={touched as Record<string, boolean>}
                                     setFieldValue={setFieldValue}
-                                    entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
-                                    getFieldKey={(field) => `mainEntityGroups.${index}.${field.name}`}
-                                    getFieldOverride={(field) => ({ name: `mainEntityGroups.${index}.${field.name}` })}
+                                    entitySettings={
+                                      entitySettings as unknown as FormFieldRendererProps['entitySettings']
+                                    }
+                                    getFieldKey={(field) =>
+                                      `mainEntityGroups.${index}.${field.name}`
+                                    }
+                                    getFieldOverride={(field) => ({
+                                      name: `mainEntityGroups.${index}.${field.name}`,
+                                    })}
                                   />
-                                  {index < ((values.mainEntityGroups as unknown as Record<string, unknown>[])?.length || 1) - 1 && (
-                                    <Divider style={{ marginTop: 15 }} />
-                                  )}
+                                  {index <
+                                    ((
+                                      values.mainEntityGroups as unknown as Record<
+                                        string,
+                                        unknown
+                                      >[]
+                                    )?.length || 1) -
+                                      1 && <Divider style={{ marginTop: 15 }} />}
                                 </div>
                               ))}
                               <Button
@@ -721,7 +915,12 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                   mainEntityFields.forEach((field) => {
                                     if (field.type === 'checkbox' || field.type === 'toggle') {
                                       newGroup[field.name] = false;
-                                    } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'files') {
+                                    } else if (
+                                      field.type === 'multiselect' ||
+                                      field.type === 'objectMarking' ||
+                                      field.type === 'objectLabel' ||
+                                      field.type === 'files'
+                                    ) {
                                       newGroup[field.name] = [];
                                     } else if (field.type === 'datetime') {
                                       newGroup[field.name] = new Date().toISOString();
@@ -750,7 +949,9 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                         errors={errors as Record<string, string>}
                         touched={touched as Record<string, boolean>}
                         setFieldValue={setFieldValue}
-                        entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
+                        entitySettings={
+                          entitySettings as unknown as FormFieldRendererProps['entitySettings']
+                        }
                         getFieldKey={(field) => field.name}
                       />
                     );
@@ -762,11 +963,14 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                   <>
                     {schema.additionalEntities.map((additionalEntity) => {
                       // Find fields for this additional entity
-                      const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === additionalEntity.id);
+                      const entityFields = schema.fields.filter(
+                        (field) => field.attributeMapping.entity === additionalEntity.id,
+                      );
                       return (
                         <div key={additionalEntity.id} className={classes.section}>
                           <Typography variant="h6" className={classes.sectionTitle}>
-                            {additionalEntity.label || `${t_i18n('Additional Entity')} - ${t_i18n(additionalEntity.entityType)}`}
+                            {additionalEntity.label ||
+                              `${t_i18n('Additional Entity')} - ${t_i18n(additionalEntity.entityType)}`}
                           </Typography>
                           {(() => {
                             if (additionalEntity.lookup) {
@@ -775,21 +979,35 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                   name={`additional_${additionalEntity.id}_lookup`}
                                   types={[additionalEntity.entityType]}
                                   style={{ width: '100%', marginTop: 20 }}
-                                  helpertext={additionalEntity.multiple ? t_i18n('Select one or more existing entities') : t_i18n('Select an existing entity')}
+                                  helpertext={
+                                    additionalEntity.multiple
+                                      ? t_i18n('Select one or more existing entities')
+                                      : t_i18n('Select an existing entity')
+                                  }
                                   multiple={additionalEntity.multiple}
                                   disableCreation={additionalEntity.disableCreation}
                                   deferCreation={isForcedImportToDraft}
                                 />
                               );
                             }
-                            if (additionalEntity.multiple && additionalEntity.fieldMode === 'parsed') {
+                            if (
+                              additionalEntity.multiple &&
+                              additionalEntity.fieldMode === 'parsed'
+                            ) {
                               // Parsed mode - single text field to parse
                               const fieldName = `additional_${additionalEntity.id}_parsed`;
                               let helperText;
-                              if (additionalEntity.entityType === 'Indicator' && additionalEntity.autoConvertToStixPattern) {
-                                helperText = t_i18n('Enter simple observable values (e.g., IP addresses, domains, hashes). They will be automatically converted to STIX patterns.');
+                              if (
+                                additionalEntity.entityType === 'Indicator' &&
+                                additionalEntity.autoConvertToStixPattern
+                              ) {
+                                helperText = t_i18n(
+                                  'Enter simple observable values (e.g., IP addresses, domains, hashes). They will be automatically converted to STIX patterns.',
+                                );
                               } else if (additionalEntity.entityType === 'Indicator') {
-                                helperText = t_i18n('Enter valid STIX patterns (e.g., [ipv4-addr:value = \'192.168.1.1\'])');
+                                helperText = t_i18n(
+                                  "Enter valid STIX patterns (e.g., [ipv4-addr:value = '192.168.1.1'])",
+                                );
                               }
                               return (
                                 <>
@@ -798,9 +1016,11 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                       component={TextField}
                                       className={classes.parsedField}
                                       name={fieldName}
-                                      placeholder={t_i18n(additionalEntity.parseMode === 'line'
-                                        ? 'Enter values separated by new lines'
-                                        : 'Enter values separated by commas')}
+                                      placeholder={t_i18n(
+                                        additionalEntity.parseMode === 'line'
+                                          ? 'Enter values separated by new lines'
+                                          : 'Enter values separated by commas',
+                                      )}
                                       rows={10}
                                       multiline={true}
                                       fullWidth={true}
@@ -813,9 +1033,11 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                       component={TextField}
                                       className={classes.parsedField}
                                       name={fieldName}
-                                      placeholder={t_i18n(additionalEntity.parseMode === 'line'
-                                        ? 'Enter values separated by new lines'
-                                        : 'Enter values separated by commas')}
+                                      placeholder={t_i18n(
+                                        additionalEntity.parseMode === 'line'
+                                          ? 'Enter values separated by new lines'
+                                          : 'Enter values separated by commas',
+                                      )}
                                       variant="standard"
                                       fullWidth
                                       helperText={helperText}
@@ -824,8 +1046,13 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                   {entityFields.length > 0 && (
                                     <>
                                       <Divider style={{ marginTop: 20, marginBottom: 10 }} />
-                                      <Typography variant="subtitle2" style={{ marginTop: 10, marginBottom: 10 }}>
-                                        {t_i18n('Additional fields (will be applied to all created entities)')}
+                                      <Typography
+                                        variant="subtitle2"
+                                        style={{ marginTop: 10, marginBottom: 10 }}
+                                      >
+                                        {t_i18n(
+                                          'Additional fields (will be applied to all created entities)',
+                                        )}
                                       </Typography>
                                       <FormFields
                                         fields={entityFields}
@@ -833,16 +1060,25 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                         errors={errors as Record<string, string>}
                                         touched={touched as Record<string, boolean>}
                                         setFieldValue={setFieldValue}
-                                        entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
-                                        getFieldKey={(field) => `additional_${additionalEntity.id}_fields.${field.name}`}
-                                        getFieldOverride={(field) => ({ name: `additional_${additionalEntity.id}_fields.${field.name}` })}
+                                        entitySettings={
+                                          entitySettings as unknown as FormFieldRendererProps['entitySettings']
+                                        }
+                                        getFieldKey={(field) =>
+                                          `additional_${additionalEntity.id}_fields.${field.name}`
+                                        }
+                                        getFieldOverride={(field) => ({
+                                          name: `additional_${additionalEntity.id}_fields.${field.name}`,
+                                        })}
                                       />
                                     </>
                                   )}
                                 </>
                               );
                             }
-                            if (additionalEntity.multiple && additionalEntity.fieldMode === 'multiple') {
+                            if (
+                              additionalEntity.multiple &&
+                              additionalEntity.fieldMode === 'multiple'
+                            ) {
                               const groupsFieldName = `additional_${additionalEntity.id}_groups`;
                               const minAmount = additionalEntity.minAmount ?? 0;
                               return (
@@ -850,7 +1086,12 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                 <FieldArray name={groupsFieldName}>
                                   {({ remove, push }) => (
                                     <>
-                                      {(values[groupsFieldName] as unknown as Record<string, unknown>[])?.map((group, index) => (
+                                      {(
+                                        values[groupsFieldName] as unknown as Record<
+                                          string,
+                                          unknown
+                                        >[]
+                                      )?.map((group, index) => (
                                         <div key={index} className={classes.fieldGroup}>
                                           {index >= minAmount && (
                                             <IconButton
@@ -864,7 +1105,8 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                             </IconButton>
                                           )}
                                           <Typography variant="subtitle2" gutterBottom>
-                                            {additionalEntity.label || additionalEntity.entityType} {index + 1}
+                                            {additionalEntity.label || additionalEntity.entityType}{' '}
+                                            {index + 1}
                                           </Typography>
                                           <FormFields
                                             fields={entityFields}
@@ -872,13 +1114,24 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                             errors={errors as Record<string, string>}
                                             touched={touched as Record<string, boolean>}
                                             setFieldValue={setFieldValue}
-                                            entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
-                                            getFieldKey={(field) => `${groupsFieldName}.${index}.${field.name}`}
-                                            getFieldOverride={(field) => ({ name: `${groupsFieldName}.${index}.${field.name}` })}
+                                            entitySettings={
+                                              entitySettings as unknown as FormFieldRendererProps['entitySettings']
+                                            }
+                                            getFieldKey={(field) =>
+                                              `${groupsFieldName}.${index}.${field.name}`
+                                            }
+                                            getFieldOverride={(field) => ({
+                                              name: `${groupsFieldName}.${index}.${field.name}`,
+                                            })}
                                           />
-                                          {index < ((values[groupsFieldName] as unknown as Record<string, unknown>[])?.length || 1) - 1 && (
-                                            <Divider style={{ marginTop: 15 }} />
-                                          )}
+                                          {index <
+                                            ((
+                                              values[groupsFieldName] as unknown as Record<
+                                                string,
+                                                unknown
+                                              >[]
+                                            )?.length || 1) -
+                                              1 && <Divider style={{ marginTop: 15 }} />}
                                         </div>
                                       ))}
                                       <Button
@@ -886,9 +1139,17 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                         onClick={() => {
                                           const newGroup: Record<string, unknown> = {};
                                           entityFields.forEach((field) => {
-                                            if (field.type === 'checkbox' || field.type === 'toggle') {
+                                            if (
+                                              field.type === 'checkbox' ||
+                                              field.type === 'toggle'
+                                            ) {
                                               newGroup[field.name] = false;
-                                            } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'files') {
+                                            } else if (
+                                              field.type === 'multiselect' ||
+                                              field.type === 'objectMarking' ||
+                                              field.type === 'objectLabel' ||
+                                              field.type === 'files'
+                                            ) {
                                               newGroup[field.name] = [];
                                             } else if (field.type === 'datetime') {
                                               newGroup[field.name] = new Date().toISOString();
@@ -902,7 +1163,8 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                         variant="secondary"
                                         size="small"
                                       >
-                                        {t_i18n('Add')} {additionalEntity.label || additionalEntity.entityType}
+                                        {t_i18n('Add')}{' '}
+                                        {additionalEntity.label || additionalEntity.entityType}
                                       </Button>
                                     </>
                                   )}
@@ -913,11 +1175,31 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                             return (
                               <FormFields
                                 fields={entityFields}
-                                values={values[`additional_${additionalEntity.id}`] as Record<string, unknown> || {}}
-                                errors={(errors as unknown as Record<string, Record<string, string>>)[`additional_${additionalEntity.id}`] || {}}
-                                touched={(touched as unknown as Record<string, Record<string, boolean>>)[`additional_${additionalEntity.id}`] || {}}
-                                setFieldValue={(fieldName: string, value: unknown) => setFieldValue(`additional_${additionalEntity.id}.${fieldName}`, value)}
-                                entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
+                                values={
+                                  (values[`additional_${additionalEntity.id}`] as Record<
+                                    string,
+                                    unknown
+                                  >) || {}
+                                }
+                                errors={
+                                  (errors as unknown as Record<string, Record<string, string>>)[
+                                    `additional_${additionalEntity.id}`
+                                  ] || {}
+                                }
+                                touched={
+                                  (touched as unknown as Record<string, Record<string, boolean>>)[
+                                    `additional_${additionalEntity.id}`
+                                  ] || {}
+                                }
+                                setFieldValue={(fieldName: string, value: unknown) =>
+                                  setFieldValue(
+                                    `additional_${additionalEntity.id}.${fieldName}`,
+                                    value,
+                                  )
+                                }
+                                entitySettings={
+                                  entitySettings as unknown as FormFieldRendererProps['entitySettings']
+                                }
                                 fieldPrefix={`additional_${additionalEntity.id}`}
                                 getFieldKey={(field) => `${additionalEntity.id}_${field.name}`}
                               />
@@ -939,17 +1221,26 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
 
                   return (
                     <>
-                      <Typography variant="h6" className={classes.sectionTitle} style={{ marginTop: 30 }}>
+                      <Typography
+                        variant="h6"
+                        className={classes.sectionTitle}
+                        style={{ marginTop: 30 }}
+                      >
                         {t_i18n('Relationships')}
                       </Typography>
                       {relationshipsWithFields.map((relationship) => {
                         // Find the entities involved
-                        const fromEntityLabel = relationship.fromEntity === 'main_entity'
-                          ? schema.mainEntityType
-                          : schema.additionalEntities?.find((e) => e.id === relationship.fromEntity)?.label || relationship.fromEntity;
-                        const toEntityLabel = relationship.toEntity === 'main_entity'
-                          ? schema.mainEntityType
-                          : schema.additionalEntities?.find((e) => e.id === relationship.toEntity)?.label || relationship.toEntity;
+                        const fromEntityLabel =
+                          relationship.fromEntity === 'main_entity'
+                            ? schema.mainEntityType
+                            : schema.additionalEntities?.find(
+                                (e) => e.id === relationship.fromEntity,
+                              )?.label || relationship.fromEntity;
+                        const toEntityLabel =
+                          relationship.toEntity === 'main_entity'
+                            ? schema.mainEntityType
+                            : schema.additionalEntities?.find((e) => e.id === relationship.toEntity)
+                                ?.label || relationship.toEntity;
                         return (
                           <div key={relationship.id} className={classes.section}>
                             <Typography variant="subtitle1" style={{ marginBottom: 10 }}>
@@ -957,13 +1248,32 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                             </Typography>
                             <FormFields
                               fields={relationship.fields ?? []}
-                              values={values[`relationship_${relationship.id}`] as Record<string, unknown> || {}}
-                              errors={(errors as unknown as Record<string, Record<string, string>>)[`relationship_${relationship.id}`] || {}}
-                              touched={(touched as unknown as Record<string, Record<string, boolean>>)[`relationship_${relationship.id}`] || {}}
-                              setFieldValue={(fieldName: string, value: unknown) => setFieldValue(`relationship_${relationship.id}.${fieldName}`, value)}
-                              entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
+                              values={
+                                (values[`relationship_${relationship.id}`] as Record<
+                                  string,
+                                  unknown
+                                >) || {}
+                              }
+                              errors={
+                                (errors as unknown as Record<string, Record<string, string>>)[
+                                  `relationship_${relationship.id}`
+                                ] || {}
+                              }
+                              touched={
+                                (touched as unknown as Record<string, Record<string, boolean>>)[
+                                  `relationship_${relationship.id}`
+                                ] || {}
+                              }
+                              setFieldValue={(fieldName: string, value: unknown) =>
+                                setFieldValue(`relationship_${relationship.id}.${fieldName}`, value)
+                              }
+                              entitySettings={
+                                entitySettings as unknown as FormFieldRendererProps['entitySettings']
+                              }
                               fieldPrefix={`relationship_${relationship.id}`}
-                              getFieldKey={(field) => `relationship_${relationship.id}_${field.name}`}
+                              getFieldKey={(field) =>
+                                `relationship_${relationship.id}_${field.name}`
+                              }
                             />
                           </div>
                         );
@@ -975,18 +1285,26 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                 <FormControlLabel
                   className={classes.draftCheckbox}
                   style={{ marginBottom: showDraftSection ? 12 : undefined }}
-                  control={(
+                  control={
                     <Checkbox
                       checked={isDraft}
                       onChange={(e) => setIsDraft(e.target.checked)}
-                      disabled={isSubmitting || isForcedImportToDraft || (schema.isDraftByDefault === true && schema.allowDraftOverride === false)}
+                      disabled={
+                        isSubmitting ||
+                        isForcedImportToDraft ||
+                        (schema.isDraftByDefault === true && schema.allowDraftOverride === false)
+                      }
                     />
-                  )}
+                  }
                   label={t_i18n('Create as draft')}
                 />
                 {showDraftSection && (
                   <>
-                    <Typography variant="h5" className={classes.sectionTitle} style={{ marginTop: 0 }}>
+                    <Typography
+                      variant="h5"
+                      className={classes.sectionTitle}
+                      style={{ marginTop: 0 }}
+                    >
                       {t_i18n('Draft')}
                     </Typography>
                     {showDraftName && (
@@ -1038,7 +1356,10 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                           label={t_i18n('Draft author')}
                           style={{ width: '100%', marginBottom: 20 }}
                           setFieldValue={setFieldValue}
-                          required={schema.draftDefaults?.author?.isRequired && schema.draftDefaults?.author?.type !== 'main_entity_author'}
+                          required={
+                            schema.draftDefaults?.author?.isRequired &&
+                            schema.draftDefaults?.author?.type !== 'main_entity_author'
+                          }
                           clearable={schema.draftDefaults?.author?.type === 'main_entity_author'}
                         />
                         {schema.draftDefaults?.author?.type === 'main_entity_author' && (
@@ -1060,7 +1381,9 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                           dynamicAuthorOrgLabel="Draft author (org)"
                           includeBundleOrganizationDynamicOption={false}
                           dynamicGroupsRestrictionSupportedValues={['AUTHOR']}
-                          disabled={!isBypass && !schema.draftDefaults?.authorizedMembers?.isEditable}
+                          disabled={
+                            !isBypass && !schema.draftDefaults?.authorizedMembers?.isEditable
+                          }
                         />
                       </div>
                     )}
@@ -1089,7 +1412,11 @@ interface FormViewProps {
   onSuccess?: () => void;
 }
 
-const FormView: FunctionComponent<FormViewProps> = ({ formId: propFormId, embedded = false, onSuccess }) => {
+const FormView: FunctionComponent<FormViewProps> = ({
+  formId: propFormId,
+  embedded = false,
+  onSuccess,
+}) => {
   const { formId: routeFormId } = useParams<{ formId: string }>();
   const formId = propFormId || routeFormId;
   const [queryRef, loadQuery] = useQueryLoader<FormViewQuery>(formViewQuery);

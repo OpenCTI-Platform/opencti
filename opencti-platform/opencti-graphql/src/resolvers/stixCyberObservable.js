@@ -23,7 +23,12 @@ import {
   vulnerabilitiesPaginated,
 } from '../domain/stixCyberObservable';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
-import { stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush, stixCoreRelationshipsPaginated } from '../domain/stixCoreObject';
+import {
+  stixCoreObjectExportPush,
+  stixCoreObjectImportPush,
+  stixCoreObjectsExportPush,
+  stixCoreRelationshipsPaginated,
+} from '../domain/stixCoreObject';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 import { stixHashesToInput } from '../schema/fieldDataAdapter';
 import { stixCyberObservableOptions } from '../schema/stixCyberObservable';
@@ -35,7 +40,8 @@ import { countriesPaginated } from '../domain/region';
 const stixCyberObservableResolvers = {
   Query: {
     stixCyberObservable: (_, { id }, context) => findById(context, context.user, id),
-    stixCyberObservables: (_, args, context) => findStixCyberObservablePaginated(context, context.user, args),
+    stixCyberObservables: (_, args, context) =>
+      findStixCyberObservablePaginated(context, context.user, args),
     stixCyberObservablesTimeSeries: (_, args, context) => {
       return stixCyberObservablesTimeSeries(context, context.user, args);
     },
@@ -50,8 +56,18 @@ const stixCyberObservableResolvers = {
     },
     stixCyberObservablesExportFiles: (_, { exportContext, first }, context) => {
       const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
-      const opts = { first, entity_id: exportContext.entity_id, entity_type: exportContext.entity_type };
-      return paginatedForPathWithEnrichment(context, context.user, path, exportContext.entity_id, opts);
+      const opts = {
+        first,
+        entity_id: exportContext.entity_id,
+        entity_type: exportContext.entity_type,
+      };
+      return paginatedForPathWithEnrichment(
+        context,
+        context.user,
+        path,
+        exportContext.entity_id,
+        opts,
+      );
     },
   },
   StixCyberObservablesOrdering: stixCyberObservableOptions.StixCyberObservablesOrdering,
@@ -66,28 +82,45 @@ const stixCyberObservableResolvers = {
       return 'Unknown';
     },
     observable_value: (stixCyberObservable) => observableValue(stixCyberObservable),
-    stixCoreRelationships: (rel, args, context) => stixCoreRelationshipsPaginated(context, context.user, rel.id, args),
-    toStix: (stixCyberObservable, args, context) => stixLoadByIdStringify(context, context.user, stixCyberObservable.id, args),
+    stixCoreRelationships: (rel, args, context) =>
+      stixCoreRelationshipsPaginated(context, context.user, rel.id, args),
+    toStix: (stixCyberObservable, args, context) =>
+      stixLoadByIdStringify(context, context.user, stixCyberObservable.id, args),
     importFiles: (stixCyberObservable, { first }, context) => {
       const path = `import/${stixCyberObservable.entity_type}/${stixCyberObservable.id}`;
       const opts = { first, entity_type: stixCyberObservable.entity_type };
-      return paginatedForPathWithEnrichment(context, context.user, path, stixCyberObservable.id, opts);
+      return paginatedForPathWithEnrichment(
+        context,
+        context.user,
+        path,
+        stixCyberObservable.id,
+        opts,
+      );
     },
     exportFiles: (stixCyberObservable, { first }, context) => {
       const path = `export/${stixCyberObservable.entity_type}/${stixCyberObservable.id}`;
       const opts = { first, entity_type: stixCyberObservable.entity_type };
-      return paginatedForPathWithEnrichment(context, context.user, path, stixCyberObservable.id, opts);
+      return paginatedForPathWithEnrichment(
+        context,
+        context.user,
+        path,
+        stixCyberObservable.id,
+        opts,
+      );
     },
-    indicators: (stixCyberObservable, args, context) => indicatorsPaginated(context, context.user, stixCyberObservable.id, args),
+    indicators: (stixCyberObservable, args, context) =>
+      indicatorsPaginated(context, context.user, stixCyberObservable.id, args),
   },
   Process: {
-    serviceDlls: (process, args, context) => serviceDllsPaginated(context, context.user, process.id, args),
+    serviceDlls: (process, args, context) =>
+      serviceDllsPaginated(context, context.user, process.id, args),
   },
   StixFile: {
     obsContent: (stixFile, _, context) => stixFileObsArtifact(context, context.user, stixFile.id),
   },
   Software: {
-    vulnerabilities: (software, args, context) => vulnerabilitiesPaginated(context, context.user, software.id, args),
+    vulnerabilities: (software, args, context) =>
+      vulnerabilitiesPaginated(context, context.user, software.id, args),
   },
   IPv4Addr: {
     countries: (ip, args, context) => countriesPaginated(context, context.user, ip.id, args),
@@ -99,7 +132,10 @@ const stixCyberObservableResolvers = {
     stixCyberObservableEdit: (_, { id }, context) => ({
       delete: () => stixCyberObservableDelete(context, context.user, id),
       fieldPatch: ({ input, commitMessage, references }) => {
-        return stixCyberObservableEditField(context, context.user, id, input, { commitMessage, references });
+        return stixCyberObservableEditField(context, context.user, id, input, {
+          commitMessage,
+          references,
+        });
       },
       contextPatch: ({ input }) => stixCyberObservableEditContext(context, context.user, id, input),
       contextClean: () => stixCyberObservableCleanContext(context, context.user, id),
@@ -112,11 +148,25 @@ const stixCyberObservableResolvers = {
       importPush: (args) => stixCoreObjectImportPush(context, context.user, id, args.file, args),
       promoteToIndicator: () => promoteObservableToIndicator(context, context.user, id),
     }),
-    stixCyberObservableAdd: (_, args, context) => addStixCyberObservable(context, context.user, args),
-    stixCyberObservablesExportAsk: (_, { input }, context) => stixCyberObservablesExportAsk(context, context.user, input),
-    stixCyberObservablesExportPush: (_, { entity_id, entity_type, file, file_markings, listFilters }, context) => {
+    stixCyberObservableAdd: (_, args, context) =>
+      addStixCyberObservable(context, context.user, args),
+    stixCyberObservablesExportAsk: (_, { input }, context) =>
+      stixCyberObservablesExportAsk(context, context.user, input),
+    stixCyberObservablesExportPush: (
+      _,
+      { entity_id, entity_type, file, file_markings, listFilters },
+      context,
+    ) => {
       const entityType = entity_type ?? 'Stix-Cyber-Observable';
-      return stixCoreObjectsExportPush(context, context.user, entity_id, entityType, file, file_markings, listFilters);
+      return stixCoreObjectsExportPush(
+        context,
+        context.user,
+        entity_id,
+        entityType,
+        file,
+        file_markings,
+        listFilters,
+      );
     },
     artifactImport: (_, args, context) => artifactImport(context, context.user, args),
   },
@@ -127,7 +177,11 @@ const stixCyberObservableResolvers = {
         const preFn = () => stixCyberObservableEditContext(context, context.user, id);
         const cleanFn = () => stixCyberObservableCleanContext(context, context.user, id);
         const bus = BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ABSTRACT_STIX_CYBER_OBSERVABLE, preFn, cleanFn });
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], {
+          type: ABSTRACT_STIX_CYBER_OBSERVABLE,
+          preFn,
+          cleanFn,
+        });
       },
     },
   },

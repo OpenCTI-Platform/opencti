@@ -41,5 +41,6 @@ input RequestAccessConfigureInput {
 
 type Mutation {
   requestAccessAdd(input: RequestAccessAddInput!): ID @auth(for: [KNOWLEDGE])
-  requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration
+    @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }

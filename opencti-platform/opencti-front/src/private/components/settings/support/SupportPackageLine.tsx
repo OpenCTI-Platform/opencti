@@ -54,13 +54,11 @@ const styles = {
 type PackageStatus = 'IN_PROGRESS' | 'READY' | 'IN_ERROR' | 'TIMEOUT' | '%future added value';
 
 const SupportPackageLineForceZipMutation = graphql`
-  mutation SupportPackageLineForceZipMutation(    
-    $input: SupportPackageForceZipInput!
-  ) {
-      supportPackageForceZip(input: $input) {
-        id
-        package_url
-      }
+  mutation SupportPackageLineForceZipMutation($input: SupportPackageForceZipInput!) {
+    supportPackageForceZip(input: $input) {
+      id
+      package_url
+    }
   }
 `;
 
@@ -122,12 +120,8 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
       variables: {
         id: data.id,
       },
-      updater: (store: RecordSourceSelectorProxy) => deleteNode(
-        store,
-        'Pagination_supportPackages',
-        paginationOptions,
-        data.id,
-      ),
+      updater: (store: RecordSourceSelectorProxy) =>
+        deleteNode(store, 'Pagination_supportPackages', paginationOptions, data.id),
       onCompleted: () => {
         setDeleting(false);
         handleCloseDelete();
@@ -164,7 +158,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
       <ListItem
         divider={true}
         style={{ ...styles.item }}
-        secondaryAction={(
+        secondaryAction={
           <>
             {!isReady && (
               <Tooltip title={t_i18n('Force download on this support package')}>
@@ -177,9 +171,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
               <Tooltip title={t_i18n('Download this support package')}>
                 <IconButton
                   disabled={!data.package_url}
-                  href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
-                    data.package_url || '',
-                  )}`}
+                  href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(data.package_url || '')}`}
                 >
                   <GetAppOutlined fontSize="small" />
                 </IconButton>
@@ -196,33 +188,24 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
               </IconButton>
             </Tooltip>
           </>
-        )}
+        }
       >
         <ListItemIcon>
-          {isProgress && !isTimeout && (
-            <CircularProgress
-              size={20}
-              color="inherit"
-            />
-          )}
-          {isProgress && isTimeout && (
-            <FileOutline
-              color="inherit"
-            />
-          )}
-          {!isProgress && (
-            <FileOutline
-              color="inherit"
-            />
-          )}
+          {isProgress && !isTimeout && <CircularProgress size={20} color="inherit" />}
+          {isProgress && isTimeout && <FileOutline color="inherit" />}
+          {!isProgress && <FileOutline color="inherit" />}
         </ListItemIcon>
         <ListItemText
-          primary={(
+          primary={
             <>
-              <div style={{ width: dataColumns.name.width, ...styles.bodyItem }}>
-                {data.name}
-              </div>
-              <div style={{ width: dataColumns.package_status.width, ...styles.bodyItem, paddingLeft: 15 }}>
+              <div style={{ width: dataColumns.name.width, ...styles.bodyItem }}>{data.name}</div>
+              <div
+                style={{
+                  width: dataColumns.package_status.width,
+                  ...styles.bodyItem,
+                  paddingLeft: 15,
+                }}
+              >
                 <Chip
                   style={{
                     color: packageStatusColors[finalStatus],
@@ -240,7 +223,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
                 {fndt(data.created_at)}
               </div>
             </>
-          )}
+          }
         />
       </ListItem>
       <DeleteDialog

@@ -1,7 +1,13 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
-import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_BULK_OPERATIONS } from '../database/engine';
+import {
+  BULK_TIMEOUT,
+  elBulk,
+  elList,
+  ES_MAX_CONCURRENCY,
+  MAX_BULK_OPERATIONS,
+} from '../database/engine';
 import { generateStandardId, idGen, normalizeName } from '../schema/identifier';
 import { logApp } from '../config/conf';
 import { ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION, OPENCTI_NAMESPACE } from '../schema/general';
@@ -28,7 +34,11 @@ export const up = async (next) => {
         if (isStixDomainObjectIdentity(entity.entity_type)) {
           const newStandardId = generateStandardId(
             entity.entity_type,
-            R.assoc('identity_class', entity.identity_class === 'sector' ? 'class' : entity.identity_class, entity),
+            R.assoc(
+              'identity_class',
+              entity.identity_class === 'sector' ? 'class' : entity.identity_class,
+              entity,
+            ),
           );
           const newAliasIds = generateAliases([entity.name, ...(entity.x_opencti_aliases || [])], {
             identity_class: entity.identity_class === 'sector' ? 'class' : entity.identity_class,
@@ -39,7 +49,8 @@ export const up = async (next) => {
               doc: {
                 i_aliases_ids: newAliasIds,
                 // Fix bad identity class....
-                identity_class: entity.identity_class === 'sector' ? 'class' : entity.identity_class,
+                identity_class:
+                  entity.identity_class === 'sector' ? 'class' : entity.identity_class,
                 standard_id: newStandardId,
                 x_opencti_stix_ids: [],
               },
@@ -49,7 +60,10 @@ export const up = async (next) => {
         const newAliasIds = generateAliases([entity.name, ...(entity.x_opencti_aliases || [])], {
           x_opencti_location_type: entity.x_opencti_location_type,
         });
-        return [{ update: { _index: entity._index, _id: entity._id } }, { doc: { i_aliases_ids: newAliasIds } }];
+        return [
+          { update: { _index: entity._index, _id: entity._id } },
+          { doc: { i_aliases_ids: newAliasIds } },
+        ];
       })
       .flat();
     pushAll(bulkOperations, op);
@@ -62,7 +76,9 @@ export const up = async (next) => {
   const concurrentUpdate = async (bulk) => {
     await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bulk });
     currentProcessing += bulk.length;
-    logApp.info(`[OPENCTI] Rewriting i_aliases_ids: ${currentProcessing} / ${bulkOperations.length}`);
+    logApp.info(
+      `[OPENCTI] Rewriting i_aliases_ids: ${currentProcessing} / ${bulkOperations.length}`,
+    );
   };
   await Promise.map(groupsOfOperations, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
   logApp.info(`[MIGRATION] Rewriting i_aliases_ids done in ${new Date() - start} ms`);

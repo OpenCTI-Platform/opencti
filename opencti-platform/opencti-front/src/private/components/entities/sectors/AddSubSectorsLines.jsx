@@ -11,11 +11,7 @@ export const addSubSectorsMutationRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    stixCoreRelationshipDelete(
-      fromId: $fromId
-      toId: $toId
-      relationship_type: $relationship_type
-    )
+    stixCoreRelationshipDelete(fromId: $fromId, toId: $toId, relationship_type: $relationship_type)
   }
 `;
 
@@ -43,8 +39,7 @@ AddSubSectorsLinesContainer.propTypes = {
 
 export const addSubSectorsLinesQuery = graphql`
   query AddSubSectorsLinesQuery($search: String, $count: Int!, $cursor: ID) {
-    ...AddSubSectorsLines_data
-      @arguments(search: $search, count: $count, cursor: $cursor)
+    ...AddSubSectorsLines_data @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 

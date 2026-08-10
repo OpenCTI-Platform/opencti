@@ -62,29 +62,26 @@ const Otp: FunctionComponent<OtpProps> = ({ secret, uri, settings }) => {
   }
 
   useEffect(() => {
-    qrcode.toDataURL(
-      uri,
-      (err: Error | null | undefined, imageUrl: string) => {
-        if (err) {
-          setOtpQrImage('');
-          return;
-        }
-        setOtpQrImage(imageUrl);
-      },
-    );
+    qrcode.toDataURL(uri, (err: Error | null | undefined, imageUrl: string) => {
+      if (err) {
+        setOtpQrImage('');
+        return;
+      }
+      setOtpQrImage(imageUrl);
+    });
   }, [uri]);
 
   const alertSeverity = error ? 'error' : 'info';
   const alertMessage = error
     ? error
-    : t_i18n('You need to activate a two-factor authentication. Please type the code generated in your application.');
+    : t_i18n(
+        'You need to activate a two-factor authentication. Please type the code generated in your application.',
+      );
 
   return (
     <LoginLayout settings={settings}>
       <Stack gap={1} sx={{ width: 500 }}>
-        <LoginAlert severity={alertSeverity}>
-          {alertMessage}
-        </LoginAlert>
+        <LoginAlert severity={alertSeverity}>{alertMessage}</LoginAlert>
         <Card
           sx={{
             display: 'flex',
@@ -94,19 +91,9 @@ const Otp: FunctionComponent<OtpProps> = ({ secret, uri, settings }) => {
           }}
         >
           <img src={otpQrImage} style={{ width: 265 }} alt="" />
-          <OtpInputField
-            value={code}
-            onChange={handleChange}
-            isDisabled={inputDisable}
-          />
-          <a
-            href={`${APP_BASE_PATH}/logout`}
-            rel="noreferrer"
-          >
-            <Button
-              size="small"
-              variant="tertiary"
-            >
+          <OtpInputField value={code} onChange={handleChange} isDisabled={inputDisable} />
+          <a href={`${APP_BASE_PATH}/logout`} rel="noreferrer">
+            <Button size="small" variant="tertiary">
               {t_i18n('Back to login')}
             </Button>
           </a>

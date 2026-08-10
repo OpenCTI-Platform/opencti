@@ -8,7 +8,7 @@ const TextList = ({ list }: TextListProps) => {
   return (
     <>
       {list && list?.length > 0
-        ? (list.map((element) => element && capitalizeFirstLetter(element)).join(', '))
+        ? list.map((element) => element && capitalizeFirstLetter(element)).join(', ')
         : EMPTY_VALUE}
     </>
   );

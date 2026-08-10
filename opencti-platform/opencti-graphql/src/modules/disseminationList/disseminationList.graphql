@@ -4,7 +4,7 @@ type DisseminationList implements InternalObject & BasicObject {
   entity_type: String!
   representative: Representative!
   parent_types: [String!]!
-  metrics:[Metric]
+  metrics: [Metric]
   created_at: DateTime!
   updated_at: DateTime!
   refreshed_at: DateTime
@@ -32,7 +32,8 @@ type DisseminationListEdge {
 
 # Queries
 type Query {
-  disseminationList(id: ID!): DisseminationList @auth(for: [KNOWLEDGE_KNDISSEMINATION, SETTINGS_SETDISSEMINATION])
+  disseminationList(id: ID!): DisseminationList
+    @auth(for: [KNOWLEDGE_KNDISSEMINATION, SETTINGS_SETDISSEMINATION])
   disseminationLists(
     first: Int
     after: ID
@@ -59,8 +60,11 @@ input DisseminationListSendInput {
 }
 
 type Mutation {
-  disseminationListAdd(input: DisseminationListAddInput!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
+  disseminationListAdd(input: DisseminationListAddInput!): DisseminationList
+    @auth(for: [SETTINGS_SETDISSEMINATION])
   disseminationListDelete(id: ID!): ID @auth(for: [SETTINGS_SETDISSEMINATION])
-  disseminationListFieldPatch(id: ID!, input: [EditInput!]!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
-  disseminationListSend(id: ID!, input: DisseminationListSendInput!): Boolean @auth(for: [KNOWLEDGE_KNDISSEMINATION])
+  disseminationListFieldPatch(id: ID!, input: [EditInput!]!): DisseminationList
+    @auth(for: [SETTINGS_SETDISSEMINATION])
+  disseminationListSend(id: ID!, input: DisseminationListSendInput!): Boolean
+    @auth(for: [KNOWLEDGE_KNDISSEMINATION])
 }

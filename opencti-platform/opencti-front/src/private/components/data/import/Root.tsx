@@ -16,28 +16,25 @@ const Root = () => {
     <Routes>
       <Route
         path="/"
-        element={<Navigate to={hasOnlyAccessToImportDraftTab ? '/dashboard/data/import/draft' : '/dashboard/data/import/file'} replace />}
+        element={
+          <Navigate
+            to={
+              hasOnlyAccessToImportDraftTab
+                ? '/dashboard/data/import/draft'
+                : '/dashboard/data/import/file'
+            }
+            replace
+          />
+        }
       />
       {restrictAccessToDraftOnly && (
         <>
-          <Route
-            path="/workbench/:fileId"
-            element={<WorkbenchFile />}
-          />
-          <Route
-            path="/file"
-            element={<ImportFilesContent />}
-          />
-          <Route
-            path="/workbench"
-            element={<ImportWorkbenchesContent />}
-          />
+          <Route path="/workbench/:fileId" element={<WorkbenchFile />} />
+          <Route path="/file" element={<ImportFilesContent />} />
+          <Route path="/workbench" element={<ImportWorkbenchesContent />} />
         </>
       )}
-      <Route
-        path="/draft"
-        element={<Drafts />}
-      />
+      <Route path="/draft" element={<Drafts />} />
     </Routes>
   );
 };

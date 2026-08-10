@@ -13,83 +13,83 @@ import { DashboardConfig } from '../../../../components/dashboard/dashboard-type
 import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
 
 const stixCoreObjectsHorizontalBarsDistributionQuery = graphql`
-    query StixCoreObjectsHorizontalBarsDistributionQuery(
-        $objectId: [String]
-        $relationship_type: [String]
-        $toTypes: [String]
-        $field: String!
-        $startDate: DateTime
-        $endDate: DateTime
-        $dateAttribute: String
-        $operation: StatsOperation!
-        $limit: Int
-        $order: String
-        $types: [String]
-        $filters: FilterGroup
-        $search: String
+  query StixCoreObjectsHorizontalBarsDistributionQuery(
+    $objectId: [String]
+    $relationship_type: [String]
+    $toTypes: [String]
+    $field: String!
+    $startDate: DateTime
+    $endDate: DateTime
+    $dateAttribute: String
+    $operation: StatsOperation!
+    $limit: Int
+    $order: String
+    $types: [String]
+    $filters: FilterGroup
+    $search: String
+  ) {
+    stixCoreObjectsDistribution(
+      objectId: $objectId
+      relationship_type: $relationship_type
+      toTypes: $toTypes
+      field: $field
+      startDate: $startDate
+      endDate: $endDate
+      dateAttribute: $dateAttribute
+      operation: $operation
+      limit: $limit
+      order: $order
+      types: $types
+      filters: $filters
+      search: $search
     ) {
-        stixCoreObjectsDistribution(
-            objectId: $objectId
-            relationship_type: $relationship_type
-            toTypes: $toTypes
-            field: $field
-            startDate: $startDate
-            endDate: $endDate
-            dateAttribute: $dateAttribute
-            operation: $operation
-            limit: $limit
-            order: $order
-            types: $types
-            filters: $filters
-            search: $search
-        ) {
-            label
-            value
-            entity {
-              ... on BasicObject {
-                id
-                entity_type
-              }
-              ... on BasicRelationship {
-                id
-                entity_type
-              }
-              ... on StixObject {
-                representative {
-                  main
-                }
-              }
-              ... on StixRelationship {
-                representative {
-                  main
-                }
-              }
-              # internal objects
-              ... on Creator {
-                id
-                name
-              }
-              ... on Group {
-                id
-                name
-              }
-              # need colors when available
-              ... on Label {
-                value
-                color
-              }
-              ... on MarkingDefinition {
-                x_opencti_color
-              }
-              ... on Status {
-                template {
-                  name
-                  color
-                }
-              }
-            }
+      label
+      value
+      entity {
+        ... on BasicObject {
+          id
+          entity_type
         }
+        ... on BasicRelationship {
+          id
+          entity_type
+        }
+        ... on StixObject {
+          representative {
+            main
+          }
+        }
+        ... on StixRelationship {
+          representative {
+            main
+          }
+        }
+        # internal objects
+        ... on Creator {
+          id
+          name
+        }
+        ... on Group {
+          id
+          name
+        }
+        # need colors when available
+        ... on Label {
+          value
+          color
+        }
+        ... on MarkingDefinition {
+          x_opencti_color
+        }
+        ... on Status {
+          template {
+            name
+            color
+          }
+        }
+      }
     }
+  }
 `;
 
 interface StixCoreObjectsHorizontalBarsComponentProps {
@@ -107,10 +107,7 @@ const StixCoreObjectsHorizontalBarsComponent = ({
 }: StixCoreObjectsHorizontalBarsComponentProps) => {
   const { t_i18n } = useFormatter();
   const { buildWidgetProps } = useDistributionGraphData();
-  const data = usePreloadedQuery(
-    stixCoreObjectsHorizontalBarsDistributionQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery(stixCoreObjectsHorizontalBarsDistributionQuery, queryRef);
   const selection = dataSelection[0];
   const distribution = data?.stixCoreObjectsDistribution ?? [];
 
@@ -153,7 +150,10 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixCoreObjectsHorizontalBarsDistributionQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(selection, config);
+  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(
+    selection,
+    config,
+  );
 
   return {
     types: DATA_SELECTION_TYPES,
@@ -178,7 +178,13 @@ const StixCoreObjectsHorizontalBars = ({
   refreshRate = null,
 }: StixCoreObjectsHorizontalBarsProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsHorizontalBarsDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixCoreObjectsHorizontalBarsDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,

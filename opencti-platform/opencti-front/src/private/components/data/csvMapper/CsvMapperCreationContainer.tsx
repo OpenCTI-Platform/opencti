@@ -26,7 +26,9 @@ const CsvMapperCreationContainer: FunctionComponent<CsvMapperCreationProps> = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-  const mappingCsv = editionQueryRef ? (usePreloadedQuery(csvMapperEditionContainerQuery, editionQueryRef)).csvMapper : null;
+  const mappingCsv = editionQueryRef
+    ? usePreloadedQuery(csvMapperEditionContainerQuery, editionQueryRef).csvMapper
+    : null;
 
   return (
     <Drawer

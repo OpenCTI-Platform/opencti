@@ -1,8 +1,15 @@
 import { createEntity } from '../database/middleware';
-import { pageEntitiesConnection, loadEntityThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import {
+  pageEntitiesConnection,
+  loadEntityThroughRelationsPaginated,
+  storeLoadById,
+} from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_REGION } from '../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_LOCATION_COUNTRY,
+  ENTITY_TYPE_LOCATION_REGION,
+} from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { RELATION_LOCATED_AT } from '../schema/stixCoreRelationship';
 
@@ -15,7 +22,14 @@ export const findCountryPaginated = (context, user, args) => {
 };
 
 export const locatedAtRegion = async (context, user, stixCoreObjectId) => {
-  return loadEntityThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION, false);
+  return loadEntityThroughRelationsPaginated(
+    context,
+    user,
+    stixCoreObjectId,
+    RELATION_LOCATED_AT,
+    ENTITY_TYPE_LOCATION_REGION,
+    false,
+  );
 };
 
 export const addCountry = async (context, user, country) => {

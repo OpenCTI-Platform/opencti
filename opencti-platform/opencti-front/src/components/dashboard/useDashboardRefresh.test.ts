@@ -44,10 +44,12 @@ describe('useDashboardRefresh', () => {
 
   it('updates local refresh rate and notifies callback when interval changes', () => {
     const onRefreshRateChange = vi.fn();
-    const { result } = renderHook(() => useDashboardRefresh({
-      initialRefreshRateSeconds: 10,
-      onRefreshRateChange,
-    }));
+    const { result } = renderHook(() =>
+      useDashboardRefresh({
+        initialRefreshRateSeconds: 10,
+        onRefreshRateChange,
+      }),
+    );
 
     act(() => {
       result.current.handleRefreshRateChange(15);
@@ -59,9 +61,11 @@ describe('useDashboardRefresh', () => {
   });
 
   it('resets the countdown without refetching when the refresh rate changes', () => {
-    const { result } = renderHook(() => useDashboardRefresh({
-      initialRefreshRateSeconds: 10,
-    }));
+    const { result } = renderHook(() =>
+      useDashboardRefresh({
+        initialRefreshRateSeconds: 10,
+      }),
+    );
 
     // Wait almost a full interval on the original rate.
     act(() => {
@@ -105,9 +109,11 @@ describe('useDashboardRefresh', () => {
   });
 
   it('auto-refreshes on interval and toggles spinner state', () => {
-    const { result } = renderHook(() => useDashboardRefresh({
-      initialRefreshRateSeconds: 5,
-    }));
+    const { result } = renderHook(() =>
+      useDashboardRefresh({
+        initialRefreshRateSeconds: 5,
+      }),
+    );
 
     expect(result.current.refreshToken).toBe(0);
     expect(result.current.isAutoRefreshing).toBe(false);
@@ -148,9 +154,11 @@ describe('useDashboardRefresh', () => {
   });
 
   it('pauses auto-refresh while the tab is hidden and resumes the remaining time', () => {
-    const { result } = renderHook(() => useDashboardRefresh({
-      initialRefreshRateSeconds: 10,
-    }));
+    const { result } = renderHook(() =>
+      useDashboardRefresh({
+        initialRefreshRateSeconds: 10,
+      }),
+    );
 
     // 3s into the interval, hide the tab.
     act(() => {
@@ -186,9 +194,11 @@ describe('useDashboardRefresh', () => {
   });
 
   it('performs a single catch-up refresh when the tab was hidden longer than an interval', () => {
-    const { result } = renderHook(() => useDashboardRefresh({
-      initialRefreshRateSeconds: 10,
-    }));
+    const { result } = renderHook(() =>
+      useDashboardRefresh({
+        initialRefreshRateSeconds: 10,
+      }),
+    );
 
     act(() => {
       setTabHidden(true);

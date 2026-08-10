@@ -92,11 +92,8 @@ describe('XtmHubTab', () => {
 
     it('renders the caller trigger instead of the default button when renderTrigger is provided', () => {
       renderXtmHubTab(route, 'OpenCTI Platform', {
-        renderTrigger: (openDialog) => React.createElement(
-          'button',
-          { type: 'button', onClick: openDialog },
-          'Custom trigger',
-        ),
+        renderTrigger: (openDialog) =>
+          React.createElement('button', { type: 'button', onClick: openDialog }, 'Custom trigger'),
       });
 
       expect(screen.getByRole('button', { name: 'Custom trigger' })).toBeInTheDocument();
@@ -105,16 +102,15 @@ describe('XtmHubTab', () => {
 
     it('opens the connection dialog through the openDialog callback given to renderTrigger', async () => {
       const { user } = renderXtmHubTab(route, 'OpenCTI Platform', {
-        renderTrigger: (openDialog) => React.createElement(
-          'button',
-          { type: 'button', onClick: openDialog },
-          'Custom trigger',
-        ),
+        renderTrigger: (openDialog) =>
+          React.createElement('button', { type: 'button', onClick: openDialog }, 'Custom trigger'),
       });
 
       await user.click(screen.getByRole('button', { name: 'Custom trigger' }));
 
-      expect(await screen.findByRole('dialog', { name: 'Connect your product to XTM Hub' })).toBeInTheDocument();
+      expect(
+        await screen.findByRole('dialog', { name: 'Connect your product to XTM Hub' }),
+      ).toBeInTheDocument();
     });
   });
 });

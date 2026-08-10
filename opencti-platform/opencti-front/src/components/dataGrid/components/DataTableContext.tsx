@@ -9,11 +9,7 @@ interface DataTableProviderProps {
 }
 
 export const DataTableProvider = ({ children, initialValue }: DataTableProviderProps) => {
-  return (
-    <DataTableContext.Provider value={initialValue}>
-      {children}
-    </DataTableContext.Provider>
-  );
+  return <DataTableContext.Provider value={initialValue}>{children}</DataTableContext.Provider>;
 };
 
 export const useDataTableContext = () => {

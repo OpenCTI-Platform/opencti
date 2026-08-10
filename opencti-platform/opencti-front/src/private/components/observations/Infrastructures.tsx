@@ -12,7 +12,10 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -70,14 +73,14 @@ const infrastructuresLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...InfrastructuresLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -130,7 +133,11 @@ const Infrastructures = () => {
     openExports: false,
     filters: emptyFilterGroup,
   };
-  const { viewStorage: { filters }, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<InfrastructuresLinesPaginationQuery$variables>(
+  const {
+    viewStorage: { filters },
+    helpers: storageHelpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<InfrastructuresLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_INFRASTRUCTURES,
     initialValues,
   );
@@ -167,22 +174,29 @@ const Infrastructures = () => {
   return (
     <ExportContextProvider>
       <div data-testid="infrastructures-page">
-        <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Infrastructures'), current: true }]} />
+        <Breadcrumbs
+          elements={[
+            { label: t_i18n('Observations') },
+            { label: t_i18n('Infrastructures'), current: true },
+          ]}
+        />
         {queryRef && (
           <DataTable
             dataColumns={dataColumns}
-            resolvePath={(data: InfrastructuresLines_data$data) => data.infrastructures?.edges?.map((n) => n?.node)}
+            resolvePath={(data: InfrastructuresLines_data$data) =>
+              data.infrastructures?.edges?.map((n) => n?.node)
+            }
             storageKey={LOCAL_STORAGE_KEY_INFRASTRUCTURES}
             initialValues={initialValues}
             contextFilters={contextFilters}
             lineFragment={infrastructureFragment}
             preloadedPaginationProps={preloadedPaginationOptions}
             exportContext={{ entity_type: 'Infrastructure' }}
-            createButton={(
+            createButton={
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <InfrastructureCreation paginationOptions={queryPaginationOptions} />
               </Security>
-            )}
+            }
           />
         )}
       </div>

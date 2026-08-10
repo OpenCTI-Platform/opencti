@@ -3,7 +3,9 @@ import Alert from '@mui/material/Alert';
 import makeStyles from '@mui/styles/makeStyles';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
-import IngestionTaxiiLines, { IngestionTaxiiLinesQuery } from './ingestionTaxii/IngestionTaxiiLines';
+import IngestionTaxiiLines, {
+  IngestionTaxiiLinesQuery,
+} from './ingestionTaxii/IngestionTaxiiLines';
 import IngestionTaxiiCreation from './ingestionTaxii/IngestionTaxiiCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
@@ -89,9 +91,7 @@ const IngestionTaxii = () => {
     return (
       <div className={classes.container}>
         <Alert severity="info">
-          {t_i18n(
-            platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER),
-          )}
+          {t_i18n(platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER))}
         </Alert>
       </div>
     );
@@ -116,7 +116,7 @@ const IngestionTaxii = () => {
         displayImport={false}
         secondaryAction
         keyword={viewStorage.searchTerm}
-        createButton={(
+        createButton={
           <Security needs={[INGESTION_SETINGESTIONS]}>
             <>
               <IngestionTaxiiImport paginationOptions={paginationOptions} />
@@ -134,15 +134,13 @@ const IngestionTaxii = () => {
               <IngestionTaxiiCreation paginationOptions={paginationOptions} />
             </>
           </Security>
-        )}
+        }
         iconExtension
       >
         <QueryRenderer
           query={IngestionTaxiiLinesQuery}
           variables={{ count: 200, ...paginationOptions }}
-          render={({ props }: {
-            props: IngestionTaxiiLinesPaginationQuery['response'] | null;
-          }) => (
+          render={({ props }: { props: IngestionTaxiiLinesPaginationQuery['response'] | null }) => (
             <IngestionTaxiiLines
               data={props}
               paginationOptions={paginationOptions}

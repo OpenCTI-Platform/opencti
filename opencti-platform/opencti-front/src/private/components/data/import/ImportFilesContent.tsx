@@ -1,14 +1,21 @@
 import { graphql } from 'react-relay';
 import React, { useState } from 'react';
 import ImportMenu from '@components/data/ImportMenu';
-import { ImportFilesContentQuery, ImportFilesContentQuery$variables } from '@components/data/import/__generated__/ImportFilesContentQuery.graphql';
+import {
+  ImportFilesContentQuery,
+  ImportFilesContentQuery$variables,
+} from '@components/data/import/__generated__/ImportFilesContentQuery.graphql';
 import { ImportFilesContentLines_data$data } from '@components/data/import/__generated__/ImportFilesContentLines_data.graphql';
 import { ImportFilesContentFileLine_file$data } from '@components/data/import/__generated__/ImportFilesContentFileLine_file.graphql';
 import ImportActionsPopover from '@components/common/files/ImportActionsPopover';
 import ImportFilesDialog from '@components/common/files/import_files/ImportFilesDialog';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  isFilterGroupNotEmpty,
+  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
+} from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -68,14 +75,13 @@ const importWorkbenchLinesFragment = graphql`
   )
   @refetchable(queryName: "ImportFilesRefetchQuery") {
     importFiles(
-      first: $count,
-      after: $cursor,
-      orderBy: $orderBy,
-      orderMode: $orderMode,
-      search: $search,
-      filters: $filters,
-    )
-    @connection(key: "Pagination_global_importFiles") {
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      search: $search
+      filters: $filters
+    ) @connection(key: "Pagination_global_importFiles") {
       edges {
         node {
           id
@@ -91,22 +97,22 @@ const importWorkbenchLinesFragment = graphql`
 
 export const importFilesContentQuery = graphql`
   query ImportFilesContentQuery(
-    $count: Int,
-    $cursor: ID,
-    $orderBy: FileOrdering,
-    $orderMode: OrderingMode,
-    $search: String,
-    $filters: FilterGroup,
+    $count: Int
+    $cursor: ID
+    $orderBy: FileOrdering
+    $orderMode: OrderingMode
+    $search: String
+    $filters: FilterGroup
   ) {
     ...ImportFilesContentLines_data
-    @arguments(
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      search: $search
-      filters: $filters
-    )
+      @arguments(
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        search: $search
+        filters: $filters
+      )
   }
 `;
 
@@ -129,11 +135,8 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
     orderAsc: false,
   };
 
-  const {
-    viewStorage,
-    helpers,
-    paginationOptions,
-  } = usePaginationLocalStorage<ImportFilesContentQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<ImportFilesContentQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
   const { filters } = viewStorage;
   const finalFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['InternalFile']);
   const queryPaginationOptions = {
@@ -141,7 +144,10 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
     filters: finalFilters,
   } as unknown as ImportFilesContentQuery$variables;
 
-  const queryRef = useQueryLoading<ImportFilesContentQuery>(importFilesContentQuery, queryPaginationOptions);
+  const queryRef = useQueryLoading<ImportFilesContentQuery>(
+    importFilesContentQuery,
+    queryPaginationOptions,
+  );
 
   const preloadedPaginationProps = {
     linesQuery: importFilesContentQuery,
@@ -179,7 +185,8 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
     createdBy: {
       label: 'Creator',
       percentWidth: 15,
-      render: ({ metaData }: ImportFilesContentFileLine_file$data) => defaultRender(metaData?.creator?.name),
+      render: ({ metaData }: ImportFilesContentFileLine_file$data) =>
+        defaultRender(metaData?.creator?.name),
     },
     objectMarking: {
       percentWidth: 15,
@@ -189,9 +196,14 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
       label: 'Modification date',
       isSortable: true,
       percentWidth: 20,
-      render: ({ lastModified }: ImportFilesContentFileLine_file$data, { fd }: {
-        fd: (date: Date) => string;
-      }) => fd(lastModified),
+      render: (
+        { lastModified }: ImportFilesContentFileLine_file$data,
+        {
+          fd,
+        }: {
+          fd: (date: Date) => string;
+        },
+      ) => fd(lastModified),
     },
   };
 
@@ -208,7 +220,9 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: ImportFilesContentLines_data$data) => data.importFiles?.edges?.map(({ node }) => node)}
+          resolvePath={(data: ImportFilesContentLines_data$data) =>
+            data.importFiles?.edges?.map(({ node }) => node)
+          }
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           contextFilters={contextFilters}
@@ -235,7 +249,10 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
         />
       )}
       {openImportFilesDialog && (
-        <ImportFilesDialog open={openImportFilesDialog} handleClose={() => setOpenImportFilesDialog(false)} />
+        <ImportFilesDialog
+          open={openImportFilesDialog}
+          handleClose={() => setOpenImportFilesDialog(false)}
+        />
       )}
     </div>
   );

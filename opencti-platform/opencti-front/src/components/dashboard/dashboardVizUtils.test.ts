@@ -1,6 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { WidgetDataSelection } from '../../utils/widget/widget';
-import { removeIdAndIncorrectKeysFromFilterGroupObject, getAvailableFilterKeysForEntityTypes, buildFiltersForCustomView } from '../../utils/filters/filtersUtils';
+import {
+  removeIdAndIncorrectKeysFromFilterGroupObject,
+  getAvailableFilterKeysForEntityTypes,
+  buildFiltersForCustomView,
+} from '../../utils/filters/filtersUtils';
 import type { SchemaType } from '../../utils/hooks/useAuth';
 import type { FilterGroup } from '../../utils/filters/filtersHelpers-types';
 import {
@@ -21,36 +25,45 @@ import { fetchQuery } from 'src/relay/environment';
 describe('resolvedDataSelection', () => {
   const stixCoreObjectAvailableFilterKey = 'regardingOf';
   const stixCoreObjectFilterKeysSchema = new Map([
-    [stixCoreObjectAvailableFilterKey, {
-      filterKey: stixCoreObjectAvailableFilterKey,
-      label: 'In regards of',
-      type: 'nested',
-      multiple: true,
-      subEntityTypes: ['IMSI'],
-      elementsForFilterValuesSearch: [],
-    }],
+    [
+      stixCoreObjectAvailableFilterKey,
+      {
+        filterKey: stixCoreObjectAvailableFilterKey,
+        label: 'In regards of',
+        type: 'nested',
+        multiple: true,
+        subEntityTypes: ['IMSI'],
+        elementsForFilterValuesSearch: [],
+      },
+    ],
   ]);
   const relationshipsAvailableFilterKey = 'fromOrToId';
   const relationshipsFilterKeysSchema = new Map([
-    [relationshipsAvailableFilterKey, {
-      filterKey: relationshipsAvailableFilterKey,
-      label: 'Related entity',
-      type: 'id',
-      multiple: false,
-      subEntityTypes: ['delivers', 'targets'],
-      elementsForFilterValuesSearch: ['Stix-Core-Object'],
-    }],
+    [
+      relationshipsAvailableFilterKey,
+      {
+        filterKey: relationshipsAvailableFilterKey,
+        label: 'Related entity',
+        type: 'id',
+        multiple: false,
+        subEntityTypes: ['delivers', 'targets'],
+        elementsForFilterValuesSearch: ['Stix-Core-Object'],
+      },
+    ],
   ]);
   const historyAvailableFilterKey = 'contextEntityId';
   const historyFilterKeysSchema = new Map([
-    [historyAvailableFilterKey, {
-      filterKey: historyAvailableFilterKey,
-      label: 'Related entity',
-      type: 'id',
-      multiple: false,
-      subEntityTypes: ['History'],
-      elementsForFilterValuesSearch: ['Stix-Core-Object'],
-    }],
+    [
+      historyAvailableFilterKey,
+      {
+        filterKey: historyAvailableFilterKey,
+        label: 'Related entity',
+        type: 'id',
+        multiple: false,
+        subEntityTypes: ['History'],
+        elementsForFilterValuesSearch: ['Stix-Core-Object'],
+      },
+    ],
   ]);
   const filterKeysSchema: SchemaType['filterKeysSchema'] = new Map([
     ['Stix-Core-Object', stixCoreObjectFilterKeysSchema],
@@ -75,61 +88,87 @@ describe('resolvedDataSelection', () => {
 
   const makeFilterGroup = (availableKey: string, value: unknown): FilterGroup => ({
     mode: 'and',
-    filters: [{
-      key: availableKey,
-      values: [value],
-      operator: 'eq',
-      mode: 'or',
-      id: '0d135be3-2878-441a-a222-0499108e7f7f',
-    }, {
-      key: 'wrongKey', // Case: unavailable key
-      values: [true],
-    }, {
-      key: availableKey, // Available key
-      values: [], // Case: no values
-    }, {
-      id: 'shouldBeRemoved',
-      key: 'dynamicRegardingOf',
-      values: [{
-        key: 'dynamic',
-        values: [{
-          id: 'shouldBeRemovedToo',
-          mode: 'and',
-          filters: [{
-            key: 'entity_type',
-            values: ['Malware'],
-          }],
-        }],
-      }, {
-        key: 'relationship_type',
-        values: [{
-          mode: 'and',
-          filters: [{
-            key: 'entity_type',
-            values: ['Malware'],
-          }],
-        }],
-      }, {
-        key: 'incorrectKey', // Case: incorrect dynamicRegardingOf subkey
-        values: [{
-          mode: 'and',
-          filters: [{
-            key: 'entity_type',
-            values: ['Malware'],
-          }],
-        }],
-      }],
-    }],
+    filters: [
+      {
+        key: availableKey,
+        values: [value],
+        operator: 'eq',
+        mode: 'or',
+        id: '0d135be3-2878-441a-a222-0499108e7f7f',
+      },
+      {
+        key: 'wrongKey', // Case: unavailable key
+        values: [true],
+      },
+      {
+        key: availableKey, // Available key
+        values: [], // Case: no values
+      },
+      {
+        id: 'shouldBeRemoved',
+        key: 'dynamicRegardingOf',
+        values: [
+          {
+            key: 'dynamic',
+            values: [
+              {
+                id: 'shouldBeRemovedToo',
+                mode: 'and',
+                filters: [
+                  {
+                    key: 'entity_type',
+                    values: ['Malware'],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            key: 'relationship_type',
+            values: [
+              {
+                mode: 'and',
+                filters: [
+                  {
+                    key: 'entity_type',
+                    values: ['Malware'],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            key: 'incorrectKey', // Case: incorrect dynamicRegardingOf subkey
+            values: [
+              {
+                mode: 'and',
+                filters: [
+                  {
+                    key: 'entity_type',
+                    values: ['Malware'],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
     filterGroups: [],
   });
   const secondary = ['Stix-Core-Object'];
 
   it('removes id and incorrect keys from FilterGroup entries when a Entities perspective widget', async () => {
-    const dataSelection: WidgetDataSelection[] = [{
-      filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-      dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-      dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-    }];
+    const dataSelection: WidgetDataSelection[] = [
+      {
+        filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
+        dynamicFrom: makeFilterGroup(
+          stixCoreObjectAvailableFilterKey,
+          regardingOfNestedValueRandom,
+        ),
+        dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
+      },
+    ];
     const { resolvedDataSelection } = await resolveDataSelection({
       filterKeysSchema,
       dataSelection,
@@ -157,11 +196,13 @@ describe('resolvedDataSelection', () => {
   });
 
   it('removes id and incorrect keys from FilterGroup entries when a Relationships perspective widget', async () => {
-    const dataSelection: WidgetDataSelection[] = [{
-      filters: makeFilterGroup(relationshipsAvailableFilterKey, randomObjectIdValue),
-      dynamicFrom: makeFilterGroup(relationshipsAvailableFilterKey, randomObjectIdValue),
-      dynamicTo: makeFilterGroup(relationshipsAvailableFilterKey, randomObjectIdValue),
-    }];
+    const dataSelection: WidgetDataSelection[] = [
+      {
+        filters: makeFilterGroup(relationshipsAvailableFilterKey, randomObjectIdValue),
+        dynamicFrom: makeFilterGroup(relationshipsAvailableFilterKey, randomObjectIdValue),
+        dynamicTo: makeFilterGroup(relationshipsAvailableFilterKey, randomObjectIdValue),
+      },
+    ];
     const { resolvedDataSelection } = await resolveDataSelection({
       filterKeysSchema,
       dataSelection,
@@ -189,11 +230,13 @@ describe('resolvedDataSelection', () => {
   });
 
   it('removes id and incorrect keys from FilterGroup entries when a Audits perspective widget', async () => {
-    const dataSelection: WidgetDataSelection[] = [{
-      filters: makeFilterGroup(historyAvailableFilterKey, randomObjectIdValue),
-      dynamicFrom: makeFilterGroup(historyAvailableFilterKey, randomObjectIdValue),
-      dynamicTo: makeFilterGroup(historyAvailableFilterKey, randomObjectIdValue),
-    }];
+    const dataSelection: WidgetDataSelection[] = [
+      {
+        filters: makeFilterGroup(historyAvailableFilterKey, randomObjectIdValue),
+        dynamicFrom: makeFilterGroup(historyAvailableFilterKey, randomObjectIdValue),
+        dynamicTo: makeFilterGroup(historyAvailableFilterKey, randomObjectIdValue),
+      },
+    ];
     const { resolvedDataSelection } = await resolveDataSelection({
       filterKeysSchema,
       dataSelection,
@@ -221,11 +264,16 @@ describe('resolvedDataSelection', () => {
   });
 
   it('does not return isMissingHostEntity if not hosted by a Custom View', async () => {
-    const dataSelection: WidgetDataSelection[] = [{
-      filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-      dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-      dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-    }];
+    const dataSelection: WidgetDataSelection[] = [
+      {
+        filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
+        dynamicFrom: makeFilterGroup(
+          stixCoreObjectAvailableFilterKey,
+          regardingOfNestedValueRandom,
+        ),
+        dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
+      },
+    ];
     const { isMissingHostEntity } = await resolveDataSelection({
       filterKeysSchema,
       dataSelection,
@@ -237,11 +285,19 @@ describe('resolvedDataSelection', () => {
 
   describe('when hosted by a Custom View', () => {
     it('resolves SELF_ID filter values', async () => {
-      const dataSelection: WidgetDataSelection[] = [{
-        filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
-        dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
-        dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
-      }];
+      const dataSelection: WidgetDataSelection[] = [
+        {
+          filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
+          dynamicFrom: makeFilterGroup(
+            stixCoreObjectAvailableFilterKey,
+            regardingOfNestedValueSELF_ID,
+          ),
+          dynamicTo: makeFilterGroup(
+            stixCoreObjectAvailableFilterKey,
+            regardingOfNestedValueSELF_ID,
+          ),
+        },
+      ];
       const customViewTargetEntityId = 'ebe9a2a0-787d-4417-950e-39bfc8cc2381';
       const { resolvedDataSelection, isMissingHostEntity } = await resolveDataSelection({
         filterKeysSchema,
@@ -276,11 +332,19 @@ describe('resolvedDataSelection', () => {
     });
 
     it('returns isMissingHostEntity if SELF_ID is used in filters but there is not host entity injected', async () => {
-      const dataSelection: WidgetDataSelection[] = [{
-        filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
-        dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
-        dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
-      }];
+      const dataSelection: WidgetDataSelection[] = [
+        {
+          filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
+          dynamicFrom: makeFilterGroup(
+            stixCoreObjectAvailableFilterKey,
+            regardingOfNestedValueSELF_ID,
+          ),
+          dynamicTo: makeFilterGroup(
+            stixCoreObjectAvailableFilterKey,
+            regardingOfNestedValueSELF_ID,
+          ),
+        },
+      ];
       const { isMissingHostEntity } = await resolveDataSelection({
         filterKeysSchema,
         dataSelection,
@@ -295,11 +359,19 @@ describe('resolvedDataSelection', () => {
     });
 
     it('returns isMissingHostEntity when custom view requires host entity even if preview mode is false', async () => {
-      const dataSelection: WidgetDataSelection[] = [{
-        filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
-        dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
-        dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
-      }];
+      const dataSelection: WidgetDataSelection[] = [
+        {
+          filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
+          dynamicFrom: makeFilterGroup(
+            stixCoreObjectAvailableFilterKey,
+            regardingOfNestedValueSELF_ID,
+          ),
+          dynamicTo: makeFilterGroup(
+            stixCoreObjectAvailableFilterKey,
+            regardingOfNestedValueSELF_ID,
+          ),
+        },
+      ];
       const { isMissingHostEntity } = await resolveDataSelection({
         filterKeysSchema,
         dataSelection,
@@ -315,11 +387,19 @@ describe('resolvedDataSelection', () => {
     });
 
     it('does not return isMissingHostEntity if there is no host entity injected but SELF_ID is not used', async () => {
-      const dataSelection: WidgetDataSelection[] = [{
-        filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-        dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-        dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-      }];
+      const dataSelection: WidgetDataSelection[] = [
+        {
+          filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
+          dynamicFrom: makeFilterGroup(
+            stixCoreObjectAvailableFilterKey,
+            regardingOfNestedValueRandom,
+          ),
+          dynamicTo: makeFilterGroup(
+            stixCoreObjectAvailableFilterKey,
+            regardingOfNestedValueRandom,
+          ),
+        },
+      ];
       const { isMissingHostEntity } = await resolveDataSelection({
         filterKeysSchema,
         dataSelection,
@@ -334,11 +414,19 @@ describe('resolvedDataSelection', () => {
     });
 
     it('returns isPreviewMode if SELF_ID is used in filters, there is a host entity injected and input host config indicates previewMode===true', async () => {
-      const dataSelection: WidgetDataSelection[] = [{
-        filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
-        dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
-        dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
-      }];
+      const dataSelection: WidgetDataSelection[] = [
+        {
+          filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
+          dynamicFrom: makeFilterGroup(
+            stixCoreObjectAvailableFilterKey,
+            regardingOfNestedValueSELF_ID,
+          ),
+          dynamicTo: makeFilterGroup(
+            stixCoreObjectAvailableFilterKey,
+            regardingOfNestedValueSELF_ID,
+          ),
+        },
+      ];
       const { isPreviewMode } = await resolveDataSelection({
         filterKeysSchema,
         dataSelection,
@@ -354,11 +442,19 @@ describe('resolvedDataSelection', () => {
     });
 
     it('does not return isPreviewMode if SELF_ID is used in filters and input host config indicates previewMode===true but no injected entity host', async () => {
-      const dataSelection: WidgetDataSelection[] = [{
-        filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
-        dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
-        dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
-      }];
+      const dataSelection: WidgetDataSelection[] = [
+        {
+          filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
+          dynamicFrom: makeFilterGroup(
+            stixCoreObjectAvailableFilterKey,
+            regardingOfNestedValueSELF_ID,
+          ),
+          dynamicTo: makeFilterGroup(
+            stixCoreObjectAvailableFilterKey,
+            regardingOfNestedValueSELF_ID,
+          ),
+        },
+      ];
       const { isPreviewMode } = await resolveDataSelection({
         filterKeysSchema,
         dataSelection,
@@ -373,11 +469,19 @@ describe('resolvedDataSelection', () => {
     });
 
     it('does not return isPreviewMode if input host config indicates previewMode===true and there is injected entity host but SELF_ID is not used in filters ', async () => {
-      const dataSelection: WidgetDataSelection[] = [{
-        filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-        dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-        dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-      }];
+      const dataSelection: WidgetDataSelection[] = [
+        {
+          filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
+          dynamicFrom: makeFilterGroup(
+            stixCoreObjectAvailableFilterKey,
+            regardingOfNestedValueRandom,
+          ),
+          dynamicTo: makeFilterGroup(
+            stixCoreObjectAvailableFilterKey,
+            regardingOfNestedValueRandom,
+          ),
+        },
+      ];
       const { isPreviewMode } = await resolveDataSelection({
         filterKeysSchema,
         dataSelection,
@@ -396,20 +500,28 @@ describe('resolvedDataSelection', () => {
   describe('when saved filters are used', () => {
     const savedFilterContent: FilterGroup = {
       mode: 'and',
-      filters: [{ key: 'regardingOf', values: [{ key: 'id', values: ['saved-entity-id'] }], operator: 'eq', mode: 'or' }],
+      filters: [
+        {
+          key: 'regardingOf',
+          values: [{ key: 'id', values: ['saved-entity-id'] }],
+          operator: 'eq',
+          mode: 'or',
+        },
+      ],
       filterGroups: [],
     };
 
     const mockFetchQuerySuccess = () => {
       (fetchQuery as ReturnType<typeof vi.fn>).mockReturnValue({
-        toPromise: () => Promise.resolve({
-          savedFilter: {
-            id: 'saved-filter-id',
-            name: 'My Saved Filter',
-            filters: JSON.stringify(savedFilterContent),
-            scope: 'Stix-Core-Object',
-          },
-        }),
+        toPromise: () =>
+          Promise.resolve({
+            savedFilter: {
+              id: 'saved-filter-id',
+              name: 'My Saved Filter',
+              filters: JSON.stringify(savedFilterContent),
+              scope: 'Stix-Core-Object',
+            },
+          }),
       });
     };
 
@@ -421,11 +533,19 @@ describe('resolvedDataSelection', () => {
 
     it('resolves filters from a saved filter when filters_id is provided', async () => {
       mockFetchQuerySuccess();
-      const dataSelection: WidgetDataSelection[] = [{
-        filters_id: 'saved-filter-id',
-        dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-        dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-      }];
+      const dataSelection: WidgetDataSelection[] = [
+        {
+          filters_id: 'saved-filter-id',
+          dynamicFrom: makeFilterGroup(
+            stixCoreObjectAvailableFilterKey,
+            regardingOfNestedValueRandom,
+          ),
+          dynamicTo: makeFilterGroup(
+            stixCoreObjectAvailableFilterKey,
+            regardingOfNestedValueRandom,
+          ),
+        },
+      ];
       const { resolvedDataSelection, isMissingSavedFilters } = await resolveDataSelection({
         filterKeysSchema,
         dataSelection,
@@ -443,11 +563,16 @@ describe('resolvedDataSelection', () => {
 
     it('resolves dynamicFrom from a saved filter when dynamicFrom_id is provided', async () => {
       mockFetchQuerySuccess();
-      const dataSelection: WidgetDataSelection[] = [{
-        filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-        dynamicFrom_id: 'saved-filter-id',
-        dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-      }];
+      const dataSelection: WidgetDataSelection[] = [
+        {
+          filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
+          dynamicFrom_id: 'saved-filter-id',
+          dynamicTo: makeFilterGroup(
+            stixCoreObjectAvailableFilterKey,
+            regardingOfNestedValueRandom,
+          ),
+        },
+      ];
       const { resolvedDataSelection, isMissingSavedFilters } = await resolveDataSelection({
         filterKeysSchema,
         dataSelection,
@@ -464,11 +589,16 @@ describe('resolvedDataSelection', () => {
 
     it('resolves dynamicTo from a saved filter when dynamicTo_id is provided', async () => {
       mockFetchQuerySuccess();
-      const dataSelection: WidgetDataSelection[] = [{
-        filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-        dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-        dynamicTo_id: 'saved-filter-id',
-      }];
+      const dataSelection: WidgetDataSelection[] = [
+        {
+          filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
+          dynamicFrom: makeFilterGroup(
+            stixCoreObjectAvailableFilterKey,
+            regardingOfNestedValueRandom,
+          ),
+          dynamicTo_id: 'saved-filter-id',
+        },
+      ];
       const { resolvedDataSelection, isMissingSavedFilters } = await resolveDataSelection({
         filterKeysSchema,
         dataSelection,
@@ -485,11 +615,19 @@ describe('resolvedDataSelection', () => {
 
     it('sets isMissingSavedFilters to true when saved filter is not found for filters_id', async () => {
       mockFetchQueryNotFound();
-      const dataSelection: WidgetDataSelection[] = [{
-        filters_id: 'non-existent-filter-id',
-        dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-        dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-      }];
+      const dataSelection: WidgetDataSelection[] = [
+        {
+          filters_id: 'non-existent-filter-id',
+          dynamicFrom: makeFilterGroup(
+            stixCoreObjectAvailableFilterKey,
+            regardingOfNestedValueRandom,
+          ),
+          dynamicTo: makeFilterGroup(
+            stixCoreObjectAvailableFilterKey,
+            regardingOfNestedValueRandom,
+          ),
+        },
+      ];
       const { isMissingSavedFilters } = await resolveDataSelection({
         filterKeysSchema,
         dataSelection,
@@ -500,11 +638,16 @@ describe('resolvedDataSelection', () => {
 
     it('sets isMissingSavedFilters to true when saved filter is not found for dynamicFrom_id', async () => {
       mockFetchQueryNotFound();
-      const dataSelection: WidgetDataSelection[] = [{
-        filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-        dynamicFrom_id: 'non-existent-filter-id',
-        dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-      }];
+      const dataSelection: WidgetDataSelection[] = [
+        {
+          filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
+          dynamicFrom_id: 'non-existent-filter-id',
+          dynamicTo: makeFilterGroup(
+            stixCoreObjectAvailableFilterKey,
+            regardingOfNestedValueRandom,
+          ),
+        },
+      ];
       const { isMissingSavedFilters } = await resolveDataSelection({
         filterKeysSchema,
         dataSelection,
@@ -514,11 +657,19 @@ describe('resolvedDataSelection', () => {
     });
 
     it('does not set isMissingSavedFilters when no saved filter ids are provided', async () => {
-      const dataSelection: WidgetDataSelection[] = [{
-        filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-        dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-        dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
-      }];
+      const dataSelection: WidgetDataSelection[] = [
+        {
+          filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
+          dynamicFrom: makeFilterGroup(
+            stixCoreObjectAvailableFilterKey,
+            regardingOfNestedValueRandom,
+          ),
+          dynamicTo: makeFilterGroup(
+            stixCoreObjectAvailableFilterKey,
+            regardingOfNestedValueRandom,
+          ),
+        },
+      ];
       const { isMissingSavedFilters } = await resolveDataSelection({
         filterKeysSchema,
         dataSelection,
@@ -623,15 +774,20 @@ describe('computeWidgetFiltersForSelection', () => {
   it('uses custom date_attribute in date filters', () => {
     const selectionFilters: FilterGroup = {
       mode: 'and',
-      filters: [{
-        key: 'entity_type',
-        values: ['Malware'],
-        operator: 'eq',
-        mode: 'or',
-      }],
+      filters: [
+        {
+          key: 'entity_type',
+          values: ['Malware'],
+          operator: 'eq',
+          mode: 'or',
+        },
+      ],
       filterGroups: [],
     };
-    const selection: WidgetDataSelection = { date_attribute: 'start_time', filters: selectionFilters };
+    const selection: WidgetDataSelection = {
+      date_attribute: 'start_time',
+      filters: selectionFilters,
+    };
     const config = { startDate: '2025-03-01T00:00:00Z' };
     const result = computeWidgetFiltersForSelection(selection, config);
     expect(result.filters).toStrictEqual({
@@ -644,28 +800,34 @@ describe('computeWidgetFiltersForSelection', () => {
           mode: 'or',
         },
       ],
-      filterGroups: [{
-        mode: 'and',
-        filters: [{
-          key: ['entity_type'],
-          values: ['Malware'],
-          operator: 'eq',
-          mode: 'or',
-        }],
-        filterGroups: [],
-      }],
+      filterGroups: [
+        {
+          mode: 'and',
+          filters: [
+            {
+              key: ['entity_type'],
+              values: ['Malware'],
+              operator: 'eq',
+              mode: 'or',
+            },
+          ],
+          filterGroups: [],
+        },
+      ],
     });
   });
 
   it('passes selection filters through to the result', () => {
     const selectionFilters: FilterGroup = {
       mode: 'and',
-      filters: [{
-        key: 'entity_type',
-        values: ['Malware'],
-        operator: 'eq',
-        mode: 'or',
-      }],
+      filters: [
+        {
+          key: 'entity_type',
+          values: ['Malware'],
+          operator: 'eq',
+          mode: 'or',
+        },
+      ],
       filterGroups: [],
     };
     const result = computeWidgetFiltersForSelection({ filters: selectionFilters }, {});
@@ -689,12 +851,14 @@ describe('computeWidgetFiltersForMultiSelection', () => {
       date_attribute: 'created_at',
       filters: {
         mode: 'and',
-        filters: [{
-          key: 'entity_type',
-          values: ['Malware'],
-          operator: 'eq',
-          mode: 'or',
-        }],
+        filters: [
+          {
+            key: 'entity_type',
+            values: ['Malware'],
+            operator: 'eq',
+            mode: 'or',
+          },
+        ],
         filterGroups: [],
       },
     };
@@ -702,18 +866,22 @@ describe('computeWidgetFiltersForMultiSelection', () => {
       date_attribute: 'updated_at',
       filters: {
         mode: 'and',
-        filters: [{
-          key: 'entity_type',
-          values: ['Report'],
-          operator: 'eq',
-          mode: 'or',
-        }],
+        filters: [
+          {
+            key: 'entity_type',
+            values: ['Report'],
+            operator: 'eq',
+            mode: 'or',
+          },
+        ],
         filterGroups: [],
       },
     };
     const config = { startDate: '2025-01-01T00:00:00Z', endDate: '2025-06-01T00:00:00Z' };
 
-    const result = computeWidgetFiltersForMultiSelection([selectionA, selectionB], config, ['Stix-Core-Object']);
+    const result = computeWidgetFiltersForMultiSelection([selectionA, selectionB], config, [
+      'Stix-Core-Object',
+    ]);
 
     expect(result.startDate).toBe(config.startDate);
     expect(result.endDate).toBe(config.endDate);
@@ -722,19 +890,25 @@ describe('computeWidgetFiltersForMultiSelection', () => {
     // First selection: created_at + Malware filter + date filters
     expect(result.timeSeriesParameters[0].field).toBe('created_at');
     expect(result.timeSeriesParameters[0].types).toStrictEqual(['Stix-Core-Object']);
-    let firstLevelFilterKeys = result.timeSeriesParameters[0].filters?.filters.map((f) => f.key).flat();
+    let firstLevelFilterKeys = result.timeSeriesParameters[0].filters?.filters
+      .map((f) => f.key)
+      .flat();
     expect(firstLevelFilterKeys).toContain('created_at');
     let secondLevelFilters = result.timeSeriesParameters[0].filters?.filterGroups;
-    expect(secondLevelFilters).toEqual([{
-      mode: 'and',
-      filters: [{
-        key: ['entity_type'],
-        values: ['Malware'],
-        operator: 'eq',
-        mode: 'or',
-      }],
-      filterGroups: [],
-    }]);
+    expect(secondLevelFilters).toEqual([
+      {
+        mode: 'and',
+        filters: [
+          {
+            key: ['entity_type'],
+            values: ['Malware'],
+            operator: 'eq',
+            mode: 'or',
+          },
+        ],
+        filterGroups: [],
+      },
+    ]);
 
     // Second selection: updated_at + Report filter + date filters
     expect(result.timeSeriesParameters[1].field).toBe('updated_at');
@@ -742,16 +916,20 @@ describe('computeWidgetFiltersForMultiSelection', () => {
     firstLevelFilterKeys = result.timeSeriesParameters[1].filters?.filters.map((f) => f.key).flat();
     expect(firstLevelFilterKeys).toContain('updated_at');
     secondLevelFilters = result.timeSeriesParameters[1].filters?.filterGroups;
-    expect(secondLevelFilters).toEqual([{
-      mode: 'and',
-      filters: [{
-        key: ['entity_type'],
-        values: ['Report'],
-        operator: 'eq',
-        mode: 'or',
-      }],
-      filterGroups: [],
-    }]);
+    expect(secondLevelFilters).toEqual([
+      {
+        mode: 'and',
+        filters: [
+          {
+            key: ['entity_type'],
+            values: ['Report'],
+            operator: 'eq',
+            mode: 'or',
+          },
+        ],
+        filterGroups: [],
+      },
+    ]);
   });
 });
 
@@ -761,22 +939,26 @@ describe('buildRelationshipMultiWidgetBaseQueryVariables', () => {
       date_attribute: 'created_at',
       filters: {
         mode: 'and',
-        filters: [{
-          key: 'entity_type',
-          values: ['Malware'],
-          operator: 'eq',
-          mode: 'or',
-        }],
+        filters: [
+          {
+            key: 'entity_type',
+            values: ['Malware'],
+            operator: 'eq',
+            mode: 'or',
+          },
+        ],
         filterGroups: [],
       },
       dynamicFrom: {
         mode: 'and',
-        filters: [{
-          key: 'entity_type',
-          values: ['Indicator'],
-          operator: 'eq',
-          mode: 'or',
-        }],
+        filters: [
+          {
+            key: 'entity_type',
+            values: ['Indicator'],
+            operator: 'eq',
+            mode: 'or',
+          },
+        ],
         filterGroups: [],
       },
     };
@@ -784,22 +966,26 @@ describe('buildRelationshipMultiWidgetBaseQueryVariables', () => {
       date_attribute: 'updated_at',
       filters: {
         mode: 'and',
-        filters: [{
-          key: 'entity_type',
-          values: ['Report'],
-          operator: 'eq',
-          mode: 'or',
-        }],
+        filters: [
+          {
+            key: 'entity_type',
+            values: ['Report'],
+            operator: 'eq',
+            mode: 'or',
+          },
+        ],
         filterGroups: [],
       },
       dynamicTo: {
         mode: 'and',
-        filters: [{
-          key: 'entity_type',
-          values: ['Campaign'],
-          operator: 'eq',
-          mode: 'or',
-        }],
+        filters: [
+          {
+            key: 'entity_type',
+            values: ['Campaign'],
+            operator: 'eq',
+            mode: 'or',
+          },
+        ],
         filterGroups: [],
       },
     };
@@ -823,7 +1009,12 @@ describe('buildRelationshipMultiWidgetBaseQueryVariables', () => {
             key: ['entity_type'],
             mode: 'or',
             operator: 'eq',
-            values: ['stix-core-relationship', 'stix-sighting-relationship', 'object', 'object-label'],
+            values: [
+              'stix-core-relationship',
+              'stix-sighting-relationship',
+              'object',
+              'object-label',
+            ],
           },
         ],
         filterGroups: [
@@ -833,11 +1024,15 @@ describe('buildRelationshipMultiWidgetBaseQueryVariables', () => {
               { key: ['created_at'], values: ['2025-01-01T00:00:00Z'], operator: 'gt', mode: 'or' },
               { key: ['created_at'], values: ['2025-06-01T00:00:00Z'], operator: 'lt', mode: 'or' },
             ],
-            filterGroups: [{
-              mode: 'and',
-              filters: [{ key: ['entity_type'], values: ['Malware'], operator: 'eq', mode: 'or' }],
-              filterGroups: [],
-            }],
+            filterGroups: [
+              {
+                mode: 'and',
+                filters: [
+                  { key: ['entity_type'], values: ['Malware'], operator: 'eq', mode: 'or' },
+                ],
+                filterGroups: [],
+              },
+            ],
           },
         ],
       },
@@ -859,21 +1054,30 @@ describe('buildRelationshipMultiWidgetBaseQueryVariables', () => {
             key: ['entity_type'],
             mode: 'or',
             operator: 'eq',
-            values: ['stix-core-relationship', 'stix-sighting-relationship', 'object', 'object-label'],
+            values: [
+              'stix-core-relationship',
+              'stix-sighting-relationship',
+              'object',
+              'object-label',
+            ],
           },
         ],
-        filterGroups: [{
-          mode: 'and',
-          filters: [
-            { key: ['updated_at'], values: ['2025-01-01T00:00:00Z'], operator: 'gt', mode: 'or' },
-            { key: ['updated_at'], values: ['2025-06-01T00:00:00Z'], operator: 'lt', mode: 'or' },
-          ],
-          filterGroups: [{
+        filterGroups: [
+          {
             mode: 'and',
-            filters: [{ key: ['entity_type'], values: ['Report'], operator: 'eq', mode: 'or' }],
-            filterGroups: [],
-          }],
-        }],
+            filters: [
+              { key: ['updated_at'], values: ['2025-01-01T00:00:00Z'], operator: 'gt', mode: 'or' },
+              { key: ['updated_at'], values: ['2025-06-01T00:00:00Z'], operator: 'lt', mode: 'or' },
+            ],
+            filterGroups: [
+              {
+                mode: 'and',
+                filters: [{ key: ['entity_type'], values: ['Report'], operator: 'eq', mode: 'or' }],
+                filterGroups: [],
+              },
+            ],
+          },
+        ],
       },
       dynamicFrom: undefined,
       dynamicTo: {
@@ -901,32 +1105,38 @@ describe('buildRelationshipSingleWidgetBaseQueryVariables', () => {
       date_attribute: 'created_at',
       filters: {
         mode: 'and',
-        filters: [{
-          key: 'entity_type',
-          values: ['Malware'],
-          operator: 'eq',
-          mode: 'or',
-        }],
+        filters: [
+          {
+            key: 'entity_type',
+            values: ['Malware'],
+            operator: 'eq',
+            mode: 'or',
+          },
+        ],
         filterGroups: [],
       },
       dynamicFrom: {
         mode: 'and',
-        filters: [{
-          key: 'entity_type',
-          values: ['Indicator'],
-          operator: 'eq',
-          mode: 'or',
-        }],
+        filters: [
+          {
+            key: 'entity_type',
+            values: ['Indicator'],
+            operator: 'eq',
+            mode: 'or',
+          },
+        ],
         filterGroups: [],
       },
       dynamicTo: {
         mode: 'and',
-        filters: [{
-          key: 'entity_type',
-          values: ['Campaign'],
-          operator: 'eq',
-          mode: 'or',
-        }],
+        filters: [
+          {
+            key: 'entity_type',
+            values: ['Campaign'],
+            operator: 'eq',
+            mode: 'or',
+          },
+        ],
         filterGroups: [],
       },
     };
@@ -945,7 +1155,12 @@ describe('buildRelationshipSingleWidgetBaseQueryVariables', () => {
             key: ['entity_type'],
             mode: 'or',
             operator: 'eq',
-            values: ['stix-core-relationship', 'stix-sighting-relationship', 'object', 'object-label'],
+            values: [
+              'stix-core-relationship',
+              'stix-sighting-relationship',
+              'object',
+              'object-label',
+            ],
           },
         ],
         filterGroups: [
@@ -955,11 +1170,15 @@ describe('buildRelationshipSingleWidgetBaseQueryVariables', () => {
               { key: ['created_at'], values: ['2025-01-01T00:00:00Z'], operator: 'gt', mode: 'or' },
               { key: ['created_at'], values: ['2025-06-01T00:00:00Z'], operator: 'lt', mode: 'or' },
             ],
-            filterGroups: [{
-              mode: 'and',
-              filters: [{ key: ['entity_type'], values: ['Malware'], operator: 'eq', mode: 'or' }],
-              filterGroups: [],
-            }],
+            filterGroups: [
+              {
+                mode: 'and',
+                filters: [
+                  { key: ['entity_type'], values: ['Malware'], operator: 'eq', mode: 'or' },
+                ],
+                filterGroups: [],
+              },
+            ],
           },
         ],
       },

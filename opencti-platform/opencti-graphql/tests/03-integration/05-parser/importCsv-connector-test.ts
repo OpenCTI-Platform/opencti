@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import { describe, it, expect } from 'vitest';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { processCSVforWorkers } from '../../../src/connector/importCsv/importCsv-connector';

@@ -8,19 +8,14 @@ import { getMainRepresentative, isFieldForIdentifier } from '../../utils/default
 import { simpleNumberFormat } from '../../utils/Number';
 
 interface WidgetTreeProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   data: readonly any[];
   groupBy: string;
   onMounted?: OpenCTIChartProps['onMounted'];
   isDistributed?: boolean;
 }
 
-const WidgetTree = ({
-  data,
-  groupBy,
-  onMounted,
-  isDistributed = false,
-}: WidgetTreeProps) => {
+const WidgetTree = ({ data, groupBy, onMounted, isDistributed = false }: WidgetTreeProps) => {
   const theme = useTheme();
   const { t_i18n } = useFormatter();
 
@@ -38,12 +33,7 @@ const WidgetTree = ({
   }, [data, groupBy, t_i18n]);
 
   const options: ApexOptions = useMemo(() => {
-    return treeMapOptions(
-      theme,
-      simpleNumberFormat,
-      'bottom',
-      isDistributed,
-    ) as ApexOptions;
+    return treeMapOptions(theme, simpleNumberFormat, 'bottom', isDistributed) as ApexOptions;
   }, [theme, isDistributed]);
 
   return (

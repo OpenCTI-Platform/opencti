@@ -110,10 +110,7 @@ const styles = (theme) => ({
 });
 
 export const stixSightingRelationshipCreationQuery = graphql`
-  query StixSightingRelationshipCreationQuery(
-    $fromId: StixRef!
-    $toId: StixRef!
-  ) {
+  query StixSightingRelationshipCreationQuery($fromId: StixRef!, $toId: StixRef!) {
     stixSightingRelationships(fromId: $fromId, toId: $toId) {
       edges {
         node {
@@ -181,9 +178,7 @@ export const stixSightingRelationshipCreationQuery = graphql`
 `;
 
 const stixSightingRelationshipCreationMutation = graphql`
-  mutation StixSightingRelationshipCreationMutation(
-    $input: StixSightingRelationshipAddInput!
-  ) {
+  mutation StixSightingRelationshipCreationMutation($input: StixSightingRelationshipAddInput!) {
     stixSightingRelationshipAdd(input: $input) {
       id
       entity_type
@@ -293,17 +288,14 @@ class StixSightingRelationshipCreation extends Component {
 
   componentDidUpdate(prevProps) {
     if (
-      this.props.open === true
-      && this.props.fromObjects !== null
-      && this.props.toObjects !== null
-      && (prevProps.open !== this.props.open
-        || prevProps.fromObjects[0] !== this.props.fromObjects[0]
-        || prevProps.toObjects[0] !== this.props.toObjects[0])
+      this.props.open === true &&
+      this.props.fromObjects !== null &&
+      this.props.toObjects !== null &&
+      (prevProps.open !== this.props.open ||
+        prevProps.fromObjects[0] !== this.props.fromObjects[0] ||
+        prevProps.toObjects[0] !== this.props.toObjects[0])
     ) {
-      if (
-        this.props.fromObjects.length === 1
-        && this.props.toObjects.length === 1
-      ) {
+      if (this.props.fromObjects.length === 1 && this.props.toObjects.length === 1) {
         fetchQuery(stixSightingRelationshipCreationQuery, {
           fromId: this.props.fromObjects[0].id,
           toId: this.props.toObjects[0].id,
@@ -312,8 +304,8 @@ class StixSightingRelationshipCreation extends Component {
           .then((data) => {
             this.setState({
               step:
-                data.stixSightingRelationships.edges
-                && data.stixSightingRelationships.edges.length > 0
+                data.stixSightingRelationships.edges &&
+                data.stixSightingRelationships.edges.length > 0
                   ? 1
                   : 2,
               existingSightings: data.stixSightingRelationships.edges,
@@ -419,9 +411,7 @@ class StixSightingRelationshipCreation extends Component {
                 <div
                   className={classes.itemHeader}
                   style={{
-                    borderBottom: `1px solid ${itemColor(
-                      fromObjects[0].entity_type,
-                    )}`,
+                    borderBottom: `1px solid ${itemColor(fromObjects[0].entity_type)}`,
                   }}
                 >
                   <div className={classes.icon}>
@@ -450,11 +440,7 @@ class StixSightingRelationshipCreation extends Component {
               <div className={classes.middle}>
                 <ArrowRightAlt fontSize="small" />
                 <br />
-                <Tooltip
-                  title={sighting.node.description}
-                  aria-label="Description"
-                  placement="top"
-                >
+                <Tooltip title={sighting.node.description} aria-label="Description" placement="top">
                   <div
                     style={{
                       padding: '5px 8px 5px 8px',
@@ -483,9 +469,7 @@ class StixSightingRelationshipCreation extends Component {
                 <div
                   className={classes.itemHeader}
                   style={{
-                    borderBottom: `1px solid ${itemColor(
-                      toObjects[0].entity_type,
-                    )}`,
+                    borderBottom: `1px solid ${itemColor(toObjects[0].entity_type)}`,
                   }}
                 >
                   <div className={classes.icon}>
@@ -510,10 +494,7 @@ class StixSightingRelationshipCreation extends Component {
               <div className="clearfix" />
             </div>
           ))}
-          <div
-            className={classes.relationCreation}
-            onClick={this.handleChangeStep.bind(this)}
-          >
+          <div className={classes.relationCreation} onClick={this.handleChangeStep.bind(this)}>
             <div
               className={classes.item}
               style={{
@@ -529,15 +510,9 @@ class StixSightingRelationshipCreation extends Component {
                 }}
               >
                 <div className={classes.icon}>
-                  <ItemIcon
-                    type={fromObjects[0].entity_type}
-                    color="#263238"
-                    size="small"
-                  />
+                  <ItemIcon type={fromObjects[0].entity_type} color="#263238" size="small" />
                 </div>
-                <div className={classes.type}>
-                  {t(`entity_${fromObjects[0].entity_type}`)}
-                </div>
+                <div className={classes.type}>{t(`entity_${fromObjects[0].entity_type}`)}</div>
               </div>
               <div className={classes.content}>
                 <span className={classes.name}>
@@ -579,15 +554,9 @@ class StixSightingRelationshipCreation extends Component {
                 }}
               >
                 <div className={classes.icon}>
-                  <ItemIcon
-                    type={toObjects[0].entity_type}
-                    color="#263238"
-                    size="small"
-                  />
+                  <ItemIcon type={toObjects[0].entity_type} color="#263238" size="small" />
                 </div>
-                <div className={classes.type}>
-                  {t(`entity_${toObjects[0].entity_type}`)}
-                </div>
+                <div className={classes.type}>{t(`entity_${toObjects[0].entity_type}`)}</div>
               </div>
               <div className={classes.content}>
                 <span className={classes.name}>
@@ -634,10 +603,7 @@ class StixSightingRelationshipCreation extends Component {
         classes={{ paper: classes.drawerPaper }}
         onClose={this.handleClose.bind(this)}
       >
-        {step === 0
-          || step === undefined
-          || fromObject === null
-          || toObjects === null
+        {step === 0 || step === undefined || fromObject === null || toObjects === null
           ? this.renderLoader()
           : ''}
         {step === 1 ? this.renderSelectSighting() : ''}

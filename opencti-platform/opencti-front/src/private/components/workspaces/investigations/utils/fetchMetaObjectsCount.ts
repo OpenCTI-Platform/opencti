@@ -5,17 +5,22 @@ import { ObjectToParse } from '../../../../../components/graph/utils/useGraphPar
 
 const fetchMetaObjectsCount = async (objects: ObjectToParse[]) => {
   // Keep only meta-objects and identities.
-  const objectIds = objects.filter(
-    (object) => object.parent_types.includes('Stix-Meta-Object')
-      || object.parent_types.includes('Identity'),
-  ).map((object) => object.id);
+  const objectIds = objects
+    .filter(
+      (object) =>
+        object.parent_types.includes('Stix-Meta-Object') ||
+        object.parent_types.includes('Identity'),
+    )
+    .map((object) => object.id);
 
   let objectsWithCount = [...objects];
   if (objectIds.length > 0) {
-    const { stixRelationshipsDistribution: relCounts } = await fetchQuery(
+    const { stixRelationshipsDistribution: relCounts } = (await fetchQuery(
       investigationGraphCountRelToQuery,
-      { objectIds },
-    ).toPromise() as InvestigationGraphStixCountRelToQuery$data;
+      {
+        objectIds,
+      },
+    ).toPromise()) as InvestigationGraphStixCountRelToQuery$data;
 
     // For each object, add the number of relations it has in our objects data.
     (relCounts ?? []).forEach((count) => {

@@ -19,12 +19,8 @@ import { Theme } from '../../components/Theme';
 const MAX_NUMBER_DYNAMIC_IDS_RESULT = 5000;
 
 export const filterValuesForDynamicSubKeyQuery = graphql`
-  query FilterValuesForDynamicSubKeyQuery(
-    $filters: FilterGroup
-  ) {
-    stixCoreObjectsNumber(
-      filters: $filters
-    ) {
+  query FilterValuesForDynamicSubKeyQuery($filters: FilterGroup) {
+    stixCoreObjectsNumber(filters: $filters) {
       total
     }
   }
@@ -49,29 +45,21 @@ const FilterValuesForDynamicSubKeyContainer = ({
 
   return (
     <Fragment>
-      <Tooltip
-        title={(
-          <TasksFilterValueContainer
-            filters={filterValue}
-          />
-        )}
-      >
+      <Tooltip title={<TasksFilterValueContainer filters={filterValue} />}>
         <Box
           sx={{
             padding: '0 4px',
             display: 'flex',
           }}
         >
-          <Chip
-            label={t_i18n('Dynamic filter')}
-            color={chipColor}
-          />
+          <Chip label={t_i18n('Dynamic filter')} color={chipColor} />
         </Box>
       </Tooltip>
       {displayWarning && (
-        <Tooltip title={
-          t_i18n('All the results may not be displayed since the Dynamic filter targets too many entities.')
-        }
+        <Tooltip
+          title={t_i18n(
+            'All the results may not be displayed since the Dynamic filter targets too many entities.',
+          )}
         >
           <WarningOutlined
             color="inherit"
@@ -100,9 +88,7 @@ const FilterValuesForDynamicSubKey = ({
   return (
     <>
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inElement} />}
-        >
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <FilterValuesForDynamicSubKeyContainer
             queryRef={queryRef}
             filterValue={filterValue}

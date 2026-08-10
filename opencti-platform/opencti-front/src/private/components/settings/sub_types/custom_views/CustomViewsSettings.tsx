@@ -24,11 +24,11 @@ const CustomViewsSettings = () => {
       <Card
         title={t_i18n('Custom Views')}
         sx={{
-        // Compensate existing top padding from data table header
-        //  to avoid the feeling of having too much empty space.
+          // Compensate existing top padding from data table header
+          //  to avoid the feeling of having too much empty space.
           pt: 2,
         }}
-        action={(
+        action={
           <>
             <Tooltip title={t_i18n('Create a new custom view')}>
               <IconButton
@@ -49,7 +49,7 @@ const CustomViewsSettings = () => {
               </IconButton>
             </Tooltip>
           </>
-        )}
+        }
       >
         <CustomViewsSettingsDataTable targetType={subType.id} />
       </Card>

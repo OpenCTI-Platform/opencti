@@ -15,13 +15,7 @@ interface DashboardVizProps {
   refreshRate?: number | null;
 }
 
-const DashboardViz = ({
-  widget,
-  config,
-  popover,
-  host,
-  refreshRate,
-}: DashboardVizProps) => {
+const DashboardViz = ({ widget, config, popover, host, refreshRate }: DashboardVizProps) => {
   const { perspective } = widget;
   return (
     <ErrorBoundary>

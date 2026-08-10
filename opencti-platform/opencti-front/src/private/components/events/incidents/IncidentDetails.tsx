@@ -3,7 +3,10 @@ import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import { IncidentDetails_incident$data, IncidentDetails_incident$key } from './__generated__/IncidentDetails_incident.graphql';
+import {
+  IncidentDetails_incident$data,
+  IncidentDetails_incident$key,
+} from './__generated__/IncidentDetails_incident.graphql';
 import StixCoreObjectsDonut from '../../common/stix_core_objects/StixCoreObjectsDonut';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import Card from '../../../../components/common/card/Card';
@@ -37,9 +40,7 @@ const incidentDetailsFragment = graphql`
 interface IncidentDetailsProps {
   incidentData: IncidentDetails_incident$key;
 }
-const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
-  incidentData,
-}) => {
+const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({ incidentData }) => {
   const { t_i18n, fldt } = useFormatter();
 
   const incident: IncidentDetails_incident$data = useFragment(
@@ -61,7 +62,10 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
             key: 'regardingOf',
             values: [
               { key: 'id', values: [incident.id], operator: 'eq' },
-              { key: 'relationship_type', values: ['related-to', 'targets', 'uses', 'attributed-to'] },
+              {
+                key: 'relationship_type',
+                values: ['related-to', 'targets', 'uses', 'attributed-to'],
+              },
             ],
           },
         ],
@@ -102,31 +106,19 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={2}>
           <Grid item xs={12}>
-            <Label>
-              {t_i18n('Description')}
-            </Label>
+            <Label>{t_i18n('Description')}</Label>
             <ExpandableMarkdown source={incident.description} limit={400} />
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Incident type')}
-            </Label>
+            <Label>{t_i18n('Incident type')}</Label>
             <FieldOrEmpty source={incident.incident_type}>
-              <Tag
-                label={incident.incident_type}
-              />
+              <Tag label={incident.incident_type} />
             </FieldOrEmpty>
-            <Label
-              sx={{ marginTop: 2 }}
-            >
-              {t_i18n('First seen')}
-            </Label>
+            <Label sx={{ marginTop: 2 }}>{t_i18n('First seen')}</Label>
             {fldt(incident.first_seen)}
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Severity')}
-            </Label>
+            <Label>{t_i18n('Severity')}</Label>
             <ItemOpenVocab
               key="type"
               small={true}
@@ -134,27 +126,13 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
               value={incident.severity}
               displayMode="chip"
             />
-            <Label
-              sx={{ marginTop: 2 }}
-            >
-              {t_i18n('Last seen')}
-            </Label>
+            <Label sx={{ marginTop: 2 }}>{t_i18n('Last seen')}</Label>
             {fldt(incident.last_seen)}
-            <Label
-              sx={{ marginTop: 2 }}
-            >
-              {t_i18n('Source')}
-            </Label>
+            <Label sx={{ marginTop: 2 }}>{t_i18n('Source')}</Label>
             <FieldOrEmpty source={incident.source}>
-              <Tag
-                label={incident.source}
-              />
+              <Tag label={incident.source} />
             </FieldOrEmpty>
-            <Label
-              sx={{ marginTop: 2 }}
-            >
-              {t_i18n('Objective')}
-            </Label>
+            <Label sx={{ marginTop: 2 }}>{t_i18n('Objective')}</Label>
             <ExpandableMarkdown source={incident.objective} limit={100} />
           </Grid>
           <Grid item xs={6}>

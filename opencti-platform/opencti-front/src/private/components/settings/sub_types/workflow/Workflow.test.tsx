@@ -21,11 +21,7 @@ const testTheme = createTheme(ThemeDark() as ThemeOptions);
 
 // Helper to render with theme
 const renderWithTheme = (component: React.ReactElement) => {
-  return render(
-    <ThemeProvider theme={testTheme}>
-      {component}
-    </ThemeProvider>,
-  );
+  return render(<ThemeProvider theme={testTheme}>{component}</ThemeProvider>);
 };
 
 // Mock ReactFlow and its hooks
@@ -131,22 +127,26 @@ vi.mock('@mui/material/styles', async () => {
 // Stable references for initial nodes/edges – must be module-level constants so that
 // useWorkflowInitialElements always returns the same array references across re-renders,
 // preventing the sync useEffect([initialNodes, initialEdges]) from looping infinitely.
-const mockInitialNodes = [{
-  id: 'node-1',
-  type: WorkflowNodeType.status,
-  data: {
-    name: 'Open',
-    statusTemplate: { id: 'status-1', name: 'Open', color: '#00FF00' },
-    onEnter: [],
-    onExit: [],
+const mockInitialNodes = [
+  {
+    id: 'node-1',
+    type: WorkflowNodeType.status,
+    data: {
+      name: 'Open',
+      statusTemplate: { id: 'status-1', name: 'Open', color: '#00FF00' },
+      onEnter: [],
+      onExit: [],
+    },
+    position: { x: 0, y: 0 },
   },
-  position: { x: 0, y: 0 },
-}];
-const mockInitialEdges = [{
-  id: 'edge-1',
-  source: 'node-1',
-  target: 'node-2',
-}];
+];
+const mockInitialEdges = [
+  {
+    id: 'edge-1',
+    source: 'node-1',
+    target: 'node-2',
+  },
+];
 
 // Mock custom hooks
 vi.mock('./hooks/useWorkflowInitialElements', async (importOriginal) => {
@@ -174,17 +174,21 @@ vi.mock('./hooks/useStatusConnection', () => ({
 
 // Mock child components
 vi.mock('./WorkflowEditionDrawer', () => ({
-  default: ({ open, onClose }: { open: boolean; onClose: () => void }) => (
+  default: ({ open, onClose }: { open: boolean; onClose: () => void }) =>
     open ? (
       <div data-testid="workflow-edition-drawer">
         <button onClick={onClose}>Close Drawer</button>
       </div>
-    ) : null
-  ),
+    ) : null,
 }));
 
 vi.mock('./PublishButton', () => ({
-  default: ({ validationStatus, onPublish, onReset, onRestore }: {
+  default: ({
+    validationStatus,
+    onPublish,
+    onReset,
+    onRestore,
+  }: {
     validationStatus?: { hasUnpublishedChanges?: boolean; validationErrors?: unknown[] };
     onPublish?: () => void;
     onReset?: () => void;
@@ -199,9 +203,15 @@ vi.mock('./PublishButton', () => ({
         {!validationStatus?.hasUnpublishedChanges ? 'Published' : 'Publish'}
       </button>
       {/* Always-enabled button for testing handlePublish when errors exist */}
-      <button data-testid="force-publish-button" onClick={onPublish}>Force Publish</button>
-      <button data-testid="reset-button" onClick={onReset}>Reset</button>
-      <button data-testid="restore-button" onClick={onRestore}>Restore</button>
+      <button data-testid="force-publish-button" onClick={onPublish}>
+        Force Publish
+      </button>
+      <button data-testid="reset-button" onClick={onReset}>
+        Reset
+      </button>
+      <button data-testid="restore-button" onClick={onRestore}>
+        Restore
+      </button>
     </div>
   ),
 }));
@@ -228,7 +238,10 @@ vi.mock('../../../../../relay/environment', () => ({
 
 describe('Workflow Component', () => {
   const mockQueryRef = {} as PreloadedQuery<SubTypeWorkflowQuery, Record<string, unknown>>;
-  const mockDepsQueryRef = {} as PreloadedQuery<SubTypeWorkflowDependenciesQuery, Record<string, unknown>>;
+  const mockDepsQueryRef = {} as PreloadedQuery<
+    SubTypeWorkflowDependenciesQuery,
+    Record<string, unknown>
+  >;
   const mockOnRefetch = vi.fn();
 
   beforeEach(() => {
@@ -238,42 +251,70 @@ describe('Workflow Component', () => {
     mockSetNodes = vi.fn();
     mockSetEdges = vi.fn();
     // Reset mock nodes and edges
-    mockNodes = [{
-      id: 'node-1',
-      type: WorkflowNodeType.status,
-      data: {
-        name: 'Open',
-        statusTemplate: { id: 'status-1', name: 'Open', color: '#00FF00' },
-        onEnter: [],
-        onExit: [],
+    mockNodes = [
+      {
+        id: 'node-1',
+        type: WorkflowNodeType.status,
+        data: {
+          name: 'Open',
+          statusTemplate: { id: 'status-1', name: 'Open', color: '#00FF00' },
+          onEnter: [],
+          onExit: [],
+        },
+        position: { x: 0, y: 0 },
       },
-      position: { x: 0, y: 0 },
-    }];
-    mockEdges = [{
-      id: 'edge-1',
-      source: 'node-1',
-      target: 'node-2',
-    }];
+    ];
+    mockEdges = [
+      {
+        id: 'edge-1',
+        source: 'node-1',
+        target: 'node-2',
+      },
+    ];
   });
 
   describe('Component rendering', () => {
     it('should render ReactFlow component', () => {
-      const { container } = renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      const { container } = renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
       expect(container.querySelector('.react-flow')).toBeInTheDocument();
     });
 
     it('should render PublishButton', () => {
-      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
       expect(screen.getByTestId('publish-button')).toBeInTheDocument();
     });
 
     it('should render Add Status button', () => {
-      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
       expect(screen.getByText('Add Status')).toBeInTheDocument();
     });
 
     it('should call fitView on mount', () => {
-      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
       expect(mockFitView).toHaveBeenCalled();
     });
   });
@@ -281,7 +322,13 @@ describe('Workflow Component', () => {
   describe('User interactions', () => {
     it('should open drawer when Add Status button is clicked', async () => {
       const user = userEvent.setup();
-      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
 
       const addButton = screen.getByText('Add Status');
       await user.click(addButton);
@@ -291,7 +338,13 @@ describe('Workflow Component', () => {
 
     it('should close drawer when close button is clicked', async () => {
       const user = userEvent.setup();
-      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
 
       // Open drawer
       const addButton = screen.getByText('Add Status');
@@ -310,41 +363,66 @@ describe('Workflow Component', () => {
 
   describe('Autosave functionality', () => {
     it('should call saveWorkflowDefinition with correct entity type', async () => {
-      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
 
-      await waitFor(() => {
-        const calls = mockSaveWorkflowDefinition.mock.calls;
-        if (calls.length > 0) {
-          expect(calls[0][0]).toMatchObject({
-            variables: expect.objectContaining({
-              entityType: 'DraftWorkspace',
-            }),
-          });
-        }
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          const calls = mockSaveWorkflowDefinition.mock.calls;
+          if (calls.length > 0) {
+            expect(calls[0][0]).toMatchObject({
+              variables: expect.objectContaining({
+                entityType: 'DraftWorkspace',
+              }),
+            });
+          }
+        },
+        { timeout: 2000 },
+      );
     });
 
     it('should provide onCompleted callback to save mutation', async () => {
-      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
 
-      await waitFor(() => {
-        const calls = mockSaveWorkflowDefinition.mock.calls;
-        if (calls.length > 0) {
-          expect(calls[0][0]).toHaveProperty('onCompleted');
-          expect(typeof calls[0][0].onCompleted).toBe('function');
-        }
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          const calls = mockSaveWorkflowDefinition.mock.calls;
+          if (calls.length > 0) {
+            expect(calls[0][0]).toHaveProperty('onCompleted');
+            expect(typeof calls[0][0].onCompleted).toBe('function');
+          }
+        },
+        { timeout: 2000 },
+      );
     });
 
     it('should clear nodes and edges when reset is confirmed', async () => {
       const user = userEvent.setup();
-      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
 
       await user.click(screen.getByTestId('reset-button'));
 
       const resetCall = mockSaveWorkflowDefinition.mock.calls.find(
-        ([arg]) => arg?.variables?.definition?.includes('"states":[]')
-          && arg?.variables?.definition?.includes('"transitions":[]'),
+        ([arg]) =>
+          arg?.variables?.definition?.includes('"states":[]') &&
+          arg?.variables?.definition?.includes('"transitions":[]'),
       );
 
       expect(resetCall).toBeDefined();
@@ -361,7 +439,13 @@ describe('Workflow Component', () => {
 
   describe('Initial state', () => {
     it('should display publish button with correct initial state', () => {
-      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
 
       const publishButton = screen.getByTestId('publish-button');
       expect(publishButton).toBeInTheDocument();
@@ -369,7 +453,13 @@ describe('Workflow Component', () => {
     });
 
     it('should handle workflow definition with no errors', () => {
-      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
 
       const publishButton = screen.getByTestId('publish-button');
       expect(publishButton).not.toBeDisabled();
@@ -379,7 +469,13 @@ describe('Workflow Component', () => {
   describe('Drawer interactions', () => {
     it('should set selectedElement when opening drawer for new status', async () => {
       const user = userEvent.setup();
-      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
 
       const addButton = screen.getByText('Add Status');
       await user.click(addButton);
@@ -389,7 +485,13 @@ describe('Workflow Component', () => {
 
     it('should reset selectedElement when closing drawer', async () => {
       const user = userEvent.setup();
-      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
 
       const addButton = screen.getByText('Add Status');
       await user.click(addButton);
@@ -405,14 +507,26 @@ describe('Workflow Component', () => {
 
   describe('ReactFlow integration', () => {
     it('should pass nodes and edges to ReactFlow', () => {
-      const { container } = renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      const { container } = renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
       const reactFlow = container.querySelector('.react-flow');
 
       expect(reactFlow).toBeInTheDocument();
     });
 
     it('should call fitView with correct options', () => {
-      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
 
       expect(mockFitView).toHaveBeenCalled();
     });
@@ -425,13 +539,21 @@ describe('Workflow Component', () => {
       vi.mocked(usePreloadedQuery).mockReturnValueOnce({
         workflowDefinition: {
           ...mockWorkflowDefinition,
-          errors: [{ type: 'MISSING_TRANSITION', message: 'State has no outgoing transition', path: [] }],
+          errors: [
+            { type: 'MISSING_TRANSITION', message: 'State has no outgoing transition', path: [] },
+          ],
         },
         statusTemplates: { edges: [{ node: { id: 'status-1', name: 'Open', color: '#00FF00' } }] },
         members: { edges: [] },
       });
 
-      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
 
       // publish-button is disabled when there are errors; use force-publish-button to invoke handlePublish directly
       await user.click(screen.getByTestId('force-publish-button'));
@@ -441,7 +563,13 @@ describe('Workflow Component', () => {
 
     it('should call commitPublish when there are no validation errors', async () => {
       const user = userEvent.setup();
-      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
 
       await user.click(screen.getByTestId('publish-button'));
 
@@ -452,7 +580,13 @@ describe('Workflow Component', () => {
 
     it('should call notifySuccess and update status on successful publish', async () => {
       const user = userEvent.setup();
-      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
 
       await user.click(screen.getByTestId('publish-button'));
 
@@ -467,25 +601,31 @@ describe('Workflow Component', () => {
 
     it('should call notifyError with structured toast on publish API error', async () => {
       const user = userEvent.setup();
-      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
 
       await user.click(screen.getByTestId('publish-button'));
 
       const publishCall = mockPublishWorkflowDefinition.mock.calls[0];
       publishCall?.[0]?.onError?.({
         res: {
-          errors: [{
-            message: 'Cannot publish workflow: the following statuses are in use',
-            extensions: { data: { removedStates: ['status-1'], entityType: 'DraftWorkspace' } },
-          }],
+          errors: [
+            {
+              message: 'Cannot publish workflow: the following statuses are in use',
+              extensions: { data: { removedStates: ['status-1'], entityType: 'DraftWorkspace' } },
+            },
+          ],
         },
       });
 
       expect(mockNotifyError).toHaveBeenCalled();
       const toastElement = mockNotifyError.mock.calls[0][0];
-      const { getByText } = render(
-        <ThemeProvider theme={testTheme}>{toastElement}</ThemeProvider>,
-      );
+      const { getByText } = render(<ThemeProvider theme={testTheme}>{toastElement}</ThemeProvider>);
       expect(getByText(/Cannot publish workflow/)).toBeInTheDocument();
     });
 
@@ -498,54 +638,72 @@ describe('Workflow Component', () => {
       });
 
       const user = userEvent.setup();
-      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
 
       await user.click(screen.getByTestId('publish-button'));
 
       const publishCall = mockPublishWorkflowDefinition.mock.calls[0];
       publishCall?.[0]?.onError?.({
         res: {
-          errors: [{
-            message: 'Cannot publish workflow: statuses in use',
-            extensions: { data: { removedStates: ['status-1'] } },
-          }],
+          errors: [
+            {
+              message: 'Cannot publish workflow: statuses in use',
+              extensions: { data: { removedStates: ['status-1'] } },
+            },
+          ],
         },
       });
 
       const toastElement = mockNotifyError.mock.calls[0][0];
-      const { getByText } = render(
-        <ThemeProvider theme={testTheme}>{toastElement}</ThemeProvider>,
-      );
+      const { getByText } = render(<ThemeProvider theme={testTheme}>{toastElement}</ThemeProvider>);
       // 'status-1' should resolve to 'Open' via statusTemplateMap
       expect(getByText(/Open/)).toBeInTheDocument();
     });
 
     it('should fall back to raw ID when StatusTemplate is not found', async () => {
       const user = userEvent.setup();
-      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
 
       await user.click(screen.getByTestId('publish-button'));
 
       const publishCall = mockPublishWorkflowDefinition.mock.calls[0];
       publishCall?.[0]?.onError?.({
         res: {
-          errors: [{
-            message: 'Cannot publish workflow: statuses in use',
-            extensions: { data: { removedStates: ['unknown-status-id'] } },
-          }],
+          errors: [
+            {
+              message: 'Cannot publish workflow: statuses in use',
+              extensions: { data: { removedStates: ['unknown-status-id'] } },
+            },
+          ],
         },
       });
 
       const toastElement = mockNotifyError.mock.calls[0][0];
-      const { getByText } = render(
-        <ThemeProvider theme={testTheme}>{toastElement}</ThemeProvider>,
-      );
+      const { getByText } = render(<ThemeProvider theme={testTheme}>{toastElement}</ThemeProvider>);
       expect(getByText(/unknown-status-id/)).toBeInTheDocument();
     });
 
     it('should handle publish API error with no removedStates gracefully', async () => {
       const user = userEvent.setup();
-      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
 
       await user.click(screen.getByTestId('publish-button'));
 
@@ -559,7 +717,13 @@ describe('Workflow Component', () => {
   describe('Restore functionality', () => {
     it('should call restoreWorkflowDefinition when restore button is clicked', async () => {
       const user = userEvent.setup();
-      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
 
       await user.click(screen.getByTestId('restore-button'));
 
@@ -572,7 +736,13 @@ describe('Workflow Component', () => {
 
     it('should reset nodes and edges and call onRefetch when restore completes', async () => {
       const user = userEvent.setup();
-      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
 
       await user.click(screen.getByTestId('restore-button'));
 
@@ -587,7 +757,13 @@ describe('Workflow Component', () => {
 
     it('should update publish status to published when restore completes', async () => {
       const user = userEvent.setup();
-      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+        />,
+      );
 
       await user.click(screen.getByTestId('restore-button'));
 

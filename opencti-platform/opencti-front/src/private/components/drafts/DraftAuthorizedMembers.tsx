@@ -8,7 +8,10 @@ import Security from '../../../utils/Security';
 import IconButton from '../../../components/common/button/IconButton';
 import { useFormatter } from '../../../components/i18n';
 import FormAuthorizedMembersDialog from '../common/form/FormAuthorizedMembersDialog';
-import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
+import {
+  authorizedMembersToOptions,
+  useGetCurrentUserAccessRight,
+} from '../../../utils/authorizedMembers';
 import { DraftAuthorizedMembersFragment$key } from '@components/drafts/__generated__/DraftAuthorizedMembersFragment.graphql';
 
 const draftFragment = graphql`
@@ -35,10 +38,7 @@ const draftFragment = graphql`
 `;
 
 const editAuthorizedMembersMutation = graphql`
-  mutation DraftAuthorizedMembersMutation(
-    $id: ID!
-    $input: [MemberAccessInput!]
-  ) {
+  mutation DraftAuthorizedMembersMutation($id: ID!, $input: [MemberAccessInput!]) {
     draftWorkspaceEditAuthorizedMembers(id: $id, input: $input) {
       id
       ...DraftRootFragment
@@ -55,12 +55,10 @@ const DraftAuthorizedMembers = ({ data }: DraftAuthorizedMembersProps) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
 
-  const {
-    id,
-    creators,
-    authorizedMembers,
-    currentUserAccessRight,
-  } = useFragment(draftFragment, data);
+  const { id, creators, authorizedMembers, currentUserAccessRight } = useFragment(
+    draftFragment,
+    data,
+  );
   const currentAccessRight = useGetCurrentUserAccessRight(currentUserAccessRight);
 
   return (
@@ -68,11 +66,7 @@ const DraftAuthorizedMembers = ({ data }: DraftAuthorizedMembersProps) => {
       {currentAccessRight.canManage && (
         <Security needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}>
           <Tooltip title={t_i18n('Authorized members')}>
-            <IconButton
-              size="default"
-              onClick={() => setOpen(true)}
-              variant="secondary"
-            >
+            <IconButton size="default" onClick={() => setOpen(true)} variant="secondary">
               <LockOutlined fontSize="small" />
             </IconButton>
           </Tooltip>

@@ -16,31 +16,27 @@ class AttackPatternParentAttackPatternsComponent extends Component {
     const { t, attackPattern } = this.props;
     return (
       <div>
-        <Label>
-          {t('Parent attack patterns')}
-        </Label>
+        <Label>{t('Parent attack patterns')}</Label>
         <List>
-          {attackPattern.parentAttackPatterns.edges.map(
-            (parentAttackPatternEdge) => {
-              const parentAttackPattern = parentAttackPatternEdge.node;
-              return (
-                <ListItemButton
-                  key={parentAttackPattern.id}
-                  dense={true}
-                  divider={true}
-                  component={Link}
-                  to={`/dashboard/techniques/attack_patterns/${parentAttackPattern.id}`}
-                >
-                  <ListItemIcon>
-                    <LockPattern color="primary" />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={`[${parentAttackPattern.x_mitre_id}] ${parentAttackPattern.name}`}
-                  />
-                </ListItemButton>
-              );
-            },
-          )}
+          {attackPattern.parentAttackPatterns.edges.map((parentAttackPatternEdge) => {
+            const parentAttackPattern = parentAttackPatternEdge.node;
+            return (
+              <ListItemButton
+                key={parentAttackPattern.id}
+                dense={true}
+                divider={true}
+                component={Link}
+                to={`/dashboard/techniques/attack_patterns/${parentAttackPattern.id}`}
+              >
+                <ListItemIcon>
+                  <LockPattern color="primary" />
+                </ListItemIcon>
+                <ListItemText
+                  primary={`[${parentAttackPattern.x_mitre_id}] ${parentAttackPattern.name}`}
+                />
+              </ListItemButton>
+            );
+          })}
         </List>
       </div>
     );

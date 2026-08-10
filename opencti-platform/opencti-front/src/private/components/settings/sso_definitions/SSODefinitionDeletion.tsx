@@ -12,21 +12,21 @@ import { SSODefinitionDeletionSamlMutation } from '@components/settings/sso_defi
 import { SSODefinitionDeletionLdapMutation } from '@components/settings/sso_definitions/__generated__/SSODefinitionDeletionLdapMutation.graphql';
 
 const oidcDeletionMutation = graphql`
-    mutation SSODefinitionDeletionOidcMutation($id: ID!) {
-        oidcProviderDelete(id: $id)
-    }
+  mutation SSODefinitionDeletionOidcMutation($id: ID!) {
+    oidcProviderDelete(id: $id)
+  }
 `;
 
 const samlDeletionMutation = graphql`
-    mutation SSODefinitionDeletionSamlMutation($id: ID!) {
-        samlProviderDelete(id: $id)
-    }
+  mutation SSODefinitionDeletionSamlMutation($id: ID!) {
+    samlProviderDelete(id: $id)
+  }
 `;
 
 const ldapDeletionMutation = graphql`
-    mutation SSODefinitionDeletionLdapMutation($id: ID!) {
-        ldapProviderDelete(id: $id)
-    }
+  mutation SSODefinitionDeletionLdapMutation($id: ID!) {
+    ldapProviderDelete(id: $id)
+  }
 `;
 
 interface ChildrenProps {
@@ -42,25 +42,35 @@ interface SSODefinitionDeletionProps {
   children: (props: ChildrenProps) => ReactNode;
 }
 
-const SSODefinitionDeletion = ({ ssoId, providerType, paginationOptions, onDeleteComplete, children }: SSODefinitionDeletionProps) => {
+const SSODefinitionDeletion = ({
+  ssoId,
+  providerType,
+  paginationOptions,
+  onDeleteComplete,
+  children,
+}: SSODefinitionDeletionProps) => {
   const { t_i18n } = useFormatter();
 
   const getMutationForType = () => {
     switch (providerType) {
-      case 'OIDC': return oidcDeletionMutation;
-      case 'SAML': return samlDeletionMutation;
-      case 'LDAP': return ldapDeletionMutation;
-      default: return oidcDeletionMutation;
+      case 'OIDC':
+        return oidcDeletionMutation;
+      case 'SAML':
+        return samlDeletionMutation;
+      case 'LDAP':
+        return ldapDeletionMutation;
+      default:
+        return oidcDeletionMutation;
     }
   };
 
   const [deleteMutation, deleting] = useApiMutation<
-    SSODefinitionDeletionOidcMutation | SSODefinitionDeletionSamlMutation | SSODefinitionDeletionLdapMutation
-  >(
-    getMutationForType(),
-    undefined,
-    { successMessage: `${t_i18n('Authentication')} ${t_i18n('successfully deleted')}` },
-  );
+    | SSODefinitionDeletionOidcMutation
+    | SSODefinitionDeletionSamlMutation
+    | SSODefinitionDeletionLdapMutation
+  >(getMutationForType(), undefined, {
+    successMessage: `${t_i18n('Authentication')} ${t_i18n('successfully deleted')}`,
+  });
 
   const deletion = useDeletion({});
   const { handleOpenDelete, handleCloseDelete } = deletion;

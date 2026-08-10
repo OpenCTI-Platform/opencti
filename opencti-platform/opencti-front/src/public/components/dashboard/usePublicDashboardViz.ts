@@ -1,8 +1,16 @@
 import { useEffect, useRef, useTransition } from 'react';
-import { GraphQLTaggedNode, UseQueryLoaderLoadQueryOptions, VariablesOf, useQueryLoader } from 'react-relay';
+import {
+  GraphQLTaggedNode,
+  UseQueryLoaderLoadQueryOptions,
+  VariablesOf,
+  useQueryLoader,
+} from 'react-relay';
 import { OperationType, PreloadableConcreteRequest } from 'relay-runtime';
 import { equals } from 'ramda';
-import { useDashboardRefreshToken, useDashboardSetQueryPending } from '../../../components/dashboard/DashboardRefreshContext';
+import {
+  useDashboardRefreshToken,
+  useDashboardSetQueryPending,
+} from '../../../components/dashboard/DashboardRefreshContext';
 
 const usePublicDashboardViz = <T extends OperationType>(
   query: GraphQLTaggedNode | PreloadableConcreteRequest<T>,

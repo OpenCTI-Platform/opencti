@@ -11,10 +11,7 @@ import DataTableWithoutFragment from '../../../../components/dataGrid/DataTableW
 import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 
 const userMutationRelationAdd = graphql`
-  mutation GroupEditionUsersRelationAddMutation(
-    $id: ID!
-    $input: InternalRelationshipAddInput!
-  ) {
+  mutation GroupEditionUsersRelationAddMutation($id: ID!, $input: InternalRelationshipAddInput!) {
     groupEdit(id: $id) {
       relationAdd(input: $input) {
         to {
@@ -51,15 +48,28 @@ interface GroupEditionUsersProps {
   storageKey: string;
 }
 
-const GroupEditionUsers: FunctionComponent<GroupEditionUsersProps> = ({ group, queryRef, paginationOptionsForUpdater, children, storageKey }) => {
+const GroupEditionUsers: FunctionComponent<GroupEditionUsersProps> = ({
+  group,
+  queryRef,
+  paginationOptionsForUpdater,
+  children,
+  storageKey,
+}) => {
   const groupId = group.id;
   const groupUsers = group.members?.edges?.map((n) => ({ id: n.node.id })) ?? [];
-  const usersData = usePreloadedQuery<DataTableToolBarUsersLinesSearchQuery>(toolBarUsersLinesSearchQuery, queryRef);
+  const usersData = usePreloadedQuery<DataTableToolBarUsersLinesSearchQuery>(
+    toolBarUsersLinesSearchQuery,
+    queryRef,
+  );
   const users = usersData.users?.edges.map((n) => n.node) ?? [];
 
   const [commitAddUser] = useApiMutation(userMutationRelationAdd);
   const [commitRemoveUser] = useApiMutation(userMutationRelationDelete);
-  const handleToggle = (userId: string, groupUser: { id: string } | undefined, event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleToggle = (
+    userId: string,
+    groupUser: { id: string } | undefined,
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const input = {
       fromId: userId,
       relationship_type: 'member-of',
@@ -91,7 +101,13 @@ const GroupEditionUsers: FunctionComponent<GroupEditionUsersProps> = ({ group, q
           relationship_type: 'member-of',
         },
         updater: (store) => {
-          deleteNodeFromId(store, groupId, 'Pagination_group_members', paginationOptionsForUpdater, groupUser.id);
+          deleteNodeFromId(
+            store,
+            groupId,
+            'Pagination_group_members',
+            paginationOptionsForUpdater,
+            groupUser.id,
+          );
         },
       });
     }
@@ -113,11 +129,13 @@ const GroupEditionUsers: FunctionComponent<GroupEditionUsersProps> = ({ group, q
         const groupUser = groupUsers.find((g) => g.id === user.id);
         return (
           <Checkbox
-            onClick={(event) => handleToggle(
-              user.id,
-              groupUser,
-              event as unknown as React.ChangeEvent<HTMLInputElement>,
-            )}
+            onClick={(event) =>
+              handleToggle(
+                user.id,
+                groupUser,
+                event as unknown as React.ChangeEvent<HTMLInputElement>,
+              )
+            }
             checked={groupUser !== undefined}
           />
         );

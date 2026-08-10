@@ -58,14 +58,7 @@ class RootInvestigation extends Component {
               if (props.workspace) {
                 return (
                   <Routes>
-                    <Route
-                      path="/"
-                      element={(
-                        <Investigation
-                          workspace={props.workspace}
-                        />
-                      )}
-                    />
+                    <Route path="/" element={<Investigation workspace={props.workspace} />} />
                   </Routes>
                 );
               }

@@ -21,9 +21,7 @@ import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import { Stack } from '@mui/material';
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 const styles = () => ({
@@ -76,22 +74,17 @@ export const StixDomainObjectsExportCreationMutation = graphql`
   }
 `;
 
-const exportValidation = (t) => Yup.object().shape({
-  format: Yup.string().required(t('This field is required')),
-  type: Yup.string().required(t('This field is required')),
-});
+const exportValidation = (t) =>
+  Yup.object().shape({
+    format: Yup.string().required(t('This field is required')),
+    type: Yup.string().required(t('This field is required')),
+  });
 
 export const scopesConn = (exportConnectors) => {
   const scopes = uniq(flatten(exportConnectors.map((c) => c.connector_scope)));
   const connectors = scopes.map((s) => {
-    const filteredConnectors = filter(
-      (e) => includes(s, e.connector_scope),
-      exportConnectors,
-    );
-    return map(
-      (x) => ({ data: { name: x.name, active: x.active } }),
-      filteredConnectors,
-    );
+    const filteredConnectors = filter((e) => includes(s, e.connector_scope), exportConnectors);
+    return map((x) => ({ data: { name: x.name, active: x.active } }), filteredConnectors);
   });
   const zipped = zip(scopes, connectors);
   return fromPairs(zipped);
@@ -172,14 +165,18 @@ class StixDomainObjectsExportCreation extends Component {
                     open={this.props.open}
                     onClose={this.props.onClose}
                     data-testid="StixDomainObjectsExportCreationDialog"
-                    title={(
+                    title={
                       <Stack direction="row" gap={1} alignContent="center">
                         {t('Generate an export')}
-                        <Tooltip title={t('Your max shareable markings will be applied to the content max markings')}>
+                        <Tooltip
+                          title={t(
+                            'Your max shareable markings will be applied to the content max markings',
+                          )}
+                        >
                           <InfoOutlined color="primary" />
                         </Tooltip>
                       </Stack>
-                    )}
+                    }
                   >
                     <Field
                       component={SelectField}
@@ -190,11 +187,7 @@ class StixDomainObjectsExportCreation extends Component {
                       containerstyle={{ width: '100%' }}
                     >
                       {availableFormat.map((value, i) => (
-                        <MenuItem
-                          key={i}
-                          value={value}
-                          disabled={!isExportActive(value)}
-                        >
+                        <MenuItem key={i} value={value} disabled={!isExportActive(value)}>
                           {value}
                         </MenuItem>
                       ))}
@@ -207,13 +200,9 @@ class StixDomainObjectsExportCreation extends Component {
                       fullWidth={true}
                       containerstyle={fieldSpacingContainerStyle}
                     >
-                      <MenuItem value="simple">
-                        {t('Simple export (just the entity)')}
-                      </MenuItem>
+                      <MenuItem value="simple">{t('Simple export (just the entity)')}</MenuItem>
                       <MenuItem value="full">
-                        {t(
-                          'Full export (entity and first neighbours)',
-                        )}
+                        {t('Full export (entity and first neighbours)')}
                       </MenuItem>
                     </Field>
                     <ObjectMarkingField
@@ -232,24 +221,19 @@ class StixDomainObjectsExportCreation extends Component {
                       style={fieldSpacingContainerStyle}
                       setFieldValue={setFieldValue}
                     />
-                    {visibleColumnExportEnabledFormats.includes(values.format)
-                      ? (
-                          <Field
-                            component={SelectField}
-                            variant="standard"
-                            name="columns"
-                            label={t('Choose column to export')}
-                            fullWidth={true}
-                            containerstyle={fieldSpacingContainerStyle}
-                          >
-                            <MenuItem value="all">
-                              {t('All attributes')}
-                            </MenuItem>
-                            <MenuItem value="view">
-                              {t('Current view')}
-                            </MenuItem>
-                          </Field>
-                        ) : undefined}
+                    {visibleColumnExportEnabledFormats.includes(values.format) ? (
+                      <Field
+                        component={SelectField}
+                        variant="standard"
+                        name="columns"
+                        label={t('Choose column to export')}
+                        fullWidth={true}
+                        containerstyle={fieldSpacingContainerStyle}
+                      >
+                        <MenuItem value="all">{t('All attributes')}</MenuItem>
+                        <MenuItem value="view">{t('Current view')}</MenuItem>
+                      </Field>
+                    ) : undefined}
                     <DialogActions>
                       <Button
                         variant="secondary"
@@ -261,10 +245,7 @@ class StixDomainObjectsExportCreation extends Component {
                       >
                         {t('Cancel')}
                       </Button>
-                      <Button
-                        onClick={submitForm}
-                        disabled={isSubmitting}
-                      >
+                      <Button onClick={submitForm} disabled={isSubmitting}>
                         {t('Create')}
                       </Button>
                     </DialogActions>
@@ -289,7 +270,4 @@ StixDomainObjectsExportCreation.propTypes = {
   open: PropTypes.bool,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixDomainObjectsExportCreation);
+export default compose(inject18n, withStyles(styles))(StixDomainObjectsExportCreation);

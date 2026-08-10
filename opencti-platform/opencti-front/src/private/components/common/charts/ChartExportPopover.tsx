@@ -11,10 +11,7 @@ interface ChartExportPopoverProps {
   series?: ApexOptions['series'];
 }
 
-const ChartExportPopover = ({
-  chart,
-  series,
-}: ChartExportPopoverProps) => {
+const ChartExportPopover = ({ chart, series }: ChartExportPopoverProps) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
@@ -31,11 +28,15 @@ const ChartExportPopover = ({
   const handleExportToCSV = () => {
     setAnchorEl(null);
     if (chart) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+      // @ts-expect-error chart.opts is not typed by the ApexCharts wrapper
       const currentFormatter = chart.opts.xaxis?.labels?.formatter;
       if (currentFormatter) {
-        chart.updateOptions({ xaxis: { labels: { formatter: (value: string) => value } } }, false, false, false);
+        chart.updateOptions(
+          { xaxis: { labels: { formatter: (value: string) => value } } },
+          false,
+          false,
+          false,
+        );
         chart.exports.exportToCSV({ series });
         chart.updateOptions({ xaxis: { labels: { formatter: currentFormatter } } }, false);
       } else {

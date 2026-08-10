@@ -95,14 +95,8 @@ export const saveViewParameters = (
   }
 };
 
-export const buildViewParamsFromUrlAndStorage = (
-  navigate,
-  location,
-  localStorageKey,
-) => {
-  const queryParams = [
-    ...new URLSearchParams(location.search).entries(),
-  ].reduce(
+export const buildViewParamsFromUrlAndStorage = (navigate, location, localStorageKey) => {
+  const queryParams = [...new URLSearchParams(location.search).entries()].reduce(
     (q, [k, v]) => Object.assign(q, { [k]: v === 'null' ? null : v }),
     {},
   );
@@ -124,7 +118,8 @@ export const buildViewParamsFromUrlAndStorage = (
     finalParams.nestedRelationships = finalParams.nestedRelationships.toString() === 'true';
   }
   if (finalParams.timeLineDisplayRelationships) {
-    finalParams.timeLineDisplayRelationships = finalParams.timeLineDisplayRelationships.toString() === 'true';
+    finalParams.timeLineDisplayRelationships =
+      finalParams.timeLineDisplayRelationships.toString() === 'true';
   }
   if (finalParams.timeLineFunctionalDate) {
     finalParams.timeLineFunctionalDate = finalParams.timeLineFunctionalDate.toString() === 'true';
@@ -167,10 +162,7 @@ export const buildViewParamsFromUrlAndStorage = (
   }
   if (typeof finalParams.stixDomainObjectsTypes === 'string') {
     finalParams.stixDomainObjectsTypes = finalParams.stixDomainObjectsTypes
-      ? (finalParams.stixDomainObjectsTypes = split(
-          ',',
-          finalParams.stixDomainObjectsTypes,
-        ))
+      ? (finalParams.stixDomainObjectsTypes = split(',', finalParams.stixDomainObjectsTypes))
       : [];
   }
   if (typeof finalParams.indicatorTypes === 'string') {
@@ -184,9 +176,7 @@ export const buildViewParamsFromUrlAndStorage = (
       : [];
   }
   if (typeof finalParams.filters === 'string') {
-    finalParams.filters = finalParams.filters
-      ? JSON.parse(finalParams.filters)
-      : {};
+    finalParams.filters = finalParams.filters ? JSON.parse(finalParams.filters) : {};
   }
   if (typeof finalParams.timeLineFilters === 'string') {
     finalParams.timeLineFilters = finalParams.timeLineFilters
@@ -202,14 +192,10 @@ export const buildViewParamsFromUrlAndStorage = (
       : [];
   }
   if (typeof finalParams.markedBy === 'string') {
-    finalParams.markedBy = finalParams.markedBy
-      ? split(',', finalParams.markedBy)
-      : [];
+    finalParams.markedBy = finalParams.markedBy ? split(',', finalParams.markedBy) : [];
   }
   if (typeof finalParams.createdBy === 'string') {
-    finalParams.createdBy = finalParams.createdBy
-      ? split(',', finalParams.createdBy)
-      : [];
+    finalParams.createdBy = finalParams.createdBy ? split(',', finalParams.createdBy) : [];
   }
   if (typeof finalParams.disabledEntityTypes === 'string') {
     finalParams.disabledEntityTypes = finalParams.disabledEntityTypes
@@ -228,9 +214,12 @@ export const buildViewParamsFromUrlAndStorage = (
   }
   if (typeof finalParams.selectedTimeRangeInterval === 'string') {
     finalParams.selectedTimeRangeInterval = finalParams.selectedTimeRangeInterval
-      .split(',').map((d) => new Date(d));
+      .split(',')
+      .map((d) => new Date(d));
   } else if (Array.isArray(finalParams.selectedTimeRangeInterval)) {
-    finalParams.selectedTimeRangeInterval = finalParams.selectedTimeRangeInterval.map((d) => new Date(d));
+    finalParams.selectedTimeRangeInterval = finalParams.selectedTimeRangeInterval.map(
+      (d) => new Date(d),
+    );
   }
   saveViewParameters(navigate, location, localStorageKey, finalParams);
   return finalParams;

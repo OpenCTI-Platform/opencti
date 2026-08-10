@@ -8,9 +8,9 @@ import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 
 const tabsFragment = graphql`
-    fragment EmailTemplateTabs_template on EmailTemplate {
-        template_body
-    }
+  fragment EmailTemplateTabs_template on EmailTemplate {
+    template_body
+  }
 `;
 
 interface ChildrenProps {
@@ -36,14 +36,15 @@ const EmailTemplateTabs = ({ children, data }: EmailTemplateTabsProps) => {
 
   return (
     <>
-      <Box sx={{
-        borderBottom: 1,
-        borderColor: 'divider',
-        marginBottom: 3,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-      }}
+      <Box
+        sx={{
+          borderBottom: 1,
+          borderColor: 'divider',
+          marginBottom: 3,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
       >
         <Tabs value={index} onChange={(_, i) => setIndex(i)}>
           <Tab label={t_i18n('Template Editor')} />

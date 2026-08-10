@@ -39,7 +39,6 @@ export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddPro
           <>
             <div id="total_attributes">
               {values?.map((_, index) => (
-
                 <Paper
                   className="paper-for-grid"
                   variant="outlined"
@@ -122,7 +121,6 @@ export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddPro
                       name={`${name}.${index}.default`}
                       label={t_i18n('Default value')}
                     />
-
                   </div>
                   <IconButton
                     id="deleteHeader"

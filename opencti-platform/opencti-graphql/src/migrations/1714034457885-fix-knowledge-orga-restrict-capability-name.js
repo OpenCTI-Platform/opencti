@@ -15,7 +15,11 @@ export const up = async (next) => {
       bool: {
         must: [
           { term: { 'entity_type.keyword': { value: 'Capability' } } },
-          { term: { 'name.keyword': { value: 'KNOWLEDGE_KNUPDATE_KNOWLEDGE_KNUPDATE_KNORGARESTRICT' } } },
+          {
+            term: {
+              'name.keyword': { value: 'KNOWLEDGE_KNUPDATE_KNOWLEDGE_KNUPDATE_KNORGARESTRICT' },
+            },
+          },
         ],
       },
     },

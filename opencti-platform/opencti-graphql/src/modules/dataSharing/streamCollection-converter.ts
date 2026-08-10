@@ -3,7 +3,9 @@ import { buildStixObject } from '../../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { cleanObject } from '../../database/stix-converter-utils';
 
-const convertStreamCollectionToStix = (instance: StoreEntityStreamCollection): StixStreamCollection => {
+const convertStreamCollectionToStix = (
+  instance: StoreEntityStreamCollection,
+): StixStreamCollection => {
   const stixObject = buildStixObject(instance);
   return {
     ...stixObject,

@@ -12,14 +12,17 @@ import { handleErrorInForm } from '../../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { EMPTY_VALUE } from '../../../../../utils/String';
 import { RequestAccessConfigurationEdition_requestAccess$key } from './__generated__/RequestAccessConfigurationEdition_requestAccess.graphql';
-import { RequestAccessConfigurationEditionMutation, RequestAccessConfigureInput } from './__generated__/RequestAccessConfigurationEditionMutation.graphql';
+import {
+  RequestAccessConfigurationEditionMutation,
+  RequestAccessConfigureInput,
+} from './__generated__/RequestAccessConfigurationEditionMutation.graphql';
 
 const requestAccessConfigurationMutation = graphql`
-    mutation RequestAccessConfigurationEditionMutation($input: RequestAccessConfigureInput!) {
-        requestAccessConfigure(input: $input) {
-            ...RequestAccessStatusFragment_requestAccess
-        }
+  mutation RequestAccessConfigurationEditionMutation($input: RequestAccessConfigureInput!) {
+    requestAccessConfigure(input: $input) {
+      ...RequestAccessStatusFragment_requestAccess
     }
+  }
 `;
 
 export const requestAccessConfigurationFragment = graphql`
@@ -90,7 +93,9 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
   const [commit] = useApiMutation<RequestAccessConfigurationEditionMutation>(
     requestAccessConfigurationMutation,
     undefined,
-    { successMessage: `${t_i18n('Request access configuration successfully updated')}` },
+    {
+      successMessage: `${t_i18n('Request access configuration successfully updated')}`,
+    },
   );
 
   const onSubmit: FormikConfig<RequestAccessEditionFormInputs>['onSubmit'] = (
@@ -119,11 +124,7 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
   };
 
   return (
-    <Drawer
-      open={open}
-      title={t_i18n('Request Access Configuration')}
-      onClose={handleClose}
-    >
+    <Drawer open={open} title={t_i18n('Request Access Configuration')} onClose={handleClose}>
       <Formik<RequestAccessEditionFormInputs>
         enableReinitialize={true}
         initialValues={initialValues}
@@ -138,7 +139,9 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
                 name="acceptedTemplate"
                 label={t_i18n('On approval move to status:')}
                 setFieldValue={setFieldValue}
-                helpertext={t_i18n('Request for information status to use when access request is accepted.')}
+                helpertext={t_i18n(
+                  'Request for information status to use when access request is accepted.',
+                )}
                 required={true}
                 style={fieldSpacingContainerStyle}
                 scope="REQUEST_ACCESS"
@@ -147,7 +150,9 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
                 name="declinedTemplate"
                 label={t_i18n('On decline move to status:')}
                 setFieldValue={setFieldValue}
-                helpertext={t_i18n('Request for information status to use when access request is declined.')}
+                helpertext={t_i18n(
+                  'Request for information status to use when access request is declined.',
+                )}
                 required={true}
                 style={fieldSpacingContainerStyle}
                 scope="REQUEST_ACCESS"

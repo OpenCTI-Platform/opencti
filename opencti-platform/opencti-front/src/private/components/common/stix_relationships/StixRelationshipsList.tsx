@@ -7,7 +7,10 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetListRelationships from '../../../../components/dashboard/WidgetListRelationships';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
-import type { StixRelationshipsListQuery, StixRelationshipsOrdering } from '@components/common/stix_relationships/__generated__/StixRelationshipsListQuery.graphql';
+import type {
+  StixRelationshipsListQuery,
+  StixRelationshipsOrdering,
+} from '@components/common/stix_relationships/__generated__/StixRelationshipsListQuery.graphql';
 import { OrderingMode } from '@components/common/stix_relationships/__generated__/StixRelationshipsListQuery.graphql';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -4490,8 +4493,7 @@ const StixRelationshipsListComponent = ({
   const data = usePreloadedQuery(stixRelationshipsListQuery, queryRef);
 
   const selection = dataSelection[0];
-  const columns
-    = selection.columns ?? getDefaultWidgetColumns('relationships');
+  const columns = selection.columns ?? getDefaultWidgetColumns('relationships');
   const edges = data?.stixRelationships?.edges ?? [];
 
   if (!edges.length) {
@@ -4512,11 +4514,12 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixRelationshipsListQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { dateAttribute, filters, dynamicFrom, dynamicTo } = buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
+  const { dateAttribute, filters, dynamicFrom, dynamicTo } =
+    buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
 
   return {
     first: selection.number ?? 50,
-    orderBy: (dateAttribute as StixRelationshipsOrdering),
+    orderBy: dateAttribute as StixRelationshipsOrdering,
     orderMode: (selection.sort_mode ?? 'desc') as OrderingMode,
     filters,
     dynamicFrom,
@@ -4549,7 +4552,13 @@ const StixRelationshipsList = ({
 }: StixRelationshipsListProps) => {
   const { t_i18n } = useFormatter();
   const rootRef = useRef<HTMLDivElement>(null);
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsListQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixRelationshipsListQuery>({
     perspective: 'relationships',
     dataSelection,
     host,

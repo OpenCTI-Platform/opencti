@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import * as R from 'ramda';
 import def from './IndicateSightedDefinition';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
@@ -12,7 +11,13 @@ import { createRuleContent } from '../rules-utils';
 import { createInferredRelation, deleteInferredRuleElement } from '../../database/middleware';
 import { fullRelationsList, type RelationOptions } from '../../database/middleware-loader';
 import { RELATION_INDICATES, RELATION_TARGETS } from '../../schema/stixCoreRelationship';
-import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE, ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_CAMPAIGN,
+  ENTITY_TYPE_INCIDENT,
+  ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_MALWARE,
+  ENTITY_TYPE_THREAT_ACTOR_GROUP,
+} from '../../schema/stixDomainObject';
 import type { RuleRuntime } from '../../types/rules';
 import { ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../../schema/general';
 import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
@@ -35,7 +40,10 @@ const indicateSightedRuleBuilder = (): RuleRuntime => {
         const { internal_id: foundRelationId, toId: organizationId, confidence } = basicSighting;
         const { [RELATION_OBJECT_MARKING]: object_marking_refs } = basicSighting;
         // We can have sighting or relationship depending on the first scanned relation
-        const existingRange = buildPeriodFromDates(basicSighting.first_seen, basicSighting.last_seen);
+        const existingRange = buildPeriodFromDates(
+          basicSighting.first_seen,
+          basicSighting.last_seen,
+        );
         const range = computeRangeIntersection(creationRange, existingRange);
         const elementMarkings = [...(markings || []), ...(object_marking_refs || [])];
         const computedConfidence = computeAverage([createdConfidence, confidence]);
@@ -43,7 +51,11 @@ const indicateSightedRuleBuilder = (): RuleRuntime => {
         const dependencies = [fromIndicator, createdId, toMalware, foundRelationId, organizationId];
         const explanation = [foundRelationId, createdId];
         // Create the inferred targets relation
-        const input = { fromId: toMalware, toId: organizationId, relationship_type: RELATION_TARGETS };
+        const input = {
+          fromId: toMalware,
+          toId: organizationId,
+          relationship_type: RELATION_TARGETS,
+        };
         const ruleContent = createRuleContent(def.id, dependencies, explanation, {
           confidence: computedConfidence,
           start_time: range.start,
@@ -83,10 +95,20 @@ const indicateSightedRuleBuilder = (): RuleRuntime => {
         const elementMarkings = [...(markings || []), ...(object_marking_refs || [])];
         const computedConfidence = computeAverage([createdConfidence, confidence]);
         // Rule content
-        const dependencies = [fromSightingIndicator, createdId, toSightingOrganization, foundRelationId, malwareId];
+        const dependencies = [
+          fromSightingIndicator,
+          createdId,
+          toSightingOrganization,
+          foundRelationId,
+          malwareId,
+        ];
         const explanation = [foundRelationId, createdId];
         // Create the inferred targets relation
-        const input = { fromId: malwareId, toId: toSightingOrganization, relationship_type: RELATION_TARGETS };
+        const input = {
+          fromId: malwareId,
+          toId: toSightingOrganization,
+          relationship_type: RELATION_TARGETS,
+        };
         const ruleContent = createRuleContent(def.id, dependencies, explanation, {
           confidence: computedConfidence,
           start_time: range.start,
@@ -98,7 +120,13 @@ const indicateSightedRuleBuilder = (): RuleRuntime => {
     };
     const listFromArgs: RelationOptions<BasicStoreRelation> = {
       fromId: fromSightingIndicator,
-      toTypes: [ENTITY_TYPE_MALWARE, ENTITY_TYPE_THREAT_ACTOR_GROUP, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INCIDENT],
+      toTypes: [
+        ENTITY_TYPE_MALWARE,
+        ENTITY_TYPE_THREAT_ACTOR_GROUP,
+        ENTITY_TYPE_INTRUSION_SET,
+        ENTITY_TYPE_CAMPAIGN,
+        ENTITY_TYPE_INCIDENT,
+      ],
       callback: listFromCallback,
     };
     await fullRelationsList(context, RULE_MANAGER_USER, RELATION_INDICATES, listFromArgs);

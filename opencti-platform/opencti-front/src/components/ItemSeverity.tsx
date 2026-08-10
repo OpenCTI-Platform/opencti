@@ -10,10 +10,7 @@ interface ItemSeverityProps {
   variant?: 'inList' | 'high';
 }
 
-const ItemSeverity: FunctionComponent<ItemSeverityProps> = ({
-  label,
-  severity,
-}) => {
+const ItemSeverity: FunctionComponent<ItemSeverityProps> = ({ label, severity }) => {
   const theme = useTheme<Theme>();
   if (!severity) {
     return <>{EMPTY_VALUE}</>;

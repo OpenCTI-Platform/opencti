@@ -16,7 +16,10 @@ const setTableFullWidth = (content: string) => {
     if (element) {
       const nbColumns = element.querySelectorAll(header ? 'th' : 'td').length;
       if (nbColumns) {
-        table.setAttribute('data-pdfmake', `{'layout':'default', 'widths':[${Array(nbColumns).fill("'*'").join()}]}`);
+        table.setAttribute(
+          'data-pdfmake',
+          `{'layout':'default', 'widths':[${Array(nbColumns).fill("'*'").join()}]}`,
+        );
       }
     }
   });
@@ -32,7 +35,7 @@ export const defaultTableLayout: { [p: string]: CustomTableLayout } = {
     paddingLeft: () => 10,
     paddingRight: () => 10,
     hLineWidth: () => 1,
-    vLineWidth: (i, { table }) => ((i === 0 || i === (table.widths ?? []).length) ? 1 : 0),
+    vLineWidth: (i, { table }) => (i === 0 || i === (table.widths ?? []).length ? 1 : 0),
   },
 };
 

@@ -25,7 +25,8 @@ function EdgeLabel({ transform, label }: { transform: string; label: string }) {
 }
 
 export default function CustomEdge({
-  id, sourceX,
+  id,
+  sourceX,
   sourceY,
   targetX,
   targetY,
@@ -47,7 +48,10 @@ export default function CustomEdge({
     <>
       <BaseEdge id={id} path={edgePath} markerEnd={markerEnd} style={style} />
       <EdgeLabelRenderer>
-        <EdgeLabel label={data.label} transform={`translate(-50%, -50%) translate(${labelX}px,${labelY}px)`} />
+        <EdgeLabel
+          label={data.label}
+          transform={`translate(-50%, -50%) translate(${labelX}px,${labelY}px)`}
+        />
       </EdgeLabelRenderer>
     </>
   );

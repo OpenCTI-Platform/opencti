@@ -4,19 +4,20 @@ import { useEmailTemplateEditMutation } from '@components/settings/email_templat
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const emailTemplateEditMutation = graphql`
-    mutation useEmailTemplateEditMutation($id: ID!, $input: [EditInput!]!) {
-        emailTemplateFieldPatch(id: $id, input: $input) {
-            id
-            entity_type
-            ...EmailTemplateTabs_template
-            ...EmailTemplateHeader_template
-        }
+  mutation useEmailTemplateEditMutation($id: ID!, $input: [EditInput!]!) {
+    emailTemplateFieldPatch(id: $id, input: $input) {
+      id
+      entity_type
+      ...EmailTemplateTabs_template
+      ...EmailTemplateHeader_template
     }
+  }
 `;
 
 const useEmailTemplateEdit = () => {
   const [mutating, setMutating] = useState(false);
-  const [commitEditMutation] = useApiMutation<useEmailTemplateEditMutation>(emailTemplateEditMutation);
+  const [commitEditMutation] =
+    useApiMutation<useEmailTemplateEditMutation>(emailTemplateEditMutation);
 
   const mutation: typeof commitEditMutation = ({ variables, onCompleted, onError }) => {
     setMutating(true);

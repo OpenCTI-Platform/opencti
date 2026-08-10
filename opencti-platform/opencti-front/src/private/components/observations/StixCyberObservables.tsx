@@ -7,7 +7,11 @@ import { StixCyberObservableLine_node$data } from '@components/observations/stix
 import StixCyberObservableCreation from './stix_cyber_observables/StixCyberObservableCreation';
 import Security from '../../../utils/Security';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { stixCyberObservablesLinesFragment, stixCyberObservablesLinesQuery, stixCyberObservablesLinesSearchQuery } from './stix_cyber_observables/StixCyberObservablesLines';
+import {
+  stixCyberObservablesLinesFragment,
+  stixCyberObservablesLinesQuery,
+  stixCyberObservablesLinesSearchQuery,
+} from './stix_cyber_observables/StixCyberObservablesLines';
 import {
   StixCyberObservablesLinesPaginationQuery,
   StixCyberObservablesLinesPaginationQuery$variables,
@@ -15,7 +19,11 @@ import {
 import useAuth from '../../../utils/hooks/useAuth';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
+import {
+  useBuildEntityTypeBasedFilterContext,
+  emptyFilterGroup,
+  useGetDefaultFilterObject,
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -48,12 +56,19 @@ const StixCyberObservables: FunctionComponent = () => {
     openExports: false,
   };
 
-  const { viewStorage, paginationOptions, helpers: storageHelpers } = usePaginationLocalStorage<StixCyberObservablesLinesPaginationQuery$variables>(
+  const {
+    viewStorage,
+    paginationOptions,
+    helpers: storageHelpers,
+  } = usePaginationLocalStorage<StixCyberObservablesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Cyber-Observable', viewStorage.filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext(
+    'Stix-Cyber-Observable',
+    viewStorage.filters,
+  );
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -101,18 +116,13 @@ const StixCyberObservables: FunctionComponent = () => {
     },
   };
 
-  const {
-    selectedElements,
-    deSelectedElements,
-    selectAll,
-  } = useEntityToggle<StixCyberObservableLine_node$data>(LOCAL_STORAGE_KEY);
+  const { selectedElements, deSelectedElements, selectAll } =
+    useEntityToggle<StixCyberObservableLine_node$data>(LOCAL_STORAGE_KEY);
 
-  const getValuesForCopy = (
-    data: StixCyberObservablesLinesSearchQuery$data,
-  ) => {
-    return (data.stixCyberObservables?.edges ?? []).map((o) => (o
-      ? { id: o.node.id, value: o.node.observable_value }
-      : { id: '', value: '' }));
+  const getValuesForCopy = (data: StixCyberObservablesLinesSearchQuery$data) => {
+    return (data.stixCyberObservables?.edges ?? []).map((o) =>
+      o ? { id: o.node.id, value: o.node.observable_value } : { id: '', value: '' },
+    );
   };
 
   const handleCopy = useCopy<StixCyberObservablesLinesSearchQuery$data>(
@@ -132,13 +142,20 @@ const StixCyberObservables: FunctionComponent = () => {
   return (
     <span data-testid="observables-page">
       <ExportContextProvider>
-        <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Observables'), current: true }]} />
+        <Breadcrumbs
+          elements={[
+            { label: t_i18n('Observations') },
+            { label: t_i18n('Observables'), current: true },
+          ]}
+        />
         {queryRef && (
           <DataTable
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
             preloadedPaginationProps={preloadedPaginationProps}
-            resolvePath={(data: StixCyberObservablesLines_data$data) => data.stixCyberObservables?.edges?.map?.((n) => n?.node)}
+            resolvePath={(data: StixCyberObservablesLines_data$data) =>
+              data.stixCyberObservables?.edges?.map?.((n) => n?.node)
+            }
             dataColumns={dataColumns}
             lineFragment={stixCyberObservableLineFragment}
             contextFilters={contextFilters}
@@ -146,7 +163,7 @@ const StixCyberObservables: FunctionComponent = () => {
             exportContext={{ entity_type: 'Stix-Cyber-Observable' }}
             availableEntityTypes={['Stix-Cyber-Observable']}
             searchContextFinal={{ entityTypes: ['Stix-Cyber-Observable'] }} // ???? for entity_type fileter
-            createButton={(
+            createButton={
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <StixCyberObservableCreation
                   paginationKey="Pagination_stixCyberObservables"
@@ -160,7 +177,7 @@ const StixCyberObservables: FunctionComponent = () => {
                   inputValue=""
                 />
               </Security>
-            )}
+            }
           />
         )}
       </ExportContextProvider>

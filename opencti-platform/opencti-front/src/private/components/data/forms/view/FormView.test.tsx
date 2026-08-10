@@ -7,9 +7,7 @@ import FormView from './FormView';
 
 vi.mock('../../../common/form/AuthorizedMembersField', () => ({
   __esModule: true,
-  default: () => (
-    <div data-testid="authorized-members-field" />
-  ),
+  default: () => <div data-testid="authorized-members-field" />,
 }));
 
 vi.mock('../../../common/form/CreatedByField', () => ({
@@ -51,7 +49,12 @@ const makeMockForm = (draftDefaults: object) => ({
   active: true,
   form_schema: JSON.stringify({
     fields: [
-      { name: 'name', label: 'Name', type: 'text', attributeMapping: { entity: 'main_entity', attributeName: 'name' } },
+      {
+        name: 'name',
+        label: 'Name',
+        type: 'text',
+        attributeMapping: { entity: 'main_entity', attributeName: 'name' },
+      },
     ],
     mainEntityType: 'Report',
     isDraftByDefault: true,
@@ -69,7 +72,10 @@ const mockUserContext = createMockUserContext({
   entitySettings: { edges: [] },
 });
 
-const resolveAndWait = async (relayEnv: ReturnType<typeof testRender>['relayEnv'], form: object) => {
+const resolveAndWait = async (
+  relayEnv: ReturnType<typeof testRender>['relayEnv'],
+  form: object,
+) => {
   await waitFor(() => {
     relayEnv.mock.resolveMostRecentOperation((operation) =>
       MockPayloadGenerator.generate(operation, { Form: () => form }),
@@ -94,7 +100,8 @@ describe('FormView', () => {
   it('should NOT render AuthorizedMembers when user lacks BYPASS and field is not editable', async () => {
     useGrantedSpy.mockImplementation((capabilities: string[]) => {
       if (capabilities.includes(useGrantedModule.BYPASS)) return false;
-      if (capabilities.includes(useGrantedModule.KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS)) return false;
+      if (capabilities.includes(useGrantedModule.KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS))
+        return false;
       return true;
     });
     const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
@@ -112,22 +119,29 @@ describe('FormView', () => {
   it('should render AuthorizedMembers when user has KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS and field is editable', async () => {
     useGrantedSpy.mockImplementation((capabilities: string[]) => {
       if (capabilities.includes(useGrantedModule.BYPASS)) return false;
-      if (capabilities.includes(useGrantedModule.KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS)) return true;
+      if (capabilities.includes(useGrantedModule.KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS))
+        return true;
       return true;
     });
     const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
-    await resolveAndWait(relayEnv, makeMockForm({
-      authorizedMembers: { enabled: true, isEditable: true, defaults: [] },
-    }));
+    await resolveAndWait(
+      relayEnv,
+      makeMockForm({
+        authorizedMembers: { enabled: true, isEditable: true, defaults: [] },
+      }),
+    );
     expect(screen.getByTestId('authorized-members-field')).toBeTruthy();
   });
 
   it('should render draftName field when enabled and editable', async () => {
     useGrantedSpy.mockReturnValue(true);
     const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
-    await resolveAndWait(relayEnv, makeMockForm({
-      name: { enabled: true, isEditable: true, isRequired: false, defaultValue: 'Default Draft' },
-    }));
+    await resolveAndWait(
+      relayEnv,
+      makeMockForm({
+        name: { enabled: true, isEditable: true, isRequired: false, defaultValue: 'Default Draft' },
+      }),
+    );
     expect(screen.getByLabelText(/Draft name/i)).toBeTruthy();
   });
 
@@ -137,9 +151,12 @@ describe('FormView', () => {
       return true;
     });
     const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
-    await resolveAndWait(relayEnv, makeMockForm({
-      name: { enabled: false, isEditable: false, isRequired: false },
-    }));
+    await resolveAndWait(
+      relayEnv,
+      makeMockForm({
+        name: { enabled: false, isEditable: false, isRequired: false },
+      }),
+    );
     expect(screen.queryByLabelText(/Draft name/i)).toBeNull();
   });
 
@@ -149,27 +166,36 @@ describe('FormView', () => {
       return true;
     });
     const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
-    await resolveAndWait(relayEnv, makeMockForm({
-      name: { enabled: true, isEditable: false, isRequired: false, defaultValue: 'Draft' },
-    }));
+    await resolveAndWait(
+      relayEnv,
+      makeMockForm({
+        name: { enabled: true, isEditable: false, isRequired: false, defaultValue: 'Draft' },
+      }),
+    );
     expect(screen.queryByLabelText(/Draft name/i)).toBeNull();
   });
 
   it('should render draftName for bypass user even when isEditable=false', async () => {
     useGrantedSpy.mockReturnValue(true);
     const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
-    await resolveAndWait(relayEnv, makeMockForm({
-      name: { enabled: true, isEditable: false, isRequired: false, defaultValue: 'Draft' },
-    }));
+    await resolveAndWait(
+      relayEnv,
+      makeMockForm({
+        name: { enabled: true, isEditable: false, isRequired: false, defaultValue: 'Draft' },
+      }),
+    );
     expect(screen.getByLabelText(/Draft name/i)).toBeTruthy();
   });
 
   it('should render draftDescription field when enabled and editable', async () => {
     useGrantedSpy.mockReturnValue(true);
     const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
-    await resolveAndWait(relayEnv, makeMockForm({
-      description: { enabled: true, isEditable: true, isRequired: false, defaultValue: 'Desc' },
-    }));
+    await resolveAndWait(
+      relayEnv,
+      makeMockForm({
+        description: { enabled: true, isEditable: true, isRequired: false, defaultValue: 'Desc' },
+      }),
+    );
     // MarkdownField uses a visual label (not linked via 'for'), so use text query
     expect(screen.getByText(/Draft description/i)).toBeTruthy();
   });
@@ -180,18 +206,24 @@ describe('FormView', () => {
       return true;
     });
     const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
-    await resolveAndWait(relayEnv, makeMockForm({
-      description: { enabled: false, isEditable: false, isRequired: false },
-    }));
+    await resolveAndWait(
+      relayEnv,
+      makeMockForm({
+        description: { enabled: false, isEditable: false, isRequired: false },
+      }),
+    );
     expect(screen.queryByText(/Draft description/i)).toBeNull();
   });
 
   it('should render ObjectAssigneeField when enabled and editable', async () => {
     useGrantedSpy.mockReturnValue(true);
     const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
-    await resolveAndWait(relayEnv, makeMockForm({
-      objectAssignee: { enabled: true, isEditable: true, isRequired: false, defaults: [] },
-    }));
+    await resolveAndWait(
+      relayEnv,
+      makeMockForm({
+        objectAssignee: { enabled: true, isEditable: true, isRequired: false, defaults: [] },
+      }),
+    );
     expect(screen.getByTestId('assignee-field-draftObjectAssignee')).toBeTruthy();
   });
 
@@ -201,27 +233,36 @@ describe('FormView', () => {
       return true;
     });
     const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
-    await resolveAndWait(relayEnv, makeMockForm({
-      objectAssignee: { enabled: false, isEditable: false, isRequired: false, defaults: [] },
-    }));
+    await resolveAndWait(
+      relayEnv,
+      makeMockForm({
+        objectAssignee: { enabled: false, isEditable: false, isRequired: false, defaults: [] },
+      }),
+    );
     expect(screen.queryByTestId('assignee-field-draftObjectAssignee')).toBeNull();
   });
 
   it('should render ObjectParticipantField when enabled and editable', async () => {
     useGrantedSpy.mockReturnValue(true);
     const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
-    await resolveAndWait(relayEnv, makeMockForm({
-      objectParticipant: { enabled: true, isEditable: true, isRequired: false, defaults: [] },
-    }));
+    await resolveAndWait(
+      relayEnv,
+      makeMockForm({
+        objectParticipant: { enabled: true, isEditable: true, isRequired: false, defaults: [] },
+      }),
+    );
     expect(screen.getByTestId('participant-field-draftObjectParticipant')).toBeTruthy();
   });
 
   it('should render CreatedByField with helper text for main_entity_author type', async () => {
     useGrantedSpy.mockReturnValue(true);
     const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
-    await resolveAndWait(relayEnv, makeMockForm({
-      author: { type: 'main_entity_author', isEditable: true, isRequired: false },
-    }));
+    await resolveAndWait(
+      relayEnv,
+      makeMockForm({
+        author: { type: 'main_entity_author', isEditable: true, isRequired: false },
+      }),
+    );
     expect(screen.getByTestId('created-by-field')).toBeTruthy();
     // helpertext is rendered as a sibling <FormHelperText> for main_entity_author
     expect(screen.getByText(/Reuse/i)).toBeTruthy();
@@ -230,9 +271,18 @@ describe('FormView', () => {
   it('should render CreatedByField without helpertext for static type', async () => {
     useGrantedSpy.mockReturnValue(true);
     const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
-    await resolveAndWait(relayEnv, makeMockForm({
-      author: { type: 'static', isEditable: true, isRequired: false, defaultValue: 'identity-1', defaultValueLabel: 'Org A' },
-    }));
+    await resolveAndWait(
+      relayEnv,
+      makeMockForm({
+        author: {
+          type: 'static',
+          isEditable: true,
+          isRequired: false,
+          defaultValue: 'identity-1',
+          defaultValueLabel: 'Org A',
+        },
+      }),
+    );
     expect(screen.getByTestId('created-by-field')).toBeTruthy();
     expect(screen.queryByText(/Reuse/i)).toBeNull();
   });
@@ -243,9 +293,17 @@ describe('FormView', () => {
       return true;
     });
     const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
-    await resolveAndWait(relayEnv, makeMockForm({
-      author: { type: 'static', isEditable: false, isRequired: false, defaultValue: 'identity-1' },
-    }));
+    await resolveAndWait(
+      relayEnv,
+      makeMockForm({
+        author: {
+          type: 'static',
+          isEditable: false,
+          isRequired: false,
+          defaultValue: 'identity-1',
+        },
+      }),
+    );
     expect(screen.queryByTestId('created-by-field')).toBeNull();
   });
 });

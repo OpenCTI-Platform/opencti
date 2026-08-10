@@ -9,10 +9,7 @@ type DangerZoneButtonProps = CustomButtonProps & {
   sensitiveType?: SensitiveConfigType;
 };
 
-const DangerZoneButton = ({
-  sensitiveType,
-  ...props
-}: DangerZoneButtonProps) => {
+const DangerZoneButton = ({ sensitiveType, ...props }: DangerZoneButtonProps) => {
   const theme = useTheme<Theme>();
 
   const rootStyle: CSSProperties = {
@@ -32,10 +29,7 @@ const DangerZoneButton = ({
   };
 
   return (
-    <DangerZoneBlock
-      type={sensitiveType}
-      sx={{ root: rootStyle, title: titleStyle }}
-    >
+    <DangerZoneBlock type={sensitiveType} sx={{ root: rootStyle, title: titleStyle }}>
       {({ disabled }) => {
         const buttonStyle: CSSProperties = {
           borderColor: theme.palette.dangerZone.main,

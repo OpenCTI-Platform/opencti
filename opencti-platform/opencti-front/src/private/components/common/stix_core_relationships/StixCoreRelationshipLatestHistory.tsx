@@ -1,16 +1,23 @@
 import React from 'react';
 import { useFormatter } from '../../../../components/i18n';
-import StixCoreRelationshipHistoryLines, { stixCoreRelationshipHistoryLinesQuery } from './StixCoreRelationshipHistoryLines';
+import StixCoreRelationshipHistoryLines, {
+  stixCoreRelationshipHistoryLinesQuery,
+} from './StixCoreRelationshipHistoryLines';
 import CardTitle from '../../../../components/common/card/CardTitle';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { StixCoreRelationshipHistoryLinesQuery, StixCoreRelationshipHistoryLinesQuery$variables } from './__generated__/StixCoreRelationshipHistoryLinesQuery.graphql';
+import {
+  StixCoreRelationshipHistoryLinesQuery,
+  StixCoreRelationshipHistoryLinesQuery$variables,
+} from './__generated__/StixCoreRelationshipHistoryLinesQuery.graphql';
 
 interface StixCoreRelationshipLatestHistoryProps {
   stixCoreRelationshipId: string;
 }
 
-const StixCoreRelationshipLatestHistory = ({ stixCoreRelationshipId }: StixCoreRelationshipLatestHistoryProps) => {
+const StixCoreRelationshipLatestHistory = ({
+  stixCoreRelationshipId,
+}: StixCoreRelationshipLatestHistoryProps) => {
   const { t_i18n } = useFormatter();
   const { tz, locale, unitSystem } = useAuth();
   const paginationOptions = {

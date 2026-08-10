@@ -9,7 +9,9 @@ import { SELF_ID } from '../../../filters/filtersUtils';
 
 describe('Hook: useBuildAttributesOutcome', () => {
   beforeAll(() => {
-    vi.spyOn(filterUtils, 'useBuildFilterKeysMapFromEntityType').mockImplementation(() => new Map());
+    vi.spyOn(filterUtils, 'useBuildFilterKeysMapFromEntityType').mockImplementation(
+      () => new Map(),
+    );
   });
   afterAll(() => {
     vi.restoreAllMocks();
@@ -52,21 +54,24 @@ describe('Hook: useBuildAttributesOutcome', () => {
       });
     });
 
-    const attributesOutcome = await buildAttributesOutcome(
-      'id_XX',
-      {
-        instance_id: SELF_ID,
-        columns: [
-          { variableName: 'reportName', attribute: 'name', label: 'Name' },
-          { variableName: 'reportLabels', attribute: 'objectLabel.value' },
-          { variableName: 'reportMarkings', attribute: 'objectMarking.definition', displayStyle: 'list' },
-        ],
-      },
-    );
+    const attributesOutcome = await buildAttributesOutcome('id_XX', {
+      instance_id: SELF_ID,
+      columns: [
+        { variableName: 'reportName', attribute: 'name', label: 'Name' },
+        { variableName: 'reportLabels', attribute: 'objectLabel.value' },
+        {
+          variableName: 'reportMarkings',
+          attribute: 'objectMarking.definition',
+          displayStyle: 'list',
+        },
+      ],
+    });
 
     const name = attributesOutcome.find((o) => o.variableName === 'reportName')?.attributeData;
     const labels = attributesOutcome.find((o) => o.variableName === 'reportLabels')?.attributeData;
-    const markings = attributesOutcome.find((o) => o.variableName === 'reportMarkings')?.attributeData;
+    const markings = attributesOutcome.find(
+      (o) => o.variableName === 'reportMarkings',
+    )?.attributeData;
     expect(name).toEqual('Super Report');
     expect(labels).toEqual('a-label');
     expect(markings).toEqual('<ul><li>tlp:red</li></ul>');

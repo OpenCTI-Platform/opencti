@@ -1,220 +1,229 @@
 # Type
 enum DraftStatus {
-    open
-    validated
+  open
+  validated
 }
 
 enum DraftChangeType {
-    create
-    delete
-    add
-    remove
+  create
+  delete
+  add
+  remove
 }
 
 type DraftContainerObjectChange {
-    entity_id: String!
-    entity_type: String!
-    representative_main: String
-    draft_operation: DraftChangeType!
+  entity_id: String!
+  entity_type: String!
+  representative_main: String
+  draft_operation: DraftChangeType!
 }
 
 type DraftWorkspace implements InternalObject & BasicObject {
-    id: ID!
-    entity_type: String!
-    representative: Representative!
-    standard_id: String!
-    parent_types: [String!]!
-    metrics:[Metric]
-    # DraftWorkspace
-    name: String!
-    createdBy: Identity
-    description: String
-    created_at: DateTime!
-    creators: [Creator!]
-    entity_id: String
-    objectAssignee: [Assignee!]
-    objectParticipant: [Participant!]
-    objectsCount: DraftObjectsCount!
-    draft_status: DraftStatus!
-    processingCount: Int!
-    works(first: Int): [Work!]
-    validationWork: Work
-    authorizedMembers: [MemberAccess!]!
-    currentUserAccessRight: String
+  id: ID!
+  entity_type: String!
+  representative: Representative!
+  standard_id: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  # DraftWorkspace
+  name: String!
+  createdBy: Identity
+  description: String
+  created_at: DateTime!
+  creators: [Creator!]
+  entity_id: String
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
+  objectsCount: DraftObjectsCount!
+  draft_status: DraftStatus!
+  processingCount: Int!
+  works(first: Int): [Work!]
+  validationWork: Work
+  authorizedMembers: [MemberAccess!]!
+  currentUserAccessRight: String
 }
 
 type DraftObjectsCount {
-    totalCount: Int!
-    entitiesCount: Int!
-    observablesCount: Int!
-    relationshipsCount: Int!
-    sightingsCount: Int!
-    containersCount: Int!
-    reviewsCount: Int!
+  totalCount: Int!
+  entitiesCount: Int!
+  observablesCount: Int!
+  relationshipsCount: Int!
+  sightingsCount: Int!
+  containersCount: Int!
+  reviewsCount: Int!
 }
 
 # Ordering
 enum DraftWorkspacesOrdering {
-    name
-    created_at
-    creator
-    draft_status
-    createdBy
-    objectAssignee
-    objectParticipant
-    workflowInstance
-    _score
+  name
+  created_at
+  creator
+  draft_status
+  createdBy
+  objectAssignee
+  objectParticipant
+  workflowInstance
+  _score
 }
 
 # Relay connections
 type DraftWorkspaceConnection {
-    pageInfo: PageInfo!
-    edges: [DraftWorkspaceEdge!]!
+  pageInfo: PageInfo!
+  edges: [DraftWorkspaceEdge!]!
 }
 
 type DraftWorkspaceEdge {
-    cursor: String!
-    node: DraftWorkspace!
+  cursor: String!
+  node: DraftWorkspace!
 }
 
 # Queries
 type Query {
-    draftWorkspace(id: String!): DraftWorkspace @auth(for: [KNOWLEDGE])
-    draftWorkspaces(
-        first: Int
-        after: ID
-        orderBy: DraftWorkspacesOrdering
-        orderMode: OrderingMode
-        filters: FilterGroup
-        search: String
-    ): DraftWorkspaceConnection @auth(for: [KNOWLEDGE])
-    draftWorkspacesRestricted(
-        first: Int
-        after: ID
-        orderBy: DraftWorkspacesOrdering
-        orderMode: OrderingMode
-        filters: FilterGroup
-        search: String
-    ): DraftWorkspaceConnection @auth(for: [KNOWLEDGE])
-    draftWorkspaceEntities(
-        draftId: String!,
-        types: [String]
-        first: Int
-        after: ID
-        orderBy: StixCoreObjectsOrdering
-        orderMode: OrderingMode
-        filters: FilterGroup
-        search: String
-        draftOperation: DraftOperation
-    ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
-    draftWorkspaceContainerObjects(
-        draftId: String!
-        containerId: String!
-    ): [DraftContainerObjectChange!]! @auth(for: [KNOWLEDGE])
-    draftWorkspaceRelationships(
-        draftId: String!,
-        types: [String]
-        first: Int
-        after: ID
-        orderBy: StixRelationshipsOrdering
-        orderMode: OrderingMode
-        filters: FilterGroup
-        search: String
-    ): StixRelationshipConnection @auth(for: [KNOWLEDGE])
-    draftWorkspaceSightingRelationships(
-        draftId: String!,
-        types: [String]
-        first: Int
-        after: ID
-        orderBy: StixSightingRelationshipsOrdering
-        orderMode: OrderingMode
-        filters: FilterGroup
-        search: String
-    ): StixSightingRelationshipConnection @auth(for: [KNOWLEDGE])
-    draftWorkspaceResolveIds(draftId: String!, ids: [String!]!): [DraftResolvedId!]! @auth(for: [KNOWLEDGE])
-    draftWorkspaceEntityFields(draftId: String!, entityId: String!): [DraftEntityField!]! @auth(for: [KNOWLEDGE])
-    draftWorkspaceEntityRelations(draftId: String!, entityId: String!): [DraftEntityRelation!]! @auth(for: [KNOWLEDGE])
-    draftWorkspaceEntityContainerRefs(draftId: String!, entityId: String!): [DraftEntityContainerRef!]! @auth(for: [KNOWLEDGE])
-    draftWorkspacesNumber(
-        dateAttribute: String
-        startDate: DateTime
-        endDate: DateTime
-        filters: FilterGroup
-        search: String
-    ): Number @auth(for: [KNOWLEDGE])
-    draftWorkspacesTimeSeries(
-        field: String!
-        operation: StatsOperation!
-        startDate: DateTime!
-        endDate: DateTime
-        interval: String!
-        filters: FilterGroup
-        search: String
-    ): [TimeSeries] @auth(for: [KNOWLEDGE])
-    draftWorkspacesDistribution(
-        field: String!
-        startDate: DateTime
-        endDate: DateTime
-        dateAttribute: String
-        operation: StatsOperation!
-        limit: Int
-        order: String
-        filters: FilterGroup
-        search: String
-    ): [Distribution] @auth(for: [KNOWLEDGE])
+  draftWorkspace(id: String!): DraftWorkspace @auth(for: [KNOWLEDGE])
+  draftWorkspaces(
+    first: Int
+    after: ID
+    orderBy: DraftWorkspacesOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): DraftWorkspaceConnection @auth(for: [KNOWLEDGE])
+  draftWorkspacesRestricted(
+    first: Int
+    after: ID
+    orderBy: DraftWorkspacesOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): DraftWorkspaceConnection @auth(for: [KNOWLEDGE])
+  draftWorkspaceEntities(
+    draftId: String!
+    types: [String]
+    first: Int
+    after: ID
+    orderBy: StixCoreObjectsOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+    draftOperation: DraftOperation
+  ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
+  draftWorkspaceContainerObjects(
+    draftId: String!
+    containerId: String!
+  ): [DraftContainerObjectChange!]! @auth(for: [KNOWLEDGE])
+  draftWorkspaceRelationships(
+    draftId: String!
+    types: [String]
+    first: Int
+    after: ID
+    orderBy: StixRelationshipsOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): StixRelationshipConnection @auth(for: [KNOWLEDGE])
+  draftWorkspaceSightingRelationships(
+    draftId: String!
+    types: [String]
+    first: Int
+    after: ID
+    orderBy: StixSightingRelationshipsOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): StixSightingRelationshipConnection @auth(for: [KNOWLEDGE])
+  draftWorkspaceResolveIds(draftId: String!, ids: [String!]!): [DraftResolvedId!]!
+    @auth(for: [KNOWLEDGE])
+  draftWorkspaceEntityFields(draftId: String!, entityId: String!): [DraftEntityField!]!
+    @auth(for: [KNOWLEDGE])
+  draftWorkspaceEntityRelations(draftId: String!, entityId: String!): [DraftEntityRelation!]!
+    @auth(for: [KNOWLEDGE])
+  draftWorkspaceEntityContainerRefs(
+    draftId: String!
+    entityId: String!
+  ): [DraftEntityContainerRef!]! @auth(for: [KNOWLEDGE])
+  draftWorkspacesNumber(
+    dateAttribute: String
+    startDate: DateTime
+    endDate: DateTime
+    filters: FilterGroup
+    search: String
+  ): Number @auth(for: [KNOWLEDGE])
+  draftWorkspacesTimeSeries(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime!
+    endDate: DateTime
+    interval: String!
+    filters: FilterGroup
+    search: String
+  ): [TimeSeries] @auth(for: [KNOWLEDGE])
+  draftWorkspacesDistribution(
+    field: String!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    operation: StatsOperation!
+    limit: Int
+    order: String
+    filters: FilterGroup
+    search: String
+  ): [Distribution] @auth(for: [KNOWLEDGE])
 }
 
 type DraftEntityField {
-    field: String!
-    values: [String!]!
+  field: String!
+  values: [String!]!
 }
 
 type DraftEntityRelation {
-    relation_id: String!
-    relationship_type: String!
-    from_id: String!
-    from_type: String!
-    from_name: String!
-    to_id: String!
-    to_type: String!
-    to_name: String!
-    draft_operation: DraftChangeType!
+  relation_id: String!
+  relationship_type: String!
+  from_id: String!
+  from_type: String!
+  from_name: String!
+  to_id: String!
+  to_type: String!
+  to_name: String!
+  draft_operation: DraftChangeType!
 }
 
 type DraftEntityContainerRef {
-    container_id: String!
-    container_type: String!
-    container_name: String!
-    draft_operation: DraftChangeType!
+  container_id: String!
+  container_type: String!
+  container_name: String!
+  draft_operation: DraftChangeType!
 }
 
 type DraftResolvedId {
-    id: String!
-    representative_main: String
+  id: String!
+  representative_main: String
 }
 
 input DraftWorkspaceAddInput {
-    name: String!
-    createdBy: String
-    description: String
-    entity_id: String
-    objectAssignee: [String]
-    objectParticipant: [String]
-    authorized_members: [MemberAccessInput!]
+  name: String!
+  createdBy: String
+  description: String
+  entity_id: String
+  objectAssignee: [String]
+  objectParticipant: [String]
+  authorized_members: [MemberAccessInput!]
 }
 
-
 type DraftWorkspaceEdit {
-    relationAdd(input: InternalRelationshipAddInput!): InternalRelationship
-    relationDelete(toId: StixRef!, relationship_type: String!): DraftWorkspace
+  relationAdd(input: InternalRelationshipAddInput!): InternalRelationship
+  relationDelete(toId: StixRef!, relationship_type: String!): DraftWorkspace
 }
 
 type Mutation {
-    draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace @auth(for: [KNOWLEDGE_KNUPDATE], forDraft: [KNOWLEDGE_KNUPDATE])
-    draftWorkspaceEdit(id: ID!): DraftWorkspaceEdit @auth(for: [KNOWLEDGE_KNUPDATE])
-    draftWorkspaceFieldPatch(id: ID!, input: [EditInput!]!): DraftWorkspace @auth(for: [KNOWLEDGE_KNUPDATE])
-    draftWorkspaceValidate(id: ID!): Work @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-    draftWorkspaceDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-    draftWorkspaceEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]): DraftWorkspace @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS])
-    draftWorkspaceContextPatch(id: ID!, input: EditContext!): DraftWorkspace @auth(for: [KNOWLEDGE_KNUPDATE])
+  draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace
+    @auth(for: [KNOWLEDGE_KNUPDATE], forDraft: [KNOWLEDGE_KNUPDATE])
+  draftWorkspaceEdit(id: ID!): DraftWorkspaceEdit @auth(for: [KNOWLEDGE_KNUPDATE])
+  draftWorkspaceFieldPatch(id: ID!, input: [EditInput!]!): DraftWorkspace
+    @auth(for: [KNOWLEDGE_KNUPDATE])
+  draftWorkspaceValidate(id: ID!): Work @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  draftWorkspaceDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  draftWorkspaceEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]): DraftWorkspace
+    @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS])
+  draftWorkspaceContextPatch(id: ID!, input: EditContext!): DraftWorkspace
+    @auth(for: [KNOWLEDGE_KNUPDATE])
 }

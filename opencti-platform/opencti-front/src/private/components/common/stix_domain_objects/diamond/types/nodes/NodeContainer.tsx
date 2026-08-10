@@ -11,11 +11,7 @@ interface NodeContainerProps {
   position: Position;
 }
 
-const NodeContainer: FunctionComponent<NodeContainerProps> = ({
-  children,
-  link,
-  position,
-}) => {
+const NodeContainer: FunctionComponent<NodeContainerProps> = ({ children, link, position }) => {
   const { t_i18n } = useFormatter();
 
   return (

@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { isResolvableId, parseUpdatesPatch, buildFieldLabelMap, formatFieldKey } from './draftReviewDiffPanelUtils';
+import {
+  isResolvableId,
+  parseUpdatesPatch,
+  buildFieldLabelMap,
+  formatFieldKey,
+} from './draftReviewDiffPanelUtils';
 
 describe('isResolvableId', () => {
   it('should return true for a valid STIX ID', () => {
@@ -38,9 +43,19 @@ describe('parseUpdatesPatch', () => {
 
   it('should filter out EXCLUDED_PATCH_FIELDS (standard_id, objects)', () => {
     const patch = JSON.stringify({
-      standard_id: { initial_value: ['old-id'], replaced_value: ['new-id'], added_value: [], removed_value: [] },
+      standard_id: {
+        initial_value: ['old-id'],
+        replaced_value: ['new-id'],
+        added_value: [],
+        removed_value: [],
+      },
       objects: { initial_value: [], replaced_value: [], added_value: ['obj1'], removed_value: [] },
-      name: { initial_value: ['Old Name'], replaced_value: ['New Name'], added_value: [], removed_value: [] },
+      name: {
+        initial_value: ['Old Name'],
+        replaced_value: ['New Name'],
+        added_value: [],
+        removed_value: [],
+      },
     });
     const result = parseUpdatesPatch(patch);
     expect(result).toHaveLength(1);
@@ -86,7 +101,12 @@ describe('parseUpdatesPatch', () => {
   it('should handle multiple fields', () => {
     const patch = JSON.stringify({
       name: { initial_value: ['A'], replaced_value: ['B'], added_value: [], removed_value: [] },
-      description: { initial_value: ['X'], replaced_value: ['Y'], added_value: [], removed_value: [] },
+      description: {
+        initial_value: ['X'],
+        replaced_value: ['Y'],
+        added_value: [],
+        removed_value: [],
+      },
     });
     const result = parseUpdatesPatch(patch);
     expect(result).toHaveLength(2);

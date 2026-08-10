@@ -14,7 +14,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import type { PlaybookCategory } from './__generated__/PlaybookFlow_playbookComponents.graphql';
-import { PlaybookBundleElementsToApply, type PlaybookComponent, type PlaybookComponentConfigSchema, type PlaybookComponents, type PlaybookConfig } from '../types/playbook-types';
+import {
+  PlaybookBundleElementsToApply,
+  type PlaybookComponent,
+  type PlaybookComponentConfigSchema,
+  type PlaybookComponents,
+  type PlaybookConfig,
+} from '../types/playbook-types';
 import type { PlaybookFlowFormData } from './PlaybookFlowForm';
 import type { PlaybookUpdateAction } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
 
@@ -39,14 +45,12 @@ export function groupAndSortPlaybookComponents(
     return component;
   });
 
-  return PLAYBOOK_CATEGORY_ORDER
-    .map((category) => ({
-      category,
-      items: filtered
-        .filter((c) => c.category === category)
-        .sort((a, b) => a.name.localeCompare(b.name)),
-    }))
-    .filter((g) => g.items.length > 0);
+  return PLAYBOOK_CATEGORY_ORDER.map((category) => ({
+    category,
+    items: filtered
+      .filter((c) => c.category === category)
+      .sort((a, b) => a.name.localeCompare(b.name)),
+  })).filter((g) => g.items.length > 0);
 }
 
 export interface NodeData {
@@ -81,19 +85,18 @@ export const computeInitialComponentConfigValues = ({
     // Get default values from schema.
     initialValues.name = selectedComponent?.name ?? '';
     initialValues.description = '';
-    Object.entries(configurationSchema?.properties ?? {})
-      .forEach(([propName, property]) => {
-        initialValues[propName] = property.default;
-        if (propName === 'actions') initialValues.actionsFormValues = [];
-      });
+    Object.entries(configurationSchema?.properties ?? {}).forEach(([propName, property]) => {
+      initialValues[propName] = property.default;
+      if (propName === 'actions') initialValues.actionsFormValues = [];
+    });
   } else {
     // Get values from saved config.
-    initialValues.name = nodeData?.component?.id === selectedComponent?.id
-      ? nodeData?.name ?? ''
-      : selectedComponent?.name ?? '';
-    initialValues.description = nodeData?.component?.id === selectedComponent?.id
-      ? nodeData?.description ?? ''
-      : '';
+    initialValues.name =
+      nodeData?.component?.id === selectedComponent?.id
+        ? (nodeData?.name ?? '')
+        : (selectedComponent?.name ?? '');
+    initialValues.description =
+      nodeData?.component?.id === selectedComponent?.id ? (nodeData?.description ?? '') : '';
     const actionsFormValues: PlaybookUpdateAction['value'][] = [];
     Object.entries(currentConfig)
       .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))

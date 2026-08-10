@@ -12,11 +12,7 @@ const stixCoreObjectMutationRelationsAdd = graphql`
     $references: [String]
   ) {
     stixCoreObjectEdit(id: $id) {
-      relationsAdd(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      relationsAdd(input: $input, commitMessage: $commitMessage, references: $references) {
         objectLabel {
           id
           value

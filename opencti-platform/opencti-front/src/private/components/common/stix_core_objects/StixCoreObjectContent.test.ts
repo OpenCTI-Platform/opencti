@@ -11,6 +11,8 @@ describe('isPdfPasswordError', () => {
   });
 
   it('returns false for non-password errors', () => {
-    expect(isPdfPasswordError({ name: 'AbortException', message: 'The operation was aborted.' })).toBe(false);
+    expect(
+      isPdfPasswordError({ name: 'AbortException', message: 'The operation was aborted.' }),
+    ).toBe(false);
   });
 });

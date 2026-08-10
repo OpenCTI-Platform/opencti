@@ -54,15 +54,18 @@ interface NotifierFormProps {
   inputValue?: string;
 }
 
-const notifierValidation = (t: (value: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  notifier_connector_id: Yup.object().required(t('This field is required')),
-  authorized_members: Yup.array().nullable(),
-});
+const notifierValidation = (t: (value: string) => string) =>
+  Yup.object().shape({
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    notifier_connector_id: Yup.object().required(t('This field is required')),
+    authorized_members: Yup.array().nullable(),
+  });
 
-type NotifierFormikHelpers = Pick<FormikHelpers<NotifierAddInput>,
-'setErrors' | 'setSubmitting' | 'resetForm'>;
+type NotifierFormikHelpers = Pick<
+  FormikHelpers<NotifierAddInput>,
+  'setErrors' | 'setSubmitting' | 'resetForm'
+>;
 
 export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
   updater,
@@ -72,7 +75,9 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
   const { t_i18n } = useFormatter();
   const formRef = createRef<CoreForm>();
   const [open, setOpen] = useState(false);
-  const [connector, setCurrentConnector] = useState<FieldOption & { schema?: string; ui_schema?: string }>();
+  const [connector, setCurrentConnector] = useState<
+    FieldOption & { schema?: string; ui_schema?: string }
+  >();
   const initialValues: NotifierAddInput = {
     name: inputValue || '',
     description: '',
@@ -140,12 +145,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
         setFieldValue,
       }) => (
         <Form>
-          <Field
-            component={TextField}
-            name="name"
-            label={t_i18n('Name')}
-            fullWidth={true}
-          />
+          <Field component={TextField} name="name" label={t_i18n('Name')} fullWidth={true} />
           <Field
             component={TextField}
             name="description"
@@ -191,9 +191,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
                 schema={JSON.parse(connector.schema ?? ' {}')}
                 formData={JSON.parse(notifierConfiguration.current)}
                 onChange={(newValue) => {
-                  notifierConfiguration.current = JSON.stringify(
-                    newValue.formData,
-                  );
+                  notifierConfiguration.current = JSON.stringify(newValue.formData);
                 }}
               >
                 <></>
@@ -201,19 +199,13 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
             </Box>
           )}
           <FormButtonContainer>
-            <Button
-              variant="secondary"
-              onClick={handleReset}
-              disabled={isSubmitting}
-            >
+            <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
               {t_i18n('Cancel')}
             </Button>
             <Button
               variant="secondary"
               onClick={() => {
-                notifierConfiguration.current = JSON.stringify(
-                  formRef.current?.state.formData,
-                );
+                notifierConfiguration.current = JSON.stringify(formRef.current?.state.formData);
                 setOpen(true);
               }}
               disabled={isSubmitting}
@@ -222,11 +214,12 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
             </Button>
             <Button
               color="secondary"
-              onClick={() => submitForm(values, formRef.current, {
-                setErrors,
-                setSubmitting,
-                resetForm,
-              })
+              onClick={() =>
+                submitForm(values, formRef.current, {
+                  setErrors,
+                  setSubmitting,
+                  resetForm,
+                })
               }
             >
               {t_i18n('Create')}
@@ -258,10 +251,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
 };
 
 const CreateNotifierControlledDial = (props: DrawerControlledDialProps) => (
-  <CreateEntityControlledDial
-    entityType="Notifier"
-    {...props}
-  />
+  <CreateEntityControlledDial entityType="Notifier" {...props} />
 );
 
 const NotifierCreation: FunctionComponent<{
@@ -271,16 +261,11 @@ const NotifierCreation: FunctionComponent<{
   paginationOptions: NotifiersLinesPaginationQuery$variables;
 }> = ({ inputValue, paginationOptions }) => {
   const { t_i18n } = useFormatter();
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_notifiers', paginationOptions, 'notifierAdd');
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_notifiers', paginationOptions, 'notifierAdd');
   return (
-    <Drawer
-      title={t_i18n('Create a notifier')}
-      controlledDial={CreateNotifierControlledDial}
-    >
-      <NotifierCreationForm
-        inputValue={inputValue}
-        updater={updater}
-      />
+    <Drawer title={t_i18n('Create a notifier')} controlledDial={CreateNotifierControlledDial}>
+      <NotifierCreationForm inputValue={inputValue} updater={updater} />
     </Drawer>
   );
 };

@@ -15,13 +15,13 @@ const publicStixCoreObjectsPolarAreaQuery = graphql`
     $startDate: DateTime
     $endDate: DateTime
     $uriKey: String!
-    $widgetId : String!
+    $widgetId: String!
   ) {
     publicStixCoreObjectsDistribution(
       startDate: $startDate
       endDate: $endDate
       uriKey: $uriKey
-      widgetId : $widgetId
+      widgetId: $widgetId
     ) {
       label
       value
@@ -83,16 +83,10 @@ const PublicStixRelationshipsPolarAreaComponent = ({
     queryRef,
   );
 
-  if (
-    publicStixCoreObjectsDistribution
-    && publicStixCoreObjectsDistribution.length > 0
-  ) {
+  if (publicStixCoreObjectsDistribution && publicStixCoreObjectsDistribution.length > 0) {
     const attributeField = dataSelection[0].attribute || 'entity_type';
     return (
-      <WidgetPolarArea
-        data={[...publicStixCoreObjectsDistribution]}
-        groupBy={attributeField}
-      />
+      <WidgetPolarArea data={[...publicStixCoreObjectsDistribution]} groupBy={attributeField} />
     );
   }
   return <WidgetNoData />;
@@ -118,9 +112,7 @@ const PublicStixCoreObjectsPolarArea = ({
   );
 
   return (
-    <WidgetContainer
-      title={parameters?.title ?? title ?? t_i18n('Entities number')}
-    >
+    <WidgetContainer title={parameters?.title ?? title ?? t_i18n('Entities number')}>
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixRelationshipsPolarAreaComponent

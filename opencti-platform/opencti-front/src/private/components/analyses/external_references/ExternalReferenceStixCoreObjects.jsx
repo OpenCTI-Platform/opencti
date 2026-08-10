@@ -15,8 +15,7 @@ const ExternalReferenceStixCoreObjectsComponent = ({ externalReference }) => {
   const { t_i18n } = useFormatter();
   const computeLink = useComputeLink();
 
-  const stixCoreObjects = (externalReference.references?.edges ?? [])
-    .map((n) => n?.node);
+  const stixCoreObjects = (externalReference.references?.edges ?? []).map((n) => n?.node);
 
   return (
     <div style={{ height: '100%' }}>
@@ -53,7 +52,9 @@ const ExternalReferenceStixCoreObjects = createFragmentContainer(
     externalReference: graphql`
       fragment ExternalReferenceStixCoreObjects_externalReference on ExternalReference {
         id
-        references(types: ["Stix-Core-Object", "Stix-Core-Relationship", "Stix-Sighting-Relationship"]) {
+        references(
+          types: ["Stix-Core-Object", "Stix-Core-Relationship", "Stix-Sighting-Relationship"]
+        ) {
           edges {
             node {
               ... on StixObject {

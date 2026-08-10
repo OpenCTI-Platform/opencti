@@ -1,5 +1,14 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addForm, findById, findFormPaginated, formDelete, formEditField, formSubmit, generateFormExportConfiguration, importFormConfiguration } from './form-domain';
+import {
+  addForm,
+  findById,
+  findFormPaginated,
+  formDelete,
+  formEditField,
+  formSubmit,
+  generateFormExportConfiguration,
+  importFormConfiguration,
+} from './form-domain';
 
 const formResolvers: Resolvers = {
   Query: {

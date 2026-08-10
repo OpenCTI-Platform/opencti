@@ -14,7 +14,11 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -27,11 +31,7 @@ const positionMutationFieldPatch = graphql`
     $references: [String]
   ) {
     positionEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         ...PositionEditionOverview_position
         ...Position_position
       }
@@ -40,10 +40,7 @@ const positionMutationFieldPatch = graphql`
 `;
 
 export const positionEditionOverviewFocus = graphql`
-  mutation PositionEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation PositionEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     positionEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -88,29 +85,30 @@ const PositionEditionOverviewComponent = (props) => {
   const { t_i18n } = useFormatter();
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(POSITION_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    description: Yup.string().nullable().max(5000, t_i18n('The value is too long')),
-    confidence: Yup.number().nullable(),
-    latitude: Yup.number()
-      .typeError(t_i18n('This field must be a number'))
-      .nullable()
-      .min(-90, t_i18n('Latitude must be between -90 and 90 degrees'))
-      .max(90, t_i18n('Latitude must be between -90 and 90 degrees')),
-    longitude: Yup.number()
-      .typeError(t_i18n('This field must be a number'))
-      .nullable()
-      .min(-180, t_i18n('Longitude must be between -180 and 180 degrees'))
-      .max(180, t_i18n('Longitude must be between -180 and 180 degrees')),
-    street_address: Yup.string()
-      .nullable()
-      .max(1000, t_i18n('The value is too long')),
-    postal_code: Yup.string().nullable().max(1000, t_i18n('The value is too long')),
-    references: Yup.array(),
-    x_opencti_workflow_id: Yup.object(),
-    createdBy: Yup.object().nullable(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      description: Yup.string().nullable().max(5000, t_i18n('The value is too long')),
+      confidence: Yup.number().nullable(),
+      latitude: Yup.number()
+        .typeError(t_i18n('This field must be a number'))
+        .nullable()
+        .min(-90, t_i18n('Latitude must be between -90 and 90 degrees'))
+        .max(90, t_i18n('Latitude must be between -90 and 90 degrees')),
+      longitude: Yup.number()
+        .typeError(t_i18n('This field must be a number'))
+        .nullable()
+        .min(-180, t_i18n('Longitude must be between -180 and 180 degrees'))
+        .max(180, t_i18n('Longitude must be between -180 and 180 degrees')),
+      street_address: Yup.string().nullable().max(1000, t_i18n('The value is too long')),
+      postal_code: Yup.string().nullable().max(1000, t_i18n('The value is too long')),
+      references: Yup.array(),
+      x_opencti_workflow_id: Yup.object(),
+      createdBy: Yup.object().nullable(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
+  );
   const positionValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
   const queries = {
     fieldPatch: positionMutationFieldPatch,
@@ -118,12 +116,7 @@ const PositionEditionOverviewComponent = (props) => {
     relationDelete: positionMutationRelationDelete,
     editionFocus: positionEditionOverviewFocus,
   };
-  const editor = useFormEditor(
-    position,
-    enableReferences,
-    queries,
-    positionValidator,
-  );
+  const editor = useFormEditor(position, enableReferences, queries, positionValidator);
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
@@ -141,8 +134,7 @@ const PositionEditionOverviewComponent = (props) => {
       variables: {
         id: position.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       onCompleted: () => {
@@ -163,10 +155,12 @@ const PositionEditionOverviewComponent = (props) => {
           editor.fieldPatch({
             variables: {
               id: position.id,
-              input: [{
-                key: name,
-                value: finalValue ?? [null],
-              }],
+              input: [
+                {
+                  key: name,
+                  value: finalValue ?? [null],
+                },
+              ],
             },
           });
         })
@@ -201,14 +195,7 @@ const PositionEditionOverviewComponent = (props) => {
       validationSchema={positionValidator}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <Form>
           <AlertConfidenceForEntity entity={position} />
           <Field
@@ -216,19 +203,17 @@ const PositionEditionOverviewComponent = (props) => {
             variant="standard"
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="name" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="name" />}
           />
           <Field
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             uploadEntityId={position.id}
             fullWidth={true}
             multiline={true}
@@ -236,9 +221,7 @@ const PositionEditionOverviewComponent = (props) => {
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
           />
           <ConfidenceField
             onFocus={editor.changeFocus}
@@ -255,13 +238,11 @@ const PositionEditionOverviewComponent = (props) => {
             name="latitude"
             type="number"
             label={t_i18n('Latitude')}
-            required={(mandatoryAttributes.includes('latitude'))}
+            required={mandatoryAttributes.includes('latitude')}
             fullWidth={true}
             onFocus={editor.changeFocus}
-            onSubmit={(name, value) => handleSubmitField(name, (value === '' ? null : value))}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="latitude" />
-            }
+            onSubmit={(name, value) => handleSubmitField(name, value === '' ? null : value)}
+            helperText={<SubscriptionFocus context={context} fieldName="latitude" />}
           />
           <Field
             component={TextField}
@@ -270,13 +251,11 @@ const PositionEditionOverviewComponent = (props) => {
             name="longitude"
             type="number"
             label={t_i18n('Longitude')}
-            required={(mandatoryAttributes.includes('longitude'))}
+            required={mandatoryAttributes.includes('longitude')}
             fullWidth={true}
             onFocus={editor.changeFocus}
-            onSubmit={(name, value) => handleSubmitField(name, (value === '' ? null : value))}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="longitude" />
-            }
+            onSubmit={(name, value) => handleSubmitField(name, value === '' ? null : value)}
+            helperText={<SubscriptionFocus context={context} fieldName="longitude" />}
           />
           <Field
             component={TextField}
@@ -284,13 +263,11 @@ const PositionEditionOverviewComponent = (props) => {
             style={{ marginTop: 20 }}
             name="street_address"
             label={t_i18n('Street address')}
-            required={(mandatoryAttributes.includes('street_address'))}
+            required={mandatoryAttributes.includes('street_address')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="street_address" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="street_address" />}
           />
           <Field
             component={TextField}
@@ -298,13 +275,11 @@ const PositionEditionOverviewComponent = (props) => {
             style={{ marginTop: 20 }}
             name="postal_code"
             label={t_i18n('Postal code')}
-            required={(mandatoryAttributes.includes('postal_code'))}
+            required={mandatoryAttributes.includes('postal_code')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="postal_code" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="postal_code" />}
           />
           {position.workflowEnabled && (
             <StatusField
@@ -314,31 +289,22 @@ const PositionEditionOverviewComponent = (props) => {
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={(
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_workflow_id"
-                />
-              )}
+              helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />}
             />
           )}
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="createdBy" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />

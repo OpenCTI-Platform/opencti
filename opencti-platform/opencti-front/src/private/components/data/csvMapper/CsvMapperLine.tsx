@@ -64,30 +64,23 @@ const CsvMapperLine: FunctionComponent<CsvMapperLineProps> = ({
       key={csvMapper.id}
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={(
-        <CsvMapperPopover
-          csvMapperId={csvMapper.id}
-          paginationOptions={paginationOptions}
-        />
-      )}
+      secondaryAction={
+        <CsvMapperPopover csvMapperId={csvMapper.id} paginationOptions={paginationOptions} />
+      }
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <TableViewIcon />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
-                key={value.label}
-                className={classes.bodyItem}
-                style={{ width: value.width }}
-              >
+              <div key={value.label} className={classes.bodyItem} style={{ width: value.width }}>
                 {value.render?.(csvMapper)}
               </div>
             ))}
           </div>
-        )}
+        }
       />
     </ListItem>
   );

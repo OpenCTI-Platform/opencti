@@ -13,15 +13,11 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const emailTemplateFieldQuery = graphql`
   query EmailTemplateFieldQuery(
-    $orderMode: OrderingMode,
+    $orderMode: OrderingMode
     $orderBy: EmailTemplateOrdering
     $filters: FilterGroup
   ) {
-    emailTemplates(
-      orderMode: $orderMode
-      orderBy: $orderBy
-      filters: $filters
-    ) {
+    emailTemplates(orderMode: $orderMode, orderBy: $orderBy, filters: $filters) {
       edges {
         node {
           id
@@ -64,7 +60,10 @@ const EmailTemplateFieldComponent: FunctionComponent<EmailTemplateFieldComponent
   const { t_i18n } = useFormatter();
 
   const data = usePreloadedQuery(emailTemplateFieldQuery, queryRef);
-  const emailTemplates = data.emailTemplates?.edges?.map(({ node }) => ({ value: node, label: node?.name }));
+  const emailTemplates = data.emailTemplates?.edges?.map(({ node }) => ({
+    value: node,
+    label: node?.name,
+  }));
 
   return (
     <div style={{ width: '100%' }}>
@@ -103,17 +102,18 @@ const EmailTemplateFieldLoader = (props: EmailTemplateFieldProps) => {
   const { name, label } = props;
 
   return queryRef ? (
-    <React.Suspense fallback={(
-      <Field
-        component={AutocompleteField}
-        name={name}
-        disabled={true}
-        fullWidth={true}
-        options={[]}
-        renderOption={() => null}
-        textfieldprops={{ label }}
-      />
-    )}
+    <React.Suspense
+      fallback={
+        <Field
+          component={AutocompleteField}
+          name={name}
+          disabled={true}
+          fullWidth={true}
+          options={[]}
+          renderOption={() => null}
+          textfieldprops={{ label }}
+        />
+      }
     >
       <EmailTemplateFieldComponent {...props} queryRef={queryRef} />
     </React.Suspense>

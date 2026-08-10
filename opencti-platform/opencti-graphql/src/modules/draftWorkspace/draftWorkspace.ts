@@ -1,49 +1,115 @@
 import { v4 as uuidv4 } from 'uuid';
 import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import { authorizedMembers, authorizedMembersActivationDate, createdAt, creators, draftChange, refreshedAt, updatedAt } from '../../schema/attribute-definition';
-import { ENTITY_TYPE_DRAFT_WORKSPACE, type StixDraftWorkspace, type StoreEntityDraftWorkspace } from './draftWorkspace-types';
+import {
+  authorizedMembers,
+  authorizedMembersActivationDate,
+  createdAt,
+  creators,
+  draftChange,
+  refreshedAt,
+  updatedAt,
+} from '../../schema/attribute-definition';
+import {
+  ENTITY_TYPE_DRAFT_WORKSPACE,
+  type StixDraftWorkspace,
+  type StoreEntityDraftWorkspace,
+} from './draftWorkspace-types';
 import convertDraftWorkspaceToStix from './draftWorkspace-converter';
 import { getDraftStatuses } from './draftStatuses';
 import { ENTITY_TYPE_WORK } from '../../schema/internalObject';
 import { createdBy, objectAssignee, objectParticipant } from '../../schema/stixRefRelationship';
 
-const DRAFT_WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityDraftWorkspace, StixDraftWorkspace> = {
-  type: {
-    id: 'draftWorkspace',
-    name: ENTITY_TYPE_DRAFT_WORKSPACE,
-    category: ABSTRACT_INTERNAL_OBJECT,
-    aliased: false,
-  },
-  identifier: {
-    definition: {
-      [ENTITY_TYPE_DRAFT_WORKSPACE]: () => uuidv4(),
+const DRAFT_WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityDraftWorkspace, StixDraftWorkspace> =
+  {
+    type: {
+      id: 'draftWorkspace',
+      name: ENTITY_TYPE_DRAFT_WORKSPACE,
+      category: ABSTRACT_INTERNAL_OBJECT,
+      aliased: false,
     },
-  },
-  overviewLayoutCustomization: [
-    { key: 'details', width: 6, label: 'Entity details' },
-    { key: 'basicInformation', width: 6, label: 'Basic information' },
-  ],
-  attributes: [
-    createdAt,
-    { name: 'name', label: 'Draft name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
-    { name: 'description', label: 'Description', type: 'string', format: 'text', editDefault: true, mandatoryType: 'customizable', multiple: false, upsert: true, isFilterable: true },
-    { name: 'entity_id', label: 'Related entity', type: 'string', format: 'id', entityTypes: [ABSTRACT_STIX_CORE_OBJECT], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'draft_status', label: 'Processing status', type: 'string', format: 'enum', values: getDraftStatuses(), mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'validation_work_id', label: 'Validation work', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_WORK], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: false },
-    { ...draftChange, isFilterable: false },
-    creators,
-    { ...authorizedMembers, editDefault: true },
-    authorizedMembersActivationDate,
-    updatedAt,
-    { ...refreshedAt, isFilterable: false },
-  ],
-  relations: [],
-  relationsRefs: [createdBy, objectAssignee, objectParticipant],
-  representative: (stix: StixDraftWorkspace) => {
-    return stix.name;
-  },
-  converter_2_1: convertDraftWorkspaceToStix,
-};
+    identifier: {
+      definition: {
+        [ENTITY_TYPE_DRAFT_WORKSPACE]: () => uuidv4(),
+      },
+    },
+    overviewLayoutCustomization: [
+      { key: 'details', width: 6, label: 'Entity details' },
+      { key: 'basicInformation', width: 6, label: 'Basic information' },
+    ],
+    attributes: [
+      createdAt,
+      {
+        name: 'name',
+        label: 'Draft name',
+        type: 'string',
+        format: 'short',
+        mandatoryType: 'external',
+        editDefault: true,
+        multiple: false,
+        upsert: false,
+        isFilterable: true,
+      },
+      {
+        name: 'description',
+        label: 'Description',
+        type: 'string',
+        format: 'text',
+        editDefault: true,
+        mandatoryType: 'customizable',
+        multiple: false,
+        upsert: true,
+        isFilterable: true,
+      },
+      {
+        name: 'entity_id',
+        label: 'Related entity',
+        type: 'string',
+        format: 'id',
+        entityTypes: [ABSTRACT_STIX_CORE_OBJECT],
+        mandatoryType: 'internal',
+        editDefault: false,
+        multiple: false,
+        upsert: false,
+        isFilterable: false,
+      },
+      {
+        name: 'draft_status',
+        label: 'Processing status',
+        type: 'string',
+        format: 'enum',
+        values: getDraftStatuses(),
+        mandatoryType: 'internal',
+        editDefault: false,
+        multiple: false,
+        upsert: true,
+        isFilterable: true,
+      },
+      {
+        name: 'validation_work_id',
+        label: 'Validation work',
+        type: 'string',
+        format: 'id',
+        entityTypes: [ENTITY_TYPE_WORK],
+        mandatoryType: 'internal',
+        editDefault: false,
+        multiple: false,
+        upsert: true,
+        isFilterable: false,
+      },
+      { ...draftChange, isFilterable: false },
+      creators,
+      { ...authorizedMembers, editDefault: true },
+      authorizedMembersActivationDate,
+      updatedAt,
+      { ...refreshedAt, isFilterable: false },
+    ],
+    relations: [],
+    relationsRefs: [createdBy, objectAssignee, objectParticipant],
+    representative: (stix: StixDraftWorkspace) => {
+      return stix.name;
+    },
+    converter_2_1: convertDraftWorkspaceToStix,
+  };
 
 registerDefinition(DRAFT_WORKSPACE_DEFINITION);

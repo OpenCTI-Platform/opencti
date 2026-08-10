@@ -14,9 +14,16 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
-import { OrganizationCreationMutation, OrganizationCreationMutation$variables } from './__generated__/OrganizationCreationMutation.graphql';
+import {
+  OrganizationCreationMutation,
+  OrganizationCreationMutation$variables,
+} from './__generated__/OrganizationCreationMutation.graphql';
 import { OrganizationsLinesPaginationQuery$variables } from './__generated__/OrganizationsLinesPaginationQuery.graphql';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
@@ -93,44 +100,39 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(ORGANIZATION_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().min(1), // only sdo with allowed 1-character-length name
-    description: Yup.string()
-      .nullable(),
-    confidence: Yup.number().nullable(),
-    x_opencti_organization_type: Yup.string()
-      .nullable(),
-    x_opencti_reliability: Yup.string()
-      .nullable(),
-    x_opencti_score: Yup.number().integer(t_i18n('The value must be an integer'))
-      .nullable()
-      .min(0, t_i18n('The value must be greater than or equal to 0'))
-      .max(100, t_i18n('The value must be less than or equal to 100')),
-    createdBy: Yup.object().nullable(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().min(1), // only sdo with allowed 1-character-length name
+      description: Yup.string().nullable(),
+      confidence: Yup.number().nullable(),
+      x_opencti_organization_type: Yup.string().nullable(),
+      x_opencti_reliability: Yup.string().nullable(),
+      x_opencti_score: Yup.number()
+        .integer(t_i18n('The value must be an integer'))
+        .nullable()
+        .min(0, t_i18n('The value must be greater than or equal to 0'))
+        .max(100, t_i18n('The value must be less than or equal to 100')),
+      createdBy: Yup.object().nullable(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
+  );
   const organizationValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 
-  const [commit] = useApiMutation<OrganizationCreationMutation>(
-    organizationMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Organization')} ${t_i18n('successfully created')}` },
-  );
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
-  const {
-    bulkCommit,
-    bulkCount,
-    bulkCurrentCount,
-    BulkResult,
-    resetBulk,
-  } = useBulkCommit<OrganizationCreationMutation>({
-    commit,
-    relayUpdater: (store) => {
-      if (updater) {
-        updater(store, 'organizationAdd');
-      }
-    },
+  const [commit] = useApiMutation<OrganizationCreationMutation>(organizationMutation, undefined, {
+    successMessage: `${t_i18n('entity_Organization')} ${t_i18n('successfully created')}`,
   });
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
+  const { bulkCommit, bulkCount, bulkCurrentCount, BulkResult, resetBulk } =
+    useBulkCommit<OrganizationCreationMutation>({
+      commit,
+      relayUpdater: (store) => {
+        if (updater) {
+          updater(store, 'organizationAdd');
+        }
+      },
+    });
 
   useEffect(() => {
     if (bulkCount > 1) {
@@ -138,11 +140,10 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
     }
   }, [bulkCount]);
 
-  const onSubmit: FormikConfig<OrganizationAddInput>['onSubmit'] = (values, {
-    setSubmitting,
-    setErrors,
-    resetForm,
-  }) => {
+  const onSubmit: FormikConfig<OrganizationAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
     const allNames = splitMultilines(values.name);
     const variables: OrganizationCreationMutation$variables[] = allNames.map((name) => ({
       input: {
@@ -175,22 +176,19 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
     });
   };
 
-  const initialValues = useDefaultValues(
-    ORGANIZATION_TYPE,
-    {
-      name: inputValue ?? '',
-      description: '',
-      x_opencti_reliability: undefined,
-      x_opencti_organization_type: undefined,
-      createdBy: defaultCreatedBy ?? undefined, // undefined for Require Fields Flagging, if Configured Mandatory Field
-      confidence: null,
-      objectMarking: defaultMarkingDefinitions ?? [],
-      objectLabel: [],
-      externalReferences: [],
-      file: null,
-      x_opencti_score: undefined,
-    },
-  );
+  const initialValues = useDefaultValues(ORGANIZATION_TYPE, {
+    name: inputValue ?? '',
+    description: '',
+    x_opencti_reliability: undefined,
+    x_opencti_organization_type: undefined,
+    createdBy: defaultCreatedBy ?? undefined, // undefined for Require Fields Flagging, if Configured Mandatory Field
+    confidence: null,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: null,
+    x_opencti_score: undefined,
+  });
 
   return (
     <Formik<OrganizationAddInput>
@@ -201,14 +199,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({
-        submitForm,
-        handleReset,
-        isSubmitting,
-        setFieldValue,
-        values,
-        resetForm,
-      }) => (
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values, resetForm }) => (
         <>
           <BulkTextModal
             open={bulkModalOpen}
@@ -241,7 +232,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
               variant="standard"
               name="name"
               label={t_i18n('Name')}
-              required={(mandatoryAttributes.includes('name'))}
+              required={mandatoryAttributes.includes('name')}
               fullWidth={true}
               detectDuplicate={['Organization']}
             />
@@ -249,7 +240,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
-              required={(mandatoryAttributes.includes('description'))}
+              required={mandatoryAttributes.includes('description')}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -262,12 +253,12 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
               entityType="Organization"
               containerStyle={fieldSpacingContainerStyle}
             />
-            { /* TODO Improve customization (vocab with letter range) 2662 */}
+            {/* TODO Improve customization (vocab with letter range) 2662 */}
             <OpenVocabField
               label={t_i18n('Organization type')}
               type="organization_type_ov"
               name="x_opencti_organization_type"
-              required={(mandatoryAttributes.includes('x_opencti_organization_type'))}
+              required={mandatoryAttributes.includes('x_opencti_organization_type')}
               containerStyle={fieldSpacingContainerStyle}
               multiple={false}
               onChange={setFieldValue}
@@ -276,7 +267,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
               label={t_i18n('Reliability')}
               type="reliability_ov"
               name="x_opencti_reliability"
-              required={(mandatoryAttributes.includes('x_opencti_reliability'))}
+              required={mandatoryAttributes.includes('x_opencti_reliability')}
               containerStyle={fieldSpacingContainerStyle}
               multiple={false}
               onChange={setFieldValue}
@@ -285,7 +276,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
               component={TextField}
               variant="standard"
               name="x_opencti_score"
-              required={(mandatoryAttributes.includes('x_opencti_score'))}
+              required={mandatoryAttributes.includes('x_opencti_score')}
               label={t_i18n('Score')}
               fullWidth={true}
               type="number"
@@ -293,26 +284,26 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
             />
             <CreatedByField
               name="createdBy"
-              required={(mandatoryAttributes.includes('createdBy'))}
+              required={mandatoryAttributes.includes('createdBy')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
-              required={(mandatoryAttributes.includes('objectLabel'))}
+              required={mandatoryAttributes.includes('objectLabel')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
-              required={(mandatoryAttributes.includes('objectMarking'))}
+              required={mandatoryAttributes.includes('objectMarking')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ExternalReferencesField
               name="externalReferences"
-              required={(mandatoryAttributes.includes('externalReferences'))}
+              required={mandatoryAttributes.includes('externalReferences')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
@@ -322,23 +313,17 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
               name="file"
               setFieldValue={setFieldValue}
               disabled={splitMultilines(values.name).length > 1}
-              noFileSelectedLabel={splitMultilines(values.name).length > 1
-                ? t_i18n('File upload not allowed in bulk creation')
-                : undefined
+              noFileSelectedLabel={
+                splitMultilines(values.name).length > 1
+                  ? t_i18n('File upload not allowed in bulk creation')
+                  : undefined
               }
             />
             <FormButtonContainer>
-              <Button
-                variant="secondary"
-                onClick={handleReset}
-                disabled={isSubmitting}
-              >
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>
@@ -349,17 +334,15 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
   );
 };
 
-const OrganizationCreation = ({ paginationOptions }: {
+const OrganizationCreation = ({
+  paginationOptions,
+}: {
   paginationOptions: OrganizationsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_organizations',
-    paginationOptions,
-    'organizationAdd',
-  );
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_organizations', paginationOptions, 'organizationAdd');
   const CreateOrganizationControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="Organization" {...props} />
   );

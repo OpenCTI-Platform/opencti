@@ -42,7 +42,15 @@ const AccessesRedirect = () => {
     return <Navigate to="/dashboard/settings/accesses/users" />;
   }
   if (hasVirtualOrgAdmin) {
-    return <Navigate to={adminOrga ? '/dashboard/settings/accesses/organizations' : '/dashboard/settings/accesses/roles'} />;
+    return (
+      <Navigate
+        to={
+          adminOrga
+            ? '/dashboard/settings/accesses/organizations'
+            : '/dashboard/settings/accesses/roles'
+        }
+      />
+    );
   }
   if (hasSetAuth) {
     return <Navigate to="/dashboard/settings/accesses/authentications" />;
@@ -66,190 +74,172 @@ const RootAccesses = () => {
         <Routes>
           <Route
             path="/"
-            element={(
+            element={
               <Security
-                needs={[SETTINGS_SETACCESSES, SETTINGS_SETMARKINGS, SETTINGS_SETDISSEMINATION, SETTINGS_SETAUTH, VIRTUAL_ORGANIZATION_ADMIN]}
+                needs={[
+                  SETTINGS_SETACCESSES,
+                  SETTINGS_SETMARKINGS,
+                  SETTINGS_SETDISSEMINATION,
+                  SETTINGS_SETAUTH,
+                  VIRTUAL_ORGANIZATION_ADMIN,
+                ]}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <AccessesRedirect />
               </Security>
-            )}
+            }
           />
           <Route
             path="/users"
-            element={(
+            element={
               <Security
                 needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <Users />
               </Security>
-            )}
+            }
           />
           <Route
             path="/users/:userId/*"
-            element={(
+            element={
               <Security
                 needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <RootUser />
               </Security>
-            )}
+            }
           />
           <Route
             path="/organizations"
-            element={(
+            element={
               <Security
                 needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <SettingsOrganizations />
               </Security>
-            )}
+            }
           />
           <Route
             path="/organizations/:organizationId/*"
-            element={(
+            element={
               <Security
                 needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <RootSettingsOrganization />
               </Security>
-            )}
+            }
           />
           <Route
             path="/roles"
-            element={(
+            element={
               <Security
                 needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <Roles />
               </Security>
-            )}
+            }
           />
           <Route
             path="/roles/:roleId/*"
-            element={(
-              <Security
-                needs={[SETTINGS_SETACCESSES]}
-                placeholder={<Navigate to={fallbackUrl} />}
-              >
+            element={
+              <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Navigate to={fallbackUrl} />}>
                 <RootRole />
               </Security>
-            )}
+            }
           />
           <Route
             path="/groups"
-            element={(
-              <Security
-                needs={[SETTINGS_SETACCESSES]}
-                placeholder={<Navigate to={fallbackUrl} />}
-              >
+            element={
+              <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Navigate to={fallbackUrl} />}>
                 <Groups />
               </Security>
-            )}
+            }
           />
           <Route
             path="/groups/:groupId/*"
-            element={(
-              <Security
-                needs={[SETTINGS_SETACCESSES]}
-                placeholder={<Navigate to={fallbackUrl} />}
-              >
+            element={
+              <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Navigate to={fallbackUrl} />}>
                 <RootGroup />
               </Security>
-            )}
+            }
           />
           <Route
             path="/sessions"
-            element={(
-              <Security
-                needs={[SETTINGS_SETACCESSES]}
-                placeholder={<Navigate to={fallbackUrl} />}
-              >
+            element={
+              <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Navigate to={fallbackUrl} />}>
                 <Sessions />
               </Security>
-            )}
+            }
           />
           <Route
             path="/policies"
-            element={(
-              <Security
-                needs={[SETTINGS_SETACCESSES]}
-                placeholder={<Navigate to={fallbackUrl} />}
-              >
+            element={
+              <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Navigate to={fallbackUrl} />}>
                 <Policies />
               </Security>
-            )}
+            }
           />
           <Route
             path="/marking"
-            element={(
-              <Security
-                needs={[SETTINGS_SETMARKINGS]}
-                placeholder={<Navigate to={fallbackUrl} />}
-              >
+            element={
+              <Security needs={[SETTINGS_SETMARKINGS]} placeholder={<Navigate to={fallbackUrl} />}>
                 <MarkingDefinitions />
               </Security>
-            )}
+            }
           />
           <Route
             path="/dissemination_list"
-            element={(
+            element={
               <Security
                 needs={[SETTINGS_SETDISSEMINATION]}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <DisseminationLists />
               </Security>
-            )}
+            }
           />
           <Route
             path="/email_templates"
-            element={(
+            element={
               <Security
                 needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <EmailTemplates />
               </Security>
-            )}
+            }
           />
           <Route
             path="/email_templates/:emailTemplateId/*"
-            element={(
+            element={
               <Security
                 needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <EmailTemplate />
               </Security>
-            )}
+            }
           />
           <Route
             path="/authentications"
-            element={(
-              <Security
-                needs={[SETTINGS_SETAUTH]}
-                placeholder={<Navigate to={fallbackUrl} />}
-              >
+            element={
+              <Security needs={[SETTINGS_SETAUTH]} placeholder={<Navigate to={fallbackUrl} />}>
                 <SSODefinitions />
               </Security>
-            )}
+            }
           />
           <Route
             path="/smtp"
-            element={(
-              <Security
-                needs={[SETTINGS_SETACCESSES]}
-                placeholder={<Navigate to={fallbackUrl} />}
-              >
+            element={
+              <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Navigate to={fallbackUrl} />}>
                 <SmtpConfiguration />
               </Security>
-            )}
+            }
           />
         </Routes>
       </Suspense>

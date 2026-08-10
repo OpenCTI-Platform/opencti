@@ -1,4 +1,9 @@
-import { InsertChartOutlined, InsightsOutlined, LibraryBooksOutlined, NotificationsOutlined } from '@mui/icons-material';
+import {
+  InsertChartOutlined,
+  InsightsOutlined,
+  LibraryBooksOutlined,
+  NotificationsOutlined,
+} from '@mui/icons-material';
 import type { ElementType } from 'react';
 
 interface NewsFeedTypeDefinition {

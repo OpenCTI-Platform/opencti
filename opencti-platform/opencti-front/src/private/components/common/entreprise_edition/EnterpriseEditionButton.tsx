@@ -64,7 +64,11 @@ const EnterpriseEditionButton = ({
           variant="secondary"
           // color="ee"
           onClick={() => setOpenEnterpriseEditionConsent(true)}
-          startIcon={<RocketLaunchOutlined style={{ color: disabled ? theme.palette.dangerZone.main : undefined }} />}
+          startIcon={
+            <RocketLaunchOutlined
+              style={{ color: disabled ? theme.palette.dangerZone.main : undefined }}
+            />
+          }
           disabled={disabled}
           classes={{
             root: classNames({
@@ -92,9 +96,7 @@ const EnterpriseEditionButton = ({
         handleCloseDrawer={() => setFeedbackCreation(false)}
         initialValue={{
           description: t_i18n(
-            `I would like to use a EE feature ${
-              feature ? `(${feature}) ` : ''
-            }but I don't have EE activated.\nI would like to discuss with you about activating EE.`,
+            `I would like to use a EE feature ${feature ? `(${feature}) ` : ''}but I don't have EE activated.\nI would like to discuss with you about activating EE.`,
           ),
         }}
       />

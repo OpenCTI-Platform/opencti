@@ -3,7 +3,10 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { TaxiiLinesPaginationQuery$data } from '@components/data/taxii/__generated__/TaxiiLinesPaginationQuery.graphql';
 import Box from '@mui/material/Box';
 import { QueryRenderer } from '../../../relay/environment';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../utils/ListParameters';
 import ListLines from '../../../components/list_lines/ListLines';
 import TaxiiLines, { TaxiiLinesQuery } from './taxii/TaxiiLines';
 import TaxiiCollectionCreation from './taxii/TaxiiCollectionCreation';
@@ -22,12 +25,18 @@ const Taxii = () => {
   const LOCAL_STORAGE_KEY = 'taxii';
   const navigate = useNavigate();
   const location = useLocation();
-  const params = buildViewParamsFromUrlAndStorage(
-    navigate,
-    location,
-    LOCAL_STORAGE_KEY,
-  ) as { orderAsc?: boolean; searchTerm?: string; view?: string; sortBy?: string };
-  const [taxiiState, setTaxiiState] = useState<{ orderAsc: boolean; searchTerm: string; view: string; sortBy: string }>({
+  const params = buildViewParamsFromUrlAndStorage(navigate, location, LOCAL_STORAGE_KEY) as {
+    orderAsc?: boolean;
+    searchTerm?: string;
+    view?: string;
+    sortBy?: string;
+  };
+  const [taxiiState, setTaxiiState] = useState<{
+    orderAsc: boolean;
+    searchTerm: string;
+    view: string;
+    sortBy: string;
+  }>({
     orderAsc: params.orderAsc !== false,
     searchTerm: params.searchTerm ?? '',
     view: params.view ?? 'lines',
@@ -35,25 +44,19 @@ const Taxii = () => {
   });
 
   const saveView = () => {
-    saveViewParameters(
-      navigate,
-      location,
-      LOCAL_STORAGE_KEY,
-      taxiiState,
-    );
+    saveViewParameters(navigate, location, LOCAL_STORAGE_KEY, taxiiState);
   };
 
   const handleSearch = (value: string) => {
-    setTaxiiState({ ...taxiiState,
-      searchTerm: value,
-    });
+    setTaxiiState({ ...taxiiState, searchTerm: value });
   };
 
   const handleSort = (field: string, orderAsc: boolean) => {
     setTaxiiState({
       ...taxiiState,
       sortBy: field,
-      orderAsc });
+      orderAsc,
+    });
   };
 
   useEffect(() => {
@@ -94,11 +97,11 @@ const Taxii = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={searchTerm}
-        createButton={(
+        createButton={
           <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
             <TaxiiCollectionCreation paginationOptions={paginationOptions} />
           </Security>
-        )}
+        }
       >
         <QueryRenderer
           query={TaxiiLinesQuery}
@@ -130,7 +133,13 @@ const Taxii = () => {
         }}
         aria-label="TaxiiCollections"
       >
-        <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('TAXII collections'), current: true }]} />
+        <Breadcrumbs
+          elements={[
+            { label: t_i18n('Data') },
+            { label: t_i18n('Data sharing') },
+            { label: t_i18n('TAXII collections'), current: true },
+          ]}
+        />
         <SharingMenu />
         {taxiiState.view === 'lines' ? renderLines(paginationOptions) : null}
       </Box>

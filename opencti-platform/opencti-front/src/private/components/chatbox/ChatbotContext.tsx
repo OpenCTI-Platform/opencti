@@ -1,4 +1,12 @@
-import React, { createContext, useContext, useState, useCallback, useMemo, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useMemo,
+  useEffect,
+  ReactNode,
+} from 'react';
 import type { ChatMode } from '@filigran/chatbot';
 import { APP_BASE_PATH } from '../../../relay/environment';
 
@@ -29,7 +37,9 @@ interface ChatbotProviderProps {
 }
 
 export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children }) => {
-  const [isOpen, setIsOpen] = useState(() => localStorage.getItem(CHAT_OPEN_STORAGE_KEY) === 'true');
+  const [isOpen, setIsOpen] = useState(
+    () => localStorage.getItem(CHAT_OPEN_STORAGE_KEY) === 'true',
+  );
   const [xtmOneConfigured, setXtmOneConfigured] = useState<boolean | null>(null);
   const [xtmOneUrl, setXtmOneUrl] = useState<string | null>(null);
   const [mode, setModeState] = useState<ChatMode>(() => {
@@ -85,26 +95,37 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children }) =>
     localStorage.setItem(SIDEBAR_WIDTH_STORAGE_KEY, String(width));
   }, []);
 
-  const value = useMemo(() => ({
-    isOpen,
-    mode,
-    sidebarWidth,
-    isResizing,
-    xtmOneConfigured,
-    xtmOneUrl,
-    openChat,
-    closeChat,
-    toggleChat,
-    setMode,
-    setSidebarWidth,
-    setIsResizing,
-  }), [isOpen, mode, sidebarWidth, isResizing, xtmOneConfigured, xtmOneUrl, openChat, closeChat, toggleChat, setMode, setSidebarWidth]);
-
-  return (
-    <ChatbotContext.Provider value={value}>
-      {children}
-    </ChatbotContext.Provider>
+  const value = useMemo(
+    () => ({
+      isOpen,
+      mode,
+      sidebarWidth,
+      isResizing,
+      xtmOneConfigured,
+      xtmOneUrl,
+      openChat,
+      closeChat,
+      toggleChat,
+      setMode,
+      setSidebarWidth,
+      setIsResizing,
+    }),
+    [
+      isOpen,
+      mode,
+      sidebarWidth,
+      isResizing,
+      xtmOneConfigured,
+      xtmOneUrl,
+      openChat,
+      closeChat,
+      toggleChat,
+      setMode,
+      setSidebarWidth,
+    ],
   );
+
+  return <ChatbotContext.Provider value={value}>{children}</ChatbotContext.Provider>;
 };
 
 export const useChatbot = (): ChatbotContextType => {

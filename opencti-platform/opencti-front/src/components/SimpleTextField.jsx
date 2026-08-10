@@ -49,12 +49,8 @@ const TextField = (props) => {
       value={value ?? ''}
       error={showError}
       helperText={
-
         detectDuplicate && !showError ? (
-          <StixDomainObjectDetectDuplicate
-            types={detectDuplicate}
-            value={meta.value}
-          />
+          <StixDomainObjectDetectDuplicate types={detectDuplicate} value={meta.value} />
         ) : showError ? (
           meta.error
         ) : (

@@ -56,19 +56,20 @@ const makeStatus = (color = '#ff0000', name = 'In review') => ({
   template: { name, color },
 });
 
-const makeDraft = (overrides: Record<string, unknown> = {}): WorkflowStatus_data$key => ({
-  id: 'draft-1',
-  entity_id: 'entity-1',
-  processingCount: 0,
-  workflowInstance: {
-    id: 'instance-1',
-    currentState: 'in_review',
-    currentStatus: makeStatus(),
-    lastHistoryEntry: null,
-    allowedTransitions: [],
-  },
-  ...overrides,
-} as unknown as WorkflowStatus_data$key);
+const makeDraft = (overrides: Record<string, unknown> = {}): WorkflowStatus_data$key =>
+  ({
+    id: 'draft-1',
+    entity_id: 'entity-1',
+    processingCount: 0,
+    workflowInstance: {
+      id: 'instance-1',
+      currentState: 'in_review',
+      currentStatus: makeStatus(),
+      lastHistoryEntry: null,
+      allowedTransitions: [],
+    },
+    ...overrides,
+  }) as unknown as WorkflowStatus_data$key;
 
 const makeTransition = (overrides: Record<string, unknown> = {}) => ({
   event: 'approve',
@@ -161,9 +162,7 @@ describe('WorkflowTransitions', () => {
   });
 
   it('renders null when allowedTransitions is empty', () => {
-    const { container } = testRender(
-      <WorkflowTransitions data={makeDraft()} />,
-    );
+    const { container } = testRender(<WorkflowTransitions data={makeDraft()} />);
     expect(container.firstChild).toBeNull();
   });
 
@@ -233,7 +232,9 @@ describe('WorkflowTransitions', () => {
     });
     const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
-    expect(await screen.findByText('You can optionally add a comment before changing the status.')).toBeDefined();
+    expect(
+      await screen.findByText('You can optionally add a comment before changing the status.'),
+    ).toBeDefined();
     expect(screen.getByText('Confirm').closest('button')).not.toBeDisabled();
   });
 
@@ -249,7 +250,9 @@ describe('WorkflowTransitions', () => {
     });
     const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
-    expect(await screen.findByText('A comment is required before changing the status.')).toBeDefined();
+    expect(
+      await screen.findByText('A comment is required before changing the status.'),
+    ).toBeDefined();
     expect(screen.getByText('Confirm').closest('button')).toBeDisabled();
   });
 

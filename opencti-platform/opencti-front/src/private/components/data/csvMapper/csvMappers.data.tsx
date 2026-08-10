@@ -1,7 +1,13 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React, { createContext, ReactNode, useContext } from 'react';
-import { csvMappers_MappersQuery, csvMappers_MappersQuery$data } from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
-import { csvMappers_SchemaAttributesQuery, csvMappers_SchemaAttributesQuery$data } from '@components/data/csvMapper/__generated__/csvMappers_SchemaAttributesQuery.graphql';
+import {
+  csvMappers_MappersQuery,
+  csvMappers_MappersQuery$data,
+} from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
+import {
+  csvMappers_SchemaAttributesQuery,
+  csvMappers_SchemaAttributesQuery$data,
+} from '@components/data/csvMapper/__generated__/csvMappers_SchemaAttributesQuery.graphql';
 
 export const mappersQuery = graphql`
   query csvMappers_MappersQuery(
@@ -12,13 +18,13 @@ export const mappersQuery = graphql`
     $search: String
   ) {
     ...CsvMapperLines_csvMapper
-    @arguments(
-      count: $count
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-      search: $search
-    )
+      @arguments(
+        count: $count
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+        search: $search
+      )
   }
 `;
 
@@ -57,9 +63,7 @@ const CsvMappersProvider = ({
 export const useCsvMappersData = () => {
   const context = useContext(CsvMappersContext);
   if (!context) {
-    throw new Error(
-      'useCsvMappersData must be used within a CsvMappersProvider',
-    );
+    throw new Error('useCsvMappersData must be used within a CsvMappersProvider');
   }
   return context;
 };

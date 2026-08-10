@@ -17,11 +17,7 @@ class FeedLines extends Component {
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
         dataList={pathOr([], ['feeds', 'edges'], this.props.data)}
-        globalCount={pathOr(
-          nbOfRowsToLoad,
-          ['feeds', 'pageInfo', 'globalCount'],
-          this.props.data,
-        )}
+        globalCount={pathOr(nbOfRowsToLoad, ['feeds', 'pageInfo', 'globalCount'], this.props.data)}
         LineComponent={<FeedLine />}
         DummyLineComponent={<FeedLineDummy />}
         dataColumns={dataColumns}

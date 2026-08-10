@@ -9,9 +9,19 @@ import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
-import { convertAssignees, convertCreatedBy, convertMarkings, convertParticipants, convertStatus } from '../../../../utils/edition';
+import {
+  convertAssignees,
+  convertCreatedBy,
+  convertMarkings,
+  convertParticipants,
+  convertStatus,
+} from '../../../../utils/edition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
@@ -34,11 +44,7 @@ export const caseIncidentMutationFieldPatch = graphql`
     $references: [String]
   ) {
     stixDomainObjectEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         x_opencti_graph_data
         ...CaseIncidentEditionOverview_case
         ...CaseUtils_case
@@ -48,10 +54,7 @@ export const caseIncidentMutationFieldPatch = graphql`
 `;
 
 export const caseIncidentEditionOverviewFocus = graphql`
-  mutation CaseIncidentEditionOverviewCaseFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation CaseIncidentEditionOverviewCaseFocusMutation($id: ID!, $input: EditContext!) {
     stixDomainObjectEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -147,11 +150,8 @@ const caseIncidentMutationRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    stixDomainObjectEdit(id: $id){
-      relationDelete(
-        toId: $toId
-        relationship_type: $relationship_type
-      ) {
+    stixDomainObjectEdit(id: $id) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...CaseIncidentEditionOverview_case
       }
     }
@@ -186,20 +186,23 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
   const { t_i18n } = useFormatter();
   const caseData = useFragment(caseIncidentEditionOverviewFragment, caseRef);
   const { mandatoryAttributes } = useIsMandatoryAttribute(CASE_INCIDENT_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    severity: Yup.string().nullable(),
-    priority: Yup.string().nullable(),
-    response_types: Yup.array(),
-    description: Yup.string().nullable(),
-    x_opencti_workflow_id: Yup.object().nullable(),
-    rating: Yup.number().nullable(),
-    confidence: Yup.number().nullable(),
-    objectAssignee: Yup.array().nullable(),
-    objectParticipant: Yup.array().nullable(),
-    createdBy: Yup.object().nullable(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      severity: Yup.string().nullable(),
+      priority: Yup.string().nullable(),
+      response_types: Yup.array(),
+      description: Yup.string().nullable(),
+      x_opencti_workflow_id: Yup.object().nullable(),
+      rating: Yup.number().nullable(),
+      confidence: Yup.number().nullable(),
+      objectAssignee: Yup.array().nullable(),
+      objectParticipant: Yup.array().nullable(),
+      createdBy: Yup.object().nullable(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
+  );
   const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
   const queries = {
     fieldPatch: caseIncidentMutationFieldPatch,
@@ -208,7 +211,10 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     editionFocus: caseIncidentEditionOverviewFocus,
   };
   const editor = useFormEditor(caseData as GenericData, enableReferences, queries, validator);
-  const onSubmit: FormikConfig<CaseIncidentEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
+  const onSubmit: FormikConfig<CaseIncidentEditionFormValues>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
@@ -233,7 +239,10 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
       },
     });
   };
-  const handleSubmitField = (name: string, value: FieldOption | string | string[] | number | number[] | null) => {
+  const handleSubmitField = (
+    name: string,
+    value: FieldOption | string | string[] | number | number[] | null,
+  ) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
       if (['x_opencti_workflow_id'].includes(name)) {
@@ -276,14 +285,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
       validateOnBlur={true}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <Form>
           <AlertConfidenceForEntity entity={caseData} />
           <Field
@@ -291,14 +293,12 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             variant="standard"
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={editor.changeField}
             askAi={true}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="name" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="name" />}
           />
           <Field
             component={DateTimePickerField}
@@ -307,12 +307,10 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             onSubmit={editor.changeField}
             textFieldProps={{
               label: t_i18n('Incident date'),
-              required: (mandatoryAttributes.includes('created')),
+              required: mandatoryAttributes.includes('created'),
               variant: 'standard',
               fullWidth: true,
-              helperText: (
-                <SubscriptionFocus context={context} fieldName="created" />
-              ),
+              helperText: <SubscriptionFocus context={context} fieldName="created" />,
               style: { marginTop: 20 },
             }}
             containerStyle={fieldSpacingContainerStyle}
@@ -321,7 +319,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             label={t_i18n('Case severity')}
             type="case_severity_ov"
             name="severity"
-            required={(mandatoryAttributes.includes('severity'))}
+            required={mandatoryAttributes.includes('severity')}
             onSubmit={handleSubmitField}
             onChange={setFieldValue}
             variant="edit"
@@ -333,7 +331,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             label={t_i18n('Case priority')}
             type="case_priority_ov"
             name="priority"
-            required={(mandatoryAttributes.includes('priority'))}
+            required={mandatoryAttributes.includes('priority')}
             onSubmit={handleSubmitField}
             onChange={setFieldValue}
             variant="edit"
@@ -345,7 +343,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             label={t_i18n('Response type')}
             type="incident_response_types_ov"
             name="response_types"
-            required={(mandatoryAttributes.includes('response_types'))}
+            required={mandatoryAttributes.includes('response_types')}
             onSubmit={handleSubmitField}
             onChange={setFieldValue}
             variant="edit"
@@ -365,7 +363,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -374,23 +372,19 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             onSubmit={editor.changeField}
             askAi={true}
             uploadEntityId={caseData.id}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
           />
 
           <ObjectAssigneeField
             name="objectAssignee"
-            required={(mandatoryAttributes.includes('objectAssignee'))}
+            required={mandatoryAttributes.includes('objectAssignee')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectAssignee" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectAssignee" />}
             onChange={editor.changeAssignee}
           />
           <ObjectParticipantField
             name="objectParticipant"
-            required={(mandatoryAttributes.includes('objectParticipant'))}
+            required={mandatoryAttributes.includes('objectParticipant')}
             style={fieldSpacingContainerStyle}
             onChange={editor.changeParticipant}
           />
@@ -402,31 +396,22 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
               onChange={editor.changeField}
               setFieldValue={setFieldValue}
               style={fieldSpacingContainerStyle}
-              helpertext={(
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_workflow_id"
-                />
-              )}
+              helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />}
             />
           )}
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="createdBy" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />

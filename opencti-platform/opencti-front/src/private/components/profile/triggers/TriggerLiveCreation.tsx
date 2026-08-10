@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* oxlint-disable no-unused-vars */
 import Button from '@common/button/Button';
 import Checkbox from '@mui/material/Checkbox';
 import Dialog from '@common/dialog/Dialog';
@@ -24,11 +24,21 @@ import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { emptyFilterGroup, getDefaultFilterObject, serializeFilterGroupForBackend, stixFilters, useFilterDefinition } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  getDefaultFilterObject,
+  serializeFilterGroupForBackend,
+  stixFilters,
+  useFilterDefinition,
+} from '../../../../utils/filters/filtersUtils';
 import { insertNode } from '../../../../utils/store';
 import NotifierField from '../../common/form/NotifierField';
 import Filters from '../../common/lists/Filters';
-import { TriggerEventType, TriggerLiveCreationKnowledgeMutation, TriggerLiveCreationKnowledgeMutation$data } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
+import {
+  TriggerEventType,
+  TriggerLiveCreationKnowledgeMutation,
+  TriggerLiveCreationKnowledgeMutation$data,
+} from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -47,16 +57,18 @@ export const triggerLiveKnowledgeCreationMutation = graphql`
   }
 `;
 
-const liveTriggerValidation = (t: (message: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  event_types: Yup.array()
-    .min(1, t('Minimum one event type'))
-    .required(t('This field is required')),
-  notifiers: Yup.array().nullable(),
-});
+const liveTriggerValidation = (t: (message: string) => string) =>
+  Yup.object().shape({
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    event_types: Yup.array()
+      .min(1, t('Minimum one event type'))
+      .required(t('This field is required')),
+    notifiers: Yup.array().nullable(),
+  });
 
-export const instanceTriggerDescription = 'When subscribing to an object, it notifies you about modifications of this object, containers (reports, groupings, etc.) about this object as well as creation and deletion of relationships related to this object.';
+export const instanceTriggerDescription =
+  'When subscribing to an object, it notifies you about modifications of this object, containers (reports, groupings, etc.) about this object as well as creation and deletion of relationships related to this object.';
 
 interface TriggerLiveAddInput {
   name: string;
@@ -89,10 +101,15 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   const theme = useTheme();
   const defaultInstanceTriggerFilters = {
     ...emptyFilterGroup,
-    filters: [getDefaultFilterObject('connectedToId', useFilterDefinition('connectedToId', ['Instance']))],
+    filters: [
+      getDefaultFilterObject('connectedToId', useFilterDefinition('connectedToId', ['Instance'])),
+    ],
   };
   const [filters, helpers] = useFiltersState();
-  const [instanceTriggerFilters, instanceTriggerFiltersHelpers] = useFiltersState(defaultInstanceTriggerFilters, defaultInstanceTriggerFilters);
+  const [instanceTriggerFilters, instanceTriggerFiltersHelpers] = useFiltersState(
+    defaultInstanceTriggerFilters,
+    defaultInstanceTriggerFilters,
+  );
   const [instance_trigger, setInstanceTrigger] = useState<boolean>(false);
   const eventTypesOptions: { value: TriggerEventType; label: string }[] = [
     { value: 'create', label: t_i18n('Creation') },
@@ -113,10 +130,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
     helpers.handleClearAllFilters();
   };
   const onChangeInstanceTrigger = (
-    setFieldValue: (
-      key: string,
-      value: { value: string; label: string }[],
-    ) => void,
+    setFieldValue: (key: string, value: { value: string; label: string }[]) => void,
   ) => {
     const newInstanceTriggerValue = !instance_trigger;
     setFieldValue(
@@ -134,9 +148,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   const liveInitialValues: TriggerLiveAddInput = {
     name: inputValue || '',
     description: '',
-    event_types: instance_trigger
-      ? instanceEventTypesOptions
-      : eventTypesOptions,
+    event_types: instance_trigger ? instanceEventTypesOptions : eventTypesOptions,
     notifiers: [],
     recipients: recipientId ? [recipientId] : [],
   };
@@ -144,7 +156,9 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
     values: TriggerLiveAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<TriggerLiveAddInput>,
   ) => {
-    const jsonFilters = instance_trigger ? serializeFilterGroupForBackend(instanceTriggerFilters) : serializeFilterGroupForBackend(filters);
+    const jsonFilters = instance_trigger
+      ? serializeFilterGroupForBackend(instanceTriggerFilters)
+      : serializeFilterGroupForBackend(filters);
     const finalValues = {
       name: values.name,
       event_types: values.event_types.map((n) => n.value),
@@ -196,19 +210,13 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
             variant: 'standard',
             label: t_i18n('Triggering on'),
           }}
-          options={
-            instance_trigger ? instanceEventTypesOptions : eventTypesOptions
-          }
+          options={instance_trigger ? instanceEventTypesOptions : eventTypesOptions}
           renderOption={(
             props: React.HTMLAttributes<HTMLLIElement>,
             option: { value: TriggerEventType; label: string },
           ) => (
             <MenuItem value={option.value} {...props}>
-              <Checkbox
-                checked={values.event_types
-                  .map((n) => n.value)
-                  .includes(option.value)}
-              />
+              <Checkbox checked={values.event_types.map((n) => n.value).includes(option.value)} />
               <ListItemText primary={option.label} />
             </MenuItem>
           )}
@@ -232,14 +240,14 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
             marginBottom: theme.spacing(1),
           }}
         >
-          {(!instance_trigger
-            && (
-              <Filters
-                availableFilterKeys={stixFilters}
-                helpers={helpers}
-                searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] }}
-              />
-            )
+          {!instance_trigger && (
+            <Filters
+              availableFilterKeys={stixFilters}
+              helpers={helpers}
+              searchContext={{
+                entityTypes: ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'],
+              }}
+            />
           )}
         </Box>
       </>
@@ -247,11 +255,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   };
 
   const liveFields = (
-    setFieldValue: (
-      field: string,
-      value: unknown,
-      shouldValidate?: boolean | undefined,
-    ) => void,
+    setFieldValue: (field: string, value: unknown, shouldValidate?: boolean | undefined) => void,
     values: TriggerLiveAddInput,
   ) => (
     <React.Fragment>
@@ -281,7 +285,10 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
             ...instanceTriggerFiltersHelpers,
             handleSwitchLocalMode: () => undefined, // connectedToId filter can only have the 'or' local mode
           }}
-          filtersRestrictions={{ preventLocalModeSwitchingFor: ['connectedToId'], preventRemoveFor: ['connectedToId'] }}
+          filtersRestrictions={{
+            preventLocalModeSwitchingFor: ['connectedToId'],
+            preventRemoveFor: ['connectedToId'],
+          }}
         />
       ) : (
         <FilterIconButton
@@ -296,11 +303,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   );
 
   const renderClassic = () => (
-    <Drawer
-      title={t_i18n('Create a live trigger')}
-      open={open}
-      onClose={onReset}
-    >
+    <Drawer title={t_i18n('Create a live trigger')} open={open} onClose={onReset}>
       {({ onClose }) => (
         <Formik<TriggerLiveAddInput>
           initialValues={liveInitialValues}
@@ -308,27 +311,14 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           onSubmit={onLiveSubmit}
           onReset={onClose}
         >
-          {({
-            submitForm,
-            handleReset,
-            isSubmitting,
-            setFieldValue,
-            values,
-          }) => (
+          {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
             <Form>
               {liveFields(setFieldValue, values)}
               <FormButtonContainer>
-                <Button
-                  variant="secondary"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                >
+                <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
+                <Button onClick={submitForm} disabled={isSubmitting}>
                   {t_i18n('Create')}
                 </Button>
               </FormButtonContainer>
@@ -359,10 +349,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
               <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </DialogActions>

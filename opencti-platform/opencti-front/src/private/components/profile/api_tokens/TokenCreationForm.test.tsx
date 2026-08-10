@@ -30,13 +30,7 @@ describe('Component: TokenCreationForm', () => {
   });
 
   it('should render form fields', () => {
-    testRender(
-      <TokenCreationForm
-        userId="mock-id"
-        onSuccess={onSuccess}
-        onClose={onClose}
-      />,
-    );
+    testRender(<TokenCreationForm userId="mock-id" onSuccess={onSuccess} onClose={onClose} />);
 
     expect(screen.getByLabelText('Name')).toBeInTheDocument();
     expect(screen.getByLabelText('Duration')).toBeInTheDocument();
@@ -44,11 +38,7 @@ describe('Component: TokenCreationForm', () => {
 
   it('should submit form and call onSuccess with token', async () => {
     const { user } = testRender(
-      <TokenCreationForm
-        userId="mock-id"
-        onSuccess={onSuccess}
-        onClose={onClose}
-      />,
+      <TokenCreationForm userId="mock-id" onSuccess={onSuccess} onClose={onClose} />,
     );
 
     // Fill Form
@@ -59,17 +49,19 @@ describe('Component: TokenCreationForm', () => {
 
     // Mock mutation implementation
     const commitMutationMock = commitMutation as Mock;
-    commitMutationMock.mockImplementation(({ onCompleted }: { onCompleted: (response: TokenCreationFormMutation$data) => void }) => {
-      onCompleted({
-        userTokenAdd: {
-          plaintext_token: 'valid-token-123',
-          token_id: 'id-123',
-          expires_at: '2023-01-01T00:00:00.000Z',
-          masked_token: '***-123',
-        },
-      });
-      return { dispose: vi.fn() };
-    });
+    commitMutationMock.mockImplementation(
+      ({ onCompleted }: { onCompleted: (response: TokenCreationFormMutation$data) => void }) => {
+        onCompleted({
+          userTokenAdd: {
+            plaintext_token: 'valid-token-123',
+            token_id: 'id-123',
+            expires_at: '2023-01-01T00:00:00.000Z',
+            masked_token: '***-123',
+          },
+        });
+        return { dispose: vi.fn() };
+      },
+    );
 
     // Click Generate
     await user.click(screen.getByRole('button', { name: 'Generate' }));
@@ -79,14 +71,16 @@ describe('Component: TokenCreationForm', () => {
     });
 
     // Verify properties passed to mutation
-    expect(commitMutation).toHaveBeenCalledWith(expect.objectContaining({
-      variables: {
-        input: {
-          name: 'My Token',
-          duration: 'UNLIMITED',
+    expect(commitMutation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        variables: {
+          input: {
+            name: 'My Token',
+            duration: 'UNLIMITED',
+          },
         },
-      },
-    }));
+      }),
+    );
 
     expect(MESSAGING$.notifySuccess).toHaveBeenCalledWith('Token generated successfully');
     expect(onSuccess).toHaveBeenCalledWith('valid-token-123');
@@ -100,11 +94,7 @@ describe('Component: TokenCreationForm', () => {
     });
 
     const { user } = testRender(
-      <TokenCreationForm
-        userId="mock-id"
-        onSuccess={onSuccess}
-        onClose={onClose}
-      />,
+      <TokenCreationForm userId="mock-id" onSuccess={onSuccess} onClose={onClose} />,
     );
 
     await user.type(screen.getByLabelText('Name'), 'Error Token');

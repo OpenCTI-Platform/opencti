@@ -24,8 +24,14 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS,
+} from '../../../../utils/hooks/useGranted';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import Security from '../../../../utils/Security';
 import { insertNode } from '../../../../utils/store';
@@ -38,7 +44,10 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { ReportCreationMutation, ReportCreationMutation$variables } from './__generated__/ReportCreationMutation.graphql';
+import {
+  ReportCreationMutation,
+  ReportCreationMutation$variables,
+} from './__generated__/ReportCreationMutation.graphql';
 
 export const reportCreationMutation = graphql`
   mutation ReportCreationMutation($input: ReportAddInput!) {
@@ -75,14 +84,17 @@ interface ReportAddInput {
   objectParticipant: FieldOption[];
   externalReferences: { value: string }[];
   file: File | undefined;
-  authorized_members: {
-    value: string;
-    accessRight: string;
-    groupsRestriction: {
-      label: string;
-      value: string;
-      type: string;
-    }[]; }[] | undefined;
+  authorized_members:
+    | {
+        value: string;
+        accessRight: string;
+        groupsRestriction: {
+          label: string;
+          value: string;
+          type: string;
+        }[];
+      }[]
+    | undefined;
 }
 
 interface ReportFormProps {
@@ -109,36 +121,37 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
   const { mandatoryAttributes } = useIsMandatoryAttribute(REPORT_TYPE);
   const canEditAuthorizedMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
   const isEnterpriseEdition = useEnterpriseEdition();
 
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2, t_i18n('Name must be at least 2 characters')),
-    published: Yup.date().typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    report_types: Yup.array().nullable(),
-    x_opencti_reliability: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
-    description: Yup.string().nullable(),
-    content: Yup.string().nullable(),
-    objectAssignee: Yup.array().nullable(),
-    objectParticipant: Yup.array().nullable(),
-    objectLabel: Yup.array().nullable(),
-    objectMarking: Yup.array().nullable(),
-    externalReferences: Yup.array().nullable(),
-    file: Yup.mixed().nullable(),
-    authorized_members: Yup.array().nullable(),
-  }, mandatoryAttributes);
-  const reportValidator = useDynamicSchemaCreationValidation(
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2, t_i18n('Name must be at least 2 characters')),
+      published: Yup.date().typeError(
+        t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'),
+      ),
+      report_types: Yup.array().nullable(),
+      x_opencti_reliability: Yup.string().nullable(),
+      confidence: Yup.number().nullable(),
+      description: Yup.string().nullable(),
+      content: Yup.string().nullable(),
+      objectAssignee: Yup.array().nullable(),
+      objectParticipant: Yup.array().nullable(),
+      objectLabel: Yup.array().nullable(),
+      objectMarking: Yup.array().nullable(),
+      externalReferences: Yup.array().nullable(),
+      file: Yup.mixed().nullable(),
+      authorized_members: Yup.array().nullable(),
+    },
     mandatoryAttributes,
-    basicShape,
   );
-  const [commit] = useApiMutation<ReportCreationMutation>(
-    reportCreationMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Report')} ${t_i18n('successfully created')}` },
-  );
+  const reportValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
+  const [commit] = useApiMutation<ReportCreationMutation>(reportCreationMutation, undefined, {
+    successMessage: `${t_i18n('entity_Report')} ${t_i18n('successfully created')}`,
+  });
 
   const onSubmit: FormikConfig<ReportAddInput>['onSubmit'] = (
     values,
@@ -161,13 +174,19 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       ...filesInput,
-      ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
-        authorized_members: values.authorized_members.map(({ value, accessRight, groupsRestriction }) => ({
-          id: value,
-          access_right: accessRight,
-          groups_restriction_ids: groupsRestriction ? groupsRestriction.map((g) => g.value) : [],
-        })),
-      }),
+      ...(isEnterpriseEdition &&
+        canEditAuthorizedMembers &&
+        values.authorized_members && {
+          authorized_members: values.authorized_members.map(
+            ({ value, accessRight, groupsRestriction }) => ({
+              id: value,
+              access_right: accessRight,
+              groups_restriction_ids: groupsRestriction
+                ? groupsRestriction.map((g) => g.value)
+                : [],
+            }),
+          ),
+        }),
     };
     commit({
       variables: {
@@ -189,9 +208,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
           onClose();
         }
         if (mapAfter) {
-          navigate(
-            `/dashboard/analyses/reports/${response.reportAdd?.id}/content/mapping`,
-          );
+          navigate(`/dashboard/analyses/reports/${response.reportAdd?.id}/content/mapping`);
         }
       },
     });
@@ -266,10 +283,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             multiple={false}
             onChange={setFieldValue}
           />
-          <ConfidenceField
-            entityType="Report"
-            containerStyle={fieldSpacingContainerStyle}
-          />
+          <ConfidenceField entityType="Report" containerStyle={fieldSpacingContainerStyle} />
           <Field
             component={MarkdownField}
             name="description"
@@ -324,7 +338,6 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
-
           />
           <ExternalReferencesField
             name="externalReferences"
@@ -335,9 +348,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
           {isEnterpriseEdition && (
-            <Security
-              needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-            >
+            <Security needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}>
               <div style={fieldSpacingContainerStyle}>
                 <Accordion>
                   <AccordionSummary id="accordion-panel">
@@ -359,17 +370,10 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             </Security>
           )}
           <FormButtonContainer>
-            <Button
-              variant="secondary"
-              onClick={handleReset}
-              disabled={isSubmitting}
-            >
+            <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitForm}
-              disabled={isSubmitting}
-            >
+            <Button onClick={submitForm} disabled={isSubmitting}>
               {t_i18n('Create')}
             </Button>
             {values.content.length > 0 && (
@@ -396,20 +400,13 @@ const ReportCreation = ({
   paginationOptions: ReportsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_reports',
-    paginationOptions,
-    'reportAdd',
-  );
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_reports', paginationOptions, 'reportAdd');
   const CreateReportControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="Report" {...props} />
   );
   return (
-    <Drawer
-      title={t_i18n('Create a report')}
-      controlledDial={CreateReportControlledDial}
-    >
+    <Drawer title={t_i18n('Create a report')} controlledDial={CreateReportControlledDial}>
       <ReportCreationForm updater={updater} />
     </Drawer>
   );

@@ -10,10 +10,7 @@ import EntitySettingVisibility from './EntitySettingVisibility';
 import { useFormatter } from '../../../../../components/i18n';
 
 export const entitySettingPatch = graphql`
-  mutation EntitySettingSettingsPatchMutation(
-    $ids: [ID!]!
-    $input: [EditInput!]!
-  ) {
+  mutation EntitySettingSettingsPatchMutation($ids: [ID!]!, $input: [EditInput!]!) {
     entitySettingsFieldPatch(ids: $ids, input: $input) {
       ...EntitySettingsFragment_entitySetting
     }

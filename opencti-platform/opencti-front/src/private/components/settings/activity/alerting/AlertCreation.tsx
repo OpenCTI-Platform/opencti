@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* oxlint-disable no-unused-vars */
 import React, { FunctionComponent, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Button from '@common/button/Button';
@@ -42,18 +42,13 @@ const AlertCreation: FunctionComponent<TriggerCreationProps> = ({
   };
   return (
     <div style={{ marginLeft: theme.spacing(1) }}>
-      <Button
-        sx={{ marginRight: theme.spacing(1) }}
-        onClick={handleOpenCreateDigest}
-      >
+      <Button sx={{ marginRight: theme.spacing(1) }} onClick={handleOpenCreateDigest}>
         {t_i18n('', {
           id: 'Create ...',
           values: { entity_type: t_i18n('Regular digest') },
         })}
       </Button>
-      <Button
-        onClick={handleOpenCreateLive}
-      >
+      <Button onClick={handleOpenCreateLive}>
         {t_i18n('', {
           id: 'Create ...',
           values: { entity_type: t_i18n('Live trigger') },

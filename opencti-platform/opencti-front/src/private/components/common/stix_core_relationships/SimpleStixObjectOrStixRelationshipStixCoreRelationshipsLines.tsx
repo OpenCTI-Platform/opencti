@@ -21,10 +21,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesFragment = gra
     stopTimeStart: { type: "DateTime" }
     stopTimeStop: { type: "DateTime" }
     confidences: { type: "[Int]" }
-    orderBy: {
-      type: "StixCoreRelationshipsOrdering"
-      defaultValue: created_at
-    }
+    orderBy: { type: "StixCoreRelationshipsOrdering", defaultValue: created_at }
     orderMode: { type: "OrderingMode", defaultValue: desc }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
@@ -66,19 +63,19 @@ export const simpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesQuery =
     $cursor: ID
   ) {
     ...SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data
-    @arguments(
-      fromOrToId: $fromOrToId
-      relationship_type: $relationship_type
-      startTimeStart: $startTimeStart
-      startTimeStop: $startTimeStop
-      stopTimeStart: $stopTimeStart
-      stopTimeStop: $stopTimeStop
-      confidences: $confidences
-      orderBy: $orderBy
-      orderMode: $orderMode
-      count: $count
-      cursor: $cursor
-    )
+      @arguments(
+        fromOrToId: $fromOrToId
+        relationship_type: $relationship_type
+        startTimeStart: $startTimeStart
+        startTimeStop: $startTimeStop
+        stopTimeStart: $stopTimeStart
+        stopTimeStop: $stopTimeStop
+        confidences: $confidences
+        orderBy: $orderBy
+        orderMode: $orderMode
+        count: $count
+        cursor: $cursor
+      )
   }
 `;
 
@@ -98,7 +95,10 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines = ({
   paginationOptions,
 }: SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesProps) => {
   const { t_i18n } = useFormatter();
-  const queryResult = usePreloadedQuery(simpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesQuery, queryRef);
+  const queryResult = usePreloadedQuery(
+    simpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesQuery,
+    queryRef,
+  );
   const data = useFragment<SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data$key>(
     SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesFragment,
     queryResult,
@@ -108,22 +108,20 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines = ({
     <div style={{ height: '100%' }}>
       {data.stixCoreRelationships && data.stixCoreRelationships.edges.length > 0 ? (
         <List>
-          {data.stixCoreRelationships.edges.map(
-            (stixCoreRelationshipEdge, index) => {
-              const stixCoreRelationship = stixCoreRelationshipEdge.node;
-              return (
-                <SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine
-                  key={`${stixObjectOrStixRelationshipId}_${index}`}
-                  dataColumns={dataColumns}
-                  entityId={stixObjectOrStixRelationshipId}
-                  entityLink={stixObjectOrStixRelationshipLink}
-                  paginationOptions={paginationOptions}
-                  node={stixCoreRelationship}
-                  connectionKey="Pagination_stixCoreRelationships"
-                />
-              );
-            },
-          )}
+          {data.stixCoreRelationships.edges.map((stixCoreRelationshipEdge, index) => {
+            const stixCoreRelationship = stixCoreRelationshipEdge.node;
+            return (
+              <SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine
+                key={`${stixObjectOrStixRelationshipId}_${index}`}
+                dataColumns={dataColumns}
+                entityId={stixObjectOrStixRelationshipId}
+                entityLink={stixObjectOrStixRelationshipLink}
+                paginationOptions={paginationOptions}
+                node={stixCoreRelationship}
+                connectionKey="Pagination_stixCoreRelationships"
+              />
+            );
+          })}
         </List>
       ) : (
         <div

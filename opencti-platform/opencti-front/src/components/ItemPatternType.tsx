@@ -7,9 +7,7 @@ interface ItemPatternTypeProps {
   label: string;
 }
 
-const ItemPatternType: FunctionComponent<ItemPatternTypeProps> = ({
-  label,
-}) => {
+const ItemPatternType: FunctionComponent<ItemPatternTypeProps> = ({ label }) => {
   const theme = useTheme<Theme>();
   const COLORS: Record<string, string> = {
     stix: theme.palette.designSystem.tertiary.darkBlue[500] || '#0F2DFF',
@@ -23,11 +21,6 @@ const ItemPatternType: FunctionComponent<ItemPatternTypeProps> = ({
     eql: theme.palette.designSystem.tertiary.turquoise[600] || '#00BD94',
     shodan: theme.palette.designSystem.tertiary.red[600] || '#B8180A',
   } as const;
-  return (
-    <Tag
-      label={label}
-      color={COLORS[label] ? COLORS[label] : COLORS.stix}
-    />
-  );
+  return <Tag label={label} color={COLORS[label] ? COLORS[label] : COLORS.stix} />;
 };
 export default ItemPatternType;

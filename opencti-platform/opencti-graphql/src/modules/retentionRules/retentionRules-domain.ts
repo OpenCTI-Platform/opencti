@@ -1,20 +1,38 @@
 import { deleteElementById, updateAttribute } from '../../database/middleware';
-import { topEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { ENTITY_TYPE_RETENTION_RULE, type BasicStoreEntityRetentionRule } from './retentionRules-types';
+import {
+  topEntitiesList,
+  pageEntitiesConnection,
+  storeLoadById,
+} from '../../database/middleware-loader';
+import {
+  ENTITY_TYPE_RETENTION_RULE,
+  type BasicStoreEntityRetentionRule,
+} from './retentionRules-types';
 import { generateInternalId, generateStandardId } from '../../schema/identifier';
 import { elIndex, elPaginate } from '../../database/engine';
-import { INDEX_INTERNAL_OBJECTS, READ_INDEX_HISTORY, READ_STIX_INDICES } from '../../database/utils';
+import {
+  INDEX_INTERNAL_OBJECTS,
+  READ_INDEX_HISTORY,
+  READ_STIX_INDICES,
+} from '../../database/utils';
 import { UnsupportedError } from '../../config/errors';
 import { utcDate } from '../../utils/format';
 import { RETENTION_MANAGER_USER } from '../../utils/access';
 import { convertFiltersToQueryOptions } from '../../utils/filtering/filtering-resolution';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { DELETABLE_FILE_STATUSES, paginatedForPathWithEnrichment } from '../internal/document/document-domain';
+import {
+  DELETABLE_FILE_STATUSES,
+  paginatedForPathWithEnrichment,
+} from '../internal/document/document-domain';
 import { logApp } from '../../config/conf';
 import { BASE_TYPE_ENTITY } from '../../schema/general';
 import { getParentTypes } from '../../schema/schemaUtils';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { EditInput, QueryRetentionRulesArgs, RetentionRuleAddInput } from '../../generated/graphql';
+import type {
+  EditInput,
+  QueryRetentionRulesArgs,
+  RetentionRuleAddInput,
+} from '../../generated/graphql';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../../schema/internalObject';
 import { emptyFilterGroup } from '../../utils/filtering/filtering-utils';
 
@@ -26,40 +44,80 @@ export const checkRetentionRule = async (context: AuthContext, input: RetentionR
   if (scope === 'knowledge') {
     const jsonFilters = filters ? JSON.parse(filters) : null;
     const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
-    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, { ...queryOptions, first: 1 });
+    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, {
+      ...queryOptions,
+      first: 1,
+    });
     return result.pageInfo.globalCount;
   }
   // file and workbench rules
   if (scope === 'file') {
-    result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/global', undefined, { notModifiedSince: before.toISOString() });
+    result = await paginatedForPathWithEnrichment(
+      context,
+      RETENTION_MANAGER_USER,
+      'import/global',
+      undefined,
+      { notModifiedSince: before.toISOString() },
+    );
   } else if (scope === 'workbench') {
     // exact_path: false to get ALL workbenches (both global and entity-attached)
-    result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/pending', undefined, { notModifiedSince: before.toISOString(), exact_path: false });
+    result = await paginatedForPathWithEnrichment(
+      context,
+      RETENTION_MANAGER_USER,
+      'import/pending',
+      undefined,
+      { notModifiedSince: before.toISOString(), exact_path: false },
+    );
   } else if (scope === 'history') {
     const jsonFilters = filters ? JSON.parse(filters) : null;
-    const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before, field: 'timestamp' });
-    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_INDEX_HISTORY, { ...queryOptions, types: [ENTITY_TYPE_HISTORY], first: 1 });
+    const queryOptions = await convertFiltersToQueryOptions(jsonFilters, {
+      before,
+      field: 'timestamp',
+    });
+    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_INDEX_HISTORY, {
+      ...queryOptions,
+      types: [ENTITY_TYPE_HISTORY],
+      first: 1,
+    });
     return result.pageInfo.globalCount;
   } else if (scope === 'activity') {
     const jsonFilters = filters ? JSON.parse(filters) : null;
-    const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before, field: 'timestamp' });
-    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_INDEX_HISTORY, { ...queryOptions, types: [ENTITY_TYPE_ACTIVITY], first: 1 });
+    const queryOptions = await convertFiltersToQueryOptions(jsonFilters, {
+      before,
+      field: 'timestamp',
+    });
+    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_INDEX_HISTORY, {
+      ...queryOptions,
+      types: [ENTITY_TYPE_ACTIVITY],
+      first: 1,
+    });
     return result.pageInfo.globalCount;
   } else {
     logApp.error('[Retention manager] Scope not existing for Retention Rule.', { scope });
   }
-  if (scope === 'file' || scope === 'workbench') { // don't delete progress files or files with works in progress
-    result.edges = result.edges.filter((e: any) => DELETABLE_FILE_STATUSES.includes(e.node.uploadStatus)
-      && (e.node.works ?? []).every((work: any) => !work || DELETABLE_FILE_STATUSES.includes(work?.status)));
+  if (scope === 'file' || scope === 'workbench') {
+    // don't delete progress files or files with works in progress
+    result.edges = result.edges.filter(
+      (e: any) =>
+        DELETABLE_FILE_STATUSES.includes(e.node.uploadStatus) &&
+        (e.node.works ?? []).every(
+          (work: any) => !work || DELETABLE_FILE_STATUSES.includes(work?.status),
+        ),
+    );
   }
   return result.edges.length;
 };
 
 // input { name, filters }
-export const createRetentionRule = async (context: AuthContext, user: AuthUser, input: RetentionRuleAddInput) => {
+export const createRetentionRule = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: RetentionRuleAddInput,
+) => {
   // filters must be a valid json
   let { filters } = input;
-  if (!filters) { // filters is undefined or an empty string
+  if (!filters) {
+    // filters is undefined or an empty string
     filters = JSON.stringify(emptyFilterGroup);
   }
   try {
@@ -96,8 +154,19 @@ export const createRetentionRule = async (context: AuthContext, user: AuthUser, 
   return retentionRule;
 };
 
-export const retentionRuleEditField = async (context: AuthContext, user: AuthUser, retentionRuleId: string, input: EditInput[]) => {
-  const { element } = await updateAttribute(context, user, retentionRuleId, ENTITY_TYPE_RETENTION_RULE, input);
+export const retentionRuleEditField = async (
+  context: AuthContext,
+  user: AuthUser,
+  retentionRuleId: string,
+  input: EditInput[],
+) => {
+  const { element } = await updateAttribute(
+    context,
+    user,
+    retentionRuleId,
+    ENTITY_TYPE_RETENTION_RULE,
+    input,
+  );
   const retentionElement = element as unknown as BasicStoreEntityRetentionRule;
   await publishUserAction({
     user,
@@ -110,8 +179,17 @@ export const retentionRuleEditField = async (context: AuthContext, user: AuthUse
   return element;
 };
 
-export const deleteRetentionRule = async (context: AuthContext, user: AuthUser, retentionRuleId: string) => {
-  const deleted = await deleteElementById(context, user, retentionRuleId, ENTITY_TYPE_RETENTION_RULE);
+export const deleteRetentionRule = async (
+  context: AuthContext,
+  user: AuthUser,
+  retentionRuleId: string,
+) => {
+  const deleted = await deleteElementById(
+    context,
+    user,
+    retentionRuleId,
+    ENTITY_TYPE_RETENTION_RULE,
+  );
   const deletedElement = deleted as unknown as BasicStoreEntityRetentionRule;
   await publishUserAction({
     user,
@@ -125,13 +203,32 @@ export const deleteRetentionRule = async (context: AuthContext, user: AuthUser, 
 };
 
 export const findById = async (context: AuthContext, user: AuthUser, retentionRuleId: string) => {
-  return storeLoadById<BasicStoreEntityRetentionRule>(context, user, retentionRuleId, ENTITY_TYPE_RETENTION_RULE);
+  return storeLoadById<BasicStoreEntityRetentionRule>(
+    context,
+    user,
+    retentionRuleId,
+    ENTITY_TYPE_RETENTION_RULE,
+  );
 };
 
-export const findRetentionRulePaginated = (context: AuthContext, user: AuthUser, args: QueryRetentionRulesArgs) => {
-  return pageEntitiesConnection<BasicStoreEntityRetentionRule>(context, user, [ENTITY_TYPE_RETENTION_RULE], args);
+export const findRetentionRulePaginated = (
+  context: AuthContext,
+  user: AuthUser,
+  args: QueryRetentionRulesArgs,
+) => {
+  return pageEntitiesConnection<BasicStoreEntityRetentionRule>(
+    context,
+    user,
+    [ENTITY_TYPE_RETENTION_RULE],
+    args,
+  );
 };
 
 export const listRules = (context: AuthContext, user: AuthUser, args?: any) => {
-  return topEntitiesList<BasicStoreEntityRetentionRule>(context, user, [ENTITY_TYPE_RETENTION_RULE], args);
+  return topEntitiesList<BasicStoreEntityRetentionRule>(
+    context,
+    user,
+    [ENTITY_TYPE_RETENTION_RULE],
+    args,
+  );
 };

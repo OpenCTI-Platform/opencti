@@ -345,6 +345,7 @@ jobs:
             cd /home/workspace/opencti-platform/opencti-graphql
             yarn check-ts
             yarn lint
+            yarn fmt:check
         '
 
     - name: Start unit tests (aka yarn test:ci-unit)

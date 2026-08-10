@@ -3,19 +3,11 @@ import { StixCoreObjectHistoryLine_node$key } from './__generated__/StixCoreObje
 import HistoryLineContent from '../history/HistoryLineContent';
 
 export const StixCoreObjectHistoryFragment = graphql`
-  fragment StixCoreObjectHistoryLine_node on Log @argumentDefinitions(
-    tz: {
-      type: "String",
-      defaultValue: null
-    }
-    locale: {
-      type: "String",
-      defaultValue: null
-    }
-    unit_system: {
-      type: "String",
-      defaultValue: null
-    }
+  fragment StixCoreObjectHistoryLine_node on Log
+  @argumentDefinitions(
+    tz: { type: "String", defaultValue: null }
+    locale: { type: "String", defaultValue: null }
+    unit_system: { type: "String", defaultValue: null }
   ) {
     id
     event_type

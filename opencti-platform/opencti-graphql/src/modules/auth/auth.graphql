@@ -3,8 +3,8 @@ input AskSendOtpInput {
 }
 
 input VerifyOtpInput {
-  otp : String!
-  transactionId : String!
+  otp: String!
+  transactionId: String!
 }
 
 input VerifyMfaInput {

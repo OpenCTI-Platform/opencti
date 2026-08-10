@@ -9,19 +9,22 @@ import { useFormatter } from '../../../../components/i18n';
 import useCustomViewTabs from '@components/custom_views/useCustomViewTabs';
 import { OtherCustomViewsTab, DefaultCustomViewTab } from '@components/custom_views/CustomViewTab';
 import CustomViewTabDropDownMenu from '@components/custom_views/CustomViewTabDropDownMenu';
-import { CUSTOM_VIEW_TAB_VALUE, DEFAULT_CUSTOM_VIEW_TAB_VALUE } from '@components/custom_views/useCustomViews';
+import {
+  CUSTOM_VIEW_TAB_VALUE,
+  DEFAULT_CUSTOM_VIEW_TAB_VALUE,
+} from '@components/custom_views/useCustomViews';
 
-export type StixDomainObjectTabsBoxTab
-  = | 'overview'
-    | 'result'
-    | 'knowledge'
-    | 'content'
-    | 'analyses'
-    | 'sightings'
-    | 'entities'
-    | 'observables'
-    | 'files'
-    | 'history';
+export type StixDomainObjectTabsBoxTab =
+  | 'overview'
+  | 'result'
+  | 'knowledge'
+  | 'content'
+  | 'analyses'
+  | 'sightings'
+  | 'entities'
+  | 'observables'
+  | 'files'
+  | 'history';
 
 interface StixDomainObjectTabsBoxProps {
   basePath: string;
@@ -41,47 +44,58 @@ interface TabInfo {
 
 // Information about static tabs.
 // Order is important, will be reflected in the UI.
-const TABS_INFO: readonly TabInfo[] = [{
-  tab: 'overview',
-  path: 'overview',
-  label: 'Overview',
-}, {
-  tab: 'result',
-  path: 'result',
-  label: 'Result',
-}, {
-  tab: 'knowledge',
-  path: 'knowledge',
-  label: 'Knowledge',
-}, {
-  tab: 'content',
-  path: 'content',
-  label: 'Content',
-}, {
-  tab: 'analyses',
-  path: 'analyses',
-  label: 'Analyses',
-}, {
-  tab: 'sightings',
-  path: 'sightings',
-  label: 'Sightings',
-}, {
-  tab: 'entities',
-  path: 'entities',
-  label: 'Entities',
-}, {
-  tab: 'observables',
-  path: 'observables',
-  label: 'Observables',
-}, {
-  tab: 'files',
-  path: 'files',
-  label: 'Data',
-}, {
-  tab: 'history',
-  path: 'history',
-  label: 'History',
-}];
+const TABS_INFO: readonly TabInfo[] = [
+  {
+    tab: 'overview',
+    path: 'overview',
+    label: 'Overview',
+  },
+  {
+    tab: 'result',
+    path: 'result',
+    label: 'Result',
+  },
+  {
+    tab: 'knowledge',
+    path: 'knowledge',
+    label: 'Knowledge',
+  },
+  {
+    tab: 'content',
+    path: 'content',
+    label: 'Content',
+  },
+  {
+    tab: 'analyses',
+    path: 'analyses',
+    label: 'Analyses',
+  },
+  {
+    tab: 'sightings',
+    path: 'sightings',
+    label: 'Sightings',
+  },
+  {
+    tab: 'entities',
+    path: 'entities',
+    label: 'Entities',
+  },
+  {
+    tab: 'observables',
+    path: 'observables',
+    label: 'Observables',
+  },
+  {
+    tab: 'files',
+    path: 'files',
+    label: 'Data',
+  },
+  {
+    tab: 'history',
+    path: 'history',
+    label: 'History',
+  },
+];
 
 type TabsWithCustomViewsProps = PropsWithChildren<{
   basePath: string;
@@ -142,31 +156,24 @@ const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
   const location = useLocation();
   const currentTab = getCurrentTab(location.pathname, basePath);
 
-  const staticTabs = TABS_INFO.map(({ tab, path, label }) =>
-    tabs.includes(tab) && (
-      <Tab
-        key={tab}
-        component={Link}
-        to={path}
-        value={path}
-        label={t_i18n(label)}
-      />
-    ));
+  const staticTabs = TABS_INFO.map(
+    ({ tab, path, label }) =>
+      tabs.includes(tab) && (
+        <Tab key={tab} component={Link} to={path} value={path} label={t_i18n(label)} />
+      ),
+  );
 
   return (
-    <Box sx={{
-      borderBottom: 1,
-      borderColor: 'divider',
-      marginBottom: 3,
-      display: 'flex',
-      justifyContent: 'space-between',
-    }}
+    <Box
+      sx={{
+        borderBottom: 1,
+        borderColor: 'divider',
+        marginBottom: 3,
+        display: 'flex',
+        justifyContent: 'space-between',
+      }}
     >
-      <TabsWithCustomViews
-        basePath={basePath}
-        entityType={entityType}
-        currentTab={currentTab}
-      >
+      <TabsWithCustomViews basePath={basePath} entityType={entityType} currentTab={currentTab}>
         {staticTabs}
       </TabsWithCustomViews>
       {extraActions ? (

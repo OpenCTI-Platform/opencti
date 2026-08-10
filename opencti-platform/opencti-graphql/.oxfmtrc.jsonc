@@ -1,0 +1,24 @@
+{
+  "singleQuote": true,
+  "semi": true,
+  "printWidth": 100,
+  "arrowParens": "always",
+  "quoteProps": "as-needed",
+  "tabWidth": 2,
+  "bracketSameLine": false,
+  "ignorePatterns": [
+    "**/build/**",
+    "**/builder/**",
+    "**/coverage/**",
+    "**/node_module/**",
+    "**/packages/**",
+    "**/public/**",
+    "**/static/**",
+    "**/src/generated/**",
+    "**/src/stixpattern/**",
+    "jest.config.js",
+    "jest.setup.js",
+    "jest.file.transform.js",
+    "jest.relay.transform.js"
+  ]
+}

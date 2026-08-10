@@ -56,10 +56,7 @@ const ListFiltersWithoutLocalStorage = ({
         </Tooltip>
       ) : (
         <Tooltip title={tooltip}>
-          <IconButton
-            onClick={handleOpenFilters}
-            style={{ float: 'left', marginTop: -2 }}
-          >
+          <IconButton onClick={handleOpenFilters} style={{ float: 'left', marginTop: -2 }}>
             {icon}
           </IconButton>
         </Tooltip>

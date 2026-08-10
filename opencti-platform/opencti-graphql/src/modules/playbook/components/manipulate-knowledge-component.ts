@@ -13,7 +13,11 @@ import {
   INPUT_PARTICIPANT,
 } from '../../../schema/general';
 import type { BasicStoreCommon } from '../../../types/store';
-import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../../types/stix-2-1-extensions';
+import {
+  STIX_EXT_MITRE,
+  STIX_EXT_OCTI,
+  STIX_EXT_OCTI_SCO,
+} from '../../../types/stix-2-1-extensions';
 import { getEntitiesMapFromCache } from '../../../database/cache';
 import { createdBy, objectLabel, objectMarking } from '../../../schema/stixRefRelationship';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
@@ -23,13 +27,21 @@ import { ENTITY_TYPE_CONTAINER_CASE } from '../../case/case-types';
 import { ENTITY_TYPE_INDICATOR } from '../../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../organization/organization-types';
 import { ENTITY_TYPE_INCIDENT } from '../../../schema/stixDomainObject';
-import { playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
+import {
+  playbookBundleElementsToApply,
+  type PlaybookBundleElementsToApply,
+  type PlaybookComponent,
+} from '../playbook-types';
 import { AUTOMATION_MANAGER_USER, executionContext } from '../../../utils/access';
 import { getParentTypes } from '../../../schema/schemaUtils';
 import * as jsonpatch from 'fast-json-patch';
 import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
-import { applyOperationFieldPatch, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
+import {
+  applyOperationFieldPatch,
+  isBundleElementInScope,
+  isBundleElementMatchFilters,
+} from '../playbook-utils';
 import { pushAll } from '../../../utils/arrayUtil';
 
 const attributePathMapping: any = {
@@ -87,7 +99,11 @@ const attributePathMapping: any = {
 };
 
 export interface ManipulateConfiguration {
-  actions: { op: 'add' | 'replace' | 'remove'; attribute: string; value: UpdateValueConfiguration[] }[];
+  actions: {
+    op: 'add' | 'replace' | 'remove';
+    attribute: string;
+    value: UpdateValueConfiguration[];
+  }[];
   applyToElements: PlaybookBundleElementsToApply;
   applyWithFilters?: string;
 }
@@ -99,9 +115,18 @@ const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<ManipulateC
       default: playbookBundleElementsToApply.onlyMain.value,
       $ref: 'Apply to',
       oneOf: [
-        { const: playbookBundleElementsToApply.onlyMain.value, title: playbookBundleElementsToApply.onlyMain.title },
-        { const: playbookBundleElementsToApply.allElements.value, title: playbookBundleElementsToApply.allElements.title },
-        { const: playbookBundleElementsToApply.allExceptMain.value, title: playbookBundleElementsToApply.allExceptMain.title },
+        {
+          const: playbookBundleElementsToApply.onlyMain.value,
+          title: playbookBundleElementsToApply.onlyMain.title,
+        },
+        {
+          const: playbookBundleElementsToApply.allElements.value,
+          title: playbookBundleElementsToApply.allElements.title,
+        },
+        {
+          const: playbookBundleElementsToApply.allExceptMain.value,
+          title: playbookBundleElementsToApply.allExceptMain.title,
+        },
       ],
     },
     applyWithFilters: {
@@ -151,12 +176,19 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
   category: 'transform_and_enrich',
   is_entry_point: false,
   is_internal: true,
-  ports: [{ id: 'out', type: 'out' }, { id: 'unmodified', type: 'out' }],
+  ports: [
+    { id: 'out', type: 'out' },
+    { id: 'unmodified', type: 'out' },
+  ],
   configuration_schema: PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT_SCHEMA,
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const context = executionContext('playbook_components');
-    const cacheIds = await getEntitiesMapFromCache(context, AUTOMATION_MANAGER_USER, ENTITY_TYPE_MARKING_DEFINITION);
+    const cacheIds = await getEntitiesMapFromCache(
+      context,
+      AUTOMATION_MANAGER_USER,
+      ENTITY_TYPE_MARKING_DEFINITION,
+    );
     const { actions, applyToElements, applyWithFilters } = playbookNode.configuration;
 
     // Compute if the attribute is defined as multiple in schema definition
@@ -177,7 +209,9 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
         if (attributePathMapping[attribute][entityType]) {
           return attributePathMapping[attribute][entityType];
         }
-        const key = Object.keys(attributePathMapping[attribute]).filter((o) => getParentTypes(entityType).includes(o)).at(0);
+        const key = Object.keys(attributePathMapping[attribute])
+          .filter((o) => getParentTypes(entityType).includes(o))
+          .at(0);
         if (key) {
           return attributePathMapping[attribute][key];
         }
@@ -194,7 +228,11 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       const isMatchingScope = isBundleElementInScope(element, applyToElements, dataInstanceId);
-      const isMatchingFilters = await isBundleElementMatchFilters(context, element, applyWithFilters);
+      const isMatchingFilters = await isBundleElementMatchFilters(
+        context,
+        element,
+        applyWithFilters,
+      );
       if (isMatchingScope && isMatchingFilters) {
         const { type, id } = element.extensions[STIX_EXT_OCTI];
         const elementOperations = actions
@@ -202,10 +240,18 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
             const attrPath = computeAttributePath(type, action.attribute);
             const multiple = isAttributeMultiple(type, action.attribute);
             const attributeType = getAttributeType(type, action.attribute);
-            return ({ action, multiple, attributeType, attrPath, path: `/objects/${index}${attrPath}` });
+            return {
+              action,
+              multiple,
+              attributeType,
+              attrPath,
+              path: `/objects/${index}${attrPath}`,
+            };
           })
           // Unrecognized attributes must be filtered
-          .filter(({ attrPath, multiple }) => isNotEmptyField(multiple) && isNotEmptyField(attrPath))
+          .filter(
+            ({ attrPath, multiple }) => isNotEmptyField(multiple) && isNotEmptyField(attrPath),
+          )
           // Map actions to data patches
           .map(({ action, path, multiple, attributeType }) => {
             if (multiple) {
@@ -213,14 +259,16 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
               // the patch value can be the "label" instead of id (for ex: markings ids / labels ids)
               const actionPatchValues = action.value.map((o) => {
                 // If value is an id, must be converted to standard_id has we work on stix bundle
-                if (cacheIds.has(o.patch_value)) return (cacheIds.get(o.patch_value) as BasicStoreCommon).standard_id;
+                if (cacheIds.has(o.patch_value))
+                  return (cacheIds.get(o.patch_value) as BasicStoreCommon).standard_id;
                 // Else, just return the value
                 return convertValue(attributeType, o.patch_value);
               });
               // the value is always the id
               const actionValues = action.value.map((o) => {
                 // If value is an id, must be converted to standard_id has we work on stix bundle
-                if (cacheIds.has(o.value)) return (cacheIds.get(o.value) as BasicStoreCommon).standard_id;
+                if (cacheIds.has(o.value))
+                  return (cacheIds.get(o.value) as BasicStoreCommon).standard_id;
                 // Else, just return the value
                 return convertValue(attributeType, o.value);
               });
@@ -229,7 +277,11 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
                   op: action.op,
                   attribute: action.attribute,
                   value: actionValues,
-                  patchOperation: { op: EditOperation.Replace, path, value: R.uniq([...currentValues, ...actionPatchValues]) },
+                  patchOperation: {
+                    op: EditOperation.Replace,
+                    path,
+                    value: R.uniq([...currentValues, ...actionPatchValues]),
+                  },
                 };
               }
               if (action.op === EditOperation.Replace) {
@@ -245,7 +297,11 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
                   op: action.op,
                   attribute: action.attribute,
                   value: actionValues,
-                  patchOperation: { op: EditOperation.Replace, path, value: currentValues.filter((c: any) => !actionPatchValues.includes(c)) },
+                  patchOperation: {
+                    op: EditOperation.Replace,
+                    path,
+                    value: currentValues.filter((c: any) => !actionPatchValues.includes(c)),
+                  },
                 };
               }
             }
@@ -255,24 +311,38 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
               op: action.op,
               attribute: action.attribute,
               value: currentValue,
-              patchOperation: { op: action.op, path, value: convertValue(attributeType, currentPatchValue) },
+              patchOperation: {
+                op: action.op,
+                path,
+                value: convertValue(attributeType, currentPatchValue),
+              },
             };
           });
         // Enlist operations to execute
         if (elementOperations.length > 0) {
           const operationObject = elementOperations.map((op) => {
-            return { key: op.attribute, value: Array.isArray(op.value) ? op.value : [op.value], operation: op.op };
+            return {
+              key: op.attribute,
+              value: Array.isArray(op.value) ? op.value : [op.value],
+              operation: op.op,
+            };
           });
           if (id) {
             applyOperationFieldPatch(element, operationObject);
           }
-          pushAll(patchOperations, elementOperations.map((e) => e.patchOperation));
+          pushAll(
+            patchOperations,
+            elementOperations.map((e) => e.patchOperation),
+          );
         }
       }
     }
     // Apply operations if needed
     if (patchOperations.length > 0) {
-      const patchedBundle = jsonpatch.applyPatch(structuredClone(bundle), patchOperations).newDocument;
+      const patchedBundle = jsonpatch.applyPatch(
+        structuredClone(bundle),
+        patchOperations,
+      ).newDocument;
       const diff = jsonpatch.compare(bundle, patchedBundle);
       if (isNotEmptyField(diff)) {
         return { output_port: 'out', bundle: patchedBundle };

@@ -4,18 +4,23 @@ import { useEmailTemplateDeleteMutation } from '@components/settings/email_templ
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const emailTemplateDeleteMutation = graphql`
-    mutation useEmailTemplateDeleteMutation($id: ID!) {
-        emailTemplateDelete(id: $id)
-    }
+  mutation useEmailTemplateDeleteMutation($id: ID!) {
+    emailTemplateDelete(id: $id)
+  }
 `;
 
 const useEmailTemplateFormDelete = () => {
   const [mutating, setMutating] = useState(false);
-  const [commitDeleteMutation] = useApiMutation<useEmailTemplateDeleteMutation>(emailTemplateDeleteMutation);
+  const [commitDeleteMutation] = useApiMutation<useEmailTemplateDeleteMutation>(
+    emailTemplateDeleteMutation,
+  );
 
-  const mutation = (
-    { variables, updater, onCompleted, onError }: UseMutationConfig<useEmailTemplateDeleteMutation>,
-  ) => {
+  const mutation = ({
+    variables,
+    updater,
+    onCompleted,
+    onError,
+  }: UseMutationConfig<useEmailTemplateDeleteMutation>) => {
     setMutating(true);
     commitDeleteMutation({
       variables,

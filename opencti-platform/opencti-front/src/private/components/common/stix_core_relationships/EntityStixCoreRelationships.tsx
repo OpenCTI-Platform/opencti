@@ -33,9 +33,7 @@ interface EntityStixCoreRelationshipsProps {
   handleChangeView?: (viewMode: string) => void;
 }
 
-const EntityStixCoreRelationships: FunctionComponent<
-  EntityStixCoreRelationshipsProps
-> = ({
+const EntityStixCoreRelationships: FunctionComponent<EntityStixCoreRelationshipsProps> = ({
   entityId,
   entityLink,
   defaultStartTime,
@@ -55,19 +53,19 @@ const EntityStixCoreRelationships: FunctionComponent<
   const classes = useStyles();
   const LOCAL_STORAGE_KEY = `relationships-${entityId}-${stixCoreObjectTypes?.join('-')}-${relationshipTypes?.join('-')}`;
 
-  const localStorage = usePaginationLocalStorage<PaginationOptions>(
-    LOCAL_STORAGE_KEY,
-    {
-      searchTerm: '',
-      sortBy: 'created',
-      orderAsc: false,
-      openExports: false,
-      filters: emptyFilterGroup,
-      view: enableEntitiesView ? 'entities' : 'relationships',
-    },
-  );
+  const localStorage = usePaginationLocalStorage<PaginationOptions>(LOCAL_STORAGE_KEY, {
+    searchTerm: '',
+    sortBy: 'created',
+    orderAsc: false,
+    openExports: false,
+    filters: emptyFilterGroup,
+    view: enableEntitiesView ? 'entities' : 'relationships',
+  });
   const { view } = localStorage.viewStorage;
-  const finalView = !enableEntitiesView && (currentView === 'entities' || view === 'entities') ? 'relationships' : currentView || view;
+  const finalView =
+    !enableEntitiesView && (currentView === 'entities' || view === 'entities')
+      ? 'relationships'
+      : currentView || view;
 
   return (
     <ExportContextProvider>

@@ -43,8 +43,10 @@ const extractAuthPart = (
   const parts = authentication_value.split(':');
 
   // For password/key/ca/token, return undefined if the part is "undefined"
-  if ((partName === 'password' || partName === 'key' || partName === 'ca' || partName === 'token')
-    && parts[index] === 'undefined') {
+  if (
+    (partName === 'password' || partName === 'key' || partName === 'ca' || partName === 'token') &&
+    parts[index] === 'undefined'
+  ) {
     return undefined;
   }
 
@@ -83,7 +85,10 @@ export const extractToken = (authentication_value: string | null | undefined) =>
 };
 
 export const updateAuthenticationFields = async (
-  setFieldValue: (field: string, value: string) => Promise<void | FormikErrors<IngestionJsonEditionForm | IngestionCsvEditionForm>>,
+  setFieldValue: (
+    field: string,
+    value: string,
+  ) => Promise<void | FormikErrors<IngestionJsonEditionForm | IngestionCsvEditionForm>>,
   value: string,
 ) => {
   // Reset every authentication values on type change

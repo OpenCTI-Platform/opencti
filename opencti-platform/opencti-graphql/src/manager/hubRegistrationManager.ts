@@ -7,18 +7,29 @@ import { cleanOldNewsFeedItems } from '../modules/xtm/hub/news-feed/news-feed-do
 import moment from 'moment';
 
 const HUB_REGISTRATION_MANAGER_ENABLED = booleanConf('hub_registration_manager:enabled', true);
-const HUB_REGISTRATION_MANAGER_KEY = conf.get('hub_registration_manager:lock_key') || 'hub_registration_manager_lock';
+const HUB_REGISTRATION_MANAGER_KEY =
+  conf.get('hub_registration_manager:lock_key') || 'hub_registration_manager_lock';
 const SCHEDULE_TIME = conf.get('hub_registration_manager:interval') || 60 * 60 * 1000; // 1 hour
-const NEWS_FEED_CLEANUP_INTERVAL_VALUE = conf.get('hub_registration_manager:news_feed_cleanup_interval_value') || 180;
-const NEWS_FEED_CLEANUP_INTERVAL_UNIT = conf.get('hub_registration_manager:news_feed_cleanup_interval_unit') || 'days';
+const NEWS_FEED_CLEANUP_INTERVAL_VALUE =
+  conf.get('hub_registration_manager:news_feed_cleanup_interval_value') || 180;
+const NEWS_FEED_CLEANUP_INTERVAL_UNIT =
+  conf.get('hub_registration_manager:news_feed_cleanup_interval_unit') || 'days';
 
-const VALID_CLEANUP_UNITS = ['seconds', 'minutes', 'hours', 'days', 'weeks', 'months', 'years'] as const;
-type ValidCleanupUnit = typeof VALID_CLEANUP_UNITS[number];
+const VALID_CLEANUP_UNITS = [
+  'seconds',
+  'minutes',
+  'hours',
+  'days',
+  'weeks',
+  'months',
+  'years',
+] as const;
+type ValidCleanupUnit = (typeof VALID_CLEANUP_UNITS)[number];
 
 if (
-  typeof NEWS_FEED_CLEANUP_INTERVAL_VALUE !== 'number'
-  || !Number.isFinite(NEWS_FEED_CLEANUP_INTERVAL_VALUE)
-  || NEWS_FEED_CLEANUP_INTERVAL_VALUE <= 0
+  typeof NEWS_FEED_CLEANUP_INTERVAL_VALUE !== 'number' ||
+  !Number.isFinite(NEWS_FEED_CLEANUP_INTERVAL_VALUE) ||
+  NEWS_FEED_CLEANUP_INTERVAL_VALUE <= 0
 ) {
   throw new Error(
     `[XTMH] Invalid news_feed_cleanup_interval_value: expected a positive number, got "${NEWS_FEED_CLEANUP_INTERVAL_VALUE}"`,
@@ -42,7 +53,10 @@ export const hubRegistrationManager = async () => {
   }
   try {
     const cutoffDate = moment()
-      .subtract(NEWS_FEED_CLEANUP_INTERVAL_VALUE, NEWS_FEED_CLEANUP_INTERVAL_UNIT as ValidCleanupUnit)
+      .subtract(
+        NEWS_FEED_CLEANUP_INTERVAL_VALUE,
+        NEWS_FEED_CLEANUP_INTERVAL_UNIT as ValidCleanupUnit,
+      )
       .toDate();
     const deletedCount = await cleanOldNewsFeedItems(
       context,

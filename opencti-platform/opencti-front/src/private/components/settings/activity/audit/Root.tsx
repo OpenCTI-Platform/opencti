@@ -31,16 +31,14 @@ const Root = () => {
   return (
     <Security
       needs={[SETTINGS_SECURITYACTIVITY]}
-      placeholder={(
-        <span>{t_i18n(
-          'You do not have any access to the audit activity of this OpenCTI instance.',
-        )}
+      placeholder={
+        <span>
+          {t_i18n('You do not have any access to the audit activity of this OpenCTI instance.')}
         </span>
-      )}
+      }
     >
       <Audit />
     </Security>
-
   );
 };
 

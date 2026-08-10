@@ -4,7 +4,12 @@ import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import MenuItem from '@mui/material/MenuItem';
-import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH, getAuthenticationValue } from '../../../../utils/ingestionAuthentificationUtils';
+import {
+  BASIC_AUTH,
+  BEARER_AUTH,
+  CERT_AUTH,
+  getAuthenticationValue,
+} from '../../../../utils/ingestionAuthentificationUtils';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -90,10 +95,7 @@ interface IngestionTaxiiCreationProps {
 }
 
 const CreateIngestionTaxiiControlledDial = (props: DrawerControlledDialProps) => (
-  <CreateEntityControlledDial
-    entityType="IngestionTaxii"
-    {...props}
-  />
+  <CreateEntityControlledDial entityType="IngestionTaxii" {...props} />
 );
 
 const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = ({
@@ -108,12 +110,12 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
 
   const [commit] = useApiMutation(IngestionTaxiiCreationMutation);
 
-  const handleSubmit = (values: IngestionTaxiiAddInput, { setSubmitting, setErrors, resetForm }: FormikHelpers<IngestionTaxiiAddInput>) => {
+  const handleSubmit = (
+    values: IngestionTaxiiAddInput,
+    { setSubmitting, setErrors, resetForm }: FormikHelpers<IngestionTaxiiAddInput>,
+  ) => {
     const authenticationValue = getAuthenticationValue(values);
-    const userId
-      = typeof values.user_id === 'object'
-        ? values.user_id?.value
-        : values.user_id;
+    const userId = typeof values.user_id === 'object' ? values.user_id?.value : values.user_id;
     const input = {
       name: values.name,
       description: values.description,
@@ -126,7 +128,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
       added_after_start: values.added_after_start,
       user_id: userId,
       automatic_user: values.automatic_user ?? true,
-      ...((values.automatic_user !== false) && { confidence_level: Number(values.confidence_level) }),
+      ...(values.automatic_user !== false && { confidence_level: Number(values.confidence_level) }),
       confidence_to_score: values.confidence_to_score,
       ssl_verify: values.ssl_verify,
     };
@@ -136,12 +138,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
         input,
       },
       updater: (store) => {
-        insertNode(
-          store,
-          'Pagination_ingestionTaxiis',
-          paginationOptions,
-          'ingestionTaxiiAdd',
-        );
+        insertNode(store, 'Pagination_ingestionTaxiis', paginationOptions, 'ingestionTaxiiAdd');
       },
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
@@ -161,7 +158,9 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
     uri: ingestionTaxiiData?.uri || '',
     version: ingestionTaxiiData?.version || '',
     collection: ingestionTaxiiData?.collection || '',
-    added_after_start: ingestionTaxiiData?.added_after_start ? new Date(ingestionTaxiiData?.added_after_start) : null,
+    added_after_start: ingestionTaxiiData?.added_after_start
+      ? new Date(ingestionTaxiiData?.added_after_start)
+      : null,
     authentication_type: ingestionTaxiiData?.authentication_type || 'none',
     user_id: '',
     automatic_user: true,
@@ -242,13 +241,9 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
                 }}
               >
                 <MenuItem value="none">{t_i18n('None')}</MenuItem>
-                <MenuItem value="basic">
-                  {t_i18n('Basic user / password')}
-                </MenuItem>
+                <MenuItem value="basic">{t_i18n('Basic user / password')}</MenuItem>
                 <MenuItem value="bearer">{t_i18n('Bearer token')}</MenuItem>
-                <MenuItem value="certificate">
-                  {t_i18n('Client certificate')}
-                </MenuItem>
+                <MenuItem value="certificate">{t_i18n('Client certificate')}</MenuItem>
               </Field>
               {values.authentication_type === BASIC_AUTH && (
                 <>
@@ -260,17 +255,11 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
                     fullWidth={true}
                     style={fieldSpacingContainerStyle}
                   />
-                  <PasswordTextField
-                    name="password"
-                    label={t_i18n('Password')}
-                  />
+                  <PasswordTextField name="password" label={t_i18n('Password')} />
                 </>
               )}
               {values.authentication_type === BEARER_AUTH && (
-                <PasswordTextField
-                  name="authentication_value"
-                  label={t_i18n('Token')}
-                />
+                <PasswordTextField name="authentication_value" label={t_i18n('Token')} />
               )}
               {values.authentication_type === CERT_AUTH && (
                 <>
@@ -282,10 +271,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
                     fullWidth={true}
                     style={fieldSpacingContainerStyle}
                   />
-                  <PasswordTextField
-                    name="key"
-                    label={t_i18n('Key (base64)')}
-                  />
+                  <PasswordTextField name="key" label={t_i18n('Key (base64)')} />
                   <Field
                     component={TextField}
                     variant="standard"
@@ -296,17 +282,12 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
                   />
                 </>
               )}
-              <IngestionCreationUserHandling
-                default_confidence_level={50}
-                labelTag="F"
-              />
+              <IngestionCreationUserHandling default_confidence_level={50} labelTag="F" />
               <Field
                 component={DateTimePickerField}
                 name="added_after_start"
                 textFieldProps={{
-                  label: t_i18n(
-                    'Import from date (empty = all TAXII collection possible items)',
-                  ),
+                  label: t_i18n('Import from date (empty = all TAXII collection possible items)'),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
@@ -327,18 +308,10 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
                 containerstyle={fieldSpacingContainerStyle}
               />
               <FormButtonContainer>
-                <Button
-                  variant="secondary"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                >
+                <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-
-                >
+                <Button onClick={submitForm} disabled={isSubmitting}>
                   {drawerSettings?.button ?? t_i18n('Create')}
                 </Button>
               </FormButtonContainer>

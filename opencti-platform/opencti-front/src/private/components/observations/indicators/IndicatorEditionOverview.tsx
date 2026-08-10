@@ -14,13 +14,22 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
-import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertKillChainPhases,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { buildDate, parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { GenericContext } from '@components/common/model/GenericContextModel';
@@ -48,10 +57,7 @@ const indicatorMutationFieldPatch = graphql`
 `;
 
 export const indicatorEditionOverviewFocus = graphql`
-  mutation IndicatorEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation IndicatorEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     indicatorContextPatch(id: $id, input: $input) {
       id
     }
@@ -104,48 +110,50 @@ interface IndicatorEditionFormData {
   references: ExternalReferencesValues | undefined;
 }
 
-const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverviewComponentProps> = ({
-  indicator,
-  handleClose,
-  context,
-  enableReferences,
-}) => {
+const IndicatorEditionOverviewComponent: FunctionComponent<
+  IndicatorEditionOverviewComponentProps
+> = ({ indicator, handleClose, context, enableReferences }) => {
   const { t_i18n } = useFormatter();
   const { mandatoryAttributes } = useIsMandatoryAttribute(INDICATOR_TYPE);
 
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    indicator_types: Yup.array(),
-    x_opencti_reliability: Yup.string().nullable(),
-    confidence: Yup.number(),
-    pattern: Yup.string().trim(),
-    valid_from: Yup.date()
-      .nullable()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    valid_until: Yup.date()
-      .nullable()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .test('is-greater', t_i18n('The valid until date must be greater than the valid from date'), function isGreater(value) {
-        const { valid_from } = this.parent;
-        return !valid_from || !value || value > valid_from;
-      }),
-    x_mitre_platforms: Yup.array().nullable(),
-    x_opencti_score: Yup.number().integer(t_i18n('The value must be an integer'))
-      .required(t_i18n('This field is required'))
-      .min(0, t_i18n('The value must be greater than or equal to 0'))
-      .max(100, t_i18n('The value must be less than or equal to 100')),
-    description: Yup.string().nullable(),
-    x_opencti_detection: Yup.boolean(),
-    references: Yup.array(),
-    x_opencti_workflow_id: Yup.object(),
-    killChainPhases: Yup.array().nullable(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
-
-  const indicatorValidator = useDynamicSchemaEditionValidation(
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      indicator_types: Yup.array(),
+      x_opencti_reliability: Yup.string().nullable(),
+      confidence: Yup.number(),
+      pattern: Yup.string().trim(),
+      valid_from: Yup.date()
+        .nullable()
+        .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+      valid_until: Yup.date()
+        .nullable()
+        .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+        .test(
+          'is-greater',
+          t_i18n('The valid until date must be greater than the valid from date'),
+          function isGreater(value) {
+            const { valid_from } = this.parent;
+            return !valid_from || !value || value > valid_from;
+          },
+        ),
+      x_mitre_platforms: Yup.array().nullable(),
+      x_opencti_score: Yup.number()
+        .integer(t_i18n('The value must be an integer'))
+        .required(t_i18n('This field is required'))
+        .min(0, t_i18n('The value must be greater than or equal to 0'))
+        .max(100, t_i18n('The value must be less than or equal to 100')),
+      description: Yup.string().nullable(),
+      x_opencti_detection: Yup.boolean(),
+      references: Yup.array(),
+      x_opencti_workflow_id: Yup.object(),
+      killChainPhases: Yup.array().nullable(),
+      objectMarking: Yup.array().nullable(),
+    },
     mandatoryAttributes,
-    basicShape,
   );
+
+  const indicatorValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
     fieldPatch: indicatorMutationFieldPatch,
@@ -153,14 +161,12 @@ const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverv
     relationDelete: indicatorMutationRelationDelete,
     editionFocus: indicatorEditionOverviewFocus,
   };
-  const editor = useFormEditor(
-    indicator,
-    enableReferences,
-    queries,
-    indicatorValidator,
-  );
+  const editor = useFormEditor(indicator, enableReferences, queries, indicatorValidator);
 
-  const onSubmit: FormikConfig<IndicatorEditionFormData>['onSubmit'] = (values, { setSubmitting }) => {
+  const onSubmit: FormikConfig<IndicatorEditionFormData>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
@@ -171,21 +177,16 @@ const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverv
       x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
       killChainPhases: (values.killChainPhases ?? []).map(({ value }) => value),
-      valid_from: values.valid_from
-        ? parse(values.valid_from).format()
-        : null,
+      valid_from: values.valid_from ? parse(values.valid_from).format() : null,
 
-      valid_until: values.valid_until
-        ? parse(values.valid_until).format()
-        : null,
+      valid_until: values.valid_until ? parse(values.valid_until).format() : null,
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
 
     editor.fieldPatch({
       variables: {
         id: indicator.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {
@@ -195,7 +196,10 @@ const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverv
     });
   };
 
-  const handleSubmitField = (name: string, value: string | string[] | number | number[] | FieldOption | null) => {
+  const handleSubmitField = (
+    name: string,
+    value: string | string[] | number | number[] | FieldOption | null,
+  ) => {
     if (!enableReferences) {
       // Do not send a mutation if the numeric score value has not actually changed.
       // HTML inputs always return strings from event.target.value, so we compare with
@@ -255,14 +259,7 @@ const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverv
       validateOnBlur={true}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <Form>
           <AlertConfidenceForEntity entity={indicator} />
           <Field
@@ -270,19 +267,17 @@ const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverv
             variant="standard"
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="name" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="name" />}
           />
           <OpenVocabField
             label={t_i18n('Indicator types')}
             type="indicator-type-ov"
             name="indicator_types"
-            required={(mandatoryAttributes.includes('indicator_types'))}
+            required={mandatoryAttributes.includes('indicator_types')}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             onChange={setFieldValue}
@@ -304,22 +299,20 @@ const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverv
             variant="standard"
             name="pattern"
             label={t_i18n('Indicator pattern')}
-            required={(mandatoryAttributes.includes('pattern'))}
+            required={mandatoryAttributes.includes('pattern')}
             fullWidth={true}
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="pattern" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="pattern" />}
           />
           <OpenVocabField
             label={t_i18n('Reliability')}
             type="reliability_ov"
             name="x_opencti_reliability"
-            required={(mandatoryAttributes.includes('x_opencti_reliability'))}
+            required={mandatoryAttributes.includes('x_opencti_reliability')}
             onChange={setFieldValue}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -335,13 +328,11 @@ const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverv
             onSubmit={handleSubmitField}
             textFieldProps={{
               label: t_i18n('Valid from'),
-              required: (mandatoryAttributes.includes('valid_from')),
+              required: mandatoryAttributes.includes('valid_from'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
-              helperText: (
-                <SubscriptionFocus context={context} fieldName="valid_from" />
-              ),
+              helperText: <SubscriptionFocus context={context} fieldName="valid_from" />,
             }}
           />
           <Field
@@ -351,20 +342,18 @@ const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverv
             onSubmit={handleSubmitField}
             textFieldProps={{
               label: t_i18n('Valid until'),
-              required: (mandatoryAttributes.includes('valid_until')),
+              required: mandatoryAttributes.includes('valid_until'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
-              helperText: (
-                <SubscriptionFocus context={context} fieldName="valid_until" />
-              ),
+              helperText: <SubscriptionFocus context={context} fieldName="valid_until" />,
             }}
           />
           <OpenVocabField
             label={t_i18n('Platforms')}
             type="platforms_ov"
             name="x_mitre_platforms"
-            required={(mandatoryAttributes.includes('x_mitre_platforms'))}
+            required={mandatoryAttributes.includes('x_mitre_platforms')}
             variant="edit"
             onSubmit={handleSubmitField}
             onChange={setFieldValue}
@@ -376,25 +365,20 @@ const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverv
             component={TextField}
             variant="standard"
             name="x_opencti_score"
-            required={(mandatoryAttributes.includes('x_opencti_score'))}
+            required={mandatoryAttributes.includes('x_opencti_score')}
             label={t_i18n('Score')}
             type="number"
             fullWidth={true}
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={(
-              <SubscriptionFocus
-                context={context}
-                fieldName="x_opencti_score"
-              />
-            )}
+            helperText={<SubscriptionFocus context={context} fieldName="x_opencti_score" />}
           />
           <Field
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -402,17 +386,13 @@ const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverv
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             uploadEntityId={indicator.id}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
           />
           <KillChainPhasesField
             name="killChainPhases"
-            required={(mandatoryAttributes.includes('killChainPhases'))}
+            required={mandatoryAttributes.includes('killChainPhases')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="killChainPhases" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldName="killChainPhases" />}
             onChange={editor.changeKillChainPhases}
           />
           {indicator.workflowEnabled && (
@@ -423,31 +403,22 @@ const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverv
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={(
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_workflow_id"
-                />
-              )}
+              helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />}
             />
           )}
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="createdBy" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
@@ -456,15 +427,10 @@ const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverv
             type="checkbox"
             name="x_opencti_detection"
             label={t_i18n('Detection')}
-            required={(mandatoryAttributes.includes('x_opencti_detection'))}
+            required={mandatoryAttributes.includes('x_opencti_detection')}
             containerstyle={{ marginTop: 20 }}
             onChange={handleSubmitField}
-            helperText={(
-              <SubscriptionFocus
-                context={context}
-                fieldName="x_opencti_detection"
-              />
-            )}
+            helperText={<SubscriptionFocus context={context} fieldName="x_opencti_detection" />}
           />
           {enableReferences && (
             <CommitMessage
@@ -490,58 +456,55 @@ IndicatorEditionOverviewComponent.propTypes = {
   enableReferences: PropTypes.bool,
 };
 
-const IndicatorEditionOverview = createFragmentContainer(
-  IndicatorEditionOverviewComponent,
-  {
-    indicator: graphql`
-      fragment IndicatorEditionOverview_indicator on Indicator {
-        id
-        name
-        confidence
-        entity_type
-        description
-        pattern
-        valid_from
-        valid_until
-        revoked
-        x_opencti_score
-        x_opencti_detection
-        x_opencti_reliability
-        x_mitre_platforms
-        indicator_types
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        killChainPhases {
+const IndicatorEditionOverview = createFragmentContainer(IndicatorEditionOverviewComponent, {
+  indicator: graphql`
+    fragment IndicatorEditionOverview_indicator on Indicator {
+      id
+      name
+      confidence
+      entity_type
+      description
+      pattern
+      valid_from
+      valid_until
+      revoked
+      x_opencti_score
+      x_opencti_detection
+      x_opencti_reliability
+      x_mitre_platforms
+      indicator_types
+      createdBy {
+        ... on Identity {
           id
+          name
           entity_type
-          kill_chain_name
-          phase_name
-          x_opencti_order
         }
-        objectMarking {
-          id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-        status {
-          id
-          order
-          template {
-            name
-            color
-          }
-        }
-        workflowEnabled
       }
-    `,
-  },
-);
+      killChainPhases {
+        id
+        entity_type
+        kill_chain_name
+        phase_name
+        x_opencti_order
+      }
+      objectMarking {
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
+      }
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
+    }
+  `,
+});
 
 export default IndicatorEditionOverview;

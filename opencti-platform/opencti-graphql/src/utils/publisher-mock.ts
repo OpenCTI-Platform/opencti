@@ -2,7 +2,9 @@ import type { StixCoreObject, StixId, StixRelationshipObject } from '../types/st
 
 export interface NotificationData {
   notification_id: string;
-  instance: (StixCoreObject | StixRelationshipObject | Partial<{ id: string | StixId | null }>) & { entity_type?: string };
+  instance: (StixCoreObject | StixRelationshipObject | Partial<{ id: string | StixId | null }>) & {
+    entity_type?: string;
+  };
   type: string;
   message: string;
 }
@@ -36,9 +38,7 @@ const DEFAULT_ACTIVITY = {
     input: [
       {
         key: 'name',
-        value: [
-          'Some name',
-        ],
+        value: ['Some name'],
       },
     ],
   },

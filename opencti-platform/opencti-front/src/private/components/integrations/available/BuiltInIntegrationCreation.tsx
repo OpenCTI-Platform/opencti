@@ -20,19 +20,13 @@ interface BuiltInIntegrationCreationProps {
 const BuiltInIntegrationCreation = ({ activeKind, onClose }: BuiltInIntegrationCreationProps) => {
   return (
     <>
-      <SyncCreation
-        open={activeKind === 'sync'}
-        handleClose={onClose}
-      />
+      <SyncCreation open={activeKind === 'sync'} handleClose={onClose} />
       <IngestionTaxiiCreation
         triggerButton={false}
         open={activeKind === 'taxii'}
         handleClose={onClose}
       />
-      <IngestionTaxiiCollectionCreation
-        open={activeKind === 'taxii-push'}
-        handleClose={onClose}
-      />
+      <IngestionTaxiiCollectionCreation open={activeKind === 'taxii-push'} handleClose={onClose} />
       <IngestionRssCreation
         triggerButton={false}
         open={activeKind === 'rss'}

@@ -49,12 +49,7 @@ const stixCoreObjectOrStixRelationshipLastContainersQuery = graphql`
     $orderMode: OrderingMode
     $filters: FilterGroup
   ) {
-    containers(
-      first: $first
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    ) {
+    containers(first: $first, orderBy: $orderBy, orderMode: $orderMode, filters: $filters) {
       edges {
         node {
           id
@@ -322,9 +317,10 @@ const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
   return (
     <Card
       padding="horizontal"
-      title={authorId
-        ? t_i18n('Latest containers authored by this entity')
-        : t_i18n('Latest containers about the object')
+      title={
+        authorId
+          ? t_i18n('Latest containers authored by this entity')
+          : t_i18n('Latest containers about the object')
       }
     >
       <QueryRenderer
@@ -350,20 +346,15 @@ const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
                           classes={{ root: classes.item }}
                           divider={true}
                           component={Link}
-                          to={`${resolveLink(container.entity_type)}/${
-                            container.id
-                          }`}
+                          to={`${resolveLink(container.entity_type)}/${container.id}`}
                         >
                           <ListItemIcon>
                             <ItemIcon type={container.entity_type} />
                           </ListItemIcon>
                           <ListItemText
-                            primary={(
+                            primary={
                               <>
-                                <div
-                                  className={classes.bodyItem}
-                                  style={{ width: '12%' }}
-                                >
+                                <div className={classes.bodyItem} style={{ width: '12%' }}>
                                   <ItemEntityType entityType={container.entity_type} />
                                 </div>
                                 <Tooltip title={container.name}>
@@ -385,7 +376,7 @@ const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
                                   />
                                 </div>
                               </>
-                            )}
+                            }
                           />
                         </ListItemButton>
                       );
@@ -419,22 +410,12 @@ const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
           return (
             <List>
               {Array.from(Array(5), (e, i) => (
-                <ListItem
-                  key={i}
-                  dense={true}
-                  divider={true}
-
-                >
+                <ListItem key={i} dense={true} divider={true}>
                   <ListItemIcon classes={{ root: classes.itemIcon }}>
-                    <Skeleton
-                      animation="wave"
-                      variant="circular"
-                      width={30}
-                      height={30}
-                    />
+                    <Skeleton animation="wave" variant="circular" width={30} height={30} />
                   </ListItemIcon>
                   <ListItemText
-                    primary={(
+                    primary={
                       <Skeleton
                         animation="wave"
                         variant="rectangular"
@@ -442,15 +423,10 @@ const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
                         height={15}
                         style={{ marginBottom: 10 }}
                       />
-                    )}
-                    secondary={(
-                      <Skeleton
-                        animation="wave"
-                        variant="rectangular"
-                        width="90%"
-                        height={15}
-                      />
-                    )}
+                    }
+                    secondary={
+                      <Skeleton animation="wave" variant="rectangular" width="90%" height={15} />
+                    }
                   />
                 </ListItem>
               ))}

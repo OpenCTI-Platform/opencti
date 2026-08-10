@@ -1,11 +1,17 @@
 import * as R from 'ramda';
 import { BaseSyntheticEvent, Dispatch, useState } from 'react';
 import { graphql } from 'react-relay';
-import { identitySearchCreatorsSearchQuery, identitySearchIdentitiesSearchQuery } from '@components/common/identities/IdentitySearch';
+import {
+  identitySearchCreatorsSearchQuery,
+  identitySearchIdentitiesSearchQuery,
+} from '@components/common/identities/IdentitySearch';
 import { stixDomainObjectsLinesSearchQuery } from '@components/common/stix_domain_objects/StixDomainObjectsLines';
 import { labelsSearchQuery } from '@components/settings/LabelsQuery';
 import { vocabularySearchQuery } from '@components/settings/VocabularyQuery';
-import { objectAssigneeFieldAssigneesSearchQuery, objectAssigneeFieldMembersSearchQuery } from '@components/common/form/ObjectAssigneeField';
+import {
+  objectAssigneeFieldAssigneesSearchQuery,
+  objectAssigneeFieldMembersSearchQuery,
+} from '@components/common/form/ObjectAssigneeField';
 import { IdentitySearchIdentitiesSearchQuery$data } from '@components/common/identities/__generated__/IdentitySearchIdentitiesSearchQuery.graphql';
 import { IdentitySearchCreatorsSearchQuery$data } from '@components/common/identities/__generated__/IdentitySearchCreatorsSearchQuery.graphql';
 import { ObjectAssigneeFieldAssigneesSearchQuery$data } from '@components/common/form/__generated__/ObjectAssigneeFieldAssigneesSearchQuery.graphql';
@@ -37,7 +43,13 @@ import { fetchQuery } from '../../relay/environment';
 import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
 import type { Theme } from '../../components/Theme';
 import useAttributes, { containerTypes } from '../hooks/useAttributes';
-import { contextFilters, entityTypesFilters, FilterSearchContext, getFilterDefinitionFromFilterKeysMap, ME_FILTER_VALUE } from './filtersUtils';
+import {
+  contextFilters,
+  entityTypesFilters,
+  FilterSearchContext,
+  getFilterDefinitionFromFilterKeysMap,
+  ME_FILTER_VALUE,
+} from './filtersUtils';
 import { useSearchEntitiesDashboardsQuery$data } from './__generated__/useSearchEntitiesDashboardsQuery.graphql';
 import { convertMarking } from '../edition';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../hooks/useGranted';
@@ -51,12 +63,7 @@ const filtersStixCoreObjectsSearchQuery = graphql`
     $count: Int
     $filters: FilterGroup
   ) {
-    stixCoreObjects(
-      search: $search
-      types: $types
-      first: $count
-      filters: $filters
-    ) {
+    stixCoreObjects(search: $search, types: $types, first: $count, filters: $filters) {
       edges {
         node {
           id
@@ -100,7 +107,7 @@ const filtersStixCoreObjectsSearchQuery = graphql`
           ... on Organization {
             name
             description
-          }          
+          }
           ... on SecurityPlatform {
             name
             description
@@ -267,7 +274,28 @@ const groupsQuery = graphql`
 
 export type EntityValue = FilterOptionValue;
 
-const INTERNAL_TYPES_IN_ACTIVITY = ['User', 'Group', 'Workspace', 'Label', 'Marking-Definition', 'Pir', 'DisseminationList', 'ExclusionList', 'DecayRule', 'EmailTemplate', 'CsvMapper', 'JsonMapper', 'StatusTemplate', 'TaxiiCollection', 'StreamCollection', 'Feed', 'Notifier', 'FintelDesign', 'RetentionRule', 'AuthenticationProvider'];
+const INTERNAL_TYPES_IN_ACTIVITY = [
+  'User',
+  'Group',
+  'Workspace',
+  'Label',
+  'Marking-Definition',
+  'Pir',
+  'DisseminationList',
+  'ExclusionList',
+  'DecayRule',
+  'EmailTemplate',
+  'CsvMapper',
+  'JsonMapper',
+  'StatusTemplate',
+  'TaxiiCollection',
+  'StreamCollection',
+  'Feed',
+  'Notifier',
+  'FintelDesign',
+  'RetentionRule',
+  'AuthenticationProvider',
+];
 
 const useSearchEntities = ({
   availableEntityTypes,
@@ -280,9 +308,7 @@ const useSearchEntities = ({
   availableRelationshipTypes?: string[];
   searchContext: FilterSearchContext;
   searchScope: Record<string, string[]>;
-  setInputValues: (
-    value: { key: string; values: string[]; operator?: string }[],
-  ) => void;
+  setInputValues: (value: { key: string; values: string[]; operator?: string }[]) => void;
 }) => {
   const [entities, setEntities] = useState<Record<string, EntityValue[]>>({});
   const { t_i18n } = useFormatter();
@@ -291,7 +317,7 @@ const useSearchEntities = ({
   const theme = useTheme() as Theme;
   const canDisplayAllUsers = useGranted([SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
   const filterKeysMap = new Map();
-  (searchContext.entityTypes).forEach((entityType) => {
+  searchContext.entityTypes.forEach((entityType) => {
     const currentMap = schema.filterKeysSchema.get(entityType);
     currentMap?.forEach((value, key) => filterKeysMap.set(key, value));
   });
@@ -334,18 +360,21 @@ const useSearchEntities = ({
     type: 'stix-meta-relationship',
   };
 
-  const unionSetEntities = (key: string, newEntities: EntityValue[]) => setEntities((c) => ({
-    ...c,
-    [key]: [...newEntities, ...(c[key] ?? [])].filter(
-      ({ value, group }, index, arr) => arr.findIndex((v) => v.value === value && v.group === group)
-        === index,
-    ),
-  }));
+  const unionSetEntities = (key: string, newEntities: EntityValue[]) =>
+    setEntities((c) => ({
+      ...c,
+      [key]: [...newEntities, ...(c[key] ?? [])].filter(
+        ({ value, group }, index, arr) =>
+          arr.findIndex((v) => v.value === value && v.group === group) === index,
+      ),
+    }));
 
   const searchEntities = (
     filterKey: string,
     cacheEntities: Record<string, { label: string; value: string | null; type: string }[]>,
-    setCacheEntities: Dispatch<Record<string, { label: string; value: string | null; type: string }[]>>,
+    setCacheEntities: Dispatch<
+      Record<string, { label: string; value: string | null; type: string }[]>
+    >,
     event: BaseSyntheticEvent,
     isSubKey?: boolean,
   ) => {
@@ -355,7 +384,8 @@ const useSearchEntities = ({
 
     const newInputValue = {
       key: filterKey,
-      values: event.target.value && event.target.value !== 0 ? [event.target.value?.toString()] : [],
+      values:
+        event.target.value && event.target.value !== 0 ? [event.target.value?.toString()] : [],
       operator: 'eq',
     };
     setInputValues([newInputValue]);
@@ -364,9 +394,7 @@ const useSearchEntities = ({
     const buildOptionsFromVocabularySearchQuery = (key: string, filterCategories: string[]) => {
       const filters = {
         mode: 'or',
-        filters: [
-          { key: 'category', values: filterCategories, operator: 'eq', mode: 'or' },
-        ],
+        filters: [{ key: 'category', values: filterCategories, operator: 'eq', mode: 'or' }],
         filterGroups: [],
       };
       fetchQuery(vocabularySearchQuery, {
@@ -376,12 +404,13 @@ const useSearchEntities = ({
       })
         .toPromise()
         .then((data) => {
-          const entityValues = (
-            ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map((n) => ({
+          const entityValues = ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
+            (n) => ({
               label: n?.node.name,
               value: n?.node.name,
               type: 'Vocabulary',
-            })));
+            }),
+          );
           unionSetEntities(key, entityValues);
         });
     };
@@ -396,12 +425,16 @@ const useSearchEntities = ({
         .then((data) => {
           const objectLabelEntities: EntityValue[] = (
             (data as LabelsQuerySearchQuery$data)?.labels?.edges ?? []
-          ).flatMap(({ node }) => ((!node.value || !node.id) ? [] : {
-            label: node.value,
-            value: node.id,
-            type: 'Label',
-            color: node.color ?? undefined,
-          }));
+          ).flatMap(({ node }) =>
+            !node.value || !node.id
+              ? []
+              : {
+                  label: node.value,
+                  value: node.id,
+                  type: 'Label',
+                  color: node.color ?? undefined,
+                },
+          );
           unionSetEntities(key, [
             {
               label: t_i18n('No label'),
@@ -437,9 +470,7 @@ const useSearchEntities = ({
           const killChainPhaseEntities = (
             (data as KillChainPhasesSearchQuery$data)?.killChainPhases?.edges ?? []
           ).map((n) => ({
-            label: n
-              ? `[${n.node.kill_chain_name}] ${n.node.phase_name}`
-              : '',
+            label: n ? `[${n.node.kill_chain_name}] ${n.node.phase_name}` : '',
             value: n?.node.id,
             type: 'Kill-Chain-Phase',
           }));
@@ -498,7 +529,7 @@ const useSearchEntities = ({
             label: getMainRepresentative(node),
             value: node.id,
             type: node.entity_type,
-            parentTypes: node.parent_types.flatMap((t) => (t || [])),
+            parentTypes: node.parent_types.flatMap((t) => t || []),
           }));
           unionSetEntities(key, elementIdEntities);
         });
@@ -513,13 +544,16 @@ const useSearchEntities = ({
         .toPromise()
         .then((data) => {
           const groups: EntityValue[] = (
-            (data as useSearchEntitiesGroupsQuery$data)?.groups
-              ?.edges ?? []
-          ).flatMap((n) => (!n ? [] : {
-            label: n.node.name,
-            value: n.node.id,
-            type: n.node.entity_type,
-          }));
+            (data as useSearchEntitiesGroupsQuery$data)?.groups?.edges ?? []
+          ).flatMap((n) =>
+            !n
+              ? []
+              : {
+                  label: n.node.name,
+                  value: n.node.id,
+                  type: n.node.entity_type,
+                },
+          );
           unionSetEntities(key, groups);
         });
     };
@@ -534,13 +568,16 @@ const useSearchEntities = ({
         .toPromise()
         .then((data) => {
           const createdByEntities: EntityValue[] = (
-            (data as IdentitySearchIdentitiesSearchQuery$data)?.identities
-              ?.edges ?? []
-          ).flatMap((n) => (!n ? [] : {
-            label: n.node.name,
-            value: n.node.id,
-            type: n.node.entity_type,
-          }));
+            (data as IdentitySearchIdentitiesSearchQuery$data)?.identities?.edges ?? []
+          ).flatMap((n) =>
+            !n
+              ? []
+              : {
+                  label: n.node.name,
+                  value: n.node.id,
+                  type: n.node.entity_type,
+                },
+          );
           unionSetEntities(key, createdByEntities);
         });
     };
@@ -555,8 +592,7 @@ const useSearchEntities = ({
         .toPromise()
         .then((data) => {
           const membersEntities = (
-            (data as ObjectAssigneeFieldMembersSearchQuery$data)?.members
-              ?.edges ?? []
+            (data as ObjectAssigneeFieldMembersSearchQuery$data)?.members?.edges ?? []
           ).map((n) => ({
             label: n?.node.name,
             value: n?.node.id,
@@ -565,14 +601,16 @@ const useSearchEntities = ({
           }));
           unionSetEntities(key, membersEntities);
           // add @me value for filters with user id as values, except in stix playbook components
-          if (entityTypes.includes('User') && searchContext.elementType !== 'Playbook-Stix-Component') {
+          if (
+            entityTypes.includes('User') &&
+            searchContext.elementType !== 'Playbook-Stix-Component'
+          ) {
             unionSetEntities(key, [meEntity]);
           }
           // system members are always users; only add them when the filter targets users
           if (entityTypes.includes('User')) {
             const membersSystems = (
-              (data as ObjectAssigneeFieldMembersSearchQuery$data)?.systemMembers
-                ?.edges ?? []
+              (data as ObjectAssigneeFieldMembersSearchQuery$data)?.systemMembers?.edges ?? []
             ).map((n) => ({
               label: n?.node.name,
               value: n?.node.id,
@@ -617,22 +655,31 @@ const useSearchEntities = ({
     // it can take an array of strings or EntityValues as input, for genericity
     // if groupedBy is set, the possible options will be duplicated for every group
     // if isLabelTranslated is set, string inputs will be translated to produce the option label
-    const buildOptionsFromStaticList = (key: string, inputList: string[] | EntityValue[], groupedBy: string[] = [], isLabelTranslated = false) => {
-      const ungroupedEntities: EntityValue[] = inputList.map((n) => (
-        typeof n === 'string' ? {
-          label: isLabelTranslated ? t_i18n(n) : n,
-          value: n,
-          type: 'Vocabulary',
-        } : {
-          label: n.label, // supposedly already translated, or do not require it
-          value: n.value,
-          type: 'Vocabulary',
-          color: n.color ?? undefined,
-        }));
+    const buildOptionsFromStaticList = (
+      key: string,
+      inputList: string[] | EntityValue[],
+      groupedBy: string[] = [],
+      isLabelTranslated = false,
+    ) => {
+      const ungroupedEntities: EntityValue[] = inputList.map((n) =>
+        typeof n === 'string'
+          ? {
+              label: isLabelTranslated ? t_i18n(n) : n,
+              value: n,
+              type: 'Vocabulary',
+            }
+          : {
+              label: n.label, // supposedly already translated, or do not require it
+              value: n.value,
+              type: 'Vocabulary',
+              color: n.color ?? undefined,
+            },
+      );
       let entitiesToAdd = ungroupedEntities;
       if (groupedBy.length > 0) {
-        entitiesToAdd = groupedBy
-          .flatMap((group) => ungroupedEntities.map((item) => ({ ...item, group })));
+        entitiesToAdd = groupedBy.flatMap((group) =>
+          ungroupedEntities.map((item) => ({ ...item, group })),
+        );
       }
       unionSetEntities(key, entitiesToAdd);
     };
@@ -651,7 +698,8 @@ const useSearchEntities = ({
       'connectedToId', // id of the listened entities in an instance trigger
       'sightedBy', // sighting relationship TODO remove because already in regardingOf, and migrate the key)
       'computed_reliability', // special key for the entity reliability, or the reliability of its author if no reliability is set
-    ].concat(entityTypesFilters)
+    ]
+      .concat(entityTypesFilters)
       .concat(contextFilters);
     // case 1 : filter keys with specific behavior
     if (keysWithSpecificSearch.includes(filterKey)) {
@@ -722,9 +770,11 @@ const useSearchEntities = ({
           }
           if (!cacheEntities[filterKey]) {
             // for History and Activity, fetch the creators of all stix core objects
-            const entityTypes = searchContext.entityTypes?.includes('History') || searchContext.entityTypes?.includes('Activity')
-              ? []
-              : searchContext.entityTypes;
+            const entityTypes =
+              searchContext.entityTypes?.includes('History') ||
+              searchContext.entityTypes?.includes('Activity')
+                ? []
+                : searchContext.entityTypes;
             // fetch only: myself + the identities listed as creator of at least 1 object of type in the searchContext.entityTypes
             fetchQuery(identitySearchCreatorsSearchQuery, { entityTypes })
               .toPromise()
@@ -756,11 +806,15 @@ const useSearchEntities = ({
             .then((data) => {
               const sightedByEntities: EntityValue[] = (
                 (data as StixDomainObjectsLinesSearchQuery$data)?.stixDomainObjects?.edges ?? []
-              ).flatMap((n) => ((!n || !n.node) ? [] : {
-                label: n.node.name ?? '',
-                value: n.node.id,
-                type: n.node.entity_type,
-              }));
+              ).flatMap((n) =>
+                !n || !n.node
+                  ? []
+                  : {
+                      label: n.node.name ?? '',
+                      value: n.node.id,
+                      type: n.node.entity_type,
+                    },
+              );
               unionSetEntities('sightedBy', sightedByEntities);
             });
           break;
@@ -775,11 +829,7 @@ const useSearchEntities = ({
           break;
         // region entity and relation types
         case 'contextEntityType': {
-          const elementTypeResult = [
-            ...scoTypes,
-            ...sdoTypes,
-            ...scrTypes,
-          ];
+          const elementTypeResult = [...scoTypes, ...sdoTypes, ...scrTypes];
           if (searchContext.elementType === 'Pir') {
             elementTypeResult.push({
               label: t_i18n('relationship_in-pir'),
@@ -788,11 +838,13 @@ const useSearchEntities = ({
             });
           }
           if (searchContext.entityTypes.includes('Activity')) {
-            elementTypeResult.push(...INTERNAL_TYPES_IN_ACTIVITY.map((n) => ({
-              label: t_i18n(`entity_${n}`),
-              value: n,
-              type: n,
-            })));
+            elementTypeResult.push(
+              ...INTERNAL_TYPES_IN_ACTIVITY.map((n) => ({
+                label: t_i18n(`entity_${n}`),
+                value: n,
+                type: n,
+              })),
+            );
           }
           const elementTypeTypes = elementTypeResult.sort((a, b) => a.label.localeCompare(b.label));
           unionSetEntities(filterKey, elementTypeTypes);
@@ -803,12 +855,13 @@ const useSearchEntities = ({
         case 'entity_types':
         case 'type':
         case 'main_entity_type':
-          if ( // case not abstract types
-            availableEntityTypes
-            && !availableEntityTypes.includes('Stix-Cyber-Observable')
-            && !availableEntityTypes.includes('Stix-Domain-Object')
-            && !availableEntityTypes.includes('Stix-Core-Object')
-            && !availableEntityTypes.includes('stix-core-relationship')
+          if (
+            // case not abstract types
+            availableEntityTypes &&
+            !availableEntityTypes.includes('Stix-Cyber-Observable') &&
+            !availableEntityTypes.includes('Stix-Domain-Object') &&
+            !availableEntityTypes.includes('Stix-Core-Object') &&
+            !availableEntityTypes.includes('stix-core-relationship')
           ) {
             let completedAvailableEntityTypes = availableEntityTypes;
             if (availableEntityTypes.includes('Container')) {
@@ -829,88 +882,81 @@ const useSearchEntities = ({
               }))
               .sort((a, b) => a.label.localeCompare(b.label));
             unionSetEntities(filterKey, entitiesTypes);
-          } else { // case abstract types
+          } else {
+            // case abstract types
             let result: EntityValue[] = [];
             // push the observables
             if (
-              !availableEntityTypes
-              || availableEntityTypes.includes('Stix-Core-Object')
-              || availableEntityTypes.includes('Stix-Cyber-Observable')
+              !availableEntityTypes ||
+              availableEntityTypes.includes('Stix-Core-Object') ||
+              availableEntityTypes.includes('Stix-Cyber-Observable')
             ) {
-              result = [
-                ...scoTypes,
-                ...result,
-              ];
+              result = [...scoTypes, ...result];
               // if there are not only stix cyber observables in the entity types list, add the 'Stix Cyber Observable' abstract type
-              if (!availableEntityTypes
-                || (availableEntityTypes && (availableEntityTypes.length > 1 || availableEntityTypes.includes('Stix-Core-Object')))) {
-                result = [
-                  abstractTypeFilterValue('Stix-Cyber-Observable'),
-                  ...result,
-                ];
+              if (
+                !availableEntityTypes ||
+                (availableEntityTypes &&
+                  (availableEntityTypes.length > 1 ||
+                    availableEntityTypes.includes('Stix-Core-Object')))
+              ) {
+                result = [abstractTypeFilterValue('Stix-Cyber-Observable'), ...result];
               }
             }
             // push the stix domain objects
             if (
-              !availableEntityTypes
-              || availableEntityTypes.includes('Stix-Core-Object')
-              || availableEntityTypes.includes('Stix-Domain-Object')
+              !availableEntityTypes ||
+              availableEntityTypes.includes('Stix-Core-Object') ||
+              availableEntityTypes.includes('Stix-Domain-Object')
             ) {
-              result = [
-                ...sdoTypes,
-                ...result,
-              ];
+              result = [...sdoTypes, ...result];
               // if there are not only stix domain objects in the entity types list, add the 'Stix Domain Object' abstract type
-              if (!availableEntityTypes
-                || (availableEntityTypes && (availableEntityTypes.length > 1 || availableEntityTypes.includes('Stix-Core-Object')))) {
-                result = [
-                  abstractTypeFilterValue('Stix-Domain-Object'),
-                  ...result,
-                ];
+              if (
+                !availableEntityTypes ||
+                (availableEntityTypes &&
+                  (availableEntityTypes.length > 1 ||
+                    availableEntityTypes.includes('Stix-Core-Object')))
+              ) {
+                result = [abstractTypeFilterValue('Stix-Domain-Object'), ...result];
               }
             }
             // push the stix core relationships types
-            if (
-              !availableEntityTypes
-              || availableEntityTypes.includes('stix-core-relationship')
-            ) {
-              result = [
-                ...scrTypes,
-                ...result,
-              ];
+            if (!availableEntityTypes || availableEntityTypes.includes('stix-core-relationship')) {
+              result = [...scrTypes, ...result];
               // if there are not only stix core relationships in the entity types list, add the 'Stix Core Relationship' abstract type
-              if (!availableEntityTypes
-                || (availableEntityTypes && availableEntityTypes.length > 1)) {
-                result = [
-                  abstractTypeFilterValue('stix-core-relationship'),
-                  ...result,
-                ];
+              if (
+                !availableEntityTypes ||
+                (availableEntityTypes && availableEntityTypes.length > 1)
+              ) {
+                result = [abstractTypeFilterValue('stix-core-relationship'), ...result];
               }
             }
             // push the sighting relationship
             if (
-              !availableEntityTypes
-              || availableEntityTypes.includes('stix-sighting-relationship')
+              !availableEntityTypes ||
+              availableEntityTypes.includes('stix-sighting-relationship')
             ) {
-              result = [
-                ...result,
-                abstractTypeFilterValue('stix-sighting-relationship'),
-              ];
+              result = [...result, abstractTypeFilterValue('stix-sighting-relationship')];
             }
             // push the 'contains' relationship
-            if (
-              !availableEntityTypes
-              || availableEntityTypes.includes('contains')
-            ) {
-              result = [
-                ...result,
-                objectRelationshipType,
-              ];
+            if (!availableEntityTypes || availableEntityTypes.includes('contains')) {
+              result = [...result, objectRelationshipType];
             }
             // push additional concrete types not covered by abstract type loading (e.g., DraftWorkspace)
             if (availableEntityTypes) {
-              const knownAbstractTypes = ['Stix-Cyber-Observable', 'Stix-Domain-Object', 'Stix-Core-Object', 'stix-core-relationship', 'stix-sighting-relationship', 'contains', 'object-label', 'Container', 'Threat-Actor'];
-              const extraConcreteTypes = availableEntityTypes.filter((type) => !knownAbstractTypes.includes(type));
+              const knownAbstractTypes = [
+                'Stix-Cyber-Observable',
+                'Stix-Domain-Object',
+                'Stix-Core-Object',
+                'stix-core-relationship',
+                'stix-sighting-relationship',
+                'contains',
+                'object-label',
+                'Container',
+                'Threat-Actor',
+              ];
+              const extraConcreteTypes = availableEntityTypes.filter(
+                (type) => !knownAbstractTypes.includes(type),
+              );
               if (extraConcreteTypes.length > 0) {
                 result = [
                   ...result,
@@ -946,21 +992,23 @@ const useSearchEntities = ({
           break;
         case 'relationship_type': {
           let relationshipsTypes: { label: string; value: string; type: string }[] = [];
-          if (availableRelationshipTypes && !isSubKey) { // if available RelationshipTypes is specified, we display only the specified relationship types
-            relationshipsTypes = availableRelationshipTypes
-              .map((n) => ({
-                label: t_i18n(`relationship_${n.toString()}`),
-                value: n,
-                type: n,
-              }));
-          } else if (isSubKey || !searchContext.entityTypes) { // if relationship_type is the subKey of regarding_of, we always display all the relationship types
+          if (availableRelationshipTypes && !isSubKey) {
+            // if available RelationshipTypes is specified, we display only the specified relationship types
+            relationshipsTypes = availableRelationshipTypes.map((n) => ({
+              label: t_i18n(`relationship_${n.toString()}`),
+              value: n,
+              type: n,
+            }));
+          } else if (isSubKey || !searchContext.entityTypes) {
+            // if relationship_type is the subKey of regarding_of, we always display all the relationship types
             relationshipsTypes = [
               ...scrTypes,
               abstractTypeFilterValue('stix-sighting-relationship'),
               objectRelationshipType,
               labelRelationshipType,
             ];
-          } else { // display relationship types according to searchContext.entityTypes
+          } else {
+            // display relationship types according to searchContext.entityTypes
             const { entityTypes } = searchContext;
             if (entityTypes.includes('stix-core-relationship')) {
               relationshipsTypes = scrTypes;
@@ -972,19 +1020,16 @@ const useSearchEntities = ({
               ];
             }
             if (entityTypes.includes('contains')) {
-              relationshipsTypes = [
-                ...relationshipsTypes,
-                objectRelationshipType,
-              ];
+              relationshipsTypes = [...relationshipsTypes, objectRelationshipType];
             }
             if (entityTypes.includes('object-label')) {
-              relationshipsTypes = [
-                ...relationshipsTypes,
-                labelRelationshipType,
-              ];
+              relationshipsTypes = [...relationshipsTypes, labelRelationshipType];
             }
           }
-          unionSetEntities(filterKey, relationshipsTypes.sort((a, b) => a.label.localeCompare(b.label)));
+          unionSetEntities(
+            filterKey,
+            relationshipsTypes.sort((a, b) => a.label.localeCompare(b.label)),
+          );
           break;
         }
         case 'x_opencti_main_observable_type':
@@ -993,8 +1038,7 @@ const useSearchEntities = ({
             .toPromise()
             .then((data) => {
               const mainObservableTypeEntities = (
-                (data as useSearchEntitiesSchemaSCOSearchQuery$data)?.schemaSCOs
-                  ?.edges ?? []
+                (data as useSearchEntitiesSchemaSCOSearchQuery$data)?.schemaSCOs?.edges ?? []
               ).map((n) => ({
                 label: t_i18n(`entity_${n?.node.id}`),
                 value: n?.node.id,
@@ -1007,10 +1051,7 @@ const useSearchEntities = ({
                   type: 'Unknown',
                 });
               }
-              unionSetEntities(
-                filterKey,
-                mainObservableTypeEntities,
-              );
+              unionSetEntities(filterKey, mainObservableTypeEntities);
             });
           break;
         // endregion
@@ -1020,11 +1061,14 @@ const useSearchEntities = ({
     } else {
       // case 2: build according to the filter type
       // depending on the filter type, fetch the right data and build the options list
-      const filterDefinition: FilterDefinition | undefined = getFilterDefinitionFromFilterKeysMap(filterKey, filterKeysMap);
+      const filterDefinition: FilterDefinition | undefined = getFilterDefinitionFromFilterKeysMap(
+        filterKey,
+        filterKeysMap,
+      );
       const filterType = filterDefinition?.type ?? 'undefined';
       switch (filterType) {
         case 'vocabulary':
-          // eslint-disable-next-line no-case-declarations
+          // oxlint-disable-next-line no-case-declarations
           const vocabularyKey = filterDefinition?.elementsForFilterValuesSearch?.[0];
           if (vocabularyKey) buildOptionsFromVocabularySearchQuery(filterKey, [vocabularyKey]);
           break;
@@ -1032,18 +1076,27 @@ const useSearchEntities = ({
           buildOptionsFromStaticList(filterKey, ['true', 'false'], [], true);
           break;
         case 'enum':
-          // eslint-disable-next-line no-case-declarations
+          // oxlint-disable-next-line no-case-declarations
           const enumValues = filterDefinition?.elementsForFilterValuesSearch ?? [];
           buildOptionsFromStaticList(filterKey, enumValues, [], true);
           break;
         case 'id':
-          // eslint-disable-next-line no-case-declarations
+          // oxlint-disable-next-line no-case-declarations
           const idEntityTypes = filterDefinition?.elementsForFilterValuesSearch ?? [];
           if (idEntityTypes) {
-            const completedStixCoreObjectTypes = stixCoreObjectTypes.concat(['Stix-Core-Object', 'Stix-Cyber-Observable']);
-            if (idEntityTypes.every((typeOfId) => completedStixCoreObjectTypes.includes(typeOfId))) { // Stix Core Objects
+            const completedStixCoreObjectTypes = stixCoreObjectTypes.concat([
+              'Stix-Core-Object',
+              'Stix-Cyber-Observable',
+            ]);
+            if (
+              idEntityTypes.every((typeOfId) => completedStixCoreObjectTypes.includes(typeOfId))
+            ) {
+              // Stix Core Objects
               buildOptionsFromStixCoreObjectTypes(filterKey, idEntityTypes);
-            } else if (idEntityTypes.every((typeOfId) => schema.smos.map((n) => n.id).includes(typeOfId))) { // Stix Meta Objects
+            } else if (
+              idEntityTypes.every((typeOfId) => schema.smos.map((n) => n.id).includes(typeOfId))
+            ) {
+              // Stix Meta Objects
               buildOptionsFromStixMetaObjectTypes(filterKey, idEntityTypes);
             } else if (idEntityTypes.includes('Group')) {
               buildOptionsFromGroupSearchQuery(filterKey);
@@ -1058,10 +1111,7 @@ const useSearchEntities = ({
                     value: n.id,
                     type: 'Notifier',
                   }));
-                  unionSetEntities(
-                    filterKey,
-                    notifiers,
-                  );
+                  unionSetEntities(filterKey, notifiers);
                 });
             } else if (idEntityTypes.includes('Trigger')) {
               fetchQuery(triggersQueriesSearchQuery, {
@@ -1076,10 +1126,7 @@ const useSearchEntities = ({
                     value: n.node.id,
                     type: 'Trigger',
                   }));
-                  unionSetEntities(
-                    filterKey,
-                    triggers,
-                  );
+                  unionSetEntities(filterKey, triggers);
                 });
             } else if (idEntityTypes.includes('StatusTemplate')) {
               fetchQuery(StatusTemplateFieldQuery, {
@@ -1088,15 +1135,18 @@ const useSearchEntities = ({
                 .toPromise()
                 .then((data) => {
                   const statusTemplateEntities: EntityValue[] = (
-                    (data as StatusTemplateFieldSearchQuery$data)?.statusTemplates?.edges
-                    ?? []
+                    (data as StatusTemplateFieldSearchQuery$data)?.statusTemplates?.edges ?? []
                   )
-                    .flatMap((n) => (!n ? [] : {
-                      label: n.node.name,
-                      color: n.node.color,
-                      value: n.node.id,
-                      type: 'Vocabulary',
-                    }))
+                    .flatMap((n) =>
+                      !n
+                        ? []
+                        : {
+                            label: n.node.name,
+                            color: n.node.color,
+                            value: n.node.id,
+                            type: 'Vocabulary',
+                          },
+                    )
                     .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''));
                   unionSetEntities(filterKey, statusTemplateEntities);
                 });
@@ -1105,15 +1155,15 @@ const useSearchEntities = ({
                 first: 500,
                 filters: {
                   mode: 'and',
-                  filters: [
-                    { key: 'type', values: ['dashboard'] },
-                  ],
+                  filters: [{ key: 'type', values: ['dashboard'] }],
                   filterGroups: [],
                 },
               })
                 .toPromise()
                 .then((data: unknown) => {
-                  const dashboards = ((data as useSearchEntitiesDashboardsQuery$data)?.workspaces?.edges ?? [])
+                  const dashboards = (
+                    (data as useSearchEntitiesDashboardsQuery$data)?.workspaces?.edges ?? []
+                  )
                     .filter((n) => !R.isNil(n?.node))
                     .map((n) => ({
                       label: n?.node.name,

@@ -45,18 +45,11 @@ const DialogFilters: FunctionComponent<DialogFiltersProps> = ({
   return (
     <React.Fragment>
       <Tooltip title={t_i18n('Advanced search')}>
-        <IconButton
-          onClick={handleOpenFilters}
-          disabled={disabled}
-        >
+        <IconButton onClick={handleOpenFilters} disabled={disabled}>
           <BiotechOutlined fontSize="medium" />
         </IconButton>
       </Tooltip>
-      <Dialog
-        open={open}
-        onClose={handleCloseFilters}
-        title={t_i18n('Advanced search')}
-      >
+      <Dialog open={open} onClose={handleCloseFilters} title={t_i18n('Advanced search')}>
         <FilterIconButton
           filters={filters}
           handleRemoveFilter={defaultHandleRemoveFilter}
@@ -68,10 +61,10 @@ const DialogFilters: FunctionComponent<DialogFiltersProps> = ({
         />
         {filterElement}
         <DialogActions>
-          <Button variant="secondary" onClick={handleCloseFilters}>{t_i18n('Cancel')}</Button>
-          <Button onClick={handleSearch}>
-            {t_i18n('Search')}
+          <Button variant="secondary" onClick={handleCloseFilters}>
+            {t_i18n('Cancel')}
           </Button>
+          <Button onClick={handleSearch}>{t_i18n('Search')}</Button>
         </DialogActions>
       </Dialog>
     </React.Fragment>

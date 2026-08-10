@@ -1,4 +1,11 @@
-import { CommonColors, PaletteColorOptions, PaletteMode, PaletteOptions, TypeBackground, TypeText } from '@mui/material/styles/createPalette';
+import {
+  CommonColors,
+  PaletteColorOptions,
+  PaletteMode,
+  PaletteOptions,
+  TypeBackground,
+  TypeText,
+} from '@mui/material/styles/createPalette';
 import { Theme as MuiTheme, ThemeOptions } from '@mui/material/styles/createTheme';
 
 declare module '@mui/material/IconButton' {

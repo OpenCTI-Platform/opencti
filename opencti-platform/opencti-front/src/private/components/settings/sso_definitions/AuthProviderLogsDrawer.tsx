@@ -74,11 +74,11 @@ const AuthProviderLogsDrawerContent: React.FC<{
 
   const content = queryRef ? (
     <Suspense
-      fallback={(
+      fallback={
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress size={32} />
         </Box>
-      )}
+      }
     >
       <AuthProviderLogsDrawerBody
         queryRef={queryRef}
@@ -96,7 +96,7 @@ const AuthProviderLogsDrawerContent: React.FC<{
       title={title}
       open
       onClose={onClose}
-      header={(
+      header={
         <Tooltip title={t_i18n('Refresh')}>
           <span>
             <IconButton
@@ -109,7 +109,7 @@ const AuthProviderLogsDrawerContent: React.FC<{
             </IconButton>
           </span>
         </Tooltip>
-      )}
+      }
     >
       {content}
     </Drawer>
@@ -121,7 +121,9 @@ const AuthProviderLogsDrawer: React.FC<AuthProviderLogsDrawerProps> = ({
   onClose,
   providerId,
 }) => {
-  const [queryRef, loadQuery] = useQueryLoader<AuthProviderLogsDrawerQuery>(authProviderLogsDrawerQuery);
+  const [queryRef, loadQuery] = useQueryLoader<AuthProviderLogsDrawerQuery>(
+    authProviderLogsDrawerQuery,
+  );
 
   useEffect(() => {
     if (isOpen && providerId) {

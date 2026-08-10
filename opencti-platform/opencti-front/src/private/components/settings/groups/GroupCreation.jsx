@@ -22,30 +22,24 @@ const groupMutation = graphql`
   }
 `;
 
-const groupValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  group_confidence_level: Yup.number()
-    .min(0, t('The value must be greater than or equal to 0'))
-    .max(100, t('The value must be less than or equal to 100'))
-    .required(t('This field is required')),
-});
+const groupValidation = (t) =>
+  Yup.object().shape({
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    group_confidence_level: Yup.number()
+      .min(0, t('The value must be greater than or equal to 0'))
+      .max(100, t('The value must be less than or equal to 100'))
+      .required(t('This field is required')),
+  });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_groups',
-    paginationOptions,
-  );
+  const conn = ConnectionHandler.getConnection(userProxy, 'Pagination_groups', paginationOptions);
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
 const CreateGroupControlledDial = (props) => (
-  <CreateEntityControlledDial
-    entityType="Group"
-    {...props}
-  />
+  <CreateEntityControlledDial entityType="Group" {...props} />
 );
 
 const GroupCreation = ({ paginationOptions }) => {
@@ -70,12 +64,7 @@ const GroupCreation = ({ paginationOptions }) => {
         const payload = store.getRootField('groupAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node');
         const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          paginationOptions,
-          newEdge,
-        );
+        sharedUpdater(store, container.getDataID(), paginationOptions, newEdge);
       },
       setSubmitting,
       onCompleted: () => {
@@ -86,10 +75,7 @@ const GroupCreation = ({ paginationOptions }) => {
   };
 
   return (
-    <Drawer
-      title={t_i18n('Create a group')}
-      controlledDial={CreateGroupControlledDial}
-    >
+    <Drawer title={t_i18n('Create a group')} controlledDial={CreateGroupControlledDial}>
       {({ onClose }) => (
         <Formik
           initialValues={{
@@ -103,12 +89,7 @@ const GroupCreation = ({ paginationOptions }) => {
         >
           {({ submitForm, handleReset, isSubmitting }) => (
             <Form>
-              <Field
-                component={TextField}
-                name="name"
-                label={t_i18n('Name')}
-                fullWidth={true}
-              />
+              <Field component={TextField} name="name" label={t_i18n('Name')} fullWidth={true} />
               <Field
                 component={MarkdownField}
                 name="description"
@@ -127,17 +108,10 @@ const GroupCreation = ({ paginationOptions }) => {
                 />
               )}
               <FormButtonContainer>
-                <Button
-                  variant="secondary"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                >
+                <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
+                <Button onClick={submitForm} disabled={isSubmitting}>
                   {t_i18n('Create')}
                 </Button>
               </FormButtonContainer>

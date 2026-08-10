@@ -11,35 +11,20 @@ interface DecayRuleCreationProps {
 }
 
 const CreateDecayRuleControlledDial = (props: DrawerControlledDialProps) => (
-  <CreateEntityControlledDial
-    entityType="DecayRule"
-    {...props}
-  />
+  <CreateEntityControlledDial entityType="DecayRule" {...props} />
 );
 
 const DecayRuleCreation = ({ paginationOptions }: DecayRuleCreationProps) => {
   const { t_i18n } = useFormatter();
 
   const updater = (store: RecordSourceSelectorProxy, rootField: string) => {
-    insertNode(
-      store,
-      'Pagination_decayRules',
-      paginationOptions,
-      rootField,
-    );
+    insertNode(store, 'Pagination_decayRules', paginationOptions, rootField);
   };
 
   return (
-    <Drawer
-      title={t_i18n('Create a decay rule')}
-      controlledDial={CreateDecayRuleControlledDial}
-    >
+    <Drawer title={t_i18n('Create a decay rule')} controlledDial={CreateDecayRuleControlledDial}>
       {({ onClose }) => (
-        <DecayRuleCreationForm
-          updater={updater}
-          onCompleted={onClose}
-          onReset={onClose}
-        />
+        <DecayRuleCreationForm updater={updater} onCompleted={onClose} onReset={onClose} />
       )}
     </Drawer>
   );

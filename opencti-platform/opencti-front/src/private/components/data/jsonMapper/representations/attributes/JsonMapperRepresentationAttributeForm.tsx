@@ -14,8 +14,7 @@ import { Theme } from '../../../../../../components/Theme';
 
 export type RepresentationAttributeForm = JsonMapperRepresentationAttributeFormData | undefined;
 
-interface JsonMapperRepresentationAttributeFormProps
-  extends FieldProps<RepresentationAttributeForm> {
+interface JsonMapperRepresentationAttributeFormProps extends FieldProps<RepresentationAttributeForm> {
   schemaAttribute: SchemaAttribute;
   label: string;
   handleErrors: (key: string, value: string | null) => void;
@@ -105,21 +104,22 @@ const JsonMapperRepresentationAttributeForm: FunctionComponent<
         />
       </div>
       <div>
-        {
-          (schemaAttribute.type === 'date' || schemaAttribute.multiple || schemaAttribute.editDefault)
-          && (
-            <JsonMapperRepresentationDialogOption configuration={value}>
-              <JsonMapperRepresentationAttributeOptions
-                schemaAttribute={schemaAttribute}
-                baseAttributeName={name}
-                configurationAttributeName={`${name}.attr_path.configuration`}
-                form={form}
-              />
-            </JsonMapperRepresentationDialogOption>
-          )
-        }
+        {(schemaAttribute.type === 'date' ||
+          schemaAttribute.multiple ||
+          schemaAttribute.editDefault) && (
+          <JsonMapperRepresentationDialogOption configuration={value}>
+            <JsonMapperRepresentationAttributeOptions
+              schemaAttribute={schemaAttribute}
+              baseAttributeName={name}
+              configurationAttributeName={`${name}.attr_path.configuration`}
+              form={form}
+            />
+          </JsonMapperRepresentationDialogOption>
+        )}
       </div>
-      <JsonMapperRepresentionAttributeSelectedConfigurations configuration={value?.attr_path?.configuration} />
+      <JsonMapperRepresentionAttributeSelectedConfigurations
+        configuration={value?.attr_path?.configuration}
+      />
     </div>
   );
 };

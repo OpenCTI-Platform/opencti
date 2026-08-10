@@ -3,7 +3,11 @@ import TextField from '@mui/material/TextField';
 import React, { FunctionComponent } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
-import { FiltersVariant, getFilterDefinitionFromFilterKeysMap, useBuildFilterKeysMapFromEntityType } from '../../../../utils/filters/filtersUtils';
+import {
+  FiltersVariant,
+  getFilterDefinitionFromFilterKeysMap,
+  useBuildFilterKeysMapFromEntityType,
+} from '../../../../utils/filters/filtersUtils';
 import FilterDate from './FilterDate';
 import FilterAutocomplete from './FilterAutocomplete';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
@@ -100,11 +104,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
           const filterLabel = t_i18n(filterDefinition?.label ?? filterKey);
           if (isDateFilter) {
             return (
-              <Grid
-                key={`${filterKey}_${index}`}
-                item
-                xs={6}
-              >
+              <Grid key={`${filterKey}_${index}`} item xs={6}>
                 <FilterDate
                   defaultHandleAddFilter={defaultHandleAddFilter}
                   filterKey={filterKey}
@@ -134,11 +134,12 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
           );
         })}
       </Grid>
-      <div style={{
-        display: 'inline-block',
-        color: theme.palette.text?.secondary,
-        marginTop: 20,
-      }}
+      <div
+        style={{
+          display: 'inline-block',
+          color: theme.palette.text?.secondary,
+          marginTop: 20,
+        }}
       >
         {t_i18n('Use Alt + click to exclude items')}
       </div>

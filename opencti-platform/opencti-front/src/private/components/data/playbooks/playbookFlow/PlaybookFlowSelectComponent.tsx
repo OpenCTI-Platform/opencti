@@ -44,13 +44,11 @@ const PlaybookFlowSelectComponent = ({
     <List>
       {grouped.map(({ category, items }, index) => (
         <React.Fragment key={category}>
-          <ListSubheader disableSticky sx={index > 0 ? { paddingTop: '8px' } : undefined}>{t_i18n(category)}</ListSubheader>
+          <ListSubheader disableSticky sx={index > 0 ? { paddingTop: '8px' } : undefined}>
+            {t_i18n(category)}
+          </ListSubheader>
           {items.map((component) => (
-            <ListItemButton
-              divider
-              key={component.id}
-              onClick={() => onSelect(component)}
-            >
+            <ListItemButton divider key={component.id} onClick={() => onSelect(component)}>
               <ListItemIcon>
                 <ItemIcon type={component.icon} />
               </ListItemIcon>

@@ -1,7 +1,16 @@
 import session from 'express-session';
 import { LRUCache } from 'lru-cache';
 import AsyncLock from 'async-lock';
-import { clearSessions, extendSession, getSession, getSessionKeys, getSessions, getSessionTtl, killSession, setSession } from './redis';
+import {
+  clearSessions,
+  extendSession,
+  getSession,
+  getSessionKeys,
+  getSessions,
+  getSessionTtl,
+  killSession,
+  setSession,
+} from './redis';
 import { logApp } from '../config/conf';
 
 const { Store } = session;
@@ -16,7 +25,10 @@ class RedisStore extends Store {
     this.scanCount = Number(options.scanCount) || 100;
     this.serializer = options.serializer || JSON;
     // ttl < 2mins, divide by 10 to have a more frequent touch, otherwise touch every 2 mins
-    this.touchCache = new LRUCache({ ttl: options.ttl < 120000 ? options.ttl / 10 : 120000, max: 1000 });
+    this.touchCache = new LRUCache({
+      ttl: options.ttl < 120000 ? options.ttl / 10 : 120000,
+      max: 1000,
+    });
     this.locker = new AsyncLock();
   }
 
@@ -90,7 +102,9 @@ class RedisStore extends Store {
 
   expiration(sid, cb = noop) {
     const key = this.prefix + sid;
-    getSessionTtl(key).then((ttl) => cb(null, ttl)).catch((err) => logApp.error('[REDIS] Error on get session TTL', { cause: err }));
+    getSessionTtl(key)
+      .then((ttl) => cb(null, ttl))
+      .catch((err) => logApp.error('[REDIS] Error on get session TTL', { cause: err }));
   }
 
   _getAllKeys(cb = noop) {

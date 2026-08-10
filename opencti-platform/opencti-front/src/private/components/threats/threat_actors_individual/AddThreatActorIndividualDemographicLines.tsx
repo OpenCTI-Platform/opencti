@@ -4,9 +4,7 @@ import { List, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui
 import { CheckCircle } from '@mui/icons-material';
 import ItemIcon from 'src/components/ItemIcon';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
-import {
-  AddThreatActorIndividualDemographicLines_data$key,
-} from '@components/threats/threat_actors_individual/__generated__/AddThreatActorIndividualDemographicLines_data.graphql';
+import { AddThreatActorIndividualDemographicLines_data$key } from '@components/threats/threat_actors_individual/__generated__/AddThreatActorIndividualDemographicLines_data.graphql';
 import { ThreatActorIndividual_ThreatActorIndividual$data } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
 import { deleteNodeFromEdge } from '../../../../utils/store';
 
@@ -46,22 +44,14 @@ export const scoRelationshipDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    stixCoreRelationshipDelete(
-      fromId: $fromId,
-      toId: $toId,
-      relationship_type: $relationship_type
-    )
+    stixCoreRelationshipDelete(fromId: $fromId, toId: $toId, relationship_type: $relationship_type)
   }
 `;
 
 export const addIndividualsThreatActorIndividualLinesQuery = graphql`
-  query AddThreatActorIndividualDemographicLinesQuery(
-    $search: String
-    $count: Int!
-    $cursor: ID
-  ) {
+  query AddThreatActorIndividualDemographicLinesQuery($search: String, $count: Int!, $cursor: ID) {
     ...AddThreatActorIndividualDemographicLines_data
-    @arguments(search: $search, count: $count, cursor: $cursor)
+      @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -70,14 +60,11 @@ const AddThreatActorIndividualDemographicLinesFragment = graphql`
   @refetchable(queryName: "AddThreatActorIndividualDemographicLinesRefetchQuery")
   @argumentDefinitions(
     search: { type: "String" }
-    count: { type: "Int", defaultValue: 25 },
-    cursor: { type: "ID" },
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
   ) {
-    countries (
-      search: $search,
-      first: $count,
-      after: $cursor,
-    ) @connection(key: "Pagination_countries") {
+    countries(search: $search, first: $count, after: $cursor)
+      @connection(key: "Pagination_countries") {
       edges {
         node {
           id
@@ -101,19 +88,15 @@ const AddThreatActorIndividualDemographicLine = ({
 }) => {
   const theme = useTheme();
   return (
-    <ListItemButton
-      divider={true}
-      onClick={handleClick}
-    >
+    <ListItemButton divider={true} onClick={handleClick}>
       <ListItemIcon>
-        {currentTargets.includes(id)
-          ? <CheckCircle style={{ color: theme.palette.primary.main }} />
-          : <ItemIcon type="Country" />
-        }
+        {currentTargets.includes(id) ? (
+          <CheckCircle style={{ color: theme.palette.primary.main }} />
+        ) : (
+          <ItemIcon type="Country" />
+        )}
       </ListItemIcon>
-      <ListItemText
-        primary={name}
-      />
+      <ListItemText primary={name} />
     </ListItemButton>
   );
 };
@@ -127,24 +110,22 @@ const AddThreatActorIndividualDemographicLines = ({
   fragmentKey: AddThreatActorIndividualDemographicLines_data$key;
   relType: string;
 }) => {
-  const data = useFragment(
-    AddThreatActorIndividualDemographicLinesFragment,
-    fragmentKey,
-  );
+  const data = useFragment(AddThreatActorIndividualDemographicLinesFragment, fragmentKey);
   const [commitRelationAdd] = useApiMutation(scoRelationshipAdd);
   const [commitRelationDelete] = useApiMutation(scoRelationshipDelete);
 
-  const initialTargets = (threatActorIndividual
-    .stixCoreRelationships?.edges
-    .filter(({ node }) => node.relationship_type === relType)
-    ?? []).map(({ node }) => node.to?.id ?? '');
+  const initialTargets = (
+    threatActorIndividual.stixCoreRelationships?.edges.filter(
+      ({ node }) => node.relationship_type === relType,
+    ) ?? []
+  ).map(({ node }) => node.to?.id ?? '');
 
   const [currentTargets, setCurrentTargets] = useState<string[]>(initialTargets);
 
   const handleToggle = (toId: string) => {
-    const stixCoreRelationshipId = threatActorIndividual
-      .stixCoreRelationships?.edges
-      .find(({ node }) => node.to?.id === toId && node.relationship_type === relType)?.node.id;
+    const stixCoreRelationshipId = threatActorIndividual.stixCoreRelationships?.edges.find(
+      ({ node }) => node.to?.id === toId && node.relationship_type === relType,
+    )?.node.id;
     const isSelected = currentTargets.includes(toId);
     const input = {
       fromId: threatActorIndividual.id,
@@ -154,12 +135,13 @@ const AddThreatActorIndividualDemographicLines = ({
     if (isSelected) {
       commitRelationDelete({
         variables: { ...input },
-        updater: (store) => deleteNodeFromEdge(
-          store,
-          'stixCoreRelationships',
-          threatActorIndividual.id,
-          stixCoreRelationshipId,
-        ),
+        updater: (store) =>
+          deleteNodeFromEdge(
+            store,
+            'stixCoreRelationships',
+            threatActorIndividual.id,
+            stixCoreRelationshipId,
+          ),
         onCompleted: () => {
           setCurrentTargets(currentTargets.filter((id) => id !== toId));
         },

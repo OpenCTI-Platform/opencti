@@ -1,36 +1,37 @@
 import type { GqlWidgetDataSelection, WidgetLayout } from '../../utils/widget/widget';
 import { fromB64, toB64 } from '../../utils/String';
-import { normalizeFilterGroupForBackend, normalizeFilterGroupForFrontend } from '../../utils/filters/filtersUtils';
+import {
+  normalizeFilterGroupForBackend,
+  normalizeFilterGroupForFrontend,
+} from '../../utils/filters/filtersUtils';
 import type { DashboardManifest, DashboardWidget } from './dashboard-types';
 
 /**
  * Serialize a complex dashboard manifest, sanitizing all filters inside the manifest before.
  * @param manifest
  */
-export const serializeDashboardManifestForBackend = (
-  manifest: DashboardManifest,
-): string => {
+export const serializeDashboardManifestForBackend = (manifest: DashboardManifest): string => {
   const newWidgets: Record<string, unknown> = {};
   const widgetIds = manifest.widgets ? Object.keys(manifest.widgets) : [];
   widgetIds.forEach((id) => {
     const widget = manifest.widgets[id];
     newWidgets[id] = {
       ...widget,
-      dataSelection: widget.dataSelection.map(
-        (selection) => ({
-          ...selection,
-          filters: normalizeFilterGroupForBackend(selection.filters),
-          dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
-          dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
-        }),
-      ),
+      dataSelection: widget.dataSelection.map((selection) => ({
+        ...selection,
+        filters: normalizeFilterGroupForBackend(selection.filters),
+        dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
+        dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
+      })),
     };
   });
 
-  return toB64(JSON.stringify({
-    ...manifest,
-    widgets: newWidgets,
-  }));
+  return toB64(
+    JSON.stringify({
+      ...manifest,
+      widgets: newWidgets,
+    }),
+  );
 };
 
 export const deserializeDashboardManifestForFrontend = (
@@ -92,15 +93,21 @@ export const deserializeDashboardManifestForFrontend = (
  * @param newManifest Manifest to merge with local changes.
  * @param layouts Local layout changes.
  */
-export const prepareManifest = (newManifest: DashboardManifest, layouts: Record<string, WidgetLayout>) => {
-  const syncWidgets = Object.values(newManifest.widgets).reduce((res, widget) => {
-    const localLayout = layouts[widget.id];
-    res[widget.id] = {
-      ...widget,
-      layout: localLayout || widget.layout,
-    };
-    return res;
-  }, {} as DashboardManifest['widgets']);
+export const prepareManifest = (
+  newManifest: DashboardManifest,
+  layouts: Record<string, WidgetLayout>,
+) => {
+  const syncWidgets = Object.values(newManifest.widgets).reduce(
+    (res, widget) => {
+      const localLayout = layouts[widget.id];
+      res[widget.id] = {
+        ...widget,
+        layout: localLayout || widget.layout,
+      };
+      return res;
+    },
+    {} as DashboardManifest['widgets'],
+  );
   return {
     ...newManifest,
     widgets: syncWidgets,

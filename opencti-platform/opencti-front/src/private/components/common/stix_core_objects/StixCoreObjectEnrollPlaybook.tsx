@@ -5,7 +5,9 @@ import { StixCoreObjectEnrollPlaybookLinesQuery$data } from '@components/common/
 import EETooltip from '../entreprise_edition/EETooltip';
 import Drawer from '../drawer/Drawer';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixCoreObjectEnrollPlaybookLines, { stixCoreObjectEnrollPlaybookLinesQuery } from './StixCoreObjectEnrollPlaybookLines';
+import StixCoreObjectEnrollPlaybookLines, {
+  stixCoreObjectEnrollPlaybookLinesQuery,
+} from './StixCoreObjectEnrollPlaybookLines';
 import { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { AUTOMATION } from '../../../../utils/hooks/useGranted';
@@ -38,14 +40,21 @@ const StixCoreObjectEnrollPlaybook: FunctionComponent<StixCoreObjectEnrollPlaybo
     <Security needs={[AUTOMATION]}>
       <>
         {!handleClose && (
-          <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Enroll in playbook')}>
+          <EETooltip
+            title={
+              disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Enroll in playbook')
+            }
+          >
             <ToggleButton
               onClick={() => !disabledInDraft && handleOpenEnrollPlaybook()}
               value="enroll"
               size="small"
               style={{ height: '100%' }}
             >
-              <PrecisionManufacturingOutlined fontSize="small" color={disabledInDraft ? 'disabled' : 'primary'} />
+              <PrecisionManufacturingOutlined
+                fontSize="small"
+                color={disabledInDraft ? 'disabled' : 'primary'}
+              />
             </ToggleButton>
           </EETooltip>
         )}
@@ -57,10 +66,17 @@ const StixCoreObjectEnrollPlaybook: FunctionComponent<StixCoreObjectEnrollPlaybo
           <QueryRenderer
             query={stixCoreObjectEnrollPlaybookLinesQuery}
             variables={{ id: stixCoreObjectId }}
-            render={({ props: queryProps }: { props: StixCoreObjectEnrollPlaybookLinesQuery$data }) => {
+            render={({
+              props: queryProps,
+            }: {
+              props: StixCoreObjectEnrollPlaybookLinesQuery$data;
+            }) => {
               if (queryProps && queryProps.playbooksForEntity) {
                 return (
-                  <StixCoreObjectEnrollPlaybookLines id={stixCoreObjectId} playbooksForEntity={queryProps.playbooksForEntity} />
+                  <StixCoreObjectEnrollPlaybookLines
+                    id={stixCoreObjectId}
+                    playbooksForEntity={queryProps.playbooksForEntity}
+                  />
                 );
               }
               return <div />;

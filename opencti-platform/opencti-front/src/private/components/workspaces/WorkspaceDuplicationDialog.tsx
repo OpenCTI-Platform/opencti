@@ -14,7 +14,10 @@ import {
   WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation,
   WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation$data,
 } from './__generated__/WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation.graphql';
-import { WorkspaceDuplicationDialogFragment$data, WorkspaceDuplicationDialogFragment$key } from './__generated__/WorkspaceDuplicationDialogFragment.graphql';
+import {
+  WorkspaceDuplicationDialogFragment$data,
+  WorkspaceDuplicationDialogFragment$key,
+} from './__generated__/WorkspaceDuplicationDialogFragment.graphql';
 import { WorkspacesLinesPaginationQuery$variables } from './__generated__/WorkspacesLinesPaginationQuery.graphql';
 
 const workspaceDuplicationFragment = graphql`
@@ -48,9 +51,7 @@ const workspaceDuplicationDialogDuplicatedWorkspaceCreation = graphql`
     }
   }
 `;
-const WorkspaceDuplicationDialog: FunctionComponent<
-  WorkspaceDuplicationDialogProps
-> = ({
+const WorkspaceDuplicationDialog: FunctionComponent<WorkspaceDuplicationDialogProps> = ({
   data,
   duplicating,
   setDuplicating,
@@ -67,9 +68,10 @@ const WorkspaceDuplicationDialog: FunctionComponent<
     [t_i18n, workspace.name],
   );
   const [newName, setNewName] = useState(duplicatedDashboardInitialName);
-  const [commitDuplicatedWorkspaceCreation] = useApiMutation<WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation>(
-    workspaceDuplicationDialogDuplicatedWorkspaceCreation,
-  );
+  const [commitDuplicatedWorkspaceCreation] =
+    useApiMutation<WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation>(
+      workspaceDuplicationDialogDuplicatedWorkspaceCreation,
+    );
   const submitDashboardDuplication = (
     e: UIEvent,
     submittedWorkspace: WorkspaceDuplicationDialogFragment$data,
@@ -95,9 +97,7 @@ const WorkspaceDuplicationDialog: FunctionComponent<
           MESSAGING$.notifySuccess(
             <span>
               {t_i18n('The dashboard has been duplicated. You can manage it')}{' '}
-              <Link
-                to={`/dashboard/workspaces/dashboards/${result.workspaceDuplicate?.id}`}
-              >
+              <Link to={`/dashboard/workspaces/dashboards/${result.workspaceDuplicate?.id}`}>
                 {t_i18n('here')}
               </Link>
               .
@@ -137,7 +137,9 @@ const WorkspaceDuplicationDialog: FunctionComponent<
         }}
       />
       <DialogActions>
-        <Button variant="secondary" onClick={() => handleCloseDuplicate()}>{t_i18n('Cancel')}</Button>
+        <Button variant="secondary" onClick={() => handleCloseDuplicate()}>
+          {t_i18n('Cancel')}
+        </Button>
         <Button
           onClick={(e) => handleSubmitDuplicate(e, newName)}
           disabled={duplicating || !newName}

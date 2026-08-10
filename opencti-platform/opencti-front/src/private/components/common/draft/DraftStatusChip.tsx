@@ -10,14 +10,20 @@ interface DraftStatusChipProps {
   draftStatus: string | null | undefined;
   workflowCurrentStatus?: {
     readonly id: string;
-    readonly template: {
-      readonly name: string;
-      readonly color: string;
-    } | null | undefined;
+    readonly template:
+      | {
+          readonly name: string;
+          readonly color: string;
+        }
+      | null
+      | undefined;
   } | null;
 }
 
-const DraftStatusChip: React.FC<DraftStatusChipProps> = ({ draftStatus, workflowCurrentStatus }) => {
+const DraftStatusChip: React.FC<DraftStatusChipProps> = ({
+  draftStatus,
+  workflowCurrentStatus,
+}) => {
   const theme = useTheme<Theme>();
   const draftColor = getDraftModeColor(theme);
   const validatedDraftColor = theme.palette.success.main;

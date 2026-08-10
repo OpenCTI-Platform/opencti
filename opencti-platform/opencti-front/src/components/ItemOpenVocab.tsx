@@ -24,9 +24,7 @@ const ItemOpenVocab: FunctionComponent<ItemOpenVocabProps> = ({
     return <>{EMPTY_VALUE}</>;
   }
 
-  let tag = (
-    <Tag label={value} />
-  );
+  let tag = <Tag label={value} />;
 
   if (displayMode === 'chip') {
     if (type === 'case_severity_ov' || type === 'incident_severity_ov') {
@@ -34,11 +32,7 @@ const ItemOpenVocab: FunctionComponent<ItemOpenVocabProps> = ({
     } else if (type === 'case_priority_ov') {
       tag = <ItemPriority label={value} priority={value} />;
     }
-    return hideEmpty ? (
-      tag
-    ) : (
-      <span>{tag}</span>
-    );
+    return hideEmpty ? tag : <span>{tag}</span>;
   }
 
   return (
@@ -50,12 +44,11 @@ const ItemOpenVocab: FunctionComponent<ItemOpenVocabProps> = ({
       }}
     >
       {tag}
-      {hideEmpty ? '' : (
+      {hideEmpty ? (
+        ''
+      ) : (
         <InformationOutline
-          style={small
-            ? { margin: '5px 0 0 10px' }
-            : { margin: '15px 0 0 10px' }
-          }
+          style={small ? { margin: '5px 0 0 10px' } : { margin: '15px 0 0 10px' }}
           fontSize="small"
           color="secondary"
         />

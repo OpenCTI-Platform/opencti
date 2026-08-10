@@ -15,59 +15,60 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 
 export const opinionMutationFieldPatch = graphql`
-    mutation OpinionEditionOverviewFieldPatchMutation(
-        $id: ID!
-        $input: [EditInput]!
-    ) {
-        opinionEdit(id: $id) {
-            fieldPatch(input: $input) {
-                ...OpinionEditionOverview_opinion
-                ...Opinion_opinion
-            }
-        }
+  mutation OpinionEditionOverviewFieldPatchMutation($id: ID!, $input: [EditInput]!) {
+    opinionEdit(id: $id) {
+      fieldPatch(input: $input) {
+        ...OpinionEditionOverview_opinion
+        ...Opinion_opinion
+      }
     }
+  }
 `;
 
 export const opinionEditionOverviewFocus = graphql`
-    mutation OpinionEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
-        opinionEdit(id: $id) {
-            contextPatch(input: $input) {
-                id
-            }
-        }
+  mutation OpinionEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
+    opinionEdit(id: $id) {
+      contextPatch(input: $input) {
+        id
+      }
     }
+  }
 `;
 
 const opinionMutationRelationAdd = graphql`
-    mutation OpinionEditionOverviewRelationAddMutation(
-        $id: ID!
-        $input: StixRefRelationshipAddInput!
-    ) {
-        opinionEdit(id: $id) {
-            relationAdd(input: $input) {
-                from {
-                    ...OpinionEditionOverview_opinion
-                }
-            }
+  mutation OpinionEditionOverviewRelationAddMutation(
+    $id: ID!
+    $input: StixRefRelationshipAddInput!
+  ) {
+    opinionEdit(id: $id) {
+      relationAdd(input: $input) {
+        from {
+          ...OpinionEditionOverview_opinion
         }
+      }
     }
+  }
 `;
 
 const opinionMutationRelationDelete = graphql`
-    mutation OpinionEditionOverviewRelationDeleteMutation(
-        $id: ID!
-        $toId: StixRef!
-        $relationship_type: String!
-    ) {
-        opinionEdit(id: $id) {
-            relationDelete(toId: $toId, relationship_type: $relationship_type) {
-                ...OpinionEditionOverview_opinion
-            }
-        }
+  mutation OpinionEditionOverviewRelationDeleteMutation(
+    $id: ID!
+    $toId: StixRef!
+    $relationship_type: String!
+  ) {
+    opinionEdit(id: $id) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
+        ...OpinionEditionOverview_opinion
+      }
     }
+  }
 `;
 
 const OPINION_TYPE = 'Opinion';
@@ -77,14 +78,17 @@ const OpinionEditionOverviewComponent = (props) => {
   const { t_i18n } = useFormatter();
   const { mandatoryAttributes } = useIsMandatoryAttribute(OPINION_TYPE);
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
-  const basicShape = yupShapeConditionalRequired({
-    opinion: Yup.string(),
-    explanation: Yup.string().nullable(),
-    confidence: Yup.number(),
-    x_opencti_workflow_id: Yup.object(),
-    createdBy: Yup.object().nullable(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      opinion: Yup.string(),
+      explanation: Yup.string().nullable(),
+      confidence: Yup.number(),
+      x_opencti_workflow_id: Yup.object(),
+      createdBy: Yup.object().nullable(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
+  );
   const opinionValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
@@ -129,8 +133,7 @@ const OpinionEditionOverviewComponent = (props) => {
       validationSchema={opinionValidator}
       validateOnChange={true}
       validateOnBlur={true}
-      onSubmit={() => {
-      }}
+      onSubmit={() => {}}
     >
       {({ setFieldValue }) => (
         <div>
@@ -140,7 +143,7 @@ const OpinionEditionOverviewComponent = (props) => {
               label={t_i18n('Opinion')}
               type="opinion-ov"
               name="opinion"
-              required={(mandatoryAttributes.includes('opinion'))}
+              required={mandatoryAttributes.includes('opinion')}
               onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               onChange={(name, value) => setFieldValue(name, value)}
@@ -153,16 +156,14 @@ const OpinionEditionOverviewComponent = (props) => {
               component={MarkdownField}
               name="explanation"
               label={t_i18n('Explanation')}
-              required={(mandatoryAttributes.includes('explanation'))}
+              required={mandatoryAttributes.includes('explanation')}
               fullWidth={true}
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
               onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="content" />
-              }
+              helperText={<SubscriptionFocus context={context} fieldName="content" />}
             />
             <ConfidenceField
               onFocus={editor.changeFocus}
@@ -180,36 +181,26 @@ const OpinionEditionOverviewComponent = (props) => {
                 onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
-                helpertext={(
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="x_opencti_workflow_id"
-                  />
-                )}
+                helpertext={
+                  <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
+                }
               />
             )}
             {userIsKnowledgeEditor && (
               <CreatedByField
                 name="createdBy"
-                required={(mandatoryAttributes.includes('createdBy'))}
+                required={mandatoryAttributes.includes('createdBy')}
                 style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
-                helpertext={
-                  <SubscriptionFocus context={context} fieldName="createdBy" />
-                }
+                helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
                 onChange={editor.changeCreated}
               />
             )}
             <ObjectMarkingField
               name="objectMarking"
-              required={(mandatoryAttributes.includes('objectMarking'))}
+              required={mandatoryAttributes.includes('objectMarking')}
               style={fieldSpacingContainerStyle}
-              helpertext={(
-                <SubscriptionFocus
-                  context={context}
-                  fieldname="objectMarking"
-                />
-              )}
+              helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
               setFieldValue={setFieldValue}
               onChange={editor.changeMarking}
             />
@@ -222,34 +213,34 @@ const OpinionEditionOverviewComponent = (props) => {
 
 export default createFragmentContainer(OpinionEditionOverviewComponent, {
   opinion: graphql`
-      fragment OpinionEditionOverview_opinion on Opinion {
+    fragment OpinionEditionOverview_opinion on Opinion {
+      id
+      opinion
+      explanation
+      confidence
+      createdBy {
+        ... on Identity {
           id
-          opinion
-          explanation
-          confidence
-          createdBy {
-              ... on Identity {
-                  id
-                  name
-                  entity_type
-              }
-          }
-          objectMarking {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-          }
-          status {
-              id
-              order
-              template {
-                  name
-                  color
-              }
-          }
-          workflowEnabled
+          name
+          entity_type
+        }
       }
+      objectMarking {
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
+      }
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
+    }
   `,
 });

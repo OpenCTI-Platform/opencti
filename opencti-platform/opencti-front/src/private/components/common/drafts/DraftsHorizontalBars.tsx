@@ -10,7 +10,12 @@ import type { DashboardConfig } from '../../../../components/dashboard/dashboard
 import useDistributionGraphData from '../../../../utils/hooks/useDistributionGraphData';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
-import type { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import type {
+  Widget,
+  WidgetDataSelection,
+  WidgetHost,
+  WidgetParameters,
+} from '../../../../utils/widget/widget';
 import { DraftsHorizontalBarsDistributionQuery } from './__generated__/DraftsHorizontalBarsDistributionQuery.graphql';
 
 const draftsHorizontalBarsDistributionQuery = graphql`
@@ -78,10 +83,7 @@ const DraftsHorizontalBarsComponent = ({
 }: DraftsHorizontalBarsComponentProps) => {
   const { t_i18n } = useFormatter();
   const { buildWidgetProps } = useDistributionGraphData();
-  const data = usePreloadedQuery(
-    draftsHorizontalBarsDistributionQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery(draftsHorizontalBarsDistributionQuery, queryRef);
   const selection = dataSelection[0];
   const distribution = data?.draftWorkspacesDistribution ?? [];
 
@@ -120,7 +122,10 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): DraftsHorizontalBarsDistributionQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(selection, config);
+  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(
+    selection,
+    config,
+  );
   return {
     field: selection.attribute ?? 'entity_type',
     operation: 'count',
@@ -144,7 +149,13 @@ const DraftsHorizontalBars = ({
 }: DraftsHorizontalBarsProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<DraftsHorizontalBarsDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<DraftsHorizontalBarsDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,

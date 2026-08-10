@@ -7,7 +7,10 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import SearchInput from '../../../../components/SearchInput';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import AddDataComponentsLines, { addDataComponentsLinesQuery } from './AddDataComponentsLines';
-import { AddDataComponentsLinesQuery, AddDataComponentsLinesQuery$variables } from './__generated__/AddDataComponentsLinesQuery.graphql';
+import {
+  AddDataComponentsLinesQuery,
+  AddDataComponentsLinesQuery$variables,
+} from './__generated__/AddDataComponentsLinesQuery.graphql';
 import { AttackPatternDataComponents_attackPattern$data } from './__generated__/AttackPatternDataComponents_attackPattern.graphql';
 import DataComponentCreation from '../data_components/DataComponentCreation';
 
@@ -33,11 +36,7 @@ const AddDataComponents: FunctionComponent<{
   );
   return (
     <>
-      <IconButton
-        color="primary"
-        aria-label="Add"
-        onClick={handleOpen}
-      >
+      <IconButton color="primary" aria-label="Add" onClick={handleOpen}>
         <Add fontSize="small" />
       </IconButton>
       <Drawer
@@ -45,32 +44,21 @@ const AddDataComponents: FunctionComponent<{
         onClose={handleClose}
         title={t_i18n('Add data components')}
         subHeader={{
-          right: [(
+          right: [
             <DataComponentCreation
               contextual={true}
               display={open}
               inputValue={search}
               paginationOptions={paginationOptions}
               key="rightButton"
-            />
-          )],
-          left: [(
-            <SearchInput
-              variant="inDrawer"
-              onSubmit={handleSearch}
-              key="leftInput"
-            />
-          )],
+            />,
+          ],
+          left: [<SearchInput variant="inDrawer" onSubmit={handleSearch} key="leftInput" />],
         }}
       >
         {queryRef && (
-          <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inElement} />}
-          >
-            <AddDataComponentsLines
-              attackPattern={attackPattern}
-              queryRef={queryRef}
-            />
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            <AddDataComponentsLines attackPattern={attackPattern} queryRef={queryRef} />
           </React.Suspense>
         )}
       </Drawer>

@@ -10,7 +10,9 @@ const LocationProbe = () => {
   return <div data-testid="location">{`${location.pathname}${location.search}`}</div>;
 };
 
-const withSuspense = (element: React.ReactElement) => <Suspense fallback={<div>Loading...</div>}>{element}</Suspense>;
+const withSuspense = (element: React.ReactElement) => (
+  <Suspense fallback={<div>Loading...</div>}>{element}</Suspense>
+);
 
 describe('RedirectByPath', () => {
   it('preserves query params for mapped redirects', async () => {
@@ -36,7 +38,9 @@ describe('RedirectByPath', () => {
       { route: '/redirect/connect-xtm-hub' },
     );
 
-    expect(await screen.findByTestId('location')).toHaveTextContent(`/dashboard/settings/experience?${XTM_HUB_AUTO_REGISTER_QUERY_PARAM}=true`);
+    expect(await screen.findByTestId('location')).toHaveTextContent(
+      `/dashboard/settings/experience?${XTM_HUB_AUTO_REGISTER_QUERY_PARAM}=true`,
+    );
   });
 
   it('renders not found for unknown mapping key', async () => {
@@ -47,6 +51,8 @@ describe('RedirectByPath', () => {
       { route: '/redirect/unknown' },
     );
 
-    expect(await screen.findByText('This page is not found on this OpenCTI application.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('This page is not found on this OpenCTI application.'),
+    ).toBeInTheDocument();
   });
 });

@@ -8,7 +8,11 @@ import { FunctionalError } from '../../config/errors';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { convertWidgetsIds } from '../workspace/workspace-utils';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
-import type { ConfigImportData, WidgetConfigImportData, WidgetConfiguration } from './dashboard-types';
+import type {
+  ConfigImportData,
+  WidgetConfigImportData,
+  WidgetConfiguration,
+} from './dashboard-types';
 import { findSavedFilter } from '../savedFilter/savedFilter-domain';
 import type { Widget, WidgetDataSelection } from '../../generated/graphql';
 
@@ -21,15 +25,20 @@ const configurationImportTypeValidation = {
 
 export const checkDashboardConfigurationImport = (type: string, parsedData: ConfigImportData) => {
   if (type in configurationImportTypeValidation && parsedData.type !== type) {
-    throw FunctionalError(configurationImportTypeValidation[type as keyof typeof configurationImportTypeValidation], {
-      reason: parsedData.type,
-    });
+    throw FunctionalError(
+      configurationImportTypeValidation[type as keyof typeof configurationImportTypeValidation],
+      {
+        reason: parsedData.type,
+      },
+    );
   }
 
   if (!isCompatibleVersionWithMinimal(parsedData.openCTI_version, MINIMAL_COMPATIBLE_VERSION)) {
     throw FunctionalError(
       `Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_COMPATIBLE_VERSION}`,
-      { reason: parsedData.openCTI_version },
+      {
+        reason: parsedData.openCTI_version,
+      },
     );
   }
 };
@@ -50,13 +59,21 @@ const resolveSavedFilterReference = async (
   if (savedFiltersId && isNotEmptyField(savedFiltersId)) {
     const savedFilter = await findSavedFilter(context, user, savedFiltersId);
     if (!savedFilter) {
-      throw FunctionalError('Saved filter not found', { widget: widgetDefinitionId, savedFiltersId });
+      throw FunctionalError('Saved filter not found', {
+        widget: widgetDefinitionId,
+        savedFiltersId,
+      });
     }
     try {
       selection[filtersKey] = JSON.parse(savedFilter.filters);
       selection[savedFiltersIdKey] = undefined;
     } catch (error) {
-      throw FunctionalError('Failed to parse saved filter', { error, widget: widgetDefinitionId, savedFiltersId, savedFiltersContent: savedFilter.filters });
+      throw FunctionalError('Failed to parse saved filter', {
+        error,
+        widget: widgetDefinitionId,
+        savedFiltersId,
+        savedFiltersContent: savedFilter.filters,
+      });
     }
   }
 };
@@ -72,13 +89,36 @@ export const resolveSavedFiltersInDataSelection = async (
 ) => {
   const dataSelection = widgetDefinition.dataSelection;
   if (dataSelection) {
-    await Promise.all(dataSelection.map(async (selection: any) => {
-      await Promise.all([
-        resolveSavedFilterReference(context, user, widgetDefinition.id, selection, 'filters_id', 'filters'),
-        resolveSavedFilterReference(context, user, widgetDefinition.id, selection, 'dynamicFrom_id', 'dynamicFrom'),
-        resolveSavedFilterReference(context, user, widgetDefinition.id, selection, 'dynamicTo_id', 'dynamicTo'),
-      ]);
-    }));
+    await Promise.all(
+      dataSelection.map(async (selection: any) => {
+        await Promise.all([
+          resolveSavedFilterReference(
+            context,
+            user,
+            widgetDefinition.id,
+            selection,
+            'filters_id',
+            'filters',
+          ),
+          resolveSavedFilterReference(
+            context,
+            user,
+            widgetDefinition.id,
+            selection,
+            'dynamicFrom_id',
+            'dynamicFrom',
+          ),
+          resolveSavedFilterReference(
+            context,
+            user,
+            widgetDefinition.id,
+            selection,
+            'dynamicTo_id',
+            'dynamicTo',
+          ),
+        ]);
+      }),
+    );
   }
 };
 
@@ -89,7 +129,11 @@ export const exportDashboardWidget = async (
   widgetId: string,
 ) => {
   const parsedManifest = fromB64(manifest ?? '{}');
-  if (parsedManifest && isNotEmptyField(parsedManifest.widgets) && parsedManifest.widgets[widgetId]) {
+  if (
+    parsedManifest &&
+    isNotEmptyField(parsedManifest.widgets) &&
+    parsedManifest.widgets[widgetId]
+  ) {
     const widgetDefinition = parsedManifest.widgets[widgetId];
     await resolveSavedFiltersInDataSelection(context, user, widgetDefinition);
     await convertWidgetsIds(context, user, [widgetDefinition], 'internal');
@@ -120,8 +164,9 @@ export const importDashboardWidgetConfiguration = async (
   // When importing a widget, change its position to not break
   // the current layout of the dashboard.
   // It is moved on a new line.
-  const widgetsArray = Object.values(dashboardManifestObjects.widgets ?? [])
-    .map((widget) => widget) as WidgetConfiguration[];
+  const widgetsArray = Object.values(dashboardManifestObjects.widgets ?? []).map(
+    (widget) => widget,
+  ) as WidgetConfiguration[];
   const nextRow = widgetsArray.reduce((max, { layout }) => {
     const widgetEndRow = layout.y + layout.h;
     return widgetEndRow > max ? widgetEndRow : max;
@@ -167,8 +212,13 @@ export const convertDashboardManifestIds = async (
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
     const { widgets } = parsedManifest;
     const widgetDefinitions: Widget[] = Object.values(widgets);
-    if (from === 'internal') { // for exports: replace saved filters ids with the associated filters content
-      await Promise.all(widgetDefinitions.map((widgetDefinition) => resolveSavedFiltersInDataSelection(context, user, widgetDefinition)));
+    if (from === 'internal') {
+      // for exports: replace saved filters ids with the associated filters content
+      await Promise.all(
+        widgetDefinitions.map((widgetDefinition) =>
+          resolveSavedFiltersInDataSelection(context, user, widgetDefinition),
+        ),
+      );
     }
     await convertWidgetsIds(context, user, widgetDefinitions, from);
     return toB64(parsedManifest) as string;

@@ -1,4 +1,10 @@
-import { addIncident, findById, findIncidentPaginated, incidentsTimeSeries, incidentsTimeSeriesByEntity } from '../domain/incident';
+import {
+  addIncident,
+  findById,
+  findIncidentPaginated,
+  incidentsTimeSeries,
+  incidentsTimeSeriesByEntity,
+} from '../domain/incident';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -25,8 +31,10 @@ const incidentResolvers = {
     },
   },
   Incident: {
-    securityCoverage: (incident, _, context) => findSecurityCoverageByCoveredId(context, context.user, incident.id),
-    objectParticipant: async (incident, _, context) => loadParticipants(context, context.user, incident),
+    securityCoverage: (incident, _, context) =>
+      findSecurityCoverageByCoveredId(context, context.user, incident.id),
+    objectParticipant: async (incident, _, context) =>
+      loadParticipants(context, context.user, incident),
   },
   IncidentsOrdering: {
     objectAssignee: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
@@ -34,18 +42,13 @@ const incidentResolvers = {
   Mutation: {
     incidentEdit: (_, { id }, context) => ({
       delete: () => stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_INCIDENT),
-      fieldPatch: ({
-        input,
-        commitMessage,
-        references,
-      }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      fieldPatch: ({ input, commitMessage, references }) =>
+        stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
-      relationDelete: ({
-        toId,
-        relationship_type: relationshipType,
-      }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
     incidentAdd: (_, { input }, context) => addIncident(context, context.user, input),
   },

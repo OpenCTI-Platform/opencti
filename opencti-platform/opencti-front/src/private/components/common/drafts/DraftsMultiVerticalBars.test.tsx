@@ -3,11 +3,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import testRender from '../../../../utils/tests/test-render';
 import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let lastBuildQueryVariables: ((...args: any[]) => any) | undefined;
 
 vi.mock('../../../../components/dashboard/WidgetContainer', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <div data-testid="widget-container">{children}</div>,
+  default: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="widget-container">{children}</div>
+  ),
 }));
 
 vi.mock('../../../../components/dashboard/WidgetNoData', () => ({
@@ -19,14 +20,15 @@ vi.mock('../../../../components/dashboard/WidgetVerticalBars', () => ({
 }));
 
 vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   default: (opts: any) => {
     lastBuildQueryVariables = opts.buildQueryVariables;
     return {
-      resolvedDataSelection: [{
-        filters: emptyFilterGroup,
-        date_attribute: 'created_at',
-      }],
+      resolvedDataSelection: [
+        {
+          filters: emptyFilterGroup,
+          date_attribute: 'created_at',
+        },
+      ],
       isMissingHostEntity: false,
       isMissingSavedFilters: false,
       isPreviewMode: false,
@@ -36,15 +38,14 @@ vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
 }));
 
 vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
-  default: ({ children, queryRef }: { children: React.ReactNode; queryRef: unknown }) => (
-    queryRef ? <>{children}</> : <div data-testid="loader" />
-  ),
+  default: ({ children, queryRef }: { children: React.ReactNode; queryRef: unknown }) =>
+    queryRef ? <>{children}</> : <div data-testid="loader" />,
 }));
 
 vi.mock('../../../../components/dashboard/dashboardVizUtils', () => ({
   computeWidgetFiltersForSelection: (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    _selection: any, _config: any,
+    _selection: any,
+    _config: any,
     opts: { fallbackToDefaultDates?: boolean } = {},
   ) => ({
     startDate: opts.fallbackToDefaultDates ? '2024-01-01T00:00:00.000Z' : null,
@@ -63,10 +64,12 @@ import DraftsMultiVerticalBars from './DraftsMultiVerticalBars';
 describe('DraftsMultiVerticalBars', () => {
   const minimalProps = {
     config: { relativeDate: null, startDate: null, endDate: null },
-    dataSelection: [{
-      filters: emptyFilterGroup,
-      date_attribute: 'created_at',
-    }],
+    dataSelection: [
+      {
+        filters: emptyFilterGroup,
+        date_attribute: 'created_at',
+      },
+    ],
     parameters: {},
   };
 

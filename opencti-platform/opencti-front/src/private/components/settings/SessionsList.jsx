@@ -112,18 +112,17 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
     });
   };
 
-  const sortByNameCaseInsensitive = (a, b) => a.user.name.toLowerCase().localeCompare(b.user.name.toLowerCase());
-  const filterByKeyword = (n) => keyword === ''
-    || n.user.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
-  const sessions = (data.sessions ?? []).filter(filterByKeyword).toSorted(sortByNameCaseInsensitive);
+  const sortByNameCaseInsensitive = (a, b) =>
+    a.user.name.toLowerCase().localeCompare(b.user.name.toLowerCase());
+  const filterByKeyword = (n) =>
+    keyword === '' || n.user.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
+  const sessions = (data.sessions ?? [])
+    .filter(filterByKeyword)
+    .toSorted(sortByNameCaseInsensitive);
 
   return (
     <>
-      <List
-        component="nav"
-        aria-labelledby="nested-list-subheader"
-        className={classes.root}
-      >
+      <List component="nav" aria-labelledby="nested-list-subheader" className={classes.root}>
         {sessions.map((session) => {
           const { user, sessions: userSessions } = session;
           const orderedSessions = userSessions.toSorted(
@@ -141,16 +140,14 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
                   <ItemIcon type="User" />
                 </ListItemIcon>
                 <ListItemText
-                  primary={(
+                  primary={
                     <div>
                       <div className={classes.name}>{user.name}</div>
                       <div className={classes.email}>{user.email}</div>
                     </div>
-                  )}
+                  }
                 />
-                <ListItemIcon classes={{ root: classes.goIcon }}>
-                  &nbsp;
-                </ListItemIcon>
+                <ListItemIcon classes={{ root: classes.goIcon }}>&nbsp;</ListItemIcon>
               </ListItemButton>
               <List style={{ margin: 0, padding: 0 }}>
                 {orderedSessions.map((userSession) => (
@@ -158,7 +155,7 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
                     key={userSession.id}
                     classes={{ root: classes.itemNested }}
                     divider={true}
-                    secondaryAction={(
+                    secondaryAction={
                       <IconButton
                         aria-label="Kill"
                         onClick={() => handleOpenKillSession(userSession.id)}
@@ -166,24 +163,21 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
                       >
                         <DeleteOutlined />
                       </IconButton>
-                    )}
+                    }
                   >
                     <ListItemIcon>
                       <ItemIcon type="Session" />
                     </ListItemIcon>
                     <ListItemText
-                      primary={(
+                      primary={
                         <div>
-                          <div className={classes.created}>
-                            {nsdt(userSession.created)}
-                          </div>
+                          <div className={classes.created}>{nsdt(userSession.created)}</div>
                           <div className={classes.ttl}>
-                            {Math.round(userSession.ttl / 60)}{' '}
-                            {t_i18n('minutes left')} /{' '}
+                            {Math.round(userSession.ttl / 60)} {t_i18n('minutes left')} /{' '}
                             {Math.round(userSession.originalMaxAge / 60)}
                           </div>
                         </div>
-                      )}
+                      }
                     />
                   </ListItem>
                 ))}

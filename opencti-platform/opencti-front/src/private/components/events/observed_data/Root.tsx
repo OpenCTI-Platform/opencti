@@ -17,7 +17,10 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import ObservedDataEdition from './ObservedDataEdition';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import ObservedDataDeletion from './ObservedDataDeletion';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -70,20 +73,20 @@ type RootObservedDataProps = {
 };
 
 const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootObservedDataSubscription>>(() => ({
-    subscription,
-    variables: { id: observedDataId },
-  }), [observedDataId]);
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootObservedDataSubscription>>(
+    () => ({
+      subscription,
+      variables: { id: observedDataId },
+    }),
+    [observedDataId],
+  );
 
   const { t_i18n } = useFormatter();
 
   useSubscription<RootObservedDataSubscription>(subConfig);
 
-  const {
-    observedData,
-    connectorsForExport,
-    connectorsForImport,
-  } = usePreloadedQuery<RootObservedDataQuery>(observedDataQuery, queryRef);
+  const { observedData, connectorsForExport, connectorsForImport } =
+    usePreloadedQuery<RootObservedDataQuery>(observedDataQuery, queryRef);
 
   if (!observedData) {
     return <ErrorNotFound />;
@@ -93,19 +96,20 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
   return (
     <>
       <div>
-        <Breadcrumbs elements={[
-          { label: t_i18n('Events') },
-          { label: t_i18n('Observed datas'), link: PATH_OBSERVED_DATAS },
-          { label: observedData.name, current: true },
-        ]}
+        <Breadcrumbs
+          elements={[
+            { label: t_i18n('Events') },
+            { label: t_i18n('Observed datas'), link: PATH_OBSERVED_DATAS },
+            { label: observedData.name, current: true },
+          ]}
         />
         <ContainerHeader
           container={observedData}
-          EditComponent={(
+          EditComponent={
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <ObservedDataEdition observedDataId={observedData.id} />
             </Security>
-          )}
+          }
           DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
             <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
               <ObservedDataDeletion id={observedData.id} isOpen={isOpen} handleClose={onClose} />
@@ -119,12 +123,9 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
           entity={observedData}
           basePath={basePath}
           pages={{
-            overview:
-              <ObservedData observedDataData={observedData} />,
-            entities:
-              <ContainerStixDomainObjects container={observedData} />,
-            observables:
-              <ContainerStixCyberObservables container={observedData} />,
+            overview: <ObservedData observedDataData={observedData} />,
+            entities: <ContainerStixDomainObjects container={observedData} />,
+            observables: <ContainerStixCyberObservables container={observedData} />,
             files: (
               <FileManager
                 id={observedDataId}
@@ -133,19 +134,14 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
                 entity={observedData}
               />
             ),
-            history:
-              <StixCoreObjectHistory stixCoreObjectId={observedDataId} />,
+            history: <StixCoreObjectHistory stixCoreObjectId={observedDataId} />,
           }}
-          extraRoutes={(
+          extraRoutes={
             <Route
               path="/knowledge/relations/:relationId/"
-              element={(
-                <StixCoreRelationship
-                  entityId={observedData.id}
-                />
-              )}
+              element={<StixCoreRelationship entityId={observedData.id} />}
             />
-          )}
+          }
         />
       </div>
     </>

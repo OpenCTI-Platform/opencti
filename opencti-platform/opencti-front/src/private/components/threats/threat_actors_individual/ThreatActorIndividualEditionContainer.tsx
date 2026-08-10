@@ -4,18 +4,10 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Drawer, { DrawerControlledDialType } from '@components/common/drawer/Drawer';
-import {
-  ThreatActorIndividualEditionOverview_ThreatActorIndividual$key,
-} from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionOverview_ThreatActorIndividual.graphql';
-import {
-  ThreatActorIndividualEditionDetails_ThreatActorIndividual$key,
-} from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionDetails_ThreatActorIndividual.graphql';
-import {
-  ThreatActorIndividualEditionDemographics_ThreatActorIndividual$key,
-} from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionDemographics_ThreatActorIndividual.graphql';
-import {
-  ThreatActorIndividualEditionBiographics_ThreatActorIndividual$key,
-} from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
+import { ThreatActorIndividualEditionOverview_ThreatActorIndividual$key } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionOverview_ThreatActorIndividual.graphql';
+import { ThreatActorIndividualEditionDetails_ThreatActorIndividual$key } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionDetails_ThreatActorIndividual.graphql';
+import { ThreatActorIndividualEditionDemographics_ThreatActorIndividual$key } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionDemographics_ThreatActorIndividual.graphql';
+import { ThreatActorIndividualEditionBiographics_ThreatActorIndividual$key } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -82,7 +74,9 @@ const ThreatActorIndividualEditionContainer: FunctionComponent<
             </Box>
             {currentTab === 0 && (
               <ThreatActorIndividualEditionOverview
-                threatActorIndividualRef={threatActorIndividual as ThreatActorIndividualEditionOverview_ThreatActorIndividual$key}
+                threatActorIndividualRef={
+                  threatActorIndividual as ThreatActorIndividualEditionOverview_ThreatActorIndividual$key
+                }
                 enableReferences={useIsEnforceReference(THREAT_ACTOR_TYPE)}
                 context={threatActorIndividual?.editContext}
                 handleClose={onClose}
@@ -90,7 +84,9 @@ const ThreatActorIndividualEditionContainer: FunctionComponent<
             )}
             {currentTab === 1 && (
               <ThreatActorIndividualEditionDetails
-                threatActorIndividualRef={threatActorIndividual as ThreatActorIndividualEditionDetails_ThreatActorIndividual$key}
+                threatActorIndividualRef={
+                  threatActorIndividual as ThreatActorIndividualEditionDetails_ThreatActorIndividual$key
+                }
                 enableReferences={useIsEnforceReference(THREAT_ACTOR_TYPE)}
                 context={threatActorIndividual?.editContext}
                 handleClose={onClose}
@@ -98,14 +94,18 @@ const ThreatActorIndividualEditionContainer: FunctionComponent<
             )}
             {currentTab === 2 && (
               <ThreatActorIndividualEditionDemographics
-                threatActorIndividualRef={threatActorIndividual as ThreatActorIndividualEditionDemographics_ThreatActorIndividual$key}
+                threatActorIndividualRef={
+                  threatActorIndividual as ThreatActorIndividualEditionDemographics_ThreatActorIndividual$key
+                }
                 enableReferences={useIsEnforceReference(THREAT_ACTOR_TYPE)}
                 context={threatActorIndividual?.editContext}
               />
             )}
             {currentTab === 3 && (
               <ThreatActorIndividualEditionBiographics
-                threatActorIndividualRef={threatActorIndividual as ThreatActorIndividualEditionBiographics_ThreatActorIndividual$key}
+                threatActorIndividualRef={
+                  threatActorIndividual as ThreatActorIndividualEditionBiographics_ThreatActorIndividual$key
+                }
                 enableReferences={useIsEnforceReference(THREAT_ACTOR_TYPE)}
                 context={threatActorIndividual?.editContext}
               />

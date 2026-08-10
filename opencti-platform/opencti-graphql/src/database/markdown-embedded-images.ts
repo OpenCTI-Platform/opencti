@@ -156,7 +156,7 @@ const parseMarkdownImageDestination = (destination: string): ParsedMarkdownDesti
   }
 
   let title: string | undefined;
-  if (index < destination.length && (destination[index] === '"' || destination[index] === '\'')) {
+  if (index < destination.length && (destination[index] === '"' || destination[index] === "'")) {
     const quote = destination[index];
     const closingQuote = destination.indexOf(quote, index + 1);
     if (closingQuote > index) {
@@ -229,7 +229,9 @@ export const resolveEmbeddedStoragePathWithContext = (
   return `${entityPrefix}${relativePath}`;
 };
 
-export const extractMarkdownImageReferences = (markdown: string): EmbeddedMarkdownImageReference[] => {
+export const extractMarkdownImageReferences = (
+  markdown: string,
+): EmbeddedMarkdownImageReference[] => {
   const references: EmbeddedMarkdownImageReference[] = [];
 
   let cursor = 0;
@@ -369,7 +371,8 @@ export const parseDataUriImage = (
     throw FunctionalError(`Data URI image exceeds max size (${maxImageSizeBytes} bytes)`);
   }
 
-  const maxTotalSizeBytes = options.maxTotalSizeBytes ?? DEFAULT_MAX_TOTAL_EMBEDDED_IMAGE_SIZE_BYTES;
+  const maxTotalSizeBytes =
+    options.maxTotalSizeBytes ?? DEFAULT_MAX_TOTAL_EMBEDDED_IMAGE_SIZE_BYTES;
   const currentTotalSizeBytes = options.currentTotalSizeBytes ?? 0;
   if (currentTotalSizeBytes + bytes.byteLength > maxTotalSizeBytes) {
     throw FunctionalError(`Data URI images exceed max total size (${maxTotalSizeBytes} bytes)`);
@@ -436,9 +439,10 @@ export const collectEmbeddedStoragePathsFromMarkdownFields = (
 ): Set<string> => {
   const seen = new Set<object>();
   const collected = new Set<string>();
-  const entityPrefix = options.entityType && options.entityId
-    ? `embedded/${options.entityType}/${options.entityId}/`
-    : undefined;
+  const entityPrefix =
+    options.entityType && options.entityId
+      ? `embedded/${options.entityType}/${options.entityId}/`
+      : undefined;
 
   const addIfEmbeddedPath = (markdown: string) => {
     const references = extractMarkdownImageReferences(markdown);

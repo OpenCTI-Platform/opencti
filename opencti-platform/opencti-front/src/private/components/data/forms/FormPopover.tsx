@@ -54,7 +54,8 @@ const FormPopover: FunctionComponent<FormPopoverProps> = ({
   };
 
   // -- Edition --
-  const [queryRef, loadQuery] = useQueryLoader<FormEditionContainerQuery>(formEditionContainerQuery);
+  const [queryRef, loadQuery] =
+    useQueryLoader<FormEditionContainerQuery>(formEditionContainerQuery);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
   const handleOpenUpdate = () => {
     setDisplayUpdate(true);
@@ -94,11 +95,7 @@ const FormPopover: FunctionComponent<FormPopoverProps> = ({
         const root = store.getRoot();
         const paginationParams = { ...paginationOptions };
         delete paginationParams.count;
-        const conn = ConnectionHandler.getConnection(
-          root,
-          'Pagination_forms',
-          paginationParams,
-        );
+        const conn = ConnectionHandler.getConnection(root, 'Pagination_forms', paginationParams);
         if (conn) {
           const pageInfo = conn.getLinkedRecord('pageInfo');
           if (pageInfo) {
@@ -126,23 +123,11 @@ const FormPopover: FunctionComponent<FormPopoverProps> = ({
       >
         <MoreVert />
       </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
-        <MenuItem onClick={handleOpenUpdate}>
-          {t_i18n('Update')}
-        </MenuItem>
-        <MenuItem onClick={handleOpenDuplicate}>
-          {t_i18n('Duplicate')}
-        </MenuItem>
-        <MenuItem onClick={handleExportForm}>
-          {t_i18n('Export')}
-        </MenuItem>
-        <MenuItem onClick={handleOpenDelete}>
-          {t_i18n('Delete')}
-        </MenuItem>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
+        <MenuItem onClick={handleOpenDuplicate}>{t_i18n('Duplicate')}</MenuItem>
+        <MenuItem onClick={handleExportForm}>{t_i18n('Export')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>

@@ -2,7 +2,7 @@ import { Field, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Drawer from '@components/common/drawer/Drawer';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTheme } from '@mui/styles';
 import { FormikHelpers } from 'formik/dist/types';
 import * as Yup from 'yup';
@@ -20,17 +20,28 @@ import {
   IngestionCatalogConnectorCreationMutation,
   IngestionCatalogConnectorCreationMutation$data,
 } from '@components/integrations/catalog/__generated__/IngestionCatalogConnectorCreationMutation.graphql';
-import IngestionCreationUserHandling, { BasicUserHandlingValues } from '@components/data/IngestionCreationUserHandling';
+import IngestionCreationUserHandling, {
+  BasicUserHandlingValues,
+} from '@components/data/IngestionCreationUserHandling';
 import { IngestionConnector, IngestionTypedProperty } from '@components/integrations/catalog/types';
 import { Launch } from 'mdi-material-ui';
 import { HubOutlined, LibraryBooksOutlined } from '@mui/icons-material';
 import ConnectorDeploymentBanner from '@components/data/connectors/ConnectorDeploymentBanner';
 import Tooltip from '@mui/material/Tooltip';
-import JsonFormArrayRenderer, { jsonFormArrayTester } from '@components/integrations/catalog/utils/JsonFormArrayRenderer';
+import JsonFormArrayRenderer, {
+  jsonFormArrayTester,
+} from '@components/integrations/catalog/utils/JsonFormArrayRenderer';
 import buildContractConfiguration from '@components/data/connectors/utils/buildContractConfiguration';
-import JsonFormUnsupportedType, { jsonFormUnsupportedTypeTester } from '@components/integrations/catalog/utils/JsonFormUnsupportedType';
-import { JsonFormPasswordRenderer, jsonFormPasswordTester } from '@components/integrations/catalog/utils/JsonFormPasswordRenderer';
-import JsonFormDeprecatedRenderer, { jsonFormDeprecatedTester } from '@components/integrations/catalog/utils/JsonFormDeprecatedRenderer';
+import JsonFormUnsupportedType, {
+  jsonFormUnsupportedTypeTester,
+} from '@components/integrations/catalog/utils/JsonFormUnsupportedType';
+import {
+  JsonFormPasswordRenderer,
+  jsonFormPasswordTester,
+} from '@components/integrations/catalog/utils/JsonFormPasswordRenderer';
+import JsonFormDeprecatedRenderer, {
+  jsonFormDeprecatedTester,
+} from '@components/integrations/catalog/utils/JsonFormDeprecatedRenderer';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { RelayError } from '../../../../relay/relayTypes';
 import type { Theme } from '../../../../components/Theme';
@@ -38,9 +49,15 @@ import { useFormatter } from '../../../../components/i18n';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
-import { JsonFormVerticalLayout, jsonFormVerticalLayoutTester } from './utils/JsonFormVerticalLayout';
+import {
+  JsonFormVerticalLayout,
+  jsonFormVerticalLayoutTester,
+} from './utils/JsonFormVerticalLayout';
 import IngestionCatalogUnverifiedDeploymentPopover from '@components/integrations/catalog/IngestionCatalogUnverifiedDeploymentPopover';
-import { filterOutDeprecatedProperties, filterOutDeprecatedRequired } from './utils/deprecatedFields';
+import {
+  filterOutDeprecatedProperties,
+  filterOutDeprecatedRequired,
+} from './utils/deprecatedFields';
 
 const ingestionCatalogConnectorCreationMutation = graphql`
   mutation IngestionCatalogConnectorCreationMutation($input: AddManagedConnectorInput) {
@@ -51,8 +68,8 @@ const ingestionCatalogConnectorCreationMutation = graphql`
       manager_requested_status
       manager_current_status
       manager_contract_configuration {
-          key
-          value
+        key
+        value
       }
     }
   }
@@ -106,42 +123,51 @@ export interface ManagedConnectorValues extends BasicUserHandlingValues {
 }
 
 const validationSchema = Yup.object().shape({
-  display_name: Yup.string()
-    .trim()
-    .min(2)
-    .max(255)
-    .required(),
+  display_name: Yup.string().trim().min(2).max(255).required(),
   user_id: Yup.object().required(),
 });
 
 const IngestionCatalogConnectorCreation = ({
-  connector, open, onClose, catalogId, hasActiveManagers, deploymentCount = 0, onCreate,
+  connector,
+  open,
+  onClose,
+  catalogId,
+  hasActiveManagers,
+  deploymentCount = 0,
+  onCreate,
 }: IngestionCatalogConnectorCreationProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [isAcknowledgementPopoverOpen, setIsAcknowledgementPopoverOpen] = useState(false);
   const [compiledValidator, setCompiledValidator] = useState<Validator | undefined>(undefined);
-  const [commitRegister] = useMutation<IngestionCatalogConnectorCreationMutation>(ingestionCatalogConnectorCreationMutation);
+  const compiledValidatorContainerImageRef = useRef<string | undefined>(undefined);
+  const [commitRegister] = useMutation<IngestionCatalogConnectorCreationMutation>(
+    ingestionCatalogConnectorCreationMutation,
+  );
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    if (!compiledValidator || compiledValidator.schema.container_image !== connector.container_image) {
+    if (
+      !compiledValidator ||
+      compiledValidatorContainerImageRef.current !== connector.container_image
+    ) {
+      compiledValidatorContainerImageRef.current = connector.container_image;
       setCompiledValidator(new Validator(connector as unknown as Schema));
     }
   }, [compiledValidator, connector]);
 
-  const submitConnectorManagementCreation = (values: ManagedConnectorValues, {
-    setSubmitting,
-    resetForm,
-  }: Partial<FormikHelpers<ManagedConnectorValues>>) => {
+  const submitConnectorManagementCreation = (
+    values: ManagedConnectorValues,
+    { setSubmitting, resetForm }: Partial<FormikHelpers<ManagedConnectorValues>>,
+  ) => {
     setSubmitting?.(true);
     const input = {
       name: values.display_name,
       catalog_id: catalogId,
       user_id: typeof values.user_id === 'string' ? values.user_id : values.user_id?.value,
       automatic_user: values.automatic_user ?? true,
-      ...((values.automatic_user !== false) && { confidence_level: values.confidence_level?.toString() }),
+      ...(values.automatic_user !== false && {
+        confidence_level: values.confidence_level?.toString(),
+      }),
       manager_contract_image: connector.container_image,
       manager_contract_configuration: buildContractConfiguration(values),
     };
@@ -154,7 +180,9 @@ const IngestionCatalogConnectorCreation = ({
         const { errors } = (error as unknown as RelayError).res;
         const errorMessage = errors?.at(0)?.message;
         if (errorMessage?.includes('CONNECTOR_NAME_ALREADY_EXISTS')) {
-          MESSAGING$.notifyError(t_i18n('A connector with this name already exists. Please choose a different name.'));
+          MESSAGING$.notifyError(
+            t_i18n('A connector with this name already exists. Please choose a different name.'),
+          );
         } else if (errorMessage) {
           MESSAGING$.notifyError(errorMessage);
         } else {
@@ -164,7 +192,9 @@ const IngestionCatalogConnectorCreation = ({
       },
       onCompleted: (response: IngestionCatalogConnectorCreationMutation$data) => {
         const connectorId = response.managedConnectorAdd?.id;
-        MESSAGING$.notifySuccess(t_i18n('The connector instance has been deployed. You can now start it.'));
+        MESSAGING$.notifySuccess(
+          t_i18n('The connector instance has been deployed. You can now start it.'),
+        );
         setSubmitting?.(false);
         resetForm?.();
         onClose();
@@ -185,26 +215,22 @@ const IngestionCatalogConnectorCreation = ({
     });
   };
 
-  const {
-    requiredProperties,
-    optionalProperties,
-    configDefaults,
-    connectorName,
-  } = useMemo(() => {
+  const { requiredProperties, optionalProperties, configDefaults, connectorName } = useMemo(() => {
     const requiredProps: Record<string, IngestionTypedProperty> = {};
     const optionalProps: Record<string, IngestionTypedProperty> = {};
     const defaults: Record<string, string | number | boolean | object | string[]> = {};
     let defaultConnectorName = '';
 
-    const nonDeprecatedProperties = filterOutDeprecatedProperties(connector.config_schema.properties);
+    const nonDeprecatedProperties = filterOutDeprecatedProperties(
+      connector.config_schema.properties,
+    );
 
     Object.entries(nonDeprecatedProperties).forEach(([key, value]) => {
       if (key === 'CONNECTOR_NAME') {
         if (value.default !== undefined) {
           const baseName = value.default.toString();
-          defaultConnectorName = deploymentCount > 0
-            ? `${baseName}-${deploymentCount + 1}`
-            : baseName;
+          defaultConnectorName =
+            deploymentCount > 0 ? `${baseName}-${deploymentCount + 1}` : baseName;
         }
         return;
       }
@@ -223,7 +249,10 @@ const IngestionCatalogConnectorCreation = ({
 
     const reqProperties: JsonSchema = {
       properties: requiredProps,
-      required: filterOutDeprecatedRequired(connector.config_schema.required, connector.config_schema.properties),
+      required: filterOutDeprecatedRequired(
+        connector.config_schema.required,
+        connector.config_schema.properties,
+      ),
     };
 
     const optProperties: JsonSchema = {
@@ -256,9 +285,11 @@ const IngestionCatalogConnectorCreation = ({
         title={t_i18n('Deploy a new connector')}
         open={open}
         onClose={onClose}
-        header={(
+        header={
           <Stack direction="row" alignItems="center" gap={1}>
-            <Tooltip title={`${deploymentCount} ${t_i18n('instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.')}`}>
+            <Tooltip
+              title={`${deploymentCount} ${t_i18n('instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.')}`}
+            >
               <Button
                 variant="secondary"
                 component={Link}
@@ -272,7 +303,9 @@ const IngestionCatalogConnectorCreation = ({
             </Tooltip>
 
             <Tooltip title={t_i18n('Vendor contact')}>
-              <span> {/** keep span so tooltip is still displayed if button is disabled * */}
+              <span>
+                {' '}
+                {/** keep span so tooltip is still displayed if button is disabled * */}
                 <IconButton
                   variant="tertiary"
                   aria-label="Vendor contact"
@@ -304,10 +337,13 @@ const IngestionCatalogConnectorCreation = ({
               </span>
             </Tooltip>
           </Stack>
-        )}
+        }
       >
         <Stack gap={1}>
-          <ConnectorDeploymentBanner hasActiveManagers={hasActiveManagers} isVerified={connector.verified} />
+          <ConnectorDeploymentBanner
+            hasActiveManagers={hasActiveManagers}
+            isVerified={connector.verified}
+          />
 
           <Formik<ManagedConnectorValues>
             onReset={onClose}
@@ -322,7 +358,15 @@ const IngestionCatalogConnectorCreation = ({
             }}
             onSubmit={() => {}}
           >
-            {({ values, isSubmitting, setSubmitting, resetForm, isValid, setValues, setFieldValue }) => {
+            {({
+              values,
+              isSubmitting,
+              setSubmitting,
+              resetForm,
+              isValid,
+              setValues,
+              setFieldValue,
+            }) => {
               const errors = compiledValidator?.validate(values)?.errors;
 
               const disableCreate = !isValid || isSubmitting || !!errors?.[0];
@@ -384,39 +428,36 @@ const IngestionCatalogConnectorCreation = ({
                     {(hasRequiredProperties || hasOptionalProperties) && (
                       <>
                         <div style={fieldSpacingContainerStyle}>{t_i18n('Configuration')}</div>
-                        {
-                          hasRequiredProperties && (
-                            <Alert
-                              severity="info"
-                              icon={false}
-                              variant="outlined"
-                              style={{
-                                position: 'relative',
-                                width: '100%',
-                                marginTop: 8,
-                              }}
-                              slotProps={{
-                                message: {
-                                  style: {
-                                    width: '100%',
-                                    overflow: 'visible',
-                                  },
+                        {hasRequiredProperties && (
+                          <Alert
+                            severity="info"
+                            icon={false}
+                            variant="outlined"
+                            style={{
+                              position: 'relative',
+                              width: '100%',
+                              marginTop: 8,
+                            }}
+                            slotProps={{
+                              message: {
+                                style: {
+                                  width: '100%',
+                                  overflow: 'visible',
                                 },
+                              },
+                            }}
+                          >
+                            <JsonForms
+                              data={configDefaults}
+                              schema={requiredProperties}
+                              renderers={customRenderers}
+                              validationMode="NoValidation"
+                              onChange={async ({ data }) => {
+                                await setValues({ ...values, ...data });
                               }}
-                            >
-
-                              <JsonForms
-                                data={configDefaults}
-                                schema={requiredProperties}
-                                renderers={customRenderers}
-                                validationMode="NoValidation"
-                                onChange={async ({ data }) => {
-                                  await setValues({ ...values, ...data });
-                                }}
-                              />
-                            </Alert>
-                          )
-                        }
+                            />
+                          </Alert>
+                        )}
 
                         {hasOptionalProperties && (
                           <div style={fieldSpacingContainerStyle}>
@@ -449,18 +490,16 @@ const IngestionCatalogConnectorCreation = ({
                     >
                       {t_i18n('Cancel')}
                     </Button>
-                    {
-                      hasActiveManagers && (
-                        <Button
+                    {hasActiveManagers && (
+                      <Button
                         // color="secondary"
-                          style={{ marginLeft: theme.spacing(2) }}
-                          onClick={handleCreate}
-                          disabled={disableCreate}
-                        >
-                          {t_i18n('Create')}
-                        </Button>
-                      )
-                    }
+                        style={{ marginLeft: theme.spacing(2) }}
+                        onClick={handleCreate}
+                        disabled={disableCreate}
+                      >
+                        {t_i18n('Create')}
+                      </Button>
+                    )}
                   </div>
                   <IngestionCatalogUnverifiedDeploymentPopover
                     onClose={() => setIsAcknowledgementPopoverOpen(false)}

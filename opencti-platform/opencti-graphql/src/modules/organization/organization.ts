@@ -1,9 +1,19 @@
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import type { Stix2Organization, StixOrganization, StoreEntityOrganization } from './organization-types';
+import type {
+  Stix2Organization,
+  StixOrganization,
+  StoreEntityOrganization,
+} from './organization-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from './organization-types';
 import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import { authorizedMembers, authorizedMembersActivationDate, iAliasedIds, xOpenctiAliases, xOpenctiReliability } from '../../schema/attribute-definition';
+import {
+  authorizedMembers,
+  authorizedMembersActivationDate,
+  iAliasedIds,
+  xOpenctiAliases,
+  xOpenctiReliability,
+} from '../../schema/attribute-definition';
 import {
   RELATION_DERIVED_FROM,
   RELATION_HAS,
@@ -28,7 +38,11 @@ import { ENTITY_MEDIA_CONTENT } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../administrativeArea/administrativeArea-types';
 import convertOrganizationToStix, { convertOrganizationToStix_2_0 } from './organization-converter';
 
-const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrganization, Stix2Organization> = {
+const ORGANIZATION_DEFINITION: ModuleDefinition<
+  StoreEntityOrganization,
+  StixOrganization,
+  Stix2Organization
+> = {
   type: {
     id: 'organization',
     name: ENTITY_TYPE_IDENTITY_ORGANIZATION,
@@ -51,12 +65,73 @@ const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrg
     xOpenctiAliases,
     iAliasedIds,
     xOpenctiReliability,
-    { name: 'default_dashboard', label: 'Default dashboard', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'x_opencti_organization_type', label: 'Organization type', type: 'string', format: 'vocabulary', vocabularyCategory: 'organization_type_ov', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_score', label: 'Score', type: 'numeric', precision: 'integer', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'default_hidden_types', label: 'Default hidden types', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
-    { name: 'authorized_authorities', label: 'Authorized authorities', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
-    { name: 'grantable_groups', label: 'Grantable groups', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+    {
+      name: 'default_dashboard',
+      label: 'Default dashboard',
+      type: 'string',
+      format: 'short',
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: false,
+      upsert: false,
+      isFilterable: false,
+    },
+    {
+      name: 'x_opencti_organization_type',
+      label: 'Organization type',
+      type: 'string',
+      format: 'vocabulary',
+      vocabularyCategory: 'organization_type_ov',
+      mandatoryType: 'customizable',
+      editDefault: true,
+      multiple: false,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'x_opencti_score',
+      label: 'Score',
+      type: 'numeric',
+      precision: 'integer',
+      mandatoryType: 'customizable',
+      editDefault: true,
+      multiple: false,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'default_hidden_types',
+      label: 'Default hidden types',
+      type: 'string',
+      format: 'short',
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: true,
+      upsert: false,
+      isFilterable: false,
+    },
+    {
+      name: 'authorized_authorities',
+      label: 'Authorized authorities',
+      type: 'string',
+      format: 'short',
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: true,
+      upsert: false,
+      isFilterable: false,
+    },
+    {
+      name: 'grantable_groups',
+      label: 'Grantable groups',
+      type: 'string',
+      format: 'short',
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: true,
+      upsert: false,
+      isFilterable: false,
+    },
     { ...authorizedMembers, editDefault: true },
     { ...authorizedMembersActivationDate },
   ],
@@ -80,33 +155,23 @@ const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrg
     },
     {
       name: RELATION_USES,
-      targets: [
-        { name: ENTITY_TYPE_TOOL, type: REL_EXTENDED },
-      ],
+      targets: [{ name: ENTITY_TYPE_TOOL, type: REL_EXTENDED }],
     },
     {
       name: RELATION_PUBLISHES,
-      targets: [
-        { name: ENTITY_MEDIA_CONTENT, type: REL_NEW },
-      ],
+      targets: [{ name: ENTITY_MEDIA_CONTENT, type: REL_NEW }],
     },
     {
       name: RELATION_DERIVED_FROM,
-      targets: [
-        { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_BUILT_IN },
-      ],
+      targets: [{ name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_BUILT_IN }],
     },
     {
       name: RELATION_SHOULD_COVER,
-      targets: [
-        { name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_NEW },
-      ],
+      targets: [{ name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_NEW }],
     },
     {
       name: RELATION_HAS,
-      targets: [
-        { name: ENTITY_TYPE_VULNERABILITY, type: REL_EXTENDED },
-      ],
+      targets: [{ name: ENTITY_TYPE_VULNERABILITY, type: REL_EXTENDED }],
     },
   ],
   representative: (stix: StixOrganization) => {

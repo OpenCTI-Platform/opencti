@@ -11,7 +11,10 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -55,14 +58,14 @@ const externalReferencesLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...ExternalReferencesLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -115,7 +118,11 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
     openExports: false,
     filters: emptyFilterGroup,
   };
-  const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<ExternalReferencesLinesPaginationQuery$variables>(
+  const {
+    viewStorage,
+    helpers: storageHelpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<ExternalReferencesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
@@ -151,25 +158,32 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
   } as UsePreloadedPaginationFragment<ExternalReferencesLinesPaginationQuery>;
   return (
     <div data-testid="external-reference-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('External references'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Analyses') },
+          { label: t_i18n('External references'), current: true },
+        ]}
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: ExternalReferencesLines_data$data) => data.externalReferences?.edges?.map((n) => n?.node)}
+          resolvePath={(data: ExternalReferencesLines_data$data) =>
+            data.externalReferences?.edges?.map((n) => n?.node)
+          }
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={externalReferencesLineFragment}
           entityTypes={['External-Reference']}
-          createButton={(
+          createButton={
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <ExternalReferenceCreation
                 paginationOptions={queryPaginationOptions}
                 openContextual={false}
               />
             </Security>
-          )}
+          }
         />
       )}
     </div>

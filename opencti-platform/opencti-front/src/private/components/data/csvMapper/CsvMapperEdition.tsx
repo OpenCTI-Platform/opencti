@@ -5,11 +5,12 @@ import { FormikConfig } from 'formik/dist/types';
 import { CsvMapperEditionContainerFragment_csvMapper$data } from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerFragment_csvMapper.graphql';
 import CsvMapperForm from '@components/data/csvMapper/CsvMapperForm';
 import { CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
-import { csvMapperToFormData, formDataToCsvMapper } from '@components/data/csvMapper/CsvMapperUtils';
-import { useCsvMappersData } from '@components/data/csvMapper/csvMappers.data';
 import {
-  CsvMapperRepresentationAttributesForm_allSchemaAttributes$key,
-} from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
+  csvMapperToFormData,
+  formDataToCsvMapper,
+} from '@components/data/csvMapper/CsvMapperUtils';
+import { useCsvMappersData } from '@components/data/csvMapper/csvMappers.data';
+import { CsvMapperRepresentationAttributesForm_allSchemaAttributes$key } from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
 import { CsvMapperRepresentationAttributesFormFragment } from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributesForm';
 import formikFieldToEditInput from '../../../../utils/FormikUtils';
 import { useComputeDefaultValues } from '../../../../utils/hooks/useDefaultValues';
@@ -28,10 +29,7 @@ interface CsvMapperEditionProps {
   onClose?: () => void;
 }
 
-const CsvMapperEdition: FunctionComponent<CsvMapperEditionProps> = ({
-  csvMapper,
-  onClose,
-}) => {
+const CsvMapperEdition: FunctionComponent<CsvMapperEditionProps> = ({ csvMapper, onClose }) => {
   const [commitUpdateMutation] = useApiMutation(csvMapperEditionPatch);
   const { schemaAttributes } = useCsvMappersData();
   const data = useFragment<CsvMapperRepresentationAttributesForm_allSchemaAttributes$key>(
@@ -50,10 +48,7 @@ const CsvMapperEdition: FunctionComponent<CsvMapperEditionProps> = ({
     computeDefaultValues,
   );
 
-  const onSubmit: FormikConfig<CsvMapperFormData>['onSubmit'] = (
-    values,
-    { setSubmitting },
-  ) => {
+  const onSubmit: FormikConfig<CsvMapperFormData>['onSubmit'] = (values, { setSubmitting }) => {
     const formattedValues = formDataToCsvMapper(values);
     const input = formikFieldToEditInput(
       {

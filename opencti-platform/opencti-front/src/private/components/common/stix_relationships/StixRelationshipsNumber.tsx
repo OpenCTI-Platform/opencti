@@ -14,50 +14,50 @@ import { useGetNumberWidgetTitle } from 'src/utils/widget/widgetUtils';
 import { buildRelationshipSingleWidgetBaseQueryVariables } from 'src/components/dashboard/dashboardVizUtils';
 
 const stixRelationshipsNumberNumberQuery = graphql`
-    query StixRelationshipsNumberNumberSeriesQuery(
-        $dateAttribute: String
-        $noDirection: Boolean
-        $endDate: DateTime
-        $onlyInferred: Boolean
-        $fromOrToId: [String]
-        $elementWithTargetTypes: [String]
-        $fromId: [String]
-        $fromRole: String
-        $fromTypes: [String]
-        $toId: [String]
-        $toRole: String
-        $toTypes: [String]
-        $relationship_type: [String]
-        $confidences: [Int]
-        $search: String
-        $filters: FilterGroup
-        $dynamicFrom: FilterGroup
-        $dynamicTo: FilterGroup
+  query StixRelationshipsNumberNumberSeriesQuery(
+    $dateAttribute: String
+    $noDirection: Boolean
+    $endDate: DateTime
+    $onlyInferred: Boolean
+    $fromOrToId: [String]
+    $elementWithTargetTypes: [String]
+    $fromId: [String]
+    $fromRole: String
+    $fromTypes: [String]
+    $toId: [String]
+    $toRole: String
+    $toTypes: [String]
+    $relationship_type: [String]
+    $confidences: [Int]
+    $search: String
+    $filters: FilterGroup
+    $dynamicFrom: FilterGroup
+    $dynamicTo: FilterGroup
+  ) {
+    stixRelationshipsNumber(
+      dateAttribute: $dateAttribute
+      noDirection: $noDirection
+      endDate: $endDate
+      onlyInferred: $onlyInferred
+      fromOrToId: $fromOrToId
+      elementWithTargetTypes: $elementWithTargetTypes
+      fromId: $fromId
+      fromRole: $fromRole
+      fromTypes: $fromTypes
+      toId: $toId
+      toRole: $toRole
+      toTypes: $toTypes
+      relationship_type: $relationship_type
+      confidences: $confidences
+      search: $search
+      filters: $filters
+      dynamicFrom: $dynamicFrom
+      dynamicTo: $dynamicTo
     ) {
-        stixRelationshipsNumber(
-            dateAttribute: $dateAttribute
-            noDirection: $noDirection
-            endDate: $endDate
-            onlyInferred: $onlyInferred
-            fromOrToId: $fromOrToId
-            elementWithTargetTypes: $elementWithTargetTypes
-            fromId: $fromId
-            fromRole: $fromRole
-            fromTypes: $fromTypes
-            toId: $toId
-            toRole: $toRole
-            toTypes: $toTypes
-            relationship_type: $relationship_type
-            confidences: $confidences
-            search: $search
-            filters: $filters
-            dynamicFrom: $dynamicFrom
-            dynamicTo: $dynamicTo
-        ) {
-            total
-            count
-        }
+      total
+      count
     }
+  }
 `;
 
 interface StixRelationshipsNumberComponentProps {
@@ -73,10 +73,7 @@ const StixRelationshipsNumberComponent = ({
   label,
 }: StixRelationshipsNumberComponentProps) => {
   const { t_i18n } = useFormatter();
-  const data = usePreloadedQuery(
-    stixRelationshipsNumberNumberQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery(stixRelationshipsNumberNumberQuery, queryRef);
 
   if (!data?.stixRelationshipsNumber) {
     return <WidgetNoData />;
@@ -99,7 +96,8 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixRelationshipsNumberNumberSeriesQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { dateAttribute, filters, dynamicFrom, dynamicTo } = buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
+  const { dateAttribute, filters, dynamicFrom, dynamicTo } =
+    buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
 
   return {
     filters,
@@ -138,7 +136,13 @@ const StixRelationshipsNumber = ({
   const DEFAULT_TITLE = t_i18n('Relationships number');
   const translatedNumberLabel = useGetNumberWidgetTitle(parameters, DEFAULT_TITLE);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsNumberNumberSeriesQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixRelationshipsNumberNumberSeriesQuery>({
     perspective: 'relationships',
     dataSelection,
     host,

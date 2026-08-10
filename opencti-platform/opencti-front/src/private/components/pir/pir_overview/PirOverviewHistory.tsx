@@ -93,9 +93,7 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
     >
       <div style={{ display: 'flex', gap: theme.spacing(0.5), flexDirection: 'column' }}>
         {history.length === 0 && (
-          <Typography variant="body2">
-            {t_i18n('No recent history for this PIR')}
-          </Typography>
+          <Typography variant="body2">{t_i18n('No recent history for this PIR')}</Typography>
         )}
 
         {history.map((historyItem) => {
@@ -120,7 +118,9 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
                   alignItems: 'center',
                 }}
               >
-                <Tooltip title={t_i18n(displayEntityTypeForTranslation(context_data?.entity_type ?? ''))}>
+                <Tooltip
+                  title={t_i18n(displayEntityTypeForTranslation(context_data?.entity_type ?? ''))}
+                >
                   <div>
                     <ItemIcon type={context_data?.entity_type} />
                   </div>
@@ -129,10 +129,7 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
                   <Typography variant="body2" color={theme.palette.text?.light}>
                     {nsdt(timestamp)}
                   </Typography>
-                  <PirHistoryMessage
-                    log={historyItem}
-                    pirName={pir.name}
-                  />
+                  <PirHistoryMessage log={historyItem} pirName={pir.name} />
                 </div>
               </Link>
             </Box>

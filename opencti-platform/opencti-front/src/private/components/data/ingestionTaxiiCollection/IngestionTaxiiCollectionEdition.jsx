@@ -15,23 +15,23 @@ import Drawer from '../../common/drawer/Drawer';
 import SwitchField from '../../../../components/fields/SwitchField';
 
 export const ingestionTaxiiCollectionMutationFieldPatch = graphql`
-  mutation IngestionTaxiiCollectionEditionFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput!]!
-  ) {
+  mutation IngestionTaxiiCollectionEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
     ingestionTaxiiCollectionFieldPatch(id: $id, input: $input) {
       ...IngestionTaxiiCollectionEdition_ingestionTaxii
     }
   }
 `;
 
-const ingestionTaxiiCollectionValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  user_id: Yup.mixed().nullable(),
-  confidence_to_score: Yup.bool().nullable(),
-  restricted_members: Yup.array().required(t('This field is required')).min(1, t('This field is required')),
-});
+const ingestionTaxiiCollectionValidation = (t) =>
+  Yup.object().shape({
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    user_id: Yup.mixed().nullable(),
+    confidence_to_score: Yup.bool().nullable(),
+    restricted_members: Yup.array()
+      .required(t('This field is required'))
+      .min(1, t('This field is required')),
+  });
 
 const IngestionTaxiiCollectionEditionContainer = ({
   t,
@@ -58,35 +58,27 @@ const IngestionTaxiiCollectionEditionContainer = ({
       .catch(() => false);
   };
 
-  const handleSubmitFieldOptions = (name, value) => ingestionTaxiiCollectionValidation(t)
-    .validateAt(name, { [name]: value })
-    .then(() => {
-      commitMutation({
-        mutation: ingestionTaxiiCollectionMutationFieldPatch,
-        variables: {
-          id: ingestionTaxiiCollection?.id,
-          input: { key: name, value: value?.map(({ value: v }) => v) ?? '' },
-        },
-      });
-    }).catch(() => false);
+  const handleSubmitFieldOptions = (name, value) =>
+    ingestionTaxiiCollectionValidation(t)
+      .validateAt(name, { [name]: value })
+      .then(() => {
+        commitMutation({
+          mutation: ingestionTaxiiCollectionMutationFieldPatch,
+          variables: {
+            id: ingestionTaxiiCollection?.id,
+            input: { key: name, value: value?.map(({ value: v }) => v) ?? '' },
+          },
+        });
+      })
+      .catch(() => false);
   const initialValues = R.pipe(
     R.assoc('user_id', convertUser(ingestionTaxiiCollection, 'user')),
     R.assoc('restricted_members', convertAuthorizedMembers(ingestionTaxiiCollection)),
-    R.pick([
-      'name',
-      'description',
-      'user_id',
-      'restricted_members',
-      'confidence_to_score',
-    ]),
+    R.pick(['name', 'description', 'user_id', 'restricted_members', 'confidence_to_score']),
   )(ingestionTaxiiCollection);
 
   return (
-    <Drawer
-      title={t('Update a TAXII Push ingester')}
-      open={open}
-      onClose={handleClose}
-    >
+    <Drawer title={t('Update a TAXII Push ingester')} open={open} onClose={handleClose}>
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
@@ -172,6 +164,4 @@ const IngestionTaxiiCollectionEditionFragment = createFragmentContainer(
   },
 );
 
-export default R.compose(
-  inject18n,
-)(IngestionTaxiiCollectionEditionFragment);
+export default R.compose(inject18n)(IngestionTaxiiCollectionEditionFragment);

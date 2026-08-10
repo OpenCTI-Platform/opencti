@@ -19,14 +19,20 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import SystemAnalysis from './SystemAnalysis';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import SystemEdition from './SystemEdition';
 import SystemDeletion from './SystemDeletion';
 import { PATH_SYSTEM, PATH_SYSTEMS } from '@components/common/routes/paths';
@@ -84,28 +90,22 @@ type RootSystemProps = {
 };
 
 const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootSystemsSubscription>>(() => ({
-    subscription,
-    variables: { id: systemId },
-  }), [systemId]);
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootSystemsSubscription>>(
+    () => ({
+      subscription,
+      variables: { id: systemId },
+    }),
+    [systemId],
+  );
   const location = useLocation();
   const navigate = useNavigate();
   const LOCAL_STORAGE_KEY = `system-${systemId}`;
-  const params = buildViewParamsFromUrlAndStorage(
-    navigate,
-    location,
-    LOCAL_STORAGE_KEY,
-  );
+  const params = buildViewParamsFromUrlAndStorage(navigate, location, LOCAL_STORAGE_KEY);
 
   const [viewAs, setViewAs] = useState<string>(propOr('knowledge', 'viewAs', params));
 
   const saveView = () => {
-    saveViewParameters(
-      navigate,
-      location,
-      LOCAL_STORAGE_KEY,
-      viewAs,
-    );
+    saveViewParameters(navigate, location, LOCAL_STORAGE_KEY, viewAs);
   };
 
   const handleChangeViewAs = (event: React.ChangeEvent<{ value: string }>) => {
@@ -116,11 +116,10 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
   const { t_i18n } = useFormatter();
   useSubscription<RootSystemsSubscription>(subConfig);
 
-  const {
-    system,
-    connectorsForExport,
-    connectorsForImport,
-  } = usePreloadedQuery<RootSystemQuery>(systemQuery, queryRef);
+  const { system, connectorsForExport, connectorsForImport } = usePreloadedQuery<RootSystemQuery>(
+    systemQuery,
+    queryRef,
+  );
 
   const { forceUpdate } = useForceUpdate();
 
@@ -134,34 +133,37 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={viewAs === 'knowledge' && (
-                <StixCoreObjectKnowledgeBar
-                  stixCoreObjectLink={link}
-                  availableSections={[
-                    'systems',
-                    'systems',
-                    'threats',
-                    'threat_actors',
-                    'intrusion_sets',
-                    'campaigns',
-                    'incidents',
-                    'malwares',
-                    'attack_patterns',
-                    'tools',
-                    'observables',
-                    'vulnerabilities',
-                  ]}
-                  data={system}
-                />
-              )}
+              element={
+                viewAs === 'knowledge' && (
+                  <StixCoreObjectKnowledgeBar
+                    stixCoreObjectLink={link}
+                    availableSections={[
+                      'systems',
+                      'systems',
+                      'threats',
+                      'threat_actors',
+                      'intrusion_sets',
+                      'campaigns',
+                      'incidents',
+                      'malwares',
+                      'attack_patterns',
+                      'tools',
+                      'observables',
+                      'vulnerabilities',
+                    ]}
+                    data={system}
+                  />
+                )
+              }
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs elements={[
-              { label: t_i18n('Entities') },
-              { label: t_i18n('Systems'), link: PATH_SYSTEMS },
-              { label: system.name, current: true },
-            ]}
+            <Breadcrumbs
+              elements={[
+                { label: t_i18n('Entities') },
+                { label: t_i18n('Systems'), link: PATH_SYSTEMS },
+                { label: system.name, current: true },
+              ]}
             />
             <StixDomainObjectHeader
               entityType="System"
@@ -169,18 +171,16 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
               isOpenctiAlias={true}
               enableQuickSubscription={true}
               enableEnricher={true}
-              EditComponent={(
+              EditComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <SystemEdition systemId={system.id} />
                 </Security>
-              )}
-              RelateComponent={(
+              }
+              RelateComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <StixCoreRelationshipCreationFromEntityHeader
-                    data={system}
-                  />
+                  <StixCoreRelationshipCreationFromEntityHeader data={system} />
                 </Security>
-              )}
+              }
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <SystemDeletion id={system.id} isOpen={isOpen} handleClose={onClose} />
@@ -195,31 +195,14 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
               entity={system}
               basePath={basePath}
               pages={{
-                overview: (
-                  <System
-                    systemData={system}
-                    viewAs={viewAs}
-                  />
-                ),
+                overview: <System systemData={system} viewAs={viewAs} />,
                 knowledge: (
                   <div key={forceUpdate}>
-                    <SystemKnowledge
-                      systemData={system}
-                      viewAs={viewAs}
-                    />
+                    <SystemKnowledge systemData={system} viewAs={viewAs} />
                   </div>
                 ),
-                content: (
-                  <StixCoreObjectContentRoot
-                    stixCoreObject={system}
-                  />
-                ),
-                analyses: (
-                  <SystemAnalysis
-                    system={system}
-                    viewAs={viewAs}
-                  />
-                ),
+                content: <StixCoreObjectContentRoot stixCoreObject={system} />,
+                analyses: <SystemAnalysis system={system} viewAs={viewAs} />,
                 sightings: (
                   <EntityStixSightingRelationships
                     entityId={system.id}
@@ -246,11 +229,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
                     entity={system}
                   />
                 ),
-                history: (
-                  <StixCoreObjectHistory
-                    stixCoreObjectId={systemId}
-                  />
-                ),
+                history: <StixCoreObjectHistory stixCoreObjectId={systemId} />,
               }}
             />
           </div>

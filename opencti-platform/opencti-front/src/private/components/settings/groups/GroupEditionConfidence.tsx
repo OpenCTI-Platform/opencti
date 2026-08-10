@@ -14,10 +14,7 @@ import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 export const groupConfidenceMutationFieldPatch = graphql`
-  mutation GroupEditionConfidenceFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-  ) {
+  mutation GroupEditionConfidenceFieldPatchMutation($id: ID!, $input: [EditInput]!) {
     groupEdit(id: $id) {
       fieldPatch(input: $input) {
         ...GroupEditionConfidence_group
@@ -39,10 +36,11 @@ interface GroupEditionConfidenceProps {
   group: GroupEditionConfidence_group$data;
   context:
     | readonly ({
-      readonly focusOn: string | null | undefined;
-      readonly name: string;
-    } | null)[]
-    | null | undefined;
+        readonly focusOn: string | null | undefined;
+        readonly name: string;
+      } | null)[]
+    | null
+    | undefined;
 }
 
 const groupConfidenceValidation = (t: (value: string) => string) => {
@@ -61,15 +59,20 @@ const groupConfidenceValidation = (t: (value: string) => string) => {
   });
 };
 
-const GroupEditionConfidenceComponent: FunctionComponent<GroupEditionConfidenceProps> = ({ group, context }) => {
+const GroupEditionConfidenceComponent: FunctionComponent<GroupEditionConfidenceProps> = ({
+  group,
+  context,
+}) => {
   const { t_i18n } = useFormatter();
 
   const initialValues: ConfidenceFormData = {
     group_confidence_level: group.group_confidence_level?.max_confidence,
-    overrides: group.group_confidence_level?.overrides?.map((override) => ({
-      ...override,
-      max_confidence: override.max_confidence.toString(),
-    })) ?? [] };
+    overrides:
+      group.group_confidence_level?.overrides?.map((override) => ({
+        ...override,
+        max_confidence: override.max_confidence.toString(),
+      })) ?? [],
+  };
 
   const [commitFieldPatch] = useApiMutation(groupConfidenceMutationFieldPatch);
 
@@ -111,10 +114,12 @@ const GroupEditionConfidenceComponent: FunctionComponent<GroupEditionConfidenceP
   const handleSubmitOverride = (index: number, value: OverrideFormData | null) => {
     if (isNotEmptyField(value?.entity_type) && isNotEmptyField(value?.max_confidence)) {
       const object_path = `/group_confidence_level/overrides/${index}`;
-      const finalValue = [{
-        entity_type: value.entity_type,
-        max_confidence: parseInt(value.max_confidence ?? '0', 10),
-      }];
+      const finalValue = [
+        {
+          entity_type: value.entity_type,
+          max_confidence: parseInt(value.max_confidence ?? '0', 10),
+        },
+      ];
       const name = `overrides[${index}]`;
       groupConfidenceValidation(t_i18n)
         .validateAt(name, { [name]: value })
@@ -169,13 +174,22 @@ const GroupEditionConfidenceComponent: FunctionComponent<GroupEditionConfidenceP
               name="overrides"
               render={(arrayHelpers) => (
                 <div>
-                  <Typography variant="h4" gutterBottom={true} style={{ float: 'left', marginTop: '20px' }}>
+                  <Typography
+                    variant="h4"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: '20px' }}
+                  >
                     {t_i18n('Add a specific max confidence level for an entity type')}
                   </Typography>
                   <IconButton
                     color="primary"
                     aria-label="Add"
-                    onClick={() => arrayHelpers.push({ entity_type: '', max_confidence: group.group_confidence_level?.max_confidence })}
+                    onClick={() =>
+                      arrayHelpers.push({
+                        entity_type: '',
+                        max_confidence: group.group_confidence_level?.max_confidence,
+                      })
+                    }
                     style={{ marginTop: '5px' }}
                     disabled={values.overrides.some((o) => o.entity_type === '')}
                   >
@@ -204,22 +218,19 @@ const GroupEditionConfidenceComponent: FunctionComponent<GroupEditionConfidenceP
   );
 };
 
-const GroupEditionConfidence = createFragmentContainer(
-  GroupEditionConfidenceComponent,
-  {
-    group: graphql`
-      fragment GroupEditionConfidence_group on Group {
-        id
-        group_confidence_level {
+const GroupEditionConfidence = createFragmentContainer(GroupEditionConfidenceComponent, {
+  group: graphql`
+    fragment GroupEditionConfidence_group on Group {
+      id
+      group_confidence_level {
+        max_confidence
+        overrides {
           max_confidence
-          overrides {
-            max_confidence
-            entity_type
-          }
+          entity_type
         }
-        ...GroupHiddenTypesField_group
       }
-    `,
-  },
-);
+      ...GroupHiddenTypesField_group
+    }
+  `,
+});
 export default GroupEditionConfidence;

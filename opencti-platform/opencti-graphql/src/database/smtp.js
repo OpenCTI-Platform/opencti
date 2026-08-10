@@ -6,7 +6,10 @@ import { getEntityFromCache } from './cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { isEmptyField } from './utils';
-import { getSmtpConfiguration, smtpConfigurationRefreshTokenUpdate } from '../modules/smtpConfiguration/smtpConfiguration-domain';
+import {
+  getSmtpConfiguration,
+  smtpConfigurationRefreshTokenUpdate,
+} from '../modules/smtpConfiguration/smtpConfiguration-domain';
 import { decryptSmtpSecret } from '../modules/smtpConfiguration/smtpConfiguration-crypto';
 
 const SMTP_FORCED_EMAIL = conf.get('smtp:forced_sender_email');
@@ -52,8 +55,17 @@ let inFlightRefresh; // concurrent refresh attempts are coalesced via an in-flig
 
 const ACCESS_TOKEN_REFRESH_MARGIN_MS = 5 * 60 * 1000; // Refresh the token a bit before it actually expires
 
-const refreshSmtpAccessToken = async ({ oauthClientId, oauthClientSecret, oauthIssuer, oauthRefreshToken, onRefreshToken }) => {
-  if (cachedAccessToken && Date.now() < cachedAccessTokenExpiresAt - ACCESS_TOKEN_REFRESH_MARGIN_MS) {
+const refreshSmtpAccessToken = async ({
+  oauthClientId,
+  oauthClientSecret,
+  oauthIssuer,
+  oauthRefreshToken,
+  onRefreshToken,
+}) => {
+  if (
+    cachedAccessToken &&
+    Date.now() < cachedAccessTokenExpiresAt - ACCESS_TOKEN_REFRESH_MARGIN_MS
+  ) {
     return cachedAccessToken;
   }
   if (inFlightRefresh) {
@@ -64,14 +76,18 @@ const refreshSmtpAccessToken = async ({ oauthClientId, oauthClientSecret, oauthI
     try {
       if (!cachedDiscoveryConfig) {
         const issuerUrl = new URL(oauthIssuer);
-        cachedDiscoveryConfig = await oidcDiscovery(issuerUrl, oauthClientId, { client_secret: oauthClientSecret });
+        cachedDiscoveryConfig = await oidcDiscovery(issuerUrl, oauthClientId, {
+          client_secret: oauthClientSecret,
+        });
       }
       tokens = await refreshTokenGrant(cachedDiscoveryConfig, oauthRefreshToken);
     } catch (err) {
       throw new Error(`Unable to refresh SMTP OAuth2 access token: ${err.message}`, { cause: err });
     }
     if (!tokens?.access_token) {
-      throw new Error('Unable to refresh SMTP OAuth2 access token: refresh token grant did not return an access_token');
+      throw new Error(
+        'Unable to refresh SMTP OAuth2 access token: refresh token grant did not return an access_token',
+      );
     }
     if (tokens.refresh_token && tokens.refresh_token !== oauthRefreshToken && onRefreshToken) {
       await onRefreshToken(tokens.refresh_token, oauthRefreshToken);
@@ -88,19 +104,24 @@ const refreshSmtpAccessToken = async ({ oauthClientId, oauthClientSecret, oauthI
   }
 };
 
-export const buildSmtpAuth = async (authType, {
-  username,
-  password,
-  oauthUser,
-  oauthClientId,
-  oauthClientSecret,
-  oauthIssuer,
-  oauthRefreshToken,
-  onRefreshToken,
-} = {}) => {
+export const buildSmtpAuth = async (
+  authType,
+  {
+    username,
+    password,
+    oauthUser,
+    oauthClientId,
+    oauthClientSecret,
+    oauthIssuer,
+    oauthRefreshToken,
+    onRefreshToken,
+  } = {},
+) => {
   if (authType === 'oauth2') {
     if (!oauthUser || !oauthClientId || !oauthClientSecret || !oauthIssuer || !oauthRefreshToken) {
-      throw new Error('SMTP OAuth2 configuration is incomplete: oauth_user, oauth_client_id, oauth_client_secret, oauth_issuer and oauth_refresh_token are all required.');
+      throw new Error(
+        'SMTP OAuth2 configuration is incomplete: oauth_user, oauth_client_id, oauth_client_secret, oauth_issuer and oauth_refresh_token are all required.',
+      );
     }
     const freshAccessToken = await refreshSmtpAccessToken({
       oauthClientId,
@@ -170,7 +191,12 @@ const getDbAuthParams = async (dbConfig) => ({
   oauthRefreshToken: await decryptSmtpSecret(dbConfig.oauth_refresh_token_encrypted),
   onRefreshToken: async (newRefreshToken, previousRefreshToken) => {
     const context = executionContext('smtp-refresh-token');
-    await smtpConfigurationRefreshTokenUpdate(context, SYSTEM_USER, previousRefreshToken, newRefreshToken);
+    await smtpConfigurationRefreshTokenUpdate(
+      context,
+      SYSTEM_USER,
+      previousRefreshToken,
+      newRefreshToken,
+    );
   },
 });
 

@@ -25,160 +25,160 @@ interface SecurityCoverageResultProps {
 }
 
 const securityCoverageResultLineFragment = graphql`
-    fragment SecurityCoverageResultLine_node on StixCoreRelationship {
+  fragment SecurityCoverageResultLine_node on StixCoreRelationship {
+    id
+    standard_id
+    entity_type
+    relationship_type
+    to {
+      ... on StixCoreObject {
         id
+        draftVersion {
+          draft_id
+          draft_operation
+        }
         standard_id
         entity_type
-        relationship_type
-        to {
-            ... on StixCoreObject {
-                id
-                draftVersion {
-                    draft_id
-                    draft_operation
-                }
-                standard_id
-                entity_type
-                created_at
-                objectLabel {
-                    id
-                    value
-                    color
-                }
-                createdBy {
-                    ... on Identity {
-                        id
-                        name
-                        entity_type
-                    }
-                }
-                objectMarking {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                }
-                containersNumber {
-                    total
-                }
-            }
-            ... on AttackPattern {
-                name
-                x_mitre_id
-            }
-            ... on Campaign {
-                name
-            }
-            ... on CourseOfAction {
-                name
-            }
-            ... on ObservedData {
-                name
-            }
-            ... on Report {
-                name
-            }
-            ... on Grouping {
-                name
-            }
-            ... on Note {
-                attribute_abstract
-                content
-            }
-            ... on Opinion {
-                opinion
-            }
-            ... on Individual {
-                name
-            }
-            ... on Organization {
-                name
-            }
-            ... on Sector {
-                name
-            }
-            ... on System {
-                name
-            }
-            ... on Indicator {
-                name
-            }
-            ... on Infrastructure {
-                name
-            }
-            ... on IntrusionSet {
-                name
-            }
-            ... on Position {
-                name
-            }
-            ... on City {
-                name
-            }
-            ... on AdministrativeArea {
-                name
-            }
-            ... on Country {
-                name
-            }
-            ... on Region {
-                name
-            }
-            ... on Malware {
-                name
-            }
-            ... on MalwareAnalysis {
-                result_name
-            }
-            ... on ThreatActor {
-                name
-            }
-            ... on Tool {
-                name
-            }
-            ... on Vulnerability {
-                name
-            }
-            ... on Incident {
-                name
-            }
-            ... on Event {
-                name
-            }
-            ... on Channel {
-                name
-            }
-            ... on Narrative {
-                name
-            }
-            ... on Language {
-                name
-            }
-            ... on DataComponent {
-                name
-            }
-            ... on DataSource {
-                name
-            }
-            ... on Case {
-                name
-            }
-            ... on Task {
-                name
-            }
-            ...on Artifact {
-                observable_value
-            }
-            ... on Indicator {
-                name
-            }
+        created_at
+        objectLabel {
+          id
+          value
+          color
         }
-        coverage_information{
-            coverage_name
-            coverage_score
+        createdBy {
+          ... on Identity {
+            id
+            name
+            entity_type
+          }
         }
+        objectMarking {
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
+        }
+        containersNumber {
+          total
+        }
+      }
+      ... on AttackPattern {
+        name
+        x_mitre_id
+      }
+      ... on Campaign {
+        name
+      }
+      ... on CourseOfAction {
+        name
+      }
+      ... on ObservedData {
+        name
+      }
+      ... on Report {
+        name
+      }
+      ... on Grouping {
+        name
+      }
+      ... on Note {
+        attribute_abstract
+        content
+      }
+      ... on Opinion {
+        opinion
+      }
+      ... on Individual {
+        name
+      }
+      ... on Organization {
+        name
+      }
+      ... on Sector {
+        name
+      }
+      ... on System {
+        name
+      }
+      ... on Indicator {
+        name
+      }
+      ... on Infrastructure {
+        name
+      }
+      ... on IntrusionSet {
+        name
+      }
+      ... on Position {
+        name
+      }
+      ... on City {
+        name
+      }
+      ... on AdministrativeArea {
+        name
+      }
+      ... on Country {
+        name
+      }
+      ... on Region {
+        name
+      }
+      ... on Malware {
+        name
+      }
+      ... on MalwareAnalysis {
+        result_name
+      }
+      ... on ThreatActor {
+        name
+      }
+      ... on Tool {
+        name
+      }
+      ... on Vulnerability {
+        name
+      }
+      ... on Incident {
+        name
+      }
+      ... on Event {
+        name
+      }
+      ... on Channel {
+        name
+      }
+      ... on Narrative {
+        name
+      }
+      ... on Language {
+        name
+      }
+      ... on DataComponent {
+        name
+      }
+      ... on DataSource {
+        name
+      }
+      ... on Case {
+        name
+      }
+      ... on Task {
+        name
+      }
+      ... on Artifact {
+        observable_value
+      }
+      ... on Indicator {
+        name
+      }
     }
+    coverage_information {
+      coverage_name
+      coverage_score
+    }
+  }
 `;
 
 export const securityCoverageResultLinesFragment = graphql`
@@ -193,54 +193,54 @@ export const securityCoverageResultLinesFragment = graphql`
     filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "SecurityCoverageResultLinesRefetchQuery") {
-      securityCoverage(id: $id) {
-          id
-          entity_type
-          stixCoreRelationships(
-              search: $search
-              first: $count
-              after: $cursor
-              orderBy: $orderBy
-              orderMode: $orderMode
-              filters: $filters
-          ) @connection(key: "PaginationSecurityCoverageResultLines__stixCoreRelationships") {
-              edges {
-                  node {
-                      id
-                      ...SecurityCoverageResultLine_node
-                  }
-              }
-              pageInfo {
-                  endCursor
-                  hasNextPage
-                  globalCount
-              }
+    securityCoverage(id: $id) {
+      id
+      entity_type
+      stixCoreRelationships(
+        search: $search
+        first: $count
+        after: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      ) @connection(key: "PaginationSecurityCoverageResultLines__stixCoreRelationships") {
+        edges {
+          node {
+            id
+            ...SecurityCoverageResultLine_node
           }
         }
+        pageInfo {
+          endCursor
+          hasNextPage
+          globalCount
+        }
       }
+    }
+  }
 `;
 
 export const securityCoverageResultLinesQuery = graphql`
-    query SecurityCoverageResultLinesPaginationQuery(
-        $id: String!
-        $search: String
-        $count: Int
-        $cursor: ID
-        $orderBy: StixCoreRelationshipsOrdering
-        $orderMode: OrderingMode
-        $filters: FilterGroup
-    ) {
-        ...SecurityCoverageResultLines_data
-            @arguments(
-                id: $id
-                search: $search
-                count: $count
-                cursor: $cursor
-                orderBy: $orderBy
-                orderMode: $orderMode
-                filters: $filters
-            )
-    }
+  query SecurityCoverageResultLinesPaginationQuery(
+    $id: String!
+    $search: String
+    $count: Int
+    $cursor: ID
+    $orderBy: StixCoreRelationshipsOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...SecurityCoverageResultLines_data
+      @arguments(
+        id: $id
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
+  }
 `;
 
 const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) => {
@@ -257,16 +257,14 @@ const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) =>
     revoked: false,
   };
 
-  const {
-    paginationOptions,
-    helpers: storageHelpers,
-  } = usePaginationLocalStorage<SecurityCoverageResultLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    {
-      id,
-      ...initialValues,
-    },
-  );
+  const { paginationOptions, helpers: storageHelpers } =
+    usePaginationLocalStorage<SecurityCoverageResultLinesPaginationQuery$variables>(
+      LOCAL_STORAGE_KEY,
+      {
+        id,
+        ...initialValues,
+      },
+    );
 
   const queryPaginationOptions = {
     ...paginationOptions,
@@ -309,39 +307,47 @@ const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) =>
       percentWidth: 15,
       isSortable: false,
       render: ({ coverage_information }) =>
-        coverage_information?.length
-          ? (
-              <SecurityCoverageScores
-                coverage_information={coverage_information}
-                variant="header"
-              />
-            ) : (
-              <Tooltip title={t_i18n('No executable tests are currently set for this entity, these can be set in OpenAEV')}>
-                <span style={{ width: '100%' }}>-</span>
-              </Tooltip>
-            ),
+        coverage_information?.length ? (
+          <SecurityCoverageScores coverage_information={coverage_information} variant="header" />
+        ) : (
+          <Tooltip
+            title={t_i18n(
+              'No executable tests are currently set for this entity, these can be set in OpenAEV',
+            )}
+          >
+            <span style={{ width: '100%' }}>-</span>
+          </Tooltip>
+        ),
     },
     to_object_label: {},
     to_object_marking: {},
   };
 
   return (
-    <div data-testid="security-coverage-result-page" style={{ height: '70vh' }} ref={setTableRootRef}>
+    <div
+      data-testid="security-coverage-result-page"
+      style={{ height: '70vh' }}
+      ref={setTableRootRef}
+    >
       {queryRef && (
         <DataTable
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           lineFragment={securityCoverageResultLineFragment}
-          preloadedPaginationProps={{
-            linesQuery: securityCoverageResultLinesQuery,
-            linesFragment: securityCoverageResultLinesFragment,
-            queryRef,
-            nodePath: ['securityCoverage', 'stixCoreRelationships', 'pageInfo', 'globalCount'],
-            setNumberOfElements: storageHelpers.handleSetNumberOfElements,
-          } as UsePreloadedPaginationFragment<SecurityCoverageResultLinesPaginationQuery>}
+          preloadedPaginationProps={
+            {
+              linesQuery: securityCoverageResultLinesQuery,
+              linesFragment: securityCoverageResultLinesFragment,
+              queryRef,
+              nodePath: ['securityCoverage', 'stixCoreRelationships', 'pageInfo', 'globalCount'],
+              setNumberOfElements: storageHelpers.handleSetNumberOfElements,
+            } as UsePreloadedPaginationFragment<SecurityCoverageResultLinesPaginationQuery>
+          }
           entityTypes={['stix-core-relationship']}
           availableFilterKeys={['toTypes']}
-          resolvePath={(data: SecurityCoverageResultLines_data$data) => data.securityCoverage?.stixCoreRelationships?.edges?.map((n) => n?.node)}
+          resolvePath={(data: SecurityCoverageResultLines_data$data) =>
+            data.securityCoverage?.stixCoreRelationships?.edges?.map((n) => n?.node)
+          }
           dataColumns={dataColumns}
           exportContext={{ entity_id: id, entity_type: 'stix-core-relationship' }}
           contextFilters={contextFilters}
@@ -349,7 +355,9 @@ const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) =>
           additionalHeaderButtons={[
             <Tooltip
               key="security-coverage-result-global-information-tooltip"
-              title={t_i18n('The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\n Coverage may be partial if some injects were not executed, if placeholders were not resolved or if the platform does not support certain actions')}
+              title={t_i18n(
+                'The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\n Coverage may be partial if some injects were not executed, if placeholders were not resolved or if the platform does not support certain actions',
+              )}
             >
               <IconButton aria-label={t_i18n('Info')} color="primary" style={{ height: '100%' }}>
                 <InfoOutlined />

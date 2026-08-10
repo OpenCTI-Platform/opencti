@@ -115,7 +115,13 @@ const filterContentFromEntityTypeAndNodeType = {
   },
   [DiamondEntityEnum.infrastructure]: {
     [DiamondNodeEnum.adversary]: {
-      entityType: ['Intrusion-Set', 'Threat-Actor-Group', 'Threat-Actor-Individual', 'Campaign', 'Incident'],
+      entityType: [
+        'Intrusion-Set',
+        'Threat-Actor-Group',
+        'Threat-Actor-Individual',
+        'Campaign',
+        'Incident',
+      ],
       relationships: ['uses', 'hosts', 'owns'],
     },
     [DiamondNodeEnum.infrastructure]: {
@@ -129,7 +135,10 @@ const filterContentFromEntityTypeAndNodeType = {
   },
 };
 
-export const getFilterFromEntityTypeAndNodeType = (entity_type: DiamondEntityEnum, nodeType: DiamondNodeEnum) => {
+export const getFilterFromEntityTypeAndNodeType = (
+  entity_type: DiamondEntityEnum,
+  nodeType: DiamondNodeEnum,
+) => {
   const filterContent = filterContentFromEntityTypeAndNodeType[entity_type][nodeType];
 
   const filterGroups = {

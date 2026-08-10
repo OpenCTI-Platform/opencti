@@ -45,10 +45,7 @@ const fileIndexingConfigurationQuery = graphql`
 `;
 
 export const fileIndexingConfigurationFieldPatch = graphql`
-  mutation FileIndexingConfigurationFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput!]!
-  ) {
+  mutation FileIndexingConfigurationFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
     managerConfigurationFieldPatch(id: $id, input: $input) {
       id
       manager_id
@@ -93,17 +90,18 @@ const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
   }, []);
   return (
     <div data-testid="file-indexing-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('File indexing'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('File indexing'), current: true },
+        ]}
+      />
       {!isEnterpriseEdition ? (
         <EnterpriseEdition feature="File indexing" />
       ) : (
         <>
           {isModuleWarning ? (
-            <Alert
-              severity="warning"
-              variant="outlined"
-              style={{ position: 'relative' }}
-            >
+            <Alert severity="warning" variant="outlined" style={{ position: 'relative' }}>
               {t_i18n(
                 'It seems that your OpenCTI stack is not supporting file indexing. Please ensure you meet',
               )}{' '}

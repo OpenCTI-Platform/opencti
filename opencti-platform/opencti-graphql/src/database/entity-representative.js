@@ -1,7 +1,13 @@
 import moment from 'moment';
 import { isEmptyField, isNotEmptyField, REDACTED_INFORMATION } from './utils';
 import { isStixRelationship } from '../schema/stixRelationship';
-import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
+import {
+  ENTITY_TYPE_CAPABILITY,
+  ENTITY_TYPE_SETTINGS,
+  ENTITY_TYPE_STATUS,
+  ENTITY_TYPE_USER,
+  isInternalObject,
+} from '../schema/internalObject';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { observableValue } from '../utils/format';
 import { ENABLED_DEMO_MODE } from '../config/conf';
@@ -83,19 +89,20 @@ export const extractEntityRepresentativeName = (entityData) => {
     mainValue = `${entityData.source_name}${entityData.external_id ? ` (${entityData.external_id})` : ''}`;
   } else if (isNotEmptyField(entityData.phase_name)) {
     mainValue = entityData.phase_name;
-  } else if (isNotEmptyField(entityData.first_observed) && isNotEmptyField(entityData.last_observed)) {
-    const from = moment(entityData.first_observed)
-      .utc()
-      .toISOString();
-    const to = moment(entityData.last_observed)
-      .utc()
-      .toISOString();
+  } else if (
+    isNotEmptyField(entityData.first_observed) &&
+    isNotEmptyField(entityData.last_observed)
+  ) {
+    const from = moment(entityData.first_observed).utc().toISOString();
+    const to = moment(entityData.last_observed).utc().toISOString();
     mainValue = `${from} - ${to}`;
-  } else if (isNotEmptyField(entityData.result_name)) { // MALWARE-ANALYSES
+  } else if (isNotEmptyField(entityData.result_name)) {
+    // MALWARE-ANALYSES
     mainValue = entityData.result_name;
   } else if (isNotEmptyField(entityData.name)) {
     mainValue = entityData.name;
-    if (isNotEmptyField(entityData.x_mitre_id)) { // Attack Pattern
+    if (isNotEmptyField(entityData.x_mitre_id)) {
+      // Attack Pattern
       mainValue = `[${entityData.x_mitre_id}] ${mainValue}`;
     }
   } else if (isNotEmptyField(entityData.description)) {

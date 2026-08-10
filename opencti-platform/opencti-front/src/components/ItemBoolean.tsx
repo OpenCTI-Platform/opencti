@@ -57,16 +57,7 @@ const ItemBoolean = ({
     }
 
     if (status === undefined) {
-      return (
-        <Tag
-          label={(
-            <CircularProgress
-              size={10}
-              color="primary"
-            />
-          )}
-        />
-      );
+      return <Tag label={<CircularProgress size={10} color="primary" />} />;
     }
 
     return (

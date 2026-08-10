@@ -14,12 +14,7 @@ type CheckboxesFieldProps = FieldProps<FieldOption[]> & {
   items: FieldOption[];
 };
 
-const CheckboxesField = ({
-  form,
-  field,
-  label,
-  items,
-}: CheckboxesFieldProps) => {
+const CheckboxesField = ({ form, field, label, items }: CheckboxesFieldProps) => {
   const { t_i18n } = useFormatter();
 
   const { setFieldValue } = form;
@@ -29,7 +24,10 @@ const CheckboxesField = ({
 
   const toggle = (val: FieldOption) => {
     if (isChecked(val)) {
-      setFieldValue(name, value.filter((v) => v !== val));
+      setFieldValue(
+        name,
+        value.filter((v) => v !== val),
+      );
     } else {
       setFieldValue(name, [...value, val]);
     }
@@ -46,37 +44,34 @@ const CheckboxesField = ({
       <ButtonGroup size="small" sx={{ marginY: 1.5 }}>
         <Button
           disabled={items.length === 0}
-          variant={(items.length > 0 && value.length === items.length) ? 'primary' : 'secondary'}
+          variant={items.length > 0 && value.length === items.length ? 'primary' : 'secondary'}
           onClick={checkAll}
         >
           {t_i18n('All')}
         </Button>
         <Button
           disabled={items.length === 0}
-          variant={(items.length > 0 && value.length === 0) ? 'primary' : 'secondary'}
+          variant={items.length > 0 && value.length === 0 ? 'primary' : 'secondary'}
           onClick={checkNone}
         >
           {t_i18n('None')}
         </Button>
       </ButtonGroup>
 
-      <FormGroup sx={{
-        maxHeight: '300px',
-        flexWrap: 'nowrap',
-        overflowY: 'auto',
-      }}
+      <FormGroup
+        sx={{
+          maxHeight: '300px',
+          flexWrap: 'nowrap',
+          overflowY: 'auto',
+        }}
       >
         {items.map((item) => (
           <FormControlLabel
             key={item.label}
             label={item.label}
-            control={(
-              <Checkbox
-                checked={isChecked(item)}
-                name={item.value}
-                onChange={() => toggle(item)}
-              />
-            )}
+            control={
+              <Checkbox checked={isChecked(item)} name={item.value} onChange={() => toggle(item)} />
+            }
           />
         ))}
       </FormGroup>

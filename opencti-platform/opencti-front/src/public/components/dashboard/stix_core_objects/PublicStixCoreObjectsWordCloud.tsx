@@ -16,13 +16,13 @@ const publicStixCoreObjectsWordCloudQuery = graphql`
     $startDate: DateTime
     $endDate: DateTime
     $uriKey: String!
-    $widgetId : String!
+    $widgetId: String!
   ) {
     publicStixCoreObjectsDistribution(
       startDate: $startDate
       endDate: $endDate
       uriKey: $uriKey
-      widgetId : $widgetId
+      widgetId: $widgetId
     ) {
       label
       value
@@ -75,11 +75,13 @@ const PublicStixCoreObjectsWordCloudComponent = ({
     queryRef,
   );
 
-  if (
-    publicStixCoreObjectsDistribution
-    && publicStixCoreObjectsDistribution.length > 0
-  ) {
-    return <WidgetWordCloud data={[...publicStixCoreObjectsDistribution]} groupBy={dataSelection[0].attribute ?? 'entity_type'} />;
+  if (publicStixCoreObjectsDistribution && publicStixCoreObjectsDistribution.length > 0) {
+    return (
+      <WidgetWordCloud
+        data={[...publicStixCoreObjectsDistribution]}
+        groupBy={dataSelection[0].attribute ?? 'entity_type'}
+      />
+    );
   }
   return <WidgetNoData />;
 };
@@ -104,9 +106,7 @@ const PublicStixCoreObjectsWordCloud = ({
   );
 
   return (
-    <WidgetContainer
-      title={parameters?.title ?? title ?? t_i18n('Distribution of entities')}
-    >
+    <WidgetContainer title={parameters?.title ?? title ?? t_i18n('Distribution of entities')}>
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixCoreObjectsWordCloudComponent

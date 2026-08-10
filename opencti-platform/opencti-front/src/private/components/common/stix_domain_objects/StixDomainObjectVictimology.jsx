@@ -3,7 +3,9 @@ import * as PropTypes from 'prop-types';
 import Grid from '@mui/material/Grid';
 import Divider from '@mui/material/Divider';
 import { useTheme } from '@mui/material/styles';
-import StixDomainObjectVictimologySectors, { stixDomainObjectVictimologySectorsStixCoreRelationshipsQuery } from './StixDomainObjectVictimologySectors';
+import StixDomainObjectVictimologySectors, {
+  stixDomainObjectVictimologySectorsStixCoreRelationshipsQuery,
+} from './StixDomainObjectVictimologySectors';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import EntityStixCoreRelationships from '../stix_core_relationships/EntityStixCoreRelationships';

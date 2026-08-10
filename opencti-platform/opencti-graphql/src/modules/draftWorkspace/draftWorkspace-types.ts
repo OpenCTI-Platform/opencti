@@ -13,7 +13,8 @@ export interface BasicStoreEntityDraftWorkspace extends BasicStoreEntity {
   object_refs: Array<string>;
 }
 
-export interface StoreEntityDraftWorkspace extends Omit<BasicStoreEntityDraftWorkspace, 'restricted_members'>, StoreEntity {
+export interface StoreEntityDraftWorkspace
+  extends Omit<BasicStoreEntityDraftWorkspace, 'restricted_members'>, StoreEntity {
   restricted_members: Array<AuthorizedMember>;
   description: string;
   object_refs: Array<string>;

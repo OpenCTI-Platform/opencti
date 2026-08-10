@@ -26,15 +26,10 @@ type FormValuesType = {
 };
 
 const CreateRoleControlledDial = (props: DrawerControlledDialProps) => (
-  <CreateEntityControlledDial
-    entityType="Role"
-    {...props}
-  />
+  <CreateEntityControlledDial entityType="Role" {...props} />
 );
 
-const RoleCreation = ({ paginationOptions }: {
-  paginationOptions: PaginationOptions;
-}) => {
+const RoleCreation = ({ paginationOptions }: { paginationOptions: PaginationOptions }) => {
   const { t_i18n } = useFormatter();
 
   const roleValidation = Yup.object().shape({
@@ -50,11 +45,7 @@ const RoleCreation = ({ paginationOptions }: {
     const userProxy = store.get(userId);
     if (!userProxy) return;
 
-    const conn = ConnectionHandler.getConnection(
-      userProxy,
-      'Pagination_roles',
-      paginationOptions,
-    );
+    const conn = ConnectionHandler.getConnection(userProxy, 'Pagination_roles', paginationOptions);
     if (!conn) return;
 
     ConnectionHandler.insertEdgeBefore(conn, newEdge);
@@ -62,7 +53,10 @@ const RoleCreation = ({ paginationOptions }: {
 
   const onSubmit = (
     values: FormValuesType,
-    { setSubmitting, resetForm }: {
+    {
+      setSubmitting,
+      resetForm,
+    }: {
       setSubmitting: (flag: boolean) => void;
       resetForm: () => void;
     },
@@ -79,11 +73,7 @@ const RoleCreation = ({ paginationOptions }: {
 
         const newEdge = payload.setLinkedRecord(payload, 'node');
         const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          newEdge,
-        );
+        sharedUpdater(store, container.getDataID(), newEdge);
       },
       setSubmitting,
       onCompleted: () => {
@@ -99,10 +89,7 @@ const RoleCreation = ({ paginationOptions }: {
   };
 
   return (
-    <Drawer
-      title={t_i18n('Create a role')}
-      controlledDial={CreateRoleControlledDial}
-    >
+    <Drawer title={t_i18n('Create a role')} controlledDial={CreateRoleControlledDial}>
       {({ onClose }) => (
         <Formik
           initialValues={initialValues}
@@ -112,12 +99,7 @@ const RoleCreation = ({ paginationOptions }: {
         >
           {({ submitForm, handleReset, isSubmitting, isValid }) => (
             <Form>
-              <Field
-                component={TextField}
-                name="name"
-                label={t_i18n('Name')}
-                fullWidth={true}
-              />
+              <Field component={TextField} name="name" label={t_i18n('Name')} fullWidth={true} />
               <Field
                 component={MarkdownField}
                 name="description"
@@ -128,17 +110,10 @@ const RoleCreation = ({ paginationOptions }: {
                 style={{ marginTop: 20 }}
               />
               <FormButtonContainer>
-                <Button
-                  variant="secondary"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                >
+                <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting || !isValid}
-                >
+                <Button onClick={submitForm} disabled={isSubmitting || !isValid}>
                   {t_i18n('Create')}
                 </Button>
               </FormButtonContainer>

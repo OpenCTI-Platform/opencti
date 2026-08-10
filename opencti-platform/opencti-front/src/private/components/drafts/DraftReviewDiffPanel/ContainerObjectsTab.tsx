@@ -28,7 +28,9 @@ interface ContainerObjectsTabComponentProps {
   queryRef: PreloadedQuery<ContainerObjectsTabQuery>;
 }
 
-const ContainerObjectsTabComponent: FunctionComponent<ContainerObjectsTabComponentProps> = ({ queryRef }) => {
+const ContainerObjectsTabComponent: FunctionComponent<ContainerObjectsTabComponentProps> = ({
+  queryRef,
+}) => {
   const { t_i18n } = useFormatter();
   const computeLink = useComputeLink();
   const { translateEntityType } = useEntityTranslation();
@@ -49,7 +51,15 @@ const ContainerObjectsTabComponent: FunctionComponent<ContainerObjectsTabCompone
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', backgroundColor: 'background.paper', borderRadius: '4px', p: '16px' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: 'background.paper',
+        borderRadius: '4px',
+        p: '16px',
+      }}
+    >
       <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mb: 2 }}>
         <Typography sx={{ width: 120, fontSize: 12, fontWeight: 600, color: 'text.secondary' }}>
           {t_i18n('Action')}
@@ -83,8 +93,25 @@ const ContainerObjectsTabComponent: FunctionComponent<ContainerObjectsTabCompone
                   {translateEntityType(obj.entity_type)}
                 </Typography>
               </Box>
-              <Box sx={{ flex: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between', minWidth: 0 }}>
-                <Typography sx={{ fontSize: 14, color: 'text.primary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', mr: 1 }}>
+              <Box
+                sx={{
+                  flex: 3,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  minWidth: 0,
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: 14,
+                    color: 'text.primary',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    mr: 1,
+                  }}
+                >
                   {obj.representative_main ?? obj.entity_id}
                 </Typography>
                 {objectLink && (
@@ -95,7 +122,14 @@ const ContainerObjectsTabComponent: FunctionComponent<ContainerObjectsTabCompone
                     target="_blank"
                     rel="noopener noreferrer"
                     size="small"
-                    sx={{ width: 26, height: 26, borderRadius: '4px', color: 'primary.main', backgroundColor: 'action.hover', flexShrink: 0 }}
+                    sx={{
+                      width: 26,
+                      height: 26,
+                      borderRadius: '4px',
+                      color: 'primary.main',
+                      backgroundColor: 'action.hover',
+                      flexShrink: 0,
+                    }}
                   >
                     <LaunchIcon sx={{ fontSize: 18 }} />
                   </IconButton>
@@ -114,7 +148,10 @@ interface ContainerObjectsTabProps {
   containerId: string;
 }
 
-const ContainerObjectsTab: FunctionComponent<ContainerObjectsTabProps> = ({ draftId, containerId }) => {
+const ContainerObjectsTab: FunctionComponent<ContainerObjectsTabProps> = ({
+  draftId,
+  containerId,
+}) => {
   const queryRef = useQueryLoading<ContainerObjectsTabQuery>(
     draftReviewDiffPanelContainerObjectsQuery,
     { draftId, containerId },

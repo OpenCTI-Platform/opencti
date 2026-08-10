@@ -15,9 +15,16 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { insertNode } from '../../../../utils/store';
 import { CitiesLinesPaginationQuery$variables } from './__generated__/CitiesLinesPaginationQuery.graphql';
-import { CityCreationMutation, CityCreationMutation$variables } from './__generated__/CityCreationMutation.graphql';
+import {
+  CityCreationMutation,
+  CityCreationMutation$variables,
+} from './__generated__/CityCreationMutation.graphql';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -65,7 +72,11 @@ interface CityAddInput {
 }
 
 interface CityFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string, response: CityCreationMutation['response']['cityAdd']) => void;
+  updater: (
+    store: RecordSourceSelectorProxy,
+    key: string,
+    response: CityCreationMutation['response']['cityAdd'],
+  ) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -91,39 +102,32 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(CITY_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    description: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
-    latitude: Yup.number()
-      .typeError(t_i18n('This field must be a number'))
-      .nullable(),
-    longitude: Yup.number()
-      .typeError(t_i18n('This field must be a number'))
-      .nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      description: Yup.string().nullable(),
+      confidence: Yup.number().nullable(),
+      latitude: Yup.number().typeError(t_i18n('This field must be a number')).nullable(),
+      longitude: Yup.number().typeError(t_i18n('This field must be a number')).nullable(),
+    },
+    mandatoryAttributes,
+  );
   const cityValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 
-  const [commit] = useApiMutation<CityCreationMutation>(
-    cityMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_City')} ${t_i18n('successfully created')}` },
-  );
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
-  const {
-    bulkCommit,
-    bulkCount,
-    bulkCurrentCount,
-    BulkResult,
-    resetBulk,
-  } = useBulkCommit<CityCreationMutation>({
-    commit,
-    relayUpdater: (store, response) => {
-      if (updater) {
-        updater(store, 'cityAdd', response?.cityAdd);
-      }
-    },
+  const [commit] = useApiMutation<CityCreationMutation>(cityMutation, undefined, {
+    successMessage: `${t_i18n('entity_City')} ${t_i18n('successfully created')}`,
   });
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
+  const { bulkCommit, bulkCount, bulkCurrentCount, BulkResult, resetBulk } =
+    useBulkCommit<CityCreationMutation>({
+      commit,
+      relayUpdater: (store, response) => {
+        if (updater) {
+          updater(store, 'cityAdd', response?.cityAdd);
+        }
+      },
+    });
 
   useEffect(() => {
     if (bulkCount > 1) {
@@ -220,7 +224,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
               component={BulkTextField}
               name="name"
               label={t_i18n('Name')}
-              required={(mandatoryAttributes.includes('name'))}
+              required={mandatoryAttributes.includes('name')}
               fullWidth={true}
               detectDuplicate={['City']}
             />
@@ -228,7 +232,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
-              required={(mandatoryAttributes.includes('description'))}
+              required={mandatoryAttributes.includes('description')}
               fullWidth={true}
               multiline={true}
               rows={4}
@@ -237,15 +241,12 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
               registerMarkdownImagesController={registerMarkdownImagesController}
               uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
-            <ConfidenceField
-              entityType="City"
-              containerStyle={fieldSpacingContainerStyle}
-            />
+            <ConfidenceField entityType="City" containerStyle={fieldSpacingContainerStyle} />
             <Field
               component={TextField}
               name="latitude"
               label={t_i18n('Latitude')}
-              required={(mandatoryAttributes.includes('latitude'))}
+              required={mandatoryAttributes.includes('latitude')}
               fullWidth={true}
               style={fieldSpacingContainerStyle}
             />
@@ -253,32 +254,32 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
               component={TextField}
               name="longitude"
               label={t_i18n('Longitude')}
-              required={(mandatoryAttributes.includes('longitude'))}
+              required={mandatoryAttributes.includes('longitude')}
               fullWidth={true}
               style={fieldSpacingContainerStyle}
             />
             <CreatedByField
               name="createdBy"
-              required={(mandatoryAttributes.includes('createdBy'))}
+              required={mandatoryAttributes.includes('createdBy')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
-              required={(mandatoryAttributes.includes('objectLabel'))}
+              required={mandatoryAttributes.includes('objectLabel')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
-              required={(mandatoryAttributes.includes('objectMarking'))}
+              required={mandatoryAttributes.includes('objectMarking')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ExternalReferencesField
               name="externalReferences"
-              required={(mandatoryAttributes.includes('externalReferences'))}
+              required={mandatoryAttributes.includes('externalReferences')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
@@ -288,23 +289,17 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
               name="file"
               setFieldValue={setFieldValue}
               disabled={splitMultilines(values.name).length > 1}
-              noFileSelectedLabel={splitMultilines(values.name).length > 1
-                ? t_i18n('File upload not allowed in bulk creation')
-                : undefined
+              noFileSelectedLabel={
+                splitMultilines(values.name).length > 1
+                  ? t_i18n('File upload not allowed in bulk creation')
+                  : undefined
               }
             />
             <FormButtonContainer>
-              <Button
-                variant="secondary"
-                onClick={handleReset}
-                disabled={isSubmitting}
-              >
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>
@@ -322,7 +317,8 @@ const CityCreation = ({
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_cities', paginationOptions, 'cityAdd');
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_cities', paginationOptions, 'cityAdd');
 
   const CreateCityControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="City" {...props} />

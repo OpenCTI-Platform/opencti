@@ -1,23 +1,48 @@
 import { BUS_TOPICS } from '../../../config/conf';
 import { createEntity, deleteElementById, updateAttribute } from '../../../database/middleware';
-import { type EntityOptions, pageEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
+import {
+  type EntityOptions,
+  pageEntitiesConnection,
+  storeLoadById,
+} from '../../../database/middleware-loader';
 import { notify } from '../../../database/redis';
 import type { DomainFindById } from '../../../domain/domainTypes';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../schema/general';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { type BasicStoreEntityTaskTemplate, ENTITY_TYPE_TASK_TEMPLATE, type StoreEntityTaskTemplate } from './task-template-types';
+import {
+  type BasicStoreEntityTaskTemplate,
+  ENTITY_TYPE_TASK_TEMPLATE,
+  type StoreEntityTaskTemplate,
+} from './task-template-types';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import type { EditInput, TaskTemplateAddInput } from '../../../generated/graphql';
 
-export const findById: DomainFindById<BasicStoreEntityTaskTemplate> = (context: AuthContext, user: AuthUser, templateId: string) => {
+export const findById: DomainFindById<BasicStoreEntityTaskTemplate> = (
+  context: AuthContext,
+  user: AuthUser,
+  templateId: string,
+) => {
   return storeLoadById(context, user, templateId, ENTITY_TYPE_TASK_TEMPLATE);
 };
 
-export const findTaskTemplatePaginated = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityTaskTemplate>) => {
-  return pageEntitiesConnection<BasicStoreEntityTaskTemplate>(context, user, [ENTITY_TYPE_TASK_TEMPLATE], opts);
+export const findTaskTemplatePaginated = (
+  context: AuthContext,
+  user: AuthUser,
+  opts: EntityOptions<BasicStoreEntityTaskTemplate>,
+) => {
+  return pageEntitiesConnection<BasicStoreEntityTaskTemplate>(
+    context,
+    user,
+    [ENTITY_TYPE_TASK_TEMPLATE],
+    opts,
+  );
 };
 
-export const taskTemplateAdd = async (context: AuthContext, user: AuthUser, input: TaskTemplateAddInput) => {
+export const taskTemplateAdd = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: TaskTemplateAddInput,
+) => {
   const created = await createEntity(context, user, input, ENTITY_TYPE_TASK_TEMPLATE);
   await publishUserAction({
     user,
@@ -31,7 +56,12 @@ export const taskTemplateAdd = async (context: AuthContext, user: AuthUser, inpu
 };
 
 export const taskTemplateDelete = async (context: AuthContext, user: AuthUser, id: string) => {
-  const element = await deleteElementById<StoreEntityTaskTemplate>(context, user, id, ENTITY_TYPE_TASK_TEMPLATE);
+  const element = await deleteElementById<StoreEntityTaskTemplate>(
+    context,
+    user,
+    id,
+    ENTITY_TYPE_TASK_TEMPLATE,
+  );
   await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, element, user);
   await publishUserAction({
     user,
@@ -44,8 +74,19 @@ export const taskTemplateDelete = async (context: AuthContext, user: AuthUser, i
   return id;
 };
 
-export const taskTemplateEdit = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
-  const { element: updatedElem } = await updateAttribute<StoreEntityTaskTemplate>(context, user, id, ENTITY_TYPE_TASK_TEMPLATE, input);
+export const taskTemplateEdit = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  input: EditInput[],
+) => {
+  const { element: updatedElem } = await updateAttribute<StoreEntityTaskTemplate>(
+    context,
+    user,
+    id,
+    ENTITY_TYPE_TASK_TEMPLATE,
+    input,
+  );
   await publishUserAction({
     user,
     event_type: 'mutation',

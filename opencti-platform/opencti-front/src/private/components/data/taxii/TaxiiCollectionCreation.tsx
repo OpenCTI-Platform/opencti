@@ -15,7 +15,12 @@ import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import { emptyFilterGroup, isFilterGroupNotEmpty, serializeFilterGroupForBackend, useAvailableFilterKeysForEntityTypes } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  isFilterGroupNotEmpty,
+  serializeFilterGroupForBackend,
+  useAvailableFilterKeysForEntityTypes,
+} from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
@@ -42,25 +47,32 @@ interface TaxiiCollectionCreationForm {
 }
 
 const TaxiiCollectionCreationMutation = graphql`
-    mutation TaxiiCollectionCreationMutation($input: TaxiiCollectionAddInput!) {
-        taxiiCollectionAdd(input: $input) {
-            ...TaxiiLine_node
-        }
+  mutation TaxiiCollectionCreationMutation($input: TaxiiCollectionAddInput!) {
+    taxiiCollectionAdd(input: $input) {
+      ...TaxiiLine_node
     }
+  }
 `;
 
-const taxiiCollectionCreationValidation = (requiredSentence: string) => Yup.object().shape({
-  name: Yup.string().required(requiredSentence),
-  description: Yup.string().nullable(),
-  authorized_members: Yup.array().nullable(),
-  taxii_public: Yup.bool().nullable(),
-  include_inferences: Yup.bool().nullable(),
-  score_to_confidence: Yup.bool().nullable(),
-  taxii_public_user_id: Yup.object().nullable()
-    .when('taxii_public', { is: true, then: (s) => s.required(requiredSentence) }),
-});
+const taxiiCollectionCreationValidation = (requiredSentence: string) =>
+  Yup.object().shape({
+    name: Yup.string().required(requiredSentence),
+    description: Yup.string().nullable(),
+    authorized_members: Yup.array().nullable(),
+    taxii_public: Yup.bool().nullable(),
+    include_inferences: Yup.bool().nullable(),
+    score_to_confidence: Yup.bool().nullable(),
+    taxii_public_user_id: Yup.object()
+      .nullable()
+      .when('taxii_public', { is: true, then: (s) => s.required(requiredSentence) }),
+  });
 
-const sharedUpdater = (store: RecordSourceSelectorProxy, userId: string, paginationOptions: PaginationOptions, newEdge: RecordProxy) => {
+const sharedUpdater = (
+  store: RecordSourceSelectorProxy,
+  userId: string,
+  paginationOptions: PaginationOptions,
+  newEdge: RecordProxy,
+) => {
   const userProxy = store.get(userId);
   if (userProxy) {
     const conn = ConnectionHandler.getConnection(
@@ -73,19 +85,21 @@ const sharedUpdater = (store: RecordSourceSelectorProxy, userId: string, paginat
 };
 
 const CreateTaxiiCollectionControlledDial = (props: DrawerControlledDialProps) => (
-  <CreateEntityControlledDial
-    entityType="TaxiiCollection"
-    {...props}
-  />
+  <CreateEntityControlledDial entityType="TaxiiCollection" {...props} />
 );
 
-const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> = ({ paginationOptions }) => {
+const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> = ({
+  paginationOptions,
+}) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const isGrantedToSetAccesses = useGranted([SETTINGS_SETACCESSES]);
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
 
-  const onSubmit: FormikConfig<TaxiiCollectionCreationForm>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
+  const onSubmit: FormikConfig<TaxiiCollectionCreationForm>['onSubmit'] = (
+    values,
+    { setSubmitting, resetForm },
+  ) => {
     const jsonFilters = serializeFilterGroupForBackend(filters);
     const authorized_members = values.authorized_members.map(({ value }) => ({
       id: value,
@@ -101,12 +115,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
         const payload = store.getRootField('taxiiCollectionAdd');
         const newEdge = payload?.setLinkedRecord(payload, 'node');
         const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          paginationOptions,
-          newEdge as RecordProxy,
-        );
+        sharedUpdater(store, container.getDataID(), paginationOptions, newEdge as RecordProxy);
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -118,7 +127,10 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
       setSubmitting,
     });
   };
-  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
+  const availableFilterKeys = useAvailableFilterKeysForEntityTypes([
+    'Stix-Core-Object',
+    'stix-core-relationship',
+  ]);
   return (
     <Drawer
       title={t_i18n('Create a TAXII collection')}
@@ -193,7 +205,9 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                 {values.taxii_public && (
                   <CreatorField
                     name="taxii_public_user_id"
-                    label={t_i18n('Share data corresponding to permissions associated with this user')}
+                    label={t_i18n(
+                      'Share data corresponding to permissions associated with this user',
+                    )}
                     containerStyle={fieldSpacingContainerStyle}
                     onChange={(name, value) => setFieldValue(name, value)}
                   />
@@ -219,13 +233,14 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                   label={t_i18n('Copy OpenCTI scores to confidence level for indicators')}
                 />
               </Box>
-              <Box sx={{
-                paddingTop: 4,
-                display: 'flex',
-                alignItems: 'center',
-                gap: theme.spacing(1),
-                marginBottom: theme.spacing(1),
-              }}
+              <Box
+                sx={{
+                  paddingTop: 4,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: theme.spacing(1),
+                  marginBottom: theme.spacing(1),
+                }}
               >
                 <Filters
                   availableFilterKeys={availableFilterKeys}
@@ -240,11 +255,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                 searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
               />
               <FormButtonContainer>
-                <Button
-                  variant="secondary"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                >
+                <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}
                 </Button>
                 <Button

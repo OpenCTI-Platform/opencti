@@ -85,63 +85,73 @@ const StatusField: FunctionComponent<StatusFieldProps> = ({
   const [keyword, setKeyword] = useState<string>('');
   const [statuses, setStatuses] = useState<StatusOption[]>(
     defaultStatus
-      ? [{
-          label: defaultStatus.template.name,
-          color: defaultStatus.template.color,
-          value: defaultStatus.id,
-          order: defaultStatus.order,
-          type: defaultStatus.type,
-        }]
+      ? [
+          {
+            label: defaultStatus.template.name,
+            color: defaultStatus.template.color,
+            value: defaultStatus.id,
+            order: defaultStatus.order,
+            type: defaultStatus.type,
+          },
+        ]
       : [],
   );
 
-  const searchStatuses = useCallback((searchKeyword: string = '') => {
-    fetchQuery(statusFieldStatusesSearchQuery, {
-      first: 100,
-      filters: type
-        ? {
-            mode: 'and',
-            filterGroups: [],
-            filters: [
-              { key: 'type', values: [type] },
-              { key: 'scope', values: [scope || StatusScopeEnum.GLOBAL] },
-            ],
-          }
-        : null,
-      orderBy: 'order',
-      orderMode: 'asc',
-      search: searchKeyword,
-    })
-      .toPromise()
-      .then((data) => {
-        const queryData = data as StatusFieldStatusesSearchQuery$data;
-        const edges = queryData?.statuses?.edges ?? [];
-        const newStatuses: StatusOption[] = edges
-          .filter((edge) => edge?.node?.template != null)
-          .map((edge) => ({
-            label: edge.node.template!.name,
-            value: edge.node.id,
-            order: edge.node.order,
-            color: edge.node.template!.color,
-            type: edge.node.type,
-          }));
-        newStatuses.sort((a, b) => ((a.type ?? '') < (b.type ?? '') ? -1 : 1));
-        setStatuses((prev) => {
-          const combined = [...prev, ...newStatuses];
-          const unique = combined.filter((item, index) => combined.findIndex((e) => e.value === item.value) === index);
-          return unique;
+  const searchStatuses = useCallback(
+    (searchKeyword: string = '') => {
+      fetchQuery(statusFieldStatusesSearchQuery, {
+        first: 100,
+        filters: type
+          ? {
+              mode: 'and',
+              filterGroups: [],
+              filters: [
+                { key: 'type', values: [type] },
+                { key: 'scope', values: [scope || StatusScopeEnum.GLOBAL] },
+              ],
+            }
+          : null,
+        orderBy: 'order',
+        orderMode: 'asc',
+        search: searchKeyword,
+      })
+        .toPromise()
+        .then((data) => {
+          const queryData = data as StatusFieldStatusesSearchQuery$data;
+          const edges = queryData?.statuses?.edges ?? [];
+          const newStatuses: StatusOption[] = edges
+            .filter((edge) => edge?.node?.template != null)
+            .map((edge) => ({
+              label: edge.node.template!.name,
+              value: edge.node.id,
+              order: edge.node.order,
+              color: edge.node.template!.color,
+              type: edge.node.type,
+            }));
+          newStatuses.sort((a, b) => ((a.type ?? '') < (b.type ?? '') ? -1 : 1));
+          setStatuses((prev) => {
+            const combined = [...prev, ...newStatuses];
+            const unique = combined.filter(
+              (item, index) => combined.findIndex((e) => e.value === item.value) === index,
+            );
+            return unique;
+          });
         });
-      });
-  }, [type, scope]);
+    },
+    [type, scope],
+  );
 
   const debouncedSearchStatuses = useDebounceCallback(searchStatuses, 1500);
 
-  const handleSearch = useCallback((_event: React.SyntheticEvent, value: string) => {
-    if (value) {
-      setKeyword(value);
-      debouncedSearchStatuses(value);
-    }
-  }, [debouncedSearchStatuses]);
+  const handleSearch = useCallback(
+    (_event: React.SyntheticEvent, value: string) => {
+      if (value) {
+        setKeyword(value);
+        debouncedSearchStatuses(value);
+      }
+    },
+    [debouncedSearchStatuses],
+  );
 
   const handleFocus = useCallback(() => {
     searchStatuses(keyword);

@@ -3,7 +3,9 @@ import makeStyles from '@mui/styles/makeStyles';
 import { graphql } from 'react-relay';
 import { CountryFieldSearchQuery$data } from '@components/common/form/__generated__/CountryFieldSearchQuery.graphql';
 import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField, { AutocompleteFieldProps } from '../../../../components/AutocompleteField';
+import AutocompleteField, {
+  AutocompleteFieldProps,
+} from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import Field, { FieldOption } from '../../../../utils/field';
@@ -67,18 +69,16 @@ const CountryField: FunctionComponent<CountryFieldProps> = ({
       fetchQuery(CountryFieldQuery, { search })
         .toPromise()
         .then((data) => {
-          const NewCountries = (
-            (data as CountryFieldSearchQuery$data)?.countries?.edges ?? []
-          ).map((n) => ({
-            label: n?.node.name,
-            value: n?.node.id,
-          }));
+          const NewCountries = ((data as CountryFieldSearchQuery$data)?.countries?.edges ?? []).map(
+            (n) => ({
+              label: n?.node.name,
+              value: n?.node.id,
+            }),
+          );
           const templateValues = [...countries, ...NewCountries];
           // Keep only the unique list of options
           const uniqTemplates = templateValues.filter((item, index) => {
-            return (
-              templateValues.findIndex((e) => e.value === item.value) === index
-            );
+            return templateValues.findIndex((e) => e.value === item.value) === index;
           });
           setCountries(uniqTemplates);
         });

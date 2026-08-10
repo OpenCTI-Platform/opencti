@@ -1,20 +1,29 @@
 import React, { useMemo } from 'react';
 import { graphql } from 'react-relay';
-import { UsersLinesPaginationQuery, UsersLinesPaginationQuery$variables } from '@components/settings/__generated__/UsersLinesPaginationQuery.graphql';
+import {
+  UsersLinesPaginationQuery,
+  UsersLinesPaginationQuery$variables,
+} from '@components/settings/__generated__/UsersLinesPaginationQuery.graphql';
 import { UsersLine_node$data } from '@components/settings/__generated__/UsersLine_node.graphql';
 import { AccountCircleOutlined, ManageAccountsOutlined, PersonOutlined } from '@mui/icons-material';
 import SettingsOrganizationUserCreation from './users/SettingsOrganizationUserCreation';
 import EnterpriseEdition from '../common/entreprise_edition/EnterpriseEdition';
 import UserCreation from './users/UserCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../utils/hooks/useGranted';
+import useGranted, {
+  SETTINGS_SETACCESSES,
+  VIRTUAL_ORGANIZATION_ADMIN,
+} from '../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { groupsQuery } from '../common/form/GroupField';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../utils/filters/filtersUtils';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -30,71 +39,72 @@ export const usersQuery = graphql`
     $filters: FilterGroup
   ) {
     ...UsersLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
 export const usersFragment = graphql`
-        fragment UsersLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "UsersOrdering", defaultValue: name }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-          filters: { type: "FilterGroup" }
-        ) @refetchable(queryName: "UsersLinesRefetchQuery") {
-          users(
-            search: $search
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-          ) @connection(key: "Pagination_users") {
-            edges {
-              node {
-                id
-                name
-                firstname
-                lastname
-                ...UsersLine_node
-              }
-            }
-            pageInfo {
-              endCursor
-              hasNextPage
-              globalCount
-            }
-          }
+  fragment UsersLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "UsersOrdering", defaultValue: name }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "UsersLinesRefetchQuery") {
+    users(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_users") {
+      edges {
+        node {
+          id
+          name
+          firstname
+          lastname
+          ...UsersLine_node
         }
-      `;
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 
 const usersLineFragment = graphql`
-    fragment UsersLine_node on User {
-      id
-      name
-      user_email
-      firstname
-      external
-      lastname
-      entity_type
-      user_service_account
-      effective_confidence_level {
-        max_confidence
-      }
-      otp_activated
-      password_valid_until
-      created_at
+  fragment UsersLine_node on User {
+    id
+    name
+    user_email
+    firstname
+    external
+    lastname
+    entity_type
+    user_service_account
+    effective_confidence_level {
+      max_confidence
     }
-  `;
+    otp_activated
+    password_valid_until
+    created_at
+  }
+`;
 
 const LOCAL_STORAGE_KEY = 'users';
 
@@ -117,14 +127,11 @@ const Users = () => {
     filters: emptyFilterGroup,
   };
 
-  const {
-    viewStorage,
-    paginationOptions,
-    helpers,
-  } = usePaginationLocalStorage<UsersLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    initialValues,
-  );
+  const { viewStorage, paginationOptions, helpers } =
+    usePaginationLocalStorage<UsersLinesPaginationQuery$variables>(
+      LOCAL_STORAGE_KEY,
+      initialValues,
+    );
 
   const { filters } = viewStorage;
   const contextFilters = useBuildEntityTypeBasedFilterContext('User', filters);
@@ -134,30 +141,27 @@ const Users = () => {
     filters: contextFilters,
   } as unknown as UsersLinesPaginationQuery$variables;
 
-  const queryRef = useQueryLoading<UsersLinesPaginationQuery>(
-    usersQuery,
-    queryPaginationOptions,
-  );
+  const queryRef = useQueryLoading<UsersLinesPaginationQuery>(usersQuery, queryPaginationOptions);
 
   const defaultAssignationFilter = {
     mode: 'and',
     filters: [{ key: 'default_assignation', values: [true] }],
     filterGroups: [],
   };
-  const defaultGroupsQueryRef = useQueryLoading(
-    groupsQuery,
-    {
-      orderBy: 'name',
-      orderMode: 'asc',
-      filters: defaultAssignationFilter,
-    },
-  );
+  const defaultGroupsQueryRef = useQueryLoading(groupsQuery, {
+    orderBy: 'name',
+    orderMode: 'asc',
+    filters: defaultAssignationFilter,
+  });
 
   const userCreateButton = useMemo(() => {
     if (isSetAccess && defaultGroupsQueryRef) {
       return (
         <React.Suspense>
-          <UserCreation paginationOptions={queryPaginationOptions} defaultGroupsQueryRef={defaultGroupsQueryRef} />
+          <UserCreation
+            paginationOptions={queryPaginationOptions}
+            defaultGroupsQueryRef={defaultGroupsQueryRef}
+          />
         </React.Suspense>
       );
     }
@@ -171,13 +175,7 @@ const Users = () => {
       );
     }
     return null;
-  }, [
-    isSetAccess,
-    defaultGroupsQueryRef,
-    isAdminOrganization,
-    isEnterpriseEdition,
-    organization,
-  ]);
+  }, [isSetAccess, defaultGroupsQueryRef, isAdminOrganization, isEnterpriseEdition, organization]);
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
@@ -224,17 +222,21 @@ const Users = () => {
       }}
       data-testid="users-settings-page"
     >
-      <Breadcrumbs elements={[
-        { label: t_i18n('Settings') },
-        { label: t_i18n('Security') },
-        { label: t_i18n('Users'), current: true }]}
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Security') },
+          { label: t_i18n('Users'), current: true },
+        ]}
       />
       {isSetAccess || isEnterpriseEdition ? (
         <>
           {queryRef && (
             <DataTable
               dataColumns={dataColumns}
-              resolvePath={(data) => data.users?.edges?.map(({ node }: { node: UsersLine_node$data }) => node)}
+              resolvePath={(data) =>
+                data.users?.edges?.map(({ node }: { node: UsersLine_node$data }) => node)
+              }
               storageKey={LOCAL_STORAGE_KEY}
               initialValues={initialValues}
               contextFilters={contextFilters}

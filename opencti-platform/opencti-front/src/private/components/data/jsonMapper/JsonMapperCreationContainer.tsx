@@ -23,7 +23,9 @@ const JsonMapperCreationContainer: FunctionComponent<JsonMapperCreationProps> = 
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-  const mappingJson = editionQueryRef ? (usePreloadedQuery(jsonMapperEditionContainerQuery, editionQueryRef)).jsonMapper : null;
+  const mappingJson = editionQueryRef
+    ? usePreloadedQuery(jsonMapperEditionContainerQuery, editionQueryRef).jsonMapper
+    : null;
   return (
     <Drawer
       title={isDuplicated ? t_i18n('Duplicate a JSON mapper') : t_i18n('Create a JSON mapper')}

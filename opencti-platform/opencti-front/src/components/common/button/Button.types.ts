@@ -2,12 +2,7 @@ export type ButtonSize = 'default' | 'small';
 export type ButtonIntent = 'default' | 'destructive' | 'ai' | 'ee';
 export type GradientVariant = 'default' | 'ai' | 'disabled';
 
-export type MuiColor
-  = | 'primary'
-    | 'secondary'
-    | 'error'
-    | 'warn'
-    | 'success';
+export type MuiColor = 'primary' | 'secondary' | 'error' | 'warn' | 'success';
 
 export type ButtonColorKey = ButtonIntent | Exclude<MuiColor, 'inherit'>;
 

@@ -18,12 +18,7 @@ interface StixCoreRelationshipCreationHeaderButtonsProps {
 
 const StixCoreRelationshipCreationHeaderButtons: React.FC<
   StixCoreRelationshipCreationHeaderButtonsProps
-> = ({
-  showSDOs,
-  showSCOs,
-  actualTypeFilterValues,
-  searchPaginationOptions,
-}) => {
+> = ({ showSDOs, showSCOs, actualTypeFilterValues, searchPaginationOptions }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -105,10 +100,7 @@ const StixCoreRelationshipCreationHeaderButtons: React.FC<
 
   return (
     <>
-      <Button
-        onClick={handleMenuOpen}
-        endIcon={menuOpen ? <ArrowDropUp /> : <ArrowDropDown />}
-      >
+      <Button onClick={handleMenuOpen} endIcon={menuOpen ? <ArrowDropUp /> : <ArrowDropDown />}>
         {t_i18n('Create')}
       </Button>
 
@@ -124,16 +116,8 @@ const StixCoreRelationshipCreationHeaderButtons: React.FC<
           },
         }}
       >
-        {showSDOs && (
-          <MenuItem onClick={handleCreateEntity}>
-            {t_i18n('Entity')}
-          </MenuItem>
-        )}
-        {showSCOs && (
-          <MenuItem onClick={handleCreateObservable}>
-            {t_i18n('Observable')}
-          </MenuItem>
-        )}
+        {showSDOs && <MenuItem onClick={handleCreateEntity}>{t_i18n('Entity')}</MenuItem>}
+        {showSCOs && <MenuItem onClick={handleCreateObservable}>{t_i18n('Observable')}</MenuItem>}
       </Menu>
 
       {showSDOs && (

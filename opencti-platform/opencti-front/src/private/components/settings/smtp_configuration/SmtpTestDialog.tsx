@@ -41,13 +41,11 @@ const SmtpTestDialog: FunctionComponent<SmtpTestDialogProps> = ({ open, onClose 
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      title={t_i18n('Test email')}
-    >
+    <Dialog open={open} onClose={handleClose} title={t_i18n('Test email')}>
       <Alert severity="warning" variant="outlined" style={{ marginBottom: 16 }}>
-        {t_i18n('This test only confirms the SMTP server accepted the message. It does not guarantee that the email was actually delivered.')}
+        {t_i18n(
+          'This test only confirms the SMTP server accepted the message. It does not guarantee that the email was actually delivered.',
+        )}
       </Alert>
       <TextField
         label={t_i18n('Email address')}

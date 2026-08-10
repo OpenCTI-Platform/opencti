@@ -16,12 +16,8 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import makeStyles from '@mui/styles/makeStyles';
 import Box from '@mui/material/Box';
-import {
-  StixDomainObjectThreatKnowledgeContainersNumberQuery$data,
-} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeContainersNumberQuery.graphql';
-import {
-  StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery$data,
-} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery.graphql';
+import { StixDomainObjectThreatKnowledgeContainersNumberQuery$data } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeContainersNumberQuery.graphql';
+import { StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery$data } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery.graphql';
 import {
   StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$data,
   StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$variables,
@@ -123,13 +119,18 @@ interface StixDomainObjectThreatKnowledgeProps {
 
 const StixDomainObjectThreatKnowledge: FunctionComponent<
   StixDomainObjectThreatKnowledgeProps
-/*
+  /*
   TODO
   we should reword the component to be able to manipulate data easier
   in fact, page update is complicated, if not impossible
   it could be interesting to use the relay provider and rework the uses of graphql queries
 */
-> = ({ stixDomainObjectId, stixDomainObjectName, stixDomainObjectType, displayObservablesStats }) => {
+> = ({
+  stixDomainObjectId,
+  stixDomainObjectName,
+  stixDomainObjectType,
+  displayObservablesStats,
+}) => {
   const classes = useStyles();
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -177,7 +178,10 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
         ...emptyFilterGroup,
         filters: [
           {
-            ...getDefaultFilterObject('elementWithTargetTypes', useFilterDefinition('elementWithTargetTypes', ['Stix-Core-Object'])),
+            ...getDefaultFilterObject(
+              'elementWithTargetTypes',
+              useFilterDefinition('elementWithTargetTypes', ['Stix-Core-Object']),
+            ),
             // For now its impossible to use the current element type for filtering
             // The filter will be always true as the element is always part of the relations
             // TODO Implement a new composite filter for relationships
@@ -226,7 +230,9 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
       ? ['stix-relationship']
       : ['stix-core-relationship', 'stix-sighting-relationship'];
   }
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['stix-core-relationship']);
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, [
+    'stix-core-relationship',
+  ]);
   const contextFilters: FilterGroup = {
     mode: 'and',
     filters: [
@@ -273,7 +279,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
                     value={total}
                     diffLabel={t_i18n('30 days')}
                     diffValue={difference}
-                    icon={(
+                    icon={
                       <DescriptionOutlined
                         style={{
                           color: theme.palette.text.secondary,
@@ -281,7 +287,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
                         }}
                         fontSize="large"
                       />
-                    )}
+                    }
                   />
                 );
               }
@@ -295,14 +301,10 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
         </Grid>
         <Grid item xs={4}>
           <QueryRenderer
-            query={
-              stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery
-            }
+            query={stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery}
             variables={{
               toId: stixDomainObjectId,
-              fromTypes: displayObservablesStats
-                ? ['Stix-Cyber-Observable']
-                : 'Indicator',
+              fromTypes: displayObservablesStats ? ['Stix-Cyber-Observable'] : 'Indicator',
               endDate: monthsAgo(1),
             }}
             render={({
@@ -315,30 +317,32 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
                 const difference = total - props.stixCoreRelationshipsNumber.count;
                 return (
                   <CardNumber
-                    label={displayObservablesStats
-                      ? t_i18n('Total observables')
-                      : t_i18n('Total indicators')
+                    label={
+                      displayObservablesStats
+                        ? t_i18n('Total observables')
+                        : t_i18n('Total indicators')
                     }
                     value={total}
                     diffLabel={t_i18n('30 days')}
                     diffValue={difference}
-                    icon={displayObservablesStats
-                      ? (
-                          <HexagonMultipleOutline
-                            style={{
-                              color: theme.palette.text.secondary,
-                              opacity: 0.35 }}
-                            fontSize="large"
-                          />
-                        )
-                      : (
-                          <ShieldSearch
-                            style={{
-                              color: theme.palette.text.secondary,
-                              opacity: 0.35 }}
-                            fontSize="large"
-                          />
-                        )
+                    icon={
+                      displayObservablesStats ? (
+                        <HexagonMultipleOutline
+                          style={{
+                            color: theme.palette.text.secondary,
+                            opacity: 0.35,
+                          }}
+                          fontSize="large"
+                        />
+                      ) : (
+                        <ShieldSearch
+                          style={{
+                            color: theme.palette.text.secondary,
+                            opacity: 0.35,
+                          }}
+                          fontSize="large"
+                        />
+                      )
                     }
                   />
                 );
@@ -353,9 +357,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
         </Grid>
         <Grid item xs={4}>
           <QueryRenderer
-            query={
-              stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery
-            }
+            query={stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery}
             variables={{
               fromOrToId: stixDomainObjectId,
               endDate: monthsAgo(1),
@@ -374,7 +376,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
                     value={total}
                     diffLabel={t_i18n('30 days')}
                     diffValue={difference}
-                    icon={(
+                    icon={
                       <DeviceHubOutlined
                         style={{
                           color: theme.palette.text.secondary,
@@ -382,7 +384,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
                         }}
                         fontSize="large"
                       />
-                    )}
+                    }
                   />
                 );
               }
@@ -463,14 +465,14 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
             </FormControl>
             <FormControlLabel
               style={{ marginTop: 20 }}
-              control={(
+              control={
                 <Switch
                   checked={nestedRelationships}
                   onChange={handleChangeNestedRelationships}
                   name="nested-relationships"
                   color="primary"
                 />
-              )}
+              }
               label={t_i18n('Display nested relationships')}
             />
           </Popover>
@@ -481,9 +483,10 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
       </div>
       <div className="clearfix" />
       {viewType !== 'diamond' && (
-        <Box sx={{
-          marginTop: theme.spacing(1),
-        }}
+        <Box
+          sx={{
+            marginTop: theme.spacing(1),
+          }}
         >
           <FilterIconButton
             helpers={helpers}
@@ -499,15 +502,9 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
         <QueryRenderer
           query={stixDomainObjectThreatDiamondQuery}
           variables={{ id: stixDomainObjectId }}
-          render={({
-            props,
-          }: {
-            props: StixDomainObjectThreatDiamondQuery$data;
-          }) => {
+          render={({ props }: { props: StixDomainObjectThreatDiamondQuery$data }) => {
             if (props) {
-              return (
-                <StixDomainObjectDiamond data={props} entityLink={link} />
-              );
+              return <StixDomainObjectDiamond data={props} entityLink={link} />;
             }
             return <Loader variant={LoaderVariant.inElement} />;
           }}

@@ -16,7 +16,10 @@ import { fetchEditContext } from '../database/redis';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { worksForSource } from '../domain/work';
 import { loadFile } from '../database/file-storage';
-import { askElementEnrichmentForConnector, askElementEnrichmentForConnectors } from '../domain/stixCoreObject';
+import {
+  askElementEnrichmentForConnector,
+  askElementEnrichmentForConnectors,
+} from '../domain/stixCoreObject';
 import { connectorsForEnrichment } from '../database/repository';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
@@ -33,13 +36,22 @@ const externalReferenceResolvers = {
       }
       return externalReference.url;
     },
-    references: (externalReference, args, context) => findReferencesForExternalIdPaginated(context, context.user, externalReference.id, args),
+    references: (externalReference, args, context) =>
+      findReferencesForExternalIdPaginated(context, context.user, externalReference.id, args),
     editContext: (externalReference) => fetchEditContext(externalReference.id),
-    jobs: (externalReference, args, context) => worksForSource(context, context.user, externalReference.standard_id, args),
-    connectors: (externalReference, { onlyAlive = false }, context) => connectorsForEnrichment(context, context.user, externalReference.entity_type, onlyAlive),
+    jobs: (externalReference, args, context) =>
+      worksForSource(context, context.user, externalReference.standard_id, args),
+    connectors: (externalReference, { onlyAlive = false }, context) =>
+      connectorsForEnrichment(context, context.user, externalReference.entity_type, onlyAlive),
     importFiles: async (externalReference, { first }, context) => {
       const opts = { first, entity_type: externalReference.entity_type };
-      const listing = await paginatedForPathWithEnrichment(context, context.user, `import/${externalReference.entity_type}/${externalReference.id}`, externalReference.id, opts);
+      const listing = await paginatedForPathWithEnrichment(
+        context,
+        context.user,
+        `import/${externalReference.entity_type}/${externalReference.id}`,
+        externalReference.id,
+        opts,
+      );
       if (externalReference.fileId) {
         try {
           const refFile = await loadFile(context, context.user, externalReference.fileId);
@@ -52,7 +64,13 @@ const externalReferenceResolvers = {
     },
     exportFiles: (externalReference, { first }, context) => {
       const opts = { first, entity_type: externalReference.entity_type };
-      return paginatedForPathWithEnrichment(context, context.user, `export/${externalReference.entity_type}`, externalReference.id, opts);
+      return paginatedForPathWithEnrichment(
+        context,
+        context.user,
+        `export/${externalReference.entity_type}`,
+        externalReference.id,
+        opts,
+      );
     },
   },
   Mutation: {
@@ -65,11 +83,14 @@ const externalReferenceResolvers = {
       relationDelete: ({ fromId, relationship_type: relationshipType }) => {
         return externalReferenceDeleteRelation(context, context.user, id, fromId, relationshipType);
       },
-      askEnrichment: ({ connectorId }) => askElementEnrichmentForConnector(context, context.user, id, connectorId),
-      askEnrichments: ({ connectorIds }) => askElementEnrichmentForConnectors(context, context.user, id, connectorIds),
+      askEnrichment: ({ connectorId }) =>
+        askElementEnrichmentForConnector(context, context.user, id, connectorId),
+      askEnrichments: ({ connectorIds }) =>
+        askElementEnrichmentForConnectors(context, context.user, id, connectorIds),
       importPush: (args) => externalReferenceImportPush(context, context.user, id, args.file, args),
     }),
-    externalReferenceAdd: (_, { input }, context) => addExternalReference(context, context.user, input),
+    externalReferenceAdd: (_, { input }, context) =>
+      addExternalReference(context, context.user, input),
   },
   Subscription: {
     externalReference: {
@@ -78,7 +99,11 @@ const externalReferenceResolvers = {
         const preFn = () => externalReferenceEditContext(context, context.user, id);
         const cleanFn = () => externalReferenceCleanContext(context, context.user, id);
         const bus = BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_EXTERNAL_REFERENCE, preFn, cleanFn });
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], {
+          type: ENTITY_TYPE_EXTERNAL_REFERENCE,
+          preFn,
+          cleanFn,
+        });
       },
     },
   },

@@ -28,13 +28,9 @@ const ConfirmationDialog: FunctionComponent<ConfirmationDialogProps> = ({
       onClose={onCancel}
       aria-labelledby="confirmation-dialog-title"
       aria-describedby="confirmation-dialog-description"
-      title={
-        <span id="confirmation-dialog-title">{title}</span>
-      }
+      title={<span id="confirmation-dialog-title">{title}</span>}
     >
-      <DialogContentText id="confirmation-dialog-description">
-        {message}
-      </DialogContentText>
+      <DialogContentText id="confirmation-dialog-description">{message}</DialogContentText>
       <DialogActions>
         <Button variant="secondary" onClick={onCancel} color="primary">
           {cancelButtonText}

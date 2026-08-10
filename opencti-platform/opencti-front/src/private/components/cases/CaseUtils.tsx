@@ -1,6 +1,14 @@
 import { graphql, ConnectionHandler, Variables } from 'react-relay';
 
-export const generateConnectionId = ({ recordId, key, params }: { recordId?: string; key: string; params?: Variables }) => ConnectionHandler.getConnectionID(recordId ?? 'root', key, params ?? {});
+export const generateConnectionId = ({
+  recordId,
+  key,
+  params,
+}: {
+  recordId?: string;
+  key: string;
+  params?: Variables;
+}) => ConnectionHandler.getConnectionID(recordId ?? 'root', key, params ?? {});
 
 export const CaseTaskFragment = graphql`
   fragment CaseUtilsTasksLine_data on Task {
@@ -38,10 +46,7 @@ export const CaseTaskFragment = graphql`
 
 export const caseSetTemplateQuery = graphql`
   mutation CaseUtilsSetTemplateMutation($id: ID!, $caseTemplatesId: [ID!]!, $connections: [ID!]!) {
-    caseSetTemplate(
-      id: $id
-      caseTemplatesId: $caseTemplatesId
-    ) {
+    caseSetTemplate(id: $id, caseTemplatesId: $caseTemplatesId) {
       ...CaseUtils_case
       tasks {
         edges {
@@ -56,10 +61,7 @@ export const caseSetTemplateQuery = graphql`
 `;
 
 export const caseMutationFieldPatch = graphql`
-  mutation CaseUtilsFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-  ) {
+  mutation CaseUtilsFieldPatchMutation($id: ID!, $input: [EditInput]!) {
     stixDomainObjectEdit(id: $id) {
       fieldPatch(input: $input) {
         ...CaseUtilsTasksLine_data
@@ -71,7 +73,7 @@ export const caseMutationFieldPatch = graphql`
               }
             }
           }
-        }      
+        }
       }
     }
   }
@@ -88,10 +90,7 @@ export const caseEditionOverviewFocus = graphql`
 `;
 
 export const caseMutationRelationAdd = graphql`
-  mutation CaseUtilsRelationAddMutation(
-    $id: ID!
-    $input: StixRefRelationshipAddInput!
-  ) {
+  mutation CaseUtilsRelationAddMutation($id: ID!, $input: StixRefRelationshipAddInput!) {
     stixDomainObjectEdit(id: $id) {
       relationAdd(input: $input) {
         from {
@@ -102,11 +101,7 @@ export const caseMutationRelationAdd = graphql`
   }
 `;
 export const caseMutationRelationDelete = graphql`
-  mutation CaseUtilsRelationDeleteMutation(
-    $id: ID!
-    $toId: StixRef!
-    $relationship_type: String!
-  ) {
+  mutation CaseUtilsRelationDeleteMutation($id: ID!, $toId: StixRef!, $relationship_type: String!) {
     stixDomainObjectEdit(id: $id) {
       relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...CaseUtils_case

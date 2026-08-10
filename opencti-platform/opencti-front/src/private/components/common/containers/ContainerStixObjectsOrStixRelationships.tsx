@@ -2,14 +2,19 @@ import React, { FunctionComponent, useContext } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import List from '@mui/material/List';
 import { QueryRenderer } from '../../../../relay/environment';
-import ContainerStixObjectsOrStixRelationshipsLines, { ContainerStixObjectsOrStixRelationshipsLinesQuery } from './ContainerStixObjectsOrStixRelationshipsLines';
+import ContainerStixObjectsOrStixRelationshipsLines, {
+  ContainerStixObjectsOrStixRelationshipsLinesQuery,
+} from './ContainerStixObjectsOrStixRelationshipsLines';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 import { ContainerStixObjectsOrStixRelationshipsLinesQuery$data } from './__generated__/ContainerStixObjectsOrStixRelationshipsLinesQuery.graphql';
 import { ContainerStixObjectsOrStixRelationships_container$data } from './__generated__/ContainerStixObjectsOrStixRelationships_container.graphql';
 import useAuth, { UserContext } from '../../../../utils/hooks/useAuth';
-import useGranted, { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNPARTICIPATE,
+  KNOWLEDGE_KNUPDATE,
+} from '../../../../utils/hooks/useGranted';
 import { ContainerStixObjectOrStixRelationshipLineDummy } from './ContainerStixObjectOrStixRelationshipLine';
 import Card from '../../../../components/common/card/Card';
 
@@ -79,11 +84,7 @@ const ContainerStixObjectsOrStixRelationshipsComponent: FunctionComponent<
       <QueryRenderer
         query={ContainerStixObjectsOrStixRelationshipsLinesQuery}
         variables={paginationOptions}
-        render={({
-          props,
-        }: {
-          props: ContainerStixObjectsOrStixRelationshipsLinesQuery$data;
-        }) => {
+        render={({ props }: { props: ContainerStixObjectsOrStixRelationshipsLinesQuery$data }) => {
           if (props && props.container && props.container.objects) {
             return (
               <ContainerStixObjectsOrStixRelationshipsLines
@@ -97,10 +98,7 @@ const ContainerStixObjectsOrStixRelationshipsComponent: FunctionComponent<
           return (
             <List>
               {Array.from(Array(10), (e, i) => (
-                <ContainerStixObjectOrStixRelationshipLineDummy
-                  key={i}
-                  dataColumns={dataColumns}
-                />
+                <ContainerStixObjectOrStixRelationshipLineDummy key={i} dataColumns={dataColumns} />
               ))}
             </List>
           );
@@ -113,23 +111,25 @@ const ContainerStixObjectsOrStixRelationshipsComponent: FunctionComponent<
       {variant !== 'noPaper' ? (
         <Card
           title={title ?? t_i18n('Related entities')}
-          action={container && (
-            <Security needs={security}>
-              <ContainerAddStixCoreObjects
-                containerId={container.id}
-                containerStixCoreObjects={container.objects?.edges ?? []}
-                paginationOptions={paginationOptions}
-                simple={true}
-                targetStixCoreObjectTypes={
-                  types ?? ['Stix-Domain-Object', 'Stix-Cyber-Observable']
-                }
-                defaultCreatedBy={container.createdBy ?? null}
-                defaultMarkingDefinitions={container.objectMarking ?? []}
-                confidence={container.confidence}
-                enableReferences={enableReferences}
-              />
-            </Security>
-          )}
+          action={
+            container && (
+              <Security needs={security}>
+                <ContainerAddStixCoreObjects
+                  containerId={container.id}
+                  containerStixCoreObjects={container.objects?.edges ?? []}
+                  paginationOptions={paginationOptions}
+                  simple={true}
+                  targetStixCoreObjectTypes={
+                    types ?? ['Stix-Domain-Object', 'Stix-Cyber-Observable']
+                  }
+                  defaultCreatedBy={container.createdBy ?? null}
+                  defaultMarkingDefinitions={container.objectMarking ?? []}
+                  confidence={container.confidence}
+                  enableReferences={enableReferences}
+                />
+              </Security>
+            )
+          }
         >
           {renderContent()}
         </Card>

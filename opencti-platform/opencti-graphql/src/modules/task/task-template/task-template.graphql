@@ -4,7 +4,7 @@ type TaskTemplate implements InternalObject & BasicObject {
   entity_type: String!
   representative: Representative!
   parent_types: [String!]!
-  metrics:[Metric]
+  metrics: [Metric]
   created: DateTime
   modified: DateTime
   name: String!
@@ -53,7 +53,13 @@ input TaskTemplateAddInput {
 }
 
 type Mutation {
-  taskTemplateAdd(input: TaskTemplateAddInput!): TaskTemplate @auth(for: [SETTINGS_SETCASETEMPLATES])
+  taskTemplateAdd(input: TaskTemplateAddInput!): TaskTemplate
+    @auth(for: [SETTINGS_SETCASETEMPLATES])
   taskTemplateDelete(id: ID!): ID @auth(for: [SETTINGS_SETCASETEMPLATES])
-  taskTemplateFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): TaskTemplate @auth(for: [SETTINGS_SETCASETEMPLATES])
+  taskTemplateFieldPatch(
+    id: ID!
+    input: [EditInput!]!
+    commitMessage: String
+    references: [String]
+  ): TaskTemplate @auth(for: [SETTINGS_SETCASETEMPLATES])
 }

@@ -17,9 +17,20 @@ import React, { FunctionComponent, useEffect } from 'react';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Button from '@common/button/Button';
-import { ClearOutlined, FolderOutlined, PauseOutlined, PlayArrowOutlined, StorageOutlined, SyncDisabledOutlined, SyncOutlined } from '@mui/icons-material';
+import {
+  ClearOutlined,
+  FolderOutlined,
+  PauseOutlined,
+  PlayArrowOutlined,
+  StorageOutlined,
+  SyncDisabledOutlined,
+  SyncOutlined,
+} from '@mui/icons-material';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import { fileIndexingConfigurationFieldPatch, fileIndexingResetMutation } from '@components/settings/file_indexing/FileIndexing';
+import {
+  fileIndexingConfigurationFieldPatch,
+  fileIndexingResetMutation,
+} from '@components/settings/file_indexing/FileIndexing';
 import { FileIndexingMonitoringQuery } from '@components/settings/file_indexing/__generated__/FileIndexingMonitoringQuery.graphql';
 import { interval } from 'rxjs';
 import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
@@ -93,9 +104,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
   const volumeIndexed = indexedFilesMetrics?.globalSize ?? 0;
   const dataToIndex = filesMetrics?.globalSize ?? 0;
   const metricsByMimeType = filesMetrics?.metricsByMimeType ?? [];
-  const [commitManagerRunning] = useApiMutation(
-    fileIndexingConfigurationFieldPatch,
-  );
+  const [commitManagerRunning] = useApiMutation(fileIndexingConfigurationFieldPatch);
   const updateManagerRunning = (running: boolean) => {
     commitManagerRunning({
       variables: {
@@ -103,9 +112,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
         input: { key: 'manager_running', value: running },
       },
       onCompleted: () => {
-        MESSAGING$.notifySuccess(
-          `File indexing successfully ${running ? 'started' : 'paused'}`,
-        );
+        MESSAGING$.notifySuccess(`File indexing successfully ${running ? 'started' : 'paused'}`);
       },
       onError: (error) => {
         handleError(error);
@@ -166,22 +173,10 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
             status={isStarted}
           />
           <BorderLinearProgress
-            value={
-              indexedFiles > 0
-                ? Math.round((indexedFiles / totalFiles) * 100)
-                : 0
-            }
+            value={indexedFiles > 0 ? Math.round((indexedFiles / totalFiles) * 100) : 0}
             variant="determinate"
           />
-          {isStarted ? (
-            <SyncOutlined
-              sx={iconStyle}
-            />
-          ) : (
-            <SyncDisabledOutlined
-              sx={iconStyle}
-            />
-          )}
+          {isStarted ? <SyncOutlined sx={iconStyle} /> : <SyncDisabledOutlined sx={iconStyle} />}
         </Card>
       </Grid>
       <Grid item xs={3}>
@@ -196,9 +191,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
           <Typography variant="h2" style={{ margin: 0 }}>
             {indexedFiles} / {totalFiles}
           </Typography>
-          <FolderOutlined
-            sx={iconStyle}
-          />
+          <FolderOutlined sx={iconStyle} />
         </Card>
       </Grid>
       <Grid item xs={3}>
@@ -213,9 +206,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
           <Typography variant="h2" style={{ margin: 0 }}>
             {indexedFiles ? n(volumeIndexed) : 0}
           </Typography>
-          <StorageOutlined
-            sx={iconStyle}
-          />
+          <StorageOutlined sx={iconStyle} />
         </Card>
       </Grid>
       <Grid item xs={4}>
@@ -227,9 +218,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
             <Card title={title} sx={style}>
               <Grid container={true} spacing={3}>
                 <Grid item xs={6}>
-                  <Label>
-                    {t_i18n('Engine')}
-                  </Label>
+                  <Label>{t_i18n('Engine')}</Label>
                   {isStarted ? (
                     <Button
                       startIcon={<PauseOutlined />}
@@ -252,9 +241,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                   )}
                 </Grid>
                 <Grid item xs={6}>
-                  <Label>
-                    {t_i18n('Indexing')}
-                  </Label>
+                  <Label>{t_i18n('Indexing')}</Label>
                   <Button
                     startIcon={<ClearOutlined />}
                     aria-label="Reset"
@@ -266,15 +253,11 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                   </Button>
                 </Grid>
                 <Grid item xs={6}>
-                  <Label>
-                    {t_i18n('Indexing manager start')}
-                  </Label>
+                  <Label>{t_i18n('Indexing manager start')}</Label>
                   {fldt(managerConfiguration?.last_run_start_date)}
                 </Grid>
                 <Grid item xs={6}>
-                  <Label>
-                    {t_i18n('Last indexation')}
-                  </Label>
+                  <Label>{t_i18n('Last indexation')}</Label>
                   {fldt(lastIndexationDate)}
                 </Grid>
               </Grid>
@@ -286,31 +269,17 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
         <Card title={t_i18n('Information')}>
           <Grid container={true} spacing={3}>
             <Grid item xs={6}>
-              <Label>
-                {t_i18n('Total files in S3')}
-              </Label>
-              <span style={{ fontWeight: 600, fontSize: 20 }}>
-                {n(totalFiles)}
-              </span>
+              <Label>{t_i18n('Total files in S3')}</Label>
+              <span style={{ fontWeight: 600, fontSize: 20 }}>{n(totalFiles)}</span>
             </Grid>
             <Grid item xs={6}>
-              <Label>
-                {t_i18n('Files volumes in S3')}
-              </Label>
-              <span style={{ fontWeight: 600, fontSize: 20 }}>
-                {b(dataToIndex)}
-              </span>
+              <Label>{t_i18n('Files volumes in S3')}</Label>
+              <span style={{ fontWeight: 600, fontSize: 20 }}>{b(dataToIndex)}</span>
             </Grid>
             <Grid item xs={12}>
-              <Label>
-                {t_i18n('S3 volume by file type')}
-              </Label>
+              <Label>{t_i18n('S3 volume by file type')}</Label>
               <List sx={{ py: 0 }}>
-                <ListItem
-                  divider={true}
-                  dense={true}
-                  style={{ height: 32, padding: 0 }}
-                >
+                <ListItem divider={true} dense={true} style={{ height: 32, padding: 0 }}>
                   <ListItemText
                     primary={t_i18n('Type')}
                     style={{
@@ -340,10 +309,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                     dense={true}
                     style={{ height: 32, padding: 0 }}
                   >
-                    <ListItemText
-                      primary={t_i18n(metrics.mimeType)}
-                      style={{ width: '30%' }}
-                    />
+                    <ListItemText primary={t_i18n(metrics.mimeType)} style={{ width: '30%' }} />
                     <ListItemText
                       primary={`${metrics.count}`}
                       style={{
@@ -366,9 +332,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
         </Card>
       </Grid>
       <Grid item xs={4}>
-        <FileIndexingConfiguration
-          managerConfiguration={managerConfiguration}
-        />
+        <FileIndexingConfiguration managerConfiguration={managerConfiguration} />
       </Grid>
     </Grid>
   );

@@ -21,7 +21,7 @@ const rejectionLogCache = new Map(); // ip -> lastLogTimestamp
 const shouldLogRejection = (ip) => {
   const now = Date.now();
   const lastLog = rejectionLogCache.get(ip);
-  if (lastLog && (now - lastLog) < REJECTION_LOG_WINDOW_MS) {
+  if (lastLog && now - lastLog < REJECTION_LOG_WINDOW_MS) {
     return false;
   }
   rejectionLogCache.set(ip, now);
@@ -31,7 +31,7 @@ const shouldLogRejection = (ip) => {
   // remove the oldest inserted entry — O(1), Map preserves insertion order.
   if (rejectionLogCache.size > REJECTION_LOG_MAX_ENTRIES) {
     for (const [cachedIp, ts] of rejectionLogCache) {
-      if ((now - ts) > REJECTION_LOG_WINDOW_MS * 2) {
+      if (now - ts > REJECTION_LOG_WINDOW_MS * 2) {
         rejectionLogCache.delete(cachedIp);
       }
     }
@@ -131,7 +131,9 @@ const queryAccessesOnlyLoginFields = (queryStr) => {
     return operations.every((op) => {
       const selections = op.selectionSet?.selections ?? [];
       if (selections.length === 0) return false;
-      return selections.every((sel) => sel.kind === 'Field' && LOGIN_ALLOWED_FIELDS.has(sel.name.value));
+      return selections.every(
+        (sel) => sel.kind === 'Field' && LOGIN_ALLOWED_FIELDS.has(sel.name.value),
+      );
     });
   } catch {
     return false;
@@ -204,11 +206,13 @@ const ipWhitelistMiddleware = async (req, res, next) => {
       }
       return res.status(200).json({
         data: null,
-        errors: [{
-          message: 'Your IP address is not allowed to access this platform',
-          name: 'IP_FORBIDDEN',
-          extensions: { code: 'IP_FORBIDDEN' },
-        }],
+        errors: [
+          {
+            message: 'Your IP address is not allowed to access this platform',
+            name: 'IP_FORBIDDEN',
+            extensions: { code: 'IP_FORBIDDEN' },
+          },
+        ],
       });
     }
 
@@ -224,7 +228,10 @@ const ipWhitelistMiddleware = async (req, res, next) => {
 
     // Authenticated but not excluded and IP not in whitelist → block
     if (shouldLogRejection(sourceIp)) {
-      logApp.warn('[IP_WHITELIST] Access denied for IP', { ip: sourceIp, user_id: authenticatedUser.id });
+      logApp.warn('[IP_WHITELIST] Access denied for IP', {
+        ip: sourceIp,
+        user_id: authenticatedUser.id,
+      });
       const auditUser = userWithOrigin(req, authenticatedUser);
       await publishUserAction({
         user: auditUser,
@@ -232,16 +239,21 @@ const ipWhitelistMiddleware = async (req, res, next) => {
         event_scope: 'login',
         event_access: 'administration',
         status: 'error',
-        context_data: { provider: 'ip_whitelist', username: authenticatedUser.user_email ?? authenticatedUser.name },
+        context_data: {
+          provider: 'ip_whitelist',
+          username: authenticatedUser.user_email ?? authenticatedUser.name,
+        },
       });
     }
     return res.status(200).json({
       data: null,
-      errors: [{
-        message: 'Your IP address is not allowed to access this platform',
-        name: 'IP_FORBIDDEN',
-        extensions: { code: 'IP_FORBIDDEN' },
-      }],
+      errors: [
+        {
+          message: 'Your IP address is not allowed to access this platform',
+          name: 'IP_FORBIDDEN',
+          extensions: { code: 'IP_FORBIDDEN' },
+        },
+      ],
     });
   } catch (error) {
     logApp.error('[IP_WHITELIST] Error checking IP whitelist', { cause: error });

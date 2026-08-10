@@ -41,7 +41,8 @@ export const connections: AttributeDefinition = {
   update: false,
   isFilterable: false,
   mappings: [
-    { ...internalId as IdAttribute,
+    {
+      ...(internalId as IdAttribute),
       isFilterable: true,
       entityTypes: [ABSTRACT_STIX_CORE_OBJECT],
       associatedFilterKeys: [
@@ -52,9 +53,44 @@ export const connections: AttributeDefinition = {
         { key: INSTANCE_RELATION_FILTER, label: 'Related entity' },
       ],
     },
-    { name: 'name', label: 'Name', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
-    { name: 'role', label: 'Role', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
-    { name: 'types', label: 'Types', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true, associatedFilterKeys: [{ key: RELATION_FROM_TYPES_FILTER, label: 'Source type' }, { key: RELATION_TO_TYPES_FILTER, label: 'Target type' }, { key: INSTANCE_RELATION_TYPES_FILTER, label: 'Related type' }] },
+    {
+      name: 'name',
+      label: 'Name',
+      type: 'string',
+      format: 'short',
+      editDefault: false,
+      mandatoryType: 'no',
+      multiple: true,
+      upsert: true,
+      isFilterable: false,
+    },
+    {
+      name: 'role',
+      label: 'Role',
+      type: 'string',
+      format: 'short',
+      editDefault: false,
+      mandatoryType: 'no',
+      multiple: true,
+      upsert: true,
+      isFilterable: false,
+    },
+    {
+      name: 'types',
+      label: 'Types',
+      type: 'string',
+      format: 'short',
+      editDefault: false,
+      mandatoryType: 'no',
+      multiple: true,
+      upsert: true,
+      isFilterable: true,
+      associatedFilterKeys: [
+        { key: RELATION_FROM_TYPES_FILTER, label: 'Source type' },
+        { key: RELATION_TO_TYPES_FILTER, label: 'Target type' },
+        { key: INSTANCE_RELATION_TYPES_FILTER, label: 'Related type' },
+      ],
+    },
   ],
 };
 
@@ -73,7 +109,21 @@ const basicRelationshipAttributes: Array<AttributeDefinition> = [
   updatedAt,
   refreshedAt,
   creators,
-  { name: 'i_inference_weight', label: 'Inference weight', type: 'numeric', precision: 'integer', update: false, editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
+  {
+    name: 'i_inference_weight',
+    label: 'Inference weight',
+    type: 'numeric',
+    precision: 'integer',
+    update: false,
+    editDefault: false,
+    mandatoryType: 'no',
+    multiple: false,
+    upsert: false,
+    isFilterable: false,
+  },
   connections,
 ];
-schemaAttributesDefinition.registerAttributes(ABSTRACT_BASIC_RELATIONSHIP, basicRelationshipAttributes);
+schemaAttributesDefinition.registerAttributes(
+  ABSTRACT_BASIC_RELATIONSHIP,
+  basicRelationshipAttributes,
+);

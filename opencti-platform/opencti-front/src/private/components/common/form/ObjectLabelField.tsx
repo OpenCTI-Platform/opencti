@@ -101,10 +101,7 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
         onInputChange={searchLabels}
         openCreate={() => setLabelCreation(true)}
         onChange={onChange}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: FieldOption,
-        ) => (
+        renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: FieldOption) => (
           <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>
               <ItemIcon type="Label" color={option.color} />
@@ -125,7 +122,11 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
           if (data.labelAdd) {
             setFieldValue?.(name, [
               ...(values ?? []),
-              { label: data.labelAdd.value ?? '', value: data.labelAdd.id, color: data.labelAdd.color ?? undefined },
+              {
+                label: data.labelAdd.value ?? '',
+                value: data.labelAdd.id,
+                color: data.labelAdd.color ?? undefined,
+              },
             ]);
           }
         }}

@@ -55,21 +55,18 @@ const AttackPatternEditionContainer = (props) => {
   );
 };
 
-const AttackPatternEditionFragment = createFragmentContainer(
-  AttackPatternEditionContainer,
-  {
-    attackPattern: graphql`
-      fragment AttackPatternEditionContainer_attackPattern on AttackPattern {
-        id
-        ...AttackPatternEditionOverview_attackPattern
-        ...AttackPatternEditionDetails_attackPattern
-        editContext {
-          name
-          focusOn
-        }
+const AttackPatternEditionFragment = createFragmentContainer(AttackPatternEditionContainer, {
+  attackPattern: graphql`
+    fragment AttackPatternEditionContainer_attackPattern on AttackPattern {
+      id
+      ...AttackPatternEditionOverview_attackPattern
+      ...AttackPatternEditionDetails_attackPattern
+      editContext {
+        name
+        focusOn
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default AttackPatternEditionFragment;

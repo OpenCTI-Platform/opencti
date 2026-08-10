@@ -15,13 +15,13 @@ const publicStixRelationshipsRadarsQuery = graphql`
     $startDate: DateTime
     $endDate: DateTime
     $uriKey: String!
-    $widgetId : String!
+    $widgetId: String!
   ) {
     publicStixRelationshipsDistribution(
       startDate: $startDate
       endDate: $endDate
       uriKey: $uriKey
-      widgetId : $widgetId
+      widgetId: $widgetId
     ) {
       label
       value
@@ -86,10 +86,7 @@ const PublicStixRelationshipsRadarComponent = ({
     queryRef,
   );
 
-  if (
-    publicStixRelationshipsDistribution
-    && publicStixRelationshipsDistribution.length > 0
-  ) {
+  if (publicStixRelationshipsDistribution && publicStixRelationshipsDistribution.length > 0) {
     return (
       <WidgetRadar
         data={[...publicStixRelationshipsDistribution]}
@@ -121,9 +118,7 @@ const PublicStixRelationshipsRadar = ({
   );
 
   return (
-    <WidgetContainer
-      title={parameters?.title ?? title ?? t_i18n('Entities number')}
-    >
+    <WidgetContainer title={parameters?.title ?? title ?? t_i18n('Entities number')}>
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixRelationshipsRadarComponent

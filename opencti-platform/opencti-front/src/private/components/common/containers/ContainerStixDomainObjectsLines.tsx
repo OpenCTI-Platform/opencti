@@ -7,7 +7,10 @@ import {
 } from '@components/common/containers/__generated__/ContainerStixDomainObjectsLinesQuery.graphql';
 import { ContainerStixDomainObjectsLines_container$key } from '@components/common/containers/__generated__/ContainerStixDomainObjectsLines_container.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { ContainerStixDomainObjectLine, ContainerStixDomainObjectLineDummy } from './ContainerStixDomainObjectLine';
+import {
+  ContainerStixDomainObjectLine,
+  ContainerStixDomainObjectLineDummy,
+} from './ContainerStixDomainObjectLine';
 import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
@@ -42,14 +45,14 @@ export const containerStixDomainObjectsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...ContainerStixDomainObjectsLines_container
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -59,10 +62,7 @@ export const containerStixDomainObjectsLinesFragment = graphql`
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
-    orderBy: {
-      type: "StixObjectOrStixRelationshipsOrdering"
-      defaultValue: name
-    }
+    orderBy: { type: "StixObjectOrStixRelationshipsOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "FilterGroup" }
   )
@@ -143,14 +143,8 @@ const ContainerStixDomainObjectsLines: FunctionComponent<ContainerStixDomainObje
         hasMore={hasMore}
         dataList={container?.objects?.edges ?? []}
         paginationOptions={paginationOptions}
-        globalCount={
-          container?.objects?.pageInfo?.globalCount ?? nbOfRowsToLoad
-        }
-        LineComponent={(
-          <ContainerStixDomainObjectLine
-            containerId={container?.id ?? null}
-          />
-        )}
+        globalCount={container?.objects?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+        LineComponent={<ContainerStixDomainObjectLine containerId={container?.id ?? null} />}
         DummyLineComponent={<ContainerStixDomainObjectLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}

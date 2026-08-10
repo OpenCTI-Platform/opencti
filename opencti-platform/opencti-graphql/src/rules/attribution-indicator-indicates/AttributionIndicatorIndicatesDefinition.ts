@@ -3,7 +3,8 @@ import type { RuleDefinition } from '../../types/rules';
 
 const id = 'attribution_indicator_indicates';
 const name = 'Indicator propagation via attribution';
-const description = 'If an entity is attributed to another entity and an indicator indicates the first entity, then the indicator also indicates the second entity.';
+const description =
+  'If an entity is attributed to another entity and an indicator indicates the first entity, then the indicator also indicates the second entity.';
 const category = 'Parent-child propagation';
 const display = {
   if: [

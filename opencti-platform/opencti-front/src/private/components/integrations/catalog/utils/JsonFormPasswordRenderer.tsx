@@ -1,5 +1,12 @@
 import React from 'react';
-import { and, ControlProps, isStringControl, RankedTester, rankWith, schemaMatches } from '@jsonforms/core';
+import {
+  and,
+  ControlProps,
+  isStringControl,
+  RankedTester,
+  rankWith,
+  schemaMatches,
+} from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import Box from '@mui/material/Box';
 import PasswordTextField from '../../../../../components/PasswordTextField';

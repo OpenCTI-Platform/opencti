@@ -18,7 +18,10 @@ interface AttackPatternsMatrixColumnsElementProps {
   attackPatternIdsToOverlap?: string[];
   isSecurityPlatform: boolean;
   isCoverage?: boolean;
-  coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>>;
+  coverageMap?: Map<
+    string,
+    ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>
+  >;
   entityId?: string;
 }
 
@@ -34,7 +37,8 @@ const AttackPatternsMatrixColumnsElement = ({
   const [isHovered, setIsHovered] = useState(false);
 
   // Get coverage information if in coverage mode
-  const coverage = isCoverage && coverageMap ? coverageMap.get(attackPattern.attack_pattern_id) : null;
+  const coverage =
+    isCoverage && coverageMap ? coverageMap.get(attackPattern.attack_pattern_id) : null;
 
   // Calculate colors based on coverage score for active/covered boxes
   const getCoverageColors = () => {
@@ -104,19 +108,19 @@ const AttackPatternsMatrixColumnsElement = ({
       {isCoverage && attackPattern.isCovered && (
         <>
           <Box sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <SecurityCoverageScores
-              coverage_information={coverage || null}
-              variant="matrix"
-            />
+            <SecurityCoverageScores coverage_information={coverage || null} variant="matrix" />
           </Box>
         </>
       )}
 
-      {!isSecurityPlatform && attackPatternIdsToOverlap?.length !== undefined && attackPattern.isCovered && !isCoverage && (
-        <AttackPatternsMatrixShouldCoverIcon
-          isOverlapping={attackPattern.isOverlapping || false}
-        />
-      )}
+      {!isSecurityPlatform &&
+        attackPatternIdsToOverlap?.length !== undefined &&
+        attackPattern.isCovered &&
+        !isCoverage && (
+          <AttackPatternsMatrixShouldCoverIcon
+            isOverlapping={attackPattern.isOverlapping || false}
+          />
+        )}
     </Box>
   );
 };

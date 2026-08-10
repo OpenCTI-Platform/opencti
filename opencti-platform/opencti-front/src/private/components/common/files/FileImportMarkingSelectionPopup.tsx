@@ -1,6 +1,8 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import AssociatedEntityField, { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
+import AssociatedEntityField, {
+  AssociatedEntityOption,
+} from '@components/common/form/AssociatedEntityField';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import DialogActions from '@mui/material/DialogActions';
 import { Formik } from 'formik';
@@ -19,11 +21,16 @@ export type SubmittedFormValues = {
   associatedEntity: AssociatedEntityOption;
 };
 
-const FileImportMarkingSelectionPopup = ({ closePopup, handleUpload, isOpen, entityId }: FileImportMarkingSelectionPopupProps) => {
+const FileImportMarkingSelectionPopup = ({
+  closePopup,
+  handleUpload,
+  isOpen,
+  entityId,
+}: FileImportMarkingSelectionPopupProps) => {
   const { t_i18n } = useFormatter();
   const handleSubmit = (values: SubmittedFormValues) => {
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
-    const associatedEntity = (entityId || values.associatedEntity?.value) || undefined; // Double check this logic
+    const associatedEntity = entityId || values.associatedEntity?.value || undefined; // Double check this logic
     closePopup();
     handleUpload(fileMarkings, associatedEntity);
   };
@@ -54,16 +61,15 @@ const FileImportMarkingSelectionPopup = ({ closePopup, handleUpload, isOpen, ent
               setFieldValue={setFieldValue}
               required={false}
             />
-            {!entityId
-              && (
-                <div style={{ paddingTop: '10px' }}>
-                  <AssociatedEntityField
-                    label={t_i18n('Associated entity')}
-                    name="associatedEntity"
-                    onChange={setFieldValue}
-                  />
-                </div>
-              )}
+            {!entityId && (
+              <div style={{ paddingTop: '10px' }}>
+                <AssociatedEntityField
+                  label={t_i18n('Associated entity')}
+                  name="associatedEntity"
+                  onChange={setFieldValue}
+                />
+              </div>
+            )}
             <DialogActions>
               <Button
                 variant="secondary"
@@ -74,11 +80,7 @@ const FileImportMarkingSelectionPopup = ({ closePopup, handleUpload, isOpen, ent
               >
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-              >
-                {t_i18n('Validate')}
-              </Button>
+              <Button onClick={submitForm}>{t_i18n('Validate')}</Button>
             </DialogActions>
           </Dialog>
         )}

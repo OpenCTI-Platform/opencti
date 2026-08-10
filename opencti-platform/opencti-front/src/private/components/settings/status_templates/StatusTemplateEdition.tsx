@@ -18,10 +18,7 @@ export const StatusTemplateEditionFragment = graphql`
 `;
 
 const statusTemplateMutationFieldPatch = graphql`
-  mutation StatusTemplateEditionFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput!]!
-  ) {
+  mutation StatusTemplateEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
     statusTemplateFieldPatch(id: $id, input: $input) {
       id
       name
@@ -38,10 +35,11 @@ const statusTemplateEditionFocus = graphql`
   }
 `;
 
-const statusTemplateValidation = (t: (name: string | object) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  color: Yup.string().required(t('This field is required')),
-});
+const statusTemplateValidation = (t: (name: string | object) => string) =>
+  Yup.object().shape({
+    name: Yup.string().required(t('This field is required')),
+    color: Yup.string().required(t('This field is required')),
+  });
 
 interface StatusTemplateEditionProps {
   handleClose: () => void;
@@ -100,8 +98,7 @@ const StatusTemplateEdition: FunctionComponent<StatusTemplateEditionProps> = ({
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={statusTemplateValidation(t_i18n)}
-      onSubmit={() => {
-      }}
+      onSubmit={() => {}}
     >
       {() => (
         <Form>

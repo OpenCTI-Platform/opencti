@@ -21,7 +21,9 @@ const fintelTemplateEditMutation = graphql`
 
 const useFintelTemplateEdit = () => {
   const [mutating, setMutating] = useState(false);
-  const [commitEditMutation] = useApiMutation<useFintelTemplateEditMutation>(fintelTemplateEditMutation);
+  const [commitEditMutation] = useApiMutation<useFintelTemplateEditMutation>(
+    fintelTemplateEditMutation,
+  );
 
   const mutation: typeof commitEditMutation = ({ variables, onCompleted, onError }) => {
     setMutating(true);

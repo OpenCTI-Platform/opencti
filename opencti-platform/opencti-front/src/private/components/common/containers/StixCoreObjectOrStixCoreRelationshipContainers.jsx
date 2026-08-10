@@ -12,13 +12,19 @@ import ListLines from '../../../../components/list_lines/ListLines';
 import StixCoreObjectOrStixCoreRelationshipContainersLines, {
   stixCoreObjectOrStixCoreRelationshipContainersLinesQuery,
 } from './StixCoreObjectOrStixCoreRelationshipContainersLines';
-import StixCoreObjectOrStixCoreRelationshipContainersGraph, { containersObjectsQuery } from './StixCoreObjectOrStixCoreRelationshipContainersGraph';
+import StixCoreObjectOrStixCoreRelationshipContainersGraph, {
+  containersObjectsQuery,
+} from './StixCoreObjectOrStixCoreRelationshipContainersGraph';
 import SearchInput from '../../../../components/SearchInput';
 import useAuth from '../../../../utils/hooks/useAuth';
 import Filters from '../lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  isFilterGroupNotEmpty,
+  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
+} from '../../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../../components/i18n';
 import { deserializeObjectB64 } from '../../../../utils/object';
 
@@ -53,24 +59,17 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-  const LOCAL_STORAGE_KEY = `containers${
-    authorId
-      ? `-${authorId}`
-      : `-${stixDomainObjectOrStixCoreRelationship.id}`
-  }`;
+  const LOCAL_STORAGE_KEY = `containers${authorId ? `-${authorId}` : `-${stixDomainObjectOrStixCoreRelationship.id}`}`;
 
-  const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage(
-    LOCAL_STORAGE_KEY,
-    {
-      filters: emptyFilterGroup,
-      searchTerm: '',
-      sortBy: 'created',
-      orderAsc: false,
-      openExports: false,
-      view: 'lines',
-      redirectionMode: 'overview',
-    },
-  );
+  const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage(LOCAL_STORAGE_KEY, {
+    filters: emptyFilterGroup,
+    searchTerm: '',
+    sortBy: 'created',
+    orderAsc: false,
+    openExports: false,
+    view: 'lines',
+    redirectionMode: 'overview',
+  });
 
   const {
     numberOfElements,
@@ -83,15 +82,27 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
     openExports,
   } = viewStorage;
 
-  const reportFilterClass = reportType !== 'all' && reportType !== undefined ? reportType.replace(/_/g, ' ') : '';
+  const reportFilterClass =
+    reportType !== 'all' && reportType !== undefined ? reportType.replace(/_/g, ' ') : '';
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Container']);
   const contextFilters = {
     mode: 'and',
     filters: [
       { key: 'entity_type', operator: 'eq', mode: 'or', values: ['Container'] },
-      ...(reportFilterClass ? [{ key: 'report_types', values: [reportFilterClass], operator: 'eq', mode: 'or' }] : []),
+      ...(reportFilterClass
+        ? [{ key: 'report_types', values: [reportFilterClass], operator: 'eq', mode: 'or' }]
+        : []),
       ...(authorId ? [{ key: 'createdBy', values: [authorId], operator: 'eq', mode: 'or' }] : []),
-      ...(!authorId && stixDomainObjectOrStixCoreRelationship?.id ? [{ key: 'objects', values: [stixDomainObjectOrStixCoreRelationship.id], operator: 'eq', mode: 'or' }] : []),
+      ...(!authorId && stixDomainObjectOrStixCoreRelationship?.id
+        ? [
+            {
+              key: 'objects',
+              values: [stixDomainObjectOrStixCoreRelationship.id],
+              operator: 'eq',
+              mode: 'or',
+            },
+          ]
+        : []),
     ],
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
@@ -200,24 +211,22 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
     ];
     return (
       <>
-        <Box sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          paddingBottom: '10px',
-        }}
-        >
-          <Box sx={{
-            gap: '10px',
+        <Box
+          sx={{
             display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingBottom: '10px',
           }}
+        >
+          <Box
+            sx={{
+              gap: '10px',
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+            }}
           >
-            <SearchInput
-              variant="small"
-              onSubmit={helpers.handleSearch}
-              keyword={searchTerm}
-            />
+            <SearchInput variant="small" onSubmit={helpers.handleSearch} keyword={searchTerm} />
             <Filters
               helpers={helpers}
               availableFilterKeys={availableFilterKeys}
@@ -254,18 +263,13 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
                   <VectorPolygon fontSize="small" />
                 </Tooltip>
               </ToggleButton>
-              <ToggleButton
-                value="export"
-                aria-label="export"
-                disabled={true}
-              >
+              <ToggleButton value="export" aria-label="export" disabled={true}>
                 <Tooltip title={t_i18n('Open export panel')}>
                   <FileDownloadOutlined fontSize="small" />
                 </Tooltip>
               </ToggleButton>
             </ToggleButtonGroup>
           </Box>
-
         </Box>
         <FilterIconButton
           helpers={helpers}
@@ -312,7 +316,9 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
           }}
           render={({ props }) => {
             if (props) {
-              const positions = deserializeObjectB64(stixDomainObjectOrStixCoreRelationship.x_opencti_graph_data);
+              const positions = deserializeObjectB64(
+                stixDomainObjectOrStixCoreRelationship.x_opencti_graph_data,
+              );
               return (
                 <StixCoreObjectOrStixCoreRelationshipContainersGraph
                   id={stixDomainObjectOrStixCoreRelationship.id}
@@ -330,9 +336,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
 
   return (
     <Suspense>
-      <div
-        className={view === 'lines' ? classes.container : classes.containerGraph}
-      >
+      <div className={view === 'lines' ? classes.container : classes.containerGraph}>
         {view === 'lines' ? renderLines() : ''}
         {view === 'graph' ? renderGraph() : ''}
       </div>

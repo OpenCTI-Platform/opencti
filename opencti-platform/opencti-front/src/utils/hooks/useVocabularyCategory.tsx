@@ -1,6 +1,9 @@
 import { graphql, loadQuery, usePreloadedQuery } from 'react-relay';
 import { useState } from 'react';
-import { useVocabularyCategoryQuery, VocabularyCategory } from './__generated__/useVocabularyCategoryQuery.graphql';
+import {
+  useVocabularyCategoryQuery,
+  VocabularyCategory,
+} from './__generated__/useVocabularyCategoryQuery.graphql';
 import { ApplicationError, environment } from '../../relay/environment';
 
 export interface VocabularyDefinition {
@@ -52,17 +55,10 @@ export const vocabFragment = graphql`
   }
 `;
 
-const queryRef = loadQuery<useVocabularyCategoryQuery>(
-  environment,
-  vocabCategoriesQuery,
-  {},
-);
+const queryRef = loadQuery<useVocabularyCategoryQuery>(environment, vocabCategoriesQuery, {});
 
 const useVocabularyCategory = () => {
-  const data = usePreloadedQuery<useVocabularyCategoryQuery>(
-    vocabCategoriesQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery<useVocabularyCategoryQuery>(vocabCategoriesQuery, queryRef);
   const vocabularyCategories = () => data.vocabularyCategories.map(({ key }) => key);
   const categories = vocabularyCategories();
   const typeToCategory = (type: string): VocabularyCategory => {
@@ -104,10 +100,7 @@ export const useVocabularyCategoryAsQuery = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [orderAsc, setOrderAsc] = useState(true);
-  const data = usePreloadedQuery<useVocabularyCategoryQuery>(
-    vocabCategoriesQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery<useVocabularyCategoryQuery>(vocabCategoriesQuery, queryRef);
   const definitions = data.vocabularyCategories;
   const categories = definitions
     .filter(({ key }) => key.includes(searchTerm))

@@ -21,15 +21,10 @@ interface LoginLogoProps {
 const LoginLogo = ({ data }: LoginLogoProps) => {
   const theme = useTheme<Theme>();
   const { platform_theme } = useFragment(fragment, data);
-  const logo = platform_theme?.theme_logo_login || (theme.palette.mode === 'dark' ? logoDark : logoLight);
+  const logo =
+    platform_theme?.theme_logo_login || (theme.palette.mode === 'dark' ? logoDark : logoLight);
 
-  return (
-    <img
-      src={logo}
-      alt="OpenCTI Logo"
-      width={180}
-    />
-  );
+  return <img src={logo} alt="OpenCTI Logo" width={180} />;
 };
 
 export default LoginLogo;

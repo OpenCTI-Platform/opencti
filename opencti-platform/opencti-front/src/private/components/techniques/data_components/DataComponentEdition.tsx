@@ -1,6 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import DataComponentEditionContainer, { dataComponentEditionQuery } from './DataComponentEditionContainer';
+import DataComponentEditionContainer, {
+  dataComponentEditionQuery,
+} from './DataComponentEditionContainer';
 import { dataComponentEditionOverviewFocus } from './DataComponentEditionOverview';
 import { DataComponentEditionContainerQuery } from './__generated__/DataComponentEditionContainerQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -21,17 +23,14 @@ const DataComponentEdition: FunctionComponent<{ dataComponentId: string }> = ({
     });
   };
 
-  const queryRef = useQueryLoading<DataComponentEditionContainerQuery>(
-    dataComponentEditionQuery,
-    { id: dataComponentId },
-  );
+  const queryRef = useQueryLoading<DataComponentEditionContainerQuery>(dataComponentEditionQuery, {
+    id: dataComponentId,
+  });
 
   return (
     <>
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inline} />}
-        >
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
           <DataComponentEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}

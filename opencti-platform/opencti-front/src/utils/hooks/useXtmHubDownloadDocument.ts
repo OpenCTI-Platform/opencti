@@ -16,11 +16,17 @@ interface Return {
   dialogConnectivityLostStatus: DialogConnectivityLostStatus;
 }
 
-const useXtmHubDownloadDocument = ({ serviceInstanceId, fileId, onSuccess, onError }: Props): Return => {
+const useXtmHubDownloadDocument = ({
+  serviceInstanceId,
+  fileId,
+  onSuccess,
+  onError,
+}: Props): Return => {
   const isGrantedToXtmHub = useGranted([SETTINGS_SETMANAGEXTMHUB]);
   const { settings } = useContext(UserContext);
   const { userPlatformToken } = useXtmHubUserPlatformToken();
-  const [dialogConnectivityLostStatus, setDialogConnectivityLostStatus] = useState<DialogConnectivityLostStatus>(DialogConnectivityLostStatus.unknown);
+  const [dialogConnectivityLostStatus, setDialogConnectivityLostStatus] =
+    useState<DialogConnectivityLostStatus>(DialogConnectivityLostStatus.unknown);
 
   useEffect(() => {
     const isTryingToDownloadDocument = !!fileId && !!serviceInstanceId;

@@ -9,31 +9,31 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 
-const IndicatorEntities = ({ indicatorId, relationshipType, defaultStartTime, defaultStopTime }) => {
+const IndicatorEntities = ({
+  indicatorId,
+  relationshipType,
+  defaultStartTime,
+  defaultStopTime,
+}) => {
   const LOCAL_STORAGE_KEY = 'indicator-entities';
 
-  const { viewStorage, helpers, paginationOptions: rawPaginationOptions } = usePaginationLocalStorage(
-    LOCAL_STORAGE_KEY,
-    {
-      searchTerm: '',
-      sortBy: 'created_at',
-      orderAsc: false,
-      openExports: false,
-      filters: emptyFilterGroup,
-      numberOfElements: {
-        number: 0,
-        symbol: '',
-      },
-    },
-  );
-
   const {
-    sortBy,
-    orderAsc,
-    filters,
-    searchTerm,
-    numberOfElements,
-  } = viewStorage;
+    viewStorage,
+    helpers,
+    paginationOptions: rawPaginationOptions,
+  } = usePaginationLocalStorage(LOCAL_STORAGE_KEY, {
+    searchTerm: '',
+    sortBy: 'created_at',
+    orderAsc: false,
+    openExports: false,
+    filters: emptyFilterGroup,
+    numberOfElements: {
+      number: 0,
+      symbol: '',
+    },
+  });
+
+  const { sortBy, orderAsc, filters, searchTerm, numberOfElements } = viewStorage;
   const paginationOptions = {
     ...rawPaginationOptions,
     fromOrToId: indicatorId,

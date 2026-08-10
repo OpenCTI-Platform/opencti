@@ -45,10 +45,7 @@ const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
         if (relatedTarget && popoverPaper?.contains(relatedTarget)) {
           return;
         }
-        helpers?.handleAddSingleValueFilter(
-          filter?.id ?? '',
-          event.target.value,
-        );
+        helpers?.handleAddSingleValueFilter(filter?.id ?? '', event.target.value);
       }}
     />
   );

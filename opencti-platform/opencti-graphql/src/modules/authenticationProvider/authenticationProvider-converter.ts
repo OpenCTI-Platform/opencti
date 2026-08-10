@@ -1,9 +1,14 @@
 import { buildStixObject } from '../../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
-import type { StixAuthenticationProvider, StoreEntityAuthenticationProvider } from './authenticationProvider-types';
+import type {
+  StixAuthenticationProvider,
+  StoreEntityAuthenticationProvider,
+} from './authenticationProvider-types';
 import { cleanObject } from '../../database/stix-converter-utils';
 
-const convertAuthenticationProviderToStix = (instance: StoreEntityAuthenticationProvider): StixAuthenticationProvider => {
+const convertAuthenticationProviderToStix = (
+  instance: StoreEntityAuthenticationProvider,
+): StixAuthenticationProvider => {
   const stixObject = buildStixObject(instance);
   return {
     ...stixObject,

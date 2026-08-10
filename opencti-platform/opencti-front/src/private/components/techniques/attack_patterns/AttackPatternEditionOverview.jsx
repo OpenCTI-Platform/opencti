@@ -13,10 +13,19 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import StatusField from '../../common/form/StatusField';
-import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertKillChainPhases,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -29,11 +38,7 @@ const attackPatternMutationFieldPatch = graphql`
     $references: [String]
   ) {
     attackPatternEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         ...AttackPatternEditionOverview_attackPattern
         ...AttackPattern_attackPattern
       }
@@ -42,10 +47,7 @@ const attackPatternMutationFieldPatch = graphql`
 `;
 
 export const attackPatternEditionOverviewFocus = graphql`
-  mutation AttackPatternEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation AttackPatternEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     attackPatternEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -90,17 +92,20 @@ const AttackPatternEditionOverviewComponent = (props) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const { mandatoryAttributes } = useIsMandatoryAttribute(ATTACK_PATTERN_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    x_mitre_id: Yup.string().nullable(),
-    description: Yup.string().nullable(),
-    references: Yup.array(),
-    confidence: Yup.number().nullable(),
-    x_opencti_workflow_id: Yup.object(),
-    killChainPhases: Yup.array().nullable(),
-    createdBy: Yup.object().nullable(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      x_mitre_id: Yup.string().nullable(),
+      description: Yup.string().nullable(),
+      references: Yup.array(),
+      confidence: Yup.number().nullable(),
+      x_opencti_workflow_id: Yup.object(),
+      killChainPhases: Yup.array().nullable(),
+      createdBy: Yup.object().nullable(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
+  );
   const attackPatternValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
@@ -109,12 +114,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
     relationDelete: attackPatternMutationRelationDelete,
     editionFocus: attackPatternEditionOverviewFocus,
   };
-  const editor = useFormEditor(
-    attackPattern,
-    enableReferences,
-    queries,
-    attackPatternValidator,
-  );
+  const editor = useFormEditor(attackPattern, enableReferences, queries, attackPatternValidator);
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -134,8 +134,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
       variables: {
         id: attackPattern.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       onCompleted: () => {
@@ -194,46 +193,35 @@ const AttackPatternEditionOverviewComponent = (props) => {
       validateOnBlur={true}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <Form style={{ marginTop: theme.spacing(2) }}>
           <AlertConfidenceForEntity entity={attackPattern} />
           <Field
             component={TextField}
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="name" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="name" />}
           />
           <Field
             component={TextField}
             name="x_mitre_id"
             label={t_i18n('External ID')}
-            required={(mandatoryAttributes.includes('x_mitre_id'))}
+            required={mandatoryAttributes.includes('x_mitre_id')}
             fullWidth={true}
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="x_mitre_id" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="x_mitre_id" />}
           />
           <Field
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -241,9 +229,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
           />
           <ConfidenceField
             onFocus={editor.changeFocus}
@@ -256,14 +242,9 @@ const AttackPatternEditionOverviewComponent = (props) => {
           <KillChainPhasesField
             name="killChainPhases"
             style={fieldSpacingContainerStyle}
-            required={(mandatoryAttributes.includes('killChainPhases'))}
+            required={mandatoryAttributes.includes('killChainPhases')}
             setFieldValue={setFieldValue}
-            helpertext={(
-              <SubscriptionFocus
-                context={context}
-                fieldName="killChainPhases"
-              />
-            )}
+            helpertext={<SubscriptionFocus context={context} fieldName="killChainPhases" />}
             onChange={editor.changeKillChainPhases}
           />
           {attackPattern.workflowEnabled && (
@@ -274,31 +255,22 @@ const AttackPatternEditionOverviewComponent = (props) => {
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={(
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_workflow_id"
-                />
-              )}
+              helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />}
             />
           )}
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="createdBy" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />

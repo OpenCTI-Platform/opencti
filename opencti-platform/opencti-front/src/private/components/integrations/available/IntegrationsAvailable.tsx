@@ -1,6 +1,14 @@
 import React, { ChangeEvent, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Box, MenuItem, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
+import {
+  Box,
+  MenuItem,
+  Stack,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
+} from '@mui/material';
 import { ViewListOutlined, ViewModuleOutlined, WidgetsOutlined } from '@mui/icons-material';
 import Grid from '@mui/material/Grid2';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -17,12 +25,26 @@ import useIngestionCatalogFilters, {
   CatalogSortMode,
 } from '@components/integrations/catalog/hooks/useIngestionCatalogFilters';
 import createDeploymentCountMap from '@components/integrations/catalog/utils/createDeploymentCountMap';
-import { getConnectorMetadata, getConnectorTypeIcon, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
-import { BUILT_IN_INTEGRATIONS, BuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
-import AvailableIntegrationLine, { AvailableIntegrationLinesHeader } from '@components/integrations/available/AvailableIntegrationLine';
+import {
+  getConnectorMetadata,
+  getConnectorTypeIcon,
+  IngestionConnectorType,
+} from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
+import {
+  BUILT_IN_INTEGRATIONS,
+  BuiltInIntegrationKind,
+} from '@components/integrations/available/builtInIntegrations';
+import AvailableIntegrationLine, {
+  AvailableIntegrationLinesHeader,
+} from '@components/integrations/available/AvailableIntegrationLine';
 import BuiltInIntegrationCard from '@components/integrations/available/BuiltInIntegrationCard';
 import BuiltInIntegrationCreation from '@components/integrations/available/BuiltInIntegrationCreation';
-import { BrowseMoreButton, MarketplaceEmptyState, MarketplaceSectionHeader, ResultCountChip } from '@components/integrations/components/MarketplaceUi';
+import {
+  BrowseMoreButton,
+  MarketplaceEmptyState,
+  MarketplaceSectionHeader,
+  ResultCountChip,
+} from '@components/integrations/components/MarketplaceUi';
 import useProgressiveReveal from '@components/integrations/components/useProgressiveReveal';
 import { IntegrationsData } from '@components/integrations/Integrations';
 import { useFormatter } from '../../../../components/i18n';
@@ -46,8 +68,11 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
   const { hasActiveManagers } = useConnectorManagerStatus();
   const { catalogsData, deploymentData, feedsData, formsData, refetchFeeds, refetchForms } = data;
 
-  const { catalogState, handleOpenDeployDialog, handleCloseDeployDialog, handleCreate } = useConnectorDeployDialog();
-  const [builtInCreationKind, setBuiltInCreationKind] = useState<BuiltInIntegrationKind | null>(null);
+  const { catalogState, handleOpenDeployDialog, handleCloseDeployDialog, handleCreate } =
+    useConnectorDeployDialog();
+  const [builtInCreationKind, setBuiltInCreationKind] = useState<BuiltInIntegrationKind | null>(
+    null,
+  );
 
   // Sections are collapsible to keep large catalogs scannable.
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
@@ -98,8 +123,8 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
 
   const [searchInput, setSearchInput] = useState(filters.search);
 
-  const [view, setView] = useState<AvailableViewMode>(
-    () => (localStorage.getItem(VIEW_STORAGE_KEY) === 'lines' ? 'lines' : 'cards'),
+  const [view, setView] = useState<AvailableViewMode>(() =>
+    localStorage.getItem(VIEW_STORAGE_KEY) === 'lines' ? 'lines' : 'cards',
   );
   const handleViewChange = (_: React.MouseEvent, value: AvailableViewMode | null) => {
     if (!value) return;
@@ -128,7 +153,10 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
   // Progressive mounting: with a large catalog, rendering every card at once
   // makes the tab lag. Cards are revealed by batches while scrolling.
   const revealResetKey = JSON.stringify({ filters, sort });
-  const { visibleCount, sentinelRef, hasMore } = useProgressiveReveal(filteredItems.length, revealResetKey);
+  const { visibleCount, sentinelRef, hasMore } = useProgressiveReveal(
+    filteredItems.length,
+    revealResetKey,
+  );
   const visibleSections = useMemo(() => {
     const result: (CatalogSection & { totalCount: number })[] = [];
     let remaining = visibleCount;
@@ -185,7 +213,9 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
         <IngestionCatalogCard
           node={connector}
           isEnterpriseEdition={isEnterpriseEdition}
-          onClickDeploy={() => handleOpenDeployDialog(connector, catalogId, hasActiveManagers, item.deploymentCount)}
+          onClickDeploy={() =>
+            handleOpenDeployDialog(connector, catalogId, hasActiveManagers, item.deploymentCount)
+          }
           deploymentCount={item.deploymentCount}
         />
       );
@@ -197,7 +227,11 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
     <div data-testid="catalog-page">
       {/* Below md the sidebar stacks full-width above the cards instead of
           squeezing them against a fixed 250px column. */}
-      <Stack direction={{ xs: 'column', md: 'row' }} gap={2} alignItems={{ xs: 'stretch', md: 'flex-start' }}>
+      <Stack
+        direction={{ xs: 'column', md: 'row' }}
+        gap={2}
+        alignItems={{ xs: 'stretch', md: 'flex-start' }}
+      >
         <IngestionCatalogFacetSidebar
           filters={filters}
           onFiltersChange={setFilters}
@@ -258,8 +292,8 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
               {visibleSections.map((section) => (
                 <Box component="section" key={section.key}>
                   {renderSectionHeader(section)}
-                  {!collapsedSections[section.key] && (
-                    view === 'lines' ? (
+                  {!collapsedSections[section.key] &&
+                    (view === 'lines' ? (
                       <Box
                         sx={{
                           borderRadius: 1,
@@ -276,26 +310,29 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
                             isEnterpriseEdition={isEnterpriseEdition}
                             onClickDeploy={() => {
                               if (item.connector) {
-                                handleOpenDeployDialog(item.connector.connector, item.connector.catalogId, hasActiveManagers, item.deploymentCount);
+                                handleOpenDeployDialog(
+                                  item.connector.connector,
+                                  item.connector.catalogId,
+                                  hasActiveManagers,
+                                  item.deploymentCount,
+                                );
                               }
                             }}
-                            onClickCreate={() => setBuiltInCreationKind(item.builtIn ? item.builtIn.kind : null)}
+                            onClickCreate={() =>
+                              setBuiltInCreationKind(item.builtIn ? item.builtIn.kind : null)
+                            }
                           />
                         ))}
                       </Box>
                     ) : (
                       <Grid container spacing={2}>
                         {section.items.map((item) => (
-                          <Grid
-                            key={item.key}
-                            size={{ xs: 12, sm: 6, lg: 4, xl: 3 }}
-                          >
+                          <Grid key={item.key} size={{ xs: 12, sm: 6, lg: 4, xl: 3 }}>
                             {renderItem(item)}
                           </Grid>
                         ))}
                       </Grid>
-                    )
-                  )}
+                    ))}
                 </Box>
               ))}
               {hasMore && <Box ref={sentinelRef} sx={{ height: 1 }} />}

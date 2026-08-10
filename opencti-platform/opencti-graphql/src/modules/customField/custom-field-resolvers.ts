@@ -7,27 +7,50 @@ import {
   customFieldDefinitionRemoveEntityType,
   customFieldDefinitionUpdateEntityType,
   findById,
-  findCustomFieldDefinitionsForEntityType,
   findCustomFieldDefinitionsPaginated,
 } from './custom-field-domain';
 
 const customFieldResolvers: Resolvers = {
   Query: {
     customFieldDefinition: (_, { id }, context) => findById(context, context.user, id),
-    customFieldDefinitions: (_, args, context) => findCustomFieldDefinitionsPaginated(context, context.user, args),
-    customFieldDefinitionsForEntityType: (_, { entityType }, context) => findCustomFieldDefinitionsForEntityType(context, context.user, entityType),
+    customFieldDefinitions: (_, args, context) =>
+      findCustomFieldDefinitionsPaginated(context, context.user, args),
   },
   Mutation: {
-    customFieldDefinitionAdd: (_, { input }, context) => customFieldDefinitionAdd(context, context.user, input),
-    customFieldDefinitionDelete: (_, { id }, context) => customFieldDefinitionDelete(context, context.user, id),
-    customFieldDefinitionFieldPatch: (_, { id, input }, context) => customFieldDefinitionEdit(context, context.user, id, input),
-    customFieldDefinitionAddEntityType: (_, { id, entityType, mandatory, default_value }, context) => (
-      customFieldDefinitionAddEntityType(context, context.user, id, entityType, mandatory, default_value)
-    ),
-    customFieldDefinitionUpdateEntityType: (_, { id, entityType, mandatory, default_value }, context) => (
-      customFieldDefinitionUpdateEntityType(context, context.user, id, entityType, mandatory, default_value)
-    ),
-    customFieldDefinitionRemoveEntityType: (_, { id, entityType }, context) => customFieldDefinitionRemoveEntityType(context, context.user, id, entityType),
+    customFieldDefinitionAdd: (_, { input }, context) =>
+      customFieldDefinitionAdd(context, context.user, input),
+    customFieldDefinitionDelete: (_, { id }, context) =>
+      customFieldDefinitionDelete(context, context.user, id),
+    customFieldDefinitionFieldPatch: (_, { id, input }, context) =>
+      customFieldDefinitionEdit(context, context.user, id, input),
+    customFieldDefinitionAddEntityType: (
+      _,
+      { id, entityType, mandatory, default_value },
+      context,
+    ) =>
+      customFieldDefinitionAddEntityType(
+        context,
+        context.user,
+        id,
+        entityType,
+        mandatory,
+        default_value,
+      ),
+    customFieldDefinitionUpdateEntityType: (
+      _,
+      { id, entityType, mandatory, default_value },
+      context,
+    ) =>
+      customFieldDefinitionUpdateEntityType(
+        context,
+        context.user,
+        id,
+        entityType,
+        mandatory,
+        default_value,
+      ),
+    customFieldDefinitionRemoveEntityType: (_, { id, entityType }, context) =>
+      customFieldDefinitionRemoveEntityType(context, context.user, id, entityType),
   },
 };
 

@@ -50,8 +50,12 @@ const indicatorResolvers: Resolvers = {
     },
   },
   Indicator: {
-    killChainPhases: (indicator, _, context) => loadThroughDenormalized(context, context.user, indicator, INPUT_KILLCHAIN, { sortBy: 'phase_name' }),
-    observables: (indicator, args, context) => observablesPaginated<any>(context, context.user, indicator.id, args),
+    killChainPhases: (indicator, _, context) =>
+      loadThroughDenormalized(context, context.user, indicator, INPUT_KILLCHAIN, {
+        sortBy: 'phase_name',
+      }),
+    observables: (indicator, args, context) =>
+      observablesPaginated<any>(context, context.user, indicator.id, args),
     decayLiveDetails: (indicator, _, context) => getDecayDetails(context, context.user, indicator),
     decayChartData: (indicator, _, context) => getDecayChartData(context, context.user, indicator),
     x_opencti_observable_values: (indicator) => getObservableValuesFromPattern(indicator.pattern),
@@ -61,11 +65,16 @@ const indicatorResolvers: Resolvers = {
     indicatorDelete: (_, { id }, context) => {
       return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_INDICATOR);
     },
-    indicatorFieldPatch: (_, { id, input, commitMessage, references }, context) => indicatorEditField(context, context.user, id, input, { commitMessage, references }),
-    indicatorContextPatch: (_, { id, input }, context) => stixDomainObjectEditContext(context, context.user, id, input),
-    indicatorContextClean: (_, { id }, context) => stixDomainObjectCleanContext(context, context.user, id),
-    indicatorRelationAdd: (_, { id, input }, context) => stixDomainObjectAddRelation(context, context.user, id, input),
-    indicatorRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
+    indicatorFieldPatch: (_, { id, input, commitMessage, references }, context) =>
+      indicatorEditField(context, context.user, id, input, { commitMessage, references }),
+    indicatorContextPatch: (_, { id, input }, context) =>
+      stixDomainObjectEditContext(context, context.user, id, input),
+    indicatorContextClean: (_, { id }, context) =>
+      stixDomainObjectCleanContext(context, context.user, id),
+    indicatorRelationAdd: (_, { id, input }, context) =>
+      stixDomainObjectAddRelation(context, context.user, id, input),
+    indicatorRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) =>
+      stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
   },
 };
 

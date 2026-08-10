@@ -7,7 +7,11 @@ import { ThemeManager_data$data } from '@components/settings/themes/__generated_
 import { useFormatter } from '../../../../components/i18n';
 import ThemeEdition from './ThemeEdition';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNGETEXPORT_KNASKEXPORT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import ThemeType from './ThemeType';
 import handleExportJson from './ThemeExportHandler';
 import useDeletion from '../../../../utils/hooks/useDeletion';
@@ -27,7 +31,7 @@ const deleteUserThemeMutation = graphql`
 
 const deleteThemeMutation = graphql`
   mutation ThemePopoverDeletionMutation($id: ID!) {
-    themeDelete(id:$id)
+    themeDelete(id: $id)
   }
 `;
 
@@ -77,10 +81,8 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
 
     theme_login_aside_type: getLoginAsideType({
       theme_login_aside_color: themeData.theme_login_aside_color,
-      theme_login_aside_gradient_start:
-      themeData.theme_login_aside_gradient_start,
-      theme_login_aside_gradient_end:
-      themeData.theme_login_aside_gradient_end,
+      theme_login_aside_gradient_start: themeData.theme_login_aside_gradient_start,
+      theme_login_aside_gradient_end: themeData.theme_login_aside_gradient_end,
       theme_login_aside_image: themeData.theme_login_aside_image,
     }),
   };
@@ -90,11 +92,9 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
     values: { entity_type: t_i18n('Theme') },
   });
 
-  const [commit] = useApiMutation(
-    deleteThemeMutation,
-    undefined,
-    { successMessage: deleteSuccessMessage },
-  );
+  const [commit] = useApiMutation(deleteThemeMutation, undefined, {
+    successMessage: deleteSuccessMessage,
+  });
   const [commitUserResetTheme] = useApiMutation(deleteUserThemeMutation);
 
   const deletion = useDeletion({ handleClose: () => setAnchorEl(null) });
@@ -131,22 +131,20 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
     if (userThemeId === themeData.id && defaultTheme) {
       commitUserResetTheme({
         variables: {
-          input: [{
-            key: 'theme',
-            value: defaultTheme.id,
-          }],
+          input: [
+            {
+              key: 'theme',
+              value: defaultTheme.id,
+            },
+          ],
         },
       });
     }
 
     commit({
       variables: { id: theme.id },
-      updater: (store: RecordSourceSelectorProxy) => deleteNode(
-        store,
-        'Pagination_themes',
-        paginationOptions,
-        theme.id,
-      ),
+      updater: (store: RecordSourceSelectorProxy) =>
+        deleteNode(store, 'Pagination_themes', paginationOptions, theme.id),
       onCompleted: () => {
         setDeleting(false);
         handleRefetch();
@@ -162,11 +160,7 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
   return (
     <div>
       <Security
-        needs={[
-          KNOWLEDGE_KNUPDATE,
-          KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,
-          KNOWLEDGE_KNUPDATE_KNDELETE,
-        ]}
+        needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT, KNOWLEDGE_KNUPDATE_KNDELETE]}
       >
         <IconButton
           aria-label={t_i18n('Open menu')}
@@ -179,24 +173,14 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
         </IconButton>
       </Security>
 
-      <Menu
-        anchorEl={anchorEl}
-        open={isMenuOpen}
-        onClose={handleClose}
-      >
+      <Menu anchorEl={anchorEl} open={isMenuOpen} onClose={handleClose}>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <MenuItem
-            onClick={handleOpenUpdate}
-            aria-label={t_i18n('Update')}
-          >
+          <MenuItem onClick={handleOpenUpdate} aria-label={t_i18n('Update')}>
             {t_i18n('Update')}
           </MenuItem>
         </Security>
         <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
-          <MenuItem
-            onClick={handleExport}
-            aria-label={t_i18n('Export')}
-          >
+          <MenuItem onClick={handleExport} aria-label={t_i18n('Export')}>
             {t_i18n('Export')}
           </MenuItem>
         </Security>
@@ -212,11 +196,7 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
           </Security>
         )}
       </Menu>
-      <ThemeEdition
-        theme={theme}
-        open={displayUpdate}
-        handleClose={handleCloseUpdate}
-      />
+      <ThemeEdition theme={theme} open={displayUpdate} handleClose={handleCloseUpdate} />
       <DeleteDialog
         deletion={deletion}
         submitDelete={submitDelete}

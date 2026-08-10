@@ -31,9 +31,12 @@ const VocabulariesRedirect = () => {
   const isGrantedToVocabularies = useGranted([SETTINGS_SETVOCABULARIES]);
 
   if (isGrantedToLabels) return <Navigate to="/dashboard/settings/vocabularies/labels" />;
-  if (isGrantedToKillChainPhases) return <Navigate to="/dashboard/settings/vocabularies/kill_chain_phases" />;
-  if (isGrantedToCaseTemplates) return <Navigate to="/dashboard/settings/vocabularies/case_templates" />;
-  if (isGrantedToStatusTemplates) return <Navigate to="/dashboard/settings/vocabularies/status_templates" />;
+  if (isGrantedToKillChainPhases)
+    return <Navigate to="/dashboard/settings/vocabularies/kill_chain_phases" />;
+  if (isGrantedToCaseTemplates)
+    return <Navigate to="/dashboard/settings/vocabularies/case_templates" />;
+  if (isGrantedToStatusTemplates)
+    return <Navigate to="/dashboard/settings/vocabularies/status_templates" />;
   if (isGrantedToVocabularies) return <Navigate to="/dashboard/settings/vocabularies/fields" />;
   return <Navigate to="/dashboard/settings" />;
 };
@@ -50,80 +53,107 @@ const RootVocabularies = () => {
         <Routes>
           <Route
             path="/"
-            element={(
+            element={
               <Security
-                needs={[SETTINGS_SETLABELS, SETTINGS_SETKILLCHAINPHASES, SETTINGS_SETSTATUSTEMPLATES, SETTINGS_SETCASETEMPLATES, SETTINGS_SETVOCABULARIES]}
+                needs={[
+                  SETTINGS_SETLABELS,
+                  SETTINGS_SETKILLCHAINPHASES,
+                  SETTINGS_SETSTATUSTEMPLATES,
+                  SETTINGS_SETCASETEMPLATES,
+                  SETTINGS_SETVOCABULARIES,
+                ]}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <VocabulariesRedirect />
               </Security>
-            )}
+            }
           />
           <Route
             path="/labels"
-            element={(
+            element={
               <Security needs={[SETTINGS_SETLABELS]} placeholder={<Navigate to={fallbackUrl} />}>
                 <Labels />
               </Security>
-            )}
+            }
           />
           <Route
             path="/kill_chain_phases"
-            element={(
-              <Security needs={[SETTINGS_SETKILLCHAINPHASES]} placeholder={<Navigate to={fallbackUrl} />}>
+            element={
+              <Security
+                needs={[SETTINGS_SETKILLCHAINPHASES]}
+                placeholder={<Navigate to={fallbackUrl} />}
+              >
                 <KillChainPhases />
               </Security>
-            )}
+            }
           />
           <Route
             path="/status_templates"
-            element={(
-              <Security needs={[SETTINGS_SETSTATUSTEMPLATES]} placeholder={<Navigate to={fallbackUrl} />}>
+            element={
+              <Security
+                needs={[SETTINGS_SETSTATUSTEMPLATES]}
+                placeholder={<Navigate to={fallbackUrl} />}
+              >
                 <StatusTemplates />
               </Security>
-            )}
+            }
           />
           <Route
             path="/case_templates"
-            element={(
-              <Security needs={[SETTINGS_SETCASETEMPLATES]} placeholder={<Navigate to={fallbackUrl} />}>
+            element={
+              <Security
+                needs={[SETTINGS_SETCASETEMPLATES]}
+                placeholder={<Navigate to={fallbackUrl} />}
+              >
                 <CaseTemplates />
               </Security>
-            )}
+            }
           />
           <Route
             path="/case_templates/:caseTemplateId/*"
-            element={(
-              <Security needs={[SETTINGS_SETCASETEMPLATES]} placeholder={<Navigate to={fallbackUrl} />}>
+            element={
+              <Security
+                needs={[SETTINGS_SETCASETEMPLATES]}
+                placeholder={<Navigate to={fallbackUrl} />}
+              >
                 <CaseTemplateTasks />
               </Security>
-            )}
+            }
           />
           {isCustomFieldsFeatureEnabled && (
             <Route
               path="/custom_fields"
-              element={(
-                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+              element={
+                <Security
+                  needs={[SETTINGS_SETCUSTOMIZATION]}
+                  placeholder={<Navigate to={fallbackUrl} />}
+                >
                   <CustomFields />
                 </Security>
-              )}
+              }
             />
           )}
           <Route
             path="/fields"
-            element={(
-              <Security needs={[SETTINGS_SETVOCABULARIES]} placeholder={<Navigate to={fallbackUrl} />}>
+            element={
+              <Security
+                needs={[SETTINGS_SETVOCABULARIES]}
+                placeholder={<Navigate to={fallbackUrl} />}
+              >
                 <VocabularyCategories />
               </Security>
-            )}
+            }
           />
           <Route
             path="/fields/:category"
-            element={(
-              <Security needs={[SETTINGS_SETVOCABULARIES]} placeholder={<Navigate to={fallbackUrl} />}>
+            element={
+              <Security
+                needs={[SETTINGS_SETVOCABULARIES]}
+                placeholder={<Navigate to={fallbackUrl} />}
+              >
                 <Vocabularies />
               </Security>
-            )}
+            }
           />
         </Routes>
       </Suspense>

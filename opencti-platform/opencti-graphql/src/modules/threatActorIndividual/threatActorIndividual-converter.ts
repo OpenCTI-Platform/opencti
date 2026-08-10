@@ -1,14 +1,24 @@
 import { buildStixDomain } from '../../database/stix-2-1-converter';
-import type { StixThreatActorIndividual, StoreEntityThreatActorIndividual } from './threatActorIndividual-types';
+import type {
+  StixThreatActorIndividual,
+  StoreEntityThreatActorIndividual,
+} from './threatActorIndividual-types';
 import type { StixThreatActor } from '../../types/stix-2-0-sdo';
 import { INPUT_BORN_IN, INPUT_ETHNICITY, INPUT_OBJECTS } from '../../schema/general';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
-import { assertType, cleanObject, convertObjectReferences, convertToStixDate } from '../../database/stix-converter-utils';
+import {
+  assertType,
+  cleanObject,
+  convertObjectReferences,
+  convertToStixDate,
+} from '../../database/stix-converter-utils';
 import { buildStixDomain as buildStixDomain2 } from '../../database/stix-2-0-converter';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from './threatActorIndividual-types';
 import type { StoreEntity } from '../../types/store';
 
-export const convertThreatActorIndividualToStix_2_1 = (instance: StoreEntityThreatActorIndividual): StixThreatActorIndividual => {
+export const convertThreatActorIndividualToStix_2_1 = (
+  instance: StoreEntityThreatActorIndividual,
+): StixThreatActorIndividual => {
   const threatActor = buildStixDomain(instance);
   return {
     ...threatActor,
@@ -46,7 +56,9 @@ export const convertThreatActorIndividualToStix_2_1 = (instance: StoreEntityThre
   };
 };
 
-export const convertThreatActorIndividualToStix_2_0 = (instance: StoreEntity): StixThreatActor & {
+export const convertThreatActorIndividualToStix_2_0 = (
+  instance: StoreEntity,
+): StixThreatActor & {
   date_of_birth: string | undefined;
   gender: string;
   job_title: string;
@@ -73,7 +85,8 @@ export const convertThreatActorIndividualToStix_2_0 = (instance: StoreEntity): S
     goals: instance.goals,
     sophistication: instance.sophistication,
     resource_level: instance.resource_level,
-    primary_motivation: instance.primary_motivation ?? (threatActorIndividual as any).primary_motivations,
+    primary_motivation:
+      instance.primary_motivation ?? (threatActorIndividual as any).primary_motivations,
     secondary_motivations: instance.secondary_motivations,
     personal_motivations: instance.personal_motivations,
     date_of_birth: convertToStixDate(threatActorIndividual.date_of_birth),

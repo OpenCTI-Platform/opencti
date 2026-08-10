@@ -69,46 +69,139 @@ export const testGenericFilter = <T extends string | number | boolean>(
   }
   if (operationMode === 'and') {
     // we need to find all of them or none of them
-    return (op === 'eq' && adaptedFilterValues.every((v) => stixCandidates.includes(v)))
-      || (op === 'not_eq' && adaptedFilterValues.every((v) => !stixCandidates.includes(v)))
-      || (op === 'contains' && adaptedFilterValues.every((v) => stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string' && c.includes(v))))
-      || (op === 'not_contains' && adaptedFilterValues.every((v) => !stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string' && c.includes(v))))
-      || (op === 'starts_with' && adaptedFilterValues.every((v) => stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string' && c.startsWith(v))))
-      || (op === 'not_starts_with' && adaptedFilterValues.every((v) => !stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string' && c.startsWith(v))))
-      || (op === 'ends_with' && adaptedFilterValues.every((v) => stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string' && c.endsWith(v))))
-      || (op === 'not_ends_with' && adaptedFilterValues.every((v) => !stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string' && c.endsWith(v))))
-      || (op === 'only_eq_to' && adaptedFilterValues.every((v) => stixCandidates.includes(v)) && stixCandidates.every((c) => adaptedFilterValues.includes(c)))
-      || (op === 'not_only_eq_to' && !(adaptedFilterValues.every((v) => stixCandidates.includes(v)) && stixCandidates.every((c) => adaptedFilterValues.includes(c))))
-      || (op === 'search' && adaptedFilterValues.every((v) => stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string'
-        && (v.split(' ').some((word) => c.includes(word)))))) // a stix candidate should contain at least one of the filter values words
-
-    // In real cases, there is only 1 filter value with the next operators (not much sense otherwise)
-        || (op === 'lt' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c < v)))
-        || (op === 'lte' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c <= v)))
-        || (op === 'gt' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c > v)))
-        || (op === 'gte' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c >= v)));
+    return (
+      (op === 'eq' && adaptedFilterValues.every((v) => stixCandidates.includes(v))) ||
+      (op === 'not_eq' && adaptedFilterValues.every((v) => !stixCandidates.includes(v))) ||
+      (op === 'contains' &&
+        adaptedFilterValues.every((v) =>
+          stixCandidates.some(
+            (c) => typeof c === 'string' && typeof v === 'string' && c.includes(v),
+          ),
+        )) ||
+      (op === 'not_contains' &&
+        adaptedFilterValues.every(
+          (v) =>
+            !stixCandidates.some(
+              (c) => typeof c === 'string' && typeof v === 'string' && c.includes(v),
+            ),
+        )) ||
+      (op === 'starts_with' &&
+        adaptedFilterValues.every((v) =>
+          stixCandidates.some(
+            (c) => typeof c === 'string' && typeof v === 'string' && c.startsWith(v),
+          ),
+        )) ||
+      (op === 'not_starts_with' &&
+        adaptedFilterValues.every(
+          (v) =>
+            !stixCandidates.some(
+              (c) => typeof c === 'string' && typeof v === 'string' && c.startsWith(v),
+            ),
+        )) ||
+      (op === 'ends_with' &&
+        adaptedFilterValues.every((v) =>
+          stixCandidates.some(
+            (c) => typeof c === 'string' && typeof v === 'string' && c.endsWith(v),
+          ),
+        )) ||
+      (op === 'not_ends_with' &&
+        adaptedFilterValues.every(
+          (v) =>
+            !stixCandidates.some(
+              (c) => typeof c === 'string' && typeof v === 'string' && c.endsWith(v),
+            ),
+        )) ||
+      (op === 'only_eq_to' &&
+        adaptedFilterValues.every((v) => stixCandidates.includes(v)) &&
+        stixCandidates.every((c) => adaptedFilterValues.includes(c))) ||
+      (op === 'not_only_eq_to' &&
+        !(
+          adaptedFilterValues.every((v) => stixCandidates.includes(v)) &&
+          stixCandidates.every((c) => adaptedFilterValues.includes(c))
+        )) ||
+      (op === 'search' &&
+        adaptedFilterValues.every((v) =>
+          stixCandidates.some(
+            (c) =>
+              typeof c === 'string' &&
+              typeof v === 'string' &&
+              v.split(' ').some((word) => c.includes(word)),
+          ),
+        )) || // a stix candidate should contain at least one of the filter values words
+      // In real cases, there is only 1 filter value with the next operators (not much sense otherwise)
+      (op === 'lt' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c < v))) ||
+      (op === 'lte' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c <= v))) ||
+      (op === 'gt' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c > v))) ||
+      (op === 'gte' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c >= v)))
+    );
   }
 
   if (operationMode === 'or') {
     // we need to find one of them or at least one is not found
-    return (op === 'eq' && adaptedFilterValues.some((v) => stixCandidates.includes(v)))
-      || (op === 'not_eq' && adaptedFilterValues.some((v) => !stixCandidates.includes(v)))
-      || (op === 'contains' && adaptedFilterValues.some((v) => stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string' && c.includes(v))))
-      || (op === 'not_contains' && adaptedFilterValues.some((v) => !stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string' && c.includes(v))))
-      || (op === 'starts_with' && adaptedFilterValues.some((v) => stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string' && c.startsWith(v))))
-      || (op === 'not_starts_with' && adaptedFilterValues.some((v) => !stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string' && c.startsWith(v))))
-      || (op === 'ends_with' && adaptedFilterValues.some((v) => stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string' && c.endsWith(v))))
-      || (op === 'not_ends_with' && adaptedFilterValues.some((v) => !stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string' && c.endsWith(v))))
-      || (op === 'only_eq_to' && stixCandidates.length === 1 && adaptedFilterValues.some((v) => stixCandidates[0] === v))
-      || (op === 'not_only_eq_to' && !(stixCandidates.length === 1 && adaptedFilterValues.some((v) => stixCandidates[0] === v)))
-      || (op === 'search' && adaptedFilterValues.some((v) => stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string'
-        && (v.split(' ').some((word) => c.includes(word)))))) // a stix candidate should contain at least one of the filter values words
-
-    // In real cases, there is only 1 filter value with the next operators (not much sense otherwise)
-        || (op === 'lt' && adaptedFilterValues.some((v) => stixCandidates.some((c) => c < v)))
-        || (op === 'lte' && adaptedFilterValues.some((v) => stixCandidates.some((c) => c <= v)))
-        || (op === 'gt' && adaptedFilterValues.some((v) => stixCandidates.some((c) => c > v)))
-        || (op === 'gte' && adaptedFilterValues.some((v) => stixCandidates.some((c) => c >= v)));
+    return (
+      (op === 'eq' && adaptedFilterValues.some((v) => stixCandidates.includes(v))) ||
+      (op === 'not_eq' && adaptedFilterValues.some((v) => !stixCandidates.includes(v))) ||
+      (op === 'contains' &&
+        adaptedFilterValues.some((v) =>
+          stixCandidates.some(
+            (c) => typeof c === 'string' && typeof v === 'string' && c.includes(v),
+          ),
+        )) ||
+      (op === 'not_contains' &&
+        adaptedFilterValues.some(
+          (v) =>
+            !stixCandidates.some(
+              (c) => typeof c === 'string' && typeof v === 'string' && c.includes(v),
+            ),
+        )) ||
+      (op === 'starts_with' &&
+        adaptedFilterValues.some((v) =>
+          stixCandidates.some(
+            (c) => typeof c === 'string' && typeof v === 'string' && c.startsWith(v),
+          ),
+        )) ||
+      (op === 'not_starts_with' &&
+        adaptedFilterValues.some(
+          (v) =>
+            !stixCandidates.some(
+              (c) => typeof c === 'string' && typeof v === 'string' && c.startsWith(v),
+            ),
+        )) ||
+      (op === 'ends_with' &&
+        adaptedFilterValues.some((v) =>
+          stixCandidates.some(
+            (c) => typeof c === 'string' && typeof v === 'string' && c.endsWith(v),
+          ),
+        )) ||
+      (op === 'not_ends_with' &&
+        adaptedFilterValues.some(
+          (v) =>
+            !stixCandidates.some(
+              (c) => typeof c === 'string' && typeof v === 'string' && c.endsWith(v),
+            ),
+        )) ||
+      (op === 'only_eq_to' &&
+        stixCandidates.length === 1 &&
+        adaptedFilterValues.some((v) => stixCandidates[0] === v)) ||
+      (op === 'not_only_eq_to' &&
+        !(
+          stixCandidates.length === 1 && adaptedFilterValues.some((v) => stixCandidates[0] === v)
+        )) ||
+      (op === 'search' &&
+        adaptedFilterValues.some((v) =>
+          stixCandidates.some(
+            (c) =>
+              typeof c === 'string' &&
+              typeof v === 'string' &&
+              v.split(' ').some((word) => c.includes(word)),
+          ),
+        )) || // a stix candidate should contain at least one of the filter values words
+      // In real cases, there is only 1 filter value with the next operators (not much sense otherwise)
+      (op === 'lt' && adaptedFilterValues.some((v) => stixCandidates.some((c) => c < v))) ||
+      (op === 'lte' && adaptedFilterValues.some((v) => stixCandidates.some((c) => c <= v))) ||
+      (op === 'gt' && adaptedFilterValues.some((v) => stixCandidates.some((c) => c > v))) ||
+      (op === 'gte' && adaptedFilterValues.some((v) => stixCandidates.some((c) => c >= v)))
+    );
   }
 
   return false;
@@ -118,10 +211,19 @@ export const testGenericFilter = <T extends string | number | boolean>(
  * Implementation of testGenericFilter for string values.
  * String comparison is insensitive to case, and we trim values by default.
  */
-export const testStringFilter = (filter: FilterExcerpt, stixCandidates: string[], changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testStringFilter = (
+  filter: FilterExcerpt,
+  stixCandidates: string[],
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   const filterValuesLowerCase = filter.values.map((v) => v.toLowerCase().trim());
   const stixValuesLowerCase = stixCandidates.map((v) => v.toLowerCase().trim());
-  return testGenericFilter<string>(filter, filterValuesLowerCase, stixValuesLowerCase, changeContext);
+  return testGenericFilter<string>(
+    filter,
+    filterValuesLowerCase,
+    stixValuesLowerCase,
+    changeContext,
+  );
 };
 
 /**
@@ -129,24 +231,49 @@ export const testStringFilter = (filter: FilterExcerpt, stixCandidates: string[]
  * Filter values are parsed as booleans
  * The strings "true", "yes" or "1" are interpreted as true ; anything else is false.
  */
-export const testBooleanFilter = (filter: FilterExcerpt, stixCandidate: boolean | null | undefined, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
-  const filterValuesAsBooleans = filter.values.map((v) => v.toLowerCase() === 'true' || v.toLowerCase() === 'yes' || v === '1');
-  return testGenericFilter<boolean>(filter, filterValuesAsBooleans, toValidArray(stixCandidate), changeContext);
+export const testBooleanFilter = (
+  filter: FilterExcerpt,
+  stixCandidate: boolean | null | undefined,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
+  const filterValuesAsBooleans = filter.values.map(
+    (v) => v.toLowerCase() === 'true' || v.toLowerCase() === 'yes' || v === '1',
+  );
+  return testGenericFilter<boolean>(
+    filter,
+    filterValuesAsBooleans,
+    toValidArray(stixCandidate),
+    changeContext,
+  );
 };
 
 /**
  * Implementation of testGenericFilter for numerical values.
  * Filter values are parsed as floats.
  */
-export const testNumericFilter = (filter: FilterExcerpt, stixCandidate: number | null | undefined, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
-  const filterValuesAsNumbers = filter.values.map((v) => parseFloat(v)).filter((n) => !Number.isNaN(n));
-  return testGenericFilter<number>(filter, filterValuesAsNumbers, toValidArray(stixCandidate), changeContext);
+export const testNumericFilter = (
+  filter: FilterExcerpt,
+  stixCandidate: number | null | undefined,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
+  const filterValuesAsNumbers = filter.values
+    .map((v) => parseFloat(v))
+    .filter((n) => !Number.isNaN(n));
+  return testGenericFilter<number>(
+    filter,
+    filterValuesAsNumbers,
+    toValidArray(stixCandidate),
+    changeContext,
+  );
 };
 
 /**
  * Specific tester using the Moment.js library to compare dates.
  */
-export const testDateFilter = ({ mode, operator, values }: FilterExcerpt, stixCandidate: string | null | undefined) => {
+export const testDateFilter = (
+  { mode, operator, values }: FilterExcerpt,
+  stixCandidate: string | null | undefined,
+) => {
   // make sure the dates are valid, otherwise we won't use them.
   const filterValuesAsDates = values.map((v) => moment(new Date(v))).filter((d) => d.isValid());
 
@@ -170,21 +297,25 @@ export const testDateFilter = ({ mode, operator, values }: FilterExcerpt, stixCa
 
   if (mode === 'and') {
     // NOTE: equality is very strict (milliseconds)
-    return (operator === 'eq' && filterValuesAsDates.every((v) => stixDate.isSame(v)))
-      || (operator === 'not_eq' && filterValuesAsDates.every((v) => !stixDate.isSame(v)))
-      || (operator === 'lt' && filterValuesAsDates.every((v) => stixDate.isBefore(v)))
-      || (operator === 'lte' && filterValuesAsDates.every((v) => stixDate.isSameOrBefore(v)))
-      || (operator === 'gt' && filterValuesAsDates.every((v) => stixDate.isAfter(v)))
-      || (operator === 'gte' && filterValuesAsDates.every((v) => stixDate.isSameOrAfter(v)));
+    return (
+      (operator === 'eq' && filterValuesAsDates.every((v) => stixDate.isSame(v))) ||
+      (operator === 'not_eq' && filterValuesAsDates.every((v) => !stixDate.isSame(v))) ||
+      (operator === 'lt' && filterValuesAsDates.every((v) => stixDate.isBefore(v))) ||
+      (operator === 'lte' && filterValuesAsDates.every((v) => stixDate.isSameOrBefore(v))) ||
+      (operator === 'gt' && filterValuesAsDates.every((v) => stixDate.isAfter(v))) ||
+      (operator === 'gte' && filterValuesAsDates.every((v) => stixDate.isSameOrAfter(v)))
+    );
   }
   if (mode === 'or') {
     // value must compare to at least one of the candidates according to operator
-    return (operator === 'eq' && filterValuesAsDates.some((v) => stixDate.isSame(v)))
-      || (operator === 'not_eq' && filterValuesAsDates.some((v) => !stixDate.isSame(v)))
-      || (operator === 'lt' && filterValuesAsDates.some((v) => stixDate.isBefore(v)))
-      || (operator === 'lte' && filterValuesAsDates.some((v) => stixDate.isSameOrBefore(v)))
-      || (operator === 'gt' && filterValuesAsDates.some((v) => stixDate.isAfter(v)))
-      || (operator === 'gte' && filterValuesAsDates.some((v) => stixDate.isSameOrAfter(v)));
+    return (
+      (operator === 'eq' && filterValuesAsDates.some((v) => stixDate.isSame(v))) ||
+      (operator === 'not_eq' && filterValuesAsDates.some((v) => !stixDate.isSame(v))) ||
+      (operator === 'lt' && filterValuesAsDates.some((v) => stixDate.isBefore(v))) ||
+      (operator === 'lte' && filterValuesAsDates.some((v) => stixDate.isSameOrBefore(v))) ||
+      (operator === 'gt' && filterValuesAsDates.some((v) => stixDate.isAfter(v))) ||
+      (operator === 'gte' && filterValuesAsDates.some((v) => stixDate.isSameOrAfter(v)))
+    );
   }
 
   return false;
@@ -194,7 +325,11 @@ export const testDateFilter = ({ mode, operator, values }: FilterExcerpt, stixCa
 
 // generic representation of a tester function
 // its implementations are dependent on the data model, to find the information requested by the filter
-export type TesterFunction = (data: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => boolean;
+export type TesterFunction = (
+  data: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => boolean;
 
 /**
  * Optional event context passed through the filtering pipeline.
@@ -215,7 +350,12 @@ export interface FilterEventContext {
  *                               see unit tests for an example.
  * @param eventContext optional context from the stream event (for has_changed evaluation)
  */
-export const testFilterGroup = (data: any, filterGroup: FilterGroup, testerByFilterKeyMap: Record<string, TesterFunction>, eventContext?: FilterEventContext): boolean => {
+export const testFilterGroup = (
+  data: any,
+  filterGroup: FilterGroup,
+  testerByFilterKeyMap: Record<string, TesterFunction>,
+  eventContext?: FilterEventContext,
+): boolean => {
   if (!isFilterGroupNotEmpty(filterGroup)) return true; // no filters -> stix always match
 
   const testSingleFilter = (filter: Filter): boolean => {
@@ -231,7 +371,11 @@ export const testFilterGroup = (data: any, filterGroup: FilterGroup, testerByFil
       results.push(filterGroup.filters.every((filter) => testSingleFilter(filter)));
     }
     if (filterGroup.filterGroups.length > 0) {
-      results.push(filterGroup.filterGroups.every((fg) => testFilterGroup(data, fg, testerByFilterKeyMap, eventContext)));
+      results.push(
+        filterGroup.filterGroups.every((fg) =>
+          testFilterGroup(data, fg, testerByFilterKeyMap, eventContext),
+        ),
+      );
     }
     return results.length > 0 && results.every((isTrue) => isTrue);
   }
@@ -242,7 +386,11 @@ export const testFilterGroup = (data: any, filterGroup: FilterGroup, testerByFil
       results.push(filterGroup.filters.some((filter) => testSingleFilter(filter)));
     }
     if (filterGroup.filterGroups.length > 0) {
-      results.push(filterGroup.filterGroups.some((fg) => testFilterGroup(data, fg, testerByFilterKeyMap, eventContext)));
+      results.push(
+        filterGroup.filterGroups.some((fg) =>
+          testFilterGroup(data, fg, testerByFilterKeyMap, eventContext),
+        ),
+      );
     }
     return results.length > 0 && results.some((isTrue) => isTrue);
   }

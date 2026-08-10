@@ -32,10 +32,12 @@ const SearchBulkContainer = () => {
   const setValuesAfterDebounce = useDebounceCallback(setValues, 500); // set values with a 500ms debounce
 
   const bulkTextToValues = (text: string) => {
-    return text
-      .split('\n')
-      .filter((o) => o.length > 1)
-      .map((val) => val.trim()) ?? [];
+    return (
+      text
+        .split('\n')
+        .filter((o) => o.length > 1)
+        .map((val) => val.trim()) ?? []
+    );
   };
 
   // Pre-fill from ?q= query parameter (e.g. when coming from the top bar search)
@@ -83,13 +85,11 @@ const SearchBulkContainer = () => {
 
   return (
     <>
-      <Breadcrumbs elements={[{ label: t_i18n('Search') }, { label: t_i18n('Bulk search'), current: true }]} />
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Search') }, { label: t_i18n('Bulk search'), current: true }]}
+      />
       <div className="clearfix" />
-      <Grid
-        container={true}
-        spacing={3}
-        style={{ marginBottom: 20, marginTop: 0 }}
-      >
+      <Grid container={true} spacing={3} style={{ marginBottom: 20, marginTop: 0 }}>
         <Grid item xs={2} style={{ marginTop: -20 }}>
           <TextField
             onChange={handleChangeTextField}
@@ -103,26 +103,26 @@ const SearchBulkContainer = () => {
         </Grid>
         <Grid item xs={10}>
           <Box sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 3, marginTop: -3 }}>
-            <Tabs
-              value={currentTab}
-              onChange={(_, value) => handleChangeTab(value)}
-            >
+            <Tabs value={currentTab} onChange={(_, value) => handleChangeTab(value)}>
               <Tab label={`${t_i18n('Known entities')} (${numberOfKnownEntities})`} />
               <Tab label={`${t_i18n('Unknown entities')} (${numberOfUnknownEntities})`} />
             </Tabs>
           </Box>
-          {currentTab === 0 && values.length > 0
-            && (
-              <SearchBulk
-                inputValues={values}
-                dataColumns={dataColumns}
-                setNumberOfEntities={setNumberOfKnownEntities}
-              />
-            )
-          }
-          {currentTab === 0 && isEmpty(textFieldValue)
-            && <DataTableWithoutFragment data={[]} globalCount={0} dataColumns={dataColumns} storageKey={BULK_SEARCH_LOCAL_STORAGE_KEY} />
-          }
+          {currentTab === 0 && values.length > 0 && (
+            <SearchBulk
+              inputValues={values}
+              dataColumns={dataColumns}
+              setNumberOfEntities={setNumberOfKnownEntities}
+            />
+          )}
+          {currentTab === 0 && isEmpty(textFieldValue) && (
+            <DataTableWithoutFragment
+              data={[]}
+              globalCount={0}
+              dataColumns={dataColumns}
+              storageKey={BULK_SEARCH_LOCAL_STORAGE_KEY}
+            />
+          )}
           <SearchBulkUnknownEntities
             values={values}
             setNumberOfEntities={setNumberOfUnknownEntities}

@@ -53,15 +53,12 @@ const ImbricatedFilterGroupDisplay: FunctionComponent<ImbricatedFilterGroupDispl
         }}
         color="warning"
         onClick={handleClickOpen}
-        label={(
+        label={
           <span style={{ display: 'flex', alignItems: 'center', gap: 4, textTransform: 'none' }}>
             {t_i18n('Filters are not fully displayed')}
-            <InformationOutline
-              fontSize="small"
-              color="secondary"
-            />
+            <InformationOutline fontSize="small" color="secondary" />
           </span>
-        )}
+        }
       />
 
       <Dialog
@@ -74,17 +71,12 @@ const ImbricatedFilterGroupDisplay: FunctionComponent<ImbricatedFilterGroupDispl
           {t_i18n('Imbricated filter groups')}
         </DialogTitle>
         <DialogContent>
-          <Typography
-            variant="body2"
-            sx={{ marginBottom: theme.spacing(2) }}
-          >
-            {t_i18n('This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API. They might have been created via the API or a migration from a previous filter format. For your information, here is information about the content of the filter object.')}
+          <Typography variant="body2" sx={{ marginBottom: theme.spacing(2) }}>
+            {t_i18n(
+              'This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API. They might have been created via the API or a migration from a previous filter format. For your information, here is information about the content of the filter object.',
+            )}
           </Typography>
-          <Typography
-            variant="h3"
-            sx={{ textTransform: 'none' }}
-            gutterBottom
-          >
+          <Typography variant="h3" sx={{ textTransform: 'none' }} gutterBottom>
             {t_i18n('Your filter group cannot be modified yet:')}
           </Typography>
           <FilterGroupsVisualDisplay
@@ -92,17 +84,10 @@ const ImbricatedFilterGroupDisplay: FunctionComponent<ImbricatedFilterGroupDispl
             filterGroups={filterGroups}
             filterMode={filterMode}
           />
-          <Typography
-            variant="h3"
-            sx={{ textTransform: 'none' }}
-            gutterBottom
-          >
+          <Typography variant="h3" sx={{ textTransform: 'none' }} gutterBottom>
             {t_i18n('The complete Filter object is as follows:')}
           </Typography>
-          <CodeBlock
-            code={JSON.stringify(filterObj, null, 2)}
-            language="json"
-          />
+          <CodeBlock code={JSON.stringify(filterObj, null, 2)} language="json" />
         </DialogContent>
         <DialogActions sx={{ mr: 2, mb: 2 }}>
           <Button onClick={handleClose} autoFocus>

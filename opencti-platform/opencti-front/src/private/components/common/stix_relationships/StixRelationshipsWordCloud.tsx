@@ -113,10 +113,7 @@ const StixRelationshipsWordCloudComponent = ({
   queryRef,
   dataSelection,
 }: StixRelationshipsWordCloudComponentProps) => {
-  const data = usePreloadedQuery(
-    stixRelationshipsWordCloudsDistributionQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery(stixRelationshipsWordCloudsDistributionQuery, queryRef);
 
   const distribution = data?.stixRelationshipsDistribution ?? [];
   const selection = dataSelection[0];
@@ -125,12 +122,7 @@ const StixRelationshipsWordCloudComponent = ({
     return <WidgetNoData />;
   }
 
-  return (
-    <WidgetWordCloud
-      data={distribution}
-      groupBy={selection.attribute ?? 'entity_type'}
-    />
-  );
+  return <WidgetWordCloud data={distribution} groupBy={selection.attribute ?? 'entity_type'} />;
 };
 
 const buildQueryVariables = (
@@ -138,7 +130,8 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixRelationshipsWordCloudDistributionQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { startDate, endDate, dateAttribute, filters, dynamicFrom, dynamicTo } = buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
+  const { startDate, endDate, dateAttribute, filters, dynamicFrom, dynamicTo } =
+    buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
 
   return {
     field: selection.attribute ?? 'entity_type',
@@ -175,7 +168,13 @@ const StixRelationshipsWordCloud = ({
   refreshRate = null,
 }: StixRelationshipsWordCloudProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsWordCloudDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixRelationshipsWordCloudDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,

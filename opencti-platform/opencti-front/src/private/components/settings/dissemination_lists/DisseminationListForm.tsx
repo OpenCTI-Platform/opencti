@@ -21,7 +21,10 @@ export interface DisseminationListFormData {
 export type DisseminationListFormInputKeys = keyof DisseminationListFormData;
 
 interface DisseminationListFormProps {
-  onSubmit: (values: DisseminationListFormData, helpers: FormikHelpers<DisseminationListFormData>) => void;
+  onSubmit: (
+    values: DisseminationListFormData,
+    helpers: FormikHelpers<DisseminationListFormData>,
+  ) => void;
   onSubmitField?: (field: DisseminationListFormInputKeys, value: string) => void;
   defaultValues?: DisseminationListFormData;
   onReset?: () => void;
@@ -46,7 +49,8 @@ const DisseminationListForm: FunctionComponent<DisseminationListFormProps> = ({
 
   const updateField = async (field: DisseminationListFormInputKeys, value: string) => {
     if (onSubmitField) {
-      validation.validateAt(field, { [field]: value })
+      validation
+        .validateAt(field, { [field]: value })
         .then(() => onSubmitField(field, value))
         .catch(() => false);
     }
@@ -98,7 +102,12 @@ const DisseminationListForm: FunctionComponent<DisseminationListFormProps> = ({
               // on pasting data, we try to extract emails
               const extractedEmails = parseEmailList(pastedText);
               if (extractedEmails.length > 0) {
-                MESSAGING$.notifySuccess(t_i18n('', { id: '{count} email address(es) extracted from pasted text', values: { count: extractedEmails.length } }));
+                MESSAGING$.notifySuccess(
+                  t_i18n('', {
+                    id: '{count} email address(es) extracted from pasted text',
+                    values: { count: extractedEmails.length },
+                  }),
+                );
                 return extractedEmails.join('\n'); // alter the pasted content
               }
               return pastedText; // do not alter pasted content; it's probably invalid anyway
@@ -106,17 +115,10 @@ const DisseminationListForm: FunctionComponent<DisseminationListFormProps> = ({
           />
           {!isEdition && (
             <FormButtonContainer>
-              <Button
-                variant="secondary"
-                onClick={handleReset}
-                disabled={isSubmitting}
-              >
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>

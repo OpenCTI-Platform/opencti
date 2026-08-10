@@ -8,19 +8,11 @@ export const DEFAULT_CUSTOM_VIEW_TAB_VALUE = 'default-custom-view';
 export const CUSTOM_VIEW_TAB_VALUE = 'custom-view';
 
 export const customViewsFragment = graphql`
-  fragment useCustomViews_data on Query
-  @refetchable(queryName: "UseCustomViewsRefetchQuery") {
+  fragment useCustomViews_data on Query @refetchable(queryName: "UseCustomViewsRefetchQuery") {
     customViews(
       orderBy: name
       orderMode: asc
-      filters: {
-        mode: and
-        filters: [{
-          key: ["enabled"]
-          values: [true]
-        }]
-        filterGroups: []
-      }
+      filters: { mode: and, filters: [{ key: ["enabled"], values: [true] }], filterGroups: [] }
     ) {
       edges {
         node {
@@ -40,9 +32,7 @@ function matchPath(customViews: CustomView[]) {
     const current = getCurrentTab(fullPath, basePath);
     const currentCustomView = customViews.find(({ path }) => path === current);
     if (currentCustomView) {
-      return currentCustomView.default
-        ? DEFAULT_CUSTOM_VIEW_TAB_VALUE
-        : CUSTOM_VIEW_TAB_VALUE;
+      return currentCustomView.default ? DEFAULT_CUSTOM_VIEW_TAB_VALUE : CUSTOM_VIEW_TAB_VALUE;
     }
     return undefined;
   };

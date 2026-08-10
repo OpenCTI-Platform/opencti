@@ -44,7 +44,10 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { stixCyberObservablesLinesAttributesQuery, stixCyberObservablesLinesSubTypesQuery } from './StixCyberObservablesLines';
+import {
+  stixCyberObservablesLinesAttributesQuery,
+  stixCyberObservablesLinesSubTypesQuery,
+} from './StixCyberObservablesLines';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -183,8 +186,8 @@ const stixCyberObservableMutation = graphql`
         }
       }
       creators {
-        id,
-        name,
+        id
+        name
       }
       objectMarking {
         id
@@ -224,9 +227,15 @@ const BULK_OBSERVABLES = [
   { type: 'Url', keys: ['value'] },
   { type: 'User-Agent', keys: ['value'] },
   { type: 'AI-Prompt', keys: ['value'] },
-  { type: 'StixFile', keys: ['name', 'hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-256', 'hashes_SHA-512'] },
+  {
+    type: 'StixFile',
+    keys: ['name', 'hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-256', 'hashes_SHA-512'],
+  },
   { type: 'Artifact', keys: ['hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-256', 'hashes_SHA-512'] },
-  { type: 'X509-Certificate', keys: ['hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-256', 'hashes_SHA-512'] },
+  {
+    type: 'X509-Certificate',
+    keys: ['hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-256', 'hashes_SHA-512'],
+  },
 ];
 
 const SCO_DEFAULT_FIELD = [
@@ -271,14 +280,26 @@ const StixCyberObservableCreation = ({
   const theme = useTheme();
   const { t_i18n } = useFormatter();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
-  const { booleanAttributes, dateAttributes, multipleAttributes, numberAttributes, ignoredAttributes } = useAttributes();
+  const {
+    booleanAttributes,
+    dateAttributes,
+    multipleAttributes,
+    numberAttributes,
+    ignoredAttributes,
+  } = useAttributes();
   const [status, setStatus] = useState({ open: false, type: type ?? null });
-  const inputObsType = useMemo(() => status?.type?.replace(/(?:^|-|_)(\w)/g, (_, l) => l.toUpperCase()), [status]);
+  const inputObsType = useMemo(
+    () => status?.type?.replace(/(?:^|-|_)(\w)/g, (_, l) => l.toUpperCase()),
+    [status],
+  );
   const [bulkOpen, setBulkOpen] = useState(false);
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const [bulkSelectedKey, setBulkSelectedKey] = useState(null);
-  const bulkConf = useMemo(() => BULK_OBSERVABLES.find(({ type: obsType }) => obsType === status.type), [status]);
+  const bulkConf = useMemo(
+    () => BULK_OBSERVABLES.find(({ type: obsType }) => obsType === status.type),
+    [status],
+  );
   // Store the latest created observable for callback
   const lastCreatedObservableRef = React.useRef(null);
 
@@ -286,35 +307,23 @@ const StixCyberObservableCreation = ({
     setBulkSelectedKey(bulkConf?.keys.length === 1 ? bulkConf.keys[0] : null);
   }, [bulkConf]);
 
-  const [commit] = useApiMutation(
-    stixCyberObservableMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Observable')} ${t_i18n('successfully created')}` },
-  );
+  const [commit] = useApiMutation(stixCyberObservableMutation, undefined, {
+    successMessage: `${t_i18n('entity_Observable')} ${t_i18n('successfully created')}`,
+  });
 
-  const {
-    bulkCommit,
-    bulkCount,
-    bulkCurrentCount,
-    BulkResult,
-    resetBulk,
-  } = useBulkCommit({
+  const { bulkCommit, bulkCount, bulkCurrentCount, BulkResult, resetBulk } = useBulkCommit({
     type: 'observables',
     commit,
     relayUpdater: (store, response) => {
-      insertNode(
-        store,
-        paginationKey,
-        paginationOptions,
-        'stixCyberObservableAdd',
-      );
+      insertNode(store, paginationKey, paginationOptions, 'stixCyberObservableAdd');
       // Store the created observable for callback
       if (response?.stixCyberObservableAdd) {
         lastCreatedObservableRef.current = response.stixCyberObservableAdd;
       }
     },
   });
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
 
   useEffect(() => {
     if (bulkCount > 1) {
@@ -340,10 +349,10 @@ const StixCyberObservableCreation = ({
       let adaptedValue = val;
       // Potential dicts
       if (
-        adaptedValue.hashes_MD5
-        || adaptedValue['hashes_SHA-1']
-        || adaptedValue['hashes_SHA-256']
-        || adaptedValue['hashes_SHA-512']
+        adaptedValue.hashes_MD5 ||
+        adaptedValue['hashes_SHA-1'] ||
+        adaptedValue['hashes_SHA-256'] ||
+        adaptedValue['hashes_SHA-512']
       ) {
         adaptedValue.hashes = [];
         if (adaptedValue.hashes_MD5.length > 0) {
@@ -384,24 +393,22 @@ const StixCyberObservableCreation = ({
         dissoc('hashes_SHA-256'),
         dissoc('hashes_SHA-512'),
         toPairs,
-        map((n) => (includes(n[0], dateAttributes)
-          ? [n[0], n[1] ? parse(n[1]).format() : null]
-          : n)),
-        map((n) => (includes(n[0], numberAttributes)
-          ? [n[0], n[1] ? parseInt(n[1], 10) : null]
-          : n)),
-        map((n) => (includes(n[0], multipleAttributes)
-          ? [n[0], n[1] ? n[1].split(',') : null]
-          : n)),
+        map((n) =>
+          includes(n[0], dateAttributes) ? [n[0], n[1] ? parse(n[1]).format() : null] : n,
+        ),
+        map((n) =>
+          includes(n[0], numberAttributes) ? [n[0], n[1] ? parseInt(n[1], 10) : null] : n,
+        ),
+        map((n) =>
+          includes(n[0], multipleAttributes) ? [n[0], n[1] ? n[1].split(',') : null] : n,
+        ),
         fromPairs,
       )(adaptedValue);
 
       const singularValue = {
         type: status.type,
         x_opencti_description:
-          values.x_opencti_description.length > 0
-            ? values.x_opencti_description
-            : null,
+          values.x_opencti_description.length > 0 ? values.x_opencti_description : null,
         x_opencti_score: parseInt(values.x_opencti_score, 10),
         createdBy: propOr(null, 'value', values.createdBy),
         objectMarking: pluck('value', values.objectMarking),
@@ -461,8 +468,9 @@ const StixCyberObservableCreation = ({
             const subTypesEdges = props.subTypes.edges;
             const translatedOrderedList = subTypesEdges
               .map((edge) => edge.node)
-              .filter((node) => !stixCyberObservableTypes
-                || stixCyberObservableTypes.includes(node.id))
+              .filter(
+                (node) => !stixCyberObservableTypes || stixCyberObservableTypes.includes(node.id),
+              )
               .map((node) => ({
                 ...node,
                 tlabel: t_i18n(`entity_${node.label}`),
@@ -512,10 +520,7 @@ const StixCyberObservableCreation = ({
             };
             const attributes = pipe(
               map((n) => n.node),
-              filter(
-                (n) => !includes(n.value, ignoredAttributes)
-                  && !n.value.startsWith('i_'),
-              ),
+              filter((n) => !includes(n.value, ignoredAttributes) && !n.value.startsWith('i_')),
             )(props.schemaAttributeNames.edges);
 
             let extraFieldsToValidate = null;
@@ -533,14 +538,29 @@ const StixCyberObservableCreation = ({
                 const bicregex = /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/i;
                 const ibanregex = /^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/i;
                 extraFieldsToValidate = {
-                  bic: Yup.string()
-                    .matches(bicregex, t_i18n('bic values can only include A-Z and 0-9, 8 or 11 characters')),
+                  bic: Yup.string().matches(
+                    bicregex,
+                    t_i18n('bic values can only include A-Z and 0-9, 8 or 11 characters'),
+                  ),
                   iban: Yup.mixed().when([], {
                     is: () => status.type === 'Bank-Account',
-                    then: () => Yup.string().matches(ibanregex, t_i18n('iban values must begin with a country code and can only include A-Z and 0-9, 34 characters')).required(t_i18n('This field is required')),
-                    otherwise: () => Yup.string().matches(ibanregex, t_i18n('iban values must begin with a country code and can only include A-Z and 0-9, 34 characters')),
+                    then: () =>
+                      Yup.string()
+                        .matches(
+                          ibanregex,
+                          t_i18n(
+                            'iban values must begin with a country code and can only include A-Z and 0-9, 34 characters',
+                          ),
+                        )
+                        .required(t_i18n('This field is required')),
+                    otherwise: () =>
+                      Yup.string().matches(
+                        ibanregex,
+                        t_i18n(
+                          'iban values must begin with a country code and can only include A-Z and 0-9, 34 characters',
+                        ),
+                      ),
                   }),
-
                 };
               } else if (attribute.value === 'hashes') {
                 initialValues.hashes_MD5 = '';
@@ -553,36 +573,76 @@ const StixCyberObservableCreation = ({
                 const sha256Regex = /(^[a-fA-F0-9]{64})(?:\n[a-fA-F0-9]{64}){0,49}$/i;
                 const sha512Regex = /(^[a-fA-F0-9]{128})(?:\n[a-fA-F0-9]{128}){0,49}$/i;
                 extraFieldsToValidate = {
-                  hashes_MD5: Yup
-                    .string().matches(md5Regex, t_i18n('MD5 values can only include A-F and 0-9, 32 characters'))
+                  hashes_MD5: Yup.string()
+                    .matches(
+                      md5Regex,
+                      t_i18n('MD5 values can only include A-F and 0-9, 32 characters'),
+                    )
                     .when(['hashes_SHA-1', 'hashes_SHA-256', 'hashes_SHA-512', 'name'], {
                       is: (a, b, c, d) => !a && !b && !c && !d,
-                      then: () => Yup.string().matches(md5Regex, t_i18n('MD5 values can only include A-F and 0-9, 32 characters')).required(t_i18n('MD5, SHA-1, SHA-256, SHA-512, or name is required')),
+                      then: () =>
+                        Yup.string()
+                          .matches(
+                            md5Regex,
+                            t_i18n('MD5 values can only include A-F and 0-9, 32 characters'),
+                          )
+                          .required(t_i18n('MD5, SHA-1, SHA-256, SHA-512, or name is required')),
                     }),
-                  'hashes_SHA-1': Yup
-                    .string().matches(sha1Regex, t_i18n('SHA-1 values can only include A-F and 0-9, 40 characters'))
+                  'hashes_SHA-1': Yup.string()
+                    .matches(
+                      sha1Regex,
+                      t_i18n('SHA-1 values can only include A-F and 0-9, 40 characters'),
+                    )
                     .when(['hashes_MD5', 'hashes_SHA-256', 'hashes_SHA-512', 'name'], {
                       is: (a, b, c, d) => !a && !b && !c && !d,
-                      then: () => Yup.string().matches(sha1Regex, t_i18n('SHA-1 values can only include A-F and 0-9, 40 characters')).required(t_i18n('MD5, SHA-1, SHA-256, SHA-512, or name is required')),
+                      then: () =>
+                        Yup.string()
+                          .matches(
+                            sha1Regex,
+                            t_i18n('SHA-1 values can only include A-F and 0-9, 40 characters'),
+                          )
+                          .required(t_i18n('MD5, SHA-1, SHA-256, SHA-512, or name is required')),
                     }),
-                  'hashes_SHA-256': Yup
-                    .string().matches(sha256Regex, t_i18n('SHA-256 values can only include A-F and 0-9, 64 characters'))
+                  'hashes_SHA-256': Yup.string()
+                    .matches(
+                      sha256Regex,
+                      t_i18n('SHA-256 values can only include A-F and 0-9, 64 characters'),
+                    )
                     .when(['hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-512', 'name'], {
                       is: (a, b, c, d) => !a && !b && !c && !d,
-                      then: () => Yup.string().matches(sha256Regex, t_i18n('SHA-256 values can only include A-F and 0-9, 64 characters')).required(t_i18n('MD5, SHA-1, SHA-256, SHA-512, or name is required')),
+                      then: () =>
+                        Yup.string()
+                          .matches(
+                            sha256Regex,
+                            t_i18n('SHA-256 values can only include A-F and 0-9, 64 characters'),
+                          )
+                          .required(t_i18n('MD5, SHA-1, SHA-256, SHA-512, or name is required')),
                     }),
-                  'hashes_SHA-512': Yup
-                    .string().matches(sha512Regex, t_i18n('SHA-512 values can only include A-F and 0-9, 128 characters'))
+                  'hashes_SHA-512': Yup.string()
+                    .matches(
+                      sha512Regex,
+                      t_i18n('SHA-512 values can only include A-F and 0-9, 128 characters'),
+                    )
                     .when(['hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-256', 'name'], {
                       is: (a, b, c, d) => !a && !b && !c && !d,
-                      then: () => Yup.string().matches(sha512Regex, t_i18n('SHA-512 values can only include A-F and 0-9, 128 characters')).required(t_i18n('MD5, SHA-1, SHA-256, SHA-512, or name is required')),
+                      then: () =>
+                        Yup.string()
+                          .matches(
+                            sha512Regex,
+                            t_i18n('SHA-512 values can only include A-F and 0-9, 128 characters'),
+                          )
+                          .required(t_i18n('MD5, SHA-1, SHA-256, SHA-512, or name is required')),
                     }),
-                  name: Yup
-                    .string()
-                    .when(['hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-256', 'hashes_SHA-512'], {
+                  name: Yup.string().when(
+                    ['hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-256', 'hashes_SHA-512'],
+                    {
                       is: (a, b, c, d) => !a && !b && !c && !d,
-                      then: () => Yup.string().required(t_i18n('MD5, SHA-1, SHA-256, SHA-512, or name is required')),
-                    }),
+                      then: () =>
+                        Yup.string().required(
+                          t_i18n('MD5, SHA-1, SHA-256, SHA-512, or name is required'),
+                        ),
+                    },
+                  ),
                   file: Yup.mixed().when([], {
                     is: () => status.type === 'Artifact',
                     then: () => Yup.mixed().required(t_i18n('This field is required')),
@@ -607,40 +667,41 @@ const StixCyberObservableCreation = ({
                 extraFieldsToValidate = {
                   [attribute.value]: Yup.string()
                     .required(t_i18n('This field is required'))
-                    .matches(imeiRegex, t_i18n('IMEI values can only include digits, must be 15 to 16 characters')),
+                    .matches(
+                      imeiRegex,
+                      t_i18n('IMEI values can only include digits, must be 15 to 16 characters'),
+                    ),
                 };
-                requiredOneOfFields = [
-                  [attribute.value],
-                ];
+                requiredOneOfFields = [[attribute.value]];
               } else if (status.type === 'ICCID') {
                 const iccidRegex = /^([0-9]{18,22}\n*)+$/i;
                 extraFieldsToValidate = {
                   [attribute.value]: Yup.string()
                     .required(t_i18n('This field is required'))
-                    .matches(iccidRegex, t_i18n('ICCID values can only include digits, must be 18 to 22 characters')),
+                    .matches(
+                      iccidRegex,
+                      t_i18n('ICCID values can only include digits, must be 18 to 22 characters'),
+                    ),
                 };
-                requiredOneOfFields = [
-                  [attribute.value],
-                ];
+                requiredOneOfFields = [[attribute.value]];
               } else if (status.type === 'IMSI') {
                 const imsiRegex = /^([0-9]{14,15}\n*)+$/i;
                 extraFieldsToValidate = {
                   [attribute.value]: Yup.string()
                     .required(t_i18n('This field is required'))
-                    .matches(imsiRegex, t_i18n('IMSI values can only include digits, must be 14 to 15 characters')),
+                    .matches(
+                      imsiRegex,
+                      t_i18n('IMSI values can only include digits, must be 14 to 15 characters'),
+                    ),
                 };
-                requiredOneOfFields = [
-                  [attribute.value],
-                ];
+                requiredOneOfFields = [[attribute.value]];
               } else if (attribute.value === 'value') {
                 initialValues[attribute.value] = inputValue || '';
                 // Dynamically include value field for Singular Observable type Object form validation
                 extraFieldsToValidate = {
                   [attribute.value]: Yup.string().required(t_i18n('This field is required')),
                 };
-                requiredOneOfFields = [
-                  [attribute.value],
-                ];
+                requiredOneOfFields = [[attribute.value]];
               } else if (status.type === 'Autonomous-System') {
                 extraFieldsToValidate = {
                   number: Yup.string().required(t_i18n('This field is required')),
@@ -705,19 +766,24 @@ const StixCyberObservableCreation = ({
                 initialValues[attribute.value] = '';
               }
             }
-            const stixCyberObservableValidation = () => Yup.object().shape({
-              x_opencti_score: Yup.number().integer(t_i18n('The value must be an integer'))
-                .nullable()
-                .min(0, t_i18n('The value must be greater than or equal to 0'))
-                .max(100, t_i18n('The value must be less than or equal to 100')),
-              x_opencti_description: Yup.string().nullable(),
-              createIndicator: Yup.boolean(),
-            });
+            const stixCyberObservableValidation = () =>
+              Yup.object().shape({
+                x_opencti_score: Yup.number()
+                  .integer(t_i18n('The value must be an integer'))
+                  .nullable()
+                  .min(0, t_i18n('The value must be greater than or equal to 0'))
+                  .max(100, t_i18n('The value must be less than or equal to 100')),
+                x_opencti_description: Yup.string().nullable(),
+                createIndicator: Yup.boolean(),
+              });
 
-            const stixCyberObservableValidationFinal = Yup.object().shape({
-              ...stixCyberObservableValidation,
-              ...extraFieldsToValidate,
-            }, requiredOneOfFields);
+            const stixCyberObservableValidationFinal = Yup.object().shape(
+              {
+                ...stixCyberObservableValidation,
+                ...extraFieldsToValidate,
+              },
+              requiredOneOfFields,
+            );
 
             if (isFromBulkRelation) {
               const foundEntityType = SCO_DEFAULT_FIELD.find((item) => item.type === status.type);
@@ -823,7 +889,9 @@ const StixCyberObservableCreation = ({
                             return (
                               <div key={attribute.value}>
                                 <Field
-                                  component={isFieldInBulk('hashes_MD5') ? BulkTextField : TextField}
+                                  component={
+                                    isFieldInBulk('hashes_MD5') ? BulkTextField : TextField
+                                  }
                                   variant="standard"
                                   name="hashes_MD5"
                                   label={t_i18n('hash_md5')}
@@ -832,7 +900,9 @@ const StixCyberObservableCreation = ({
                                   bulkType="observables"
                                 />
                                 <Field
-                                  component={isFieldInBulk('hashes_SHA-1') ? BulkTextField : TextField}
+                                  component={
+                                    isFieldInBulk('hashes_SHA-1') ? BulkTextField : TextField
+                                  }
                                   variant="standard"
                                   name="hashes_SHA-1"
                                   label={t_i18n('hash_sha-1')}
@@ -841,7 +911,9 @@ const StixCyberObservableCreation = ({
                                   bulkType="observables"
                                 />
                                 <Field
-                                  component={isFieldInBulk('hashes_SHA-256') ? BulkTextField : TextField}
+                                  component={
+                                    isFieldInBulk('hashes_SHA-256') ? BulkTextField : TextField
+                                  }
                                   variant="standard"
                                   name="hashes_SHA-256"
                                   label={t_i18n('hash_sha-256')}
@@ -850,7 +922,9 @@ const StixCyberObservableCreation = ({
                                   bulkType="observables"
                                 />
                                 <Field
-                                  component={isFieldInBulk('hashes_SHA-512') ? BulkTextField : TextField}
+                                  component={
+                                    isFieldInBulk('hashes_SHA-512') ? BulkTextField : TextField
+                                  }
                                   variant="standard"
                                   name="hashes_SHA-512"
                                   label={t_i18n('hash_sha-512')}
@@ -866,13 +940,9 @@ const StixCyberObservableCreation = ({
                               <OpenVocabField
                                 key={attribute.value}
                                 label={t_i18n(attribute.value)}
-                                type={fieldToCategory(
-                                  status.type,
-                                  attribute.value,
-                                )}
+                                type={fieldToCategory(status.type, attribute.value)}
                                 name={attribute.value}
-                                onChange={(name, value) => setFieldValue(name, value)
-                                }
+                                onChange={(name, value) => setFieldValue(name, value)}
                                 containerStyle={fieldSpacingContainerStyle}
                                 multiple={false}
                               />
@@ -930,10 +1000,7 @@ const StixCyberObservableCreation = ({
                               />
                             );
                           }
-                          if (
-                            attribute.value === 'name'
-                            && status.type === 'Autonomous-System'
-                          ) {
+                          if (attribute.value === 'name' && status.type === 'Autonomous-System') {
                             const setDefaultAutonomousSystemId = (_, value) => {
                               const match = value.match(/^as(\d+)$/i);
                               if (match && !values.number) {
@@ -977,10 +1044,7 @@ const StixCyberObservableCreation = ({
                         setFieldValue={setFieldValue}
                         values={values.objectLabel}
                       />
-                      <ObjectMarkingField
-                        name="objectMarking"
-                        style={fieldSpacingContainerStyle}
-                      />
+                      <ObjectMarkingField name="objectMarking" style={fieldSpacingContainerStyle} />
                       <ExternalReferencesField
                         name="externalReferences"
                         style={fieldSpacingContainerStyle}
@@ -990,10 +1054,17 @@ const StixCyberObservableCreation = ({
                       <CustomFileUploader
                         setFieldValue={setFieldValue}
                         formikErrors={errors}
-                        disabled={bulkConf && bulkSelectedKey && splitMultilines(values[bulkSelectedKey]).length > 1}
-                        noFileSelectedLabel={bulkConf && bulkSelectedKey && splitMultilines(values[bulkSelectedKey]).length > 1
-                          ? t_i18n('File upload not allowed in bulk creation')
-                          : undefined
+                        disabled={
+                          bulkConf &&
+                          bulkSelectedKey &&
+                          splitMultilines(values[bulkSelectedKey]).length > 1
+                        }
+                        noFileSelectedLabel={
+                          bulkConf &&
+                          bulkSelectedKey &&
+                          splitMultilines(values[bulkSelectedKey]).length > 1
+                            ? t_i18n('File upload not allowed in bulk creation')
+                            : undefined
                         }
                       />
                       <Field
@@ -1013,17 +1084,10 @@ const StixCyberObservableCreation = ({
                             {t_i18n('Back')}
                           </Button>
                         )}
-                        <Button
-                          variant="secondary"
-                          onClick={handleReset}
-                          disabled={isSubmitting}
-                        >
+                        <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                           {t_i18n('Cancel')}
                         </Button>
-                        <Button
-                          onClick={submitForm}
-                          disabled={isSubmitting}
-                        >
+                        <Button onClick={submitForm} disabled={isSubmitting}>
                           {t_i18n('Create')}
                         </Button>
                       </FormButtonContainer>
@@ -1053,15 +1117,15 @@ const StixCyberObservableCreation = ({
           onClose={localHandleClose}
           title={t_i18n('Create an observable')}
           header={
-            !isFromBulkRelation && status.type
-              ? (
-                  <BulkTextModalButton
-                    onClick={() => setBulkOpen(true)}
-                    title={t_i18n('Create multiple observables')}
-                    disabled={!bulkConf}
-                  />
-                )
-              : <></>
+            !isFromBulkRelation && status.type ? (
+              <BulkTextModalButton
+                onClick={() => setBulkOpen(true)}
+                title={t_i18n('Create multiple observables')}
+                disabled={!bulkConf}
+              />
+            ) : (
+              <></>
+            )
           }
         >
           {!status.type ? renderList() : renderForm()}
@@ -1073,11 +1137,7 @@ const StixCyberObservableCreation = ({
   const renderUnavailableBulkMessage = () => {
     if (isFromBulkRelation && !bulkConf) {
       return (
-        <Alert
-          severity="info"
-          variant="outlined"
-          style={{ marginBottom: 10 }}
-        >
+        <Alert severity="info" variant="outlined" style={{ marginBottom: 10 }}>
           {t_i18n('This entity has several key fields, which is incompatible with bulk creation')}
         </Alert>
       );
@@ -1101,22 +1161,21 @@ const StixCyberObservableCreation = ({
         <Dialog
           open={speeddial ? open : status.open}
           onClose={speeddial ? handleClose : localHandleClose}
-          title={(
+          title={
             <Stack direction="row" alignItems="center" justifyContent="space-between">
               {t_i18n('Create an observable')}
-              {!isFromBulkRelation && status.type
-                ? (
-                    <BulkTextModalButton
-                      sx={{ marginRight: 0 }}
-                      onClick={() => setBulkOpen(true)}
-                      title={t_i18n('Create multiple observables')}
-                      disabled={!bulkConf}
-                    />
-                  )
-                : <></>
-              }
+              {!isFromBulkRelation && status.type ? (
+                <BulkTextModalButton
+                  sx={{ marginRight: 0 }}
+                  onClick={() => setBulkOpen(true)}
+                  title={t_i18n('Create multiple observables')}
+                  disabled={!bulkConf}
+                />
+              ) : (
+                <></>
+              )}
             </Stack>
-          )}
+          }
         >
           {renderUnavailableBulkMessage()}
           {!status.type ? renderList() : renderForm()}

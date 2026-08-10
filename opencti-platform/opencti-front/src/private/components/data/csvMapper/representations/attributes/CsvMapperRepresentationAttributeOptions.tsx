@@ -14,7 +14,9 @@ interface CsvMapperRepresentationAttributeOptionsProps {
   form: FormikProps<CsvMapperFormData>;
 }
 
-const CsvMapperRepresentationAttributeOptions: FunctionComponent<CsvMapperRepresentationAttributeOptionsProps> = ({ schemaAttribute, attributeName, form }) => {
+const CsvMapperRepresentationAttributeOptions: FunctionComponent<
+  CsvMapperRepresentationAttributeOptionsProps
+> = ({ schemaAttribute, attributeName, form }) => {
   const { t_i18n } = useFormatter();
   const { setFieldValue, getFieldProps } = form;
 
@@ -49,9 +51,7 @@ const CsvMapperRepresentationAttributeOptions: FunctionComponent<CsvMapperRepres
       {schemaAttribute.editDefault && (
         <>
           {schemaAttribute.name === 'objectMarking' ? (
-            <CsvMapperDefaultMarking
-              name={`${attributeName}.default_values`}
-            />
+            <CsvMapperDefaultMarking name={`${attributeName}.default_values`} />
           ) : (
             <DefaultValueField
               attribute={schemaAttribute}
@@ -61,18 +61,13 @@ const CsvMapperRepresentationAttributeOptions: FunctionComponent<CsvMapperRepres
             />
           )}
 
-          {settingsDefaultValues
-            ? (
-                <DialogContentText>
-                  {t_i18n('Settings default values usage...')}
-                </DialogContentText>
-              )
-            : (
-                <DialogContentText sx={{ width: 450, mt: '8px' }}>
-                  {t_i18n('No default value set in Settings...')}
-                </DialogContentText>
-              )
-          }
+          {settingsDefaultValues ? (
+            <DialogContentText>{t_i18n('Settings default values usage...')}</DialogContentText>
+          ) : (
+            <DialogContentText sx={{ width: 450, mt: '8px' }}>
+              {t_i18n('No default value set in Settings...')}
+            </DialogContentText>
+          )}
         </>
       )}
     </>

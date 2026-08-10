@@ -9,11 +9,23 @@ import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreR
 import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
-import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, filtersAfterSwitchLocalMode } from '../../../../utils/filters/filtersUtils';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
+import {
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  emptyFilterGroup,
+  filtersAfterSwitchLocalMode,
+} from '../../../../utils/filters/filtersUtils';
 import CaseRftKnowledgeGraph, { caseRftKnowledgeGraphQuery } from './CaseRftKnowledgeGraph';
-import CaseRftKnowledgeTimeLine, { caseRftKnowledgeTimeLineQuery } from './CaseRftKnowledgeTimeLine';
-import CaseRftKnowledgeCorrelation, { caseRftKnowledgeCorrelationQuery } from './CaseRftKnowledgeCorrelation';
+import CaseRftKnowledgeTimeLine, {
+  caseRftKnowledgeTimeLineQuery,
+} from './CaseRftKnowledgeTimeLine';
+import CaseRftKnowledgeCorrelation, {
+  caseRftKnowledgeCorrelationQuery,
+} from './CaseRftKnowledgeCorrelation';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import withRouter from '../../../../utils/compat_router/withRouter';
@@ -30,11 +42,7 @@ class CaseRftKnowledgeComponent extends Component {
     this.state = {
       currentModeOnlyActive: propOr(false, 'currentModeOnlyActive', params),
       currentKillChain: propOr('mitre-attack', 'currentKillChain', params),
-      timeLineDisplayRelationships: propOr(
-        false,
-        'timeLineDisplayRelationships',
-        params,
-      ),
+      timeLineDisplayRelationships: propOr(false, 'timeLineDisplayRelationships', params),
       timeLineFunctionalDate: propOr(false, 'timeLineFunctionalDate', params),
       timeLineFilters: propOr(emptyFilterGroup, 'timeLineFilters', params),
       timeLineSearchTerm: R.propOr('', 'timeLineSearchTerm', params),
@@ -43,12 +51,7 @@ class CaseRftKnowledgeComponent extends Component {
 
   saveView() {
     const LOCAL_STORAGE_KEY = `case-rfts-knowledge-${this.props.caseData.id}`;
-    saveViewParameters(
-      this.props.navigate,
-      this.props.location,
-      LOCAL_STORAGE_KEY,
-      this.state,
-    );
+    saveViewParameters(this.props.navigate, this.props.location, LOCAL_STORAGE_KEY, this.state);
   }
 
   handleToggleTimeLineDisplayRelationships() {
@@ -90,11 +93,7 @@ class CaseRftKnowledgeComponent extends Component {
   }
 
   handleRemoveTimeLineFilter(key, op = 'eq') {
-    const newFilters = constructHandleRemoveFilter(
-      this.state.timeLineFilters,
-      key,
-      op,
-    );
+    const newFilters = constructHandleRemoveFilter(this.state.timeLineFilters, key, op);
     this.setState({ timeLineFilters: newFilters }, () => this.saveView());
   }
 
@@ -131,10 +130,10 @@ class CaseRftKnowledgeComponent extends Component {
     const defaultTypes = timeLineDisplayRelationships
       ? ['stix-core-relationship']
       : ['Stix-Core-Object'];
-    const types = R.head(timeLineFilters.filters.filter((n) => n.key === 'entity_type'))
-      ?.values.length > 0
-      ? []
-      : defaultTypes;
+    const types =
+      R.head(timeLineFilters.filters.filter((n) => n.key === 'entity_type'))?.values.length > 0
+        ? []
+        : defaultTypes;
     let orderBy = 'created_at';
     if (timeLineFunctionalDate && timeLineDisplayRelationships) {
       orderBy = 'start_time';
@@ -174,7 +173,7 @@ class CaseRftKnowledgeComponent extends Component {
         <Routes>
           <Route
             path="/graph"
-            element={(
+            element={
               <QueryRenderer
                 query={caseRftKnowledgeGraphQuery}
                 variables={{ id: caseData.id }}
@@ -191,18 +190,16 @@ class CaseRftKnowledgeComponent extends Component {
                   }
                   return (
                     <div style={{ height: '50vh' }}>
-                      <Loader
-                        variant={LoaderVariant.inElement}
-                      />
+                      <Loader variant={LoaderVariant.inElement} />
                     </div>
                   );
                 }}
               />
-            )}
+            }
           />
           <Route
             path="/timeline"
-            element={(
+            element={
               <>
                 <ContentKnowledgeTimeLineBar
                   handleTimeLineSearch={this.handleTimeLineSearch.bind(this)}
@@ -216,12 +213,8 @@ class CaseRftKnowledgeComponent extends Component {
                     this,
                   )}
                   timeLineFilters={timeLineFilters}
-                  handleAddTimeLineFilter={this.handleAddTimeLineFilter.bind(
-                    this,
-                  )}
-                  handleRemoveTimeLineFilter={this.handleRemoveTimeLineFilter.bind(
-                    this,
-                  )}
+                  handleAddTimeLineFilter={this.handleAddTimeLineFilter.bind(this)}
+                  handleRemoveTimeLineFilter={this.handleRemoveTimeLineFilter.bind(this)}
                   handleSwitchFilterLocalMode={this.handleSwitchFilterLocalMode.bind(this)}
                   handleSwitchFilterGlobalMode={this.handleSwitchFilterGlobalMode.bind(this)}
                 />
@@ -240,58 +233,45 @@ class CaseRftKnowledgeComponent extends Component {
                     }
                     return (
                       <div style={{ height: '50vh' }}>
-                        <Loader
-                          variant={LoaderVariant.inElement}
-                        />
+                        <Loader variant={LoaderVariant.inElement} />
                       </div>
                     );
                   }}
                 />
               </>
-            )}
+            }
           />
           <Route
             path="/correlation"
-            element={(
+            element={
               <QueryRenderer
                 query={caseRftKnowledgeCorrelationQuery}
                 variables={{ id: caseData.id }}
                 render={({ props }) => {
                   if (props && props.caseRft) {
-                    return (
-                      <CaseRftKnowledgeCorrelation
-                        data={props.caseRft}
-                        id={caseData.id}
-                      />
-                    );
+                    return <CaseRftKnowledgeCorrelation data={props.caseRft} id={caseData.id} />;
                   }
                   return (
                     <div style={{ height: '50vh' }}>
-                      <Loader
-                        variant={LoaderVariant.inElement}
-                      />
+                      <Loader variant={LoaderVariant.inElement} />
                     </div>
                   );
                 }}
               />
-            )}
+            }
           />
           <Route
             path="/matrix"
-            element={(
+            element={
               <StixDomainObjectAttackPatterns
                 stixDomainObjectId={caseData.id}
                 entityType={caseData.entity_type}
               />
-            )}
+            }
           />
           <Route
             path="/relations/:relationId"
-            element={(
-              <StixCoreRelationship
-                entityId={caseData.id}
-              />
-            )}
+            element={<StixCoreRelationship entityId={caseData.id} />}
           />
           <Route index element={<Navigate replace={true} to="graph" />} />
         </Routes>

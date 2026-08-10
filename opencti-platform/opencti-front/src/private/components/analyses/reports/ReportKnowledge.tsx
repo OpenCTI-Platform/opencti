@@ -6,11 +6,21 @@ import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreR
 import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import ReportKnowledgeGraph, { reportKnowledgeGraphQuery } from './ReportKnowledgeGraph';
-import ReportKnowledgeCorrelation, { reportKnowledgeCorrelationQuery } from './ReportKnowledgeCorrelation';
+import ReportKnowledgeCorrelation, {
+  reportKnowledgeCorrelationQuery,
+} from './ReportKnowledgeCorrelation';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 import ReportKnowledgeTimeLine, { reportKnowledgeTimeLineQuery } from './ReportKnowledgeTimeLine';
-import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, filtersAfterSwitchLocalMode } from '../../../../utils/filters/filtersUtils';
+import {
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  emptyFilterGroup,
+  filtersAfterSwitchLocalMode,
+} from '../../../../utils/filters/filtersUtils';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import type { FilterDefinition } from '../../../../utils/hooks/useAuth';
@@ -29,29 +39,36 @@ interface ReportKnowledgeComponentState {
   timeLineSearchTerm: string;
 }
 
-type ReportKnowledgeComponentAction = {
-  type: 'toggle-timeline-display-relationships';
-} | {
-  type: 'toggle-timeline-functional-date';
-} | {
-  type: 'add-timeline-filter';
-  id: string | null;
-  key: string;
-  filterKeysSchema: Map<string, Map<string, FilterDefinition>>;
-  op: string;
-} | {
-  type: 'remove-timeline-filter';
-  key: string;
-  op: string;
-} | {
-  type: 'switch-filter-local-mode';
-  localFilter: Filter;
-} | {
-  type: 'switch-filter-global-mode';
-} | {
-  type: 'timeline-search';
-  value: string;
-};
+type ReportKnowledgeComponentAction =
+  | {
+      type: 'toggle-timeline-display-relationships';
+    }
+  | {
+      type: 'toggle-timeline-functional-date';
+    }
+  | {
+      type: 'add-timeline-filter';
+      id: string | null;
+      key: string;
+      filterKeysSchema: Map<string, Map<string, FilterDefinition>>;
+      op: string;
+    }
+  | {
+      type: 'remove-timeline-filter';
+      key: string;
+      op: string;
+    }
+  | {
+      type: 'switch-filter-local-mode';
+      localFilter: Filter;
+    }
+  | {
+      type: 'switch-filter-global-mode';
+    }
+  | {
+      type: 'timeline-search';
+      value: string;
+    };
 
 const reducer = (state: ReportKnowledgeComponentState, action: ReportKnowledgeComponentAction) => {
   switch (action.type) {
@@ -83,11 +100,7 @@ const reducer = (state: ReportKnowledgeComponentState, action: ReportKnowledgeCo
     }
     case 'remove-timeline-filter': {
       const { key, op } = action;
-      const newFilters = constructHandleRemoveFilter(
-        state.timeLineFilters,
-        key,
-        op,
-      );
+      const newFilters = constructHandleRemoveFilter(state.timeLineFilters, key, op);
       return {
         ...state,
         timeLineFilters: newFilters!,
@@ -137,11 +150,7 @@ const ReportKnowledgeComponent = (props: ReportKnowledgeComponentProps) => {
     ReportKnowledgeComponentState,
     ReturnType<typeof buildViewParamsFromUrlAndStorage>,
     [ReportKnowledgeComponentAction]
-  >(reducer, buildViewParamsFromUrlAndStorage(
-    navigate,
-    location,
-    LOCAL_STORAGE_KEY,
-  ), (params) => ({
+  >(reducer, buildViewParamsFromUrlAndStorage(navigate, location, LOCAL_STORAGE_KEY), (params) => ({
     currentModeOnlyActive: params['currentModeOnlyActive'] ?? false,
     currentKillChain: params['currentKillChain'] ?? 'mitre-attack',
     timeLineDisplayRelationships: params['timeLineDisplayRelationships'] ?? false,
@@ -150,12 +159,7 @@ const ReportKnowledgeComponent = (props: ReportKnowledgeComponentProps) => {
     timeLineSearchTerm: params['timeLineSearchTerm'] ?? '',
   }));
 
-  const saveView = () => saveViewParameters(
-    navigate,
-    location,
-    LOCAL_STORAGE_KEY,
-    state,
-  );
+  const saveView = () => saveViewParameters(navigate, location, LOCAL_STORAGE_KEY, state);
 
   useEffect(() => {
     if (hasUnsavedChanges) {
@@ -236,10 +240,10 @@ const ReportKnowledgeComponent = (props: ReportKnowledgeComponentProps) => {
   const defaultTypes = timeLineDisplayRelationships
     ? ['stix-core-relationship']
     : ['Stix-Core-Object'];
-  const types = (timeLineFilters.filters.filter((n) => n.key === 'entity_type').at(0)
-    ?.values?.length ?? 0) > 0
-    ? []
-    : defaultTypes;
+  const types =
+    (timeLineFilters.filters.filter((n) => n.key === 'entity_type').at(0)?.values?.length ?? 0) > 0
+      ? []
+      : defaultTypes;
   let orderBy = 'created_at';
   if (timeLineFunctionalDate && timeLineDisplayRelationships) {
     orderBy = 'start_time';
@@ -277,7 +281,7 @@ const ReportKnowledgeComponent = (props: ReportKnowledgeComponentProps) => {
       <Routes>
         <Route
           path="/graph"
-          element={(
+          element={
             <QueryRenderer
               query={reportKnowledgeGraphQuery}
               variables={{ id: report.id }}
@@ -294,18 +298,16 @@ const ReportKnowledgeComponent = (props: ReportKnowledgeComponentProps) => {
                 }
                 return (
                   <div style={{ height: '50vh' }}>
-                    <Loader
-                      variant={LoaderVariant.inElement}
-                    />
+                    <Loader variant={LoaderVariant.inElement} />
                   </div>
                 );
               }}
             />
-          )}
+          }
         />
         <Route
           path="/timeline"
-          element={(
+          element={
             <>
               <ContentKnowledgeTimeLineBar
                 handleTimeLineSearch={handleTimeLineSearch}
@@ -335,59 +337,46 @@ const ReportKnowledgeComponent = (props: ReportKnowledgeComponentProps) => {
                   }
                   return (
                     <div style={{ height: '50vh' }}>
-                      <Loader
-                        variant={LoaderVariant.inElement}
-                      />
+                      <Loader variant={LoaderVariant.inElement} />
                     </div>
                   );
                 }}
               />
             </>
-          )}
+          }
         />
         <Route
           path="/correlation"
-          element={(
+          element={
             <QueryRenderer
               query={reportKnowledgeCorrelationQuery}
               variables={{ id: report.id }}
               render={({ props }: { props: ReportKnowledgeCorrelationQuery$data }) => {
                 if (props && props.report) {
-                  return (
-                    <ReportKnowledgeCorrelation
-                      id={report.id}
-                      data={props.report}
-                    />
-                  );
+                  return <ReportKnowledgeCorrelation id={report.id} data={props.report} />;
                 }
                 return (
                   <div style={{ height: '50vh' }}>
-                    <Loader
-                      variant={LoaderVariant.inElement}
-                    />
+                    <Loader variant={LoaderVariant.inElement} />
                   </div>
                 );
               }}
             />
-          )}
+          }
         />
         <Route
           path="/matrix"
-          element={(
+          element={
             <StixDomainObjectAttackPatterns
               stixDomainObjectId={report.id}
               entityType={report.entity_type}
               disableExport={false}
             />
-          )}
+          }
         />
         <Route
           path="/relations/:relationId"
-          element={(
-            <StixCoreRelationship
-              entityId={report.id}
-            />
-          )}
+          element={<StixCoreRelationship entityId={report.id} />}
         />
         <Route index element={<Navigate replace={true} to="graph" />} />
       </Routes>

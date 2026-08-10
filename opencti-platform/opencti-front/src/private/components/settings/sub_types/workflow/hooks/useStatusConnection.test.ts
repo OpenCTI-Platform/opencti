@@ -44,13 +44,28 @@ describe('useStatusConnection', () => {
   // Cases 1 & 2 omitted for brevity as they passed, but they should use hoisted.mockSetNodes
 
   it('Case 3: Status -> Transition (should use addEdge helper)', () => {
-    const sourceNode: Node = { id: 's1', type: WorkflowNodeType.status, position: { x: 0, y: 0 }, data: {} };
-    const targetNode: Node = { id: 't1', type: WorkflowNodeType.transition, position: { x: 100, y: 0 }, data: {} };
+    const sourceNode: Node = {
+      id: 's1',
+      type: WorkflowNodeType.status,
+      position: { x: 0, y: 0 },
+      data: {},
+    };
+    const targetNode: Node = {
+      id: 't1',
+      type: WorkflowNodeType.transition,
+      position: { x: 100, y: 0 },
+      data: {},
+    };
 
     hoisted.mockGetNode.mockImplementation((id: string) => (id === 's1' ? sourceNode : targetNode));
 
     const { result } = renderHook(() => useStatusConnection());
-    const connection: Connection = { source: 's1', target: 't1', sourceHandle: null, targetHandle: null };
+    const connection: Connection = {
+      source: 's1',
+      target: 't1',
+      sourceHandle: null,
+      targetHandle: null,
+    };
 
     act(() => {
       result.current(connection);
@@ -74,13 +89,28 @@ describe('useStatusConnection', () => {
   });
 
   it('Case 4: Transition -> Status (should include markerEnd arrow)', () => {
-    const sourceNode: Node = { id: 't1', type: WorkflowNodeType.transition, position: { x: 0, y: 0 }, data: {} };
-    const targetNode: Node = { id: 's1', type: WorkflowNodeType.status, position: { x: 100, y: 0 }, data: {} };
+    const sourceNode: Node = {
+      id: 't1',
+      type: WorkflowNodeType.transition,
+      position: { x: 0, y: 0 },
+      data: {},
+    };
+    const targetNode: Node = {
+      id: 's1',
+      type: WorkflowNodeType.status,
+      position: { x: 100, y: 0 },
+      data: {},
+    };
 
     hoisted.mockGetNode.mockImplementation((id: string) => (id === 't1' ? sourceNode : targetNode));
 
     const { result } = renderHook(() => useStatusConnection());
-    const connection: Connection = { source: 't1', target: 's1', sourceHandle: null, targetHandle: null };
+    const connection: Connection = {
+      source: 't1',
+      target: 's1',
+      sourceHandle: null,
+      targetHandle: null,
+    };
 
     act(() => {
       result.current(connection);

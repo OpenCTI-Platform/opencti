@@ -69,33 +69,27 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
   const handleUpload = (fileMarkings: string[], associatedEntityId: string | undefined) => {
     if (!selectedFile) return;
     commitMutation({
-      mutation: associatedEntityId
-        ? fileUploaderEntityMutation
-        : fileUploaderGlobalMutation,
+      mutation: associatedEntityId ? fileUploaderEntityMutation : fileUploaderGlobalMutation,
       variables: { file: selectedFile, fileMarkings, id: associatedEntityId },
       optimisticUpdater: () => {
         setUpload(selectedFile.name);
       },
-      onCompleted: (
-        result:
-          | FileUploaderEntityMutation$data
-          | FileUploaderGlobalMutation$data,
-      ) => {
+      onCompleted: (result: FileUploaderEntityMutation$data | FileUploaderGlobalMutation$data) => {
         if (uploadRef.current?.value) {
           uploadRef.current.value = ''; // Reset the upload input
         }
         setUpload(null);
         MESSAGING$.notifySuccess(t_i18n('File successfully uploaded'));
         const fileId = associatedEntityId
-          ? (result as FileUploaderEntityMutation$data).stixCoreObjectEdit
-              ?.importPush?.id
+          ? (result as FileUploaderEntityMutation$data).stixCoreObjectEdit?.importPush?.id
           : (result as FileUploaderGlobalMutation$data).uploadImport?.id;
         if (nameInCallback) {
           onUploadSuccess(fileId);
         } else {
           onUploadSuccess();
         }
-        if (!entityId && associatedEntityId) { // if global import with entity upload context: redirect to that entity
+        if (!entityId && associatedEntityId) {
+          // if global import with entity upload context: redirect to that entity
           const entityType = fileId?.split('/')[1];
           if (entityType) {
             navigate(`${resolveLink(entityType)}/${associatedEntityId}/files`);
@@ -114,7 +108,6 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
   const hasSelectedFile = !!selectedFile;
 
   return (
-
     <React.Fragment>
       {accept ? (
         <input
@@ -147,16 +140,9 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
         />
       )}
       {upload ? (
-        <Tooltip
-          title={`Uploading ${upload}`}
-          aria-label={`Uploading ${upload}`}
-        >
+        <Tooltip title={`Uploading ${upload}`} aria-label={`Uploading ${upload}`}>
           <IconButton disabled={true} size="small">
-            <CircularProgress
-              size={24}
-              thickness={2}
-              color="primary"
-            />
+            <CircularProgress size={24} thickness={2} color="primary" />
           </IconButton>
         </Tooltip>
       ) : (

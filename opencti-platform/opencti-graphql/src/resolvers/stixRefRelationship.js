@@ -18,23 +18,38 @@ import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../schema/general';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { distributionRelations } from '../database/middleware';
 import { schemaRelationsRefTypesMapping } from '../database/stix-ref';
-import { containersPaginated, notesPaginated, opinionsPaginated, reportsPaginated } from '../domain/stixCoreObject';
+import {
+  containersPaginated,
+  notesPaginated,
+  opinionsPaginated,
+  reportsPaginated,
+} from '../domain/stixCoreObject';
 import { loadCreators } from '../database/members';
 
 const stixRefRelationshipResolvers = {
   Query: {
     stixRefRelationship: (_, { id }, context) => findById(context, context.user, id),
-    stixRefRelationships: (_, args, context) => findRefRelationshipsPaginated(context, context.user, args),
-    stixNestedRefRelationships: (_, args, context) => findNestedPaginated(context, context.user, args),
-    stixSchemaRefRelationships: (_, { id, toType }, context) => schemaRefRelationships(context, context.user, id, toType),
-    stixSchemaRefRelationshipsPossibleTypes: (_, { type }, context) => schemaRefRelationshipsPossibleTypes(context, context.user, type),
-    stixRefRelationshipsDistribution: (_, args, context) => distributionRelations(context, context.user, args),
-    stixRefRelationshipsNumber: (_, args, context) => stixRefRelationshipsNumber(context, context.user, args),
+    stixRefRelationships: (_, args, context) =>
+      findRefRelationshipsPaginated(context, context.user, args),
+    stixNestedRefRelationships: (_, args, context) =>
+      findNestedPaginated(context, context.user, args),
+    stixSchemaRefRelationships: (_, { id, toType }, context) =>
+      schemaRefRelationships(context, context.user, id, toType),
+    stixSchemaRefRelationshipsPossibleTypes: (_, { type }, context) =>
+      schemaRefRelationshipsPossibleTypes(context, context.user, type),
+    stixRefRelationshipsDistribution: (_, args, context) =>
+      distributionRelations(context, context.user, args),
+    stixRefRelationshipsNumber: (_, args, context) =>
+      stixRefRelationshipsNumber(context, context.user, args),
     schemaRelationsRefTypesMapping: () => schemaRelationsRefTypesMapping(),
   },
   StixRefRelationship: {
-    from: (rel, _, context) => (rel.from ? rel.from : context.batch.idsBatchLoader.load({ id: rel.fromId, type: rel.fromType })),
-    to: (rel, _, context) => (rel.to ? rel.to : context.batch.idsBatchLoader.load({ id: rel.toId, type: rel.toType })),
+    from: (rel, _, context) =>
+      rel.from
+        ? rel.from
+        : context.batch.idsBatchLoader.load({ id: rel.fromId, type: rel.fromType }),
+    to: (rel, _, context) =>
+      rel.to ? rel.to : context.batch.idsBatchLoader.load({ id: rel.toId, type: rel.toType }),
     // region inner listing - cant be batch loaded
     containers: (rel, args, context) => containersPaginated(context, context.user, rel.id, args),
     reports: (rel, args, context) => reportsPaginated(context, context.user, rel.id, args),
@@ -52,7 +67,8 @@ const stixRefRelationshipResolvers = {
       fieldPatch: ({ input }) => stixRefRelationshipEditField(context, context.user, id, input),
       contextPatch: ({ input }) => stixRefRelationshipEditContext(context, context.user, id, input),
     }),
-    stixRefRelationshipAdd: (_, { input }, context) => addStixRefRelationship(context, context.user, input),
+    stixRefRelationshipAdd: (_, { input }, context) =>
+      addStixRefRelationship(context, context.user, input),
   },
   Subscription: {
     stixRefRelationship: {
@@ -61,7 +77,11 @@ const stixRefRelationshipResolvers = {
         const preFn = () => stixRefRelationshipEditContext(context, context.user, id);
         const cleanFn = () => stixRefRelationshipCleanContext(context, context.user, id);
         const bus = BUS_TOPICS[ABSTRACT_STIX_REF_RELATIONSHIP];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ABSTRACT_STIX_REF_RELATIONSHIP, preFn, cleanFn });
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], {
+          type: ABSTRACT_STIX_REF_RELATIONSHIP,
+          preFn,
+          cleanFn,
+        });
       },
     },
   },

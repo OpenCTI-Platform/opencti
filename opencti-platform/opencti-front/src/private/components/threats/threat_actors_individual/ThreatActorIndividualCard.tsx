@@ -128,9 +128,11 @@ interface ThreatActorIndividualCardProps {
   onLabelClick: HandleAddFilter;
   bookmarksIds?: string[];
 }
-const ThreatActorIndividualCard: FunctionComponent<
-  ThreatActorIndividualCardProps
-> = ({ node, onLabelClick, bookmarksIds }) => {
+const ThreatActorIndividualCard: FunctionComponent<ThreatActorIndividualCardProps> = ({
+  node,
+  onLabelClick,
+  bookmarksIds,
+}) => {
   const data = useFragment(ThreatActorIndividualCardFragment, node);
   return (
     <GenericAttackCard

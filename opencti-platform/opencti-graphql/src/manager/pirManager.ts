@@ -22,7 +22,13 @@ import { STIX_TYPE_RELATION } from '../schema/general';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { AuthContext } from '../types/user';
 import { FunctionalError } from '../config/errors';
-import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, type ParsedPir, type ParsedPirCriterion, type StoreEntityPir } from '../modules/pir/pir-types';
+import {
+  type BasicStoreEntityPir,
+  ENTITY_TYPE_PIR,
+  type ParsedPir,
+  type ParsedPirCriterion,
+  type StoreEntityPir,
+} from '../modules/pir/pir-types';
 import { constructFinalPirFilters, parsePir } from '../modules/pir/pir-utils';
 import { getEntitiesListFromCache } from '../database/cache';
 import { fetchStreamEventsRangeFromEventId } from '../database/stream/stream-handler';
@@ -100,17 +106,31 @@ const pirUnflagElementFromQueue = async (
  * @param pir The PIR to check.
  * @returns Array of matching criteria, if any.
  */
-export const checkEventOnPir = async (context: AuthContext, event: SseEvent<any>, pir: ParsedPir) => {
+export const checkEventOnPir = async (
+  context: AuthContext,
+  event: SseEvent<any>,
+  pir: ParsedPir,
+) => {
   const { data } = event;
   const { pir_type, pir_criteria, pir_filters } = pir;
   // 1. Check Pir filters (filters that do not count as criteria).
   const pirFinalFilters = constructFinalPirFilters(pir_type, pir_filters);
-  const eventMatchesPirFilters = await isStixMatchFilterGroup(context, PIR_MANAGER_USER, data, pirFinalFilters);
+  const eventMatchesPirFilters = await isStixMatchFilterGroup(
+    context,
+    PIR_MANAGER_USER,
+    data,
+    pirFinalFilters,
+  );
   // 2. Check Pir criteria one by one (because we need to know which one matches or not).
   const matchingCriteria: typeof pir_criteria = [];
   if (eventMatchesPirFilters) {
     for (const pirCriterion of pir_criteria) {
-      const isMatch = await isStixMatchFilterGroup(context, PIR_MANAGER_USER, data, pirCriterion.filters);
+      const isMatch = await isStixMatchFilterGroup(
+        context,
+        PIR_MANAGER_USER,
+        data,
+        pirCriterion.filters,
+      );
       if (isMatch) matchingCriteria.push(pirCriterion);
     }
   }
@@ -130,29 +150,45 @@ const processStreamEventsForPir = (context: AuthContext, pir: BasicStoreEntityPi
       const event = eventsContent[i];
       const { data } = event;
       const matchingCriteria = await checkEventOnPir(context, event, parsedPir);
-      if (matchingCriteria.length > 0) { // the event matches Pir
+      if (matchingCriteria.length > 0) {
+        // the event matches Pir
         const sourceId: string = data.extensions?.[STIX_EXT_OCTI]?.source_ref;
-        if (!sourceId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no source id found`);
+        if (!sourceId)
+          throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no source id found`);
         const relationshipId: string = data.extensions?.[STIX_EXT_OCTI]?.id;
-        if (!relationshipId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no relationship id found`);
+        if (!relationshipId)
+          throw FunctionalError(
+            `Cannot flag the source with Pir ${pir.id}, no relationship id found`,
+          );
         const relationshipAuthorId = data.extensions?.[STIX_EXT_OCTI]?.created_by_ref_id;
         switch (event.type) {
           case EVENT_TYPE_CREATE:
           case EVENT_TYPE_UPDATE:
-            await pirFlagElementToQueue(pir, relationshipId, sourceId, matchingCriteria, relationshipAuthorId);
+            await pirFlagElementToQueue(
+              pir,
+              relationshipId,
+              sourceId,
+              matchingCriteria,
+              relationshipAuthorId,
+            );
             break;
           case EVENT_TYPE_DELETE:
             await pirUnflagElementFromQueue(pir, relationshipId, sourceId);
             break;
           default: // Nothing to do
         }
-      } else { // the event doesn't match the Pir
+      } else {
+        // the event doesn't match the Pir
         const sourcePirRefs = data.extensions?.[STIX_EXT_OCTI]?.source_ref_pir_refs ?? [];
         if (event.type === EVENT_TYPE_UPDATE && sourcePirRefs.length > 0) {
           const sourceId: string = data.extensions?.[STIX_EXT_OCTI]?.source_ref;
-          if (!sourceId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no source id found`);
+          if (!sourceId)
+            throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no source id found`);
           const relationshipId: string = data.extensions?.[STIX_EXT_OCTI]?.id;
-          if (!relationshipId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no relationship id found`);
+          if (!relationshipId)
+            throw FunctionalError(
+              `Cannot flag the source with Pir ${pir.id}, no relationship id found`,
+            );
           await pirUnflagElementFromQueue(pir, relationshipId, sourceId);
         }
       }
@@ -165,21 +201,35 @@ const processStreamEventsForPir = (context: AuthContext, pir: BasicStoreEntityPi
  */
 export const pirManagerHandler = async () => {
   const context = executionContext(PIR_MANAGER_CONTEXT);
-  const allPirs = await getEntitiesListFromCache<BasicStoreEntityPir>(context, PIR_MANAGER_USER, ENTITY_TYPE_PIR);
+  const allPirs = await getEntitiesListFromCache<BasicStoreEntityPir>(
+    context,
+    PIR_MANAGER_USER,
+    ENTITY_TYPE_PIR,
+  );
 
   // Loop through all Pirs by group
-  await BluePromise.map(allPirs, async (pir) => {
-    // Fetch stream events since last event id caught by the Pir.
-    const { lastEventId } = await fetchStreamEventsRangeFromEventId(
-      pir.lastEventId,
-      processStreamEventsForPir(context, pir),
-      { streamBatchSize: PIR_MANAGER_STREAM_BATCH_SIZE },
-    );
+  await BluePromise.map(
+    allPirs,
+    async (pir) => {
+      // Fetch stream events since last event id caught by the Pir.
+      const { lastEventId } = await fetchStreamEventsRangeFromEventId(
+        pir.lastEventId,
+        processStreamEventsForPir(context, pir),
+        { streamBatchSize: PIR_MANAGER_STREAM_BATCH_SIZE },
+      );
       // Update pir last event id.
-    if (lastEventId !== pir.lastEventId) {
-      await updatePir(context, PIR_MANAGER_USER, pir.id, [{ key: 'lastEventId', value: [lastEventId] }], { auditLogEnabled: false });
-    }
-  }, { concurrency: PIR_MANAGER_MAX_CONCURRENCY });
+      if (lastEventId !== pir.lastEventId) {
+        await updatePir(
+          context,
+          PIR_MANAGER_USER,
+          pir.id,
+          [{ key: 'lastEventId', value: [lastEventId] }],
+          { auditLogEnabled: false },
+        );
+      }
+    },
+    { concurrency: PIR_MANAGER_MAX_CONCURRENCY },
+  );
 };
 
 // Configuration of the manager.

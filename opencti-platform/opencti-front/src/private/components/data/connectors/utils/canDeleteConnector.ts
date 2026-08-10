@@ -14,9 +14,11 @@ const canDeleteConnector = (connector: Connector_connector$data): boolean => {
 
   // For managed connectors, allow deletion only after stop has been requested or connector is stopped
   if (connector.is_managed) {
-    return connector.manager_requested_status === 'stopping'
-      || connector.manager_requested_status === 'stopped'
-      || connector.manager_current_status === 'stopped';
+    return (
+      connector.manager_requested_status === 'stopping' ||
+      connector.manager_requested_status === 'stopped' ||
+      connector.manager_current_status === 'stopped'
+    );
   }
 
   // For non-managed connectors, cannot delete if active

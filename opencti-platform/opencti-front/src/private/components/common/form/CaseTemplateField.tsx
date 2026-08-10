@@ -1,7 +1,9 @@
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import AutocompleteField, { AutocompleteFieldProps } from '../../../../components/AutocompleteField';
+import AutocompleteField, {
+  AutocompleteFieldProps,
+} from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -100,7 +102,10 @@ const CaseTemplateFieldComponent: FunctionComponent<CaseTemplateFieldComponentPr
   );
 };
 
-type CaseTemplateFieldProps = Omit<Omit<CaseTemplateFieldComponentProps, 'queryRef'>, 'reloadCaseTemplates'>;
+type CaseTemplateFieldProps = Omit<
+  Omit<CaseTemplateFieldComponentProps, 'queryRef'>,
+  'reloadCaseTemplates'
+>;
 
 const CaseTemplateField: FunctionComponent<CaseTemplateFieldProps> = (props) => {
   const queryRef = useQueryLoading<CaseTemplateFieldQuery>(caseTemplateFieldQuery);

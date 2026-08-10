@@ -36,11 +36,7 @@ const WidgetCreationTypes = () => {
   };
 
   return (
-    <Grid
-      container={true}
-      spacing={3}
-      style={{ marginTop: 20, marginBottom: 20 }}
-    >
+    <Grid container={true} spacing={3} style={{ marginTop: 20, marginBottom: 20 }}>
       {visualizationTypes.map((visualizationType) => (
         <Grid key={visualizationType.key} item xs={4}>
           <Card
@@ -54,11 +50,7 @@ const WidgetCreationTypes = () => {
           >
             <CardContent>
               {renderWidgetIcon(visualizationType.key, 'large')}
-              <Typography
-                gutterBottom
-                variant="body1"
-                style={{ marginTop: 8 }}
-              >
+              <Typography gutterBottom variant="body1" style={{ marginTop: 8 }}>
                 {t_i18n(visualizationType.name)}
               </Typography>
             </CardContent>

@@ -11,7 +11,10 @@ import Tooltip from '@mui/material/Tooltip';
 import Checkbox from '@mui/material/Checkbox';
 import { graphql, useFragment } from 'react-relay';
 import { Theme } from '@mui/material/styles/createTheme';
-import { NarrativeLine_node$data, NarrativeLine_node$key } from './__generated__/NarrativeLine_node.graphql';
+import {
+  NarrativeLine_node$data,
+  NarrativeLine_node$key,
+} from './__generated__/NarrativeLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
@@ -24,10 +27,7 @@ interface NarrativeLineProps {
   onLabelClick: HandleAddFilter;
   selectedElements: Record<string, NarrativeLine_node$data>;
   deSelectedElements: Record<string, NarrativeLine_node$data>;
-  onToggleEntity: (
-    entity: NarrativeLine_node$data,
-    event?: React.SyntheticEvent,
-  ) => void;
+  onToggleEntity: (entity: NarrativeLine_node$data, event?: React.SyntheticEvent) => void;
   selectAll: boolean;
   onToggleShiftEntity: (
     index: number,
@@ -123,16 +123,15 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
     >
       <ListItemIcon
         style={{ color: theme.palette.primary.main, minWidth: 40 }}
-        onClick={(event) => (event.shiftKey
-          ? onToggleShiftEntity(index, data, event)
-          : onToggleEntity(data, event))
+        onClick={(event) =>
+          event.shiftKey ? onToggleShiftEntity(index, data, event) : onToggleEntity(data, event)
         }
       >
         <Checkbox
           edge="start"
           checked={
-            (selectAll && !(data.id in (deSelectedElements || {})))
-            || data.id in (selectedElements || {})
+            (selectAll && !(data.id in (deSelectedElements || {}))) ||
+            data.id in (selectedElements || {})
           }
           disableRipple={true}
         />
@@ -141,12 +140,10 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
         <ItemIcon type="Narrative" />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <>
             <Tooltip title={data.name}>
-              <div style={commonTextStyle(theme, dataColumns.name.width)}>
-                {data.name}
-              </div>
+              <div style={commonTextStyle(theme, dataColumns.name.width)}>{data.name}</div>
             </Tooltip>
             <div style={commonTextStyle(theme, dataColumns.description.width)}>
               {emptyFilled(data.description)}
@@ -158,14 +155,12 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
                 onClick={onLabelClick}
               />
             </div>
-            <div style={commonTextStyle(theme, dataColumns.created.width)}>
-              {fd(data.created)}
-            </div>
+            <div style={commonTextStyle(theme, dataColumns.created.width)}>{fd(data.created)}</div>
             <div style={commonTextStyle(theme, dataColumns.modified.width)}>
               {fd(data.modified)}
             </div>
           </>
-        )}
+        }
       />
       <ListItemIcon style={{ position: 'absolute', right: -10 }}>
         <KeyboardArrowRightOutlined />
@@ -174,60 +169,31 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
   );
 };
 
-export const NarrativeLineDummy = ({
-  dataColumns,
-}: {
-  dataColumns: DataColumns;
-}) => {
+export const NarrativeLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const theme = useTheme();
 
   return (
     <ListItem style={{ paddingLeft: 10, height: 50 }} divider={true}>
       <ListItemIcon style={{ color: theme.palette.primary.main }}>
-        <Skeleton
-          animation="wave"
-          variant="circular"
-          width={30}
-          height={30}
-        />
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <>
             <div style={commonTextStyle(theme, dataColumns.name.width)}>
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
             <div style={commonTextStyle(theme, dataColumns.description.width)}>
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
             <div style={commonTextStyle(theme, dataColumns.objectLabel.width)}>
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
             <div style={commonTextStyle(theme, dataColumns.created.width)}>
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
           </>
-        )}
+        }
       />
       <ListItemIcon style={{ position: 'absolute', right: -10 }}>
         <KeyboardArrowRightOutlined color="disabled" />

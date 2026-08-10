@@ -9,11 +9,7 @@ describe('Component: FintelTemplateForm', () => {
     const onSubmitField = vi.fn();
 
     const { user } = testRender(
-      <FintelTemplateForm
-        onClose={() => {}}
-        onSubmit={onSubmit}
-        onSubmitField={onSubmitField}
-      />,
+      <FintelTemplateForm onClose={() => {}} onSubmit={onSubmit} onSubmitField={onSubmitField} />,
     );
 
     await user.click(screen.getByRole('button', { name: 'Create' }));
@@ -25,11 +21,7 @@ describe('Component: FintelTemplateForm', () => {
     const onSubmitField = vi.fn();
 
     const { user } = testRender(
-      <FintelTemplateForm
-        onClose={() => {}}
-        onSubmit={onSubmit}
-        onSubmitField={onSubmitField}
-      />,
+      <FintelTemplateForm onClose={() => {}} onSubmit={onSubmit} onSubmitField={onSubmitField} />,
     );
 
     await user.type(screen.getByLabelText('Name *'), 'MyFintelTemplate');

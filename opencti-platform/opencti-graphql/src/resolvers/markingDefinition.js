@@ -19,7 +19,8 @@ const markingDefinitionResolvers = {
     markingDefinitions: (_, args, context) => findMarkingsPaginated(context, context.user, args),
   },
   MarkingDefinition: {
-    toStix: (markingDefinition, args, context) => stixLoadByIdStringify(context, context.user, markingDefinition.id, args),
+    toStix: (markingDefinition, args, context) =>
+      stixLoadByIdStringify(context, context.user, markingDefinition.id, args),
     editContext: (markingDefinition) => fetchEditContext(markingDefinition.id),
   },
   Mutation: {
@@ -29,7 +30,8 @@ const markingDefinitionResolvers = {
       contextPatch: ({ input }) => markingDefinitionEditContext(context, context.user, id, input),
       contextClean: () => markingDefinitionCleanContext(context, context.user, id),
     }),
-    markingDefinitionAdd: (_, { input }, context) => addAllowedMarkingDefinition(context, context.user, input),
+    markingDefinitionAdd: (_, { input }, context) =>
+      addAllowedMarkingDefinition(context, context.user, input),
   },
   Subscription: {
     markingDefinition: {
@@ -38,7 +40,11 @@ const markingDefinitionResolvers = {
         const preFn = () => markingDefinitionEditContext(context, context.user, id);
         const cleanFn = () => markingDefinitionCleanContext(context, context.user, id);
         const bus = BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_MARKING_DEFINITION, preFn, cleanFn });
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], {
+          type: ENTITY_TYPE_MARKING_DEFINITION,
+          preFn,
+          cleanFn,
+        });
       },
     },
   },

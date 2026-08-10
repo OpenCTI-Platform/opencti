@@ -3,11 +3,23 @@ import { describe, it, expect, vi } from 'vitest';
 vi.mock('../../../utils/hooks/useAttributes', () => ({
   default: () => ({
     containerTypes: ['Report', 'Grouping', 'Note', 'Case-Incident', 'Case-Rfi', 'Case-Rft'],
-    aliasedTypes: ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set', 'Campaign', 'Malware', 'Tool'],
+    aliasedTypes: [
+      'Threat-Actor-Group',
+      'Threat-Actor-Individual',
+      'Intrusion-Set',
+      'Campaign',
+      'Malware',
+      'Tool',
+    ],
   }),
 }));
 
-import { getWidgetColumns, getDefaultWidgetColumns, getCustomAttributesColumns, getDefaultCustomAttributesColumns } from './WidgetListsDefaultColumns';
+import {
+  getWidgetColumns,
+  getDefaultWidgetColumns,
+  getCustomAttributesColumns,
+  getDefaultCustomAttributesColumns,
+} from './WidgetListsDefaultColumns';
 
 describe('WidgetListsDefaultColumns', () => {
   describe('getWidgetColumns for DraftWorkspace', () => {
@@ -106,7 +118,10 @@ describe('WidgetListsDefaultColumns', () => {
     it('does NOT leak the detailed CVSS custom-attributes-only columns', () => {
       const columns = getWidgetColumns('entities', 'Vulnerability');
       const attributes = columns.map((c) => c.attribute);
-      const leaked = attributes.filter((a) => a?.startsWith('x_opencti_cvss') && !a?.endsWith('_score') && !a?.endsWith('_severity'));
+      const leaked = attributes.filter(
+        (a) =>
+          a?.startsWith('x_opencti_cvss') && !a?.endsWith('_score') && !a?.endsWith('_severity'),
+      );
       expect(leaked).toHaveLength(0);
     });
   });

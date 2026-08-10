@@ -1,5 +1,9 @@
 import { AuthenticationProviderType } from '../../generated/graphql';
-import { AuthenticationProviderError, type AuthenticationProviderLogger, createAuthLogger } from './providers-logger';
+import {
+  AuthenticationProviderError,
+  type AuthenticationProviderLogger,
+  createAuthLogger,
+} from './providers-logger';
 import type {
   BasicStoreEntityAuthenticationProvider,
   LdapStoreConfiguration,
@@ -7,14 +11,26 @@ import type {
   OidcStoreConfiguration,
   SamlStoreConfiguration,
 } from './authenticationProvider-types';
-import { initializeEnvAuthenticationProviders, registerAuthenticationProvider, unregisterAuthenticationProvider } from './providers-env-deprecated';
+import {
+  initializeEnvAuthenticationProviders,
+  registerAuthenticationProvider,
+  unregisterAuthenticationProvider,
+} from './providers-env-deprecated';
 import { createSAMLStrategy } from './provider-saml';
 import { createLDAPStrategy } from './provider-ldap';
 import { createOpenIdStrategy } from './provider-oidc';
-import { getProvidersFromEnvironment, isAuthenticationForcedFromEnv, isLocalAuthEnabledInEnv, isLocalAuthForcedEnabledFromEnv } from './providers-configuration';
+import {
+  getProvidersFromEnvironment,
+  isAuthenticationForcedFromEnv,
+  isLocalAuthEnabledInEnv,
+  isLocalAuthForcedEnabledFromEnv,
+} from './providers-configuration';
 import { PROVIDERS } from './providers-configuration';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { findAllAuthenticationProvider, resolveProviderIdentifier } from './authenticationProvider-domain';
+import {
+  findAllAuthenticationProvider,
+  resolveProviderIdentifier,
+} from './authenticationProvider-domain';
 import { registerLocalStrategy } from './provider-local';
 import { executionContext, SYSTEM_USER } from '../../utils/access';
 import { registerHeadersStrategy } from './provider-headers';
@@ -52,34 +68,41 @@ export interface ProviderAuthInfo {
 }
 
 const context = executionContext('authentication_providers');
-export const handleProviderLogin = async (logger: AuthenticationProviderLogger, info: ProviderAuthInfo) => {
+export const handleProviderLogin = async (
+  logger: AuthenticationProviderLogger,
+  info: ProviderAuthInfo,
+) => {
   if (!info.userMapping.email) {
-    throw new AuthenticationProviderError('No user email found, please verify provider configuration and server response', info);
+    throw new AuthenticationProviderError(
+      'No user email found, please verify provider configuration and server response',
+      info,
+    );
   }
   logger.info('User info resolved', info);
 
-  if (!await isEnterpriseEdition(context)) {
-    throw new AuthenticationProviderError('This authentication strategy is not available, please contact your administrator');
+  if (!(await isEnterpriseEdition(context))) {
+    throw new AuthenticationProviderError(
+      'This authentication strategy is not available, please contact your administrator',
+    );
   }
 
-  const user = await loginFromProvider(
-    info.userMapping,
-    {
-      providerGroupsMapping: info.groupsMapping.groupMappingEntries,
-      providerGroups: info.groupsMapping.groups,
-      autoCreateGroup: info.groupsMapping.autoCreateGroup,
-      preventDefaultGroups: info.groupsMapping.preventDefaultGroups,
-      extendPlatformGroups: info.groupsMapping.extendPlatformGroups,
-      providerOrganizations: info.organizationsMapping.organizations,
-      autoCreateOrganization: info.organizationsMapping.autoCreateOrganization,
-    },
-  );
+  const user = await loginFromProvider(info.userMapping, {
+    providerGroupsMapping: info.groupsMapping.groupMappingEntries,
+    providerGroups: info.groupsMapping.groups,
+    autoCreateGroup: info.groupsMapping.autoCreateGroup,
+    preventDefaultGroups: info.groupsMapping.preventDefaultGroups,
+    extendPlatformGroups: info.groupsMapping.extendPlatformGroups,
+    providerOrganizations: info.organizationsMapping.organizations,
+    autoCreateOrganization: info.organizationsMapping.autoCreateOrganization,
+  });
   addUserLoginCount();
   logger.success('User successfully logged', { userId: user.id, email: user.user_email });
   return user;
 };
 
-export const refreshStrategy = async (authenticationStrategy: BasicStoreEntityAuthenticationProvider) => {
+export const refreshStrategy = async (
+  authenticationStrategy: BasicStoreEntityAuthenticationProvider,
+) => {
   await unregisterStrategy(authenticationStrategy);
 
   if (authenticationStrategy.enabled) {
@@ -87,9 +110,13 @@ export const refreshStrategy = async (authenticationStrategy: BasicStoreEntityAu
   }
 };
 
-export const unregisterStrategy = async (authenticationStrategy: BasicStoreEntityAuthenticationProvider) => {
+export const unregisterStrategy = async (
+  authenticationStrategy: BasicStoreEntityAuthenticationProvider,
+) => {
   // when changing a provider identifier, we need to find the old identifier value in order to unregister it correctly
-  const identifierFromProviders = PROVIDERS.find((p) => p.internal_id === authenticationStrategy.internal_id)?.provider;
+  const identifierFromProviders = PROVIDERS.find(
+    (p) => p.internal_id === authenticationStrategy.internal_id,
+  )?.provider;
   const identifier = identifierFromProviders ?? resolveProviderIdentifier(authenticationStrategy);
   unregisterAuthenticationProvider(identifier);
 };
@@ -97,13 +124,16 @@ export const unregisterStrategy = async (authenticationStrategy: BasicStoreEntit
 const startingProviders = new Set<string>();
 export const isProviderStarting = (providerId: string) => startingProviders.has(providerId);
 
-export const registerStrategy = async (authenticationProvider: BasicStoreEntityAuthenticationProvider) => {
+export const registerStrategy = async (
+  authenticationProvider: BasicStoreEntityAuthenticationProvider,
+) => {
   const { type, name, button_label_override } = authenticationProvider;
   const identifier = resolveProviderIdentifier(authenticationProvider);
   const meta = { name, identifier };
   const logger = createAuthLogger(authenticationProvider.internal_id, type, identifier);
   const { configuration } = authenticationProvider;
-  const { user_info_mapping, groups_mapping, organizations_mapping } = configuration as MappingConfiguration;
+  const { user_info_mapping, groups_mapping, organizations_mapping } =
+    configuration as MappingConfiguration;
   logger.info('Provider is starting', { user_info_mapping, groups_mapping, organizations_mapping });
 
   startingProviders.add(authenticationProvider.internal_id);
@@ -128,19 +158,15 @@ export const registerStrategy = async (authenticationProvider: BasicStoreEntityA
         return;
       }
       Object.assign(created.strategy, { logger });
-      registerAuthenticationProvider(
-        meta.identifier,
-        created.strategy,
-        {
-          internal_id: authenticationProvider.internal_id,
-          name: meta.name,
-          type: created.auth_type,
-          strategy: authenticationProvider.type,
-          provider: meta.identifier,
-          logout_remote: created.logout_remote,
-          button_label_override,
-        },
-      );
+      registerAuthenticationProvider(meta.identifier, created.strategy, {
+        internal_id: authenticationProvider.internal_id,
+        name: meta.name,
+        type: created.auth_type,
+        strategy: authenticationProvider.type,
+        provider: meta.identifier,
+        logout_remote: created.logout_remote,
+        button_label_override,
+      });
     }
     logger.success('Provider started successfully');
   } catch (e) {
@@ -164,7 +190,7 @@ export const initDatabaseAuthenticationProviders = async (context: AuthContext, 
 };
 
 export const initializeAuthenticationProviders = async (context: AuthContext) => {
-  const settings = await getSettingsFromDatabase(context) as unknown as BasicStoreSettings;
+  const settings = (await getSettingsFromDatabase(context)) as unknown as BasicStoreSettings;
 
   // Local auth is always enabled, to allow config admin login
   // The filter is done afterward in user#sessionLogin
@@ -180,7 +206,10 @@ export const initializeAuthenticationProviders = async (context: AuthContext) =>
   if (isAuthenticationForcedFromEnv()) {
     // Cleanup providers from database
     const authenticators = await findAllAuthenticationProvider(context, SYSTEM_USER);
-    await elDeleteElements(context, SYSTEM_USER, authenticators, { forceDelete: true, forceRefresh: true });
+    await elDeleteElements(context, SYSTEM_USER, authenticators, {
+      forceDelete: true,
+      forceRefresh: true,
+    });
 
     // First manage local
     const confProviders = getProvidersFromEnvironment() ?? {};
@@ -201,7 +230,7 @@ export const initializeAuthenticationProviders = async (context: AuthContext) =>
     await initDatabaseAuthenticationProviders(context, SYSTEM_USER);
   }
   // Safety net: force local_auth enabled when no other provider is available
-  const finalSettings = await getSettings(context) as unknown as BasicStoreSettings;
+  const finalSettings = (await getSettings(context)) as unknown as BasicStoreSettings;
   if (finalSettings.local_auth?.enabled === false) {
     const isHttpsEnabled = !!(conf.get('app:https_cert:key') && conf.get('app:https_cert:crt'));
     const eeActive = getEnterpriseEditionInfo(finalSettings).license_validated;
@@ -211,7 +240,9 @@ export const initializeAuthenticationProviders = async (context: AuthContext) =>
     const hasEnvProviders = PROVIDERS.length > 0;
     const hasDbProvider = eeActive && dbProviders.some((p) => p.enabled);
 
-    const hasSSOProviders = ((isAuthenticationForcedFromEnv() && hasEnvProviders) || (!isAuthenticationForcedFromEnv() && hasDbProvider));
+    const hasSSOProviders =
+      (isAuthenticationForcedFromEnv() && hasEnvProviders) ||
+      (!isAuthenticationForcedFromEnv() && hasDbProvider);
 
     if (isLocalAuthForcedEnabledFromEnv() || (!hasCert && !hasHeader && !hasSSOProviders)) {
       logApp.warn('[MIGRATION-SAFETY] No other provider available, forcing local_auth to enabled');

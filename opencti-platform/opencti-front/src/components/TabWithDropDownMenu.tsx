@@ -30,7 +30,12 @@ type TabWithDropDownMenuProps = Omit<TabProps<'div'>, 'onClick'> & {
 };
 
 /** A Tab that shows an arrow indicator and triggers a drop-down menu on click. */
-export const TabWithDropDownMenu = ({ isOpen, onOpen, label, ...tabProps }: TabWithDropDownMenuProps) => (
+export const TabWithDropDownMenu = ({
+  isOpen,
+  onOpen,
+  label,
+  ...tabProps
+}: TabWithDropDownMenuProps) => (
   <Tab
     {...tabProps}
     component="div"
@@ -48,7 +53,7 @@ export const TabWithDropDownMenu = ({ isOpen, onOpen, label, ...tabProps }: TabW
       paddingLeft: '19px',
       paddingRight: '13px',
     }}
-    label={(
+    label={
       <>
         <Box
           sx={{
@@ -61,9 +66,13 @@ export const TabWithDropDownMenu = ({ isOpen, onOpen, label, ...tabProps }: TabW
         >
           {label}
         </Box>
-        {isOpen ? <ArrowDropUp sx={{ fontSize: '20px' }} /> : <ArrowDropDown sx={{ fontSize: '20px' }} />}
+        {isOpen ? (
+          <ArrowDropUp sx={{ fontSize: '20px' }} />
+        ) : (
+          <ArrowDropDown sx={{ fontSize: '20px' }} />
+        )}
       </>
-    )}
+    }
     onClick={onOpen}
   />
 );

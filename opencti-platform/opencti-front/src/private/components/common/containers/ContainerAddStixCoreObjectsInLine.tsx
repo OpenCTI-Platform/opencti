@@ -8,15 +8,23 @@ import { DataColumns } from '../../../../components/list_lines';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { PaginationLocalStorage, usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import {
+  PaginationLocalStorage,
+  usePaginationLocalStorage,
+} from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { removeEmptyFields } from '../../../../utils/utils';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import Drawer from '../drawer/Drawer';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
-import { ContainerAddStixCoreObjectsLinesQuery, ContainerAddStixCoreObjectsLinesQuery$variables } from './__generated__/ContainerAddStixCoreObjectsLinesQuery.graphql';
+import {
+  ContainerAddStixCoreObjectsLinesQuery,
+  ContainerAddStixCoreObjectsLinesQuery$variables,
+} from './__generated__/ContainerAddStixCoreObjectsLinesQuery.graphql';
 import { ContainerStixDomainObjectsLinesQuery$variables } from './__generated__/ContainerStixDomainObjectsLinesQuery.graphql';
-import ContainerAddStixCoreObjectsLines, { containerAddStixCoreObjectsLinesQuery } from './ContainerAddStixCoreObjectsLines';
+import ContainerAddStixCoreObjectsLines, {
+  containerAddStixCoreObjectsLinesQuery,
+} from './ContainerAddStixCoreObjectsLines';
 import { ContainerStixCyberObservablesLinesPaginationQuery$variables } from '@components/common/containers/__generated__/ContainerStixCyberObservablesLinesPaginationQuery.graphql';
 import { DefaultMarking } from '@components/settings/marking_definitions/markingDefinition.types';
 
@@ -27,10 +35,7 @@ interface ControlledDialProps {
 
 const ControlledDial = ({ onOpen, title }: ControlledDialProps) => {
   return (
-    <Button
-      aria-label={title}
-      onClick={() => onOpen()}
-    >
+    <Button aria-label={title} onClick={() => onOpen()}>
       {title}
     </Button>
   );
@@ -41,10 +46,7 @@ const GraphControlledDial = ({ onOpen }: { onOpen: () => void }) => {
 
   return (
     <Tooltip title={t_i18n('Add an entity to this container')}>
-      <IconButton
-        color="primary"
-        onClick={() => onOpen()}
-      >
+      <IconButton color="primary" onClick={() => onOpen()}>
         <Add />
       </IconButton>
     </Tooltip>
@@ -62,7 +64,9 @@ interface ContainerAddStixCreObjectsInLineLoaderProps {
   queryRef: PreloadedQuery<ContainerAddStixCoreObjectsLinesQuery>;
   containerId: string;
   buildColumns: () => DataColumns;
-  linesPaginationOptions: ContainerStixDomainObjectsLinesQuery$variables | ContainerStixCyberObservablesLinesPaginationQuery$variables;
+  linesPaginationOptions:
+    | ContainerStixDomainObjectsLinesQuery$variables
+    | ContainerStixCyberObservablesLinesPaginationQuery$variables;
   knowledgeGraph?: boolean;
   selectedElements: unknown[];
   handleSelect: (o: { id: string }) => void;
@@ -72,7 +76,9 @@ interface ContainerAddStixCreObjectsInLineLoaderProps {
   enableReferences?: boolean;
 }
 
-const ContainerAddStixCreObjectsInLineLoader: FunctionComponent<ContainerAddStixCreObjectsInLineLoaderProps> = ({
+const ContainerAddStixCreObjectsInLineLoader: FunctionComponent<
+  ContainerAddStixCreObjectsInLineLoaderProps
+> = ({
   queryRef,
   containerId,
   buildColumns,
@@ -108,7 +114,9 @@ const ContainerAddStixCreObjectsInLineLoader: FunctionComponent<ContainerAddStix
 interface ContainerAddStixCoreObjectsInLineProps {
   containerId: string;
   targetStixCoreObjectTypes: string[];
-  paginationOptions: ContainerStixDomainObjectsLinesQuery$variables | ContainerStixCyberObservablesLinesPaginationQuery$variables;
+  paginationOptions:
+    | ContainerStixDomainObjectsLinesQuery$variables
+    | ContainerStixCyberObservablesLinesPaginationQuery$variables;
   containerStixCoreObjects: unknown[];
   onAdd?: (node: { id: string }) => void;
   onDelete?: (node: { id: string }) => void;
@@ -120,7 +128,9 @@ interface ContainerAddStixCoreObjectsInLineProps {
   knowledgeGraph?: boolean | undefined;
 }
 
-const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreObjectsInLineProps> = ({
+const ContainerAddStixCoreObjectsInLine: FunctionComponent<
+  ContainerAddStixCoreObjectsInLineProps
+> = ({
   containerId,
   targetStixCoreObjectTypes,
   paginationOptions: linesPaginationOptions,
@@ -143,33 +153,25 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
   const showSCOCreation = targetStixCoreObjectTypes.includes('Stix-Cyber-Observable');
 
   const LOCAL_STORAGE_KEY = `container-${containerId}-add-${targetStixCoreObjectTypes}`;
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<
-    ContainerAddStixCoreObjectsLinesQuery$variables
-  >(
-    LOCAL_STORAGE_KEY,
-    {
-      searchTerm: '',
-      sortBy: '_score',
-      orderAsc: false,
-      filters: emptyFilterGroup,
-      types: targetStixCoreObjectTypes,
-    },
-    true,
-  );
-  const {
-    sortBy,
-    orderAsc,
-    searchTerm,
-    filters,
-    numberOfElements,
-  } = viewStorage;
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<ContainerAddStixCoreObjectsLinesQuery$variables>(
+      LOCAL_STORAGE_KEY,
+      {
+        searchTerm: '',
+        sortBy: '_score',
+        orderAsc: false,
+        filters: emptyFilterGroup,
+        types: targetStixCoreObjectTypes,
+      },
+      true,
+    );
+  const { sortBy, orderAsc, searchTerm, filters, numberOfElements } = viewStorage;
   const [containerRef, setRef] = useState<HTMLDivElement | null>(null);
-  const [selectedElements, setSelectedElements] = useState<scoEdge[]>(containerStixCoreObjects as scoEdge[]);
+  const [selectedElements, setSelectedElements] = useState<scoEdge[]>(
+    containerStixCoreObjects as scoEdge[],
+  );
   const handleSelect = (node: { id: string }) => {
-    setSelectedElements([
-      ...selectedElements,
-      { node, types: ['manual'] },
-    ]);
+    setSelectedElements([...selectedElements, { node, types: ['manual'] }]);
     if (typeof onAdd === 'function') onAdd(node);
   };
   const handleDeselect = (node: { id: string }) => {
@@ -211,7 +213,10 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
     ...paginationOptionsNoCount,
     search: keyword,
   });
-  const queryRef = useQueryLoading<ContainerAddStixCoreObjectsLinesQuery>(containerAddStixCoreObjectsLinesQuery, { count: 100, ...searchPaginationOptions });
+  const queryRef = useQueryLoading<ContainerAddStixCoreObjectsLinesQuery>(
+    containerAddStixCoreObjectsLinesQuery,
+    { count: 100, ...searchPaginationOptions },
+  );
 
   const [openCreateEntity, setOpenCreateEntity] = useState<boolean>(false);
   const [openCreateObservable, setOpenCreateObservable] = useState<boolean>(false);
@@ -253,8 +258,12 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
   };
 
   const Dial = showSDOCreation
-    ? ({ onOpen }: { onOpen: () => void }) => <ControlledDial title={t_i18n('Add entity')} onOpen={onOpen} />
-    : ({ onOpen }: { onOpen: () => void }) => <ControlledDial title={t_i18n('Add observable')} onOpen={onOpen} />;
+    ? ({ onOpen }: { onOpen: () => void }) => (
+        <ControlledDial title={t_i18n('Add entity')} onOpen={onOpen} />
+      )
+    : ({ onOpen }: { onOpen: () => void }) => (
+        <ControlledDial title={t_i18n('Add observable')} onOpen={onOpen} />
+      );
 
   const buttons = (
     <Stack direction="row" gap={1}>
@@ -309,7 +318,7 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
         entityTypes={targetStixCoreObjectTypes}
         createButton={buttons}
       >
-        {(containerRef && queryRef) && (
+        {containerRef && queryRef && (
           <Suspense>
             <ContainerAddStixCreObjectsInLineLoader
               queryRef={queryRef}

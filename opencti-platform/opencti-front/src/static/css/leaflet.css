@@ -281,7 +281,11 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
 /* general typography */
 .leaflet-container {
-  font: 12px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font:
+    12px/1.5 'Helvetica Neue',
+    Arial,
+    Helvetica,
+    sans-serif;
 }
 
 /* general toolbar styles */
@@ -344,7 +348,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
 .leaflet-control-zoom-in,
 .leaflet-control-zoom-out {
-  font: bold 18px "Lucida Console", Monaco, monospace;
+  font:
+    bold 18px 'Lucida Console',
+    Monaco,
+    monospace;
   text-indent: 1px;
 }
 
@@ -527,7 +534,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
   text-align: center;
   width: 18px;
   height: 14px;
-  font: 16px/14px Tahoma, Verdana, sans-serif;
+  font:
+    16px/14px Tahoma,
+    Verdana,
+    sans-serif;
   color: #c3c3c3;
   text-decoration: none;
   font-weight: bold;
@@ -549,7 +559,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   width: 24px;
   margin: 0 auto;
 
-  -ms-filter: "progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678)";
+  -ms-filter: 'progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678)';
   filter: progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678);
 }
 .leaflet-oldie .leaflet-popup-tip-container {
@@ -599,7 +609,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   pointer-events: none;
   border: 6px solid transparent;
   background: transparent;
-  content: "";
+  content: '';
 }
 
 /* Directions */

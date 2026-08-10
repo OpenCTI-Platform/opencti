@@ -59,9 +59,12 @@ export const daysAgo = (
   date: DateInput | null = null,
   fromStart = true,
 ): string =>
-  moment(dayStartDate(date ?? null, fromStart)).subtract(number, 'days').format();
+  moment(dayStartDate(date ?? null, fromStart))
+    .subtract(number, 'days')
+    .format();
 
-export const lastDayOfThePreviousMonth = (): string => moment().subtract(1, 'months').endOf('month').format();
+export const lastDayOfThePreviousMonth = (): string =>
+  moment().subtract(1, 'months').endOf('month').format();
 
 export const daysAfter = (
   number: number | string,
@@ -77,19 +80,19 @@ export const daysAfter = (
   return newDate;
 };
 
-export const minutesBefore = (
-  number: number | string,
-  date?: DateInput | null,
-): string =>
+export const minutesBefore = (number: number | string, date?: DateInput | null): string =>
   moment(date || dayStartDate())
     .subtract(number, 'minutes')
     .format();
 
-export const monthsAgo = (number: number | string): string => moment(dayStartDate()).subtract(number, 'months').format();
+export const monthsAgo = (number: number | string): string =>
+  moment(dayStartDate()).subtract(number, 'months').format();
 
-export const yearsAgo = (number: number | string): string => moment(dayStartDate()).subtract(number, 'years').format();
+export const yearsAgo = (number: number | string): string =>
+  moment(dayStartDate()).subtract(number, 'years').format();
 
-export const yearFormat = (data: DateInput): string => (data && data !== '-' ? parse(data).format(yearDateFormat) : '');
+export const yearFormat = (data: DateInput): string =>
+  data && data !== '-' ? parse(data).format(yearDateFormat) : '';
 
 /**
  * Format a date using a specific format string, or the default 'YYYY-MM-DD'.
@@ -105,9 +108,7 @@ export const dateFormat = (
   if (isNone(data)) {
     return null;
   }
-  return data && data !== '-'
-    ? parse(data).format(specificFormat || defaultDateFormat)
-    : '';
+  return data && data !== '-' ? parse(data).format(specificFormat || defaultDateFormat) : '';
 };
 
 export const formatTimeForToday = (time: string): string => {
@@ -169,10 +170,7 @@ export const formatSeconds = (seconds: number): string => {
  * @param input The number of minutes.
  * @param t_i18n Translation function.
  */
-export const stringFormatMinutes = (
-  input: number,
-  t_i18n: (s: string) => string,
-): string => {
+export const stringFormatMinutes = (input: number, t_i18n: (s: string) => string): string => {
   const ONE_HOUR = 60;
   const ONE_DAY = ONE_HOUR * 24;
   const days = Math.floor(input / ONE_DAY);

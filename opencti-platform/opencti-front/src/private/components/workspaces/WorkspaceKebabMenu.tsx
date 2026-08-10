@@ -14,7 +14,12 @@ import WorkspaceDeletion from '@components/workspaces/WorkspaceDeletion';
 import { WorkspaceKebabMenuFragment$key } from './__generated__/WorkspaceKebabMenuFragment.graphql';
 import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import Security from '../../../utils/Security';
-import useGranted, { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_EXDELETE, EXPLORE_EXUPDATE_PUBLISH, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
+import useGranted, {
+  EXPLORE_EXUPDATE,
+  EXPLORE_EXUPDATE_EXDELETE,
+  EXPLORE_EXUPDATE_PUBLISH,
+  INVESTIGATION_INUPDATE,
+} from '../../../utils/hooks/useGranted';
 import { useFormatter } from '../../../components/i18n';
 
 const kebabMenuFragment = graphql`
@@ -42,10 +47,12 @@ const useDuplicate = (isGranted = false, onDuplicate = noop) => {
   const [displayDuplicate, setDisplayDuplicate] = useState(false);
   const handleCloseDuplicate = () => setDisplayDuplicate(false);
   const [duplicating, setDuplicating] = useState(false);
-  const handleDashboardDuplication = isGranted ? () => {
-    onDuplicate();
-    setDisplayDuplicate(true);
-  } : noop;
+  const handleDashboardDuplication = isGranted
+    ? () => {
+        onDuplicate();
+        setDisplayDuplicate(true);
+      }
+    : noop;
 
   return {
     displayDuplicate,
@@ -76,7 +83,11 @@ const useAddToContainer = (onAddToContainer = noop) => {
     setIsAddToContainerDialogOpen(true);
   };
 
-  return { isAddToContainerDialogOpen, handleOpenTurnToReportOrCaseContainer, handleCloseTurnToReportOrCaseContainer };
+  return {
+    isAddToContainerDialogOpen,
+    handleOpenTurnToReportOrCaseContainer,
+    handleCloseTurnToReportOrCaseContainer,
+  };
 };
 
 const useDelete = (onDelete = noop) => {
@@ -113,20 +124,27 @@ const WorkspaceKebabMenu = ({ data }: WorkspaceKebabMenuProps) => {
     handleDashboardDuplication,
     handleCloseDuplicate,
   } = useDuplicate(isGrantedToUpdateDashboard, handleClose);
-  const { displayManageAccess, handleOpenManageAccess, handleCloseManageAccess } = useManageAccess(handleClose);
-  const { isAddToContainerDialogOpen, handleOpenTurnToReportOrCaseContainer, handleCloseTurnToReportOrCaseContainer } = useAddToContainer(handleClose);
+  const { displayManageAccess, handleOpenManageAccess, handleCloseManageAccess } =
+    useManageAccess(handleClose);
+  const {
+    isAddToContainerDialogOpen,
+    handleOpenTurnToReportOrCaseContainer,
+    handleCloseTurnToReportOrCaseContainer,
+  } = useAddToContainer(handleClose);
   const { openDelete, handleOpenDeletion, handleCloseDeletion } = useDelete(handleClose);
 
   const goToPublicDashboards = () => {
     const filter = {
       mode: 'and',
       filterGroups: [],
-      filters: [{
-        key: 'dashboard_id',
-        values: [workspace.id],
-        mode: 'or',
-        operator: 'eq',
-      }],
+      filters: [
+        {
+          key: 'dashboard_id',
+          values: [workspace.id],
+          mode: 'or',
+          operator: 'eq',
+        },
+      ],
     };
     navigate(`/dashboard/workspaces/dashboards_public?filters=${JSON.stringify(filter)}`);
   };
@@ -179,23 +197,31 @@ const WorkspaceKebabMenu = ({ data }: WorkspaceKebabMenuProps) => {
         }}
       >
         <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]} hasAccess={canManage}>
-          <MenuItem onClick={handleOpenManageAccess}>{t_i18n('Manage access restriction')}</MenuItem>
+          <MenuItem onClick={handleOpenManageAccess}>
+            {t_i18n('Manage access restriction')}
+          </MenuItem>
         </Security>
         {variant === 'investigation' && (
           <Security needs={[INVESTIGATION_INUPDATE]}>
-            <MenuItem onClick={handleOpenTurnToReportOrCaseContainer}>{t_i18n('Add to a container')}</MenuItem>
+            <MenuItem onClick={handleOpenTurnToReportOrCaseContainer}>
+              {t_i18n('Add to a container')}
+            </MenuItem>
           </Security>
         )}
         {variant === 'dashboard' && (
           <>
             <Security needs={[EXPLORE_EXUPDATE]} hasAccess={canEdit}>
-              <MenuItem onClick={handleDashboardDuplication}>{t_i18n('Duplicate the dashboard')}</MenuItem>
+              <MenuItem onClick={handleDashboardDuplication}>
+                {t_i18n('Duplicate the dashboard')}
+              </MenuItem>
             </Security>
             <MenuItem onClick={goToPublicDashboards}>
               {t_i18n('View associated public dashboards')}
             </MenuItem>
             <Security needs={[EXPLORE_EXUPDATE_PUBLISH]} hasAccess={canManage}>
-              <MenuItem onClick={handleOpenCreation}>{t_i18n('Create a public dashboard')}</MenuItem>
+              <MenuItem onClick={handleOpenCreation}>
+                {t_i18n('Create a public dashboard')}
+              </MenuItem>
             </Security>
           </>
         )}

@@ -82,6 +82,7 @@ extend type Query {
   redisStreamInfo: RedisStreamInfo @auth
 }
 extend type Mutation {
-  streamCollectionAdd(input: StreamCollectionAddInput!): StreamCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  streamCollectionAdd(input: StreamCollectionAddInput!): StreamCollection
+    @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   streamCollectionEdit(id: ID!): StreamCollectionEditMutations @auth(for: [TAXIIAPI_SETCOLLECTIONS])
 }

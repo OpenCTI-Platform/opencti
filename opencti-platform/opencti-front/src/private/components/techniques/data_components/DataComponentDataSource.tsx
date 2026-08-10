@@ -10,17 +10,17 @@ import { LinkOff, StreamOutlined } from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
 import { useFormatter } from '../../../../components/i18n';
 import AddDataSources from './AddDataSources';
-import { DataComponentDataSources_dataComponent$data, DataComponentDataSources_dataComponent$key } from './__generated__/DataComponentDataSources_dataComponent.graphql';
+import {
+  DataComponentDataSources_dataComponent$data,
+  DataComponentDataSources_dataComponent$key,
+} from './__generated__/DataComponentDataSources_dataComponent.graphql';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Label from '../../../../components/common/label/Label';
 
 const dataComponentDataSourcesRemoveMutation = graphql`
-  mutation DataComponentDataSourcesRemoveMutation(
-    $id: ID!
-    $input: [EditInput]!
-  ) {
+  mutation DataComponentDataSourcesRemoveMutation($id: ID!, $input: [EditInput]!) {
     dataComponentFieldPatch(id: $id, input: $input) {
       ...DataComponentEditionOverview_dataComponent
       ...DataComponent_dataComponent
@@ -43,9 +43,9 @@ interface DataComponentDataSourcesProps {
   dataComponent: DataComponentDataSources_dataComponent$key;
 }
 
-const DataComponentDataSource: FunctionComponent<
-  DataComponentDataSourcesProps
-> = ({ dataComponent }) => {
+const DataComponentDataSource: FunctionComponent<DataComponentDataSourcesProps> = ({
+  dataComponent,
+}) => {
   const { t_i18n } = useFormatter();
 
   const data: DataComponentDataSources_dataComponent$data = useFragment(
@@ -78,16 +78,13 @@ const DataComponentDataSource: FunctionComponent<
             dense={true}
             divider={true}
             disablePadding={true}
-            secondaryAction={(
+            secondaryAction={
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <IconButton
-                  aria-label="Remove"
-                  onClick={removeDataSource}
-                >
+                <IconButton aria-label="Remove" onClick={removeDataSource}>
                   <LinkOff />
                 </IconButton>
               </Security>
-            )}
+            }
           >
             <ListItemButton
               component={Link}

@@ -10,7 +10,11 @@ interface CodeBlockProps {
   customHeight?: string;
 }
 
-const CodeBlock: FunctionComponent<CodeBlockProps> = ({ language, code, customHeight = '400px' }) => {
+const CodeBlock: FunctionComponent<CodeBlockProps> = ({
+  language,
+  code,
+  customHeight = '400px',
+}) => {
   const theme = useTheme<Theme>();
   return (
     <SyntaxHighlighter

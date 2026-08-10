@@ -1,7 +1,12 @@
 import type { SxProps } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import type { ColorDefinition, GradientColor, SizeConfig } from './Button.types';
-import { getDisabledSx, createGradientSx, createTextGradientSx, getButtonContentSx } from './Button.utils';
+import {
+  getDisabledSx,
+  createGradientSx,
+  createTextGradientSx,
+  getButtonContentSx,
+} from './Button.utils';
 import type { Theme } from '../../Theme';
 
 interface StyleFactoryParams {

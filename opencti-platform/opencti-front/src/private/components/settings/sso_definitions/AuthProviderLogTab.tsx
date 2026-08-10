@@ -14,7 +14,12 @@ import { useTheme } from '@mui/styles';
 import Label from '../../../../components/common/label/Label';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { EMPTY_VALUE } from '../../../../utils/String';
-import { ContentCopyOutlined, OpenInNewOutlined, ArrowUpward, ArrowDownward } from '@mui/icons-material';
+import {
+  ContentCopyOutlined,
+  OpenInNewOutlined,
+  ArrowUpward,
+  ArrowDownward,
+} from '@mui/icons-material';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { a11yDark, coy } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import type { Theme } from '../../../../components/Theme';
@@ -52,7 +57,10 @@ const levelTagColor = (level: string, theme: Theme) => {
     case 'success':
       return (theme.palette.success as { main?: string })?.main ?? theme.palette.text.secondary;
     default:
-      return (theme.palette as { severity?: { default?: string } }).severity?.default ?? theme.palette.text.secondary;
+      return (
+        (theme.palette as { severity?: { default?: string } }).severity?.default ??
+        theme.palette.text.secondary
+      );
   }
 };
 
@@ -63,13 +71,16 @@ const DETAILS_PREVIEW_MAX_LEN = 56;
 type JsonTokenType = 'punctuation' | 'key' | 'string' | 'number' | 'keyword';
 type Segment = { type: JsonTokenType; value: string };
 
-const serializeToColoredSegments = (value: unknown, maxChars: number): { segments: Segment[]; truncated: boolean } => {
+const serializeToColoredSegments = (
+  value: unknown,
+  maxChars: number,
+): { segments: Segment[]; truncated: boolean } => {
   const segments: Segment[] = [];
   let len = 0;
   let truncated = false;
 
   const add = (type: JsonTokenType, raw: string): void => {
-    truncated ||= (len + raw.length) > maxChars;
+    truncated ||= len + raw.length > maxChars;
     const take = Math.min(raw.length, maxChars - len);
     if (take > 0) {
       segments.push({ type, value: raw.slice(0, take) });
@@ -133,7 +144,10 @@ const jsonTokenColor = (type: JsonTokenType, theme: Theme): string => {
 const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ name, authLogHistory }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const [detailsOpen, setDetailsOpen] = useState<{ index: number; entry: AuthLogEntryShape } | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState<{
+    index: number;
+    entry: AuthLogEntryShape;
+  } | null>(null);
 
   const handleCopyDetails = () => {
     if (!detailsOpen?.entry?.meta) return;
@@ -163,10 +177,41 @@ const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ name, authLogHi
           <Table size="small" stickyHeader sx={{ tableLayout: 'fixed', width: '100%' }}>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 600, width: TIMESTAMP_WIDTH, minWidth: TIMESTAMP_WIDTH, backgroundColor: 'background.paper', zIndex: 1 }}>Timestamp</TableCell>
-                <TableCell sx={{ fontWeight: 600, width: LEVEL_WIDTH, minWidth: LEVEL_WIDTH, backgroundColor: 'background.paper', zIndex: 1 }}>Level</TableCell>
-                <TableCell sx={{ fontWeight: 600, width: '22%', backgroundColor: 'background.paper', zIndex: 1 }}>Message</TableCell>
-                <TableCell sx={{ fontWeight: 600, backgroundColor: 'background.paper', zIndex: 1 }}>Details</TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 600,
+                    width: TIMESTAMP_WIDTH,
+                    minWidth: TIMESTAMP_WIDTH,
+                    backgroundColor: 'background.paper',
+                    zIndex: 1,
+                  }}
+                >
+                  Timestamp
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 600,
+                    width: LEVEL_WIDTH,
+                    minWidth: LEVEL_WIDTH,
+                    backgroundColor: 'background.paper',
+                    zIndex: 1,
+                  }}
+                >
+                  Level
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 600,
+                    width: '22%',
+                    backgroundColor: 'background.paper',
+                    zIndex: 1,
+                  }}
+                >
+                  Message
+                </TableCell>
+                <TableCell sx={{ fontWeight: 600, backgroundColor: 'background.paper', zIndex: 1 }}>
+                  Details
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -177,17 +222,39 @@ const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ name, authLogHi
                   onClick={() => setDetailsOpen({ index, entry })}
                   sx={{ cursor: 'pointer' }}
                 >
-                  <TableCell sx={{ whiteSpace: 'nowrap', width: TIMESTAMP_WIDTH, minWidth: TIMESTAMP_WIDTH, fontFamily: 'monospace', fontSize: '0.8125rem' }}>
+                  <TableCell
+                    sx={{
+                      whiteSpace: 'nowrap',
+                      width: TIMESTAMP_WIDTH,
+                      minWidth: TIMESTAMP_WIDTH,
+                      fontFamily: 'monospace',
+                      fontSize: '0.8125rem',
+                    }}
+                  >
                     {formatTimestamp(entry.timestamp)}
                   </TableCell>
-                  <TableCell sx={{ width: LEVEL_WIDTH, minWidth: LEVEL_WIDTH, overflow: 'visible', whiteSpace: 'nowrap' }}>
+                  <TableCell
+                    sx={{
+                      width: LEVEL_WIDTH,
+                      minWidth: LEVEL_WIDTH,
+                      overflow: 'visible',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
                     <Tag
                       label={entry.level}
                       color={levelTagColor(entry.level, theme)}
                       labelTextTransform="uppercase"
                     />
                   </TableCell>
-                  <TableCell sx={{ maxWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <TableCell
+                    sx={{
+                      maxWidth: 0,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
                     {entry.message}
                   </TableCell>
                   <TableCell sx={{ maxWidth: 0 }}>
@@ -216,14 +283,19 @@ const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ name, authLogHi
                           title={(() => {
                             try {
                               const raw = JSON.stringify(entry.meta);
-                              return raw.length > DETAILS_PREVIEW_MAX_LEN ? `${raw.slice(0, DETAILS_PREVIEW_MAX_LEN)}…` : raw;
+                              return raw.length > DETAILS_PREVIEW_MAX_LEN
+                                ? `${raw.slice(0, DETAILS_PREVIEW_MAX_LEN)}…`
+                                : raw;
                             } catch {
                               return '—';
                             }
                           })()}
                         >
                           {(() => {
-                            const { segments, truncated } = serializeToColoredSegments(entry.meta, DETAILS_PREVIEW_MAX_LEN);
+                            const { segments, truncated } = serializeToColoredSegments(
+                              entry.meta,
+                              DETAILS_PREVIEW_MAX_LEN,
+                            );
                             if (segments.length === 0) return '—';
                             return (
                               <>
@@ -367,7 +439,10 @@ const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ name, authLogHi
                     onClick={handleCopyDetails}
                     sx={{ padding: 0.25 }}
                     aria-label={t_i18n('Copy')}
-                    disabled={detailsOpen.entry.meta == null || Object.keys(detailsOpen.entry.meta).length === 0}
+                    disabled={
+                      detailsOpen.entry.meta == null ||
+                      Object.keys(detailsOpen.entry.meta).length === 0
+                    }
                   >
                     <ContentCopyOutlined sx={{ fontSize: '1rem' }} />
                   </IconButton>

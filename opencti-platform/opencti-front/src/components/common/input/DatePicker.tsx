@@ -3,10 +3,7 @@ import { DatePicker as MuiDatePicker, DatePickerProps } from '@mui/x-date-picker
 import { useTheme } from '@mui/material/styles';
 import { Theme } from '../../Theme';
 
-const DatePicker: React.FC<DatePickerProps<Date>> = ({
-  slotProps,
-  ...datePickerProps
-}) => {
+const DatePicker: React.FC<DatePickerProps<Date>> = ({ slotProps, ...datePickerProps }) => {
   const theme = useTheme<Theme>();
   const { value } = datePickerProps;
 

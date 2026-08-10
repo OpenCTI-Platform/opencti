@@ -32,7 +32,8 @@ export const FONTS = {
   },
 };
 
-const isJapanese = (htmlData: string) => /[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\uFF00-\uFFEF\u4E00-\u9FAF\u3400-\u4DBF]/.test(htmlData);
+const isJapanese = (htmlData: string) =>
+  /[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\uFF00-\uFFEF\u4E00-\u9FAF\u3400-\u4DBF]/.test(htmlData);
 const isKorean = (htmlData: string) => /[\u1100-\u11FF\u3130-\u318F\uAC00-\uD7AF]/.test(htmlData);
 
 export const detectLanguage = (htmlData: string) => {

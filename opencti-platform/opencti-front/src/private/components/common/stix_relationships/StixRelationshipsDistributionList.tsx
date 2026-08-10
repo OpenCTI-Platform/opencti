@@ -1,7 +1,10 @@
 import React, { ReactNode } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
+import {
+  getMainRepresentative,
+  isFieldForIdentifier,
+} from '../../../../utils/defaultRepresentatives';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
@@ -108,10 +111,7 @@ const StixRelationshipsDistributionListComponent = ({
   dataSelection,
   hasSetAccess,
 }: StixRelationshipsDistributionListComponentProps) => {
-  const data = usePreloadedQuery(
-    stixRelationshipsDistributionListDistributionQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery(stixRelationshipsDistributionListDistributionQuery, queryRef);
   const selection = dataSelection[0];
   const raw = data?.stixRelationshipsDistribution ?? [];
 
@@ -134,12 +134,7 @@ const StixRelationshipsDistributionListComponent = ({
       type,
     };
   });
-  return (
-    <WidgetDistributionList
-      data={formatted}
-      hasSettingAccess={hasSetAccess}
-    />
-  );
+  return <WidgetDistributionList data={formatted} hasSettingAccess={hasSetAccess} />;
 };
 
 const buildQueryVariables = (
@@ -147,7 +142,8 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixRelationshipsDistributionListDistributionQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { startDate, endDate, dateAttribute, filters, dynamicFrom, dynamicTo } = buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
+  const { startDate, endDate, dateAttribute, filters, dynamicFrom, dynamicTo } =
+    buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
 
   return {
     field: selection.attribute ?? 'entity_type',
@@ -186,7 +182,13 @@ const StixRelationshipsDistributionList = ({
 }: StixRelationshipsDistributionListProps) => {
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsDistributionListDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixRelationshipsDistributionListDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,

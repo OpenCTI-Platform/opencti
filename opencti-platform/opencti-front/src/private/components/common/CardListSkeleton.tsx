@@ -17,16 +17,12 @@ const CardListSkeleton = ({ title, rows = 5 }: CardListSkeletonProps) => {
     <Card title={title} padding="horizontal">
       <List>
         {Array.from(Array(rows), (e, i) => (
-          <ListItem
-            key={`card_list_skel_${i}`}
-            dense
-            divider
-          >
+          <ListItem key={`card_list_skel_${i}`} dense divider>
             <ListItemIcon>
               <Avatar>{i}</Avatar>
             </ListItemIcon>
             <ListItemText
-              primary={(
+              primary={
                 <Skeleton
                   animation="wave"
                   variant="rectangular"
@@ -34,15 +30,10 @@ const CardListSkeleton = ({ title, rows = 5 }: CardListSkeletonProps) => {
                   height={15}
                   style={{ marginBottom: 10 }}
                 />
-              )}
-              secondary={(
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height={15}
-                />
-              )}
+              }
+              secondary={
+                <Skeleton animation="wave" variant="rectangular" width="90%" height={15} />
+              }
             />
           </ListItem>
         ))}

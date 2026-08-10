@@ -31,8 +31,7 @@ const ToolEdition: FunctionComponent<{ toolId: string }> = ({ toolId }) => {
             controlledDial={EditEntityControlledDial}
           />
         </React.Suspense>
-      )
-      }
+      )}
     </>
   );
 };

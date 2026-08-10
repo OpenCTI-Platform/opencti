@@ -43,20 +43,11 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
     <Box sx={{ height: '100%' }} className="break">
       <Card title={t_i18n('Details')} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <div>
-          <Label>
-            {t_i18n('Description')}
-          </Label>
-          <ExpandableMarkdown
-            source={indicator.description}
-            limit={400}
-            removeLinks
-          />
+          <Label>{t_i18n('Description')}</Label>
+          <ExpandableMarkdown source={indicator.description} limit={400} removeLinks />
         </div>
         <div>
-
-          <Label>
-            {t_i18n('Indicator pattern')}
-          </Label>
+          <Label>{t_i18n('Indicator pattern')}</Label>
           <FieldOrEmpty source={indicator.pattern}>
             <ExpandablePre source={indicator.pattern} limit={300} />
           </FieldOrEmpty>
@@ -64,28 +55,27 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
 
         <Grid container={true} spacing={2} sx={{ mt: 0 }}>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Valid from')}
-            </Label>
+            <Label>{t_i18n('Valid from')}</Label>
             <span>{fldt(indicator.valid_from)}</span>
             <Label
               sx={{ mt: 2 }}
-              action={indicator.decay_applied_rule && (
-                <Tooltip
-                  title={t_i18n(
-                    'This score is updated with the decay rule applied to this indicator.',
-                  )}
-                >
-                  <InformationOutline fontSize="small" color="primary" />
-                </Tooltip>
-              )}
+              action={
+                indicator.decay_applied_rule && (
+                  <Tooltip
+                    title={t_i18n(
+                      'This score is updated with the decay rule applied to this indicator.',
+                    )}
+                  >
+                    <InformationOutline fontSize="small" color="primary" />
+                  </Tooltip>
+                )
+              }
             >
               {t_i18n('Score')}
             </Label>
             <Stack direction="row" gap={1}>
               <ItemScore score={indicator.x_opencti_score} />
-              {(indicator.decay_applied_rule
-                || !!indicator.decay_exclusion_applied_rule) && (
+              {(indicator.decay_applied_rule || !!indicator.decay_exclusion_applied_rule) && (
                 <>
                   <Button
                     size="small"
@@ -114,62 +104,35 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             </Stack>
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Valid until')}
-            </Label>
+            <Label>{t_i18n('Valid until')}</Label>
             <span>{fldt(indicator.valid_until)}</span>
-            <Label
-              sx={{ marginTop: 2 }}
-            >
-              {t_i18n('Detection')}
-            </Label>
+            <Label sx={{ marginTop: 2 }}>{t_i18n('Detection')}</Label>
             <ItemBoolean
-              label={
-                indicator.x_opencti_detection ? t_i18n('Yes') : t_i18n('No')
-              }
+              label={indicator.x_opencti_detection ? t_i18n('Yes') : t_i18n('No')}
               status={indicator.x_opencti_detection}
             />
-            <StixCoreObjectKillChainPhasesView
-              killChainPhases={indicator.killChainPhases ?? []}
-            />
+            <StixCoreObjectKillChainPhasesView killChainPhases={indicator.killChainPhases ?? []} />
           </Grid>
         </Grid>
         <Grid container={true} spacing={3} sx={{ marginBottom: '10px' }}>
           <Grid item xs={4}>
-            <Label
-              sx={{ marginTop: 2 }}
-            >
-              {t_i18n('Indicator types')}
-            </Label>
+            <Label sx={{ marginTop: 2 }}>{t_i18n('Indicator types')}</Label>
             <FieldOrEmpty source={indicator.indicator_types}>
               <Stack direction="row" flexWrap="wrap" gap={1}>
                 {indicator.indicator_types?.map((indicatorType) => (
-                  <Tag
-                    key={indicatorType}
-                    label={indicatorType}
-                  />
+                  <Tag key={indicatorType} label={indicatorType} />
                 ))}
               </Stack>
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
-            <Label
-              sx={{ marginTop: 2 }}
-            >
-              {t_i18n('Main observable type')}
-            </Label>
+            <Label sx={{ marginTop: 2 }}>{t_i18n('Main observable type')}</Label>
             <FieldOrEmpty source={indicator.x_opencti_main_observable_type}>
-              <Tag
-                label={indicator.x_opencti_main_observable_type}
-              />
+              <Tag label={indicator.x_opencti_main_observable_type} />
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
-            <Label
-              sx={{ marginTop: 2 }}
-            >
-              {t_i18n('Platforms')}
-            </Label>
+            <Label sx={{ marginTop: 2 }}>{t_i18n('Platforms')}</Label>
             <TextList list={indicator.x_mitre_platforms} />
           </Grid>
         </Grid>

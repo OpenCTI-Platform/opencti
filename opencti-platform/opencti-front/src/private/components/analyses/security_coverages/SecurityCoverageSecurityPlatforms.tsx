@@ -22,9 +22,9 @@ interface SecurityCoverageSecurityPlatformsProps {
   securityCoverage: SecurityCoverageSecurityPlatforms_securityCoverage$data;
 }
 
-const SecurityCoverageSecurityPlatformsComponent: FunctionComponent<SecurityCoverageSecurityPlatformsProps> = ({
-  securityCoverage,
-}) => {
+const SecurityCoverageSecurityPlatformsComponent: FunctionComponent<
+  SecurityCoverageSecurityPlatformsProps
+> = ({ securityCoverage }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const paginationOptions = {
@@ -35,12 +35,13 @@ const SecurityCoverageSecurityPlatformsComponent: FunctionComponent<SecurityCove
   };
   return (
     <div>
-      <Label action={(
-        <AddSecurityPlatforms
-          securityCoverage={securityCoverage}
-          paginationOptions={paginationOptions}
-        />
-      )}
+      <Label
+        action={
+          <AddSecurityPlatforms
+            securityCoverage={securityCoverage}
+            paginationOptions={paginationOptions}
+          />
+        }
       >
         {t_i18n('Security Platforms')}
       </Label>
@@ -55,7 +56,7 @@ const SecurityCoverageSecurityPlatformsComponent: FunctionComponent<SecurityCove
                 dense={true}
                 divider={true}
                 disablePadding={true}
-                secondaryAction={(
+                secondaryAction={
                   <StixCoreRelationshipPopover
                     objectId={securityCoverage.id}
                     connectionKey="Pagination_securityPlatforms"
@@ -63,7 +64,7 @@ const SecurityCoverageSecurityPlatformsComponent: FunctionComponent<SecurityCove
                     paginationOptions={paginationOptions}
                     isCoverage={true}
                   />
-                )}
+                }
               >
                 <ListItemButton
                   component={Link}
@@ -74,9 +75,11 @@ const SecurityCoverageSecurityPlatformsComponent: FunctionComponent<SecurityCove
                     <ItemIcon color={theme.palette.primary.main} type="security-platform" />
                   </ListItemIcon>
                   <ListItemText
-                    primary={(
+                    primary={
                       <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                        <Typography variant="body2" component="span" sx={{ flex: '1 1 10%' }}>{securityPlatform?.name}</Typography>
+                        <Typography variant="body2" component="span" sx={{ flex: '1 1 10%' }}>
+                          {securityPlatform?.name}
+                        </Typography>
                         <Box sx={{ flex: '1 1 auto', display: 'flex', justifyContent: 'center' }}>
                           <SecurityCoverageScores
                             coverage_information={coverage}
@@ -84,7 +87,7 @@ const SecurityCoverageSecurityPlatformsComponent: FunctionComponent<SecurityCove
                           />
                         </Box>
                       </Box>
-                    )}
+                    }
                   />
                 </ListItemButton>
               </ListItem>

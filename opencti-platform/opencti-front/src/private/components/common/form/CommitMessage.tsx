@@ -54,9 +54,8 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
   const [controlOpen, setControlOpen] = useState<boolean>(open ?? false);
   const handleOpenControl = () => setControlOpen(true);
   const handleCloseControl = () => setControlOpen(false);
-  const validateReferences = (
-    references: ExternalReferencesValues | undefined,
-  ) => !!references && references.length > 0;
+  const validateReferences = (references: ExternalReferencesValues | undefined) =>
+    !!references && references.length > 0;
   const onSubmitFromDialog = async () => {
     await submitForm();
     handleClose?.();
@@ -123,10 +122,7 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
               {t_i18n('Update without references')}
             </Button>
           </Security>
-          <Button
-            onClick={onSubmitFromDialog}
-            disabled={disabled || !validateReferences(values)}
-          >
+          <Button onClick={onSubmitFromDialog} disabled={disabled || !validateReferences(values)}>
             {t_i18n('Validate')}
           </Button>
         </DialogActions>

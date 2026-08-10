@@ -20,32 +20,23 @@ import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../
 import ObjectMarkingField from '../form/ObjectMarkingField';
 
 export const StixCoreObjectsExportCreationMutation = graphql`
-  mutation StixCoreObjectsExportCreationMutation(
-    $input: StixCoreObjectsExportAskInput!
-  ) {
+  mutation StixCoreObjectsExportCreationMutation($input: StixCoreObjectsExportAskInput!) {
     stixCoreObjectsExportAsk(input: $input) {
       id
     }
   }
 `;
 
-const exportValidation = (t_i18n) => Yup.object().shape({
-  format: Yup.string().trim().required(t_i18n('This field is required')),
-});
+const exportValidation = (t_i18n) =>
+  Yup.object().shape({
+    format: Yup.string().trim().required(t_i18n('This field is required')),
+  });
 
 export const scopesConn = (exportConnectors) => {
-  const scopes = R.uniq(
-    R.flatten(R.map((c) => c.connector_scope, exportConnectors)),
-  );
+  const scopes = R.uniq(R.flatten(R.map((c) => c.connector_scope, exportConnectors)));
   const connectors = R.map((s) => {
-    const filteredConnectors = R.filter(
-      (e) => R.includes(s, e.connector_scope),
-      exportConnectors,
-    );
-    return R.map(
-      (x) => ({ data: { name: x.name, active: x.active } }),
-      filteredConnectors,
-    );
+    const filteredConnectors = R.filter((e) => R.includes(s, e.connector_scope), exportConnectors);
+    return R.map((x) => ({ data: { name: x.name, active: x.active } }), filteredConnectors);
   }, scopes);
   const zipped = R.zip(scopes, connectors);
   return R.fromPairs(zipped);
@@ -64,7 +55,8 @@ const StixCoreObjectsExportCreation = ({
   const { t_i18n } = useFormatter();
 
   const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState([]);
-  const handleSelectedContentMaxMarkingsChange = (values) => setSelectedContentMaxMarkingsIds(values.map(({ value }) => value));
+  const handleSelectedContentMaxMarkingsChange = (values) =>
+    setSelectedContentMaxMarkingsIds(values.map(({ value }) => value));
   const visibleColumnExportEnabledFormats = ['text/csv'];
   const onSubmit = (selectedIds, values, { setSubmitting, resetForm }) => {
     const { orderBy, filters, orderMode, search } = paginationOptions;
@@ -119,7 +111,8 @@ const StixCoreObjectsExportCreation = ({
               columns: 'all',
             }}
             validationSchema={exportValidation(t_i18n)}
-            onSubmit={(values, { setSubmitting, resetForm }) => onSubmit(selectedIds, values, { setSubmitting, resetForm })
+            onSubmit={(values, { setSubmitting, resetForm }) =>
+              onSubmit(selectedIds, values, { setSubmitting, resetForm })
             }
             onReset={() => setOpen(false)}
           >
@@ -132,14 +125,18 @@ const StixCoreObjectsExportCreation = ({
                     setOpen(false);
                   }}
                   data-testid="StixCoreObjectsExportCreationDialog"
-                  title={(
+                  title={
                     <>
                       {t_i18n('Generate an export')}
-                      <Tooltip title={t_i18n('Your max shareable markings will be applied to the content max markings')}>
+                      <Tooltip
+                        title={t_i18n(
+                          'Your max shareable markings will be applied to the content max markings',
+                        )}
+                      >
                         <InfoOutlined sx={{ paddingLeft: 1 }} fontSize="small" />
                       </Tooltip>
                     </>
-                  )}
+                  }
                 >
                   <QueryRenderer
                     query={markingDefinitionsLinesSearchQuery}
@@ -157,11 +154,7 @@ const StixCoreObjectsExportCreation = ({
                               containerstyle={{ width: '100%' }}
                             >
                               {exportScopes.map((value, i) => (
-                                <MenuItem
-                                  key={i}
-                                  value={value}
-                                  disabled={!isExportActive(value)}
-                                >
+                                <MenuItem key={i} value={value} disabled={!isExportActive(value)}>
                                   {value}
                                 </MenuItem>
                               ))}
@@ -169,7 +162,9 @@ const StixCoreObjectsExportCreation = ({
                             <ObjectMarkingField
                               name="contentMaxMarkings"
                               label={t_i18n(CONTENT_MAX_MARKINGS_TITLE)}
-                              onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values)}
+                              onChange={(_, values) =>
+                                handleSelectedContentMaxMarkingsChange(values)
+                              }
                               style={fieldSpacingContainerStyle}
                               setFieldValue={setFieldValue}
                               limitToMaxSharing
@@ -182,24 +177,19 @@ const StixCoreObjectsExportCreation = ({
                               style={fieldSpacingContainerStyle}
                               setFieldValue={setFieldValue}
                             />
-                            {visibleColumnExportEnabledFormats.includes(values.format)
-                              ? (
-                                  <Field
-                                    component={SelectField}
-                                    variant="standard"
-                                    name="columns"
-                                    label={t_i18n('Choose column to export')}
-                                    fullWidth={true}
-                                    containerstyle={fieldSpacingContainerStyle}
-                                  >
-                                    <MenuItem value="all">
-                                      {t_i18n('All attributes')}
-                                    </MenuItem>
-                                    <MenuItem value="view">
-                                      {t_i18n('Current view')}
-                                    </MenuItem>
-                                  </Field>
-                                ) : undefined}
+                            {visibleColumnExportEnabledFormats.includes(values.format) ? (
+                              <Field
+                                component={SelectField}
+                                variant="standard"
+                                name="columns"
+                                label={t_i18n('Choose column to export')}
+                                fullWidth={true}
+                                containerstyle={fieldSpacingContainerStyle}
+                              >
+                                <MenuItem value="all">{t_i18n('All attributes')}</MenuItem>
+                                <MenuItem value="view">{t_i18n('Current view')}</MenuItem>
+                              </Field>
+                            ) : undefined}
                           </>
                         );
                       }
@@ -210,10 +200,7 @@ const StixCoreObjectsExportCreation = ({
                     <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                       {t_i18n('Cancel')}
                     </Button>
-                    <Button
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                    >
+                    <Button onClick={submitForm} disabled={isSubmitting}>
                       {t_i18n('Create')}
                     </Button>
                   </DialogActions>

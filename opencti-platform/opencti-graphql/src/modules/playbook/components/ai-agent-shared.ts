@@ -119,12 +119,11 @@ export interface AgentJwtUser {
  * the actual invocation are guaranteed to run as the SAME XTM One
  * identity and the user is only looked up once per playbook step.
  */
-export const resolveAgentJwtUser = async (
-  runAsUserId?: string,
-): Promise<AgentJwtUser | null> => {
-  const candidateIds = runAsUserId && runAsUserId !== OPENCTI_ADMIN_UUID
-    ? [runAsUserId, OPENCTI_ADMIN_UUID]
-    : [OPENCTI_ADMIN_UUID];
+export const resolveAgentJwtUser = async (runAsUserId?: string): Promise<AgentJwtUser | null> => {
+  const candidateIds =
+    runAsUserId && runAsUserId !== OPENCTI_ADMIN_UUID
+      ? [runAsUserId, OPENCTI_ADMIN_UUID]
+      : [OPENCTI_ADMIN_UUID];
   const context = executionContext('playbook_components');
   for (let candidateIndex = 0; candidateIndex < candidateIds.length; candidateIndex += 1) {
     const targetUserId = candidateIds[candidateIndex];
@@ -141,7 +140,11 @@ export const resolveAgentJwtUser = async (
       if (user?.user_email) {
         return { id: user.id, user_email: user.user_email };
       }
-      logApp.warn('[PLAYBOOK AI AGENT] JWT user not found or has no resolvable email', { targetUserId, userFound: !!user, hasNextFallback });
+      logApp.warn('[PLAYBOOK AI AGENT] JWT user not found or has no resolvable email', {
+        targetUserId,
+        userFound: !!user,
+        hasNextFallback,
+      });
     } catch (e: unknown) {
       logApp.warn('[PLAYBOOK AI AGENT] Failed to resolve JWT user', {
         targetUserId,
@@ -150,9 +153,12 @@ export const resolveAgentJwtUser = async (
       });
     }
   }
-  logApp.error('[PLAYBOOK AI AGENT] No resolvable JWT identity (no candidate user with a usable email), skipping XTM One interaction', {
-    runAsUserId,
-  });
+  logApp.error(
+    '[PLAYBOOK AI AGENT] No resolvable JWT identity (no candidate user with a usable email), skipping XTM One interaction',
+    {
+      runAsUserId,
+    },
+  );
   return null;
 };
 
@@ -163,7 +169,8 @@ export const resolveAgentJwtUser = async (
  * ``resolveAgentJwtUser`` — without touching the database or logging
  * misleading identity-resolution warnings.
  */
-export const isXtmOneConfigured = (): boolean => !!nconf.get('xtm:xtm_one_url') && xtmOneClient.isConfigured();
+export const isXtmOneConfigured = (): boolean =>
+  !!nconf.get('xtm:xtm_one_url') && xtmOneClient.isConfigured();
 
 /**
  * Runtime defense in depth: re-check that ``slug`` is currently bound to
@@ -232,9 +239,7 @@ export type RunAsConfiguration = string | { label?: string; value?: string } | n
  * configs may carry a raw id string. Returns undefined when no run-as
  * user is configured.
  */
-export const resolveRunAsUserId = (
-  runAs?: RunAsConfiguration,
-): string | undefined => {
+export const resolveRunAsUserId = (runAs?: RunAsConfiguration): string | undefined => {
   if (!runAs) return undefined;
   if (typeof runAs === 'string') return runAs.trim() || undefined;
   return runAs.value?.trim() || undefined;
@@ -291,7 +296,9 @@ export const assertRunAsUserAllowed = async (
   if (await isRunAsUserAllowed(context, user, runAs)) {
     return;
   }
-  throw ForbiddenAccess('The "run as" user must be yourself or a service account', { runAsUserId: resolveRunAsUserId(runAs) });
+  throw ForbiddenAccess('The "run as" user must be yourself or a service account', {
+    runAsUserId: resolveRunAsUserId(runAs),
+  });
 };
 
 /**
@@ -334,8 +341,9 @@ export const assertDefinitionRunAsAllowed = async (
   playbookDefinition?: string | null,
 ): Promise<void> => {
   await Promise.all(
-    extractDefinitionRunAsValues(playbookDefinition)
-      .map((runAs) => assertRunAsUserAllowed(context, user, runAs)),
+    extractDefinitionRunAsValues(playbookDefinition).map((runAs) =>
+      assertRunAsUserAllowed(context, user, runAs),
+    ),
   );
 };
 
@@ -362,20 +370,22 @@ export const sanitizeDefinitionRunAs = async (
     return playbookDefinition;
   }
   const selfOption = { label: user.name, value: user.id };
-  const mutations = await Promise.all((definition.nodes ?? []).map(async (node) => {
-    if (!node?.configuration) return false;
-    let config: { run_as?: RunAsConfiguration };
-    try {
-      config = JSON.parse(node.configuration) as { run_as?: RunAsConfiguration };
-    } catch {
-      return false;
-    }
-    if (config.run_as === undefined || config.run_as === null) return false;
-    if (await isRunAsUserAllowed(context, user, config.run_as)) return false;
-    config.run_as = selfOption;
-    node.configuration = JSON.stringify(config);
-    return true;
-  }));
+  const mutations = await Promise.all(
+    (definition.nodes ?? []).map(async (node) => {
+      if (!node?.configuration) return false;
+      let config: { run_as?: RunAsConfiguration };
+      try {
+        config = JSON.parse(node.configuration) as { run_as?: RunAsConfiguration };
+      } catch {
+        return false;
+      }
+      if (config.run_as === undefined || config.run_as === null) return false;
+      if (await isRunAsUserAllowed(context, user, config.run_as)) return false;
+      config.run_as = selfOption;
+      node.configuration = JSON.stringify(config);
+      return true;
+    }),
+  );
   return mutations.some((changed) => changed) ? JSON.stringify(definition) : playbookDefinition;
 };
 

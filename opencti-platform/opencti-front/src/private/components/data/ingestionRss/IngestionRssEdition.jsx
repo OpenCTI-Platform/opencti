@@ -13,17 +13,18 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import CreatorField from '../../common/form/CreatorField';
-import { convertCreatedBy, convertMarkingsWithoutEdges, convertUser } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertMarkingsWithoutEdges,
+  convertUser,
+} from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import Drawer from '../../common/drawer/Drawer';
 import IngestionEditionUserHandling from '@components/data/IngestionEditionUserHandling';
 import SwitchField from '../../../../components/fields/SwitchField';
 
 export const ingestionRssMutationFieldPatch = graphql`
-  mutation IngestionRssEditionFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput!]!
-  ) {
+  mutation IngestionRssEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
     ingestionRssFieldPatch(id: $id, input: $input) {
       ...IngestionRssEdition_ingestionRss
     }
@@ -31,40 +32,39 @@ export const ingestionRssMutationFieldPatch = graphql`
 `;
 
 export const ingestionRssEditionUserHandlingPatch = graphql`
-  mutation IngestionRssEditionUserHandlingMutation($id: ID!, $input: IngestionRssAddAutoUserInput!) {
+  mutation IngestionRssEditionUserHandlingMutation(
+    $id: ID!
+    $input: IngestionRssAddAutoUserInput!
+  ) {
     ingestionRssAddAutoUser(id: $id, input: $input) {
+      id
+      name
+      user {
         id
+        entity_type
         name
-        user {
-            id
-            entity_type
-            name
-        }
+      }
     }
   }
 `;
 
-const ingestionRssValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  scheduling_period: Yup.string().required(t('This field is required')),
-  uri: Yup.string().required(t('This field is required')),
-  object_marking_refs: Yup.array().nullable(),
-  report_types: Yup.array().nullable(),
-  created_by_ref: Yup.mixed().nullable(),
-  user_id: Yup.mixed().nullable(),
-  current_state_date: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .nullable(),
-  ssl_verify: Yup.bool().required(t('This field is required')),
-});
+const ingestionRssValidation = (t) =>
+  Yup.object().shape({
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    scheduling_period: Yup.string().required(t('This field is required')),
+    uri: Yup.string().required(t('This field is required')),
+    object_marking_refs: Yup.array().nullable(),
+    report_types: Yup.array().nullable(),
+    created_by_ref: Yup.mixed().nullable(),
+    user_id: Yup.mixed().nullable(),
+    current_state_date: Yup.date()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .nullable(),
+    ssl_verify: Yup.bool().required(t('This field is required')),
+  });
 
-const IngestionRssEditionContainer = ({
-  t,
-  handleClose,
-  ingestionRss,
-  open,
-}) => {
+const IngestionRssEditionContainer = ({ t, handleClose, ingestionRss, open }) => {
   const handleSubmitField = (name, value) => {
     ingestionRssValidation(t)
       .validateAt(name, { [name]: value })
@@ -94,10 +94,7 @@ const IngestionRssEditionContainer = ({
   };
   const initialValues = R.pipe(
     R.assoc('report_types', ingestionRss.report_types ?? []),
-    R.assoc(
-      'created_by_ref',
-      convertCreatedBy(ingestionRss, 'defaultCreatedBy'),
-    ),
+    R.assoc('created_by_ref', convertCreatedBy(ingestionRss, 'defaultCreatedBy')),
     R.assoc('user_id', convertUser(ingestionRss, 'user')),
     R.assoc(
       'object_marking_refs',
@@ -118,11 +115,7 @@ const IngestionRssEditionContainer = ({
     ]),
   )(ingestionRss);
   return (
-    <Drawer
-      title={t('Update a RSS ingester')}
-      open={open}
-      onClose={handleClose}
-    >
+    <Drawer title={t('Update a RSS ingester')} open={open} onClose={handleClose}>
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
@@ -164,24 +157,20 @@ const IngestionRssEditionContainer = ({
               containerStyle={fieldSpacingContainerStyle}
               showConfidence
             />
-            {ingestionRss.user?.name === 'SYSTEM'
-              && (
-                <IngestionEditionUserHandling
-                  key={initialValues.name}
-                  feedName={initialValues.name}
-                  onAutoUserCreated={() => setFieldValue('user_id', `[F] ${initialValues.name}`)}
-                  dataId={ingestionRss.id}
-                  mutation={ingestionRssEditionUserHandlingPatch}
-                />
-              )
-            }
+            {ingestionRss.user?.name === 'SYSTEM' && (
+              <IngestionEditionUserHandling
+                key={initialValues.name}
+                feedName={initialValues.name}
+                onAutoUserCreated={() => setFieldValue('user_id', `[F] ${initialValues.name}`)}
+                dataId={ingestionRss.id}
+                mutation={ingestionRssEditionUserHandlingPatch}
+              />
+            )}
             <Field
               component={DateTimePickerField}
               name="current_state_date"
               textFieldProps={{
-                label: t(
-                  'Import from date (empty = all RSS feed possible items)',
-                ),
+                label: t('Import from date (empty = all RSS feed possible items)'),
                 variant: 'standard',
                 fullWidth: true,
                 style: { marginTop: 20 },
@@ -233,41 +222,36 @@ IngestionRssEditionContainer.propTypes = {
   t: PropTypes.func,
 };
 
-const IngestionRssEditionFragment = createFragmentContainer(
-  IngestionRssEditionContainer,
-  {
-    ingestionRss: graphql`
-      fragment IngestionRssEdition_ingestionRss on IngestionRss {
+const IngestionRssEditionFragment = createFragmentContainer(IngestionRssEditionContainer, {
+  ingestionRss: graphql`
+    fragment IngestionRssEdition_ingestionRss on IngestionRss {
+      id
+      name
+      description
+      uri
+      scheduling_period
+      report_types
+      ingestion_running
+      current_state_date
+      ssl_verify
+      user {
         id
+        entity_type
         name
-        description
-        uri
-        scheduling_period
-        report_types
-        ingestion_running
-        current_state_date
-        ssl_verify
-        user {
-          id
-          entity_type
-          name
-        }
-        defaultCreatedBy {
-          id
-          entity_type
-          name
-        }
-        defaultMarkingDefinitions {
-          id
-          entity_type
-          definition
-          definition_type
-        }
       }
-    `,
-  },
-);
+      defaultCreatedBy {
+        id
+        entity_type
+        name
+      }
+      defaultMarkingDefinitions {
+        id
+        entity_type
+        definition
+        definition_type
+      }
+    }
+  `,
+});
 
-export default R.compose(
-  inject18n,
-)(IngestionRssEditionFragment);
+export default R.compose(inject18n)(IngestionRssEditionFragment);

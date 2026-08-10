@@ -33,9 +33,7 @@ const styles = (theme) => ({
   },
 });
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 const stixCyberObservableIndicatorPopoverDeletionMutation = graphql`
@@ -44,11 +42,7 @@ const stixCyberObservableIndicatorPopoverDeletionMutation = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    stixCoreRelationshipDelete(
-      fromId: $fromId
-      toId: $toId
-      relationship_type: $relationship_type
-    )
+    stixCoreRelationshipDelete(fromId: $fromId, toId: $toId, relationship_type: $relationship_type)
   }
 `;
 
@@ -122,9 +116,7 @@ class StixCyberObservableIndicatorPopover extends Component {
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
         >
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Remove')}
-          </MenuItem>
+          <MenuItem onClick={this.handleOpenDelete.bind(this)}>{t('Remove')}</MenuItem>
         </Menu>
         <Dialog
           open={this.state.displayDelete}
@@ -142,10 +134,7 @@ class StixCyberObservableIndicatorPopover extends Component {
             >
               {t('Cancel')}
             </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
+            <Button onClick={this.submitDelete.bind(this)} disabled={this.state.deleting}>
               {t('Confirm')}
             </Button>
           </DialogActions>
@@ -165,7 +154,4 @@ StixCyberObservableIndicatorPopover.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCyberObservableIndicatorPopover);
+export default compose(inject18n, withStyles(styles))(StixCyberObservableIndicatorPopover);

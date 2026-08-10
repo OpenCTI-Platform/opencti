@@ -11,15 +11,23 @@ const RestrictionRoot = () => {
   return (
     <div data-testid="data-management-page" style={{ height: '100%' }}>
       <RestrictionMenu />
-      <PageContainer
-        withGap
-        withRightMenu
-        style={{ height: '100%' }}
-      >
+      <PageContainer withGap withRightMenu style={{ height: '100%' }}>
         <Routes>
           <Route path="/drafts" element={<RestrictedDrafts />} />
           {isEnterpriseEdition && <Route path="/restricted" element={<RestrictedEntities />} />}
-          <Route index element={<Navigate to={isEnterpriseEdition ? '/dashboard/data/restriction/restricted' : '/dashboard/data/restriction/drafts'} replace={true} />} />
+          <Route
+            index
+            element={
+              <Navigate
+                to={
+                  isEnterpriseEdition
+                    ? '/dashboard/data/restriction/restricted'
+                    : '/dashboard/data/restriction/drafts'
+                }
+                replace={true}
+              />
+            }
+          />
         </Routes>
       </PageContainer>
     </div>

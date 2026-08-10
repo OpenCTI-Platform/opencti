@@ -7,10 +7,16 @@ const message = '[MIGRATION] Change delete capability description';
 export const up = async (next) => {
   logMigration.info(`${message} > started`);
   const context = executionContext('migration');
-  const deleteCapability = await elLoadById(context, SYSTEM_USER, 'capability--be60f4fc-8d91-59f6-925a-1b211a06d086');
+  const deleteCapability = await elLoadById(
+    context,
+    SYSTEM_USER,
+    'capability--be60f4fc-8d91-59f6-925a-1b211a06d086',
+  );
   if (deleteCapability) {
     const deleteCapabilityPatch = { description: 'Delete / Merge knowledge' };
-    await elReplace(context, deleteCapability._index, deleteCapability.internal_id, { doc: deleteCapabilityPatch });
+    await elReplace(context, deleteCapability._index, deleteCapability.internal_id, {
+      doc: deleteCapabilityPatch,
+    });
   }
   logMigration.info(`${message} > done`);
   next();

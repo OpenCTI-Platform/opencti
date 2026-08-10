@@ -25,11 +25,7 @@ export const relatedContainersDetailsQuery = graphql`
     $operation: StatsOperation!
     $filters: FilterGroup!
   ) {
-    stixCoreObjectsDistribution(
-      field: $field
-      operation: $operation
-      filters: $filters
-    ) {
+    stixCoreObjectsDistribution(field: $field, operation: $operation, filters: $filters) {
       label
       value
     }
@@ -68,7 +64,10 @@ interface RelatedContainersDetailsProps {
   relatedContainer: RelatedContainerNode;
 }
 
-const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ containerId, relatedContainer }) => {
+const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({
+  containerId,
+  relatedContainer,
+}) => {
   const { t_i18n, fldt } = useFormatter();
 
   const queryFilters = {
@@ -109,14 +108,11 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
     ],
   };
 
-  const queryRef = useQueryLoading<RelatedContainersDetailsQuery>(
-    relatedContainersDetailsQuery,
-    {
-      field: 'entity_type',
-      operation: 'count',
-      filters: queryFilters,
-    } as unknown as RelatedContainersDetailsQuery$variables,
-  );
+  const queryRef = useQueryLoading<RelatedContainersDetailsQuery>(relatedContainersDetailsQuery, {
+    field: 'entity_type',
+    operation: 'count',
+    filters: queryFilters,
+  } as unknown as RelatedContainersDetailsQuery$variables);
 
   return (
     <Grid container rowSpacing={3}>
@@ -138,9 +134,7 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
           <Typography variant="h3" gutterBottom>
             {t_i18n('Marking')}
           </Typography>
-          <ItemMarkings
-            markingDefinitions={relatedContainer.objectMarking ?? []}
-          />
+          <ItemMarkings markingDefinitions={relatedContainer.objectMarking ?? []} />
         </Grid>
       </Grid>
 
@@ -149,7 +143,10 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
           <Typography variant="h3" gutterBottom>
             {t_i18n('Processing status')}
           </Typography>
-          <ItemStatus status={relatedContainer.status} disabled={!relatedContainer.workflowEnabled} />
+          <ItemStatus
+            status={relatedContainer.status}
+            disabled={!relatedContainer.workflowEnabled}
+          />
         </Grid>
       </Grid>
 
@@ -199,7 +196,6 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
         <RelatedContainersDetailsTable filters={queryFilters} />
       </Grid>
     </Grid>
-
   );
 };
 

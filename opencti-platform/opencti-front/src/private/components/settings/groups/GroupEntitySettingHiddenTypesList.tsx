@@ -23,12 +23,12 @@ const groupEntitySettingHiddenTypesListQuery = graphql`
 const GroupHiddenTypesListComponent: FunctionComponent<{
   targetType: string;
   queryRef: PreloadedQuery<GroupEntitySettingHiddenTypesListQuery>;
-}> = ({
-  targetType,
-  queryRef,
-}) => {
+}> = ({ targetType, queryRef }) => {
   const { t_i18n } = useFormatter();
-  const data = usePreloadedQuery<GroupEntitySettingHiddenTypesListQuery>(groupEntitySettingHiddenTypesListQuery, queryRef);
+  const data = usePreloadedQuery<GroupEntitySettingHiddenTypesListQuery>(
+    groupEntitySettingHiddenTypesListQuery,
+    queryRef,
+  );
   const groups = data.groups?.edges?.map((e) => e?.node) ?? [];
 
   return (
@@ -41,8 +41,13 @@ const GroupHiddenTypesListComponent: FunctionComponent<{
     />
   );
 };
-const GroupEntitySettingHiddenTypesList: FunctionComponent<{ targetType: string }> = ({ targetType }) => {
-  const queryRef = useQueryLoading<GroupEntitySettingHiddenTypesListQuery>(groupEntitySettingHiddenTypesListQuery, {});
+const GroupEntitySettingHiddenTypesList: FunctionComponent<{ targetType: string }> = ({
+  targetType,
+}) => {
+  const queryRef = useQueryLoading<GroupEntitySettingHiddenTypesListQuery>(
+    groupEntitySettingHiddenTypesListQuery,
+    {},
+  );
   return (
     <>
       {queryRef && (

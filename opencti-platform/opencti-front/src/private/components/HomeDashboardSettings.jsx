@@ -19,20 +19,22 @@ import useApiMutation from '../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles(() => createStyles({
-  muiSelect: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  muiSelectIcon: {
-    minWidth: 36,
-  },
-  mainButton: ({ bannerHeightNumber }) => ({
-    position: 'fixed',
-    bottom: `${bannerHeightNumber + 30}px`,
-    right: 30,
+const useStyles = makeStyles(() =>
+  createStyles({
+    muiSelect: {
+      display: 'flex',
+      alignItems: 'center',
+    },
+    muiSelectIcon: {
+      minWidth: 36,
+    },
+    mainButton: ({ bannerHeightNumber }) => ({
+      position: 'fixed',
+      bottom: `${bannerHeightNumber + 30}px`,
+      right: 30,
+    }),
   }),
-}));
+);
 
 export const PLATFORM_DASHBOARD = 'cf093b57-713f-404b-a210-a1c5c8cb3791';
 
@@ -43,12 +45,7 @@ export const dashboardSettingsDashboardsQuery = graphql`
     $orderMode: OrderingMode
     $filters: FilterGroup
   ) {
-    workspaces(
-      first: $count
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    ) {
+    workspaces(first: $count, orderBy: $orderBy, orderMode: $orderMode, filters: $filters) {
       edges {
         node {
           id
@@ -68,7 +65,9 @@ const dashboardSettingsMutation = graphql`
 `;
 
 const HomeDashboardSettings = () => {
-  const { bannerSettings: { bannerHeightNumber } } = useAuth();
+  const {
+    bannerSettings: { bannerHeightNumber },
+  } = useAuth();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
   const classes = useStyles({ bannerHeightNumber });
   const { t_i18n } = useFormatter();
@@ -95,21 +94,20 @@ const HomeDashboardSettings = () => {
   return (
     <Security
       needs={[EXPLORE]}
-      placeholder={(
+      placeholder={
         <FormControl style={{ width: '100%' }}>
           <InputLabel id="timeField">{t_i18n('Date reference')}</InputLabel>
           <Select
             labelId="timeField"
             value={timeField === null ? '' : timeField}
-            onChange={(event) => handleUpdate('default_time_field', event.target.value)
-            }
+            onChange={(event) => handleUpdate('default_time_field', event.target.value)}
             fullWidth={true}
           >
             <MenuItem value="technical">{t_i18n('Technical date')}</MenuItem>
             <MenuItem value="functional">{t_i18n('Functional date')}</MenuItem>
           </Select>
         </FormControl>
-      )}
+      }
     >
       <QueryRenderer
         query={dashboardSettingsDashboardsQuery}
@@ -131,39 +129,23 @@ const HomeDashboardSettings = () => {
             return (
               <>
                 <FormControl style={{ width: '100%' }}>
-                  <InputLabel id="timeField">
-                    {t_i18n('Date reference')}
-                  </InputLabel>
+                  <InputLabel id="timeField">{t_i18n('Date reference')}</InputLabel>
                   <Select
                     labelId="timeField"
                     value={timeField ?? 'technical'}
-                    onChange={(event) => handleUpdate(
-                      'default_time_field',
-                      event.target.value,
-                    )
-                    }
+                    onChange={(event) => handleUpdate('default_time_field', event.target.value)}
                     fullWidth={true}
                   >
-                    <MenuItem value="technical">
-                      {t_i18n('Technical date')}
-                    </MenuItem>
-                    <MenuItem value="functional">
-                      {t_i18n('Functional date')}
-                    </MenuItem>
+                    <MenuItem value="technical">{t_i18n('Technical date')}</MenuItem>
+                    <MenuItem value="functional">{t_i18n('Functional date')}</MenuItem>
                   </Select>
                 </FormControl>
                 <FormControl style={{ width: '100%', marginTop: 20 }}>
-                  <InputLabel id="timeField">
-                    {t_i18n('Custom dashboard')}
-                  </InputLabel>
+                  <InputLabel id="timeField">{t_i18n('Custom dashboard')}</InputLabel>
                   <Select
                     labelId="dashboard"
                     value={dashboard?.id ?? 'automatic'}
-                    onChange={(event) => handleUpdate(
-                      'default_dashboard',
-                      event.target.value,
-                    )
-                    }
+                    onChange={(event) => handleUpdate('default_dashboard', event.target.value)}
                     fullWidth={true}
                     classes={{
                       select: classes.muiSelect,
@@ -182,9 +164,10 @@ const HomeDashboardSettings = () => {
                     )}
                     {dashboards.map(({ id, name }) => (
                       <MenuItem key={id} value={id}>
-                        <ListItemIcon classes={{
-                          root: classes.muiSelectIcon,
-                        }}
+                        <ListItemIcon
+                          classes={{
+                            root: classes.muiSelectIcon,
+                          }}
                         >
                           <ItemIcon type="Dashboard" />
                         </ListItemIcon>
@@ -196,9 +179,10 @@ const HomeDashboardSettings = () => {
                     )}
                     {workspaces?.map(({ node }) => (
                       <MenuItem key={node.id} value={node.id}>
-                        <ListItemIcon classes={{
-                          root: classes.muiSelectIcon,
-                        }}
+                        <ListItemIcon
+                          classes={{
+                            root: classes.muiSelectIcon,
+                          }}
                         >
                           <ItemIcon type="Dashboard" />
                         </ListItemIcon>

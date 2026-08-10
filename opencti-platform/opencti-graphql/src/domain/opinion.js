@@ -1,12 +1,27 @@
 import * as R from 'ramda';
 import { assoc, dissoc, pipe } from 'ramda';
-import { createEntity, distributionEntities, fullEntitiesOrRelationsList, patchAttribute, timeSeriesEntities } from '../database/middleware';
-import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
+import {
+  createEntity,
+  distributionEntities,
+  fullEntitiesOrRelationsList,
+  patchAttribute,
+  timeSeriesEntities,
+} from '../database/middleware';
+import {
+  internalLoadById,
+  pageEntitiesConnection,
+  storeLoadById,
+} from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_OPINION } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixRefRelationship';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
+import {
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  buildRefRelationKey,
+} from '../schema/general';
 import { elCount, ES_MAX_PAGINATION } from '../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { isStixId } from '../schema/schemaUtils';
@@ -39,8 +54,15 @@ export const findMyOpinion = async (context, user, entityId) => {
 
 // Entities tab
 
-export const opinionContainsStixObjectOrStixRelationship = async (context, user, opinionId, thingId) => {
-  const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).id : thingId;
+export const opinionContainsStixObjectOrStixRelationship = async (
+  context,
+  user,
+  opinionId,
+  thingId,
+) => {
+  const resolvedThingId = isStixId(thingId)
+    ? (await internalLoadById(context, user, thingId)).id
+    : thingId;
   const args = {
     filters: {
       mode: 'and',
@@ -61,7 +83,12 @@ export const opinionsTimeSeries = (context, user, args) => {
 };
 
 export const opinionsNumber = (context, user, args) => ({
-  count: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_OPINION], args)),
+  count: elCount(
+    context,
+    user,
+    READ_INDEX_STIX_DOMAIN_OBJECTS,
+    assoc('types', [ENTITY_TYPE_CONTAINER_OPINION], args),
+  ),
   total: elCount(
     context,
     user,
@@ -86,18 +113,16 @@ export const opinionsNumberByEntity = (context, user, args) => {
   const { objectId } = args;
   const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), objectId);
   return {
-    count: elCount(
-      context,
-      user,
-      READ_INDEX_STIX_DOMAIN_OBJECTS,
-      { ...args, filters, types: [ENTITY_TYPE_CONTAINER_OPINION] },
-    ),
-    total: elCount(
-      context,
-      user,
-      READ_INDEX_STIX_DOMAIN_OBJECTS,
-      { ...args, filters, types: [ENTITY_TYPE_CONTAINER_OPINION] },
-    ),
+    count: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+      ...args,
+      filters,
+      types: [ENTITY_TYPE_CONTAINER_OPINION],
+    }),
+    total: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+      ...args,
+      filters,
+      types: [ENTITY_TYPE_CONTAINER_OPINION],
+    }),
   };
 };
 
@@ -123,7 +148,10 @@ export const updateOpinionsMetrics = async (context, user, opinionId) => {
     filters: [{ key: 'category', values: ['opinion_ov'] }],
     filterGroups: [],
   };
-  const vocabs = await fullEntitiesOrRelationsList(context, user, [ENTITY_TYPE_VOCABULARY], { filters: filtersForVocabs, maxSize: ES_MAX_PAGINATION });
+  const vocabs = await fullEntitiesOrRelationsList(context, user, [ENTITY_TYPE_VOCABULARY], {
+    filters: filtersForVocabs,
+    maxSize: ES_MAX_PAGINATION,
+  });
   const indexedVocab = R.indexBy(R.prop('name'), vocabs);
   const lowerCasedVocab = R.indexBy((o) => o.name?.toLowerCase(), vocabs);
   const findOpinionVocab = (opinionName) => {
@@ -138,7 +166,11 @@ export const updateOpinionsMetrics = async (context, user, opinionId) => {
     context,
     user,
     [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP],
-    { filters: filtersForObjects, maxSize: ES_MAX_PAGINATION, baseData: true },
+    {
+      filters: filtersForObjects,
+      maxSize: ES_MAX_PAGINATION,
+      baseData: true,
+    },
   );
   for (let i = 0; i < elements.length; i += 1) {
     const filtersForOpinions = {
@@ -146,7 +178,12 @@ export const updateOpinionsMetrics = async (context, user, opinionId) => {
       filters: [{ key: buildRefRelationKey(RELATION_OBJECT), values: [elements[i].id] }],
       filterGroups: [],
     };
-    const opinions = await fullEntitiesOrRelationsList(context, user, [ENTITY_TYPE_CONTAINER_OPINION], { filters: filtersForOpinions, maxSize: ES_MAX_PAGINATION });
+    const opinions = await fullEntitiesOrRelationsList(
+      context,
+      user,
+      [ENTITY_TYPE_CONTAINER_OPINION],
+      { filters: filtersForOpinions, maxSize: ES_MAX_PAGINATION },
+    );
     const opinionsWithVocabs = opinions.map((n) => ({ ...n, vocab: findOpinionVocab(n.opinion) }));
     const opinionsNumbers = opinionsWithVocabs.map((n) => n.vocab.order);
     const opinionsMetrics = {
@@ -156,7 +193,13 @@ export const updateOpinionsMetrics = async (context, user, opinionId) => {
       total: opinionsNumbers.length,
     };
     const patch = { opinions_metrics: opinionsMetrics };
-    await patchAttribute(context, SYSTEM_USER, elements[i].internal_id, elements[i].entity_type, patch);
+    await patchAttribute(
+      context,
+      SYSTEM_USER,
+      elements[i].internal_id,
+      elements[i].entity_type,
+      patch,
+    );
   }
 };
 // endregion

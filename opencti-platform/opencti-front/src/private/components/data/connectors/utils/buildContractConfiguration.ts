@@ -17,10 +17,10 @@ const buildContractConfiguration = (values: ManagedConnectorValues) => {
         computedValue = value.join(',');
       }
 
-      return ({
+      return {
         key,
         value: computedValue.toString(),
-      });
+      };
     });
 };
 

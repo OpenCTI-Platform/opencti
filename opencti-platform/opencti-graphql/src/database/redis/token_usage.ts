@@ -17,7 +17,7 @@ export const updateTokenUsage = async (tokenRaw: UserApiToken) => {
   const key = `${REDIS_TOKEN_USAGE_PREFIX}${token.id}`;
   const now = Date.now();
   const lastChecked = token[tokenUsageLastUpdateTime] ?? 0;
-  if ((now - lastChecked) > REDIS_THROTTLE_MILLIS) {
+  if (now - lastChecked > REDIS_THROTTLE_MILLIS) {
     try {
       const data: TokenUsage = { tokenId: token.id, last_check: now };
       const redis = getClientBase();

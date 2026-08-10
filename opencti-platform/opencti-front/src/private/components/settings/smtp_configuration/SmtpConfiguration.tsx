@@ -30,22 +30,22 @@ import useApiMutation from 'src/utils/hooks/useApiMutation';
 import { MESSAGING$ } from 'src/relay/environment';
 
 const smtpConfigurationQuery = graphql`
-  query SmtpConfigurationQuery{
-    smtpConfiguration{
-        smtp_enabled
-        use_db_config
-        forced_sender_email
-        sender_email_address
-        hostname
-        port
-        use_ssl
-        reject_unauthorized
-        auth_type
-        username
-        oauth_user
-        oauth_client_id
-        oauth_issuer
-        oauth_refresh_token_expires_at
+  query SmtpConfigurationQuery {
+    smtpConfiguration {
+      smtp_enabled
+      use_db_config
+      forced_sender_email
+      sender_email_address
+      hostname
+      port
+      use_ssl
+      reject_unauthorized
+      auth_type
+      username
+      oauth_user
+      oauth_client_id
+      oauth_issuer
+      oauth_refresh_token_expires_at
     }
   }
 `;
@@ -66,7 +66,10 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
   refetch,
 }) => {
   const { t_i18n, nsdt } = useFormatter();
-  const { smtpConfiguration } = usePreloadedQuery(smtpConfigurationQuery, smtpConfigurationQueryRef);
+  const { smtpConfiguration } = usePreloadedQuery(
+    smtpConfigurationQuery,
+    smtpConfigurationQueryRef,
+  );
 
   const [formOpen, setFormOpen] = useState(false);
   const [testDialogOpen, setTestDialogOpen] = useState(false);
@@ -79,14 +82,18 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
   const isForcedBySysAdmin = smtpConfiguration?.forced_sender_email === true;
   const useDbConfig = smtpConfiguration?.use_db_config === true;
 
-  const renderBoolean = (value: boolean | null | undefined) => (
-    value === null || value === undefined
-      ? <ItemBoolean status={null} neutralLabel="-" />
-      : <ItemBoolean status={!!value} label={value ? t_i18n('Yes') : t_i18n('No')} />
-  );
+  const renderBoolean = (value: boolean | null | undefined) =>
+    value === null || value === undefined ? (
+      <ItemBoolean status={null} neutralLabel="-" />
+    ) : (
+      <ItemBoolean status={!!value} label={value ? t_i18n('Yes') : t_i18n('No')} />
+    );
 
   const renderText = (value: string | number | null | undefined) => (
-    <ItemBoolean status={null} neutralLabel={value !== null && value !== undefined && value !== '' ? String(value) : '-'} />
+    <ItemBoolean
+      status={null}
+      neutralLabel={value !== null && value !== undefined && value !== '' ? String(value) : '-'}
+    />
   );
 
   const handleFormCompleted = () => {
@@ -113,7 +120,13 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
       }}
       data-testid="smtp-settings-page"
     >
-      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('SMTP configuration'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Security') },
+          { label: t_i18n('SMTP configuration'), current: true },
+        ]}
+      />
 
       {isForcedBySysAdmin && (
         <Alert
@@ -121,19 +134,21 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
           variant="outlined"
           style={{ marginTop: 20, marginBottom: 16, padding: '0px 10px' }}
         >
-          {t_i18n('You cannot configure a new SMTP integration via this interface. Contact your administrator if you need to update it.')}
+          {t_i18n(
+            'You cannot configure a new SMTP integration via this interface. Contact your administrator if you need to update it.',
+          )}
           <br />
-          {t_i18n('Once the new configuration is in place you would need to restart your platform.')}
+          {t_i18n(
+            'Once the new configuration is in place you would need to restart your platform.',
+          )}
         </Alert>
       )}
 
       {!isForcedBySysAdmin && !useDbConfig && smtpConfiguration && (
-        <Alert
-          severity="info"
-          variant="outlined"
-          style={{ marginTop: 20, padding: '0px 10px' }}
-        >
-          {t_i18n('Currently, the SMTP is configured via a backend configuration. To change your configuration, simply enable the usage of the Interface configuration & define your SMTP configuration in this screen.')}
+        <Alert severity="info" variant="outlined" style={{ marginTop: 20, padding: '0px 10px' }}>
+          {t_i18n(
+            'Currently, the SMTP is configured via a backend configuration. To change your configuration, simply enable the usage of the Interface configuration & define your SMTP configuration in this screen.',
+          )}
         </Alert>
       )}
 
@@ -142,10 +157,20 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 20 }}>
             {smtpConfiguration && (
               <>
-                <IconButton variant="secondary" size="default" aria-label={t_i18n('Open menu')} aria-haspopup="true" onClick={(e) => setMenuAnchorEl(e.currentTarget)}>
+                <IconButton
+                  variant="secondary"
+                  size="default"
+                  aria-label={t_i18n('Open menu')}
+                  aria-haspopup="true"
+                  onClick={(e) => setMenuAnchorEl(e.currentTarget)}
+                >
                   <MoreVertOutlined fontSize="medium" />
                 </IconButton>
-                <Menu anchorEl={menuAnchorEl} open={Boolean(menuAnchorEl)} onClose={() => setMenuAnchorEl(null)}>
+                <Menu
+                  anchorEl={menuAnchorEl}
+                  open={Boolean(menuAnchorEl)}
+                  onClose={() => setMenuAnchorEl(null)}
+                >
                   <MenuItem
                     onClick={() => {
                       setMenuAnchorEl(null);
@@ -162,11 +187,11 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
                 {t_i18n('Test')}
               </Button>
             )}
-            <Button onClick={() => setFormOpen(true)}>
-              {t_i18n('Update')}
-            </Button>
+            <Button onClick={() => setFormOpen(true)}>{t_i18n('Update')}</Button>
           </div>
-        ) : <></>}
+        ) : (
+          <></>
+        )}
       </Security>
 
       <div style={isForcedBySysAdmin ? { opacity: 0.5, pointerEvents: 'none' } : undefined}>
@@ -174,15 +199,22 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 'bold', paddingY: 2 }}>{t_i18n('SMTP fields')}</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', paddingY: 2 }}>{t_i18n('SMTP value')}</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', paddingY: 2 }}>
+                  {t_i18n('SMTP fields')}
+                </TableCell>
+                <TableCell sx={{ fontWeight: 'bold', paddingY: 2 }}>
+                  {t_i18n('SMTP value')}
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               <TableRow>
                 <TableCell>{t_i18n('SMTP enabled')}</TableCell>
                 <TableCell>
-                  <ItemBoolean status={smtpEnabled} label={smtpEnabled ? t_i18n('Yes') : t_i18n('No')} />
+                  <ItemBoolean
+                    status={smtpEnabled}
+                    label={smtpEnabled ? t_i18n('Yes') : t_i18n('No')}
+                  />
                 </TableCell>
               </TableRow>
               <TableRow>
@@ -222,7 +254,10 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
                   <TableRow>
                     <TableCell>{t_i18n('Password')}</TableCell>
                     <TableCell>
-                      <ItemBoolean status={null} neutralLabel={smtpConfiguration ? '••••••••' : '-'} />
+                      <ItemBoolean
+                        status={null}
+                        neutralLabel={smtpConfiguration ? '••••••••' : '-'}
+                      />
                     </TableCell>
                   </TableRow>
                 </>
@@ -236,7 +271,10 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
                   <TableRow>
                     <TableCell>{t_i18n('OAuth client ID')}</TableCell>
                     <TableCell>
-                      <ItemBoolean status={null} neutralLabel={smtpConfiguration ? '••••••••' : '-'} />
+                      <ItemBoolean
+                        status={null}
+                        neutralLabel={smtpConfiguration ? '••••••••' : '-'}
+                      />
                     </TableCell>
                   </TableRow>
                   <TableRow>
@@ -246,7 +284,11 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
                   <TableRow>
                     <TableCell>{t_i18n('Refresh token expiration date')}</TableCell>
                     <TableCell>
-                      {renderText(smtpConfiguration?.oauth_refresh_token_expires_at ? nsdt(smtpConfiguration.oauth_refresh_token_expires_at) : null)}
+                      {renderText(
+                        smtpConfiguration?.oauth_refresh_token_expires_at
+                          ? nsdt(smtpConfiguration.oauth_refresh_token_expires_at)
+                          : null,
+                      )}
                     </TableCell>
                   </TableRow>
                 </>
@@ -272,10 +314,7 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
             </Drawer>
           )}
           {!isForcedBySysAdmin && useDbConfig && (
-            <SmtpTestDialog
-              open={testDialogOpen}
-              onClose={() => setTestDialogOpen(false)}
-            />
+            <SmtpTestDialog open={testDialogOpen} onClose={() => setTestDialogOpen(false)} />
           )}
           <Dialog
             open={deleteDialogOpen}
@@ -299,7 +338,8 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
 };
 
 const SmtpConfiguration = () => {
-  const [smtpConfigurationQueryRef, loadQuery] = useQueryLoadingWithLoadQuery<SmtpConfigurationQuery>(smtpConfigurationQuery);
+  const [smtpConfigurationQueryRef, loadQuery] =
+    useQueryLoadingWithLoadQuery<SmtpConfigurationQuery>(smtpConfigurationQuery);
   const refetch = () => loadQuery({}, { fetchPolicy: 'network-only' });
 
   return (

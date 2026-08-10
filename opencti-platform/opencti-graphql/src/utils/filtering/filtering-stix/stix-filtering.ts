@@ -19,14 +19,21 @@ import { checkFiltersFormat } from '../filtering-utils';
 const checkFiltersKeysForStixMatch = (filterGroup: FilterGroup) => {
   filterGroup.filters.forEach((filter) => {
     if (!Array.isArray(filter.key)) {
-      throw UnsupportedError('The provided filter key is not an array', { key: JSON.stringify(filter.key) });
+      throw UnsupportedError('The provided filter key is not an array', {
+        key: JSON.stringify(filter.key),
+      });
     }
     if (filter.key.length !== 1) {
-      throw UnsupportedError('Stix filtering can only be executed on a unique filter key', { key: JSON.stringify(filter.key) });
+      throw UnsupportedError('Stix filtering can only be executed on a unique filter key', {
+        key: JSON.stringify(filter.key),
+      });
     }
     if (FILTER_KEY_TESTERS_MAP[filter.key[0]] === undefined) {
       const availableFilters = JSON.stringify(Object.keys(FILTER_KEY_TESTERS_MAP));
-      throw UnsupportedError('Stix filtering is not compatible with the provided filter key', { key: JSON.stringify(filter.key), availableFilters });
+      throw UnsupportedError('Stix filtering is not compatible with the provided filter key', {
+        key: JSON.stringify(filter.key),
+        availableFilters,
+      });
     }
   });
   filterGroup.filterGroups.forEach((fg) => checkFiltersKeysForStixMatch(fg));
@@ -102,8 +109,21 @@ export const isStixMatchFilterGroup = async (
   // the provided map will contain replacements for filter values, if any necessary.
   // we use the entities stored in cache for the "Resolved-Filters" (all the entities used by the saved filters - stream, trigger, playbooks)
   // see cacheManager.ts:platformResolvedFilters
-  const cache = await getEntitiesMapFromCache<StixObject>(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
-  const map = filterGroup ? await buildResolutionMapForFilterGroup(context, user, filterGroup, cache) : new Map();
+  const cache = await getEntitiesMapFromCache<StixObject>(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_RESOLVED_FILTERS,
+  );
+  const map = filterGroup
+    ? await buildResolutionMapForFilterGroup(context, user, filterGroup, cache)
+    : new Map();
 
-  return isStixMatchFilterGroup_MockableForUnitTests(context, user, stix, filterGroup, map, eventContext);
+  return isStixMatchFilterGroup_MockableForUnitTests(
+    context,
+    user,
+    stix,
+    filterGroup,
+    map,
+    eventContext,
+  );
 };

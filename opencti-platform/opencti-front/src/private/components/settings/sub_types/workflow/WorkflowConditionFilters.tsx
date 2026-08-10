@@ -13,21 +13,13 @@ interface WorkflowCondition {
   mode?: string;
 }
 
-const WorkflowConditionFilters = ({
-  form,
-  field,
-}: FieldProps<WorkflowCondition>) => {
+const WorkflowConditionFilters = ({ form, field }: FieldProps<WorkflowCondition>) => {
   const { setFieldValue } = form;
   const { name, value } = field;
 
   const [filters, helpers] = useFiltersState(value?.filters || emptyFilterGroup);
   const availableEntityTypes = ['User', 'Group', 'Organization', 'DraftWorkspace'];
-  const availableFilterKeys = [
-    'name',
-    'workflow_user',
-    'workflow_group',
-    'workflow_organization',
-  ];
+  const availableFilterKeys = ['name', 'workflow_user', 'workflow_group', 'workflow_organization'];
   const searchContext = { entityTypes: availableEntityTypes };
 
   useEffect(() => {

@@ -33,11 +33,9 @@ const TaskDeletion = ({
     id: '... successfully deleted',
     values: { entity_type: t_i18n('entity_Task') },
   });
-  const [commit] = useApiMutation(
-    taskDeletionDeleteMutation,
-    undefined,
-    { successMessage: deleteSuccessMessage },
-  );
+  const [commit] = useApiMutation(taskDeletionDeleteMutation, undefined, {
+    successMessage: deleteSuccessMessage,
+  });
   const deletion = useDeletion({ handleClose });
   const { setDeleting, handleCloseDelete } = deletion;
   const submitDelete = () => {

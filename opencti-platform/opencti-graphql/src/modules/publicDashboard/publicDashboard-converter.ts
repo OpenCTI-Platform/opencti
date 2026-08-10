@@ -3,7 +3,9 @@ import { buildStixDomain } from '../../database/stix-2-1-converter';
 import type { StixPublicDashboard, StoreEntityPublicDashboard } from './publicDashboard-types';
 import { cleanObject } from '../../database/stix-converter-utils';
 
-const convertPublicDashboardToStix = (instance: StoreEntityPublicDashboard): StixPublicDashboard => {
+const convertPublicDashboardToStix = (
+  instance: StoreEntityPublicDashboard,
+): StixPublicDashboard => {
   const stixDomainObject = buildStixDomain(instance);
   return {
     ...stixDomainObject,

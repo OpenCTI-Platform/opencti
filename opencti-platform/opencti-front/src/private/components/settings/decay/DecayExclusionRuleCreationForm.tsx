@@ -16,7 +16,10 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import SwitchField from '../../../../components/fields/SwitchField';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../relay/environment';
-import { emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  serializeFilterGroupForBackend,
+} from '../../../../utils/filters/filtersUtils';
 import Alert from 'src/components/Alert';
 import { useTheme } from '@mui/material/styles';
 
@@ -50,7 +53,11 @@ const decayExclusionRuleCreationValidator = (t: (value: string) => string) => {
   });
 };
 
-const DecayExclusionRuleCreationForm = ({ updater, onReset, onCompleted }: DecayExclusionRuleCreationFormProps) => {
+const DecayExclusionRuleCreationForm = ({
+  updater,
+  onReset,
+  onCompleted,
+}: DecayExclusionRuleCreationFormProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const [commit] = useApiMutation(decayExclusionRuleCreationFormAddMutation);
@@ -97,7 +104,9 @@ const DecayExclusionRuleCreationForm = ({ updater, onReset, onCompleted }: Decay
   return (
     <>
       <Alert
-        content={t_i18n('Be careful, please define some filter for your exclusion rule, otherwise, since no filters are set, any indicator will match the rule and will have an exclusion rule')}
+        content={t_i18n(
+          'Be careful, please define some filter for your exclusion rule, otherwise, since no filters are set, any indicator will match the rule and will have an exclusion rule',
+        )}
         severity="warning"
         style={{ marginBottom: 20 }}
       />
@@ -111,13 +120,7 @@ const DecayExclusionRuleCreationForm = ({ updater, onReset, onCompleted }: Decay
       >
         {({ submitForm, handleReset, isSubmitting }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
-            <Field
-              component={TextField}
-              name="name"
-              label={t_i18n('Name')}
-              fullWidth
-              required
-            />
+            <Field component={TextField} name="name" label={t_i18n('Name')} fullWidth required />
             <Field
               component={MarkdownField}
               name="description"
@@ -127,13 +130,14 @@ const DecayExclusionRuleCreationForm = ({ updater, onReset, onCompleted }: Decay
               rows={2}
               style={{ marginTop: 20 }}
             />
-            <Box sx={{
-              paddingTop: '20px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: theme.spacing(1),
-              marginBottom: theme.spacing(1),
-            }}
+            <Box
+              sx={{
+                paddingTop: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: theme.spacing(1),
+                marginBottom: theme.spacing(1),
+              }}
             >
               <Filters
                 availableFilterKeys={enabledFilters}
@@ -162,11 +166,7 @@ const DecayExclusionRuleCreationForm = ({ updater, onReset, onCompleted }: Decay
               >
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-                style={{ marginLeft: 16 }}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting} style={{ marginLeft: 16 }}>
                 {t_i18n('Create')}
               </Button>
             </div>

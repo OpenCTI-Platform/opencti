@@ -143,10 +143,7 @@ export const stixNestedRefRelationshipCreationResolveQuery = graphql`
 `;
 
 export const stixNestedRefRelationshipCreationQuery = graphql`
-  query StixNestedRefRelationshipCreationQuery(
-    $fromId: StixRef!
-    $toId: StixRef!
-  ) {
+  query StixNestedRefRelationshipCreationQuery($fromId: StixRef!, $toId: StixRef!) {
     stixNestedRefRelationships(fromId: $fromId, toId: $toId) {
       edges {
         node {
@@ -203,9 +200,7 @@ export const stixNestedRefRelationshipCreationQuery = graphql`
 `;
 
 const stixNestedRefRelationshipCreationMutation = graphql`
-  mutation StixNestedRefRelationshipCreationMutation(
-    $input: StixRefRelationshipAddInput!
-  ) {
+  mutation StixNestedRefRelationshipCreationMutation($input: StixRefRelationshipAddInput!) {
     stixRefRelationshipAdd(input: $input) {
       id
       entity_type
@@ -258,20 +253,21 @@ const stixNestedRefRelationshipCreationMutation = graphql`
   }
 `;
 
-const stixNestedRefRelationshipValidation = (t) => Yup.object().shape({
-  relationship_type: Yup.string().required(t('This field is required')),
-  confidence: Yup.number()
-    .typeError(t('The value must be a number'))
-    .integer(t('The value must be a number')),
-  start_time: Yup.date()
-    .nullable()
-    .default(null)
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  stop_time: Yup.date()
-    .nullable()
-    .default(null)
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-});
+const stixNestedRefRelationshipValidation = (t) =>
+  Yup.object().shape({
+    relationship_type: Yup.string().required(t('This field is required')),
+    confidence: Yup.number()
+      .typeError(t('The value must be a number'))
+      .integer(t('The value must be a number')),
+    start_time: Yup.date()
+      .nullable()
+      .default(null)
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    stop_time: Yup.date()
+      .nullable()
+      .default(null)
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+  });
 
 class StixNestedRefRelationshipCreation extends Component {
   constructor(props) {
@@ -289,14 +285,8 @@ class StixNestedRefRelationshipCreation extends Component {
           R.assoc('confidence', parseInt(values.confidence, 10)),
           R.assoc('fromId', fromObject.id),
           R.assoc('toId', toObject.id),
-          R.assoc(
-            'start_time',
-            values.start_time ? parse(values.start_time).format() : null,
-          ),
-          R.assoc(
-            'stop_time',
-            values.stop_time ? parse(values.stop_time).format() : null,
-          ),
+          R.assoc('start_time', values.start_time ? parse(values.start_time).format() : null),
+          R.assoc('stop_time', values.stop_time ? parse(values.stop_time).format() : null),
           R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
         )(values);
         commitMutation({
@@ -306,9 +296,7 @@ class StixNestedRefRelationshipCreation extends Component {
           },
           setSubmitting,
           onCompleted: (response) => {
-            this.props.handleResult(
-              response.stixRefRelationshipAdd,
-            );
+            this.props.handleResult(response.stixRefRelationshipAdd);
           },
         });
       }, this.props.toObjects);
@@ -320,17 +308,14 @@ class StixNestedRefRelationshipCreation extends Component {
 
   componentDidUpdate(prevProps) {
     if (
-      this.props.open === true
-      && this.props.fromObjects !== null
-      && this.props.toObjects !== null
-      && (prevProps.open !== this.props.open
-        || prevProps.fromObjects[0] !== this.props.fromObjects[0]
-        || prevProps.toObjects[0] !== this.props.toObjects[0])
+      this.props.open === true &&
+      this.props.fromObjects !== null &&
+      this.props.toObjects !== null &&
+      (prevProps.open !== this.props.open ||
+        prevProps.fromObjects[0] !== this.props.fromObjects[0] ||
+        prevProps.toObjects[0] !== this.props.toObjects[0])
     ) {
-      if (
-        this.props.fromObjects.length === 1
-        && this.props.toObjects.length === 1
-      ) {
+      if (this.props.fromObjects.length === 1 && this.props.toObjects.length === 1) {
         fetchQuery(stixNestedRefRelationshipCreationQuery, {
           fromId: this.props.fromObjects[0].id,
           toId: this.props.toObjects[0].id,
@@ -339,8 +324,8 @@ class StixNestedRefRelationshipCreation extends Component {
           .then((data) => {
             this.setState({
               step:
-                data.stixNestedRefRelationships.edges
-                && data.stixNestedRefRelationships.edges.length > 0
+                data.stixNestedRefRelationships.edges &&
+                data.stixNestedRefRelationships.edges.length > 0
                   ? 1
                   : 2,
               existingRelations: data.stixNestedRefRelationships.edges,
@@ -427,9 +412,7 @@ class StixNestedRefRelationshipCreation extends Component {
                 <div
                   className={classes.item}
                   style={{
-                    border: `2px solid ${itemColor(
-                      fromObjects[0].entity_type,
-                    )}`,
+                    border: `2px solid ${itemColor(fromObjects[0].entity_type)}`,
                     top: 10,
                     left: 0,
                   }}
@@ -437,9 +420,7 @@ class StixNestedRefRelationshipCreation extends Component {
                   <div
                     className={classes.itemHeader}
                     style={{
-                      borderBottom: `1px solid ${itemColor(
-                        fromObjects[0].entity_type,
-                      )}`,
+                      borderBottom: `1px solid ${itemColor(fromObjects[0].entity_type)}`,
                     }}
                   >
                     <div className={classes.icon}>
@@ -457,7 +438,7 @@ class StixNestedRefRelationshipCreation extends Component {
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      { }
+                      {}
                       {fromObjects[0].relationship_type ? (
                         t(`relationship_${fromObjects[0].relationship_type}`)
                       ) : fromObjects.length > 1 ? (
@@ -492,9 +473,7 @@ class StixNestedRefRelationshipCreation extends Component {
                   <div
                     className={classes.itemHeader}
                     style={{
-                      borderBottom: `1px solid ${itemColor(
-                        toObjects[0].entity_type,
-                      )}`,
+                      borderBottom: `1px solid ${itemColor(toObjects[0].entity_type)}`,
                     }}
                   >
                     <div className={classes.icon}>
@@ -512,7 +491,7 @@ class StixNestedRefRelationshipCreation extends Component {
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      { }
+                      {}
                       {toObjects[0].relationship_type ? (
                         t(`relationship_${toObjects[0].relationship_type}`)
                       ) : toObjects.length > 1 ? (
@@ -541,9 +520,7 @@ class StixNestedRefRelationshipCreation extends Component {
                   relationshipTypes,
                 )}
               </Field>
-              <ConfidenceField
-                containerStyle={fieldSpacingContainerStyle}
-              />
+              <ConfidenceField containerStyle={fieldSpacingContainerStyle} />
               <Field
                 component={DateTimePickerField}
                 name="start_time"
@@ -626,9 +603,7 @@ class StixNestedRefRelationshipCreation extends Component {
                 <div
                   className={classes.itemHeader}
                   style={{
-                    borderBottom: `1px solid ${itemColor(
-                      fromObjects[0].entity_type,
-                    )}`,
+                    borderBottom: `1px solid ${itemColor(fromObjects[0].entity_type)}`,
                   }}
                 >
                   <div className={classes.icon}>
@@ -657,11 +632,7 @@ class StixNestedRefRelationshipCreation extends Component {
               <div className={classes.middle}>
                 <ArrowRightAlt fontSize="small" />
                 <br />
-                <Tooltip
-                  title={relation.node.description}
-                  aria-label="Description"
-                  placement="top"
-                >
+                <Tooltip title={relation.node.description} aria-label="Description" placement="top">
                   <div
                     style={{
                       padding: '5px 8px 5px 8px',
@@ -690,9 +661,7 @@ class StixNestedRefRelationshipCreation extends Component {
                 <div
                   className={classes.itemHeader}
                   style={{
-                    borderBottom: `1px solid ${itemColor(
-                      toObjects[0].entity_type,
-                    )}`,
+                    borderBottom: `1px solid ${itemColor(toObjects[0].entity_type)}`,
                   }}
                 >
                   <div className={classes.icon}>
@@ -709,18 +678,13 @@ class StixNestedRefRelationshipCreation extends Component {
                   </div>
                 </div>
                 <div className={classes.content}>
-                  <span className={classes.name}>
-                    {truncate(toObjects[0].name, 20)}
-                  </span>
+                  <span className={classes.name}>{truncate(toObjects[0].name, 20)}</span>
                 </div>
               </div>
               <div className="clearfix" />
             </div>
           ))}
-          <div
-            className={classes.relationCreation}
-            onClick={this.handleChangeStep.bind(this)}
-          >
+          <div className={classes.relationCreation} onClick={this.handleChangeStep.bind(this)}>
             <div
               className={classes.item}
               style={{
@@ -736,15 +700,9 @@ class StixNestedRefRelationshipCreation extends Component {
                 }}
               >
                 <div className={classes.icon}>
-                  <ItemIcon
-                    type={fromObjects[0].entity_type}
-                    color="#263238"
-                    size="small"
-                  />
+                  <ItemIcon type={fromObjects[0].entity_type} color="#263238" size="small" />
                 </div>
-                <div className={classes.type}>
-                  {t(`entity_${fromObjects[0].entity_type}`)}
-                </div>
+                <div className={classes.type}>{t(`entity_${fromObjects[0].entity_type}`)}</div>
               </div>
               <div className={classes.content}>
                 <span className={classes.name}>
@@ -786,15 +744,9 @@ class StixNestedRefRelationshipCreation extends Component {
                 }}
               >
                 <div className={classes.icon}>
-                  <ItemIcon
-                    type={toObjects[0].entity_type}
-                    color="#263238"
-                    size="small"
-                  />
+                  <ItemIcon type={toObjects[0].entity_type} color="#263238" size="small" />
                 </div>
-                <div className={classes.type}>
-                  {t(`entity_${toObjects[0].entity_type}`)}
-                </div>
+                <div className={classes.type}>{t(`entity_${toObjects[0].entity_type}`)}</div>
               </div>
               <div className={classes.content}>
                 <span className={classes.name}>
@@ -841,10 +793,7 @@ class StixNestedRefRelationshipCreation extends Component {
         classes={{ paper: classes.drawerPaper }}
         onClose={this.handleClose.bind(this)}
       >
-        {step === 0
-          || step === undefined
-          || fromObject === null
-          || toObjects === null
+        {step === 0 || step === undefined || fromObject === null || toObjects === null
           ? this.renderLoader()
           : ''}
         {step === 1 ? this.renderSelectRelation() : ''}
@@ -857,21 +806,28 @@ class StixNestedRefRelationshipCreation extends Component {
             }}
             render={({ props }) => {
               if (props && props.stixSchemaRefRelationships) {
-                if (props.stixSchemaRefRelationships.from.length === 0 && props.stixSchemaRefRelationships.to.length > 0) {
+                if (
+                  props.stixSchemaRefRelationships.from.length === 0 &&
+                  props.stixSchemaRefRelationships.to.length > 0
+                ) {
                   this.handleReverseRelation();
                   return this.renderLoader();
                 }
                 return (
                   <div>
-                    {this.renderForm(props.stixSchemaRefRelationships, props.stixSchemaRefRelationships.to.length > 0)}
+                    {this.renderForm(
+                      props.stixSchemaRefRelationships,
+                      props.stixSchemaRefRelationships.to.length > 0,
+                    )}
                   </div>
                 );
               }
               return this.renderLoader();
             }}
           />
-        )
-          : ''}
+        ) : (
+          ''
+        )}
       </Drawer>
     );
   }

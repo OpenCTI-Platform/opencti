@@ -23,12 +23,18 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
 import { isPathOverview } from '../../../../utils/tabUtils';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import ThreatActorGroupEdition from './ThreatActorGroupEdition';
 import ThreatActorGroupDeletion from './ThreatActorGroupDeletion';
 import StixCoreRelationshipCreationFromEntityHeader from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import CreateRelationshipContextProvider from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
-import { PATH_THREAT_ACTORS_GROUP, PATH_THREAT_ACTORS_GROUPS } from '@components/common/routes/paths';
+import {
+  PATH_THREAT_ACTORS_GROUP,
+  PATH_THREAT_ACTORS_GROUPS,
+} from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootThreatActorsGroupSubscription($id: ID!) {
@@ -61,7 +67,8 @@ const ThreatActorGroupQuery = graphql`
       x_opencti_graph_data
       currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
-      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(relatedRelationshipTypes: $relatedRelationshipTypes)
+      ...StixCoreObjectKnowledgeBar_stixCoreObject
+        @arguments(relatedRelationshipTypes: $relatedRelationshipTypes)
       ...ThreatActorGroup_ThreatActorGroup
       ...ThreatActorGroupKnowledge_ThreatActorGroup
       ...FileImportViewer_entity
@@ -89,18 +96,18 @@ type RootThreatActorGroupProps = {
 };
 
 const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorGroupProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootThreatActorsGroupSubscription>>(() => ({
-    subscription,
-    variables: { id: threatActorGroupId },
-  }), [threatActorGroupId]);
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootThreatActorsGroupSubscription>>(
+    () => ({
+      subscription,
+      variables: { id: threatActorGroupId },
+    }),
+    [threatActorGroupId],
+  );
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootThreatActorsGroupSubscription>(subConfig);
-  const {
-    threatActorGroup,
-    connectorsForExport,
-    connectorsForImport,
-  } = usePreloadedQuery<RootThreatActorGroupQuery>(ThreatActorGroupQuery, queryRef);
+  const { threatActorGroup, connectorsForExport, connectorsForImport } =
+    usePreloadedQuery<RootThreatActorGroupQuery>(ThreatActorGroupQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
   const basePath = PATH_THREAT_ACTORS_GROUP(threatActorGroupId);
   const isOverview = isPathOverview(location.pathname, basePath);
@@ -113,7 +120,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
           <Routes>
             <Route
               path="/knowledge/*"
-              element={(
+              element={
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -135,7 +142,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
                   ]}
                   data={threatActorGroup}
                 />
-              )}
+              }
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -149,21 +156,23 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
             <StixDomainObjectHeader
               entityType="Threat-Actor-Group"
               stixDomainObject={threatActorGroup}
-              EditComponent={(
+              EditComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <ThreatActorGroupEdition threatActorGroupId={threatActorGroup.id} />
                 </Security>
-              )}
-              RelateComponent={(
+              }
+              RelateComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <StixCoreRelationshipCreationFromEntityHeader
-                    data={threatActorGroup}
-                  />
+                  <StixCoreRelationshipCreationFromEntityHeader data={threatActorGroup} />
                 </Security>
-              )}
+              }
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                  <ThreatActorGroupDeletion id={threatActorGroup.id} isOpen={isOpen} handleClose={onClose} />
+                  <ThreatActorGroupDeletion
+                    id={threatActorGroup.id}
+                    isOpen={isOpen}
+                    handleClose={onClose}
+                  />
                 </Security>
               )}
               enableEnricher={true}
@@ -175,8 +184,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
               entity={threatActorGroup}
               basePath={basePath}
               pages={{
-                overview:
-                  <ThreatActorGroup threatActorGroupData={threatActorGroup} />,
+                overview: <ThreatActorGroup threatActorGroupData={threatActorGroup} />,
                 knowledge: (
                   <div key={forceUpdate}>
                     <ThreatActorGroupKnowledge
@@ -185,13 +193,12 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
                     />
                   </div>
                 ),
-                content: (
-                  <StixCoreObjectContentRoot
-                    stixCoreObject={threatActorGroup}
+                content: <StixCoreObjectContentRoot stixCoreObject={threatActorGroup} />,
+                analyses: (
+                  <StixCoreObjectOrStixCoreRelationshipContainers
+                    stixDomainObjectOrStixCoreRelationship={threatActorGroup}
                   />
                 ),
-                analyses:
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={threatActorGroup} />,
                 files: (
                   <FileManager
                     id={threatActorGroupId}
@@ -200,8 +207,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
                     entity={threatActorGroup}
                   />
                 ),
-                history:
-                  <StixCoreObjectHistory stixCoreObjectId={threatActorGroupId} />,
+                history: <StixCoreObjectHistory stixCoreObjectId={threatActorGroupId} />,
               }}
               extraActions={isOverview && <AIInsights id={threatActorGroup.id} />}
             />

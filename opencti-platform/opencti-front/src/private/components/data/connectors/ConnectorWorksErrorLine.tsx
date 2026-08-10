@@ -35,11 +35,13 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
   const displayEntityOrId = (entity: ResolvedEntity, isCopyable = false) => {
     const name = entity.representative?.main;
 
-    const displayStandardId = (isCopyable ? (
-      <pre><ItemCopy content={entity.standard_id ?? ''} variant="wrap" /></pre>
+    const displayStandardId = isCopyable ? (
+      <pre>
+        <ItemCopy content={entity.standard_id ?? ''} variant="wrap" />
+      </pre>
     ) : (
       <div>{entity.standard_id}</div>
-    ));
+    );
 
     return entity.entity_type ? (
       <Tooltip title={name}>
@@ -47,7 +49,9 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
           [{entity.entity_type}] {truncate(name, truncateLimit)}
         </a>
       </Tooltip>
-    ) : displayStandardId;
+    ) : (
+      displayStandardId
+    );
   };
 
   return (
@@ -56,12 +60,26 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
         <TableCell>{nsdt(error.rawError.timestamp)}</TableCell>
         <TableCell>
           {error.isParsed && error.parsedError.doc_code ? (
-            <a href={`https://docs.opencti.io/latest/deployment/troubleshooting/#${error.parsedError.doc_code.toLowerCase()}`} target="_blank" rel="noreferrer">{error.parsedError.doc_code}</a>
+            <a
+              href={`https://docs.opencti.io/latest/deployment/troubleshooting/#${error.parsedError.doc_code.toLowerCase()}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {error.parsedError.doc_code}
+            </a>
           ) : (
-            <a href="https://docs.opencti.io/latest/deployment/troubleshooting" target="_blank" rel="noreferrer">{t_i18n('Unknown')}</a>
+            <a
+              href="https://docs.opencti.io/latest/deployment/troubleshooting"
+              target="_blank"
+              rel="noreferrer"
+            >
+              {t_i18n('Unknown')}
+            </a>
           )}
         </TableCell>
-        <TableCell>{error.isParsed ? error.parsedError.message : error.rawError.message ?? EMPTY_VALUE}</TableCell>
+        <TableCell>
+          {error.isParsed ? error.parsedError.message : (error.rawError.message ?? EMPTY_VALUE)}
+        </TableCell>
         <TableCell>
           {error.isParsed ? (
             displayEntityOrId(error.parsedError.entity)
@@ -73,11 +91,7 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
         </TableCell>
         <TableCell>
           <Tooltip title={t_i18n('Details')}>
-            <IconButton
-              onClick={handleToggleModalError}
-              aria-haspopup="true"
-              color="primary"
-            >
+            <IconButton onClick={handleToggleModalError} aria-haspopup="true" color="primary">
               <InfoOutlined />
             </IconButton>
           </Tooltip>
@@ -92,25 +106,40 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
         <DialogContentText>
           {error.isParsed && (
             <>
-              <Typography variant="h4" gutterBottom={true}>{t_i18n('Source')}</Typography>
+              <Typography variant="h4" gutterBottom={true}>
+                {t_i18n('Source')}
+              </Typography>
               <Paper
                 style={{ padding: '15px', borderRadius: 4, marginBottom: '15px' }}
                 variant="outlined"
               >
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 15 }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'stretch',
+                    gap: 15,
+                  }}
+                >
                   <div>
-                    <Typography variant="h3" gutterBottom={true}>{t_i18n('Entity')}</Typography>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t_i18n('Entity')}
+                    </Typography>
                     {displayEntityOrId(error.parsedError.entity, true)}
                   </div>
                   {error.parsedError.entity.from && (
                     <div>
-                      <Typography variant="h3" gutterBottom={true}>{t_i18n('From')}</Typography>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t_i18n('From')}
+                      </Typography>
                       {displayEntityOrId(error.parsedError.entity.from, true)}
                     </div>
                   )}
                   {error.parsedError.entity.to && (
                     <div>
-                      <Typography variant="h3" gutterBottom={true}>{t_i18n('To')}</Typography>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t_i18n('To')}
+                      </Typography>
                       {displayEntityOrId(error.parsedError.entity.to, true)}
                     </div>
                   )}
@@ -118,31 +147,42 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
               </Paper>
             </>
           )}
-          <Typography variant="h4" gutterBottom={true}>{t_i18n('Error')}</Typography>
-          <Paper
-            style={{ padding: '15px', borderRadius: 4 }}
-            variant="outlined"
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 15 }}>
+          <Typography variant="h4" gutterBottom={true}>
+            {t_i18n('Error')}
+          </Typography>
+          <Paper style={{ padding: '15px', borderRadius: 4 }} variant="outlined">
+            <div
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 15 }}
+            >
               <div>
-                <Typography variant="h3" gutterBottom={true}>{t_i18n('Timestamp')}</Typography>
-                <pre><ItemCopy content={error.rawError.timestamp ?? EMPTY_VALUE} /></pre>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t_i18n('Timestamp')}
+                </Typography>
+                <pre>
+                  <ItemCopy content={error.rawError.timestamp ?? EMPTY_VALUE} />
+                </pre>
               </div>
               <div>
-                <Typography variant="h3" gutterBottom={true}>{t_i18n('Message')}</Typography>
-                <pre><ItemCopy content={error.rawError.message ?? EMPTY_VALUE} variant="wrap" /></pre>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t_i18n('Message')}
+                </Typography>
+                <pre>
+                  <ItemCopy content={error.rawError.message ?? EMPTY_VALUE} variant="wrap" />
+                </pre>
               </div>
               <div>
-                <Typography variant="h3" gutterBottom={true}>{t_i18n('Source')}</Typography>
-                <pre><ItemCopy content={error.rawError.source ?? EMPTY_VALUE} variant="wrap" /></pre>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t_i18n('Source')}
+                </Typography>
+                <pre>
+                  <ItemCopy content={error.rawError.source ?? EMPTY_VALUE} variant="wrap" />
+                </pre>
               </div>
             </div>
           </Paper>
         </DialogContentText>
         <DialogActions>
-          <Button onClick={handleToggleModalError}>
-            {t_i18n('Close')}
-          </Button>
+          <Button onClick={handleToggleModalError}>{t_i18n('Close')}</Button>
         </DialogActions>
       </Dialog>
     </>

@@ -37,9 +37,7 @@ const styles = (theme) => ({
   },
 });
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 const syncPopoverDeletionMutation = graphql`
@@ -210,22 +208,14 @@ class SyncPopover extends Component {
   async exportSync() {
     const { syncId } = this.props;
 
-    const data = await fetchQuery(environment,
-      syncPopoverExportQuery,
-      { id: syncId },
-    ).toPromise();
+    const data = await fetchQuery(environment, syncPopoverExportQuery, { id: syncId }).toPromise();
 
     if (data && data.synchronizer) {
       const { synchronizer } = data;
 
-      const blob = new Blob(
-        [synchronizer.toConfigurationExport],
-        { type: 'application/json' },
-      );
+      const blob = new Blob([synchronizer.toConfigurationExport], { type: 'application/json' });
 
-      const [day, month, year] = new Date()
-        .toLocaleDateString('fr-FR')
-        .split('/');
+      const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
 
       const fileName = `${year}${month}${day}_synchronizer_${synchronizer.name}.json`;
 
@@ -261,22 +251,12 @@ class SyncPopover extends Component {
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
         >
-          {!running && (
-            <MenuItem onClick={this.handleOpenStart.bind(this)}>
-              {t('Start')}
-            </MenuItem>
-          )}
-          {running && (
-            <MenuItem onClick={this.handleOpenStop.bind(this)}>
-              {t('Stop')}
-            </MenuItem>
-          )}
+          {!running && <MenuItem onClick={this.handleOpenStart.bind(this)}>{t('Start')}</MenuItem>}
+          {running && <MenuItem onClick={this.handleOpenStop.bind(this)}>{t('Stop')}</MenuItem>}
           <MenuItem disabled={running} onClick={this.handleOpenUpdate.bind(this)}>
             {t('Update')}
           </MenuItem>
-          <MenuItem onClick={this.handleExport.bind(this)}>
-            {t('Export')}
-          </MenuItem>
+          <MenuItem onClick={this.handleExport.bind(this)}>{t('Export')}</MenuItem>
           <MenuItem disabled={running} onClick={this.handleOpenDelete.bind(this)}>
             {t('Delete')}
           </MenuItem>
@@ -291,11 +271,7 @@ class SyncPopover extends Component {
             variables={{ id: syncId }}
             render={({ props }) => {
               if (props) {
-                return (
-                  <SyncEdition
-                    synchronizer={props.synchronizer}
-                  />
-                );
+                return <SyncEdition synchronizer={props.synchronizer} />;
               }
               return <div />;
             }}
@@ -307,9 +283,7 @@ class SyncPopover extends Component {
           title={t('Are you sure?')}
           size="small"
         >
-          <DialogContentText>
-            {t('Do you want to delete this OpenCTI stream?')}
-          </DialogContentText>
+          <DialogContentText>{t('Do you want to delete this OpenCTI stream?')}</DialogContentText>
           <DialogActions>
             <Button
               variant="secondary"
@@ -318,10 +292,7 @@ class SyncPopover extends Component {
             >
               {t('Cancel')}
             </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
+            <Button onClick={this.submitDelete.bind(this)} disabled={this.state.deleting}>
               {t('Confirm')}
             </Button>
           </DialogActions>
@@ -334,9 +305,7 @@ class SyncPopover extends Component {
           onClose={this.handleCloseStart.bind(this)}
         >
           <DialogContent>
-            <DialogContentText>
-              {t('Do you want to start this OpenCTI stream?')}
-            </DialogContentText>
+            <DialogContentText>{t('Do you want to start this OpenCTI stream?')}</DialogContentText>
           </DialogContent>
           <DialogActions>
             <Button
@@ -346,10 +315,7 @@ class SyncPopover extends Component {
             >
               {t('Cancel')}
             </Button>
-            <Button
-              onClick={this.submitStart.bind(this)}
-              disabled={this.state.starting}
-            >
+            <Button onClick={this.submitStart.bind(this)} disabled={this.state.starting}>
               {t('Start')}
             </Button>
           </DialogActions>
@@ -362,9 +328,7 @@ class SyncPopover extends Component {
           onClose={this.handleCloseStop.bind(this)}
         >
           <DialogContent>
-            <DialogContentText>
-              {t('Do you want to stop this OpenCTI stream?')}
-            </DialogContentText>
+            <DialogContentText>{t('Do you want to stop this OpenCTI stream?')}</DialogContentText>
           </DialogContent>
           <DialogActions>
             <Button
@@ -374,10 +338,7 @@ class SyncPopover extends Component {
             >
               {t('Cancel')}
             </Button>
-            <Button
-              onClick={this.submitStop.bind(this)}
-              disabled={this.state.stopping}
-            >
+            <Button onClick={this.submitStop.bind(this)} disabled={this.state.stopping}>
               {t('Stop')}
             </Button>
           </DialogActions>

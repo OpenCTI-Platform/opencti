@@ -16,5 +16,6 @@ export const IMPORT_CSV_CONNECTOR: Connector = {
   connector_type: CONNECTOR_INTERNAL_IMPORT_FILE,
   name: '[FILE] CSV Mapper import',
   built_in: true,
-  connector_schema_runtime_fn: (context: AuthContext, user: AuthUser) => fullEntitiesList(context, user, [ENTITY_TYPE_CSV_MAPPER]),
+  connector_schema_runtime_fn: (context: AuthContext, user: AuthUser) =>
+    fullEntitiesList(context, user, [ENTITY_TYPE_CSV_MAPPER]),
 };

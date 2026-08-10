@@ -44,11 +44,16 @@ interface RequestAccessFormAddInput {
   request_access_type: 'organization_sharing';
 }
 
-const requestAccessValidation = (t: (v: string) => string) => Yup.object().shape({
-  organizations: Yup.object().required(t('This field is required')),
-});
+const requestAccessValidation = (t: (v: string) => string) =>
+  Yup.object().shape({
+    organizations: Yup.object().required(t('This field is required')),
+  });
 
-const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose, entitiesIds }) => {
+const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({
+  open,
+  onClose,
+  entitiesIds,
+}) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const { me } = useAuth();
@@ -71,7 +76,10 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
     request_access_entities: [],
     request_access_type: 'organization_sharing',
   };
-  const onSubmit: FormikConfig<RequestAccessFormAddInput>['onSubmit'] = (values, { setSubmitting, resetForm, setErrors }) => {
+  const onSubmit: FormikConfig<RequestAccessFormAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, resetForm, setErrors },
+  ) => {
     const { organizations } = values;
     const input: RequestAccessDialogMutation$variables['input'] = {
       request_access_reason: values.request_access_reason,
@@ -94,66 +102,72 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
   };
 
   return (
-    <> {meResolvedId && (
-      <Dialog
-        open={open}
-        slotProps={{
-          paper: { variant: 'elevation', elevation: 1 },
-        }}
-        keepMounted={true}
-        fullWidth={true}
-        slots={{ transition: Transition }}
-        onClose={onClose}
-      >
-        <DialogContent>
-          <DialogTitle style={{ padding: '16px 0' }}>{t_i18n('Request Access')}</DialogTitle>
-          <Formik
-            initialValues={initialValues}
-            onSubmit={onSubmit}
-            validationSchema={requestAccessValidation(t_i18n)}
-          >
-            {({ isSubmitting, submitForm, setFieldValue }) => {
-              return (
-                <Form>
-                  <DialogContent style={{ padding: theme.spacing(1) }}>
-                    <DialogContentText>
-                      {t_i18n('Your organization does not have permission...')}
-                    </DialogContentText>
-                    <Field
-                      component={TextField}
-                      name="request_access_reason"
-                      label={t_i18n('Enter justification for requesting access to this knowledge')}
-                      fullWidth={true}
-                      variant="standard"
-                      style={fieldSpacingContainerStyle}
-                      askAi={false}
-                      multiline={true}
-                      minRows={5}
-                    />
-                    <MyOrganizationField
-                      name="organizations"
-                      style={fieldSpacingContainerStyle}
-                      label={t_i18n('Select one of your organization for requesting access to this knowledge')}
-                      multiple={false}
-                      disabled={false}
-                      onChange={setFieldValue}
-                    />
-                  </DialogContent>
-                  <DialogActions>
-                    <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
-                      {t_i18n('Cancel')}
-                    </Button>
-                    <Button onClick={submitForm} disabled={isSubmitting}>
-                      {t_i18n('Request Access')}
-                    </Button>
-                  </DialogActions>
-                </Form>
-              );
-            }}
-          </Formik>
-        </DialogContent>
-      </Dialog>
-    )}
+    <>
+      {' '}
+      {meResolvedId && (
+        <Dialog
+          open={open}
+          slotProps={{
+            paper: { variant: 'elevation', elevation: 1 },
+          }}
+          keepMounted={true}
+          fullWidth={true}
+          slots={{ transition: Transition }}
+          onClose={onClose}
+        >
+          <DialogContent>
+            <DialogTitle style={{ padding: '16px 0' }}>{t_i18n('Request Access')}</DialogTitle>
+            <Formik
+              initialValues={initialValues}
+              onSubmit={onSubmit}
+              validationSchema={requestAccessValidation(t_i18n)}
+            >
+              {({ isSubmitting, submitForm, setFieldValue }) => {
+                return (
+                  <Form>
+                    <DialogContent style={{ padding: theme.spacing(1) }}>
+                      <DialogContentText>
+                        {t_i18n('Your organization does not have permission...')}
+                      </DialogContentText>
+                      <Field
+                        component={TextField}
+                        name="request_access_reason"
+                        label={t_i18n(
+                          'Enter justification for requesting access to this knowledge',
+                        )}
+                        fullWidth={true}
+                        variant="standard"
+                        style={fieldSpacingContainerStyle}
+                        askAi={false}
+                        multiline={true}
+                        minRows={5}
+                      />
+                      <MyOrganizationField
+                        name="organizations"
+                        style={fieldSpacingContainerStyle}
+                        label={t_i18n(
+                          'Select one of your organization for requesting access to this knowledge',
+                        )}
+                        multiple={false}
+                        disabled={false}
+                        onChange={setFieldValue}
+                      />
+                    </DialogContent>
+                    <DialogActions>
+                      <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
+                        {t_i18n('Cancel')}
+                      </Button>
+                      <Button onClick={submitForm} disabled={isSubmitting}>
+                        {t_i18n('Request Access')}
+                      </Button>
+                    </DialogActions>
+                  </Form>
+                );
+              }}
+            </Formik>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 };

@@ -1,7 +1,11 @@
 import { logApp } from '../config/conf';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { ENTITY_TYPE_INGESTION_CSV, ENTITY_TYPE_INGESTION_RSS, ENTITY_TYPE_INGESTION_TAXII } from '../modules/ingestion/ingestion-types';
+import {
+  ENTITY_TYPE_INGESTION_CSV,
+  ENTITY_TYPE_INGESTION_RSS,
+  ENTITY_TYPE_INGESTION_TAXII,
+} from '../modules/ingestion/ingestion-types';
 import { registerConnectorForIngestion } from '../domain/connector';
 
 const message = '[MIGRATION] Ingestion dedicated built in connector creation';

@@ -16,12 +16,14 @@ const caseTemplateResolvers: Resolvers = {
     caseTemplates: (_, args, context) => findCaseTemplatePaginated(context, context.user, args),
   },
   CaseTemplate: {
-    tasks: (current, args, context) => taskTemplatesPaginated(context, context.user, current.id, args),
+    tasks: (current, args, context) =>
+      taskTemplatesPaginated(context, context.user, current.id, args),
   },
   Mutation: {
     caseTemplateAdd: (_, { input }, context) => caseTemplateAdd(context, context.user, input),
     caseTemplateDelete: (_, { id }, context) => caseTemplateDelete(context, context.user, id),
-    caseTemplateFieldPatch: (_, { id, input }, context) => caseTemplateEdit(context, context.user, id, input),
+    caseTemplateFieldPatch: (_, { id, input }, context) =>
+      caseTemplateEdit(context, context.user, id, input),
     caseTemplateRelationAdd: (_, { id, input }, context) => {
       return caseTemplateAddRelation(context, context.user, id, input);
     },

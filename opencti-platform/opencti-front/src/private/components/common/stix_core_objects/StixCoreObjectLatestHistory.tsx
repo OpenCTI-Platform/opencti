@@ -7,7 +7,9 @@ import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import CardListSkeleton from '../CardListSkeleton';
-import StixCoreObjectHistoryLines, { stixCoreObjectHistoryLinesQuery } from './StixCoreObjectHistoryLines';
+import StixCoreObjectHistoryLines, {
+  stixCoreObjectHistoryLinesQuery,
+} from './StixCoreObjectHistoryLines';
 
 type StixCoreObjectLatestHistoryProps = {
   stixCoreObjectId: string;
@@ -45,9 +47,7 @@ const StixCoreObjectLatestHistory = ({ stixCoreObjectId }: StixCoreObjectLatestH
   return (
     <>
       {queryRef && (
-        <React.Suspense
-          fallback={<CardListSkeleton title={t_i18n('Most recent history')} />}
-        >
+        <React.Suspense fallback={<CardListSkeleton title={t_i18n('Most recent history')} />}>
           <StixCoreObjectHistoryLines
             title={t_i18n('Most recent history')}
             queryRef={queryRef}
@@ -55,8 +55,7 @@ const StixCoreObjectLatestHistory = ({ stixCoreObjectId }: StixCoreObjectLatestH
             paginationOptions={paginationOptions}
           />
         </React.Suspense>
-      )
-      }
+      )}
     </>
   );
 };

@@ -16,11 +16,7 @@ import Message from '../components/Message';
 import Playground from './components/Playground';
 import { AppDataProvider } from '../utils/hooks/useAppData';
 
-const queryRef = loadQuery<LoginRootPublicQuery>(
-  environment,
-  rootPublicQuery,
-  {},
-);
+const queryRef = loadQuery<LoginRootPublicQuery>(environment, rootPublicQuery, {});
 
 const PublicRoot = () => {
   const { publicSettings: settings } = usePreloadedQuery<LoginRootPublicQuery>(
@@ -37,16 +33,15 @@ const PublicRoot = () => {
       <StyledEngineProvider injectFirst={true}>
         <ConnectedThemeProvider settings={settings}>
           <ConnectedIntlProvider settings={settings}>
-            <AppDataProvider
-              isPublicRoute={true}
-              metricsDefinition={metricsDefinition}
-            >
+            <AppDataProvider isPublicRoute={true} metricsDefinition={metricsDefinition}>
               <CssBaseline />
               <Message />
               <Routes>
                 <Route path="/" element={boundaryWrapper(PublicDataSharing)} />
                 <Route path="/dashboard/:uriKey/*" element={boundaryWrapper(PublicDashboard)} />
-                {isPlaygroundEnabled && <Route path="/graphql/" element={boundaryWrapper(Playground)} />}
+                {isPlaygroundEnabled && (
+                  <Route path="/graphql/" element={boundaryWrapper(Playground)} />
+                )}
               </Routes>
             </AppDataProvider>
           </ConnectedIntlProvider>

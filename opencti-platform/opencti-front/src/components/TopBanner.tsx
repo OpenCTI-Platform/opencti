@@ -53,9 +53,13 @@ const TopBanner = ({
   });
 
   // Always call the hook (rules of hooks), but only act when dismissible and a bus is configured.
-  useBus(dismissBus ?? '', (value: boolean) => {
-    if (dismissible) setIsDismissed(value);
-  }, [dismissible]);
+  useBus(
+    dismissBus ?? '',
+    (value: boolean) => {
+      if (dismissible) setIsDismissed(value);
+    },
+    [dismissible],
+  );
 
   const handleDismiss = () => {
     if (!dismissKey || !dismissBus) return;
@@ -65,29 +69,29 @@ const TopBanner = ({
 
   const platformBannerLevel = settings?.platform_banner_level;
   const platformBannerText = settings?.platform_banner_text;
-  const isPlatformBannerActivated = isNotEmptyField(platformBannerLevel) && isNotEmptyField(platformBannerText);
+  const isPlatformBannerActivated =
+    isNotEmptyField(platformBannerLevel) && isNotEmptyField(platformBannerText);
 
   if (isDismissed) return null;
 
   return (
-    <div style={{
-      position: 'fixed',
-      zIndex: 1202,
-      color: '#000000',
-      width: '100%',
-      padding: 4,
-      borderRadius: 0,
-      backgroundImage: `linear-gradient(to right, ${colors.from}, ${colors.to})`,
-      justifyContent: 'center',
-      alignItems: 'center',
-      display: 'flex',
-      top: (isPlatformBannerActivated ? SYSTEM_BANNER_HEIGHT : 0),
-      height: TOP_BANNER_HEIGHT,
-    }}
+    <div
+      style={{
+        position: 'fixed',
+        zIndex: 1202,
+        color: '#000000',
+        width: '100%',
+        padding: 4,
+        borderRadius: 0,
+        backgroundImage: `linear-gradient(to right, ${colors.from}, ${colors.to})`,
+        justifyContent: 'center',
+        alignItems: 'center',
+        display: 'flex',
+        top: isPlatformBannerActivated ? SYSTEM_BANNER_HEIGHT : 0,
+        height: TOP_BANNER_HEIGHT,
+      }}
     >
-      <span>
-        {bannerText}
-      </span>
+      <span>{bannerText}</span>
       {buttonText && (
         <Button
           onClick={onButtonClick}

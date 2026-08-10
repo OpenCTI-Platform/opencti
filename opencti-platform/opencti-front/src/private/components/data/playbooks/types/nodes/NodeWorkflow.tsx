@@ -14,11 +14,15 @@ type node = {
   id: string;
 };
 
-const getHandlePositionStyle = (count: number, index: number, width = 220): React.CSSProperties | undefined => {
+const getHandlePositionStyle = (
+  count: number,
+  index: number,
+  width = 220,
+): React.CSSProperties | undefined => {
   // we distribute evenly the output ports at the bottom using CSS
   // we divide our width in N intervals, the N points being at the center of their interval
   const interval = width / count;
-  const position = index * interval + (interval / 2);
+  const position = index * interval + interval / 2;
   return { left: position };
 };
 
@@ -29,17 +33,19 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
   const { getNode } = useReactFlow();
   const displayDescription = data.description || data.component?.description;
   return (
-    <div style={{
-      position: 'relative',
-      border: theme.palette.mode === 'dark'
-        ? '1px solid rgba(255, 255, 255, 0.12)'
-        : '1px solid rgba(0, 0, 0, 0.12)',
-      borderRadius: 4,
-      backgroundColor: theme.palette.background.paper,
-      width: 220,
-      minHeight: 50,
-      padding: '8px 5px 5px 5px',
-    }}
+    <div
+      style={{
+        position: 'relative',
+        border:
+          theme.palette.mode === 'dark'
+            ? '1px solid rgba(255, 255, 255, 0.12)'
+            : '1px solid rgba(0, 0, 0, 0.12)',
+        borderRadius: 4,
+        backgroundColor: theme.palette.background.paper,
+        width: 220,
+        minHeight: 50,
+        padding: '8px 5px 5px 5px',
+      }}
     >
       <ItemIcon type={data.component.icon} variant="inline" />
       <div style={{ float: 'left' }}>
@@ -49,14 +55,14 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
           </div>
         </Tooltip>
         <Tooltip title={t_i18n(displayDescription)}>
-          <div style={{
-            maxWidth: 160,
-            fontSize: 8,
-            color: theme.palette.mode === 'dark'
-              ? 'rgba(255, 255, 255, 0.5)'
-              : 'rgba(0, 0, 0, 0.5)',
-            wordBreak: 'break-word',
-          }}
+          <div
+            style={{
+              maxWidth: 160,
+              fontSize: 8,
+              color:
+                theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
+              wordBreak: 'break-word',
+            }}
           >
             {t_i18n(truncate(displayDescription, 150, false))}
           </div>
@@ -73,11 +79,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
         >
           <MoreVert style={{ fontSize: 12 }} />
         </IconButton>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={() => setAnchorEl(null)}
-        >
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
           <MenuItem
             onClick={() => {
               data.openConfig(getNode(id));
@@ -106,11 +108,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
       </div>
       {!data.component?.is_entry_point && (
         <div style={{ position: 'absolute', bottom: 0, right: 0 }}>
-          <Tooltip
-            title={t_i18n(
-              'Add a new branch at the same level from the parent output',
-            )}
-          >
+          <Tooltip title={t_i18n('Add a new branch at the same level from the parent output')}>
             <IconButton
               onClick={() => data.openAddSibling(getNode(id))}
               aria-haspopup="true"
@@ -124,15 +122,16 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
       {!data.component?.is_entry_point && (
         <Handle type="target" position={Position.Top} isConnectable={false} />
       )}
-      <div style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        width: '100%',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
       >
         {(data.component?.ports ?? []).map((n: node, index: number, array: node[]) => (
           <Handle

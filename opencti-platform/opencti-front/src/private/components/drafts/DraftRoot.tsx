@@ -8,7 +8,13 @@ import DraftRelationships from '@components/drafts/DraftRelationships';
 import DraftSightings from '@components/drafts/DraftSightings';
 import DraftReview from '@components/drafts/DraftReview';
 import { DraftRootQuery } from '@components/drafts/__generated__/DraftRootQuery.graphql';
-import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import {
+  graphql,
+  PreloadedQuery,
+  useFragment,
+  usePreloadedQuery,
+  useQueryLoader,
+} from 'react-relay';
 import { interval } from 'rxjs';
 import ConnectorWorkLine from '@components/data/connectors/ConnectorWorkLine';
 import Paper from '@mui/material/Paper';
@@ -124,21 +130,22 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
   const draftContext = useDraftContext();
   const canAskImportKnowledge = useGranted([KNOWLEDGE_KNASKIMPORT]);
 
-  const { draftWorkspace: draftWorkspaceFragment } = usePreloadedQuery<DraftRootQuery>(draftRootQuery, queryRef);
+  const { draftWorkspace: draftWorkspaceFragment } = usePreloadedQuery<DraftRootQuery>(
+    draftRootQuery,
+    queryRef,
+  );
   if (!draftWorkspaceFragment) {
-    return (<ErrorNotFound />);
+    return <ErrorNotFound />;
   }
 
   const draft = useFragment<DraftRootFragment$key>(draftRootFragment, draftWorkspaceFragment);
-  const {
-    name,
-    objectsCount,
-    draft_status,
-    validationWork,
-  } = draft;
+  const { name, objectsCount, draft_status, validationWork } = draft;
   const isDraftReadOnly = draft_status !== 'open';
 
-  const { showCommentPopup, handleClose } = useDraftCommentPopup(draftId, draft.workflowInstance?.lastHistoryEntry);
+  const { showCommentPopup, handleClose } = useDraftCommentPopup(
+    draftId,
+    draft.workflowInstance?.lastHistoryEntry,
+  );
 
   // switch to draft
   const { enterDraft } = useSwitchDraft();
@@ -168,7 +175,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
 
   // If me user is not yet updated to be in draft, display loader
   if (!isDraftReadOnly && !draftContext) {
-    return (<Loader />);
+    return <Loader />;
   }
 
   const basePath = `/dashboard/data/import/draft/${draftId}`;
@@ -184,9 +191,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           {draft.workflowInstance?.lastHistoryEntry?.comment}
         </DialogContentText>
         <DialogActions>
-          <Button onClick={handleClose}>
-            {t_i18n('Close')}
-          </Button>
+          <Button onClick={handleClose}>{t_i18n('Close')}</Button>
         </DialogActions>
       </Dialog>
       {isDraftReadOnly && (
@@ -202,7 +207,12 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           {validationWork && (
             <Paper
               key={validationWork.id}
-              style={{ margin: '10px 0 20px 0', padding: '15px', borderRadius: 4, position: 'relative' }}
+              style={{
+                margin: '10px 0 20px 0',
+                padding: '15px',
+                borderRadius: 4,
+                position: 'relative',
+              }}
               variant="outlined"
             >
               <ConnectorWorkLine
@@ -228,24 +238,21 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           marginBottom: 3,
         }}
       >
-        <Tabs
-          id="tabs-container"
-          value={getCurrentTab(location.pathname, basePath)}
-        >
+        <Tabs id="tabs-container" value={getCurrentTab(location.pathname, basePath)}>
           <Tab
             component={Link}
             to="overview"
             value="overview"
-            label={
-              <span>{t_i18n('Overview')}</span>
-            }
+            label={<span>{t_i18n('Overview')}</span>}
           />
           <Tab
             component={Link}
             to="entities"
             value="entities"
             label={
-              <span>{t_i18n('Entities')} ({objectsCount.entitiesCount})</span>
+              <span>
+                {t_i18n('Entities')} ({objectsCount.entitiesCount})
+              </span>
             }
           />
           <Tab
@@ -253,7 +260,9 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
             to="observables"
             value="observables"
             label={
-              <span>{t_i18n('Observables')} ({objectsCount.observablesCount})</span>
+              <span>
+                {t_i18n('Observables')} ({objectsCount.observablesCount})
+              </span>
             }
           />
           <Tab
@@ -261,7 +270,9 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
             to="relationships"
             value="relationships"
             label={
-              <span>{t_i18n('Relationships')} ({objectsCount.relationshipsCount})</span>
+              <span>
+                {t_i18n('Relationships')} ({objectsCount.relationshipsCount})
+              </span>
             }
           />
           <Tab
@@ -269,7 +280,9 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
             to="sightings"
             value="sightings"
             label={
-              <span>{t_i18n('Sightings')} ({objectsCount.sightingsCount})</span>
+              <span>
+                {t_i18n('Sightings')} ({objectsCount.sightingsCount})
+              </span>
             }
           />
           <Tab
@@ -277,62 +290,61 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
             to="containers"
             value="containers"
             label={
-              <span>{t_i18n('Containers')} ({objectsCount.containersCount})</span>
+              <span>
+                {t_i18n('Containers')} ({objectsCount.containersCount})
+              </span>
             }
           />
           {!isDraftReadOnly && canAskImportKnowledge && (
-            <Tab
-              component={Link}
-              to="files"
-              value="files"
-              label={t_i18n('Files')}
-            />
+            <Tab component={Link} to="files" value="files" label={t_i18n('Files')} />
           )}
           <Tab
             component={Link}
             to="review"
             value="review"
-            label={<span>{t_i18n('Review')} ({objectsCount.reviewsCount})</span>}
+            label={
+              <span>
+                {t_i18n('Review')} ({objectsCount.reviewsCount})
+              </span>
+            }
           />
         </Tabs>
       </Box>
       <Routes>
         <Route
           path="/"
-          element={<Navigate to={`/dashboard/data/import/draft/${draftId}/entities`} replace={true} />}
+          element={
+            <Navigate to={`/dashboard/data/import/draft/${draftId}/entities`} replace={true} />
+          }
         />
-        <Route
-          path="/overview"
-          element={<DraftOverview draft={draft} />}
-        />
+        <Route path="/overview" element={<DraftOverview draft={draft} />} />
         <Route
           path="/entities"
-          element={<DraftEntities entitiesType="Stix-Domain-Object" excludedEntityTypes="Container" isReadOnly={isDraftReadOnly} />}
+          element={
+            <DraftEntities
+              entitiesType="Stix-Domain-Object"
+              excludedEntityTypes="Container"
+              isReadOnly={isDraftReadOnly}
+            />
+          }
         />
         <Route
           path="/observables"
-          element={<DraftEntities entitiesType="Stix-Cyber-Observable" isReadOnly={isDraftReadOnly} />}
+          element={
+            <DraftEntities entitiesType="Stix-Cyber-Observable" isReadOnly={isDraftReadOnly} />
+          }
         />
         <Route
           path="/relationships"
           element={<DraftRelationships isReadOnly={isDraftReadOnly} />}
         />
-        <Route
-          path="/sightings"
-          element={<DraftSightings isReadOnly={isDraftReadOnly} />}
-        />
+        <Route path="/sightings" element={<DraftSightings isReadOnly={isDraftReadOnly} />} />
         <Route
           path="/containers"
           element={<DraftEntities entitiesType="Container" isReadOnly={isDraftReadOnly} />}
         />
-        <Route
-          path="/files"
-          element={<ImportFilesContent inDraftOverview />}
-        />
-        <Route
-          path="/review"
-          element={<DraftReview draftId={draftId} />}
-        />
+        <Route path="/files" element={<ImportFilesContent inDraftOverview />} />
+        <Route path="/review" element={<DraftReview draftId={draftId} />} />
       </Routes>
     </>
   );

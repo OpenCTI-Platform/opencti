@@ -7,7 +7,9 @@ import Drawer from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
-import AddSubAttackPatternsLines, { addSubAttackPatternsLinesQuery } from './AddSubAttackPatternsLines';
+import AddSubAttackPatternsLines, {
+  addSubAttackPatternsLinesQuery,
+} from './AddSubAttackPatternsLines';
 import AttackPatternCreation from './AttackPatternCreation';
 
 class AddSubAttackPattern extends Component {
@@ -35,11 +37,7 @@ class AddSubAttackPattern extends Component {
     };
     return (
       <>
-        <IconButton
-          color="primary"
-          aria-label="Add"
-          onClick={this.handleOpen.bind(this)}
-        >
+        <IconButton color="primary" aria-label="Add" onClick={this.handleOpen.bind(this)}>
           <Add fontSize="small" />
         </IconButton>
         <Drawer
@@ -47,22 +45,22 @@ class AddSubAttackPattern extends Component {
           onClose={this.handleClose.bind(this)}
           title={t('Add sub attack patterns')}
           subHeader={{
-            right: [(
+            right: [
               <AttackPatternCreation
                 display={this.state.open}
                 contextual={true}
                 inputValue={this.state.search}
                 paginationOptions={paginationOptions}
                 key="rightButton"
-              />
-            )],
-            left: [(
+              />,
+            ],
+            left: [
               <SearchInput
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
                 key="leftInput"
-              />
-            )],
+              />,
+            ],
           }}
         >
           <QueryRenderer
@@ -75,9 +73,7 @@ class AddSubAttackPattern extends Component {
               return (
                 <AddSubAttackPatternsLines
                   attackPattern={attackPattern}
-                  attackPatternSubAttackPatterns={
-                    attackPatternSubAttackPatterns
-                  }
+                  attackPatternSubAttackPatterns={attackPatternSubAttackPatterns}
                   data={props}
                 />
               );

@@ -2,11 +2,19 @@ import { ENTITY_TYPE_CONTAINER_CASE } from '../case-types';
 import { NAME_FIELD, normalizeName } from '../../../schema/identifier';
 import type { ModuleDefinition } from '../../../schema/module';
 import { registerDefinition } from '../../../schema/module';
-import { createdBy, objectAssignee, objectMarking, objectParticipant } from '../../../schema/stixRefRelationship';
+import {
+  createdBy,
+  objectAssignee,
+  objectMarking,
+  objectParticipant,
+} from '../../../schema/stixRefRelationship';
 import type { Stix2CaseRft, StixCaseRft, StoreEntityCaseRft } from './case-rft-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from './case-rft-types';
 import { convertCaseRftToStix_2_0, convertCaseRftToStix_2_1 } from './case-rft-converter';
-import { authorizedMembers, authorizedMembersActivationDate } from '../../../schema/attribute-definition';
+import {
+  authorizedMembers,
+  authorizedMembersActivationDate,
+} from '../../../schema/attribute-definition';
 
 const CASE_RFT_DEFINITION: ModuleDefinition<StoreEntityCaseRft, StixCaseRft, Stix2CaseRft> = {
   type: {
@@ -37,10 +45,53 @@ const CASE_RFT_DEFINITION: ModuleDefinition<StoreEntityCaseRft, StixCaseRft, Sti
     { key: 'notes', width: 12, label: 'Notes about this entity' },
   ],
   attributes: [
-    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'takedown_types', label: 'Request for takedown types', type: 'string', format: 'vocabulary', vocabularyCategory: 'request_for_takedown_types_ov', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, isFilterable: true },
-    { name: 'severity', label: 'Severity', type: 'string', format: 'vocabulary', vocabularyCategory: 'case_severity_ov', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'priority', label: 'Priority', type: 'string', format: 'vocabulary', vocabularyCategory: 'case_priority_ov', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    {
+      name: 'name',
+      label: 'Name',
+      type: 'string',
+      format: 'short',
+      mandatoryType: 'external',
+      editDefault: true,
+      multiple: false,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'takedown_types',
+      label: 'Request for takedown types',
+      type: 'string',
+      format: 'vocabulary',
+      vocabularyCategory: 'request_for_takedown_types_ov',
+      mandatoryType: 'customizable',
+      editDefault: true,
+      multiple: true,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'severity',
+      label: 'Severity',
+      type: 'string',
+      format: 'vocabulary',
+      vocabularyCategory: 'case_severity_ov',
+      mandatoryType: 'customizable',
+      editDefault: true,
+      multiple: false,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'priority',
+      label: 'Priority',
+      type: 'string',
+      format: 'vocabulary',
+      vocabularyCategory: 'case_priority_ov',
+      mandatoryType: 'customizable',
+      editDefault: true,
+      multiple: false,
+      upsert: true,
+      isFilterable: true,
+    },
     { ...authorizedMembers, editDefault: true },
     { ...authorizedMembersActivationDate },
   ],

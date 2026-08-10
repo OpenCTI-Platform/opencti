@@ -30,19 +30,11 @@ const EntitySettingHiddenTypesList: FunctionComponent<{
   label: string;
   link: string;
   entityType: string;
-}> = ({
-  targetType,
-  nodes,
-  label,
-  link,
-  entityType,
-}) => {
+}> = ({ targetType, nodes, label, link, entityType }) => {
   const hiddenEntities = computeHiddenEntities(nodes, targetType);
   return (
     <Box sx={{ marginTop: 2 }}>
-      <Label>
-        {label}
-      </Label>
+      <Label>{label}</Label>
       <List style={{ paddingTop: 0 }}>
         <FieldOrEmpty source={hiddenEntities}>
           {hiddenEntities.map((hiddenEntity) => (

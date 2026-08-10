@@ -16,7 +16,11 @@ import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
@@ -28,11 +32,7 @@ const intrusionSetMutationFieldPatch = graphql`
     $references: [String]
   ) {
     intrusionSetEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         ...IntrusionSetEditionOverview_intrusionSet
         ...IntrusionSet_intrusionSet
       }
@@ -41,10 +41,7 @@ const intrusionSetMutationFieldPatch = graphql`
 `;
 
 export const intrusionSetEditionOverviewFocus = graphql`
-  mutation IntrusionSetEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation IntrusionSetEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     intrusionSetEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -89,22 +86,20 @@ const IntrusionSetEditionOverviewComponent = (props) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
 
-  const { mandatoryAttributes } = useIsMandatoryAttribute(
-    INTRUSION_SET_TYPE,
-  );
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    confidence: Yup.number().nullable(),
-    description: Yup.string().nullable(),
-    references: Yup.array(),
-    createdBy: Yup.object().nullable(),
-    x_opencti_workflow_id: Yup.object(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
-  const intrusionSetValidator = useDynamicSchemaEditionValidation(
+  const { mandatoryAttributes } = useIsMandatoryAttribute(INTRUSION_SET_TYPE);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      confidence: Yup.number().nullable(),
+      description: Yup.string().nullable(),
+      references: Yup.array(),
+      createdBy: Yup.object().nullable(),
+      x_opencti_workflow_id: Yup.object(),
+      objectMarking: Yup.array().nullable(),
+    },
     mandatoryAttributes,
-    basicShape,
   );
+  const intrusionSetValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
     fieldPatch: intrusionSetMutationFieldPatch,
@@ -112,12 +107,7 @@ const IntrusionSetEditionOverviewComponent = (props) => {
     relationDelete: intrusionSetMutationRelationDelete,
     editionFocus: intrusionSetEditionOverviewFocus,
   };
-  const editor = useFormEditor(
-    intrusionSet,
-    enableReferences,
-    queries,
-    intrusionSetValidator,
-  );
+  const editor = useFormEditor(intrusionSet, enableReferences, queries, intrusionSetValidator);
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -138,8 +128,7 @@ const IntrusionSetEditionOverviewComponent = (props) => {
       variables: {
         id: intrusionSet.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       onCompleted: () => {
@@ -193,28 +182,19 @@ const IntrusionSetEditionOverviewComponent = (props) => {
       validateOnBlur={true}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <Form style={{ marginTop: theme.spacing(2) }}>
           <AlertConfidenceForEntity entity={intrusionSet} />
           <Field
             component={TextField}
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             askAi={true}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="name" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="name" />}
           />
           <ConfidenceField
             onFocus={editor.changeFocus}
@@ -228,7 +208,7 @@ const IntrusionSetEditionOverviewComponent = (props) => {
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -236,9 +216,7 @@ const IntrusionSetEditionOverviewComponent = (props) => {
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             askAi={true}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
             uploadEntityId={intrusionSet.id}
           />
           {intrusionSet.workflowEnabled && (
@@ -249,31 +227,22 @@ const IntrusionSetEditionOverviewComponent = (props) => {
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={(
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_workflow_id"
-                />
-              )}
+              helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />}
             />
           )}
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="createdBy" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />

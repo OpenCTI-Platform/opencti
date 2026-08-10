@@ -29,20 +29,17 @@ const CourseOfActionEditionContainer = (props) => {
   );
 };
 
-const CourseOfActionEditionFragment = createFragmentContainer(
-  CourseOfActionEditionContainer,
-  {
-    courseOfAction: graphql`
-      fragment CourseOfActionEditionContainer_courseOfAction on CourseOfAction {
-        id
-        ...CourseOfActionEditionOverview_courseOfAction
-        editContext {
-          name
-          focusOn
-        }
+const CourseOfActionEditionFragment = createFragmentContainer(CourseOfActionEditionContainer, {
+  courseOfAction: graphql`
+    fragment CourseOfActionEditionContainer_courseOfAction on CourseOfAction {
+      id
+      ...CourseOfActionEditionOverview_courseOfAction
+      editContext {
+        name
+        focusOn
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default CourseOfActionEditionFragment;

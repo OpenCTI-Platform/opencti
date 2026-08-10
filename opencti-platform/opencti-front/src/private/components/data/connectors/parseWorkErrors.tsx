@@ -11,13 +11,7 @@ const parseWorkErrorsQuery = graphql`
       filters: {
         mode: or
         filterGroups: []
-        filters: [
-          {
-            key: "standard_id"
-            values: $ids
-            mode: or
-          }
-        ]
+        filters: [{ key: "standard_id", values: $ids, mode: or }]
       }
     ) {
       edges {
@@ -80,8 +74,21 @@ const parseWorkErrorsQuery = graphql`
   }
 `;
 
-type Entities = (NonNullable<NonNullable<NonNullable<NonNullable<parseWorkErrorsQuery$data>['stixObjectOrStixRelationships']>['edges']>[number]>['node'] | undefined)[];
-export type ResolvedEntity = NonNullable<NonNullable<NonNullable<parseWorkErrorsQuery$data['stixObjectOrStixRelationships']>['edges']>[number]>['node'];
+type Entities = (
+  | NonNullable<
+      NonNullable<
+        NonNullable<
+          NonNullable<parseWorkErrorsQuery$data>['stixObjectOrStixRelationships']
+        >['edges']
+      >[number]
+    >['node']
+  | undefined
+)[];
+export type ResolvedEntity = NonNullable<
+  NonNullable<
+    NonNullable<parseWorkErrorsQuery$data['stixObjectOrStixRelationships']>['edges']
+  >[number]
+>['node'];
 type ErrorLevel = 'Critical' | 'Warning' | 'Unclassified';
 
 export interface FullParsedWorkMessage {
@@ -136,12 +143,14 @@ export const getLevel = (code: string): ErrorLevel => {
   return 'Unclassified';
 };
 
-export const parseError = (error: NonNullable<NonNullable<WorkMessages>[number]>): ParsedWorkMessage => {
+export const parseError = (
+  error: NonNullable<NonNullable<WorkMessages>[number]>,
+): ParsedWorkMessage => {
   // Try/Catch to prevent JSON.parse Exception
   try {
     const parsedSource = JSON5.parse(error.source ?? '{}');
     const source = parsedSource.type === 'bundle' ? parsedSource.objects[0] : parsedSource;
-    const message = JSON5.parse((error.message ?? ''));
+    const message = JSON5.parse(error.message ?? '');
     const entityId = source.id;
     const fromId = source.source_ref;
     const toId = source.target_ref;
@@ -153,12 +162,16 @@ export const parseError = (error: NonNullable<NonNullable<WorkMessages>[number]>
       entity: {
         standard_id: entityId,
         representative: { main: getMainRepresentative(source, entityId) },
-        from: fromId ? {
-          standard_id: fromId,
-        } : undefined,
-        to: toId ? {
-          standard_id: toId,
-        } : undefined,
+        from: fromId
+          ? {
+              standard_id: fromId,
+            }
+          : undefined,
+        to: toId
+          ? {
+              standard_id: toId,
+            }
+          : undefined,
       },
     };
 
@@ -204,22 +217,22 @@ const parseWorkErrors = async (errorsList: WorkMessages): Promise<ParsedWorkMess
     const errorParsed = parseError(error);
     if (errorParsed.isParsed) {
       ids.push(errorParsed.parsedError.entity.standard_id ?? '');
-      if (errorParsed.parsedError.entity.from) ids.push(errorParsed.parsedError.entity.from.standard_id ?? '');
-      if (errorParsed.parsedError.entity.to) ids.push(errorParsed.parsedError.entity.to.standard_id ?? '');
+      if (errorParsed.parsedError.entity.from)
+        ids.push(errorParsed.parsedError.entity.from.standard_id ?? '');
+      if (errorParsed.parsedError.entity.to)
+        ids.push(errorParsed.parsedError.entity.to.standard_id ?? '');
     }
     return errorParsed;
   });
 
   if (ids.length < 1) return parsedList;
   // try to resolve entities
-  const entities: Entities = await fetchQuery(
-    environment,
-    parseWorkErrorsQuery,
-    { ids },
-  )
+  const entities: Entities = await fetchQuery(environment, parseWorkErrorsQuery, { ids })
     .toPromise()
     .then((data) => {
-      return ((data as parseWorkErrorsQuery$data)?.stixObjectOrStixRelationships?.edges ?? []).map((n) => n?.node);
+      return ((data as parseWorkErrorsQuery$data)?.stixObjectOrStixRelationships?.edges ?? []).map(
+        (n) => n?.node,
+      );
     });
   return parsedList.map((error) => {
     return resolveError(error, entities);

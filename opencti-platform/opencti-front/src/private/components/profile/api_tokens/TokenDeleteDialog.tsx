@@ -26,17 +26,10 @@ const TokenDeleteDialog = ({ open, token, onDelete, onClose }: TokenDeleteDialog
         {t_i18n('Do you want to revoke the token')} <strong>{token?.name}</strong>?
       </DialogContentText>
       <DialogActions>
-        <Button
-          variant="secondary"
-          onClick={onClose}
-        >
+        <Button variant="secondary" onClick={onClose}>
           {t_i18n('Cancel')}
         </Button>
-        <Button
-          intent="destructive"
-          onClick={onDelete}
-          autoFocus
-        >
+        <Button intent="destructive" onClick={onDelete} autoFocus>
           {t_i18n('Revoke')}
         </Button>
       </DialogActions>

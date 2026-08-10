@@ -27,7 +27,10 @@ import { getPaddingRight } from '../../../../utils/utils';
 import { isPathOverview } from '../../../../utils/tabUtils';
 import CountryEdition from './CountryEdition';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import CountryDeletion from './CountryDeletion';
 import { PATH_COUNTRIES, PATH_COUNTRY } from '@components/common/routes/paths';
 
@@ -84,9 +87,7 @@ interface RootCountryComponentProps {
 }
 
 const RootCountryComponent = ({ queryRef, countryId }: RootCountryComponentProps) => {
-  const subConfig = useMemo<
-    GraphQLSubscriptionConfig<RootCountriesSubscription>
-  >(
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootCountriesSubscription>>(
     () => ({
       subscription,
       variables: { id: countryId },
@@ -110,7 +111,7 @@ const RootCountryComponent = ({ queryRef, countryId }: RootCountryComponentProps
           <Routes>
             <Route
               path="/knowledge/*"
-              element={(
+              element={
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -130,32 +131,31 @@ const RootCountryComponent = ({ queryRef, countryId }: RootCountryComponentProps
                   ]}
                   data={country}
                 />
-              )}
+              }
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs elements={[
-              { label: t_i18n('Locations') },
-              { label: t_i18n('Countries'), link: PATH_COUNTRIES },
-              { label: country.name, current: true },
-            ]}
+            <Breadcrumbs
+              elements={[
+                { label: t_i18n('Locations') },
+                { label: t_i18n('Countries'), link: PATH_COUNTRIES },
+                { label: country.name, current: true },
+              ]}
             />
             <StixDomainObjectHeader
               entityType="Country"
               disableSharing={true}
               stixDomainObject={country}
-              EditComponent={(
+              EditComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <CountryEdition countryId={country.id} />
                 </Security>
-              )}
-              RelateComponent={(
+              }
+              RelateComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <StixCoreRelationshipCreationFromEntityHeader
-                    data={country}
-                  />
+                  <StixCoreRelationshipCreationFromEntityHeader data={country} />
                 </Security>
-              )}
+              }
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <CountryDeletion id={country.id} isOpen={isOpen} handleClose={onClose} />
@@ -176,11 +176,7 @@ const RootCountryComponent = ({ queryRef, countryId }: RootCountryComponentProps
                     <CountryKnowledge countryData={country} />
                   </div>
                 ),
-                content: (
-                  <StixCoreObjectContentRoot
-                    stixCoreObject={country}
-                  />
-                ),
+                content: <StixCoreObjectContentRoot stixCoreObject={country} />,
                 analyses: (
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={country}
@@ -202,8 +198,7 @@ const RootCountryComponent = ({ queryRef, countryId }: RootCountryComponentProps
                     entity={country}
                   />
                 ),
-                history:
-                  <StixCoreObjectHistory stixCoreObjectId={countryId} />,
+                history: <StixCoreObjectHistory stixCoreObjectId={countryId} />,
               }}
               extraActions={isOverview && <AIInsights id={country.id} />}
             />

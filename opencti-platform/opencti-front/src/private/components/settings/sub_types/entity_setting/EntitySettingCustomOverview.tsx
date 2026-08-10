@@ -26,10 +26,11 @@ const EntitySettingCustomOverview = () => {
 
   const entitySetting = useFragment(
     entitySettingsOverviewLayoutCustomizationFragment,
-    (subType?.settings ?? null) as EntitySettingsOverviewLayoutCustomization_entitySetting$key | null,
+    (subType?.settings ??
+      null) as EntitySettingsOverviewLayoutCustomization_entitySetting$key | null,
   );
 
-  const [commitReset] = useApiMutation((entitySettingsOverviewLayoutCustomizationEdit));
+  const [commitReset] = useApiMutation(entitySettingsOverviewLayoutCustomizationEdit);
 
   if (!subType) return <ErrorNotFound />;
   if (!subType.settings) return <ErrorNotFound />;
@@ -59,7 +60,7 @@ const EntitySettingCustomOverview = () => {
       <Grid size={6}>
         <Card
           title={t_i18n('Overview layout customization')}
-          action={(
+          action={
             <Tooltip title={t_i18n('Reset to default layout')}>
               <IconButton
                 onClick={() => resetLayout()}
@@ -70,7 +71,7 @@ const EntitySettingCustomOverview = () => {
                 <RestartAlt fontSize="small" color="primary" />
               </IconButton>
             </Tooltip>
-          )}
+          }
         >
           <EntitySettingsOverviewLayoutCustomization
             entitySettingsData={entitySetting as EntitySettingsOverviewLayoutCustomizationData}
