@@ -34,6 +34,10 @@ describe('SecurityCoverage domain', () => {
     it('should create coverage result if explicitly asked for', async () => {
       const input = {
         ...BASE_INPUT(),
+        coverage_information: [{
+          coverage_name: 'prevention',
+          coverage_score: 10,
+        }],
         add_related_entities: true,
       };
       const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
