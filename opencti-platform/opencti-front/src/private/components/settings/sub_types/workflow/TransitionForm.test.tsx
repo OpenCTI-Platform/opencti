@@ -43,7 +43,7 @@ const renderForm = (initialValues: Partial<WorkflowEditionFormValues>, onSubmit 
   return testRender(
     <Formik initialValues={initialValues as WorkflowEditionFormValues} onSubmit={onSubmit}>
       <Form>
-        <TransitionForm />
+        <TransitionForm entityType="DraftWorkspace" />
       </Form>
     </Formik>,
   );
