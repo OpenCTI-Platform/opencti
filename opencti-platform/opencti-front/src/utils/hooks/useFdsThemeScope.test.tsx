@@ -1,65 +1,54 @@
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { act, renderHook } from '@testing-library/react';
-import { useState } from 'react';
-import { describe, expect, it } from 'vitest';
+import { renderHook } from '@testing-library/react';
+import { beforeEach, describe, expect, it } from 'vitest';
 import useFdsThemeScope from './useFdsThemeScope';
 
 describe('Hook: useFdsThemeScope', () => {
-  // Lets the test flip the MUI palette mode after mount without relying on
-  // renderHook's `rerender` (which only re-invokes the hook callback, not
-  // the wrapper) — the wrapper owns the mode as local state and exposes its
-  // setter through this closure variable so `act()` can trigger a real
-  // context update, exactly like a live theme change would.
-  let setMode: (mode: 'light' | 'dark') => void = () => {};
+  const root = () => document.documentElement;
 
-  const ThemeSwitcher = ({ children }: { children: React.ReactNode }) => {
-    const [mode, setLocalMode] = useState<'light' | 'dark'>('dark');
-    setMode = setLocalMode;
-    return (
-      <ThemeProvider theme={createTheme({ palette: { mode } })}>
-        {children}
-      </ThemeProvider>
+  beforeEach(() => {
+    root().classList.remove('light', 'dark');
+  });
+
+  it('writes the class on the document root, not on a container', () => {
+    renderHook(() => useFdsThemeScope('Light'));
+
+    expect(root().classList.contains('light')).toBe(true);
+    expect(root().classList.contains('dark')).toBe(false);
+  });
+
+  it('swaps the class reactively when the theme changes after mount', () => {
+    const { rerender } = renderHook(
+      ({ name }: { name: string }) => useFdsThemeScope(name),
+      { initialProps: { name: 'Dark' } },
     );
-  };
 
-  it('applies the class matching the current theme mode on mount', () => {
-    const container = document.createElement('div');
-    const containerRef = { current: container };
+    expect(root().classList.contains('dark')).toBe(true);
 
-    renderHook(() => useFdsThemeScope(containerRef), { wrapper: ThemeSwitcher });
+    rerender({ name: 'Light' });
+    expect(root().classList.contains('light')).toBe(true);
+    expect(root().classList.contains('dark')).toBe(false);
 
-    expect(container.classList.contains('dark')).toBe(true);
-    expect(container.classList.contains('light')).toBe(false);
+    rerender({ name: 'Dark' });
+    expect(root().classList.contains('dark')).toBe(true);
+    expect(root().classList.contains('light')).toBe(false);
   });
 
-  it('swaps the class reactively when the theme mode changes after mount', () => {
-    const container = document.createElement('div');
-    const containerRef = { current: container };
+  // The acquired behaviour this migration must not lose: custom themes are
+  // stored in database under arbitrary names, and `themeBuilder` treats
+  // everything that is not `Light` as dark. If this hook resolved such a name
+  // to light, MUI and FDS would disagree and the rail would be unreadable.
+  it.each(['Dark', 'Corporate', 'filigran-2026', '', undefined])(
+    'resolves the non-Light theme name %p to dark',
+    (name) => {
+      renderHook(() => useFdsThemeScope(name));
 
-    renderHook(() => useFdsThemeScope(containerRef), { wrapper: ThemeSwitcher });
+      expect(root().classList.contains('dark')).toBe(true);
+      expect(root().classList.contains('light')).toBe(false);
+    },
+  );
 
-    expect(container.classList.contains('dark')).toBe(true);
-
-    act(() => {
-      setMode('light');
-    });
-
-    expect(container.classList.contains('light')).toBe(true);
-    expect(container.classList.contains('dark')).toBe(false);
-
-    act(() => {
-      setMode('dark');
-    });
-
-    expect(container.classList.contains('dark')).toBe(true);
-    expect(container.classList.contains('light')).toBe(false);
-  });
-
-  it('never sets both classes at once, and does nothing when the container is not mounted', () => {
-    const containerRef = { current: null };
-
-    expect(() => {
-      renderHook(() => useFdsThemeScope(containerRef), { wrapper: ThemeSwitcher });
-    }).not.toThrow();
+  it('returns the resolved mode so callers do not re-derive it', () => {
+    expect(renderHook(() => useFdsThemeScope('Light')).result.current).toBe('light');
+    expect(renderHook(() => useFdsThemeScope('Corporate')).result.current).toBe('dark');
   });
 });
