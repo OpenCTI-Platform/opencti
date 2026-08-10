@@ -26,102 +26,122 @@ const slugify = (name: string) => (name ?? 'unnamed')
   .replace(/^-+|-+$/g, '')
   .slice(0, 80) || 'unnamed';
 
-const exportCategory = async (
+const exportEntitiesToZip = async <T extends { id: string; name: string }>(
+  archive: ZipArchive,
+  entities: T[],
+  exportFn: (entity: T) => Promise<string>,
+  pathFor: (entity: T) => string,
+): Promise<number> => {
+  for (let i = 0; i < entities.length; i += 1) {
+    const exported = await exportFn(entities[i]);
+    archive.append(exported, { name: pathFor(entities[i]) });
+  }
+  return entities.length;
+};
+
+export const exportPlaybooksCategory = async (context: AuthContext, user: AuthUser, archive: ZipArchive): Promise<number> => {
+  const playbooks = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_PLAYBOOK], {});
+  return exportEntitiesToZip(archive, playbooks, playbookExport, (p) => `playbooks/playbook-${slugify(p.name)}-${p.id}.json`);
+};
+
+export const exportFormsCategory = async (context: AuthContext, user: AuthUser, archive: ZipArchive): Promise<number> => {
+  const forms = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_FORM], {});
+  return exportEntitiesToZip(archive, forms, generateFormExportConfiguration, (f) => `form_intakes/form-${slugify(f.name)}-${f.id}.json`);
+};
+
+export const exportDashboardsCategory = async (context: AuthContext, user: AuthUser, archive: ZipArchive): Promise<number> => {
+  const workspaces = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_WORKSPACE], {});
+  const dashboards = workspaces.filter((w) => w.type === 'dashboard');
+  return exportEntitiesToZip(
+    archive,
+    dashboards,
+    (d) => generateWorkspaceExportConfiguration(context, user, d),
+    (d) => `dashboards/dash-${slugify(d.name)}-${d.id}.json`,
+  );
+};
+
+export const exportCustomViewsCategory = async (context: AuthContext, user: AuthUser, archive: ZipArchive): Promise<number> => {
+  const customViews = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_CUSTOM_VIEW], {});
+  return exportEntitiesToZip(
+    archive,
+    customViews,
+    (cv) => exportCustomView(context, user, cv),
+    (cv) => `custom_views/custom-view-${slugify(cv.name)}-${cv.id}.json`,
+  );
+};
+
+export const exportFintelTemplatesCategory = async (context: AuthContext, user: AuthUser, archive: ZipArchive): Promise<number> => {
+  const templates = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_FINTEL_TEMPLATE], {});
+  return exportEntitiesToZip(
+    archive,
+    templates,
+    (t) => fintelTemplateExport(context, user, t),
+    (t) => `fintel_templates/fintel-template-${slugify(t.name)}-${t.id}.json`,
+  );
+};
+
+export const exportIngestionCsvCategory = async (context: AuthContext, user: AuthUser, archive: ZipArchive): Promise<number> => {
+  const feeds = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_INGESTION_CSV], {});
+  return exportEntitiesToZip(
+    archive,
+    feeds,
+    (f) => csvFeedMapperExport(context, user, f),
+    (f) => `ingestion/feeds/feed-csv/feed-csv-${slugify(f.name)}-${f.id}.json`,
+  );
+};
+
+export const exportIngestionJsonCategory = async (context: AuthContext, user: AuthUser, archive: ZipArchive): Promise<number> => {
+  const feeds = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_INGESTION_JSON], {});
+  return exportEntitiesToZip(
+    archive,
+    feeds,
+    (f) => jsonFeedExport(context, user, f),
+    (f) => `ingestion/feeds/feed-json/feed-json-${slugify(f.name)}-${f.id}.json`,
+  );
+};
+
+export const exportIngestionRssCategory = async (context: AuthContext, user: AuthUser, archive: ZipArchive): Promise<number> => {
+  const feeds = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_INGESTION_RSS], {});
+  return exportEntitiesToZip(
+    archive,
+    feeds,
+    (f) => rssFeedExport(context, user, f),
+    (f) => `ingestion/feeds/feed-rss/feed-rss-${slugify(f.name)}-${f.id}.json`,
+  );
+};
+
+export const exportIngestionTaxiiCategory = async (context: AuthContext, user: AuthUser, archive: ZipArchive): Promise<number> => {
+  const feeds = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_INGESTION_TAXII], {});
+  return exportEntitiesToZip(
+    archive,
+    feeds,
+    taxiiFeedExport,
+    (f) => `ingestion/feeds/feed-taxii/feed-taxii-${slugify(f.name)}-${f.id}.json`,
+  );
+};
+
+export const exportCategory = async (
   context: AuthContext,
   user: AuthUser,
   entityType: string,
   archive: ZipArchive,
 ): Promise<number> => {
-  if (entityType === ENTITY_TYPE_PLAYBOOK) {
-    const playbooks = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_PLAYBOOK], {});
-    for (let i = 0; i < playbooks.length; i += 1) {
-      const exported = await playbookExport(playbooks[i]);
-      archive.append(exported, { name: `playbooks/playbook-${slugify(playbooks[i].name)}-${playbooks[i].id}.json` });
-    }
-    return playbooks.length;
+  switch (entityType) {
+    case ENTITY_TYPE_PLAYBOOK: return exportPlaybooksCategory(context, user, archive);
+    case ENTITY_TYPE_FORM: return exportFormsCategory(context, user, archive);
+    case ENTITY_TYPE_WORKSPACE: return exportDashboardsCategory(context, user, archive);
+    case ENTITY_TYPE_CUSTOM_VIEW: return exportCustomViewsCategory(context, user, archive);
+    case ENTITY_TYPE_FINTEL_TEMPLATE: return exportFintelTemplatesCategory(context, user, archive);
+    case ENTITY_TYPE_INGESTION_CSV: return exportIngestionCsvCategory(context, user, archive);
+    case ENTITY_TYPE_INGESTION_JSON: return exportIngestionJsonCategory(context, user, archive);
+    case ENTITY_TYPE_INGESTION_RSS: return exportIngestionRssCategory(context, user, archive);
+    case ENTITY_TYPE_INGESTION_TAXII: return exportIngestionTaxiiCategory(context, user, archive);
+    default: throw Error(`Unknown configuration export entity_type: "${entityType}"`);
   }
-
-  if (entityType === ENTITY_TYPE_FORM) {
-    const forms = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_FORM], {});
-    for (let i = 0; i < forms.length; i += 1) {
-      const exported = await generateFormExportConfiguration(forms[i]);
-      archive.append(exported, { name: `form_intakes/form-${slugify(forms[i].name)}-${forms[i].id}.json` });
-    }
-    return forms.length;
-  }
-
-  if (entityType === ENTITY_TYPE_WORKSPACE) {
-    const workspaces = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_WORKSPACE], {});
-    const dashboards = workspaces.filter((w) => w.type === 'dashboard');
-    for (let i = 0; i < dashboards.length; i += 1) {
-      const exported = await generateWorkspaceExportConfiguration(context, user, dashboards[i]);
-      archive.append(exported, { name: `dashboards/dash-${slugify(dashboards[i].name)}-${dashboards[i].id}.json` });
-    }
-    return dashboards.length;
-  }
-
-  if (entityType === ENTITY_TYPE_CUSTOM_VIEW) {
-    const customViews = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_CUSTOM_VIEW], {});
-    for (let i = 0; i < customViews.length; i += 1) {
-      const exported = await exportCustomView(context, user, customViews[i]);
-      archive.append(exported, { name: `custom_views/custom-view-${slugify(customViews[i].name)}-${customViews[i].id}.json` });
-    }
-    return customViews.length;
-  }
-
-  if (entityType === ENTITY_TYPE_FINTEL_TEMPLATE) {
-    const templates = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_FINTEL_TEMPLATE], {});
-    for (let i = 0; i < templates.length; i += 1) {
-      const exported = await fintelTemplateExport(context, user, templates[i]);
-      archive.append(exported, { name: `fintel_templates/fintel-template-${slugify(templates[i].name)}-${templates[i].id}.json` });
-    }
-    return templates.length;
-  }
-
-  if (entityType === ENTITY_TYPE_INGESTION_CSV) {
-    const feeds = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_INGESTION_CSV], {});
-    for (let i = 0; i < feeds.length; i += 1) {
-      const exported = await csvFeedMapperExport(context, user, feeds[i]);
-      archive.append(exported, { name: `ingestion/feeds/feed-csv/feed-csv-${slugify(feeds[i].name)}-${feeds[i].id}.json` });
-    }
-    return feeds.length;
-  }
-
-  if (entityType === ENTITY_TYPE_INGESTION_JSON) {
-    const feeds = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_INGESTION_JSON], {});
-    for (let i = 0; i < feeds.length; i += 1) {
-      const exported = await jsonFeedExport(context, user, feeds[i]);
-      archive.append(exported, { name: `ingestion/feeds/feed-json/feed-json-${slugify(feeds[i].name)}-${feeds[i].id}.json` });
-    }
-    return feeds.length;
-  }
-
-  if (entityType === ENTITY_TYPE_INGESTION_RSS) {
-    const feeds = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_INGESTION_RSS], {});
-    for (let i = 0; i < feeds.length; i += 1) {
-      const exported = await rssFeedExport(context, user, feeds[i]);
-      archive.append(exported, { name: `ingestion/feeds/feed-rss/feed-rss-${slugify(feeds[i].name)}-${feeds[i].id}.json` });
-    }
-    return feeds.length;
-  }
-
-  if (entityType === ENTITY_TYPE_INGESTION_TAXII) {
-    const feeds = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_INGESTION_TAXII], {});
-    for (let i = 0; i < feeds.length; i += 1) {
-      const exported = await taxiiFeedExport(feeds[i]);
-      archive.append(exported, { name: `ingestion/feeds/feed-taxii/feed-taxii-${slugify(feeds[i].name)}-${feeds[i].id}.json` });
-    }
-    return feeds.length;
-  }
-
-  throw Error(`Unknown configuration export entity_type: "${entityType}"`);
 };
 
 /**
- * Builds the configuration export ZIP for the given entity_types and returns
- * it base64-encoded, following the same pattern as a single-entity export
- * function (returns a string) - the frontend decodes it and triggers the
- * browser download.
+ * Builds the configuration export ZIP for the given entity_types and returns it base64-encoded
  */
 export const generateGlobalConfigurationExport = async (
   context: AuthContext,
