@@ -672,13 +672,13 @@ const createSseMiddleware = () => {
                   const isOriginVisible = isOriginMatchFilterGroup(eventData, originFilters);
                   if (type === EVENT_TYPE_UPDATE) {
                     const { newDocument: previous } = jsonpatch.applyPatch(structuredClone(stix), evenContext.reverse_patch);
-                    const userHasAccessToUpdateEvent = await isUserCanAccessStreamUpdateEvent(user, eventData);
                     const isPreviouslyVisible = await isStixMatchFilterGroup(context, user, previous, streamFilters, eventContext);
                     if (isPreviouslyVisible && !isCurrentlyVisible && publishDeletion) { // No longer visible
                       if (isOriginVisible) {
-                        // If the user no longer has access to the entity
-                        // we need to remove the context from the delete event to avoid leaking information
-                        const deleteEventData = { ...eventData, context: {} };
+                        // If the user no longer has access to the entity, we need to remove the context
+                        // and replace the (now-restricted) current data with the previous, already-visible
+                        // document, to avoid leaking the post-update state (e.g. new markings, changed fields)
+                        const deleteEventData = { ...eventData, data: previous, context: {} };
                         await client.sendEvent(eventId, EVENT_TYPE_DELETE, deleteEventData);
                         cache.set(stix.id, 'hit');
                       }
@@ -694,6 +694,7 @@ const createSseMiddleware = () => {
                         }
                       }
                     } else if (isCurrentlyVisible) { // Just an update
+                      const userHasAccessToUpdateEvent = isOriginVisible ? await isUserCanAccessStreamUpdateEvent(user, eventData) : false;
                       if (isOriginVisible && userHasAccessToUpdateEvent) {
                         const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
                         if (isValidResolution) {
