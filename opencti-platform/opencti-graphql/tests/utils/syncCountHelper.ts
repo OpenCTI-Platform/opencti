@@ -13,7 +13,7 @@ import { VOCABULARY_NUMBERS } from '../11-sync/sync-utils';
 
 export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
-testCreatedCounter['attack-pattern'] = 10;
+testCreatedCounter['attack-pattern'] = 11;
 testCreatedCounter.campaign = 6;
 testCreatedCounter['case-incident'] = 7;
 testCreatedCounter['case-rfi'] = 8;
@@ -62,9 +62,9 @@ testCreatedCounter['threat-actor'] = 25;
 testCreatedCounter.tool = 5;
 testCreatedCounter['tracking-number'] = 1;
 testCreatedCounter.vocabulary = VOCABULARY_NUMBERS;
-testCreatedCounter.vulnerability = 9;
-testCreatedCounter['security-coverage'] = 6;
-testCreatedCounter['security-coverage-result'] = 6;
+testCreatedCounter.vulnerability = 10;
+testCreatedCounter['security-coverage'] = 12;
+testCreatedCounter['security-coverage-result'] = 11;
 
 export const testUpdatedCounter: Record<string, number> = {};
 testUpdatedCounter['marking-definition'] = 2;
@@ -114,7 +114,7 @@ testMergedCounter['attack-pattern'] = 1;
 
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
-testDeletedCounter['attack-pattern'] = 5;
+testDeletedCounter['attack-pattern'] = 6;
 testDeletedCounter.campaign = 2;
 testDeletedCounter['case-incident'] = 7;
 testDeletedCounter['case-rfi'] = 8;
@@ -154,13 +154,13 @@ testDeletedCounter.sighting = 1;
 testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter['threat-actor'] = 16;
 testDeletedCounter.tool = 5;
-testDeletedCounter.vulnerability = 3;
+testDeletedCounter.vulnerability = 4;
 testDeletedCounter.software = 1;
 testDeletedCounter.iccid = 3;
 testDeletedCounter.imei = 2;
 testDeletedCounter.imsi = 1;
-testDeletedCounter['security-coverage'] = 5;
-testDeletedCounter['security-coverage-result'] = 5;
+testDeletedCounter['security-coverage'] = 11;
+testDeletedCounter['security-coverage-result'] = 10;
 
 export const doTotal = (eventCounter: Record<string, number>) => {
   const allRecordKeys = Object.keys(eventCounter);
