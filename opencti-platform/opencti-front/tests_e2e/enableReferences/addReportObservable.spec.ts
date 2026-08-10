@@ -172,6 +172,10 @@ test.describe('Add and remove observable from Observables tab of a Report as noB
     // Create a report and check that adding an observable is possible
     const reportName = `Test add observable e2e 2 ${nowTime}`;
     await reportPage.goto();
+    // Was `getByTestId('ChevronRightIcon')`: the rail's expand affordance used
+    // to be a raw MUI icon. The design-system rail exposes a named control,
+    // so this goes through the page object like every other rail interaction.
+    await leftBarPage.open();
     await reportPage.openNewReportForm();
     await reportForm.nameField.fill(reportName);
     await reportPage.getCreateReportButton().click();

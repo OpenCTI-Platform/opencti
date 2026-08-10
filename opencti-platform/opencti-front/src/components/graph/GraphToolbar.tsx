@@ -15,7 +15,7 @@ import { useGraphContext } from './GraphContext';
 import GraphToolbarCorrelationTools from './components/GraphToolbarCorrelationTools';
 import GraphToolbarExpandTools, { GraphToolbarExpandToolsProps } from './components/GraphToolbarExpandTools';
 import useAuth from '../../utils/hooks/useAuth';
-import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
+import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../utils/hooks/useDraftContext';
 
 export type GraphToolbarProps = GraphToolbarContentToolsProps & GraphToolbarExpandToolsProps & GraphToolbarDisplayToolsProps;

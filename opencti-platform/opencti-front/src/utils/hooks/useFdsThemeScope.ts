@@ -1,41 +1,52 @@
-import { type MutableRefObject, useEffect } from 'react';
-import { useTheme } from '@mui/styles';
-import type { Theme } from '../../components/Theme';
+import { useEffect } from 'react';
+
+export type FdsThemeMode = 'light' | 'dark';
 
 /**
- * Bridges the app's MUI `theme.palette.mode` to the `.dark`/`.light`
- * scoping classes that FDS components (`@filigran/design-system`) rely on
- * for their CSS custom properties, applied to an arbitrary container
- * instead of `<html>`/`<body>`.
+ * Single writer of the `.light` / `.dark` class that FDS components
+ * (`@filigran/design-system`) read to resolve their CSS custom properties.
+ * The class goes on `document.documentElement`, and the hook also returns the
+ * resolved mode so callers do not re-derive it.
  *
- * This generalizes the ad hoc pattern already in production in
- * `AskArianePanel.tsx` (`isDarkMode = theme.palette.mode === 'dark'`
- * toggling a single `'dark'` class on its portal container): it reads the
- * exact same source, but always sets exactly one of `dark`/`light` (the
- * original only ever set `dark` or nothing) and stays reactive to theme
- * changes that happen after mount — e.g. a user flipping dark/light in
- * Settings.
+ * WHY THE DOCUMENT ROOT (decision taken 2026-08-04, revising this hook's
+ * original scoped design):
+ * FDS portals its floating layers — submenu flyouts, tooltips, dropdown
+ * content — directly into `<body>`, outside whatever subtree rendered the
+ * component. A class scoped to a container therefore themes the component but
+ * leaves every floating layer unthemed, and the defect only shows on hover or
+ * on a collapsed rail, which is exactly where review does not look. Targeting
+ * the root is the only placement that covers both the in-tree markup and the
+ * portalled layers. This mirrors the mechanism already proven in the OpenAEV
+ * migration.
  *
- * Attach `containerRef` to the root of whichever subtree renders FDS
- * components. Never point it at `document.documentElement`/`document.body`:
- * FDS scoping is meant to nest per-subtree, not replace the app-wide
- * `data-theme` attribute already managed by `useDocumentThemeModifier`.
+ * The earlier version of this hook took a container ref and its documentation
+ * explicitly forbade targeting the root. That guidance is obsolete — it
+ * predates the portal analysis above — and has been removed rather than left
+ * to contradict the code.
  *
- * This hook only wires the classes — it isn't applied to any component
- * yet, that's a deliberate separate step for each future consumer.
+ * DEFENSIVE MAPPING: anything that is not the built-in `Light` theme resolves
+ * to `dark`. Custom themes are stored in database with arbitrary names, and
+ * `themeBuilder` already branches the same way; keeping a single rule here is
+ * what stops MUI and FDS from disagreeing on a theme named e.g. `Corporate`.
+ *
+ * NOT A DUPLICATE: `useDocumentThemeModifier` and `private/Index.tsx` both
+ * write `body[data-theme]`, which is a different attribute on a different
+ * node, consumed by the product's own stylesheets. Neither touches the root
+ * class, so they do not compete with this hook. `AskArianePanel` additionally
+ * sets `dark` on its own portal container; since it derives from the same
+ * palette mode it stays consistent, and it becomes redundant once this hook
+ * is in place.
  */
-const useFdsThemeScope = (containerRef: MutableRefObject<HTMLDivElement | null>) => {
-  const theme = useTheme<Theme>();
-  const isDarkMode = theme.palette.mode === 'dark';
+const useFdsThemeScope = (themeName: string | undefined): FdsThemeMode => {
+  const mode: FdsThemeMode = themeName === 'Light' ? 'light' : 'dark';
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) {
-      return;
-    }
-    container.classList.toggle('dark', isDarkMode);
-    container.classList.toggle('light', !isDarkMode);
-  }, [containerRef, isDarkMode]);
+    const root = document.documentElement;
+    root.classList.toggle('dark', mode === 'dark');
+    root.classList.toggle('light', mode === 'light');
+  }, [mode]);
+
+  return mode;
 };
 
 export default useFdsThemeScope;

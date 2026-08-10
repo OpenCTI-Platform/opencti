@@ -12,6 +12,7 @@ import themeDark, {
 } from './ThemeDark';
 import themeLight from './ThemeLight';
 import { useDocumentFaviconModifier, useDocumentThemeModifier } from '../utils/hooks/useDocumentModifier';
+import useFdsThemeScope from '../utils/hooks/useFdsThemeScope';
 import { AppThemeProvider_settings$data } from './__generated__/AppThemeProvider_settings.graphql';
 import { useExportTheme } from '../utils/ExportThemeContext';
 
@@ -115,10 +116,13 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
     return createTheme(themeBuilder(appTheme) as ThemeOptions);
   }, [themeToUse]);
 
-  // Keep the body `data-theme` attribute in sync with the MUI palette mode so
-  // that CSS files targeting `body[data-theme="dark"]` / `body[data-theme="light"]`
-  // apply on the very first render.
-  const themeMode = (themeToUse?.name ?? defaultTheme.name) === 'Filigran Light' ? 'light' : 'dark';
+  // Single defensive resolution of the theme name to a light/dark mode,
+  // owned by `useFdsThemeScope`: it writes the `.light`/`.dark` class FDS
+  // components read on the document root, and returns the mode reused here
+  // for the body `data-theme` attribute the product's own stylesheets target
+  // (`body[data-theme="dark"]`). Deriving both from one call is what keeps
+  // MUI, the product CSS and FDS from disagreeing on a custom theme name.
+  const themeMode = useFdsThemeScope(themeToUse?.name ?? defaultTheme.name);
   useDocumentThemeModifier(themeMode);
 
   return <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>;
