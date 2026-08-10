@@ -1,6 +1,21 @@
-import { Page } from '@playwright/test';
+import { Page, Locator } from '@playwright/test';
 import { expect } from '../../fixtures/baseFixtures';
 
+/**
+ * Page object for the main left navigation.
+ *
+ * Re-anchored on what the design-system Navbar actually emits rather than on
+ * implementation details of the component it replaced:
+ *  - the rail is a <nav aria-label="Main navigation">;
+ *  - leaf entries and submenu entries are real anchors, so role=link;
+ *  - a submenu parent is an accordion trigger, so role=button + aria-expanded,
+ *    which lets us open a submenu idempotently instead of the previous
+ *    "click another menu first" workaround;
+ *  - the collapse toggle is the library's own row, named Expand/Collapse.
+ *
+ * The public method names and signatures are unchanged: 20 spec files call
+ * them and this migration must not ripple into them.
+ */
 // Bounds a single attempt of the menu navigation, so a step taken on a stale layout is
 // abandoned and retried instead of consuming the whole budget of the retry loop.
 const STEP_TIMEOUT = 10_000;
@@ -9,58 +24,65 @@ const NAVIGATION_TIMEOUT = 60_000;
 export default class LeftBarPage {
   constructor(private page: Page) {}
 
+  private nav(): Locator {
+    return this.page.getByLabel('Main navigation', { exact: true });
+  }
+
   async open() {
-    await this.page.getByLabel('Main navigation', { exact: true }).hover();
-    const isOpenButtonVisible = await this.page.getByTestId('ChevronRightIcon').isVisible();
-    if (isOpenButtonVisible) {
-      await this.page.getByTestId('ChevronRightIcon').click();
+    await this.nav().hover();
+    const expandButton = this.nav().getByRole('button', { name: 'Expand', exact: true });
+    const collapseButton = this.nav().getByRole('button', { name: 'Collapse', exact: true });
+    // Wait for one of the two states to be reachable before probing with the
+    // non-waiting count(): a modal that is still closing marks the rest of the
+    // page aria-hidden, and role queries answer 0 while that lasts.
+    await expect(expandButton.or(collapseButton)).toBeVisible();
+    if (await expandButton.count() > 0) {
+      await expandButton.click();
+      // The rail animates its width; wait for the expanded-only label to settle.
+      await expect(collapseButton).toBeVisible();
     }
   }
 
   async clickOnMenu(menuName: string, subMenuItem?: string) {
-    // Fix the following issue: if the menu to open is already open, and you
-    // click on it then you are closing it and by so you do not have access
-    // to the submenus anymore.
-    // Here to be sure we are opening the menu instead of closing it, we open
-    // an other one before, as we can have only one menu open at a time.
-    const otherMenu = menuName === 'Threats' ? 'Arsenal' : 'Threats';
-    const otherMenuLocator = this.page.getByRole('menuitem', { name: otherMenu, exact: true });
-    const menuLocator = this.page.getByRole('menuitem', { name: menuName, exact: true });
+    // The same row is an accordion trigger (button) when the rail is expanded
+    // and an anchor when it is collapsed; both carry aria-expanded, so the role
+    // is the only reliable discriminator. Wait for either before probing with
+    // the non-waiting count(): a modal that is still closing marks the rest of
+    // the page aria-hidden, and role queries answer 0 while that lasts.
+    const trigger = this.nav().getByRole('button', { name: menuName, exact: true });
+    const anchor = this.nav().getByRole('link', { name: menuName, exact: true });
+    await expect(trigger.or(anchor)).toBeVisible();
 
-    if (!subMenuItem) {
-      await otherMenuLocator.click();
-      await menuLocator.click();
+    if (await trigger.count() === 0) {
+      // Collapsed rail: the parent navigates on click and its children only
+      // exist in the hover flyout, which the library portals out of the <nav>
+      // and where Radix overrides the anchors' role to menuitem.
+      if (subMenuItem) {
+        await anchor.hover();
+        const flyoutSub = this.page.getByRole('menuitem', { name: subMenuItem, exact: true });
+        await expect(flyoutSub.first()).toBeVisible();
+        await flyoutSub.first().click();
+        return;
+      }
+      await anchor.click();
       return;
     }
 
-    // Expanding a menu collapses the previous one, so two collapses are animated at once and
-    // the navigation container overflows, scrolls, then snaps back when the animation ends.
-    // A sub menu item can therefore move between the actionability check and the click, and
-    // the click silently lands on the neighbouring row without navigating anywhere.
-    // Retry the whole sequence - reopening the menu from a known state on each attempt -
-    // until the navigation actually happened.
-    const subMenuItemLocator = this.page.getByRole('menuitem', { name: subMenuItem, exact: true });
-    await expect(async () => {
-      await otherMenuLocator.click({ timeout: STEP_TIMEOUT });
-      await menuLocator.click({ timeout: STEP_TIMEOUT });
-      await expect(subMenuItemLocator).toBeVisible({ timeout: STEP_TIMEOUT });
-
-      const href = await subMenuItemLocator.getAttribute('href', { timeout: STEP_TIMEOUT });
-      if (!href) {
-        throw new Error(`The "${subMenuItem}" menu item is expected to be a link`);
-      }
-      // Resolved against the current location so an absolute href is compared on equal terms.
-      const link = new URL(href, this.page.url()).pathname;
-
-      await subMenuItemLocator.click({ timeout: STEP_TIMEOUT });
-      const { pathname } = new URL(this.page.url());
-      const hasNavigated = pathname === link || pathname.startsWith(`${link}/`);
-      expect(hasNavigated, `Expected to navigate to "${link}" but current path is "${pathname}"`).toBeTruthy();
-    }).toPass({ timeout: NAVIGATION_TIMEOUT });
+    // Opening an already-open submenu would close it, which is what forced the
+    // previous "open another menu first" dance. aria-expanded lets us simply
+    // not click when it is already open.
+    if (await trigger.getAttribute('aria-expanded') !== 'true') {
+      await trigger.click();
+    }
+    if (subMenuItem) {
+      const sub = this.nav().getByRole('link', { name: subMenuItem, exact: true });
+      await expect(sub).toBeVisible();
+      await sub.click();
+    }
   }
 
   async getSubItem(subMenuItem: string) {
-    await this.page.getByLabel(subMenuItem, { exact: true }).click();
+    await this.nav().getByRole('link', { name: subMenuItem, exact: true }).click();
   }
 
   async expectBreadcrumb(...items: string[]) {

@@ -27,14 +27,26 @@ jobs:
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
     - name: Frontend install and build
+      # FDS_GIT_TOKEN authenticates the @filigran/design-system git dependency.
+      # It is passed by name (-e FDS_GIT_TOKEN, no value) so it never appears in
+      # the rendered workflow, and expanded inside the container: the sh -c body
+      # must stay single-quoted or the host would expand it onto the docker
+      # command line.
+      env:
+        FDS_GIT_TOKEN: ${{ secrets.FDS_GIT_TOKEN }}
       run: |
         docker run  \
           --name frontend-build \
           -v ${{ github.workspace }}:/home/workspace \
+          -e FDS_GIT_TOKEN \
           node:22-alpine3.23 \
           sh -c 'set -eux
+            apk --no-cache add git
             npm install -g corepack
             cd /home/workspace/opencti-platform/opencti-front
+            set +x
+            git config --global url."https://x-access-token:${FDS_GIT_TOKEN}@github.com/".insteadOf "https://github.com/"
+            set -x
             yarn install
             yarn build
             '
