@@ -97,7 +97,7 @@ const validateAction = (action: z.infer<typeof workflowActionConfigSchema>, sour
   if (definition.paramsSchema) {
     const result = definition.paramsSchema.safeParse(action.params);
     if (!result.success) {
-      throw ValidationError(`Invalid params for action '${action.type}' in ${source}`, { errors: result.error.issues });
+      throw ValidationError(`Invalid params for action '${action.type}' in ${source}`, undefined, { errors: result.error.issues });
     }
   }
 };

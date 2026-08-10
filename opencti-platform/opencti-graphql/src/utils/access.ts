@@ -59,6 +59,7 @@ export const KNOWLEDGE_KNDISSEMINATION = 'KNOWLEDGE_KNDISSEMINATION';
 export const KNOWLEDGE_KNSHAREFILTERS = 'KNOWLEDGE_KNSHAREFILTERS';
 export const VIRTUAL_ORGANIZATION_ADMIN = 'VIRTUAL_ORGANIZATION_ADMIN';
 export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
+export const SETTINGS_SETAUTH = 'SETTINGS_SETAUTH';
 export const SETTINGS_SECURITYACTIVITY = 'SETTINGS_SECURITYACTIVITY';
 export const SETTINGS_SETCUSTOMIZATION = 'SETTINGS_SETCUSTOMIZATION';
 export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
@@ -426,8 +427,8 @@ export const EXPIRATION_MANAGER_USER: AuthUser = {
   id: EXPIRATION_MANAGER_USER_UUID,
   internal_id: EXPIRATION_MANAGER_USER_UUID,
   individual_id: undefined,
-  name: 'EXPIRATION MANAGER',
-  user_email: 'EXPIRATION MANAGER',
+  name: 'EXPIRATION SCHEDULER',
+  user_email: 'EXPIRATION SCHEDULER',
   origin: { user_id: EXPIRATION_MANAGER_USER_UUID, socket: 'internal' },
   roles: [ADMINISTRATOR_ROLE],
   groups: [],
@@ -864,6 +865,12 @@ export const isUserCanAccessStoreElement = async (context: AuthContext, user: Au
   return elements.length === 1;
 };
 
+/**
+ * Check whether a user can access a STIX element using already-resolved platform settings.
+ *
+ * This is the synchronous variant intended for batch usage (for example in loops over
+ * multiple STIX objects) to avoid refetching settings for each element.
+ */
 export const checkUserCanAccessStixElement = (context: AuthContext, user: AuthUser, instance: StixObject, hasPlatformOrg: boolean) => {
   // If user have bypass, grant access to all
   if (isBypassUser(user)) {
@@ -897,6 +904,13 @@ export const checkUserCanAccessStixElement = (context: AuthContext, user: AuthUs
   return organizationAllowed || (restricted_members.length > 0 && authorizedMemberAllowed);
 };
 
+/**
+ * Asynchronous convenience wrapper around checkUserCanAccessStixElement.
+ *
+ * This variant resolves platform settings from cache before
+ * delegating to the synchronous checker. Do not pass this async function directly
+ * to Array.filter; resolve results first (for example with Promise.all).
+ */
 export const isUserCanAccessStixElement = async (context: AuthContext, user: AuthUser, instance: StixObject) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
   const hasPlatformOrg = !!settings.platform_organization;

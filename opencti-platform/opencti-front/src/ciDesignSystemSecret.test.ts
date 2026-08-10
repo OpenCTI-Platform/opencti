@@ -77,6 +77,46 @@ const collectBuildSteps = async (): Promise<BuildStep[]> => {
 
 const buildSteps = await collectBuildSteps();
 
+/**
+ * Second enumeration, for the other half of the call graph. A reusable workflow
+ * only sees the secrets its caller hands it: `secrets: inherit`, or an explicit
+ * mapping. Replacing `inherit` with a mapping that lists every secret but this
+ * one leaves `secrets.FDS_GIT_TOKEN` empty, and the install fails far from the
+ * workflow that caused it. See FDS-WORKAROUND #1 in fds-migration/.
+ */
+
+const SECRET_NAME = 'FDS_GIT_TOKEN';
+
+/** Splits a workflow's `jobs:` mapping into its individual job bodies. */
+const splitJobs = (content: string): string[] => content
+  .split(/^ {2}(?=[A-Za-z0-9_-]+:\s*$)/m)
+  .slice(1);
+
+interface WorkflowFile {
+  name: string;
+  content: string;
+}
+
+const workflows: WorkflowFile[] = await Promise.all(
+  (await listYamlFiles(path.join(CI_ROOT, 'workflows'))).map(async (file) => ({
+    name: path.basename(file),
+    content: await readFile(file, 'utf8'),
+  })),
+);
+
+/** Reusable workflows that read the secret and must therefore declare it. */
+const consumers = workflows.filter(({ content }) => content.includes(`secrets.${SECRET_NAME}`)
+  && content.includes('workflow_call:'));
+
+/** Every `uses: ./.github/workflows/<consumer>` job, with the job body around it. */
+const callSites = workflows.flatMap(({ name, content }) => splitJobs(content)
+  .flatMap((job) => {
+    const called = job.match(/^\s*uses:\s*\.\/\.github\/workflows\/(\S+)\s*$/m)?.[1];
+    return called && consumers.some((c) => c.name === called)
+      ? [{ caller: name, called, job }]
+      : [];
+  }));
+
 describe('CI wiring for the private design-system dependency', () => {
   it('finds the image build steps to check', () => {
     expect(buildSteps.length).toBeGreaterThan(0);
@@ -87,5 +127,19 @@ describe('CI wiring for the private design-system dependency', () => {
     const reachesInstall = target === undefined || target.startsWith('builder-front');
     const needsSecret = reachesInstall && await dockerfileNeedsSecret(file);
     expect(body.includes(`${SECRET_ID}=`)).toBe(needsSecret);
+  });
+
+  it('finds the reusable workflows and call sites to check', () => {
+    expect(consumers.length).toBeGreaterThan(0);
+    expect(callSites.length).toBeGreaterThan(0);
+  });
+
+  it.each(consumers)('$name declares the secret it reads', ({ content }) => {
+    const workflowCall = content.slice(content.indexOf('workflow_call:'), content.search(/^jobs:/m));
+    expect(workflowCall).toContain(`${SECRET_NAME}:`);
+  });
+
+  it.each(callSites)('$caller passes the secret to $called', ({ job }) => {
+    expect(/secrets:\s*inherit/.test(job) || job.includes(`${SECRET_NAME}:`)).toBe(true);
   });
 });

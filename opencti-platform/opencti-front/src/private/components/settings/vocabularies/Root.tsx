@@ -4,16 +4,19 @@ import Loader from '../../../../components/Loader';
 import LabelsVocabulariesMenu from '../LabelsVocabulariesMenu';
 import useGranted, {
   SETTINGS_SETCASETEMPLATES,
+  SETTINGS_SETCUSTOMIZATION,
   SETTINGS_SETKILLCHAINPHASES,
   SETTINGS_SETLABELS,
   SETTINGS_SETSTATUSTEMPLATES,
   SETTINGS_SETVOCABULARIES,
 } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
 import useSettingsFallbackUrl from '../../../../utils/hooks/useSettingsFallbackUrl';
 
 const Security = lazy(() => import('../../../../utils/Security'));
 const CaseTemplates = lazy(() => import('../case_templates/CaseTemplates'));
 const CaseTemplateTasks = lazy(() => import('../case_templates/CaseTemplateTasks'));
+const CustomFields = lazy(() => import('../custom_fields/CustomFields'));
 const KillChainPhases = lazy(() => import('../KillChainPhases'));
 const Labels = lazy(() => import('../Labels'));
 const StatusTemplates = lazy(() => import('../status_templates/StatusTemplates'));
@@ -37,6 +40,8 @@ const VocabulariesRedirect = () => {
 
 const RootVocabularies = () => {
   const fallbackUrl = useSettingsFallbackUrl();
+  const { isFeatureEnable } = useHelper();
+  const isCustomFieldsFeatureEnabled = isFeatureEnable('CUSTOM_FIELDS');
 
   return (
     <>
@@ -94,6 +99,16 @@ const RootVocabularies = () => {
               </Security>
             )}
           />
+          {isCustomFieldsFeatureEnabled && (
+            <Route
+              path="/custom_fields"
+              element={(
+                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+                  <CustomFields />
+                </Security>
+              )}
+            />
+          )}
           <Route
             path="/fields"
             element={(

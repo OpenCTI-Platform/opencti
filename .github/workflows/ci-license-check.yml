@@ -7,6 +7,10 @@ on:
         description: "Reference of the branch or commit sha"
         type: string
         default: ${{ github.sha }}
+    secrets:
+      FDS_GIT_TOKEN:
+        description: "Read token for the private @filigran/design-system git dependency"
+        required: false
 
 jobs:
   license-check:
@@ -15,7 +19,7 @@ jobs:
     steps:
 
     - name: OpenCTI checkout
-      uses: actions/checkout@v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         ref: ${{ inputs.checkout_ref }}
 

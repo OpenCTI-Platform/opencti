@@ -5,10 +5,12 @@ import {
   convertRelationRefsFilterKeys,
   extractFilterGroupValues,
   replaceFilterKey,
-  replaceEnrichValuesInFilters
+  replaceEnrichValuesInFilters,
 } from '../../../src/utils/filtering/filtering-utils';
 import type { FilterGroup } from '../../../src/generated/graphql';
 import { ME_FILTER_VALUE } from '../../../src/utils/filtering/filtering-constants';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import { countAllThings } from '../../../src/database/middleware-loader';
 
 describe('Filtering utils', () => {
   it('should check a filter syntax', async () => {
@@ -144,7 +146,7 @@ describe('Filtering utils', () => {
             { key: ['value'], values: ['bbb'] },
           ],
           filterGroups: [],
-        }
+        },
       ],
     } as FilterGroup;
     const expectedFilter = {
@@ -162,7 +164,7 @@ describe('Filtering utils', () => {
             { key: ['value'], values: ['bbb'] },
           ],
           filterGroups: [],
-        }
+        },
       ],
     };
     const newFilter = replaceFilterKey(filterGroup, 'oldKey', 'newKey');
@@ -192,7 +194,7 @@ describe('Filtering utils', () => {
                 { key: ['located-at', 'name', 'externalReferences'], values: ['aaa'] },
               ],
               filterGroups: [],
-            }
+            },
           ],
         },
       ],
@@ -220,9 +222,9 @@ describe('Filtering utils', () => {
                 { key: ['rel_located-at.*', 'name', 'rel_external-reference.*'], values: ['aaa'] },
               ],
               filterGroups: [],
-            }
+            },
           ],
-        }
+        },
       ],
     };
     const newFilter = convertRelationRefsFilterKeys(filterGroup);
@@ -251,8 +253,8 @@ describe('Filtering utils', () => {
             { key: ['entity_type', 'parent_types'], values: ['City', 'Region'], operator: 'not_eq', mode: 'and' },
             { key: 'objectLabel', values: ['label1'] },
             { key: 'objectMarking', values: ['marking1'] },
-          ]
-        }
+          ],
+        },
       ],
     } as FilterGroup;
     expect(extractFilterGroupValues(filterGroup2, ['entity_type', 'objectMarking'])).toStrictEqual(['Report', 'City', 'Region', 'marking1']);
@@ -269,8 +271,8 @@ describe('Filtering utils', () => {
             { key: ['entity_type'], values: ['City', 'Region'], operator: 'not_eq', mode: 'and' },
             { key: ['objectLabel'], values: ['label1'] },
             { key: 'objectMarking', values: ['marking1'] },
-          ]
-        }
+          ],
+        },
       ],
     } as FilterGroup;
     expect(extractFilterGroupValues(filterGroup3, ['entity_type'], true)).toStrictEqual(['YYY', 'label1', 'marking1']);
@@ -292,8 +294,8 @@ describe('Filtering utils', () => {
                 { key: 'id', values: ['id1', 'id2'] },
               ],
             },
-          ]
-        }
+          ],
+        },
       ],
     } as FilterGroup;
     expect(extractFilterGroupValues(filterGroup4, ['objectLabel', 'regardingOf'])).toStrictEqual(['label1', 'id1', 'id2']);
@@ -313,8 +315,8 @@ describe('Filtering utils', () => {
                   filters: [
                     { key: 'objectLabel', values: ['label1', 'label2'] },
                     { key: 'objectMarking', values: ['marking1'] },
-                  ]
-                }
+                  ],
+                },
               ] },
           ],
           operator: 'eq',
@@ -347,7 +349,7 @@ describe('Filtering utils', () => {
                 { key: 'objectLabel', values: ['label3'] },
               ],
               filterGroups: [],
-            }
+            },
           ],
           operator: 'eq',
           mode: 'or' },
@@ -402,5 +404,19 @@ describe('Filtering utils', () => {
     } as FilterGroup;
     const finalFilter = replaceEnrichValuesInFilters(filterGroup, user_id, { label1: 'label1-id', label3: 'label3-id' });
     expect(finalFilter).toEqual(expectedFilter);
+  });
+
+  it('should reject a filter group carrying an unsupported operator, provided as a raw JSON string', async () => {
+    const filtersString = JSON.stringify({
+      mode: 'and',
+      filters: [
+        { key: ['name'], values: ['return true;'], operator: 'internal_script' },
+      ],
+      filterGroups: [],
+    });
+
+    await expect(
+      countAllThings(testContext, ADMIN_USER, { filters: JSON.parse(filtersString) }),
+    ).rejects.toThrow('Not supported filter operator');
   });
 });

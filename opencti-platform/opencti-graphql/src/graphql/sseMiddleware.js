@@ -28,6 +28,7 @@ import {
   BYPASS,
   computeUserMemberAccessIds,
   isUserCanAccessStixElement,
+  isUserCanAccessStreamUpdateEvent,
   isUserHasCapability,
   isUserInPlatformOrganization,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
@@ -674,19 +675,27 @@ const createSseMiddleware = () => {
                     const isPreviouslyVisible = await isStixMatchFilterGroup(context, user, previous, streamFilters, eventContext);
                     if (isPreviouslyVisible && !isCurrentlyVisible && publishDeletion) { // No longer visible
                       if (isOriginVisible) {
-                        await client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
+                        // If the user no longer has access to the entity, we need to remove the context
+                        // and replace the (now-restricted) current data with the previous, already-visible
+                        // document, to avoid leaking the post-update state (e.g. new markings, changed fields)
+                        const deleteEventData = { ...eventData, data: previous, context: {} };
+                        await client.sendEvent(eventId, EVENT_TYPE_DELETE, deleteEventData);
                         cache.set(stix.id, 'hit');
                       }
                     } else if (!isPreviouslyVisible && isCurrentlyVisible) { // Newly visible
                       if (isOriginVisible) {
                         const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
                         if (isValidResolution) {
-                          await client.sendEvent(eventId, EVENT_TYPE_CREATE, eventData);
+                          // If the user didn't have access to the element before the update
+                          // we need to remove the context from the create event to avoid leaking information on the update context
+                          const createEventData = { ...eventData, context: {} };
+                          await client.sendEvent(eventId, EVENT_TYPE_CREATE, createEventData);
                           cache.set(stix.id, 'hit');
                         }
                       }
                     } else if (isCurrentlyVisible) { // Just an update
-                      if (isOriginVisible) {
+                      const userHasAccessToUpdateEvent = isOriginVisible ? await isUserCanAccessStreamUpdateEvent(user, eventData) : false;
+                      if (isOriginVisible && userHasAccessToUpdateEvent) {
                         const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
                         if (isValidResolution) {
                           await client.sendEvent(eventId, event, eventData);

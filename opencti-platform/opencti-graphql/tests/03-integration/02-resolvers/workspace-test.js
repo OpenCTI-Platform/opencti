@@ -103,6 +103,15 @@ const EXPORT_WIDGET_QUERY = gql`
   }
 `;
 
+const IMPORT_WIDGET_QUERY = gql`
+  mutation workspaceImportWidget($id: ID!, $input: ImportConfigurationInput!) {
+    workspaceWidgetConfigurationImport(id: $id, input: $input) {
+      id
+      manifest
+    }
+  }
+`;
+
 describe('Workspace resolver standard behavior', () => {
   let workspaceInternalId;
   const workspaceName = 'an investigation';
@@ -542,14 +551,7 @@ describe('Workspace resolver standard behavior', () => {
     const emptyDashboardManifest = toB64({ widgets: {}, config: {} });
 
     const queryResult = await queryAsAdmin({
-      query: gql`
-        mutation workspaceImportWidget($id: ID!, $input: ImportConfigurationInput!) {
-          workspaceWidgetConfigurationImport(id: $id, input: $input) {
-            id
-            manifest
-          }
-        }
-      `,
+      query: IMPORT_WIDGET_QUERY,
       variables: {
         id: workspaceId,
         input: {
@@ -574,13 +576,7 @@ describe('Workspace resolver standard behavior', () => {
     const emptyDashboardManifest = toB64({ widgets: {}, config: {} });
 
     const queryResult = await queryAsAdmin({
-      query: gql`
-        mutation workspaceImportWidget($id: ID!, $input: ImportConfigurationInput!) {
-          workspaceWidgetConfigurationImport(id: $id, input: $input) {
-            manifest
-          }
-        }
-      `,
+      query: IMPORT_WIDGET_QUERY,
       variables: {
         id: workspaceInternalId,
         input: {
@@ -601,13 +597,7 @@ describe('Workspace resolver standard behavior', () => {
     const emptyDashboardManifest = toB64({ widgets: {}, config: {} });
 
     const queryResult = await queryAsAdmin({
-      query: gql`
-        mutation workspaceImportWidget($id: ID!, $input: ImportConfigurationInput!) {
-          workspaceWidgetConfigurationImport(id: $id, input: $input) {
-            manifest
-          }
-        }
-      `,
+      query: IMPORT_WIDGET_QUERY,
       variables: {
         id: workspaceInternalId,
         input: {

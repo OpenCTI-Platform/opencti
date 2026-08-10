@@ -1,3 +1,4 @@
+import type { GraphQLError } from 'graphql';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { Client as ElkClient } from '@elastic/elasticsearch';
 import { Client as OpenClient } from '@opensearch-project/opensearch';
@@ -48,7 +49,17 @@ import {
   WRITE_PLATFORM_INDICES,
 } from './utils';
 import conf, { booleanConf, extendedErrors, loadCert, logApp, logMigration } from '../config/conf';
-import { ComplexSearchError, ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
+import {
+  ClientAbortError,
+  ComplexSearchError,
+  ConfigurationError,
+  DatabaseError,
+  EngineShardsError,
+  FunctionalError,
+  LockTimeoutError,
+  TYPE_LOCK_ERROR,
+  UnsupportedError,
+} from '../config/errors';
 import {
   isStixRefRelationship,
   isStixRefUnidirectionalRelationship,
@@ -579,6 +590,22 @@ export const isTransitoryError = (error: any): boolean => {
     return true;
   }
   return false;
+};
+
+// covers both engine clients: node-fetch's AbortError (ElkClient) and
+// OpenSearch's RequestAbortedError.
+export const isClientAbortError = (err: any): boolean => {
+  return err instanceof AbortError || err?.name === 'AbortError' || err?.name === 'RequestAbortedError';
+};
+
+// Use this instead of throwing DatabaseError directly when catching an error
+// from an abort-signal-aware engine call, so a client abort isn't misclassified
+// as a genuine engine failure.
+export const wrapEngineError = (reason: string, err: any, data: Record<string, any> = {}): GraphQLError => {
+  if (isClientAbortError(err)) {
+    return ClientAbortError(reason, { cause: err, ...data });
+  }
+  return DatabaseError(reason, { cause: err, ...data });
 };
 
 export const retryElOperations = async (operation: () => Promise<any>): Promise<any> => {
@@ -1993,7 +2020,7 @@ export const elFindByIds = async <T extends BasicStoreBase>(
     logApp.debug('[SEARCH] elInternalLoadById', { query });
     const searchType = `${ids} (${types ? (types as string[]).join(', ') : 'Any'})`;
     const data = await elRawSearch(context, user, searchType, query).catch((err) => {
-      throw DatabaseError('Find direct ids fail', { cause: err, query, searchType });
+      throw wrapEngineError('Find direct ids fail', err, { query, searchType });
     });
     const elements = data.hits.hits;
     if (elements.length > workingIds.length) {
@@ -2691,7 +2718,7 @@ export const buildLocalMustFilter = (validFilter: any) => {
               script: {
                 script: {
                   source: `
-                    def fieldValues = doc['${buildFieldForScriptQuery(headKey)}'];
+                    def fieldValues = doc[params.field];
                     if (fieldValues == null || fieldValues.length == 0) return false;
                     def filterValues = params.values;
                     if (params.mode == 'and') {
@@ -2702,6 +2729,7 @@ export const buildLocalMustFilter = (validFilter: any) => {
                     return false;
                   `,
                   params: {
+                    field: buildFieldForScriptQuery(headKey),
                     values,
                     mode: localFilterMode,
                   },
@@ -2717,9 +2745,10 @@ export const buildLocalMustFilter = (validFilter: any) => {
             });
           } else if (operator === 'wildcard' || operator === 'not_wildcard') {
             const targets = operator === 'wildcard' ? valuesFiltering : noValuesFiltering;
+            const val = specialElasticCharsEscape(values[i].toString());
             targets.push({
               query_string: {
-                query: values[i] === '*' ? values[i] : `"${values[i].toString()}"`,
+                query: values[i] === '*' ? values[i] : `"${val}"`,
                 fields: arrayKeys,
               },
             });
@@ -2753,16 +2782,15 @@ export const buildLocalMustFilter = (validFilter: any) => {
                 fields: arrayKeys.map((k) => `${k}.keyword`),
               },
             });
-          } else if (operator === 'script' || operator === 'internal_script') {
-            if (operator === 'script' && !isEsScriptFilterEnabled()) {
+          } else if (operator === 'script') {
+            if (!isEsScriptFilterEnabled()) {
               throw UnsupportedError('Filter script is not allowed', { filter: validFilter });
-            } else {
-              valuesFiltering.push({
-                script: {
-                  script: values[i].toString(),
-                },
-              });
             }
+            valuesFiltering.push({
+              script: {
+                script: values[i].toString(),
+              },
+            });
           } else if (operator === 'search') {
             const shouldSearch = elGenerateFieldTextSearchShould(values[i].toString(), arrayKeys);
             const bool = {
@@ -2772,7 +2800,7 @@ export const buildLocalMustFilter = (validFilter: any) => {
               },
             };
             valuesFiltering.push(bool);
-          } else { // range operators
+          } else if (RANGE_OPERATORS.includes(operator)) { // range operators
             if (arrayKeys.length > 1) {
               throw UnsupportedError('Range filter must have only one field', { keys: arrayKeys });
             }
@@ -2781,6 +2809,8 @@ export const buildLocalMustFilter = (validFilter: any) => {
                 [headKey]: { [operator]: values[i] },
               },
             });
+          } else {
+            throw UnsupportedError('Not supported filter operator', { filter: validFilter, filterOperator: operator });
           }
         }
       }
@@ -3086,6 +3116,11 @@ type QueryBodyBuilderOpts = ProcessSearchArgs & BuildDraftFilterOpts & {
   endDate?: any;
   dateAttribute?: string | null;
   includeAuthorities?: boolean | null;
+  /**
+   * Trusted, internal-only raw Painless script clauses (ANDed with the rest of the query).
+   * MUST NEVER be populated from user/GraphQL/JSON input.
+   */
+  internalScriptFilters?: string[];
 };
 const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options: QueryBodyBuilderOpts) => {
   const {
@@ -3109,6 +3144,7 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
     dateAttribute = null,
     includeAuthorities = false,
     noRegardingOfFilterIdsCheck = false,
+    internalScriptFilters = [],
   } = options;
   const elFindByIdsToMap = async (c: AuthContext, u: AuthUser, i: string[], o: any) => {
     return elFindByIds<BasicStoreObject>(c, u, i, { ...o, toMap: true }) as Promise<Record<string, BasicStoreObject>>;
@@ -3121,6 +3157,12 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
   const accessMust = markingRestrictions.must;
   const accessMustNot = markingRestrictions.must_not;
   const mustFilters = [];
+  // Trusted, internal-only raw Painless script clauses. These never go through the filter
+  // grammar (buildLocalMustFilter / checkAndConvertFilters): they can only be populated by
+  // hardcoded backend TS code, never by user/GraphQL/JSON input.
+  internalScriptFilters.forEach((source) => {
+    mustFilters.push({ script: { script: { source } } });
+  });
   // Add special keys to filters
   const specialFiltersContent: any = [];
   if (ids.length > 0 || startDate || endDate || (types !== null && types.length > 0)) {
@@ -3360,7 +3402,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
   } catch (err: any) {
     const root_cause = err.meta?.body?.error?.caused_by?.type;
     if (root_cause === TOO_MANY_CLAUSES) throw ComplexSearchError();
-    throw DatabaseError('Fail to execute engine pagination', { cause: err, root_cause, query, queryArguments: options });
+    throw wrapEngineError('Fail to execute engine pagination', err, { root_cause, query, queryArguments: options });
   }
 };
 export type RepaginateOpts<T extends BasicStoreBase> = PaginateOpts & {
@@ -3500,7 +3542,7 @@ export const elCardinalityCount = async (
   };
   const searchType = `Aggregations (${field})`;
   const cardinalityData = await elRawSearch(context, user, searchType, cardinalityQuery).catch((err) => {
-    throw DatabaseError('Cardinality computing fail', { cause: err, cardinalityQuery });
+    throw wrapEngineError('Cardinality computing fail', err, { cardinalityQuery });
   });
   return cardinalityData.aggregations.cardinality_count.value;
 };
@@ -3893,7 +3935,7 @@ export const elAggregationsList = async (
   };
   const searchType = `Aggregations (${aggregations.map((agg) => agg.field)?.join(', ')})`;
   const data = await elRawSearch(context, user, searchType, query).catch((err) => {
-    throw DatabaseError('Aggregations computing list fail', { cause: err, query });
+    throw wrapEngineError('Aggregations computing list fail', err, { query });
   });
   const aggsMap = Object.keys(data.aggregations);
   const aggsValues = R.uniq(R.flatten(aggsMap.map((agg) => data.aggregations[agg].buckets?.map((b: { key: string }) => b.key))));
@@ -4125,7 +4167,7 @@ export const elUpdate = async (
         () => (engine as OpenClient).update(updateRequest),
       );
     } catch (err: any) {
-      throw DatabaseError('Update indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
+      throw wrapEngineError('Update indexing fail', err, { documentId, entityType, ...extendedErrors({ documentBody }) });
     }
   };
   return retryElOperations(updateOperation);

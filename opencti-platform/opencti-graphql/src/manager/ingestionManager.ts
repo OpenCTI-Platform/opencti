@@ -289,7 +289,8 @@ export const rssExecutor = async (context: AuthContext, turndownService: Turndow
               }
             }
             // In case of error we need also to take in account the min_interval_minutes with last_execution_date update.
-            patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() }).catch((reason) => logApp.error('ERROR', { cause: reason }));
+            patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() })
+              .catch((reason) => logApp.error('[OPENCTI-MODULE] INGESTION Rss, error on updating ingestion status', { cause: reason }));
           });
         ingestionPromises.push(ingestionPromise);
       }
@@ -511,7 +512,7 @@ export const taxiiExecutor = async (context: AuthContext) => {
             });
           })
           .catch(async (e: Error) => {
-            logApp.info('[OPENCTI-MODULE] INGESTION - Taxii handler rejected', { error: e.message, name: ingestion.name });
+            logApp.warn('[OPENCTI-MODULE] INGESTION - Taxii handler rejected', { cause: e, name: ingestion.name });
             try {
               await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now(), last_execution_status: 'error' });
             } catch (patchErr) {
@@ -619,9 +620,10 @@ export const csvExecutor = async (context: AuthContext) => {
       } else {
         const ingestionPromise = csvDataHandler(context, ingestion)
           .catch((e) => {
-            logApp.warn('[OPENCTI-MODULE] INGESTION - Csv ingestion execution', { cause: e.message, name: ingestion.name });
+            logApp.warn('[OPENCTI-MODULE] INGESTION - Csv ingestion execution', { cause: e, name: ingestion.name });
             // In case of error we need also to take in account the min_interval_minutes with last_execution_date update.
-            patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() }).catch((reason) => logApp.error('ERROR', { cause: reason }));
+            patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() })
+              .catch((reason) => logApp.error('[OPENCTI-MODULE] INGESTION Csv, Error on updating ingestion status in database', { cause: reason }));
           });
         ingestionPromises.push(ingestionPromise);
       }
@@ -659,26 +661,33 @@ export const jsonExecutor = async (context: AuthContext) => {
     if (isMustExecuteIteration(ingestion.last_execution_date, ingestion.scheduling_period)) {
       const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
       if (messages_number === 0) { // If no more ingestion to do
-        logApp.info(`[OPENCTI-MODULE] Executing Json ingestion for ${ingestion.name}`);
-        const { objects, variables, nextExecutionState } = await executeJsonQuery(context, ingestion, {
-          timeout: FEED_REQUEST_TIMEOUT,
-        });
-        logApp.info(`[OPENCTI-MODULE] Json ingestion execution for ${objects.length} items`);
-        // Push the bundle to absorption queue if required
-        if (objects.length > 0) {
-          const bundle: StixBundle = {
-            id: `bundle--${uuidv4()}`,
-            spec_version: '2.1',
-            type: 'bundle',
-            objects,
-          };
-          await pushBundleToConnectorQueue(context, ingestion, bundle);
+        try {
+          logApp.info(`[OPENCTI-MODULE] Executing Json ingestion for ${ingestion.name}`);
+          const { objects, variables, nextExecutionState } = await executeJsonQuery(context, ingestion, {
+            timeout: FEED_REQUEST_TIMEOUT,
+          });
+          logApp.info(`[OPENCTI-MODULE] Json ingestion execution for ${objects.length} items`);
+          // Push the bundle to absorption queue if required
+          if (objects.length > 0) {
+            const bundle: StixBundle = {
+              id: `bundle--${uuidv4()}`,
+              spec_version: '2.1',
+              type: 'bundle',
+              objects,
+            };
+            await pushBundleToConnectorQueue(context, ingestion, bundle);
+          }
+          // Save new state for next execution
+          const ingestionState = mergeQueryState(ingestion.query_attributes, variables, nextExecutionState);
+          const state = { ingestion_json_state: ingestionState, last_execution_date: now() };
+          await patchJsonIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
+          await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state: ingestionState });
+        } catch (e) {
+          logApp.warn('[OPENCTI-MODULE] INGESTION - Json ingestion execution', { cause: e, name: ingestion.name });
+          // In case of error we need also to take in account the min_interval_minutes with last_execution_date update.
+          await patchJsonIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() })
+            .catch((reason) => logApp.error('[OPENCTI-MODULE] INGESTION Json, error on updating status', { cause: reason }));
         }
-        // Save new state for next execution
-        const ingestionState = mergeQueryState(ingestion.query_attributes, variables, nextExecutionState);
-        const state = { ingestion_json_state: ingestionState, last_execution_date: now() };
-        await patchJsonIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
-        await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state: ingestionState });
       } else {
         // Update the state
         await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { buffering: true, messages_size });

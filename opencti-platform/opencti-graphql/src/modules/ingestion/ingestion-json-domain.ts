@@ -78,7 +78,18 @@ const buildQueryObject = (queryParamsAttributes: Array<DataParam> | undefined, r
   return params;
 };
 
-const replaceVariables = (body: string, variables: Record<string, object | string>) => {
+/**
+ * Normalises the result of getValueFromPath (typed as any) to a string or null.
+ * JSONPath can return an array — in that case the first element is used.
+ * Non-string, non-array values (objects, numbers, …) are rejected (return null).
+ */
+const toUrlString = (value: unknown): string | null => {
+  const candidate = Array.isArray(value) ? value[0] : value;
+  return typeof candidate === 'string' ? candidate : null;
+};
+
+const replaceVariables = (body: string | undefined | null, variables: Record<string, object | string>) => {
+  if (body == null) return '';
   const regex = /\$\w+/g;
   return body.replace(regex, (match) => {
     const variableName = match.substring(1);
@@ -140,11 +151,21 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
     timeout,
     responseType: 'json',
     certificates,
+    beforeRedirect: (options) => {
+      // axios delegates redirect handling to the `follow-redirects` package, which enriches
+      // the options object with a `href` field (in addition to protocol/hostname/port/path)
+      // before invoking beforeRedirect. See follow-redirects `preservedUrlFields` / `spreadUrlObject`.
+      if (typeof options.href === 'string') {
+        verifyIngestionUri(options.href);
+      }
+    },
   };
   const httpClient = getHttpClient(httpClientOptions);
   // Prepare query params
   const queryVariables = filterVariablesForAttributes(ingestion.query_attributes ?? [], variables, 'query_param');
   const parsedUri = replaceVariables(ingestion.uri, queryVariables);
+  // Re-validate after variable substitution to prevent placeholder bypass of deny list
+  verifyIngestionUri(parsedUri);
   // Prepare body
   const bodyVariables = filterVariablesForAttributes(ingestion.query_attributes ?? [], variables, 'body');
   const parsedBody = replaceVariables(ingestion.body, bodyVariables);
@@ -167,8 +188,9 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   let nextExecutionState = buildQueryObject(ingestion.query_attributes, { ...requestData, ...responseHeaders }, false);
   // region Try to paginate with next page style
   if (ingestion.pagination_with_sub_page && isNotEmptyField(ingestion.pagination_with_sub_page_attribute_path)) {
-    let url = getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, requestData);
+    let url = toUrlString(getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, requestData));
     while (isNotEmptyField(url) && (maxResults === 0 || objects.length < maxResults)) {
+      verifyIngestionUri(url);
       logApp.info(`> Sub query: ${url}`);
       await wait(100); // Wait 100 ms between 2 calls
       const { data: paginationData } = await httpClient.call({
@@ -183,7 +205,7 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
       if (paginationObjects.length > 0) {
         objects = objects.concat(paginationObjects);
       }
-      url = getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, paginationData);
+      url = toUrlString(getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, paginationData));
     }
   }
   // endregion
@@ -348,6 +370,9 @@ export const addIngestionJson = async (context: AuthContext, user: AuthUser, inp
 };
 
 export const editIngestionJson = async (context: AuthContext, user: AuthUser, id: string, input: IngestionJsonAddInput) => {
+  if (input.uri) {
+    verifyIngestionUri(input.uri);
+  }
   let authenticationValue = input.authentication_value;
   if (authenticationValue && input.authentication_type) {
     const { authentication_value: encrypted_value } = await findById(context, user, id);

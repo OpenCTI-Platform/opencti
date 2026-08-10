@@ -32,6 +32,16 @@ export interface CustomFieldEntityTypeSetting {
   default_value?: string;
 }
 
+// Per-entity-type settings of a custom field definition.
+// `mandatory` and `default_value` are defined for each entity type the field is
+// attached to (US.2), not globally on the definition. Field-intrinsic constraints
+// (field_type, min/max, select_options) stay global on the definition.
+export interface CustomFieldEntityTypeSetting {
+  entity_type: string;
+  mandatory: boolean;
+  default_value?: string;
+}
+
 export interface BasicStoreEntityCustomFieldDefinition extends BasicStoreEntity {
   name: string;
   description: string;

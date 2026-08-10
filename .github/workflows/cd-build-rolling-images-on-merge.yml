@@ -40,13 +40,18 @@ jobs:
       - name: Load builder image
         run: docker load --input /tmp/opencti-builder.tar
 
+      - name: Use client-python in OpenCTI from same branch
+        env:
+          CHECKOUT_REF: ${{ github.sha }}
+        run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@'"$CHECKOUT_REF"'#subdirectory=client-python|' ./opencti-platform/opencti-graphql/src/python/requirements.txt
+
       - name: Build graphql production and prune devDependencies
         run: |
           docker run --rm \
             -v ${{ github.workspace }}/opencti-platform/opencti-graphql:/opt/opencti/opencti-graphql \
             -w /opt/opencti/opencti-graphql \
             filigran/builder:${{ github.sha }} \
-            sh -c "yarn install --immutable && yarn install:python && yarn build:prod && yarn workspaces focus --production"
+            sh -c "yarn install --immutable && apk add --no-cache git && yarn install:python && yarn build:prod && yarn workspaces focus --production"
 
       - name: Build front production and prune devDependencies
         # The sh -c body is single-quoted on purpose: double quotes would make

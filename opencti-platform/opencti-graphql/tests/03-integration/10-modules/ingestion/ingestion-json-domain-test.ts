@@ -1,6 +1,15 @@
+import * as http from 'node:http';
+import { type AddressInfo } from 'node:net';
 import { Readable } from 'node:stream';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { addIngestionJson, deleteIngestionJson, ingestionJsonEditField, testJsonIngestionMapping } from '../../../../src/modules/ingestion/ingestion-json-domain';
+import {
+  addIngestionJson,
+  deleteIngestionJson,
+  editIngestionJson,
+  executeJsonQuery,
+  ingestionJsonEditField,
+  testJsonIngestionMapping,
+} from '../../../../src/modules/ingestion/ingestion-json-domain';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { type EditInput, IngestionAuthType, type IngestionJsonAddInput, JsonMapperRepresentationType } from '../../../../src/generated/graphql';
 import * as uriDenyListConfigMock from '../../../../src/config/uriDenyList';
@@ -11,13 +20,27 @@ import type { FileUploadData } from '../../../../src/database/file-storage';
 import { regexpTestData, representationsFormulaMatrix, representationsRegExpr, stixBundleDataFormulaMatrix } from './ingestionManager-testData/ingestion-json-data';
 import { ENTITY_TYPE_TOOL } from '../../../../src/schema/stixDomainObject';
 
+const startTestServer = (handler: (req: http.IncomingMessage, res: http.ServerResponse) => void): Promise<{ server: http.Server; baseUrl: string }> => {
+  return new Promise((resolve, reject) => {
+    const server = http.createServer(handler);
+    server.listen(0, '127.0.0.1', () => {
+      const { port } = server.address() as AddressInfo;
+      resolve({ server, baseUrl: `http://127.0.0.1:${port}` });
+    });
+    server.on('error', reject);
+  });
+};
+
+const stopTestServer = (server: http.Server): Promise<void> => new Promise((resolve, reject) => server.close((err) => (err ? reject(err) : resolve())));
+
 describe('Ingestion Json domain - Deny list coverage', async () => {
   let myJsonFeed: BasicStoreEntityIngestionJson;
+  let editFeed: BasicStoreEntityIngestionJson;
 
   afterAll(async () => {
-    if (myJsonFeed && myJsonFeed.id) {
-      await deleteIngestionJson(testContext, ADMIN_USER, myJsonFeed.id);
-    }
+    if (myJsonFeed?.id) await deleteIngestionJson(testContext, ADMIN_USER, myJsonFeed.id);
+    if (editFeed?.id) await deleteIngestionJson(testContext, ADMIN_USER, editFeed.id);
+    vi.restoreAllMocks();
   });
 
   it('should be able to create a JSON feed with an allowed URI, and refused field patch of denied URL', async () => {
@@ -54,6 +77,28 @@ describe('Ingestion Json domain - Deny list coverage', async () => {
     };
     await expect(testJsonIngestionMapping(testContext, ADMIN_USER, testInput))
       .rejects.toThrow('This URI is not allowed for ingestion.');
+  });
+
+  it('should refuse updating URI to a denied value via editIngestionJson', async () => {
+    vi.spyOn(uriDenyListConfigMock, 'uriDenyList').mockReturnValue([]);
+    editFeed = await addIngestionJson(testContext, ADMIN_USER, {
+      authentication_type: IngestionAuthType.None,
+      name: 'Test JSON feed edit deny list',
+      uri: 'https://allowed.example.com/feed',
+      user_id: ADMIN_USER.id,
+      json_mapper_id: 'fake-mapper-id',
+      verb: 'GET',
+    }) as unknown as BasicStoreEntityIngestionJson;
+
+    vi.spyOn(uriDenyListConfigMock, 'uriDenyList').mockReturnValue(['*.blocked-example.net']);
+    await expect(editIngestionJson(testContext, ADMIN_USER, editFeed.id, {
+      authentication_type: IngestionAuthType.None,
+      name: 'Test JSON feed edit deny list',
+      uri: 'https://sub.blocked-example.net/feed',
+      user_id: ADMIN_USER.id,
+      json_mapper_id: 'fake-mapper-id',
+      verb: 'GET',
+    })).rejects.toThrow('This URI is not allowed for ingestion.');
   });
 });
 
@@ -423,5 +468,103 @@ describe('Ingestion Json domain - ingestionJsonTester mutation (testJsonIngestio
     expect(parsedObjects.length).toBeLessThanOrEqual(50);
     expect(result.nbEntities).toBeLessThanOrEqual(50);
     expect(parsedObjects.some((o: any) => o.name === 'tool-51')).toBe(false);
+  });
+});
+
+describe('Ingestion Json domain - pagination with sub-page coverage', async () => {
+  let paginationServer: http.Server;
+  let paginationBaseUrl: string;
+  let mapperId: string;
+  let feed: BasicStoreEntityIngestionJson;
+
+  beforeAll(async () => {
+    const mapper = await createJsonMapper(testContext, ADMIN_USER, {
+      name: 'Pagination test mapper',
+      representations: JSON.stringify([{
+        id: 'a1b2c3d4-0000-0000-0000-000000000099',
+        type: 'entity',
+        target: { entity_type: 'Domain-Name', path: '$.items[*]' },
+        attributes: [{ mode: 'simple', key: 'value', attr_path: { path: '$.value' } }],
+      }]),
+    });
+    mapperId = mapper.id;
+
+    ({ server: paginationServer, baseUrl: paginationBaseUrl } = await startTestServer((_req, res) => {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ items: [{ value: 'page1.example.com' }], next: 'https://blocked-example.net/page2' }));
+    }));
+
+    vi.spyOn(uriDenyListConfigMock, 'uriDenyList').mockReturnValue([]);
+    feed = await addIngestionJson(testContext, ADMIN_USER, {
+      authentication_type: IngestionAuthType.None,
+      name: 'Pagination sub-page test',
+      uri: `${paginationBaseUrl}/page1`,
+      user_id: ADMIN_USER.id,
+      json_mapper_id: mapperId,
+      verb: 'GET',
+      pagination_with_sub_page: true,
+      pagination_with_sub_page_attribute_path: '$.next',
+    }) as unknown as BasicStoreEntityIngestionJson;
+  });
+
+  afterAll(async () => {
+    if (feed?.id) await deleteIngestionJson(testContext, ADMIN_USER, feed.id);
+    if (mapperId) await deleteJsonMapper(testContext, ADMIN_USER, mapperId);
+    await stopTestServer(paginationServer);
+    vi.restoreAllMocks();
+  });
+
+  it('should refuse fetching a sub-page URL that matches the deny list', async () => {
+    vi.spyOn(uriDenyListConfigMock, 'uriDenyList').mockReturnValue(['blocked-example.net']);
+    await expect(executeJsonQuery(testContext, feed))
+      .rejects.toThrow('This URI is not allowed for ingestion.');
+  });
+});
+
+describe('Ingestion Json domain - redirect deny list coverage', async () => {
+  let redirectServer: http.Server;
+  let redirectBaseUrl: string;
+  let mapperId: string;
+  let feed: BasicStoreEntityIngestionJson;
+
+  beforeAll(async () => {
+    const mapper = await createJsonMapper(testContext, ADMIN_USER, {
+      name: 'Redirect test mapper',
+      representations: JSON.stringify([{
+        id: 'a1b2c3d4-0000-0000-0000-000000000098',
+        type: 'entity',
+        target: { entity_type: 'Domain-Name', path: '$.items[*]' },
+        attributes: [{ mode: 'simple', key: 'value', attr_path: { path: '$.value' } }],
+      }]),
+    });
+    mapperId = mapper.id;
+
+    ({ server: redirectServer, baseUrl: redirectBaseUrl } = await startTestServer((_req, res) => {
+      res.writeHead(302, { Location: 'https://blocked-example.net/redirected' });
+      res.end();
+    }));
+
+    vi.spyOn(uriDenyListConfigMock, 'uriDenyList').mockReturnValue([]);
+    feed = await addIngestionJson(testContext, ADMIN_USER, {
+      authentication_type: IngestionAuthType.None,
+      name: 'Redirect deny list test',
+      uri: `${redirectBaseUrl}/start`,
+      user_id: ADMIN_USER.id,
+      json_mapper_id: mapperId,
+      verb: 'GET',
+    }) as unknown as BasicStoreEntityIngestionJson;
+  });
+
+  afterAll(async () => {
+    if (feed?.id) await deleteIngestionJson(testContext, ADMIN_USER, feed.id);
+    if (mapperId) await deleteJsonMapper(testContext, ADMIN_USER, mapperId);
+    await stopTestServer(redirectServer);
+    vi.restoreAllMocks();
+  });
+
+  it('should refuse following a redirect toward a URL that matches the deny list', async () => {
+    vi.spyOn(uriDenyListConfigMock, 'uriDenyList').mockReturnValue(['blocked-example.net']);
+    await expect(executeJsonQuery(testContext, feed))
+      .rejects.toThrow('This URI is not allowed for ingestion.');
   });
 });
