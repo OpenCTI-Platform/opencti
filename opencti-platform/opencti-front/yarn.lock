@@ -11992,7 +11992,7 @@ __metadata:
     react-draggable: "npm:4.7.1"
     react-force-graph-2d: "npm:1.29.1"
     react-force-graph-3d: "npm:1.29.1"
-    react-grid-layout: "npm:2.2.3"
+    react-grid-layout: "npm:2.2.4"
     react-intl: "npm:7.1.14"
     react-leaflet: "npm:5.0.0"
     react-markdown: "npm:10.1.0"
@@ -13074,9 +13074,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-grid-layout@npm:2.2.3":
-  version: 2.2.3
-  resolution: "react-grid-layout@npm:2.2.3"
+"react-grid-layout@npm:2.2.4":
+  version: 2.2.4
+  resolution: "react-grid-layout@npm:2.2.4"
   dependencies:
     clsx: "npm:^2.1.1"
     fast-equals: "npm:^4.0.3"
@@ -13087,7 +13087,7 @@ __metadata:
   peerDependencies:
     react: ">= 16.3.0"
     react-dom: ">= 16.3.0"
-  checksum: 10c0/93657e6d06567ab096b02cadde6aa3f382910bfa2f2c8df127e8788d4df7aab6eca6f1e1235af6293246d5113d06a0bf41445192d5267d6381a535ea007cd280
+  checksum: 10c0/cde80a1fa5aaa40ac5b42a0c99c7bb07436e14c5e076b11c6a66810665ff9e23c78cc5583e2edcabec57629801af976bf34c3345a25b85662aea470eca40813b
   languageName: node
   linkType: hard
 
