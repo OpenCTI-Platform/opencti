@@ -30,6 +30,10 @@
     "test:e2e:coverage": "E2E_TEST=true E2E_COVERAGE=true yarn playwright test",
     "knip": "knip"
   },
+  "packageManager": "yarn@4.18.0+sha512.fcb8716fe7cd0eece141ffc18b92193a9df9204c1ba83189c288835223fc0bbe64af473bab0d5e9927a7daeb5caf2bb07eb2787cc9338ca040ea125f2a1f2f7e",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "dependencies": {
     "@analytics/google-analytics": "1.1.0",
     "@cfworker/json-schema": "4.1.1",
@@ -171,10 +175,6 @@
     "vite-plugin-monaco-editor": "1.1.0",
     "vite-plugin-relay": "2.1.0",
     "vitest": "4.1.10"
-  },
-  "packageManager": "yarn@4.17.1+sha512.ccbfabf7d7b6b32075088be9386fb9a2e00bb6887ef07fa56effabc890a56d53da1ccc4128d62db245fcbd3961b236d75335bdf7d5320ed6eafb7588b7ad4697",
-  "engines": {
-    "node": ">=22.0.0"
   },
   "resolutions": {
     "@filigran/chatbot/lodash": "4.18.1",
