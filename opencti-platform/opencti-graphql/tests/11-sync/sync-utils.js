@@ -109,6 +109,7 @@ export const checkMapConsistency = (before, after) => {
     }
     // expect(`${key} - ${value}`).toEqual(`${key} - ${compareValue}`);
   });
+  if (failedExpects.length > 0) console.log(failedExpects);
   expect(failedExpects.length, `checkMapConsistency failed ${JSON.stringify(failedExpects)}`).toEqual(0);
 };
 export const checkPostSyncContent = async (remoteUri, objectMap, relMap, initStixReport) => {
