@@ -413,6 +413,50 @@ source, one condition at a time.
 - **#10 — accordion vs flyout state.** Still a single `open`/`onOpenChange` pair.
 - **#11 — rail layout.** The `<nav>` is still `h-full` in normal flow.
 
+### Custom-theme iso-functionality, proved without a database
+
+The requirement is that a platform administrator's custom theme keeps working
+identically. That is testable without a running instance, because the mechanism
+is a pure one: `AppThemeProvider` passes the DB's `Theme.theme_*` fields into
+`ThemeDark()` / `ThemeLight()` as parameters, and the FDS constants are only the
+fallback when a field is null.
+
+So both theme modules were bundled at the old and the new bridge and called
+twice each — once with a full set of custom values standing in for a DB theme
+row (`background`, `paper`, `nav` i.e. `theme_nav`, `primary`, `secondary`,
+`accent`, `text_color`), once with no arguments — and the resulting palettes
+were diffed field by field.
+
+| Palette | Fields | Changed |
+| --- | --- | --- |
+| Dark, custom theme | 116 | 11 |
+| Light, custom theme | 117 | 20 |
+| Dark, standard theme | 116 | 13 |
+| Light, standard theme | 117 | 21 |
+
+**The custom theme is protected exactly where it should be.** The standard
+palettes move on three fields the custom palettes do not: `primary.main` and
+`border.primary` in dark, `secondary.main` in light. Those are precisely the
+DB-overridable fields whose FDS fallback changed — under a custom theme they
+keep the administrator's value, untouched by this pass.
+
+**`theme_nav` does not appear in any of the four diffs.** The top bar's colour
+is byte-identical before and after, in both modes, custom or standard.
+
+Everything that does move is a field with no DB override — `error`, `warn`,
+`success`, `dangerZone`, `severity` and the `designSystem` block — which is the
+set `migration-state.json` already documents as visually live. Those are the
+deltas for design to validate; they are not regressions but the WCAG and Figma
+decisions the library already shipped, finally reaching this product's MUI
+theme.
+
+What this method does **not** cover, and what still needs a running instance: the
+`Navbar` accent under a custom `theme_primary` (workaround #1 resolves it at
+render time from `theme.palette.primary.main`, so it follows the same parameter
+and is expected to be iso-functional, but it is not proved here), and the
+`color-mix` derivatives of a custom accent — see the #6 measurement above, which
+is why that workaround stays.
+
 ### Proposed as a standard playbook step
 
 Steps 1 and the pin-bump exercise of `process/PRODUCT-IMPLEMENTATION-PLAYBOOK.md`
