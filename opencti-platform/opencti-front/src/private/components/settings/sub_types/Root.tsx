@@ -50,13 +50,19 @@ const RootSubType = () => {
   const { isFeatureEnable } = useHelper();
   const isDraftWorkspaceType = subTypeId === 'DraftWorkspace';
   const isCustomFieldsFeatureEnabled = isFeatureEnable('CUSTOM_FIELDS');
+  const isEntitiesWorkflowEnabled = isFeatureEnable('ENTITIES_WORKFLOW');
 
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
         <Route path="/" element={<SubType />}>
           <Route index element={<SubTypeIndexRedirect />} />
-          <Route path={SUBTYPE_TAB_WORKFLOW} element={isDraftWorkspaceType ? <SubTypeWorkflow /> : <GlobalWorkflowSettingsCard />} />
+          <Route
+            path={SUBTYPE_TAB_WORKFLOW}
+            element={(isDraftWorkspaceType || isEntitiesWorkflowEnabled)
+              ? <SubTypeWorkflow entityType={subTypeId} />
+              : <GlobalWorkflowSettingsCard />}
+          />
           <Route path={SUBTYPE_TAB_TEMPLATES} element={<FintelTemplatesManager />} />
           <Route
             path={SUBTYPE_TAB_ATTRIBUTES}
