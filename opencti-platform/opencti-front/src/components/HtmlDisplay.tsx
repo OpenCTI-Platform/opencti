@@ -20,16 +20,14 @@ const SANITIZE_CONFIG = {
 // `style` attributes coming from user-controlled content.
 const FORBIDDEN_STYLE_PROPERTIES = ['position', 'z-index', 'inset', 'top', 'right', 'bottom', 'left'];
 
+// Use the browser's own CSS parser (via CSSStyleDeclaration) instead of naive
+// string splitting: it normalizes CSS escapes (e.g. `po\73ition`) and safely
+// handles values that legitimately contain `;` (e.g. data-URIs).
 const sanitizeStyleAttribute = (styleValue: string) => {
-  return styleValue
-    .split(';')
-    .map((declaration) => declaration.trim())
-    .filter((declaration) => {
-      if (!declaration) return false;
-      const propertyName = declaration.split(':')[0]?.trim().toLowerCase();
-      return !FORBIDDEN_STYLE_PROPERTIES.includes(propertyName);
-    })
-    .join('; ');
+  const span = document.createElement('span');
+  span.setAttribute('style', styleValue);
+  FORBIDDEN_STYLE_PROPERTIES.forEach((property) => span.style.removeProperty(property));
+  return span.style.cssText;
 };
 
 // Strip dangerous positioning CSS properties from inline styles to prevent
