@@ -80,7 +80,8 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
       ).toPromise() as PlatformBundleDrawerExportQuery$data;
       if (result?.globalConfigurationExport) {
         const blob = new Blob([base64ToBytes(result.globalConfigurationExport)], { type: 'application/zip' });
-        const suffix = bundleName ? `_${bundleName}` : '';
+        const safeBundleName = bundleName.trim().replace(/[^a-z0-9-_]+/gi, '_').replace(/^_+|_+$/g, '').slice(0, 80);
+        const suffix = safeBundleName ? `_${safeBundleName}` : '';
         const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
         fileDownload(blob, `${year}${month}${day}_opencti_config_export${suffix}.zip`);
       }
