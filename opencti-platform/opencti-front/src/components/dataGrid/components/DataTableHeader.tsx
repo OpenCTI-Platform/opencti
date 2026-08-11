@@ -1,7 +1,7 @@
 import React, { FunctionComponent, MouseEvent, RefObject, useRef } from 'react';
 import { ArrowDropDown, ArrowDropUp, MoreVert } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
-import SimpleDraggrable from 'react-draggable';
+import SimpleDraggable from 'react-draggable';
 import makeStyles from '@mui/styles/makeStyles';
 import { createStyles } from '@mui/styles';
 import { Theme as MuiTheme } from '@mui/material/styles/createTheme';
@@ -139,7 +139,7 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
       <div className={classes.aligner} />
 
       {variant !== DataTableVariant.inline && variant !== DataTableVariant.widget && (
-        <SimpleDraggrable
+        <SimpleDraggable
           nodeRef={draggableRef as unknown as RefObject<HTMLDivElement>}
           position={{ x: 3, y: -3 }}
           axis="x"
@@ -177,7 +177,7 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
           }}
         >
           <div ref={draggableRef} className={classes.draggable} />
-        </SimpleDraggrable>
+        </SimpleDraggable>
       )}
     </div>
   );
