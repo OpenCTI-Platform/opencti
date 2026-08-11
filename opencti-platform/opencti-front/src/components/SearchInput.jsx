@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import TextField from '@mui/material/TextField';
-import InputAdornment from '@mui/material/InputAdornment';
+import { SearchField } from '@filigran/design-system';
 import { ManageSearchOutlined, Search, TuneOutlined, KeyboardArrowDownOutlined } from '@mui/icons-material';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import { useNavigate } from 'react-router-dom';
@@ -445,18 +445,17 @@ const SearchInput = (props) => {
 
   return (
     <>
+      {/* Width is owned by the bar, not by this component — see topBarConstants.ts */}
       <Stack
         direction="row"
         alignItems="center"
         spacing={1}
-        sx={{ minWidth: 550, width: '50%', maxWidth: 680 }}
+        sx={{ width: '100%' }}
       >
         {/* ── Search Input Field (left, fills remaining space) ──── */}
-        <GradientBorderTextField
+        <SearchField
           name="keyword"
           value={searchValue}
-          variant="outlined"
-          size="small"
           fullWidth
           placeholder={getPlaceholder()}
           onChange={(event) => {
@@ -464,32 +463,12 @@ const SearchInput = (props) => {
             setSearchValue(value);
           }}
           onKeyDown={handleKeyDown}
-          isActive={isNLQActivated}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <Search
-                  fontSize="small"
-                  sx={{
-                    color: isNLQActivated ? theme.palette.ai.main : 'inherit',
-                    mr: 0.5,
-                  }}
-                />
-              ),
-              endAdornment: isNLQActivated && isNLQLoading ? (
-                <InputAdornment position="end">
-                  <Loader variant="inline" />
-                </InputAdornment>
-              ) : null,
-              classes: {
-                root: classRoot,
-                input: classInput,
-              },
-            },
-          }}
+          onClear={() => setSearchValue('')}
           {...otherProps}
           autoComplete="off"
         />
+        {/* FDS-WORKAROUND #20: NLQ loading indicator beside the field, SearchField exposes no busy slot — see fds-migration/LIBRARY-FEEDBACK.md #20 */}
+        {isNLQActivated && isNLQLoading && <Loader variant="inline" />}
 
         {/* ── Mode Toggles (right) ────────────────────────────────── */}
         <ToggleButtonGroup
