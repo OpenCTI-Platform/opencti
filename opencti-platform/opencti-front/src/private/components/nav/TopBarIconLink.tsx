@@ -7,6 +7,9 @@ import { Link } from 'react-router-dom';
 /** The background `IconButton` paints for `active`, as the library's own token. */
 const SELECTED_BACKGROUND = 'var(--color-filigran-brand-primary-transparency)';
 
+/** The glyph colour `IconButton` resolves; `text-inherit` alone would take the bar's. */
+const GLYPH_COLOR = 'var(--color-filigran-brand-primary)';
+
 interface TopBarIconLinkProps {
   /** Required accessible label — icon-only controls have no visible text. */
   'aria-label': string;
@@ -33,8 +36,11 @@ const TopBarIconLink: FunctionComponent<TopBarIconLinkProps> = ({
   // `tertiary` is the bar's anatomy; the default `primary` is a FILLED brand button.
   const classes = iconButtonVariants({ priority: 'tertiary' });
 
-  // FDS-WORKAROUND #16: selected background inline, layered utilities lose here — see fds-migration/LIBRARY-FEEDBACK.md #16
-  const style = active ? { backgroundColor: SELECTED_BACKGROUND } : undefined;
+  // FDS-WORKAROUND #16: colour and selected background inline, layered utilities lose here — see fds-migration/LIBRARY-FEEDBACK.md #16
+  const style = {
+    color: GLYPH_COLOR,
+    ...(active && { backgroundColor: SELECTED_BACKGROUND }),
+  };
 
   return (
     <Link

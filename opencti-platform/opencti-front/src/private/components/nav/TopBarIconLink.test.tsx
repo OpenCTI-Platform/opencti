@@ -36,6 +36,14 @@ describe('TopBarIconLink', () => {
     expect(link.style.backgroundColor).toBe('');
   });
 
+  it('carries the library glyph colour, so it matches the IconButtons beside it', () => {
+    renderLink(false);
+    const link = screen.getByRole('link', { name: 'Notifications' });
+    // Without this the link inherits the bar's text colour and reads white,
+    // while the library IconButton next to it resolves the brand token.
+    expect(link.style.color).toBe('var(--color-filigran-brand-primary)');
+  });
+
   it('hides the glyph from assistive technology, as IconButton does', () => {
     renderLink(false);
     expect(screen.getByTestId('glyph').parentElement).toHaveAttribute('aria-hidden', 'true');
