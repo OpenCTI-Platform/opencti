@@ -9,7 +9,18 @@ import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useG
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useTheme } from '@mui/material/styles';
 
-const EEChip = React.forwardRef<HTMLDivElement, { feature?: string; clickable?: boolean; floating?: boolean; libraryChip?: boolean }>(({ feature, clickable = true, floating = false, libraryChip = false }, ref) => {
+interface EEChipProps {
+  feature?: string;
+  clickable?: boolean;
+  floating?: boolean;
+  /** Opt in to the library `Chip`; every other call site keeps the legacy marker. */
+  libraryChip?: boolean;
+}
+
+const EEChip = React.forwardRef<HTMLDivElement, EEChipProps>((
+  { feature, clickable = true, floating = false, libraryChip = false },
+  ref,
+) => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
