@@ -20,7 +20,10 @@ const ingestionTaxiiResolvers: Resolvers = {
     ingestionTaxii: (_, { id }, context) => findTaxiiIngestionById(context, context.user, id),
     ingestionTaxiis: (_, args, context) => findTaxiiIngestionPaginated(context, context.user, args),
     taxiiFeedAddInputFromImport: (_, { file }) => taxiiFeedAddInputFromImport(file),
-    ingestionTaxiiLogs: async (_: unknown, { id }: { id: string }) => findIngestionLogsForFeed(id),
+    ingestionTaxiiLogs: async (_: unknown, { id }: { id: string }, context) => {
+      await findTaxiiIngestionById(context, context.user, id);
+      return findIngestionLogsForFeed(id);
+    },
   },
   IngestionTaxii: {
     authentication_value: async (ingestionTaxii) => {
