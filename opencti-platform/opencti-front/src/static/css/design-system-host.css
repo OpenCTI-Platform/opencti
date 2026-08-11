@@ -19,10 +19,7 @@
   flex: 0 0 auto;
 }
 
-/* HOST CONCERN, not a workaround: the library's overlays read --fds-z-overlay
-   (default 50) and OpenCTI's app bar sits at 1199, so the host names its own
-   stacking level. 1300 is MUI's zIndex.modal, the level the popovers this
-   replaces already used. Retired FDS-WORKAROUND #5 — see LIBRARY-FEEDBACK.md #5. */
+/* Host stacking level for the library's overlays — retired FDS-WORKAROUND #5 — see fds-migration/LIBRARY-FEEDBACK.md #5 */
 :root {
   --fds-z-overlay: 1300;
 }
