@@ -175,7 +175,10 @@ const SecurityCoverages: FunctionComponent = () => {
       percentWidth: 35,
       isSortable: true,
     },
-    coverage_last_result: { percentWidth: 15 },
+    coverage_last_result: {
+      percentWidth: 15,
+      isSortable: false,
+    },
     coverage_information: { percentWidth: 15 },
     creator: {
       percentWidth: 12,

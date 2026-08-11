@@ -364,15 +364,11 @@ class SecurityCoverageResult:
                 )
 
             raw_coverages = stix_object["coverage"] if "coverage" in stix_object else []
-            coverage_information = list(
-                map(
-                    lambda cov: {
-                        "coverage_name": cov["name"],
-                        "coverage_score": cov["score"],
-                    },
-                    raw_coverages,
-                )
-            )
+            coverage_information = coverage_information = [
+                {"coverage_name": cov["name"], "coverage_score": cov["score"]}
+                for cov in raw_coverages
+                if "score" in cov
+            ]
 
             return self.create(
                 stix_id=stix_object["id"],
