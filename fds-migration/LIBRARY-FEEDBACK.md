@@ -471,3 +471,159 @@ not only to rail rows — the fix is worth generalising rather than repeating.
 running platform and read the computed `cursor` of every `<a>` and `<button>`
 inside `nav.app-navbar`; all of them must be `pointer`, with no exception for
 the switcher.
+
+---
+
+Entries 13–20 were raised by the Header pilot (admin top bar), at pin
+`5960966216533f620393a2174213c666f57af7dd`. Several restate what the OpenAEV
+Header pilot already filed; where they do, its entry number is given so the
+library sees two consumers, not one.
+
+---
+
+## 13. `IconButton` renders a hard `<button>` and accepts no `asChild`
+
+**Needed.** Two bar controls (Triggers, Notifications) are genuine routes. As
+buttons with an `onClick` they would lose middle-click, ⌘/Ctrl-click, "copy link
+address" and the status-bar preview — a behavioural loss.
+
+**Today.** `IconButton` hard-renders `<button>` with no `asChild`, while
+`Button` has one.
+
+**Consequence.** `TopBarIconLink.tsx` applies `iconButtonVariants` to a router
+`Link`, re-implementing the component's DOM contract (the `aria-hidden` glyph
+wrapper) by hand. Same technique as OpenAEV's entry 21.
+
+**Ask.** Give `IconButton` the `asChild` `Button` already has.
+
+**Removal test.** Delete `TopBarIconLink.tsx`, wrap `<Link>` in
+`<IconButton asChild>`; the icon-link tests stay green.
+
+---
+
+## 14. `Header` ships no positioning, so every product re-invents it
+
+**Needed.** A top bar fixed to the viewport, offset by the navigation rail and
+by up to three stacked banners.
+
+**Today.** `Header` is laid out in flow and never sticky, by design.
+
+**Consequence.** The product supplies `position: fixed`, `top`, `left`, `right`
+and `z-index` inline, and `fullWidth={false}` with them. Same as OpenAEV's
+entry 20 — two consumers out of two.
+
+**Ask.** Either document the positioning contract, or an opt-in fixed mode.
+
+**Removal test.** Delete the inline block; the bar must stay fixed, flush with
+the rail, under the banners.
+
+---
+
+## 15. A themeable surface has no supported hook for a product-driven colour
+
+**Needed.** OpenCTI administrators set `theme_background` per theme; it paints
+the top bar's gradient. Adopting `Header` as-is would drop that.
+
+**Today.** The glass layer reads `--gradient-default`, a token assembled at
+`:root`. Overriding its stops at `:root` would repaint every other library
+surface — the Navbar included — while still failing to repaint a gradient
+already assembled there.
+
+**Consequence.** The product re-declares the whole assembled gradient on the bar
+element. Same ask as OpenAEV's entry 17.
+
+**Ask.** A documented per-surface background hook.
+
+**Removal test.** Replace the re-declaration with the supported hook; a custom
+`theme_background` must still paint the bar and nothing else.
+
+---
+
+## 16. Layered utilities lose to the host's unlayered CSS
+
+**Needed.** The selected icon link must carry the same background `IconButton`
+paints for `active`.
+
+**Today.** The library's utilities are layered; a class added on the same
+element by a product that composes by hand loses to unlayered host CSS.
+
+**Consequence.** `TopBarIconLink` sets the background inline, from the library's
+own token rather than a literal. Same failure mode as OpenAEV's entry 24.
+
+**Ask.** Document the layer contract consumers must respect.
+
+**Removal test.** Move the background back to a class; the active link must stay
+tinted.
+
+---
+
+## 17. `HeaderGroup`'s `grow` caps below this bar's ceiling
+
+**Needed.** A search window of 200–500px.
+
+**Today.** `grow` caps at 400px; `grow="unbounded"` removes the cap entirely.
+
+**Consequence.** The product uses `grow="unbounded"` and declares the window on
+the group it owns. Same as OpenAEV's entry 18.
+
+**Ask.** Let `grow` take the cap as a value.
+
+**Removal test.** Replace the inline window with the prop; measured width must
+stay 200–500px.
+
+---
+
+## 18. No general-purpose separator
+
+**Needed.** A rule between the AI actions and the platform actions.
+
+**Today.** `NavbarSeparator`, `MenuSeparator` and `SelectSeparator` are each
+bound to their own component.
+
+**Consequence.** A `div role="separator"` painted from the library's border
+token. Same as OpenAEV's entry 22.
+
+**Ask.** A standalone `Separator`.
+
+**Removal test.** Replace the div with the component; the rule keeps its
+geometry and colour.
+
+---
+
+## 19. No `Badge`
+
+**Needed.** The unread dot on the notifications control.
+
+**Today.** The library ships no badge.
+
+**Consequence.** MUI's `Badge` wraps the glyph inside the library-styled link.
+Named in OpenAEV's entry 22 as a gap worth sizing.
+
+**Ask.** A `Badge`, dot and count variants. Understood to be in progress.
+
+**Removal test.** Swap MUI's `Badge` for the library's; the dot must keep its
+position and its `invisible` behaviour.
+
+---
+
+## 20. `SearchField` has no busy state and no themeable leading icon
+
+**Needed.** While a natural-language query runs, the field must show it is
+working; and when NLQ mode is on, the leading magnifier is tinted with the AI
+colour so the mode is visible at the field itself.
+
+**Today.** `SearchField` renders its own magnifier and clear cross and exposes
+neither a busy state nor a hook for the leading icon's colour. `searchOption` is
+a trailing slot for actions, not a status area.
+
+**Consequence.** Adopting `SearchField` for the top bar dropped three
+affordances the product had: an animated gradient border while NLQ is active,
+the AI-tinted magnifier, and an inline loader inside the field. The loader now
+sits beside the field; the other two are gone. The NLQ mode remains readable
+from the toggle's own selected state.
+
+**Ask.** A `busy`/`loading` state, and a documented way to colour the leading
+icon.
+
+**Removal test.** Pass the busy state and the icon colour; the loader returns
+inside the field and the magnifier tints with NLQ on.
