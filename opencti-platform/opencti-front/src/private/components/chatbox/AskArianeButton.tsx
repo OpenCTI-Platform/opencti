@@ -99,7 +99,7 @@ const AskArianeButton = () => {
           startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" />}
         >
           {t_i18n('Ask Ariane')}
-          <EEChip />
+          <EEChip libraryChip={true} />
         </Button>
       </EETooltip>
 

@@ -537,6 +537,26 @@ AI-tinted background and border when active. Filed as entry 20.
 Eight compensations, entries 13–20. Entries 13, 14, 15, 16, 17 and 18 restate
 gaps the OpenAEV Header pilot already filed — two consumers, not one.
 
+### Accepted at the checkpoint
+
+At 768px with the rail expanded, the AI actions and the mode toggles overlap by
+131px. The bar this replaces did not overlap, but ran 323px off-screen instead,
+so the controls needed a horizontal page scroll to reach. Accepted as-is by
+design, like the OpenAEV pilot's own 57px. Page-level horizontal scroll below
+1400px is pre-existing — the previous bar scrolls identically.
+
+The "EE" marker in the bar is now the library `Chip` with `tone="tonic"`, the
+tone library PR #72 added for exactly this badge. The 26 other `EEChip` call
+sites keep the legacy marker; converting them is its own change. The bar's chip
+is decorative — a clickable `Chip` renders a `<button>`, which cannot nest
+inside the Ask Ariane button — see entry 21.
+
+The bar still shows two blues: library controls resolve
+`--color-filigran-brand-primary` (#42caff) while the MUI survivors read
+`theme.palette.primary.main`, which the database theme row pins to the pre-WCAG
+#0fbcff. Fixed by a sister pull request that migrates the built-in theme rows,
+so this pilot stays front-only.
+
 ### Verification
 
 Step 5b, against the library's documentation site at the same pin: 12 properties

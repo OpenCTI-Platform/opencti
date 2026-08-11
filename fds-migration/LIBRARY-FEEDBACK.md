@@ -627,3 +627,68 @@ icon.
 
 **Removal test.** Pass the busy state and the icon colour; the loader returns
 inside the field and the magnifier tints with NLQ on.
+
+---
+
+## 21. A clickable `Chip` renders a `<button>`, so it cannot sit inside one
+
+**Needed.** The bar's "EE" marker is inside the "Ask Ariane" button, and
+clicking it used to open the enterprise-edition dialog instead of the button's
+own action.
+
+**Today.** `Chip` renders a `<button>` as soon as `onClick` is present. Nesting
+that inside the surrounding button is invalid.
+
+**Consequence.** The bar's chip is rendered decorative: `<Chip label="EE"
+tone="tonic" />` with no `onClick`, so the click now falls through to the Ask
+Ariane button. The dialog stays reachable from the 26 other `EEChip` sites,
+which keep the legacy marker.
+
+**Ask.** A non-button clickable affordance, or a documented way to keep the
+chip's own activation inside an interactive ancestor.
+
+**Removal test.** Pass the handler; the chip must open the dialog without
+nesting interactive elements.
+
+---
+
+## 22. `Menu` shows its focus ring on hover
+
+**Found at pin `5960966`.** Reported from the running product.
+
+**What happens.** Moving the pointer over a `MenuItem` gives it real DOM focus:
+measured `document.activeElement === item`, `:focus-visible` matches, and
+`data-highlighted` is set. The library's own `focus-visible:ring-2`,
+`focus-visible:ring-offset-2` and `ring-focus` classes therefore fire, painting
+the brand-blue ring — the keyboard affordance — under the mouse.
+
+**Scope.** Not specific to link items: reproduced on a plain `<div>` item
+(Feedback) as well as on `asChild` anchors. The product passes only `asChild`
+and `onSelect`, so nothing product-side is involved.
+
+**Ask.** Separate the hover treatment from the focus ring, so the ring stays a
+keyboard affordance.
+
+**Removal test.** Hover a `MenuItem` with the mouse: no focus ring; reach the
+same item with the keyboard: ring present.
+
+---
+
+## 23. `ProductSwitcher` truncates product names at its own default width
+
+**Found at pin `5960966`.** Reported from the running product.
+
+**What happens.** The panel is 200px (`min-width: 200px`, `max-width: 300px`,
+`width: 200px`). Each row puts a `shrink-0` logo slot of 100px first and a 16px
+trailing icon last, leaving 36px for the "OpenAEV" label and 60px for
+"XTM Hub". The label span is `overflow: visible`, so the text spills rather
+than ellipsising — on screen it reads "OpenA", "XTM H".
+
+**Scope.** Entirely library geometry; the product passes no width and no label
+styling.
+
+**Ask.** Let the logo slot shrink, or widen the default panel, or ellipsise the
+label — but the 100px logo against a 200px panel cannot hold a product name.
+
+**Removal test.** Open the switcher: every product name is fully readable, or
+truncated with an ellipsis rather than clipped mid-word.

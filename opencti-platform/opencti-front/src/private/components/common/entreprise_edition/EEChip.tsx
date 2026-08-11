@@ -1,3 +1,4 @@
+import { Chip } from '@filigran/design-system';
 import React, { CSSProperties, MouseEvent, useState } from 'react';
 import FeedbackCreation from '@components/cases/feedbacks/FeedbackCreation';
 import EnterpriseEditionAgreement from '@components/common/entreprise_edition/EnterpriseEditionAgreement';
@@ -8,7 +9,7 @@ import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useG
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useTheme } from '@mui/material/styles';
 
-const EEChip = React.forwardRef<HTMLDivElement, { feature?: string; clickable?: boolean; floating?: boolean }>(({ feature, clickable = true, floating = false }, ref) => {
+const EEChip = React.forwardRef<HTMLDivElement, { feature?: string; clickable?: boolean; floating?: boolean; libraryChip?: boolean }>(({ feature, clickable = true, floating = false, libraryChip = false }, ref) => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -55,13 +56,18 @@ const EEChip = React.forwardRef<HTMLDivElement, { feature?: string; clickable?: 
 
   return (!isEnterpriseEdition && (
     <>
-      <div
-        ref={ref}
-        style={divStyle}
-        onClick={(e) => onClick(e)}
-      >
-        EE
-      </div>
+      {libraryChip ? (
+        // FDS-WORKAROUND #21: decorative only, a clickable Chip renders a nested <button> — see fds-migration/LIBRARY-FEEDBACK.md #21
+        <Chip label="EE" tone="tonic" />
+      ) : (
+        <div
+          ref={ref}
+          style={divStyle}
+          onClick={(e) => onClick(e)}
+        >
+          EE
+        </div>
+      )}
       {isAdmin ? (
         <EnterpriseEditionAgreement
           open={displayDialog}
