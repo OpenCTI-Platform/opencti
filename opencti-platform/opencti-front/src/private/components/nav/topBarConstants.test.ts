@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  TOP_BAR_HEIGHT,
-  TOP_BAR_HEIGHT_FALLBACK,
-  TOP_BAR_SEARCH_MAX_WIDTH,
-  TOP_BAR_SEARCH_MIN_WIDTH,
-} from './topBarConstants';
+import { TOP_BAR_HEIGHT, TOP_BAR_HEIGHT_FALLBACK, TOP_BAR_SEARCH_MAX_WIDTH, TOP_BAR_SEARCH_MIN_WIDTH } from './topBarConstants';
 
 describe('top bar geometry', () => {
   it('bounds the search window at the cross-product values', () => {
