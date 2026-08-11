@@ -1400,15 +1400,11 @@ class StixCoreRelationship:
                 if "external_uri" in stix_relation
                 else None
             )
-            coverage_information = list(
-                map(
-                    lambda cov: {
-                        "coverage_name": cov["name"],
-                        "coverage_score": cov["score"],
-                    },
-                    raw_coverages,
-                )
-            )
+            coverage_information = [
+                {"coverage_name": cov["name"], "coverage_score": cov["score"]}
+                for cov in raw_coverages
+                if "score" in cov
+            ]
 
             source_ref = stix_relation["source_ref"]
             target_ref = stix_relation["target_ref"]

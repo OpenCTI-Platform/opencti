@@ -13,7 +13,8 @@ import {
   findCoveredEntitiesDistribution,
   findResultsRelationshipsPaginated,
 } from './securityCoverage-domain';
-import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_VULNERABILITY } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_VULNERABILITY } from '../vulnerability/vulnerability-types';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -36,6 +37,7 @@ const SecurityCoverageResolvers: Resolvers = {
     toStixBundle: (securityCoverage, _, context) => securityCoverageStixBundle(context, context.user, securityCoverage.id),
     results: (securityCoverage, _, context) => loadSecurityCoverageResults(context, context.user, securityCoverage),
     // security coverage result info
+    external_uri: (securityCoverage, _, context) => loadSecurityCoverageResultProperty(context, context.user, securityCoverage, 'external_uri'),
     coverage_last_result: (securityCoverage, _, context) => loadMostRecentLastCoverageResult(context, context.user, securityCoverage),
     coverage_valid_from: (securityCoverage, _, context) => loadSecurityCoverageResultProperty(context, context.user, securityCoverage, 'coverage_valid_from'),
     coverage_valid_to: (securityCoverage, _, context) => loadSecurityCoverageResultProperty(context, context.user, securityCoverage, 'coverage_valid_to'),
@@ -67,7 +69,7 @@ const SecurityCoverageResolvers: Resolvers = {
       },
       subscribe: (_: any, { id }: any, context: any) => {
         const bus = BUS_TOPICS[ENTITY_TYPE_SECURITY_COVERAGE];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_SECURITY_COVERAGE,
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC, bus.ADDED_TOPIC], { type: ENTITY_TYPE_SECURITY_COVERAGE,
           notifySelf: true,
         });
       },
