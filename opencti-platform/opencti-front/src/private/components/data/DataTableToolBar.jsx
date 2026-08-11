@@ -252,6 +252,7 @@ const typesWithScore = [
   'Media-Content',
   'Persona',
   'Threat-Actor-Group',
+  'Intrusion-Set',
 ];
 const typesWithSeverity = ['Case-Incident', 'Case-Rft', 'Case-Rfi'];
 const typesWithPriority = ['Case-Incident', 'Case-Rft', 'Case-Rfi'];
