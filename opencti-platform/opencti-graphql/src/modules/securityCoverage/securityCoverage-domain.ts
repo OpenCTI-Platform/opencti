@@ -191,6 +191,7 @@ export const objectCovered = async <T extends BasicStoreEntity>(context: AuthCon
 };
 
 export const securityCoverageDelete = async (context: AuthContext, user: AuthUser, securityCoverageId: string) => {
+  logApp.info('[DEBUG SCR] Delete SC:', { securityCoverageId });
   const securityCoverage = await findById(context, user, securityCoverageId);
   const deletedResults = await deleteSecurityCoverageResultsByResultOf(context, user, securityCoverage);
   logApp.info(`[SECURITY-COVERAGE-RESULT][${securityCoverageId}] SCR deleted: ${deletedResults}`);
@@ -215,6 +216,7 @@ export const deleteSecurityCoverageResultsByResultOf = async (
 ) => {
   const deletedIds: string[] = [];
   const results = await listSecurityCoverageResults(context, user, securityCoverage);
+  logApp.info('[DEBUG SCR] List of SCR to delete:', { results, securityCoverage });
   for (const result of results) {
     const deleted = await deleteElementById<StoreEntitySecurityCoverageResult>(
       context,
