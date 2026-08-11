@@ -416,10 +416,12 @@ class StixDomainObject:
                 goals
                 sophistication
                 resource_level
-                x_opencti_score
                 primary_motivation
                 secondary_motivations
                 personal_motivations
+            }
+            ... on ThreatActorGroup {
+                x_opencti_score
             }
             ... on Tool {
                 name
@@ -955,10 +957,12 @@ class StixDomainObject:
                 goals
                 sophistication
                 resource_level
-                x_opencti_score
                 primary_motivation
                 secondary_motivations
                 personal_motivations
+            }
+            ... on ThreatActorGroup {
+                x_opencti_score
             }
             ... on Tool {
                 name
