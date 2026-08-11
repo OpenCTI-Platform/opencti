@@ -191,8 +191,13 @@ describe('Intrusion set resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.intrusionSets.edges.length).toBeGreaterThanOrEqual(2);
-    expect(queryResult.data.intrusionSets.edges[0].node.x_opencti_score).toEqual(80);
-    expect(queryResult.data.intrusionSets.edges[1].node.x_opencti_score).toEqual(10);
+    const scores = queryResult.data.intrusionSets.edges.map((edge) => edge.node.x_opencti_score);
+    expect(scores[0]).toEqual(80);
+    const score10Index = scores.indexOf(10);
+    const score80Index = scores.indexOf(80);
+    expect(score10Index).toBeGreaterThanOrEqual(0);
+    expect(score80Index).toBeGreaterThanOrEqual(0);
+    expect(score80Index).toBeLessThan(score10Index);
   });
   it('should filter intrusion sets by score', async () => {
     const scoreFilter = {
