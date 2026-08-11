@@ -184,7 +184,7 @@ const DataTableInternalToolbar = ({
         deSelectedElements={deSelectedElements}
         numberOfSelectedElements={numberOfSelectedElements}
         selectAll={selectAll}
-        search={searchTerm ?? globalSearch}
+        search={globalSearch ?? searchTerm}
         filters={contextFilters}
         types={entityTypes}
         handleClearSelectedElements={handleClearSelectedElements}
@@ -296,6 +296,7 @@ const DataTable = (props: OCTIDataTableProps) => {
         dataQueryArgs={{ ...dataQueryArgs }}
         useLineData={useLineData(lineFragment)}
         settingsMessagesBannerHeight={settingsMessagesBannerHeight}
+        searchTerm={globalSearch}
         filtersComponent={(
           <DataTableInternalFilters
             entityTypes={entityTypes}

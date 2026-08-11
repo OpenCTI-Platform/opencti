@@ -15,7 +15,7 @@ import { ConnectorsLogosQuery } from '@components/data/connectors/__generated__/
 import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
 import DeployedFacetSidebar, { useDeployedTypeMetadata } from '@components/integrations/deployed/DeployedFacetSidebar';
 import DeployedIntegrationCard from '@components/integrations/deployed/DeployedIntegrationCard';
-import DeployedIntegrationLine from '@components/integrations/deployed/DeployedIntegrationLine';
+import DeployedIntegrationLine, { DeployedIntegrationLinesHeader } from '@components/integrations/deployed/DeployedIntegrationLine';
 import useDeployedIntegrations from '@components/integrations/deployed/useDeployedIntegrations';
 import useDeployedIntegrationsFilters, { DeployedSection, DeployedSortMode } from '@components/integrations/deployed/useDeployedIntegrationsFilters';
 import { MarketplaceEmptyState, MarketplaceSectionHeader, ResultCountChip } from '@components/integrations/components/MarketplaceUi';
@@ -165,6 +165,7 @@ const IntegrationsDeployedContent = ({
             <MenuItem value="name">{t_i18n('Name (A-Z)')}</MenuItem>
             <MenuItem value="status">{t_i18n('Status')}</MenuItem>
             <MenuItem value="lastRun">{t_i18n('Last run')}</MenuItem>
+            <MenuItem value="messages">{t_i18n('Queued messages')}</MenuItem>
           </TextField>
           <ResultCountChip count={filteredItems.length} />
           <ToggleButtonGroup
@@ -234,6 +235,7 @@ const IntegrationsDeployedContent = ({
                         overflow: 'hidden',
                       }}
                     >
+                      <DeployedIntegrationLinesHeader />
                       {section.items.map((item) => (
                         <DeployedIntegrationLine key={item.id} item={item} onChange={handleItemChange} />
                       ))}

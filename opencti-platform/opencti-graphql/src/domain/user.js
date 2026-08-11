@@ -130,6 +130,7 @@ import {
 import { addOrganization } from '../modules/organization/organization-domain';
 import validator from 'validator';
 import { logAuthInfo } from '../modules/authenticationProvider/providers-logger';
+import { hashSHA256 } from '../utils/hash';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -184,14 +185,14 @@ export const userWithOrigin = (req, user, originHeaders = {}) => {
   const sso_headers_metadata = R.mergeAll((user.headers_audit ?? [])
     .map((header) => ({ [header]: req.header(header) })));
   const tracing_headers_metadata = getRequestAuditHeaders(req);
-
+  const hashedSessionId = req?.sessionID ? hashSHA256(req.sessionID) : undefined;
   const origin = {
     socket: 'query',
     ip: req?.ip,
     user_id: user.id,
     group_ids: user.groups?.map((g) => g.internal_id) ?? [],
     organization_ids: user.organizations?.map((o) => o.internal_id) ?? [],
-    user_metadata: { ...sso_headers_metadata, ...tracing_headers_metadata },
+    user_metadata: { ...sso_headers_metadata, ...tracing_headers_metadata, sessionHash: hashedSessionId },
     referer: req?.headers.referer,
     applicant_id: req?.headers['opencti-applicant-id'],
     call_retry_number: req?.headers['opencti-retry-number'],
@@ -1086,6 +1087,10 @@ export const userEditField = async (context, user, userId, rawInputs) => {
       throw FunctionalError('Cannot force password change for external user', { userId });
     }
     if (input.key === 'password') {
+      // orgs admins can't update other users passwords
+      if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && user.id !== userId) {
+        throw ForbiddenAccess();
+      }
       const userServiceAccountInput = rawInputs.find((x) => x.key === 'user_service_account');
       if (userServiceAccountInput && userToUpdate.user_service_account !== userServiceAccountInput.value[0]) {
         skipThisInput = true;
@@ -1121,7 +1126,7 @@ export const userEditField = async (context, user, userId, rawInputs) => {
         const draftWorkspaces = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
         const draftWorkspace = draftWorkspaces.get(draftContext);
         if (!draftWorkspace) throw DraftLockedError('Could not find draft workspace');
-        if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN) throw DraftLockedError('Can not move to a draft not in an open state');
+        if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN) throw DraftLockedError('Can not move to a draft that is not in an open state');
       }
     }
     if (input.key === 'unit_system') {
@@ -1427,8 +1432,12 @@ export const userAddRelation = async (context, user, userId, input) => {
   }
   // Check in case organization admins adds non-grantable group a user
   const myGrantableGroups = R.uniq(user.administrated_organizations.map((orga) => orga.grantable_groups).flat());
+  const myAdministratedOrganizationsIds = user.administrated_organizations.map((orga) => orga.id);
   if (isOnlyOrgaAdmin(user)) {
-    if (input.relationship_type === 'member-of' && !myGrantableGroups.includes(input.toId)) {
+    if (input.relationship_type === RELATION_MEMBER_OF && !myGrantableGroups.includes(input.toId)) {
+      throw ForbiddenAccess();
+    }
+    if (input.relationship_type === RELATION_PARTICIPATE_TO && !myAdministratedOrganizationsIds.includes(input.toId)) {
       throw ForbiddenAccess();
     }
   }
@@ -1465,12 +1474,14 @@ export const userDeleteRelation = async (context, user, targetUser, toId, relati
 };
 
 export const userIdDeleteRelation = async (context, user, userId, toId, relationshipType) => {
-  // check the user is accessible
-  const userData = await loadUserToUpdateWithAccessCheck(context, user, userId);
-
   if (!isInternalRelationship(relationshipType)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method, got ${relationshipType}.`);
   }
+  if (relationshipType === RELATION_PARTICIPATE_TO) {
+    return userDeleteOrganizationRelation(context, user, userId, toId);
+  }
+  // check the user is accessible
+  const userData = await loadUserToUpdateWithAccessCheck(context, user, userId);
   return userDeleteRelation(context, user, userData, toId, relationshipType);
 };
 
@@ -1508,7 +1519,7 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
 
 export const loginFromProvider = async (userInfo, opts = {}) => {
   const { providerGroups = [], providerOrganizations = [], preventDefaultGroups = false } = opts;
-  const { autoCreateGroup = false, autoCreateOrganization = false } = opts;
+  const { autoCreateGroup = false, extendPlatformGroups = false, autoCreateOrganization = false, providerGroupsMapping = [] } = opts;
   const context = executionContext('login_provider');
   // region test the groups / organization existence and eventually auto create
   if (providerGroups.length > 0) {
@@ -1576,9 +1587,14 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
   // region Update the groups
   // If groups are specified here, that overwrite the default assignation
   if (providerGroups.length > 0) {
-    // 01 - Delete all groups relation from the user
+    // 01 - Delete group relations from the user
     const userGroups = await fullEntitiesThroughRelationsToList(context, SYSTEM_USER, user.id, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
-    const deleteGroups = userGroups.filter((o) => !providerGroups.includes(o.name));
+    let deleteGroups = userGroups.filter((o) => !providerGroups.includes(o.name));
+    if (extendPlatformGroups) {
+      // swap to delete groups that are managed by the provider that aren't in the provided groups
+      const providerManagedGroups = providerGroupsMapping.map((mapping) => mapping.platform).filter((group) => !providerGroups.includes(group));
+      deleteGroups = userGroups.filter((o) => providerManagedGroups.includes(o.name));
+    }
     for (let index = 0; index < deleteGroups.length; index += 1) {
       const deleteGroup = deleteGroups[index];
       await userDeleteRelation(context, SYSTEM_USER, user, deleteGroup.id, RELATION_MEMBER_OF);

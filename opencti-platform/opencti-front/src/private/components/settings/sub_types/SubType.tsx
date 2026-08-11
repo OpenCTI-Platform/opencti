@@ -10,7 +10,6 @@ import Loader from '../../../../components/Loader';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 import { useFormatter } from '../../../../components/i18n';
 import useAttributes from '../../../../utils/hooks/useAttributes';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import SubTypeMenu from './SubTypeMenu';
 import EntitySettingSettings from './entity_setting/EntitySettingSettings';
@@ -51,7 +50,6 @@ interface SubTypeProps {
 const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const { t_i18n } = useFormatter();
   const { typesWithFintelTemplates } = useAttributes();
-  const { isFeatureEnable } = useHelper();
 
   const data = usePreloadedQuery(subTypeQuery, queryRef);
   const { isCustomViewsEnabled } = useProvideCustomViewsSettingsContext({ data });
@@ -67,8 +65,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const subTypeSettingsId = subType.settings?.id;
   if (!subTypeSettingsId) return <ErrorNotFound />;
 
-  const isDraftWorkflowFeatureEnabled = isFeatureEnable('DRAFT_WORKFLOW');
-  const isDraftWorkspaceType = subType.label === 'DraftWorkspace' && isDraftWorkflowFeatureEnabled;
+  const isDraftWorkspaceType = subType.label === 'DraftWorkspace';
 
   const isWorkflowConfigurationEnabled = !!subType.settings?.availableSettings.includes('workflow_configuration');
 

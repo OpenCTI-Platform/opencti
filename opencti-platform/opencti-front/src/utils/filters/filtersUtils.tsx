@@ -41,6 +41,9 @@ export const SELF_ID_VALUE = 'CURRENT ENTITY';
 
 export const ME_FILTER_VALUE = '@me';
 
+// Filter operators that do not require any values in filter.values
+export const NO_VALUES_FILTER_OPERATORS = ['nil', 'not_nil', 'has_changed', 'not_has_changed'];
+
 // 'within' operator filter constants
 export const DEFAULT_WITHIN_FILTER_VALUES = ['now-1d', 'now'];
 
@@ -220,7 +223,16 @@ export const isNumericFilter = (
   return filterType === 'integer' || filterType === 'float';
 };
 
-// return the values of the filters of a specific key among a filters list
+/**
+ * Remove filters that have no values, except those whose operators are valid without values
+ */
+export const removeEmptyFiltersFromList = (filtersList: Filter[]) => {
+  return filtersList.filter((f) => NO_VALUES_FILTER_OPERATORS.includes(f.operator ?? 'eq') || f.values.length > 0);
+};
+
+/**
+ * Return the values of the filters of a specific key among a filters list
+ */
 export const findFilterFromKey = (
   filters: Filter[],
   key: string,
@@ -237,6 +249,9 @@ export const findFilterFromKey = (
   return null;
 };
 
+/**
+ * Return all filters whose key is in `keys` and whose operator matches.
+ */
 export const findFiltersFromKeys = (
   filters: Filter[],
   keys: string[],
@@ -499,7 +514,13 @@ export const filterValue = (
   if (filterKey === 'relationship_type' || filterKey === 'type') {
     return t_i18n(`relationship_${value}`);
   }
-  return value;
+
+  if (value === undefined || value === null) {
+    return value;
+  }
+
+  // Defensive check to prevent errors on string manipulation after this call
+  return typeof value === 'string' ? value : String(value);
 };
 
 export const isFilterEditable = (filtersRestrictions: FiltersRestrictions | undefined, filterKey: string, filterValues: string[]) => {
@@ -906,9 +927,7 @@ const removeFrontendIdAndEmptyFiltersFromFiltersArray = (filtersArray: Filter[])
     return newFilter;
   };
 
-  return filtersArray
-    .filter((f) => ['nil', 'not_nil', 'has_changed', 'not_has_changed'].includes(f.operator ?? 'eq') || f.values.length > 0)
-    .map((f) => removeFrontendIdFromFilter(f));
+  return removeEmptyFiltersFromList(filtersArray).map((f) => removeFrontendIdFromFilter(f));
 };
 
 // TODO use useRemoveIdAndIncorrectKeysFromFilterGroupObject instead when all the calling files are in pure function

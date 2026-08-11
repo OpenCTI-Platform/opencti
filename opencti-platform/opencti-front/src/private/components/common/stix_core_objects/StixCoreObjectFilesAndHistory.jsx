@@ -31,7 +31,6 @@ import { convertMarkings } from '../../../../utils/edition';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useAuth from '../../../../utils/hooks/useAuth';
 import AuthorizedMembersField from '../form/AuthorizedMembersField';
-import useHelper from '../../../../utils/hooks/useHelper';
 import { useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import { DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
@@ -146,7 +145,6 @@ const StixCoreObjectFilesAndHistory = ({
   withoutRelations,
   bypassEntityId,
 }) => {
-  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const { me: owner, settings } = useAuth();
   const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKSPACE_TYPE);
@@ -182,6 +180,7 @@ const StixCoreObjectFilesAndHistory = ({
 
   const onSubmitImport = (values, { setSubmitting, resetForm }) => {
     const { connector_id, configuration, objectMarking, validation_mode, authorizedMembers } = values;
+    const shouldCreateDraft = validation_mode === 'draft' && !draftContext;
     let config = configuration;
     // Dynamically inject the markings chosen by the user into the csv mapper.
     const isCsvConnector = selectedConnector?.name === 'ImportCsv';
@@ -193,7 +192,7 @@ const StixCoreObjectFilesAndHistory = ({
       }
     }
     commitMutation({
-      mutation: validation_mode === 'draft' ? fileManagerCreateDraftAskJobImportMutation : stixCoreObjectFilesAndHistoryAskJobImportMutation,
+      mutation: shouldCreateDraft ? fileManagerCreateDraftAskJobImportMutation : stixCoreObjectFilesAndHistoryAskJobImportMutation,
       variables: {
         fileName: fileToImport.id,
         connectorId: connector_id,
@@ -301,7 +300,6 @@ const StixCoreObjectFilesAndHistory = ({
     createdBy: undefined,
     authorized_members: undefined,
   });
-
   return (
     <div className={classes.container} data-testid="sco-data-file-and-history">
       <Grid
@@ -338,7 +336,7 @@ const StixCoreObjectFilesAndHistory = ({
       </Grid>
       <Formik
         enableReinitialize={true}
-        initialValues={{ connector_id: '', validation_mode: draftContext ? 'draft' : 'workbench', configuration: '', objectMarking: [], ...draftInitialValues }}
+        initialValues={{ connector_id: '', validation_mode: 'draft', configuration: '', objectMarking: [], ...draftInitialValues }}
         validationSchema={importValidation(t_i18n, selectedConnector?.configurations?.length > 0)}
         onSubmit={onSubmitImport}
         onReset={handleCloseImport}
@@ -388,52 +386,48 @@ const StixCoreObjectFilesAndHistory = ({
                   setFieldValue={setFieldValue}
                 >
                   <MenuItem
-                    key="workbench"
-                    value="workbench"
-                  >
-                    Workbench
-                  </MenuItem>
-                  <MenuItem
                     key="draft"
                     value="draft"
                   >
                     Draft
                   </MenuItem>
+                  <MenuItem
+                    key="workbench"
+                    value="workbench"
+                  >
+                    Workbench
+                  </MenuItem>
                 </Field>
               )}
-              {values.validation_mode === 'draft' && (
+              {values.validation_mode === 'draft' && !draftContext && (
                 <>
-                  {isFeatureEnable('DRAFT_WORKFLOW') && (
-                    <>
-                      <Field
-                        component={MarkdownField}
-                        name="description"
-                        label={t_i18n('Description')}
-                        required={mandatoryAttributes.includes('description')}
-                        fullWidth={true}
-                        multiline={true}
-                        rows="4"
-                        style={fieldSpacingContainerStyle}
-                        askAi={true}
-                      />
-                      <ObjectAssigneeField
-                        name="objectAssignee"
-                        style={fieldSpacingContainerStyle}
-                        required={mandatoryAttributes.includes('objectAssignee')}
-                      />
-                      <ObjectParticipantField
-                        name="objectParticipant"
-                        style={fieldSpacingContainerStyle}
-                        required={mandatoryAttributes.includes('objectParticipant')}
-                      />
-                      <CreatedByField
-                        name="createdBy"
-                        required={mandatoryAttributes.includes('createdBy')}
-                        style={fieldSpacingContainerStyle}
-                        setFieldValue={setFieldValue}
-                      />
-                    </>
-                  )}
+                  <Field
+                    component={MarkdownField}
+                    name="description"
+                    label={t_i18n('Description')}
+                    required={mandatoryAttributes.includes('description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows="4"
+                    style={fieldSpacingContainerStyle}
+                    askAi={true}
+                  />
+                  <ObjectAssigneeField
+                    name="objectAssignee"
+                    style={fieldSpacingContainerStyle}
+                    required={mandatoryAttributes.includes('objectAssignee')}
+                  />
+                  <ObjectParticipantField
+                    name="objectParticipant"
+                    style={fieldSpacingContainerStyle}
+                    required={mandatoryAttributes.includes('objectParticipant')}
+                  />
+                  <CreatedByField
+                    name="createdBy"
+                    required={mandatoryAttributes.includes('createdBy')}
+                    style={fieldSpacingContainerStyle}
+                    setFieldValue={setFieldValue}
+                  />
                   <Field
                     name="authorizedMembers"
                     component={AuthorizedMembersField}

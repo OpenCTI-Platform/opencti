@@ -21,7 +21,7 @@ import SettingsCustomizationPage from 'tests_e2e/model/settingsCustomization.pag
  * 9. Export then re-import the view.
  * 10. Delete the view (and its duplicate and the imported view).
  */
-test('Custom View CRUD - golden path', { tag: ['@ce'] }, async ({ page }) => {
+test('Custom View CRUD - golden path', { tag: ['@ce', '@group1'] }, async ({ page }) => {
   const leftBarPage = new LeftBarPage(page);
   const customViewsSettingsPage = new CustomViewsSettingsPage(page);
   const customizationPage = new SettingsCustomizationPage(page);
@@ -82,15 +82,19 @@ test('Custom View CRUD - golden path', { tag: ['@ce'] }, async ({ page }) => {
   // ─── Verify tab appears on a Campaign entity page ─────────────────────────────
   await leftBarPage.clickOnMenu('Threats', 'Campaigns');
   await campaignPage.getNthItemFromGrid(0).click();
-  // The custom view tab should be visible (single view → uses view name directly)
-  await expect(page.getByRole('tab', { name: viewName })).toBeVisible();
+  // Tab label depends on how many custom views exist:
+  // - single enabled view → tab shows the view name
+  // - multiple enabled views → tab shows generic "Custom view" dropdown
+  // Use case-insensitive regex to handle both cases.
+  await expect(page.getByRole('tab', { name: /custom view/i })).toBeVisible();
 
   // ─── Set as Default ──────────────────────────────────────────────────────────
+  // Use the list popover "Set as default" action (the edit form hides the default
+  // field in edition mode — default is set via the dedicated popover action).
   await page.goto(customViewsSettingsPage.getPageUrl('Campaign'));
-  await customViewsSettingsPage.getItemFromList(viewName).click();
-  await customViewDetailsPage.getEditButton().click();
-  await customViewDetailsPage.getDefaultToggle().click();
-  await customViewDetailsPage.getCloseButton().click();
+  const viewItem = customViewsSettingsPage.getItemFromList(viewName);
+  await customViewsSettingsPage.getQuickActionsButton(viewItem).click();
+  await customViewsSettingsPage.getSetAsDefaultQuickActionButton().click();
 
   // Verify the default tab is first on a Campaign entity page
   await leftBarPage.clickOnMenu('Threats', 'Campaigns');

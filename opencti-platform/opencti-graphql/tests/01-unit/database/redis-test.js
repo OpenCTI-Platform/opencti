@@ -1,4 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+vi.mock('../../../src/schema/schema-relationsRef', () => ({
+  schemaRelationsRefDefinition: {
+    getAllInputNames: vi.fn(() => ['createdBy', 'objectMarking', 'objectLabel']),
+  },
+}));
+
+import { removeResolvedRefs } from '../../../src/database/redis';
 import { generateClusterNodes, generateNatMap } from '../../../src/database/redis';
 
 describe('redis', () => {
@@ -23,5 +31,32 @@ describe('redis', () => {
     expect(second.at(0)).toBe('10.0.1.231:30001');
     expect(second.at(1).host).toBe('203.0.113.73');
     expect(second.at(1).port).toBe(30002);
+  });
+});
+
+describe('removeResolvedRefs', () => {
+  it('should strip resolved ref fields and INPUT_OBJECTS', () => {
+    const instance = {
+      id: 'malware-1',
+      name: 'MalwareA',
+      'created-by': 'identity-1',
+      createdBy: { id: 'identity-1' },
+      'object-marking': ['marking-1'],
+      objectMarking: [{ definition: 'TLP:RED' }],
+      objectLabel: [{ value: 'malware' }],
+      objects: [{ id: 'obj-1' }],
+    };
+
+    expect(removeResolvedRefs(instance)).toEqual({
+      id: 'malware-1',
+      name: 'MalwareA',
+      'created-by': 'identity-1',
+      'object-marking': ['marking-1'],
+    });
+  });
+
+  it('should keep all fields when there are no resolved refs', () => {
+    const instance = { id: 'a', name: 'B', description: 'C' };
+    expect(removeResolvedRefs(instance)).toEqual(instance);
   });
 });

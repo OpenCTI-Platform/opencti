@@ -17,7 +17,6 @@ import { Select, SelectChangeEvent } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import { StixCoreRelationshipAddInput } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationMutation.graphql';
-import { RelayError } from 'src/relay/relayTypes';
 import Loader from 'src/components/Loader';
 import { graphql } from 'react-relay';
 import { ForceUpdateEvent } from '@components/common/bulk/useForceUpdate';
@@ -408,8 +407,7 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
       try {
         await commit(finalValues);
       } catch (error) {
-        const { errors } = (error as unknown as RelayError).res;
-        MESSAGING$.notifyError(errors.at(0)?.message);
+        MESSAGING$.notifyRelayError(error);
         setIsSubmitting(false);
       }
     }

@@ -7,7 +7,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import XtmHubDialogConnectivityLost from '@components/xtm_hub/dialog/connectivity-lost';
 import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { RelayError } from '../../../../relay/relayTypes';
 import useXtmHubDownloadDocument from '../../../../utils/hooks/useXtmHubDownloadDocument';
 import { PaginationOptions } from '../../../../components/list_lines';
 import { IngestionTaxiiImportQuery$data } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiImportQuery.graphql';
@@ -30,8 +29,12 @@ export const taxiiFeedImportQuery = graphql`
 
 interface IngestionTaxiiImportProps {
   paginationOptions: PaginationOptions;
+  // Hide the upload toggle when the import is driven externally (Hub deep link).
+  hideTrigger?: boolean;
+  // Called when the prefilled creation drawer closes (creation or cancel).
+  onClose?: () => void;
 }
-const IngestionTaxiiImport: FunctionComponent<IngestionTaxiiImportProps> = ({ paginationOptions }) => {
+const IngestionTaxiiImport: FunctionComponent<IngestionTaxiiImportProps> = ({ paginationOptions, hideTrigger, onClose }) => {
   const { fileId, serviceInstanceId } = useParams();
   const navigate = useNavigate();
   const inputFileRef = useRef<HTMLInputElement>(null);
@@ -50,8 +53,7 @@ const IngestionTaxiiImport: FunctionComponent<IngestionTaxiiImportProps> = ({ pa
         inputFileRef.current.value = '';
       }
     } catch (e) {
-      const { errors } = (e as unknown as RelayError).res;
-      MESSAGING$.notifyError(errors.at(0)?.message);
+      MESSAGING$.notifyRelayError(e);
     }
   };
 
@@ -73,7 +75,7 @@ const IngestionTaxiiImport: FunctionComponent<IngestionTaxiiImportProps> = ({ pa
   });
 
   const handleConfirm = () => {
-    navigate('/dashboard/settings/experience');
+    navigate('/redirect/connect-xtm-hub');
   };
 
   const handleCancel = () => {
@@ -87,15 +89,17 @@ const IngestionTaxiiImport: FunctionComponent<IngestionTaxiiImportProps> = ({ pa
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />
-      <ToggleButton
-        value="import"
-        size="small"
-        sx={{ marginLeft: 1 }}
-        title={t_i18n('Import a Taxii Feed')}
-        onClick={() => inputFileRef?.current?.click()}
-      >
-        <FileUploadOutlined fontSize="small" color="primary" />
-      </ToggleButton>
+      {!hideTrigger && (
+        <ToggleButton
+          value="import"
+          size="small"
+          sx={{ marginLeft: 1 }}
+          title={t_i18n('Import a Taxii Feed')}
+          onClick={() => inputFileRef?.current?.click()}
+        >
+          <FileUploadOutlined fontSize="small" color="primary" />
+        </ToggleButton>
+      )}
       <VisuallyHiddenInput
         ref={inputFileRef}
         type="file"
@@ -104,7 +108,10 @@ const IngestionTaxiiImport: FunctionComponent<IngestionTaxiiImportProps> = ({ pa
       />
       <IngestionTaxiiCreation
         open={open}
-        handleClose={() => setOpen(false)}
+        handleClose={() => {
+          setOpen(false);
+          onClose?.();
+        }}
         ingestionTaxiiData={ingestTaxiiData}
         paginationOptions={paginationOptions}
         triggerButton={false}

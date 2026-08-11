@@ -83,6 +83,8 @@ export const extractWsSessionContext = async (context) => {
 const createHttpServer = async () => {
   logApp.info('[INIT] Configuring HTTP/HTTPS server');
   const app = express();
+  // Disable the X-Powered-By header to avoid leaking framework information.
+  app.disable('x-powered-by');
   // Rate limiter must be first registered so it applies to all requests including /graphql
   // Even before session so it avoid creating session on rate limited requests.
   app.use(rateLimit(buildRateLimiterOptions()));

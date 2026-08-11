@@ -5,7 +5,6 @@ import { FileUploadOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton/ToggleButton';
 import { useNavigate, useParams } from 'react-router-dom';
 import XtmHubDialogConnectivityLost from '@components/xtm_hub/dialog/connectivity-lost';
-import { RelayError } from '../../../relay/relayTypes';
 import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import SyncCreation from '@components/data/sync/SyncCreation';
 import { useFormatter } from '../../../components/i18n';
@@ -30,8 +29,12 @@ export const syncImportQuery = graphql`
 
 interface SyncImportProps {
   paginationOptions: PaginationOptions;
+  // Hide the upload toggle when the import is driven externally (Hub deep link).
+  hideTrigger?: boolean;
+  // Called when the prefilled creation drawer closes (creation or cancel).
+  onClose?: () => void;
 }
-const SyncImport: FunctionComponent<SyncImportProps> = ({ paginationOptions }) => {
+const SyncImport: FunctionComponent<SyncImportProps> = ({ paginationOptions, hideTrigger, onClose }) => {
   const { fileId, serviceInstanceId } = useParams();
   const navigate = useNavigate();
   const inputFileRef = useRef<HTMLInputElement>(null);
@@ -50,8 +53,7 @@ const SyncImport: FunctionComponent<SyncImportProps> = ({ paginationOptions }) =
         inputFileRef.current.value = '';
       }
     } catch (e) {
-      const { errors } = (e as unknown as RelayError).res;
-      MESSAGING$.notifyError(errors.at(0)?.message);
+      MESSAGING$.notifyRelayError(e);
     }
   };
 
@@ -73,7 +75,7 @@ const SyncImport: FunctionComponent<SyncImportProps> = ({ paginationOptions }) =
   });
 
   const handleConfirm = () => {
-    navigate('/dashboard/settings/experience');
+    navigate('/redirect/connect-xtm-hub');
   };
 
   const handleCancel = () => {
@@ -87,15 +89,17 @@ const SyncImport: FunctionComponent<SyncImportProps> = ({ paginationOptions }) =
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />
-      <ToggleButton
-        value="import"
-        size="small"
-        sx={{ marginLeft: 1 }}
-        title={t_i18n('Import an OpenCTI Stream')}
-        onClick={() => inputFileRef?.current?.click()}
-      >
-        <FileUploadOutlined fontSize="small" color="primary" />
-      </ToggleButton>
+      {!hideTrigger && (
+        <ToggleButton
+          value="import"
+          size="small"
+          sx={{ marginLeft: 1 }}
+          title={t_i18n('Import an OpenCTI Stream')}
+          onClick={() => inputFileRef?.current?.click()}
+        >
+          <FileUploadOutlined fontSize="small" color="primary" />
+        </ToggleButton>
+      )}
       <VisuallyHiddenInput
         ref={inputFileRef}
         type="file"
@@ -104,12 +108,15 @@ const SyncImport: FunctionComponent<SyncImportProps> = ({ paginationOptions }) =
       />
       <SyncCreation
         open={open}
-        handleClose={() => setOpen(false)}
+        handleClose={() => {
+          setOpen(false);
+          onClose?.();
+        }}
         ingestionSynchronizerData={ingestSynchronizerData}
         paginationOptions={paginationOptions}
         triggerButton={false}
         drawerSettings={{
-          title: t_i18n('Import a Taxii Feed'),
+          title: t_i18n('Import an OpenCTI Stream'),
           button: t_i18n('Create'),
         }}
       />

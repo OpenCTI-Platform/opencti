@@ -48,6 +48,7 @@ const headerStrategyFormQuery = graphql`
           }
           auto_create_groups
           prevent_default_groups
+          extend_platform_groups
         }
         organizations_mapping {
           default_organizations
@@ -91,6 +92,7 @@ const headerStrategyFormMutation = graphql`
             }
             auto_create_groups
             prevent_default_groups
+            extend_platform_groups
           }
           organizations_mapping {
             default_organizations
@@ -132,6 +134,7 @@ interface HeaderStrategyFormValues {
     groups_mapping: MappingEntry[];
     auto_create_groups: boolean;
     prevent_default_groups: boolean;
+    extend_platform_groups: boolean;
   };
   organizations_mapping: {
     default_organizations: string[];
@@ -193,6 +196,7 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
       groups_mapping: (gm?.groups_mapping ?? []).map((m) => ({ provider: m.provider, platform: m.platform })),
       auto_create_groups: gm?.auto_create_groups ?? false,
       prevent_default_groups: gm?.prevent_default_groups ?? false,
+      extend_platform_groups: gm?.extend_platform_groups ?? false,
     },
     organizations_mapping: {
       default_organizations: [...(om?.default_organizations ?? [])],
@@ -234,6 +238,7 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
               .map((m) => ({ provider: m.provider, platform: m.platform })),
             auto_create_groups: values.groups_mapping.auto_create_groups,
             prevent_default_groups: values.groups_mapping.prevent_default_groups,
+            extend_platform_groups: values.groups_mapping.extend_platform_groups,
           },
           organizations_mapping: {
             default_organizations: filterStringArray(values.organizations_mapping.default_organizations),

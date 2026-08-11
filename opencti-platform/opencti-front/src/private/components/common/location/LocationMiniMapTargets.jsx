@@ -3,7 +3,6 @@ import { GeoJSON, MapContainer, Marker, TileLayer } from 'react-leaflet';
 import L from 'leaflet';
 import { useTheme } from '@mui/material/styles';
 import { UserContext } from '../../../../utils/hooks/useAuth';
-import { fileUri } from '../../../../relay/environment';
 import CityOrange from '../../../../static/images/leaflet/city_orange.png';
 import { usePublicSettings } from '../../../../public/PublicSettingsProvider';
 import allCountries from '../../../../static/geo/countries.json';
@@ -23,8 +22,8 @@ const colors = [
 ];
 
 const pointerIcon = new L.Icon({
-  iconUrl: fileUri(CityOrange),
-  iconRetinaUrl: fileUri(CityOrange),
+  iconUrl: CityOrange,
+  iconRetinaUrl: CityOrange,
   iconAnchor: [5, 55],
   popupAnchor: [10, -44],
   iconSize: [25, 25],

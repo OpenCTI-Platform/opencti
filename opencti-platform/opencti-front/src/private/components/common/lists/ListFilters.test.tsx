@@ -4,7 +4,6 @@ import testRender, { createMockUserContext } from '../../../../utils/tests/test-
 
 vi.mock('../../../../relay/environment', () => ({
   APP_BASE_PATH: '',
-  fileUri: (f: string) => f,
   MESSAGING$: { messages$: { subscribe: () => ({}) } },
   environment: {},
   QueryRenderer: ({ render }: { render: (args: { props: null }) => React.ReactNode }) => render({ props: null }),

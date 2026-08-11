@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER } from '../../../utils/testQuery';
-import { queryAsAdmin, queryAsAdminWithSuccess } from '../../../utils/testQueryHelper';
+import { createUploadFromTestDataFile, queryAsAdmin, queryAsAdminWithSuccess } from '../../../utils/testQueryHelper';
 import { IngestionAuthType } from '../../../../src/generated/graphql';
 
 // Minimal JSON mapper representations - creates a Domain-Name entity from a path
@@ -216,5 +216,194 @@ describe('JSON ingestion resolver — authentication encryption', () => {
     });
     expect(result.data?.ingestionJsonDelete).toBe(jsonIngestionId);
     jsonIngestionId = ''; // mark as deleted so afterAll skips it
+  });
+});
+
+describe('JSON ingestion resolver — configuration export / import', () => {
+  const IMPORT_MUTATION = gql`
+    mutation jsonFeedAddInputFromImport($file: Upload!) {
+      ingestionJsonAddInputFromImport(file: $file) {
+        name
+        description
+        scheduling_period
+        uri
+        verb
+        ssl_verify
+        headers {
+          name
+          value
+        }
+        authentication_type
+        jsonMapper {
+          id
+          name
+        }
+      }
+    }
+  `;
+  const DELETE_MAPPER_MUTATION = gql`mutation deleteJsonMapperFromImport($id: ID!) { jsonMapperDelete(id: $id) }`;
+
+  let exportMapperId: string;
+  let exportIngestionId: string;
+  let importedMapperId: string;
+
+  beforeAll(async () => {
+    const mapperResult = await queryAsAdminWithSuccess({
+      query: gql`
+        mutation createJsonMapperForExportTest($input: JsonMapperAddInput!) {
+          jsonMapperAdd(input: $input) {
+            id
+          }
+        }
+      `,
+      variables: {
+        input: {
+          name: 'JSON mapper for export test',
+          representations: MINIMAL_REPRESENTATIONS,
+        },
+      },
+    });
+    exportMapperId = mapperResult.data?.jsonMapperAdd?.id;
+    expect(exportMapperId).toBeDefined();
+
+    const ingestionResult = await queryAsAdminWithSuccess({
+      query: gql`
+        mutation createJsonIngestionForExportTest($input: IngestionJsonAddInput!) {
+          ingestionJsonAdd(input: $input) {
+            id
+          }
+        }
+      `,
+      variables: {
+        input: {
+          name: 'JSON feed for export test',
+          description: 'JSON feed export description',
+          uri: 'http://jsonserver.invalid/api/export',
+          authentication_type: IngestionAuthType.None,
+          json_mapper_id: exportMapperId,
+          user_id: ADMIN_USER.id,
+          scheduling_period: 'PT1H',
+          verb: 'get',
+          headers: [
+            { name: 'Accept', value: 'application/json' },
+            { name: 'Authorization', value: 'Bearer super-secret-token' },
+          ],
+        },
+      },
+    });
+    exportIngestionId = ingestionResult.data?.ingestionJsonAdd?.id;
+    expect(exportIngestionId).toBeDefined();
+  });
+
+  afterAll(async () => {
+    if (exportIngestionId) {
+      await queryAsAdmin({
+        query: gql`mutation deleteJsonIngestionExportTest($id: ID!) { ingestionJsonDelete(id: $id) }`,
+        variables: { id: exportIngestionId },
+      });
+    }
+    if (exportMapperId) {
+      await queryAsAdmin({ query: DELETE_MAPPER_MUTATION, variables: { id: exportMapperId } });
+    }
+    if (importedMapperId) {
+      await queryAsAdmin({ query: DELETE_MAPPER_MUTATION, variables: { id: importedMapperId } });
+    }
+  });
+
+  it('should generate a self-contained export configuration with the embedded mapper', async () => {
+    // Covers: jsonFeedExport (ingestion-json-domain.ts)
+    // Covers: IngestionJson.toConfigurationExport field resolver
+    const result = await queryAsAdminWithSuccess({
+      query: gql`
+        query queryJsonFeedExport($id: String!) {
+          ingestionJson(id: $id) {
+            name
+            toConfigurationExport
+          }
+        }
+      `,
+      variables: { id: exportIngestionId },
+    });
+    const exported = JSON.parse(result.data?.ingestionJson.toConfigurationExport);
+    expect(exported.type).toBe('jsonFeeds');
+    expect(exported.openCTI_version).toBeDefined();
+    expect(exported.configuration).toMatchObject({
+      name: 'JSON feed for export test',
+      description: 'JSON feed export description',
+      uri: 'http://jsonserver.invalid/api/export',
+      verb: 'get',
+      scheduling_period: 'PT1H',
+      // Credentials are platform-specific and never exported.
+      authentication_value: '',
+    });
+    // Covers: sanitizeExportedHeaders — sensitive header values are blanked,
+    // non-sensitive ones are exported as-is.
+    expect(exported.configuration.headers).toEqual([
+      { name: 'Accept', value: 'application/json' },
+      { name: 'Authorization', value: '' },
+    ]);
+    expect(exported.configuration.json_mapper.name).toBe('JSON mapper for export test');
+    expect(exported.configuration.json_mapper.representations).toHaveLength(1);
+    expect(exported.configuration.json_mapper.representations[0].target.entity_type).toBe('Domain-Name');
+  });
+
+  it('should import a configuration and create the embedded mapper when it does not exist', async () => {
+    // Covers: jsonFeedAddInputFromImport mapper creation branch (ingestion-json-domain.ts)
+    // Covers: createJsonMapperFromConfiguration (jsonMapper-domain.ts)
+    const upload = await createUploadFromTestDataFile('jsonFeed/test-json-feed.json', 'test-json-feed.json', 'application/json');
+    const result = await queryAsAdminWithSuccess({
+      query: IMPORT_MUTATION,
+      variables: { file: upload },
+    });
+    const imported = result.data?.ingestionJsonAddInputFromImport;
+    expect(imported).toMatchObject({
+      name: 'jsonFeedAuto',
+      description: 'Imported JSON feed',
+      scheduling_period: 'PT1H',
+      uri: 'http://jsonserver.invalid/api/data',
+      verb: 'get',
+      ssl_verify: true,
+      headers: [{ name: 'Accept', value: 'application/json' }],
+    });
+    expect(imported.jsonMapper.name).toBe('JSON mapper from feed import test');
+    expect(imported.jsonMapper.id).toBeDefined();
+    importedMapperId = imported.jsonMapper.id;
+  });
+
+  it('should reuse the existing mapper when importing the same configuration again', async () => {
+    // Covers: jsonFeedAddInputFromImport mapper reuse branch (ingestion-json-domain.ts)
+    const upload = await createUploadFromTestDataFile('jsonFeed/test-json-feed.json', 'test-json-feed.json', 'application/json');
+    const result = await queryAsAdminWithSuccess({
+      query: IMPORT_MUTATION,
+      variables: { file: upload },
+    });
+    const imported = result.data?.ingestionJsonAddInputFromImport;
+    expect(imported.jsonMapper.id).toBe(importedMapperId);
+  });
+
+  it('should refuse a configuration exported by an incompatible platform version', async () => {
+    // Covers: the version guard of jsonFeedAddInputFromImport
+    const upload = await createUploadFromTestDataFile('jsonFeed/test-json-feed-outdated.json', 'test-json-feed-outdated.json', 'application/json');
+    const result = await queryAsAdmin({
+      query: IMPORT_MUTATION,
+      variables: { file: upload },
+    });
+    expect(result.errors).toBeDefined();
+    if (result.errors) {
+      expect(result.errors[0].message).toContain('Invalid version of the platform');
+    }
+  });
+
+  it('should refuse a configuration without an embedded mapper', async () => {
+    // Covers: the missing mapper guard of jsonFeedAddInputFromImport
+    const upload = await createUploadFromTestDataFile('jsonFeed/test-json-feed-no-mapper.json', 'test-json-feed-no-mapper.json', 'application/json');
+    const result = await queryAsAdmin({
+      query: IMPORT_MUTATION,
+      variables: { file: upload },
+    });
+    expect(result.errors).toBeDefined();
+    if (result.errors) {
+      expect(result.errors[0].message).toContain('missing embedded JSON mapper');
+    }
   });
 });

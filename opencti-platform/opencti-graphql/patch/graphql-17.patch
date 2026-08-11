@@ -1,0 +1,269 @@
+diff --git a/package.json b/package.json
+index ea6af5445a2b1a3088efed30e331af83933b7e2e..677105fb1eb08c6beed88d4540c45b787a83dfc2 100644
+--- a/package.json
++++ b/package.json
+@@ -38,166 +38,76 @@
+   "types": "index.d.ts",
+   "exports": {
+     "./error": {
+-      "development": {
+-        "module": "./__dev__/error/index.mjs",
+-        "bun": "./__dev__/error/index.mjs",
+-        "module-sync": "./__dev__/error/index.mjs",
+-        "node": "./__dev__/error/index.js",
+-        "require": "./__dev__/error/index.js",
+-        "default": "./__dev__/error/index.mjs"
+-      },
+-      "default": {
+-        "module": "./error/index.mjs",
+-        "bun": "./error/index.mjs",
+-        "module-sync": "./error/index.mjs",
+-        "node": "./error/index.js",
+-        "require": "./error/index.js",
+-        "default": "./error/index.mjs"
+-      }
++      "module": "./error/index.mjs",
++      "bun": "./error/index.mjs",
++      "module-sync": "./error/index.mjs",
++      "node": "./error/index.js",
++      "require": "./error/index.js",
++      "default": "./error/index.mjs"
+     },
+     "./execution": {
+-      "development": {
+-        "module": "./__dev__/execution/index.mjs",
+-        "bun": "./__dev__/execution/index.mjs",
+-        "module-sync": "./__dev__/execution/index.mjs",
+-        "node": "./__dev__/execution/index.js",
+-        "require": "./__dev__/execution/index.js",
+-        "default": "./__dev__/execution/index.mjs"
+-      },
+-      "default": {
+-        "module": "./execution/index.mjs",
+-        "bun": "./execution/index.mjs",
+-        "module-sync": "./execution/index.mjs",
+-        "node": "./execution/index.js",
+-        "require": "./execution/index.js",
+-        "default": "./execution/index.mjs"
+-      }
++      "module": "./execution/index.mjs",
++      "bun": "./execution/index.mjs",
++      "module-sync": "./execution/index.mjs",
++      "node": "./execution/index.js",
++      "require": "./execution/index.js",
++      "default": "./execution/index.mjs"
+     },
+     ".": {
+-      "development": {
+-        "module": "./__dev__/index.mjs",
+-        "bun": "./__dev__/index.mjs",
+-        "module-sync": "./__dev__/index.mjs",
+-        "node": "./__dev__/index.js",
+-        "require": "./__dev__/index.js",
+-        "default": "./__dev__/index.mjs"
+-      },
+-      "default": {
+-        "module": "./index.mjs",
+-        "bun": "./index.mjs",
+-        "module-sync": "./index.mjs",
+-        "node": "./index.js",
+-        "require": "./index.js",
+-        "default": "./index.mjs"
+-      }
++      "module": "./index.mjs",
++      "bun": "./index.mjs",
++      "module-sync": "./index.mjs",
++      "node": "./index.js",
++      "require": "./index.js",
++      "default": "./index.mjs"
+     },
+     "./language": {
+-      "development": {
+-        "module": "./__dev__/language/index.mjs",
+-        "bun": "./__dev__/language/index.mjs",
+-        "module-sync": "./__dev__/language/index.mjs",
+-        "node": "./__dev__/language/index.js",
+-        "require": "./__dev__/language/index.js",
+-        "default": "./__dev__/language/index.mjs"
+-      },
+-      "default": {
+-        "module": "./language/index.mjs",
+-        "bun": "./language/index.mjs",
+-        "module-sync": "./language/index.mjs",
+-        "node": "./language/index.js",
+-        "require": "./language/index.js",
+-        "default": "./language/index.mjs"
+-      }
++      "module": "./language/index.mjs",
++      "bun": "./language/index.mjs",
++      "module-sync": "./language/index.mjs",
++      "node": "./language/index.js",
++      "require": "./language/index.js",
++      "default": "./language/index.mjs"
+     },
+     "./type": {
+-      "development": {
+-        "module": "./__dev__/type/index.mjs",
+-        "bun": "./__dev__/type/index.mjs",
+-        "module-sync": "./__dev__/type/index.mjs",
+-        "node": "./__dev__/type/index.js",
+-        "require": "./__dev__/type/index.js",
+-        "default": "./__dev__/type/index.mjs"
+-      },
+-      "default": {
+-        "module": "./type/index.mjs",
+-        "bun": "./type/index.mjs",
+-        "module-sync": "./type/index.mjs",
+-        "node": "./type/index.js",
+-        "require": "./type/index.js",
+-        "default": "./type/index.mjs"
+-      }
++      "module": "./type/index.mjs",
++      "bun": "./type/index.mjs",
++      "module-sync": "./type/index.mjs",
++      "node": "./type/index.js",
++      "require": "./type/index.js",
++      "default": "./type/index.mjs"
+     },
+     "./utilities": {
+-      "development": {
+-        "module": "./__dev__/utilities/index.mjs",
+-        "bun": "./__dev__/utilities/index.mjs",
+-        "module-sync": "./__dev__/utilities/index.mjs",
+-        "node": "./__dev__/utilities/index.js",
+-        "require": "./__dev__/utilities/index.js",
+-        "default": "./__dev__/utilities/index.mjs"
+-      },
+-      "default": {
+-        "module": "./utilities/index.mjs",
+-        "bun": "./utilities/index.mjs",
+-        "module-sync": "./utilities/index.mjs",
+-        "node": "./utilities/index.js",
+-        "require": "./utilities/index.js",
+-        "default": "./utilities/index.mjs"
+-      }
++      "module": "./utilities/index.mjs",
++      "bun": "./utilities/index.mjs",
++      "module-sync": "./utilities/index.mjs",
++      "node": "./utilities/index.js",
++      "require": "./utilities/index.js",
++      "default": "./utilities/index.mjs"
+     },
+     "./validation": {
+-      "development": {
+-        "module": "./__dev__/validation/index.mjs",
+-        "bun": "./__dev__/validation/index.mjs",
+-        "module-sync": "./__dev__/validation/index.mjs",
+-        "node": "./__dev__/validation/index.js",
+-        "require": "./__dev__/validation/index.js",
+-        "default": "./__dev__/validation/index.mjs"
+-      },
+-      "default": {
+-        "module": "./validation/index.mjs",
+-        "bun": "./validation/index.mjs",
+-        "module-sync": "./validation/index.mjs",
+-        "node": "./validation/index.js",
+-        "require": "./validation/index.js",
+-        "default": "./validation/index.mjs"
+-      }
++      "module": "./validation/index.mjs",
++      "bun": "./validation/index.mjs",
++      "module-sync": "./validation/index.mjs",
++      "node": "./validation/index.js",
++      "require": "./validation/index.js",
++      "default": "./validation/index.mjs"
+     },
+     "./*.js": {
+-      "development": {
+-        "module": "./__dev__/*.mjs",
+-        "bun": "./__dev__/*.mjs",
+-        "module-sync": "./__dev__/*.mjs",
+-        "node": "./__dev__/*.js",
+-        "require": "./__dev__/*.js",
+-        "default": "./__dev__/*.mjs"
+-      },
+-      "default": {
+-        "module": "./*.mjs",
+-        "bun": "./*.mjs",
+-        "module-sync": "./*.mjs",
+-        "node": "./*.js",
+-        "require": "./*.js",
+-        "default": "./*.mjs"
+-      }
++      "module": "./*.mjs",
++      "bun": "./*.mjs",
++      "module-sync": "./*.mjs",
++      "node": "./*.js",
++      "require": "./*.js",
++      "default": "./*.mjs"
+     },
+     "./*": {
+-      "development": {
+-        "module": "./__dev__/*.mjs",
+-        "bun": "./__dev__/*.mjs",
+-        "module-sync": "./__dev__/*.mjs",
+-        "node": "./__dev__/*.js",
+-        "require": "./__dev__/*.js",
+-        "default": "./__dev__/*.mjs"
+-      },
+-      "default": {
+-        "module": "./*.mjs",
+-        "bun": "./*.mjs",
+-        "module-sync": "./*.mjs",
+-        "node": "./*.js",
+-        "require": "./*.js",
+-        "default": "./*.mjs"
+-      }
++      "module": "./*.mjs",
++      "bun": "./*.mjs",
++      "module-sync": "./*.mjs",
++      "node": "./*.js",
++      "require": "./*.js",
++      "default": "./*.mjs"
+     }
+   }
+ }
+diff --git a/jsutils/instanceOf.js b/jsutils/instanceOf.js
+index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
+--- a/jsutils/instanceOf.js
++++ b/jsutils/instanceOf.js
+@@ -31,7 +31,16 @@
+     return false;
+ }
+ function prodInstanceOf(value, symbol) {
+-    return value?.__kind === symbol;
++    if (value?.__kind === symbol) {
++        return true;
++    }
++    // Fall back to comparing the symbol's description: within a single test process,
++    // Vitest's SSR module runner can evaluate this exact same graphql package through
++    // two independent module realms (its own inlined evaluator vs Node's native loader),
++    // producing type-kind brand symbols that carry the same meaning but fail strict
++    // identity. This never happens outside that harness, and a genuine version/shape
++    // mismatch would still fail elsewhere (different description or missing members).
++    return typeof value?.__kind === 'symbol' && value.__kind.description === symbol.description;
+ }
+ exports.instanceOf = prodInstanceOf;
+ function enableDevInstanceOf() {
+diff --git a/jsutils/instanceOf.mjs b/jsutils/instanceOf.mjs
+index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
+--- a/jsutils/instanceOf.mjs
++++ b/jsutils/instanceOf.mjs
+@@ -27,7 +27,16 @@
+     return false;
+ }
+ function prodInstanceOf(value, symbol) {
+-    return value?.__kind === symbol;
++    if (value?.__kind === symbol) {
++        return true;
++    }
++    // Fall back to comparing the symbol's description: within a single test process,
++    // Vitest's SSR module runner can evaluate this exact same graphql package through
++    // two independent module realms (its own inlined evaluator vs Node's native loader),
++    // producing type-kind brand symbols that carry the same meaning but fail strict
++    // identity. This never happens outside that harness, and a genuine version/shape
++    // mismatch would still fail elsewhere (different description or missing members).
++    return typeof value?.__kind === 'symbol' && value.__kind.description === symbol.description;
+ }
+ export let instanceOf = prodInstanceOf;
+ export function enableDevInstanceOf() {

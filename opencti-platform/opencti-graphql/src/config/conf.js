@@ -37,7 +37,6 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicD
 import { AI_BUS } from '../modules/ai/ai-types';
 import { SUPPORT_BUS } from '../modules/support/support-types';
 import { ENTITY_TYPE_EXCLUSION_LIST } from '../modules/exclusionList/exclusionList-types';
-import { ENTITY_TYPE_SMTP_CONFIGURATION } from '../modules/smtpConfiguration/smtpConfiguration-types';
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
 import { ENTITY_TYPE_DISSEMINATION_LIST } from '../modules/disseminationList/disseminationList-types';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
@@ -279,14 +278,14 @@ const auditLogger = winston.createLogger({
 export const SUPPORT_LOG_RELATIVE_LOCAL_DIR = '.support';
 export const SUPPORT_LOG_FILE_PREFIX = 'support';
 const supportLogger = winston.createLogger({
-  level: 'warn',
+  level: 'info',
   format: format.combine(timestamp(), format.errors({ stack: true }), format.json()),
   transports: [new DailyRotateFile({
     filename: SUPPORT_LOG_FILE_PREFIX,
     dirname: SUPPORT_LOG_RELATIVE_LOCAL_DIR,
     maxFiles: 3,
     maxSize: '10m',
-    level: 'warn',
+    level: 'info',
   })],
 });
 
@@ -326,8 +325,7 @@ export const logApp = {
     if (appLogTransports.length > 0 && appLogger.isLevelEnabled(level)) {
       const data = prepareLogMetadata(meta, { category: LOG_APP, source: 'backend' });
       appLogger.log(level, message, data);
-      // Only add in support package starting warn level
-      if (appLogger.isLevelEnabled('warn')) {
+      if (supportLogger.isLevelEnabled(level)) {
         supportLogger.log(level, message, data);
       }
     }
@@ -594,6 +592,9 @@ export const ENABLED_FEATURE_FLAGS = nconf.get('app:enabled_dev_features') ?? []
 export const FEATURE_FLAG_ALL = '*';
 export const isFeatureEnabled = (feature) => ENABLED_FEATURE_FLAGS.includes(FEATURE_FLAG_ALL) || ENABLED_FEATURE_FLAGS.includes(feature);
 
+// Custom fields feature flag (use isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG) to check activation)
+export const CUSTOM_FIELDS_FEATURE_FLAG = 'CUSTOM_FIELDS';
+
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;
 export const TOPIC_CONTEXT_PREFIX = `${REDIS_PREFIX}_OPENCTI_CONTEXT_`;
@@ -736,11 +737,6 @@ export const BUS_TOPICS = {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_EXCLUSION_LIST_EDIT_TOPIC`,
     DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_EXCLUSION_LIST_DELETE_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_EXCLUSION_LIST_ADDED_TOPIC`,
-  },
-  [ENTITY_TYPE_SMTP_CONFIGURATION]: {
-    EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_SMTP_CONFIGURATION_EDIT_TOPIC`,
-    DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_SMTP_CONFIGURATION_DELETE_TOPIC`,
-    ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_SMTP_CONFIGURATION_ADDED_TOPIC`,
   },
   [ENTITY_TYPE_DISSEMINATION_LIST]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DISSEMINATION_LIST_EDIT_TOPIC`,

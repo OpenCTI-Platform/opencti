@@ -5,13 +5,15 @@ import { SourceMapConsumer } from 'source-map';
 const readStdin = () => new Promise((resolve) => {
   let data = '';
   process.stdin.setEncoding('utf8');
-  process.stdin.on('data', (chunk) => { data += chunk; });
+  process.stdin.on('data', (chunk) => {
+    data += chunk;
+  });
   process.stdin.on('end', () => resolve(data));
 });
 
 /**
  * This code will allow you to convert a built stack error to the real lines of code
- * For that you need to align your code version and build the backend/frontend to have the correct back.js.map file
+ * For that you need to align your code version and build the backend/frontend to have the correct back.mjs.map file
  * For the backend, <yarn build> in opencti-graphql
  * For the frontend, <yarn build> in opencti-front
  * Then you just have to put your json log of the error in a .env files at the root directory of opencti-graphql
@@ -19,7 +21,7 @@ const readStdin = () => new Promise((resolve) => {
  * and start the script yarn stack:analysis
  */
 
-const BACKEND_MAP = './build/back.js.map';
+const BACKEND_MAP = './build/back.mjs.map';
 const FRONT_ASSETS_DIR = '../opencti-front/dist/assets';
 const isExecTypeBack = process.argv[process.argv.length - 1] === 'back';
 const stackData = (isExecTypeBack ? process.env.BACKEND_LOG : process.env.FRONTEND_LOG) ?? await readStdin();

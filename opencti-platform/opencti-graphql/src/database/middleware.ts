@@ -23,6 +23,8 @@ import {
   ValidationError,
 } from '../config/errors';
 import { extractEntityRepresentativeName } from './entity-representative';
+import { CUSTOM_FIELD_PREFIX } from '../modules/customField/custom-field-types';
+import { getCustomFieldDefinitionByName, getCustomFieldValueField } from '../modules/customField/custom-field-cache';
 import {
   computeAverage,
   extractIdsFromStoreObject,
@@ -49,6 +51,7 @@ import {
 import {
   type AggregationRelationsCount,
   elAggregationCount,
+  elAggregationNestedTermsWithFilter,
   elAggregationRelationsCount,
   elConnection,
   elDeleteElements,
@@ -764,15 +767,21 @@ const convertAggregateDistributions = async (
   limit: number,
   orderingFunction: any,
   distribution: { label: string; value: number }[],
-): Promise<{ label: string; value: number; entity: BasicStoreEntity }[]> => {
+): Promise<{ label: string; value: number; entity: BasicStoreEntity | null }[]> => {
   const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution)) as { label: string; value: number }[];
   // resolve all of them with system user
   const allResolveLabels = await elFindByIds<BasicStoreEntity>(context, SYSTEM_USER, data.map((d) => d.label), { toMap: true }) as Record<string, BasicStoreEntity>;
-  // filter out unresolved data (like the SYSTEM user for instance)
-  const filteredData = data.filter((n) => isNotEmptyField(allResolveLabels[n.label.toLowerCase()]));
+  // filter out unresolved data (like the SYSTEM user for instance); keep the synthetic 'unknown' bucket
+  const filteredData = data.filter((n) => n.label === 'unknown' || isNotEmptyField(allResolveLabels[n.label.toLowerCase()]));
   // entities not granted shall be sent as "restricted" with limited information
   const grantedIds: string[] = [];
   for (let i = 0; i < filteredData.length; i += 1) {
+    // The 'unknown' bucket has no real entity — skip resolution and access check
+    if (filteredData[i].label === 'unknown') {
+      grantedIds.push('unknown');
+      // eslint-disable-next-line no-continue
+      continue;
+    }
     const resolved = allResolveLabels[filteredData[i].label.toLowerCase()];
     const canAccess = await isUserCanAccessStoreElement(context, user, resolved);
     if (canAccess) {
@@ -781,6 +790,10 @@ const convertAggregateDistributions = async (
   }
   return filteredData
     .map((n) => {
+      // The 'unknown' bucket has no backing entity
+      if (n.label === 'unknown') {
+        return { ...n, entity: null };
+      }
       const element = allResolveLabels[n.label.toLowerCase()];
       if (grantedIds.includes(n.label.toLowerCase())) {
         return {
@@ -842,11 +855,11 @@ export const distributionHistory = async (context: AuthContext, user: AuthUser, 
     return convertAggregateDistributions(context, user, limit, orderingFunction, distributionData);
   }
   if (field === 'name' || field === 'context_data.id') {
-    let result: { label: string; value: number; entity: BasicStoreEntity }[] = [];
+    let result: { label: string; value: number; entity: BasicStoreEntity | null }[] = [];
     await convertAggregateDistributions(context, user, limit, orderingFunction, distributionData)
       .then((hits) => {
         result = hits.map((hit) => ({
-          label: hit.entity.name ?? extractEntityRepresentativeName(hit.entity),
+          label: hit.entity?.name ?? extractEntityRepresentativeName(hit.entity),
           value: hit.value,
           entity: hit.entity,
         }));
@@ -863,37 +876,69 @@ export const distributionEntities = async (
   user: AuthUser,
   types: string | string[] | undefined | null,
   args: EntityFilters<BasicStoreEntity> & { limit?: number | null; order?: string | null; field: string } & { onlyInferred?: boolean },
-): Promise<{ label: string; value: number; entity: BasicStoreEntity }[]> => {
-  const distributionArgs = buildEntityFilters(types, args);
+): Promise<{ label: string; value: number; entity: BasicStoreEntity | null }[]> => {
   const { limit = 10, order = 'desc', field } = args;
-  const aggregationNotSupported = field.includes('.')
-    && !field.endsWith('internal_id')
-    && !field.includes('opinions_metrics');
-  if (aggregationNotSupported) {
-    throw FunctionalError('Distribution entities does not support relation aggregation field', { field });
+  const distributionArgs = buildEntityFilters(types, args);
+  const targetIndices = args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES;
+
+  let distributionData;
+
+  // Handle custom fields (x_opencti_cf_*) via nested aggregation
+  if (field.startsWith(CUSTOM_FIELD_PREFIX)) {
+    const customFieldDef = await getCustomFieldDefinitionByName(context, user, field);
+    // Terms aggregations on nested text sub-fields require the .keyword suffix; numeric, boolean
+    // and date sub-fields are already aggregatable as-is.
+    const NON_KEYWORD_VALUE_FIELDS = ['int_value', 'boolean_value', 'date_value'];
+    const rawValueField = customFieldDef ? getCustomFieldValueField(customFieldDef.field_type) : 'string_value';
+    const valueField = `custom_field_values.${rawValueField}${NON_KEYWORD_VALUE_FIELDS.includes(rawValueField) ? '' : '.keyword'}`;
+
+    distributionData = await elAggregationNestedTermsWithFilter(
+      context,
+      user,
+      targetIndices,
+      {
+        path: 'custom_field_values',
+        field: valueField,
+        filter: { term: { 'custom_field_values.field_name': field } },
+      },
+      {
+        ...distributionArgs,
+        size: limit ?? undefined,
+      },
+    );
+  } else {
+    const aggregationNotSupported = field.includes('.')
+      && !field.endsWith('internal_id')
+      && !field.includes('opinions_metrics');
+    if (aggregationNotSupported) {
+      throw FunctionalError('Distribution entities does not support relation aggregation field', { field });
+    }
+    let finalField = field;
+    if (field.includes('.') && !field.includes('opinions_metrics')) {
+      finalField = REL_INDEX_PREFIX + field;
+    }
+    if (field === 'name') {
+      finalField = 'internal_id';
+    }
+    distributionData = await elAggregationCount(context, user, targetIndices, {
+      ...distributionArgs,
+      field: finalField,
+    });
   }
-  let finalField = field;
-  if (field.includes('.') && !field.includes('opinions_metrics')) {
-    finalField = REL_INDEX_PREFIX + field;
-  }
-  if (field === 'name') {
-    finalField = 'internal_id';
-  }
-  const distributionData = await elAggregationCount(context, user, args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES, {
-    ...distributionArgs,
-    field: finalField,
-  });
+
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
-  if (field.includes(ID_INTERNAL) || field === 'creator_id' || field === 'x_opencti_workflow_id') {
-    return convertAggregateDistributions(context, user, limit as number, orderingFunction, distributionData);
+  if (!field.startsWith(CUSTOM_FIELD_PREFIX)) {
+    if (field.includes(ID_INTERNAL) || field === 'creator_id' || field === 'x_opencti_workflow_id') {
+      return convertAggregateDistributions(context, user, limit as number, orderingFunction, distributionData);
+    }
   }
   if (field === 'name') {
-    let result: { label: string; value: number; entity: BasicStoreEntity }[] = [];
+    let result: { label: string; value: number; entity: BasicStoreEntity | null }[] = [];
     await convertAggregateDistributions(context, user, limit as number, orderingFunction, distributionData)
       .then((hits) => {
         result = hits.map((hit) => ({
-          label: hit.entity.name ?? extractEntityRepresentativeName(hit.entity),
+          label: hit.entity?.name ?? extractEntityRepresentativeName(hit.entity),
           value: hit.value,
           entity: hit.entity,
         }));
@@ -903,7 +948,7 @@ export const distributionEntities = async (
   // TODO this return problably doesn't work when it happens: API always expects an entity in returned data, but there is none with this return
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData)); // label not good
+  return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
 export const distributionRelations = async (
   context: AuthContext,
@@ -1305,11 +1350,37 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
           // if the instance has not yet this key, we need to add the full key as a new array
           patch = [{ op: 'add' as const, path: `${preparedPath}`, value }];
         } else {
-          // otherwise we need to add the values to the existing array, using jsonpatch indexed path
-          patch = value.map((v, index) => {
-            const afterIndex = index + instanceKeyValues.length;
-            return { op: 'add' as const, path: `${preparedPath}/${afterIndex}`, value: v };
-          });
+          // Reconcile entries sharing a stable `field_id` (e.g. custom_field_values) so an ADD acts
+          // as an upsert-by-field: an incoming entry replaces the existing entry for the same
+          // field_id instead of being appended as a duplicate.
+          const incomingFieldIds = (value as Array<Record<string, any>>).filter((v) => v?.field_id !== undefined).map((v) => v.field_id);
+          const preservedValues = incomingFieldIds.length > 0
+            ? instanceKeyValues.filter((c: Record<string, any>) => !incomingFieldIds.includes(c?.field_id))
+            : instanceKeyValues;
+          if (preservedValues.length !== instanceKeyValues.length) {
+            // For multi_select custom fields, `select_values` is itself an array: merge/union it with
+            // the previous entry instead of discarding already-selected options on every new upsert.
+            // Other sub-fields (int_value, string_value, ...) keep last-write-wins semantics.
+            const existingByFieldId = new Map<string, Record<string, any>>(
+              instanceKeyValues
+                .filter((c: Record<string, any>) => c?.field_id !== undefined)
+                .map((c: Record<string, any>) => [c.field_id, c] as [string, Record<string, any>]),
+            );
+            const mergedValue = (value as Array<Record<string, any>>).map((v) => {
+              const existing = v?.field_id !== undefined ? existingByFieldId.get(v.field_id) : undefined;
+              if (existing && Array.isArray(existing.select_values) && Array.isArray(v.select_values)) {
+                return { ...v, select_values: R.uniq([...existing.select_values, ...v.select_values]) };
+              }
+              return v;
+            });
+            patch = [{ op: 'replace' as const, path: preparedPath, value: [...preservedValues, ...mergedValue] }];
+          } else {
+            // otherwise we need to add the values to the existing array, using jsonpatch indexed path
+            patch = value.map((v, index) => {
+              const afterIndex = index + instanceKeyValues.length;
+              return { op: 'add' as const, path: `${preparedPath}/${afterIndex}`, value: v };
+            });
+          }
         }
         const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
         finalVal = patchedInstance[key];
@@ -1325,8 +1396,11 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
         const current = jsonpatch.getValueByPointer(instance, preparedPath);
         if (Array.isArray(current) && value) {
           const toRemove = Array.isArray(value) ? value : [value];
-          // Filter out items in current that match items in toRemove
-          const newValues = current.filter((c) => !toRemove.some((r) => r.id === c.id || R.equals(r, c)));
+          // Filter out items in current that match items in toRemove.
+          // `field_id` is a stable per-entry identifier used by nested object attributes that don't
+          // have a plain `id` (e.g. custom_field_values), allowing a precise removal that is recomputed
+          // against the live value at apply time instead of a stale pre-computed snapshot.
+          const newValues = current.filter((c) => !toRemove.some((r) => r.id === c.id || (r.field_id !== undefined && r.field_id === c.field_id) || R.equals(r, c)));
           patch = [{ op: 'replace' as const, path: preparedPath, value: newValues }];
         } else {
           patch = [{ op: 'remove' as const, path: preparedPath }];
@@ -1465,14 +1539,15 @@ const ed = (date?: string) => isEmptyField(date) || date === FROM_START_STR || d
 const noDate = (
   e: { first_seen?: string; last_seen?: string; start_time?: string; stop_time?: string },
 ) => ed(e.first_seen) && ed(e.last_seen) && ed(e.start_time) && ed(e.stop_time);
-const filterTargetByExisting = async (
+// Exported for direct unit/benchmark testing of the merge relation filtering algorithm.
+export const filterTargetByExisting = async (
   context: AuthContext,
   targetEntity: BasicStoreBase,
   redirectSide: 'from' | 'to',
   sourcesDependencies: MergeEntitiesDependency,
   targetDependencies: MergeEntitiesDependency,
 ): Promise<{ deletions: BasicStoreRelation[]; redirects: MergeEntityDependency[] }> => {
-  const cache: string[] = [];
+  const cache = new Set<string>();
   const filtered: MergeEntityDependency[] = [];
   const sources = sourcesDependencies[`i_relations_${redirectSide}`];
   const targets = targetDependencies[`i_relations_${redirectSide}`];
@@ -1482,14 +1557,30 @@ const filterTargetByExisting = async (
   const filteredMarkings = await cleanMarkings(context, markings.map((m) => m.internal_id));
   const filteredMarkingIds = filteredMarkings.map((m) => m.internal_id);
   const markingTargetDeletions = markingTargets.filter((m) => !filteredMarkingIds.includes(m.internal_id)).map((m) => m.i_relation);
+  // Index targets by (relation type, internal id) so that each source lookup is O(1) instead of a full O(m) scan.
+  // This avoids the previous O(n x m) complexity that could hang for entities with a large number of relationships.
+  // Nested by entity_type then internal_id (rather than a single concatenated string key) so that values
+  // containing hyphens (both fields can) can never collide across different (entity_type, internal_id) pairs.
+  const targetsIndex = new Map<string, Map<string, MergeEntityDependency[]>>();
+  for (let targetIndex = 0; targetIndex < targets.length; targetIndex += 1) {
+    const target = targets[targetIndex];
+    let byInternalId = targetsIndex.get(target.i_relation.entity_type);
+    if (!byInternalId) {
+      byInternalId = new Map<string, MergeEntityDependency[]>();
+      targetsIndex.set(target.i_relation.entity_type, byInternalId);
+    }
+    const bucket = byInternalId.get(target.internal_id);
+    if (bucket) {
+      bucket.push(target);
+    } else {
+      byInternalId.set(target.internal_id, [target]);
+    }
+  }
   for (let index = 0; index < sources.length; index += 1) {
     const source = sources[index];
     // If the relation source is already in target = filtered
-    const finder = (t: MergeEntityDependency) => {
-      const sameTarget = t.internal_id === source.internal_id;
-      const sameRelationType = t.i_relation.entity_type === source.i_relation.entity_type;
-      return sameRelationType && sameTarget && noDate(t.i_relation as unknown as any);
-    };
+    const matchingTargets = targetsIndex.get(source.i_relation.entity_type)?.get(source.internal_id);
+    const hasExistingTarget = matchingTargets !== undefined && matchingTargets.some((t) => noDate(t.i_relation as unknown as any));
     // In case of single meta to move, check if the target have not already this relation.
     // If yes, we keep it, if not we rewrite it
     const relationRefType = redirectSide === 'from' ? source.i_relation.fromType : source.i_relation.toType;
@@ -1505,9 +1596,9 @@ const filterTargetByExisting = async (
     // Markings duplication definition group
     const isMarkingToKeep = source.i_relation.entity_type === RELATION_OBJECT_MARKING ? filteredMarkingIds.includes(source.internal_id) : true;
     // Check and add the relation in the processing list if needed
-    if (!existingSingleMeta && !isSelfMeta && isMarkingToKeep && !R.find(finder, targets) && !cache.includes(id)) {
+    if (!existingSingleMeta && !isSelfMeta && isMarkingToKeep && !hasExistingTarget && !cache.has(id)) {
       filtered.push(source);
-      cache.push(id);
+      cache.add(id);
     }
   }
   return { deletions: markingTargetDeletions, redirects: filtered };
@@ -2005,7 +2096,7 @@ const prepareAttributesForUpdate = async (
     if (input.key === VALUE_FIELD && instanceType === ENTITY_TYPE_LABEL) {
       return {
         key: input.key,
-        value: input.value.map((v) => v.toLowerCase()),
+        value: input.value.map((v) => v.trim()),
       };
     }
     // Aliases can't have the same name as entity name and an already existing normalized alias
@@ -2652,14 +2743,22 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
           }
         }
         if (operation === UPDATE_OPERATION_ADD) {
-          const filteredList = (updatedInstance[key] || []).filter((d: any) => !isInferredIndex(d.i_relation._index));
-          const currentIds = filteredList.map((o: any) => [o.id, o.standard_id]).flat();
-          const refsToCreate = refs.filter((r) => !currentIds.includes(r.internal_id));
+          // fresh post-lock check to avoid diffing against a stale pre-lock snapshot;
+          // scoped to only the candidate targets (toId) and base fields, instead of listing every existing relation
+          const candidateIds = refs.map((r) => r.internal_id);
+          const currentRels = await fullRelationsList(context, user, relType, {
+            indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+            fromId: initial.internal_id,
+            toId: candidateIds,
+            baseData: true,
+          });
+          const currentIds = new Set(currentRels.map((n: BasicStoreRelation) => n.toId));
+          const refsToCreate = refs.filter((r) => !currentIds.has(r.internal_id));
           if (refsToCreate.length > 0) {
             const newRelations = buildInstanceRelTo(refsToCreate, relType);
             pushAll(relationsToCreate, newRelations);
             updatedInputs.push({ key, value: refsToCreate, operation: operation as unknown as any, previous: updatedInstance[key] });
-            updatedInstance[key] = [...(updatedInstance[key] || []), ...refsToCreate];
+            updatedInstance[key] = R.uniqBy((r: any) => r.internal_id, [...(updatedInstance[key] || []), ...refsToCreate]);
             updatedInstance[relType] = updatedInstance[key].map((u: any) => u.internal_id);
           }
         }

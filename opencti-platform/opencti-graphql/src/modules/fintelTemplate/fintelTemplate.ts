@@ -24,6 +24,7 @@ export const FINTEL_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityFintelTempl
     { name: 'instance_filters', label: 'Instance filters', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'template_content', label: 'Template content', type: 'string', format: 'text', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: false },
     { name: 'start_date', label: 'Available since', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'default', label: 'Default', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'fintel_template_widgets', label: 'Fintel template widgets', type: 'object', format: 'flat', mandatoryType: 'external', editDefault: false, multiple: true, upsert: false, isFilterable: false },
   ],
   relations: [],

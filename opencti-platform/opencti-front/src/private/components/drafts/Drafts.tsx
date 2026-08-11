@@ -20,7 +20,6 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { DraftsLines_data$data } from './__generated__/DraftsLines_data.graphql';
 import { DraftsLinesPaginationQuery, DraftsLinesPaginationQuery$variables } from './__generated__/DraftsLinesPaginationQuery.graphql';
 import DraftPopover from './DraftPopover';
-import useHelper from '../../../utils/hooks/useHelper';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
 import useRuntimeSortGuard from '../../../utils/hooks/useRuntimeSortGuard';
@@ -153,8 +152,6 @@ interface DraftsProps {
 }
 
 const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenCreate, emptyStateMessage }) => {
-  const { isFeatureEnable } = useHelper();
-  const isDraftWorkflowEnabled = isFeatureEnable('DRAFT_WORKFLOW');
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE], false, { capabilitiesInDraft: [KNOWLEDGE_KNUPDATE] });
   const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
@@ -206,41 +203,6 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
     nodePath: ['draftWorkspaces', 'pageInfo', 'globalCount'],
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<DraftsLinesPaginationQuery>;
-
-  const dataColumnsWithoutMetadata: DataTableProps['dataColumns'] = {
-    name: {
-      percentWidth: 50,
-      isSortable: true,
-    },
-    creator: {
-      percentWidth: 15,
-      isSortable: true,
-    },
-    created_at: {
-      percentWidth: 15,
-      isSortable: true,
-    },
-    draft_status: {
-      id: 'draft_status',
-      label: 'Status',
-      percentWidth: 10,
-      isSortable: true,
-      render: (node) => (
-        node.workflowInstance?.currentStatus ? (
-          <ItemStatus status={node.workflowInstance.currentStatus} />
-        ) : (
-          <DraftStatusChip draftStatus={node.draft_status} />
-        )
-      ),
-    },
-    draft_validation_progress: {
-      id: 'draft_validation_progress',
-      label: 'Validation progress',
-      percentWidth: 10,
-      isSortable: false,
-      render: ({ validationWork }) => defaultRender(computeValidationProgress(validationWork)),
-    },
-  };
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
@@ -302,7 +264,7 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
       {queryRef && (
         <>
           <DataTable
-            dataColumns={isDraftWorkflowEnabled ? dataColumns : dataColumnsWithoutMetadata}
+            dataColumns={dataColumns}
             resolvePath={(data: DraftsLines_data$data) => (data.draftWorkspaces?.edges ?? []).map((n) => n?.node)}
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}

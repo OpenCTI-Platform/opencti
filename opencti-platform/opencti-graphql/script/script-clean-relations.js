@@ -4,5 +4,5 @@ import { logApp } from '../src/config/conf';
 import { executionContext } from '../src/utils/access';
 
 const context = executionContext('script');
-cleanInconsistentRelations(context)
-  .then(() => logApp.info('[SCRIPT] Clean relations done'));
+await cleanInconsistentRelations(context);
+logApp.info('[SCRIPT] Clean relations done');

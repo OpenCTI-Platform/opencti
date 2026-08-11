@@ -5,11 +5,10 @@ import { useFormatter } from '../../../../components/i18n';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
+import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import type { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DraftsDonutDistributionQuery } from './__generated__/DraftsDonutDistributionQuery.graphql';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from 'src/utils/filters/filtersUtils';
 import useDashboardViz from 'src/components/dashboard/useDashboardViz';
 import WidgetRenderContent from 'src/components/dashboard/WidgetRenderContent';
 
@@ -104,22 +103,14 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): DraftsDonutDistributionQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const dateAttribute
-    = selection.date_attribute && selection.date_attribute.length > 0
-      ? selection.date_attribute
-      : 'created_at';
-  const { startDate, endDate } = computeStartEndDates(config);
-  const { filters } = buildFiltersAndOptionsForWidgets(
-    selection.filters,
-    { startDate, endDate, dateAttribute },
-  );
+  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(selection, config);
   return {
     field: selection.attribute ?? 'entity_type',
     operation: 'count',
     startDate,
     endDate,
     dateAttribute,
-    filters: normalizeFilterGroupForBackend(filters),
+    filters,
     limit: selection.number ?? 10,
   };
 };

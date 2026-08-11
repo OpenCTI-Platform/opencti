@@ -103,7 +103,7 @@ const waitPlatformIsAlive = async (): Promise<true> => {
   return true;
 };
 
-export async function setup() {
+export const setup = async () => {
   await checkSystemDependencies();
   initLockFork();
 
@@ -138,8 +138,8 @@ export async function setup() {
     await createTestUsers();
     logApp.info(`[vitest-global-setup] User setup done in ${new Date().getTime() - startTime} ms`);
   }
-}
+};
 
-export async function teardown() {
+export const teardown = async () => {
   // Better to let vite kill it in 5s than wait +60s for a gracefully stop.
-}
+};

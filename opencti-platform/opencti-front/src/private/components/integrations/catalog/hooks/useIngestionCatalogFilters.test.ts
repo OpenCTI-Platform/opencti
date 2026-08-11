@@ -61,14 +61,14 @@ const renderFilters = ({
 };
 
 // A small catalog exercising every facet group:
-// - import-a: EXTERNAL_IMPORT, verified, use case "SIEM"
-// - import-b: EXTERNAL_IMPORT, community, use case "EDR"
-// - stream-a: STREAM, verified, use cases "SIEM" + "EDR"
-// plus the built-in sync method (verified by definition).
+// - import-a: EXTERNAL_IMPORT, verified, use case "SIEM", category "Threat intelligence", Free
+// - import-b: EXTERNAL_IMPORT, community, use case "EDR", category "SecOps", Commercial
+// - stream-a: STREAM, verified, use cases "SIEM" + "EDR", both categories, Free
+// plus the built-in sync method (verified by definition, no categories, no license).
 const facetContracts = [
-  makeContract({ title: 'Import A', slug: 'import-a', container_type: 'EXTERNAL_IMPORT', verified: true, use_cases: ['SIEM'] }),
-  makeContract({ title: 'Import B', slug: 'import-b', container_type: 'EXTERNAL_IMPORT', verified: false, use_cases: ['EDR'] }),
-  makeContract({ title: 'Stream A', slug: 'stream-a', container_type: 'STREAM', verified: true, use_cases: ['SIEM', 'EDR'] }),
+  makeContract({ title: 'Import A', slug: 'import-a', container_type: 'EXTERNAL_IMPORT', verified: true, use_cases: ['SIEM'], solution_categories: ['Threat intelligence'], license_type: 'Free' }),
+  makeContract({ title: 'Import B', slug: 'import-b', container_type: 'EXTERNAL_IMPORT', verified: false, use_cases: ['EDR'], solution_categories: ['SecOps'], license_type: 'Commercial' }),
+  makeContract({ title: 'Stream A', slug: 'stream-a', container_type: 'STREAM', verified: true, use_cases: ['SIEM', 'EDR'], solution_categories: ['Threat intelligence', 'SecOps'], license_type: 'Free' }),
 ];
 
 describe('useIngestionCatalogFilters', () => {
@@ -82,6 +82,9 @@ describe('useIngestionCatalogFilters', () => {
       const { result } = renderFilters({ contracts: facetContracts, builtIns: [builtInSync] });
       expect(result.current.facets.typeCounts).toEqual({ EXTERNAL_IMPORT: 2, STREAM: 1 });
       expect(result.current.facets.useCaseCounts).toEqual({ SIEM: 2, EDR: 2 });
+      expect(result.current.facets.solutionCategoryCounts).toEqual({ 'Threat intelligence': 2, SecOps: 2 });
+      // The built-in has no license type and is not counted in any bucket.
+      expect(result.current.facets.licenseTypeCounts).toEqual({ Free: 2, Commercial: 1 });
       // 3 verified (2 connectors + built-in), 1 community
       expect(result.current.facets.statusCounts).toEqual({ filigran: 3, community: 1 });
       expect(result.current.facets.deploymentCounts).toEqual({ connector: 3, 'built-in': 1 });
@@ -93,9 +96,25 @@ describe('useIngestionCatalogFilters', () => {
       // Type counts honor the status filter (only verified connectors remain)...
       expect(result.current.facets.typeCounts).toEqual({ EXTERNAL_IMPORT: 1, STREAM: 1 });
       expect(result.current.facets.useCaseCounts).toEqual({ SIEM: 2, EDR: 1 });
+      expect(result.current.facets.solutionCategoryCounts).toEqual({ 'Threat intelligence': 2, SecOps: 1 });
+      expect(result.current.facets.licenseTypeCounts).toEqual({ Free: 2 });
       expect(result.current.facets.deploymentCounts).toEqual({ connector: 2, 'built-in': 1 });
       // ...but the status group itself is counted with the status filter skipped.
       expect(result.current.facets.statusCounts).toEqual({ filigran: 3, community: 1 });
+    });
+
+    it('counts the license and category groups with their own filter skipped', () => {
+      const { result } = renderFilters({ contracts: facetContracts, builtIns: [builtInSync] });
+      act(() => result.current.setFilters((prev) => ({ ...prev, licenseTypes: ['Commercial'] })));
+      // The license group itself ignores the active license filter...
+      expect(result.current.facets.licenseTypeCounts).toEqual({ Free: 2, Commercial: 1 });
+      // ...while the other groups only see the Commercial item (import-b).
+      expect(result.current.facets.typeCounts).toEqual({ EXTERNAL_IMPORT: 1 });
+      expect(result.current.facets.solutionCategoryCounts).toEqual({ SecOps: 1 });
+      act(() => result.current.setFilters((prev) => ({ ...prev, licenseTypes: [], solutionCategories: ['SecOps'] })));
+      // Same semantics for the category group (import-b + stream-a match).
+      expect(result.current.facets.solutionCategoryCounts).toEqual({ 'Threat intelligence': 2, SecOps: 2 });
+      expect(result.current.facets.licenseTypeCounts).toEqual({ Free: 1, Commercial: 1 });
     });
 
     it('keeps a facet count accurate when the facet itself is selected', () => {
@@ -120,6 +139,39 @@ describe('useIngestionCatalogFilters', () => {
       expect(result.current.filteredItems.some((item) => item.deployment === 'built-in')).toBe(false);
       expect(result.current.filteredItems.map((item) => item.title)).toEqual(['Import A', 'Import B']);
       expect(result.current.sections.some((section) => section.key === BUILT_IN_SECTION_KEY)).toBe(false);
+    });
+  });
+
+  describe('solution category and license type filters', () => {
+    it('keeps only the items matching a selected solution category', () => {
+      const { result } = renderFilters({ contracts: facetContracts, builtIns: [builtInSync] });
+      act(() => result.current.setFilters((prev) => ({ ...prev, solutionCategories: ['Threat intelligence'] })));
+      expect(result.current.filteredItems.map((item) => item.title).sort()).toEqual(['Import A', 'Stream A']);
+    });
+
+    it('filters out items without a license type when a license filter is active', () => {
+      const { result } = renderFilters({ contracts: facetContracts, builtIns: [builtInSync] });
+      act(() => result.current.setFilters((prev) => ({ ...prev, licenseTypes: ['Free'] })));
+      // The built-in sync method has no license type: it must not match.
+      expect(result.current.filteredItems.some((item) => item.deployment === 'built-in')).toBe(false);
+      expect(result.current.filteredItems.map((item) => item.title).sort()).toEqual(['Import A', 'Stream A']);
+    });
+
+    it('exposes the available categories and license types sorted', () => {
+      const { result } = renderFilters({ contracts: facetContracts, builtIns: [builtInSync] });
+      expect(result.current.facets.solutionCategories).toEqual(['SecOps', 'Threat intelligence']);
+      expect(result.current.facets.licenseTypes).toEqual(['Commercial', 'Free']);
+    });
+
+    it('reports active filters and clears them with clearAllFilters', () => {
+      const { result } = renderFilters({ contracts: facetContracts });
+      expect(result.current.hasActiveFilters).toBe(false);
+      act(() => result.current.setFilters((prev) => ({ ...prev, solutionCategories: ['SecOps'], licenseTypes: ['Free'] })));
+      expect(result.current.hasActiveFilters).toBe(true);
+      act(() => result.current.clearAllFilters());
+      expect(result.current.hasActiveFilters).toBe(false);
+      expect(result.current.filters.solutionCategories).toEqual([]);
+      expect(result.current.filters.licenseTypes).toEqual([]);
     });
   });
 
@@ -176,6 +228,33 @@ describe('useIngestionCatalogFilters', () => {
       expect(result.current.filters.statuses).toEqual(['filigran']);
       expect(result.current.filters.deployments).toEqual(['connector']);
       expect(result.current.filters.useCases).toEqual(['SIEM']);
+    });
+
+    it('parses solutionCategory and licenseType params from the URL', () => {
+      const { result } = renderFilters({
+        contracts: facetContracts,
+        params: 'solutionCategory=SecOps,Threat intelligence&licenseType=Free',
+      });
+      expect(result.current.filters.solutionCategories).toEqual(['SecOps', 'Threat intelligence']);
+      expect(result.current.filters.licenseTypes).toEqual(['Free']);
+      // Categories match with OR semantics; Commercial import-b is excluded.
+      expect(result.current.filteredItems.map((item) => item.title).sort()).toEqual(['Import A', 'Stream A']);
+    });
+
+    it('persists solutionCategory and licenseType in the canonical sorted URL', () => {
+      const { result } = renderFilters({ contracts: facetContracts });
+      act(() => result.current.setFilters((prev) => ({
+        ...prev,
+        // Selected in reverse order on purpose: the URL must still be canonical.
+        solutionCategories: ['Threat intelligence', 'SecOps'],
+        licenseTypes: ['Free'],
+      })));
+      const params = new URLSearchParams(window.location.search);
+      expect(params.get('solutionCategory')).toBe('SecOps,Threat intelligence');
+      expect(params.get('licenseType')).toBe('Free');
+      // Clearing the filters removes the params from the URL.
+      act(() => result.current.clearAllFilters());
+      expect(window.location.search).toBe('');
     });
 
     it('deduplicates and trims repeated values from hand-crafted URLs', () => {

@@ -106,7 +106,9 @@ interface ConnectorWorksSectionProps {
   connectorId: string;
 }
 
-const ConnectorWorksSection: FunctionComponent<ConnectorWorksSectionProps> = ({ connectorId }) => {
+// Exported: also used by the built-in feed detail page, through the feed's
+// technical queue connector id.
+export const ConnectorWorksSection: FunctionComponent<ConnectorWorksSectionProps> = ({ connectorId }) => {
   const optionsInProgress: ConnectorWorksQuery$variables = {
     count: 50,
     orderMode: 'asc',
@@ -138,7 +140,7 @@ const ConnectorWorksSection: FunctionComponent<ConnectorWorksSectionProps> = ({ 
         key="connector-works-in-progress"
         query={connectorWorksQuery}
         variables={optionsInProgress}
-        fetchPolicy="cache-and-network"
+        fetchPolicy="store-and-network"
         render={({ props }: { props: ConnectorWorksQuery$data | null }) => {
           if (props) {
             return <ConnectorWorks data={props} options={[optionsInProgress]} inProgress={true} />;
@@ -151,7 +153,7 @@ const ConnectorWorksSection: FunctionComponent<ConnectorWorksSectionProps> = ({ 
         key="connector-works-finished"
         query={connectorWorksQuery}
         variables={optionsFinished}
-        fetchPolicy="cache-and-network"
+        fetchPolicy="store-and-network"
         render={({ props }: { props: ConnectorWorksQuery$data | null }) => {
           if (props) {
             return <ConnectorWorks data={props} options={[optionsFinished]} />;
@@ -539,12 +541,18 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
             <Grid container={true} spacing={2}>
               {connector.connector_info?.buffering && (
                 <Grid item xs={12}>
-                  <Alert severity="warning" icon={<UpdateIcon color="warning" />} style={{ alignItems: 'center' }}>
-                    <div>
-                      <strong>{t_i18n('Buffering: ')}</strong>
-                      {t_i18n('Server ingestion is not accepting new work, waiting for current messages in ingestion to be processed until message count go back under threshold')}
-                    </div>
-                  </Alert>
+                  <Box sx={{ display: 'flex', alignItems: 'stretch', gap: 1 }}>
+                    <Alert
+                      severity="warning"
+                      icon={<UpdateIcon color="warning" />}
+                      style={{ alignItems: 'center', marginBottom: 0, flex: 1 }}
+                    >
+                      <div>
+                        <strong>{t_i18n('Buffering: ')}</strong>
+                        {t_i18n('Server ingestion is not accepting new work, waiting for current messages in ingestion to be processed until message count go back under threshold')}
+                      </div>
+                    </Alert>
+                  </Box>
                 </Grid>
               )}
 

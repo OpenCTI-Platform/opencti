@@ -36,6 +36,7 @@ import {
 } from '../types/workflow-types';
 import { validateWorkflowDefinitionData, extractAllStatesFromDefinition } from '../workflow-validation';
 import { checkEnterpriseEdition } from '../../../enterprise-edition/ee';
+import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema/internalObject';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
 // 'validateDraft' is a CE feature and must NOT be listed here.
@@ -622,7 +623,7 @@ export const publishWorkflowDefinition = async (
           if (conflictingInstances.length > 0) {
             throw FunctionalError(
               'Cannot publish workflow: the following statuses are in use and cannot be removed. Move all items out of those statuses first.',
-              { removedStates: nonEndingRemovedStates, entityType },
+              { removedStates: nonEndingRemovedStates, entityType: ENTITY_TYPE_STATUS_TEMPLATE },
             );
           }
         }

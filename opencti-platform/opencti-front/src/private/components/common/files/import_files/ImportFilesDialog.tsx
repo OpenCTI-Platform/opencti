@@ -32,7 +32,6 @@ import Button from '../../../../../components/common/button/Button';
 import Dialog from '../../../../../components/common/dialog/Dialog';
 import { useFormatter } from '../../../../../components/i18n';
 import { handleErrorInForm, MESSAGING$ } from '../../../../../relay/environment';
-import { RelayError } from '../../../../../relay/relayTypes';
 import { resolveLink } from '../../../../../utils/Entity';
 import Security from '../../../../../utils/Security';
 import { FieldOption } from '../../../../../utils/field';
@@ -199,8 +198,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
           handleClose();
         },
         onError: (error) => {
-          const { errors } = (error as unknown as RelayError).res;
-          MESSAGING$.notifyError(errors.at(0)?.message);
+          MESSAGING$.notifyRelayError(error);
         },
       });
     }

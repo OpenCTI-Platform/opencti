@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     "prefix": "Version ",
     "data-source": "milestones",
     "milestone-match": "Release {{tag_name}}",

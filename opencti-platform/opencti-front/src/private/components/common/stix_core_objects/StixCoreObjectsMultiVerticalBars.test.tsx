@@ -49,7 +49,7 @@ vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
 }));
 
 vi.mock('../../../../components/dashboard/dashboardVizUtils', () => ({
-  computeStartEndDates: () => ({ startDate: null, endDate: null }),
+  computeWidgetFiltersForMultiSelection: () => ({ startDate: null, endDate: null, timeSeriesParameters: [] }),
 }));
 
 import StixCoreObjectsMultiVerticalBars from './StixCoreObjectsMultiVerticalBars';

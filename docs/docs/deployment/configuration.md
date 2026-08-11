@@ -119,8 +119,8 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 
 | Parameter                 | Environment variable       | Default value                                                  | Description                                                      |
 |:--------------------------|:---------------------------|:---------------------------------------------------------------|------------------------------------------------------------------|
-| app:map_tile_server_dark  | APP__MAP_TILE_SERVER_DARK  | https://map.opencti.io/styles/filigran-dark2/{z}/{x}/{y}.png   | The address of the OpenStreetMap provider with dark theme style  |
-| app:map_tile_server_light | APP__MAP_TILE_SERVER_LIGHT | https://map.opencti.io/styles/filigran-light2/{z}/{x}/{y}.png  | The address of the OpenStreetMap provider with light theme style |
+| app:map_tile_server_dark  | APP__MAP_TILE_SERVER_DARK  | https://map.opencti.io/styles/filigran-dark3/{z}/{x}/{y}.png   | The address of the OpenStreetMap provider with dark theme style  |
+| app:map_tile_server_light | APP__MAP_TILE_SERVER_LIGHT | https://map.opencti.io/styles/filigran-light3/{z}/{x}/{y}.png  | The address of the OpenStreetMap provider with light theme style |
 | app:reference_attachment  | APP__REFERENCE_ATTACHMENT  | `false`                                                        | External reference mandatory attachment                          |
 
 #### Functional customization
@@ -136,7 +136,7 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 | relations_deduplication:types_overrides:*relationship_type*:next_days        | RELATIONS_DEDUPLICATION__*RELATIONSHIP_TYPE*__NEXT_DAYS        |               | Override the next days for a specific type of relationship (ex. *targets*)                                               |
 | relations_deduplication:types_overrides:*relationship_type*:created_by_based | RELATIONS_DEDUPLICATION__*RELATIONSHIP_TYPE*__CREATED_BY_BASED |               | Override the author duplication for a specific type of relationship (ex. *targets*)                                      |
 | app:trash:enabled                                                            | APP__TRASH__ENABLED                                            | `true`        | Enable or disable the trash system. If disabled, the trash manager will also be disabled                                 |
-| app:validation_mode                                                          | APP__VALIDATION_MODE                                           | `workbench`   | Can either be `workbench` or `draft` depending on the validation mode to be used for automatic imports                   |
+| app:validation_mode                                                          | APP__VALIDATION_MODE                                           | `draft`       | Can either be `workbench` or `draft` depending on the validation mode to be used for automatic imports                   |
 | app:authentication:force_local                                               | APP__AUTHENTICATION__FORCE_LOCAL                               | `false`       | Use this variable to force the enablement of your local authentication policy even if disabled in UI                     | 
 | app:authentication:force_env                                                 | APP__AUTHENTICATION__FORCE_ENV                                 | `false`       | Use this variable to force the usage of variables to log in. This will prevent any edition of Authentication via UI too. |
 
@@ -250,6 +250,7 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 
 | Parameter                  | Environment variable        | Default value | Description                                                                                                          |
 |:---------------------------|:----------------------------|:--------------|:----------------------------------------------------------------------------------------------------------------------------------|
+| smtp:enabled               | SMTP__ENABLED               | `true`        | Enable or disable SMTP email sending                                                                                 |
 | smtp:hostname              | SMTP__HOSTNAME              |               | SMTP Server hostname                                                                                                 |
 | smtp:port                  | SMTP__PORT                  | 465           | SMTP Port (25 or 465 for TLS)                                                                                        |
 | smtp:use_ssl               | SMTP__USE_SSL               | `false`       | SMTP over TLS                                                                                                        |
@@ -262,6 +263,15 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 | smtp:oauth_client_secret   | SMTP__OAUTH_CLIENT_SECRET   |               | OAuth2: client secret associated with the client ID                                                                  |
 | smtp:oauth_issuer          | SMTP__OAUTH_ISSUER          |               | OAuth2: OIDC issuer URL of the identity provider (used for discovery and refresh token grant)                        |
 | smtp:oauth_refresh_token   | SMTP__OAUTH_REFRESH_TOKEN   |               | OAuth2: long-lived refresh token used to obtain a fresh access token before each email is sent                       |
+| smtp:forced_sender_email   | SMTP__FORCED_SENDER_EMAIL   |               | When set, forces all emails to use this address as sender and disables the UI-based SMTP configuration               |
+
+!!! note "Interface-based SMTP configuration"
+
+    OpenCTI also supports configuring SMTP entirely from the **Settings > Security > SMTP configuration** interface, without requiring a deployment restart. When the **Use configuration in interface** toggle is enabled in the interface, the platform uses the settings stored in the database and ignores the backend JSON/env configuration.
+
+    The backend parameters above act as a fallback when the interface configuration is not enabled.
+
+    See [SMTP configuration](../administration/smtp-configuration.md) for details.
 
 !!! note "OAuth2 authentication (provider-agnostic)"
 
@@ -292,7 +302,7 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 | Parameter              | Environment variable        | Default value | Description                                                                   |
 |:-----------------------|:----------------------------|:--------------|:------------------------------------------------------------------------------|
 | ai:enabled             | AI__ENABLED                 | true          | Enable AI capabilities                                                        |
-| ai:type                | AI__TYPE                    | mistralai     | AI type (`openai`, `mistralai` or `azureopenai`)                              |              |
+| ai:type                | AI__TYPE                    | mistralai     | AI type (`openai`, `mistralai` or `azureopenai`)                              |
 | ai:endpoint            | AI__ENDPOINT                |               | Endpoint URL (empty means default cloud service)                              |
 | ai:token               | AI__TOKEN                   |               | Token for endpoint credentials                                                |
 | ai:model               | AI__MODEL                   |               | Model to be used for text generation (depending on type)                      |

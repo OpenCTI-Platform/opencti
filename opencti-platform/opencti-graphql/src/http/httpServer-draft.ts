@@ -33,7 +33,10 @@ export const checkDraftInContext = async (executeContext: AuthContext) => {
             value: '',
           }]);
         }
-        throw FunctionalError(`Draft ${executeContext.draft_context} cannot be found`);
+        const serviceAccountHint = executeContext.user.user_service_account === true
+          ? ''
+          : ', consider switching the user associated to your connector to a service account (instead of a user)';
+        throw FunctionalError(`Draft ${executeContext.draft_context} cannot be found${serviceAccountHint}`);
       }
 
       if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN) {
@@ -44,7 +47,7 @@ export const checkDraftInContext = async (executeContext: AuthContext) => {
             value: '',
           }]);
         }
-        throw DraftLockedError('Can not execute request in a draft not in an open state');
+        throw DraftLockedError('Cannot execute request in a draft that is not in an open state');
       }
     } else {
       throw FunctionalError('User cannot be found');

@@ -38,6 +38,14 @@ const AuthProviderGroupsFields = () => {
         label={t_i18n('Auto create groups')}
       />
 
+      {/* extend platform groups */}
+      <Field
+        component={SwitchField}
+        type="checkbox"
+        name="groups_mapping.extend_platform_groups"
+        label={t_i18n('Extend platform groups')}
+      />
+
       {/* Default groups */}
       <FieldArray name="groups_mapping.default_groups">
         {({ push, remove, form }) => {

@@ -212,13 +212,16 @@ nav:
         - Widget creation: usage/widgets.md
         - Tips for widget creation: usage/tips-widget-creation.md
       - Custom views: usage/custom-views.md
-      - Workflows and assignation: usage/workflows.md
+      - Workflows:
+         - Draft workflow: usage/draft-workflow.md
+         - Entities workflow: usage/workflows.md
       - Indicators lifecycle: usage/indicators-lifecycle.md
       - Playbook automation:
         - Introduction: usage/playbook-automation.md
         - Playbook creation: usage/playbook-creation.md
         - Playbook components: usage/playbook-components.md
       - Security Coverage: usage/security-coverage.md
+      - Data consistency: usage/dataSanityManager.md
     - Delete and restore knowledge: usage/delete-restore.md
     - Sharing and exports:
       - Native feeds: usage/feeds.md
@@ -236,6 +239,7 @@ nav:
       - Parameters: administration/parameters.md
       - Security:
         - Authentication: administration/authentication-via-ui.md
+        - SMTP configuration: administration/smtp-configuration.md
         - Cookies: administration/cookies.md
         - Policies: administration/policies.md
         - Users and RBAC:
@@ -243,7 +247,10 @@ nav:
           - Protect sensitive configuration: administration/protect-sensitive-configuration.md
         - Data segregation:
           - Marking restriction: administration/segregation.md
-          - Organization segregation: administration/organization-segregation.md
+          - Organization segregation:
+            - Organization-Based Segregation Concept Installation & RBAC Setup: administration/Part 1 - Organization-Based Segregation Concept, Installation & RBAC Setup.md
+            - Customizing the Platform as the Main Organization: administration/Part 2 - Customizing the Platform as the Main Organization.md
+            - How to Share Data With Organizations: administration/Part 3 - How to Share Data With Organizations.md
           - Authorized members: administration/authorized-members.md
           - Request access: administration/request-access.md
         - Dissemination list: administration/dissemination-list.md

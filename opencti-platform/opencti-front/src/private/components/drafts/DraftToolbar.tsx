@@ -18,7 +18,6 @@ import WorkflowTransitions from '../common/workflow/WorkflowTransitions';
 import { DraftToolbarQuery } from '@components/drafts/__generated__/DraftToolbarQuery.graphql';
 import { DraftToolbarFragment$key } from '@components/drafts/__generated__/DraftToolbarFragment.graphql';
 import DraftApprove from './DraftApprove';
-import useHelper from '../../../utils/hooks/useHelper';
 
 const draftFragment = graphql`
   fragment DraftToolbarFragment on DraftWorkspace {
@@ -53,7 +52,6 @@ const DraftToolbarComponent = ({
   draftId,
 }: DraftToolbarComponentProps) => {
   const theme = useTheme<Theme>();
-  const { isFeatureEnable } = useHelper();
 
   const { draftWorkspace } = usePreloadedQuery(draftQuery, queryRef);
   if (!draftWorkspace) return (<ErrorNotFound />);
@@ -69,7 +67,7 @@ const DraftToolbarComponent = ({
   );
 
   // Show approve button if the workflow is disabled (for backward compatibility)
-  const showApprove = isFeatureEnable('DRAFT_WORKFLOW') && draft.workflowInstance;
+  const showApprove = draft.workflowInstance;
 
   return (
     <Stack

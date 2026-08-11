@@ -23,6 +23,8 @@ import {
   findJsonMapperForIngestionById,
   ingestionJsonEditField,
   ingestionJsonResetState,
+  jsonFeedAddInputFromImport,
+  jsonFeedExport,
   testJsonIngestionMapping,
 } from './ingestion-json-domain';
 import { removeAuthenticationCredentials } from './ingestion-common';
@@ -43,8 +45,12 @@ const ingestionJsonResolvers: Resolvers = {
     user: (ingestionJson, _, context) => loadCreator(context, context.user, ingestionJson.user_id),
     connector_id: (ingestionJson) => connectorIdFromIngestId(ingestionJson.id),
     jsonMapper: (ingestionJson, _, context) => findJsonMapperForIngestionById(context, context.user, ingestionJson.json_mapper_id),
+    toConfigurationExport: (ingestionJson, _, context) => jsonFeedExport(context, context.user, ingestionJson),
   },
   Mutation: {
+    ingestionJsonAddInputFromImport: (_, { file }, context) => {
+      return jsonFeedAddInputFromImport(context, context.user, file);
+    },
     ingestionJsonTester: (_, { input }, context) => {
       return testJsonIngestionMapping(context, context.user, input);
     },

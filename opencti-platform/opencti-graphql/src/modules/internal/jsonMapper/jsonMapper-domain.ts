@@ -37,7 +37,7 @@ export const jsonMapperTest = async (context: AuthContext, user: AuthUser, confi
   const jsonMapperParsed = parseJsonMapper(parsedConfiguration);
   const { createReadStream } = await fileUpload;
   const data: string = await streamConverter(createReadStream());
-  const allObjects = await jsonMappingExecution(context, user, data, jsonMapperParsed);
+  const allObjects = await jsonMappingExecution(context, user, data, jsonMapperParsed, 50);
   return {
     objects: JSON.stringify(allObjects.slice(0, 50), null, 2), // Max 50 records to display
     nbRelationships: allObjects.filter((object) => object.type === 'relationship').length,
@@ -51,6 +51,39 @@ export const getParsedRepresentations = async (context: AuthContext, user: AuthU
   return parsedMapper.representations;
 };
 
+// Creates a JSON mapper from an exported mapper configuration ({ name,
+// representations, variables }). Shared by the standalone mapper import and
+// the JSON feed configuration import (which embeds the mapper).
+export const createJsonMapperFromConfiguration = async (
+  context: AuthContext,
+  user: AuthUser,
+  configuration: { name: string; representations: unknown; variables: unknown },
+) => {
+  // Exported representations reference entities (default values) by STIX
+  // standard id: convert them back to internal ids so they resolve here.
+  const representations = (configuration.representations ?? []) as JsonMapperRepresentation[];
+  await convertRepresentationsIds(context, user, representations, 'stix');
+  const importData = {
+    name: configuration.name,
+    representations: JSON.stringify(representations),
+    variables: JSON.stringify(configuration.variables),
+  };
+  const importMapper = await createEntity(context, user, importData, ENTITY_TYPE_JSON_MAPPER);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'extended',
+    message: `import ${importMapper.name} json mapper`,
+    context_data: {
+      id: importMapper.id,
+      entity_type: ENTITY_TYPE_JSON_MAPPER,
+      input: importMapper,
+    },
+  });
+  return importMapper as BasicStoreEntityJsonMapper;
+};
+
 export const jsonMapperImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
   const parsedData = await extractContentFrom(file);
   // check platform version compatibility
@@ -60,27 +93,8 @@ export const jsonMapperImport = async (context: AuthContext, user: AuthUser, fil
       { reason: parsedData.openCTI_version },
     );
   }
-  const config = parsedData.configuration;
-  const importData = {
-    name: config.name,
-    representations: JSON.stringify(config.representations),
-    variables: JSON.stringify(config.variables),
-  };
-  const importMapper = await createEntity(context, user, importData, ENTITY_TYPE_JSON_MAPPER);
-  const importMapperId = importMapper.id;
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'create',
-    event_access: 'extended',
-    message: `import ${importMapper.name} json mapper`,
-    context_data: {
-      id: importMapperId,
-      entity_type: ENTITY_TYPE_JSON_MAPPER,
-      input: importMapper,
-    },
-  });
-  return importMapperId;
+  const importMapper = await createJsonMapperFromConfiguration(context, user, parsedData.configuration);
+  return importMapper.id;
 };
 
 export const jsonMapperExport = async (context: AuthContext, user: AuthUser, jsonMapper: BasicStoreEntityJsonMapper) => {

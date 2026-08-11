@@ -82,7 +82,11 @@ const workflowResolvers = {
     pendingTransition: (instance: any) => instance.pendingTransition ?? null,
   },
   WorkflowSerializedTransition: {
-    from: (transition: any) => (Array.isArray(transition.from) ? transition.from : [transition.from]),
+    from: (transition: any) => {
+      if (transition.from === null || transition.from === undefined) return [];
+      return Array.isArray(transition.from) ? transition.from : [transition.from];
+    },
+    to: (transition: any) => transition.to ?? null,
   },
   WorkflowTransition: {
     toStatus: (transition: any) => ({ id: transition.toState, template_id: transition.toState }),

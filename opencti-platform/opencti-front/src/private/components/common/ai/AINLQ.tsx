@@ -170,9 +170,9 @@ export const useAINLQ = (callbacks: NLQCallbacks) => {
   const search = (searchKeyword: string, agentSlug?: string) => {
     setIsLoading(true);
     if (xtmOneConfigured === true) {
-      runXtmOneNlq(searchKeyword, agentSlug).catch((err) => {
+      runXtmOneNlq(searchKeyword, agentSlug).catch((err: Error) => {
         setIsLoading(false);
-        callbacks.onError((err as Error)?.message ?? t_i18n('NLQ call failed'));
+        callbacks.onError(err?.message ?? t_i18n('NLQ call failed'));
       });
     } else {
       runLegacyNlq(searchKeyword);

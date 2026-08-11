@@ -922,3 +922,53 @@ describe('EntitySetting.workflow_published_version_id resolver', () => {
     expect(result).toBeNull();
   });
 });
+
+// ---------------------------------------------------------------------------
+// WorkflowSerializedTransition field resolvers
+// ---------------------------------------------------------------------------
+
+describe('WorkflowSerializedTransition resolver – from field', () => {
+  it('should wrap a single string into an array', () => {
+    const transition = { from: 'status-open', to: 'status-closed', event: 'close' };
+    const result = workflowResolvers.WorkflowSerializedTransition.from(transition);
+    expect(result).toEqual(['status-open']);
+  });
+
+  it('should return an array unchanged when from is already an array', () => {
+    const transition = { from: ['status-open', 'status-draft'], to: 'status-closed', event: 'close' };
+    const result = workflowResolvers.WorkflowSerializedTransition.from(transition);
+    expect(result).toEqual(['status-open', 'status-draft']);
+  });
+
+  it('should return an empty array when from is null', () => {
+    const transition = { from: null, to: 'status-closed', event: 'close' };
+    const result = workflowResolvers.WorkflowSerializedTransition.from(transition);
+    expect(result).toEqual([]);
+  });
+
+  it('should return an empty array when from is undefined', () => {
+    const transition = { to: 'status-closed', event: 'close' };
+    const result = workflowResolvers.WorkflowSerializedTransition.from(transition);
+    expect(result).toEqual([]);
+  });
+});
+
+describe('WorkflowSerializedTransition resolver – to field', () => {
+  it('should return the target state when to is defined', () => {
+    const transition = { from: ['status-open'], to: 'status-closed', event: 'close' };
+    const result = workflowResolvers.WorkflowSerializedTransition.to(transition);
+    expect(result).toBe('status-closed');
+  });
+
+  it('should return null when to is null (unlinked transition)', () => {
+    const transition = { from: ['status-open'], to: null, event: 'close' };
+    const result = workflowResolvers.WorkflowSerializedTransition.to(transition);
+    expect(result).toBeNull();
+  });
+
+  it('should return null when to is undefined', () => {
+    const transition = { from: ['status-open'], event: 'close' };
+    const result = workflowResolvers.WorkflowSerializedTransition.to(transition);
+    expect(result).toBeNull();
+  });
+});

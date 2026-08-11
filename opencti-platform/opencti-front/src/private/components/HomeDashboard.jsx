@@ -23,6 +23,7 @@ import CustomDashboard from './workspaces/dashboards/CustomDashboard';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
 import MarkdownDisplay from '../../components/markdownDisplay/MarkdownDisplay';
+import XtmHubPermissionRequiredDialog from './settings/xtm-hub/XtmHubPermissionRequiredDialog';
 
 // region styles
 // Deprecated - https://mui.com/system/styles/basics/
@@ -588,6 +589,7 @@ const HomeDashboardComponent = ({ queryRef }) => {
   return (
     <UserContext.Provider value={dashboardContextValue}>
       <div className={classes.root} data-testid="dashboard-page">
+        <XtmHubPermissionRequiredDialog />
         {defaultDashboard !== PLATFORM_DASHBOARD ? (
           <CustomHomeDashboard
             dashboard={defaultDashboard}

@@ -68,6 +68,12 @@ export const knowledgeGraphStixCoreObjectQuery = graphql`
             ... on System {
                 name
             }
+            ... on SecurityPlatform {
+                name
+            }
+            ... on SecurityCoverage {
+                name
+            }
             ... on Indicator {
                 name
                 valid_from

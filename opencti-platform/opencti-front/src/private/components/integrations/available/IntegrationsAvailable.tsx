@@ -1,9 +1,9 @@
 import React, { ChangeEvent, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Box, MenuItem, Stack, TextField } from '@mui/material';
-import { WidgetsOutlined } from '@mui/icons-material';
+import { Box, MenuItem, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
+import { ViewListOutlined, ViewModuleOutlined, WidgetsOutlined } from '@mui/icons-material';
 import Grid from '@mui/material/Grid2';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import { useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
 import IngestionCatalogCard from '@components/integrations/catalog/IngestionCatalogCard';
 import IngestionCatalogConnectorCreation from '@components/integrations/catalog/IngestionCatalogConnectorCreation';
@@ -19,6 +19,7 @@ import useIngestionCatalogFilters, {
 import createDeploymentCountMap from '@components/integrations/catalog/utils/createDeploymentCountMap';
 import { getConnectorMetadata, getConnectorTypeIcon, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
 import { BUILT_IN_INTEGRATIONS, BuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
+import AvailableIntegrationLine, { AvailableIntegrationLinesHeader } from '@components/integrations/available/AvailableIntegrationLine';
 import BuiltInIntegrationCard from '@components/integrations/available/BuiltInIntegrationCard';
 import BuiltInIntegrationCreation from '@components/integrations/available/BuiltInIntegrationCreation';
 import { BrowseMoreButton, MarketplaceEmptyState, MarketplaceSectionHeader, ResultCountChip } from '@components/integrations/components/MarketplaceUi';
@@ -27,6 +28,11 @@ import { IntegrationsData } from '@components/integrations/Integrations';
 import { useFormatter } from '../../../../components/i18n';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import SearchInput from '../../../../components/SearchInput';
+
+type AvailableViewMode = 'cards' | 'lines';
+
+// Persisted so large catalogs keep the compact view across navigations.
+const VIEW_STORAGE_KEY = 'integrations_available_view';
 
 interface IntegrationsAvailableProps {
   data: IntegrationsData;
@@ -91,6 +97,15 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
   });
 
   const [searchInput, setSearchInput] = useState(filters.search);
+
+  const [view, setView] = useState<AvailableViewMode>(
+    () => (localStorage.getItem(VIEW_STORAGE_KEY) === 'lines' ? 'lines' : 'cards'),
+  );
+  const handleViewChange = (_: React.MouseEvent, value: AvailableViewMode | null) => {
+    if (!value) return;
+    localStorage.setItem(VIEW_STORAGE_KEY, value);
+    setView(value);
+  };
 
   const handleSearchInputSubmit = (value: string) => {
     setSearchInput(value);
@@ -212,6 +227,24 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
               <MenuItem value="verified">{t_i18n('Verified first')}</MenuItem>
             </TextField>
             <ResultCountChip count={filteredItems.length} />
+            <ToggleButtonGroup
+              size="small"
+              exclusive
+              value={view}
+              onChange={handleViewChange}
+              sx={{ backgroundColor: theme.palette.background.paper }}
+            >
+              <ToggleButton value="cards" aria-label="cards" data-testid="available-view-cards">
+                <Tooltip title={t_i18n('Cards view')}>
+                  <ViewModuleOutlined fontSize="small" />
+                </Tooltip>
+              </ToggleButton>
+              <ToggleButton value="lines" aria-label="lines" data-testid="available-view-lines">
+                <Tooltip title={t_i18n('Lines view')}>
+                  <ViewListOutlined fontSize="small" />
+                </Tooltip>
+              </ToggleButton>
+            </ToggleButtonGroup>
           </Stack>
 
           {sections.length === 0 ? (
@@ -221,21 +254,47 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
               extraAction={<BrowseMoreButton />}
             />
           ) : (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: view === 'lines' ? 3 : 4 }}>
               {visibleSections.map((section) => (
                 <Box component="section" key={section.key}>
                   {renderSectionHeader(section)}
                   {!collapsedSections[section.key] && (
-                    <Grid container spacing={2}>
-                      {section.items.map((item) => (
-                        <Grid
-                          key={item.key}
-                          size={{ xs: 12, sm: 6, lg: 4, xl: 3 }}
-                        >
-                          {renderItem(item)}
-                        </Grid>
-                      ))}
-                    </Grid>
+                    view === 'lines' ? (
+                      <Box
+                        sx={{
+                          borderRadius: 1,
+                          border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
+                          backgroundColor: theme.palette.background.paper,
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <AvailableIntegrationLinesHeader />
+                        {section.items.map((item) => (
+                          <AvailableIntegrationLine
+                            key={item.key}
+                            item={item}
+                            isEnterpriseEdition={isEnterpriseEdition}
+                            onClickDeploy={() => {
+                              if (item.connector) {
+                                handleOpenDeployDialog(item.connector.connector, item.connector.catalogId, hasActiveManagers, item.deploymentCount);
+                              }
+                            }}
+                            onClickCreate={() => setBuiltInCreationKind(item.builtIn ? item.builtIn.kind : null)}
+                          />
+                        ))}
+                      </Box>
+                    ) : (
+                      <Grid container spacing={2}>
+                        {section.items.map((item) => (
+                          <Grid
+                            key={item.key}
+                            size={{ xs: 12, sm: 6, lg: 4, xl: 3 }}
+                          >
+                            {renderItem(item)}
+                          </Grid>
+                        ))}
+                      </Grid>
+                    )
                   )}
                 </Box>
               ))}

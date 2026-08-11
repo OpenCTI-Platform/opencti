@@ -14,7 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import type { PlaybookCategory } from './__generated__/PlaybookFlow_playbookComponents.graphql';
-import type { PlaybookComponent, PlaybookComponents } from '../types/playbook-types';
+import { PlaybookBundleElementsToApply, type PlaybookComponent, type PlaybookComponentConfigSchema, type PlaybookComponents, type PlaybookConfig } from '../types/playbook-types';
+import type { PlaybookFlowFormData } from './PlaybookFlowForm';
+import type { PlaybookUpdateAction } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
 
 export const PLAYBOOK_CATEGORY_ORDER = [
   'start_playbook',
@@ -46,3 +48,67 @@ export function groupAndSortPlaybookComponents(
     }))
     .filter((g) => g.items.length > 0);
 }
+
+export interface NodeData {
+  name?: string;
+  description?: string;
+  configuration?: PlaybookConfig;
+  component?: PlaybookComponent;
+}
+interface ComputeInitialComponentConfigValuesParams {
+  action: string | null;
+  currentConfig: PlaybookConfig | null;
+  configurationSchema: PlaybookComponentConfigSchema | null;
+  nodeData?: NodeData;
+  selectedComponent?: PlaybookComponent | null;
+}
+
+export const computeInitialComponentConfigValues = ({
+  action,
+  currentConfig,
+  nodeData,
+  configurationSchema,
+  selectedComponent,
+}: ComputeInitialComponentConfigValuesParams): PlaybookFlowFormData => {
+  const initialValues: PlaybookFlowFormData = {
+    name: '',
+    description: '',
+  };
+
+  const componentIsReplaced = action === 'replace';
+
+  if (!currentConfig || componentIsReplaced) {
+    // Get default values from schema.
+    initialValues.name = selectedComponent?.name ?? '';
+    initialValues.description = '';
+    Object.entries(configurationSchema?.properties ?? {})
+      .forEach(([propName, property]) => {
+        initialValues[propName] = property.default;
+        if (propName === 'actions') initialValues.actionsFormValues = [];
+      });
+  } else {
+    // Get values from saved config.
+    initialValues.name = nodeData?.component?.id === selectedComponent?.id
+      ? nodeData?.name ?? ''
+      : selectedComponent?.name ?? '';
+    initialValues.description = nodeData?.component?.id === selectedComponent?.id
+      ? nodeData?.description ?? ''
+      : '';
+    const actionsFormValues: PlaybookUpdateAction['value'][] = [];
+    Object.entries(currentConfig)
+      .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
+      .forEach(([key, value]) => {
+        if (/actions-\d-value/.test(key)) actionsFormValues.push(value);
+        else {
+          initialValues[key] = value;
+        }
+        initialValues.actionsFormValues = actionsFormValues;
+      });
+    // Ensure applyToElements defaults to 'only-main' for existing configs missing it
+    if (!initialValues.applyToElements && configurationSchema?.properties?.applyToElements) {
+      initialValues.applyToElements = PlaybookBundleElementsToApply.ONLY_MAIN;
+    }
+  }
+
+  return initialValues;
+};

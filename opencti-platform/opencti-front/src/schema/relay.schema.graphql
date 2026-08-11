@@ -9713,8 +9713,10 @@ type Query {
   ingestionTaxii(id: String!): IngestionTaxii
   ingestionTaxiis(first: Int, after: ID, orderBy: IngestionTaxiiOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiConnection
   taxiiFeedAddInputFromImport(file: Upload!): TaxiiFeedAddInputFromImport!
+  ingestionTaxiiLogs(id: String!): [IngestionEntry]
   ingestionTaxiiCollection(id: String!): IngestionTaxiiCollection
   ingestionTaxiiCollections(first: Int, after: ID, orderBy: IngestionTaxiiCollectionOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiCollectionConnection
+  ingestionTaxiiCollectionAddInputFromImport(file: Upload!): IngestionTaxiiCollectionAddInputFromImport!
   ingestionCsv(id: String!): IngestionCsv
   ingestionCsvs(first: Int, after: ID, orderBy: IngestionCsvOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionCsvConnection
   csvFeedAddInputFromImport(file: Upload!): CSVFeedAddInputFromImport!
@@ -9822,6 +9824,9 @@ type Query {
   dataSanityOperations: [DataSanityOperation!]!
   dataSanityExecutions: [DataSanityExecution!]!
   dataSanityOperationDryRun(operation_name: String!): DataSanityDryRunOutput!
+  customFieldDefinition(id: String!): CustomFieldDefinition
+  customFieldDefinitions(first: Int, after: ID, orderBy: CustomFieldDefinitionsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): CustomFieldDefinitionConnection
+  customFieldDefinitionsForEntityType(entityType: String!): CustomFieldDefinitionConnection
 }
 
 type Subscription {
@@ -10634,6 +10639,7 @@ type Mutation {
   ingestionCsvDelete(id: ID!): ID
   ingestionCsvFieldPatch(id: ID!, input: [EditInput!]!): IngestionCsv
   ingestionCsvAddAutoUser(id: ID!, input: IngestionCsvAddAutoUserInput!): IngestionCsv
+  ingestionJsonAddInputFromImport(file: Upload!): IngestionJsonAddInputFromImport!
   ingestionJsonTester(input: IngestionJsonAddInput!): JsonMapperTestResult
   ingestionJsonAdd(input: IngestionJsonAddInput!): IngestionJson
   ingestionJsonResetState(id: ID!): IngestionJson
@@ -10701,9 +10707,8 @@ type Mutation {
   exclusionListFileAdd(input: ExclusionListFileAddInput!): ExclusionList
   exclusionListFieldPatch(id: ID!, input: [EditInput!], file: Upload): ExclusionList
   exclusionListDelete(id: ID!): ID
-  smtpConfigurationAdd(input: SmtpConfigurationAddInput!): SmtpConfiguration
-  smtpConfigurationUpdate(id: ID!, input: SmtpConfigurationEditInput!): SmtpConfiguration
-  smtpConfigurationDelete(id: ID!): ID
+  smtpConfigurationEdit(input: SmtpConfigurationAddInput!): SmtpConfiguration
+  smtpConfigurationDelete: Boolean
   smtpConfigurationTest(email: String!): Boolean
   draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace
   draftWorkspaceEdit(id: ID!): DraftWorkspaceEdit
@@ -10794,6 +10799,13 @@ type Mutation {
   retentionRuleCheck(input: RetentionRuleAddInput): Int!
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations
   dataSanityOperationRequestRun(operation_name: String!): ID
+  dataSanityOperationStop(operation_name: String!): ID
+  customFieldDefinitionAdd(input: CustomFieldDefinitionAddInput!): CustomFieldDefinition
+  customFieldDefinitionDelete(id: ID!): ID
+  customFieldDefinitionFieldPatch(id: ID!, input: [EditInput!]!): CustomFieldDefinition
+  customFieldDefinitionAddEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition
+  customFieldDefinitionUpdateEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition
+  customFieldDefinitionRemoveEntityType(id: ID!, entityType: String!): CustomFieldDefinition
 }
 
 enum WorkflowExecutionStatus {
@@ -10815,7 +10827,7 @@ type WorkflowSerializedState {
 
 type WorkflowSerializedTransition {
   from: [String!]!
-  to: String!
+  to: String
   event: String!
   asyncActions: [WorkflowActionConfig!]
   syncActions: [WorkflowActionConfig!]
@@ -12629,6 +12641,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   response_types: [String!]
   severity: String
   priority: String
+  customFieldValues: [CustomFieldValue!]
 }
 
 enum CaseIncidentsOrdering {
@@ -12697,6 +12710,7 @@ input CaseIncidentAddInput {
   update: Boolean
   authorized_members: [MemberAccessInput!]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type RfiRequestAccessConfiguration {
@@ -13879,6 +13893,8 @@ type IngestionTaxii implements InternalObject & BasicObject {
   added_after_start: DateTime
   ingestion_running: Boolean
   last_execution_date: DateTime
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry]
   confidence_to_score: Boolean
   ssl_verify: Boolean
   toConfigurationExport: String!
@@ -13913,6 +13929,22 @@ type TaxiiFeedAddInputFromImport {
   authentication_type: String!
   authentication_value: String!
   added_after_start: String
+}
+
+enum IngestionLogLevel {
+  success
+  info
+  warn
+  error
+}
+
+type IngestionEntry {
+  timestamp: DateTime!
+  level: IngestionLogLevel!
+  type: String!
+  identifier: String!
+  message: String!
+  meta: JSON
 }
 
 input IngestionTaxiiAddInput {
@@ -13960,6 +13992,7 @@ type IngestionTaxiiCollection implements InternalObject & BasicObject {
   user_id: String
   user: Creator
   authorized_members: [MemberAccess!]
+  toConfigurationExport: String!
 }
 
 enum IngestionTaxiiCollectionOrdering {
@@ -13977,6 +14010,12 @@ type IngestionTaxiiCollectionConnection {
 type IngestionTaxiiCollectionEdge {
   cursor: String!
   node: IngestionTaxiiCollection!
+}
+
+type IngestionTaxiiCollectionAddInputFromImport {
+  name: String!
+  description: String
+  confidence_to_score: Boolean
 }
 
 input IngestionTaxiiCollectionAddInput {
@@ -14127,6 +14166,29 @@ type IngestionJson implements InternalObject & BasicObject {
   last_execution_date: DateTime
   markings: [String!]
   ssl_verify: Boolean
+  toConfigurationExport: String!
+}
+
+type IngestionJsonMapperFromImport {
+  id: String!
+  name: String!
+}
+
+type IngestionJsonAddInputFromImport {
+  name: String!
+  description: String
+  scheduling_period: String
+  uri: String
+  verb: String
+  body: String
+  pagination_with_sub_page: Boolean
+  pagination_with_sub_page_attribute_path: String
+  pagination_with_sub_page_query_verb: String
+  headers: [IngestionHeader!]
+  query_attributes: [IngestionQueryAttribute!]
+  authentication_type: IngestionAuthType
+  ssl_verify: Boolean
+  jsonMapper: IngestionJsonMapperFromImport!
 }
 
 enum IngestionJsonOrdering {
@@ -15234,9 +15296,9 @@ input ExclusionListFileAddInput {
 }
 
 type SmtpConfiguration {
-  id: ID!
   smtp_enabled: Boolean!
   use_db_config: Boolean!
+  forced_sender_email: Boolean!
   sender_email_address: String
   hostname: String
   port: Int
@@ -15256,26 +15318,6 @@ enum SmtpAuthType {
 }
 
 input SmtpConfigurationAddInput {
-  smtp_enabled: Boolean
-  use_db_config: Boolean
-  sender_email_address: String
-  hostname: String
-  port: Int
-  use_ssl: Boolean
-  reject_unauthorized: Boolean
-  auth_type: SmtpAuthType
-  username: String
-  password: String
-  oauth_user: String
-  oauth_client_id: String
-  oauth_client_secret: String
-  oauth_issuer: String
-  oauth_access_token: String
-  oauth_refresh_token: String
-  oauth_refresh_token_expires_at: DateTime
-}
-
-input SmtpConfigurationEditInput {
   smtp_enabled: Boolean
   use_db_config: Boolean
   sender_email_address: String
@@ -15410,6 +15452,7 @@ type FintelTemplate implements BasicObject & InternalObject {
   start_date: DateTime
   fintel_template_widgets: [FintelTemplateWidget!]!
   toConfigurationExport: String!
+  default: Boolean
 }
 
 input FintelTemplateWidgetAddInput {
@@ -15427,6 +15470,7 @@ input FintelTemplateAddInput {
   template_content: String
   start_date: DateTime
   fintel_template_widgets: [FintelTemplateWidgetAddInput!]
+  default: Boolean
 }
 
 type FintelTemplateEdge {
@@ -15744,6 +15788,7 @@ type FintelDesign implements BasicObject & InternalObject {
   gradiantFromColor: String
   gradiantToColor: String
   textColor: String
+  default: Boolean
 }
 
 input FintelDesignAddInput {
@@ -15753,6 +15798,7 @@ input FintelDesignAddInput {
   gradiantFromColor: String
   gradiantToColor: String
   textColor: String
+  default: Boolean
   file: Upload
 }
 
@@ -15769,6 +15815,7 @@ type FintelDesignConnection {
 enum FintelDesignOrdering {
   _score
   name
+  default
   created_at
 }
 
@@ -16244,6 +16291,7 @@ type GroupsMapping {
   groups_mapping: [MappingEntry!]!
   auto_create_groups: Boolean!
   prevent_default_groups: Boolean!
+  extend_platform_groups: Boolean
 }
 
 input GroupsMappingInput {
@@ -16253,6 +16301,7 @@ input GroupsMappingInput {
   groups_mapping: [MappingEntryInput!]!
   auto_create_groups: Boolean!
   prevent_default_groups: Boolean!
+  extend_platform_groups: Boolean!
 }
 
 type OrganizationsMapping {
@@ -16586,6 +16635,7 @@ type CustomViewsConnection {
 enum CustomViewsOrdering {
   name
   enabled
+  default
 }
 
 type CustomViewsSettings {
@@ -16921,4 +16971,87 @@ type DataSanityImpactedElement {
 
 type DataSanityDryRunOutput {
   estimated_impact: [DataSanityImpactedElement!]!
+}
+
+type CustomFieldValue {
+  field_id: ID!
+  field_name: String!
+  int_value: Int
+  string_value: String
+  boolean_value: Boolean
+  date_value: DateTime
+  select_value: String
+  select_values: [String!]
+}
+
+input CustomFieldValueAddInput {
+  field_id: ID!
+  field_name: String!
+  int_value: Int
+  string_value: String
+  boolean_value: Boolean
+  date_value: DateTime
+  select_value: String
+  select_values: [String!]
+}
+
+type CustomFieldEntityTypeSetting {
+  entity_type: String!
+  mandatory: Boolean!
+  default_value: String
+}
+
+type CustomFieldDefinition implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  representative: Representative!
+  parent_types: [String!]!
+  metrics: [Metric]
+  created: DateTime
+  modified: DateTime
+  name: String!
+  label: String!
+  field_type: String!
+  entity_types: [String!]
+  entity_type_settings: [CustomFieldEntityTypeSetting!]
+  multiple: Boolean!
+  description: String
+  min_value: Int
+  max_value: Int
+  select_options: [String!]
+}
+
+enum CustomFieldDefinitionsOrdering {
+  name
+  label
+  field_type
+  created
+  _score
+}
+
+type CustomFieldDefinitionConnection {
+  pageInfo: PageInfo!
+  edges: [CustomFieldDefinitionEdge!]!
+}
+
+type CustomFieldDefinitionEdge {
+  cursor: String!
+  node: CustomFieldDefinition!
+}
+
+input CustomFieldDefinitionAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  label: String!
+  field_type: String!
+  entity_types: [String!]
+  multiple: Boolean
+  description: String
+  created: DateTime
+  min_value: Int
+  max_value: Int
+  select_options: [String!]
 }

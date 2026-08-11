@@ -34,6 +34,7 @@ const fintelTemplatesFragment = graphql`
           settings_types
           start_date
           entity_type
+          default
         }
       }
     }
@@ -63,6 +64,7 @@ const FintelTemplatesManager = () => {
       name: template.name,
       description: template.description ?? null,
       published: !!template.start_date,
+      default: !!template.default,
     });
     setDrawerOpen(true);
   };
@@ -87,6 +89,8 @@ const FintelTemplatesManager = () => {
       });
     }
   };
+
+  const currentDefaultName = fintelTemplates?.edges.find(({ node }) => node.default)?.node.name;
 
   return (
     <>
@@ -151,6 +155,7 @@ const FintelTemplatesManager = () => {
           isOpen={isDrawerOpen}
           template={templateToEdit}
           entityType={target_type}
+          currentDefaultName={currentDefaultName}
           onClose={() => {
             setDrawerOpen(false);
             setTemplateToEdit(undefined);

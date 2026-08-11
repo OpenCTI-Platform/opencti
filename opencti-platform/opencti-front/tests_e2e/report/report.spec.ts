@@ -1,5 +1,4 @@
-import * as path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 import { format } from 'date-fns';
 import { v4 as uuid } from 'uuid';
 import { expect, test } from '../fixtures/baseFixtures';
@@ -13,7 +12,8 @@ import ExternalReferenceFormPageModel from '../model/form/externalReferenceForm.
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 import EntitiesTabPageModel from '../model/EntitiesTab.pageModel';
 
-const baseDir = path.dirname(fileURLToPath(import.meta.url));
+const TEST_MD_PATH = fileURLToPath(new URL('assets/report.test.md', import.meta.url));
+const TEST_PDF_PATH = fileURLToPath(new URL('assets/report.test.pdf', import.meta.url));
 
 /**
  * Content of the test
@@ -29,7 +29,7 @@ const baseDir = path.dirname(fileURLToPath(import.meta.url));
  * Delete report.
  * Check deletion.
  */
-test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, async ({ page }) => {
+test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group1'] }, async ({ page }) => {
   await fakeDate(page, 'April 1 2024 12:00:00');
   const leftNavigation = new LeftBarPage(page);
   const reportPage = new ReportPage(page);
@@ -118,7 +118,7 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, asyn
   await reportForm.markingsAutocomplete.selectOption('TLP:GREEN');
   await expect(reportForm.markingsAutocomplete.getOption('TLP:GREEN')).toBeVisible();
 
-  await reportForm.associatedFileField.uploadContentFile(path.join(baseDir, 'assets/report.test.md'));
+  await reportForm.associatedFileField.uploadContentFile(TEST_MD_PATH);
   await expect(reportForm.associatedFileField.getByText('report.test.md')).toBeVisible();
 
   await reportForm.getCreateButton().click();
@@ -273,11 +273,11 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, asyn
   await expect(processingStatus).toBeVisible();
 
   await reportDetailsPage.openLabelsSelect();
-  await reportDetailsPage.labelsSelect.selectOption('covid-19');
+  await reportDetailsPage.labelsSelect.selectOption('COVID-19');
   await reportDetailsPage.addLabels();
   await expect(reportDetailsPage.overview.getLabel('campaign')).toBeVisible();
   await expect(reportDetailsPage.overview.getLabel('report')).toBeVisible();
-  await expect(reportDetailsPage.overview.getLabel('covid-19')).toBeVisible();
+  await expect(reportDetailsPage.overview.getLabel('COVID-19')).toBeVisible();
 
   // ---------
   // endregion
@@ -306,7 +306,7 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, asyn
  * Delete report by background task.
  * Check deletion.
  */
-test('Report live entities creation and relationships', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, async ({ page }) => {
+test('Report live entities creation and relationships', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group1'] }, async ({ page }) => {
   const leftNavigation = new LeftBarPage(page);
   // const toolbar = new ToolbarPageModel(page);
   const reportPage = new ReportPage(page);
@@ -323,6 +323,7 @@ test('Report live entities creation and relationships', { tag: ['@report', '@kno
 
   await reportPage.openNewReportForm();
   const reportName = `Report with created entities - ${uuid()}`;
+  const labelName = `threat-${uuid()}`;
   await reportForm.nameField.fill(reportName);
 
   // region Check author labels and external references creation forms
@@ -346,12 +347,12 @@ test('Report live entities creation and relationships', { tag: ['@report', '@kno
   await labelForm.getCreateButton().click();
   await expect(labelForm.valueField.getByText('This field is required')).toBeVisible();
   await expect(labelForm.colorField.getByText('This field is required')).toBeVisible();
-  await labelForm.valueField.fill('threat');
+  await labelForm.valueField.fill(labelName);
   await expect(labelForm.valueField.getByText('This field is required')).toBeHidden();
   await labelForm.colorField.fill('#9d3fb8');
   await expect(labelForm.colorField.getByText('This field is required')).toBeHidden();
   await labelForm.getCreateButton().click();
-  await expect(reportForm.labelsAutocomplete.getOption('threat')).toBeVisible();
+  await expect(reportForm.labelsAutocomplete.getOption(labelName)).toBeVisible();
 
   // Create external references
   await reportForm.externalReferencesAutocomplete.openAddOptionForm();
@@ -361,7 +362,7 @@ test('Report live entities creation and relationships', { tag: ['@report', '@kno
   await expect(externalReferenceForm.urlField.getByText('The value must be an URL')).toBeVisible();
   await externalReferenceForm.sourceNameField.fill('external ref');
   await externalReferenceForm.urlField.fill('https://github.com/OpenCTI-Platform/opencti');
-  await externalReferenceForm.associatedFileField.uploadContentFile(path.join(baseDir, 'assets/report.test.pdf'));
+  await externalReferenceForm.associatedFileField.uploadContentFile(TEST_PDF_PATH);
   await expect(externalReferenceForm.associatedFileField.getByText('report.test.pdf')).toBeVisible();
   await externalReferenceForm.getCreateButton().click();
   await expect(reportForm.externalReferencesAutocomplete.getOption('external ref')).toBeVisible();
@@ -380,7 +381,7 @@ test('Report live entities creation and relationships', { tag: ['@report', '@kno
   const author = reportDetailsPage.getTextForHeading('Author', 'Jeanne Mitchel');
   await expect(author).toBeVisible();
 
-  await expect(reportDetailsPage.overview.getLabel('threat')).toBeVisible();
+  await expect(reportDetailsPage.overview.getLabel(labelName)).toBeVisible();
 
   const externalReference = reportDetailsPage.getTextForCard('EXTERNAL REFERENCES', 'external ref (report.test.pdf)');
   await expect(externalReference).toBeVisible();

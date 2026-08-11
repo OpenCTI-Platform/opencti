@@ -35,6 +35,8 @@ type IngestionTaxii implements InternalObject & BasicObject {
     added_after_start: DateTime
     ingestion_running: Boolean
     last_execution_date: DateTime
+    last_execution_status: String
+    ingestionLogs: [IngestionEntry] @ff(flags: ["INGESTION_FEED_LOGS"])
     confidence_to_score: Boolean
     ssl_verify: Boolean
     toConfigurationExport: String!
@@ -68,6 +70,22 @@ type TaxiiFeedAddInputFromImport {
     added_after_start: String
 }
 
+enum IngestionLogLevel {
+    success
+    info
+    warn
+    error
+}
+
+type IngestionEntry {
+    timestamp: DateTime!
+    level: IngestionLogLevel!
+    type: String!
+    identifier: String!
+    message: String!
+    meta: JSON
+}
+
 # Queries
 type Query {
     ingestionTaxii(id: String!): IngestionTaxii @auth(for: [INGESTION])
@@ -83,6 +101,7 @@ type Query {
     taxiiFeedAddInputFromImport(
         file: Upload!
     ): TaxiiFeedAddInputFromImport! @auth(for: [INGESTION])
+    ingestionTaxiiLogs(id: String!): [IngestionEntry] @auth(for: [INGESTION]) @ff(flags: ["INGESTION_FEED_LOGS"])
 }
 
 # Mutations

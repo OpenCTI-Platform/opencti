@@ -1,6 +1,5 @@
 import { buttonClasses } from '@mui/material/Button';
 import type { ExtendedThemeOptions } from './Theme';
-import { fileUri } from '../relay/environment';
 import LogoText from '../static/images/logo_text_dark.svg';
 import LogoCollapsed from '../static/images/logo_dark.svg';
 import { hexToRGB } from '../utils/Colors';
@@ -36,8 +35,8 @@ const ThemeDark = (
   accent: string | null = null,
   text_color = THEME_DARK_DEFAULT_TEXT,
 ): ExtendedThemeOptions => ({
-  logo: logo || fileUri(LogoText),
-  logo_collapsed: logo_collapsed || fileUri(LogoCollapsed),
+  logo: logo || LogoText,
+  logo_collapsed: logo_collapsed || LogoCollapsed,
   borderRadius: 4,
   palette: {
     mode: 'dark',
@@ -83,6 +82,9 @@ const ThemeDark = (
       background: hexToRGB(EE_COLOR, 0.2),
       lightBackground: hexToRGB(EE_COLOR, 0.08),
     },
+    // Aligned with the OpenAEV xtmhub token so the Filigran Experience
+    // screens share the same accent on both platforms.
+    xtmhub: { main: '#00f1bd' },
     background: {
       default: background || THEME_DARK_DEFAULT_BACKGROUND,
       paper: paper || THEME_DARK_DEFAULT_PAPER,

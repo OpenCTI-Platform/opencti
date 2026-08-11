@@ -163,7 +163,7 @@ export interface WorkflowSerializedState {
 
 export interface WorkflowSerializedTransition {
   from: string | string[];
-  to: string;
+  to: string | null;
   event: string;
   comment?: string;
   /** Phase 1: async background task actions. Run before syncActions. */

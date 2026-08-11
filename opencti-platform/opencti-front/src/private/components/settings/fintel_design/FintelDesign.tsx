@@ -1,14 +1,14 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { FintelDesignQuery } from '@components/settings/fintel_design/__generated__/FintelDesignQuery.graphql';
 import Grid from '@mui/material/Grid2';
+import Button from '@common/button/Button';
 import { useTheme } from '@mui/styles';
 import { FintelDesign_fintelDesign$key } from '@components/settings/fintel_design/__generated__/FintelDesign_fintelDesign.graphql';
 import FintelDesignForm from '@components/settings/fintel_design/FintelDesignForm';
-import FintelDesignEdition from '@components/settings/fintel_design/FintelDesignEdition';
-import { Box, Stack } from '@mui/material';
-import MenuItem from '@mui/material/MenuItem';
+import FintelDesignFormDrawer, { FintelDesignEditData } from '@components/settings/fintel_design/FintelDesignFormDrawer';
+import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import PageContainer from '../../../../components/PageContainer';
@@ -18,17 +18,27 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { htmlToPdfReport } from '../../../../utils/htmlToPdf/htmlToPdf';
 import useFileFromTemplate from '../../../../utils/outcome_template/engine/useFileFromTemplate';
 import PdfViewer from '../../../../components/PdfViewer';
-import PopoverMenu from '../../../../components/PopoverMenu';
 import FintelDesignDeletion from './FintelDesignDeletion';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Card from '../../../../components/common/card/Card';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
+import FintelDesignPopover from './FintelDesignPopover';
+import Tag from '../../../../components/common/tag/Tag';
 
 const fintelDesignQuery = graphql`
   query FintelDesignQuery($id: String!) {
+    fintelDesigns(orderBy: name, orderMode: asc) {
+      edges {
+        node {
+          id
+          name
+          default
+        }
+      }
+    }
     fintelDesign(id: $id) {
       ...FintelDesign_fintelDesign
-      ...FintelDesignEditionOverview_fintelDesign
+      default
     }
   }
 `;
@@ -42,6 +52,7 @@ const fintelDesignComponentFragment = graphql`
     gradiantToColor
     textColor
     file_id
+    default
   }
 `;
 
@@ -54,8 +65,10 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const navigate = useNavigate();
   const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
   const [openDelete, setOpenDelete] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const [pdf, setPdf] = useState<File>();
   const { buildFileFromTemplate } = useFileFromTemplate();
@@ -69,6 +82,11 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
     queryResult.fintelDesign,
   );
   if (!queryResult.fintelDesign || !fintelDesign) return null;
+
+  const currentDefaultName = queryResult.fintelDesigns?.edges
+    ?.map((edge) => edge?.node)
+    .find((node) => node?.default && node.id !== fintelDesign.id)
+    ?.name;
 
   const buildPreview = async () => {
     const template = {
@@ -99,35 +117,45 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
             { label: `${fintelDesign.name}`, current: true },
           ]}
         />
-        <Stack direction="row" mb={3}>
-          <TitleMainEntity sx={{ flex: 1 }}>
-            {fintelDesign.name}
-          </TitleMainEntity>
-          <div style={{ marginRight: theme.spacing(0.5) }}>
-            {canDelete && (
-              <PopoverMenu>
-                {({ closeMenu }) => (
-                  <Box>
-                    <MenuItem onClick={() => {
-                      handleOpenDelete();
-                      closeMenu();
-                    }}
-                    >
-                      {t_i18n('Delete')}
-                    </MenuItem>
-                  </Box>
-                )}
-              </PopoverMenu>
+        <Stack direction="row" mb={3} alignItems="center">
+          <Stack direction="row" alignItems="center" spacing={1} sx={{ flex: 1, minWidth: 0, mr: 1 }}>
+            <TitleMainEntity>
+              {fintelDesign.name}
+            </TitleMainEntity>
+            {fintelDesign.default && (
+              <Tag
+                color={theme.palette.success.main}
+                label={t_i18n('Default')}
+              />
             )}
-          </div>
+          </Stack>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <FintelDesignPopover
+              fintelDesignId={fintelDesign.id}
+              isDefault={!!fintelDesign.default}
+              currentDefaultName={fintelDesign.default ? undefined : currentDefaultName}
+              inline={false}
+              onDelete={canDelete ? handleOpenDelete : undefined}
+            />
+            <Button disableElevation onClick={() => setIsEditing(true)}>
+              {t_i18n('Update')}
+            </Button>
+          </Stack>
           <FintelDesignDeletion
             id={fintelDesign.id}
             isOpen={openDelete}
             handleClose={handleCloseDelete}
+            onDeleteComplete={() => navigate('/dashboard/settings/customization/fintel_designs')}
           />
-          <FintelDesignEdition
-            fintelDesignId={fintelDesign.id}
-            overviewData={queryResult.fintelDesign}
+          <FintelDesignFormDrawer
+            fintelDesign={{
+              id: fintelDesign.id,
+              name: fintelDesign.name,
+              description: fintelDesign.description ?? null,
+              default: !!fintelDesign.default,
+            } satisfies FintelDesignEditData}
+            isOpen={isEditing}
+            onClose={() => setIsEditing(false)}
           />
         </Stack>
         <Grid

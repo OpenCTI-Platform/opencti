@@ -1,0 +1,5 @@
+{"openCTI_version":"6.9.4","type":"jsonFeeds","configuration": {
+  "name": "jsonFeedOutdated",
+  "uri": "http://jsonserver.invalid/api/data",
+  "json_mapper": { "name": "Some mapper", "variables": [], "representations": [] }
+}}

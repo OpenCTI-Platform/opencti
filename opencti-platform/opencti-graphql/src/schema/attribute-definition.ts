@@ -33,17 +33,24 @@ export type MandatoryType = 'internal' | 'external' | 'customizable' | 'no';
 export type BasicStoreAttribute = object | string;
 
 type BasicDefinition = {
-  name: string; // name in the database
-  label: string; // label for front display
+  /** name in the database */
+  name: string;
+  /** label for front display */
+  label: string;
   description?: string; // Description of the attribute
   multiple: boolean; // If attribute can have multiple values
   mandatoryType: MandatoryType; // If attribute is mandatory
-  upsert: boolean; // If attribute can be upsert by the integration
-  upsert_force_replace?: boolean; // For multiple, if upsert will for a replacement instead of cumulate information
-  isFilterable: boolean; // If attribute can be used as a filter key in the UI
+  /** If attribute can be upsert by the integration */
+  upsert: boolean;
+  /** For multiple, if upsert will for a replacement instead of cumulate information */
+  upsert_force_replace?: boolean;
+  /** If attribute can be used as a filter key in the UI */
+  isFilterable: boolean;
   editDefault: boolean; // TO CHECK ?????
-  defaultValue?: any; // Default value to apply if there is no user defined value (for example for the main observable type of indicators)
-  update?: boolean; // If attribute can be updated (null = true)
+  /** Default value to apply if there is no user defined value (for example for the main observable type of indicators) */
+  defaultValue?: any;
+  /** If attribute can be updated (null = true) */
+  update?: boolean;
   featureFlag?: string; // if attribute is on feature flag, null by default
   requiredCapabilities?: string[];
 };

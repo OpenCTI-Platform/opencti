@@ -7,13 +7,6 @@ vi.mock('../../../utils/hooks/useAttributes', () => ({
   }),
 }));
 
-// TODO(DRAFT_WORKFLOW): remove this mock when the DRAFT_WORKFLOW flag is removed (see WidgetListsDefaultColumns.tsx).
-vi.mock('../../../utils/hooks/useHelper', () => ({
-  default: () => ({
-    isFeatureEnable: () => true,
-  }),
-}));
-
 import { getWidgetColumns, getDefaultWidgetColumns, getCustomAttributesColumns, getDefaultCustomAttributesColumns } from './WidgetListsDefaultColumns';
 
 describe('WidgetListsDefaultColumns', () => {

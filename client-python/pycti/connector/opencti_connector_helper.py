@@ -616,7 +616,7 @@ class ListenQueue(threading.Thread):
                 if event_data.get("stix_objects")
                 else None
             )
-            validation_mode = event_data.get("validation_mode", "workbench")
+            validation_mode = event_data.get("validation_mode", "draft")
             force_validation = event_data.get("force_validation", False)
             # Set the API headers
             internal_data = json_data["internal"]
@@ -2402,7 +2402,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             "Connector registered with ID", {"id": self.connect_id}
         )
         self.work_id = None
-        self.validation_mode = "workbench"
+        self.validation_mode = "draft"
         self.force_validation = False
         self.draft_id = None
         self.playbook = None

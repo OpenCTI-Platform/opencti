@@ -1,6 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const getSchemaURL = () => {
   if (process.env.OPENCTI_MANIFEST_URL) {
@@ -23,10 +23,7 @@ const getFetchHeaders = () => {
 const OUTPUT_DIR = '../src/__generated__';
 const OUTPUT_FILE = 'opencti-manifest.json';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-async function getConnectorManifest() {
+const getConnectorManifest = async () => {
   console.info('📝 Getting connectors manifest');
   const schemaUrl = getSchemaURL();
   try {
@@ -44,7 +41,7 @@ async function getConnectorManifest() {
 
     // save file
     console.info('➡️ Writing manifest file...');
-    const fullDir = path.resolve(__dirname, OUTPUT_DIR);
+    const fullDir = fileURLToPath(new URL(OUTPUT_DIR, import.meta.url));
     fs.mkdirSync(fullDir, { recursive: true });
     const fullPath = path.join(fullDir, OUTPUT_FILE);
     fs.writeFileSync(fullPath, data, 'utf8');
@@ -55,6 +52,6 @@ async function getConnectorManifest() {
     console.error(err);
     process.exit(1);
   }
-}
+};
 
 await getConnectorManifest();

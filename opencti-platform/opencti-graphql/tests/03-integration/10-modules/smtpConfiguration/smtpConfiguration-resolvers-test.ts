@@ -1,16 +1,13 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { deleteElementById } from '../../../../src/database/middleware';
 import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { queryAsAdminWithSuccess, queryAsAdminWithError, queryAsUserIsExpectedForbidden } from '../../../utils/testQueryHelper';
-import { ENTITY_TYPE_SMTP_CONFIGURATION } from '../../../../src/modules/smtpConfiguration/smtpConfiguration-types';
-import { fullEntitiesList } from '../../../../src/database/middleware-loader';
-import type { BasicStoreEntitySmtpConfiguration } from '../../../../src/modules/smtpConfiguration/smtpConfiguration-types';
+import { patchAttribute } from '../../../../src/database/middleware';
+import { ENTITY_TYPE_SETTINGS } from '../../../../src/schema/internalObject';
 
 const SMTP_CONFIGURATION_QUERY = gql`
   query SmtpConfigurationTest {
     smtpConfiguration {
-      id
       smtp_enabled
       use_db_config
       sender_email_address
@@ -27,23 +24,9 @@ const SMTP_CONFIGURATION_QUERY = gql`
   }
 `;
 
-const SMTP_CONFIGURATION_ADD_MUTATION = gql`
-  mutation SmtpConfigurationAddTest($input: SmtpConfigurationAddInput!) {
-    smtpConfigurationAdd(input: $input) {
-      id
-      smtp_enabled
-      use_db_config
-      hostname
-      port
-      auth_type
-    }
-  }
-`;
-
-const SMTP_CONFIGURATION_UPDATE_MUTATION = gql`
-  mutation SmtpConfigurationUpdateTest($id: ID!, $input: SmtpConfigurationEditInput!) {
-    smtpConfigurationUpdate(id: $id, input: $input) {
-      id
+const SMTP_CONFIGURATION_EDIT_MUTATION = gql`
+  mutation SmtpConfigurationEditTest($input: SmtpConfigurationAddInput!) {
+    smtpConfigurationEdit(input: $input) {
       smtp_enabled
       use_db_config
       hostname
@@ -59,28 +42,21 @@ const SMTP_CONFIGURATION_TEST_MUTATION = gql`
   }
 `;
 
-const SMTP_CONFIGURATION_DELETE_MUTATION = gql`
-  mutation SmtpConfigurationDeleteTest($id: ID!) {
-    smtpConfigurationDelete(id: $id)
+const clearSmtpConfiguration = async () => {
+  // Retrieve settings id via a raw query to reset smtp_configuration between tests
+  const { data } = await queryAsAdminWithSuccess({ query: gql`query { settings { id } }` });
+  const settingsId = data?.settings?.id;
+  if (settingsId) {
+    await patchAttribute(testContext, ADMIN_USER, settingsId, ENTITY_TYPE_SETTINGS, { smtp_configuration: null });
   }
-`;
+};
 
 describe('SmtpConfiguration resolvers', () => {
-  let configId: string;
-
-  beforeAll(async () => {
-    // Ensure clean state
-    const configs = await fullEntitiesList<BasicStoreEntitySmtpConfiguration>(testContext, ADMIN_USER, [ENTITY_TYPE_SMTP_CONFIGURATION]);
-    await Promise.all(configs.map(({ id }) => deleteElementById(testContext, ADMIN_USER, id, ENTITY_TYPE_SMTP_CONFIGURATION)));
-  });
-
-  afterAll(async () => {
-    const configs = await fullEntitiesList<BasicStoreEntitySmtpConfiguration>(testContext, ADMIN_USER, [ENTITY_TYPE_SMTP_CONFIGURATION]);
-    await Promise.all(configs.map(({ id }) => deleteElementById(testContext, ADMIN_USER, id, ENTITY_TYPE_SMTP_CONFIGURATION)));
-  });
+  beforeAll(clearSmtpConfiguration);
+  afterAll(clearSmtpConfiguration);
 
   describe('Query smtpConfiguration', () => {
-    it('should return null when no configuration exists in database', async () => {
+    it('should return null when no configuration has been set in settings', async () => {
       const result = await queryAsAdminWithSuccess({ query: SMTP_CONFIGURATION_QUERY });
       expect(result.data.smtpConfiguration).toBeNull();
     });
@@ -90,49 +66,37 @@ describe('SmtpConfiguration resolvers', () => {
     });
   });
 
-  describe('Mutation smtpConfigurationAdd', () => {
-    it('should reject port 25 on create', async () => {
-      await queryAsAdminWithError(
-        { query: SMTP_CONFIGURATION_ADD_MUTATION, variables: { input: { smtp_enabled: false, use_db_config: false, port: 25 } } },
-        'Port 25 is not allowed for SMTP configuration',
-      );
-    });
-
-    it('should create a new smtp configuration', async () => {
-      const result = await queryAsAdminWithSuccess({
-        query: SMTP_CONFIGURATION_ADD_MUTATION,
-        variables: { input: { smtp_enabled: false, use_db_config: false, hostname: 'smtp.example.com', port: 587 } },
-      });
-      expect(result.data.smtpConfigurationAdd.id).toBeDefined();
-      expect(result.data.smtpConfigurationAdd.hostname).toBe('smtp.example.com');
-      expect(result.data.smtpConfigurationAdd.smtp_enabled).toBe(false);
-      configId = result.data.smtpConfigurationAdd.id;
-    });
-
-    it('should reject creating a second configuration', async () => {
-      await queryAsAdminWithError(
-        { query: SMTP_CONFIGURATION_ADD_MUTATION, variables: { input: { smtp_enabled: false, use_db_config: false } } },
-        'An SMTP configuration already exists',
-      );
-    });
-  });
-
-  describe('Mutation smtpConfigurationUpdate', () => {
-    it('should update the configuration by id', async () => {
-      const result = await queryAsAdminWithSuccess({
-        query: SMTP_CONFIGURATION_UPDATE_MUTATION,
-        variables: { id: configId, input: { smtp_enabled: true, hostname: 'smtp-updated.example.com', port: 587 } },
-      });
-      expect(result.data.smtpConfigurationUpdate.id).toBe(configId);
-      expect(result.data.smtpConfigurationUpdate.smtp_enabled).toBe(true);
-      expect(result.data.smtpConfigurationUpdate.hostname).toBe('smtp-updated.example.com');
-    });
-
+  describe('Mutation smtpConfigurationEdit', () => {
     it('should reject port 25', async () => {
       await queryAsAdminWithError(
-        { query: SMTP_CONFIGURATION_UPDATE_MUTATION, variables: { id: configId, input: { port: 25 } } },
+        { query: SMTP_CONFIGURATION_EDIT_MUTATION, variables: { input: { smtp_enabled: false, use_db_config: false, port: 25 } } },
         'Port 25 is not allowed for SMTP configuration',
       );
+    });
+
+    it('should save smtp configuration to settings', async () => {
+      const result = await queryAsAdminWithSuccess({
+        query: SMTP_CONFIGURATION_EDIT_MUTATION,
+        variables: { input: { smtp_enabled: false, use_db_config: true, hostname: 'smtp.example.com', port: 587 } },
+      });
+      expect(result.data.smtpConfigurationEdit.hostname).toBe('smtp.example.com');
+      expect(result.data.smtpConfigurationEdit.smtp_enabled).toBe(false);
+      expect(result.data.smtpConfigurationEdit.use_db_config).toBe(true);
+    });
+
+    it('should be queryable after edit', async () => {
+      const result = await queryAsAdminWithSuccess({ query: SMTP_CONFIGURATION_QUERY });
+      expect(result.data.smtpConfiguration).not.toBeNull();
+      expect(result.data.smtpConfiguration.hostname).toBe('smtp.example.com');
+    });
+
+    it('should update existing configuration (upsert)', async () => {
+      const result = await queryAsAdminWithSuccess({
+        query: SMTP_CONFIGURATION_EDIT_MUTATION,
+        variables: { input: { smtp_enabled: true, use_db_config: true, hostname: 'smtp-updated.example.com', port: 587 } },
+      });
+      expect(result.data.smtpConfigurationEdit.smtp_enabled).toBe(true);
+      expect(result.data.smtpConfigurationEdit.hostname).toBe('smtp-updated.example.com');
     });
   });
 
@@ -154,16 +118,5 @@ describe('SmtpConfiguration resolvers', () => {
       );
     });
   });
-
-  describe('Mutation smtpConfigurationDelete', () => {
-    it('should delete the configuration by id and return its id', async () => {
-      const result = await queryAsAdminWithSuccess({ query: SMTP_CONFIGURATION_DELETE_MUTATION, variables: { id: configId } });
-      expect(result.data.smtpConfigurationDelete).toBe(configId);
-    });
-
-    it('should return null on query after deletion', async () => {
-      const result = await queryAsAdminWithSuccess({ query: SMTP_CONFIGURATION_QUERY });
-      expect(result.data.smtpConfiguration).toBeNull();
-    });
-  });
 });
+

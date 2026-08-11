@@ -1,0 +1,28 @@
+{"openCTI_version":"7.260722.0","type":"jsonFeeds","configuration": {
+  "name": "jsonFeedAuto",
+  "description": "Imported JSON feed",
+  "scheduling_period": "PT1H",
+  "uri": "http://jsonserver.invalid/api/data",
+  "verb": "get",
+  "body": null,
+  "pagination_with_sub_page": false,
+  "pagination_with_sub_page_attribute_path": null,
+  "pagination_with_sub_page_query_verb": null,
+  "headers": [{"name": "Accept", "value": "application/json"}],
+  "query_attributes": [],
+  "authentication_type": "none",
+  "authentication_value": "",
+  "ssl_verify": true,
+  "json_mapper": {
+    "name": "JSON mapper from feed import test",
+    "variables": [],
+    "representations": [
+      {
+        "id": "b1a2c3d4-0000-0000-0000-000000000010",
+        "type": "entity",
+        "target": { "entity_type": "Domain-Name", "path": "$[*]" },
+        "attributes": [{ "mode": "simple", "key": "value", "attr_path": { "path": "$.domain" } }]
+      }
+    ]
+  }
+}}

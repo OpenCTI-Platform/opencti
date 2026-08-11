@@ -379,7 +379,7 @@ const StixDomainObjectHeader = (props) => {
       setOpenCommitCreate(false);
       setNewAlias('');
       resetForm();
-      MESSAGING$.notifyError('You can\'t add the same alias as the name');
+      MESSAGING$.notifyError(t_i18n('You can\'t add the same alias as the name'));
       return;
     }
     if (

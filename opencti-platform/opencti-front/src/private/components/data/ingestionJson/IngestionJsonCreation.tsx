@@ -57,6 +57,39 @@ interface IngestionJsonCreationContainerProps {
   paginationOptions?: IngestionJsonLinesPaginationQuery$variables | null | undefined;
   isDuplicated: boolean;
   triggerButton?: boolean;
+  // Prefilled values coming from a configuration import (JSON file upload).
+  importedInput?: IngestionJsonImportedInput | null;
+  drawerSettings?: {
+    title: string;
+    button: string;
+  };
+}
+
+// Shape of the ingestionJsonAddInputFromImport mutation response: the feed
+// configuration plus the resolved (or created) JSON mapper reference.
+export interface IngestionJsonImportedInput {
+  name: string;
+  description?: string | null;
+  scheduling_period?: string | null;
+  uri?: string | null;
+  verb?: string | null;
+  body?: string | null;
+  pagination_with_sub_page?: boolean | null;
+  pagination_with_sub_page_attribute_path?: string | null;
+  pagination_with_sub_page_query_verb?: string | null;
+  headers?: ReadonlyArray<{ readonly name: string; readonly value: string }> | null;
+  query_attributes?: ReadonlyArray<{
+    readonly type?: string | null;
+    readonly from?: string | null;
+    readonly to?: string | null;
+    readonly data_operation?: string | null;
+    readonly state_operation?: string | null;
+    readonly default?: string | null;
+    readonly exposed?: string | null;
+  }> | null;
+  authentication_type?: string | null;
+  ssl_verify?: boolean | null;
+  jsonMapper: { readonly id: string; readonly name: string };
 }
 
 export interface IngestionJsonHeader {
@@ -105,6 +138,11 @@ interface IngestionJsonCreationProps {
   isDuplicated: boolean;
   handleClose: () => void;
   ingestionJson?: IngestionJsonEditionFragment_ingestionJson$key | null;
+  importedInput?: IngestionJsonImportedInput | null;
+  drawerSettings?: {
+    title: string;
+    button: string;
+  };
 }
 
 const resolveHasUserChoiceJsonMapper = (option: FieldOption & {
@@ -119,7 +157,7 @@ const resolveHasUserChoiceJsonMapper = (option: FieldOption & {
   );
 };
 
-const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ paginationOptions, isDuplicated, handleClose, ingestionJson }) => {
+const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ paginationOptions, isDuplicated, handleClose, ingestionJson, importedInput, drawerSettings }) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const ingestionJsonData = useFragment(ingestionJsonEditionFragment, ingestionJson);
@@ -224,7 +262,41 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
     });
   };
   const queryRef = useQueryLoading<JsonMapperFieldSearchQuery>(jsonMapperQuery);
-  const initialValues: IngestionJsonAddInput = isDuplicated && ingestionJsonData ? {
+  // Prefill from an imported configuration: credentials, user and markings are
+  // platform-specific and are chosen by the user before creation.
+  const importedInitialValues: IngestionJsonAddInput | null = importedInput ? {
+    name: importedInput.name ?? '',
+    description: importedInput.description ?? '',
+    scheduling_period: importedInput.scheduling_period ?? 'auto',
+    uri: importedInput.uri ?? '',
+    verb: importedInput.verb ?? 'GET',
+    body: importedInput.body ?? '',
+    headers: (importedInput.headers ?? []).map(({ name, value }) => ({ name, value })),
+    query_attributes: (importedInput.query_attributes ?? []).map((attribute) => ({
+      type: attribute.type ?? '',
+      from: attribute.from ?? '',
+      to: attribute.to ?? '',
+      data_operation: attribute.data_operation ?? '',
+      state_operation: attribute.state_operation ?? '',
+      default: attribute.default ?? '',
+      exposed: attribute.exposed ?? '',
+    })),
+    pagination_with_sub_page: importedInput.pagination_with_sub_page ?? false,
+    pagination_with_sub_page_query_verb: importedInput.pagination_with_sub_page_query_verb ?? 'GET',
+    pagination_with_sub_page_attribute_path: importedInput.pagination_with_sub_page_attribute_path ?? '',
+    json_mapper_id: { label: importedInput.jsonMapper.name, value: importedInput.jsonMapper.id },
+    authentication_type: importedInput.authentication_type ?? 'none',
+    authentication_value: '',
+    user_id: '',
+    username: '',
+    password: '',
+    cert: '',
+    key: '',
+    ca: '',
+    markings: [],
+    ssl_verify: importedInput.ssl_verify ?? true,
+  } : null;
+  const duplicatedOrDefaultValues: IngestionJsonAddInput = isDuplicated && ingestionJsonData ? {
     name: `${ingestionJsonData.name} - copy`,
     description: ingestionJsonData.description,
     scheduling_period: ingestionJsonData.scheduling_period ?? 'auto',
@@ -277,6 +349,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
     markings: [],
     ssl_verify: true,
   };
+  const initialValues: IngestionJsonAddInput = importedInitialValues ?? duplicatedOrDefaultValues;
 
   return (
     <Formik<IngestionJsonAddInput>
@@ -546,7 +619,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
                 onClick={submitForm}
                 disabled={isSubmitting || isCreateDisabled}
               >
-                {t_i18n('Create')}
+                {drawerSettings?.button ?? t_i18n('Create')}
               </Button>
             )}
           </FormButtonContainer>
@@ -576,6 +649,8 @@ export const IngestionJsonCreationContainer: FunctionComponent<IngestionJsonCrea
   paginationOptions,
   isDuplicated,
   triggerButton = true,
+  importedInput,
+  drawerSettings,
 }) => {
   const { t_i18n } = useFormatter();
 
@@ -584,7 +659,7 @@ export const IngestionJsonCreationContainer: FunctionComponent<IngestionJsonCrea
     : null;
   return (
     <Drawer
-      title={isDuplicated ? t_i18n('Duplicate a JSON feed') : t_i18n('Create a JSON feed')}
+      title={drawerSettings?.title ?? (isDuplicated ? t_i18n('Duplicate a JSON feed') : t_i18n('Create a JSON feed'))}
       open={open}
       onClose={handleClose}
       controlledDial={!isDuplicated && triggerButton ? CreateIngestionJsonControlledDial : undefined}
@@ -595,6 +670,8 @@ export const IngestionJsonCreationContainer: FunctionComponent<IngestionJsonCrea
           handleClose={onClose}
           paginationOptions={paginationOptions}
           isDuplicated={isDuplicated}
+          importedInput={importedInput}
+          drawerSettings={drawerSettings}
         />
       )}
     </Drawer>

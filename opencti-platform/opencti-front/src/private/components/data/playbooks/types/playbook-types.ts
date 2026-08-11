@@ -5,11 +5,18 @@ import { PlaybookUpdateAction } from '../playbookFlow/playbookFlowFields/playboo
 export type PlaybookComponents = NonNullable<PlaybookFlow_playbookComponents$data['playbookComponents']>;
 export type PlaybookComponent = NonNullable<PlaybookComponents[number]>;
 
+export enum PlaybookBundleElementsToApply {
+  ALL = 'all-elements',
+  ONLY_MAIN = 'only-main',
+  ALL_EXCEPT_MAIN = 'all-except-main',
+}
+
 export interface PlaybookConfig {
   filters?: string;
   applyWithFilters?: string;
   actions?: PlaybookUpdateAction[];
   triggerTime?: string;
+  applyToElements?: PlaybookBundleElementsToApply;
 }
 
 export interface PlaybookDefinitionNode {

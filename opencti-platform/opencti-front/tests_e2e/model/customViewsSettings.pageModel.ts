@@ -46,6 +46,10 @@ export default class CustomViewsSettingsPage {
     return this.page.getByRole('menuitem', { name: 'Disable' });
   }
 
+  getSetAsDefaultQuickActionButton() {
+    return this.page.getByRole('menuitem', { name: 'Set as default' });
+  }
+
   getConfirmButton() {
     return this.page.getByRole('button', { name: 'Confirm' });
   }

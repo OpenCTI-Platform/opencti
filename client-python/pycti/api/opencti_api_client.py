@@ -4,6 +4,7 @@ import base64
 import datetime
 import io
 import json
+import mimetypes
 import os
 import re
 import shutil
@@ -12,7 +13,6 @@ import tempfile
 import threading
 from typing import Any, Dict, Optional, Tuple, Union
 
-import magic
 import requests
 
 from pycti import __version__
@@ -27,6 +27,7 @@ from pycti.api.opencti_api_trash import OpenCTIApiTrash
 from pycti.api.opencti_api_work import OpenCTIApiWork
 from pycti.api.opencti_api_workspace import OpenCTIApiWorkspace
 from pycti.entities.opencti_attack_pattern import AttackPattern
+from pycti.entities.opencti_audit import Audit
 from pycti.entities.opencti_campaign import Campaign
 from pycti.entities.opencti_capability import Capability
 from pycti.entities.opencti_case_incident import CaseIncident
@@ -50,6 +51,7 @@ from pycti.entities.opencti_kill_chain_phase import KillChainPhase
 from pycti.entities.opencti_label import Label
 from pycti.entities.opencti_language import Language
 from pycti.entities.opencti_location import Location
+from pycti.entities.opencti_log import Log
 from pycti.entities.opencti_malware import Malware
 from pycti.entities.opencti_malware_analysis import MalwareAnalysis
 from pycti.entities.opencti_marking_definition import MarkingDefinition
@@ -328,6 +330,8 @@ class OpenCTIApiClient:
         self.opinion = Opinion(self)
         self.grouping = Grouping(self)
         self.indicator = Indicator(self)
+        self.audit = Audit(self)
+        self.log = Log(self)
 
         # Admin functionality
         self.capability = Capability(self)
@@ -1048,7 +1052,9 @@ class OpenCTIApiClient:
                 if file_name.endswith(".json"):
                     mime_type = "application/json"
                 else:
-                    mime_type = magic.from_file(file_name, mime=True)
+                    mime_type = (
+                        mimetypes.guess_type(file_name)[0] or "application/octet-stream"
+                    )
             query_vars = {"file": File(file_name, data, mime_type)}
             # optional file markings
             if file_markings is not None:
@@ -1129,7 +1135,9 @@ class OpenCTIApiClient:
                 if file_name.endswith(".json"):
                     mime_type = "application/json"
                 else:
-                    mime_type = magic.from_file(file_name, mime=True)
+                    mime_type = (
+                        mimetypes.guess_type(file_name)[0] or "application/octet-stream"
+                    )
             return self.query(
                 query,
                 {

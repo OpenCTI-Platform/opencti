@@ -13,10 +13,12 @@ import {
   IngestionTaxiiCollectionLinesPaginationQuery$variables,
 } from '@components/data/ingestionTaxiiCollection/__generated__/IngestionTaxiiCollectionLinesPaginationQuery.graphql';
 import { IngestionTaxiiCollectionPopoverEditionQuery$data } from '@components/data/ingestionTaxiiCollection/__generated__/IngestionTaxiiCollectionPopoverEditionQuery.graphql';
+import { IngestionTaxiiCollectionPopoverExportQuery$data } from '@components/data/ingestionTaxiiCollection/__generated__/IngestionTaxiiCollectionPopoverExportQuery.graphql';
 import { PopoverProps } from '@mui/material/Popover';
+import fileDownload from 'js-file-download';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import { useFormatter } from '../../../../components/i18n';
-import { QueryRenderer } from '../../../../relay/environment';
+import { fetchQuery, QueryRenderer } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
@@ -36,6 +38,15 @@ const ingestionTaxiiEditionQuery = graphql`
       description
       ingestion_running
       ...IngestionTaxiiCollectionEdition_ingestionTaxii
+    }
+  }
+`;
+
+const ingestionTaxiiCollectionExportQuery = graphql`
+  query IngestionTaxiiCollectionPopoverExportQuery($id: String!) {
+    ingestionTaxiiCollection(id: $id) {
+      name
+      toConfigurationExport
     }
   }
 `;
@@ -122,6 +133,18 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
     });
   };
 
+  const handleExport = async () => {
+    handleClose();
+    const data = await fetchQuery(ingestionTaxiiCollectionExportQuery, { id: ingestionTaxiiId }).toPromise();
+    const { ingestionTaxiiCollection } = data as IngestionTaxiiCollectionPopoverExportQuery$data;
+    if (ingestionTaxiiCollection) {
+      const blob = new Blob([ingestionTaxiiCollection.toConfigurationExport], { type: 'text/json' });
+      const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
+      const fileName = `${year}${month}${day}_taxiiPush_${ingestionTaxiiCollection.name}.json`;
+      fileDownload(blob, fileName);
+    }
+  };
+
   const [commitStart] = useApiMutation(ingestionTaxiiCollectionMutationFieldPatch);
   const submitStart = () => {
     setStarting(true);
@@ -180,6 +203,9 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         )}
         <MenuItem onClick={handleOpenUpdate}>
           {t_i18n('Update')}
+        </MenuItem>
+        <MenuItem onClick={handleExport}>
+          {t_i18n('Export')}
         </MenuItem>
         <MenuItem onClick={handleOpenDelete}>
           {t_i18n('Delete')}

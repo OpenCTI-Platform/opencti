@@ -83,17 +83,19 @@ vi.mock('react-relay', async () => {
     ...actual,
     usePreloadedQuery: vi.fn(() => ({
       workflowDefinition: mockWorkflowDefinition,
-      statusTemplates: [
-        { id: 'status-1', name: 'Open', color: '#00FF00' },
-      ],
-      members: [{ id: 'user-1', name: 'Test User' }],
+      statusTemplates: {
+        edges: [{ node: { id: 'status-1', name: 'Open', color: '#00FF00' } }],
+      },
+      members: { edges: [{ node: { id: 'user-1', name: 'Test User', entity_type: 'User' } }] },
     })),
     graphql: vi.fn((query) => query),
+    useMutation: vi.fn(() => [mockPublishWorkflowDefinition]),
   };
 });
 
 // Mock useApiMutation
-// The component calls useApiMutation in order: save (1st), publish (2nd), restore (3rd)
+// The component calls useApiMutation in order: save (1st), restore (2nd)
+// Publish uses useMutation directly (mocked via react-relay mock above).
 // We use a counter that gets reset before each test so the order is always deterministic.
 const mockSaveWorkflowDefinition = vi.fn();
 const mockPublishWorkflowDefinition = vi.fn();
@@ -102,8 +104,8 @@ let useApiMutationCallIndex = 0;
 
 vi.mock('../../../../../utils/hooks/useApiMutation', () => ({
   default: vi.fn(() => {
-    const mocks = [mockSaveWorkflowDefinition, mockPublishWorkflowDefinition, mockRestoreWorkflowDefinition];
-    const result = mocks[useApiMutationCallIndex % 3] ?? mockSaveWorkflowDefinition;
+    const mocks = [mockSaveWorkflowDefinition, mockRestoreWorkflowDefinition];
+    const result = mocks[useApiMutationCallIndex % 2] ?? mockSaveWorkflowDefinition;
     useApiMutationCallIndex++;
     return [result];
   }),
@@ -147,12 +149,16 @@ const mockInitialEdges = [{
 }];
 
 // Mock custom hooks
-vi.mock('./hooks/useWorkflowInitialElements', () => ({
-  useWorkflowInitialElements: vi.fn(() => ({
-    initialNodes: mockInitialNodes,
-    initialEdges: mockInitialEdges,
-  })),
-}));
+vi.mock('./hooks/useWorkflowInitialElements', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./hooks/useWorkflowInitialElements')>();
+  return {
+    useWorkflowInitialElements: vi.fn(() => ({
+      initialNodes: mockInitialNodes,
+      initialEdges: mockInitialEdges,
+    })),
+    convertEdgesToObject: actual.convertEdgesToObject,
+  };
+});
 
 vi.mock('./hooks/usePlaceholdersSync', () => ({
   usePlaceholdersSync: vi.fn(),
@@ -192,6 +198,8 @@ vi.mock('./PublishButton', () => ({
       >
         {!validationStatus?.hasUnpublishedChanges ? 'Published' : 'Publish'}
       </button>
+      {/* Always-enabled button for testing handlePublish when errors exist */}
+      <button data-testid="force-publish-button" onClick={onPublish}>Force Publish</button>
       <button data-testid="reset-button" onClick={onReset}>Reset</button>
       <button data-testid="restore-button" onClick={onRestore}>Restore</button>
     </div>
@@ -204,6 +212,18 @@ vi.mock('./NodeTypes', () => ({
 
 vi.mock('./EdgeTypes', () => ({
   default: {},
+}));
+
+// Mock MESSAGING$ to capture toast calls — must use vi.hoisted because vi.mock is hoisted
+const { mockNotifyError, mockNotifySuccess } = vi.hoisted(() => ({
+  mockNotifyError: vi.fn(),
+  mockNotifySuccess: vi.fn(),
+}));
+vi.mock('../../../../../relay/environment', () => ({
+  MESSAGING$: {
+    notifyError: mockNotifyError,
+    notifySuccess: mockNotifySuccess,
+  },
 }));
 
 describe('Workflow Component', () => {
@@ -395,6 +415,144 @@ describe('Workflow Component', () => {
       renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
 
       expect(mockFitView).toHaveBeenCalled();
+    });
+  });
+
+  describe('Publish functionality', () => {
+    it('should call notifyError with validation errors toast when pre-existing errors exist', async () => {
+      const user = userEvent.setup();
+      const { usePreloadedQuery } = await import('react-relay');
+      vi.mocked(usePreloadedQuery).mockReturnValueOnce({
+        workflowDefinition: {
+          ...mockWorkflowDefinition,
+          errors: [{ type: 'MISSING_TRANSITION', message: 'State has no outgoing transition', path: [] }],
+        },
+        statusTemplates: { edges: [{ node: { id: 'status-1', name: 'Open', color: '#00FF00' } }] },
+        members: { edges: [] },
+      });
+
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+
+      // publish-button is disabled when there are errors; use force-publish-button to invoke handlePublish directly
+      await user.click(screen.getByTestId('force-publish-button'));
+
+      expect(mockNotifyError).toHaveBeenCalled();
+    });
+
+    it('should call commitPublish when there are no validation errors', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+
+      await user.click(screen.getByTestId('publish-button'));
+
+      expect(mockPublishWorkflowDefinition).toHaveBeenCalledWith(
+        expect.objectContaining({ variables: { entityType: 'DraftWorkspace' } }),
+      );
+    });
+
+    it('should call notifySuccess and update status on successful publish', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+
+      await user.click(screen.getByTestId('publish-button'));
+
+      const publishCall = mockPublishWorkflowDefinition.mock.calls[0];
+      publishCall?.[0]?.onCompleted?.();
+
+      expect(mockNotifySuccess).toHaveBeenCalledWith('Workflow successfully published');
+      await waitFor(() => {
+        expect(screen.getByTestId('publish-button')).toHaveTextContent('Published');
+      });
+    });
+
+    it('should call notifyError with structured toast on publish API error', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+
+      await user.click(screen.getByTestId('publish-button'));
+
+      const publishCall = mockPublishWorkflowDefinition.mock.calls[0];
+      publishCall?.[0]?.onError?.({
+        res: {
+          errors: [{
+            message: 'Cannot publish workflow: the following statuses are in use',
+            extensions: { data: { removedStates: ['status-1'], entityType: 'DraftWorkspace' } },
+          }],
+        },
+      });
+
+      expect(mockNotifyError).toHaveBeenCalled();
+      const toastElement = mockNotifyError.mock.calls[0][0];
+      const { getByText } = render(
+        <ThemeProvider theme={testTheme}>{toastElement}</ThemeProvider>,
+      );
+      expect(getByText(/Cannot publish workflow/)).toBeInTheDocument();
+    });
+
+    it('should resolve StatusTemplate ID to name in error toast', async () => {
+      const { usePreloadedQuery } = await import('react-relay');
+      vi.mocked(usePreloadedQuery).mockReturnValueOnce({
+        workflowDefinition: mockWorkflowDefinition,
+        statusTemplates: { edges: [{ node: { id: 'status-1', name: 'Open', color: '#00FF00' } }] },
+        members: { edges: [] },
+      });
+
+      const user = userEvent.setup();
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+
+      await user.click(screen.getByTestId('publish-button'));
+
+      const publishCall = mockPublishWorkflowDefinition.mock.calls[0];
+      publishCall?.[0]?.onError?.({
+        res: {
+          errors: [{
+            message: 'Cannot publish workflow: statuses in use',
+            extensions: { data: { removedStates: ['status-1'] } },
+          }],
+        },
+      });
+
+      const toastElement = mockNotifyError.mock.calls[0][0];
+      const { getByText } = render(
+        <ThemeProvider theme={testTheme}>{toastElement}</ThemeProvider>,
+      );
+      // 'status-1' should resolve to 'Open' via statusTemplateMap
+      expect(getByText(/Open/)).toBeInTheDocument();
+    });
+
+    it('should fall back to raw ID when StatusTemplate is not found', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+
+      await user.click(screen.getByTestId('publish-button'));
+
+      const publishCall = mockPublishWorkflowDefinition.mock.calls[0];
+      publishCall?.[0]?.onError?.({
+        res: {
+          errors: [{
+            message: 'Cannot publish workflow: statuses in use',
+            extensions: { data: { removedStates: ['unknown-status-id'] } },
+          }],
+        },
+      });
+
+      const toastElement = mockNotifyError.mock.calls[0][0];
+      const { getByText } = render(
+        <ThemeProvider theme={testTheme}>{toastElement}</ThemeProvider>,
+      );
+      expect(getByText(/unknown-status-id/)).toBeInTheDocument();
+    });
+
+    it('should handle publish API error with no removedStates gracefully', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} />);
+
+      await user.click(screen.getByTestId('publish-button'));
+
+      const publishCall = mockPublishWorkflowDefinition.mock.calls[0];
+      publishCall?.[0]?.onError?.({ res: { errors: [{ message: 'Unexpected error' }] } });
+
+      expect(mockNotifyError).toHaveBeenCalled();
     });
   });
 

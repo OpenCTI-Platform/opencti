@@ -1,12 +1,13 @@
-import { defineConfig } from 'eslint/config'
-import eslint from '@eslint/js'
-import tseslint from 'typescript-eslint'
-import react from 'eslint-plugin-react'
-import globals from 'globals'
-import importPlugin from 'eslint-plugin-import'
-import importNewlines from 'eslint-plugin-import-newlines'
-import customRules from 'eslint-plugin-custom-rules'
-import stylistic from '@stylistic/eslint-plugin'
+import { fileURLToPath } from 'node:url';
+import { defineConfig } from 'eslint/config';
+import eslint from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import react from 'eslint-plugin-react';
+import globals from 'globals';
+import importPlugin from 'eslint-plugin-import';
+import importNewlines from 'eslint-plugin-import-newlines';
+import customRules from 'eslint-plugin-custom-rules';
+import stylistic from '@stylistic/eslint-plugin';
 
 export default defineConfig([
   {
@@ -89,7 +90,7 @@ export default defineConfig([
       parser: tseslint.parser,
       parserOptions: {
         project: './tsconfig.json',
-        tsconfigRootDir: import.meta.dirname,
+        tsconfigRootDir: fileURLToPath(new URL('.', import.meta.url)),
         ecmaFeatures: { jsx: true },
       },
       globals: {
@@ -167,4 +168,4 @@ export default defineConfig([
       'react/react-in-jsx-scope': 'off',
     },
   },
-])
+]);

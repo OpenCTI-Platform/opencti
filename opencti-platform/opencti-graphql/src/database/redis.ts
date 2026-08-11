@@ -17,6 +17,7 @@ import { INPUT_OBJECTS } from '../schema/general';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import type { ExclusionListCacheItem } from './exclusionListCache';
 import { refreshLocalCacheForEntity } from './cache';
+import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -340,9 +341,9 @@ export const notify = async (topic: string, instance: any, user: AuthUser) => {
     // Resolved object_refs must be dissoc from original objects as not directly used for live update
     // and can imply very large event message
     if (Array.isArray(instance)) {
-      data = (instance as any[]).map((i) => R.dissoc(INPUT_OBJECTS, i));
+      data = (instance as any[]).map(removeResolvedRefs);
     } else {
-      data = R.dissoc(INPUT_OBJECTS, instance);
+      data = removeResolvedRefs(instance);
     }
     // Direct refresh the current instance cache
     await refreshLocalCacheForEntity(topic, data as unknown as BasicStoreCommon);
@@ -350,6 +351,11 @@ export const notify = async (topic: string, instance: any, user: AuthUser) => {
     await getClientPubSub().publish(topic, { instance: data, user });
   }
   return instance;
+};
+
+export const removeResolvedRefs = (instance: any) => {
+  const refInputNames = new Set([INPUT_OBJECTS, ...schemaRelationsRefDefinition.getAllInputNames()]);
+  return Object.fromEntries(Object.entries(instance).filter(([k]) => !refInputNames.has(k)));
 };
 
 // region user context (clientContext)
@@ -920,6 +926,55 @@ export const redisDeleteAuthLogHistory = async (id: string): Promise<void> => {
     logApp.error('Failed to delete auth log history from Redis', { cause: err });
   }
 };
+
+// region ingestion log history (FIFO, last 20 per feed)
+const INGESTION_LOG_KEY_PREFIX = 'ingestion-log-';
+const INGESTION_LOG_MAX_SIZE = 20;
+
+export interface IngestionLogEntry {
+  timestamp: number;
+  level: 'success' | 'info' | 'warn' | 'error';
+  type: string;
+  identifier: string;
+  message: string;
+  meta?: Record<string, unknown>;
+}
+
+const ingestionLogListKey = (feedId: string) => `${INGESTION_LOG_KEY_PREFIX}${feedId}-history`;
+
+export const redisPushIngestionLog = async (feedId: string, entry: Omit<IngestionLogEntry, 'timestamp'>) => {
+  try {
+    const key = ingestionLogListKey(feedId);
+    const value = JSON.stringify({ timestamp: Date.now(), ...entry });
+    await redisTx(getClientBase(), async (tx) => {
+      tx.lpush(key, value);
+      tx.ltrim(key, 0, INGESTION_LOG_MAX_SIZE - 1);
+    });
+  } catch (err) {
+    logApp.error('Failed to push ingestion log entry to Redis', { cause: err });
+  }
+};
+
+export const redisGetIngestionLogHistory = async (feedId: string): Promise<IngestionLogEntry[]> => {
+  const listKey = ingestionLogListKey(feedId);
+  const rawList = await getClientBase().lrange(listKey, 0, INGESTION_LOG_MAX_SIZE - 1);
+  return rawList.map((s) => {
+    try {
+      return JSON.parse(s) as IngestionLogEntry;
+    } catch {
+      return null;
+    }
+  }).filter((e): e is IngestionLogEntry => e !== null);
+};
+
+export const redisDeleteIngestionLogHistory = async (feedId: string): Promise<void> => {
+  try {
+    await getClientBase().del(ingestionLogListKey(feedId));
+  } catch (err) {
+    logApp.error('Failed to delete ingestion log history from Redis', { cause: err });
+  }
+};
+// endregion
 
 // region - XTM One registration result
 const XTM_REGISTRATION_RESULT_KEY = 'xtm_registration_result';

@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.25
+# syntax=docker/dockerfile:1.26
 FROM registry.access.redhat.com/ubi9/ubi AS base
 
 ARG PYTHON_VERSION=3.12
@@ -117,4 +117,4 @@ EOT
 VOLUME ["/opt/opencti/logs", "/opt/opencti/telemetry", "/opt/opencti/.support"]
 
 ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["node", "build/back.js"]
+CMD ["node", "build/back.mjs"]

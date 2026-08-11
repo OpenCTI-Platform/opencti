@@ -76,6 +76,7 @@ vi.mock('../../../src/config/tracing', async (importOriginal) => {
 // Default: no DB config (use_db_config: false / no row) → fall back to JSON config.
 const smtpConfigurationDomainMocks = vi.hoisted(() => ({
   getSmtpConfiguration: vi.fn(async () => null),
+  smtpConfigurationRefreshTokenUpdate: vi.fn(async () => undefined),
 }));
 vi.mock('../../../src/modules/smtpConfiguration/smtpConfiguration-domain', () => smtpConfigurationDomainMocks);
 
@@ -104,6 +105,7 @@ type SmtpCredentials = {
   oauthClientSecret?: string;
   oauthIssuer?: string;
   oauthRefreshToken?: string;
+  onRefreshToken?: (newRefreshToken: string, previousRefreshToken: string) => Promise<void>;
 };
 
 // The JS source infers all destructured params as required; cast to the intended optional API.
@@ -141,6 +143,20 @@ describe('buildSmtpAuth — OAuth2', () => {
       clientSecret: 'my-client-secret',
       accessToken: 'refreshed-access-token',
     });
+  });
+
+  it('should report a rotated refresh token returned by the identity provider', async () => {
+    const { refreshTokenGrant } = await import('openid-client');
+    (refreshTokenGrant as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      access_token: 'new-access-token',
+      refresh_token: 'new-refresh-token',
+      expires_in: 3600,
+    });
+    const onRefreshToken = vi.fn(async () => undefined);
+
+    await buildSmtpAuth('oauth2', { ...oauth2Config, onRefreshToken });
+
+    expect(onRefreshToken).toHaveBeenCalledWith('new-refresh-token', 'my-refresh-token');
   });
 
   it('should use oauthUser and not username even when both are provided', async () => {

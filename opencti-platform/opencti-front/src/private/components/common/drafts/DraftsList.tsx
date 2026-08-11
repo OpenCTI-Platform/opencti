@@ -1,8 +1,7 @@
 import React, { CSSProperties, ReactNode, useRef } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
+import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
@@ -11,7 +10,6 @@ import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import type { WidgetColumn, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DraftsListQuery } from './__generated__/DraftsListQuery.graphql';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const defaultDraftColumns: WidgetColumn[] = [
   { attribute: 'name', label: 'Name' },
@@ -89,22 +87,15 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): DraftsListQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { startDate, endDate } = computeStartEndDates(config);
   const orderBy = (selection.sort_by && selection.sort_by.length > 0
     ? selection.sort_by
     : 'created_at') as DraftsListQuery['variables']['orderBy'];
-  const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-    ? selection.date_attribute
-    : 'created_at';
-  const { filters } = buildFiltersAndOptionsForWidgets(
-    selection.filters,
-    { startDate, endDate, dateAttribute },
-  );
+  const { filters } = computeWidgetFiltersForSelection(selection, config);
   return {
     first: selection.number ?? 10,
     orderBy,
     orderMode: (selection.sort_mode ?? 'desc') as DraftsListQuery['variables']['orderMode'],
-    filters: normalizeFilterGroupForBackend(filters),
+    filters,
   };
 };
 
@@ -117,7 +108,6 @@ interface DraftsListComponentProps {
   queryRef: PreloadedQuery<DraftsListQuery>;
   dataSelection: WidgetDataSelection[];
   widgetId: string;
-  isDraftWorkflowEnabled: boolean;
 }
 
 const DraftsListComponent = ({
@@ -125,12 +115,10 @@ const DraftsListComponent = ({
   queryRef,
   dataSelection,
   widgetId,
-  isDraftWorkflowEnabled,
 }: DraftsListComponentProps) => {
   const data = usePreloadedQuery(draftsListQuery, queryRef);
   const selection = dataSelection[0];
-  const rawColumns: WidgetColumn[] = selection.columns ? [...selection.columns] : defaultDraftColumns;
-  const columns = isDraftWorkflowEnabled ? rawColumns : rawColumns.filter((c) => c.attribute !== 'workflowInstance');
+  const columns: WidgetColumn[] = selection.columns ? [...selection.columns] : defaultDraftColumns;
   const edges = data?.draftWorkspaces?.edges ?? [];
 
   if (edges.length === 0) {
@@ -178,8 +166,6 @@ const DraftsList = ({
   host,
 }: DraftsListProps) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isDraftWorkflowEnabled = isFeatureEnable('DRAFT_WORKFLOW');
   const rootRef = useRef<HTMLDivElement>(null);
 
   const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<DraftsListQuery>({
@@ -213,7 +199,6 @@ const DraftsList = ({
             rootRef={rootRef}
             dataSelection={resolvedDataSelection}
             widgetId={widgetId}
-            isDraftWorkflowEnabled={isDraftWorkflowEnabled}
           />
         </WidgetRenderContent>
       </div>

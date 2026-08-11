@@ -34,12 +34,6 @@ export default defineConfig(({ mode }) => {
       inconsistentCjsInterop: true,
     },
 
-    define: {
-      // Workaround to circumvent usage of process.env in react-draggable.
-      // To remove once https://github.com/react-grid-layout/react-draggable/issues/806 is addressed.
-      'process.env.DRAGGABLE_DEBUG': JSON.stringify(process.env.DRAGGABLE_DEBUG === 'true'),
-    },
-
     resolve: {
       tsconfigPaths: true,
       extensions: ['.tsx', '.jsx', '.ts', '.js', '.json'],
@@ -55,8 +49,7 @@ export default defineConfig(({ mode }) => {
             .replace(/%APP_SCRIPT_SNIPPET%/g,  '')
             .replace(/%APP_TITLE%/g, 'OpenCTI Dev')
             .replace(/%APP_DESCRIPTION%/g, 'OpenCTI Development platform')
-            .replace(/%APP_FAVICON%/g, `${basePath}/assets/static/favicon.png`)
-            .replace(/%APP_MANIFEST%/g, `${basePath}/assets/static/manifest.json`),
+            .replace(/%APP_FAVICON%/g, `./assets/static/favicon.png`),
       },
       react(),
       relay,

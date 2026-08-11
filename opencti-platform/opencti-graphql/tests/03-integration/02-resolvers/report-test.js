@@ -307,7 +307,8 @@ describe('Report resolver standard behavior', () => {
         operation: 'count',
       },
     });
-    expect(queryResult.data.reportsDistribution.length).toEqual(2);
+    // 2 distinct creators + 1 'unknown' bucket for reports with no created-by (added by the missing-value aggregation)
+    expect(queryResult.data.reportsDistribution.length).toEqual(3);
   });
   it('should reports distribution by entity to be accurate', async () => {
     const queryResult = await queryAsAdmin({
@@ -534,6 +535,98 @@ describe('Report resolver standard behavior', () => {
 
       expect(readQueryResultBefore.data.report.updated_at < readQueryResultAfter.data.report.updated_at).toBeTruthy();
       expect(readQueryResultBefore.data.report.modified < readQueryResultAfter.data.report.modified).toBeTruthy();
+    });
+  });
+
+  describe('Report deleteWithElements', () => {
+    const MALWARE_ADD_QUERY = gql`
+      mutation MalwareAdd($input: MalwareAddInput!) {
+        malwareAdd(input: $input) {
+          id
+          standard_id
+        }
+      }
+    `;
+    const REPORT_ADD_QUERY = gql`
+      mutation ReportAdd($input: ReportAddInput!) {
+        reportAdd(input: $input) {
+          id
+        }
+      }
+    `;
+    const REPORT_DELETE_ELEMENTS_COUNT_QUERY = gql`
+      query report($id: String!) {
+        report(id: $id) {
+          id
+          deleteWithElementsCount
+        }
+      }
+    `;
+    const REPORT_DELETE_WITH_ELEMENTS_QUERY = gql`
+      mutation ReportDelete($id: ID!) {
+        reportEdit(id: $id) {
+          delete(purgeElements: true)
+        }
+      }
+    `;
+    const MALWARE_READ_QUERY = gql`
+      query malware($id: String!) {
+        malware(id: $id) {
+          id
+        }
+      }
+    `;
+
+    const addMalware = async (name) => {
+      const result = await queryAsAdmin({ query: MALWARE_ADD_QUERY, variables: { input: { name } } });
+      return result.data.malwareAdd;
+    };
+    const addReportWithObjects = async (name, objects) => {
+      const result = await queryAsAdmin({
+        query: REPORT_ADD_QUERY,
+        variables: { input: { name, published: '2020-02-26T00:51:35.000Z', objects } },
+      });
+      return result.data.reportAdd;
+    };
+
+    it('should count and purge-delete an orphan object referenced by a single report', async () => {
+      const malware = await addMalware('report-delete-with-elements orphan malware');
+      const report = await addReportWithObjects('report-delete-with-elements orphan report', [malware.standard_id]);
+
+      // The malware is referenced only by this report: it must be detected as an orphan.
+      const countResult = await queryAsAdmin({ query: REPORT_DELETE_ELEMENTS_COUNT_QUERY, variables: { id: report.id } });
+      expect(countResult.data.report.deleteWithElementsCount).toEqual(1);
+
+      // Purge-delete the report: the report and its orphan malware must both be gone.
+      await queryAsAdmin({ query: REPORT_DELETE_WITH_ELEMENTS_QUERY, variables: { id: report.id } });
+
+      const reportAfter = await queryAsAdmin({ query: READ_QUERY, variables: { id: report.id } });
+      expect(reportAfter.data.report).toBeNull();
+
+      const malwareAfter = await queryAsAdmin({ query: MALWARE_READ_QUERY, variables: { id: malware.id } });
+      expect(malwareAfter.data.malware).toBeNull();
+    });
+
+    it('should not count nor delete an object still referenced by another report', async () => {
+      const malware = await addMalware('report-delete-with-elements shared malware');
+      const reportA = await addReportWithObjects('report-delete-with-elements shared report A', [malware.standard_id]);
+      const reportB = await addReportWithObjects('report-delete-with-elements shared report B', [malware.standard_id]);
+
+      // The malware is referenced by 2 reports: it must NOT be detected as an orphan for reportA.
+      const countResult = await queryAsAdmin({ query: REPORT_DELETE_ELEMENTS_COUNT_QUERY, variables: { id: reportA.id } });
+      expect(countResult.data.report.deleteWithElementsCount).toEqual(0);
+
+      // Purge-delete reportA: reportA is gone, but the shared malware must survive.
+      await queryAsAdmin({ query: REPORT_DELETE_WITH_ELEMENTS_QUERY, variables: { id: reportA.id } });
+
+      const reportAAfter = await queryAsAdmin({ query: READ_QUERY, variables: { id: reportA.id } });
+      expect(reportAAfter.data.report).toBeNull();
+
+      const malwareAfter = await queryAsAdmin({ query: MALWARE_READ_QUERY, variables: { id: malware.id } });
+      expect(malwareAfter.data.malware).not.toBeNull();
+
+      // Cleanup: reportB now exclusively owns the malware, purge-delete it too.
+      await queryAsAdmin({ query: REPORT_DELETE_WITH_ELEMENTS_QUERY, variables: { id: reportB.id } });
     });
   });
 

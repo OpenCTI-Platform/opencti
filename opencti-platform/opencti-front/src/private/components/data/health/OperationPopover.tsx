@@ -22,6 +22,12 @@ const operationPopoverRequestRunMutation = graphql`
   }
 `;
 
+const operationPopoverStopMutation = graphql`
+  mutation OperationPopoverStopMutation($operation_name: String!) {
+    dataSanityOperationStop(operation_name: $operation_name)
+  }
+`;
+
 const operationPopoverDryRunQuery = graphql`
   query OperationPopoverDryRunQuery($operation_name: String!) {
     dataSanityOperationDryRun(operation_name: $operation_name) {
@@ -35,13 +41,19 @@ const operationPopoverDryRunQuery = graphql`
 
 interface OperationPopoverProps {
   operationName: string;
+  /** An operation can only be stopped when it is running or scheduled. */
+  isStoppable: boolean;
+  /** Called after a mutation succeeded, to let the parent refresh the operation list. */
+  onUpdate?: () => void;
 }
 
-const OperationPopover: FunctionComponent<OperationPopoverProps> = ({ operationName }) => {
+const OperationPopover: FunctionComponent<OperationPopoverProps> = ({ operationName, isStoppable, onUpdate }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayScheduleRun, setDisplayScheduleRun] = useState(false);
   const [scheduling, setScheduling] = useState(false);
+  const [displayStop, setDisplayStop] = useState(false);
+  const [stopping, setStopping] = useState(false);
   const [displayDryRun, setDisplayDryRun] = useState(false);
   const [dryRunLoading, setDryRunLoading] = useState(false);
   const [dryRunResult, setDryRunResult] = useState<OperationPopoverDryRunQuery$data['dataSanityOperationDryRun'] | null>(null);
@@ -73,6 +85,37 @@ const OperationPopover: FunctionComponent<OperationPopoverProps> = ({ operationN
       onCompleted: () => {
         setScheduling(false);
         handleCloseScheduleRun();
+        onUpdate?.();
+      },
+      onError: () => {
+        setScheduling(false);
+      },
+    });
+  };
+
+  // Stop the operation (marks it as done even if currently running)
+  const [commitStop] = useApiMutation(operationPopoverStopMutation);
+
+  const handleOpenStop = () => {
+    setDisplayStop(true);
+    handleClose();
+  };
+
+  const handleCloseStop = () => {
+    setDisplayStop(false);
+  };
+
+  const submitStop = () => {
+    setStopping(true);
+    commitStop({
+      variables: { operation_name: operationName },
+      onCompleted: () => {
+        setStopping(false);
+        handleCloseStop();
+        onUpdate?.();
+      },
+      onError: () => {
+        setStopping(false);
       },
     });
   };
@@ -117,6 +160,9 @@ const OperationPopover: FunctionComponent<OperationPopoverProps> = ({ operationN
         <MenuItem onClick={handleOpenScheduleRun}>
           {t_i18n('Schedule a run')}
         </MenuItem>
+        <MenuItem onClick={handleOpenStop} disabled={!isStoppable} data-testid="stop-operation-menu-item">
+          {t_i18n('Stop')}
+        </MenuItem>
         <MenuItem onClick={handleOpenDryRun}>
           {t_i18n('Estimate impact')}
         </MenuItem>
@@ -142,6 +188,31 @@ const OperationPopover: FunctionComponent<OperationPopoverProps> = ({ operationN
             disabled={scheduling}
           >
             {t_i18n('Schedule')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={displayStop}
+        onClose={handleCloseStop}
+        title={t_i18n('Stop the operation')}
+      >
+        <DialogContentText>
+          {t_i18n('Do you want to stop this operation? It will be marked as done, even if it is currently running, and can be scheduled again afterwards.')}
+        </DialogContentText>
+        <DialogActions>
+          <Button
+            variant="secondary"
+            onClick={handleCloseStop}
+            disabled={stopping}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            onClick={submitStop}
+            disabled={stopping}
+            data-testid="stop-operation-confirm-button"
+          >
+            {t_i18n('Stop')}
           </Button>
         </DialogActions>
       </Dialog>

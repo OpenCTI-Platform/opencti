@@ -1,0 +1,5 @@
+{"openCTI_version":"7.260722.0","type":"taxiiPushCollections","configuration": {
+  "name": "taxiiPushAuto",
+  "description": "Taxii push imported description",
+  "confidence_to_score": true
+}}

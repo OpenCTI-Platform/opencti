@@ -1,0 +1,264 @@
+import { Environment, FetchPolicy, Observable, RecordSource, SelectorStoreUpdater, Store } from 'relay-runtime';
+import type { GraphQLTaggedNode, OperationType } from 'relay-runtime';
+import { Subject, timer } from 'rxjs';
+import { debounce } from 'rxjs/operators';
+import React, { ReactNode } from 'react';
+import { commitLocalUpdate as CLU, commitMutation as CM, fetchQuery as FQ, QueryRenderer as QR, requestSubscription as RS } from 'react-relay';
+import { urlMiddleware, RelayNetworkLayer } from 'react-relay-network-modern';
+import type { SubscribeFunction } from 'react-relay-network-modern';
+import * as R from 'ramda';
+import { createClient } from 'graphql-ws';
+import uploadMiddleware from './uploadMiddleware';
+import type { RelayError } from './relayTypes';
+
+declare global {
+  interface Window {
+    BASE_PATH?: string;
+  }
+}
+
+interface ServiceMessage {
+  type: string;
+  text?: unknown;
+  fullError?: unknown;
+}
+
+// Service bus
+const MESSENGER$ = new Subject<ServiceMessage[]>().pipe(
+  debounce(() => timer(500)),
+) as Subject<ServiceMessage[]>;
+export const MESSAGING$ = {
+  messages: MESSENGER$,
+  notifyError: (text) => MESSENGER$.next([{ type: 'error', text }]),
+  notifyRelayError: (error) => {
+    const messages = (error.res.errors ?? []).map((e) => ({
+      type: 'error',
+      text: e.message,
+      fullError: e,
+    }));
+    MESSENGER$.next(messages);
+  },
+  notifyCustomRelayError: (error, errorMessageMap) => {
+    const messages = (error.res.errors ?? []).map((e) => ({
+      type: 'error',
+      text: errorMessageMap[e.name] ?? e.message,
+      fullError: e,
+    }));
+    MESSENGER$.next(messages);
+  },
+  notifySuccess: (text) => MESSENGER$.next([{ type: 'message', text }]),
+  notifyNLQ: (text) => MESSENGER$.next([{ type: 'nlq', text }]),
+  toggleNav: new Subject(),
+  redirect: new Subject(),
+};
+
+// Default application exception.
+export class ApplicationError extends Error {
+  data: unknown;
+
+  constructor(errors: unknown) {
+    super();
+    this.data = errors;
+  }
+}
+
+// Network
+const basePath = window.BASE_PATH ?? '';
+const isEmptyPath = R.isEmpty(basePath);
+const contextPath = isEmptyPath || basePath === '/' ? '' : basePath;
+export const APP_BASE_PATH = isEmptyPath || contextPath.startsWith('/') ? contextPath : `/${contextPath}`;
+
+// Create Network
+let subscriptionClient;
+const loc = window.location;
+const isSecure = loc.protocol === 'https:' ? 's' : '';
+const subscriptionUrl = `ws${isSecure}://${loc.host}${APP_BASE_PATH}/graphql`;
+const subscribeFn = (request, variables) => {
+  if (!subscriptionClient) {
+    // Lazy creation of the subscription client to connect only after auth
+    subscriptionClient = createClient({
+      url: subscriptionUrl,
+    });
+  }
+  return Observable.create((sink) => {
+    return subscriptionClient.subscribe({
+      query: request.text,
+      operationName: request.name,
+      variables,
+    }, sink);
+  });
+};
+const fetchMiddleware = urlMiddleware({
+  url: `${APP_BASE_PATH}/graphql`,
+  credentials: 'same-origin',
+  // --- to add when we enable csrfPrevention in ApolloServer ---
+  // headers: (request) => {
+  //   return { 'x-apollo-operation-name': request.operation.operationKind };
+  // },
+  // -----------
+});
+const network = new RelayNetworkLayer([fetchMiddleware, uploadMiddleware()], {
+  subscribeFn: subscribeFn as unknown as SubscribeFunction,
+});
+const store = new Store(new RecordSource());
+const namespacedTypenames = new Set(['MeUser', 'PublicSettings']);
+const getDataID = (fieldValue, typeName) => {
+  const id = fieldValue?.id;
+  if (!id) return null;
+  if (namespacedTypenames.has(typeName)) {
+    return `${typeName}:${id}`;
+  }
+  return id;
+};
+export const environment = new Environment({ network, store, getDataID });
+
+// Components
+interface QueryRendererProps {
+  variables?: Record<string, unknown>;
+  query: GraphQLTaggedNode;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  render: (data: any) => ReactNode;
+  fetchPolicy?: FetchPolicy;
+}
+
+export const QueryRenderer = ({
+  variables,
+  query,
+  render,
+  fetchPolicy,
+}: QueryRendererProps) => {
+  return (
+    <QR
+      environment={environment}
+      query={query}
+      variables={variables ?? {}}
+      fetchPolicy={fetchPolicy}
+      render={(data) => {
+        const { error } = data;
+        if (error) {
+          throw new ApplicationError(error);
+        }
+        return render(data);
+      }}
+    />
+  );
+};
+
+const buildErrorMessages = (error: RelayError) => (error.res.errors ?? []).map(
+  (e) => ({
+    type: 'error',
+    text: e?.data?.reason ?? e.message,
+  }));
+
+const FORCE_PASSWORD_CHANGE_ROUTE = '/dashboard/change-password';
+
+export const defaultCommitMutation = {
+  updater: undefined,
+  optimisticUpdater: undefined,
+  optimisticResponse: undefined,
+  onCompleted: undefined,
+  onError: undefined,
+  setSubmitting: undefined,
+};
+
+export const relayErrorHandling = (
+  error,
+  setSubmitting?: (submitted: boolean) => void,
+  onError?: (e, message) => void,
+) => {
+  if (setSubmitting) setSubmitting?.(false);
+  if (error && error.res && error.res.errors) {
+    const passwordChangeRequired = error.res.errors.some(
+      (e) => e?.extensions?.code === 'PASSWORD_CHANGE_REQUIRED',
+    );
+    if (passwordChangeRequired) {
+      const alreadyOnForcePasswordChange = window.location.pathname.startsWith(FORCE_PASSWORD_CHANGE_ROUTE);
+      if (!alreadyOnForcePasswordChange) {
+        MESSAGING$.redirect.next(FORCE_PASSWORD_CHANGE_ROUTE);
+      }
+      return;
+    }
+    const authRequired = error.res.errors.filter(
+      (e) => (e?.data?.type ?? e.message) === 'authentication',
+    );
+    if (authRequired.length > 0) {
+      MESSAGING$.notifyError('Unauthorized action, please refresh your browser');
+    } else if (onError) {
+      const messages = buildErrorMessages(error);
+      MESSAGING$.messages.next(messages);
+      onError(error, messages);
+    } else {
+      const messages = buildErrorMessages(error);
+      MESSAGING$.messages.next(messages);
+    }
+  }
+};
+
+export const extractSimpleError = (error) => {
+  if (error && error.res && error.res.errors) {
+    const messages = buildErrorMessages(error);
+    return messages[0].text;
+  }
+  return 'Unknown error';
+};
+
+// Relay functions
+export const commitMutation = ({
+  mutation,
+  variables,
+  updater,
+  optimisticUpdater,
+  optimisticResponse,
+  onCompleted,
+  onError,
+  setSubmitting,
+}) => CM(environment, {
+  mutation,
+  variables,
+  updater,
+  optimisticUpdater,
+  optimisticResponse,
+  onCompleted,
+  onError: (error) => relayErrorHandling(error, setSubmitting, onError),
+});
+
+export const requestSubscription = (args) => RS(environment, args);
+
+export const fetchQuery = <T extends OperationType>(
+  query: GraphQLTaggedNode,
+  args: T['variables'] = {},
+) => FQ<T>(environment, query, args);
+
+export const commitLocalUpdate = (updater: SelectorStoreUpdater) => CLU(environment, updater);
+
+export const handleErrorInForm = (
+  e: Error,
+  setErrors: (e) => void,
+) => {
+  const error = e as unknown as RelayError;
+  const formattedError = R.head(error.res.errors ?? []);
+  if (formattedError?.data && formattedError.data.field) {
+    setErrors({
+      [formattedError.data.field]:
+      formattedError.data.message || formattedError.data.reason,
+    });
+  } else {
+    const messages = (error.res.errors ?? []).map(
+      (e) => ({
+        type: 'error',
+        text: e?.data?.reason ?? e.message,
+      }));
+    MESSAGING$.messages.next(messages);
+  }
+};
+
+export const handleError = (error) => {
+  if (error && error.res && error.res.errors) {
+    const messages = (error.res.errors ?? []).map(
+      (e) => ({
+        type: 'error',
+        text: e?.data?.message ?? e.message,
+      }));
+    MESSAGING$.messages.next(messages);
+  }
+};

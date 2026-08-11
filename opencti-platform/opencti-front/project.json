@@ -47,7 +47,6 @@
     "e2e": {
       "executor": "nx:run-commands",
       "dependsOn": [
-        { "projects": ["opencti-graphql"], "target": "wait-api" },
         { "projects": ["opencti-worker"], "target": "dev" }
       ],
       "options": {

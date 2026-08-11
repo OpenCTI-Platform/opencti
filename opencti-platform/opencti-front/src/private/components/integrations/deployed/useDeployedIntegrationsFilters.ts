@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { BUILT_IN_INTEGRATION_KINDS, isBuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 
-export type DeployedSortMode = 'name' | 'status' | 'lastRun';
+export type DeployedSortMode = 'name' | 'status' | 'lastRun' | 'messages';
 
 export type DeployedStatusFacet = 'active' | 'processing' | 'inactive';
 
@@ -96,7 +96,7 @@ const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedInte
       .filter((k): k is DeployedKindFacet => (DEPLOYED_KIND_FACETS as string[]).includes(k)),
   });
   const [sort, setSort] = useState<DeployedSortMode>(
-    (['name', 'status', 'lastRun'] as const).find((mode) => mode === searchParams.get('sort')) ?? 'name',
+    (['name', 'status', 'lastRun', 'messages'] as const).find((mode) => mode === searchParams.get('sort')) ?? 'name',
   );
 
   useEffect(() => {
@@ -170,6 +170,12 @@ const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedInte
         const aDate = a.lastRunDate ?? a.updatedAt ?? '';
         const bDate = b.lastRunDate ?? b.updatedAt ?? '';
         if (aDate !== bDate) return bDate.localeCompare(aDate);
+      }
+      // Largest backlog first, to quickly spot integrations with queued messages.
+      if (sort === 'messages') {
+        const aMessages = a.messagesCount ?? 0;
+        const bMessages = b.messagesCount ?? 0;
+        if (aMessages !== bMessages) return bMessages - aMessages;
       }
       return a.name.localeCompare(b.name);
     });

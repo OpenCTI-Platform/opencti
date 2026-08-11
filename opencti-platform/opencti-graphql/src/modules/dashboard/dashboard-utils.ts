@@ -9,6 +9,8 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { convertWidgetsIds } from '../workspace/workspace-utils';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import type { ConfigImportData, WidgetConfigImportData, WidgetConfiguration } from './dashboard-types';
+import { findSavedFilter } from '../savedFilter/savedFilter-domain';
+import type { Widget, WidgetDataSelection } from '../../generated/graphql';
 
 const MINIMAL_COMPATIBLE_VERSION = '5.12.16';
 
@@ -32,12 +34,66 @@ export const checkDashboardConfigurationImport = (type: string, parsedData: Conf
   }
 };
 
-export const exportDashboardWidget = async (context: AuthContext, user: AuthUser, manifest: string, widgetId: string) => {
+/**
+ * Resolves a single saved filter reference within a data selection:
+ * Replaces the saved filter id with the actual inline filters and removes the saved filter reference.
+ */
+const resolveSavedFilterReference = async (
+  context: AuthContext,
+  user: AuthUser,
+  widgetDefinitionId: string,
+  selection: WidgetDataSelection,
+  savedFiltersIdKey: 'filters_id' | 'dynamicFrom_id' | 'dynamicTo_id',
+  filtersKey: 'filters' | 'dynamicFrom' | 'dynamicTo',
+) => {
+  const savedFiltersId = selection[savedFiltersIdKey];
+  if (savedFiltersId && isNotEmptyField(savedFiltersId)) {
+    const savedFilter = await findSavedFilter(context, user, savedFiltersId);
+    if (!savedFilter) {
+      throw FunctionalError('Saved filter not found', { widget: widgetDefinitionId, savedFiltersId });
+    }
+    try {
+      selection[filtersKey] = JSON.parse(savedFilter.filters);
+      selection[savedFiltersIdKey] = undefined;
+    } catch (error) {
+      throw FunctionalError('Failed to parse saved filter', { error, widget: widgetDefinitionId, savedFiltersId, savedFiltersContent: savedFilter.filters });
+    }
+  }
+};
+
+/**
+ * Resolves saved filter references in widget data selections:
+ * Replaces saved filters ids with the actual inline filters and removes the saved filters references.
+ */
+export const resolveSavedFiltersInDataSelection = async (
+  context: AuthContext,
+  user: AuthUser,
+  widgetDefinition: Widget,
+) => {
+  const dataSelection = widgetDefinition.dataSelection;
+  if (dataSelection) {
+    await Promise.all(dataSelection.map(async (selection: any) => {
+      await Promise.all([
+        resolveSavedFilterReference(context, user, widgetDefinition.id, selection, 'filters_id', 'filters'),
+        resolveSavedFilterReference(context, user, widgetDefinition.id, selection, 'dynamicFrom_id', 'dynamicFrom'),
+        resolveSavedFilterReference(context, user, widgetDefinition.id, selection, 'dynamicTo_id', 'dynamicTo'),
+      ]);
+    }));
+  }
+};
+
+export const exportDashboardWidget = async (
+  context: AuthContext,
+  user: AuthUser,
+  manifest: string,
+  widgetId: string,
+) => {
   const parsedManifest = fromB64(manifest ?? '{}');
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets) && parsedManifest.widgets[widgetId]) {
     const widgetDefinition = parsedManifest.widgets[widgetId];
-    delete widgetDefinition.id; // Remove current widget id
+    await resolveSavedFiltersInDataSelection(context, user, widgetDefinition);
     await convertWidgetsIds(context, user, [widgetDefinition], 'internal');
+    delete widgetDefinition.id; // Remove current widget id
     const exportConfigration = {
       openCTI_version: pjson.version,
       type: 'widget',
@@ -93,9 +149,13 @@ export const importDashboardWidgetConfiguration = async (
   };
 };
 
-// region workspace ids converter_2_1
-// Export => Dashboard filter ids must be converted to standard id
-// Import => Dashboards filter ids must be converted back to internal id
+/**
+ * Convert dashboard widget ids between internal and STIX 2_1 formats.
+ *
+ * - Export (`from = 'internal'`): filter ids are converted to STIX ids and
+ *   saved filter references are resolved to inline filter content.
+ * - Import (`from = 'stix'`): filter ids are converted back to internal ids.
+ */
 export const convertDashboardManifestIds = async (
   context: AuthContext,
   user: AuthUser,
@@ -106,10 +166,12 @@ export const convertDashboardManifestIds = async (
   // Regeneration for dashboards
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
     const { widgets } = parsedManifest;
-    const widgetDefinitions = Object.values(widgets);
+    const widgetDefinitions: Widget[] = Object.values(widgets);
+    if (from === 'internal') { // for exports: replace saved filters ids with the associated filters content
+      await Promise.all(widgetDefinitions.map((widgetDefinition) => resolveSavedFiltersInDataSelection(context, user, widgetDefinition)));
+    }
     await convertWidgetsIds(context, user, widgetDefinitions, from);
     return toB64(parsedManifest) as string;
   }
   return manifest;
 };
-// endregion

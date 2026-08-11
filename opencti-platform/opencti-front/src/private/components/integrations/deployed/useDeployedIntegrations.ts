@@ -27,6 +27,9 @@ export interface DeployedIntegrationItem {
   statusLabel: string;
   running?: boolean;
   messagesCount: number | null;
+  // Current bundles/second consumed from the integration queues (RabbitMQ ack
+  // rate); null when the queue never had traffic or is not resolvable.
+  throughputRate: number | null;
   lastRunDate: string | null;
   updatedAt: string | null;
   isManaged: boolean;
@@ -81,6 +84,7 @@ const useDeployedIntegrations = ({
     // Registered connectors, enriched with their live state and queue metrics.
     const queues = connectorsStateData?.rabbitMQMetrics?.queues ?? [];
     const queueMessagesByConnector = new Map<string, number>();
+    const queueRateByConnector = new Map<string, number>();
     for (const queue of queues) {
       if (!queue?.name) continue;
       const messages = toSafeNumber(queue.messages);
@@ -90,6 +94,12 @@ const useDeployedIntegrations = ({
       const connectorId = queue.name.substring(queue.name.indexOf('_', idx) + 1);
       if (!connectorId) continue;
       queueMessagesByConnector.set(connectorId, (queueMessagesByConnector.get(connectorId) ?? 0) + messages);
+      // RabbitMQ omits message_stats until a queue sees traffic: keep null in
+      // that case so the UI shows a placeholder instead of a misleading 0.
+      const rate = Number(queue.message_stats?.ack_details?.rate);
+      if (Number.isFinite(rate)) {
+        queueRateByConnector.set(connectorId, (queueRateByConnector.get(connectorId) ?? 0) + rate);
+      }
     }
 
     // Every built-in feed instance registers a technical queue connector: those
@@ -106,6 +116,9 @@ const useDeployedIntegrations = ({
     const feedTwinConnectorIds = new Set(feedIds.map((id) => connectorIdFromIngestId(id)));
     const feedQueueMessages = (feedId: string): number => {
       return queueMessagesByConnector.get(connectorIdFromIngestId(feedId)) ?? 0;
+    };
+    const feedQueueRate = (feedId: string): number | null => {
+      return queueRateByConnector.get(connectorIdFromIngestId(feedId)) ?? null;
     };
 
     for (const connector of connectorsListData?.connectors ?? []) {
@@ -137,6 +150,7 @@ const useDeployedIntegrations = ({
         status: itemStatus,
         statusLabel: label,
         messagesCount: queueMessagesByConnector.get(connector.id) ?? 0,
+        throughputRate: queueRateByConnector.get(connector.id) ?? null,
         lastRunDate: null,
         updatedAt: connector.updated_at,
         isManaged: !!connector.is_managed,
@@ -159,6 +173,7 @@ const useDeployedIntegrations = ({
         ...feedStatus(node.running),
         running: !!node.running,
         messagesCount: toSafeNumber(node.queue_messages),
+        throughputRate: feedQueueRate(node.id),
         lastRunDate: (node.current_state_date as string | null) ?? null,
         updatedAt: null,
         isManaged: false,
@@ -191,6 +206,7 @@ const useDeployedIntegrations = ({
         ...feedStatus(node.ingestion_running),
         running: !!node.ingestion_running,
         messagesCount: feedQueueMessages(node.id),
+        throughputRate: feedQueueRate(node.id),
         lastRunDate: (node.last_execution_date as string | null) ?? null,
         updatedAt: (node.updated_at as string | null) ?? null,
         isManaged: false,
@@ -229,6 +245,7 @@ const useDeployedIntegrations = ({
         ...feedStatus(node.active),
         running: !!node.active,
         messagesCount: feedQueueMessages(node.id),
+        throughputRate: feedQueueRate(node.id),
         lastRunDate: null,
         updatedAt: (node.updated_at as string | null) ?? null,
         isManaged: false,
