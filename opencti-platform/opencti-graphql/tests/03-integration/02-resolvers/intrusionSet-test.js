@@ -277,7 +277,18 @@ describe('Intrusion set resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.intrusionSetEdit.relationAdd.from.objectMarking.length).toEqual(1);
+    const READ_MARKINGS_QUERY = gql`
+      query intrusionSet($id: String!) {
+        intrusionSet(id: $id) {
+          id
+          objectMarking {
+            id
+          }
+        }
+      }
+    `;
+    const readResult = await queryAsAdmin({ query: READ_MARKINGS_QUERY, variables: { id: intrusionSetInternalId } });
+    expect(readResult.data.intrusionSet.objectMarking.length).toEqual(1);
   });
   it('should delete relation in intrusion set', async () => {
     const RELATION_DELETE_QUERY = gql`
