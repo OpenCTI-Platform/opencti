@@ -24,7 +24,15 @@ import {
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
   READ_STIX_INDICES,
 } from '../database/utils';
-import { BYPASS, computeUserMemberAccessIds, isUserCanAccessStixElement, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, SYSTEM_USER } from '../utils/access';
+import {
+  BYPASS,
+  computeUserMemberAccessIds,
+  isUserCanAccessStixElement,
+  isUserCanAccessStreamUpdateEvent,
+  isUserHasCapability,
+  KNOWLEDGE_ORGANIZATION_RESTRICT,
+  SYSTEM_USER,
+} from '../utils/access';
 import { FROM_START_STR, streamEventId, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, buildRefRelationKey, ENTITY_TYPE_CONTAINER, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
@@ -637,19 +645,29 @@ const createSseMiddleware = () => {
                     const { newDocument: previous } = jsonpatch.applyPatch(structuredClone(stix), evenContext.reverse_patch);
                     const isPreviouslyVisible = await isStixMatchFilterGroup(context, user, previous, streamFilters);
                     if (isPreviouslyVisible && !isCurrentlyVisible && publishDeletion) { // No longer visible
-                      await client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
+                      // If the user no longer has access to the entity, we need to remove the context
+                      // and replace the (now-restricted) current data with the previous, already-visible
+                      // document, to avoid leaking the post-update state (e.g. new markings, changed fields)
+                      const deleteEventData = { ...eventData, data: previous, context: {} };
+                      await client.sendEvent(eventId, EVENT_TYPE_DELETE, deleteEventData);
                       cache.set(stix.id, 'hit');
                     } else if (!isPreviouslyVisible && isCurrentlyVisible) { // Newly visible
                       const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
                       if (isValidResolution) {
-                        await client.sendEvent(eventId, EVENT_TYPE_CREATE, eventData);
+                        // If the user didn't have access to the element before the update
+                        // we need to remove the context from the create event to avoid leaking information on the update context
+                        const createEventData = { ...eventData, context: {} };
+                        await client.sendEvent(eventId, EVENT_TYPE_CREATE, createEventData);
                         cache.set(stix.id, 'hit');
                       }
                     } else if (isCurrentlyVisible) { // Just an update
-                      const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
-                      if (isValidResolution) {
-                        await client.sendEvent(eventId, event, eventData);
-                        cache.set(stix.id, 'hit');
+                      const userHasAccessToUpdateEvent = await isUserCanAccessStreamUpdateEvent(user, eventData);
+                      if (userHasAccessToUpdateEvent) {
+                        const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
+                        if (isValidResolution) {
+                          await client.sendEvent(eventId, event, eventData);
+                          cache.set(stix.id, 'hit');
+                        }
                       }
                     } else if (isRelation && publishDependencies) { // Update but not visible - relation type
                       // In case of relationship publication, from or to can be related to something that
