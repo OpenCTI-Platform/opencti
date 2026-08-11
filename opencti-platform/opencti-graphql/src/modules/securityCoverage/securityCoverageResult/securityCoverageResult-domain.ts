@@ -111,7 +111,6 @@ export const deleteSecurityCoverageResult = async (
   user: AuthUser,
   id: string,
 ) => {
-  logApp.info('[DEBUG SCR] Delete SCR:', { id });
   const deleted = await deleteElementById(context, user, id, ENTITY_TYPE_SECURITY_COVERAGE_RESULT);
   await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, id, user);
   return deleted.id;
