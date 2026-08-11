@@ -24,6 +24,7 @@ const LIST_QUERY = gql`
           id
           name
           description
+          x_opencti_score
         }
       }
     }
@@ -37,6 +38,7 @@ const READ_QUERY = gql`
       standard_id
       name
       description
+      x_opencti_score
       toStix
     }
   }
@@ -44,7 +46,11 @@ const READ_QUERY = gql`
 
 describe('Intrusion set resolver standard behavior', () => {
   let intrusionSetInternalId;
+  let intrusionSetForOrderingAInternalId;
+  let intrusionSetForOrderingBInternalId;
   const intrusionSetStixId = 'intrusion-set--952ec932-a8c8-4050-9662-f0771ed7c477';
+  const intrusionSetForOrderingAStixId = 'intrusion-set--11111111-a8c8-4050-9662-f0771ed7c477';
+  const intrusionSetForOrderingBStixId = 'intrusion-set--22222222-a8c8-4050-9662-f0771ed7c477';
   it('should intrusion set created', async () => {
     const CREATE_QUERY = gql`
       mutation IntrusionSetAdd($input: IntrusionSetAddInput!) {
@@ -52,6 +58,7 @@ describe('Intrusion set resolver standard behavior', () => {
           id
           name
           description
+          x_opencti_score
         }
       }
     `;
@@ -61,6 +68,7 @@ describe('Intrusion set resolver standard behavior', () => {
         name: 'Intrusion set',
         stix_id: intrusionSetStixId,
         description: 'Intrusion set description',
+        x_opencti_score: 40,
       },
     };
     const intrusionSet = await queryAsAdmin({
@@ -70,13 +78,54 @@ describe('Intrusion set resolver standard behavior', () => {
     expect(intrusionSet).not.toBeNull();
     expect(intrusionSet.data.intrusionSetAdd).not.toBeNull();
     expect(intrusionSet.data.intrusionSetAdd.name).toEqual('Intrusion set');
+    expect(intrusionSet.data.intrusionSetAdd.x_opencti_score).toEqual(40);
     intrusionSetInternalId = intrusionSet.data.intrusionSetAdd.id;
+  });
+  it('should create intrusion sets for score ordering and filtering', async () => {
+    const CREATE_QUERY = gql`
+      mutation IntrusionSetAdd($input: IntrusionSetAddInput!) {
+        intrusionSetAdd(input: $input) {
+          id
+          name
+          x_opencti_score
+        }
+      }
+    `;
+    const intrusionSetA = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: {
+        input: {
+          name: 'Intrusion set score test A',
+          stix_id: intrusionSetForOrderingAStixId,
+          description: 'Intrusion set score test A description',
+          x_opencti_score: 10,
+        },
+      },
+    });
+    const intrusionSetB = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: {
+        input: {
+          name: 'Intrusion set score test B',
+          stix_id: intrusionSetForOrderingBStixId,
+          description: 'Intrusion set score test B description',
+          x_opencti_score: 80,
+        },
+      },
+    });
+
+    expect(intrusionSetA.data.intrusionSetAdd.x_opencti_score).toEqual(10);
+    expect(intrusionSetB.data.intrusionSetAdd.x_opencti_score).toEqual(80);
+
+    intrusionSetForOrderingAInternalId = intrusionSetA.data.intrusionSetAdd.id;
+    intrusionSetForOrderingBInternalId = intrusionSetB.data.intrusionSetAdd.id;
   });
   it('should intrusion set loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: intrusionSetInternalId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.intrusionSet).not.toBeNull();
     expect(queryResult.data.intrusionSet.id).toEqual(intrusionSetInternalId);
+    expect(queryResult.data.intrusionSet.x_opencti_score).toEqual(40);
     expect(queryResult.data.intrusionSet.toStix.length).toBeGreaterThan(5);
   });
   it('should intrusion set loaded by stix id', async () => {
@@ -96,6 +145,7 @@ describe('Intrusion set resolver standard behavior', () => {
           fieldPatch(input: $input) {
             id
             name
+            x_opencti_score
           }
         }
       }
@@ -105,6 +155,63 @@ describe('Intrusion set resolver standard behavior', () => {
       variables: { id: intrusionSetInternalId, input: { key: 'name', value: ['Intrusion set - test'] } },
     });
     expect(queryResult.data.intrusionSetEdit.fieldPatch.name).toEqual('Intrusion set - test');
+  });
+  it('should update intrusion set score using field patch', async () => {
+    const UPDATE_QUERY = gql`
+      mutation IntrusionSetEdit($id: ID!, $input: [EditInput]!) {
+        intrusionSetEdit(id: $id) {
+          fieldPatch(input: $input) {
+            id
+            x_opencti_score
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: intrusionSetInternalId,
+        input: { key: 'x_opencti_score', value: '55' },
+      },
+    });
+    expect(queryResult.data.intrusionSetEdit.fieldPatch.x_opencti_score).toEqual(55);
+
+    const readResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: intrusionSetInternalId } });
+    expect(readResult.data.intrusionSet.x_opencti_score).toEqual(55);
+  });
+  it('should list intrusion sets ordered by score', async () => {
+    const queryResult = await queryAsAdmin({
+      query: LIST_QUERY,
+      variables: {
+        first: 10,
+        orderBy: 'x_opencti_score',
+        orderMode: 'desc',
+        search: 'Intrusion set score test',
+      },
+    });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.intrusionSets.edges.length).toBeGreaterThanOrEqual(2);
+    expect(queryResult.data.intrusionSets.edges[0].node.x_opencti_score).toEqual(80);
+    expect(queryResult.data.intrusionSets.edges[1].node.x_opencti_score).toEqual(10);
+  });
+  it('should filter intrusion sets by score', async () => {
+    const scoreFilter = {
+      mode: 'and',
+      filters: [{ key: ['x_opencti_score'], values: ['10'], operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    };
+    const queryResult = await queryAsAdmin({
+      query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: scoreFilter,
+        search: 'Intrusion set score test',
+      },
+    });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.intrusionSets.edges.length).toEqual(1);
+    expect(queryResult.data.intrusionSets.edges[0].node.id).toEqual(intrusionSetForOrderingAInternalId);
+    expect(queryResult.data.intrusionSets.edges[0].node.x_opencti_score).toEqual(10);
   });
   it('should context patch intrusion set', async () => {
     const CONTEXT_PATCH_QUERY = gql`
@@ -207,5 +314,28 @@ describe('Intrusion set resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: intrusionSetStixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.intrusionSet).toBeNull();
+  });
+  it('should cleanup intrusion sets used for score ordering and filtering', async () => {
+    const DELETE_QUERY = gql`
+      mutation intrusionSetDelete($id: ID!) {
+        intrusionSetEdit(id: $id) {
+          delete
+        }
+      }
+    `;
+
+    await queryAsAdmin({
+      query: DELETE_QUERY,
+      variables: { id: intrusionSetForOrderingAInternalId },
+    });
+    await queryAsAdmin({
+      query: DELETE_QUERY,
+      variables: { id: intrusionSetForOrderingBInternalId },
+    });
+
+    const queryResultA = await queryAsAdmin({ query: READ_QUERY, variables: { id: intrusionSetForOrderingAStixId } });
+    const queryResultB = await queryAsAdmin({ query: READ_QUERY, variables: { id: intrusionSetForOrderingBStixId } });
+    expect(queryResultA.data.intrusionSet).toBeNull();
+    expect(queryResultB.data.intrusionSet).toBeNull();
   });
 });
