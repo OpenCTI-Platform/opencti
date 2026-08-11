@@ -20,7 +20,7 @@ jobs:
       secrets:
         DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-        FDS_GIT_TOKEN: ${{ secrets.FDS_GIT_TOKEN }} # FDS-WORKAROUND #1
+        FDS_GIT_TOKEN: ${{ secrets.FDS_GIT_TOKEN }} # FDS-CI-SECRET
 
   wf-redeploy-instance:
       name: Restart testing-xtm-one instance

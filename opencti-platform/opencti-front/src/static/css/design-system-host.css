@@ -19,7 +19,7 @@
   flex: 0 0 auto;
 }
 
-/* FDS-WORKAROUND #5: raise portalled surfaces above the app bar — remove when the library exposes a stacking hook — see fds-migration/LIBRARY-FEEDBACK.md #5 */
-body > [data-radix-popper-content-wrapper] {
-  z-index: 1300 !important;
+/* Host stacking level for the library's overlays — retired FDS-WORKAROUND #5 — see fds-migration/LIBRARY-FEEDBACK.md #5 */
+:root {
+  --fds-z-overlay: 1300;
 }
