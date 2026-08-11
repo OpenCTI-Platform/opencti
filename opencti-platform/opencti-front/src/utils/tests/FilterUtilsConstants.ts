@@ -2486,6 +2486,7 @@ filterKeysSchema.set('Stix-Core-Object', new Map([
       multiple: false,
       subEntityTypes: [
         'Indicator',
+        'Threat-Actor-Group',
         'Autonomous-System',
         'Directory',
         'Domain-Name',
