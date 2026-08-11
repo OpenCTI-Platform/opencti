@@ -779,7 +779,6 @@ const convertAggregateDistributions = async (
     // The 'unknown' bucket has no real entity — skip resolution and access check
     if (filteredData[i].label === 'unknown') {
       grantedIds.push('unknown');
-      // eslint-disable-next-line no-continue
       continue;
     }
     const resolved = allResolveLabels[filteredData[i].label.toLowerCase()];
@@ -960,7 +959,7 @@ export const distributionRelations = async (
     relationship_type: string[];
     dateAttribute?: string | null;
     onlyInferred?: boolean; } & RelationFilters<BasicStoreCommon>,
-) => {
+): ReturnType<typeof convertAggregateDistributions> => {
   const { field } = args; // Mandatory fields
   const { limit = 50, order } = args;
   const { relationship_type: relationshipTypes, dateAttribute = 'created_at' } = args;
@@ -2911,7 +2910,9 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
       // TODO Implements a more generic approach to notify enrichment
       // If entity is currently covered
       const isRefUpdate = relationsToCreate.length > 0 || relationsToDelete.length > 0;
-      if (isRefUpdate && data.updatedInstance[RELATION_COVERED]) {
+      const shouldUpdateSecurityCoverage = data.updatedInstance[RELATION_COVERED]
+        && data.updatedInstance.entity_type !== ENTITY_TYPE_SECURITY_COVERAGE;
+      if (isRefUpdate && shouldUpdateSecurityCoverage) {
         const { element: securityCoverage } = await updateAttribute(
           context,
           user,

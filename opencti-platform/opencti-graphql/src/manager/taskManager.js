@@ -48,6 +48,7 @@ import {
   TASK_TYPE_LIST,
   TASK_TYPE_QUERY,
   TASK_TYPE_RULE,
+  ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES,
 } from '../domain/backgroundTask-common';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { getDraftContext } from '../utils/draftContext';
@@ -217,6 +218,11 @@ export const baseOperationBuilder = (actionType, operations, element) => {
     baseOperationObject.opencti_operation = 'unshare';
     baseOperationObject.sharing_organization_ids = operations[0].context.values;
     baseOperationObject.sharing_direct_container = false;
+  }
+  // Has-covered relationships task
+  if (actionType === ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES) {
+    baseOperationObject.opencti_operation = 'add_related_covered_entities';
+    baseOperationObject.security_coverage_result_id = operations[0].id;
   }
   // Access management
   if (actionType === ACTION_TYPE_REMOVE_AUTH_MEMBERS) {
