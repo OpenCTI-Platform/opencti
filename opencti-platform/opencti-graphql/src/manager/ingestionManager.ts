@@ -625,7 +625,7 @@ export const csvExecutor = async (context: AuthContext) => {
         const ingestionPromise = csvDataHandler(context, ingestion)
           .then(async ({ objectsInBundleCount }) => {
             try {
-              await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_status: 'success' });
+              await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_status: 'success', last_execution_date: now() });
             } catch (patchErr) {
               logApp.warn('[OPENCTI-MODULE] Failed to patch csv ingestion success status', { cause: patchErr });
             }
