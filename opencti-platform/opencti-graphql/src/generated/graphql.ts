@@ -35058,6 +35058,7 @@ export type ThreatActorGroup = BasicObject & StixCoreObject & StixDomainObject &
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
+  x_opencti_score?: Maybe<Scalars['Int']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
 };
 
@@ -35258,6 +35259,7 @@ export type ThreatActorGroupAddInput = {
   update?: InputMaybe<Scalars['Boolean']['input']>;
   upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
+  x_opencti_score?: InputMaybe<Scalars['Int']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
@@ -35643,6 +35645,7 @@ export enum ThreatActorsOrdering {
   Sophistication = 'sophistication',
   ThreatActorTypes = 'threat_actor_types',
   UpdatedAt = 'updated_at',
+  XOpenctiScore = 'x_opencti_score',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
@@ -52509,6 +52512,7 @@ export type ThreatActorGroupResolvers<ContextType = any, ParentType extends Reso
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
