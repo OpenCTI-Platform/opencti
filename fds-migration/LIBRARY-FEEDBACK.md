@@ -13,7 +13,12 @@ live in the entry, not in the source — one place to read, one place to update.
 
 Raised during: the navigation pilot (replacing `LeftBar.jsx` with `Navbar`),
 library pin `56f7e59823cae7d815a451206e3cb4cb1d31022d`, then re-checked at
-pin `486cec92c3abf006997ac269d34ff0fcc23f178f` (2026-08-06).
+pin `486cec92c3abf006997ac269d34ff0fcc23f178f` (2026-08-06) and at pin
+`5960966216533f620393a2174213c666f57af7dd` (2026-08-11, the token pass).
+
+Closed so far: entries 5 and 12, both at the 2026-08-11 pin. Every other entry
+was re-checked against that pin's source and its removal condition is still
+unmet — the compensations stay, with the reason stated in each entry.
 
 ---
 
@@ -141,7 +146,26 @@ reload disappears.
 
 ---
 
-## 5. Floating surfaces are portalled below the product's app bar
+## 5. Floating surfaces are portalled below the product's app bar — ✅ CLOSED at pin `5960966` (2026-08-11)
+
+**Fixed by library PR #96** (`feat(overlay): let a host control overlay stacking
+with --fds-z-overlay`), which routes all six floating surfaces — the Dialog panel
+and its scrim, `TooltipContent`, `SelectContent`, `Menu`'s shared panel and the
+`NavbarSubmenu` flyout — through `var(--fds-z-overlay, 50)`. Radix then
+propagates the *resolved* value onto the wrapper's inline style on its own,
+which is what puts it back within a host's reach.
+
+**Compensation retired.** The `body > [data-radix-popper-content-wrapper] {
+z-index: 1300 !important }` rule is gone from
+`opencti-front/src/static/css/design-system-host.css`, replaced by a plain
+`:root { --fds-z-overlay: 1300 }` — same level, no `!important`, no dependence
+on a Radix-internal attribute selector. The value is unchanged, so this is
+iso-functional with what it replaces.
+
+The history below is kept as the record of why the rule existed.
+
+---
+
 
 **Needed.** Submenu flyouts and tooltips from the collapsed rail must render
 above the top bar.
@@ -397,7 +421,24 @@ its position while an inner container scrolls.
 
 ---
 
-## 12. The pointer-cursor fix stopped at `NavbarItem` and left `ProductSwitcher` behind
+## 12. The pointer-cursor fix stopped at `NavbarItem` and left `ProductSwitcher` behind — ✅ CLOSED at pin `5960966` (2026-08-11)
+
+**Fixed by library PR #94** (`fix(cursor): declare the pointer cursor on the
+shared interactive layers`), which took the generalisation this entry asked for
+rather than repeating the per-component fix: the cursor now lives on
+`buttonVariants`, `iconButtonVariants`, `TabsTrigger`, `SelectTrigger` and
+`Switch`'s control root. `iconButtonVariants` alone settles `ProductSwitcher`'s
+24×24 trigger, and with it Dialog's close button, SearchField's action slot,
+Input's end icon, Menu's triggers and Chip's delete button.
+
+**Nothing to retire.** This pilot deliberately filed the gap instead of writing
+a host rule, so closing it removes no product code — which is the whole point of
+having filed it that way.
+
+The history below is kept as the record of what was measured when it was open.
+
+---
+
 
 **Found at pin `486cec92c3abf006997ac269d34ff0fcc23f178f`,** re-checking the rail
 after library PR #84 (`fix(navbar-item): give button-rendered rail rows the

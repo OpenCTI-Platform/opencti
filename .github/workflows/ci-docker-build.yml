@@ -119,7 +119,7 @@ jobs:
           # when the secret exists. The `Build (builder)` step above stops at
           # `target: builder`, before the install, so it needs nothing.
           # Reusable workflows CAN read the secrets context (composite actions
-          # cannot), but only what the caller passes — see FDS-WORKAROUND #1.
+          # cannot), but only what the caller passes — see FDS-CI-SECRET in fds-migration/.
           secrets: |
             fds_git_token=${{ secrets.FDS_GIT_TOKEN }}
 

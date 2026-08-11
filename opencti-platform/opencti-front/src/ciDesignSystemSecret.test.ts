@@ -81,7 +81,7 @@ const buildSteps = await collectBuildSteps();
  * only sees the secrets its caller hands it: `secrets: inherit`, or an explicit
  * mapping. Replacing `inherit` with a mapping that lists every secret but this
  * one leaves `secrets.FDS_GIT_TOKEN` empty, and the install fails far from the
- * workflow that caused it. See FDS-WORKAROUND #1 in fds-migration/.
+ * workflow that caused it. See FDS-CI-SECRET in fds-migration/.
  */
 
 const SECRET_NAME = 'FDS_GIT_TOKEN';

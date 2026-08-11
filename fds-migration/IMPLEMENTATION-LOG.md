@@ -211,3 +211,279 @@ the tarball to begin with — the 12 packed files are `dist` plus `README`,
 `CHANGELOG` and `package.json`. The growth is `Header` and the `Menu`
 primitives, and it is almost entirely source maps and typings: `index.js.map`
 +76 160 and `index.mjs.map` +75 315 bytes together account for 60% of it.
+
+## 2026-08-11 — Token pass: pin bumped to `5960966`, bridge regenerated
+
+Branch: `fds/token-bridge-bump` (targets `design-system/current`).
+Pin: `486cec92c3abf006997ac269d34ff0fcc23f178f` → `5960966216533f620393a2174213c666f57af7dd`
+(13 library commits). The bump was pushed and proved green on its own
+(17/17 jobs) before anything else was committed on top of it.
+
+### The bump brought no token, and that is the point
+
+`theme.css` is **byte-identical** at the old and the new pin. Every token change
+below was already inside the pin OpenCTI had installed since 2026-08-06; what
+was stale was the bridge, generated from the `theme.css` of **2026-07-16**
+(library commit `f3dcda7`, #32). Twelve library commits of token changes had
+accumulated behind it. The product was therefore running a MUI theme built from
+July values against a library stylesheet shipping August ones.
+
+`migration-state.json` had recorded that lag as a false positive of the
+freshness check. It was not. The note is corrected in the same commit.
+
+### Method — and why it is worth reusing at every bump
+
+A plain diff of the old and the new bridge cannot tell a token change apart from
+a generator change. So the bridge was regenerated **at every version of
+`theme.css` in `main`'s history** since the one it was built from — twelve runs,
+same generator throughout — which separates the two cleanly:
+
+| Contribution | Tokens moved |
+| --- | --- |
+| Generator alone (same `theme.css`) | **0** — one JSDoc comment reflowed |
+| `theme.css` alone (same generator) | **96 changed, 45 added, 2 removed** |
+
+The final run is byte-identical to the committed bridge, so the attribution
+chain is proved end to end rather than asserted. Each row below names the
+library commit whose `theme.css` moved that value, and the OpenCTI MUI theme
+keys that read it — "no key" means the token is in the bridge but this product
+consumes nothing from it, so the change is invisible here.
+
+**Of the 143 tokens that move, 17 are consumed by this product.** Those 17 are
+listed first.
+
+### Removed tokens
+
+`--radius-xs` (`2px`) and `--shadow-xs` (`2px`), both dropped by the library's
+`feat(tokens)!` #49. Neither is consumed by `ThemeDark.ts` or `ThemeLight.ts`,
+so the breaking change is inert here.
+
+### Value changes, token by token
+
+| Token | Mode | Old → new | Library commit(s) | OpenCTI MUI theme keys |
+| --- | --- | --- | --- | --- |
+| `--bg-elevation-disabled` | dark | `#18191b` → `#101b33` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | `dark:palette.designSystem.background.disabled` |
+| `--border-elevation-default` | dark | `#3665b4` → `#3a5bbb` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | `dark:palette.designSystem.border.main` |
+| `--color-feedback-error-tertiary` | dark | `#f8958c` → `#f57266` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | `dark:palette.dangerZone.light`<br>`dark:palette.dangerZone.text`<br>`dark:palette.designSystem.destructive.light` |
+| `--color-feedback-neutral-primary` | dark | `#7a9cd6` → `#95969d` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | `dark:palette.severity.none`<br>`dark:palette.severity.default` |
+| `--color-filigran-brand-primary` | dark | `#0fbcff` → `#42caff` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | `dark:THEME_DARK_DEFAULT_PRIMARY`<br>`dark:palette.designSystem.primary.main` |
+| `--color-filigran-brand-tertiary` | dark | `#009edb` → `#0079a8` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | `dark:palette.designSystem.primary.dark` |
+| `--color-feedback-error-primary` | light | `#e51e10` → `#b8180a` | ab04390 feat(button): RFC-driven rework (variant × priority API) (#37) | `light:palette.error.main`<br>`light:palette.dangerZone.main`<br>`light:palette.severity.critical`<br>`light:palette.designSystem.destructive.main`<br>`light:palette.designSystem.alert.error.primary` |
+| `--color-feedback-error-secondary` | light | `#f8958c` → `#f57266` | ab04390 feat(button): RFC-driven rework (variant × priority API) (#37) | `light:palette.dangerZone.light`<br>`light:palette.designSystem.destructive.light`<br>`light:palette.designSystem.alert.error.secondary` |
+| `--color-feedback-info-primary` | light | `#009edb` → `#0079a8` | b0b12eb feat(search-field): implement SearchField component (#41) | `light:palette.severity.info`<br>`light:palette.designSystem.alert.info.primary` |
+| `--color-feedback-neutral-primary` | light | `#afb0b6` → `#62636a` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | `light:palette.severity.none`<br>`light:palette.severity.default` |
+| `--color-feedback-success-primary` | light | `#17ab1f` → `#117916` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | `light:palette.success`<br>`light:palette.severity.low`<br>`light:palette.designSystem.alert.success.primary` |
+| `--color-feedback-success-tertiary` | light | `#117916` → `#094e0b` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | `light:palette.success`<br>`light:palette.designSystem.alert.success.tertiary` |
+| `--color-filigran-tonic-primary` | light | `#00f0bc` → `#009474` | ab04390 feat(button): RFC-driven rework (variant × priority API) (#37)<br>b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | `light:THEME_LIGHT_DEFAULT_SECONDARY`<br>`light:palette.designSystem.secondary.main` |
+| `--gradient-default` | dark | `linear-gradient(135deg, #070d18 0.0%, #0c1527 100.0%)` → `linear-gradient(90deg, #070d18 0.0%, #0c1527 100.0%)` | 7ea6c51 feat(navbar): Navbar, NavbarItem, NavbarSubmenu, ProductSwitcher (#43) | `dark:palette.designSystem.gradient.background` |
+| `--gradient-focus` | dark | `linear-gradient(90deg, #0fbcff 0.0%, #00f0bc 100.0%)` → `linear-gradient(90deg, #42caff 0.0%, #00f0bc 100.0%)` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | `dark:palette.designSystem.gradient.focus` |
+| `--gradient-default` | light | `linear-gradient(135deg, #f2f2f3 0.0%, #ffffff 100.0%)` → `linear-gradient(90deg, #f2f2f3 0.0%, #ffffff 100.0%)` | 7ea6c51 feat(navbar): Navbar, NavbarItem, NavbarSubmenu, ProductSwitcher (#43) | `light:palette.designSystem.gradient.background` |
+| `--gradient-focus` | light | `linear-gradient(90deg, #0015a8 0.0%, #00f0bc 100.0%)` → `linear-gradient(90deg, #0015a8 0.0%, #009474 100.0%)` | ab04390 feat(button): RFC-driven rework (variant × priority API) (#37)<br>b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | `light:palette.designSystem.gradient.focus` |
+| `--bg-elevation-disabled-layer-0` | dark | `#18191b` → `#101b33` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | — |
+| `--bg-elevation-disabled-layer-1` | dark | `#313235` → `#13213e` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | — |
+| `--bg-elevation-disabled-layer-2` | dark | `#313235` → `#13213e` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | — |
+| `--bg-elevation-disabled-layer-3` | dark | `#313235` → `#13213e` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | — |
+| `--bg-elevation-highlight` | dark | `#101b33` → `#13213e` | ff74716 feat(tokens)!: add overlay width + blur scale tokens, remove --shadow-xs (#49) | — |
+| `--bg-elevation-highlight-layer-0` | dark | `#101b33` → `#13213e` | ff74716 feat(tokens)!: add overlay width + blur scale tokens, remove --shadow-xs (#49) | — |
+| `--bg-elevation-highlight-layer-1` | dark | `#13213e` → `#182a4e` | ff74716 feat(tokens)!: add overlay width + blur scale tokens, remove --shadow-xs (#49) | — |
+| `--bg-input-default` | dark | `#101b33` → `#13213e` | ff74716 feat(tokens)!: add overlay width + blur scale tokens, remove --shadow-xs (#49) | — |
+| `--bg-input-disabled` | dark | `#18191b` → `#101b33` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | — |
+| `--bg-input-hover` | dark | `#070d18` → `#0d172b` | d7ea4f2 feat(chip): add the tonic brand tone, and sync the Figma tokens it ships with (#72) | — |
+| `--border-elevation-default-layer-0` | dark | `#3665b4` → `#3a5bbb` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | — |
+| `--border-elevation-default-layer-2` | dark | `#c8d6ee` → `#7a9cd6` | ff74716 feat(tokens)!: add overlay width + blur scale tokens, remove --shadow-xs (#49) | — |
+| `--border-elevation-default-layer-3` | dark | `#ffffff` → `#7a9cd6` | ff74716 feat(tokens)!: add overlay width + blur scale tokens, remove --shadow-xs (#49) | — |
+| `--border-elevation-subtle-layer-2` | dark | `#3665b4` → `#2b4f8d` | ff74716 feat(tokens)!: add overlay width + blur scale tokens, remove --shadow-xs (#49) | — |
+| `--border-elevation-subtle-layer-3` | dark | `#7a9cd6` → `#2b4f8d` | ff74716 feat(tokens)!: add overlay width + blur scale tokens, remove --shadow-xs (#49) | — |
+| `--color-feedback-neutral-secondary` | dark | `#2b4f8d` → `#62636a` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | — |
+| `--color-feedback-neutral-secondary-transparency` | dark | `#2b4f8d4d` → `#62636a4d` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | — |
+| `--color-feedback-neutral-tertiary` | dark | `#c8d6ee` → `#cacbce` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | — |
+| `--color-filigran-brand-primary-transparency` | dark | `#0fbcff1a` → `#42caff1a` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | — |
+| `--icon-highlight` | dark | `#0fbcff` → `#42caff` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | — |
+| `--bg-alert-error` | light | `#f8958c4d` → `#f572664d` | ab04390 feat(button): RFC-driven rework (variant × priority API) (#37) | — |
+| `--bg-elevation-heading-layer-1` | light | `#f2f2f3` → `#f4f4f6` | d7ea4f2 feat(chip): add the tonic brand tone, and sync the Figma tokens it ships with (#72) | — |
+| `--bg-elevation-heading-layer-2` | light | `#e4e5e7` → `#cacbce` | d7ea4f2 feat(chip): add the tonic brand tone, and sync the Figma tokens it ships with (#72) | — |
+| `--bg-elevation-heading-layer-3` | light | `#cacbce` → `#afb0b6` | d7ea4f2 feat(chip): add the tonic brand tone, and sync the Figma tokens it ships with (#72) | — |
+| `--bg-input-hover` | light | `#f2f2f3` → `#f4f4f6` | d7ea4f2 feat(chip): add the tonic brand tone, and sync the Figma tokens it ships with (#72) | — |
+| `--border-alert-error` | light | `#e51e10` → `#b8180a` | ab04390 feat(button): RFC-driven rework (variant × priority API) (#37) | — |
+| `--border-alert-info` | light | `#009edb` → `#0079a8` | b0b12eb feat(search-field): implement SearchField component (#41) | — |
+| `--border-alert-success` | light | `#17ab1f` → `#117916` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | — |
+| `--border-input-error` | light | `#e51e10` → `#b8180a` | ab04390 feat(button): RFC-driven rework (variant × priority API) (#37) | — |
+| `--border-input-focus` | light | `#009edb` → `#0079a8` | b0b12eb feat(search-field): implement SearchField component (#41) | — |
+| `--color-feedback-error-secondary-transparency` | light | `#f8958c4d` → `#f572664d` | ab04390 feat(button): RFC-driven rework (variant × priority API) (#37) | — |
+| `--color-feedback-neutral-secondary` | light | `#f2f2f3` → `#95969d` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62)<br>e710971 feat(switch): land icon/Off tokens export and rebind off-thumb to dedicated token (#76) | — |
+| `--color-feedback-neutral-secondary-transparency` | light | `#f2f2f34d` → `#95969d4d` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62)<br>e710971 feat(switch): land icon/Off tokens export and rebind off-thumb to dedicated token (#76) | — |
+| `--color-feedback-neutral-tertiary` | light | `#62636a` → `#494a50` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | — |
+| `--color-filigran-tonic-secondary` | light | `#009474` → `#005744` | ab04390 feat(button): RFC-driven rework (variant × priority API) (#37) | — |
+| `--color-filigran-tonic-tertiary` | light | `#bdffed` → `#80ffdd` | ab04390 feat(button): RFC-driven rework (variant × priority API) (#37) | — |
+| `--icon-error` | light | `#e51e10` → `#b8180a` | ab04390 feat(button): RFC-driven rework (variant × priority API) (#37) | — |
+| `--icon-info` | light | `#009edb` → `#0079a8` | b0b12eb feat(search-field): implement SearchField component (#41) | — |
+| `--icon-success` | light | `#17ab1f` → `#117916` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | — |
+| `--text-input-error` | light | `#e51e10` → `#b8180a` | ab04390 feat(button): RFC-driven rework (variant × priority API) (#37) | — |
+| `--grayblue-300` | both | `#3665b4` → `#3a5bbb` | b838d43 fix(tokens): WCAG 2.1 AA contrast remediation for interactive components (button, icon-button) (#62) | — |
+| `--leading-content-base` | both | `115%` → `150%` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--leading-content-base-bold` | both | `115%` → `150%` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--leading-content-base-link` | both | `115%` → `150%` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--leading-content-base-medium` | both | `115%` → `150%` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--leading-content-button` | both | `115%` → `150%` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--leading-content-caption` | both | `115%` → `150%` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--leading-content-compact` | both | `115%` → `150%` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--leading-content-compact-bold` | both | `115%` → `150%` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--leading-content-compact-link` | both | `115%` → `150%` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--leading-content-compact-medium` | both | `115%` → `150%` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--leading-content-highlight` | both | `115%` → `150%` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--leading-title-2xl` | both | `120%` → `150%` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--leading-title-jumbo` | both | `120%` → `150%` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--leading-title-lg` | both | `120%` → `150%` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--leading-title-md` | both | `120%` → `150%` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--leading-title-sm` | both | `120%` → `150%` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--leading-title-xl` | both | `120%` → `150%` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--leading-title-xs` | both | `120%` → `150%` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--tracking-content-base` | both | `0.75px` → `0.0075em` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--tracking-content-base-bold` | both | `0.75px` → `0.0075em` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--tracking-content-base-link` | both | `0.75px` → `0.0075em` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--tracking-content-base-medium` | both | `0.75px` → `0.0075em` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--tracking-content-button` | both | `0.75px` → `0.0075em` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--tracking-content-caption` | both | `0.75px` → `0.0075em` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--tracking-content-compact` | both | `0.75px` → `0.0075em` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--tracking-content-compact-bold` | both | `0.75px` → `0.0075em` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--tracking-content-compact-link` | both | `0.75px` → `0.0075em` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--tracking-content-compact-medium` | both | `0.75px` → `0.0075em` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--tracking-content-highlight` | both | `0.75px` → `0.0075em` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--tracking-normal` | both | `0.75px` → `0.0075em` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--tracking-relaxed` | both | `1px` → `0.01em` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--tracking-tight` | both | `0.5px` → `0.005em` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--tracking-title-2xl` | both | `0.75px` → `0.0075em` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--tracking-title-lg` | both | `0.75px` → `0.0075em` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--tracking-title-md` | both | `0.75px` → `0.0075em` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--tracking-title-sm` | both | `0.75px` → `0.0075em` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--tracking-title-xl` | both | `0.75px` → `0.0075em` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+| `--tracking-title-xs` | both | `0.75px` → `0.0075em` | 179ee2e fix(tokens): correct systemic line-height and letter-spacing drift at the generator level (#67) | — |
+
+### Added tokens (45 entries, 30 distinct)
+
+None is consumed by this product's theme today; they are listed so a future
+mapping pass can see what became available and when.
+
+- `feat(tokens)!` #49 — `--blur-{sm,md,lg,xl}`, `--width-overlay-{sm,md,lg,xl}`, `--icon-subtle`
+- WCAG #62 — `--color-feedback-contrast-{primary,secondary,tertiary}`, `--color-filigran-brand-primary-transparency-50`, `--icon-negative`, `--icon-neutral`, `--turquoise-750`
+- `feat(chip)` #72 — `--bg-elevation-hover` and its four layers, `--color-filigran-tonic-accent`, `--color-filigran-tonic-accent-transparency-20`
+- `feat(tokens)` #33 / `fix(tokens)` #67 — the `content-code` family (`--font-content-code`, `--font-mono-plex`, `--font-weight-content-code`, `--text-content-code`, `--leading-content-code`, `--tracking-content-code`)
+- `feat(switch)` #76 — `--color-feedback-neutral-off`
+
+Note `--color-filigran-brand-primary-transparency-50`: the product already
+re-derives that exact token in `NavBar.tsx` (workaround #6). Its arrival in
+`theme.css` does not retire that workaround — see below.
+
+### Bump → retirement: what this bump let us delete
+
+Every entry in `LIBRARY-FEEDBACK.md` was re-checked against the new pin's
+source, one condition at a time.
+
+**Retired.**
+
+- **#5 — overlay stacking.** Library PR #96 routes all six floating surfaces
+  through `var(--fds-z-overlay, 50)`. The host rule
+  `body > [data-radix-popper-content-wrapper] { z-index: 1300 !important }` is
+  replaced by `:root { --fds-z-overlay: 1300 }`. Proof, measured in the running
+  product: the retired selector has 0 occurrences in the loaded stylesheets; the
+  library's own compiled overlay class resolves to `1300`; unsetting the host
+  variable drops it to the library default `50`.
+- **#12 — `ProductSwitcher` pointer cursor.** Library PR #94 declares the cursor
+  on the shared layers (`iconButtonVariants` covers the switcher's trigger).
+  This pilot filed it instead of writing a host rule, so closing it deletes no
+  product code — which is exactly the payoff of having filed it that way.
+
+**Kept, with the condition that is still false.**
+
+- **#1 — accent hook.** `NavbarProps` at the new pin still exposes no `accent`.
+- **#2 / #7 — `asChild`.** `NavbarItem` still has no `href`/`to`, and no
+  `NavbarItemBody` is exported, so a slotted row still loses the icon handling
+  and the row body.
+- **#3 — collapse label.** Still the literals `"Expand"` / `"Collapse"`.
+- **#6 — derived brand tokens.** `theme.css` still declares
+  `--color-filigran-brand-primary-transparency{,-50}` on the same root
+  selectors as the base token, so a subtree override does not reach them.
+  Measured in the running product: overriding the base to `#ff0000` on a
+  subtree gives `rgb(255, 0, 0)` for the base and
+  `color(srgb 0.258824 0.792157 1 / 0.1)` — i.e. the untouched root brand
+  colour at 10 % — for the derivative. This is the trap that must be re-tested
+  on every theme change, not the token alone.
+- **#8 — rail width.** The `<nav>` still carries `w-45` with no `shrink-0`.
+- **#9 — submenu role.** Flyout children are still `DropdownMenuPrimitive.Item`.
+- **#10 — accordion vs flyout state.** Still a single `open`/`onOpenChange` pair.
+- **#11 — rail layout.** The `<nav>` is still `h-full` in normal flow.
+
+### Custom-theme iso-functionality, proved without a database
+
+The requirement is that a platform administrator's custom theme keeps working
+identically. That is testable without a running instance, because the mechanism
+is a pure one: `AppThemeProvider` passes the DB's `Theme.theme_*` fields into
+`ThemeDark()` / `ThemeLight()` as parameters, and the FDS constants are only the
+fallback when a field is null.
+
+So both theme modules were bundled at the old and the new bridge and called
+twice each — once with a full set of custom values standing in for a DB theme
+row (`background`, `paper`, `nav` i.e. `theme_nav`, `primary`, `secondary`,
+`accent`, `text_color`), once with no arguments — and the resulting palettes
+were diffed field by field.
+
+| Palette | Fields | Changed |
+| --- | --- | --- |
+| Dark, custom theme | 116 | 11 |
+| Light, custom theme | 117 | 20 |
+| Dark, standard theme | 116 | 13 |
+| Light, standard theme | 117 | 21 |
+
+**The custom theme is protected exactly where it should be.** The standard
+palettes move on three fields the custom palettes do not: `primary.main` and
+`border.primary` in dark, `secondary.main` in light. Those are precisely the
+DB-overridable fields whose FDS fallback changed — under a custom theme they
+keep the administrator's value, untouched by this pass.
+
+**`theme_nav` does not appear in any of the four diffs.** The top bar's colour
+is byte-identical before and after, in both modes, custom or standard.
+
+Everything that does move is a field with no DB override — `error`, `warn`,
+`success`, `dangerZone`, `severity` and the `designSystem` block — which is the
+set `migration-state.json` already documents as visually live. Those are the
+deltas for design to validate; they are not regressions but the WCAG and Figma
+decisions the library already shipped, finally reaching this product's MUI
+theme.
+
+What this method does **not** cover, and what still needs a running instance: the
+`Navbar` accent under a custom `theme_primary` (workaround #1 resolves it at
+render time from `theme.palette.primary.main`, so it follows the same parameter
+and is expected to be iso-functional, but it is not proved here), and the
+`color-mix` derivatives of a custom accent — see the #6 measurement above, which
+is why that workaround stays.
+
+### Proposed as a standard playbook step
+
+Steps 1 and the pin-bump exercise of `process/PRODUCT-IMPLEMENTATION-PLAYBOOK.md`
+cover picking a pin and retiring compensations, but nothing there produces a
+per-token account of what a bump changes and where it will show. The method
+above is offered as that missing step: regenerate at every intermediate
+`theme.css`, separate generator drift from token drift, attribute each value to
+its originating commit, and join it against the product's own theme wiring so
+the "where will this show" column is derived rather than guessed. Filed to the
+library repository alongside this pass.
+
+### Marker renamed: `FDS-WORKAROUND #1` → `FDS-CI-SECRET` in the CI wiring
+
+The 2026-08-11 master sync added `FDS-WORKAROUND #1` markers to the five
+workflow call sites that must forward `FDS_GIT_TOKEN`. That number was already
+taken: `FDS-WORKAROUND #N` means `LIBRARY-FEEDBACK.md` entry N, and entry 1 is
+the `Navbar` accent hook. Two unrelated things answered to the same label, in a
+convention whose whole purpose is that a marker and its rationale cannot drift
+apart. The CI markers are renamed `FDS-CI-SECRET`, which is not a library gap
+and has no entry number.
+
+**`FDS-CI-SECRET` — why those five lines exist.** A reusable workflow only sees
+the secrets its caller hands it. Master's #17486 replaced `secrets: inherit`
+with explicit mappings, which silently cut `FDS_GIT_TOKEN` off from
+`ci-test-frontend-quality`, `ci-test-end-to-end`, `ci-license-check` and the two
+`ci-docker-build` deploy callers. Master's explicit-secrets discipline is kept;
+the token is declared in each reusable workflow's `workflow_call.secrets` and
+mapped at each call site. `ciDesignSystemSecret.test.ts` enumerates both halves
+of the call graph, so the next sync fails loudly — two of those five paths never
+run on a pull request and would not otherwise show up red.
