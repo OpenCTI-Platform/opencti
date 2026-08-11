@@ -55,6 +55,12 @@ ERROR_TYPE_BAD_GATEWAY = "Bad Gateway"
 ERROR_TYPE_DRAFT_LOCK = "DRAFT_LOCKED"
 ERROR_TYPE_WORK_NOT_ALIVE = "WORK_NOT_ALIVE"
 ERROR_TYPE_TIMEOUT = "Request timed out"
+ERROR_TYPE_FUNCTIONAL = "FUNCTIONAL_ERROR"
+
+#: Maximum size of the item payload reported as bundle too large
+MAX_REPORTED_SOURCE_LENGTH = 50000
+#: Number of characters of the error message appended to the import error log
+ERROR_LOG_PREVIEW_LENGTH = 300
 
 #: STIX Extension ID for OpenCTI custom objects and properties
 STIX_EXT_OCTI: str = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
@@ -3546,6 +3552,31 @@ class OpenCTIStix2:
         bundles_success_counter.add(1)
         return True
 
+    def _report_item_error(self, work_id: str, item, error: str):
+        """Report an item-level import error as a work expectation.
+
+        :param work_id: Work ID for tracking import progress, no-op when None
+        :type work_id: str
+        :param item: STIX2 item that failed to be imported
+        :type item: dict
+        :param error: error message to report in the work status
+        :type error: str
+        """
+        if work_id is None:
+            return
+        item_str = json.dumps(item)
+        self.opencti.work.report_expectation(
+            work_id,
+            {
+                "error": error,
+                "source": (
+                    item_str
+                    if len(item_str) < MAX_REPORTED_SOURCE_LENGTH
+                    else "Bundle too large"
+                ),
+            },
+        )
+
     def import_item_with_retries(
         self,
         item,
@@ -3646,37 +3677,28 @@ class OpenCTIStix2:
                 # That also works for missing reference with too much execution
                 else:
                     bundles_technical_error_counter.add(1)
-                    worker_logger.error(
-                        "Unrecognized error during bundle import", {"error": error}
-                    )
-                    if work_id is not None:
-                        item_str = json.dumps(item)
-                        self.opencti.work.report_expectation(
-                            work_id,
-                            {
-                                "error": error,
-                                "source": (
-                                    item_str
-                                    if len(item_str) < 50000
-                                    else "Bundle too large"
-                                ),
-                            },
+                    # Functional errors are caused by the data itself (malformed
+                    # observable, invalid value, ...): retrying would fail the same
+                    # way, so this is not a platform issue -> log it as a warning.
+                    if ERROR_TYPE_FUNCTIONAL in error_msg:
+                        worker_logger.warning(
+                            "Functional error during bundle import: "
+                            + error[:ERROR_LOG_PREVIEW_LENGTH],
+                            {"error": error},
                         )
+                    else:
+                        worker_logger.error(
+                            "Unrecognized error during bundle import: "
+                            + error[:ERROR_LOG_PREVIEW_LENGTH],
+                            {"error": error},
+                        )
+                    # In both cases the item is rejected and must appear in the work status
+                    self._report_item_error(work_id, item, error)
                     return None
 
         max_retry_error_message = "Max number of retries reached, please see error logs of workers for more details. Bundle will be sent to dead letter queue."
         worker_logger.error(max_retry_error_message)
-        if work_id is not None:
-            item_str = json.dumps(item)
-            self.opencti.work.report_expectation(
-                work_id,
-                {
-                    "error": max_retry_error_message,
-                    "source": (
-                        item_str if len(item_str) < 50000 else "Bundle too large"
-                    ),
-                },
-            )
+        self._report_item_error(work_id, item, max_retry_error_message)
         item["rejection_info"] = {
             "reject_reason": "MAX_RETRY",
             "last_error_msg": error_msg,
