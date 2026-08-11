@@ -27,7 +27,10 @@ const ingestionCsvResolvers: Resolvers = {
     csvFeedAddInputFromImport: (_, { file }, context) => csvFeedAddInputFromImport(context, context.user, file),
     defaultIngestionGroupCount: (_, __, context) => defaultIngestionGroupsCount(context),
     userAlreadyExists: (_, { name }, context) => userAlreadyExists(context, name),
-    ingestionCsvLogs: async (_: unknown, { id }: { id: string }) => findIngestionLogsForFeed(id),
+    ingestionCsvLogs: async (_: unknown, { id }: { id: string }, context) => {
+      await findById(context, context.user, id);
+      return findIngestionLogsForFeed(id);
+    },
   },
   IngestionCsv: {
     authentication_value: async (ingestionCsv) => {
