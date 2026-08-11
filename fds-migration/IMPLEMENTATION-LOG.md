@@ -487,3 +487,65 @@ the token is declared in each reusable workflow's `workflow_call.secrets` and
 mapped at each call site. `ciDesignSystemSecret.test.ts` enumerates both halves
 of the call graph, so the next sync fails loudly — two of those five paths never
 run on a pull request and would not otherwise show up red.
+
+## 2026-08-11 — Admin top bar adopts the design-system `Header`
+
+Branch: `fds/header-pilot` (targets `design-system/current`). Pin unchanged at
+`5960966216533f620393a2174213c666f57af7dd` — the token pass already installed
+the `Header`, so this pilot bumps nothing.
+
+### What the bar was
+
+`AppBar` + `Toolbar`, painted by a gradient assembled from
+`theme.palette.background.gradient.start/end` — which trace to the DB's
+`theme_background`, **not** `theme_nav`. `theme_nav` reached this bar through
+exactly one path: the Suspense fallback's `makeStyles` class. The bar already
+supplied its own fixing, rail offset and three stacked banner offsets, and
+pre-multiplied its own transparency at 90%.
+
+### What changed
+
+`Header` / `HeaderGroup` replace `AppBar` / `Toolbar`. The glass now comes from
+the library at Figma's 94%, so the product's gradient stops became opaque —
+keeping them pre-multiplied would have applied the transparency twice.
+
+The assembled gradient is re-declared on the bar element. Measured under a
+custom theme: the bar's `--gradient-default` carries the administrator's
+`theme_background`, while the Navbar's still resolves to the library default —
+the override does not leak, which is what a `:root` declaration would have
+broken.
+
+The search input is the library's `SearchField`, and the window moves from
+550–680px to 200–500px as named constants on the group the product owns.
+
+Height has one source of truth: `--fds-header-height` with the library's 68px
+fallback, read by the chatbot offset. `WorkspaceTurnToContainerDialog.tsx`'s
+`top: 68` was left alone — it positions a control inside a dialog and is not
+this bar's height.
+
+Per arbitration, the Suspense fallback keeps its `background.nav` paint
+unchanged. This pilot normalises nothing there.
+
+### What the adoption cost
+
+Three affordances of the old field have no equivalent in `SearchField`: the
+animated gradient border, the AI-tinted magnifier, and the loader inside the
+field. The loader moved beside the field; the other two are gone. NLQ mode stays
+readable from its toggle, which carries an always-AI-coloured glyph plus an
+AI-tinted background and border when active. Filed as entry 20.
+
+Eight compensations, entries 13–20. Entries 13, 14, 15, 16, 17 and 18 restate
+gaps the OpenAEV Header pilot already filed — two consumers, not one.
+
+### Verification
+
+Step 5b, against the library's documentation site at the same pin: 12 properties
+compared, **0 differences**, glass included.
+
+Suite under Node 22: build, `check-ts`, lint, `verify-translation` and 158 test
+files / 1391 tests green; migration conformity 16 checks, 0 issues.
+
+Eleven new tests. Key assertions mutation-tested — restoring the 550px floor,
+replacing the height variable with a literal, painting the active link from a
+hardcoded colour, dropping the active state, and moving the gradient to `:root`
+each turn the suite red.
