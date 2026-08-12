@@ -15804,6 +15804,8 @@ type FintelDesign implements BasicObject & InternalObject {
   gradiantToColor: String
   textColor: String
   default: Boolean
+  includeCoverPageByDefault: Boolean
+  includeBackPageByDefault: Boolean
 }
 
 input FintelDesignAddInput {
@@ -15814,6 +15816,8 @@ input FintelDesignAddInput {
   gradiantToColor: String
   textColor: String
   default: Boolean
+  includeCoverPageByDefault: Boolean
+  includeBackPageByDefault: Boolean
   file: Upload
 }
 

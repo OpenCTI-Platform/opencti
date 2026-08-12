@@ -12,6 +12,8 @@ export interface FintelDesign {
   gradiantToColor: string;
   textColor: string;
   default?: boolean;
+  includeCoverPageByDefault?: boolean;
+  includeBackPageByDefault?: boolean;
 }
 
 // region Database types
@@ -23,6 +25,8 @@ export interface BasicStoreEntityFintelDesign extends BasicStoreEntity {
   gradiantToColor: string;
   textColor: string;
   default?: boolean;
+  includeCoverPageByDefault?: boolean;
+  includeBackPageByDefault?: boolean;
 }
 
 export interface StoreEntityFintelDesign extends StoreEntity {
@@ -33,6 +37,8 @@ export interface StoreEntityFintelDesign extends StoreEntity {
   gradiantToColor: string;
   textColor: string;
   default?: boolean;
+  includeCoverPageByDefault?: boolean;
+  includeBackPageByDefault?: boolean;
 }
 // end region
 
@@ -45,6 +51,8 @@ export interface StixFintelDesign extends StixObject {
   gradiantToColor: string;
   textColor: string;
   default: boolean;
+  includeCoverPageByDefault: boolean;
+  includeBackPageByDefault: boolean;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };

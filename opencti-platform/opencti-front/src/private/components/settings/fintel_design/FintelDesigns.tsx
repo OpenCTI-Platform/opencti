@@ -93,6 +93,8 @@ const fintelDesignsLineFragment = graphql`
     gradiantToColor
     textColor
     default
+    includeCoverPageByDefault
+    includeBackPageByDefault
   }
 `;
 
@@ -231,6 +233,8 @@ const FintelDesigns = () => {
                       name: row.name,
                       description: row.description ?? null,
                       default: !!row.default,
+                      includeCoverPageByDefault: row.includeCoverPageByDefault ?? true,
+                      includeBackPageByDefault: row.includeBackPageByDefault ?? true,
                     })}
                     onDelete={canDelete ? () => setFintelDesignToDelete(row.id) : undefined}
                   />

@@ -72,6 +72,8 @@ interface FintelDesignFormValues {
   name: string;
   description: string;
   default: boolean;
+  includeCoverPageByDefault: boolean;
+  includeBackPageByDefault: boolean;
 }
 
 interface PendingCreate {
@@ -92,6 +94,8 @@ export interface FintelDesignEditData {
   name: string;
   description: string | null;
   default: boolean;
+  includeCoverPageByDefault: boolean;
+  includeBackPageByDefault: boolean;
 }
 
 const CreateFintelDesignControlledDial: DrawerControlledDialType = (props) => (
@@ -156,7 +160,15 @@ const FintelDesignFormDrawer: FunctionComponent<FintelDesignFormDrawerProps> = (
     helpers: FormikHelpers<FintelDesignFormValues>,
   ) => {
     commitAdd({
-      variables: { input: { name: values.name, description: values.description, default: values.default } },
+      variables: {
+        input: {
+          name: values.name,
+          description: values.description,
+          default: values.default,
+          includeCoverPageByDefault: values.includeCoverPageByDefault,
+          includeBackPageByDefault: values.includeBackPageByDefault,
+        },
+      },
       updater: (store, response) => {
         if (response?.fintelDesignAdd) updater(store);
       },
@@ -197,7 +209,7 @@ const FintelDesignFormDrawer: FunctionComponent<FintelDesignFormDrawerProps> = (
     fetchQuery(fintelDesignsCurrentDefaultQuery, {}).toPromise().catch((err) => handleError(err));
   };
 
-  const patchField = (name: string, value: FieldOption | string) => {
+  const patchField = (name: string, value: FieldOption | string | boolean) => {
     commitPatch({
       variables: { id: fintelDesign!.id, input: [{ key: name, value: [value ?? ''] }] },
     });
@@ -236,7 +248,7 @@ const FintelDesignFormDrawer: FunctionComponent<FintelDesignFormDrawerProps> = (
     else handleUnsetDefault(revert);
   };
 
-  const handleSubmitField = (name: string, value: FieldOption | string) => {
+  const handleSubmitField = (name: string, value: FieldOption | string | boolean) => {
     patchField(name, value);
   };
 
@@ -253,6 +265,8 @@ const FintelDesignFormDrawer: FunctionComponent<FintelDesignFormDrawerProps> = (
     name: fintelDesign?.name ?? '',
     description: fintelDesign?.description ?? '',
     default: !!fintelDesign?.default,
+    includeCoverPageByDefault: fintelDesign?.includeCoverPageByDefault ?? true,
+    includeBackPageByDefault: fintelDesign?.includeBackPageByDefault ?? true,
   };
 
   const validator = Yup.object().shape({
@@ -312,6 +326,23 @@ const FintelDesignFormDrawer: FunctionComponent<FintelDesignFormDrawerProps> = (
                         handleDefaultToggle(next, () => setFieldValue('default', !next));
                       }
                     : undefined}
+                />
+                <div style={{ marginTop: 20, fontWeight: 500 }}>{t_i18n('Export defaults')}</div>
+                <Field
+                  component={SwitchField}
+                  type="checkbox"
+                  name="includeCoverPageByDefault"
+                  label={t_i18n('Include cover page by default')}
+                  containerstyle={{ marginTop: 10 }}
+                  onChange={isEditMode ? handleSubmitField : undefined}
+                />
+                <Field
+                  component={SwitchField}
+                  type="checkbox"
+                  name="includeBackPageByDefault"
+                  label={t_i18n('Include back page by default')}
+                  containerstyle={{ marginTop: 10 }}
+                  onChange={isEditMode ? handleSubmitField : undefined}
                 />
                 {!isEditMode && (
                   <FormButtonContainer>
