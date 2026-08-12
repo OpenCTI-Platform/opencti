@@ -67,16 +67,11 @@ export const findById = async (
   user: AuthUser,
   SecurityCoverageId: string,
 ): Promise<BasicStoreEntitySecurityCoverage> => {
-  const store = storeLoadById<BasicStoreEntitySecurityCoverage>(
+  return storeLoadById<BasicStoreEntitySecurityCoverage>(
     context,
     user,
     SecurityCoverageId,
     ENTITY_TYPE_SECURITY_COVERAGE,
-  );
-  return notify(
-    BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC,
-    store,
-    user,
   );
 };
 
@@ -137,7 +132,7 @@ export const addSecurityCoverage = async (
   }
 
   return notify(
-    BUS_TOPICS[ENTITY_TYPE_SECURITY_COVERAGE].EDIT_TOPIC,
+    BUS_TOPICS[ENTITY_TYPE_SECURITY_COVERAGE].ADDED_TOPIC,
     createdSecurityCoverage,
     user,
   );

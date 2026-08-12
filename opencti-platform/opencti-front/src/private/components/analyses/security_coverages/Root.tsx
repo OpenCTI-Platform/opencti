@@ -31,6 +31,7 @@ const subscription = graphql`
             id
             external_uri
             ...SecurityCoverage_securityCoverage
+            ...GoToOpenAEVDrawerFragment
         }
     }
 `;
