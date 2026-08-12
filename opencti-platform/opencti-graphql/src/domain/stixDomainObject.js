@@ -240,6 +240,9 @@ export const addStixDomainObject = async (context, user, stixDomainObject) => {
   if (innerType === ENTITY_TYPE_CONTAINER_NOTE) {
     data.created = data.created || now();
   }
+  if (data.x_opencti_score !== null && data.x_opencti_score !== undefined && data.x_opencti_score !== '') {
+    checkScore(data.x_opencti_score);
+  }
   // Create the element
   const created = await createEntity(context, user, R.dissoc('type', data), innerType);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
@@ -317,7 +320,7 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
   const scoreEditInput = input.find((e) => e.key === 'x_opencti_score');
   if (scoreEditInput) {
     const newScore = scoreEditInput.value[0];
-    if (newScore !== null && newScore !== undefined && newScore) {
+    if (newScore !== null && newScore !== undefined && newScore !== '') {
       checkScore(newScore);
     }
   }
