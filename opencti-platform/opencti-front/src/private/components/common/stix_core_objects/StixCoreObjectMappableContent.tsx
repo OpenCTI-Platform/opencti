@@ -1,4 +1,4 @@
-import { FunctionComponent, useEffect, useRef, useState } from 'react';
+import { FunctionComponent, useEffect, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import CommitMessage from '@components/common/form/CommitMessage';
 import * as Yup from 'yup';
@@ -94,17 +94,6 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
   const classes = useStyles();
   let { description, contentField } = containerData;
   const [draftContent, setDraftContent] = useState(contentField || '');
-  const latestDraftContentRef = useRef(draftContent);
-  const latestPersistedContentRef = useRef(containerData.contentField || '');
-  const persistFieldValueRef = useRef<(name: string, value: string) => void>(() => {});
-
-  useEffect(() => {
-    latestDraftContentRef.current = draftContent;
-  }, [draftContent]);
-
-  useEffect(() => {
-    latestPersistedContentRef.current = containerData.contentField || '';
-  }, [containerData.contentField]);
 
   useEffect(() => {
     // Reset local draft only when switching to another object.
@@ -163,7 +152,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
     });
   };
 
-  const persistFieldValue = (
+  const handleSubmitField = (
     name: string,
     value: string,
   ) => {
@@ -188,28 +177,6 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
         .catch(() => false);
     }
   };
-
-  useEffect(() => {
-    persistFieldValueRef.current = persistFieldValue;
-  });
-
-  const handleSubmitField = (
-    name: string,
-    value: string,
-  ) => {
-    persistFieldValue(name, value);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (!editionMode || enableReferences) return;
-      const latestDraftContent = latestDraftContentRef.current || '';
-      const latestPersistedContent = latestPersistedContentRef.current || '';
-      if (latestDraftContent !== latestPersistedContent) {
-        persistFieldValueRef.current('content', latestDraftContent);
-      }
-    };
-  }, [editionMode, enableReferences]);
 
   const matchCase = (text: string, pattern: string) => {
     let result = '';

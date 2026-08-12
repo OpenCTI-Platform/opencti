@@ -7,7 +7,7 @@ import InputLabel from '@mui/material/InputLabel';
 import { useTheme } from '@mui/styles';
 import { FieldProps, useField } from 'formik';
 import { isNil } from 'ramda';
-import { CSSProperties, useState } from 'react';
+import { CSSProperties, useEffect, useRef, useState } from 'react';
 import useAI from '../../utils/hooks/useAI';
 import { RichTextEditor } from '@filigran/rich-text-editor';
 import { useFormatter } from '../i18n';
@@ -47,6 +47,23 @@ const RichTextField = ({
   const [fullScreen, setFullScreen] = useState(false);
   const [, meta] = useField(name);
   const { enabled, configured } = useAI();
+  const editorAdapterRef = useRef<{ getData: () => string } | null>(null);
+  const latestEditorValueRef = useRef(value ?? '');
+
+  useEffect(() => {
+    latestEditorValueRef.current = value ?? '';
+  }, [value]);
+
+  useEffect(() => {
+    return () => {
+      const adapter = editorAdapterRef.current;
+      if (!adapter || !onSubmit) return;
+      const html = adapter.getData();
+      if (html !== latestEditorValueRef.current) {
+        onSubmit(name, html);
+      }
+    };
+  }, [name, onSubmit]);
 
   const fieldErrors = errors[name] as string;
   const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
@@ -58,13 +75,18 @@ const RichTextField = ({
         }
       }}
       data={value}
+      onReady={(adapter) => {
+        editorAdapterRef.current = adapter;
+      }}
       onChange={(_, adapter) => {
         const html = adapter.getData();
+        latestEditorValueRef.current = html;
         setFieldValue(name, html);
         onChange?.(name, html);
       }}
       onBlur={(_, adapter) => {
         const html = adapter.getData();
+        latestEditorValueRef.current = html;
         setFieldValue(name, html);
         setFieldTouched(name, true);
         onSubmit?.(name, html);
