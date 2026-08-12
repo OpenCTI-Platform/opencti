@@ -19,12 +19,27 @@ import { rssFeedExport } from '../ingestion/ingestion-rss-domain';
 import { taxiiFeedExport } from '../ingestion/ingestion-taxii-domain';
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../fintelTemplate/fintelTemplate-types';
 import { fintelTemplateExport } from '../fintelTemplate/fintelTemplate-domain';
+import {
+  generateSettingsBrandingExportConfiguration,
+  generateSettingsLanguageExportConfiguration,
+  generateSettingsMessagesExportConfiguration,
+  generateSettingsThemeExportConfiguration,
+} from '../../domain/settings';
+import { generateHiddenEntityTypesExportConfiguration } from '../entitySetting/entitySetting-domain';
+import { buildContextDataForFile, publishUserAction } from '../../listener/UserActionListener';
+import { addGlobalExportPlatformCount } from '../../manager/telemetryManager';
 
 const slugify = (name: string) => (name ?? 'unnamed')
   .toLowerCase()
   .replace(/[^a-z0-9-_]+/g, '-')
   .replace(/^-+|-+$/g, '')
   .slice(0, 80) || 'unnamed';
+
+export const SETTINGS_BRANDING = 'SettingsBranding';
+export const SETTINGS_THEME = 'SettingsTheme';
+export const SETTINGS_LANGUAGE = 'SettingsLanguage';
+export const SETTINGS_MESSAGES = 'SettingsMessages';
+export const SETTINGS_HIDDEN_ENTITY_TYPES = 'SettingsHiddenEntityTypes';
 
 const exportEntitiesToZip = async <T extends { id: string; name: string }>(
   archive: ZipArchive,
@@ -120,6 +135,36 @@ export const exportIngestionTaxiiCategory = async (context: AuthContext, user: A
   );
 };
 
+export const exportSettingsBrandingCategory = async (context: AuthContext, _user: AuthUser, archive: ZipArchive): Promise<number> => {
+  const exported = await generateSettingsBrandingExportConfiguration(context);
+  archive.append(exported, { name: 'settings/branding.json' });
+  return 1;
+};
+
+export const exportSettingsThemeCategory = async (context: AuthContext, _user: AuthUser, archive: ZipArchive): Promise<number> => {
+  const exported = await generateSettingsThemeExportConfiguration(context);
+  archive.append(exported, { name: 'settings/theme.json' });
+  return 1;
+};
+
+export const exportSettingsLanguageCategory = async (context: AuthContext, _user: AuthUser, archive: ZipArchive): Promise<number> => {
+  const exported = await generateSettingsLanguageExportConfiguration(context);
+  archive.append(exported, { name: 'settings/language.json' });
+  return 1;
+};
+
+export const exportSettingsMessagesCategory = async (context: AuthContext, _user: AuthUser, archive: ZipArchive): Promise<number> => {
+  const exported = await generateSettingsMessagesExportConfiguration(context);
+  archive.append(exported, { name: 'settings/messages.json' });
+  return 1;
+};
+
+export const exportHiddenEntityTypesCategory = async (context: AuthContext, user: AuthUser, archive: ZipArchive): Promise<number> => {
+  const exported = await generateHiddenEntityTypesExportConfiguration(context, user);
+  archive.append(exported, { name: 'entity_settings/hidden_entity_types.json' });
+  return JSON.parse(exported).configuration.hidden_entity_types.length;
+};
+
 export const exportCategory = async (
   context: AuthContext,
   user: AuthUser,
@@ -136,6 +181,11 @@ export const exportCategory = async (
     case ENTITY_TYPE_INGESTION_JSON: return exportIngestionJsonCategory(context, user, archive);
     case ENTITY_TYPE_INGESTION_RSS: return exportIngestionRssCategory(context, user, archive);
     case ENTITY_TYPE_INGESTION_TAXII: return exportIngestionTaxiiCategory(context, user, archive);
+    case SETTINGS_BRANDING: return exportSettingsBrandingCategory(context, user, archive);
+    case SETTINGS_THEME: return exportSettingsThemeCategory(context, user, archive);
+    case SETTINGS_LANGUAGE: return exportSettingsLanguageCategory(context, user, archive);
+    case SETTINGS_MESSAGES: return exportSettingsMessagesCategory(context, user, archive);
+    case SETTINGS_HIDDEN_ENTITY_TYPES: return exportHiddenEntityTypesCategory(context, user, archive);
     default: throw Error(`Unknown configuration export entity_type: "${entityType}"`);
   }
 };
@@ -176,6 +226,22 @@ export const generateGlobalConfigurationExport = async (
     counts,
   };
   archive.append(JSON.stringify(meta, null, 2), { name: 'meta.json' });
+
+  const contextData = buildContextDataForFile(
+    null,
+    'global_configuration_export',
+    'platform_configuration_export.zip',
+    [],
+    { entity_types: uniqueEntityTypes, counts },
+  );
+  await publishUserAction({
+    user,
+    event_type: 'file',
+    event_access: 'administration',
+    event_scope: 'create',
+    context_data: contextData,
+  });
+  addGlobalExportPlatformCount();
 
   await archive.finalize();
   await zipReady;
