@@ -26,6 +26,7 @@ const LIST_QUERY = gql`
           id
           name
           description
+          x_opencti_score
         }
       }
     }
@@ -64,7 +65,17 @@ const READ_QUERY = gql`
       standard_id
       name
       description
+      x_opencti_score
       toStix
+    }
+  }
+`;
+
+const READ_SCORE_QUERY = gql`
+  query IncidentScore($id: String!) {
+    incident(id: $id) {
+      id
+      x_opencti_score
     }
   }
 `;
@@ -79,6 +90,7 @@ describe('Incident resolver standard behavior', () => {
           id
           name
           description
+          x_opencti_score
         }
       }
     `;
@@ -88,6 +100,7 @@ describe('Incident resolver standard behavior', () => {
         name: 'Incident',
         stix_id: incidentStixId,
         description: 'Incident description',
+        x_opencti_score: 42,
         first_seen: '2020-03-24T10:51:20+00:00',
         last_seen: '2020-03-24T10:51:20+00:00',
       },
@@ -99,7 +112,92 @@ describe('Incident resolver standard behavior', () => {
     expect(incident).not.toBeNull();
     expect(incident.data.incidentAdd).not.toBeNull();
     expect(incident.data.incidentAdd.name).toEqual('Incident');
+    expect(incident.data.incidentAdd.x_opencti_score).toEqual(42);
     incidentInternalId = incident.data.incidentAdd.id;
+  });
+  it('should read Incident score value', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_SCORE_QUERY, variables: { id: incidentInternalId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.incident).not.toBeNull();
+    expect(queryResult.data.incident.x_opencti_score).toEqual(42);
+  });
+  it('should reject Incident creation with score below 0', async () => {
+    const CREATE_QUERY = gql`
+      mutation IncidentAdd($input: IncidentAddInput!) {
+        incidentAdd(input: $input) {
+          id
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: {
+        input: {
+          name: 'Incident invalid score -1',
+          x_opencti_score: -1,
+        },
+      },
+    });
+    expect(queryResult.errors?.length).toBe(1);
+    expect(queryResult.data?.incidentAdd).toBeNull();
+  });
+  it('should reject Incident creation with score above 100', async () => {
+    const CREATE_QUERY = gql`
+      mutation IncidentAdd($input: IncidentAddInput!) {
+        incidentAdd(input: $input) {
+          id
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: {
+        input: {
+          name: 'Incident invalid score 101',
+          x_opencti_score: 101,
+        },
+      },
+    });
+    expect(queryResult.errors?.length).toBe(1);
+    expect(queryResult.data?.incidentAdd).toBeNull();
+  });
+  it('should reject Incident creation with non integer score', async () => {
+    const CREATE_QUERY = gql`
+      mutation IncidentAdd($input: IncidentAddInput!) {
+        incidentAdd(input: $input) {
+          id
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: {
+        input: {
+          name: 'Incident invalid score 12.5',
+          x_opencti_score: 12.5,
+        },
+      },
+    });
+    expect(queryResult.errors?.length).toBe(1);
+    expect([null, undefined]).toContain(queryResult.data?.incidentAdd);
+  });
+  it('should reject Incident score field patch with non integer value', async () => {
+    const UPDATE_SCORE_QUERY = gql`
+      mutation IncidentEdit($id: ID!, $input: [EditInput]!) {
+        incidentEdit(id: $id) {
+          fieldPatch(input: $input) {
+            id
+            x_opencti_score
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_SCORE_QUERY,
+      variables: { id: incidentInternalId, input: { key: 'x_opencti_score', value: [12.5] } },
+    });
+    expect(queryResult.errors?.length).toBe(1);
+    expect([null, undefined]).toContain(queryResult.data?.incidentEdit?.fieldPatch);
   });
   it('should Incident loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: incidentInternalId } });
@@ -165,6 +263,58 @@ describe('Incident resolver standard behavior', () => {
       variables: { id: incidentInternalId, input: { key: 'name', value: ['Incident - test'] } },
     });
     expect(queryResult.data.incidentEdit.fieldPatch.name).toEqual('Incident - test');
+  });
+  it('should update Incident score using field patch', async () => {
+    const UPDATE_SCORE_QUERY = gql`
+      mutation IncidentEdit($id: ID!, $input: [EditInput]!) {
+        incidentEdit(id: $id) {
+          fieldPatch(input: $input) {
+            id
+            x_opencti_score
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_SCORE_QUERY,
+      variables: { id: incidentInternalId, input: { key: 'x_opencti_score', value: [73] } },
+    });
+    expect(queryResult.data.incidentEdit.fieldPatch.x_opencti_score).toEqual(73);
+
+    const readResult = await queryAsAdmin({ query: READ_SCORE_QUERY, variables: { id: incidentInternalId } });
+    expect(readResult.data.incident.x_opencti_score).toEqual(73);
+  });
+  it('should list Incidents ordered by score', async () => {
+    const queryResult = await queryAsAdmin({
+      query: LIST_QUERY,
+      variables: {
+        first: 10,
+        orderBy: 'x_opencti_score',
+        orderMode: 'desc',
+        filters: {
+          mode: 'and',
+          filters: [{ key: ['name'], values: ['Incident - test'], operator: 'eq', mode: 'or' }],
+          filterGroups: [],
+        },
+      },
+    });
+    expect(queryResult.data.incidents.edges.length).toBeGreaterThan(0);
+    expect(queryResult.data.incidents.edges[0].node.x_opencti_score).toEqual(73);
+  });
+  it('should filter Incidents by score', async () => {
+    const queryResult = await queryAsAdmin({
+      query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [{ key: ['x_opencti_score'], values: ['73'], operator: 'eq', mode: 'or' }],
+          filterGroups: [],
+        },
+      },
+    });
+    const incidentIds = queryResult.data.incidents.edges.map((edge) => edge.node.id);
+    expect(incidentIds).toContain(incidentInternalId);
   });
   it('should context patch Incident', async () => {
     const CONTEXT_PATCH_QUERY = gql`

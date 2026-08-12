@@ -53,6 +53,7 @@ interface IncidentAddInput {
   name: string;
   description: string;
   confidence: number | undefined;
+  x_opencti_score: string | undefined;
   incident_type: string;
   severity: string;
   source: string;
@@ -97,6 +98,10 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     confidence: Yup.number().nullable(),
+    x_opencti_score: Yup.number().integer(t_i18n('The value must be an integer'))
+      .nullable()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100')),
     incident_type: Yup.string().nullable(),
     severity: Yup.string().nullable(),
     source: Yup.string().nullable(),
@@ -117,6 +122,9 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
       ...buildCreationFilesInput(values.file ? [values.file] : []),
       ...cleanedValues,
       confidence: parseInt(String(cleanedValues.confidence), 10),
+      x_opencti_score: cleanedValues.x_opencti_score !== undefined && cleanedValues.x_opencti_score !== ''
+        ? parseInt(cleanedValues.x_opencti_score, 10)
+        : undefined,
       createdBy: cleanedValues.createdBy?.value,
       objectMarking: cleanedValues.objectMarking.map((v) => v.value),
       objectAssignee: cleanedValues.objectAssignee.map(({ value }) => value),
@@ -154,6 +162,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
   const initialValues = useDefaultValues<IncidentAddInput>(INCIDENT_TYPE, {
     name: inputValue ?? '',
     confidence: defaultConfidence,
+    x_opencti_score: undefined,
     incident_type: '',
     severity: '',
     source: '',
@@ -189,6 +198,16 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
           <ConfidenceField
             entityType="Incident"
             containerStyle={fieldSpacingContainerStyle}
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="x_opencti_score"
+            label={t_i18n('Score')}
+            required={(mandatoryAttributes.includes('x_opencti_score'))}
+            type="number"
+            fullWidth={true}
+            style={fieldSpacingContainerStyle}
           />
           <OpenVocabField
             label={t_i18n('Incident type')}
