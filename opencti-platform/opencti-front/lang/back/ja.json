@@ -467,6 +467,8 @@
   "In regards of (dynamic)": "ダイナミック）に関して",
   "Incident response type": "インシデント対応タイプ",
   "Incident type": "重大度",
+  "Include back page by default": "デフォルトで裏表紙を含める",
+  "Include cover page by default": "デフォルトで表紙を含める",
   "Include header": "ヘッダを含む",
   "Include in carousel": "カルーセルの順番",
   "Include inferences": "推論を含む",
