@@ -11,6 +11,7 @@ const convertEntitySettingToStix = (instance: StoreEntityEntitySetting): StixEnt
     platform_entity_files_ref: instance.platform_entity_files_ref,
     platform_hidden_type: instance.platform_hidden_type,
     enforce_reference: instance.enforce_reference,
+    sync_workflow_status_by_name: instance.sync_workflow_status_by_name,
     attributes_configuration: instance.attributes_configuration,
     available_settings: instance.availableSettings,
     workflow_configuration: instance.workflow_configuration,

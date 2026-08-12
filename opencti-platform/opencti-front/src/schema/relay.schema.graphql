@@ -10870,6 +10870,7 @@ type EntitySetting implements InternalObject & BasicObject {
   platform_entity_files_ref: Boolean
   platform_hidden_type: Boolean
   enforce_reference: Boolean
+  sync_workflow_status_by_name: Boolean
   attributes_configuration: String
   attributesDefinitions: [TypeAttribute!]!
   mandatoryAttributes: [String!]!
