@@ -948,14 +948,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@filigran/design-system@XTM-Foundation/filigran-design-system#commit=5960966216533f620393a2174213c666f57af7dd":
+"@filigran/design-system@XTM-Foundation/filigran-design-system#commit=3bee101ce459125d998efe4412fe9c5927ff346e":
   version: 0.1.0
-  resolution: "@filigran/design-system@https://github.com/XTM-Foundation/filigran-design-system.git#commit=5960966216533f620393a2174213c666f57af7dd"
+  resolution: "@filigran/design-system@https://github.com/XTM-Foundation/filigran-design-system.git#commit=3bee101ce459125d998efe4412fe9c5927ff346e"
   dependencies:
     "@radix-ui/react-accordion": "npm:^1.2.18"
     "@radix-ui/react-checkbox": "npm:^1.3.11"
     "@radix-ui/react-dialog": "npm:^1.1.22"
     "@radix-ui/react-dropdown-menu": "npm:^2.1.22"
+    "@radix-ui/react-popover": "npm:^1.1.23"
     "@radix-ui/react-radio-group": "npm:^1.4.7"
     "@radix-ui/react-select": "npm:^2.3.7"
     "@radix-ui/react-slider": "npm:^1.4.7"
@@ -970,7 +971,7 @@ __metadata:
   peerDependencies:
     react: ^19.0.0
     react-dom: ^19.0.0
-  checksum: 10c0/29a40912f0e994ff77c60fb61817aa31c20d1c9257c46710ab41509a489aed0af18bc4e72158b850006a0fc5ab84b3ad0db0fc923ba453c5773dcfac3d448ef3
+  checksum: 10c0/11a3673a424564c7c0add07b0735d04644b3e5269b557e4f673f33a5ea00f7b00fc1c008a72b33ac06e4e01238210766c73c2cf3c0c18ddc8e90d93447790b6b
   languageName: node
   linkType: hard
 
@@ -3347,6 +3348,39 @@ __metadata:
     "@types/react-dom":
       optional: true
   checksum: 10c0/01fd48bf24c4a43e799a9f0d4b4dc5b2bde57cd56307d0bb179c97dab99b902f5edb8f48899c21b623bcdfbc80d59e8a9ca5670b86c40f0b8ca4b90712bc3bcc
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-popover@npm:^1.1.23":
+  version: 1.1.23
+  resolution: "@radix-ui/react-popover@npm:1.1.23"
+  dependencies:
+    "@radix-ui/primitive": "npm:1.1.7"
+    "@radix-ui/react-compose-refs": "npm:1.1.5"
+    "@radix-ui/react-context": "npm:1.2.2"
+    "@radix-ui/react-dismissable-layer": "npm:1.1.19"
+    "@radix-ui/react-focus-guards": "npm:1.1.6"
+    "@radix-ui/react-focus-scope": "npm:1.1.16"
+    "@radix-ui/react-id": "npm:1.1.4"
+    "@radix-ui/react-popper": "npm:1.3.7"
+    "@radix-ui/react-portal": "npm:1.1.17"
+    "@radix-ui/react-presence": "npm:1.1.10"
+    "@radix-ui/react-primitive": "npm:2.1.10"
+    "@radix-ui/react-slot": "npm:1.3.3"
+    "@radix-ui/react-use-controllable-state": "npm:1.2.6"
+    aria-hidden: "npm:^1.2.4"
+    react-remove-scroll: "npm:^2.7.2"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10c0/b0a6c89657c7aaa379f6e4361ebb821b50cb526ff8ca287451360917ab31a9682165b8b82d2f9623dc98aeb0be9090e386961deac19d50c8f37958745483bd3b
   languageName: node
   linkType: hard
 
@@ -12711,7 +12745,7 @@ __metadata:
     "@faker-js/faker": "npm:10.5.0"
     "@filigran/chatbot": "npm:3.7.4"
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2"
-    "@filigran/design-system": "XTM-Foundation/filigran-design-system#commit=5960966216533f620393a2174213c666f57af7dd"
+    "@filigran/design-system": "XTM-Foundation/filigran-design-system#commit=3bee101ce459125d998efe4412fe9c5927ff346e"
     "@filigran/rich-text-editor": "npm:1.2.0"
     "@fontsource/geologica": "npm:5.3.0"
     "@fontsource/ibm-plex-sans": "npm:5.3.0"
