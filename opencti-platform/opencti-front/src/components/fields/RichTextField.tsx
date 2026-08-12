@@ -63,9 +63,11 @@ const RichTextField = ({
         setFieldValue(name, html);
         onChange?.(name, html);
       }}
-      onBlur={() => {
+      onBlur={(_, adapter) => {
+        const html = adapter.getData();
+        setFieldValue(name, html);
         setFieldTouched(name, true);
-        onSubmit?.(name, value);
+        onSubmit?.(name, html);
       }}
       onFocus={() => onFocus?.(name)}
       disabled={disabled}
