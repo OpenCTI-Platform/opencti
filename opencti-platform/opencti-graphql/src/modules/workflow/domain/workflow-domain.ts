@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { logApp } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
-import { createEntity, createRelation, loadEntity, updateAttribute } from '../../../database/middleware';
+import { createEntity, createRelation, deleteElementById, loadEntity, updateAttribute } from '../../../database/middleware';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../database/members';
 import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../database/middleware-loader';
@@ -1068,6 +1068,27 @@ export const initializeEntityWorkflow = async (
   const definitionData = await getDefinitionData(executionContext, executionUser, entitySetting);
   if (!definitionData) return;
   await ensureWorkflowInstance(executionContext, executionUser, entity, entitySetting, definitionData);
+};
+
+/**
+ * Delete the WorkflowInstance (if any) associated to an entity that is being deleted.
+ * The `has-workflow` relationship pointing to it is already cleaned up generically by
+ * elDeleteElements' relation cascade, but the WorkflowInstance document itself is a
+ * separate entity and would otherwise be left orphaned. No-op if no instance exists.
+ */
+export const cleanupEntityWorkflow = async (
+  context: AuthContext,
+  user: AuthUser,
+  entity: any,
+): Promise<void> => {
+  if (entity.entity_type === ENTITY_TYPE_WORKFLOW_INSTANCE) return;
+  const executionContext = bypassDraftContext(context);
+  const executionUser = executionContext.user!;
+  const effectiveEntityId = entity.internal_id || entity.id;
+  const instanceEntity = await findWorkflowInstanceEntity(executionContext, executionUser, effectiveEntityId);
+  if (!instanceEntity) return;
+  const instanceId = instanceEntity.internal_id || instanceEntity.id;
+  await deleteElementById(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE);
 };
 
 export const isStatusTemplateUsedInWorkflows = async (

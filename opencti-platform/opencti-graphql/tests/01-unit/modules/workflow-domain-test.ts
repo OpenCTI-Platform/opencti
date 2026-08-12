@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as ee from '../../../src/enterprise-edition/ee';
-import { createEntity, createRelation, loadEntity, updateAttribute } from '../../../src/database/middleware';
+import { createEntity, createRelation, deleteElementById, loadEntity, updateAttribute } from '../../../src/database/middleware';
 import { WorkflowFactory } from '../../../src/modules/workflow/engine/workflow-factory';
 import {
   setWorkflowDefinition,
@@ -14,7 +14,10 @@ import {
   triggerWorkflowEvent,
   clearWorkflowPendingState,
   getWorkflowPublishedVersionId,
+  cleanupEntityWorkflow,
 } from '../../../src/modules/workflow/domain/workflow-domain';
+import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
+import { FilterMode } from '../../../src/generated/graphql';
 import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../src/database/middleware-loader';
 import { resolveUserById } from '../../../src/domain/user';
 import { findByType } from '../../../src/modules/entitySetting/entitySetting-domain';
@@ -30,6 +33,7 @@ vi.mock('../../../src/database/middleware', () => ({
   createRelation: vi.fn(),
   loadEntity: vi.fn(),
   updateAttribute: vi.fn(),
+  deleteElementById: vi.fn(),
 }));
 
 vi.mock('../../../src/database/middleware-loader', () => ({
@@ -1855,5 +1859,74 @@ describe('getWorkflowPublishedVersionId', () => {
     const result = await getWorkflowPublishedVersionId(mockContext, entitySetting);
 
     expect(result).toBe('pub-v1');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// cleanupEntityWorkflow
+// ---------------------------------------------------------------------------
+
+describe('cleanupEntityWorkflow', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('is a no-op when the deleted entity is itself a WorkflowInstance', async () => {
+    const entity = { id: 'wi-1', internal_id: 'wi-1', entity_type: ENTITY_TYPE_WORKFLOW_INSTANCE };
+
+    await cleanupEntityWorkflow(mockContext, mockUser, entity);
+
+    expect(loadEntity).not.toHaveBeenCalled();
+    expect(deleteElementById).not.toHaveBeenCalled();
+  });
+
+  it('is a no-op when no WorkflowInstance exists for the deleted entity', async () => {
+    (loadEntity as any).mockResolvedValue(null);
+    const entity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' };
+
+    await cleanupEntityWorkflow(mockContext, mockUser, entity);
+
+    expect(loadEntity).toHaveBeenCalledWith(mockContext, mockContext.user, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
+      filters: {
+        mode: FilterMode.And,
+        filters: [{ key: ['entity_id'], values: ['entity-id'] }],
+        filterGroups: [],
+      },
+    });
+    expect(deleteElementById).not.toHaveBeenCalled();
+  });
+
+  it('deletes the WorkflowInstance found for the deleted entity', async () => {
+    (loadEntity as any).mockResolvedValue({ id: 'inst-id', internal_id: 'inst-id', entity_type: ENTITY_TYPE_WORKFLOW_INSTANCE });
+    const entity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' };
+
+    await cleanupEntityWorkflow(mockContext, mockUser, entity);
+
+    expect(deleteElementById).toHaveBeenCalledWith(mockContext, mockContext.user, 'inst-id', ENTITY_TYPE_WORKFLOW_INSTANCE);
+  });
+
+  it('falls back to entity.id when internal_id is missing to look up the instance', async () => {
+    (loadEntity as any).mockResolvedValue({ id: 'inst-id', internal_id: 'inst-id', entity_type: ENTITY_TYPE_WORKFLOW_INSTANCE });
+    const entity = { id: 'entity-id', entity_type: 'Incident' };
+
+    await cleanupEntityWorkflow(mockContext, mockUser, entity);
+
+    expect(loadEntity).toHaveBeenCalledWith(mockContext, mockContext.user, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
+      filters: {
+        mode: FilterMode.And,
+        filters: [{ key: ['entity_id'], values: ['entity-id'] }],
+        filterGroups: [],
+      },
+    });
+    expect(deleteElementById).toHaveBeenCalledWith(mockContext, mockContext.user, 'inst-id', ENTITY_TYPE_WORKFLOW_INSTANCE);
+  });
+
+  it('falls back to instance.id when the found instance has no internal_id', async () => {
+    (loadEntity as any).mockResolvedValue({ id: 'inst-id', entity_type: ENTITY_TYPE_WORKFLOW_INSTANCE });
+    const entity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' };
+
+    await cleanupEntityWorkflow(mockContext, mockUser, entity);
+
+    expect(deleteElementById).toHaveBeenCalledWith(mockContext, mockContext.user, 'inst-id', ENTITY_TYPE_WORKFLOW_INSTANCE);
   });
 });
