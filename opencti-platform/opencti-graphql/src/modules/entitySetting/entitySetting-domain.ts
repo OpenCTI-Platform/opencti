@@ -24,6 +24,7 @@ import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from
 import { canViewTemplates } from '../fintelTemplate/fintelTemplate-domain';
 import { emptyPaginationResult } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
+import pjson from '../../../package.json';
 
 // -- LOADING --
 
@@ -223,4 +224,19 @@ export const queryDefaultValuesAttributesForSetting = async (
     return { ...a, defaultValues: a.defaultValues ?? [] };
   }));
   return defaultValuesAttributes;
+};
+
+export const generateHiddenEntityTypesExportConfiguration = async (context: AuthContext, user: AuthUser): Promise<string> => {
+  const entitySettings = await fullEntitiesList<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING], {});
+  const hidden_entity_types = entitySettings
+    .filter((entitySetting) => entitySetting.platform_hidden_type)
+    .map((entitySetting) => entitySetting.target_type);
+
+  return JSON.stringify({
+    openCTI_version: pjson.version,
+    type: 'settingsHiddenEntityTypes',
+    configuration: {
+      hidden_entity_types,
+    },
+  });
 };

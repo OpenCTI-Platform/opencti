@@ -152,6 +152,7 @@ export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
 export const TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES = 'sharedSavedFiltersPermissionChangesCount';
 export const TELEMETRY_GAUGE_WORKFLOW_PUBLISH = 'workflowPublishCount';
+export const TELEMETRY_GAUGE_GLOBAL_EXPORT_PLATFORM = 'globalExportPlatformCount';
 // AI usage counters. Backend-agnostic by design: a chatbot message or an Ask AI
 // call is the SAME feature whether it is served by the legacy path or by
 // XTM One, so no counter carries a legacy/xtm_one dimension. The before/after
@@ -297,6 +298,11 @@ export const addSharedSavedFiltersPermissionChangesCount = () => {
 export const addWorkflowPublishCount = () => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_WORKFLOW_PUBLISH, 1)
     .catch((reason) => logApp.warn('Error adding workflow publish count to telemetry', { reason }));
+};
+
+export const addGlobalExportPlatformCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_GLOBAL_EXPORT_PLATFORM, 1)
+    .catch((reason) => logApp.warn('Error adding global export platform count to telemetry', { reason }));
 };
 
 // All the counters below are fire-and-forget: they are called from feature
@@ -746,6 +752,8 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setSharedSavedFiltersPermissionChangesCount(sharedSavedFiltersPermissionChangesCountInRedis);
     const workflowPublishCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKFLOW_PUBLISH);
     manager.setWorkflowPublishCount(workflowPublishCountInRedis);
+    const globalExportPlatformCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_GLOBAL_EXPORT_PLATFORM);
+    manager.setGlobalExportPlatformCount(globalExportPlatformCountInRedis);
     const chatbotMessageCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CHATBOT_MESSAGE);
     manager.setChatbotMessageCount(chatbotMessageCountInRedis);
     const aiInsightItems: DimensionalGaugeItem[] = [];
