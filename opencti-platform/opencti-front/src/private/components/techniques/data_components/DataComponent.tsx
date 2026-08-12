@@ -58,6 +58,16 @@ const DataComponentFragment = graphql`
         color
       }
     }
+    workflowInstance {
+      id
+      currentStatus {
+        template {
+          id
+          name
+          color
+        }
+      }
+    }
     workflowEnabled
     ...DataComponentDetails_dataComponent
   }

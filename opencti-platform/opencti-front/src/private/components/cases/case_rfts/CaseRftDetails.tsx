@@ -40,6 +40,16 @@ const CaseRftDetailsFragment = graphql`
         color
       }
     }
+    workflowInstance {
+      id
+      currentStatus {
+        template {
+          id
+          name
+          color
+        }
+      }
+    }
     workflowEnabled
     relatedContainers(
       first: 10
