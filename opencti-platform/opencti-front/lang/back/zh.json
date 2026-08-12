@@ -467,6 +467,8 @@
   "In regards of (dynamic)": "关于(动态)",
   "Incident response type": "事件响应类型",
   "Incident type": "事件类型",
+  "Include back page by default": "默认包含封底",
+  "Include cover page by default": "默认包含封面页",
   "Include header": "包含报头",
   "Include in carousel": "纳入轮播",
   "Include inferences": "包含推论",

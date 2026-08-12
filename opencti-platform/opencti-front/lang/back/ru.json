@@ -467,6 +467,8 @@
   "In regards of (dynamic)": "Что касается (динамики)",
   "Incident response type": "Тип реагирования на инцидент",
   "Incident type": "Тип инцидента",
+  "Include back page by default": "По умолчанию включать заднюю обложку",
+  "Include cover page by default": "По умолчанию включать титульную страницу",
   "Include header": "Включите заголовок",
   "Include in carousel": "Включить в карусель",
   "Include inferences": "Включите умозаключения",
