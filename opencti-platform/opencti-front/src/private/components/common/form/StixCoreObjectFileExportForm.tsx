@@ -24,6 +24,7 @@ import { FileExportOutline, FilePdfBox, InformationOutline, LanguageMarkdownOutl
 import React, { useEffect, useState } from 'react';
 import * as Yup from 'yup';
 import AutocompleteField from '../../../../components/AutocompleteField';
+import Alert from '../../../../components/Alert';
 import Card from '../../../../components/common/card/Card';
 import SelectField from '../../../../components/fields/SelectField';
 import SwitchField from '../../../../components/fields/SwitchField';
@@ -516,6 +517,18 @@ const StixCoreObjectFileExportForm = ({
                             label={t_i18n('Include back page')}
                             containerstyle={{ marginTop: 10 }}
                           />
+                          {(!values.includeCoverPage || !values.includeBackPage) && (
+                            <Alert
+                              style={{ marginTop: 10 }}
+                              content={t_i18n(
+                                !values.includeCoverPage && !values.includeBackPage
+                                  ? 'The PDF will start and end on content pages only.'
+                                  : !values.includeCoverPage
+                                      ? 'The PDF will start on the first content page.'
+                                      : 'The PDF will end on the last content page.',
+                              )}
+                            />
+                          )}
                         </>
                       )}
                     </>
