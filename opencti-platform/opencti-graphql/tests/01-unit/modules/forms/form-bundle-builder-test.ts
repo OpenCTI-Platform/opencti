@@ -58,13 +58,13 @@ vi.mock('../../../../src/python/pythonBridge', () => ({
   createStixPattern: vi.fn(async () => "[domain-name:value = 'evil.com']"),
 }));
 
-vi.mock('../../../../src/config/errors', () => ({
-  FunctionalError: vi.fn((msg: string, data?: any) => {
-    const err = new Error(msg);
-    Object.assign(err, data);
-    return err;
-  }),
-}));
+vi.mock('../../../../src/config/errors', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../src/config/errors')>();
+  return {
+    ...actual,
+    // override only what you need, keep the rest
+  };
+});
 
 vi.mock('../../../../src/schema/stixCyberObservable', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../../src/schema/stixCyberObservable')>();
@@ -98,7 +98,7 @@ vi.mock('../../../../src/modules/form/form-entity-builder', () => ({
   }),
 }));
 
-// ─── Imports après les mocks ──────────────────────────────────────────────────
+// ─── Imports after mocks ──────────────────────────────────────────────────
 
 const context = {} as AuthContext;
 const user = SYSTEM_USER;

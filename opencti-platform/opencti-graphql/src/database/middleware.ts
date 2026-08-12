@@ -13,9 +13,9 @@ import {
   ALREADY_DELETED_ERROR,
   AlreadyDeletedError,
   DatabaseError,
+  DOC_INSUFFICIENT_CONFIDENCE_LEVEL,
   ForbiddenAccess,
   FunctionalError,
-  INSUFFICIENT_CONFIDENCE_LEVEL,
   LockTimeoutError,
   MissingReferenceError,
   TYPE_LOCK_ERROR,
@@ -4031,7 +4031,7 @@ const createEntityRaw = async (
   } catch (e: any) {
     // In case of insufficient confidence level, don't reject and continue to upsert
     // as upsert have a complex strategy about confidence that doesn't reject everything
-    if (rawInput.update !== false && e?.extensions?.data?.doc_code === INSUFFICIENT_CONFIDENCE_LEVEL) {
+    if (rawInput.update !== false && e?.extensions?.data?.doc_code === DOC_INSUFFICIENT_CONFIDENCE_LEVEL) {
       logApp.warn('Merging stopped because of user confidence level, applying upsert', { cause: e });
       // Try to execute the method forcing update to false, prevent auto merging.
       return await internalCreateEntityRaw(context, user, { ...rawInput, update: false }, type, opts);

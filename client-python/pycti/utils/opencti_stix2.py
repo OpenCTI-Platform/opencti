@@ -55,7 +55,13 @@ ERROR_TYPE_BAD_GATEWAY = "Bad Gateway"
 ERROR_TYPE_DRAFT_LOCK = "DRAFT_LOCKED"
 ERROR_TYPE_WORK_NOT_ALIVE = "WORK_NOT_ALIVE"
 ERROR_TYPE_TIMEOUT = "Request timed out"
-ERROR_TYPE_FUNCTIONAL = "FUNCTIONAL_ERROR"
+
+#: Platform "doc_code" are a stable contract.
+EXPECTED_FUNCTIONAL_ERROR_DOC_CODES = [
+    "INCORRECT_OBSERVABLE_FORMAT",
+    "INCORRECT_INDICATOR_FORMAT",
+    "INDICATOR_PATTERN_EXCLUDED",
+]
 
 #: Maximum size of the item payload reported as bundle too large
 MAX_REPORTED_SOURCE_LENGTH = 50000
@@ -1302,6 +1308,7 @@ class OpenCTIStix2:
         object_marking_ids = embedded_relationships["object_marking"]
         object_label_ids = embedded_relationships["object_label"]
         open_vocabs = embedded_relationships["open_vocabs"]
+        granted_refs_ids = embedded_relationships["granted_refs"]
         kill_chain_phases_ids = embedded_relationships["kill_chain_phases"]
         object_refs_ids = embedded_relationships["object_refs"]
         external_references_ids = embedded_relationships["external_references"]
@@ -1344,6 +1351,7 @@ class OpenCTIStix2:
             "object_marking_ids": object_marking_ids,
             "object_label_ids": object_label_ids,
             "open_vocabs": open_vocabs,
+            "granted_refs_ids": granted_refs_ids,
             "kill_chain_phases_ids": kill_chain_phases_ids,
             "object_ids": object_refs_ids,
             "external_references_ids": external_references_ids,
@@ -3677,10 +3685,15 @@ class OpenCTIStix2:
                 # That also works for missing reference with too much execution
                 else:
                     bundles_technical_error_counter.add(1)
-                    # Functional errors are caused by the data itself (malformed
-                    # observable, invalid value, ...): retrying would fail the same
-                    # way, so this is not a platform issue -> log it as a warning.
-                    if ERROR_TYPE_FUNCTIONAL in error_msg:
+                    # Some functional errors are caused by the data itself
+                    # (malformed observable, invalid indicator pattern, ...):
+                    # retrying would fail the same way and nothing can be done at
+                    # platform level, so they are logged as warnings.
+                    is_expected_functional_error = any(
+                        doc_code in error_msg
+                        for doc_code in EXPECTED_FUNCTIONAL_ERROR_DOC_CODES
+                    )
+                    if is_expected_functional_error:
                         worker_logger.warning(
                             "Functional error during bundle import: "
                             + error[:ERROR_LOG_PREVIEW_LENGTH],

@@ -22,7 +22,7 @@ import { elCount } from '../database/engine';
 import { isEmptyField, isNotEmptyField, READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { workToExportFile } from './work';
 import { addIndicator } from '../modules/indicator/indicator-domain';
-import { FunctionalError } from '../config/errors';
+import { DOC_INCORRECT_OBSERVABLE_FORMAT, FunctionalError } from '../config/errors';
 import { createStixPattern } from '../python/pythonBridge';
 import { checkObservableSyntax, STIX_PATTERN_TYPE } from '../utils/syntax';
 import {
@@ -241,7 +241,7 @@ export const addStixCyberObservable = async (context, user, input) => {
   // Check the consistency of the observable.
   const observableSyntaxResult = checkObservableSyntax(type, observableInput);
   if (observableSyntaxResult !== true) {
-    throw FunctionalError('Observable is not correctly formatted', { type, input: observableInput, doc_code: 'INCORRECT_OBSERVABLE_FORMAT' });
+    throw FunctionalError('Observable is not correctly formatted', { type, input: observableInput, doc_code: DOC_INCORRECT_OBSERVABLE_FORMAT });
   }
   // If everything ok, create adapt/create the observable
   const created = await createEntity(context, user, observableInput, type);
