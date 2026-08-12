@@ -69,7 +69,7 @@ const EEChip = React.forwardRef<HTMLDivElement, EEChipProps>((
     <>
       {libraryChip ? (
         // Decorative by design: the surrounding button owns the click — see fds-migration/LIBRARY-FEEDBACK.md #21
-        <Chip label="EE" tone="tonic" />
+        <Chip label="EE" severity="ee" />
       ) : (
         <div
           ref={ref}

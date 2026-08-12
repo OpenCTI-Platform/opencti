@@ -651,7 +651,19 @@ new visual. At the next pin bump, switch the word and re-checkpoint the bar.
 
 ---
 
-## 22. `Menu` shows its focus ring on hover
+## 22. `Menu` shows its focus ring on hover — ✅ CLOSED at pin `990810f` (2026-08-12)
+
+**Fixed by library PR #110** (`fix(menu): keep the keyboard focus ring off rows
+the pointer highlights`). Measured after the bump: hovering an item still gives
+it DOM focus and `:focus-visible` — that is Radix's own semantics — but the
+ring now resolves fully transparent (`rgba(0, 0, 0, 0) 0px 0px 0px 0px`), so
+only the hover background paints. The keyboard affordance is unaffected.
+
+The history below is kept as the record of what was measured when it was open.
+
+---
+
+### Original report — `Menu` shows its focus ring on hover
 
 **Found at pin `5960966`.** Reported from the running product.
 
