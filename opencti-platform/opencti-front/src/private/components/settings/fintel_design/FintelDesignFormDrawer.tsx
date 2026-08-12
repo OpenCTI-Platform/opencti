@@ -12,6 +12,7 @@ import { FintelDesignsLinesPaginationQuery$variables } from '@components/setting
 import Button from '@common/button/Button';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import Alert from '../../../../components/Alert';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { fetchQuery, handleError, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -343,6 +344,10 @@ const FintelDesignFormDrawer: FunctionComponent<FintelDesignFormDrawerProps> = (
                   label={t_i18n('Include back page by default')}
                   containerstyle={{ marginTop: 10 }}
                   onChange={isEditMode ? handleSubmitField : undefined}
+                />
+                <Alert
+                  style={{ marginTop: 10 }}
+                  content={t_i18n('These defaults pre-fill the export modal but can be overridden at export time.')}
                 />
                 {!isEditMode && (
                   <FormButtonContainer>
