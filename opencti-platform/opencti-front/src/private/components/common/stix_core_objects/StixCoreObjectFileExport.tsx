@@ -341,7 +341,17 @@ const StixCoreObjectFileExportComponent = ({
         const fileName = `${values.exportFileName}.pdf`;
         const isFromTemplate = fileId.startsWith('fromTemplate');
         const PDF = isFromTemplate
-          ? await htmlToPdfReport(scoName ?? '', fileData, name, fileMarkingNames, values.fintelDesign?.value)
+          ? await htmlToPdfReport(
+              scoName ?? '',
+              fileData,
+              name,
+              fileMarkingNames,
+              values.fintelDesign?.value,
+              {
+                includeCoverPage: values.includeCoverPage,
+                includeBackPage: values.includeBackPage,
+              },
+            )
           : htmlToPdf(fileId, fileData);
         const blob = await PDF.getBlob();
         uploadFile({

@@ -26,6 +26,7 @@ import * as Yup from 'yup';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import Card from '../../../../components/common/card/Card';
 import SelectField from '../../../../components/fields/SelectField';
+import SwitchField from '../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -57,6 +58,8 @@ export interface StixCoreObjectFileExportFormInputs {
   contentMaxMarkings: FieldOption[];
   fileMarkings: FieldOption[];
   fintelDesign: FintelDesignFieldOption | null;
+  includeCoverPage: boolean;
+  includeBackPage: boolean;
 }
 
 export interface StixCoreObjectFileExportFormProps {
@@ -176,6 +179,8 @@ const StixCoreObjectFileExportForm = ({
     exportFileName: null,
     contentMaxMarkings: [],
     fintelDesign: null,
+    includeCoverPage: true,
+    includeBackPage: true,
     fileMarkings: defaultFileToExport?.fileMarkings.map(({ id, name }) => ({ label: name, value: id }))
       ?? defaultFileMarkings
       ?? [],
@@ -252,6 +257,13 @@ const StixCoreObjectFileExportForm = ({
         useEffect(() => {
           setSelectedContentMaxMarkingsIds((values.contentMaxMarkings ?? []).map(({ value }) => value));
         }, [values.contentMaxMarkings]);
+
+        useEffect(() => {
+          const defaults = values.fintelDesign?.value;
+          if (!defaults) return;
+          setFieldValue('includeCoverPage', defaults.includeCoverPageByDefault ?? true);
+          setFieldValue('includeBackPage', defaults.includeBackPageByDefault ?? true);
+        }, [setFieldValue, values.fintelDesign?.value?.id]);
 
         const shouldDisplayFintelDesign = (
           (values.connector?.value === BUILT_IN_FROM_TEMPLATE.value && values.format === 'application/pdf')
@@ -485,6 +497,27 @@ const StixCoreObjectFileExportForm = ({
                         style={fieldSpacingContainerStyle}
                         setFieldValue={setFieldValue}
                       />
+                      {values.connector.value === BUILT_IN_HTML_TO_PDF.value && (
+                        <>
+                          <Typography variant="h3" sx={{ marginTop: 3 }}>
+                            {t_i18n('Page options')}
+                          </Typography>
+                          <Field
+                            component={SwitchField}
+                            type="checkbox"
+                            name="includeCoverPage"
+                            label={t_i18n('Include cover page')}
+                            containerstyle={{ marginTop: 10 }}
+                          />
+                          <Field
+                            component={SwitchField}
+                            type="checkbox"
+                            name="includeBackPage"
+                            label={t_i18n('Include back page')}
+                            containerstyle={{ marginTop: 10 }}
+                          />
+                        </>
+                      )}
                     </>
                   )}
                 </>

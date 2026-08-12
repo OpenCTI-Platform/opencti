@@ -10004,6 +10004,8 @@ export type FintelDesign = BasicObject & InternalObject & {
   gradiantFromColor?: Maybe<Scalars['String']['output']>;
   gradiantToColor?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
+  includeBackPageByDefault?: Maybe<Scalars['Boolean']['output']>;
+  includeCoverPageByDefault?: Maybe<Scalars['Boolean']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
@@ -10018,6 +10020,8 @@ export type FintelDesignAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   gradiantFromColor?: InputMaybe<Scalars['String']['input']>;
   gradiantToColor?: InputMaybe<Scalars['String']['input']>;
+  includeBackPageByDefault?: InputMaybe<Scalars['Boolean']['input']>;
+  includeCoverPageByDefault?: InputMaybe<Scalars['Boolean']['input']>;
   name: Scalars['String']['input'];
   textColor?: InputMaybe<Scalars['String']['input']>;
 };
@@ -45335,6 +45339,8 @@ export type FintelDesignResolvers<ContextType = any, ParentType extends Resolver
   gradiantFromColor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   gradiantToColor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  includeBackPageByDefault?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  includeCoverPageByDefault?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
