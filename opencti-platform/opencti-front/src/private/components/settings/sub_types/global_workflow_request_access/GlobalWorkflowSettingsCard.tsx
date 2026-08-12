@@ -12,6 +12,7 @@ import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import GlobalWorkflowSettings from './GlobalWorkflowSettings';
 import RequestAccessSettings from './RequestAccessSettings';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
+import useHelper from '../../../../../utils/hooks/useHelper';
 
 const globalWorkflowSettingsCardPatch = graphql`
     mutation GlobalWorkflowSettingsCardPatchMutation(
@@ -30,6 +31,8 @@ const GlobalWorkflowSettingsCard = () => {
 
   const { subType } = useSubTypeOutletContext();
   const isEnterpriseEdition = useEnterpriseEdition();
+  const { isFeatureEnable } = useHelper();
+  const isSyncWorkflowStatusByNameFeatureEnabled = isFeatureEnable('SYNC_WORKFLOW_STATUS_BY_NAME');
   const requestAccessConfiguration = subType.settings.requestAccessConfiguration;
   const [commit] = useApiMutation(globalWorkflowSettingsCardPatch);
 
@@ -57,34 +60,38 @@ const GlobalWorkflowSettingsCard = () => {
               <GlobalWorkflowSettings data={subType} subTypeId={subType.id} workflowEnabled={subType.workflowEnabled ?? false} />
             )
           }
-          <Label action={(
-            <Tooltip
-              title={!isSyncWorkflowStatusByNameAvailable
-                ? t_i18n('This configuration is not available for this entity type')
-                : t_i18n('When enabled, an organization synchronizer maps a remote workflow status onto the local status with the same name and scope, instead of dropping it.')
-              }
-            >
-              <InformationOutline
-                fontSize="small"
-                color="primary"
-              />
-            </Tooltip>
-          )}
-          >
-            {t_i18n('Sync workflow status by name')}
-          </Label>
-          <FormGroup>
-            <FormControlLabel
-              control={(
-                <Switch
-                  disabled={!isSyncWorkflowStatusByNameAvailable}
-                  checked={subType.settings.sync_workflow_status_by_name ?? false}
-                  onChange={handleToggleSyncWorkflowStatusByName}
-                />
+          {isSyncWorkflowStatusByNameFeatureEnabled && (
+            <>
+              <Label action={(
+                <Tooltip
+                  title={!isSyncWorkflowStatusByNameAvailable
+                    ? t_i18n('This configuration is not available for this entity type')
+                    : t_i18n('When enabled, an organization synchronizer maps a remote workflow status onto the local status with the same name and scope, instead of dropping it.')
+                  }
+                >
+                  <InformationOutline
+                    fontSize="small"
+                    color="primary"
+                  />
+                </Tooltip>
               )}
-              label={t_i18n('Sync workflow status by name')}
-            />
-          </FormGroup>
+              >
+                {t_i18n('Sync workflow status by name')}
+              </Label>
+              <FormGroup>
+                <FormControlLabel
+                  control={(
+                    <Switch
+                      disabled={!isSyncWorkflowStatusByNameAvailable}
+                      checked={subType.settings.sync_workflow_status_by_name ?? false}
+                      onChange={handleToggleSyncWorkflowStatusByName}
+                    />
+                  )}
+                  label={t_i18n('Sync workflow status by name')}
+                />
+              </FormGroup>
+            </>
+          )}
         </Grid>
         {hasRequestAccessConfig && requestAccessConfiguration && (
           <>

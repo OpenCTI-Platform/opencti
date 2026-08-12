@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme, ThemeOptions } from '@mui/material/styles';
 import GlobalWorkflowSettingsCard from './GlobalWorkflowSettingsCard';
@@ -37,6 +37,11 @@ vi.mock('../../../../../utils/hooks/useEnterpriseEdition', () => ({
   default: vi.fn(),
 }));
 
+const mockIsFeatureEnable = vi.fn();
+vi.mock('../../../../../utils/hooks/useHelper', () => ({
+  default: () => ({ isFeatureEnable: mockIsFeatureEnable }),
+}));
+
 const mockCommit = vi.fn();
 vi.mock('../../../../../utils/hooks/useApiMutation', () => ({
   default: () => [mockCommit],
@@ -62,8 +67,14 @@ const makeSubType = (availableSettings: string[], syncWorkflowStatusByName = fal
 });
 
 describe('GlobalWorkflowSettingsCard', () => {
+  beforeEach(() => {
+    // Feature flag enabled by default; overridden in the dedicated disabled-flag test.
+    mockIsFeatureEnable.mockReturnValue(true);
+  });
+
   afterEach(() => {
     mockCommit.mockReset();
+    mockIsFeatureEnable.mockReset();
   });
 
   it('renders request access settings when request_access_workflow is available', () => {
@@ -133,5 +144,18 @@ describe('GlobalWorkflowSettingsCard', () => {
         input: { key: 'sync_workflow_status_by_name', value: 'true' },
       },
     });
+  });
+
+  it('does not render the sync workflow status by name switch when the feature flag is disabled', () => {
+    mockIsFeatureEnable.mockReturnValue(false);
+    vi.mocked(useEnterpriseEdition).mockReturnValue(false);
+    vi.mocked(useSubTypeOutletContext).mockReturnValue({
+      subType: makeSubType(['workflow_configuration', 'sync_workflow_status_by_name'], true),
+    } as never);
+
+    renderWithTheme(<GlobalWorkflowSettingsCard />);
+
+    expect(screen.queryByText('Sync workflow status by name')).not.toBeInTheDocument();
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
   });
 });

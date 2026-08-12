@@ -3,6 +3,7 @@ import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 
 const mockResolveSyncedWorkflowId = vi.fn();
 const mockGetEntitySettingFromCache = vi.fn();
+const mockIsFeatureEnabled = vi.fn();
 
 // Mock every non-trivial dependency of syncManager.js so the module can be imported in isolation.
 vi.mock('../../../src/config/conf', async (importOriginal) => {
@@ -10,6 +11,7 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
   return {
     ...actual,
     logApp: { info: vi.fn(), debug: vi.fn(), warn: vi.fn(), error: vi.fn() },
+    isFeatureEnabled: (...args: unknown[]) => mockIsFeatureEnabled(...args),
   };
 });
 vi.mock('../../../src/domain/connector-sync-crypto', () => ({
@@ -72,13 +74,15 @@ const buildRemoteData = (extensionOverrides: Record<string, unknown>) => ({
 
 describe('syncManager transformDataWithReverseIdAndFilesData - workflow status remap', () => {
   beforeEach(() => {
-    // Opt-in toggle enabled by default for existing tests; overridden per-test where needed.
+    // Opt-in toggle and feature flag enabled by default for existing tests; overridden per-test where needed.
     mockGetEntitySettingFromCache.mockResolvedValue({ sync_workflow_status_by_name: true });
+    mockIsFeatureEnabled.mockReturnValue(true);
   });
 
   afterEach(() => {
     mockResolveSyncedWorkflowId.mockReset();
     mockGetEntitySettingFromCache.mockReset();
+    mockIsFeatureEnabled.mockReset();
   });
 
   it('should remap the remote workflow status to the local id when a match is found', async () => {
@@ -154,5 +158,22 @@ describe('syncManager transformDataWithReverseIdAndFilesData - workflow status r
 
     expect(mockResolveSyncedWorkflowId).not.toHaveBeenCalled();
     expect(data.extensions[STIX_EXT_OCTI].workflow_id).toBeUndefined();
+  });
+
+  it('should not attempt resolution when the feature flag is disabled, even if the entity type has opted in', async () => {
+    mockIsFeatureEnabled.mockReturnValue(false);
+    const { transformDataWithReverseIdAndFilesData } = await import('../../../src/manager/syncManager');
+
+    const remoteData = buildRemoteData({
+      workflow_id: 'remote-status-id',
+      workflow_status_name: 'IN_PROGRESS',
+      workflow_status_scope: 'Global',
+    });
+    const { data } = await transformDataWithReverseIdAndFilesData({ uri: 'http://remote' }, {}, remoteData, {});
+
+    expect(mockResolveSyncedWorkflowId).not.toHaveBeenCalled();
+    expect(data.extensions[STIX_EXT_OCTI].workflow_id).toBeUndefined();
+    expect(data.extensions[STIX_EXT_OCTI].workflow_status_name).toBeUndefined();
+    expect(data.extensions[STIX_EXT_OCTI].workflow_status_scope).toBeUndefined();
   });
 });
