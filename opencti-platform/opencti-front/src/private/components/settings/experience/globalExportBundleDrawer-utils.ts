@@ -48,6 +48,18 @@ export const EXPORT_CATEGORIES: GlobalExportBundleCategory[] = [
     label: 'Fintel Templates',
     kind: 'flat',
   },
+  {
+    key: 'Settings',
+    label: 'Platform Settings',
+    kind: 'children',
+    items: [
+      { key: 'SettingsBranding', label: 'Branding' },
+      { key: 'SettingsTheme', label: 'Theme (colors, logos)' },
+      { key: 'SettingsLanguage', label: 'Language & translations' },
+      { key: 'SettingsMessages', label: 'Messages (banner, login, consent)' },
+      { key: 'SettingsHiddenEntityTypes', label: 'Hidden entity types' },
+    ],
+  },
 ];
 
 export const getDefaultCheckedCategoryItems = (): Record<string, string[]> => {
