@@ -630,25 +630,24 @@ inside the field and the magnifier tints with NLQ on.
 
 ---
 
-## 21. A clickable `Chip` renders a `<button>`, so it cannot sit inside one
+## 21. The bar's EE marker is decorative — a recorded decision, not a gap
 
-**Needed.** The bar's "EE" marker is inside the "Ask Ariane" button, and
-clicking it used to open the enterprise-edition dialog instead of the button's
-own action.
+**Decision (Sandy, 2026-08-12).** In the top bar the "EE" marker is information,
+not a control: the surrounding "Ask Ariane" button owns the click and opens the
+dialog, and the chip only signals that the feature belongs to the enterprise
+pack. It is therefore rendered without `onClick`.
 
-**Today.** `Chip` renders a `<button>` as soon as `onClick` is present. Nesting
-that inside the surrounding button is invalid.
+**Why it is also the only valid shape here.** `Chip` renders a `<button>` as
+soon as `onClick` is present, and nesting that inside the Ask Ariane button
+would be invalid. The decision and the constraint agree, so nothing is being
+worked around.
 
-**Consequence.** The bar's chip is rendered decorative: `<Chip label="EE"
-tone="tonic" />` with no `onClick`, so the click now falls through to the Ask
-Ariane button. The dialog stays reachable from the 26 other `EEChip` sites,
-which keep the legacy marker.
+**Elsewhere.** The 26 other `EEChip` call sites keep the legacy marker and its
+click, which opens the enterprise-edition dialog. Converting them is its own
+change.
 
-**Ask.** A non-button clickable affordance, or a documented way to keep the
-chip's own activation inside an interactive ancestor.
-
-**Removal test.** Pass the handler; the chip must open the dialog without
-nesting interactive elements.
+**Pending.** The library is replacing the `tone` axis with `severity="ee"` and a
+new visual. At the next pin bump, switch the word and re-checkpoint the bar.
 
 ---
 

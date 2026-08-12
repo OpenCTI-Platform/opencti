@@ -557,6 +557,19 @@ The bar still shows two blues: library controls resolve
 #0fbcff. Fixed by a sister pull request that migrates the built-in theme rows,
 so this pilot stays front-only.
 
+### Pending at the next pin bump
+
+The library is replacing `Chip`'s `tone` axis with `severity="ee"` and a new
+visual (Figma node 2752:19169, EE row: opaque `--color-filigran-tonic-primary`
+fill, `--text-negative-primary` label, `content-compact-bold`). At the next
+bump, switch `tone="tonic"` to the new word in `EEChip.tsx` and re-checkpoint
+the bar. The bar's marker stays decorative — a recorded decision, see
+LIBRARY-FEEDBACK.md entry 21.
+
+`ProductSwitcher` still clips product names: library PR #107 gave the rail's
+labels an ellipsis and a tooltip but does not touch the switcher, so entry 23
+remains open.
+
 ### Verification
 
 Step 5b, against the library's documentation site at the same pin: 12 properties

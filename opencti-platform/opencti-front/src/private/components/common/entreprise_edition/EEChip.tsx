@@ -68,7 +68,7 @@ const EEChip = React.forwardRef<HTMLDivElement, EEChipProps>((
   return (!isEnterpriseEdition && (
     <>
       {libraryChip ? (
-        // FDS-WORKAROUND #21: decorative only, a clickable Chip renders a nested <button> — see fds-migration/LIBRARY-FEEDBACK.md #21
+        // Decorative by design: the surrounding button owns the click — see fds-migration/LIBRARY-FEEDBACK.md #21
         <Chip label="EE" tone="tonic" />
       ) : (
         <div
