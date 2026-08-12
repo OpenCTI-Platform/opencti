@@ -59,6 +59,16 @@ export const narrativeFragment = graphql`
         color
       }
     }
+    workflowInstance {
+      id
+      currentStatus {
+        template {
+          id
+          name
+          color
+        }
+      }
+    }
     workflowEnabled
     ...NarrativeDetails_narrative
   }

@@ -12,6 +12,7 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { truncate } from '../../../utils/String';
 import { useFormatter } from '../../../components/i18n';
 import { useComputeLink } from '../../../utils/hooks/useAppData';
+import useAuth from '../../../utils/hooks/useAuth';
 
 const draftSightingsLineFragment = graphql`
     fragment DraftSightings_node on StixSightingRelationship {
@@ -50,6 +51,16 @@ const draftSightingsLineFragment = graphql`
             }
         }
         workflowEnabled
+        workflowInstance {
+          id
+          currentStatus {
+            template {
+              id
+              name
+              color
+            }
+          }
+        }
         is_inferred
         x_opencti_inferences {
             rule {
@@ -289,6 +300,8 @@ const DraftSightings: FunctionComponent<DraftSightingsProps> = ({ isReadOnly }) 
   const { draftId } = useParams() as { draftId: string };
   const { t_i18n } = useFormatter();
   const computeLink = useComputeLink();
+  const { platformModuleHelpers: { isFeatureEnable } } = useAuth();
+  const isWorkflowInstanceEnabled = isFeatureEnable('ENTITIES_WORKFLOW');
 
   const initialValues = {
     filters: {
@@ -364,7 +377,7 @@ const DraftSightings: FunctionComponent<DraftSightingsProps> = ({ isReadOnly }) 
     first_seen: { percentWidth: 12 },
     last_seen: { percentWidth: 12 },
     confidence: { percentWidth: 10 },
-    x_opencti_workflow_id: { percentWidth: 8 },
+    ...(isWorkflowInstanceEnabled ? { workflowInstance: { percentWidth: 8 } } : { x_opencti_workflow_id: { percentWidth: 8 } }),
   };
 
   const preloadedPaginationProps = {
