@@ -673,21 +673,24 @@ same item with the keyboard: ring present.
 
 ---
 
-## 23. `ProductSwitcher` truncates product names at its own default width
+## 23. ~~`ProductSwitcher` truncates product names~~ — WITHDRAWN, it was ours
 
-**Found at pin `5960966`.** Reported from the running product.
+**Filed in error, 2026-08-12.** This entry blamed the library's panel geometry.
+It was the product: `NavBar.tsx` passed `width={126}` — the trigger slot's width
+— to the two *option* logos, whose slot is 100px. The images overflowed their
+slot by 26px and were clipped, which read as truncated wording.
 
-**What happens.** The panel is 200px (`min-width: 200px`, `max-width: 300px`,
-`width: 200px`). Each row puts a `shrink-0` logo slot of 100px first and a 16px
-trailing icon last, leaving 36px for the "OpenAEV" label and 60px for
-"XTM Hub". The label span is `overflow: visible`, so the text spills rather
-than ellipsising — on screen it reads "OpenA", "XTM H".
+**Fixed product-side**, on the OpenAEV pilot's own model
+(`LeftBarHeader.tsx`): `style={{ width: '100%', height: 'auto', objectFit:
+'contain' }}`. Measured in the running product — before: both logos 126px in a
+100px slot, 26px overflow, clipped. After: both 100px in a 100px slot, no
+overflow, aspect preserved, "OpenAEV" and "XTM Hub" fully legible.
 
-**Scope.** Entirely library geometry; the product passes no width and no label
-styling.
+The trigger's own logo keeps `width={126}`: its slot is that wide, and it is
+correct.
 
-**Ask.** Let the logo slot shrink, or widen the default panel, or ellipsise the
-label — but the 100px logo against a 200px panel cannot hold a product name.
-
-**Removal test.** Open the switcher: every product name is fully readable, or
-truncated with an ellipsis rather than clipped mid-word.
+**Lesson for the next entry.** The measurement that misled me was reading the
+label span's width and the `shrink-0` logo slot, and concluding the library
+sized them wrongly. It did not: the product oversized the image inside them. A
+gap should be filed against the library only after checking what the product
+passes in.
