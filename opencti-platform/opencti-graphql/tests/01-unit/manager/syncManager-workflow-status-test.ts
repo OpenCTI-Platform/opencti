@@ -160,6 +160,21 @@ describe('syncManager transformDataWithReverseIdAndFilesData - workflow status r
     expect(data.extensions[STIX_EXT_OCTI].workflow_id).toBeUndefined();
   });
 
+  it('should not attempt resolution when the entity setting is undefined', async () => {
+    mockGetEntitySettingFromCache.mockResolvedValue({});
+    const { transformDataWithReverseIdAndFilesData } = await import('../../../src/manager/syncManager');
+
+    const remoteData = buildRemoteData({
+      workflow_id: 'remote-status-id',
+      workflow_status_name: 'IN_PROGRESS',
+      workflow_status_scope: 'Global',
+    });
+    const { data } = await transformDataWithReverseIdAndFilesData({ uri: 'http://remote' }, {}, remoteData, {});
+
+    expect(mockResolveSyncedWorkflowId).not.toHaveBeenCalled();
+    expect(data.extensions[STIX_EXT_OCTI].workflow_id).toBeUndefined();
+  });
+
   it('should not attempt resolution when the feature flag is disabled, even if the entity type has opted in', async () => {
     mockIsFeatureEnabled.mockReturnValue(false);
     const { transformDataWithReverseIdAndFilesData } = await import('../../../src/manager/syncManager');

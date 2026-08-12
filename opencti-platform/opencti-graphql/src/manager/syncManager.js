@@ -120,7 +120,7 @@ export const transformDataWithReverseIdAndFilesData = async (sync, httpClient, d
   if (remoteWorkflowId) {
     // Opt-in per entity type, gated behind the feature flag while the capability is still experimental
     const entitySetting = await getEntitySettingFromCache(executionContext('sync_manager'), octiExtension.type);
-    const localWorkflowId = isFeatureEnabled(SYNC_WORKFLOW_STATUS_BY_NAME_FEATURE_FLAG) && entitySetting?.sync_workflow_status_by_name
+    const localWorkflowId = isFeatureEnabled(SYNC_WORKFLOW_STATUS_BY_NAME_FEATURE_FLAG) && (entitySetting?.sync_workflow_status_by_name ?? false)
       ? await resolveSyncedWorkflowId(executionContext('sync_manager'), SYSTEM_USER, octiExtension.type, remoteWorkflowStatusScope, remoteWorkflowStatusName)
       : undefined;
     if (localWorkflowId) {
