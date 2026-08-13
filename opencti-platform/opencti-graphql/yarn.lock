@@ -4830,10 +4830,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"agent-base@npm:^7.1.0, agent-base@npm:^7.1.2, agent-base@npm:^7.1.4":
+"agent-base@npm:^7.1.0, agent-base@npm:^7.1.2":
   version: 7.1.4
   resolution: "agent-base@npm:7.1.4"
   checksum: 10c0/c2c9ab7599692d594b6a161559ada307b7a624fa4c7b03e3afdb5a5e31cd0e53269115b620fcab024c5ac6a6f37fa5eb2e004f076ad30f5f7e6b8b671f7b35fe
+  languageName: node
+  linkType: hard
+
+"agent-base@npm:^9.0.0":
+  version: 9.0.0
+  resolution: "agent-base@npm:9.0.0"
+  checksum: 10c0/0274cd9a2a0ee78e3fbe0e80e7e0c41df27102466f7f7b3a67c045bb4c00fc517ce0496de3045b55f5eeec1a0e77d9d0a9b9320b0362bfe61e0c9e6d7ebaee76
   languageName: node
   linkType: hard
 
@@ -5250,27 +5257,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios-cookiejar-support@npm:6.0.5":
-  version: 6.0.5
-  resolution: "axios-cookiejar-support@npm:6.0.5"
+"axios-cookiejar-support@npm:7.0.0":
+  version: 7.0.0
+  resolution: "axios-cookiejar-support@npm:7.0.0"
   dependencies:
-    http-cookie-agent: "npm:^7.0.3"
+    http-cookie-agent: "npm:^8.0.0"
   peerDependencies:
     axios: ">=0.20.0"
     tough-cookie: ">=4.0.0"
-  checksum: 10c0/e493c5423de79fd7cf5d8ad97e1506b06fcc9f36a6bf6e0060663015cb2a7e6458440b6300106d79ab2a6cc4845f5c0948957ea0e76057a3b9aeb1e9758ce7e0
+  checksum: 10c0/67c2ecd417adf0979dc0921a7199a9623810951bba007eb769dcb2ded54e9d95da92c979fba2d543b33089a3d9e96ea7070647497185b75001659891bc19675b
   languageName: node
   linkType: hard
 
-"axios@npm:1.16.1":
-  version: 1.16.1
-  resolution: "axios@npm:1.16.1"
+"axios@npm:1.19.0":
+  version: 1.19.0
+  resolution: "axios@npm:1.19.0"
   dependencies:
     follow-redirects: "npm:^1.16.0"
-    form-data: "npm:^4.0.5"
+    form-data: "npm:^4.0.6"
     https-proxy-agent: "npm:^5.0.1"
     proxy-from-env: "npm:^2.1.0"
-  checksum: 10c0/2f77e37e6552bbff8a772d058fb09500198e9188c6b20dc799d82dbe12a8cb506f6eed4e4e62a9ba612a35cbab496faa26d68f9bff14a53af6d15c3e136391a7
+  checksum: 10c0/559fe7d51291787def61566a3db78b87510c8faf9c8a8c006d9d8b933808628ff0d8eca7756b40ae25e07da96d946c68c1ffba3da9075ed0b5d3661801d76869
   languageName: node
   linkType: hard
 
@@ -7466,7 +7473,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"form-data@npm:^4.0.4, form-data@npm:^4.0.5":
+"form-data@npm:^4.0.4, form-data@npm:^4.0.6":
   version: 4.0.6
   resolution: "form-data@npm:4.0.6"
   dependencies:
@@ -8062,18 +8069,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"http-cookie-agent@npm:^7.0.3":
-  version: 7.0.3
-  resolution: "http-cookie-agent@npm:7.0.3"
+"http-cookie-agent@npm:^8.0.0":
+  version: 8.0.0
+  resolution: "http-cookie-agent@npm:8.0.0"
   dependencies:
-    agent-base: "npm:^7.1.4"
+    agent-base: "npm:^9.0.0"
   peerDependencies:
     tough-cookie: ^4.0.0 || ^5.0.0 || ^6.0.0
-    undici: ^7.0.0
+    undici: ^7.0.0 || ^8.0.0
   peerDependenciesMeta:
     undici:
       optional: true
-  checksum: 10c0/da77c932cfa0868769159557e5c0a827e76db21c4533d423f6e8db67ac63cca756ddee8fa2c1a172b150241eda5ee92764662d20a932efb344b204270aa7f11b
+  checksum: 10c0/6af0d7e41cccf173e9399844956e3491676d9803bbb3a47a7fe5bd6c4ed29d1ae4aa24609a2c819d3928c86a28e774ec8aeac604bf928ef6af9c36ba21582b97
   languageName: node
   linkType: hard
 
@@ -10230,7 +10237,7 @@ __metadata:
     async-lock: "npm:1.4.1"
     aws-sdk-v3-proxy: "npm:2.2.0"
     axios: "npm:1.19.0"
-    axios-cookiejar-support: "npm:6.0.5"
+    axios-cookiejar-support: "npm:7.0.0"
     bcryptjs: "npm:3.0.3"
     bluebird: "npm:3.7.2"
     body-parser: "npm:2.2.2"
