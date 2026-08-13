@@ -2770,6 +2770,7 @@
   "Live streams": "ライブストリーム",
   "Live Streams | Data Sharing | Data": "ライブストリーム｜データ共有｜データ",
   "Live trigger": "ライブトリガー",
+  "Loading agents...": "エージェントを読み込み中...",
   "Loading current message count...": "現在のメッセージ数をロード中...",
   "Local": "ローカル",
   "Local authentication cannot be changed when authentication is managed by environment configuration": "認証が環境設定で管理されている場合、ローカル認証は変更できない",

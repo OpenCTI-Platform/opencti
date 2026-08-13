@@ -2770,6 +2770,7 @@
   "Live streams": "실시간 스트림",
   "Live Streams | Data Sharing | Data": "실시간 스트림 | 데이터 공유 | 데이터",
   "Live trigger": "실시간 트리거",
+  "Loading agents...": "에이전트를 불러오는 중...",
   "Loading current message count...": "현재 메시지 수 로드 중...",
   "Local": "로컬",
   "Local authentication cannot be changed when authentication is managed by environment configuration": "환경 구성으로 인증이 관리되는 경우 로컬 인증을 변경할 수 없습니다",

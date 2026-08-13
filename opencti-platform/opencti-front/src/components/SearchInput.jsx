@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import TextField from '@mui/material/TextField';
-import { SearchField } from '@filigran/design-system';
+import { SearchField, Spinner } from '@filigran/design-system';
 import { ManageSearchOutlined, Search, TuneOutlined, KeyboardArrowDownOutlined } from '@mui/icons-material';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import { useNavigate } from 'react-router-dom';
@@ -13,7 +13,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import CircularProgress from '@mui/material/CircularProgress';
 import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
 import useEnterpriseEdition from '../utils/hooks/useEnterpriseEdition';
@@ -567,7 +566,9 @@ const SearchInput = (props) => {
           {nlqAgentsLoading && (
             <MenuItem disabled>
               <ListItemIcon>
-                <CircularProgress size={18} />
+                {/* The only thing saying the agents are loading — this row has
+                    no visible text, so the spinner carries the message. */}
+                <Spinner size="sm" label={t_i18n('Loading agents...')} />
               </ListItemIcon>
             </MenuItem>
           )}

@@ -2770,6 +2770,7 @@
   "Live streams": "Publicación en vivo",
   "Live Streams | Data Sharing | Data": "Transmisiones en directo | Intercambio de datos | Datos",
   "Live trigger": "Disparador en vivo",
+  "Loading agents...": "Cargando agentes...",
   "Loading current message count...": "Cargando recuento de mensajes actual...",
   "Local": "Local",
   "Local authentication cannot be changed when authentication is managed by environment configuration": "La autenticación local no se puede cambiar cuando la autenticación se gestiona mediante la configuración del entorno",
