@@ -5,6 +5,8 @@ import { loadEntity } from '../../../src/database/middleware';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
 import { FilterMode } from '../../../src/generated/graphql';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import { findByType } from '../../../src/domain/status';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 
 // Directly query the store for the WorkflowInstance attached to an entity,
 // mirroring the lookup used internally by workflow-domain.ts.
@@ -739,6 +741,86 @@ describe('Workflow Resolver', () => {
       it('should eagerly materialize a real WorkflowInstance as soon as the relationship is created', async () => {
         const instance = await findWorkflowInstance(eagerRelationId);
         expect(instance).not.toBeNull();
+      });
+    });
+
+    describe('on legacy status field patch (updateAttribute)', () => {
+      const STIX_DOMAIN_OBJECT_ADD_MUTATION = gql`
+        mutation StixDomainObjectAdd($input: StixDomainObjectAddInput!) {
+          stixDomainObjectAdd(input: $input) {
+            id
+          }
+        }
+      `;
+      const STIX_DOMAIN_OBJECT_FIELD_PATCH_MUTATION = gql`
+        mutation StixDomainObjectFieldPatch($id: ID!, $input: [EditInput]!) {
+          stixDomainObjectEdit(id: $id) {
+            fieldPatch(input: $input) {
+              id
+            }
+          }
+        }
+      `;
+      const STIX_DOMAIN_OBJECT_DELETE_MUTATION = gql`
+        mutation StixDomainObjectDelete($id: ID!) {
+          stixDomainObjectEdit(id: $id) {
+            delete
+          }
+        }
+      `;
+
+      let reportId: string;
+      let secondStatusId: string;
+
+      beforeAll(async () => {
+        // Create the Report *before* any workflow is configured for this type, so
+        // createEntity's eager initializeEntityWorkflow call is a no-op (no instance yet).
+        const createResult = await queryAsAdmin({
+          query: STIX_DOMAIN_OBJECT_ADD_MUTATION,
+          variables: { input: { name: 'Legacy Status Patch Test Report', type: 'Report' } },
+        });
+        reportId = createResult.data?.stixDomainObjectAdd.id;
+
+        // Configure and publish the workflow *after* creation so that the entity
+        // currently has no WorkflowInstance, letting us exercise the lazy path.
+        await queryAsAdmin({
+          query: WORKFLOW_DEFINITION_ADD_MUTATION,
+          variables: { entityType: 'Report', definition: simpleWorkflowDefinition },
+        });
+        await queryAsAdmin({
+          query: WORKFLOW_DEFINITION_PUBLISH_MUTATION,
+          variables: { entityType: 'Report' },
+        });
+
+        const statuses = await findByType(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT);
+        secondStatusId = statuses[1].id;
+      });
+
+      afterAll(async () => {
+        await queryAsAdmin({
+          query: STIX_DOMAIN_OBJECT_DELETE_MUTATION,
+          variables: { id: reportId },
+        });
+        await queryAsAdmin({
+          query: WORKFLOW_DEFINITION_DELETE_MUTATION,
+          variables: { entityType: 'Report' },
+        });
+      });
+
+      it('should lazily materialize a real WorkflowInstance when the legacy x_opencti_workflow_id is patched', async () => {
+        // No instance should exist yet: the workflow was configured after entity creation.
+        const beforePatch = await findWorkflowInstance(reportId);
+        expect(beforePatch).toBeNull();
+
+        await queryAsAdmin({
+          query: STIX_DOMAIN_OBJECT_FIELD_PATCH_MUTATION,
+          variables: { id: reportId, input: { key: 'x_opencti_workflow_id', value: [secondStatusId] } },
+        });
+
+        // Patching the legacy status field should have lazily triggered initializeEntityWorkflow,
+        // which in turn calls ensureWorkflowInstance since no instance existed for this entity yet.
+        const afterPatch = await findWorkflowInstance(reportId);
+        expect(afterPatch).not.toBeNull();
       });
     });
   });
