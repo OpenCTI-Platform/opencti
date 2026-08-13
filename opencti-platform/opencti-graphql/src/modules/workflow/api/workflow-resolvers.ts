@@ -121,7 +121,7 @@ const workflowResolvers = {
   },
   EntitySetting: {
     workflow_published_version_id: (entitySetting: any, _: any, context: AuthContext) => {
-      return getWorkflowPublishedVersionId(context, entitySetting);
+      return getWorkflowPublishedVersionId(context, context.user!, entitySetting);
     },
   },
   DraftWorkspace: {
