@@ -565,14 +565,13 @@ describe('Provider coverage', () => {
         },
       };
 
-      const reqContext: AuthContext = {
+      const reqContext = {
         otp_mandatory: false,
         req: request as Express.Request,
         source: '',
-        tracing: undefined,
         user: undefined,
         user_inside_platform_organization: false,
-      };
+      } as AuthContext;
       return reqContext;
     };
 

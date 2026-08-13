@@ -12,7 +12,7 @@ config/*.json.bak
 coverage
 test-results
 logs
-telemetry
+/telemetry
 .support
 graphql.schema.json
 __pycache__

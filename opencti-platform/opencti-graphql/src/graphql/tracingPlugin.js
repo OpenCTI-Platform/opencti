@@ -1,5 +1,6 @@
 import { head, includes } from 'ramda';
-import { SEMATTRS_DB_OPERATION, SEMATTRS_ENDUSER_ID, SEMATTRS_MESSAGING_MESSAGE_PAYLOAD_COMPRESSED_SIZE_BYTES } from '@opentelemetry/semantic-conventions';
+import { ATTR_DB_OPERATION_NAME, SEMATTRS_DB_OPERATION, SEMATTRS_MESSAGING_MESSAGE_PAYLOAD_COMPRESSED_SIZE_BYTES } from '@opentelemetry/semantic-conventions';
+import { ATTR_ENDUSER_ID, ATTR_MESSAGING_MESSAGE_BODY_SIZE } from '../telemetry/semantic-conventions';
 import { AUTH_FAILURE, AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../config/errors';
 import { isEmptyField } from '../database/utils';
 
@@ -30,8 +31,10 @@ export default {
         tracingSpan = context.tracing.getTracer().startSpan(`${operationType} ${resolveContext.operationName}`, {
           attributes: {
             'enduser.type': context.source,
+            [ATTR_DB_OPERATION_NAME]: operationType,
+            // Deprecated attribute to be removed when transition done
             [SEMATTRS_DB_OPERATION]: operationType,
-            [SEMATTRS_ENDUSER_ID]: endUserId,
+            [ATTR_ENDUSER_ID]: endUserId,
           },
           kind: 1,
         });
@@ -41,6 +44,8 @@ export default {
         if (tracingSpan) { // Tracing span can be null for invalid operations
           const requestError = getRequestError(sendContext);
           const payloadSize = Buffer.byteLength(JSON.stringify(sendContext.request.variables || {}));
+          tracingSpan.setAttribute(ATTR_MESSAGING_MESSAGE_BODY_SIZE, payloadSize);
+          // Deprecated attribute to be removed when transition done
           tracingSpan.setAttribute(SEMATTRS_MESSAGING_MESSAGE_PAYLOAD_COMPRESSED_SIZE_BYTES, payloadSize);
           if (requestError) {
             tracingSpan.setStatus({ code: 2, message: requestError.name });

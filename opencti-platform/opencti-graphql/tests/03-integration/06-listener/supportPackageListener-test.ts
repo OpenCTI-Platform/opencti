@@ -7,13 +7,12 @@ import type { BasicStoreEntityDecayRule } from '../../../src/modules/decayRule/d
 import { PackageStatus } from '../../../src/generated/graphql';
 import { onSupportPackageMessage } from '../../../src/modules/support/supportPackage-listener';
 
-const adminContext: AuthContext = {
+const adminContext = {
   user: ADMIN_USER,
-  tracing: undefined,
   source: 'supportPackageListener-test',
   otp_mandatory: false,
   user_inside_platform_organization: false,
-};
+} as AuthContext;
 describe('SupportPackage listener standard behavior', () => {
   it('should support package event update node status', async () => {
     const supportPackage = await prepareNewSupportPackage(adminContext, ADMIN_USER, { name: 'test listener support package' });
