@@ -54,6 +54,143 @@ describe('RSS ingestion resolver standard behavior', () => {
       `,
       variables: INGESTER_TO_CREATE,
     });
+
+    describe('RSS ingestion resolver — ingestion logs', () => {
+      let rssLogsIngestionId: string;
+      const rssLogsIngestionName = 'Rss logs resolver test';
+
+      it('should create a RSS ingestion for logs tests', async () => {
+        const result = await queryAsAdminWithSuccess({
+          query: gql`
+            mutation createRssIngesterForLogs($input: IngestionRssAddInput!) {
+              ingestionRssAdd(input: $input) {
+                id
+                name
+              }
+            }
+          `,
+          variables: {
+            input: {
+              name: rssLogsIngestionName,
+              uri: 'http://rss-feed.invalid/logs-feed.xml',
+              user_id: ADMIN_USER.id,
+              scheduling_period: 'PT1H',
+              ingestion_running: false,
+            },
+          },
+        });
+        rssLogsIngestionId = result.data?.ingestionRssAdd.id;
+        expect(rssLogsIngestionId).toBeDefined();
+      });
+
+      it('should resolve logs from ingestionRssLogs query and ingestionLogs field', async () => {
+        await redisDeleteIngestionLogHistory(rssLogsIngestionId);
+        await redisPushIngestionLog(rssLogsIngestionId, {
+          level: 'info',
+          type: 'rss',
+          identifier: rssLogsIngestionName,
+          message: 'info-log',
+          meta: { step: 1 },
+        });
+        await redisPushIngestionLog(rssLogsIngestionId, {
+          level: 'success',
+          type: 'rss',
+          identifier: rssLogsIngestionName,
+          message: 'success-log',
+          meta: { step: 2 },
+        });
+        await redisPushIngestionLog(rssLogsIngestionId, {
+          level: 'warn',
+          type: 'rss',
+          identifier: rssLogsIngestionName,
+          message: 'warn-log',
+          meta: { step: 3 },
+        });
+        await redisPushIngestionLog(rssLogsIngestionId, {
+          level: 'error',
+          type: 'rss',
+          identifier: rssLogsIngestionName,
+          message: 'error-log',
+          meta: { step: 4 },
+        });
+
+        const queryLogsResult = await queryAsAdminWithSuccess({
+          query: gql`
+            query readRssLogs($id: String!) {
+              ingestionRssLogs(id: $id) {
+                level
+                message
+                type
+                identifier
+                meta
+              }
+            }
+          `,
+          variables: { id: rssLogsIngestionId },
+        });
+        expect(queryLogsResult.data?.ingestionRssLogs).toHaveLength(4);
+        expect(queryLogsResult.data?.ingestionRssLogs.map((l: { level: string }) => l.level)).toEqual(['error', 'warn', 'success', 'info']);
+        expect(queryLogsResult.data?.ingestionRssLogs[0].message).toBe('error-log');
+
+        const fieldLogsResult = await queryAsAdminWithSuccess({
+          query: gql`
+            query readRssLogsField($id: String!) {
+              ingestionRss(id: $id) {
+                id
+                ingestionLogs {
+                  level
+                  message
+                }
+              }
+            }
+          `,
+          variables: { id: rssLogsIngestionId },
+        });
+        expect(fieldLogsResult.data?.ingestionRss.ingestionLogs).toHaveLength(4);
+        expect(fieldLogsResult.data?.ingestionRss.ingestionLogs.map((l: { level: string }) => l.level)).toEqual(['error', 'warn', 'success', 'info']);
+      });
+
+      it('should fail when encountering an unknown log level', async () => {
+        await redisDeleteIngestionLogHistory(rssLogsIngestionId);
+        await getClientBase().lpush(`ingestion-log-${rssLogsIngestionId}-history`, JSON.stringify({
+          timestamp: new Date().toISOString(),
+          level: 'unknown_level',
+          type: 'rss',
+          identifier: rssLogsIngestionName,
+          message: 'bad-level',
+          meta: {},
+        }));
+
+        const result = await queryAsAdmin({
+          query: gql`
+            query readRssLogsWithBadLevel($id: String!) {
+              ingestionRssLogs(id: $id) {
+                level
+                message
+              }
+            }
+          `,
+          variables: { id: rssLogsIngestionId },
+        });
+        expect(result.errors).toBeDefined();
+        if (result.errors) {
+          expect(result.errors[0].message).toContain('Unknown ingestion log level');
+        }
+      });
+
+      it('should delete the RSS ingestion used for logs tests', async () => {
+        await redisDeleteIngestionLogHistory(rssLogsIngestionId);
+        const result = await queryAsAdminWithSuccess({
+          query: gql`
+            mutation deleteRssIngesterForLogs($id: ID!) {
+              ingestionRssDelete(id: $id)
+            }
+          `,
+          variables: { id: rssLogsIngestionId },
+        });
+        expect(result.data?.ingestionRssDelete).toEqual(rssLogsIngestionId);
+      });
+    });
     expect(ingesterQueryResult.data?.ingestionRssAdd.id).toBeDefined();
     expect(ingesterQueryResult.data?.ingestionRssAdd.name).toBe('RSS ingester for integration test');
     expect(ingesterQueryResult.data?.ingestionRssAdd.uri).toBe('http://rss-feed.invalid/feed.xml');
