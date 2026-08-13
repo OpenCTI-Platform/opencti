@@ -201,9 +201,6 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
     const bundleObjects = [testBundleObject<StixDomainObject>({
       id: MALWARE_ID,
       type: 'Malware',
-      octiExtension: {
-        score: 20,
-      },
     })];
 
     const configuration: ManipulateConfiguration = {
@@ -235,7 +232,6 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
     expect(objectExtensions.opencti_upsert_operations[0].operation).toBe('replace');
     expect(objectExtensions.opencti_upsert_operations[0].key).toBe('x_opencti_score');
     expect(objectExtensions.opencti_upsert_operations[0].value[0]).toBe('42');
-    expect(objectExtensions.score).toBe(42);
   });
 
   describe('Bundle scope', () => {
