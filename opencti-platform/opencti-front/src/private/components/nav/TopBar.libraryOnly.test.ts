@@ -166,9 +166,32 @@ describe('the admin top bar is built from library components', () => {
 
   it('takes the bar controls from the library', () => {
     const bar = SOURCES.get('src/private/components/nav/TopBar.tsx') as string;
-    for (const symbol of ['Header', 'HeaderGroup', 'Badge', 'IconButton', 'Menu']) {
+    for (const symbol of ['Header', 'HeaderGroup', 'IconButton', 'Menu']) {
       expect(bar).toMatch(new RegExp(`import \\{[^}]*\\b${symbol}\\b[^}]*\\} from '@filigran/design-system'`, 's'));
     }
+    // The unread marker lives on the control that carries it, one file down.
+    const link = SOURCES.get('src/private/components/nav/TopBarIconLink.tsx') as string;
+    expect(link).toMatch(/import \{[^}]*\bBadge\b[^}]*\} from '@filigran\/design-system'/s);
+  });
+
+  it('marks the control with the badge, never the aria-hidden glyph', () => {
+    const link = SOURCES.get('src/private/components/nav/TopBarIconLink.tsx') as string;
+    // The badge wraps the anchor; the glyph stays inside its hidden span. The
+    // other way round, `aria-describedby` lands inside `aria-hidden` and the
+    // count is announced by nobody — measured through CDP, not inferred.
+    expect(link).toMatch(/<Badge \{\.\.\.badge\}>\{link\}<\/Badge>/);
+    expect(link).not.toMatch(/<Badge[\s\S]*?\{icon\}/);
+    const bar = SOURCES.get('src/private/components/nav/TopBar.tsx') as string;
+    expect(bar).not.toMatch(/<Badge\b/);
+  });
+
+  it('forwards what asChild clones, so the tooltips actually open', () => {
+    const link = SOURCES.get('src/private/components/nav/TopBarIconLink.tsx') as string;
+    // Naming only the known props silently swallowed Radix's handlers and ref:
+    // the Triggers and Notifications tooltips never opened.
+    expect(link).toMatch(/React\.forwardRef</);
+    expect(link).toMatch(/\.\.\.rest\s*\}?\s*,?\s*\}/);
+    expect(link).toMatch(/\{\.\.\.rest\}/);
   });
 
   it('draws the cluster rule with the library separator, never a styled div', () => {
@@ -208,13 +231,15 @@ describe('the admin top bar is built from library components', () => {
   });
 
   it('leaves the unread marker on the library default tone', () => {
+    // Red, on both products — Sandy, 2026-08-14. No `tone` anywhere on the
+    // path from the call site to the anchor: the library default IS the
+    // decision, and overriding it later has to be written down when it is made.
     const bar = SOURCES.get('src/private/components/nav/TopBar.tsx') as string;
-    const badge = /<Badge[\s\S]*?\/?>/.exec(bar);
-    expect(badge).not.toBeNull();
-    // The library made `error` the default deliberately. Overriding it is a
-    // design decision, so it may not arrive silently: state the tone here the
-    // day it is chosen.
-    expect(badge![0]).not.toMatch(/\btone=/);
+    const call = /badge=\{\{[\s\S]*?\}\}/.exec(bar);
+    expect(call).not.toBeNull();
+    expect(call![0]).not.toMatch(/\btone\b/);
+    const link = SOURCES.get('src/private/components/nav/TopBarIconLink.tsx') as string;
+    expect(link).not.toMatch(/\btone[=:]/);
   });
 
   it('states the search window through the named constants', () => {

@@ -1,7 +1,7 @@
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import { AccountCircleOutlined, AlarmOnOutlined, NotificationsOutlined } from '@mui/icons-material';
 import AppBar from '@mui/material/AppBar';
-import { Badge, Header, HeaderGroup, IconButton, Menu, MenuContent, MenuItem, MenuTrigger, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Header, HeaderGroup, IconButton, Menu, MenuContent, MenuItem, MenuTrigger, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
@@ -310,17 +310,16 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                         aria-label={t_i18n('Notifications')}
                         to="/dashboard/profile/notifications/alerts"
                         active={location.pathname.startsWith('/dashboard/profile/notifications')}
-                        icon={(
-                          // `dot`: the bar signals unread without a count, and still announces the total.
-                          <Badge
-                            content={unreadCount}
-                            dot
-                            invisible={!hasUnread}
-                            accessibleText={`${unreadCount} ${t_i18n('unread')}`}
-                          >
-                            <NotificationsOutlined fontSize="medium" />
-                          </Badge>
-                        )}
+                        icon={<NotificationsOutlined fontSize="medium" />}
+                        // Marks the control, never the glyph: the glyph sits in an
+                        // aria-hidden span, where the badge's description reaches
+                        // nobody. `dot`: unread without a count, total still announced.
+                        badge={{
+                          content: unreadCount,
+                          dot: true,
+                          invisible: !hasUnread,
+                          accessibleText: `${unreadCount} ${t_i18n('unread')}`,
+                        }}
                       />
                     </TooltipTrigger>
                     <TooltipContent>{t_i18n('Notifications')}</TooltipContent>

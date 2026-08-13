@@ -48,4 +48,84 @@ describe('TopBarIconLink', () => {
     renderLink(false);
     expect(screen.getByTestId('glyph').parentElement).toHaveAttribute('aria-hidden', 'true');
   });
+
+  describe('the unread marker', () => {
+    const renderBadged = (unread: number, invisible = false) => testRender(
+      <TopBarIconLink
+        aria-label="Notifications"
+        to="/dashboard/profile/notifications/alerts"
+        icon={<svg data-testid="glyph" />}
+        badge={{ content: unread, dot: true, invisible, accessibleText: `${unread} unread` }}
+      />,
+    );
+
+    it('announces the count as the control DESCRIPTION, computed, not as text in the tree', () => {
+      renderBadged(3);
+      const link = screen.getByRole('link', { name: 'Notifications' });
+      // Computed through the accname/description algorithm — the same thing a
+      // screen reader resolves, and the thing that was empty when the badge
+      // wrapped the aria-hidden glyph instead of the control.
+      expect(link).toHaveAccessibleName('Notifications');
+      expect(link).toHaveAccessibleDescription('3 unread');
+    });
+
+    it('leaves the control undescribed when there is nothing unread', () => {
+      renderBadged(0, true);
+      const link = screen.getByRole('link', { name: 'Notifications' });
+      expect(link).toHaveAccessibleName('Notifications');
+      expect(link).toHaveAccessibleDescription('');
+    });
+
+    it('keeps the marker out of the glyph, which no assistive technology reads', () => {
+      renderBadged(3);
+      const link = screen.getByRole('link', { name: 'Notifications' });
+      const described = link.getAttribute('aria-describedby');
+      expect(described).toBeTruthy();
+      // The described node must not sit inside the hidden glyph span.
+      const node = document.getElementById(described as string);
+      expect(node).not.toBeNull();
+      expect(node?.closest('[aria-hidden="true"]')).toBeNull();
+    });
+  });
+
+  it('forwards the props asChild clones onto it, or the tooltip never opens', () => {
+    const onPointerEnter = () => {};
+    testRender(
+      <TopBarIconLink
+        aria-label="Triggers"
+        to="/dashboard/profile/triggers"
+        icon={<svg data-testid="glyph" />}
+        data-state="closed"
+        onPointerEnter={onPointerEnter}
+      />,
+    );
+    // `data-state` is what Radix's trigger puts on its child; if the component
+    // drops unknown props, it never lands and the tooltip is silently dead.
+    expect(screen.getByRole('link', { name: 'Triggers' })).toHaveAttribute('data-state', 'closed');
+  });
+
+  it('keeps the library variant when a parent clones a className onto it', () => {
+    const { rerender } = testRender(
+      <TopBarIconLink
+        aria-label="Triggers"
+        to="/dashboard/profile/triggers"
+        icon={<svg data-testid="glyph" />}
+      />,
+    );
+    const variant = screen.getByRole('link', { name: 'Triggers' }).getAttribute('class');
+    expect(variant).toBeTruthy();
+    // Spreading an incoming className over the computed one erased the whole
+    // variant and the control collapsed to its glyph — 24x28 instead of 36x36.
+    rerender(
+      <TopBarIconLink
+        aria-label="Triggers"
+        to="/dashboard/profile/triggers"
+        icon={<svg data-testid="glyph" />}
+        className="from-a-cloning-parent"
+      />,
+    );
+    const merged = screen.getByRole('link', { name: 'Triggers' }).getAttribute('class') ?? '';
+    expect(merged).toContain('from-a-cloning-parent');
+    for (const cls of (variant as string).split(/\s+/)) expect(merged).toContain(cls);
+  });
 });
