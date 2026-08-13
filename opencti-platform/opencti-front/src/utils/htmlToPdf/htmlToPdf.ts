@@ -165,6 +165,10 @@ export const htmlToPdfReport = async (
   templateName: string,
   markingNames: string[],
   fintelDesign?: FintelDesign | null | undefined,
+  pageOptions?: {
+    includeCoverPage?: boolean;
+    includeBackPage?: boolean;
+  },
 ) => {
   const formattedTemplateName = capitalizeWords(templateName);
   let logo;
@@ -222,8 +226,8 @@ export const htmlToPdfReport = async (
     fintelDesign?.gradiantToColor || DARK_BLUE,
   ];
   const textColor = fintelDesign?.textColor || WHITE;
-  const includeCoverPage = fintelDesign?.includeCoverPage ?? true;
-  const includeBackPage = fintelDesign?.includeBackPage ?? true;
+  const includeCoverPage = pageOptions?.includeCoverPage ?? true;
+  const includeBackPage = pageOptions?.includeBackPage ?? true;
 
   const coverPage: Content[] = [
     {
