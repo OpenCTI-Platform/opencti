@@ -95,6 +95,16 @@ const DELETE_CONNECTOR_MUTATION = gql`
     }
 `;
 
+const CREATE_CONNECTOR_MUTATION = gql`
+  mutation RegisterConnector($input: RegisterConnectorInput) {
+    registerConnector(input: $input) {
+      id
+      name
+      connector_type
+    }
+  }
+`;
+
 // Queries
 const CONNECTOR_MANAGER_QUERY = gql`
     query ConnectorManager($managerId: ID!) {
@@ -160,6 +170,65 @@ const GET_CONNECTOR_EXCERPT_QUERY = gql`
         title
         slug
         logo
+      }
+    }
+  }
+`;
+
+const GET_CONNECTOR_MANAGER_CONTRACT_ENDPOINTS_QUERY = gql`
+  query GetConnectorManagerContractEndpoints($id: String!) {
+    connector(id: $id) {
+      id
+      manager_contract_image
+      manager_contract_hash
+      manager_contract_configuration {
+        key
+        value
+      }
+      manager_contract_definition
+      manager_contract_excerpt {
+        title
+        slug
+        logo
+      }
+    }
+  }
+`;
+
+const CONNECTOR_MIGRATION_ASSESSMENT_QUERY = gql`
+  query ConnectorMigrationAssessment($connectorId: ID!, $containerImage: String!, $configuration: [ContractConfigInput!]) {
+    connectorMigrationAssessment(connectorId: $connectorId, containerImage: $containerImage, configuration: $configuration) {
+      connector_id
+      connector_name
+      contract_image
+      summary {
+        total_source_keys
+        mapped_keys
+        ignored_keys
+        missing_mandatory_keys
+        can_migrate
+        assessment_date
+      }
+      mapped {
+        key
+        sourceKey
+        value
+        type
+        required
+      }
+      ignored {
+        key
+        value
+        reason
+      }
+      missing {
+        key
+        type
+        description
+        format
+        enum
+        default
+        required
       }
     }
   }
@@ -1192,6 +1261,7 @@ describe('Connector Composer and Managed Connectors', () => {
 
   describe('Managed Connector operations', () => {
     let managedConnectorId: string;
+    let standaloneConnectorId: string;
 
     it('should fail to add managed connector with invalid image', async () => {
       const catalogId = catalogHelper.getCatalogId();
@@ -1250,6 +1320,60 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(managedConnectorAdd.manager_contract_configuration.length).toBeGreaterThan(0);
     });
 
+    it('should return stable manager contract endpoint output formats', async () => {
+      const testConnector = catalogHelper.getTestSafeConnector();
+      const result = await queryAsAdminWithSuccess({
+        query: GET_CONNECTOR_MANAGER_CONTRACT_ENDPOINTS_QUERY,
+        variables: { id: managedConnectorId },
+      });
+
+      const connectorData = result.data?.connector;
+      expect(connectorData).toBeDefined();
+      expect(typeof connectorData.manager_contract_image).toBe('string');
+      expect(connectorData.manager_contract_image).toEqual(`${testConnector.container_image}:${testConnector.container_version}`);
+      expect(typeof connectorData.manager_contract_hash).toBe('string');
+      expect(connectorData.manager_contract_hash.length).toBeGreaterThan(0);
+      expect(Array.isArray(connectorData.manager_contract_configuration)).toBeTruthy();
+      expect(connectorData.manager_contract_configuration.length).toBeGreaterThan(0);
+      connectorData.manager_contract_configuration.forEach((entry: { key: string; value: string }) => {
+        expect(typeof entry.key).toBe('string');
+        expect(typeof entry.value).toBe('string');
+      });
+
+      const definitionRaw = connectorData.manager_contract_definition;
+      expect(typeof definitionRaw).toBe('string');
+      const definition = JSON.parse(definitionRaw);
+      expect(definition).toMatchObject({
+        title: expect.any(String),
+        slug: expect.any(String),
+        description: expect.any(String),
+        short_description: expect.any(String),
+        logo: expect.any(String),
+        use_cases: expect.any(Array),
+        verified: expect.any(Boolean),
+        last_verified_date: expect.any(String),
+        playbook_supported: expect.any(Boolean),
+        max_confidence_level: expect.any(Number),
+        support_version: expect.any(String),
+        subscription_link: expect.any(String),
+        source_code: expect.any(String),
+        manager_supported: expect.any(Boolean),
+        container_version: expect.any(String),
+        container_image: expect.any(String),
+        container_type: expect.any(String),
+      });
+      expect(definition.config_schema).toBeDefined();
+      expect(definition.config_schema.properties).toBeDefined();
+
+      const excerpt = connectorData.manager_contract_excerpt;
+      expect(excerpt).toBeDefined();
+      expect(excerpt).toMatchObject({
+        title: expect.any(String),
+        slug: expect.any(String),
+        logo: expect.any(String),
+      });
+    });
+
     it('should retrieve the manager contract excerpt for a managed connector', async () => {
       const result = await queryAsAdminWithSuccess({
         query: GET_CONNECTOR_EXCERPT_QUERY,
@@ -1261,7 +1385,78 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(excerpt).toBeDefined();
       expect(excerpt.title).toEqual('IPinfo');
       expect(excerpt.slug).toEqual('ipinfo');
-      expect(excerpt.logo).toMatch(/^data:image\/.+;base64,[A-Za-z0-9+/]+=*$/);
+      expect(excerpt.logo).toMatch(/^\/storage\/view\/catalog-logos\//);
+    });
+
+    it('should return connectorMigrationAssessment with stable output format', async () => {
+      const testConnector = catalogHelper.getTestSafeConnector();
+      const registerResult = await queryAsAdminWithSuccess({
+        query: CREATE_CONNECTOR_MUTATION,
+        variables: {
+          input: {
+            id: uuidv4(),
+            name: 'Assessment standalone connector',
+            type: testConnector.container_type,
+            scope: ['IPv4-Addr'],
+            auto: true,
+            only_contextual: false,
+          },
+        },
+      });
+      standaloneConnectorId = registerResult.data?.registerConnector?.id;
+      createdConnectorIds.add(standaloneConnectorId);
+
+      const assessmentResult = await queryAsAdminWithSuccess({
+        query: CONNECTOR_MIGRATION_ASSESSMENT_QUERY,
+        variables: {
+          connectorId: standaloneConnectorId,
+          containerImage: testConnector.container_image,
+          configuration: catalogHelper.getMinimalConfig(testConnector, {
+            IPINFO_TOKEN: 'assessment-token',
+            ...ipinfoProperties,
+          }),
+        },
+      });
+
+      const assessment = assessmentResult.data?.connectorMigrationAssessment;
+      expect(assessment).toBeDefined();
+      expect(assessment.connector_id).toEqual(standaloneConnectorId);
+      expect(assessment.connector_name).toEqual('Assessment standalone connector');
+      expect(assessment.contract_image).toEqual(testConnector.container_image);
+      expect(assessment.summary).toMatchObject({
+        total_source_keys: expect.any(Number),
+        mapped_keys: expect.any(Number),
+        ignored_keys: expect.any(Number),
+        missing_mandatory_keys: expect.any(Number),
+        can_migrate: expect.any(Boolean),
+      });
+      expect(assessment.summary.assessment_date).toBeDefined();
+      expect(new Date(assessment.summary.assessment_date).toString()).not.toEqual('Invalid Date');
+      expect(Array.isArray(assessment.mapped)).toBeTruthy();
+      expect(Array.isArray(assessment.ignored)).toBeTruthy();
+      expect(Array.isArray(assessment.missing)).toBeTruthy();
+      assessment.mapped.forEach((entry: { key: string; sourceKey: string; value: string; type: string; required: boolean }) => {
+        expect(entry).toMatchObject({
+          key: expect.any(String),
+          sourceKey: expect.any(String),
+          value: expect.any(String),
+          type: expect.any(String),
+          required: expect.any(Boolean),
+        });
+      });
+      assessment.ignored.forEach((entry: { key: string; value: string; reason: string }) => {
+        expect(entry).toMatchObject({
+          key: expect.any(String),
+          value: expect.any(String),
+          reason: expect.any(String),
+        });
+      });
+      assessment.missing.forEach((entry: { key: string; type: string; description: string; required: boolean }) => {
+        expect(entry.key).toEqual(expect.any(String));
+        expect(entry.type).toEqual(expect.any(String));
+        expect(entry.description).toEqual(expect.any(String));
+        expect(entry.required).toEqual(expect.any(Boolean));
+      });
     });
 
     it('should edit managed connector', async () => {

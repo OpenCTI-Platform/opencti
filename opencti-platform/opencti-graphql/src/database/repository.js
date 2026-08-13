@@ -9,11 +9,11 @@ import { BUILTIN_NOTIFIERS_CONNECTORS } from '../modules/notifier/notifier-stati
 import { builtInConnector, builtInConnectorsRuntime } from '../connector/connector-domain';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { shortHash } from '../schema/schemaUtils';
-import { encryptValue, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
+import { encryptValue, mapContractEntityFieldsToGraphqlCatalogContract } from '../modules/catalog/catalog-domain';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { getEntitiesMapFromCache } from './cache';
 import { SYSTEM_USER } from '../utils/access';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { booleanConf } from '../config/conf';
 import { ConnectorPriorityGroup } from '../generated/graphql';
 import { injectProxyConfiguration } from '../config/proxy-config';
 import { getPlatformCrypto } from '../utils/platformCrypto';
@@ -22,7 +22,7 @@ import { memoize } from '../utils/memoize';
 import { addUserTokenByAdmin, revokeUserTokenByAdmin } from '../modules/user/user-domain';
 import { getClientBase } from './redis';
 import { lockResources } from '../lock/master-lock';
-import { LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';
+import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';
 
 export const CONNECTOR_PRIORITY_GROUP_VALUES = Object.values(ConnectorPriorityGroup);
 
@@ -78,28 +78,22 @@ export const connector = async (context, user, id) => {
 };
 
 export const computeManagerConnectorContract = async (_context, _user, cn) => {
-  const contracts = await getSupportedContractsByImage();
-  const contract = contracts.get(cn.manager_contract_image);
-  return contract ? JSON.stringify(contract) : contract;
+  if (!cn.manager_contract) {
+    return null;
+  }
+  return JSON.stringify(mapContractEntityFieldsToGraphqlCatalogContract(cn.manager_contract));
 };
 
 export const computeManagerConnectorExcerpt = async (_context, _user, cn) => {
-  if (!cn.manager_contract_image) {
+  if (!cn.manager_contract) {
     return null;
   }
-
-  const contracts = await getSupportedContractsByImage();
-  const contract = contracts.get(cn.manager_contract_image);
-
-  if (!contract) {
-    logApp.warn('No contract found for', { connectorName: cn.name });
-    return null;
-  }
+  const managerContract = cn.manager_contract;
 
   return {
-    title: contract.title,
-    slug: contract.slug,
-    logo: contract.logo,
+    title: managerContract.title,
+    slug: managerContract.slug,
+    logo: managerContract.logo_uri ?? '',
   };
 };
 
@@ -173,10 +167,18 @@ export const computeManagerConnectorConfiguration = async (context, _, cn, { wit
 };
 
 export const computeManagerConnectorImage = async (cn) => {
-  const contracts = await getSupportedContractsByImage();
-  const contract = contracts.get(cn.manager_contract_image);
-  if (!contract) return '';
-  return isNotEmptyField(cn.manager_contract_image) ? `${cn.manager_contract_image}:${contract.container_version}` : null;
+  if (!cn.manager_contract) {
+    return '';
+  }
+  const managerContract = cn.manager_contract;
+  if (!managerContract.image || !managerContract.version) {
+    throw FunctionalError('Invalid manager contract snapshot', {
+      connectorId: cn.id ?? cn.internal_id,
+      image: managerContract.image,
+      version: managerContract.version,
+    });
+  }
+  return `${managerContract.image}:${managerContract.version}`;
 };
 
 export const computeManagerContractHash = async (context, user, cn) => {
