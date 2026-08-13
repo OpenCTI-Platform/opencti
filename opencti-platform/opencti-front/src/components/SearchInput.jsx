@@ -446,12 +446,7 @@ const SearchInput = (props) => {
   return (
     <>
       {/* Width is owned by the bar, not by this component — see topBarConstants.ts */}
-      <Stack
-        direction="row"
-        alignItems="center"
-        spacing={1}
-        sx={{ width: '100%' }}
-      >
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8, width: '100%' }}>
         {/* ── Search Input Field (left, fills remaining space) ──── */}
         <SearchField
           name="keyword"
@@ -614,7 +609,7 @@ const SearchInput = (props) => {
             </MenuItem>
           ))}
         </Menu>
-      </Stack>
+      </div>
 
       {isAdmin ? (
         <EnterpriseEditionAgreement

@@ -14,16 +14,26 @@ const TOP_BAR = readFileSync(path.resolve('src/private/components/nav/TopBar.tsx
 /** MUI imports the bar is still allowed to carry, and why. */
 const ALLOWED_MUI = [
   '@mui/icons-material', // glyphs only — the library ships no icon set
-  '@mui/material', // Badge, entry 19
   '@mui/styles', // useTheme, for the product's own palette
   '@mui/material/AppBar', // Suspense fallback only, asserted below
   '@mui/styles/makeStyles', // paints that same fallback from background.nav
 ];
 
+/** Component families the bar must not render. Each was retired to the library. */
+const RETIRED_MUI = ['MuiBadge-'];
+
 const muiImports = [...TOP_BAR.matchAll(/^import[^;]*?from '(@mui\/[^']+)';/gms)]
   .map((m) => m[1]);
 
 describe('the admin top bar is built from library components', () => {
+  it.each(RETIRED_MUI)('no longer renders %s', (family) => {
+    expect(TOP_BAR).not.toContain(family);
+  });
+
+  it('takes its Badge from the library', () => {
+    expect(TOP_BAR).toMatch(/import \{[^}]*\bBadge\b[^}]*\} from '@filigran\/design-system'/s);
+  });
+
   it('imports the library Header and its group', () => {
     expect(TOP_BAR).toMatch(/import \{[^}]*\bHeader\b[^}]*\} from '@filigran\/design-system'/s);
     expect(TOP_BAR).toMatch(/import \{[^}]*\bHeaderGroup\b[^}]*\} from '@filigran\/design-system'/s);

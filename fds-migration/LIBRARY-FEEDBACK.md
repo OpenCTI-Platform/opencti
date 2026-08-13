@@ -590,7 +590,23 @@ geometry and colour.
 
 ---
 
-## 19. No `Badge`
+## 19. No `Badge` — ✅ CLOSED at pin `8798cbb` (2026-08-13)
+
+**Shipped by library PR #114.** The bar's unread marker is now the library
+`Badge`: `content` carries the total, `dot` renders the reduced form ("there is
+something, do not show how much"), and `invisible` unmounts it when nothing is
+unread — the same three behaviours the MUI badge provided.
+
+Measured after: zero `MuiBadge-` elements remain in the bar, and with nothing
+unread the badge is not mounted at all, so no empty node is left behind.
+`TopBar.libraryOnly.test.ts` now names `MuiBadge-` among the classes the bar
+must not carry, so a regression fails the suite rather than a review.
+
+The history below is kept as the record of what was missing.
+
+---
+
+### Original report — No `Badge`
 
 **Needed.** The unread dot on the notifications control.
 
@@ -706,3 +722,49 @@ label span's width and the `shrink-0` logo slot, and concluding the library
 sized them wrongly. It did not: the product oversized the image inside them. A
 gap should be filed against the library only after checking what the product
 passes in.
+
+---
+
+## 24. No segmented control, so the bar's mode toggles stay MUI
+
+**Needed.** The bar exposes two mutually exclusive search modes — advanced
+search and bulk search — as a segmented pair, and a third segment appears for
+natural-language search when XTM One is configured. Selection is exclusive,
+each segment is a toggle rather than an action, and the group is one tab stop
+with arrow-key movement between segments.
+
+**Today.** The library ships `Button`, `IconButton` and `Chip`; none of them
+carries selected state as a group. The pilot therefore leaves
+`ToggleButtonGroup` + `ToggleButton` on MUI. They are the last rendered MUI
+components in the bar, and the reason `TopBar.libraryOnly.test.ts` asserts a
+named survivor list rather than zero MUI.
+
+**Asked.** A grouped, single-select control — the segments themselves can be
+the existing `IconButton`, what is missing is the group that owns exclusivity,
+roving focus and the selected style.
+
+---
+
+## 25. The gradient-text recipe breaks on any nested component
+
+**Where it bit.** `variant="ia"` paints its label with
+`background-clip: text` + `-webkit-text-fill-color: transparent`. That fill
+**inherits**, and it beats `color` on the descendant. Any component nested in
+such a button — for this bar, the EE chip inside "Ask Ariane" — paints its
+glyphs invisible: the chip rendered as a coloured pill with no "EE" in it, in
+both themes.
+
+The library documents the trap in its own source ("breaks if the child has
+nested elements"), which makes it a known sharp edge rather than a surprise —
+but a consumer only meets it after shipping the bug.
+
+**Fixed product-side** in `createTextGradientSx`: element children get
+`-webkit-text-fill-color: currentColor` back, bare text nodes keep the
+gradient. Measured on the bar's chip (8px from the label, own fill and
+background restored, at rest and on hover, dark and light) and on the
+product's text-only gradient buttons, which have no element children and are
+therefore unchanged.
+
+**Asked.** Carry the same reset inside the library's `text-gradient-*`
+utility, so the gradient stays scoped to the button's own text and consumers
+cannot nest their way into an invisible child.

@@ -1,8 +1,20 @@
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import { AccountCircleOutlined, AlarmOnOutlined, NotificationsOutlined } from '@mui/icons-material';
-import { Badge } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
-import { Header, HeaderGroup, IconButton, Menu, MenuContent, MenuItem, MenuTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@filigran/design-system';
+import {
+  Badge,
+  Header,
+  HeaderGroup,
+  IconButton,
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@filigran/design-system';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
@@ -128,6 +140,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     : 0;
   const isNewNewsFeed = newsFeedCount > 0;
   const hasUnread = isNewNotification || isNewNewsFeed;
+  // The bar shows a dot, never a count; the total is still announced.
+  const unreadCount = (notificationsNumber !== null ? notificationsNumber : (data.myUnreadNotificationsCount ?? 0)) + newsFeedCount;
   const subConfig = useMemo(
     () => ({
       subscription: topBarNotificationNumberSubscription,
@@ -311,8 +325,13 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                       to="/dashboard/profile/notifications/alerts"
                       active={location.pathname.startsWith('/dashboard/profile/notifications')}
                       icon={(
-                        // FDS-WORKAROUND #19: MUI Badge, the library ships none — see fds-migration/LIBRARY-FEEDBACK.md #19
-                        <Badge color="secondary" variant="dot" invisible={!hasUnread}>
+                        // `dot`: the bar signals unread without a count, and still announces the total.
+                        <Badge
+                          content={unreadCount}
+                          dot
+                          invisible={!hasUnread}
+                          accessibleText={`${unreadCount} ${t_i18n('unread')}`}
+                        >
                           <NotificationsOutlined fontSize="medium" />
                         </Badge>
                       )}
