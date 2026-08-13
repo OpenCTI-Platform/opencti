@@ -52,6 +52,7 @@ import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
 import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
 import { AuthenticationProviderError } from '../modules/authenticationProvider/providers-logger';
 import { buildDefaultHelmetParameters, buildPublicHelmetParameters } from './httpUtils';
+import { CATALOG_LOGO_VIEW_PATH, handleCatalogLogoViewRequest } from '../modules/catalog/catalog-http';
 
 const publicDir = DEV_MODE ? '../opencti-front/dist' : 'public';
 
@@ -299,6 +300,9 @@ const createApp = async (app, schema) => {
       res.status(503).send({ status: 'error', error: e.message });
     }
   });
+
+  // -- Catalog logo view
+  app.get(`${basePath}${CATALOG_LOGO_VIEW_PATH}`, handleCatalogLogoViewRequest);
 
   // -- embedded loader
   const uuidPattern = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';

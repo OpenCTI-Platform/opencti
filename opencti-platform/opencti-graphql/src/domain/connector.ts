@@ -55,7 +55,7 @@ import { isCompatibleVersionWithMinimal } from '../utils/version';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import type { BasicStoreCommon, StoreEntity } from '../types/store';
 import { addConnectorDeployedCount, addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '../manager/telemetryManager';
-import { computeConnectorTargetContract, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
+import { computeConnectorTargetContract, getSupportedContractsByImage, mapContractDtoV0ToContractEntityFields } from '../modules/catalog/catalog-domain';
 import { getEntitiesMapFromCache } from '../database/cache';
 
 import { createOnTheFlyUser } from '../modules/user/user-domain';
@@ -67,6 +67,7 @@ import { extractContentFrom } from '../utils/fileToContent';
 import type { FileHandle } from 'fs/promises';
 import { encryptSynchronizerCredential } from './connector-sync-crypto';
 import { verifyIngestionUri } from '../modules/ingestion/ingestion-common';
+import { listCatalogContractLogos, storeCatalogContractLogo } from '../modules/catalog/catalog-logo-storage';
 
 const MINIMAL_SYNCHRONIZER_COMPATIBLE_VERSION = '6.9.6';
 // Sanitize name for K8s/Docker
@@ -87,6 +88,26 @@ const sanitizeContainerName = (label: string): string => {
   }
 
   return sanitized;
+};
+
+const computeManagerContractSnapshot = async (
+  catalogId: string,
+  contractDto: any,
+) => {
+  const existingLogos = await listCatalogContractLogos();
+  const logoStorageResult = await storeCatalogContractLogo(contractDto, existingLogos);
+  if (logoStorageResult.result === 'failed') {
+    logApp.warn('[CONNECTOR] Failed to store manager contract logo', {
+      catalogId,
+      slug: contractDto.slug,
+      cause: logoStorageResult.error?.message,
+    });
+  }
+  return mapContractDtoV0ToContractEntityFields({
+    catalogId,
+    contractDto,
+    logoUri: logoStorageResult.logoUri,
+  });
 };
 
 // region connectors
@@ -283,6 +304,7 @@ export const managedConnectorAdd = async (
   }
 
   // Create connector
+  const managerContract = await computeManagerContractSnapshot(input.catalog_id, targetContract);
   const connectorToCreate: any = {
     title: input.name,
     name: sanitizedName,
@@ -291,6 +313,7 @@ export const managedConnectorAdd = async (
     connector_user_id: connectorUser.id,
     manager_contract_image: input.manager_contract_image,
     manager_contract_configuration: contractConfigurations,
+    manager_contract: managerContract,
     manager_requested_status: 'stopped',
     connector_state_timestamp: now(),
     built_in: false,
