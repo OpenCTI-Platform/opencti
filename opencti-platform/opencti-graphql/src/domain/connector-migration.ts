@@ -7,13 +7,16 @@ import { completeConnector, connector } from '../database/repository';
 import type { Connector, ConnectorContractConfiguration, ContractConfigInput } from '../generated/graphql';
 import { publishUserAction } from '../listener/UserActionListener';
 import { addConnectorDeployedCount } from '../manager/telemetryManager';
-import { computeConnectorTargetContract, findContractByContainerImage } from '../modules/catalog/catalog-domain';
+import { computeConnectorTargetContract, findContractByContainerImage, mapContractDtoV0ToContractEntityFields } from '../modules/catalog/catalog-domain';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER } from '../schema/internalObject';
 import type { BasicStoreEntityConnectorManager } from '../types/connector';
 import type { AuthContext, AuthUser } from '../types/user';
 import { isServiceAccountUser } from '../utils/access';
 import { resolveUserByIdFromCache, userEditField } from './user';
+import type { CatalogContractDtoV0 } from '../modules/catalog/catalog-types';
+import { now } from '../utils/format';
+import { listCatalogContractLogos, storeCatalogContractLogo } from '../modules/catalog/catalog-logo-storage';
 
 type ConfigInput = {
   key: string;
@@ -22,6 +25,7 @@ type ConfigInput = {
 
 type MappedKey = {
   key: string;
+  sourceKey: string;
   value: string;
   type: string;
   required: boolean;
@@ -89,6 +93,7 @@ const categorizeKeys = (
     if (value !== null && value !== undefined) {
       mapped.push({
         key: schemaKey,
+        sourceKey: keyUpper,
         value: String(value),
         type: propSchema.type,
         required: requiredKeys.includes(schemaKey),
@@ -144,9 +149,9 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
     throw FunctionalError('Contract not found', { container_image: containerImage });
   }
 
-  let contract;
+  let contract: CatalogContractDtoV0;
   try {
-    contract = JSON.parse(contractData.contract);
+    contract = JSON.parse(contractData.contract) as CatalogContractDtoV0;
   } catch {
     throw FunctionalError('Cannot parse contract found');
   }
@@ -185,7 +190,7 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
     connector_id: connectorId,
     connector_name: existingConnector.name,
     connector_type: existingConnector.connector_type,
-    contract_slug: contract.contract_slug,
+    contract_slug: contract.slug,
     contract_title: contract.title,
     contract_image: contract.container_image,
     summary: {
@@ -193,6 +198,7 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
       mapped_keys: mapped.length,
       ignored_keys: ignored.length,
       missing_mandatory_keys: missingMandatory.length,
+      assessment_date: now(),
       missing_optional_keys: missing.length - missingMandatory.length,
       can_migrate: missingMandatory.length === 0,
       configuration_provided: configuration !== null,
@@ -322,10 +328,19 @@ export const migrateConnectorToManaged = async (
     );
   }
 
+  const existingLogos = await listCatalogContractLogos();
+  const logoStorageResult = await storeCatalogContractLogo(contract, existingLogos);
+  const managerContract = mapContractDtoV0ToContractEntityFields({
+    catalogId: contractData.catalog_id,
+    contractDto: contract,
+    logoUri: logoStorageResult.logoUri,
+  });
+
   const managedConnectorData: any = {
     title: existingConnector.name,
     catalog_id: contractData.catalog_id,
     manager_contract_image: contract.container_image,
+    manager_contract: managerContract,
     manager_contract_configuration: filteredConfigurations,
     manager_requested_status: 'stopped',
   };

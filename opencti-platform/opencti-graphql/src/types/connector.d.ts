@@ -1,3 +1,4 @@
+import type { CatalogContractEntityFields } from '../modules/catalog/catalog-types';
 import type { BasicStoreEntity, StoreEntity } from './store';
 
 export interface ConnectorInfo {
@@ -8,6 +9,8 @@ export interface ConnectorInfo {
   next_run_datetime: DateTime;
   last_run_datetime: DateTime;
 }
+
+type ConnectorManagerContract = CatalogContractEntityFields;
 
 export interface BasicStoreEntityConnector extends StoreEntity {
   active: boolean;
@@ -20,13 +23,15 @@ export interface BasicStoreEntityConnector extends StoreEntity {
   connector_state: string;
   connector_state_reset: boolean;
   connector_trigger_filters: string;
-  connector_user_id; string;
+  connector_user_id: string;
   connector_info: ConnectorInfo;
   playbook_compatible: boolean;
   xtm_one_intent: string | null;
   // region composer (set only on composer-managed connectors)
   catalog_id?: string;
   manager_contract_image?: string;
+  manager_contract?: ConnectorManagerContract;
+  manager_upgrade_strategy?: string;
   // endregion
 }
 export interface BasicStoreEntityConnectorManager extends BasicStoreEntity {
