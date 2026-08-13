@@ -1017,7 +1017,7 @@ describe('User has no settings capability and is organization admin query behavi
     });
   });
   it('should not add participate-to relation if target organization is not administrated', async () => {
-    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
       query: USER_RELATION_ADD_PARTICIPATE_TO_QUERY,
       variables: {
         id: userInternalId,
@@ -1026,7 +1026,7 @@ describe('User has no settings capability and is organization admin query behavi
     });
   });
   it('should not delete participate-to relation if target organization is not administrated', async () => {
-    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
       query: USER_RELATION_DELETE_PARTICIPATE_TO_QUERY,
       variables: {
         id: userInternalId,
@@ -1086,7 +1086,7 @@ describe('User has no settings capability and is organization admin query behavi
     expect(queryResult.data.userEdit.organizationDelete.id).toEqual(userInternalId);
   });
   it('should add participate-to relation if target organization is administrated', async () => {
-    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: USER_RELATION_ADD_PARTICIPATE_TO_QUERY,
       variables: {
         id: userInternalId,
@@ -1096,7 +1096,7 @@ describe('User has no settings capability and is organization admin query behavi
     expect(queryResult.data.userEdit.relationAdd.entity_type).toEqual('participate-to');
   });
   it('should delete participate-to relation if target organization is administrated', async () => {
-    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: USER_RELATION_DELETE_PARTICIPATE_TO_QUERY,
       variables: {
         id: userInternalId,
