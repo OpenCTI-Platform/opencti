@@ -2,7 +2,14 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import crypto from 'crypto';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type CatalogContract, type CatalogDefinition, type CatalogType } from './catalog-types';
+import {
+  type CatalogContract,
+  type CatalogContractDtoV0,
+  type CatalogContractEntityFields,
+  type CatalogDefinition,
+  type CatalogType,
+  type GraphqlCatalogContract,
+} from './catalog-types';
 import { isEmptyField } from '../../database/utils';
 import { UnsupportedError } from '../../config/errors';
 import { idGenFromData } from '../../schema/identifier';
@@ -492,4 +499,63 @@ export const findContractBySlug = (context: AuthContext, user: AuthUser, contrac
 
 export const findContractByContainerImage = (context: AuthContext, user: AuthUser, containerImage: string) => {
   return findContract(context, user, (contract) => contract.container_image === containerImage);
+};
+
+export const mapContractDtoV0ToContractEntityFields = (params: {
+  catalogId: string;
+  contractDto: CatalogContractDtoV0;
+  logoUri: string | null;
+}): CatalogContractEntityFields => {
+  const { catalogId, contractDto, logoUri } = params;
+  return {
+    catalog_id: catalogId,
+    contract_id: `${contractDto.slug}-${contractDto.container_version}`,
+    title: contractDto.title,
+    slug: contractDto.slug,
+    description: contractDto.description,
+    short_description: contractDto.short_description,
+    logo_uri: logoUri ?? undefined,
+    use_cases: contractDto.use_cases,
+    verified: contractDto.verified,
+    last_verified_date: contractDto.last_verified_date ?? undefined,
+    playbook_supported: contractDto.playbook_supported,
+    max_confidence_level: contractDto.max_confidence_level,
+    support_version: contractDto.support_version ?? undefined,
+    subscription_link: contractDto.subscription_link ?? undefined,
+    source_code: contractDto.source_code ?? undefined,
+    manager_supported: contractDto.manager_supported,
+    version: contractDto.container_version,
+    image: contractDto.container_image,
+    connector_type: contractDto.container_type,
+    config_schema: contractDto.config_schema,
+    license_type: contractDto.license_type ?? undefined,
+    solution_categories: contractDto.solution_categories ?? undefined,
+    contact: contractDto.contact ?? undefined,
+  };
+};
+
+export const mapContractEntityFieldsToGraphqlCatalogContract = (contract: CatalogContractEntityFields): GraphqlCatalogContract => {
+  return {
+    title: contract.title,
+    slug: contract.slug,
+    description: contract.description,
+    short_description: contract.short_description,
+    logo: contract.logo_uri ?? null,
+    use_cases: contract.use_cases ?? [],
+    verified: contract.verified,
+    last_verified_date: contract.last_verified_date ?? '',
+    playbook_supported: contract.playbook_supported,
+    max_confidence_level: contract.max_confidence_level,
+    support_version: contract.support_version ?? null,
+    subscription_link: contract.subscription_link ?? null,
+    source_code: contract.source_code ?? '',
+    manager_supported: contract.manager_supported,
+    container_version: contract.version,
+    container_image: contract.image,
+    container_type: contract.connector_type,
+    config_schema: contract.config_schema,
+    license_type: contract.license_type ?? null,
+    solution_categories: contract.solution_categories ?? [],
+    contact: contract.contact ?? null,
+  };
 };
