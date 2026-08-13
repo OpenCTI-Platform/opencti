@@ -83,12 +83,10 @@ export const validateAndFormatSchemaAttribute = (
       if (value === null || value === undefined || value === '') {
         return;
       }
-
       const parsedValue = Number(value);
       if (Number.isNaN(parsedValue)) {
         throw ValidationError('Attribute must be a numeric/string', attributeName, extendedErrors({ input: editInput }));
       }
-
       if (attributeName === 'x_opencti_score' && (!Number.isInteger(parsedValue) || parsedValue < 0 || parsedValue > 100)) {
         throw ValidationError('The score should be an integer between 0 and 100', attributeName, extendedErrors({ input: editInput }));
       }
