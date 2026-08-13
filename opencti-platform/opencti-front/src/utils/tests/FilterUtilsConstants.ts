@@ -2521,6 +2521,7 @@ filterKeysSchema.set('Stix-Core-Object', new Map([
         'Media-Content',
         'Stix-Cyber-Observable',
         'Intrusion-Set',
+        'Event',
       ],
       elementsForFilterValuesSearch: [],
       subFilters: null,
