@@ -155,6 +155,7 @@
     "@vitejs/plugin-react": "6.0.5",
     "@vitest/coverage-v8": "4.1.10",
     "babel-plugin-relay": "21.0.1",
+    "dom-accessibility-api": "0.5.16",
     "esbuild": "0.28.1",
     "eslint": "10.8.0",
     "eslint-import-resolver-typescript": "4.4.5",
