@@ -47,7 +47,11 @@ const ALLOWED: Record<string, string> = {
 /** Component families the rendered bar must no longer contain. */
 const RETIRED = ['MuiBadge-', 'MuiStack-', 'CircularProgress'];
 
-/** Named survivors: MUI still rendered, with the gap that keeps them alive. */
+/**
+ * Named survivors: MUI still rendered, with the gap that keeps them alive.
+ * Every one of these traces to a single missing component. When the library
+ * ships a segmented control, all four rows go at once.
+ */
 const SURVIVORS = [
   {
     symbol: 'ToggleButtonGroup',
@@ -58,6 +62,19 @@ const SURVIVORS = [
     symbol: 'ToggleButton',
     file: 'src/components/SearchInput.jsx',
     retiredBy: 'LIBRARY-FEEDBACK #24 — the library ships no segmented control',
+  },
+  {
+    // The dropdown itself has a library equivalent. Its trigger does not: the
+    // caret lives inside a `ToggleButton`, so a Radix trigger would have to
+    // clone onto a non-focusable span or nest a button inside a button.
+    symbol: 'Menu',
+    file: 'src/components/SearchInput.jsx',
+    retiredBy: 'LIBRARY-FEEDBACK #24 — blocked by the same missing segmented control',
+  },
+  {
+    symbol: 'MenuItem',
+    file: 'src/components/SearchInput.jsx',
+    retiredBy: 'LIBRARY-FEEDBACK #24 — blocked by the same missing segmented control',
   },
 ];
 
@@ -134,6 +151,25 @@ describe('the admin top bar is built from library components', () => {
     const bar = SOURCES.get('src/private/components/nav/TopBar.tsx') as string;
     expect(bar).toMatch(/'--gradient-default':/);
     expect(bar).not.toMatch(/:root/);
+  });
+
+  it('sizes the loader from the slot it sits in, not by eye', () => {
+    const search = read('src/components/SearchInput.jsx');
+    // The sibling rows render a 20px glyph in the same icon slot, which is the
+    // library's `md`. Nothing is being encircled here, so the 32px `xl` tier
+    // would not be sitting in anything.
+    expect(search).toMatch(/<Spinner size="md"/);
+    expect(search).not.toMatch(/<Spinner size="(sm|lg|xl)"/);
+  });
+
+  it('leaves the unread marker on the library default tone', () => {
+    const bar = SOURCES.get('src/private/components/nav/TopBar.tsx') as string;
+    const badge = /<Badge[\s\S]*?\/?>/.exec(bar);
+    expect(badge).not.toBeNull();
+    // The library made `error` the default deliberately. Overriding it is a
+    // design decision, so it may not arrive silently: state the tone here the
+    // day it is chosen.
+    expect(badge![0]).not.toMatch(/\btone=/);
   });
 
   it('states the search window through the named constants', () => {
