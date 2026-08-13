@@ -1,4 +1,4 @@
-import Button from '@common/button/Button';
+import { Button } from '@filigran/design-system';
 import FiligranIcon from '@components/common/FiligranIcon';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
@@ -92,9 +92,8 @@ const AskArianeButton = () => {
         title={isCGUStatusPending && !hasRightToValidateCGU ? t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.') : 'Open chatbot'}
       >
         <Button
-          variant="tertiary"
-          gradient
-          gradientVariant="ai"
+          variant="ia"
+          priority="tertiary"
           onClick={toggleChatbot}
           startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" />}
         >

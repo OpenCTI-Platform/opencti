@@ -23,6 +23,14 @@ describe('createTextGradientSx', () => {
     expect(reset.background).toBeUndefined();
   });
 
+  it('hides the glyphs through the fill alone, so the reset has a colour to resolve to', () => {
+    const sx = createTextGradientSx(GRADIENT, 90) as Record<string, unknown>;
+    // The library hides the label with `-webkit-text-fill-color` only. Adding
+    // `color: transparent` on top breaks the reset below it: a child asking for
+    // `currentColor` would resolve to transparent and stay invisible.
+    expect(sx.color).toBeUndefined();
+  });
+
   it('keeps tinting the leading icon', () => {
     const sx = createTextGradientSx(GRADIENT, 90) as unknown as Record<string, Record<string, unknown>>;
     expect(sx['& svg'].fill).toBe(GRADIENT.start);
