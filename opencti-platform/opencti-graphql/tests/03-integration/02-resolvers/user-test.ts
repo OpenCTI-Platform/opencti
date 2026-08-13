@@ -982,6 +982,18 @@ describe('User has no settings capability and is organization admin query behavi
     expect([userInternalId, userEditorId, userParticipateId].every((userId) => queryResult.data?.users.edges.map((n: any) => n.node.id).includes(userId)))
       .toBeTruthy();
   });
+  it('Org admins should NOT update password for other users', async () => {
+    const variables = {
+      id: userInternalId,
+      input: [
+        { key: 'password', value: 'new_password' },
+      ],
+    };
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: UPDATE_QUERY,
+      variables,
+    });
+  });
   it('should update user from its own organization', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
       query: UPDATE_QUERY,

@@ -2485,7 +2485,9 @@ filterKeysSchema.set('Stix-Core-Object', new Map([
       type: 'integer',
       multiple: false,
       subEntityTypes: [
+        'Malware',
         'Indicator',
+        'Threat-Actor-Group',
         'Autonomous-System',
         'Directory',
         'Domain-Name',
@@ -2518,6 +2520,7 @@ filterKeysSchema.set('Stix-Core-Object', new Map([
         'Payment-Card',
         'Media-Content',
         'Stix-Cyber-Observable',
+        'Intrusion-Set',
       ],
       elementsForFilterValuesSearch: [],
       subFilters: null,

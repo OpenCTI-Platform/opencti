@@ -54,8 +54,8 @@ input EmailTemplateAddInput {
 
 # Mutations
 type Mutation {
-    emailTemplateAdd(input: EmailTemplateAddInput!): EmailTemplate @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-    emailTemplateDelete(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-    emailTemplateFieldPatch(id: ID!, input: [EditInput!]!): EmailTemplate @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-    emailTemplateTestSend(id: ID!): Boolean @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
+    emailTemplateAdd(input: EmailTemplateAddInput!): EmailTemplate @auth(for: [SETTINGS_SETACCESSES])
+    emailTemplateDelete(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])
+    emailTemplateFieldPatch(id: ID!, input: [EditInput!]!): EmailTemplate @auth(for: [SETTINGS_SETACCESSES])
+    emailTemplateTestSend(id: ID!): Boolean @auth(for: [SETTINGS_SETACCESSES])
 }

@@ -335,6 +335,7 @@ class StixDomainObject:
                 resource_level
                 primary_motivation
                 secondary_motivations
+                x_opencti_score
             }
             ... on City {
                 name
@@ -419,6 +420,9 @@ class StixDomainObject:
                 primary_motivation
                 secondary_motivations
                 personal_motivations
+            }
+            ... on ThreatActorGroup {
+                x_opencti_score
             }
             ... on Tool {
                 name
@@ -873,6 +877,7 @@ class StixDomainObject:
                 resource_level
                 primary_motivation
                 secondary_motivations
+                x_opencti_score
             }
             ... on City {
                 name
@@ -957,6 +962,9 @@ class StixDomainObject:
                 primary_motivation
                 secondary_motivations
                 personal_motivations
+            }
+            ... on ThreatActorGroup {
+                x_opencti_score
             }
             ... on Tool {
                 name
