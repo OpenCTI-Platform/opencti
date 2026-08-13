@@ -7086,6 +7086,7 @@ enum MalwaresOrdering {
   objectLabel
   x_opencti_workflow_id
   is_family
+  x_opencti_score
   confidence
   _score
 }
@@ -7224,6 +7225,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   architecture_execution_envs: [String]
   implementation_languages: [String]
   capabilities: [String]
+  x_opencti_score: Int
   killChainPhases: [KillChainPhase!]
   samples: [StixCyberObservable!]
   # Technical
@@ -7267,6 +7269,7 @@ input MalwareAddInput {
   architecture_execution_envs: [String]
   implementation_languages: [String]
   capabilities: [String]
+  x_opencti_score: Int
   confidence: Int
   revoked: Boolean
   lang: String
