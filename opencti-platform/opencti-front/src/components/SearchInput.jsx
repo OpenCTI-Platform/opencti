@@ -13,8 +13,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import Stack from '@mui/material/Stack';
-import Box from '@mui/material/Box';
 import useEnterpriseEdition from '../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from './i18n';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../utils/hooks/useGranted';
@@ -515,7 +513,10 @@ const SearchInput = (props) => {
                   onClick={handleNlqToggleClick}
                   disabled={nlqNoAgentAvailable || (isCGUStatusPending && !isAdmin)}
                 >
-                  <Stack direction="row" alignItems="center" spacing={0}>
+                  {/* Plain elements, not MUI layout: the segmented control is the
+                      only MUI left in the bar and its inside must not add more —
+                      see TopBar.libraryOnly.test.ts, RETIRED. */}
+                  <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <FiligranIcon
                       icon={LogoXtmOneIcon}
                       size="small"
@@ -523,14 +524,13 @@ const SearchInput = (props) => {
                     />
                     {/* Caret click zone — larger hit area with visual separator */}
                     {useXtmOne && nlqAgents.length > 0 && (
-                      <Box
-                        component="span"
-                        sx={{
+                      <span
+                        style={{
                           display: 'inline-flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          ml: 0.5,
-                          pl: 0.5,
+                          marginLeft: 4,
+                          paddingLeft: 4,
                           borderLeft: `1px solid ${isNLQActivated ? theme.palette.ai?.main + '40' : theme.palette.divider}`,
                           cursor: 'pointer',
                         }}
@@ -540,9 +540,9 @@ const SearchInput = (props) => {
                         }}
                       >
                         <KeyboardArrowDownOutlined sx={{ fontSize: 18, color: 'inherit' }} />
-                      </Box>
+                      </span>
                     )}
-                  </Stack>
+                  </div>
                 </ToggleButton>
               </span>
             </Tooltip>

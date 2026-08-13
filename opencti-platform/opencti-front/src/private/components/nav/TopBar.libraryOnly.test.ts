@@ -21,8 +21,15 @@ const FILES = [
   'src/components/UploadImport.tsx',
 ];
 
+/**
+ * The search field carries the two exempted gaps, so its allow-list is the one
+ * below plus `EXEMPTED`. It is checked by symbol all the same: the exemption
+ * covers named components, not the file.
+ */
+const SEARCH_FIELD = 'src/components/SearchInput.jsx';
+
 const read = (f: string) => readFileSync(path.resolve(f), 'utf8');
-const SOURCES = new Map(FILES.map((f) => [f, read(f)]));
+const SOURCES = new Map([...FILES, SEARCH_FIELD].map((f) => [f, read(f)]));
 
 /**
  * MUI symbols the bar may still import, and the condition that retires each.
@@ -35,6 +42,10 @@ const ALLOWED: Record<string, string> = {
   NotificationsOutlined: 'glyph',
   FileUploadOutlined: 'glyph',
   RadarOutlined: 'glyph',
+  ManageSearchOutlined: 'glyph',
+  Search: 'glyph',
+  TuneOutlined: 'glyph',
+  KeyboardArrowDownOutlined: 'glyph',
   // Retired by: the product dropping the legacy MUI theme. The bar reads the
   // palette to build its own gradient; it renders nothing with it.
   useTheme: 'palette read, renders nothing',
@@ -48,35 +59,47 @@ const ALLOWED: Record<string, string> = {
 const RETIRED = ['MuiBadge-', 'MuiStack-', 'CircularProgress'];
 
 /**
+ * The two exemptions Sandy granted on 2026-08-13, and nothing else. Each names
+ * the component the library owes and the single condition that retires the
+ * whole row — so an exemption cannot quietly become a habit.
+ */
+const EXEMPTED: Record<string, string> = {
+  // Segmented control — LIBRARY-FEEDBACK #24. All of these go together the day
+  // the library ships one.
+  ToggleButtonGroup: '#24 segmented control',
+  ToggleButton: '#24 segmented control',
+  // MUI's group injects `value`/`selected` into its children THROUGH the
+  // tooltip (measured: `data-mui-internal-clone-element` on the wrapper, and
+  // `Mui-selected` arriving on the toggle). A library Tooltip is not in that
+  // cloning contract, so swapping it silently breaks selection — the tooltip
+  // is part of the segmented control, not a separate choice.
+  Tooltip: '#24 inside the segmented control cloning contract',
+  // The agent dropdown hangs off the caret inside a `ToggleButton`; a Radix
+  // trigger would have to nest a button inside a button.
+  Menu: '#24 blocked by the same missing segmented control',
+  MenuItem: '#24 blocked by the same missing segmented control',
+  ListItemIcon: '#24 rows of that same menu',
+  ListItemText: '#24 rows of that same menu',
+  // Popover — LIBRARY-FEEDBACK #25. Not rendered in the bar today; declared so
+  // the day it arrives it is a known gap and not a surprise.
+  Popover: '#25 the library ships no Popover yet',
+  // Not the bar: `GradientBorderTextField` serves the drawer and page variants
+  // of this same component. The bar's own field is the library `SearchField`.
+  TextField: 'non-topBar variants only, never rendered in the bar',
+};
+
+/**
  * Named survivors: MUI still rendered, with the gap that keeps them alive.
  * Every one of these traces to a single missing component. When the library
- * ships a segmented control, all four rows go at once.
+ * ships a segmented control, all of these rows go at once.
  */
-const SURVIVORS = [
-  {
-    symbol: 'ToggleButtonGroup',
-    file: 'src/components/SearchInput.jsx',
-    retiredBy: 'LIBRARY-FEEDBACK #24 — the library ships no segmented control',
-  },
-  {
-    symbol: 'ToggleButton',
-    file: 'src/components/SearchInput.jsx',
-    retiredBy: 'LIBRARY-FEEDBACK #24 — the library ships no segmented control',
-  },
-  {
-    // The dropdown itself has a library equivalent. Its trigger does not: the
-    // caret lives inside a `ToggleButton`, so a Radix trigger would have to
-    // clone onto a non-focusable span or nest a button inside a button.
-    symbol: 'Menu',
-    file: 'src/components/SearchInput.jsx',
-    retiredBy: 'LIBRARY-FEEDBACK #24 — blocked by the same missing segmented control',
-  },
-  {
-    symbol: 'MenuItem',
-    file: 'src/components/SearchInput.jsx',
-    retiredBy: 'LIBRARY-FEEDBACK #24 — blocked by the same missing segmented control',
-  },
-];
+const SURVIVORS = Object.entries(EXEMPTED)
+  .filter(([, why]) => why.startsWith('#24'))
+  .map(([symbol, why]) => ({
+    symbol,
+    file: SEARCH_FIELD,
+    retiredBy: `LIBRARY-FEEDBACK ${why}`,
+  }));
 
 const importedSymbols = (source: string) => {
   const symbols: string[] = [];
@@ -106,6 +129,18 @@ describe('the admin top bar is built from library components', () => {
       // than only that a count changed.
       expect(ALLOWED, `${symbol} is imported by ${file} and is not an allowed MUI symbol`)
         .toHaveProperty(symbol);
+    }
+  });
+
+  it('the search field imports no MUI symbol outside the allow-list and the two exemptions', () => {
+    // `Stack` and `Box` were here and are not: pure MUI layout inside the one
+    // MUI control left in the bar. They are absent from both lists, so putting
+    // either back fails this test rather than passing unnoticed.
+    for (const symbol of importedSymbols(SOURCES.get(SEARCH_FIELD) as string)) {
+      expect(
+        { ...ALLOWED, ...EXEMPTED },
+        `${symbol} is imported by ${SEARCH_FIELD}: allow it with a reason, or exempt it with the component the library owes`,
+      ).toHaveProperty(symbol);
     }
   });
 
