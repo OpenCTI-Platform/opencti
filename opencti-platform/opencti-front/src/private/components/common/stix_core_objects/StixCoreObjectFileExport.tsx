@@ -273,8 +273,6 @@ const StixCoreObjectFileExportComponent = ({
     gradiantFromColor: values.fintelDesign?.value.gradiantFromColor ?? null,
     gradiantToColor: values.fintelDesign?.value.gradiantToColor ?? null,
     textColor: values.fintelDesign?.value.textColor ?? null,
-    includeCoverPage: values.includeCoverPage,
-    includeBackPage: values.includeBackPage,
   });
 
   /**
@@ -340,6 +338,10 @@ const StixCoreObjectFileExportComponent = ({
             templateName,
             fileMarkingNames,
             buildFintelDesignOptions(values),
+            {
+              includeCoverPage: values.includeCoverPage,
+              includeBackPage: values.includeBackPage,
+            },
           );
           const blob = await PDF.getBlob();
           uploadFile({
@@ -372,6 +374,10 @@ const StixCoreObjectFileExportComponent = ({
               name,
               fileMarkingNames,
               buildFintelDesignOptions(values),
+              {
+                includeCoverPage: values.includeCoverPage,
+                includeBackPage: values.includeBackPage,
+              },
             )
           : htmlToPdf(fileId, fileData);
         const blob = await PDF.getBlob();

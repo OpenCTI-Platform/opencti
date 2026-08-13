@@ -40,8 +40,6 @@ export interface FintelDesign {
   gradiantFromColor: string | null | undefined;
   gradiantToColor: string | null | undefined;
   textColor: string | null | undefined;
-  includeCoverPage?: boolean;
-  includeBackPage?: boolean;
 }
 
 export type FintelDesignFieldOption = {
