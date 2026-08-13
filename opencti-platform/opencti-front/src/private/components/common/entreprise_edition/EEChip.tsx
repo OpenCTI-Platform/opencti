@@ -9,6 +9,9 @@ import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useG
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useTheme } from '@mui/material/styles';
 
+/** The bar wants 8px between the label and the chip; the button already gives 4. */
+const EE_CHIP_EXTRA_GAP = '4px';
+
 interface EEChipProps {
   feature?: string;
   clickable?: boolean;
@@ -69,7 +72,8 @@ const EEChip = React.forwardRef<HTMLDivElement, EEChipProps>((
     <>
       {libraryChip ? (
         // Decorative by design: the surrounding button owns the click — see fds-migration/LIBRARY-FEEDBACK.md #21
-        <Chip label="EE" severity="ee" />
+        // 8px from the label: the button's own content gap contributes 4px.
+        <Chip label="EE" severity="ee" style={{ marginInlineStart: EE_CHIP_EXTRA_GAP }} />
       ) : (
         <div
           ref={ref}

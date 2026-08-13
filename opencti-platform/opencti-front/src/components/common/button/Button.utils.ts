@@ -160,6 +160,12 @@ export const createTextGradientSx = (
     backgroundClip: 'text',
     WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
+    // The gradient is for the button's own text nodes. `-webkit-text-fill-color`
+    // inherits and beats `color`, so a nested component paints invisible glyphs
+    // unless element children get their own fill back.
+    '& > *': {
+      WebkitTextFillColor: 'currentColor',
+    },
     '& svg': {
       fill: gradientColors.start,
       color: gradientColors.start,
