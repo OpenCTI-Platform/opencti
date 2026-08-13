@@ -2519,6 +2519,7 @@ filterKeysSchema.set('Stix-Core-Object', new Map([
         'Payment-Card',
         'Media-Content',
         'Stix-Cyber-Observable',
+        'Intrusion-Set',
       ],
       elementsForFilterValuesSearch: [],
       subFilters: null,

@@ -261,6 +261,7 @@ class StixCoreObject:
                 resource_level
                 primary_motivation
                 secondary_motivations
+                x_opencti_score
             }
             ... on City {
                 name
@@ -987,6 +988,7 @@ class StixCoreObject:
                 resource_level
                 primary_motivation
                 secondary_motivations
+                x_opencti_score
             }
             ... on City {
                 name
