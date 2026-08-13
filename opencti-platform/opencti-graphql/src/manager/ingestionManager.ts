@@ -282,14 +282,10 @@ export const rssExecutor = async (context: AuthContext, turndownService: Turndow
         ingestionLogger.info('Feed execution started', { uri: ingestion.uri });
         const ingestionPromise = rssDataHandler(context, httpGet, turndownService, ingestion)
           .then(async () => {
-            try {
-              await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, {
-                last_execution_status: 'success',
-                last_execution_date: now(),
-              });
-            } catch (patchErr) {
-              logApp.warn('[OPENCTI-MODULE] Failed to patch rss ingestion success status', { cause: patchErr });
-            }
+            await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, {
+              last_execution_status: 'success',
+              last_execution_date: now(),
+            });
             await ingestionLogger.success('Feed execution succeeded');
           })
           .catch((e) => {
