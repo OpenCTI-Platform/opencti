@@ -805,14 +805,19 @@ const StixCyberObservableCreation = ({
                           uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
                         />
                         {attributes.map((attribute) => {
+                          const isValueAttribute = attribute.value === 'value';
+                          const attributeLabel = isValueAttribute
+                            ? t_i18n('Value')
+                            : t_i18n(attribute.value);
                           if (bulkConf && attribute.value === bulkSelectedKey) {
                             return (
                               <Field
                                 component={BulkTextField}
                                 variant="standard"
                                 name={attribute.value}
-                                label={t_i18n(attribute.value)}
+                                label={attributeLabel}
                                 key={attribute.value}
+                                required={isValueAttribute}
                                 fullWidth={true}
                                 style={{ marginTop: 20 }}
                                 bulkType="observables"
@@ -959,7 +964,8 @@ const StixCyberObservableCreation = ({
                               variant="standard"
                               key={attribute.value}
                               name={attribute.value}
-                              label={t_i18n(attribute.value)}
+                              label={attributeLabel}
+                              required={isValueAttribute}
                               fullWidth={true}
                               style={{ marginTop: 20 }}
                             />
