@@ -717,3 +717,50 @@ inside a button. Neither is a conversion, so nothing was forced.
 Everything else in the bar and the whole navigation bar are library components,
 apart from `MuiSvgIcon` glyphs. The measured spec for the missing control is in
 LIBRARY-FEEDBACK entry 24.
+
+### One MUI family was still rendering, and the guard could not see it
+
+The sentence above was not yet true when it was written. A sweep of the
+**rendered** bar in a browser, at the served pin, on the three themes, found
+`MuiStack-` inside the NLQ toggle — a `Stack` and a `Box` doing pure layout
+inside the one MUI control the bar is allowed to keep. The guard already listed
+`MuiStack-` as retired, but it read only the five files the bar owns, and this
+one lives in `SearchInput.jsx`.
+
+Both are now plain elements at the same geometry: the caret keeps its 4px
+margin, its 4px padding and its 1px divider, and the toggle's box is unchanged
+at 36 × 36px. `SearchInput.jsx` joined the by-symbol check, with the segmented
+control's own symbols — `ToggleButtonGroup`, `ToggleButton`, `Tooltip`, `Menu`,
+`MenuItem`, `ListItemIcon`, `ListItemText` — declared as the exemption and
+nothing else. Putting `Stack` back turns the suite red; so does adding any
+symbol from a module that is already allowed.
+
+`Tooltip` is in that list on evidence, not convenience: MUI's group injects
+`value` and `selected` into its children *through* the tooltip — measured,
+`data-mui-internal-clone-element` on the wrapper and `Mui-selected` arriving on
+the toggle. A library `Tooltip` is not in that cloning contract, so swapping it
+would break selection while looking correct in a screenshot.
+
+After the change the rendered bar carries, on all three themes: `MuiSvgIcon`
+(glyphs), and `MuiToggleButtonGroup` / `MuiToggleButton` / `MuiButtonBase` —
+the exempted control and the base class it renders. Nothing else.
+
+### The token bridge was stale, and CI could not say so
+
+`check-fds-conformity.mjs` reported **16 checks, 0 issues** on this branch
+throughout. Run with the library actually checked out beside the product, the
+same script reports `bridge-freshness: STALE`: `theme.css` moved between
+`990810f` and `35a4768` and the bridge was never regenerated. The gate had been
+returning `SKIPPED` — counted inside the 16 — because CI has no sibling
+checkout, so a green line was standing in for a check that never ran.
+
+The change itself is harmless, and that was established before touching
+anything: 620 custom properties on each side, **not one value different**. What
+moved is the four `.text-gradient-*` utilities, which are rules, not tokens —
+library PR #116, the very fix this bump came for.
+
+The bridge was regenerated with the library's own generator
+(`pnpm generate:mui-bridge --product opencti --write-to-product`), never edited
+by hand, and the result is a two-line diff: the recorded `theme.css` hash and
+the file's own checksum. Conformity is now 16 checks, 0 issues with
+`bridge-freshness` genuinely **OK** rather than skipped.

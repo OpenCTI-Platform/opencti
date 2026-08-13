@@ -774,6 +774,27 @@ named survivor list rather than zero MUI.
 the existing `IconButton`, what is missing is the group that owns exclusivity,
 roving focus and the selected style.
 
+### The `Popover` that comes with it
+
+**Exempted by Sandy, 2026-08-13, with this entry.** No product line imports a
+`Popover`: it reaches the page because MUI draws the exempted menu with one
+(`MenuRoot = styled(Popover)` in `@mui/material`). The library exports none
+either — checked on the installed build at pin `35a4768`, not inferred from a
+changelog: `Popover` is absent from `dist/index.d.ts`, while the Radix
+dependency it would be built on is already there. Sandy still has to design it.
+
+**Retired by** the same event as the rest of this entry: a library segmented
+control removes the menu's MUI trigger, and the library's own floating layer
+replaces the popover under it. `TopBar.libraryOnly.test.ts` names `Popover` in
+`EXEMPTED` so that importing one directly stays a declared, dated exemption
+rather than a new arrival.
+
+**Not exempted, and now closed:** `Stack` and `Box` were still inside the NLQ
+toggle — MUI layout, not the control. Replaced by plain elements at the same
+geometry (4px caret margin and padding, unchanged 1px divider). The guard reads
+`SearchInput.jsx` by symbol from now on, so either one coming back fails
+instead of passing under an exemption written for named components.
+
 ---
 
 ## 25. The gradient-text recipe breaks on any nested component — ✅ CLOSED at pin `7e7b417`
