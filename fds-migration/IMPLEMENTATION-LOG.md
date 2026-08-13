@@ -805,3 +805,34 @@ MUI families unchanged (glyphs plus the exempted segmented control), separator
 16px|16px with 8px inside each cluster, EE chip legible at rest and on hover in
 the three themes, badge dot 8px red (`rgb(241,67,55)` dark, `rgb(184,24,10)`
 light), and all three tooltips opening on pointer and on keyboard.
+
+## Reconciliation of the two review passes
+
+Two sessions worked these reserves in parallel and both pushed. Sandy arbitrated
+the outcome: **the encapsulated design is the one that ships** — the control
+owns its own marker through a `badge` prop, forwards its ref and rest props, and
+merges `className`/`style`. Everything above stands as written.
+
+Two things were grafted onto it from the other pass, and nothing else:
+
+**A counter-check on the accessible tree.** `TopBarIconLink.test.tsx` proves the
+COMPONENT honours its contract. `TopBarNotifications.a11y.test.tsx` proves the
+BAR'S CALL SITE passes the right thing — the control composed exactly as
+`TopBar` composes it, inside a tooltip trigger, with the badge props the bar
+supplies. The defect was never in the component's contract; it was in what the
+bar handed it. The two files also compute the tree by different routes —
+`dom-accessibility-api` directly here, jest-dom's matchers there — so they
+cannot both go green for a reason belonging to one shared helper. Mutation-
+tested: moving the badge back inside the `aria-hidden` glyph turns **both**
+files red, four assertions in total.
+
+**The exemption list cannot grow by accretion.** The two exemptions are
+re-confirmed and dated 2026-08-14, with the retirement condition spelled out —
+the library ships the component. A new test walks every entry and fails if one
+carries a reason that is neither of the two Sandy granted. Mutation-tested:
+adding a third with an invented justification turns the suite red, naming the
+symbol.
+
+Both grafts are test-only. The rendered bar at this head is identical to the one
+measured above, so the checkpoint was not re-run: there is nothing new to look
+at, and re-photographing an unchanged bar would only look like evidence.
