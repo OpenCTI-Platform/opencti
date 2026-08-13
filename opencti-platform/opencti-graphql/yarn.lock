@@ -24,9 +24,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@apollo/protobufjs@npm:1.2.7":
-  version: 1.2.7
-  resolution: "@apollo/protobufjs@npm:1.2.7"
+"@apollo/protobufjs@npm:1.2.8":
+  version: 1.2.8
+  resolution: "@apollo/protobufjs@npm:1.2.8"
   dependencies:
     "@protobufjs/aspromise": "npm:^1.1.2"
     "@protobufjs/base64": "npm:^1.1.2"
@@ -43,7 +43,7 @@ __metadata:
   bin:
     apollo-pbjs: bin/pbjs
     apollo-pbts: bin/pbts
-  checksum: 10c0/24b08929c5216f75e3bf457cf7e132d957d6774b0feebb104e98d9b0c06e801ef3919ee23d6a63a6297fb4aa41da3491b8e9acc3481fea0909c90f41f1e5a0f6
+  checksum: 10c0/fb11ee65d965be83df28da1098384b5485123f8053380fb2c79b0e09dcf9677c7fcfe7c1668d68fe4cdcdebe17e3b8a5c0e34364a209f07fe060a5de6137ad0e
   languageName: node
   linkType: hard
 
@@ -93,11 +93,11 @@ __metadata:
   linkType: hard
 
 "@apollo/usage-reporting-protobuf@npm:^4.1.0, @apollo/usage-reporting-protobuf@npm:^4.1.1":
-  version: 4.1.1
-  resolution: "@apollo/usage-reporting-protobuf@npm:4.1.1"
+  version: 4.1.2
+  resolution: "@apollo/usage-reporting-protobuf@npm:4.1.2"
   dependencies:
-    "@apollo/protobufjs": "npm:1.2.7"
-  checksum: 10c0/45f0167a87d4ae8a12124831ebb29905122d28afdbfa23a4f25f4570189d5ddaa6f2829ef97923f5909b9753e39dbd28f810ca2a93ad9fcd60b2baf5669f5223
+    "@apollo/protobufjs": "npm:1.2.8"
+  checksum: 10c0/aa5af92455a7aad398418c96b0952ad659b3552e50f4a80307a9026aa8dab7ba3a0f5c7a87ac37a97aa22a920b2b2bf1805b4bc5172bf41a21f1c32cbb608fdd
   languageName: node
   linkType: hard
 
