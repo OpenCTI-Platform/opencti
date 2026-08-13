@@ -8,12 +8,12 @@ type Catalog implements InternalObject & BasicObject {
   # Catalog
   name: String!
   description: String!
-  contracts: [String!]!
+  contracts: [String!]! # JSON.Stringified GraphqlCatalogContract items
 }
 
 type ExtendedContract {
   catalog_id: String!
-  contract: String!
+  contract: String! # JSON.Stringified GraphqlCatalogContract items
 }
 
 # Ordering
