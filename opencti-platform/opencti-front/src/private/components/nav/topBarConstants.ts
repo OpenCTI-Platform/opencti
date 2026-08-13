@@ -15,3 +15,10 @@ export const TOP_BAR_SEARCH_MAX_WIDTH = 500;
  */
 export const TOP_BAR_HEIGHT_FALLBACK = 68;
 export const TOP_BAR_HEIGHT = `var(--fds-header-height, ${TOP_BAR_HEIGHT_FALLBACK}px)`;
+
+/**
+ * Hover delay before a library tooltip opens. Declared once and provided at the
+ * private app's root: a library `Tooltip` throws without a provider, and bar
+ * controls also render on screens the bar does not own.
+ */
+export const TOOLTIP_DELAY_MS = 200;
