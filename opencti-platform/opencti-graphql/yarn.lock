@@ -8252,9 +8252,9 @@ __metadata:
   linkType: hard
 
 "ip-address@npm:^10.0.1, ip-address@npm:^10.2.0":
-  version: 10.4.0
-  resolution: "ip-address@npm:10.4.0"
-  checksum: 10c0/d7b0bd2624fd861afbae6e49036a9b56f9506eaff7ff38592b7b4492dd5c272b53f5356dc8cc019e318acf29a96c90a3d1af1df761960267d23efa96858270fa
+  version: 10.5.0
+  resolution: "ip-address@npm:10.5.0"
+  checksum: 10c0/c6616bc99c90b552dad2beb850ca697c1ea3e2b89662d652a4439cd72a549b0c9af100a54be0d25be86599e2b089db87ef5303157d142e5b4c21bd2a1301dfa7
   languageName: node
   linkType: hard
 
@@ -9885,10 +9885,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nodemailer@npm:9.0.1":
-  version: 9.0.1
-  resolution: "nodemailer@npm:9.0.1"
-  checksum: 10c0/4213f01aa211127c1ce33243c5e45e7f831601a933d03fa864cd827b1bd5ea2782cb4b43722bee7028cbc193733d9802dad1120fe67181448eb0b7de52218a37
+"nodemailer@npm:9.0.5":
+  version: 9.0.5
+  resolution: "nodemailer@npm:9.0.5"
+  checksum: 10c0/60f7a21497c98c0d275cd12c488af581ef6aee65db575026319ac249dcac210bdab20edf77fe3158176ed3910f70d8c46d89abcd74f57a7170302727e6d05ee3
   languageName: node
   linkType: hard
 
@@ -10229,7 +10229,7 @@ __metadata:
     archiver-zip-encrypted: "npm:2.0.0"
     async-lock: "npm:1.4.1"
     aws-sdk-v3-proxy: "npm:2.2.0"
-    axios: "npm:1.16.1"
+    axios: "npm:1.19.0"
     axios-cookiejar-support: "npm:6.0.5"
     bcryptjs: "npm:3.0.3"
     bluebird: "npm:3.7.2"
@@ -10291,7 +10291,7 @@ __metadata:
     node-calls-python: "npm:1.11.1"
     node-fetch: "npm:3.3.2"
     node-forge: "npm:1.4.0"
-    nodemailer: "npm:9.0.1"
+    nodemailer: "npm:9.0.5"
     openai: "npm:4.104.0"
     openid-client: "npm:6.8.2"
     openid-clientv5: "npm:openid-client@5.7.1"
@@ -10315,13 +10315,13 @@ __metadata:
     typescript: "npm:5.9.3"
     typescript-eslint: "npm:8.56.1"
     unzipper: "npm:0.12.3"
-    uuid: "npm:14.0.0"
+    uuid: "npm:14.0.1"
     uuid-time: "npm:1.0.0"
     validator: "npm:13.15.26"
     vitest: "npm:3.2.4"
     winston: "npm:3.19.0"
     winston-daily-rotate-file: "npm:5.0.0"
-    ws: "npm:8.21.0"
+    ws: "npm:8.21.3"
     xml2js: "npm:0.6.2"
     zod: "npm:3.25.76"
   dependenciesMeta:
@@ -12818,12 +12818,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:14.0.0":
-  version: 14.0.0
-  resolution: "uuid@npm:14.0.0"
+"uuid@npm:14.0.1":
+  version: 14.0.1
+  resolution: "uuid@npm:14.0.1"
   bin:
     uuid: dist-node/bin/uuid
-  checksum: 10c0/a57ae7794c45005c1a9208989196c5baf79a7679c30f43c1bee9033a2c4d113a2cea216fa6fcc9663b08b0d55635df1a7c6eb7e7f3d21c3e50688c698fa39a50
+  checksum: 10c0/2d961289097cb68c37d93d1da0b5c3aafc1eb9948a455cca8d0ae53a099b2fe583b8933254a84097f700e6bac2e23033364904df0467c22551d5d9611febcaf6
   languageName: node
   linkType: hard
 
@@ -13286,22 +13286,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:8.21.0":
-  version: 8.21.0
-  resolution: "ws@npm:8.21.0"
-  peerDependencies:
-    bufferutil: ^4.0.1
-    utf-8-validate: ">=5.0.2"
-  peerDependenciesMeta:
-    bufferutil:
-      optional: true
-    utf-8-validate:
-      optional: true
-  checksum: 10c0/ef4a243476283fc49bc7550966c4af4aa0eef56273837211e700de3b664e08604a760cdddcb5ba43c049140e74ccfec5b0ee0bb439e08c2adf9138902fdde5f9
-  languageName: node
-  linkType: hard
-
-"ws@npm:^8.17.1, ws@npm:^8.18.0, ws@npm:^8.18.3, ws@npm:^8.19.0, ws@npm:^8.20.0":
+"ws@npm:8.21.3, ws@npm:^8.17.1, ws@npm:^8.18.0, ws@npm:^8.18.3, ws@npm:^8.19.0, ws@npm:^8.20.0":
   version: 8.21.3
   resolution: "ws@npm:8.21.3"
   peerDependencies:
