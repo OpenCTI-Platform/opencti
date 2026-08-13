@@ -278,7 +278,16 @@ export const rssExecutor = async (context: AuthContext, turndownService: Turndow
         // If no message in queue and last execution is old enough, fetch new data
       } else {
         const httpGet = rssHttpGetter(ingestion);
+        const ingestionLogger = createIngestionLogger(ingestion.internal_id, ingestion.name, 'rss');
+        ingestionLogger.info('Feed execution started', { uri: ingestion.uri });
         const ingestionPromise = rssDataHandler(context, httpGet, turndownService, ingestion)
+          .then(async () => {
+            await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, {
+              last_execution_status: 'success',
+              last_execution_date: now(),
+            });
+            await ingestionLogger.success('Feed execution succeeded');
+          })
           .catch((e) => {
             logApp.warn('[OPENCTI-MODULE] INGESTION - RSS ingestion execution', { cause: e, name: ingestion.name });
             if (e instanceof AxiosError) {
@@ -288,8 +297,10 @@ export const rssExecutor = async (context: AuthContext, turndownService: Turndow
                 }
               }
             }
+            ingestionLogger.error('Feed execution failed', buildIngestionErrorMeta(e))
+              .catch((reason) => logApp.error('[OPENCTI-MODULE] INGESTION Rss, error on pushing ingestion error log', { cause: reason }));
             // In case of error we need also to take in account the min_interval_minutes with last_execution_date update.
-            patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() })
+            patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now(), last_execution_status: 'error' })
               .catch((reason) => logApp.error('[OPENCTI-MODULE] INGESTION Rss, error on updating ingestion status', { cause: reason }));
           });
         ingestionPromises.push(ingestionPromise);
