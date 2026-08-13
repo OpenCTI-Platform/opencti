@@ -43,10 +43,17 @@ export type FileOption = Pick<FieldOption, 'label' | 'value'> & {
     id: string;
     name: string;
   }[];
+  fintelTemplateId?: string | null;
 };
 
 export type ConnectorOption = FieldOption & {
   connectorScope: readonly string[];
+};
+
+export type TemplateOption = FieldOption & {
+  isDefault?: boolean;
+  includeCoverPageByDefault?: boolean;
+  includeBackPageByDefault?: boolean;
 };
 
 export interface StixCoreObjectFileExportFormInputs {
@@ -54,7 +61,7 @@ export interface StixCoreObjectFileExportFormInputs {
   format: string;
   type: string | null;
   fileToExport: FileOption | null;
-  template: FieldOption | null;
+  template: TemplateOption | null;
   exportFileName: string | null;
   contentMaxMarkings: FieldOption[];
   fileMarkings: FieldOption[];
@@ -68,10 +75,10 @@ export interface StixCoreObjectFileExportFormProps {
   onClose: () => void;
   onSubmit: FormikConfig<StixCoreObjectFileExportFormInputs>['onSubmit'];
   connectors: ConnectorOption[];
-  templates?: FieldOption[];
+  templates?: TemplateOption[];
   fileOptions?: FileOption[];
   defaultFileMarkings?: FieldOption[];
-  defaultTemplate?: FieldOption;
+  defaultTemplate?: TemplateOption;
   defaultValues?: {
     connector: string;
     format: string;
@@ -260,11 +267,22 @@ const StixCoreObjectFileExportForm = ({
         }, [values.contentMaxMarkings]);
 
         useEffect(() => {
-          const defaults = values.fintelDesign?.value;
+          const defaults = values.template;
           if (!defaults) return;
           setFieldValue('includeCoverPage', defaults.includeCoverPageByDefault ?? true);
           setFieldValue('includeBackPage', defaults.includeBackPageByDefault ?? true);
-        }, [setFieldValue, values.fintelDesign?.value?.id]);
+        }, [setFieldValue, values.template?.value]);
+
+        useEffect(() => {
+          if (values.connector?.value !== BUILT_IN_HTML_TO_PDF.value) return;
+          if (!values.fileToExport?.value.startsWith('fromTemplate/')) return;
+          const originTemplateId = values.fileToExport.fintelTemplateId;
+          if (!originTemplateId) return;
+          const originTemplate = (templates ?? []).find((template) => template.value === originTemplateId);
+          if (!originTemplate) return;
+          setFieldValue('includeCoverPage', originTemplate.includeCoverPageByDefault ?? true);
+          setFieldValue('includeBackPage', originTemplate.includeBackPageByDefault ?? true);
+        }, [setFieldValue, templates, values.connector?.value, values.fileToExport?.value, values.fileToExport?.fintelTemplateId]);
 
         const shouldDisplayFintelDesign = (
           (values.connector?.value === BUILT_IN_FROM_TEMPLATE.value && values.format === 'application/pdf')

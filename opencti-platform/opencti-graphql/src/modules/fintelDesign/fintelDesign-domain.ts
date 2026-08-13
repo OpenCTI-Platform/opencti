@@ -25,12 +25,7 @@ export const findFintelDesignPaginated = async (context: AuthContext, user: Auth
 
 export const addFintelDesign = async (context: AuthContext, user: AuthUser, fintelDesign: FintelDesignAddInput) => {
   await checkEnterpriseEdition(context);
-  const fintelDesignWithDefault = {
-    ...fintelDesign,
-    default: fintelDesign.default ?? false,
-    includeCoverPageByDefault: fintelDesign.includeCoverPageByDefault ?? true,
-    includeBackPageByDefault: fintelDesign.includeBackPageByDefault ?? true,
-  };
+  const fintelDesignWithDefault = { ...fintelDesign, default: fintelDesign.default ?? false };
 
   // The default status is stored on the object itself (fintelDesign) rather than on a parent entity.
   // While this simplifies certain aspects of the design, it makes it hard to guarantee that only one default exists at a time.

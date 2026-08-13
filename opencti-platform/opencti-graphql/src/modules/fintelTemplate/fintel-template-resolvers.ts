@@ -6,6 +6,8 @@ const fintelTemplateResolvers: Resolvers = {
     fintelTemplate: (_, { id }, context) => findById(context, context.user, id),
   },
   FintelTemplate: {
+    includeCoverPageByDefault: (fintelTemplate) => fintelTemplate.includeCoverPageByDefault ?? true,
+    includeBackPageByDefault: (fintelTemplate) => fintelTemplate.includeBackPageByDefault ?? true,
     toConfigurationExport: (fintelTemplate, _, context) => fintelTemplateExport(context, context.user, fintelTemplate),
   },
   Mutation: {

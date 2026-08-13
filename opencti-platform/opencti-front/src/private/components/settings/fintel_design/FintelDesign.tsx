@@ -39,8 +39,6 @@ const fintelDesignQuery = graphql`
     fintelDesign(id: $id) {
       ...FintelDesign_fintelDesign
       default
-      includeCoverPageByDefault
-      includeBackPageByDefault
     }
   }
 `;
@@ -55,8 +53,6 @@ const fintelDesignComponentFragment = graphql`
     textColor
     file_id
     default
-    includeCoverPageByDefault
-    includeBackPageByDefault
   }
 `;
 
@@ -157,8 +153,6 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
               name: fintelDesign.name,
               description: fintelDesign.description ?? null,
               default: !!fintelDesign.default,
-              includeCoverPageByDefault: fintelDesign.includeCoverPageByDefault ?? true,
-              includeBackPageByDefault: fintelDesign.includeBackPageByDefault ?? true,
             } satisfies FintelDesignEditData}
             isOpen={isEditing}
             onClose={() => setIsEditing(false)}

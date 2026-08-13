@@ -41,8 +41,36 @@ describe('Component: FintelTemplateForm', () => {
         description: null,
         published: false,
         default: false,
+        includeCoverPageByDefault: true,
+        includeBackPageByDefault: true,
       },
       expect.anything(),
     );
+  });
+
+  it('should submit export default toggle changes in edit mode', async () => {
+    const onSubmit = vi.fn();
+    const onSubmitField = vi.fn();
+
+    const { user } = testRender(
+      <FintelTemplateForm
+        onClose={() => {}}
+        onSubmit={onSubmit}
+        onSubmitField={onSubmitField}
+        defaultValues={{
+          name: 'MyFintelTemplate',
+          description: null,
+          published: true,
+          default: false,
+          includeCoverPageByDefault: true,
+          includeBackPageByDefault: true,
+        }}
+        editingProps={{ onDefaultToggle: vi.fn() }}
+      />,
+    );
+
+    await user.click(screen.getByLabelText('Include cover page by default'));
+
+    expect(onSubmitField).toHaveBeenCalledWith('includeCoverPageByDefault', false);
   });
 });

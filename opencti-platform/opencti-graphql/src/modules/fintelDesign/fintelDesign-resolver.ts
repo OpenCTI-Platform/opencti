@@ -4,8 +4,6 @@ import { addFintelDesign, findFintelDesignPaginated, findById, fintelDesignDelet
 const fintelDesignResolvers: Resolvers = {
   FintelDesign: {
     default: (fintelDesign) => Boolean(fintelDesign.default),
-    includeCoverPageByDefault: (fintelDesign) => fintelDesign.includeCoverPageByDefault ?? true,
-    includeBackPageByDefault: (fintelDesign) => fintelDesign.includeBackPageByDefault ?? true,
   },
   Query: {
     fintelDesign: (_, { id }, context) => findById(context, context.user, id),

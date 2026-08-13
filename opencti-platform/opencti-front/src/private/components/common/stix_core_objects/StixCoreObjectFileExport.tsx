@@ -10,6 +10,7 @@ import StixCoreObjectFileExportForm, {
   StixCoreObjectFileExportFormInputs,
   StixCoreObjectFileExportFormProps,
 } from '@components/common/form/StixCoreObjectFileExportForm';
+import type { FintelDesign } from '@components/common/form/FintelDesignField';
 import {
   StixCoreObjectContentFilesUploadStixCoreObjectMutation,
   StixCoreObjectContentFilesUploadStixCoreObjectMutation$variables,
@@ -60,6 +61,7 @@ const stixCoreObjectFileExportQuery = graphql`
             name
             metaData {
               mimetype
+              fintel_template_id
             }
             objectMarking {
               id
@@ -79,6 +81,7 @@ const stixCoreObjectFileExportQuery = graphql`
             name
             metaData {
               mimetype
+              fintel_template_id
             }
             objectMarking {
               id
@@ -96,6 +99,8 @@ const stixCoreObjectFileExportQuery = graphql`
           id
           name
           default
+          includeCoverPageByDefault
+          includeBackPageByDefault
         }
         filesFromTemplate(first: 500) {
           edges {
@@ -104,6 +109,7 @@ const stixCoreObjectFileExportQuery = graphql`
               name
               metaData {
                 mimetype
+                fintel_template_id
               }
               objectMarking {
                 id
@@ -204,6 +210,7 @@ const StixCoreObjectFileExportComponent = ({
         id: o.id,
         name: getMainRepresentative(o),
       })),
+      fintelTemplateId: e.node.metaData?.fintel_template_id ?? null,
     };
   });
   // Artificially add mappable content in possible exports
@@ -220,7 +227,9 @@ const StixCoreObjectFileExportComponent = ({
   const templateOptions = (stixCoreObject?.fintelTemplates ?? []).map((t) => ({
     value: t.id,
     label: t.name,
-    isDefault: t.default,
+    isDefault: t.default ?? false,
+    includeCoverPageByDefault: t.includeCoverPageByDefault ?? true,
+    includeBackPageByDefault: t.includeBackPageByDefault ?? true,
   }));
 
   const defaultTemplate = templateOptions.find((t) => t.isDefault);
@@ -259,6 +268,14 @@ const StixCoreObjectFileExportComponent = ({
   const [commitUploadFile] = useApiMutation<StixCoreObjectContentFilesUploadStixCoreObjectMutation>(
     stixCoreObjectContentFilesUploadStixCoreObjectMutation,
   );
+  const buildFintelDesignOptions = (values: StixCoreObjectFileExportFormInputs): FintelDesign => ({
+    file_id: values.fintelDesign?.value.file_id ?? null,
+    gradiantFromColor: values.fintelDesign?.value.gradiantFromColor ?? null,
+    gradiantToColor: values.fintelDesign?.value.gradiantToColor ?? null,
+    textColor: values.fintelDesign?.value.textColor ?? null,
+    includeCoverPage: values.includeCoverPage,
+    includeBackPage: values.includeBackPage,
+  });
 
   /**
    * Export using "built-in" connector.
@@ -309,6 +326,7 @@ const StixCoreObjectFileExportComponent = ({
             id: scoId,
             fileMarkings,
             fromTemplate: true,
+            fintelTemplateId: templateId,
             file,
           });
         } else {
@@ -316,13 +334,20 @@ const StixCoreObjectFileExportComponent = ({
           const templateName = values.template.label;
           const fileName = `${values.exportFileName}.pdf`;
           const fileMarkingNames = values.fileMarkings.map(({ label }) => label);
-          const PDF = await htmlToPdfReport(scoName ?? '', templateContent, templateName, fileMarkingNames, values.fintelDesign?.value);
+          const PDF = await htmlToPdfReport(
+            scoName ?? '',
+            templateContent,
+            templateName,
+            fileMarkingNames,
+            buildFintelDesignOptions(values),
+          );
           const blob = await PDF.getBlob();
           uploadFile({
             id: scoId,
             fileMarkings,
             file: new File([blob], fileName, { type: blob.type }),
             fromTemplate: true,
+            fintelTemplateId: templateId,
           });
         }
       } else if (values.fileToExport !== null) {
@@ -346,11 +371,7 @@ const StixCoreObjectFileExportComponent = ({
               fileData,
               name,
               fileMarkingNames,
-              values.fintelDesign?.value,
-              {
-                includeCoverPage: values.includeCoverPage,
-                includeBackPage: values.includeBackPage,
-              },
+              buildFintelDesignOptions(values),
             )
           : htmlToPdf(fileId, fileData);
         const blob = await PDF.getBlob();

@@ -4,6 +4,7 @@ import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { InformationOutline } from 'mdi-material-ui';
 import * as Yup from 'yup';
+import Alert from '../../../../../components/Alert';
 import TextField from '../../../../../components/TextField';
 import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
 import MarkdownField from '../../../../../components/fields/markdownField/MarkdownField';
@@ -16,6 +17,8 @@ export interface FintelTemplateFormInputs {
   description: string | null;
   published: boolean;
   default: boolean;
+  includeCoverPageByDefault: boolean;
+  includeBackPageByDefault: boolean;
 }
 
 export type FintelTemplateFormInputKeys = keyof FintelTemplateFormInputs;
@@ -43,6 +46,9 @@ const FintelTemplateForm = ({
     name: Yup.string().trim().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     published: Yup.boolean().required(t_i18n('This field is required')),
+    default: Yup.boolean().required(t_i18n('This field is required')),
+    includeCoverPageByDefault: Yup.boolean().required(t_i18n('This field is required')),
+    includeBackPageByDefault: Yup.boolean().required(t_i18n('This field is required')),
   });
 
   const initialValues: FintelTemplateFormInputs = defaultValues ?? {
@@ -50,11 +56,16 @@ const FintelTemplateForm = ({
     description: null,
     published: false,
     default: false,
+    includeCoverPageByDefault: true,
+    includeBackPageByDefault: true,
   };
 
   const updateField = async (field: FintelTemplateFormInputKeys, value: unknown) => {
-    validation.validateAt(field, { [field]: value })
-      .then(() => onSubmitField(field, value))
+    const normalizedValue = ['published', 'default', 'includeCoverPageByDefault', 'includeBackPageByDefault'].includes(field)
+      ? value === true || value === 'true'
+      : value;
+    validation.validateAt(field, { [field]: normalizedValue })
+      .then(() => onSubmitField(field, normalizedValue))
       .catch(() => false);
   };
 
@@ -123,6 +134,27 @@ const FintelTemplateForm = ({
                     }
                   : onUpdate
               }
+            />
+            <div style={{ marginTop: 20, fontWeight: 500 }}>{t_i18n('Export defaults')}</div>
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="includeCoverPageByDefault"
+              label={t_i18n('Include cover page by default')}
+              containerstyle={{ marginTop: 10 }}
+              onChange={onUpdate}
+            />
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="includeBackPageByDefault"
+              label={t_i18n('Include back page by default')}
+              containerstyle={{ marginTop: 10 }}
+              onChange={onUpdate}
+            />
+            <Alert
+              style={{ marginTop: 10 }}
+              content={t_i18n('These defaults pre-fill the export modal but can be overridden at export time.')}
             />
 
             {!editingProps && (

@@ -14,8 +14,6 @@ export const convertFintelDesignToStix = (instance: StoreEntityFintelDesign): St
     gradiantToColor: instance.gradiantToColor,
     textColor: instance.textColor,
     default: Boolean(instance.default),
-    includeCoverPageByDefault: instance.includeCoverPageByDefault ?? true,
-    includeBackPageByDefault: instance.includeBackPageByDefault ?? true,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],

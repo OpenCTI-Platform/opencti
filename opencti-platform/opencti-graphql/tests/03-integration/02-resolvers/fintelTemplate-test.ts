@@ -75,6 +75,8 @@ const READ_QUERY = gql`
       settings_types
       start_date
       default
+      includeCoverPageByDefault
+      includeBackPageByDefault
       fintel_template_widgets {
         variable_name
         widget {
@@ -103,6 +105,8 @@ const CREATE_QUERY = gql`
       id
       name
       description
+      includeCoverPageByDefault
+      includeBackPageByDefault
     }
   }
 `;
@@ -158,6 +162,8 @@ describe('Fintel template resolver standard behavior', () => {
     expect(fintelTemplate).not.toBeNull();
     expect(fintelTemplate.data?.fintelTemplateAdd).not.toBeNull();
     expect(fintelTemplate.data?.fintelTemplateAdd.name).toEqual('Fintel template 1');
+    expect(fintelTemplate.data?.fintelTemplateAdd.includeCoverPageByDefault).toEqual(true);
+    expect(fintelTemplate.data?.fintelTemplateAdd.includeBackPageByDefault).toEqual(true);
     fintelTemplateInternalId = fintelTemplate.data?.fintelTemplateAdd.id;
   });
   it('should fintel template loaded by internal id', async () => {
@@ -166,6 +172,8 @@ describe('Fintel template resolver standard behavior', () => {
     expect(queryResult.data?.fintelTemplate).not.toBeNull();
     expect(queryResult.data?.fintelTemplate.id).toEqual(fintelTemplateInternalId);
     expect(queryResult.data?.fintelTemplate.name).toEqual('Fintel template 1');
+    expect(queryResult.data?.fintelTemplate.includeCoverPageByDefault).toEqual(true);
+    expect(queryResult.data?.fintelTemplate.includeBackPageByDefault).toEqual(true);
   });
   it('should fintel template created with built-in widgets', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
