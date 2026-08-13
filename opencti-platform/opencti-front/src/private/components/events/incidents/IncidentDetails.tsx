@@ -12,6 +12,10 @@ import Label from '../../../../components/common/label/Label';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Tag from '../../../../components/common/tag/Tag';
 
+type IncidentDetailsWithScore = IncidentDetails_incident$data & {
+  readonly x_opencti_score?: number | null;
+};
+
 const incidentDetailsFragment = graphql`
   fragment IncidentDetails_incident on Incident {
     id
@@ -44,7 +48,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
 }) => {
   const { t_i18n, fldt } = useFormatter();
 
-  const incident: IncidentDetails_incident$data = useFragment(
+  const incident: IncidentDetailsWithScore = useFragment(
     incidentDetailsFragment,
     incidentData,
   );

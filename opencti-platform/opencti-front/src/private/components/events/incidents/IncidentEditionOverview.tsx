@@ -18,13 +18,17 @@ import { convertAssignees, convertCreatedBy, convertMarkings, convertParticipant
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
-import { IncidentEditionOverview_incident$key } from './__generated__/IncidentEditionOverview_incident.graphql';
+import { IncidentEditionOverview_incident$data, IncidentEditionOverview_incident$key } from './__generated__/IncidentEditionOverview_incident.graphql';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import type { Theme } from '../../../../components/Theme';
+
+type IncidentOverviewWithScore = IncidentEditionOverview_incident$data & {
+  readonly x_opencti_score?: number | null;
+};
 
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionOverviewFieldPatchMutation(
@@ -163,7 +167,7 @@ const IncidentEditionOverviewComponent: FunctionComponent<
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
-  const incident = useFragment(incidentEditionOverviewFragment, incidentRef);
+  const incident: IncidentOverviewWithScore = useFragment(incidentEditionOverviewFragment, incidentRef);
   const { mandatoryAttributes } = useIsMandatoryAttribute(INCIDENT_TYPE);
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
@@ -245,7 +249,7 @@ const IncidentEditionOverviewComponent: FunctionComponent<
     description: incident.description,
     incident_type: incident.incident_type,
     severity: incident.severity,
-    x_opencti_score: incident.x_opencti_score,
+    x_opencti_score: incident.x_opencti_score ?? null,
     createdBy: convertCreatedBy(incident) as FieldOption,
     objectMarking: convertMarkings(incident),
     objectAssignee: convertAssignees(incident),
