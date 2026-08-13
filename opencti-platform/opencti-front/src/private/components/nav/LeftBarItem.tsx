@@ -41,6 +41,7 @@ interface RenderMenuItemParams {
   fontSize?: 'default' | 'small';
   forceShowText?: boolean;
   itemIcon?: React.ReactElement;
+  showTooltip?: boolean;
 }
 
 const LeftBarItem: React.FC<LeftBarItemProps> = ({
@@ -156,6 +157,16 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
     }
   };
 
+  // return focus to the button when we transitioned from !open -> open
+  const prevOpen = React.useRef(showSubItemMenu);
+  React.useEffect(() => {
+    if (prevOpen.current === true && showSubItemMenu === false) {
+      anchorRef.current!.focus();
+    }
+
+    prevOpen.current = showSubItemMenu;
+  }, [showSubItemMenu]);
+
   const renderMenuItem = ({
     itemLabel,
     selected,
@@ -163,6 +174,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
     fontSize = 'default',
     forceShowText = false, // For popover items
     itemIcon = undefined,
+    showTooltip = true,
   }: RenderMenuItemParams,
   ) => {
     const isSubItem = fontSize === 'small';
@@ -199,9 +211,14 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
               },
             }}
           >
-            <Tooltip key={itemLabel} title={itemLabel} placement="right">
-              {itemIcon}
-            </Tooltip>
+            {showTooltip ? (
+              <Tooltip key={itemLabel} title={itemLabel} aria-hidden="true" placement="right">
+                {itemIcon}
+              </Tooltip>
+            ) : (
+              itemIcon
+            )
+            }
           </ListItemIcon>
         )}
 
@@ -289,6 +306,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
       <ListItemButton
         component={Link}
         to={link}
+        aria-label={label}
         dense
         onClick={onClick}
         sx={getMenuStyles(isParentSelected)}
@@ -307,10 +325,11 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
           dense
           aria-expanded={isMenuOpen}
           aria-controls={`nav-${label}-collapse`}
+          aria-label={label}
           onClick={handleParentClick}
           sx={getMenuStyles(isParentSelected)}
         >
-          {renderMenuItem({ itemLabel: label, selected: isParentSelected, itemIcon: icon })}
+          {renderMenuItem({ itemLabel: label, selected: isParentSelected, itemIcon: icon, showTooltip: false })}
           {isMenuOpen ? <ArrowDropUp sx={{ fontSize: '20px' }} /> : <ArrowDropDown sx={{ fontSize: '20px' }} />}
         </ListItemButton>
 
@@ -339,22 +358,26 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
         ref={anchorRef}
         tabIndex={0}
         id={`nav-${label}`}
-        aria-expanded={isMenuOpen}
-        aria-haspopup="menu"
+        aria-expanded={isMenuOpen ? 'true' : undefined}
         aria-controls={isMenuOpen ? `${label}-sub-menu` : undefined}
+        aria-haspopup="true"
         onClick={handleClick}
         onKeyDown={handleKeyboard}
         sx={getMenuStyles(isParentSelected)}
+        aria-label={label}
       >
-        {renderMenuItem({ itemLabel: label, selected: isParentSelected, itemIcon: icon })}
+        {renderMenuItem({ itemLabel: label, selected: isParentSelected, itemIcon: icon, showTooltip: false })}
       </ListItemButton>
       <Popover
         sx={{ pointerEvents: 'none' }}
+        role="menu"
         open={showSubItemMenu}
         anchorEl={anchorRef.current}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
         onClose={onMenuClose}
+        aria-expanded={showSubItemMenu}
+        aria-hidden={!showSubItemMenu}
         disableScrollLock
         elevation={0}
         slotProps={{
@@ -371,6 +394,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
       >
         <MenuList
           variant="menu"
+          aria-labelledby={`nav-${label}`}
           autoFocusItem={!usingHover}
           disablePadding
           id={`${label}-sub-menu`}
