@@ -24,6 +24,8 @@ const headerFragment = graphql`
     start_date
     template_content
     default
+    includeCoverPageByDefault
+    includeBackPageByDefault
   }
 `;
 
@@ -132,6 +134,8 @@ const FintelTemplateHeader = ({ entitySettingId, data, currentDefaultName }: Fin
           description: template.description ?? null,
           published: !!template.start_date,
           default: !!template.default,
+          includeCoverPageByDefault: template.includeCoverPageByDefault ?? true,
+          includeBackPageByDefault: template.includeBackPageByDefault ?? true,
         }}
         currentDefaultName={template.default ? undefined : currentDefaultName}
         onClose={() => setFormOpen(false)}

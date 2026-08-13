@@ -9904,6 +9904,7 @@ export type FileMetadata = {
   errors?: Maybe<Array<Maybe<WorkMessage>>>;
   external_reference_id?: Maybe<Scalars['String']['output']>;
   file_markings?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  fintel_template_id?: Maybe<Scalars['String']['output']>;
   inCarousel?: Maybe<Scalars['Boolean']['output']>;
   labels?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   labels_text?: Maybe<Scalars['String']['output']>;
@@ -10004,8 +10005,6 @@ export type FintelDesign = BasicObject & InternalObject & {
   gradiantFromColor?: Maybe<Scalars['String']['output']>;
   gradiantToColor?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
-  includeBackPageByDefault?: Maybe<Scalars['Boolean']['output']>;
-  includeCoverPageByDefault?: Maybe<Scalars['Boolean']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
@@ -10020,8 +10019,6 @@ export type FintelDesignAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   gradiantFromColor?: InputMaybe<Scalars['String']['input']>;
   gradiantToColor?: InputMaybe<Scalars['String']['input']>;
-  includeBackPageByDefault?: InputMaybe<Scalars['Boolean']['input']>;
-  includeCoverPageByDefault?: InputMaybe<Scalars['Boolean']['input']>;
   name: Scalars['String']['input'];
   textColor?: InputMaybe<Scalars['String']['input']>;
 };
@@ -10052,6 +10049,8 @@ export type FintelTemplate = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   fintel_template_widgets: Array<FintelTemplateWidget>;
   id: Scalars['ID']['output'];
+  includeBackPageByDefault?: Maybe<Scalars['Boolean']['output']>;
+  includeCoverPageByDefault?: Maybe<Scalars['Boolean']['output']>;
   instance_filters?: Maybe<Scalars['String']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
@@ -10068,6 +10067,8 @@ export type FintelTemplateAddInput = {
   default?: InputMaybe<Scalars['Boolean']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   fintel_template_widgets?: InputMaybe<Array<FintelTemplateWidgetAddInput>>;
+  includeBackPageByDefault?: InputMaybe<Scalars['Boolean']['input']>;
+  includeCoverPageByDefault?: InputMaybe<Scalars['Boolean']['input']>;
   instance_filters?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   settings_types: Array<Scalars['String']['input']>;
@@ -31366,6 +31367,7 @@ export type StixCoreObjectEditMutationsImportPushArgs = {
   embedded?: InputMaybe<Scalars['Boolean']['input']>;
   file: Scalars['Upload']['input'];
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  fintelTemplateId?: InputMaybe<Scalars['String']['input']>;
   fromTemplate?: InputMaybe<Scalars['Boolean']['input']>;
   noTriggerImport?: InputMaybe<Scalars['Boolean']['input']>;
   version?: InputMaybe<Scalars['DateTime']['input']>;
@@ -32390,6 +32392,7 @@ export type StixDomainObjectEditMutationsImportPushArgs = {
   embedded?: InputMaybe<Scalars['Boolean']['input']>;
   file: Scalars['Upload']['input'];
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  fintelTemplateId?: InputMaybe<Scalars['String']['input']>;
   fromTemplate?: InputMaybe<Scalars['Boolean']['input']>;
   noTriggerImport?: InputMaybe<Scalars['Boolean']['input']>;
   version?: InputMaybe<Scalars['DateTime']['input']>;
@@ -45295,6 +45298,7 @@ export type FileMetadataResolvers<ContextType = any, ParentType extends Resolver
   errors?: Resolver<Maybe<Array<Maybe<ResolversTypes['WorkMessage']>>>, ParentType, ContextType>;
   external_reference_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   file_markings?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  fintel_template_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   inCarousel?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   labels?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   labels_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -45339,8 +45343,6 @@ export type FintelDesignResolvers<ContextType = any, ParentType extends Resolver
   gradiantFromColor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   gradiantToColor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  includeBackPageByDefault?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  includeCoverPageByDefault?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
@@ -45366,6 +45368,8 @@ export type FintelTemplateResolvers<ContextType = any, ParentType extends Resolv
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   fintel_template_widgets?: Resolver<Array<ResolversTypes['FintelTemplateWidget']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  includeBackPageByDefault?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  includeCoverPageByDefault?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   instance_filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

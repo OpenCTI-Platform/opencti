@@ -30,8 +30,6 @@ const LIST_QUERY = gql`
           gradiantFromColor
           gradiantToColor
           textColor
-          includeCoverPageByDefault
-          includeBackPageByDefault
         }
       }
     }
@@ -50,8 +48,6 @@ const READ_QUERY = gql`
       gradiantFromColor
       gradiantToColor
       textColor
-      includeCoverPageByDefault
-      includeBackPageByDefault
     }
   }
 `;
@@ -62,8 +58,6 @@ const CREATE_QUERY = gql`
       id
       name
       description
-      includeCoverPageByDefault
-      includeBackPageByDefault
     }
   }
 `;
@@ -78,8 +72,6 @@ const EDIT_QUERY = gql`
       textColor
       gradiantToColor
       gradiantFromColor
-      includeCoverPageByDefault
-      includeBackPageByDefault
     }
   }
 `;
@@ -120,8 +112,6 @@ describe('Fintel Design resolver standard behavior', () => {
     expect(fintelDesign).not.toBeNull();
     expect(fintelDesign.data?.fintelDesignAdd).not.toBeNull();
     expect(fintelDesign.data?.fintelDesignAdd.name).toEqual('Test Fintel Design');
-    expect(fintelDesign.data?.fintelDesignAdd.includeCoverPageByDefault).toEqual(true);
-    expect(fintelDesign.data?.fintelDesignAdd.includeBackPageByDefault).toEqual(true);
     fintelDesignInternalId = fintelDesign.data?.fintelDesignAdd.id;
   });
 
@@ -131,8 +121,6 @@ describe('Fintel Design resolver standard behavior', () => {
     expect(queryResult.data?.fintelDesign).not.toBeNull();
     expect(queryResult.data?.fintelDesign.id).toEqual(fintelDesignInternalId);
     expect(queryResult.data?.fintelDesign.name).toEqual('Test Fintel Design');
-    expect(queryResult.data?.fintelDesign.includeCoverPageByDefault).toEqual(true);
-    expect(queryResult.data?.fintelDesign.includeBackPageByDefault).toEqual(true);
   });
 
   it('should list Fintel Designs', async () => {

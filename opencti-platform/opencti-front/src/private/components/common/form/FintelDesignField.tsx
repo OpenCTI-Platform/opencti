@@ -29,8 +29,6 @@ const fintelDesignFieldQuery = graphql`
           gradiantToColor
           gradiantFromColor
           textColor
-          includeCoverPageByDefault
-          includeBackPageByDefault
         }
       }
     }
@@ -38,13 +36,12 @@ const fintelDesignFieldQuery = graphql`
 `;
 
 export interface FintelDesign {
-  id?: string | null | undefined;
   file_id: string | null | undefined;
   gradiantFromColor: string | null | undefined;
   gradiantToColor: string | null | undefined;
   textColor: string | null | undefined;
-  includeCoverPageByDefault?: boolean | null | undefined;
-  includeBackPageByDefault?: boolean | null | undefined;
+  includeCoverPage?: boolean;
+  includeBackPage?: boolean;
 }
 
 export type FintelDesignFieldOption = {

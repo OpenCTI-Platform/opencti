@@ -30,6 +30,7 @@ export interface BasicStoreEntityDocument extends BasicStoreEntity {
     order?: number;
     description?: string;
     inCarousel?: boolean;
+    fintel_template_id?: string;
     filename?: string;
     file_markings?: string[];
   };

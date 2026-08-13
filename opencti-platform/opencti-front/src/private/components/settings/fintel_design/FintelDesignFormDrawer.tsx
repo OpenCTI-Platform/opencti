@@ -12,7 +12,6 @@ import { FintelDesignsLinesPaginationQuery$variables } from '@components/setting
 import Button from '@common/button/Button';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import Alert from '../../../../components/Alert';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { fetchQuery, handleError, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -73,8 +72,6 @@ interface FintelDesignFormValues {
   name: string;
   description: string;
   default: boolean;
-  includeCoverPageByDefault: boolean;
-  includeBackPageByDefault: boolean;
 }
 
 interface PendingCreate {
@@ -95,8 +92,6 @@ export interface FintelDesignEditData {
   name: string;
   description: string | null;
   default: boolean;
-  includeCoverPageByDefault: boolean;
-  includeBackPageByDefault: boolean;
 }
 
 const CreateFintelDesignControlledDial: DrawerControlledDialType = (props) => (
@@ -166,8 +161,6 @@ const FintelDesignFormDrawer: FunctionComponent<FintelDesignFormDrawerProps> = (
           name: values.name,
           description: values.description,
           default: values.default,
-          includeCoverPageByDefault: values.includeCoverPageByDefault,
-          includeBackPageByDefault: values.includeBackPageByDefault,
         },
       },
       updater: (store, response) => {
@@ -266,8 +259,6 @@ const FintelDesignFormDrawer: FunctionComponent<FintelDesignFormDrawerProps> = (
     name: fintelDesign?.name ?? '',
     description: fintelDesign?.description ?? '',
     default: !!fintelDesign?.default,
-    includeCoverPageByDefault: fintelDesign?.includeCoverPageByDefault ?? true,
-    includeBackPageByDefault: fintelDesign?.includeBackPageByDefault ?? true,
   };
 
   const validator = Yup.object().shape({
@@ -327,27 +318,6 @@ const FintelDesignFormDrawer: FunctionComponent<FintelDesignFormDrawerProps> = (
                         handleDefaultToggle(next, () => setFieldValue('default', !next));
                       }
                     : undefined}
-                />
-                <div style={{ marginTop: 20, fontWeight: 500 }}>{t_i18n('Export defaults')}</div>
-                <Field
-                  component={SwitchField}
-                  type="checkbox"
-                  name="includeCoverPageByDefault"
-                  label={t_i18n('Include cover page by default')}
-                  containerstyle={{ marginTop: 10 }}
-                  onChange={isEditMode ? handleSubmitField : undefined}
-                />
-                <Field
-                  component={SwitchField}
-                  type="checkbox"
-                  name="includeBackPageByDefault"
-                  label={t_i18n('Include back page by default')}
-                  containerstyle={{ marginTop: 10 }}
-                  onChange={isEditMode ? handleSubmitField : undefined}
-                />
-                <Alert
-                  style={{ marginTop: 10 }}
-                  content={t_i18n('These defaults pre-fill the export modal but can be overridden at export time.')}
                 />
                 {!isEditMode && (
                   <FormButtonContainer>
