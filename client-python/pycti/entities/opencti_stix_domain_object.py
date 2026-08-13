@@ -420,6 +420,9 @@ class StixDomainObject:
                 secondary_motivations
                 personal_motivations
             }
+            ... on ThreatActorGroup {
+                x_opencti_score
+            }
             ... on Tool {
                 name
                 description
@@ -957,6 +960,9 @@ class StixDomainObject:
                 primary_motivation
                 secondary_motivations
                 personal_motivations
+            }
+            ... on ThreatActorGroup {
+                x_opencti_score
             }
             ... on Tool {
                 name

@@ -5548,6 +5548,7 @@ enum ThreatActorsOrdering {
   confidence
   sophistication
   resource_level
+  x_opencti_score
   _score
   threat_actor_types
   objectMarking
@@ -5703,6 +5704,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   goals: [String]
   sophistication: String
   resource_level: String
+  x_opencti_score: Int
   primary_motivation: String
   secondary_motivations: [String]
   personal_motivations: [String]
@@ -5724,6 +5726,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
 input ThreatActorGroupAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+  x_opencti_score: Int
 
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!

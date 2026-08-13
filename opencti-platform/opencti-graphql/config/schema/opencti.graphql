@@ -7299,6 +7299,7 @@ enum ThreatActorsOrdering {
   updated_at
   x_opencti_workflow_id
   confidence
+  x_opencti_score
   sophistication
   resource_level
   _score
@@ -7491,6 +7492,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   # StixObject
   representative: Representative!
   x_opencti_stix_ids: [StixId]
+  x_opencti_score: Int
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -7642,6 +7644,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
 input ThreatActorGroupAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+  x_opencti_score: Int
   name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   aliases: [String]

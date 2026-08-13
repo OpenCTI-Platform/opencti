@@ -251,6 +251,7 @@ const typesWithScore = [
   'Payment-Card',
   'Media-Content',
   'Persona',
+  'Threat-Actor-Group',
 ];
 const typesWithSeverity = ['Case-Incident', 'Case-Rft', 'Case-Rfi'];
 const typesWithPriority = ['Case-Incident', 'Case-Rft', 'Case-Rfi'];
