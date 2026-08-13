@@ -80,13 +80,23 @@ const EXEMPTED: Record<string, string> = {
   MenuItem: '#24 blocked by the same missing segmented control',
   ListItemIcon: '#24 rows of that same menu',
   ListItemText: '#24 rows of that same menu',
-  // Popover — LIBRARY-FEEDBACK #25. Not rendered in the bar today; declared so
-  // the day it arrives it is a known gap and not a surprise.
-  Popover: '#25 the library ships no Popover yet',
+  // Popover — the second exemption. It is not imported here: it arrives as
+  // MUI's own implementation of the exempted menu (`MenuRoot = styled(Popover)`
+  // in @mui/material), and the library exports no public Popover at pin
+  // 35a4768 — verified on the installed build, not assumed. Declared by name so
+  // that importing one directly is still a named, dated exemption.
+  Popover: '#24 MUI draws the exempted menu with it; no library Popover yet',
   // Not the bar: `GradientBorderTextField` serves the drawer and page variants
   // of this same component. The bar's own field is the library `SearchField`.
   TextField: 'non-topBar variants only, never rendered in the bar',
 };
+
+/**
+ * Declared but not imported today. `Popover` is the only one: it reaches the
+ * page through MUI's own `Menu`, never through a line of product code, so
+ * asserting its presence would assert a fiction.
+ */
+const DECLARED_NOT_IMPORTED = ['Popover'];
 
 /**
  * Named survivors: MUI still rendered, with the gap that keeps them alive.
@@ -94,7 +104,7 @@ const EXEMPTED: Record<string, string> = {
  * ships a segmented control, all of these rows go at once.
  */
 const SURVIVORS = Object.entries(EXEMPTED)
-  .filter(([, why]) => why.startsWith('#24'))
+  .filter(([symbol, why]) => why.startsWith('#24') && !DECLARED_NOT_IMPORTED.includes(symbol))
   .map(([symbol, why]) => ({
     symbol,
     file: SEARCH_FIELD,
