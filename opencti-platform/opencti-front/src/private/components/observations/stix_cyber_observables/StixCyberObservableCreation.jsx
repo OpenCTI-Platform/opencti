@@ -517,7 +517,7 @@ const StixCyberObservableCreation = ({
                   && !n.value.startsWith('i_'),
               ),
             )(props.schemaAttributeNames.edges);
-
+            console.log('attributes : ', attributes);
             let extraFieldsToValidate = null;
             let requiredOneOfFields = [];
             for (const attribute of attributes) {
@@ -725,7 +725,11 @@ const StixCyberObservableCreation = ({
             }
 
             const isFieldInBulk = (name) => name === bulkSelectedKey;
-
+            console.log('requiredOneOfFields : ', requiredOneOfFields);
+            console.log('extraFieldsToValidate : ', extraFieldsToValidate);
+            console.log('');
+            console.log('initialValues : ', initialValues);
+            console.log('stixCyberObservableValidationFinal : ', stixCyberObservableValidationFinal);
             return (
               <Formik
                 initialValues={initialValues}
@@ -1057,7 +1061,7 @@ const StixCyberObservableCreation = ({
         <Drawer
           open={status.open}
           onClose={localHandleClose}
-          title={t_i18n('Create an observable')}
+          title={t_i18n('Create an oazebservable')}
           header={
             !isFromBulkRelation && status.type
               ? (
