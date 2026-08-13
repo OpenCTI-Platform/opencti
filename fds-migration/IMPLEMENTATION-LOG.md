@@ -764,3 +764,44 @@ The bridge was regenerated with the library's own generator
 by hand, and the result is a two-line diff: the recorded `theme.css` hash and
 the file's own checksum. Conformity is now 16 checks, 0 issues with
 `bridge-freshness` genuinely **OK** rather than skipped.
+
+### R3 re-measured in the computed accessibility tree, and it was red
+
+"Present in the DOM" was doing the work of "announced". Read through CDP
+(`Accessibility.getPartialAXTree` on the anchor itself, the OpenAEV method),
+the Notifications control was, on all three themes:
+
+| | before | after |
+|---|---|---|
+| role | `link` | `link` |
+| NAME | `"Notifications"` (`aria-label`) | `"Notifications"` (`aria-label`) |
+| DESCRIPTION | **`""`** | **`"5 unread"`** |
+| `aria-describedby` | on the `<svg>`, inside `aria-hidden` | on the `<a>` |
+
+The badge was wrapping the glyph. `TopBarIconLink` renders the glyph inside
+`aria-hidden="true"` — as `IconButton` does — so the reference `Badge` clones
+onto its child landed outside the accessibility tree. A DOM sweep found the
+text and read as a pass; the computed tree said nothing was announced.
+
+The badge now marks the **control**: `TopBarIconLink` takes a `badge` prop and
+wraps its own anchor. No `tone` at any point on that path — red is the library
+default and the decision (Sandy, 2026-08-14), on both products.
+
+Two further defects fell out of the same pass, neither of them visible in the
+markup:
+
+- The **tooltips on Triggers and Notifications never opened**, on pointer or on
+  keyboard. `TopBarIconLink` named the five props it knew about, so everything
+  `TooltipTrigger asChild` cloned onto it — handlers, `data-state`, ref — was
+  dropped. The tooltip on the library `IconButton` beside them worked, which is
+  what made the gap invisible. Fixed by forwarding the ref and the rest props.
+- Doing that naively then **shrank the control to 24×28** instead of 36×36: a
+  cloning parent passes `className: undefined`, and spreading it replaced the
+  library variant wholesale. `className` and `style` are merged now, with a
+  test that fails if either is spread again.
+
+Both are filed as LIBRARY-FEEDBACK 28 and 29. Re-checkpointed after the change:
+MUI families unchanged (glyphs plus the exempted segmented control), separator
+16px|16px with 8px inside each cluster, EE chip legible at rest and on hover in
+the three themes, badge dot 8px red (`rgb(241,67,55)` dark, `rgb(184,24,10)`
+light), and all three tooltips opening on pointer and on keyboard.

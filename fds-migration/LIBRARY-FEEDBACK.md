@@ -868,3 +868,51 @@ one arrived inside a feature commit titled for the Spinner's new tier.
 
 **Asked.** Flag a default-value change in the release note the way a removed
 prop would be. A consumer cannot diff what it never wrote.
+
+---
+
+## 28. `Badge` describes the element it is given, so it must be given the control
+
+**Not a library defect — a consumer trap the API cannot see.** `Badge` clones
+`aria-describedby` onto its single child element. The bar handed it the glyph,
+and `TopBarIconLink` renders the glyph inside `aria-hidden="true"`, exactly as
+`IconButton` does. The reference therefore landed on a node outside the
+accessibility tree.
+
+**Measured through CDP** (`Accessibility.getPartialAXTree` on the anchor), the
+three themes, before: role `link`, NAME `"Notifications"` from
+`attribute[aria-label]`, **DESCRIPTION `""`** — the count was announced by
+nobody, while a DOM sweep found the text and read as if it worked. That is the
+whole point of measuring the computed tree instead of the markup.
+
+**After**, the badge wraps the anchor: NAME `"Notifications"`, **DESCRIPTION
+`"5 unread"`**, `aria-describedby` on the `<a>` itself, in dark, light and a
+custom theme.
+
+**Ask.** A dev-only warning when the element `Badge` is about to describe is
+`aria-hidden`, or sits inside something that is — the same shape as the
+existing warning for a non-element child. It is cheap and it catches the one
+mistake the type system cannot.
+
+---
+
+## 29. A component that names its props swallows what `asChild` clones onto it
+
+**Ours, found by the same pass, and worth writing down for the next pilot.**
+`TopBarIconLink` destructured the five props it knew about. `TooltipTrigger
+asChild` clones its handlers, its `data-state` and its ref onto that component,
+and every one of them was dropped: measured, the Triggers and Notifications
+tooltips **never opened**, on pointer or on keyboard, while the tooltip on the
+library `IconButton` next to them did. Nothing was red; the markup looked
+right.
+
+Fixed by forwarding the ref and spreading the rest onto the anchor — and
+`className` and `style` are merged rather than spread, because a cloning parent
+passes `className: undefined` and that replaced the library variant outright:
+the control measured **24×28 instead of 36×36**, with no size class left on it.
+Both are guarded by tests now.
+
+**Lesson for the playbook.** A hand-rolled stand-in for a library component
+(entry 13's `IconButton asChild` gap is what forces one here) must forward ref
+and rest props, or it is not a drop-in — and the failure is silent in both
+directions.
