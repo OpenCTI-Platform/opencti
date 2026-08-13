@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { hashMergeValidation } from '../../../src/database/middleware';
-import { generateAttributesInputsForUpsert, generateRefsInputsForUpsert, mergeUpsertInput, mergeUpsertInputs } from '../../../src/utils/upsert-utils';
+import {
+  generateAttributesInputsForUpsert,
+  generateRefsInputsForUpsert,
+  mergeUpsertInput,
+  mergeUpsertInputs,
+  sanitizeSynchronizedWorkflowInputs,
+  sanitizeSynchronizedWorkflowUpsertOperations
+} from '../../../src/utils/upsert-utils';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { ENTITY_DOMAIN_NAME } from '../../../src/schema/stixCyberObservable';
 
@@ -56,6 +63,40 @@ describe('middleware upsertElement test', () => {
 
       expect(inputs.length).toEqual(1); // we still update description since no existing
       expect(inputs[0]).toEqual({ key: 'description', value: ['indicator1 new description'] });
+    });
+    describe('middleware synchronized workflow status input sanitization', () => {
+      it('should discard x_opencti_workflow_id input if workflow id is unknown locally', () => {
+        const inputs = [
+          { key: 'x_opencti_workflow_id', value: ['remote-status-id'] },
+          { key: 'description', value: ['updated'] },
+        ];
+        const validStatusIdsByType = new Set(['local-status-id']);
+
+        const sanitizedInputs = sanitizeSynchronizedWorkflowInputs(inputs, 'remote-status-id', validStatusIdsByType);
+        expect(sanitizedInputs).toEqual([{ key: 'description', value: ['updated'] }]);
+      });
+
+      it('should keep x_opencti_workflow_id input if workflow id exists locally', () => {
+        const inputs = [
+          { key: 'x_opencti_workflow_id', value: ['local-status-id'] },
+          { key: 'description', value: ['updated'] },
+        ];
+        const validStatusIdsByType = new Set(['local-status-id']);
+
+        const sanitizedInputs = sanitizeSynchronizedWorkflowInputs(inputs, 'local-status-id', validStatusIdsByType);
+        expect(sanitizedInputs).toEqual(inputs);
+      });
+
+      it('should drop workflow upsert operations if workflow id is unknown locally', () => {
+        const upsertOperations = [
+          { key: 'x_opencti_workflow_id', operation: 'replace', value: ['remote-status-id'] },
+          { key: 'indicator_types', operation: 'add', value: ['malicious-activity'] },
+        ];
+        const validStatusIdsByType = new Set(['local-status-id']);
+
+        const sanitizedOperations = sanitizeSynchronizedWorkflowUpsertOperations(upsertOperations, 'remote-status-id', validStatusIdsByType);
+        expect(sanitizedOperations).toEqual([{ key: 'indicator_types', operation: 'add', value: ['malicious-activity'] }]);
+      });
     });
     it('should generateAttributesInputsForUpsert with indicator description update', () => {
       const resolvedElement = { ...indicator1, description: 'indicator1 old description' }; // existing description
