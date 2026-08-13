@@ -1,20 +1,7 @@
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import { AccountCircleOutlined, AlarmOnOutlined, NotificationsOutlined } from '@mui/icons-material';
 import AppBar from '@mui/material/AppBar';
-import {
-  Badge,
-  Header,
-  HeaderGroup,
-  IconButton,
-  Menu,
-  MenuContent,
-  MenuItem,
-  MenuTrigger,
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@filigran/design-system';
+import { Badge, Header, HeaderGroup, IconButton, Menu, MenuContent, MenuItem, MenuTrigger, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
@@ -111,6 +98,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const isAllNewsFeedUnsubscribed = me.unsubscribed_news_feed_types?.includes('*') ?? false;
   const draftContext = useDraftContext();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
+  const showAiCluster = hasKnowledgeAccess
+    && filigran_chatbot_ai_cgu_status !== CGUStatus.disabled;
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const { height: topBannerHeight } = useTopBanner();
   const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
@@ -244,7 +233,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
 
   return (
     // Radix tooltips need a provider in scope; scoped to this bar, not the whole app.
-    <TooltipProvider delayDuration={200}>
+    <>
       <Header
         // FDS-WORKAROUND #14: bar positioned product-side, `fullWidth={false}` with it — see fds-migration/LIBRARY-FEEDBACK.md #14
         fullWidth={false}
@@ -285,91 +274,89 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                   <>
                     <AskArianeButton />
                     <CtemCommandCenterButton />
-                    {/* FDS-WORKAROUND #18: separator painted from the library's border token — see fds-migration/LIBRARY-FEEDBACK.md #18 */}
-                    <div
-                      role="separator"
-                      aria-orientation="vertical"
-                      className="self-stretch w-px my-2 mx-1.5 bg-border-medium"
-                    />
                   </>
                 )
               }
             </>
           </Security>
-          {!draftContext && (
-            <Security needs={[KNOWLEDGE]}>
-              <>
-                {ee.license_type === 'nfr' && <ItemBoolean label="EE DEV LICENSE" status={false} />}
-                <Security needs={[KNOWLEDGE_KNASKIMPORT]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
-                  <UploadImport
-                    variant="icon"
-                    fontSize="medium"
-                    size="default"
-                  />
-                </Security>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <TopBarIconLink
-                      aria-label={t_i18n('Triggers')}
-                      to="/dashboard/profile/triggers"
-                      active={location.pathname === '/dashboard/profile/triggers'}
-                      icon={<AlarmOnOutlined fontSize="medium" />}
+          {/* The rule belongs to the cluster that follows it, and only draws
+              when an AI cluster precedes it. */}
+          <HeaderGroup separatorBefore={showAiCluster}>
+            {!draftContext && (
+              <Security needs={[KNOWLEDGE]}>
+                <>
+                  {ee.license_type === 'nfr' && <ItemBoolean label="EE DEV LICENSE" status={false} />}
+                  <Security needs={[KNOWLEDGE_KNASKIMPORT]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
+                    <UploadImport
+                      variant="icon"
+                      fontSize="medium"
+                      size="default"
                     />
-                  </TooltipTrigger>
-                  <TooltipContent>{t_i18n('Triggers')}</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <TopBarIconLink
-                      aria-label={t_i18n('Notifications')}
-                      to="/dashboard/profile/notifications/alerts"
-                      active={location.pathname.startsWith('/dashboard/profile/notifications')}
-                      icon={(
-                        // `dot`: the bar signals unread without a count, and still announces the total.
-                        <Badge
-                          content={unreadCount}
-                          dot
-                          invisible={!hasUnread}
-                          accessibleText={`${unreadCount} ${t_i18n('unread')}`}
-                        >
-                          <NotificationsOutlined fontSize="medium" />
-                        </Badge>
-                      )}
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent>{t_i18n('Notifications')}</TooltipContent>
-                </Tooltip>
-              </>
-            </Security>
-          )}
-          <Menu open={menuOpen} onOpenChange={setMenuOpen}>
-            {/* MenuTrigger + asChild around an IconButton is the library's canonical pairing. */}
-            <MenuTrigger asChild>
-              <IconButton
-                priority="tertiary"
-                aria-label={t_i18n('Profile')}
-                id="profile-menu-button"
-                active={location.pathname === '/dashboard/profile/me'}
-                icon={<AccountCircleOutlined fontSize="medium" />}
-              />
-            </MenuTrigger>
-            <MenuContent align="end">
-              <MenuItem asChild onSelect={handleCloseMenu}>
-                <Link to="/dashboard/profile">{t_i18n('Profile')}</Link>
-              </MenuItem>
-              <MenuItem onSelect={handleOpenDrawer}>{t_i18n('Feedback')}</MenuItem>
-              <MenuItem asChild onSelect={handleCloseMenu}>
-                <a href={`${APP_BASE_PATH}/logout`} rel="noreferrer">{t_i18n('Logout')}</a>
-              </MenuItem>
-            </MenuContent>
-          </Menu>
+                  </Security>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <TopBarIconLink
+                        aria-label={t_i18n('Triggers')}
+                        to="/dashboard/profile/triggers"
+                        active={location.pathname === '/dashboard/profile/triggers'}
+                        icon={<AlarmOnOutlined fontSize="medium" />}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>{t_i18n('Triggers')}</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <TopBarIconLink
+                        aria-label={t_i18n('Notifications')}
+                        to="/dashboard/profile/notifications/alerts"
+                        active={location.pathname.startsWith('/dashboard/profile/notifications')}
+                        icon={(
+                          // `dot`: the bar signals unread without a count, and still announces the total.
+                          <Badge
+                            content={unreadCount}
+                            dot
+                            invisible={!hasUnread}
+                            accessibleText={`${unreadCount} ${t_i18n('unread')}`}
+                          >
+                            <NotificationsOutlined fontSize="medium" />
+                          </Badge>
+                        )}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>{t_i18n('Notifications')}</TooltipContent>
+                  </Tooltip>
+                </>
+              </Security>
+            )}
+            <Menu open={menuOpen} onOpenChange={setMenuOpen}>
+              {/* MenuTrigger + asChild around an IconButton is the library's canonical pairing. */}
+              <MenuTrigger asChild>
+                <IconButton
+                  priority="tertiary"
+                  aria-label={t_i18n('Profile')}
+                  id="profile-menu-button"
+                  active={location.pathname === '/dashboard/profile/me'}
+                  icon={<AccountCircleOutlined fontSize="medium" />}
+                />
+              </MenuTrigger>
+              <MenuContent align="end">
+                <MenuItem asChild onSelect={handleCloseMenu}>
+                  <Link to="/dashboard/profile">{t_i18n('Profile')}</Link>
+                </MenuItem>
+                <MenuItem onSelect={handleOpenDrawer}>{t_i18n('Feedback')}</MenuItem>
+                <MenuItem asChild onSelect={handleCloseMenu}>
+                  <a href={`${APP_BASE_PATH}/logout`} rel="noreferrer">{t_i18n('Logout')}</a>
+                </MenuItem>
+              </MenuContent>
+            </Menu>
+          </HeaderGroup>
         </HeaderGroup>
       </Header>
       <FeedbackCreation
         openDrawer={openDrawer}
         handleCloseDrawer={handleCloseDrawer}
       />
-    </TooltipProvider>
+    </>
   );
 };
 
