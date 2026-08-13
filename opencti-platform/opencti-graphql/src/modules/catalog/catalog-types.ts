@@ -1,3 +1,6 @@
+import type { BasicStoreEntity, StoreEntity } from '../../types/store';
+
+// region DTO types
 export type IngestionConnectorType = 'INTERNAL_ENRICHMENT' | 'EXTERNAL_IMPORT' | 'INTERNAL_EXPORT_FILE' | 'INTERNAL_IMPORT_FILE';
 
 type TypeMap = {
@@ -15,19 +18,19 @@ type TypedProperty<K extends keyof TypeMap = keyof TypeMap> = {
   format?: string;
 };
 
-export interface CatalogContract {
+export interface CatalogContractDtoV0 {
   title: string;
   slug: string;
   description: string;
   short_description: string;
-  logo: string;
+  logo: string | null;
   use_cases: string[];
   verified: boolean;
   last_verified_date: string;
   playbook_supported: boolean;
   max_confidence_level: number;
-  support_version: string;
-  subscription_link: string;
+  support_version: string | null;
+  subscription_link: string | null;
   source_code: string;
   manager_supported: boolean;
   container_version: string;
@@ -43,21 +46,31 @@ export interface CatalogContract {
     required: string[];
     additionalProperties: boolean;
   };
+  license_type: 'Free' | 'Commercial' | null;
+  solution_categories: string[];
+  contact: string | null;
 }
 
-export interface CatalogDefinition {
+export interface CatalogDtoV0 {
   id: string;
   name: string;
   description: string;
-  contracts: Array<CatalogContract>;
+  contracts: Array<CatalogContractDtoV0>;
 }
+// endregion
+
+// region Domain types
+export type CatalogContract = CatalogContractDtoV0;
+export type CatalogDefinition = CatalogDtoV0;
+// endregion
 
 export interface CatalogType {
   definition: CatalogDefinition;
   graphql: GraphqlCatalog;
 }
 
-// region Database types
+// region Api types
+export type GraphqlCatalogContract = CatalogContractDtoV0;
 export interface GraphqlCatalog {
   id: string;
   entity_type: string;
@@ -65,5 +78,67 @@ export interface GraphqlCatalog {
   parent_types: string[];
   name: string;
   description: string;
-  contracts: string[];
+  contracts: string[]; // JSON.Stringified GraphqlCatalogContract items
 }
+// endregion
+
+// region Database types
+
+export const ENTITY_TYPE_CATALOG_CONTRACT = 'CatalogContract';
+export const ENTITY_TYPE_CATALOG_MANIFEST = 'CatalogManifest';
+
+/**
+ * Fields specific to the `CatalogContract` entity.
+ * Also reused to embed the contract in `Connector` entities.
+ */
+export interface CatalogContractEntityFields {
+  catalog_id: string;
+  contract_id: string;
+  title: string;
+  slug: string;
+  description: string;
+  short_description: string;
+  logo_uri?: string;
+  use_cases?: string[];
+  verified: boolean;
+  last_verified_date?: string;
+  playbook_supported: boolean;
+  max_confidence_level: number;
+  support_version?: string;
+  subscription_link?: string;
+  source_code?: string;
+  manager_supported: boolean;
+  version: string;
+  image: string;
+  connector_type: IngestionConnectorType;
+  config_schema: {
+    $schema: string;
+    $id: string;
+    type: string;
+    properties: {
+      [key: string]: TypedProperty;
+    };
+    required: string[];
+    additionalProperties: boolean;
+  };
+  license_type?: 'Free' | 'Commercial';
+  solution_categories: string[];
+  contact?: string;
+};
+
+export interface BasicStoreEntityCatalogContract extends BasicStoreEntity, CatalogContractEntityFields {}
+
+export interface StoreEntityCatalogContract extends StoreEntity, CatalogContractEntityFields {}
+
+interface CatalogManifestEntityFields {
+  source_uri: string;
+  catalog_id: string;
+  revision: string;
+  manifest_version?: string;
+  version?: string;
+}
+
+export interface BasicStoreEntityCatalogManifest extends BasicStoreEntity, CatalogManifestEntityFields {}
+
+export interface StoreEntityCatalogManifest extends StoreEntity, CatalogManifestEntityFields {}
+// endregion
