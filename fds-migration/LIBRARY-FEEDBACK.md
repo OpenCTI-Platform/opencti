@@ -730,9 +730,33 @@ passes in.
 
 ## 24. No segmented control, so the bar's mode toggles stay MUI
 
-**Last measured at pin `7e7b417`:** after the AI controls and the import button
-moved to the library, `ToggleButtonGroup`, `ToggleButton` and the `ButtonBase`
-they render are the only non-glyph MUI left in the bar.
+**Last measured at pin `35a4768`:** `ToggleButtonGroup`, `ToggleButton` and the
+`ButtonBase` they render are the only non-glyph MUI left in the bar — and they
+now block a second conversion as well.
+
+**It also blocks the NLQ dropdown.** That menu has a library equivalent
+(`Menu`/`MenuItem`/`MenuSeparator`), but its trigger does not: the caret is a
+`<span>` *inside* a `ToggleButton`, and the menu anchors to it. A Radix
+`MenuTrigger asChild` would have to clone onto a non-focusable span, and
+without `asChild` it renders a `<button>` inside the `ToggleButton`'s own
+button. Both are wrong, so the menu stays MUI until the group does not.
+
+**Measured values, so the component can be specified** (dark theme, bar
+running):
+
+| | |
+|---|---|
+| Group | 84 × 36 px, `role="group"`, radius 4px, transparent background |
+| Segments | 2 × 36 × 36 px, padding 0, radius 4px, 18px glyph |
+| Gap between segments | 6px |
+| Selected | background `rgba(66,202,255,0.25)`, glyph `rgb(255,255,255)` |
+| Unselected | transparent background, glyph `rgb(66,202,255)` |
+| Semantics | `aria-pressed` true/false, **one tab stop per segment** — no roving focus |
+| Third segment | appears for natural-language search when XTM One is configured |
+
+The tab-stop behaviour is worth a decision rather than a copy: the MUI group
+gives each segment its own tab stop, where a segmented control usually carries
+one stop for the group and arrow keys between segments.
 
 **Needed.** The bar exposes two mutually exclusive search modes — advanced
 search and bulk search — as a segmented pair, and a third segment appears for
@@ -799,3 +823,27 @@ Radix-recommended placement, and dropping the bar's own.
 is good. Worth a line in the `Tooltip` documentation page saying where a product
 is expected to mount the provider, so the first consumer does not discover it
 through a crash on a screen they were not looking at.
+
+---
+
+## 27. `Badge`'s default tone changed under a consumer, and nothing announced it
+
+**What happened.** At pin `35a4768` (library PR #119) the default `tone` moved
+from `brand` to `error`. The bar's unread marker passes no `tone`, so it went
+from the brand blue to red without a line of product code changing.
+
+That is a legitimate library decision — an unread count arguably *is* an alert —
+and the product is taking the new default rather than pinning the old look. But
+a default that repaints a shipped consumer is a breaking visual change, and this
+one arrived inside a feature commit titled for the Spinner's new tier.
+
+**Measured, so the choice can be made on values rather than memory:**
+
+| Theme | Default (`error`) | `tone="brand"` |
+|---|---|---|
+| Dark | `rgb(136,17,6)` counter, `rgb(241,67,55)` dot | `rgb(66,202,255)` |
+| Light | `rgb(245,114,102)` counter, `rgb(184,24,10)` dot | `rgb(0,21,168)` |
+| Custom | `rgb(136,17,6)` counter, `rgb(241,67,55)` dot | `rgb(66,202,255)` |
+
+**Asked.** Flag a default-value change in the release note the way a removed
+prop would be. A consumer cannot diff what it never wrote.

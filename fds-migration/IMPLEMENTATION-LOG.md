@@ -670,3 +670,50 @@ glyphs and nothing else.
 
 `check-ts`, lint, `verify-translation` and the full test suite under Node 22.
 Two new translation keys, declared in all nine locales.
+
+## Second bump — pin `35a4768`, and the one gap that stays
+
+Library PRs #118 (ProgressBar tones) and #119 (Spinner's 32px tier, Badge
+default tone) landed on top of the four already consumed.
+
+The five deliverables were verified on the **rendered build**, through a
+throwaway probe mounted behind a URL flag and removed before commit — not from
+the type declarations, which had already once described something the build did
+not carry:
+
+| | Measured in the browser |
+|---|---|
+| Spinner tiers | sm 16px, md 20px, lg 24px, **xl 32px**, all animating |
+| Badge default | red — counter `rgb(136,17,6)`, dot `rgb(241,67,55)` |
+| Badge `tone="brand"` | `rgb(66,202,255)` |
+| ProgressBar `tone="success"` | fill `rgb(23,171,31)`, `role="progressbar"` |
+| `separatorBefore` | rule drawn, 16px of air each side |
+| Gradient child reset | present in the served CSS |
+
+### The loader's tier, chosen by measurement
+
+The NLQ menu's other rows render `FiligranIcon size="small"` in the same icon
+slot; measured, that is **20×20**, which is the library's `md`. The 32px `xl`
+tier is for a ring that has to encircle something, and this spinner encircles
+nothing — it occupies the slot alone. A test fails if the tier is changed
+without the slot changing.
+
+### The badge went red without the product asking
+
+The bar's unread marker passes no `tone`, so #119's new default repainted it
+from brand blue to red. The product takes the library's default rather than
+pinning the old look, and a test now fails if a `tone` is ever set silently —
+choosing to override is a design decision and has to be written down when it is
+made. Plates on the three themes are in the pull request.
+
+### The coverage rule is not met, and it is one component
+
+The bar still renders `ToggleButtonGroup`, `ToggleButton` and their `ButtonBase`.
+That same gap blocks a second conversion: the NLQ dropdown *does* have a library
+equivalent, but its trigger is a caret `<span>` inside a `ToggleButton`, so a
+Radix trigger would either clone onto a non-focusable span or nest a button
+inside a button. Neither is a conversion, so nothing was forced.
+
+Everything else in the bar and the whole navigation bar are library components,
+apart from `MuiSvgIcon` glyphs. The measured spec for the missing control is in
+LIBRARY-FEEDBACK entry 24.
