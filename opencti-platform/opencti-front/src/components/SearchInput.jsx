@@ -567,8 +567,11 @@ const SearchInput = (props) => {
             <MenuItem disabled>
               <ListItemIcon>
                 {/* The only thing saying the agents are loading — this row has
-                    no visible text, so the spinner carries the message. */}
-                <Spinner size="sm" label={t_i18n('Loading agents...')} />
+                    no visible text, so the spinner carries the message.
+                    `md` is 20px, the size the sibling rows render in this same
+                    icon slot; nothing is being encircled here, so the 32px tier
+                    would not be sitting in anything. */}
+                <Spinner size="md" label={t_i18n('Loading agents...')} />
               </ListItemIcon>
             </MenuItem>
           )}
