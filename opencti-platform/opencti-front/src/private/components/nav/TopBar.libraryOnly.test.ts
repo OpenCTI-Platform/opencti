@@ -59,9 +59,17 @@ const ALLOWED: Record<string, string> = {
 const RETIRED = ['MuiBadge-', 'MuiStack-', 'CircularProgress'];
 
 /**
- * The two exemptions Sandy granted on 2026-08-13, and nothing else. Each names
- * the component the library owes and the single condition that retires the
- * whole row — so an exemption cannot quietly become a habit.
+ * NAMED EXEMPTIONS — the only MUI the bar may render, besides glyphs.
+ *
+ * Exactly two, each granted explicitly and re-confirmed by Sandy on 2026-08-14:
+ *   1. The segmented control, together with the NLQ dropdown that depends on it
+ *      — its caret lives inside a `ToggleButton`.
+ *   2. `Popover`, which the library has not designed yet.
+ *
+ * Both carry the SAME retirement condition: THE LIBRARY SHIPS THE COMPONENT.
+ * Each row names the component the library owes, so an exemption cannot quietly
+ * become a habit, and one whose component has shipped must be deleted rather
+ * than left standing. A test below fails if a THIRD kind of exemption appears.
  */
 const EXEMPTED: Record<string, string> = {
   // Segmented control — LIBRARY-FEEDBACK #24. All of these go together the day
@@ -139,6 +147,22 @@ describe('the admin top bar is built from library components', () => {
       // than only that a count changed.
       expect(ALLOWED, `${symbol} is imported by ${file} and is not an allowed MUI symbol`)
         .toHaveProperty(symbol);
+    }
+  });
+
+  it('grants no exemption beyond the two that were named', () => {
+    // The failure guarded against here is a THIRD kind of exemption appearing.
+    // Every reason must trace to one Sandy granted, so the list can grow only
+    // where an exemption already applies — never by accretion.
+    const NAMED = [
+      '#24', // the segmented control, and everything that depends on it
+      'non-topBar', // not the bar at all: other variants of a shared component
+    ];
+    for (const [symbol, why] of Object.entries(EXEMPTED)) {
+      expect(
+        NAMED.some((prefix) => why.startsWith(prefix)),
+        `${symbol} is exempted for a reason that is neither named exemption`,
+      ).toBe(true);
     }
   });
 
