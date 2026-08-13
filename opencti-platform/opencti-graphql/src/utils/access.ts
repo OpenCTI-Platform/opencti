@@ -639,6 +639,40 @@ export const INTERNAL_USERS_WITHOUT_REDACTED = {
   [WORKFLOW_MANAGER_USER.id]: WORKFLOW_MANAGER_USER,
 };
 
+export enum OTPValidationStatus {
+  VALID,
+  AUTHENTICATION_REQUIRED,
+  ACTIVATION_REQUIRED,
+  VALIDATION_REQUIRED,
+}
+export const checkOTPValidationStatus = (context: AuthContext, allowUnprotectedOTP?: boolean): OTPValidationStatus => {
+  // Get user from the session
+  const { user, otp_mandatory, user_otp_validated } = context;
+  // User must be authenticated.
+  if (!user) {
+    return OTPValidationStatus.AUTHENTICATION_REQUIRED;
+  }
+  if (!allowUnprotectedOTP) {
+    // If the platform enforce OTP
+    if (otp_mandatory) {
+      // If user have not validated is OTP in session
+      // by default user_otp_validated is true for direct api usage
+      if (!user_otp_validated) {
+        // If OTP is not setup, return a specific error
+        if (!user.otp_activated) {
+          return OTPValidationStatus.ACTIVATION_REQUIRED;
+        }
+        // If already setup but not validated, return the validation screen
+        return OTPValidationStatus.VALIDATION_REQUIRED;
+      }
+    } else if (user.otp_activated && !user_otp_validated) {
+      // If user self activate OTP, session must be validated
+      return OTPValidationStatus.VALIDATION_REQUIRED;
+    }
+  }
+  return OTPValidationStatus.VALID;
+};
+
 export const isInternalUser = (user: AuthUser): boolean => {
   return INTERNAL_USERS[user.id] !== undefined;
 };
