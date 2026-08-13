@@ -582,3 +582,91 @@ Eleven new tests. Key assertions mutation-tested — restoring the 550px floor,
 replacing the height variable with a literal, painting the active link from a
 hardcoded colour, dropping the active state, and moving the gradient to `:root`
 each turn the suite red.
+
+## Final bump — pin `7e7b417`, the four library deliverables
+
+Four library pull requests landed together: `Badge` (#114), `Spinner` and
+`ProgressBar` (#115), the gradient-text child fill (#116), and `HeaderGroup`'s
+leading separator (#117). Each was verified **in the installed package**, not
+from commit titles: the first, second and fourth as exported declarations in
+`index.d.ts`, the third as `.text-gradient-*>*{-webkit-text-fill-color:
+currentColor}` in the built `index.css`. The served bundle was then confirmed to
+carry the same rule, and the listening PID's working directory confirmed which
+checkout answers on 3010.
+
+### The cluster separator
+
+Figma's rule between the AI cluster and the actions cluster is now the library's
+`separatorBefore`, and the hand-painted `<div role="separator">` is gone. The
+bar models it as the library's own example does — the separated cluster nests
+inside the one that precedes it — with the rule drawn only when an AI cluster is
+actually there to be separated from.
+
+Measured in the running product, on the three themes:
+
+| | |
+|---|---|
+| Air before the rule | 16px |
+| Air after the rule | 16px |
+| Inside each cluster | 8px |
+| Rule | 1px, `border-elevation-subtle` at 0.5 opacity, 36px tall |
+
+The rule's colour follows the theme (`rgb(31,57,101)` dark, `rgb(202,203,206)`
+light). Visual order is unchanged: search, mode toggles, Ask Ariane, import,
+triggers, notifications, profile.
+
+### The AI controls, and the trap under them
+
+`AskArianeButton` and `CtemCommandCenterButton` are now the library `Button` and
+`IconButton` in their `ia` variant. `UploadImport` moved to the library too, but
+in the **default** variant: importing data is not an AI affordance, and giving
+it the AI gradient would have been a visual decision nobody asked for.
+
+The library hides a gradient label with `-webkit-text-fill-color` alone.
+OpenCTI's `createTextGradientSx` also set `color: transparent`, and the two
+together defeat the very reset that makes nested children visible: a child
+asking for `currentColor` resolves it back to transparent. The product recipe
+was aligned on the library's, red-before-fix.
+
+Measured inside the gradient button, on all three themes — chip fill and
+background, icon paint, and the loading spinner (forced on to observe it):
+nothing nested renders invisible. The chip sits 8px from the label; with the
+library button that distance is entirely the chip's own margin, because the
+label is a bare text node and no flex gap falls between them.
+
+### Progress
+
+The bar's one MUI loader — the NLQ agents menu — is the library `Spinner`. It
+carries a `label`, because that row has no visible text and the spinner is the
+only thing saying anything is happening. It could not be exercised in the
+browser here: the NLQ affordance needs XTM One configured, which this checkpoint
+instance is not.
+
+### The guard, rebuilt
+
+The first guard listed allowed MUI *modules*, which is how `Stack` arrived under
+an already-allowed `@mui/material`. The unit is now the **symbol**, across the
+bar and the components it owns, and the failure message names what arrived.
+Three mutations were run: a new icon symbol from the already-allowed
+`@mui/icons-material`, `Stack` from `@mui/material`, and the separator reverted
+to a styled div. All three turn the suite red; restored, it is green.
+
+A second guard asserts on the **rendered DOM**. It covers `UploadImport`, the one
+bar control that also serves three screens the bar does not own — and it earned
+its place immediately by catching a real regression: a library `Tooltip` throws
+without a `TooltipProvider`, and only the bar had one. Fixed by providing once at
+the private app's root. The other bar controls need the chatbot context and Relay
+data; mocking half the application to reach a green would prove the mock, so they
+stay on the source guard and on the measured checkpoint.
+
+### What is still MUI, and why
+
+Rendered in the bar: `ToggleButtonGroup`, `ToggleButton` and their `ButtonBase`
+— the library ships no segmented control (LIBRARY-FEEDBACK #24) — plus
+`MuiSvgIcon` glyphs, the library shipping no icon set. The navigation bar renders
+glyphs and nothing else.
+
+### Verification
+
+`check-ts`, lint, `verify-translation` and the full test suite under Node 22.
+Two new translation keys, declared in all nine locales.

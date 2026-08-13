@@ -662,8 +662,11 @@ worked around.
 click, which opens the enterprise-edition dialog. Converting them is its own
 change.
 
-**Pending.** The library is replacing the `tone` axis with `severity="ee"` and a
-new visual. At the next pin bump, switch the word and re-checkpoint the bar.
+**Settled at pin `7e7b417`.** The `tone` axis is gone; the marker is
+`severity="ee"` and was re-checkpointed on the three themes, at rest and on
+hover. The 8px between the label and the chip is now carried entirely by the
+chip's own margin: the library button lays its label out as a bare text node,
+so no flex gap falls between the two — measured, not assumed.
 
 ---
 
@@ -727,6 +730,10 @@ passes in.
 
 ## 24. No segmented control, so the bar's mode toggles stay MUI
 
+**Last measured at pin `7e7b417`:** after the AI controls and the import button
+moved to the library, `ToggleButtonGroup`, `ToggleButton` and the `ButtonBase`
+they render are the only non-glyph MUI left in the bar.
+
 **Needed.** The bar exposes two mutually exclusive search modes — advanced
 search and bulk search — as a segmented pair, and a third segment appears for
 natural-language search when XTM One is configured. Selection is exclusive,
@@ -745,7 +752,7 @@ roving focus and the selected style.
 
 ---
 
-## 25. The gradient-text recipe breaks on any nested component
+## 25. The gradient-text recipe breaks on any nested component — ✅ CLOSED at pin `7e7b417`
 
 **Where it bit.** `variant="ia"` paints its label with
 `background-clip: text` + `-webkit-text-fill-color: transparent`. That fill
@@ -765,6 +772,30 @@ background restored, at rest and on hover, dark and light) and on the
 product's text-only gradient buttons, which have no element children and are
 therefore unchanged.
 
-**Asked.** Carry the same reset inside the library's `text-gradient-*`
-utility, so the gradient stays scoped to the button's own text and consumers
-cannot nest their way into an invisible child.
+**Shipped by library PR #116** — ✅ CLOSED at pin `7e7b417`. The built CSS now
+carries `.text-gradient-*>*{-webkit-text-fill-color:currentColor}`.
+
+**One difference worth naming, because it bit us.** The library hides the label
+with the fill alone; OpenCTI's own `createTextGradientSx` also set
+`color: transparent`. With both, the reset resolves `currentColor` back to
+transparent and a nested child stays invisible anyway — the reset only works
+because the colour underneath it is real. The product recipe was aligned on the
+library's, and a test fails if `color: transparent` returns.
+
+---
+
+## 26. A library `Tooltip` throws without a `TooltipProvider`, and nothing says so at the type level
+
+**Where it bit.** The bar had a `TooltipProvider` and no other screen did. Moving
+the import control onto the library `Tooltip` made it throw — *"`Tooltip` must be
+used within `TooltipProvider`"* — on the three screens outside the bar that
+render the same control. TypeScript compiled it, ESLint passed it, and the bar
+itself looked fine: only a rendered-DOM test caught it.
+
+**Fixed product-side** by providing once at the private app's root, which is the
+Radix-recommended placement, and dropping the bar's own.
+
+**Asked.** Nothing about the API — this is Radix's contract and the error message
+is good. Worth a line in the `Tooltip` documentation page saying where a product
+is expected to mount the provider, so the first consumer does not discover it
+through a crash on a screen they were not looking at.
