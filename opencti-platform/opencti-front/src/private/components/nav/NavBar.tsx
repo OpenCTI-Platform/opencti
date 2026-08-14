@@ -301,13 +301,14 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
               id: 'openaev',
               label: t_i18n('OpenAEV'),
               tooltip: isNotEmptyField(openAEVUrl) ? t_i18n('Platform connected') : t_i18n('Get OpenAEV now'),
-              logo: <img src={isLightTheme ? logoOpenAEVLight : logoOpenAEVDark} alt="" width={126} />,
+              // Option logos fill their own slot; a fixed width overflows it.
+              logo: <img src={isLightTheme ? logoOpenAEVLight : logoOpenAEVDark} alt="" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />,
               href: isNotEmptyField(openAEVUrl) ? (openAEVUrl as string) : OPENAEV_FALLBACK_URL,
             },
             {
               id: 'xtmhub',
               label: t_i18n('XTM Hub'),
-              logo: <img src={isLightTheme ? logoXTMHubLight : logoXTMHubDark} alt="" width={126} />,
+              logo: <img src={isLightTheme ? logoXTMHubLight : logoXTMHubDark} alt="" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />,
               ...(xtmHubRegistered
                 ? { href: isNotEmptyField(xtmhubUrl) ? (xtmhubUrl as string) : XTMHUB_FALLBACK_URL }
                 : { to: '/dashboard/settings/experience' }),

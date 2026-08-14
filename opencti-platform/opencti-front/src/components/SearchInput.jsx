@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import TextField from '@mui/material/TextField';
-import InputAdornment from '@mui/material/InputAdornment';
+import { SearchField, Spinner } from '@filigran/design-system';
 import { ManageSearchOutlined, Search, TuneOutlined, KeyboardArrowDownOutlined } from '@mui/icons-material';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import { useNavigate } from 'react-router-dom';
@@ -13,9 +13,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import CircularProgress from '@mui/material/CircularProgress';
-import Stack from '@mui/material/Stack';
-import Box from '@mui/material/Box';
 import useEnterpriseEdition from '../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from './i18n';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../utils/hooks/useGranted';
@@ -446,18 +443,12 @@ const SearchInput = (props) => {
 
   return (
     <>
-      <Stack
-        direction="row"
-        alignItems="center"
-        spacing={1}
-        sx={{ minWidth: 550, width: '50%', maxWidth: 680 }}
-      >
+      {/* Width is owned by the bar, not by this component — see topBarConstants.ts */}
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8, width: '100%' }}>
         {/* ── Search Input Field (left, fills remaining space) ──── */}
-        <GradientBorderTextField
+        <SearchField
           name="keyword"
           value={searchValue}
-          variant="outlined"
-          size="small"
           fullWidth
           placeholder={getPlaceholder()}
           onChange={(event) => {
@@ -465,33 +456,13 @@ const SearchInput = (props) => {
             setSearchValue(value);
           }}
           onKeyDown={handleKeyDown}
-          isActive={isNLQActivated}
-          label={t_i18n('Search')}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <Search
-                  fontSize="small"
-                  sx={{
-                    color: isNLQActivated ? theme.palette.ai.main : 'inherit',
-                    mr: 0.5,
-                  }}
-                />
-              ),
-              endAdornment: isNLQActivated && isNLQLoading ? (
-                <InputAdornment position="end">
-                  <Loader variant="inline" />
-                </InputAdornment>
-              ) : null,
-              classes: {
-                root: classRoot,
-                input: classInput,
-              },
-            },
-          }}
+          onClear={() => setSearchValue('')}
           {...otherProps}
           autoComplete="off"
+          label={t_i18n('Search')}
         />
+        {/* FDS-WORKAROUND #20: NLQ loading indicator beside the field, SearchField exposes no busy slot — see fds-migration/LIBRARY-FEEDBACK.md #20 */}
+        {isNLQActivated && isNLQLoading && <Loader variant="inline" />}
 
         {/* ── Mode Toggles (right) ────────────────────────────────── */}
         <ToggleButtonGroup
@@ -544,7 +515,10 @@ const SearchInput = (props) => {
                   onClick={handleNlqToggleClick}
                   disabled={nlqNoAgentAvailable || (isCGUStatusPending && !isAdmin)}
                 >
-                  <Stack direction="row" alignItems="center" spacing={0}>
+                  {/* Plain elements, not MUI layout: the segmented control is the
+                      only MUI left in the bar and its inside must not add more —
+                      see TopBar.libraryOnly.test.ts, RETIRED. */}
+                  <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <FiligranIcon
                       icon={LogoXtmOneIcon}
                       size="small"
@@ -552,14 +526,13 @@ const SearchInput = (props) => {
                     />
                     {/* Caret click zone — larger hit area with visual separator */}
                     {useXtmOne && nlqAgents.length > 0 && (
-                      <Box
-                        component="span"
-                        sx={{
+                      <span
+                        style={{
                           display: 'inline-flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          ml: 0.5,
-                          pl: 0.5,
+                          marginLeft: 4,
+                          paddingLeft: 4,
                           borderLeft: `1px solid ${isNLQActivated ? theme.palette.ai?.main + '40' : theme.palette.divider}`,
                           cursor: 'pointer',
                         }}
@@ -569,9 +542,9 @@ const SearchInput = (props) => {
                         }}
                       >
                         <KeyboardArrowDownOutlined sx={{ fontSize: 18, color: 'inherit' }} />
-                      </Box>
+                      </span>
                     )}
-                  </Stack>
+                  </div>
                 </ToggleButton>
               </span>
             </Tooltip>
@@ -595,7 +568,12 @@ const SearchInput = (props) => {
           {nlqAgentsLoading && (
             <MenuItem disabled>
               <ListItemIcon>
-                <CircularProgress size={18} />
+                {/* The only thing saying the agents are loading — this row has
+                    no visible text, so the spinner carries the message.
+                    `md` is 20px, the size the sibling rows render in this same
+                    icon slot; nothing is being encircled here, so the 32px tier
+                    would not be sitting in anything. */}
+                <Spinner size="md" label={t_i18n('Loading agents...')} />
               </ListItemIcon>
             </MenuItem>
           )}
@@ -637,7 +615,7 @@ const SearchInput = (props) => {
             </MenuItem>
           ))}
         </Menu>
-      </Stack>
+      </div>
 
       {isAdmin ? (
         <EnterpriseEditionAgreement
