@@ -1,5 +1,5 @@
 import { PythonShell } from 'python-shell';
-import { SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
+import { ATTR_DB_NAMESPACE, SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
 import * as nodecallspython from 'node-calls-python';
 import nconf from 'nconf';
 import { DEV_MODE, logApp } from '../config/conf';
@@ -77,6 +77,8 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
     });
   };
   return telemetry(context, user, `PYTHON ${scriptName}`, {
+    [ATTR_DB_NAMESPACE]: 'python_testing_engine',
+    // Deprecated attribute to be removed when transition done
     [SEMATTRS_DB_NAME]: 'python_testing_engine',
   }, execPythonTestingProcessFn);
 };
@@ -133,6 +135,8 @@ const execNativePython = async (context, user, script, ...args) => {
     throw UnknownError('[BRIDGE] execNativePython error', result);
   };
   return telemetry(context, user, `PYTHON ${script.fn}`, {
+    [ATTR_DB_NAMESPACE]: 'python_runtime_engine',
+    // Deprecated attribute to be removed when transition done
     [SEMATTRS_DB_NAME]: 'python_runtime_engine',
   }, execNativePythonFn);
 };

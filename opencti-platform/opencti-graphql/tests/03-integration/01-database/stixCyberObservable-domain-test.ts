@@ -9,7 +9,7 @@ import { requestFileFromStorageAsAdmin } from '../../utils/testQueryHelper';
 import { paginatedForPathWithEnrichment, findById as documentFindById } from '../../../src/modules/internal/document/document-domain';
 
 describe('Testing Artifact merge with files on S3', () => {
-  const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'stixCyberObservableDomain-test', otp_mandatory: false, user_inside_platform_organization: false };
+  const adminContext = { user: ADMIN_USER, source: 'stixCyberObservableDomain-test', otp_mandatory: false, user_inside_platform_organization: false } as AuthContext;
   let artifact1Id = '';
   let artifact1: any;
   let artifact2: any;
@@ -23,13 +23,13 @@ describe('Testing Artifact merge with files on S3', () => {
         file: {
           createReadStream: () => Readable.from('This is a file content for the first Artifact.'),
           filename: 'testing merge artifact with spaces 1.exe',
-          mimetype: 'application/x-dosexec'
+          mimetype: 'application/x-dosexec',
         },
         x_opencti_description: 'This is the first Artifact.',
         hashes: [],
         mime_type: 'application/x-dosexec',
         x_opencti_additional_names: 'shortname.exe',
-      }
+      },
     };
     artifact1 = await addStixCyberObservable(adminContext, ADMIN_USER, inputArtifact1);
     expect(artifact1.id).toBeDefined();
@@ -56,11 +56,11 @@ describe('Testing Artifact merge with files on S3', () => {
         file: {
           createReadStream: () => Readable.from('This is a file content for the second Artifact.'),
           filename: 'testing merge artifact 2.json',
-          mimetype: 'application/json'
+          mimetype: 'application/json',
         },
         x_opencti_description: '{ \'key\':\'value for artifact 2\'} }',
         hashes: [],
-      }
+      },
     };
     artifact2 = await addStixCyberObservable(adminContext, ADMIN_USER, inputArtifact2);
   });

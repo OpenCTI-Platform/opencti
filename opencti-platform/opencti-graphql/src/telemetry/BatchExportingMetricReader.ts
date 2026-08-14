@@ -1,13 +1,14 @@
 import * as api from '@opentelemetry/api';
 import { internal, ExportResultCode, globalErrorHandler, unrefTimer } from '@opentelemetry/core';
-import { diag } from '@opentelemetry/api';
-import { type MetricProducer, MetricReader, type PushMetricExporter, TimeoutError } from '@opentelemetry/sdk-metrics';
-import { callWithTimeout } from '@opentelemetry/sdk-metrics/build/esnext/utils';
-import type { DataPoint, ResourceMetrics } from '@opentelemetry/sdk-metrics/build/src/export/MetricData';
-import { Resource } from '@opentelemetry/resources/build/src/Resource';
+import { type MetricProducer, type PushMetricExporter } from '@opentelemetry/sdk-metrics';
+import { type DataPoint, type ResourceMetrics, MetricReader } from '@opentelemetry/sdk-metrics';
+import { emptyResource } from '@opentelemetry/resources';
 import { UnknownError } from '../config/errors';
 import { logApp } from '../config/conf';
 import { pushAll } from '../utils/arrayUtil';
+import { callWithTimeout, TimeoutError } from '../utils/promiseUtils';
+
+const EMPTY_RESOURCE = emptyResource();
 
 export type BatchExportingMetricReaderOptions = {
   exporter: PushMetricExporter;
@@ -19,7 +20,7 @@ export type BatchExportingMetricReaderOptions = {
 };
 
 export class BatchExportingMetricReader extends MetricReader {
-  private _resourceMetrics: ResourceMetrics = { resource: Resource.EMPTY, scopeMetrics: [] };
+  private _resourceMetrics: ResourceMetrics = { resource: EMPTY_RESOURCE, scopeMetrics: [] };
 
   private _intervalCollect?: ReturnType<typeof setInterval>;
 
@@ -67,7 +68,7 @@ export class BatchExportingMetricReader extends MetricReader {
       );
     }
     const doCollect = async () => {
-      if (this._resourceMetrics.resource !== Resource.EMPTY) {
+      if (this._resourceMetrics.resource !== EMPTY_RESOURCE) {
         // Append result
         const metrics = resourceMetrics.scopeMetrics.map((scopeMetric) => scopeMetric.metrics).flat();
         this._resourceMetrics.scopeMetrics.forEach((value) => {
@@ -90,7 +91,7 @@ export class BatchExportingMetricReader extends MetricReader {
     // Avoid scheduling a promise to make the behavior more predictable and easier to test
     if (resourceMetrics.resource.asyncAttributesPending) {
       resourceMetrics.resource.waitForAsyncAttributes?.()
-        .then(doCollect, (err: any) => diag.debug('Error while resolving async portion of resource: ', err));
+        .then(doCollect, (err: any) => api.diag.debug('Error while resolving async portion of resource: ', err));
     } else {
       await doCollect();
     }
@@ -118,7 +119,7 @@ export class BatchExportingMetricReader extends MetricReader {
       if (result.code !== ExportResultCode.SUCCESS) {
         throw UnknownError('PeriodicExportingMetricReader: metrics export failed', { cause: result.error });
       }
-      this._resourceMetrics.resource = Resource.EMPTY;
+      this._resourceMetrics.resource = EMPTY_RESOURCE;
     };
     await doExport();
   }
