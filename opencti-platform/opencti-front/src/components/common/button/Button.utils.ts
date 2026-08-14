@@ -156,10 +156,20 @@ export const createTextGradientSx = (
 
   return {
     background: gradientStr,
-    color: 'transparent',
     backgroundClip: 'text',
     WebkitBackgroundClip: 'text',
+    // Hiding the glyphs through the fill alone, as the library does. `color`
+    // stays, because the reset below resolves against it: were it transparent,
+    // a child inheriting `currentColor` would resolve back to transparent and
+    // stay invisible — an icon, a spinner, anything that takes its colour from
+    // the text.
     WebkitTextFillColor: 'transparent',
+    // The gradient is for the button's own text nodes. `-webkit-text-fill-color`
+    // inherits and beats `color`, so a nested component paints invisible glyphs
+    // unless element children get their own fill back.
+    '& > *': {
+      WebkitTextFillColor: 'currentColor',
+    },
     '& svg': {
       fill: gradientColors.start,
       color: gradientColors.start,

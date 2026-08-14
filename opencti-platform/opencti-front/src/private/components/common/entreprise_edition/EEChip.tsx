@@ -1,3 +1,4 @@
+import { Chip } from '@filigran/design-system';
 import React, { CSSProperties, MouseEvent, useState } from 'react';
 import FeedbackCreation from '@components/cases/feedbacks/FeedbackCreation';
 import EnterpriseEditionAgreement from '@components/common/entreprise_edition/EnterpriseEditionAgreement';
@@ -8,7 +9,25 @@ import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useG
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useTheme } from '@mui/material/styles';
 
-const EEChip = React.forwardRef<HTMLDivElement, { feature?: string; clickable?: boolean; floating?: boolean }>(({ feature, clickable = true, floating = false }, ref) => {
+/**
+ * The bar wants 8px between the label and the chip. The library button lays its
+ * label out as a bare text node, so no flex gap falls between the two: the whole
+ * distance is this margin. Measured, not assumed.
+ */
+const EE_CHIP_EXTRA_GAP = '8px';
+
+interface EEChipProps {
+  feature?: string;
+  clickable?: boolean;
+  floating?: boolean;
+  /** Opt in to the library `Chip`; every other call site keeps the legacy marker. */
+  libraryChip?: boolean;
+}
+
+const EEChip = React.forwardRef<HTMLDivElement, EEChipProps>((
+  { feature, clickable = true, floating = false, libraryChip = false },
+  ref,
+) => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -55,13 +74,18 @@ const EEChip = React.forwardRef<HTMLDivElement, { feature?: string; clickable?: 
 
   return (!isEnterpriseEdition && (
     <>
-      <div
-        ref={ref}
-        style={divStyle}
-        onClick={(e) => onClick(e)}
-      >
-        EE
-      </div>
+      {libraryChip ? (
+        // Decorative by design: the surrounding button owns the click — see fds-migration/LIBRARY-FEEDBACK.md #21
+        <Chip label="EE" severity="ee" style={{ marginInlineStart: EE_CHIP_EXTRA_GAP }} />
+      ) : (
+        <div
+          ref={ref}
+          style={divStyle}
+          onClick={(e) => onClick(e)}
+        >
+          EE
+        </div>
+      )}
       {isAdmin ? (
         <EnterpriseEditionAgreement
           open={displayDialog}
