@@ -118,6 +118,7 @@ const settingsQuery = graphql`
     }
     about {
       version
+      build_commit
       dependencies {
         name
         version
@@ -214,7 +215,8 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
   };
 
   const modules = settings.platform_modules;
-  const { version, dependencies } = about || { version: '', dependencies: [] };
+  const { version, build_commit: buildCommit, dependencies } = about || { version: '', build_commit: null, dependencies: [] };
+  const displayedVersion = buildCommit ? `${version} (${buildCommit})` : version;
   const isEnterpriseEditionActivated = settings.platform_enterprise_edition.license_enterprise;
   const isEnterpriseEditionByConfig = settings.platform_enterprise_edition.license_by_configuration;
   const isEnterpriseEditionValid = settings.platform_enterprise_edition.license_validated;
@@ -592,7 +594,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     <ListItem divider={true}>
                       <ListItemText primary={t_i18n('Version')} />
                       <ItemBoolean
-                        neutralLabel={version}
+                        neutralLabel={displayedVersion}
                         status={null}
                       />
                     </ListItem>

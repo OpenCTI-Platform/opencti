@@ -67,6 +67,8 @@ RUN yarn build
 
 FROM base AS app
 
+ARG BUILD_COMMIT
+
 RUN <<EOT
   set -euxo pipefail
 
@@ -95,6 +97,7 @@ COPY --from=builder-front /opt/opencti/opencti-front/dist/ ./public/
 ENV PYTHONUNBUFFERED="1"
 ENV NODE_OPTIONS="--max_old_space_size=12288"
 ENV NODE_ENV="production"
+ENV BUILD_COMMIT="${BUILD_COMMIT}"
 
 RUN <<EOT
   set -euxo pipefail

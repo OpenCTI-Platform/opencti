@@ -60,6 +60,7 @@ const LINUX_CERTFILES = [
 const DEFAULT_ENV = 'production';
 export const OPENCTI_SESSION = 'opencti_session';
 export const PLATFORM_VERSION = pjson.version;
+export const BUILD_COMMIT = process.env.BUILD_COMMIT?.slice(0, 7);
 const LOG_APP = 'APP';
 const LOG_AUDIT = 'AUDIT';
 
