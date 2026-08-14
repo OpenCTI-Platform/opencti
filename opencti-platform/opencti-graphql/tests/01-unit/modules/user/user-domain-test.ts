@@ -27,6 +27,8 @@ vi.mock('../../../../src/database/middleware-loader', () => ({
 }));
 import { internalLoadById } from '../../../../src/database/middleware-loader';
 import { notify } from '../../../../src/database/redis';
+import { elLoadBy } from '../../../../src/database/engine';
+import { validateAndNormalizeEmailInput } from '../../../../src/domain/user';
 
 describe('User Domain', () => {
   const context = {
@@ -153,5 +155,70 @@ describe('User Domain', () => {
       await expect(revokeUserToken(context, user, 'non-existent')).rejects.toThrow('Token not found');
       await expect(revokeUserToken(context, user, 'non-existent')).rejects.toThrow('Token not found');
     });
+  });
+});
+
+vi.mock('../../../../src/database/engine', () => ({
+  elLoadBy: vi.fn(),
+}));
+
+describe('validateAndNormalizeEmailInput', () => {
+  const context = {
+    user: { id: 'admin-id' },
+  } as AuthContext;
+
+  const userId = 'user-id';
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should ignore inputs that are not user_email', async () => {
+    const input = { key: 'firstname', value: ['John'] };
+
+    await validateAndNormalizeEmailInput(context, userId, input);
+
+    expect(elLoadBy).not.toHaveBeenCalled();
+    expect(input.value).toEqual(['John']);
+  });
+
+  it('should lowercase and trim the email before checking for duplicates', async () => {
+    (elLoadBy as any).mockResolvedValue(null);
+    const input = { key: 'user_email', value: ['  Victim@Example.COM  '] };
+
+    await validateAndNormalizeEmailInput(context, userId, input);
+
+    expect(input.value).toEqual(['victim@example.com']);
+    expect(elLoadBy).toHaveBeenCalledWith(
+      context,
+      expect.anything(),
+      'user_email',
+      'victim@example.com',
+      expect.anything(),
+    );
+  });
+
+  it('should allow a user to keep their own email (self no-op, same or different case)', async () => {
+    (elLoadBy as any).mockResolvedValue({ internal_id: userId });
+    const input = { key: 'user_email', value: ['Test@Test.com'] };
+
+    await expect(validateAndNormalizeEmailInput(context, userId, input)).resolves.not.toThrow();
+    expect(input.value).toEqual(['test@test.com']);
+  });
+
+  it('should reject a case-variant duplicate of another user\'s email (GHSA-vrrj-h9rx-9g7g)', async () => {
+    (elLoadBy as any).mockResolvedValue({ internal_id: 'victim-id' });
+    const input = { key: 'user_email', value: ['Victim@Example.com'] };
+
+    await expect(validateAndNormalizeEmailInput(context, userId, input))
+      .rejects.toThrow('User already exists');
+  });
+
+  it('should reject an exact-match duplicate of another user\'s email', async () => {
+    (elLoadBy as any).mockResolvedValue({ internal_id: 'victim-id' });
+    const input = { key: 'user_email', value: ['victim@example.com'] };
+
+    await expect(validateAndNormalizeEmailInput(context, userId, input))
+      .rejects.toThrow('User already exists');
   });
 });

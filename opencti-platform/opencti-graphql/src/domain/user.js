@@ -1070,7 +1070,7 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
 };
 
 // User related
-const validateAndNormalizeEmailInput = async (context, userId, input) => {
+export const validateAndNormalizeEmailInput = async (context, userId, input) => {
   if (input.key === 'user_email') {
     if (!Array.isArray(input.value) || input.value.length !== 1 || isEmptyField(input.value[0])) {
       throw FunctionalError('The email you have provided is not valid');
