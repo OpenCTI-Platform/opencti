@@ -1069,6 +1069,9 @@ export const initializeEntityWorkflow = async (
   user: AuthUser,
   entity: any,
 ): Promise<void> => {
+  // Avoid self-referential/unnecessary work for the internal objects created by workflow
+  // initialization itself: the `has-workflow` relationship and the WorkflowInstance entity.
+  if (entity.entity_type === RELATION_HAS_WORKFLOW || entity.entity_type === ENTITY_TYPE_WORKFLOW_INSTANCE) return;
   const executionContext = bypassDraftContext(context);
   const executionUser = bypassDraftUser(user);
   const entitySetting = await getWorkflowConfig(executionContext, executionUser, entity.entity_type);

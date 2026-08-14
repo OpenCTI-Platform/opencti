@@ -4251,7 +4251,11 @@ export const internalDeleteElementById = async <T extends StoreObject>(
   // - TRANSACTION END
   if (isFeatureEnabled('ENTITIES_WORKFLOW')) {
     // Clean up the WorkflowInstance (if any) so it doesn't stay orphaned after its entity is deleted.
-    await cleanupEntityWorkflow(context, user, element as BasicStoreBase);
+    try {
+      await cleanupEntityWorkflow(context, user, element as BasicStoreBase);
+    } catch (err) {
+      logApp.error('[OPENCTI] Error cleaning up WorkflowInstance after entity deletion', { cause: err, id: (element as BasicStoreBase).internal_id });
+    }
   }
   return { element, event };
 };
