@@ -10,7 +10,7 @@ const ABOUT_QUERY = gql`
   query about {
     about {
       version
-      build_commit
+      buildCommit
       dependencies {
         name
         version
@@ -94,7 +94,7 @@ describe('Settings resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     const { about } = queryResult.data;
     expect(about).not.toBeNull();
-    expect(about).toHaveProperty('build_commit');
+    expect(about.buildCommit === null || /^[0-9a-f]{7}$/i.test(about.buildCommit)).toBe(true);
     expect(about.dependencies.length).toEqual(4);
   });
   it('should settings information', async () => {

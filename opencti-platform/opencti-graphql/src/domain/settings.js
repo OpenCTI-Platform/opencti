@@ -51,7 +51,7 @@ export const getMemoryStatistics = () => {
 
 export const getApplicationInfo = () => ({
   version: PLATFORM_VERSION,
-  build_commit: BUILD_COMMIT,
+  buildCommit: BUILD_COMMIT,
   debugStats: {}, // Lazy loaded
 });
 

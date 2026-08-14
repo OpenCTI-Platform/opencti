@@ -118,7 +118,7 @@ const settingsQuery = graphql`
     }
     about {
       version
-      build_commit
+      buildCommit
       dependencies {
         name
         version
@@ -215,7 +215,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
   };
 
   const modules = settings.platform_modules;
-  const { version, build_commit: buildCommit, dependencies } = about || { version: '', build_commit: null, dependencies: [] };
+  const { version, buildCommit, dependencies } = about || { version: '', buildCommit: null, dependencies: [] };
   const displayedVersion = buildCommit ? `${version} (${buildCommit})` : version;
   const isEnterpriseEditionActivated = settings.platform_enterprise_edition.license_enterprise;
   const isEnterpriseEditionByConfig = settings.platform_enterprise_edition.license_by_configuration;

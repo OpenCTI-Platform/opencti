@@ -283,7 +283,7 @@ type AppInfo {
   """
   The short commit hash used to build the OpenCTI application
   """
-  build_commit: String @auth
+  buildCommit: String @auth
   """
   The OpenCTI api current memory usage
   """

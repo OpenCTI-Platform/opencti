@@ -652,7 +652,7 @@ export type AppDebugStatistics = {
 export type AppInfo = {
   __typename?: 'AppInfo';
   /** The short commit hash used to build the OpenCTI application */
-  build_commit?: Maybe<Scalars['String']['output']>;
+  buildCommit?: Maybe<Scalars['String']['output']>;
   /** The objects statistics */
   debugStats?: Maybe<AppDebugStatistics>;
   /** The list of OpenCTI software dependencies */
@@ -42153,7 +42153,7 @@ export type AppDebugStatisticsResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type AppInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['AppInfo'] = ResolversParentTypes['AppInfo']> = ResolversObject<{
-  build_commit?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  buildCommit?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   debugStats?: Resolver<Maybe<ResolversTypes['AppDebugStatistics']>, ParentType, ContextType>;
   dependencies?: Resolver<Array<ResolversTypes['DependencyVersion']>, ParentType, ContextType>;
   memory?: Resolver<Maybe<ResolversTypes['AppMemory']>, ParentType, ContextType>;

@@ -290,7 +290,7 @@ type AppInfo {
   version: String!
 
   """The short commit hash used to build the OpenCTI application"""
-  build_commit: String
+  buildCommit: String
 
   """The OpenCTI api current memory usage"""
   memory: AppMemory
