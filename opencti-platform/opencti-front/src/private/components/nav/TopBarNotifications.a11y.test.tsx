@@ -1,0 +1,86 @@
+import { computeAccessibleDescription, computeAccessibleName } from 'dom-accessibility-api';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { NotificationsOutlined } from '@mui/icons-material';
+import React from 'react';
+import { describe, expect, it } from 'vitest';
+import TopBarIconLink from './TopBarIconLink';
+import testRender from '../../../utils/tests/test-render';
+
+/**
+ * A counter-check, deliberately from a different angle than
+ * `TopBarIconLink.test.tsx`.
+ *
+ * That file proves the COMPONENT honours its contract. This one proves the
+ * BAR'S CALL SITE passes the right thing: the control is composed here exactly
+ * as `TopBar` composes it — inside a tooltip trigger, with the badge props the
+ * bar supplies — because the defect being guarded against was never in the
+ * component's contract. It was in what the bar handed it: the badge went to the
+ * glyph, the glyph renders inside `aria-hidden`, and the count was announced to
+ * nobody while the markup looked correct.
+ *
+ * It also computes the tree through `dom-accessibility-api` directly rather
+ * than through jest-dom's matchers, so the two files do not fail together for a
+ * reason that belongs to one shared helper.
+ */
+
+const renderAsTheBarDoes = (unread: number) => testRender(
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <TopBarIconLink
+        aria-label="Notifications"
+        to="/dashboard/profile/notifications/alerts"
+        icon={<NotificationsOutlined fontSize="medium" />}
+        badge={{
+          content: unread,
+          dot: true,
+          invisible: unread === 0,
+          accessibleText: `${unread} unread`,
+        }}
+      />
+    </TooltipTrigger>
+    <TooltipContent>Notifications</TooltipContent>
+  </Tooltip>,
+);
+
+const controlIn = (root: HTMLElement) => root.querySelector('a') as HTMLElement;
+
+describe('the notifications control, composed as the bar composes it', () => {
+  it('keeps its own accessible name', () => {
+    const { baseElement } = renderAsTheBarDoes(4);
+    expect(computeAccessibleName(controlIn(baseElement))).toBe('Notifications');
+  });
+
+  it('announces the count as the control accessible description', () => {
+    const { baseElement } = renderAsTheBarDoes(4);
+    const description = computeAccessibleDescription(controlIn(baseElement));
+    // The value, not the markup: whatever element carries it, it has to resolve
+    // onto the control the user actually focuses.
+    expect(description).toContain('4');
+    expect(description).toContain('unread');
+  });
+
+  it('resolves that description outside every aria-hidden subtree', () => {
+    const { baseElement } = renderAsTheBarDoes(4);
+    const described = controlIn(baseElement).getAttribute('aria-describedby');
+    expect(described).toBeTruthy();
+    const target = baseElement.querySelector(`#${described}`);
+    expect(target).not.toBeNull();
+    // The exact regression: the description existed, and computed to nothing,
+    // because it pointed inside the hidden glyph.
+    expect(target?.closest('[aria-hidden="true"]')).toBeNull();
+  });
+
+  it('says nothing extra when there is nothing unread', () => {
+    const { baseElement } = renderAsTheBarDoes(0);
+    expect(computeAccessibleName(controlIn(baseElement))).toBe('Notifications');
+    expect(computeAccessibleDescription(controlIn(baseElement))).toBe('');
+  });
+
+  it('still lets the tooltip trigger reach the control it wraps', () => {
+    const { baseElement } = renderAsTheBarDoes(4);
+    // `data-state` only lands here if what TooltipTrigger cloned survived the
+    // journey to the anchor. Without it the tooltip never opens, and nothing
+    // else in this file would notice.
+    expect(controlIn(baseElement).getAttribute('data-state')).toBe('closed');
+  });
+});
