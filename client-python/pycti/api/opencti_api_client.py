@@ -85,7 +85,7 @@ from pycti.entities.opencti_vocabulary import Vocabulary
 from pycti.entities.opencti_vulnerability import Vulnerability
 from pycti.utils.opencti_logger import logger
 from pycti.utils.opencti_stix2 import OpenCTIStix2
-from pycti.utils.opencti_stix2_utils import OpenCTIStix2Utils
+from pycti.utils.opencti_stix2_utils import NOT_PROVIDED, OpenCTIStix2Utils
 
 # Global singleton variables for proxy certificate management
 _PROXY_CERT_BUNDLE = None
@@ -608,6 +608,10 @@ class OpenCTIApiClient:
             cleaned = {}
             files_vars = []
             for key, val in obj.items():
+                # NOT_PROVIDED marks a value never supplied by the
+                # caller (as opposed to an explicit None/null).
+                if val is NOT_PROVIDED:
+                    continue
                 new_path = f"{path_prefix}.{key}" if path_prefix else key
                 cleaned_val, nested_files = self._extract_files(val, new_path)
                 cleaned[key] = cleaned_val
@@ -721,11 +725,11 @@ class OpenCTIApiClient:
                 proxies=self.proxies,
                 timeout=self.session_requests_timeout,
             )
-        # If no
+        # If no files, send a normal request
         else:
             r = self.session.post(
                 self.api_url,
-                json={"query": query, "variables": variables},
+                json={"query": query, "variables": query_var},
                 headers=query_headers,
                 verify=self.ssl_verify,
                 cert=self.cert,
