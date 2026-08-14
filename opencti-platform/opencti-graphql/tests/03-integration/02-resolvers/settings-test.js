@@ -1,9 +1,10 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { head } from 'ramda';
-import { queryAsAdmin, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { createUploadFromTestDataFile, queryAsAdmin, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
+import { downloadFileRange } from '../../../src/database/raw-file-storage';
 import { USER_EDITOR, USER_SECURITY } from '../../utils/testQuery';
 
 const ABOUT_QUERY = gql`
@@ -274,5 +275,124 @@ describe('Settings resolver messages behavior', () => {
     // -- ASSERT --
     const { platform_messages } = queryResult.data.settingsEdit.deleteMessage;
     expect(platform_messages.length).toEqual(0);
+  });
+});
+
+describe('Settings map source management', () => {
+  const MAP_SOURCE_SETTINGS_QUERY = gql`
+    query settings {
+      settings {
+        id
+        platform_map_custom_file {
+          name
+          size
+        }
+      }
+    }
+  `;
+
+  const MAP_CUSTOM_FILE_UPLOAD = gql`
+    mutation SettingsMapCustomFileUpload($id: ID!, $file: Upload!) {
+      settingsEdit(id: $id) {
+        uploadMapCustomFile(file: $file) {
+          id
+          platform_map_custom_file {
+            name
+            size
+          }
+        }
+      }
+    }
+  `;
+
+  const MAP_CUSTOM_FILE_DELETE = gql`
+    mutation SettingsMapCustomFileDelete($id: ID!) {
+      settingsEdit(id: $id) {
+        deleteMapCustomFile {
+          id
+          platform_map_custom_file {
+            name
+            size
+          }
+        }
+      }
+    }
+  `;
+
+  const settingsId = async () => {
+    const queryResult = await queryAsAdmin({ query: MAP_SOURCE_SETTINGS_QUERY });
+    return queryResult.data.settings.id;
+  };
+
+  it('should have no custom file initially', async () => {
+    const queryResult = await queryAsAdmin({ query: MAP_SOURCE_SETTINGS_QUERY });
+    expect(queryResult.data.settings.platform_map_custom_file).toBeNull();
+  });
+
+  it('should upload a map file to S3', async () => {
+    const id = await settingsId();
+    resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    const upload = await createUploadFromTestDataFile('test-map-file.pmtiles', 'test-map-file.pmtiles', 'application/octet-stream');
+    const queryResult = await queryAsAdmin({
+      query: MAP_CUSTOM_FILE_UPLOAD,
+      variables: { id, file: upload },
+    });
+    expect(queryResult.errors).toBeUndefined();
+    const customFile = queryResult.data.settingsEdit.uploadMapCustomFile.platform_map_custom_file;
+    expect(customFile).not.toBeNull();
+    expect(customFile.name).toEqual('test-map-file.pmtiles');
+    expect(customFile.size).toBeGreaterThan(0);
+  });
+
+  it('should download full file via downloadFileRange without range', async () => {
+    const result = await downloadFileRange('maps/world.pmtiles');
+    expect(result).not.toBeNull();
+    expect(result.totalSize).toBeGreaterThan(0);
+    expect(result.contentLength).toEqual(result.totalSize);
+    expect(result.contentRange).toBeUndefined();
+    expect(result.etag).toBeDefined();
+    result.stream.destroy();
+  });
+
+  it('should download partial content via downloadFileRange with range', async () => {
+    const result = await downloadFileRange('maps/world.pmtiles', 'bytes=0-9');
+    expect(result).not.toBeNull();
+    expect(result.contentLength).toEqual(10);
+    expect(result.contentRange).toMatch(/^bytes 0-9\//);
+    expect(result.totalSize).toBeGreaterThan(10);
+    expect(result.etag).toBeDefined();
+    result.stream.destroy();
+  });
+
+  it('should return null from downloadFileRange for non-existent key', async () => {
+    const result = await downloadFileRange('maps/non-existent.pmtiles');
+    expect(result).toBeNull();
+  });
+
+  it('should mark the range not satisfiable when downloadFileRange gets an out-of-bounds range', async () => {
+    const fullResult = await downloadFileRange('maps/world.pmtiles');
+    const totalSize = fullResult.totalSize;
+    fullResult.stream.destroy();
+
+    const result = await downloadFileRange('maps/world.pmtiles', `bytes=${totalSize + 100}-${totalSize + 200}`);
+    expect(result).not.toBeNull();
+    expect(result.rangeNotSatisfiable).toBe(true);
+    result.stream.destroy();
+  });
+
+  it('should delete the S3 map file', async () => {
+    const id = await settingsId();
+    resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    const queryResult = await queryAsAdmin({
+      query: MAP_CUSTOM_FILE_DELETE,
+      variables: { id },
+    });
+    expect(queryResult.errors).toBeUndefined();
+    expect(queryResult.data.settingsEdit.deleteMapCustomFile.platform_map_custom_file).toBeNull();
+  });
+
+  it('should have no custom file after deletion', async () => {
+    const queryResult = await queryAsAdmin({ query: MAP_SOURCE_SETTINGS_QUERY });
+    expect(queryResult.data.settings.platform_map_custom_file).toBeNull();
   });
 });
