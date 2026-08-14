@@ -471,3 +471,448 @@ not only to rail rows — the fix is worth generalising rather than repeating.
 running platform and read the computed `cursor` of every `<a>` and `<button>`
 inside `nav.app-navbar`; all of them must be `pointer`, with no exception for
 the switcher.
+
+---
+
+Entries 13–20 were raised by the Header pilot (admin top bar), at pin
+`5960966216533f620393a2174213c666f57af7dd`. Several restate what the OpenAEV
+Header pilot already filed; where they do, its entry number is given so the
+library sees two consumers, not one.
+
+---
+
+## 13. `IconButton` renders a hard `<button>` and accepts no `asChild`
+
+**Needed.** Two bar controls (Triggers, Notifications) are genuine routes. As
+buttons with an `onClick` they would lose middle-click, ⌘/Ctrl-click, "copy link
+address" and the status-bar preview — a behavioural loss.
+
+**Today.** `IconButton` hard-renders `<button>` with no `asChild`, while
+`Button` has one.
+
+**Consequence.** `TopBarIconLink.tsx` applies `iconButtonVariants` to a router
+`Link`, re-implementing the component's DOM contract (the `aria-hidden` glyph
+wrapper) by hand. Same technique as OpenAEV's entry 21.
+
+**Ask.** Give `IconButton` the `asChild` `Button` already has.
+
+**Removal test.** Delete `TopBarIconLink.tsx`, wrap `<Link>` in
+`<IconButton asChild>`; the icon-link tests stay green.
+
+---
+
+## 14. `Header` ships no positioning, so every product re-invents it
+
+**Needed.** A top bar fixed to the viewport, offset by the navigation rail and
+by up to three stacked banners.
+
+**Today.** `Header` is laid out in flow and never sticky, by design.
+
+**Consequence.** The product supplies `position: fixed`, `top`, `left`, `right`
+and `z-index` inline, and `fullWidth={false}` with them. Same as OpenAEV's
+entry 20 — two consumers out of two.
+
+**Ask.** Either document the positioning contract, or an opt-in fixed mode.
+
+**Removal test.** Delete the inline block; the bar must stay fixed, flush with
+the rail, under the banners.
+
+---
+
+## 15. A themeable surface has no supported hook for a product-driven colour
+
+**Needed.** OpenCTI administrators set `theme_background` per theme; it paints
+the top bar's gradient. Adopting `Header` as-is would drop that.
+
+**Today.** The glass layer reads `--gradient-default`, a token assembled at
+`:root`. Overriding its stops at `:root` would repaint every other library
+surface — the Navbar included — while still failing to repaint a gradient
+already assembled there.
+
+**Consequence.** The product re-declares the whole assembled gradient on the bar
+element. Same ask as OpenAEV's entry 17.
+
+**Ask.** A documented per-surface background hook.
+
+**Removal test.** Replace the re-declaration with the supported hook; a custom
+`theme_background` must still paint the bar and nothing else.
+
+---
+
+## 16. Layered utilities lose to the host's unlayered CSS
+
+**Needed.** The selected icon link must carry the same background `IconButton`
+paints for `active`.
+
+**Today.** The library's utilities are layered; a class added on the same
+element by a product that composes by hand loses to unlayered host CSS.
+
+**Consequence.** `TopBarIconLink` sets the background inline, from the library's
+own token rather than a literal. Same failure mode as OpenAEV's entry 24.
+
+**Ask.** Document the layer contract consumers must respect.
+
+**Removal test.** Move the background back to a class; the active link must stay
+tinted.
+
+---
+
+## 17. `HeaderGroup`'s `grow` caps below this bar's ceiling
+
+**Needed.** A search window of 200–500px.
+
+**Today.** `grow` caps at 400px; `grow="unbounded"` removes the cap entirely.
+
+**Consequence.** The product uses `grow="unbounded"` and declares the window on
+the group it owns. Same as OpenAEV's entry 18.
+
+**Ask.** Let `grow` take the cap as a value.
+
+**Removal test.** Replace the inline window with the prop; measured width must
+stay 200–500px.
+
+---
+
+## 18. No general-purpose separator
+
+**Needed.** A rule between the AI actions and the platform actions.
+
+**Today.** `NavbarSeparator`, `MenuSeparator` and `SelectSeparator` are each
+bound to their own component.
+
+**Consequence.** A `div role="separator"` painted from the library's border
+token. Same as OpenAEV's entry 22.
+
+**Ask.** A standalone `Separator`.
+
+**Removal test.** Replace the div with the component; the rule keeps its
+geometry and colour.
+
+---
+
+## 19. No `Badge` — ✅ CLOSED at pin `8798cbb` (2026-08-13)
+
+**Shipped by library PR #114.** The bar's unread marker is now the library
+`Badge`: `content` carries the total, `dot` renders the reduced form ("there is
+something, do not show how much"), and `invisible` unmounts it when nothing is
+unread — the same three behaviours the MUI badge provided.
+
+Measured after: zero `MuiBadge-` elements remain in the bar, and with nothing
+unread the badge is not mounted at all, so no empty node is left behind.
+`TopBar.libraryOnly.test.ts` now names `MuiBadge-` among the classes the bar
+must not carry, so a regression fails the suite rather than a review.
+
+The history below is kept as the record of what was missing.
+
+---
+
+### Original report — No `Badge`
+
+**Needed.** The unread dot on the notifications control.
+
+**Today.** The library ships no badge.
+
+**Consequence.** MUI's `Badge` wraps the glyph inside the library-styled link.
+Named in OpenAEV's entry 22 as a gap worth sizing.
+
+**Ask.** A `Badge`, dot and count variants. Understood to be in progress.
+
+**Removal test.** Swap MUI's `Badge` for the library's; the dot must keep its
+position and its `invisible` behaviour.
+
+---
+
+## 20. `SearchField` has no busy state and no themeable leading icon
+
+**Needed.** While a natural-language query runs, the field must show it is
+working; and when NLQ mode is on, the leading magnifier is tinted with the AI
+colour so the mode is visible at the field itself.
+
+**Today.** `SearchField` renders its own magnifier and clear cross and exposes
+neither a busy state nor a hook for the leading icon's colour. `searchOption` is
+a trailing slot for actions, not a status area.
+
+**Consequence.** Adopting `SearchField` for the top bar dropped three
+affordances the product had: an animated gradient border while NLQ is active,
+the AI-tinted magnifier, and an inline loader inside the field. The loader now
+sits beside the field; the other two are gone. The NLQ mode remains readable
+from the toggle's own selected state.
+
+**Ask.** A `busy`/`loading` state, and a documented way to colour the leading
+icon.
+
+**Removal test.** Pass the busy state and the icon colour; the loader returns
+inside the field and the magnifier tints with NLQ on.
+
+---
+
+## 21. The bar's EE marker is decorative — a recorded decision, not a gap
+
+**Decision (Sandy, 2026-08-12).** In the top bar the "EE" marker is information,
+not a control: the surrounding "Ask Ariane" button owns the click and opens the
+dialog, and the chip only signals that the feature belongs to the enterprise
+pack. It is therefore rendered without `onClick`.
+
+**Why it is also the only valid shape here.** `Chip` renders a `<button>` as
+soon as `onClick` is present, and nesting that inside the Ask Ariane button
+would be invalid. The decision and the constraint agree, so nothing is being
+worked around.
+
+**Elsewhere.** The 26 other `EEChip` call sites keep the legacy marker and its
+click, which opens the enterprise-edition dialog. Converting them is its own
+change.
+
+**Settled at pin `7e7b417`.** The `tone` axis is gone; the marker is
+`severity="ee"` and was re-checkpointed on the three themes, at rest and on
+hover. The 8px between the label and the chip is now carried entirely by the
+chip's own margin: the library button lays its label out as a bare text node,
+so no flex gap falls between the two — measured, not assumed.
+
+---
+
+## 22. `Menu` shows its focus ring on hover — ✅ CLOSED at pin `990810f` (2026-08-12)
+
+**Fixed by library PR #110** (`fix(menu): keep the keyboard focus ring off rows
+the pointer highlights`). Measured after the bump: hovering an item still gives
+it DOM focus and `:focus-visible` — that is Radix's own semantics — but the
+ring now resolves fully transparent (`rgba(0, 0, 0, 0) 0px 0px 0px 0px`), so
+only the hover background paints. The keyboard affordance is unaffected.
+
+The history below is kept as the record of what was measured when it was open.
+
+---
+
+### Original report — `Menu` shows its focus ring on hover
+
+**Found at pin `5960966`.** Reported from the running product.
+
+**What happens.** Moving the pointer over a `MenuItem` gives it real DOM focus:
+measured `document.activeElement === item`, `:focus-visible` matches, and
+`data-highlighted` is set. The library's own `focus-visible:ring-2`,
+`focus-visible:ring-offset-2` and `ring-focus` classes therefore fire, painting
+the brand-blue ring — the keyboard affordance — under the mouse.
+
+**Scope.** Not specific to link items: reproduced on a plain `<div>` item
+(Feedback) as well as on `asChild` anchors. The product passes only `asChild`
+and `onSelect`, so nothing product-side is involved.
+
+**Ask.** Separate the hover treatment from the focus ring, so the ring stays a
+keyboard affordance.
+
+**Removal test.** Hover a `MenuItem` with the mouse: no focus ring; reach the
+same item with the keyboard: ring present.
+
+---
+
+## 23. ~~`ProductSwitcher` truncates product names~~ — WITHDRAWN, it was ours
+
+**Filed in error, 2026-08-12.** This entry blamed the library's panel geometry.
+It was the product: `NavBar.tsx` passed `width={126}` — the trigger slot's width
+— to the two *option* logos, whose slot is 100px. The images overflowed their
+slot by 26px and were clipped, which read as truncated wording.
+
+**Fixed product-side**, on the OpenAEV pilot's own model
+(`LeftBarHeader.tsx`): `style={{ width: '100%', height: 'auto', objectFit:
+'contain' }}`. Measured in the running product — before: both logos 126px in a
+100px slot, 26px overflow, clipped. After: both 100px in a 100px slot, no
+overflow, aspect preserved, "OpenAEV" and "XTM Hub" fully legible.
+
+The trigger's own logo keeps `width={126}`: its slot is that wide, and it is
+correct.
+
+**Lesson for the next entry.** The measurement that misled me was reading the
+label span's width and the `shrink-0` logo slot, and concluding the library
+sized them wrongly. It did not: the product oversized the image inside them. A
+gap should be filed against the library only after checking what the product
+passes in.
+
+---
+
+## 24. No segmented control, so the bar's mode toggles stay MUI
+
+**Last measured at pin `35a4768`:** `ToggleButtonGroup`, `ToggleButton` and the
+`ButtonBase` they render are the only non-glyph MUI left in the bar — and they
+now block a second conversion as well.
+
+**It also blocks the NLQ dropdown.** That menu has a library equivalent
+(`Menu`/`MenuItem`/`MenuSeparator`), but its trigger does not: the caret is a
+`<span>` *inside* a `ToggleButton`, and the menu anchors to it. A Radix
+`MenuTrigger asChild` would have to clone onto a non-focusable span, and
+without `asChild` it renders a `<button>` inside the `ToggleButton`'s own
+button. Both are wrong, so the menu stays MUI until the group does not.
+
+**Measured values, so the component can be specified** (dark theme, bar
+running):
+
+| | |
+|---|---|
+| Group | 84 × 36 px, `role="group"`, radius 4px, transparent background |
+| Segments | 2 × 36 × 36 px, padding 0, radius 4px, 18px glyph |
+| Gap between segments | 6px |
+| Selected | background `rgba(66,202,255,0.25)`, glyph `rgb(255,255,255)` |
+| Unselected | transparent background, glyph `rgb(66,202,255)` |
+| Semantics | `aria-pressed` true/false, **one tab stop per segment** — no roving focus |
+| Third segment | appears for natural-language search when XTM One is configured |
+
+The tab-stop behaviour is worth a decision rather than a copy: the MUI group
+gives each segment its own tab stop, where a segmented control usually carries
+one stop for the group and arrow keys between segments.
+
+**Needed.** The bar exposes two mutually exclusive search modes — advanced
+search and bulk search — as a segmented pair, and a third segment appears for
+natural-language search when XTM One is configured. Selection is exclusive,
+each segment is a toggle rather than an action, and the group is one tab stop
+with arrow-key movement between segments.
+
+**Today.** The library ships `Button`, `IconButton` and `Chip`; none of them
+carries selected state as a group. The pilot therefore leaves
+`ToggleButtonGroup` + `ToggleButton` on MUI. They are the last rendered MUI
+components in the bar, and the reason `TopBar.libraryOnly.test.ts` asserts a
+named survivor list rather than zero MUI.
+
+**Asked.** A grouped, single-select control — the segments themselves can be
+the existing `IconButton`, what is missing is the group that owns exclusivity,
+roving focus and the selected style.
+
+### The `Popover` that comes with it
+
+**Exempted by Sandy, 2026-08-13, with this entry.** No product line imports a
+`Popover`: it reaches the page because MUI draws the exempted menu with one
+(`MenuRoot = styled(Popover)` in `@mui/material`). The library exports none
+either — checked on the installed build at pin `35a4768`, not inferred from a
+changelog: `Popover` is absent from `dist/index.d.ts`, while the Radix
+dependency it would be built on is already there. Sandy still has to design it.
+
+**Retired by** the same event as the rest of this entry: a library segmented
+control removes the menu's MUI trigger, and the library's own floating layer
+replaces the popover under it. `TopBar.libraryOnly.test.ts` names `Popover` in
+`EXEMPTED` so that importing one directly stays a declared, dated exemption
+rather than a new arrival.
+
+**Not exempted, and now closed:** `Stack` and `Box` were still inside the NLQ
+toggle — MUI layout, not the control. Replaced by plain elements at the same
+geometry (4px caret margin and padding, unchanged 1px divider). The guard reads
+`SearchInput.jsx` by symbol from now on, so either one coming back fails
+instead of passing under an exemption written for named components.
+
+---
+
+## 25. The gradient-text recipe breaks on any nested component — ✅ CLOSED at pin `7e7b417`
+
+**Where it bit.** `variant="ia"` paints its label with
+`background-clip: text` + `-webkit-text-fill-color: transparent`. That fill
+**inherits**, and it beats `color` on the descendant. Any component nested in
+such a button — for this bar, the EE chip inside "Ask Ariane" — paints its
+glyphs invisible: the chip rendered as a coloured pill with no "EE" in it, in
+both themes.
+
+The library documents the trap in its own source ("breaks if the child has
+nested elements"), which makes it a known sharp edge rather than a surprise —
+but a consumer only meets it after shipping the bug.
+
+**Fixed product-side** in `createTextGradientSx`: element children get
+`-webkit-text-fill-color: currentColor` back, bare text nodes keep the
+gradient. Measured on the bar's chip (8px from the label, own fill and
+background restored, at rest and on hover, dark and light) and on the
+product's text-only gradient buttons, which have no element children and are
+therefore unchanged.
+
+**Shipped by library PR #116** — ✅ CLOSED at pin `7e7b417`. The built CSS now
+carries `.text-gradient-*>*{-webkit-text-fill-color:currentColor}`.
+
+**One difference worth naming, because it bit us.** The library hides the label
+with the fill alone; OpenCTI's own `createTextGradientSx` also set
+`color: transparent`. With both, the reset resolves `currentColor` back to
+transparent and a nested child stays invisible anyway — the reset only works
+because the colour underneath it is real. The product recipe was aligned on the
+library's, and a test fails if `color: transparent` returns.
+
+---
+
+## 26. A library `Tooltip` throws without a `TooltipProvider`, and nothing says so at the type level
+
+**Where it bit.** The bar had a `TooltipProvider` and no other screen did. Moving
+the import control onto the library `Tooltip` made it throw — *"`Tooltip` must be
+used within `TooltipProvider`"* — on the three screens outside the bar that
+render the same control. TypeScript compiled it, ESLint passed it, and the bar
+itself looked fine: only a rendered-DOM test caught it.
+
+**Fixed product-side** by providing once at the private app's root, which is the
+Radix-recommended placement, and dropping the bar's own.
+
+**Asked.** Nothing about the API — this is Radix's contract and the error message
+is good. Worth a line in the `Tooltip` documentation page saying where a product
+is expected to mount the provider, so the first consumer does not discover it
+through a crash on a screen they were not looking at.
+
+---
+
+## 27. `Badge`'s default tone changed under a consumer, and nothing announced it
+
+**What happened.** At pin `35a4768` (library PR #119) the default `tone` moved
+from `brand` to `error`. The bar's unread marker passes no `tone`, so it went
+from the brand blue to red without a line of product code changing.
+
+That is a legitimate library decision — an unread count arguably *is* an alert —
+and the product is taking the new default rather than pinning the old look. But
+a default that repaints a shipped consumer is a breaking visual change, and this
+one arrived inside a feature commit titled for the Spinner's new tier.
+
+**Measured, so the choice can be made on values rather than memory:**
+
+| Theme | Default (`error`) | `tone="brand"` |
+|---|---|---|
+| Dark | `rgb(136,17,6)` counter, `rgb(241,67,55)` dot | `rgb(66,202,255)` |
+| Light | `rgb(245,114,102)` counter, `rgb(184,24,10)` dot | `rgb(0,21,168)` |
+| Custom | `rgb(136,17,6)` counter, `rgb(241,67,55)` dot | `rgb(66,202,255)` |
+
+**Asked.** Flag a default-value change in the release note the way a removed
+prop would be. A consumer cannot diff what it never wrote.
+
+---
+
+## 28. `Badge` describes the element it is given, so it must be given the control
+
+**Not a library defect — a consumer trap the API cannot see.** `Badge` clones
+`aria-describedby` onto its single child element. The bar handed it the glyph,
+and `TopBarIconLink` renders the glyph inside `aria-hidden="true"`, exactly as
+`IconButton` does. The reference therefore landed on a node outside the
+accessibility tree.
+
+**Measured through CDP** (`Accessibility.getPartialAXTree` on the anchor), the
+three themes, before: role `link`, NAME `"Notifications"` from
+`attribute[aria-label]`, **DESCRIPTION `""`** — the count was announced by
+nobody, while a DOM sweep found the text and read as if it worked. That is the
+whole point of measuring the computed tree instead of the markup.
+
+**After**, the badge wraps the anchor: NAME `"Notifications"`, **DESCRIPTION
+`"5 unread"`**, `aria-describedby` on the `<a>` itself, in dark, light and a
+custom theme.
+
+**Ask.** A dev-only warning when the element `Badge` is about to describe is
+`aria-hidden`, or sits inside something that is — the same shape as the
+existing warning for a non-element child. It is cheap and it catches the one
+mistake the type system cannot.
+
+---
+
+## 29. A component that names its props swallows what `asChild` clones onto it
+
+**Ours, found by the same pass, and worth writing down for the next pilot.**
+`TopBarIconLink` destructured the five props it knew about. `TooltipTrigger
+asChild` clones its handlers, its `data-state` and its ref onto that component,
+and every one of them was dropped: measured, the Triggers and Notifications
+tooltips **never opened**, on pointer or on keyboard, while the tooltip on the
+library `IconButton` next to them did. Nothing was red; the markup looked
+right.
+
+Fixed by forwarding the ref and spreading the rest onto the anchor — and
+`className` and `style` are merged rather than spread, because a cloning parent
+passes `className: undefined` and that replaced the library variant outright:
+the control measured **24×28 instead of 36×36**, with no size class left on it.
+Both are guarded by tests now.
+
+**Lesson for the playbook.** A hand-rolled stand-in for a library component
+(entry 13's `IconButton asChild` gap is what forces one here) must forward ref
+and rest props, or it is not a drop-in — and the failure is silent in both
+directions.
