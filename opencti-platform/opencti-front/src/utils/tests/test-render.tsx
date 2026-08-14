@@ -4,6 +4,7 @@ import React, { ReactNode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { render, renderHook } from '@testing-library/react';
 import { createMockEnvironment } from 'relay-test-utils';
+import { TooltipProvider } from '@filigran/design-system';
 import { EnvironmentConfig } from 'relay-runtime';
 import userEvent from '@testing-library/user-event';
 import { RelayMockEnvironment } from 'relay-test-utils/lib/RelayModernMockEnvironment';
@@ -87,9 +88,13 @@ export const ProvidersWrapper = ({ children, relayEnv, userContext }: ProvidersW
       <RelayEnvironmentProvider environment={relayEnv}>
         <AppIntlProvider settings={{ platform_language: 'auto', platform_translations: '{}' }}>
           <ThemeProvider theme={createTheme(ThemeDark() as ThemeOptions)}>
-            <UserContext.Provider value={defaultUserContext as UserContextType}>
-              {children}
-            </UserContext.Provider>
+            {/* The private app root provides one, so tests must too — a library
+                Tooltip throws without it. */}
+            <TooltipProvider>
+              <UserContext.Provider value={defaultUserContext as UserContextType}>
+                {children}
+              </UserContext.Provider>
+            </TooltipProvider>
           </ThemeProvider>
         </AppIntlProvider>
       </RelayEnvironmentProvider>

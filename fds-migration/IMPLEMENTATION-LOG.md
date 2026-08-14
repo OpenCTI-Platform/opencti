@@ -487,3 +487,352 @@ the token is declared in each reusable workflow's `workflow_call.secrets` and
 mapped at each call site. `ciDesignSystemSecret.test.ts` enumerates both halves
 of the call graph, so the next sync fails loudly — two of those five paths never
 run on a pull request and would not otherwise show up red.
+
+## 2026-08-11 — Admin top bar adopts the design-system `Header`
+
+Branch: `fds/header-pilot` (targets `design-system/current`). Pin unchanged at
+`5960966216533f620393a2174213c666f57af7dd` — the token pass already installed
+the `Header`, so this pilot bumps nothing.
+
+### What the bar was
+
+`AppBar` + `Toolbar`, painted by a gradient assembled from
+`theme.palette.background.gradient.start/end` — which trace to the DB's
+`theme_background`, **not** `theme_nav`. `theme_nav` reached this bar through
+exactly one path: the Suspense fallback's `makeStyles` class. The bar already
+supplied its own fixing, rail offset and three stacked banner offsets, and
+pre-multiplied its own transparency at 90%.
+
+### What changed
+
+`Header` / `HeaderGroup` replace `AppBar` / `Toolbar`. The glass now comes from
+the library at Figma's 94%, so the product's gradient stops became opaque —
+keeping them pre-multiplied would have applied the transparency twice.
+
+The assembled gradient is re-declared on the bar element. Measured under a
+custom theme: the bar's `--gradient-default` carries the administrator's
+`theme_background`, while the Navbar's still resolves to the library default —
+the override does not leak, which is what a `:root` declaration would have
+broken.
+
+The search input is the library's `SearchField`, and the window moves from
+550–680px to 200–500px as named constants on the group the product owns.
+
+Height has one source of truth: `--fds-header-height` with the library's 68px
+fallback, read by the chatbot offset. `WorkspaceTurnToContainerDialog.tsx`'s
+`top: 68` was left alone — it positions a control inside a dialog and is not
+this bar's height.
+
+Per arbitration, the Suspense fallback keeps its `background.nav` paint
+unchanged. This pilot normalises nothing there.
+
+### What the adoption cost
+
+Three affordances of the old field have no equivalent in `SearchField`: the
+animated gradient border, the AI-tinted magnifier, and the loader inside the
+field. The loader moved beside the field; the other two are gone. NLQ mode stays
+readable from its toggle, which carries an always-AI-coloured glyph plus an
+AI-tinted background and border when active. Filed as entry 20.
+
+Eight compensations, entries 13–20. Entries 13, 14, 15, 16, 17 and 18 restate
+gaps the OpenAEV Header pilot already filed — two consumers, not one.
+
+### Accepted at the checkpoint
+
+At 768px with the rail expanded, the AI actions and the mode toggles overlap by
+131px. The bar this replaces did not overlap, but ran 323px off-screen instead,
+so the controls needed a horizontal page scroll to reach. Accepted as-is by
+design, like the OpenAEV pilot's own 57px. Page-level horizontal scroll below
+1400px is pre-existing — the previous bar scrolls identically.
+
+The "EE" marker in the bar is now the library `Chip` with `tone="tonic"`, the
+tone library PR #72 added for exactly this badge. The 26 other `EEChip` call
+sites keep the legacy marker; converting them is its own change. The bar's chip
+is decorative — a clickable `Chip` renders a `<button>`, which cannot nest
+inside the Ask Ariane button — see entry 21.
+
+The bar still shows two blues: library controls resolve
+`--color-filigran-brand-primary` (#42caff) while the MUI survivors read
+`theme.palette.primary.main`, which the database theme row pins to the pre-WCAG
+#0fbcff. Fixed by a sister pull request that migrates the built-in theme rows,
+so this pilot stays front-only.
+
+### Pending at the next pin bump
+
+The library is replacing `Chip`'s `tone` axis with `severity="ee"` and a new
+visual (Figma node 2752:19169, EE row: opaque `--color-filigran-tonic-primary`
+fill, `--text-negative-primary` label, `content-compact-bold`). At the next
+bump, switch `tone="tonic"` to the new word in `EEChip.tsx` and re-checkpoint
+the bar. The bar's marker stays decorative — a recorded decision, see
+LIBRARY-FEEDBACK.md entry 21.
+
+`ProductSwitcher` still clips product names: library PR #107 gave the rail's
+labels an ellipsis and a tooltip but does not touch the switcher, so entry 23
+remains open.
+
+### Verification
+
+Step 5b, against the library's documentation site at the same pin: 12 properties
+compared, **0 differences**, glass included.
+
+Suite under Node 22: build, `check-ts`, lint, `verify-translation` and 158 test
+files / 1391 tests green; migration conformity 16 checks, 0 issues.
+
+Eleven new tests. Key assertions mutation-tested — restoring the 550px floor,
+replacing the height variable with a literal, painting the active link from a
+hardcoded colour, dropping the active state, and moving the gradient to `:root`
+each turn the suite red.
+
+## Final bump — pin `7e7b417`, the four library deliverables
+
+Four library pull requests landed together: `Badge` (#114), `Spinner` and
+`ProgressBar` (#115), the gradient-text child fill (#116), and `HeaderGroup`'s
+leading separator (#117). Each was verified **in the installed package**, not
+from commit titles: the first, second and fourth as exported declarations in
+`index.d.ts`, the third as `.text-gradient-*>*{-webkit-text-fill-color:
+currentColor}` in the built `index.css`. The served bundle was then confirmed to
+carry the same rule, and the listening PID's working directory confirmed which
+checkout answers on 3010.
+
+### The cluster separator
+
+Figma's rule between the AI cluster and the actions cluster is now the library's
+`separatorBefore`, and the hand-painted `<div role="separator">` is gone. The
+bar models it as the library's own example does — the separated cluster nests
+inside the one that precedes it — with the rule drawn only when an AI cluster is
+actually there to be separated from.
+
+Measured in the running product, on the three themes:
+
+| | |
+|---|---|
+| Air before the rule | 16px |
+| Air after the rule | 16px |
+| Inside each cluster | 8px |
+| Rule | 1px, `border-elevation-subtle` at 0.5 opacity, 36px tall |
+
+The rule's colour follows the theme (`rgb(31,57,101)` dark, `rgb(202,203,206)`
+light). Visual order is unchanged: search, mode toggles, Ask Ariane, import,
+triggers, notifications, profile.
+
+### The AI controls, and the trap under them
+
+`AskArianeButton` and `CtemCommandCenterButton` are now the library `Button` and
+`IconButton` in their `ia` variant. `UploadImport` moved to the library too, but
+in the **default** variant: importing data is not an AI affordance, and giving
+it the AI gradient would have been a visual decision nobody asked for.
+
+The library hides a gradient label with `-webkit-text-fill-color` alone.
+OpenCTI's `createTextGradientSx` also set `color: transparent`, and the two
+together defeat the very reset that makes nested children visible: a child
+asking for `currentColor` resolves it back to transparent. The product recipe
+was aligned on the library's, red-before-fix.
+
+Measured inside the gradient button, on all three themes — chip fill and
+background, icon paint, and the loading spinner (forced on to observe it):
+nothing nested renders invisible. The chip sits 8px from the label; with the
+library button that distance is entirely the chip's own margin, because the
+label is a bare text node and no flex gap falls between them.
+
+### Progress
+
+The bar's one MUI loader — the NLQ agents menu — is the library `Spinner`. It
+carries a `label`, because that row has no visible text and the spinner is the
+only thing saying anything is happening. It could not be exercised in the
+browser here: the NLQ affordance needs XTM One configured, which this checkpoint
+instance is not.
+
+### The guard, rebuilt
+
+The first guard listed allowed MUI *modules*, which is how `Stack` arrived under
+an already-allowed `@mui/material`. The unit is now the **symbol**, across the
+bar and the components it owns, and the failure message names what arrived.
+Three mutations were run: a new icon symbol from the already-allowed
+`@mui/icons-material`, `Stack` from `@mui/material`, and the separator reverted
+to a styled div. All three turn the suite red; restored, it is green.
+
+A second guard asserts on the **rendered DOM**. It covers `UploadImport`, the one
+bar control that also serves three screens the bar does not own — and it earned
+its place immediately by catching a real regression: a library `Tooltip` throws
+without a `TooltipProvider`, and only the bar had one. Fixed by providing once at
+the private app's root. The other bar controls need the chatbot context and Relay
+data; mocking half the application to reach a green would prove the mock, so they
+stay on the source guard and on the measured checkpoint.
+
+### What is still MUI, and why
+
+Rendered in the bar: `ToggleButtonGroup`, `ToggleButton` and their `ButtonBase`
+— the library ships no segmented control (LIBRARY-FEEDBACK #24) — plus
+`MuiSvgIcon` glyphs, the library shipping no icon set. The navigation bar renders
+glyphs and nothing else.
+
+### Verification
+
+`check-ts`, lint, `verify-translation` and the full test suite under Node 22.
+Two new translation keys, declared in all nine locales.
+
+## Second bump — pin `35a4768`, and the one gap that stays
+
+Library PRs #118 (ProgressBar tones) and #119 (Spinner's 32px tier, Badge
+default tone) landed on top of the four already consumed.
+
+The five deliverables were verified on the **rendered build**, through a
+throwaway probe mounted behind a URL flag and removed before commit — not from
+the type declarations, which had already once described something the build did
+not carry:
+
+| | Measured in the browser |
+|---|---|
+| Spinner tiers | sm 16px, md 20px, lg 24px, **xl 32px**, all animating |
+| Badge default | red — counter `rgb(136,17,6)`, dot `rgb(241,67,55)` |
+| Badge `tone="brand"` | `rgb(66,202,255)` |
+| ProgressBar `tone="success"` | fill `rgb(23,171,31)`, `role="progressbar"` |
+| `separatorBefore` | rule drawn, 16px of air each side |
+| Gradient child reset | present in the served CSS |
+
+### The loader's tier, chosen by measurement
+
+The NLQ menu's other rows render `FiligranIcon size="small"` in the same icon
+slot; measured, that is **20×20**, which is the library's `md`. The 32px `xl`
+tier is for a ring that has to encircle something, and this spinner encircles
+nothing — it occupies the slot alone. A test fails if the tier is changed
+without the slot changing.
+
+### The badge went red without the product asking
+
+The bar's unread marker passes no `tone`, so #119's new default repainted it
+from brand blue to red. The product takes the library's default rather than
+pinning the old look, and a test now fails if a `tone` is ever set silently —
+choosing to override is a design decision and has to be written down when it is
+made. Plates on the three themes are in the pull request.
+
+### The coverage rule is not met, and it is one component
+
+The bar still renders `ToggleButtonGroup`, `ToggleButton` and their `ButtonBase`.
+That same gap blocks a second conversion: the NLQ dropdown *does* have a library
+equivalent, but its trigger is a caret `<span>` inside a `ToggleButton`, so a
+Radix trigger would either clone onto a non-focusable span or nest a button
+inside a button. Neither is a conversion, so nothing was forced.
+
+Everything else in the bar and the whole navigation bar are library components,
+apart from `MuiSvgIcon` glyphs. The measured spec for the missing control is in
+LIBRARY-FEEDBACK entry 24.
+
+### One MUI family was still rendering, and the guard could not see it
+
+The sentence above was not yet true when it was written. A sweep of the
+**rendered** bar in a browser, at the served pin, on the three themes, found
+`MuiStack-` inside the NLQ toggle — a `Stack` and a `Box` doing pure layout
+inside the one MUI control the bar is allowed to keep. The guard already listed
+`MuiStack-` as retired, but it read only the five files the bar owns, and this
+one lives in `SearchInput.jsx`.
+
+Both are now plain elements at the same geometry: the caret keeps its 4px
+margin, its 4px padding and its 1px divider, and the toggle's box is unchanged
+at 36 × 36px. `SearchInput.jsx` joined the by-symbol check, with the segmented
+control's own symbols — `ToggleButtonGroup`, `ToggleButton`, `Tooltip`, `Menu`,
+`MenuItem`, `ListItemIcon`, `ListItemText` — declared as the exemption and
+nothing else. Putting `Stack` back turns the suite red; so does adding any
+symbol from a module that is already allowed.
+
+`Tooltip` is in that list on evidence, not convenience: MUI's group injects
+`value` and `selected` into its children *through* the tooltip — measured,
+`data-mui-internal-clone-element` on the wrapper and `Mui-selected` arriving on
+the toggle. A library `Tooltip` is not in that cloning contract, so swapping it
+would break selection while looking correct in a screenshot.
+
+After the change the rendered bar carries, on all three themes: `MuiSvgIcon`
+(glyphs), and `MuiToggleButtonGroup` / `MuiToggleButton` / `MuiButtonBase` —
+the exempted control and the base class it renders. Nothing else.
+
+### The token bridge was stale, and CI could not say so
+
+`check-fds-conformity.mjs` reported **16 checks, 0 issues** on this branch
+throughout. Run with the library actually checked out beside the product, the
+same script reports `bridge-freshness: STALE`: `theme.css` moved between
+`990810f` and `35a4768` and the bridge was never regenerated. The gate had been
+returning `SKIPPED` — counted inside the 16 — because CI has no sibling
+checkout, so a green line was standing in for a check that never ran.
+
+The change itself is harmless, and that was established before touching
+anything: 620 custom properties on each side, **not one value different**. What
+moved is the four `.text-gradient-*` utilities, which are rules, not tokens —
+library PR #116, the very fix this bump came for.
+
+The bridge was regenerated with the library's own generator
+(`pnpm generate:mui-bridge --product opencti --write-to-product`), never edited
+by hand, and the result is a two-line diff: the recorded `theme.css` hash and
+the file's own checksum. Conformity is now 16 checks, 0 issues with
+`bridge-freshness` genuinely **OK** rather than skipped.
+
+### R3 re-measured in the computed accessibility tree, and it was red
+
+"Present in the DOM" was doing the work of "announced". Read through CDP
+(`Accessibility.getPartialAXTree` on the anchor itself, the OpenAEV method),
+the Notifications control was, on all three themes:
+
+| | before | after |
+|---|---|---|
+| role | `link` | `link` |
+| NAME | `"Notifications"` (`aria-label`) | `"Notifications"` (`aria-label`) |
+| DESCRIPTION | **`""`** | **`"5 unread"`** |
+| `aria-describedby` | on the `<svg>`, inside `aria-hidden` | on the `<a>` |
+
+The badge was wrapping the glyph. `TopBarIconLink` renders the glyph inside
+`aria-hidden="true"` — as `IconButton` does — so the reference `Badge` clones
+onto its child landed outside the accessibility tree. A DOM sweep found the
+text and read as a pass; the computed tree said nothing was announced.
+
+The badge now marks the **control**: `TopBarIconLink` takes a `badge` prop and
+wraps its own anchor. No `tone` at any point on that path — red is the library
+default and the decision (Sandy, 2026-08-14), on both products.
+
+Two further defects fell out of the same pass, neither of them visible in the
+markup:
+
+- The **tooltips on Triggers and Notifications never opened**, on pointer or on
+  keyboard. `TopBarIconLink` named the five props it knew about, so everything
+  `TooltipTrigger asChild` cloned onto it — handlers, `data-state`, ref — was
+  dropped. The tooltip on the library `IconButton` beside them worked, which is
+  what made the gap invisible. Fixed by forwarding the ref and the rest props.
+- Doing that naively then **shrank the control to 24×28** instead of 36×36: a
+  cloning parent passes `className: undefined`, and spreading it replaced the
+  library variant wholesale. `className` and `style` are merged now, with a
+  test that fails if either is spread again.
+
+Both are filed as LIBRARY-FEEDBACK 28 and 29. Re-checkpointed after the change:
+MUI families unchanged (glyphs plus the exempted segmented control), separator
+16px|16px with 8px inside each cluster, EE chip legible at rest and on hover in
+the three themes, badge dot 8px red (`rgb(241,67,55)` dark, `rgb(184,24,10)`
+light), and all three tooltips opening on pointer and on keyboard.
+
+## Reconciliation of the two review passes
+
+Two sessions worked these reserves in parallel and both pushed. Sandy arbitrated
+the outcome: **the encapsulated design is the one that ships** — the control
+owns its own marker through a `badge` prop, forwards its ref and rest props, and
+merges `className`/`style`. Everything above stands as written.
+
+Two things were grafted onto it from the other pass, and nothing else:
+
+**A counter-check on the accessible tree.** `TopBarIconLink.test.tsx` proves the
+COMPONENT honours its contract. `TopBarNotifications.a11y.test.tsx` proves the
+BAR'S CALL SITE passes the right thing — the control composed exactly as
+`TopBar` composes it, inside a tooltip trigger, with the badge props the bar
+supplies. The defect was never in the component's contract; it was in what the
+bar handed it. The two files also compute the tree by different routes —
+`dom-accessibility-api` directly here, jest-dom's matchers there — so they
+cannot both go green for a reason belonging to one shared helper. Mutation-
+tested: moving the badge back inside the `aria-hidden` glyph turns **both**
+files red, four assertions in total.
+
+**The exemption list cannot grow by accretion.** The two exemptions are
+re-confirmed and dated 2026-08-14, with the retirement condition spelled out —
+the library ships the component. A new test walks every entry and fails if one
+carries a reason that is neither of the two Sandy granted. Mutation-tested:
+adding a third with an invented justification turns the suite red, naming the
+symbol.
+
+Both grafts are test-only. The rendered bar at this head is identical to the one
+measured above, so the checkpoint was not re-run: there is nothing new to look
+at, and re-photographing an unchanged bar would only look like evidence.
