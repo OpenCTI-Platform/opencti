@@ -8,7 +8,6 @@ import { ExclusionListsLine_node$data } from '@components/settings/exclusion_lis
 import { ExclusionListsLinesPaginationQuery$variables } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLinesPaginationQuery.graphql';
 import ExclusionListEdition, { exclusionListMutationFieldPatch } from '@components/settings/exclusion_lists/ExclusionListEdition';
 import { Link } from 'react-router-dom';
-import { APP_BASE_PATH } from 'src/relay/environment';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -87,7 +86,7 @@ const ExclusionListPopover: FunctionComponent<ExclusionListPopoverProps> = ({
 
   const handleCloseEditionForm = () => setIsEditionFormOpen(false);
 
-  const downloadFileLink = `${APP_BASE_PATH}/storage/get/${encodeURIComponent(data.file_id)}`;
+  const downloadFileLink = `/storage/get/${encodeURIComponent(data.file_id)}`;
 
   return (
     <>
