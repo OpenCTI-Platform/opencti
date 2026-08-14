@@ -209,6 +209,35 @@ describe('Fintel template resolver standard behavior', () => {
     const queryResult2 = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
     expect(queryResult2.data?.fintelTemplate.description).toEqual('new description');
   });
+  it('should fintel template export defaults edited and persisted', async () => {
+    await queryAsAdmin({
+      query: EDIT_QUERY,
+      variables: {
+        id: fintelTemplateInternalId,
+        input: [
+          { key: 'includeCoverPageByDefault', value: [false] },
+          { key: 'includeBackPageByDefault', value: [false] },
+        ],
+      },
+    });
+    const readAfterFalse = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
+    expect(readAfterFalse.data?.fintelTemplate.includeCoverPageByDefault).toEqual(false);
+    expect(readAfterFalse.data?.fintelTemplate.includeBackPageByDefault).toEqual(false);
+
+    await queryAsAdmin({
+      query: EDIT_QUERY,
+      variables: {
+        id: fintelTemplateInternalId,
+        input: [
+          { key: 'includeCoverPageByDefault', value: [true] },
+          { key: 'includeBackPageByDefault', value: [true] },
+        ],
+      },
+    });
+    const readAfterTrue = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
+    expect(readAfterTrue.data?.fintelTemplate.includeCoverPageByDefault).toEqual(true);
+    expect(readAfterTrue.data?.fintelTemplate.includeBackPageByDefault).toEqual(true);
+  });
   it('should retrieve fintel templates and files from template on a STIX object', async () => {
     vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
     vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();

@@ -33,6 +33,105 @@ describe('File resolver standard behavior', () => {
     expect(queryResult.data?.file7).toBe('application/json');
   });
 
+  it('should keep originating fintel template id on fromTemplate import push', async () => {
+    const stixDomainObjectStixId = 'tool--34c9875d-8206-4f4b-bf17-f58d9cf7ebed';
+    const CREATE_QUERY = gql`
+      mutation StixDomainObjectAdd($input: StixDomainObjectAddInput!) {
+        stixDomainObjectAdd(input: $input) {
+          id
+        }
+      }
+    `;
+    const created = await queryAsAdminWithSuccess({
+      query: CREATE_QUERY,
+      variables: {
+        input: {
+          name: 'StixDomainObject fromTemplate file metadata',
+          type: 'Tool',
+          stix_id: stixDomainObjectStixId,
+          description: 'StixDomainObject description',
+        },
+      },
+    });
+    const stixDomainObjectInternalId = created?.data?.stixDomainObjectAdd.id;
+
+    const IMPORT_FILE_QUERY = gql`
+      mutation StixDomainObjectImportPush(
+        $id: ID!,
+        $file: Upload!,
+        $fromTemplate: Boolean,
+        $fintelTemplateId: String
+      ) {
+        stixDomainObjectEdit(id: $id) {
+          importPush(
+            file: $file,
+            fromTemplate: $fromTemplate,
+            fintelTemplateId: $fintelTemplateId
+          ) {
+            id
+            metaData {
+              fintel_template_id
+            }
+          }
+        }
+      }
+    `;
+    const readStream = fileToReadStream('./tests/data/', 'test-file-to-index.txt', 'test-file-to-index.txt', 'text/plain');
+    const fileUpload = { ...readStream, encoding: 'utf8' };
+    const upload = new Upload();
+    upload.promise = new Promise((executor) => {
+      executor(fileUpload);
+    });
+    upload.file = fileUpload;
+    const templateId = 'fintel-template--origin-1';
+    const importPushQueryResult = await queryAsAdminWithSuccess({
+      query: IMPORT_FILE_QUERY,
+      variables: {
+        id: stixDomainObjectInternalId,
+        file: upload,
+        fromTemplate: true,
+        fintelTemplateId: templateId,
+      },
+    });
+    expect(importPushQueryResult?.data?.stixDomainObjectEdit.importPush.metaData.fintel_template_id).toEqual(templateId);
+
+    const READ_QUERY = gql`
+      query stixDomainObject($id: String!) {
+        stixDomainObject(id: $id) {
+          id
+          importFiles {
+            edges {
+              node {
+                id
+                metaData {
+                  fintel_template_id
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdminWithSuccess({
+      query: READ_QUERY,
+      variables: { id: stixDomainObjectInternalId },
+    });
+    const importedFile = queryResult?.data?.stixDomainObject.importFiles.edges[0].node;
+    expect(importedFile.metaData.fintel_template_id).toEqual(templateId);
+
+    const DELETE_QUERY = gql`
+      mutation stixDomainObjectDelete($id: ID!) {
+        stixDomainObjectEdit(id: $id) {
+          delete
+        }
+      }
+    `;
+    await queryAsAdminWithSuccess({
+      query: DELETE_QUERY,
+      variables: { id: stixDomainObjectInternalId },
+    });
+  });
+
   describe('batchFileMarkingDefinitions', () => {
     it('should filter empty markings correctly', async () => {
       // First step : Create a marking definition
