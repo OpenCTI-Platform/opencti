@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { hashMergeValidation } from '../../../src/database/middleware';
 import {
   generateAttributesInputsForUpsert,
+  generateInputsForUpsert,
   generateRefsInputsForUpsert,
   mergeUpsertInput,
   mergeUpsertInputs,
@@ -10,6 +11,11 @@ import {
 } from '../../../src/utils/upsert-utils';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { ENTITY_DOMAIN_NAME } from '../../../src/schema/stixCyberObservable';
+import * as cacheModule from '../../../src/database/cache';
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('middleware hashMergeValidation test', () => {
   it('should hashes allowed to merge', () => {
@@ -127,6 +133,60 @@ describe('middleware upsertElement test', () => {
       inputs = generateAttributesInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, updatePatchWithTypes, confidenceForUpsert);
 
       expect(inputs.length).toEqual(0); // no changes since confidenceMatch is false, we don't replace existing description
+    });
+  });
+  describe('middleware generateInputsForUpsert synchronized workflow status filtering', () => {
+    const resolvedIndicator = {
+      id: 'indicator2-uuid-internal',
+      internal_id: 'indicator2-uuid-internal',
+      standard_id: 'indicator2-uuid-standard',
+      entity_type: 'Indicator',
+      description: 'existing description',
+      pattern: '[domain-name:value = \'filigran.dev\']',
+      pattern_type: 'stix',
+      x_opencti_main_observable_type: ENTITY_DOMAIN_NAME,
+    };
+
+    it('should remove unknown workflow id update in synchronized mode', async () => {
+      vi.spyOn(cacheModule, 'getEntitiesListFromCache').mockResolvedValue([{ id: 'local-status-id', type: 'Indicator' }]);
+      const synchronizedContext = { ...testContext, synchronizedUpsert: true };
+      const updatePatch = {
+        description: 'updated description',
+        x_opencti_workflow_id: 'remote-status-id',
+      };
+
+      const inputs = await generateInputsForUpsert(
+        synchronizedContext,
+        ADMIN_USER,
+        resolvedIndicator,
+        'Indicator',
+        updatePatch,
+        { isConfidenceMatch: true, isConfidenceUpper: true },
+        true
+      );
+      expect(inputs.find((n) => n.key === 'x_opencti_workflow_id')).toBeUndefined();
+      expect(inputs.find((n) => n.key === 'description')).toEqual({ key: 'description', value: ['updated description'] });
+    });
+
+    it('should keep known workflow id update in synchronized mode', async () => {
+      vi.spyOn(cacheModule, 'getEntitiesListFromCache').mockResolvedValue([{ id: 'local-status-id', type: 'Indicator' }]);
+      const synchronizedContext = { ...testContext, synchronizedUpsert: true };
+      const updatePatch = {
+        description: 'updated description',
+        x_opencti_workflow_id: 'local-status-id',
+      };
+
+      const inputs = await generateInputsForUpsert(
+        synchronizedContext,
+        ADMIN_USER,
+        resolvedIndicator,
+        'Indicator',
+        updatePatch,
+        { isConfidenceMatch: true, isConfidenceUpper: true },
+        true
+      );
+      expect(inputs.find((n) => n.key === 'x_opencti_workflow_id')).toEqual({ key: 'x_opencti_workflow_id', value: ['local-status-id'] });
+      expect(inputs.find((n) => n.key === 'description')).toEqual({ key: 'description', value: ['updated description'] });
     });
   });
   describe('middleware generateAttributesInputsForUpsert with opencti_upsert_operations test', () => {
