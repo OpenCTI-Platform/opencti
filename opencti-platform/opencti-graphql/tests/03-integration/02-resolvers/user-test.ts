@@ -866,6 +866,25 @@ describe('User has no settings capability and is organization admin query behavi
             }
         }
     `;
+  const USER_RELATION_ADD_PARTICIPATE_TO_QUERY = gql`
+    mutation UserRelationAddParticipateTo($id: ID!, $toId: ID!) {
+      userEdit(id: $id) {
+        relationAdd(input: { toId: $toId, relationship_type: "participate-to" }) {
+          id
+          entity_type
+        }
+      }
+    }
+  `;
+  const USER_RELATION_DELETE_PARTICIPATE_TO_QUERY = gql`
+    mutation UserRelationDeleteParticipateTo($id: ID!, $toId: StixRef!) {
+      userEdit(id: $id) {
+        relationDelete(toId: $toId, relationship_type: "participate-to") {
+          id
+        }
+      }
+    }
+  `;
 
   afterAll(async () => {
     // remove the capability to administrate the Organization
@@ -997,6 +1016,24 @@ describe('User has no settings capability and is organization admin query behavi
       },
     });
   });
+  it('should not add participate-to relation if target organization is not administrated', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      query: USER_RELATION_ADD_PARTICIPATE_TO_QUERY,
+      variables: {
+        id: userInternalId,
+        toId: platformOrganizationId,
+      },
+    });
+  });
+  it('should not delete participate-to relation if target organization is not administrated', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      query: USER_RELATION_DELETE_PARTICIPATE_TO_QUERY,
+      variables: {
+        id: userInternalId,
+        toId: platformOrganizationId,
+      },
+    });
+  });
   it('should administrate more than 1 organization', async () => {
     // Need to add granted_groups to PLATFORM_ORGANIZATION because of line 533 in domain/user.js
     const grantableGroupQueryResult = await adminQuery({
@@ -1047,6 +1084,26 @@ describe('User has no settings capability and is organization admin query behavi
       },
     });
     expect(queryResult.data.userEdit.organizationDelete.id).toEqual(userInternalId);
+  });
+  it('should add participate-to relation if target organization is administrated', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+      query: USER_RELATION_ADD_PARTICIPATE_TO_QUERY,
+      variables: {
+        id: userInternalId,
+        toId: platformOrganizationId,
+      },
+    });
+    expect(queryResult.data.userEdit.relationAdd.entity_type).toEqual('participate-to');
+  });
+  it('should delete participate-to relation if target organization is administrated', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+      query: USER_RELATION_DELETE_PARTICIPATE_TO_QUERY,
+      variables: {
+        id: userInternalId,
+        toId: platformOrganizationId,
+      },
+    });
+    expect(queryResult.data.userEdit.relationDelete.id).toEqual(userInternalId);
   });
   it('should remove Editor from PLATFORM_ORGANIZATION', async () => {
     const queryResult = await adminQueryWithSuccess({
