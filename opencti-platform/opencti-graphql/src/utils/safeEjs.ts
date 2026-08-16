@@ -161,70 +161,19 @@ const createSafeContext = (
  * never modified, so EJS rendering behaviour is unchanged.
  */
 const stripJsComments = (code: string): string => {
-  const result: string[] = [];
-  let i = 0;
-  const len = code.length;
-
-  while (i < len) {
-    const ch = code[i];
-
-    // String literals — skip entire literal so `//` inside strings is not treated as a comment
-    if (ch === '"' || ch === "'" || ch === '`') {
-      const quote = ch;
-      result.push(ch);
-      i += 1;
-      while (i < len) {
-        const c = code[i];
-        result.push(c);
-        if (c === '\\' && i + 1 < len) {
-          i += 1;
-          result.push(code[i]);
-        } else if (c === quote) {
-          break;
+  const chars = code.split('');
+  const cursor = jsParser.parse(code).cursor();
+  do {
+    const { name } = cursor.type;
+    if (name === 'LineComment' || name === 'BlockComment') {
+      for (let i = cursor.from; i < cursor.to; i += 1) {
+        if (chars[i] !== '\n' && chars[i] !== '\r') {
+          chars[i] = ' ';
         }
-        i += 1;
-      }
-      i += 1;
-      continue;
-    }
-
-    if (ch === '/' && i + 1 < len) {
-      const next = code[i + 1];
-
-      // Line comment — replace through end of line with spaces
-      if (next === '/') {
-        result.push(' ', ' ');
-        i += 2;
-        while (i < len && code[i] !== '\n' && code[i] !== '\r') {
-          result.push(' ');
-          i += 1;
-        }
-        continue;
-      }
-
-      // Block comment — replace content with spaces, keep newlines
-      if (next === '*') {
-        result.push(' ', ' ');
-        i += 2;
-        while (i < len) {
-          const c = code[i];
-          if (c === '*' && i + 1 < len && code[i + 1] === '/') {
-            result.push(' ', ' ');
-            i += 2;
-            break;
-          }
-          result.push(c === '\n' || c === '\r' ? c : ' ');
-          i += 1;
-        }
-        continue;
       }
     }
-
-    result.push(ch);
-    i += 1;
-  }
-
-  return result.join('');
+  } while (cursor.next());
+  return chars.join('');
 };
 
 const extractEJSCode = (template: string, openTag: string, closeTag: string) => {
