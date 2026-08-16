@@ -772,3 +772,146 @@ l'application réelle, pas déduit.
 
 C'est la preuve de bout en bout du correctif de `NavBar.tsx:101` (§0.4) : avant
 le renommage, cette colonne aurait affiché le bleu Filigran.
+
+---
+
+## 14. Arbitrages Sandy — troisième tour, et ce qu'ils ont produit
+
+| # | décision | état |
+|---|---|---|
+| fusion `master` → `design-system/current` | go, **règle d'or** : master d'abord, puis ré-application des sessions d'implémentation par-dessus | **poussée** (`5722cda3f6`) |
+| login | correctif **au site**, pas sur le champ de palette | **fait**, mesuré avant/après |
+| thème client | base par couche, surface **et** bordure ; bordure = couleur des cartes du client en thème personnalisé | **câblé**, arête absente montrée |
+| `title` / `action` | props adoptées à terme, **pas dans cette vague** — inventaire d'abord | **inventaire ci-dessous** |
+| dégradé `ExperienceCard` | **hors périmètre**, comme les semi-transparents | listé, non converti |
+| T1 / T2 / N7 | non convertis tant que (b) n'est pas tranché | non convertis |
+
+---
+
+## 15. Login — correctif au site, mesuré avant/après
+
+Le correctif est **au site d'appel**, pas sur `background.secondary` : `LoginPage.tsx`
+pose `backgroundColor: 'background.paper'` sur ses deux `Card`. Le champ de
+palette reste **intact** pour ses 9 consommateurs et les 164 autres cartes.
+
+`background.paper` résout sur `--bg-elevation-default-layer-1` et **continue de
+suivre le `theme_paper` d'un client** — c'est déjà ce que `Card` fait sur sa
+branche « thème personnalisé ». Aucune perte.
+
+Mesuré sur l'app tournante, correctif mis de côté puis rétabli pour obtenir un
+vrai avant :
+
+| thème | avant | après |
+|---|---|---|
+| **sombre** | `rgb(12,21,36)` = `#0C1524`, **hors échelle** | **`rgb(13,23,43)` = LAYER 1** ✅ |
+| clair | `rgb(255,255,255)` = LAYER 1 | `rgb(255,255,255)` — **inchangé** ✅ |
+
+Conforme à la prévision : **seul le sombre bouge**. Les deux surfaces de la page
+sont traitées (la carte du formulaire et la carte « aucun fournisseur
+d'authentification »), pas seulement celle qui se voit par défaut.
+
+---
+
+## 16. Thème client — contrat câblé, arête absente assumée
+
+Câblé dans `useFdsThemeScope`, le **seul écrivain** des propriétés que la lib lit
+sur la racine. Quand la couleur de panneau s'écarte du défaut du mode, l'hôte
+redéclare **la base par couche, surface ET bordure** :
+
+```
+--bg-elevation-default-layer-1        : <theme_paper du client>
+--border-elevation-subtle-soft-layer-1: <theme_paper du client>
+```
+
+Couche 1 seulement : c'est l'élévation par défaut du Paper, et le client fournit
+exactement une couleur. Retour à un thème intégré → les deux propriétés sont
+**retirées**, pas laissées en surcharge morte.
+
+Mesuré sur l'app, Paper de la lib monté dans la cascade réelle :
+
+| thème | surface | bordure composite | ratio bordure/surface |
+|---|---|---|---|
+| sombre | `rgb(13,23,43)` | `rgb(17,31,58)` | **1,091** |
+| clair | `rgb(255,255,255)` | `rgb(239,239,240)` | **1,149** |
+| **client** (`#3b2450`) | **`rgb(59,36,80)`** | **`rgb(59,36,80)`** | **1,000** |
+
+**L'arête disparaît en thème client** — 15 % de la couleur du client sur cette
+même couleur recompose exactement la couleur. C'est la conséquence assumée de
+l'arbitrage : **montrée, pas corrigée**.
+
+---
+
+## 17. `title` / `action` — inventaire avant adoption
+
+Adoption décidée, **hors de cette vague**. Voici ce qu'il faut savoir avant.
+
+### Population
+
+| motif | nombre |
+|---|---|
+| `Typography variant="h4"` dans le produit | **37** |
+| `Typography variant="h3"` | **84** |
+| dont un `h4` immédiatement suivi d'un `<Paper>` ou `<Card>` | **4** |
+| parmi les 28 Paper du périmètre : titre **hors** surface | **2** (N4, N7) |
+| parmi les 28 : bandeau de titre **dans** la surface | **8** (H1-H8) |
+| parmi les 28 : titre dans la surface, sans bandeau | **1** (H9) |
+
+### Typographie actuelle vs celle de la lib
+
+| | produit `h4` | produit `h3` | lib (rangée `title`) |
+|---|---|---|---|
+| taille | 12px | 13px | 12px |
+| graisse | **500** | 400 | **400** |
+| famille | héritée | **Geologica** | IBM Plex Sans |
+| casse | **`lowercase`** | **`lowercase`** | **`none`** |
+| hauteur | 15px | auto | **24px** |
+| écart au panneau | `margin-bottom: 10px` | `10px` | `gap: 8px` |
+| couleur | texte primaire | texte primaire | **texte secondaire** |
+
+La casse est le point le plus visible : le produit force `lowercase` sur ses
+deux niveaux de titre, la lib non. L'adoption **changera le texte affiché**,
+pas seulement son style.
+
+### Le piège structurel — mesuré, pas repris de confiance
+
+Dès qu'une des deux props est posée, le Paper rend :
+
+```
+<div class="flex flex-col gap-2">     ← ENVELOPPE, ne reçoit RIEN du consommateur
+  <div class="flex h-6 …">Titre</div>
+  <div class="… layer-1 p-6 {className}">…</div>   ← la SURFACE porte le className
+</div>
+```
+
+`className` et `style` restent sur la **surface**. Un consommateur qui passe
+`flex-1` ou `height: 100%` les applique donc à l'intérieur, pendant que
+l'enveloppe garde sa taille naturelle. Reproduit à l'identique dans un parent
+`display:flex; flex-direction:column; height:300px` :
+
+| | hauteur rendue |
+|---|---|
+| sans `title` — `flex-1` sur la racine | **188px** |
+| avec `title` — enveloppe non stylée | **104px** |
+| （dont la surface interne） | 72px |
+
+**Le panneau perd 84px.** C'est l'effondrement observé côté OpenAEV, réglé
+là-bas en passant le conteneur produit en **grille**.
+
+**Sites d'OpenCTI concernés** : `StreamConsumersDrawer` (N8, `height: 100%`),
+`ImportFilesFormSelector` (N11, parent `height:100% flex column`) et
+`ExperienceCard` (G1, `height:100%` + `flex:1`). Les trois devront passer leur
+conteneur en grille **avant** que `title`/`action` y soient adoptés.
+
+---
+
+## 18. `ExperienceCard` — hors périmètre, listé
+
+`private/components/settings/experience/ExperienceCard.tsx:57` peint
+`linear-gradient(135deg, alpha(accent,.08), transparent 60%)` et le shorthand
+`background` **annule le fond du Paper** (mesuré `rgba(0,0,0,0)` dans les trois
+thèmes). Le Paper de la lib peint un fond opaque et n'expose ni dégradé ni
+transparence.
+
+**Hors périmètre, au même titre que les conteneurs semi-transparents.** Non
+converti, listé ici pour que la prochaine vague ne le reprenne pas par
+inadvertance — même statut que `DetailHero` côté OpenAEV.
