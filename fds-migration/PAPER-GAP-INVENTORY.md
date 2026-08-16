@@ -976,3 +976,54 @@ tranchée. La décision sur la bordure et l'ombre (D5) les couvre bien, elle ; l
 transparence, non. Conformément à la règle « une perte assumée n'existe que si
 Sandy l'a explicitement tranchée », les deux sites restent sur MUI en attendant
 un arbitrage explicite.
+
+---
+
+## 20. Feuille de décision — les 14 surfaces restantes, par classe
+
+Servie en local : **http://127.0.0.1:5311/decision.html** (`?mode=light` pour le
+thème clair). Captures : `feuille-decision-dark.png`, `feuille-decision-light.png`.
+**Rien n'est converti par cette page** — c'est un banc, et l'attente est
+explicite : ne rien convertir avant que Sandy rende la feuille annotée.
+
+**La condition posée est vérifiée** : les 14 surfaces restantes sont bien des
+`<Paper>` **directs**, sauf la classe 7 qui n'en est pas une (voir plus bas).
+État mesuré : **14 balises converties, 14 restantes** sur les 28 de départ.
+
+| # | classe | population restante | écart qui commande la décision |
+|---|---|---|---|
+| 1 | **swap mécanique** | **0** | — |
+| 2 | **ombre perdue** | **2** (+3 flottantes hors périmètre) | pas de bordure + ombre d'élévation MUI ; la lib fait l'inverse, non désactivable |
+| 3 | **fond propre** | **3** | fond annulé (T1, T2) ou dégradé d'accent (G1) ; la lib peint opaque |
+| 4 | **padding hors échelle** | **6** | 15px ×4, 20px ×2 ; hors échelle → 0px en silence |
+| 5 | **surface hébergeant une structure** | **3** (déjà comptés ailleurs) | grille interne + `.paper-for-grid` non-layerée qui gagne (#16) |
+| 6 | **gouttières de liste** | **0** en périmètre | motif déjà validé et appliqué sur N11/N12/N13 |
+| 7 | **motif carte** | **222 sites** | **pas des Paper directs** |
+
+### Deux classes sont vides, et pas pour la même raison
+
+- **Swap mécanique : vide par épuisement.** Les 14 sites sans écart ont déjà été
+  convertis dans cette vague (8 en-têtes SSO, N8, N11, N12, N13, H9, N7). Aucun
+  des 14 restants n'est sans écart — chacun porte au moins un des motifs 2 à 5.
+- **Gouttières de liste : classe traitée.** Le motif est validé et appliqué ; ne
+  restent que les trois surfaces flottantes, hors périmètre par arbitrage.
+
+### Classe 7 — la réponse à la condition
+
+`Card.tsx` rend `Card` de MUI, qui compose `Paper` **en interne**. Ce ne sont
+donc **pas des `<Paper>` directs** : les convertir n'est pas un échange de
+balise mais un remplacement de composant, et leur fond passe par
+`background.secondary` — le champ que le login contourne désormais au site.
+
+Décompte mesuré aujourd'hui : **222 sites `<Card>` dans 167 fichiers**. Le brief
+annonçait 164 ; l'écart est signalé, pas absorbé.
+
+### Recouvrements assumés
+
+Un site peut relever de deux classes ; il est rangé sous celle qui **commande**
+sa décision, et son autre appartenance est nommée :
+
+- N5, N6 — classe 4 (padding 20px) **et** classe 5 (grille interne)
+- N9 — classe 2 (ombre) **et** classe 5 (cellule `.paper-for-grid`)
+- F1, F2, F3 — classe 2 (ombre) **et** classe 6 (MenuList), **et** hors périmètre
+  par l'arbitrage initial sur les surfaces flottantes
