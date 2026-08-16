@@ -628,3 +628,64 @@ sans lui, le Paper de MUI est en `content-box` et celui de la lib en
 C'est la leçon OpenAEV #34 sous une autre forme : **un banc qui ne charge pas
 tout ce que l'hôte charge mesure autre chose que l'application.** Corrigé dans
 les deux entrées du banc.
+
+---
+
+## 12. Page de login et écrans publics — le défaut OpenAEV ne se reproduit pas ici
+
+Vérifié en lecture de code et de tokens ; **la mesure au DOM reste à faire sur
+l'app tournante** (elle demande le backend, voir la note en fin de section).
+
+**Le défaut côté OpenAEV** : `Login.tsx` posait
+`backgroundColor: 'background.secondary'`, un champ de palette qui résolvait sur
+`--bg-elevation-highlight-layer-0` — dont la valeur est exactement celle de
+layer 2. Le panneau du formulaire se retrouvait deux crans au-dessus de la page
+au lieu d'un.
+
+**Le piège existe bien dans le jeu de tokens**, vérifié :
+
+| token | sombre | égal à |
+|---|---|---|
+| `--bg-elevation-highlight-layer-0` | `#13213e` | **`--bg-elevation-default-layer-2`** (`#13213e`) |
+
+**Mais aucun code d'OpenCTI ne lit `--bg-elevation-highlight`** — grep sur tout
+`src/`, hors pont généré : **zéro occurrence**. Le champ de palette fautif
+n'existe pas ici.
+
+**Et la page de login d'OpenCTI n'a pas de `<Paper>` du tout.** Sa structure est
+une colonne de contenu et une colonne aside (`LoginLayout.tsx`), pas une carte
+posée sur une page :
+
+| surface | source | couche |
+|---|---|---|
+| colonne de contenu | `designSystem.background.main`, ou `background.default` si thème client | **layer 0** |
+| aside | image du client, ou dégradé en dur (`#050A14 → #0C1728` sombre, `#EAEAED → #FEFEFF` clair) | hors échelle par construction |
+
+Les deux branches retombent sur la même constante, et cette constante est
+correctement câblée :
+
+| constante | token FDS | valeur sombre |
+|---|---|---|
+| `THEME_*_DEFAULT_BACKGROUND` | `--bg-elevation-default-layer-0` | `#070d18` |
+| `THEME_*_DEFAULT_PAPER` | `--bg-elevation-default-layer-1` | `#0d172b` |
+| `THEME_*_DEFAULT_ACCENT` | `--bg-elevation-default-layer-3` | `#1f3965` |
+
+**Rien à corriger, donc — et surtout rien à corriger « au cas où ».** La colonne
+de contenu est la surface de page de sa moitié d'écran, pas un panneau flottant :
+layer 0 est le bon niveau ici, là où OpenAEV avait bien un panneau qui devait
+être à layer 1.
+
+### Aucun champ de palette rendu orphelin par cette vague
+
+`tsc --noEmit` passe sans erreur après régénération du pont : aucune clé lue par
+`ThemeDark`/`ThemeLight` n'a disparu. Relevé au passage, **antérieur à cette
+vague et non causé par elle** : `designSystem.background.bg2` et `bg3` sont
+déclarés et lus **zéro fois** (`bg1`, `bg4`, `disabled` et `main` le sont). Ils
+existent pour la complétude de l'échelle ; signalé, pas touché.
+
+### Ce qui reste à mesurer
+
+La couche rendue de la page de login et des écrans publics, **au DOM sur l'app
+tournante**. La page est publique, donc mesurable sans authentification, mais
+elle demande l'API GraphQL. Ce sera fait avec le checkpoint navbar, qui demande
+la même app.
