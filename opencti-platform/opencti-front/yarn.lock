@@ -3852,25 +3852,25 @@ __metadata:
   linkType: hard
 
 "@tiptap/extension-bubble-menu@npm:^3.23.1":
-  version: 3.30.0
-  resolution: "@tiptap/extension-bubble-menu@npm:3.30.0"
+  version: 3.30.1
+  resolution: "@tiptap/extension-bubble-menu@npm:3.30.1"
   dependencies:
     "@floating-ui/dom": "npm:^1.0.0"
   peerDependencies:
-    "@tiptap/core": 3.30.0
-    "@tiptap/pm": 3.30.0
-  checksum: 10c0/722007f89587adaa48fd9f72ea921096bb21270c1a82481a64b3d43868e5e80d5a2fe6f76b429f86b34f5d354d82f52f1b6a58422a0b0739c7c80c5c8cbb2d2b
+    "@tiptap/core": 3.30.1
+    "@tiptap/pm": 3.30.1
+  checksum: 10c0/132147ec14d1210811b36a3d12ee089bdbb534b2b47f951499ff27fb53143b327df4ab3ca4fe68f2d3c54b455d14b717df32c8432ca17513146150a2be57b756
   languageName: node
   linkType: hard
 
 "@tiptap/extension-floating-menu@npm:^3.23.1":
-  version: 3.30.0
-  resolution: "@tiptap/extension-floating-menu@npm:3.30.0"
+  version: 3.30.1
+  resolution: "@tiptap/extension-floating-menu@npm:3.30.1"
   peerDependencies:
     "@floating-ui/dom": ^1.0.0
-    "@tiptap/core": 3.30.0
-    "@tiptap/pm": 3.30.0
-  checksum: 10c0/2e97f6fc5a41a6e33c5ff2d9821f8bc47e33393bdba62e5a990131682633c5d6f5af392d62e00a56092f058f663796569625162cac18f8ad2a2cf67a4a3d795a
+    "@tiptap/core": 3.30.1
+    "@tiptap/pm": 3.30.1
+  checksum: 10c0/f656faf4ab33ea2ddd248bc95e2e2fae8b644e16e223f03e7227252597bcbab3ae70971829cddd7035b831a59461ff23c677651e8352203c637a5e879da29b89
   languageName: node
   linkType: hard
 
@@ -5652,11 +5652,11 @@ __metadata:
   linkType: hard
 
 "baseline-browser-mapping@npm:^2.11.12":
-  version: 2.11.13
-  resolution: "baseline-browser-mapping@npm:2.11.13"
+  version: 2.11.14
+  resolution: "baseline-browser-mapping@npm:2.11.14"
   bin:
     baseline-browser-mapping: dist/cli.cjs
-  checksum: 10c0/a02511614ebe0311d4831e7ba11e88e5997d5bf0733e5eadd7d97b4bb69d76f468a982862108cb90721e1a41f4ef36c1a5f9fa18569923702ad2875ca3abfe58
+  checksum: 10c0/b0d248660ed8a09b0738fb9ca383668e8e445ad23b3efa8a5c41ee91fdf09399766513f97e5effd77e2e5027c1eec225f84bbfdf01586871e5ba2bb4cce8ea83
   languageName: node
   linkType: hard
 
