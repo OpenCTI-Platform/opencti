@@ -2293,9 +2293,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/core@npm:1.2.6":
-  version: 1.2.6
-  resolution: "@langchain/core@npm:1.2.6"
+"@langchain/core@npm:1.2.7":
+  version: 1.2.7
+  resolution: "@langchain/core@npm:1.2.7"
   dependencies:
     "@cfworker/json-schema": "npm:^4.0.2"
     "@standard-schema/spec": "npm:^1.1.0"
@@ -2304,7 +2304,7 @@ __metadata:
     mustache: "npm:^4.2.0"
     p-queue: "npm:^6.6.2"
     zod: "npm:^3.25.76 || ^4"
-  checksum: 10c0/97c14d497d75a358cef86812314e3afe36d5b3fc24849758da6524a04073af577f6ef87cdb497459f7df3270c3033448a43d3261b00c84db2c3b6b6afbe1fe59
+  checksum: 10c0/8f2e9857dc654279560ac2f63943c018bc70fcec74cdfe82fd42d88827c3af55920de6994d8fc735ead8d01fc772aebb4309693e6d92ed9fb69156fc48c7f6eb
   languageName: node
   linkType: hard
 
@@ -5067,11 +5067,11 @@ __metadata:
   linkType: hard
 
 "baseline-browser-mapping@npm:^2.11.12":
-  version: 2.11.13
-  resolution: "baseline-browser-mapping@npm:2.11.13"
+  version: 2.11.14
+  resolution: "baseline-browser-mapping@npm:2.11.14"
   bin:
     baseline-browser-mapping: dist/cli.cjs
-  checksum: 10c0/a02511614ebe0311d4831e7ba11e88e5997d5bf0733e5eadd7d97b4bb69d76f468a982862108cb90721e1a41f4ef36c1a5f9fa18569923702ad2875ca3abfe58
+  checksum: 10c0/b0d248660ed8a09b0738fb9ca383668e8e445ad23b3efa8a5c41ee91fdf09399766513f97e5effd77e2e5027c1eec225f84bbfdf01586871e5ba2bb4cce8ea83
   languageName: node
   linkType: hard
 
@@ -9851,7 +9851,7 @@ __metadata:
     "@graphql-tools/schema": "npm:10.1.0"
     "@graphql-tools/utils": "npm:11.2.2"
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
-    "@langchain/core": "npm:1.2.6"
+    "@langchain/core": "npm:1.2.7"
     "@langchain/mistralai": "npm:1.2.0"
     "@langchain/openai": "npm:1.5.7"
     "@lezer/javascript": "npm:1.5.4"
