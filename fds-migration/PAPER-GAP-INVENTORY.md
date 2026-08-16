@@ -631,61 +631,82 @@ les deux entrées du banc.
 
 ---
 
-## 12. Page de login et écrans publics — le défaut OpenAEV ne se reproduit pas ici
+## 12. Page de login et écrans publics — mesuré sur l'app tournante
 
-Vérifié en lecture de code et de tokens ; **la mesure au DOM reste à faire sur
-l'app tournante** (elle demande le backend, voir la note en fin de section).
+> **Cette section corrige une conclusion antérieure de ma part.** En lecture de
+> code seule, j'avais écrit que la page de login « n'a pas de `<Paper>` du tout »
+> et que rien ne lisait le champ de palette fautif. La mesure au DOM dit
+> autrement : le formulaire **est** une surface `MuiPaper`/`MuiCard`, et elle est
+> peinte par `background.secondary` — **exactement le champ qui portait le défaut
+> OpenAEV**. Mon grep cherchait `<Paper>` dans `public/` et le token
+> `--bg-elevation-highlight` ; le formulaire passe par le wrapper `Card`, donc
+> les deux l'ont manqué. La lecture de code ne remplace pas la mesure.
 
-**Le défaut côté OpenAEV** : `Login.tsx` posait
-`backgroundColor: 'background.secondary'`, un champ de palette qui résolvait sur
-`--bg-elevation-highlight-layer-0` — dont la valeur est exactement celle de
-layer 2. Le panneau du formulaire se retrouvait deux crans au-dessus de la page
-au lieu d'un.
+App servie sur `127.0.0.1:3011`, backend de **cette branche** sur `127.0.0.1:4011`,
+préfixe d'index isolé (`papercti`) pour ne pas toucher aux données de dev
+partagées. Pin re-prouvé par les octets servis par cette app : `transparency-15`
+×29, `transparency-40` ×0, ancien nom de marque déclaré 0 fois, `p-8` présent.
 
-**Le piège existe bien dans le jeu de tokens**, vérifié :
+Le backend de la branche compte : il sert `theme_primary: #42caff`, la valeur
+introduite par sa propre migration. Un backend plus ancien aurait servi
+`#0fbcff` et fait mesurer la mauvaise chose.
 
-| token | sombre | égal à |
+### Ce qui est mesuré
+
+| surface | thème sombre | thème clair |
 |---|---|---|
-| `--bg-elevation-highlight-layer-0` | `#13213e` | **`--bg-elevation-default-layer-2`** (`#13213e`) |
+| carte du formulaire (`MuiCard`, padding 24) | `rgb(12,21,36)` = **`#0C1524`** — **hors échelle** | `rgb(255,255,255)` = **layer 1** ✅ |
+| colonne de contenu | `rgb(7,13,24)` = **layer 0** ✅ | layer 0 ✅ |
+| aside | dégradé en dur | dégradé en dur |
 
-**Mais aucun code d'OpenCTI ne lit `--bg-elevation-highlight`** — grep sur tout
-`src/`, hors pont généré : **zéro occurrence**. Le champ de palette fautif
-n'existe pas ici.
+Les couches, relevées sur la page elle-même : layer 0 `#070d18`, layer 1
+`#0d172b`, layer 2 `#13213e`, layer 3 `#1f3965`.
 
-**Et la page de login d'OpenCTI n'a pas de `<Paper>` du tout.** Sa structure est
-une colonne de contenu et une colonne aside (`LoginLayout.tsx`), pas une carte
-posée sur une page :
+### D'où vient l'écart
 
-| surface | source | couche |
+`Card.tsx:68-71` :
+
+```ts
+const isCustomCardColor = hasCustomColor(theme, 'theme_paper');
+const backgroundColor = isCustomCardColor
+  ? theme.palette.background.paper       // thème client → couleur du client
+  : theme.palette.background.secondary;  // thème par défaut → littéral en dur
+```
+
+et `ThemeDark.ts:96-98` :
+
+```ts
+secondary: paper === THEME_DARK_DEFAULT_PAPER ? '#0C1524' : (paper ?? '#0C1524'),
+```
+
+`#0C1524` n'est **aucun** des quatre pas. Distance RGB aux couches : layer 1 → **7**,
+layer 0 → 15, layer 2 → 29, layer 3 → 77. Il vise layer 1 et le rate de peu.
+
+En clair, `ThemeLight.ts:98-100` pose `#FFFFFF`, qui **est** exactement layer 1 :
+**l'écart est propre au thème sombre**.
+
+### Ce n'est pas le même défaut qu'OpenAEV, mais c'est le même champ
+
+| | OpenAEV | OpenCTI |
 |---|---|---|
-| colonne de contenu | `designSystem.background.main`, ou `background.default` si thème client | **layer 0** |
-| aside | image du client, ou dégradé en dur (`#050A14 → #0C1728` sombre, `#EAEAED → #FEFEFF` clair) | hors échelle par construction |
+| champ | `background.secondary` | `background.secondary` |
+| mécanisme | résolvait sur `--bg-elevation-highlight-layer-0`, dont la valeur **est** celle de layer 2 | **littéral en dur** `#0C1524`, sur aucune couche |
+| symptôme | panneau 2 crans trop haut | carte à 7 unités RGB de layer 1, sombre seulement |
+| ampleur | 1 surface | **toutes les cartes du thème par défaut** |
 
-Les deux branches retombent sur la même constante, et cette constante est
-correctement câblée :
+### Pourquoi je ne corrige pas
 
-| constante | token FDS | valeur sombre |
-|---|---|---|
-| `THEME_*_DEFAULT_BACKGROUND` | `--bg-elevation-default-layer-0` | `#070d18` |
-| `THEME_*_DEFAULT_PAPER` | `--bg-elevation-default-layer-1` | `#0d172b` |
-| `THEME_*_DEFAULT_ACCENT` | `--bg-elevation-default-layer-3` | `#1f3965` |
+`background.secondary` a **9 consommateurs directs**, et `Card.tsx` en est un —
+c'est-à-dire **les 164 sites de Card**, explicitement hors périmètre de cette
+vague. Passer `#0C1524` au token layer 1 est une seule ligne, mais elle repeint
+toutes les cartes du produit en thème sombre par défaut. Ce n'est pas une
+correction de vague pilote, c'est une décision à part entière.
 
-**Rien à corriger, donc — et surtout rien à corriger « au cas où ».** La colonne
-de contenu est la surface de page de sa moitié d'écran, pas un panneau flottant :
-layer 0 est le bon niveau ici, là où OpenAEV avait bien un panneau qui devait
-être à layer 1.
+**Mesuré, chiffré, remonté — pas corrigé.** À toi.
 
 ### Aucun champ de palette rendu orphelin par cette vague
 
 `tsc --noEmit` passe sans erreur après régénération du pont : aucune clé lue par
 `ThemeDark`/`ThemeLight` n'a disparu. Relevé au passage, **antérieur à cette
-vague et non causé par elle** : `designSystem.background.bg2` et `bg3` sont
-déclarés et lus **zéro fois** (`bg1`, `bg4`, `disabled` et `main` le sont). Ils
-existent pour la complétude de l'échelle ; signalé, pas touché.
-
-### Ce qui reste à mesurer
-
-La couche rendue de la page de login et des écrans publics, **au DOM sur l'app
-tournante**. La page est publique, donc mesurable sans authentification, mais
-elle demande l'API GraphQL. Ce sera fait avec le checkpoint navbar, qui demande
-la même app.
+vague** : `designSystem.background.bg2` et `bg3` sont déclarés et lus zéro fois.
+Signalé, pas touché.
