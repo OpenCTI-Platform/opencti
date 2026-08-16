@@ -100,7 +100,7 @@
     "body-parser": "2.3.0",
     "canonicalize": "3.0.0",
     "compression": "1.8.1",
-    "content-disposition": "2.0.1",
+    "content-disposition": "3.0.0",
     "content-type": "2.1.0",
     "convert": "7.0.2",
     "cors": "2.8.6",
