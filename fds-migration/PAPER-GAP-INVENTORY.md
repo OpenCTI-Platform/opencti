@@ -710,3 +710,65 @@ correction de vague pilote, c'est une décision à part entière.
 `ThemeDark`/`ThemeLight` n'a disparu. Relevé au passage, **antérieur à cette
 vague** : `designSystem.background.bg2` et `bg3` sont déclarés et lus zéro fois.
 Signalé, pas touché.
+
+---
+
+## 13. Checkpoint navbar — application réelle, cinq états, deux niveaux, trois thèmes
+
+App servie sur `127.0.0.1:3011`, backend de la branche sur `127.0.0.1:4011`,
+préfixe d'index isolé. Authentification par **jeton Bearer** — aucun mot de
+passe saisi dans un champ. Thème client réel créé en base (`PaperClient`,
+`theme_paper #3b2450`, `theme_primary #ff8a3d`), pas simulé.
+
+### Les cinq états, mesurés (thème sombre)
+
+| état | fond | barre gauche | bordure interne | outline |
+|---|---|---|---|---|
+| repos | `rgba(0,0,0,0)` | `2px` transparente | transparente | `3px none` |
+| **survol** | **`rgb(19,33,62)`** | **transparente** | transparente | `3px none` |
+| **focus** (Tab réel) | inchangé | `2px rgb(66,202,255)` | **`2px solid rgb(66,202,255)`** | `0px none` |
+| **sélection niveau 1** | **`srgb(0.259,0.792,1)/0.1`** = marque à 10 % | `2px rgb(66,202,255)` | — | — |
+| **sélection niveau 2** | `rgba(0,0,0,0)` — **sans fond** | transparente au repos | `2px` à la couleur de marque au focus | — |
+
+Conforme à la Figma sur les trois points annoncés :
+
+- **survol = fond seul, sans barre à gauche** ✅ — la barre gauche reste
+  `rgba(0,0,0,0)` pendant que le fond passe à `rgb(19,33,62)`. C'est le
+  correctif #124.
+- **focus = bordure interne** ✅ — `2px solid` à la couleur de marque.
+- **sélection niveau 1 avec fond, niveau 2 sans fond** ✅.
+
+### Deux pièges de mesure, corrigés plutôt que publiés
+
+1. **Le survol ne se déclenchait pas.** `hover({ force: true })` laissait le
+   fond à `rgba(0,0,0,0)` et donnait « aucun changement au survol ». Il faut un
+   **vrai déplacement de souris** (`mouse.move` sur le centre de la rangée).
+2. **Le focus paraissait absent au niveau 1.** `locator.focus()` ne met pas
+   `:focus-visible`, donc la bordure interne ne s'appliquait pas et la mesure
+   ressemblait à un défaut WCAG 2.4.7. Avec une **vraie tabulation**,
+   `:focus-visible` est vrai et la bordure est bien là. Vérifié avant d'écrire
+   quoi que ce soit : **il n'y a pas de défaut d'accessibilité ici.**
+
+Une troisième erreur avait faussé la première passe : le rail se replie par
+**son** bouton `Expand` ; prendre « le dernier élément cliquable du nav »
+attrapait une rangée et **naviguait ailleurs**, ce qui faisait mesurer un autre
+écran.
+
+### Ce que le focus confirme au passage
+
+`outline` passe de `3px none` à `0px none` sous focus : la règle
+`:focus { outline: 0 }` du produit (`static/css/index.css:26`) s'applique bien.
+**L'indicateur survit quand même**, parce que #123 en a fait une bordure et pas
+un anneau. C'est exactement l'argument de LIBRARY-FEEDBACK #35 — vérifié ici sur
+l'application réelle, pas déduit.
+
+### Thème client — la teinte de marque suit
+
+| | sélection niveau 1 | focus niveau 2 |
+|---|---|---|
+| sombre | `srgb(0.259,0.792,1)/0.1`, barre `#42caff` | bordure `#42caff` |
+| clair | `srgb(0,0.082,0.659)/0.1`, barre `#0015a8` | bordure `#0015a8` |
+| **client** | **`srgb(1,0.541,0.239)/0.1`**, barre **`#ff8a3d`** | bordure **`#ff8a3d`** |
+
+C'est la preuve de bout en bout du correctif de `NavBar.tsx:101` (§0.4) : avant
+le renommage, cette colonne aurait affiché le bleu Filigran.
