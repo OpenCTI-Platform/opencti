@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 // FDS-WORKAROUND #13: icon button that is really a link, library variants reused — remove when `IconButton` accepts `asChild` — see fds-migration/LIBRARY-FEEDBACK.md #13
 
 /** The background `IconButton` paints for `active`, as the library's own token. */
-const SELECTED_BACKGROUND = 'var(--color-filigran-brand-primary-transparency)';
+const SELECTED_BACKGROUND = 'var(--color-filigran-brand-primary-transparency-10)';
 
 /** The glyph colour `IconButton` resolves; `text-inherit` alone would take the bar's. */
 const GLYPH_COLOR = 'var(--color-filigran-brand-primary)';
