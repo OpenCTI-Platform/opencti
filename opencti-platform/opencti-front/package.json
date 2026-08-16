@@ -163,7 +163,7 @@
     "eslint-plugin-react": "7.37.5",
     "globals": "17.11.0",
     "i18n-auto-translation": "2.2.3",
-    "jsdom": "29.1.1",
+    "jsdom": "30.0.1",
     "knip": "6.32.2",
     "license-checker-rseidelsohn": "5.0.1",
     "monocart-reporter": "2.12.4",
