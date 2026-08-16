@@ -218,6 +218,7 @@ const notUpdatableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', '
 const notScannableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
 const notEnrichableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
 const typesWithScore = [
+  'Malware',
   'Stix-Cyber-Observable',
   'Indicator',
   'Autonomous-System',
@@ -251,6 +252,8 @@ const typesWithScore = [
   'Payment-Card',
   'Media-Content',
   'Persona',
+  'Threat-Actor-Group',
+  'Intrusion-Set',
 ];
 const typesWithSeverity = ['Case-Incident', 'Case-Rft', 'Case-Rfi'];
 const typesWithPriority = ['Case-Incident', 'Case-Rft', 'Case-Rfi'];

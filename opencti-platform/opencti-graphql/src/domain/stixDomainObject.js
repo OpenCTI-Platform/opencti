@@ -317,7 +317,7 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
   const scoreEditInput = input.find((e) => e.key === 'x_opencti_score');
   if (scoreEditInput) {
     const newScore = scoreEditInput.value[0];
-    if (newScore !== null && newScore !== undefined && newScore) {
+    if (newScore !== null && newScore !== undefined && newScore !== '') {
       checkScore(newScore);
     }
   }

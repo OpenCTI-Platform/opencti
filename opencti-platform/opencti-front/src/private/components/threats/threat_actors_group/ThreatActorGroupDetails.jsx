@@ -8,6 +8,7 @@ import inject18n from '../../../../components/i18n';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import ImageCarousel from '../../../../components/ImageCarousel';
+import ItemScore from '../../../../components/ItemScore';
 import ThreatActorGroupLocation from './ThreatActorGroupLocation';
 import Card from '@common/card/Card';
 import Label from '../../../../components/common/label/Label';
@@ -127,6 +128,12 @@ class ThreatActorGroupDetailsComponent extends Component {
           </Grid>
           <Grid item xs={4}>
             <Label>
+              {t('Score')}
+            </Label>
+            <ItemScore score={threatActorGroup.x_opencti_score} />
+          </Grid>
+          <Grid item xs={4}>
+            <Label>
               {t('Goals')}
             </Label>
             <TextList
@@ -165,6 +172,7 @@ const ThreatActorGroupDetails = createFragmentContainer(
         threat_actor_types
         sophistication
         resource_level
+        x_opencti_score
         primary_motivation
         secondary_motivations
         goals

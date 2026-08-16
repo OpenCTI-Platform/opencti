@@ -1,11 +1,11 @@
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
-import { defaultFieldResolver } from 'graphql';
 import type { GraphQLFieldConfig, GraphQLSchema } from 'graphql';
+import { defaultFieldResolver } from 'graphql';
 import { AuthRequired, ForbiddenAccess, LtsRequiredActivation, OtpRequired, OtpRequiredActivation, UnsupportedError } from '../config/errors';
 import { Capabilities } from '../generated/graphql';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
-import type { AuthContext } from '../types/user';
-import { BYPASS, SETTINGS_SET_ACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../utils/access';
+import type { AuthContext, AuthUser } from '../types/user';
+import { BYPASS, checkOTPValidationStatus, OTPValidationStatus, SETTINGS_SET_ACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../utils/access';
 import { getDraftContext } from '../utils/draftContext';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
@@ -91,30 +91,21 @@ export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilde
 
             fieldConfig.resolve = (source: any, args: any, context: AuthContext, info: any) => {
               // Get user from the session
-              const { user, otp_mandatory, user_otp_validated, blocked_for_lts_validation } = context;
-              // User must be authenticated.
-              if (!user) {
-                throw AuthRequired();
-              }
+              const { user, blocked_for_lts_validation } = context;
+              // Check user OTP status
               const allowUnprotectedOTP = !!getDirective(schema, fieldConfig, OTP_PROTECT_DIRECTIVE)?.[0];
-              if (!allowUnprotectedOTP) {
-                // If the platform enforce OTP
-                if (otp_mandatory) {
-                  // If user have not validated is OTP in session
-                  // by default user_otp_validated is true for direct api usage
-                  if (!user_otp_validated) {
-                    // If OTP is not setup, return a specific error
-                    if (!user.otp_activated) {
-                      throw OtpRequiredActivation();
-                    }
-                    // If already setup but not validated, return the validation screen
-                    throw OtpRequired();
-                  }
-                } else if (user.otp_activated && !user_otp_validated) {
-                  // If user self activate OTP, session must be validated
+              const otpStatus = checkOTPValidationStatus(context, allowUnprotectedOTP);
+              switch (otpStatus) {
+                case OTPValidationStatus.AUTHENTICATION_REQUIRED:
+                  throw AuthRequired();
+                case OTPValidationStatus.VALIDATION_REQUIRED:
                   throw OtpRequired();
-                }
+                case OTPValidationStatus.ACTIVATION_REQUIRED:
+                  throw OtpRequiredActivation();
+                default:
+                  break;
               }
+              const authenticatedUser = user as AuthUser;
               // LTS version must be validated
               const allowUnlicensedLTS = !!getDirective(schema, fieldConfig, LTS_PROTECT_DIRECTIVE)?.[0];
               if (blocked_for_lts_validation && !allowUnlicensedLTS) {
@@ -125,11 +116,11 @@ export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilde
                 return resolve(source, args, context, info);
               }
 
-              const userBaseCapabilities = user.capabilities.map((c) => c.name);
-              const userCapabilitiesInDraft = user.capabilitiesInDraft?.map((c) => c.name) ?? [];
+              const userBaseCapabilities = authenticatedUser.capabilities.map((c) => c.name);
+              const userCapabilitiesInDraft = authenticatedUser.capabilitiesInDraft?.map((c) => c.name) ?? [];
 
               // Accept everything if bypass capability or the system user (protection).
-              const shouldBypass = userBaseCapabilities.includes(BYPASS) || user.id === OPENCTI_ADMIN_UUID;
+              const shouldBypass = userBaseCapabilities.includes(BYPASS) || authenticatedUser.id === OPENCTI_ADMIN_UUID;
               if (shouldBypass) {
                 return resolve(source, args, context, info);
               }
@@ -154,7 +145,7 @@ export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilde
               if (typeName === ENTITY_TYPE_IDENTITY_ORGANIZATION
                 && requiredCapabilitiesBase.includes(VIRTUAL_ORGANIZATION_ADMIN)
                 && !userBaseCapabilities.includes(SETTINGS_SET_ACCESSES)) {
-                if (user.administrated_organizations.some(({ id }) => id === source.id)) {
+                if (authenticatedUser.administrated_organizations.some(({ id }) => id === source.id)) {
                   return resolve(source, args, context, info);
                 }
                 return null;
