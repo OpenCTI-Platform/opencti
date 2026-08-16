@@ -856,21 +856,40 @@ Adoption décidée, **hors de cette vague**. Voici ce qu'il faut savoir avant.
 | parmi les 28 : bandeau de titre **dans** la surface | **8** (H1-H8) |
 | parmi les 28 : titre dans la surface, sans bandeau | **1** (H9) |
 
-### Typographie actuelle vs celle de la lib
+### Typographie actuelle vs celle de la lib — MESURÉE, et je corrige une erreur
 
-| | produit `h4` | produit `h3` | lib (rangée `title`) |
+> **Correction.** J'ai d'abord écrit, en lisant `ThemeDark.ts`, que le produit
+> force `lowercase` sur `h3` et `h4` et que l'adoption **changerait le texte
+> affiché**. Sandy a repris ce point. **C'est faux.** La déclaration existe bien
+> dans `typography.h3`/`h4` (lignes 305 et 317), mais elle est **neutralisée** par
+> `MuiTypography.styleOverrides.root { textTransform: 'none' }`
+> (`ThemeDark.ts:673-680`), qui gagne sur les styles de variante. Mesuré sur le
+> DOM : la classe emotion émise contient `text-transform: none`, pas `lowercase`.
+> Le `::first-letter: uppercase` survit, mais il n'a plus rien à recapitaliser.
+>
+> **Conséquence : le texte affiché NE CHANGE PAS.** L'adoption est un changement
+> de style seul. Le `lowercase` du thème est du code mort.
+>
+> Troisième fois dans cette vague que lire le thème donne une réponse que la
+> mesure contredit — après le `<Paper>` de la page de login et le focus de la
+> navbar.
+
+Mesuré sur les trois cas représentatifs, thème sombre :
+
+| | N4 / N7 (`h4`) | H9 (`h3`) | lib (rangée `title`) |
 |---|---|---|---|
+| casse rendue | **`none`** | **`none`** | **`none`** — identique |
+| texte rendu | inchangé | inchangé | **inchangé** |
 | taille | 12px | 13px | 12px |
 | graisse | **500** | 400 | **400** |
-| famille | héritée | **Geologica** | IBM Plex Sans |
-| casse | **`lowercase`** | **`lowercase`** | **`none`** |
-| hauteur | 15px | auto | **24px** |
-| écart au panneau | `margin-bottom: 10px` | `10px` | `gap: 8px` |
-| couleur | texte primaire | texte primaire | **texte secondaire** |
+| famille | IBM Plex Sans | **Geologica** | IBM Plex Sans |
+| couleur | primaire `rgb(242,242,243)` | primaire | **secondaire `rgb(175,176,182)`** |
+| hauteur | **15px** | **15px** | **24px** |
 
-La casse est le point le plus visible : le produit force `lowercase` sur ses
-deux niveaux de titre, la lib non. L'adoption **changera le texte affiché**,
-pas seulement son style.
+Ce qui bouge réellement : **+9px de hauteur** par en-tête, la graisse de `h4`
+(500 → 400), la famille de `h3` (Geologica → IBM Plex Sans) et la couleur
+(primaire → secondaire) sur les trois. Planches : `titles-dark.png`,
+`titles-light.png`.
 
 ### Le piège structurel — mesuré, pas repris de confiance
 
@@ -915,3 +934,45 @@ transparence.
 **Hors périmètre, au même titre que les conteneurs semi-transparents.** Non
 converti, listé ici pour que la prochaine vague ne le reprenne pas par
 inadvertance — même statut que `DetailHero` côté OpenAEV.
+
+
+---
+
+## 19. Padding asymétrique — tranché : uniforme 16px, option (b) abandonnée
+
+**Décision de Sandy, prise SUR PIÈCE après lecture des planches** (`asym-dark.png`,
+`asym-light.png`, cellules à largeur fixe et contenu identique) : les trois sites
+passent à **`padding={16}` uniforme**.
+
+**N7 va à 16 et non à 24**, alors que la règle du plus proche désignait 24 : c'est
+volontaire, Sandy préfère l'homogénéité des trois sites à l'application stricte
+de la règle. Noté ici pour que personne ne « corrige » ce 16 en 24 plus tard en
+croyant à un oubli.
+
+**L'option (b) — padding par côté côté lib — est fermée.** Aucune prop à porter,
+aucune session lib à lancer. Ce n'est **pas un renoncement technique** : la
+faisabilité était chiffrée (échelle inchangée, ajout additif et non cassant, 20
+classes à safelister dont 12 manquantes), et la mesure montrait bien que (b)
+était exactement ISO là où (a) coûte de +8 à +28px. C'est un arbitrage produit
+sur pièce : l'écart visible ne justifie pas l'ajout d'API.
+
+### Ce qui a été converti, et ce qui ne l'a pas été
+
+| site | décision | état |
+|---|---|---|
+| **N7** `StixDomainObjectAuthorKnowledge.jsx:273` | `padding={16}` | **converti** |
+| **T1** `HistoryLineContent.tsx:107` | `padding={16}` | **NON converti — arrêt** |
+| **T2** `UserHistoryLine.tsx:339` | `padding={16}` | **NON converti — arrêt** |
+
+**Pourquoi T1 et T2 sont en arrêt.** Les deux portent `background: 0`, qui annule
+le fond du Paper : ce sont les **conteneurs semi-transparents**, mis **hors
+périmètre dès le brief initial** (« HORS PÉRIMÈTRE, déjà tranché : les conteneurs
+semi-transparents »). Mesuré : fond rendu `rgba(0, 0, 0, 0)` dans les trois
+thèmes, la page se voit au travers.
+
+Les convertir ajouterait un fond **opaque** — une perte de fonctionnalité
+visuelle que le Paper de la lib ne sait pas éviter, et qui n'a **pas** été
+tranchée. La décision sur la bordure et l'ombre (D5) les couvre bien, elle ; la
+transparence, non. Conformément à la règle « une perte assumée n'existe que si
+Sandy l'a explicitement tranchée », les deux sites restent sur MUI en attendant
+un arbitrage explicite.

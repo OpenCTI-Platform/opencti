@@ -172,6 +172,14 @@
           "no-hardcoded-padding"
         ],
         "note": "H9 — pilot lot, padding={16}; radius dropped, 4px is the library default (measured)"
+      },
+      {
+        "file": "opencti-platform/opencti-front/src/private/components/common/stix_domain_objects/StixDomainObjectAuthorKnowledge.jsx",
+        "guards": [
+          "imported-from-library",
+          "no-hardcoded-padding"
+        ],
+        "note": "N7 — asymmetric 20/20/0/20 converted to a uniform padding={16} on Sandy's call from the board (16, not the nearest 24, for homogeneity across the three asymmetric sites)"
       }
     ]
   }
