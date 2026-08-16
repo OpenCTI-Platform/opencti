@@ -1116,3 +1116,58 @@ deliberate robustness property worth generalising.
 **Product-side note.** The rule is old, broad, and not this migration's to
 remove — deleting it changes focus rendering across the whole application. It is
 flagged, not touched.
+
+---
+
+## 36. The shipped stylesheet carries only the utilities the library itself happens to use
+
+Raised while converting the warm-up lot (the 8 SSO header panels), and it is
+the same root cause that priced the asymmetric-padding question.
+
+**Needed.** Two things the eight panels do today and must keep doing: a top
+margin (`mt: 2` → 16px, `mt: 2.5` → 20px on one of them) and
+`overflow: hidden`, which is load-bearing — it clips the inner title banner to
+the surface's 4px radius. Neither is a padding, so neither belongs in the
+`padding` prop.
+
+**Today.** Measured against the installed `dist/index.css` at pin `a22b188`:
+
+| class | in the shipped sheet |
+|---|---|
+| `overflow-hidden` | ✅ present |
+| `mt-4` (16px) | ❌ **absent** |
+| `mt-5` (20px) | ❌ **absent** |
+
+So `overflow` could stay a class and the margin could not. This product does
+not compile Tailwind — it consumes the pre-built sheet — so an absent class
+resolves to nothing at all, silently. The margin is posed in `style` instead,
+marked `FDS-WORKAROUND #36` in all four files.
+
+**The same absence prices a design decision.** The per-side padding classes an
+asymmetric `padding` API would need are present only where some library
+component happens to use them:
+
+| | 0 | 8 | 16 | 24 | 32 |
+|---|---|---|---|---|---|
+| `pt-` | ❌ | ❌ | ✅ | ❌ | ❌ |
+| `pr-` | ❌ | ✅ | ✅ | ❌ | ✅ |
+| `pb-` | ❌ | ✅ | ❌ | ❌ | ❌ |
+| `pl-` | ❌ | ❌ | ✅ | ✅ | ✅ |
+
+**8 of the 20 exist, by accident.** This is exactly the `p-8` situation before
+#125 — a class the API would emit, absent from the sheet, resolving to 0px with
+no error — multiplied by four sides. Any per-side padding API has to safelist
+all 20 explicitly, the way `src/tokens/index.css` already safelists the five
+`p-*`, and `paper-padding-emission.test.ts` has to assert all 20 compile.
+
+**Ask.** Not "ship all of Tailwind". Two narrower things:
+
+1. **Safelist the utilities the library's own public API can emit**, and pin
+   them with the emission test. That is a closed, enumerable set — it is what
+   #125 did for `p-8` — and it makes the sheet's contents a consequence of the
+   API rather than of which component happened to use what.
+2. **Say, in the consumer docs, that the sheet is not general-purpose.** A
+   consuming agent's reasonable assumption is that a Tailwind-looking class
+   works; the failure when it does not is silent and visual-only. One sentence
+   plus the safelist list would close the whole class of bug — the same shape
+   of ask as the `title`-is-not-a-slot documentation line in #33.

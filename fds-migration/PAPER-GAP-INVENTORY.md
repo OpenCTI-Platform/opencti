@@ -1,7 +1,10 @@
 # Inventaire des écarts — Paper (lib) vs surfaces conteneur OpenCTI
 
 Rendu **avant** toute conversion, comme prérequis bloquant de la vague pilote
-Paper. Rien n'est converti à ce stade.
+Paper. Les sections 0 à 6 sont l'inventaire tel qu'il a été rendu, quand rien
+n'était converti — elles ne sont pas réécrites. Les arbitrages de Sandy (§7),
+les captures de test du cas laissé ouvert (§8) et le lot d'échauffement (§9)
+sont ajoutés à la suite.
 
 - Produit : OpenCTI, branche `fds/paper-pilot` sur `design-system/current`
   (base `a45a8342378990c0606518b8c11bc21140cff9cf`).
@@ -391,3 +394,159 @@ périmètre — la question ne se pose pas ici.
 - le motif Paper dans `check-fds-conformity.mjs` avec la garde
   « padding en dur sur un Paper lib » ;
 - le checkpoint navbar (cinq états, deux niveaux) sur l'app réelle.
+
+---
+
+## 7. Arbitrages Sandy — 2026-08-16
+
+Appliqués tels quels, sans les rejouer.
+
+| # | décision | portée |
+|---|---|---|
+| **D1** | padding **15 → 16** (valeur la plus proche de l'échelle) | N1, N2, N3, N4 |
+| **D2** | padding **20 → 24** — « entre resserrer et donner un peu d'air, je préfère l'air » | N5, N6 |
+| **règle** | aucune conversion « au plus proche » **silencieuse** ailleurs : sans plus proche évident, on remonte | tout le périmètre |
+| **D3** | **non tranché** — captures de test demandées, voir §8 | T1, T2, N7 |
+| **D5** | bordure : **on garde exactement ce que fait la lib**. Les 21 sites outlined prennent sa teinte ; les 7 sans bordure en **gagnent** une et **perdent** leur ombre MUI. Changement visuel **voulu**, la lib fait référence. | 28/28 |
+| **découpage** | **validé** : échauffement = les 8 en-têtes SSO ; pilote = N8, N11, N12, N13, H9 | — |
+| **en attente** | teinte, câblage thème client, `title`/`action` non-ISO, dégradé `ExperienceCard`, bandeau dans la surface | rien qui en dépende n'est converti |
+
+### D1/D2 appliqués — le tableau des paddings après règle
+
+| valeur produit | sites | après règle | écart annoncé |
+|---|---|---|---|
+| 0 | 15 | `padding={0}` | ISO |
+| 15 | 4 | `padding={16}` | **+1px** sur les quatre côtés |
+| 16 | 3 | `padding={16}` | ISO |
+| 20 | 2 | `padding={24}` | **+4px** sur les quatre côtés |
+| asymétrique | 3 | — | §8 |
+
+---
+
+## 8. Padding asymétrique — les deux options, mesurées
+
+Trois sites. Mesures au DOM, thème sombre (identiques en clair et en thème
+client, le padding ne dépend pas du thème). Hauteur de la surface à contenu
+constant :
+
+| site | produit | (a) uniforme | (b) par côté |
+|---|---|---|---|
+| **T1** `8/15/0/15` | h = **24** | `padding={8}` → h = **32** (+8) · `padding={16}` → h = **48** (**+24, le double**) | `8/16/0/16` → h = **24** — **identique** |
+| **T2** `8/15/0/15` | h = **24** | idem T1 | `8/16/0/16` → h = **24** — **identique** |
+| **N7** `20/20/0/20` | h = **36** | `padding={24}` → h = **64** (**+28**) | `24/24/0/24` → h = **40** (+4, la seule conséquence de la règle 20→24) |
+
+**Pourquoi T1 et T2 ont deux colonnes (a).** La règle « la valeur la plus
+proche » désigne 16 pour l'horizontal (15→16), mais le haut est déjà à 8 et le
+bas à 0 : une valeur **uniforme** doit en choisir **une seule**, et 8 comme 16
+sont défendables. C'est le cas « pas de plus proche évident » — les deux sont
+donc montrées plutôt qu'arbitrées en silence.
+
+**Ce qu'on perd concrètement avec (a).** Sur T1/T2, un bloc de 24px devient
+32 ou 48 : ce sont des **lignes d'historique**, empilées par dizaines. À 48, la
+liste double de hauteur. Le `0` en bas n'est pas une coquette : il évite de
+doubler la gouttière entre deux lignes consécutives. Sur N7, +28px sous un
+graphe de 300px de haut.
+
+### Option (b) — ce qu'elle coûterait côté lib
+
+Chiffré, pas estimé. **Rien n'a été poussé côté lib** : la colonne (b) des
+captures est une maquette locale qui rend la liste de classes exacte du Paper
+installé, padding en moins.
+
+**Forme d'API.** L'ajout naturel est d'élargir la prop existante, pas d'en
+ajouter une :
+
+```tsx
+padding?: Pad | { block?: Pad; inline?: Pad }        // le cas courant
+padding?: Pad | { top?: Pad; right?: Pad; bottom?: Pad; left?: Pad }
+```
+
+avec `Pad = 0 | 8 | 16 | 24 | 32` — **l'échelle ne bouge pas**. Les trois sites
+d'OpenCTI tombent tous dans la forme longue (`bottom` différent des trois
+autres), donc la forme courte `{ block, inline }` ne suffirait pas.
+
+**Effet sur l'échelle existante : aucun.** `padding={16}` continue de rendre
+`p-4`. C'est purement additif et non cassant — le nombre reste le raccourci du
+cas uniforme.
+
+**Effet sur la feuille livrée : c'est là qu'est le coût réel.** `cva` ne sait
+pas exprimer un quadruplet en une variante : il faut **quatre variantes**
+(`paddingTop/Right/Bottom/Left`) mappées sur des classes statiques
+`pt-/pr-/pb-/pl-`, soit **20 classes**. Mesuré sur le `dist/index.css`
+installé, **8 des 20 existent**, par hasard, parce qu'un composant de la lib
+les utilise :
+
+| | 0 | 8 | 16 | 24 | 32 |
+|---|---|---|---|---|---|
+| `pt-` | ❌ | ❌ | ✅ | ❌ | ❌ |
+| `pr-` | ❌ | ✅ | ✅ | ❌ | ✅ |
+| `pb-` | ❌ | ✅ | ❌ | ❌ | ❌ |
+| `pl-` | ❌ | ❌ | ✅ | ✅ | ✅ |
+
+Les 12 manquantes doivent être safelistées dans `src/tokens/index.css`, et
+`paper-padding-emission.test.ts` doit prouver que les 20 compilent — exactement
+ce que #125 a fait pour `p-8`. C'est le vrai poste de coût, et il est
+mécanique, pas conceptuel. Repris en LIBRARY-FEEDBACK #36.
+
+**Effet sur la garde anti-padding-en-dur : elle y gagne.** La garde rougit
+quand un padding réapparaît en `className`/`sx`/`style` sur un Paper de la lib.
+Aujourd'hui, un site asymétrique ne peut s'exprimer **que** comme ça — donc
+soit il reste sur MUI, soit la garde reçoit trois exemptions permanentes. Avec
+(b), le padding reste **dans la prop** et la garde reste intègre sur les trois
+sites. L'option (b) protège le gate ; la refuser lui coûte trois trous.
+
+**Le risque à connaître.** Une valeur hors échelle rend toujours 0px en silence
+(LIBRARY-FEEDBACK #30). Par côté, ce piège est multiplié par quatre. Si (b)
+part, l'avertissement dev de #30 devrait partir avec — c'est la même ligne de
+code, et elle vaut plus que la fonctionnalité.
+
+---
+
+## 9. Lot d'échauffement — converti, ISO vérifié au DOM
+
+**8 surfaces, 4 fichiers**, tous à `padding={0}` :
+`AuthProviderGroupsFields.tsx` (3), `AuthProviderOrganizationsFields.tsx` (3),
+`AuthProviderUserInfoFields.tsx` (1, `mt` 20px), `HeaderStrategyForm.tsx` (1).
+
+Aucun des quatre fichiers n'est **mixte** : chacun n'importait le Paper de MUI
+que pour ces sites-là, donc les deux gardes sont armées partout.
+
+**Mesuré au DOM, avant vs après, bandeau interne compris :**
+
+| propriété | avant | après |
+|---|---|---|
+| padding surface | `0/0/0/0` | `0/0/0/0` |
+| margin-top | 16px / 20px | 16px / 20px |
+| rayon | 4px | 4px |
+| `overflow` | `hidden` | `hidden` |
+| fond | `rgb(13,23,43)` | `rgb(13,23,43)` |
+| largeur × hauteur | 561 × 60 | 561 × 60 |
+| **bandeau interne** | pad `12/16/12/16`, fond `rgba(255,255,255,.08)`, 559 × 44 | **identique, aucun écart** |
+| bordure | `rgba(255,255,255,.12)` | `srgb(.169,.310,.553)/.15` |
+
+**Le seul écart est la teinte de bordure** — décision D5, voulue.
+
+Le bandeau de titre interne est un **enfant** : son padding n'a pas été
+transféré au Paper. Il porte un sens (il doit toucher les bords et être clippé
+au rayon par `overflow: hidden`), c'est le cas prévu par la règle.
+
+### Deux capacités absentes de la feuille livrée
+
+`mt-4` et `mt-5` **n'existent pas** dans `dist/index.css` (`overflow-hidden`,
+si). La marge est donc posée en `style`, marquée `FDS-WORKAROUND #36` dans les
+quatre fichiers. C'est une marge, pas un padding : la garde ne rougit pas, et
+c'est correct.
+
+### La garde a été vue rouge avant d'être crue verte
+
+Trois essais, remis en état après chacun :
+
+| essai | verdict |
+|---|---|
+| `className="… p-4"` sur un Paper lib | ❌ rouge — 3 balises signalées |
+| `style={{ padding: 15 }}` sur un Paper lib | ❌ rouge — 3 balises signalées |
+| retour au `import Paper from '@mui/material/Paper'` (**l'esquive** que la regex naïve rate) | ❌ rouge — « deep default import » nommé |
+
+Puis vert de nouveau. Le motif `paperPattern` sait aussi déclarer un fichier
+**mixte** (`mixed.allowMuiPaperFor` + raison) : aucun site n'en a besoin dans ce
+lot, mais la forme existe pour les suivants, plutôt que d'esquiver la regex.
