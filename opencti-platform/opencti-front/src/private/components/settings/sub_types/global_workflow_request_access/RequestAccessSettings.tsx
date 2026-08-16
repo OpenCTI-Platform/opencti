@@ -4,7 +4,7 @@ import SubTypeStatusPopover from '@components/settings/sub_types/SubTypeWorkflow
 import { graphql, useFragment } from 'react-relay';
 import RequestAccessConfigurationPopover from '@components/settings/sub_types/global_workflow_request_access/RequestAccessConfigurationPopover';
 import RequestAccessStatus from '@components/settings/sub_types/global_workflow_request_access/RequestAccessStatus';
-import Paper from '@mui/material/Paper';
+import { Paper } from '@filigran/design-system';
 import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../../components/i18n';
 import { StatusScopeEnum } from '../../../../../utils/statusConstants';
@@ -51,10 +51,10 @@ const RequestAccessSettings = ({ subTypeId, data, dataConfiguration }: RequestAc
   }));
   const requestAccessWorkflowDisabled = statusList.length === 0;
 
+  // Le padding passe au Paper (prop `padding`) et le rayon tombe : 4px est
+  // déjà le `rounded-sm` de la lib, mesuré identique avant/après.
   const paperStyle: CSSProperties = {
     marginTop: theme.spacing(1),
-    padding: theme.spacing(2),
-    borderRadius: theme.spacing(0.5),
     position: 'relative',
   };
   return (
@@ -73,8 +73,8 @@ const RequestAccessSettings = ({ subTypeId, data, dataConfiguration }: RequestAc
       </div>
       <div style={{ marginTop: 20 }}>
         <Paper
+          padding={16}
           style={paperStyle}
-          variant="outlined"
           className="paper-for-grid"
         >
           <Typography variant="h3" gutterBottom={true}>

@@ -1,5 +1,6 @@
 import { Delete } from '@mui/icons-material';
-import { Alert, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
+import { Alert, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
+import { Paper } from '@filigran/design-system';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
@@ -111,7 +112,7 @@ export const TokenListBase: React.FC<TokenListProps> = ({ node }) => {
 
   if (tokens.length === 0) {
     return (
-      <Paper variant="outlined">
+      <Paper padding={0}>
         <div className={classes.empty}>
           {t_i18n('No tokens found. Click "Generate Token" to create one.')}
         </div>

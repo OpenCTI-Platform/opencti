@@ -132,6 +132,46 @@
           "no-hardcoded-padding"
         ],
         "note": "H8 — warm-up lot, padding={0}"
+      },
+      {
+        "file": "opencti-platform/opencti-front/src/private/components/data/stream/StreamConsumersDrawer.tsx",
+        "guards": [
+          "imported-from-library",
+          "no-hardcoded-padding"
+        ],
+        "note": "N8 — pilot lot, padding={16}; height inline, FDS-WORKAROUND #16"
+      },
+      {
+        "file": "opencti-platform/opencti-front/src/private/components/common/files/import_files/ImportFilesFormSelector.tsx",
+        "guards": [
+          "imported-from-library",
+          "no-hardcoded-padding"
+        ],
+        "note": "N11 — pilot lot, padding={0}; the List keeps its own gutter, full-bleed dividers"
+      },
+      {
+        "file": "opencti-platform/opencti-front/src/private/components/profile/api_tokens/TokenList.tsx",
+        "guards": [
+          "imported-from-library",
+          "no-hardcoded-padding"
+        ],
+        "note": "N12 — pilot lot, padding={0}"
+      },
+      {
+        "file": "opencti-platform/opencti-front/src/private/components/settings/users/UserTokenList.tsx",
+        "guards": [
+          "imported-from-library",
+          "no-hardcoded-padding"
+        ],
+        "note": "N13 — pilot lot, padding={0}"
+      },
+      {
+        "file": "opencti-platform/opencti-front/src/private/components/settings/sub_types/global_workflow_request_access/RequestAccessSettings.tsx",
+        "guards": [
+          "imported-from-library",
+          "no-hardcoded-padding"
+        ],
+        "note": "H9 — pilot lot, padding={16}; radius dropped, 4px is the library default (measured)"
       }
     ]
   }

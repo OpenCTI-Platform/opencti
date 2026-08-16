@@ -2,9 +2,9 @@
 
 Rendu **avant** toute conversion, comme prérequis bloquant de la vague pilote
 Paper. Les sections 0 à 6 sont l'inventaire tel qu'il a été rendu, quand rien
-n'était converti — elles ne sont pas réécrites. Les arbitrages de Sandy (§7),
-les captures de test du cas laissé ouvert (§8) et le lot d'échauffement (§9)
-sont ajoutés à la suite.
+n'était converti — elles ne sont pas réécrites. Les arbitrages de Sandy (§7,
+§10), les captures de test du cas laissé ouvert (§8) et les deux lots convertis
+(§9 échauffement, §11 pilote) sont ajoutés à la suite.
 
 - Produit : OpenCTI, branche `fds/paper-pilot` sur `design-system/current`
   (base `a45a8342378990c0606518b8c11bc21140cff9cf`).
@@ -550,3 +550,81 @@ Trois essais, remis en état après chacun :
 Puis vert de nouveau. Le motif `paperPattern` sait aussi déclarer un fichier
 **mixte** (`mixed.allowMuiPaperFor` + raison) : aucun site n'en a besoin dans ce
 lot, mais la forme existe pour les suivants, plutôt que d'esquiver la regex.
+
+---
+
+## 10. Arbitrages Sandy — 2026-08-16, deuxième tour
+
+| # | décision |
+|---|---|
+| teinte de bordure | **tranchée** au §7 (D5), la liste des « cinq restants » était périmée sur ce point |
+| **bandeau dans la surface** | **reste tel quel** — c'est du contenu produit dans la surface, pas un motif que le Paper doit exprimer. Documenté ci-dessous comme motif non exprimé par la lib, **sans exemption de gate**. |
+| padding asymétrique | **option (b)** retenue : prop élargie côté lib. Deux conditions : les 20 classes statiques safelistées et couvertes par le test d'émission, et l'avertissement dev hors échelle **dans la même PR**. En attendant, T1/T2/N7 **ne sont pas convertis**. |
+| lot pilote | **lancé** — N8, N11, N12, N13, H9 |
+
+### Le bandeau dans la surface — motif non exprimé par la lib
+
+8 sites (`sso_definitions/*`) rendent, comme **premier enfant** du Paper, un
+`<Box sx={{ px: 2, py: 1.5, backgroundColor: 'action.hover' }}>` que
+`overflow: hidden` clippe au rayon de la surface.
+
+`title` rend **au-dessus** de la surface, hors bordure, sans fond : il ne peut
+pas exprimer ce motif, à aucune typographie. **Décision Sandy : le bandeau reste
+un enfant produit.** Ce n'est donc pas un écart à combler côté lib, et **aucune
+exemption de gate n'est posée** — les deux gardes restent armées sur les huit
+fichiers, parce que le bandeau n'est ni un import MUI ni un padding sur le
+Paper. Mesuré identique avant/après (pad `12/16/12/16`, fond
+`rgba(255,255,255,.08)`, 559 × 44).
+
+---
+
+## 11. Lot pilote — converti, ISO vérifié au DOM
+
+**5 surfaces, 5 fichiers.** Chacun n'avait qu'un seul `<Paper>` : aucun fichier
+mixte, les deux gardes sont armées partout.
+
+| site | avant | après |
+|---|---|---|
+| **N8** `StreamConsumersDrawer.tsx:116` | `sx` flex + `padding: theme.spacing(2)` + `height: 100%`, `.paper-for-grid` | `padding={16}`, classes flex, **hauteur en style inline** (voir ci-dessous) |
+| **N11** `ImportFilesFormSelector.tsx:74` | `sx={{ flex: 1, overflow: 'auto' }}` | `padding={0}`, `className="flex-1"`, `overflow` en style |
+| **N12** `TokenList.tsx:114` | `variant="outlined"` | `padding={0}` |
+| **N13** `UserTokenList.tsx:110` | `variant="outlined"` | `padding={0}` |
+| **H9** `RequestAccessSettings.tsx:75` | `style={paperStyle}` (mt 8, padding 16, rayon 4, relative) | `padding={16}`, `paperStyle` réduit à mt + relative |
+
+**Mesuré au DOM, 15 propriétés par site** (padding, marge, rayon, `overflow`,
+`display`, `flex-direction`, `align-items`, `justify-content`, `position`,
+`flex`, hauteur calculée, hauteur rendue, largeur, fond, ombre) :
+
+> **écarts hors teinte de bordure : 0 sur les 5 sites.**
+
+La teinte de bordure change partout — décision D5.
+
+**N11 :** le `<List>` garde sa gouttière, rien n'est transféré au Paper. Les
+séparateurs continuent de toucher les bords.
+
+**H9 :** le rayon sort de `paperStyle` — `theme.spacing(0.5)` vaut 4px, soit
+exactement le `rounded-sm` de la lib, mesuré identique. Le padding sort aussi,
+sinon la garde rougirait — à juste titre.
+
+### N8 — le seul site où la conversion naïve n'était PAS ISO
+
+`h-full` **perd** contre `.paper-for-grid` du produit (`height: calc(100% - 25px)`).
+Mesuré : 110px attendus, **85px rendus**. Cause : l'utilitaire de la lib vit
+dans `@layer utilities`, la classe produit est **non-layerée**, et le non-layeré
+gagne — c'est LIBRARY-FEEDBACK #16, qui vient de mordre pour de vrai.
+
+La hauteur repasse donc en `style` inline, qui bat les deux : mesuré 110 → 110.
+Marqué `FDS-WORKAROUND #16` sur place. Les classes de flex, elles, n'ont aucun
+concurrent non-layeré sur cet élément et s'appliquent normalement.
+
+### Le banc était sous-spécifié, et ça a failli produire un faux résultat
+
+Première mesure de N8 et H9 : `h 144 → 85` et `119 → 85`. Les deux étaient
+faux. Le banc ne rendait pas `<CssBaseline />`, que `private/Index.tsx` rend :
+sans lui, le Paper de MUI est en `content-box` et celui de la lib en
+`border-box`, donc la même hauteur donnait deux boîtes différentes. Avec
+`CssBaseline`, H9 est ISO d'emblée et il ne reste que le vrai écart de N8.
+
+C'est la leçon OpenAEV #34 sous une autre forme : **un banc qui ne charge pas
+tout ce que l'hôte charge mesure autre chose que l'application.** Corrigé dans
+les deux entrées du banc.

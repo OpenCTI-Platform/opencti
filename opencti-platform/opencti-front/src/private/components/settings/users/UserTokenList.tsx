@@ -1,5 +1,6 @@
 import { Delete } from '@mui/icons-material';
-import { IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
+import { IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
+import { Paper } from '@filigran/design-system';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
@@ -107,7 +108,7 @@ export const UserTokenList: React.FC<UserTokenListProps> = ({ openDrawer = false
   return (
     <div>
       {tokens.length === 0 ? (
-        <Paper variant="outlined">
+        <Paper padding={0}>
           <div className={classes.empty}>
             {t_i18n('No tokens found.')}
           </div>
