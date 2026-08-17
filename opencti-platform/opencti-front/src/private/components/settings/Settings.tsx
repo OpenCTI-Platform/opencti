@@ -590,7 +590,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                       <ItemCopy content={settings.id} variant="inLine" />
                     </ListItem>
                     <ListItem divider={true}>
-                      <ListItemText primary={t_i18n('Version')} />
+                      <ListItemText primary={t_i18n('Version')} secondary="🚀 feature-branch" />
                       <ItemBoolean
                         neutralLabel={version}
                         status={null}

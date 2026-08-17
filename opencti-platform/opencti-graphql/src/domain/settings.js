@@ -40,7 +40,7 @@ export const getMemoryStatistics = () => {
 };
 
 export const getApplicationInfo = () => ({
-  version: PLATFORM_VERSION,
+  version: `${PLATFORM_VERSION} (feature-branch preview)`,
   debugStats: {}, // Lazy loaded
 });
 
