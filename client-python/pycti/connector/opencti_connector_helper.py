@@ -19,6 +19,7 @@ Example:
 
 import asyncio
 import base64
+import concurrent.futures
 import copy
 import datetime
 import json
@@ -532,6 +533,18 @@ class ListenQueue(threading.Thread):
         self.queue_name = connector_config["listen"]
         self.exit_event = threading.Event()
         self.thread = None
+        # API listen protocol only: a dedicated single-worker executor keeps
+        # _data_handler off the Uvicorn event loop (so /health stays responsive)
+        # while explicitly serializing callback execution (single-flight), since
+        # _data_handler mutates shared helper state (work_id, draft_id,
+        # validation_mode) with no thread-safety contract beyond that.
+        self._callback_executor = (
+            concurrent.futures.ThreadPoolExecutor(
+                max_workers=1, thread_name_prefix="listen-api-callback"
+            )
+            if listen_protocol == "API"
+            else None
+        )
 
     # noinspection PyUnusedLocal
     def _process_message(self, channel, method, properties, body) -> None:
@@ -814,7 +827,13 @@ class ListenQueue(threading.Thread):
                 content={"error": "Invalid JSON payload"},
             )
         try:
-            self._data_handler(data)
+            # Offloaded to a dedicated single-worker executor: the event loop
+            # (and /health) stays responsive, callback executions are
+            # serialized (single-flight, see __init__ for the rationale).
+            loop = asyncio.get_running_loop()
+            await loop.run_in_executor(
+                self._callback_executor, self._data_handler, data
+            )
         except Exception as e:
             self.helper.connector_logger.error(
                 "Error processing message", {"cause": str(e)}
@@ -827,6 +846,22 @@ class ListenQueue(threading.Thread):
         return JSONResponse(
             status_code=202, content={"message": "Message successfully received"}
         )
+
+    # noinspection PyUnusedLocal
+    async def _http_health_callback(self, request: Request) -> JSONResponse:
+        """Handle health-check requests for the API listen protocol.
+
+        Answered directly on the event loop (never routed through the
+        callback executor), so it stays responsive while a message is
+        being processed.
+
+        :param request: The incoming FastAPI request object
+        :type request: Request
+
+        :return: JSON response confirming liveness
+        :rtype: JSONResponse
+        """
+        return JSONResponse(status_code=200, content={"status": "ok"})
 
     def run(self) -> None:
         """Execute the message listening thread.
@@ -895,6 +930,11 @@ class ListenQueue(threading.Thread):
         elif self.listen_protocol == "API":
             self.helper.connector_logger.info("Starting Listen HTTP thread")
             app.add_api_route(
+                "/health",
+                self._http_health_callback,
+                methods=["GET"],
+            )
+            app.add_api_route(
                 self.listen_protocol_api_path,
                 self._http_process_callback,
                 methods=["POST"],
@@ -925,9 +965,12 @@ class ListenQueue(threading.Thread):
         """
         self.helper.connector_logger.info("Preparing ListenQueue for clean shutdown")
         self.exit_event.set()
-        self.pika_connection.close()
+        if self.pika_connection:
+            self.pika_connection.close()
         if self.thread:
             self.thread.join()
+        if self._callback_executor:
+            self._callback_executor.shutdown(wait=True)
 
 
 class PingAlive(threading.Thread):
