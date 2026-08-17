@@ -22,7 +22,7 @@ describe('stix core object domain import push', () => {
       x_opencti_files: [],
     } as never);
     vi.spyOn(access, 'validateUserAccessOperation').mockReturnValue(true);
-    vi.spyOn(draftContext, 'getDraftContext').mockReturnValue(null);
+    vi.spyOn(draftContext, 'getDraftContext').mockReturnValue(undefined);
     vi.spyOn(identifier, 'getInstanceIds').mockReturnValue(['report--1']);
     vi.spyOn(entitySettingUtils, 'getEntitySettingFromCache').mockResolvedValue({ platform_entity_files_ref: false } as never);
     const unlock = vi.fn();
@@ -43,9 +43,10 @@ describe('stix core object domain import push', () => {
       fintelTemplateId: 'fintel-template--1',
     });
 
+    const uploadOptions = uploadSpy.mock.calls[0]?.[4] as { meta?: { fintel_template_id?: string } } | undefined;
     expect(result.id).toEqual('file--1');
     expect(uploadSpy.mock.calls[0][2]).toEqual('fromTemplate/Report/report--1');
-    expect(uploadSpy.mock.calls[0][4].meta.fintel_template_id).toEqual('fintel-template--1');
+    expect(uploadOptions?.meta?.fintel_template_id).toEqual('fintel-template--1');
     expect(unlock).toHaveBeenCalledTimes(1);
   });
 
@@ -58,7 +59,8 @@ describe('stix core object domain import push', () => {
       fintelTemplateId: 'fintel-template--1',
     });
 
+    const uploadOptions = uploadSpy.mock.calls[0]?.[4] as { meta?: { fintel_template_id?: string } } | undefined;
     expect(uploadSpy.mock.calls[0][2]).toEqual('import/Report/report--1');
-    expect(uploadSpy.mock.calls[0][4].meta.fintel_template_id).toBeUndefined();
+    expect(uploadOptions?.meta?.fintel_template_id).toBeUndefined();
   });
 });
