@@ -96,6 +96,22 @@ const Card = ({
     background: variant !== 'outlined'
       ? backgroundColor
       : 'transparent',
+    /**
+     * The card's own edge, taken from the design system's token rather than
+     * from MUI's built-in `divider` default — which is what an `outlined`
+     * MUI Card would otherwise draw, and which the product never declares.
+     *
+     * Deliberately ONE LINE here rather than swapping `CardMui` for the
+     * library `Paper`. The surface colour and the radius already match the
+     * library (see `backgroundColor` above; radius is 4px on both sides), so
+     * an exchange would buy this border and nothing else — while forcing 45
+     * `sx` call sites onto `style`, giving 25 `variant="outlined"` sites a
+     * background they do not have, dropping the asymmetric padding of 11
+     * sites plus part of the 126 dashboard tiles, and leaving a hybrid
+     * wrapper the real Card migration would have to undo. Same rendering,
+     * none of the debt.
+     */
+    border: '1px solid var(--border-elevation-subtle-soft)',
     ...(applyStyleToContainer ? paddingStyle : {}),
     ...(applyStyleToContainer ? sx : {}),
   };
