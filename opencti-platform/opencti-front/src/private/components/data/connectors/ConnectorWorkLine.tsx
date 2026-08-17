@@ -1,11 +1,11 @@
 import React, { FunctionComponent, useState } from 'react';
+import { Paper } from '@filigran/design-system';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import LinearProgress from '@mui/material/LinearProgress';
 import Button from '@common/button/Button';
 import { Delete } from 'mdi-material-ui';
-import Paper from '@mui/material/Paper';
 import Alert from '@mui/material/Alert';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -187,29 +187,34 @@ const ConnectorWorkLine: FunctionComponent<
             <Tab label={`${t_i18n('Warning')} (${warnings.length})`} value="Warning" />
             <Tab label={`${t_i18n('All')} (${errors.length})`} value="All" />
           </Tabs>
-          <TableContainer component={Paper}>
-            <Table aria-label="errors table">
-              <TableHead>
-                <TableRow>
-                  <TableCell>{t_i18n('Timestamp')}</TableCell>
-                  <TableCell>{t_i18n('Code')}</TableCell>
-                  <TableCell>{t_i18n('Message')}</TableCell>
-                  <TableCell>{t_i18n('Source')}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {tabValue === 'Critical' && criticals.map((error, i) => (
-                  <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
-                ))}
-                {tabValue === 'Warning' && warnings.map((error, i) => (
-                  <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
-                ))}
-                {tabValue === 'All' && errors.map((error, i) => (
-                  <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          {/* Surface = Paper de la lib ; le TableContainer redevient un simple
+              conteneur de défilement. Décision de Sandy : l'ombre d'élévation MUI
+              laisse place à la bordure de la lib. */}
+          <Paper padding={0}>
+            <TableContainer>
+              <Table aria-label="errors table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>{t_i18n('Timestamp')}</TableCell>
+                    <TableCell>{t_i18n('Code')}</TableCell>
+                    <TableCell>{t_i18n('Message')}</TableCell>
+                    <TableCell>{t_i18n('Source')}</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {tabValue === 'Critical' && criticals.map((error, i) => (
+                    <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
+                  ))}
+                  {tabValue === 'Warning' && warnings.map((error, i) => (
+                    <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
+                  ))}
+                  {tabValue === 'All' && errors.map((error, i) => (
+                    <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
         </>
       </Drawer>
     </>

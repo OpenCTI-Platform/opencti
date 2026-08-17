@@ -1,11 +1,11 @@
 import Button from '@common/button/Button';
+import { Paper } from '@filigran/design-system';
 import Dialog from '@common/dialog/Dialog';
 import { IndicatorDetails_indicator$data } from '@components/observations/indicators/__generated__/IndicatorDetails_indicator.graphql';
 import DecayChart, { DecayHistory } from '@components/settings/decay/DecayChart';
 import { SxProps } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
 import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
 import { Theme } from '@mui/material/styles/createTheme';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -149,28 +149,33 @@ const DecayDialogContent: FunctionComponent<DecayDialogContentProps> = ({ indica
           />
         </Grid>
         <Grid item xs={5}>
-          <TableContainer component={Paper}>
-            <Table sx={{ maxHeight: 440 }} size="small" aria-label="lifecycle history">
-              <TableHead>
-                <TableRow>
-                  <TableCell>{t_i18n('Information')}</TableCell>
-                  <TableCell>{t_i18n('Score')}</TableCell>
-                  <TableCell>{t_i18n('Date')}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {labelledHistoryList.map((history, index) => {
-                  return (
-                    <TableRow key={index}>
-                      <TableCell sx={history.style}>{t_i18n(history.label)}</TableCell>
-                      <TableCell sx={history.style}>{history.score}</TableCell>
-                      <TableCell sx={history.style}>{history.updated_at}</TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          {/* Surface = Paper de la lib ; le TableContainer redevient un simple
+              conteneur de défilement. Décision de Sandy : l'ombre d'élévation MUI
+              laisse place à la bordure de la lib. */}
+          <Paper padding={0}>
+            <TableContainer>
+              <Table sx={{ maxHeight: 440 }} size="small" aria-label="lifecycle history">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>{t_i18n('Information')}</TableCell>
+                    <TableCell>{t_i18n('Score')}</TableCell>
+                    <TableCell>{t_i18n('Date')}</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {labelledHistoryList.map((history, index) => {
+                    return (
+                      <TableRow key={index}>
+                        <TableCell sx={history.style}>{t_i18n(history.label)}</TableCell>
+                        <TableCell sx={history.style}>{history.score}</TableCell>
+                        <TableCell sx={history.style}>{history.updated_at}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
         </Grid>
       </Grid>
       <DialogActions>

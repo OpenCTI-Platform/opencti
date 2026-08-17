@@ -1171,3 +1171,66 @@ all 20 explicitly, the way `src/tokens/index.css` already safelists the five
    works; the failure when it does not is silent and visual-only. One sentence
    plus the safelist list would close the whole class of bug — the same shape
    of ask as the `title`-is-not-a-slot documentation line in #33.
+
+---
+
+## 37. `Paper`'s title row cannot follow the host's text colour, and that blocks adoption
+
+**Raised during the Paper pilot, from a measurement that changed the decision.**
+Sandy's arbitration was to adopt `title`/`action`; this entry is why OpenCTI is
+not adopting them yet.
+
+**Needed.** OpenCTI's theme is customer-configurable per tenant, and
+`theme_text_color` is one of the editable fields. Both of the product's panel
+heading levels take it:
+
+```ts
+// ThemeDark.ts / ThemeLight.ts — typography
+h3: { fontSize: 13, fontWeight: 400, fontFamily: 'Geologica', color: text_color, … }
+h4: { fontSize: 12, fontWeight: 500, color: text_color, … }
+```
+
+`text_color` is the 9th argument of the theme factory — the tenant's
+`theme_text_color`. A titled panel therefore follows the customer's text colour
+today, on every screen.
+
+**Today.** The library's title row paints `text-default-secondary`, a fixed
+token. Measured at the DOM on three representative titles:
+
+| | product `h4` | product `h3` | library `title` row |
+|---|---|---|---|
+| colour | `text_color` — **the customer's** | idem | **`--text-default-secondary`**, fixed |
+| size / weight | 12px / 500 | 13px / 400 | 12px / 400 |
+| family | IBM Plex Sans | **Geologica** | IBM Plex Sans |
+| height | 15px | 15px | **24px** |
+| rendered `text-transform` | `none` | `none` | `none` — identical |
+
+**Consequence.** On a tenant with a customised `theme_text_color`, adopting
+`title` makes every converted heading **stop following that colour**. That is
+not a change of style — it is a **regression of a configured behaviour**, and it
+is exactly the class of defect entry #28 raised for the surface colour and the
+15%-border round then fixed for the border. The header is the third property of
+the same component, and the only one still unreachable.
+
+Worth noting what is NOT the problem: the typography differences above are real
+but arbitrable, and the `text-transform` scare is not one — OpenCTI's theme
+declares `lowercase` on `h3`/`h4` but `MuiTypography.styleOverrides.root` sets
+`textTransform: 'none'` and wins, so the rendered text is identical on both
+sides. Only the colour blocks.
+
+**Ask.** Let the title row's colour be reachable by the host, the same way the
+surface and the border already are — a per-layer base the host may re-declare,
+or a documented custom property. The mechanism from #28 is already proven in
+this product: re-declaring `--bg-elevation-default-layer-1` repaints the
+surface, `--border-elevation-subtle-soft-layer-1` repaints the border. A
+`--text-*` equivalent for the header row would close it.
+
+**Removal test.** On a tenant whose `theme_text_color` differs from the default,
+a `<Paper title="…">` header renders in that colour rather than in
+`--text-default-secondary`. Until then OpenCTI keeps its own header above the
+surface and does not pass `title`/`action`.
+
+**Scope of what this unblocks, measured.** `Card.tsx` has **222 call sites**, and
+**123 of them pass `title=`** — 55 %. So the `title`/`action` question and the
+Card component question are **one decision, not two**: the day the header colour
+is reachable, 123 sites become expressible in one move.

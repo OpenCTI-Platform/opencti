@@ -234,6 +234,30 @@
           "no-hardcoded-padding"
         ],
         "note": "N10 — class 2, gains the border and loses the MUI elevation shadow; height inline, FDS-WORKAROUND #16"
+      },
+      {
+        "file": "opencti-platform/opencti-front/src/private/components/observations/indicators/DecayDialogContent.tsx",
+        "guards": [
+          "imported-from-library",
+          "no-hardcoded-padding"
+        ],
+        "note": "injected form B — TableContainer wrapped in a library Paper, padding={0}"
+      },
+      {
+        "file": "opencti-platform/opencti-front/src/private/components/data/connectors/ConnectorWorkLine.tsx",
+        "guards": [
+          "imported-from-library",
+          "no-hardcoded-padding"
+        ],
+        "note": "injected form B — idem"
+      },
+      {
+        "file": "opencti-platform/opencti-front/src/private/components/data/tasks/TasksList.jsx",
+        "guards": [
+          "imported-from-library",
+          "no-hardcoded-padding"
+        ],
+        "note": "injected form B — two sites, idem"
       }
     ]
   }

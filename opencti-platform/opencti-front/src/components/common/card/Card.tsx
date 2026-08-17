@@ -4,7 +4,6 @@ import { Stack, SxProps, Card as CardMui, CardActionArea, StackProps } from '@mu
 import CardTitle from './CardTitle';
 import { Theme } from '../../Theme';
 import { Link } from 'react-router-dom';
-import { hasCustomColor } from '../../../utils/theme';
 
 export interface CardProps extends PropsWithChildren {
   title?: ReactNode;
@@ -65,10 +64,30 @@ const Card = ({
     };
   }
 
-  const isCustomCardColor = hasCustomColor(theme, 'theme_paper');
-  const backgroundColor = isCustomCardColor
-    ? theme.palette.background.paper
-    : theme.palette.background.secondary;
+  /**
+   * ELEVATION LAYER 1, in every theme.
+   *
+   * This used to branch: `background.paper` on a customer theme, and
+   * `background.secondary` otherwise. That second field is a hardcoded literal
+   * — `#0C1524` in dark, which is NO step of the elevation scale (layer-1 is
+   * `#0d172b`). Measured at the DOM, every card in the product painted it. In
+   * light the same field is `#FFFFFF`, which IS layer-1, so the drift was
+   * dark-only — and invisible to anyone reading the theme rather than the
+   * rendered pixel.
+   *
+   * `background.paper` resolves to `--bg-elevation-default-layer-1` through the
+   * token bridge and already follows a customer's `theme_paper`, which is why
+   * the custom-theme branch used it. Collapsing to it changes the DEFAULT
+   * themes only; a customised install renders exactly as before.
+   *
+   * Fixed HERE, in the wrapper, deliberately — not in the theme. Repointing
+   * `background.secondary` itself would move its seven other consumers
+   * (date pickers, drawer header, saved-filters autocomplete, relationship
+   * header, chatbot) which are inputs and chrome, not card surfaces, and were
+   * never part of this question. Same shape as the login-page correction: at
+   * the site that paints, not on the shared field.
+   */
+  const backgroundColor = theme.palette.background.paper;
 
   const containerSx: SxProps = {
     position: 'relative',

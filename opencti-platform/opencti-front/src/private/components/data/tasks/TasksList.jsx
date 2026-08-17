@@ -1,4 +1,5 @@
 import Button from '@common/button/Button';
+import { Paper } from '@filigran/design-system';
 import Card from '@common/card/Card';
 import Dialog from '@common/dialog/Dialog';
 import Tag from '@common/tag/Tag';
@@ -7,7 +8,6 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import Grid from '@mui/material/Grid';
 import LinearProgress from '@mui/material/LinearProgress';
-import Paper from '@mui/material/Paper';
 import Slide from '@mui/material/Slide';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -482,24 +482,29 @@ const TasksList = ({ data, options }) => {
         onClose={handleCloseMessages}
       >
         <DialogContentText>
-          <TableContainer component={Paper}>
-            <Table className={classes.table} aria-label="simple table">
-              <TableHead>
-                <TableRow>
-                  <TableCell>{t_i18n('Timestamp')}</TableCell>
-                  <TableCell>{t_i18n('Message')}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {messages.map((message) => (
-                  <TableRow key={message.timestamp}>
-                    <TableCell>{nsdt(message.timestamp)}</TableCell>
-                    <TableCell>{message.message}</TableCell>
+          {/* Surface = Paper de la lib ; le TableContainer redevient un simple
+              conteneur de défilement. Décision de Sandy : l'ombre d'élévation MUI
+              laisse place à la bordure de la lib. */}
+          <Paper padding={0}>
+            <TableContainer>
+              <Table className={classes.table} aria-label="simple table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>{t_i18n('Timestamp')}</TableCell>
+                    <TableCell>{t_i18n('Message')}</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+                <TableBody>
+                  {messages.map((message) => (
+                    <TableRow key={message.timestamp}>
+                      <TableCell>{nsdt(message.timestamp)}</TableCell>
+                      <TableCell>{message.message}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
         </DialogContentText>
         <DialogActions>
           <Button
@@ -516,24 +521,29 @@ const TasksList = ({ data, options }) => {
         onClose={handleCloseErrors}
       >
         <DialogContentText>
-          <TableContainer component={Paper}>
-            <Table className={classes.table} aria-label="simple table">
-              <TableHead>
-                <TableRow>
-                  <TableCell>{t_i18n('Timestamp')}</TableCell>
-                  <TableCell>{t_i18n('Message')}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {errors.map((error) => (
-                  <TableRow key={error.timestamp}>
-                    <TableCell>{nsdt(error.timestamp)}</TableCell>
-                    <TableCell>{error.message}</TableCell>
+          {/* Surface = Paper de la lib ; le TableContainer redevient un simple
+              conteneur de défilement. Décision de Sandy : l'ombre d'élévation MUI
+              laisse place à la bordure de la lib. */}
+          <Paper padding={0}>
+            <TableContainer>
+              <Table className={classes.table} aria-label="simple table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>{t_i18n('Timestamp')}</TableCell>
+                    <TableCell>{t_i18n('Message')}</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+                <TableBody>
+                  {errors.map((error) => (
+                    <TableRow key={error.timestamp}>
+                      <TableCell>{nsdt(error.timestamp)}</TableCell>
+                      <TableCell>{error.message}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
         </DialogContentText>
         <DialogActions>
           <Button onClick={handleCloseErrors}>
