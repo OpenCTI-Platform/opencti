@@ -697,7 +697,7 @@ En clair, `ThemeLight.ts:98-100` pose `#FFFFFF`, qui **est** exactement layer 1 
 ### Pourquoi je ne corrige pas
 
 `background.secondary` a **9 consommateurs directs**, et `Card.tsx` en est un —
-c'est-à-dire **les 164 sites de Card**, explicitement hors périmètre de cette
+c'est-à-dire **les 222 sites de Card** (décompte mesuré ; le brief annonçait 164), explicitement hors périmètre de cette
 vague. Passer `#0C1524` au token layer 1 est une seule ligne, mais elle repeint
 toutes les cartes du produit en thème sombre par défaut. Ce n'est pas une
 correction de vague pilote, c'est une décision à part entière.
@@ -792,7 +792,7 @@ le renommage, cette colonne aurait affiché le bleu Filigran.
 
 Le correctif est **au site d'appel**, pas sur `background.secondary` : `LoginPage.tsx`
 pose `backgroundColor: 'background.paper'` sur ses deux `Card`. Le champ de
-palette reste **intact** pour ses 9 consommateurs et les 164 autres cartes.
+palette reste **intact** pour ses 9 consommateurs et les 222 autres cartes.
 
 `background.paper` résout sur `--bg-elevation-default-layer-1` et **continue de
 suivre le `theme_paper` d'un client** — c'est déjà ce que `Card` fait sur sa
@@ -1016,7 +1016,7 @@ balise mais un remplacement de composant, et leur fond passe par
 `background.secondary` — le champ que le login contourne désormais au site.
 
 Décompte mesuré aujourd'hui : **222 sites `<Card>` dans 167 fichiers**. Le brief
-annonçait 164 ; l'écart est signalé, pas absorbé.
+annonçait 164 ; l'écart est signalé, pas absorbé. **222 est le chiffre qui dimensionne le chantier Card.**
 
 ### Recouvrements assumés
 
@@ -1027,3 +1027,76 @@ sa décision, et son autre appartenance est nommée :
 - N9 — classe 2 (ombre) **et** classe 5 (cellule `.paper-for-grid`)
 - F1, F2, F3 — classe 2 (ombre) **et** classe 6 (MenuList), **et** hors périmètre
   par l'arbitrage initial sur les surfaces flottantes
+
+---
+
+## 21. Classes 2, 4 et 5 converties — et trois trouvailles en cours de route
+
+Validé par Sandy sur la feuille. **7 sites convertis.**
+
+| classe | sites | avant → après, mesuré |
+|---|---|---|
+| 2 | N10 `ImageCarousel.tsx:143` | perd l'ombre MUI, gagne `1px` de bordure — **+2px** |
+| 4 | N1, N2 `ConnectorWorksErrorLine.tsx:96,122` · N3 `DraftRoot.tsx:203` · N4 `ScaleConfiguration.tsx:209` | 15px → `padding={16}` — **+2px** |
+| 4+5 | N5 `HeaderField.tsx:32` · N6 `QueryAttributeField.tsx:43` | 20px → `padding={24}` — **+8px** |
+
+Sur N5/N6, `.paper-for-grid` ne combat **aucun** utilitaire de la lib : ces deux
+sites ne posent pas de hauteur par classe, donc le contournement #16 n'est pas
+nécessaire — contrairement à N8. Vérifié, pas supposé. Sur N10 le contournement
+est repris par précaution et marqué sur place.
+
+### 21.1 N9 était mal classé — erreur d'inventaire de ma part
+
+Je l'avais mis en classe 2 (« ombre perdue »). La balise entière dit autre chose :
+`EntitySettingCustomOverview.tsx:85` pose déjà **`boxShadow: 'none'`** *et* sa
+propre bordure **`0.5px solid theme.palette.border.primary`**. Ma copie de banc
+avait tronqué les deux propriétés, d'où une mesure fausse.
+
+Conséquence : **la classe 2 ne contenait qu'un site en périmètre, N10.**
+
+Et N9 **sort de la vague** : `border.primary` vaut `hexToRGB(theme_primary, 0.3)`,
+c'est-à-dire **l'accent du client à 30 %**. Le convertir donne une bordure neutre
+de 1px qui ne suit plus l'accent — une **perte d'information**, pas un changement
+de style. Décision de Sandy : hors vague, avec T1, T2 et G1.
+
+### 21.2 Définitivement hors vague Paper
+
+| site | raison |
+|---|---|
+| T1 `HistoryLineContent.tsx:107` | `background: 0` — semi-transparent |
+| T2 `UserHistoryLine.tsx:339` | `background: 0` — semi-transparent |
+| G1 `ExperienceCard.tsx:57` | dégradé d'accent + fond annulé |
+| **N9** `EntitySettingCustomOverview.tsx:85` | bordure `0.5px` à **l'accent du client à 30 %** |
+
+Plus les trois surfaces flottantes F1, F2, F3, qui appartiennent à Dialog/Menu.
+
+### 21.3 L'inventaire était incomplet : 7 surfaces Paper de plus
+
+Elles sont **injectées par prop** — `<TableContainer component={Paper}>` — donc
+un grep sur `<Paper` ne les voit pas. Le périmètre réel est **28 balises + 7
+injectées = 35 surfaces Paper**.
+
+| fichier | nb |
+|---|---|
+| `components/common/table/ChangesTable.tsx:38` | 1 |
+| `private/components/data/connectors/ConnectorWorkLine.tsx:190` | 1 |
+| `private/components/data/tasks/TasksList.jsx:485,519` | 2 |
+| `private/components/observations/indicators/DecayDialogContent.tsx:152` | 1 |
+| `private/components/profile/api_tokens/TokenList.tsx:125` | 1 |
+| `private/components/settings/users/UserTokenList.tsx:117` | 1 |
+
+### 21.4 Un défaut que j'avais livré, et qui est corrigé
+
+En convertissant `TokenList` et `UserTokenList` au lot pilote, j'ai remplacé leur
+import MUI par celui de la lib — ce qui a **silencieusement repointé leur
+`component={Paper}`** sur le Paper de la lib. Non mesuré, non voulu, parti dans
+`fd4f990567` avec une CI verte.
+
+Corrigé : MUI est rendu à `component=` sous l'alias `MuiPaper`, la balise
+`<Paper>` reste celle de la lib, et les deux fichiers sont déclarés **MIXTES**
+dans `migration-state.json` — exactement le cas pour lequel
+`mixed.allowMuiPaperFor` existait. La garde d'import y est désarmée avec sa
+raison, `no-hardcoded-padding` reste armée.
+
+**Pourquoi MUI doit rester là** : un composant passé à MUI via `component=`
+reçoit des props MUI (`variant`, `sx`) que le Paper de la lib n'accepte pas.

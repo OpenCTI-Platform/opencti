@@ -152,18 +152,24 @@
       {
         "file": "opencti-platform/opencti-front/src/private/components/profile/api_tokens/TokenList.tsx",
         "guards": [
-          "imported-from-library",
           "no-hardcoded-padding"
         ],
-        "note": "N12 — pilot lot, padding={0}"
+        "note": "N12 — converted tag + MUI Paper kept for TableContainer component=",
+        "mixed": {
+          "allowMuiPaperFor": "TableContainer component=",
+          "reason": "a component handed to MUI via component= receives MUI props (variant, sx) the library Paper does not accept; the <Paper> tag itself is the library one"
+        }
       },
       {
         "file": "opencti-platform/opencti-front/src/private/components/settings/users/UserTokenList.tsx",
         "guards": [
-          "imported-from-library",
           "no-hardcoded-padding"
         ],
-        "note": "N13 — pilot lot, padding={0}"
+        "note": "N13 — converted tag + MUI Paper kept for TableContainer component=",
+        "mixed": {
+          "allowMuiPaperFor": "TableContainer component=",
+          "reason": "a component handed to MUI via component= receives MUI props (variant, sx) the library Paper does not accept; the <Paper> tag itself is the library one"
+        }
       },
       {
         "file": "opencti-platform/opencti-front/src/private/components/settings/sub_types/global_workflow_request_access/RequestAccessSettings.tsx",
@@ -180,6 +186,54 @@
           "no-hardcoded-padding"
         ],
         "note": "N7 — asymmetric 20/20/0/20 converted to a uniform padding={16} on Sandy's call from the board (16, not the nearest 24, for homogeneity across the three asymmetric sites)"
+      },
+      {
+        "file": "opencti-platform/opencti-front/src/private/components/data/connectors/ConnectorWorksErrorLine.tsx",
+        "guards": [
+          "imported-from-library",
+          "no-hardcoded-padding"
+        ],
+        "note": "N1+N2 — class 4, 15px -> padding={16}"
+      },
+      {
+        "file": "opencti-platform/opencti-front/src/private/components/drafts/DraftRoot.tsx",
+        "guards": [
+          "imported-from-library",
+          "no-hardcoded-padding"
+        ],
+        "note": "N3 — class 4, 15px -> padding={16}"
+      },
+      {
+        "file": "opencti-platform/opencti-front/src/private/components/settings/sub_types/scale_configuration/ScaleConfiguration.tsx",
+        "guards": [
+          "imported-from-library",
+          "no-hardcoded-padding"
+        ],
+        "note": "N4 — class 4, 15px -> padding={16}; dead makeStyles rule removed"
+      },
+      {
+        "file": "opencti-platform/opencti-front/src/private/components/common/form/HeaderField.tsx",
+        "guards": [
+          "imported-from-library",
+          "no-hardcoded-padding"
+        ],
+        "note": "N5 — class 4+5, 20px -> padding={24}, hosts a 2-column grid"
+      },
+      {
+        "file": "opencti-platform/opencti-front/src/private/components/common/form/QueryAttributeField.tsx",
+        "guards": [
+          "imported-from-library",
+          "no-hardcoded-padding"
+        ],
+        "note": "N6 — class 4+5, 20px -> padding={24}, hosts a 2-column grid"
+      },
+      {
+        "file": "opencti-platform/opencti-front/src/components/ImageCarousel.tsx",
+        "guards": [
+          "imported-from-library",
+          "no-hardcoded-padding"
+        ],
+        "note": "N10 — class 2, gains the border and loses the MUI elevation shadow; height inline, FDS-WORKAROUND #16"
       }
     ]
   }
