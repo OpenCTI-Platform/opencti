@@ -1,3 +1,8 @@
+input GlobalExportSelectionInput {
+  entityType: String!
+  ids: [ID!]
+}
+
 extend type Query {
-  globalConfigurationExport(entityTypes: [String!]!): String! @auth(for: [BYPASS])
+  globalConfigurationExport(entityTypes: [String!]!, selections: [GlobalExportSelectionInput!]): String! @auth(for: [BYPASS])
 }

@@ -21,13 +21,19 @@ import type { Theme } from 'src/components/Theme';
 import Drawer from '@components/common/drawer/Drawer';
 import { fetchQuery } from '../../../../relay/environment';
 import { EXPORT_CATEGORIES, getDefaultCheckedCategoryItems } from './globalExportBundleDrawer-utils';
+import ExportBundleInstancesAccordion, { InstanceSelectionMode } from './ExportBundleInstancesAccordion';
+import { EXPORT_INSTANCE_CONFIGS } from './exportBundleInstances';
 import type { PlatformBundleDrawerExportQuery$data } from './__generated__/PlatformBundleDrawerExportQuery.graphql';
 
 const platformBundleDrawerExportQuery = graphql`
-  query PlatformBundleDrawerExportQuery($entityTypes: [String!]!) {
-    globalConfigurationExport(entityTypes: $entityTypes)
+  query PlatformBundleDrawerExportQuery($entityTypes: [String!]!, $selections: [GlobalExportSelectionInput!]) {
+    globalConfigurationExport(entityTypes: $entityTypes, selections: $selections)
   }
 `;
+
+const getDefaultInstanceModes = (): Record<string, InstanceSelectionMode> => Object.fromEntries(
+  EXPORT_INSTANCE_CONFIGS.map((config) => [config.entityType, 'all' as InstanceSelectionMode]),
+);
 
 const base64ToBytes = (base64: string): Uint8Array<ArrayBuffer> => {
   const binary = atob(base64);
@@ -49,8 +55,23 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
   const theme = useTheme<Theme>();
 
   const [checkedCategoryItems, setCheckedCategoryItems] = useState<Record<string, string[]>>(getDefaultCheckedCategoryItems());
+  const [instanceModes, setInstanceModes] = useState<Record<string, InstanceSelectionMode>>(getDefaultInstanceModes());
+  const [instanceSelectedIds, setInstanceSelectedIds] = useState<Record<string, Set<string>>>({});
   const [bundleName, setBundleName] = useState('');
   const [exporting, setExporting] = useState(false);
+
+  const handleInstanceModeChange = (entityType: string) => (mode: InstanceSelectionMode) => {
+    setInstanceModes((prev) => ({ ...prev, [entityType]: mode }));
+  };
+
+  const handleToggleInstanceId = (entityType: string) => (id: string, checked: boolean) => {
+    setInstanceSelectedIds((prev) => {
+      const next = new Set(prev[entityType] ?? []);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return { ...prev, [entityType]: next };
+    });
+  };
 
   const handleToggleFlatCategory = (categoryKey: string) => (event: ChangeEvent<HTMLInputElement>) => {
     setCheckedCategoryItems((prev) => ({ ...prev, [categoryKey]: event.target.checked ? [categoryKey] : [] }));
@@ -72,11 +93,24 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
 
   const exportConfiguration = async () => {
     const entityTypes = Array.from(new Set(Object.values(checkedCategoryItems).flat()));
+    const selections: { entityType: string; ids: string[] }[] = [];
+
+    EXPORT_INSTANCE_CONFIGS.forEach((config) => {
+      const mode = instanceModes[config.entityType] ?? 'all';
+      const ids = instanceSelectedIds[config.entityType] ?? new Set<string>();
+      if (mode === 'all') {
+        entityTypes.push(config.entityType);
+      } else if (mode === 'partial' && ids.size > 0) {
+        entityTypes.push(config.entityType);
+        selections.push({ entityType: config.entityType, ids: Array.from(ids) });
+      }
+    });
+
     setExporting(true);
     try {
       const result = await fetchQuery(
         platformBundleDrawerExportQuery,
-        { entityTypes },
+        { entityTypes: Array.from(new Set(entityTypes)), selections },
       ).toPromise() as PlatformBundleDrawerExportQuery$data;
       if (result?.globalConfigurationExport) {
         const blob = new Blob([base64ToBytes(result.globalConfigurationExport)], { type: 'application/zip' });
@@ -116,6 +150,28 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
             <Typography variant="body2" color="textSecondary">
               {t_i18n('Select all the elements to include in your configuration bundle')}
             </Typography>
+
+            {EXPORT_INSTANCE_CONFIGS.map((config, index) => {
+              const previousGroup = index > 0 ? EXPORT_INSTANCE_CONFIGS[index - 1].group : undefined;
+              const showGroupHeader = config.group && config.group !== previousGroup;
+              return (
+                <React.Fragment key={config.entityType}>
+                  {showGroupHeader && (
+                    <Typography variant="overline" color="textSecondary" sx={{ mt: 1 }}>
+                      {t_i18n(config.group as string)}
+                    </Typography>
+                  )}
+                  <ExportBundleInstancesAccordion
+                    config={config}
+                    mode={instanceModes[config.entityType] ?? 'all'}
+                    selectedIds={instanceSelectedIds[config.entityType] ?? new Set<string>()}
+                    onModeChange={handleInstanceModeChange(config.entityType)}
+                    onToggleId={handleToggleInstanceId(config.entityType)}
+                    accordionSx={accordionSx}
+                  />
+                </React.Fragment>
+              );
+            })}
 
             {EXPORT_CATEGORIES.map((category) => {
               if (category.kind === 'placeholder') {
