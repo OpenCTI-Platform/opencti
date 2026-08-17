@@ -278,14 +278,14 @@ const auditLogger = winston.createLogger({
 export const SUPPORT_LOG_RELATIVE_LOCAL_DIR = '.support';
 export const SUPPORT_LOG_FILE_PREFIX = 'support';
 const supportLogger = winston.createLogger({
-  level: 'warn',
+  level: 'info',
   format: format.combine(timestamp(), format.errors({ stack: true }), format.json()),
   transports: [new DailyRotateFile({
     filename: SUPPORT_LOG_FILE_PREFIX,
     dirname: SUPPORT_LOG_RELATIVE_LOCAL_DIR,
     maxFiles: 3,
     maxSize: '10m',
-    level: 'warn',
+    level: 'info',
   })],
 });
 
@@ -325,8 +325,7 @@ export const logApp = {
     if (appLogTransports.length > 0 && appLogger.isLevelEnabled(level)) {
       const data = prepareLogMetadata(meta, { category: LOG_APP, source: 'backend' });
       appLogger.log(level, message, data);
-      // Only add in support package starting warn level
-      if (appLogger.isLevelEnabled('warn')) {
+      if (supportLogger.isLevelEnabled(level)) {
         supportLogger.log(level, message, data);
       }
     }
@@ -592,6 +591,9 @@ export const ENABLED_FEATURE_FLAGS = nconf.get('app:enabled_dev_features') ?? []
 // a special flag name allows to enable all feature flags at once
 export const FEATURE_FLAG_ALL = '*';
 export const isFeatureEnabled = (feature) => ENABLED_FEATURE_FLAGS.includes(FEATURE_FLAG_ALL) || ENABLED_FEATURE_FLAGS.includes(feature);
+
+// Custom fields feature flag (use isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG) to check activation)
+export const CUSTOM_FIELDS_FEATURE_FLAG = 'CUSTOM_FIELDS';
 
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;

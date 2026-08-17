@@ -1,6 +1,6 @@
 import * as C from '@mui/material/colors';
 import { resolveLink } from './Entity';
-import { truncate } from './String';
+import { sanitize, truncate } from './String';
 import { isColorCloseToWhite } from './Colors';
 import { alpha } from '@mui/material/styles';
 import { shouldOpenInNewTabMouseEvent } from './domEvent';
@@ -54,6 +54,11 @@ const handleNavigate = (event, navigate, link) => {
   }
 };
 
+// theme colors are always stored as 6-digit hex (see themeValidation.ts), so any other
+// value is untrusted input and must be rejected rather than interpolated into CSS
+const HEX_COLOR_REGEX = /^#[0-9a-fA-F]{6}$/;
+const sanitizeCssColor = (value, fallback) => (HEX_COLOR_REGEX.test(value) ? value : fallback);
+
 /**
  * A custom tooltip for ApexChart.
  * This tooltip only display the label of the data it hovers.
@@ -63,11 +68,16 @@ const handleNavigate = (event, navigate, link) => {
  *
  * @param {Theme} theme
  */
-const simpleLabelTooltip = (theme) => ({ seriesIndex, w }) => (`
-  <div style="background: ${theme.palette.background.nav}; color: ${theme.palette.text.primary}; padding: 2px 6px; font-size: 12px">
-    ${w.config.labels[seriesIndex]}
+export const simpleLabelTooltip = (theme) => ({ seriesIndex, w }) => {
+  const safeNavColor = sanitizeCssColor(theme.palette.background.nav, 'inherit');
+  const safeTextColor = sanitizeCssColor(theme.palette.text.primary, 'inherit');
+  const safeLabel = sanitize(String(w.config.labels[seriesIndex] ?? ''), true);
+  return (`
+  <div style="background: ${safeNavColor}; color: ${safeTextColor}; padding: 2px 6px; font-size: 12px">
+    ${safeLabel}
   </div>
 `);
+};
 
 /**
  * @param {Theme} theme

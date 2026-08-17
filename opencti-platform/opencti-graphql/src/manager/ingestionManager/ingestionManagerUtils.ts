@@ -29,7 +29,7 @@ export const createIngestionLogger = (feedId: string, feedName: string, feedType
       });
     },
     error: async (message, meta = {}) => {
-      logApp.error(`${logPrefix}${message}`, { meta: { ...meta, feedName } });
+      logApp.warn(`${logPrefix}${message}`, { meta: { ...meta, feedName } });
       await redisPushIngestionLog(feedId, { level: 'error', type: feedType, identifier: feedName, message, meta });
     },
   };

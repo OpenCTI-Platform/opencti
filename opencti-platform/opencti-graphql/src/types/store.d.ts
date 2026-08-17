@@ -454,6 +454,16 @@ interface BasicStoreEntity extends BasicStoreCommon {
   x_opencti_cvss_v4_base_score: number;
   // PIR
   pir_information?: Array<PirInformation>;
+  // Custom fields
+  custom_field_values?: Array<{
+    field_id: string;
+    field_name: string;
+    int_value?: number;
+    string_value?: string;
+    boolean_value?: boolean;
+    date_value?: string;
+    select_value?: string;
+  }>;
 }
 
 interface StoreEntity extends BasicStoreEntity, StoreCommon {

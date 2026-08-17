@@ -5869,6 +5869,7 @@ enum IntrusionSetsOrdering {
   x_opencti_workflow_id
   resource_level
   primary_motivation
+  x_opencti_score
   confidence
   _score
   objectMarking
@@ -6003,6 +6004,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   resource_level: String
   primary_motivation: String
   secondary_motivations: [String]
+  x_opencti_score: Int
   locations: LocationConnection
   # Technical
   creators: [Creator!]
@@ -6045,6 +6047,7 @@ input IntrusionSetAddInput {
   resource_level: String
   primary_motivation: String
   secondary_motivations: [String]
+  x_opencti_score: Int
   confidence: Int
   revoked: Boolean
   lang: String
@@ -7083,6 +7086,7 @@ enum MalwaresOrdering {
   objectLabel
   x_opencti_workflow_id
   is_family
+  x_opencti_score
   confidence
   _score
 }
@@ -7221,6 +7225,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   architecture_execution_envs: [String]
   implementation_languages: [String]
   capabilities: [String]
+  x_opencti_score: Int
   killChainPhases: [KillChainPhase!]
   samples: [StixCyberObservable!]
   # Technical
@@ -7264,6 +7269,7 @@ input MalwareAddInput {
   architecture_execution_envs: [String]
   implementation_languages: [String]
   capabilities: [String]
+  x_opencti_score: Int
   confidence: Int
   revoked: Boolean
   lang: String
@@ -7299,6 +7305,7 @@ enum ThreatActorsOrdering {
   updated_at
   x_opencti_workflow_id
   confidence
+  x_opencti_score
   sophistication
   resource_level
   _score
@@ -7491,6 +7498,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   # StixObject
   representative: Representative!
   x_opencti_stix_ids: [StixId]
+  x_opencti_score: Int
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -7642,6 +7650,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
 input ThreatActorGroupAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+  x_opencti_score: Int
   name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   aliases: [String]
@@ -15999,7 +16008,7 @@ type WorkEditMutations {
 ######## INTERNAL OBJECT ENTITIES
 
 type SettingsEditMutations {
-  fieldPatch(input: [EditInput]!): Settings @auth(for: [SETTINGS_SETPARAMETERS, SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, SETTINGS_SETCUSTOMIZATION])
+  fieldPatch(input: [EditInput]!): Settings @auth(for: [SETTINGS_SETPARAMETERS, SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, SETTINGS_SETCUSTOMIZATION, SETTINGS_SETAUTH, SETTINGS_SETMANAGEXTMHUB])
   contextPatch(input: EditContext): Settings @auth(for: [SETTINGS_SETPARAMETERS])
   contextClean: Settings @auth(for: [SETTINGS_SETPARAMETERS])
   editMessage(input: SettingsMessageInput!): Settings @auth(for: [SETTINGS_SETPARAMETERS])

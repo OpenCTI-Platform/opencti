@@ -145,9 +145,9 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
     // check paragraphs value is correct
     if (action === 'container-report' || action === 'summarize-files') {
       if (Number.isNaN(paragraphs)) {
-        MESSAGING$.notifyError('Number of paragraphs should be a number');
+        MESSAGING$.notifyError(t_i18n('Number of paragraphs should be a number'));
       } else if (paragraphs <= 0) {
-        MESSAGING$.notifyError('Number of paragraphs should be greather than 0');
+        MESSAGING$.notifyError(t_i18n('Number of paragraphs should be greater than 0'));
       } else {
         handleAskAiContent();
       }

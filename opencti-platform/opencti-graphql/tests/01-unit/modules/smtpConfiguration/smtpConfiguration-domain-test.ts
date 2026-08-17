@@ -1,10 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as Cache from '../../../../src/database/cache';
 import * as Middleware from '../../../../src/database/middleware';
-import * as Conf from '../../../../src/config/conf';
 import {
   getSmtpConfiguration,
-  getSmtpConfigurationForAdmin,
   smtpConfigurationDelete,
   smtpConfigurationEdit,
   smtpConfigurationRefreshTokenUpdate,
@@ -47,7 +45,6 @@ vi.mock('../../../../src/config/conf', async () => {
         EDIT_TOPIC: 'SETTINGS_EDIT_TOPIC',
       },
     },
-    isFeatureEnabled: vi.fn(() => true),
   };
 });
 
@@ -77,34 +74,9 @@ const MOCK_SETTINGS = {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.mocked(Conf.isFeatureEnabled).mockReturnValue(true);
   vi.mocked(Cache.getEntityFromCache).mockResolvedValue(MOCK_SETTINGS);
 });
 
-// ---------- feature flag disabled ----------
-
-describe('feature flag disabled', () => {
-  beforeEach(() => {
-    vi.mocked(Conf.isFeatureEnabled).mockReturnValue(false);
-  });
-
-  it('smtpConfigurationEdit should throw ForbiddenAccess', async () => {
-    await expect(smtpConfigurationEdit(mockContext, mockUser, { smtp_enabled: false, use_db_config: false }))
-      .rejects.toMatchObject({ extensions: { code: 'FORBIDDEN_ACCESS' } });
-    expect(Middleware.patchAttribute).not.toHaveBeenCalled();
-  });
-
-  it('smtpConfigurationTest should throw ForbiddenAccess', async () => {
-    await expect(smtpConfigurationTest(mockContext, mockUser, 'test@example.com'))
-      .rejects.toMatchObject({ extensions: { code: 'FORBIDDEN_ACCESS' } });
-  });
-
-  it('getSmtpConfigurationForAdmin should throw ForbiddenAccess', async () => {
-    await expect(getSmtpConfigurationForAdmin(mockContext, mockUser))
-      .rejects.toMatchObject({ extensions: { code: 'FORBIDDEN_ACCESS' } });
-    expect(Cache.getEntityFromCache).not.toHaveBeenCalled();
-  });
-});
 // ---------- getSmtpConfiguration ----------
 
 describe('getSmtpConfiguration', () => {
@@ -117,22 +89,6 @@ describe('getSmtpConfiguration', () => {
   it('should return null when settings has no smtp_configuration', async () => {
     vi.mocked(Cache.getEntityFromCache).mockResolvedValue({ ...MOCK_SETTINGS, smtp_configuration: undefined });
     const result = await getSmtpConfiguration(mockContext, mockUser);
-    expect(result).toBeNull();
-  });
-});
-
-// ---------- getSmtpConfigurationForAdmin ----------
-
-describe('getSmtpConfigurationForAdmin', () => {
-  it('should delegate to getSmtpConfiguration when feature is enabled', async () => {
-    const result = await getSmtpConfigurationForAdmin(mockContext, mockUser);
-    expect(result).toEqual(MOCK_SMTP_CONFIG);
-    expect(Cache.getEntityFromCache).toHaveBeenCalledOnce();
-  });
-
-  it('should return null when settings has no smtp_configuration', async () => {
-    vi.mocked(Cache.getEntityFromCache).mockResolvedValue({ ...MOCK_SETTINGS, smtp_configuration: undefined });
-    const result = await getSmtpConfigurationForAdmin(mockContext, mockUser);
     expect(result).toBeNull();
   });
 });
@@ -308,12 +264,7 @@ describe('smtpConfigurationDelete', () => {
     );
   });
 
-  it('should throw ForbiddenAccess when feature flag is disabled', async () => {
-    vi.mocked(Conf.isFeatureEnabled).mockReturnValue(false);
-    await expect(smtpConfigurationDelete(mockContext, mockUser))
-      .rejects.toMatchObject({ extensions: { code: 'FORBIDDEN_ACCESS' } });
-    expect(Middleware.patchAttribute).not.toHaveBeenCalled();
-  });
+
 });
 
 // ---------- smtpConfigurationTest ----------

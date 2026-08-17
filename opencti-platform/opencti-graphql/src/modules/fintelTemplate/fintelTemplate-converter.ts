@@ -14,6 +14,7 @@ export const convertFintelTemplateToStix = (instance: StoreEntityFintelTemplate)
     template_content: instance.template_content,
     fintel_template_widgets: instance.fintel_template_widgets ?? [],
     start_date: instance.start_date,
+    default: Boolean(instance.default),
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],

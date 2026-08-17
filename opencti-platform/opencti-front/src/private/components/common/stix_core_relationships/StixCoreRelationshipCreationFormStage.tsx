@@ -113,7 +113,7 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
             }
           },
           onError: (error: Error) => {
-            handleErrorInForm(error);
+            handleErrorInForm(error, setErrors);
           },
           onCompleted: () => {
             setSubmitting(false);
@@ -126,7 +126,7 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
         });
       } catch (error) {
         setSubmitting(false);
-        handleErrorInForm(error, setErrors);
+        handleErrorInForm(error as Error, setErrors);
       }
     }
   };

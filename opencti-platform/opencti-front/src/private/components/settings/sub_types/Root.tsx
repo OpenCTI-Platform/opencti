@@ -5,6 +5,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader from '../../../../components/Loader';
 import FintelTemplate from './fintel_templates/FintelTemplate';
 import EntitySettingAttributesCard from './entity_setting/EntitySettingAttributesCard';
+import EntitySettingCustomFields from './entity_setting/EntitySettingCustomFields';
 import EntitySettingCustomOverview from './entity_setting/EntitySettingCustomOverview';
 import FintelTemplatesManager from './fintel_templates/FintelTemplatesManager';
 import CustomViewEdition from './custom_views/CustomViewEdition';
@@ -21,6 +22,7 @@ import {
 import SubType from './SubType';
 import GlobalWorkflowSettingsCard from './global_workflow_request_access/GlobalWorkflowSettingsCard';
 import SubTypeWorkflow from './SubTypeWorkflow';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const SubTypeIndexRedirect = () => {
   const { tabs } = useSubTypeOutletContext();
@@ -45,7 +47,9 @@ const RootSubType = () => {
 
   if (!subTypeId) return <ErrorNotFound />;
 
+  const { isFeatureEnable } = useHelper();
   const isDraftWorkspaceType = subTypeId === 'DraftWorkspace';
+  const isCustomFieldsFeatureEnabled = isFeatureEnable('CUSTOM_FIELDS');
 
   return (
     <Suspense fallback={<Loader />}>
@@ -54,7 +58,15 @@ const RootSubType = () => {
           <Route index element={<SubTypeIndexRedirect />} />
           <Route path={SUBTYPE_TAB_WORKFLOW} element={isDraftWorkspaceType ? <SubTypeWorkflow /> : <GlobalWorkflowSettingsCard />} />
           <Route path={SUBTYPE_TAB_TEMPLATES} element={<FintelTemplatesManager />} />
-          <Route path={SUBTYPE_TAB_ATTRIBUTES} element={<EntitySettingAttributesCard />} />
+          <Route
+            path={SUBTYPE_TAB_ATTRIBUTES}
+            element={(
+              <>
+                <EntitySettingAttributesCard />
+                {isCustomFieldsFeatureEnabled && <EntitySettingCustomFields />}
+              </>
+            )}
+          />
           <Route path={SUBTYPE_TAB_OVERVIEW_LAYOUT} element={<EntitySettingCustomOverview />} />
           <Route path={SUBTYPE_TAB_CUSTOM_VIEWS} element={<CustomViewsSettings />} />
         </Route>

@@ -41,4 +41,5 @@ extend type Query {
 
 extend type Mutation {
     dataSanityOperationRequestRun(operation_name: String!): ID @auth(for: [BYPASS])
+    dataSanityOperationStop(operation_name: String!): ID @auth(for: [BYPASS])
 }

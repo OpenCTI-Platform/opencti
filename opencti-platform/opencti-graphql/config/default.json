@@ -326,7 +326,7 @@
   "ingestion_manager": {
     "enabled": true,
     "lock_key": "ingestion_manager_lock",
-    "interval": 30000,   
+    "interval": 30000,
     "feed": {
       "request_timeout": 300000
     },
@@ -389,8 +389,6 @@
     "engine_selector": "auto",
     "engine_check": true,
     "index_creation_pattern": "-000001",
-    "search_wildcard_prefix": false,
-    "search_fuzzy": false,
     "max_pagination_result": 5000,
     "default_pagination_result": 500,
     "max_bulk_operations": 5000,

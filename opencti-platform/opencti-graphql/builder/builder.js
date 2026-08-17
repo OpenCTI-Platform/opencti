@@ -55,7 +55,7 @@ await esbuild.build({
   entryNames: '[name]',
   bundle: true,
   platform: 'node',
-  target: ['node20'],
+  target: ['node22'],
   minifyWhitespace: !isDev,
   minifyIdentifiers: false,
   minifySyntax: !isDev,

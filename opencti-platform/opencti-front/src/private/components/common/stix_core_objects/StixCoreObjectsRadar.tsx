@@ -1,7 +1,6 @@
 import React, { ReactNode } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetRadar from '../../../../components/dashboard/WidgetRadar';
@@ -10,7 +9,7 @@ import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderCo
 import { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { StixCoreObjectsRadarDistributionQuery } from './__generated__/StixCoreObjectsRadarDistributionQuery.graphql';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
+import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
 
 const stixCoreObjectsRadarDistributionQuery = graphql`
   query StixCoreObjectsRadarDistributionQuery(
@@ -138,15 +137,7 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixCoreObjectsRadarDistributionQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const dateAttribute = selection.date_attribute?.length
-    ? selection.date_attribute
-    : 'created_at';
-  const { startDate, endDate } = computeStartEndDates(config);
-  const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, {
-    startDate,
-    endDate,
-    dateAttribute,
-  });
+  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(selection, config);
 
   return {
     types: DATA_SELECTION_TYPES,
@@ -155,7 +146,7 @@ const buildQueryVariables = (
     startDate,
     endDate,
     dateAttribute,
-    filters: normalizeFilterGroupForBackend(filters),
+    filters,
     limit: selection.number ?? 10,
   };
 };

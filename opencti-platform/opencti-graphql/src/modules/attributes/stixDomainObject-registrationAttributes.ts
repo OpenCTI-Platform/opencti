@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { CUSTOM_FIELDS_FEATURE_FLAG } from '../../config/conf';
 import {
   aliases,
   type AttributeDefinition,
@@ -215,6 +216,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>
     iAliasedIds,
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'x_opencti_score', label: 'Score', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'first_seen', label: 'First seen', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'last_seen', label: 'Last seen', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'goals', label: 'Goals', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
@@ -246,6 +248,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'malware_types', label: 'Malware types', type: 'string', format: 'vocabulary', vocabularyCategory: 'malware_type_ov', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, isFilterable: true },
+    { name: 'x_opencti_score', label: 'Score', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'is_family', label: 'Is family', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'first_seen', label: 'First seen', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'last_seen', label: 'Last seen', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
@@ -265,6 +268,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>
     { name: 'roles', label: 'Roles', type: 'string', format: 'vocabulary', vocabularyCategory: 'threat_actor_group_role_ov', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
     { name: 'sophistication', label: 'Sophistication', format: 'vocabulary', type: 'string', vocabularyCategory: 'threat_actor_group_sophistication_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'resource_level', label: 'Resource level', type: 'string', format: 'vocabulary', vocabularyCategory: 'attack_resource_level_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'x_opencti_score', label: 'Score', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'primary_motivation', label: 'Primary motivation', type: 'string', format: 'vocabulary', vocabularyCategory: 'attack_motivation_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'secondary_motivations', label: 'Secondary motivation', type: 'string', format: 'vocabulary', vocabularyCategory: 'attack_motivation_ov', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
     { name: 'personal_motivations', label: 'Personal motivation', type: 'string', format: 'vocabulary', vocabularyCategory: 'attack_motivation_ov', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
@@ -352,3 +356,29 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>
   ],
 };
 R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), stixDomainObjectsAttributes);
+
+// Custom field values — registered once at boot, content is dynamic (no restart needed)
+schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_DOMAIN_OBJECT, [
+  {
+    name: 'custom_field_values',
+    label: 'Custom field values',
+    type: 'object',
+    format: 'nested',
+    mandatoryType: 'no',
+    editDefault: false,
+    multiple: true,
+    upsert: true,
+    isFilterable: false,
+    featureFlag: CUSTOM_FIELDS_FEATURE_FLAG,
+    mappings: [
+      { name: 'field_id', label: 'Field ID', type: 'string', format: 'short', mandatoryType: 'internal', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+      { name: 'field_name', label: 'Field name', type: 'string', format: 'short', mandatoryType: 'internal', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+      { name: 'int_value', label: 'Integer value', type: 'numeric', precision: 'integer', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+      { name: 'string_value', label: 'String value', type: 'string', format: 'short', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+      { name: 'boolean_value', label: 'Boolean value', type: 'boolean', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+      { name: 'date_value', label: 'Date value', type: 'date', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+      { name: 'select_value', label: 'Select value', type: 'string', format: 'short', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+      { name: 'select_values', label: 'Select values', type: 'string', format: 'short', mandatoryType: 'no', upsert: false, editDefault: false, multiple: true, isFilterable: false },
+    ],
+  },
+]);

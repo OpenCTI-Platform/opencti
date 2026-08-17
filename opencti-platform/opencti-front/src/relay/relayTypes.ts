@@ -15,6 +15,7 @@ export interface RelayError {
       data?: {
         field?: string;
         message?: string;
+        reason?: string;
       };
     }[];
   };

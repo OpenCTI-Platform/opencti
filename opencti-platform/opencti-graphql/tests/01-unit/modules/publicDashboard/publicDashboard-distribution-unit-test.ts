@@ -30,7 +30,10 @@ vi.mock('../../../../src/database/engine', () => ({
 
 vi.mock('../../../../src/database/redis', () => ({ notify: vi.fn() }));
 
-vi.mock('../../../../src/database/cache', () => ({ getEntitiesMapFromCache: vi.fn() }));
+vi.mock('../../../../src/database/cache', () => ({
+  getEntitiesMapFromCache: vi.fn(),
+  getEntityFromCache: vi.fn().mockResolvedValue({ platform_organization: null }),
+}));
 
 vi.mock('../../../../src/listener/UserActionListener', () => ({
   publishUserAction: vi.fn(),

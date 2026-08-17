@@ -1,6 +1,5 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
@@ -12,7 +11,7 @@ import { StixRelationshipsHorizontalBarsDistributionQuery } from './__generated_
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import ApexCharts from 'apexcharts';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
+import { buildRelationshipSingleWidgetBaseQueryVariables } from '../../../../components/dashboard/dashboardVizUtils';
 
 export const stixRelationshipsHorizontalBarsDistributionQuery = graphql`
   query StixRelationshipsHorizontalBarsDistributionQuery(
@@ -152,13 +151,7 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixRelationshipsHorizontalBarsDistributionQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const dateAttribute
-    = selection.date_attribute?.length ? selection.date_attribute : 'created_at';
-  const { startDate, endDate } = computeStartEndDates(config);
-  const { filters } = buildFiltersAndOptionsForWidgets(
-    selection.filters,
-    { isKnowledgeRelationshipWidget: true },
-  );
+  const { startDate, endDate, dateAttribute, filters, dynamicFrom, dynamicTo } = buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
 
   return {
     field: selection.attribute ?? 'entity_type',
@@ -167,10 +160,10 @@ const buildQueryVariables = (
     endDate,
     dateAttribute,
     limit: selection.number ?? 10,
-    filters: normalizeFilterGroupForBackend(filters),
+    filters,
     isTo: selection.isTo,
-    dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
-    dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
+    dynamicFrom,
+    dynamicTo,
   };
 };
 

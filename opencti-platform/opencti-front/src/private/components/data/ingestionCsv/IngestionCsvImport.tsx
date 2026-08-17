@@ -11,7 +11,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import XtmHubDialogConnectivityLost from '@components/xtm_hub/dialog/connectivity-lost';
 import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { RelayError } from '../../../../relay/relayTypes';
 import useXtmHubDownloadDocument from '../../../../utils/hooks/useXtmHubDownloadDocument';
 
 export const csvFeedImportQuery = graphql`
@@ -92,8 +91,7 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
           }
         })
         .catch((e) => {
-          const { errors } = (e as unknown as RelayError).res;
-          MESSAGING$.notifyError(errors.at(0)?.message);
+          MESSAGING$.notifyRelayError(e);
         });
     }
   };
@@ -105,7 +103,7 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
 
   const onDownloadError = () => {
     navigate('/dashboard/integrations/deployed?kind=csv');
-    MESSAGING$.notifyError('An error occurred while importing CSV Feed configuration.');
+    MESSAGING$.notifyError(t_i18n('An error occurred while importing CSV Feed configuration.'));
   };
 
   const { dialogConnectivityLostStatus } = useXtmHubDownloadDocument({

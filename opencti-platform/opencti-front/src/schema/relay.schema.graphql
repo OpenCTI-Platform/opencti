@@ -4663,6 +4663,7 @@ enum IntrusionSetsOrdering {
   x_opencti_workflow_id
   resource_level
   primary_motivation
+  x_opencti_score
   confidence
   _score
   objectMarking
@@ -4733,6 +4734,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   resource_level: String
   primary_motivation: String
   secondary_motivations: [String]
+  x_opencti_score: Int
   locations: LocationConnection
   creators: [Creator!]
   toStix(version: Version): String
@@ -4762,6 +4764,7 @@ input IntrusionSetAddInput {
   resource_level: String
   primary_motivation: String
   secondary_motivations: [String]
+  x_opencti_score: Int
   confidence: Int
   revoked: Boolean
   lang: String
@@ -5407,6 +5410,7 @@ enum MalwaresOrdering {
   objectLabel
   x_opencti_workflow_id
   is_family
+  x_opencti_score
   confidence
   _score
 }
@@ -5482,6 +5486,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   architecture_execution_envs: [String]
   implementation_languages: [String]
   capabilities: [String]
+  x_opencti_score: Int
   killChainPhases: [KillChainPhase!]
   samples: [StixCyberObservable!]
   creators: [Creator!]
@@ -5512,6 +5517,7 @@ input MalwareAddInput {
   architecture_execution_envs: [String]
   implementation_languages: [String]
   capabilities: [String]
+  x_opencti_score: Int
   confidence: Int
   revoked: Boolean
   lang: String
@@ -5548,6 +5554,7 @@ enum ThreatActorsOrdering {
   confidence
   sophistication
   resource_level
+  x_opencti_score
   _score
   threat_actor_types
   objectMarking
@@ -5703,6 +5710,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   goals: [String]
   sophistication: String
   resource_level: String
+  x_opencti_score: Int
   primary_motivation: String
   secondary_motivations: [String]
   personal_motivations: [String]
@@ -5724,6 +5732,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
 input ThreatActorGroupAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+  x_opencti_score: Int
 
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
@@ -9824,6 +9833,9 @@ type Query {
   dataSanityOperations: [DataSanityOperation!]!
   dataSanityExecutions: [DataSanityExecution!]!
   dataSanityOperationDryRun(operation_name: String!): DataSanityDryRunOutput!
+  customFieldDefinition(id: String!): CustomFieldDefinition
+  customFieldDefinitions(first: Int, after: ID, orderBy: CustomFieldDefinitionsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): CustomFieldDefinitionConnection
+  customFieldDefinitionsForEntityType(entityType: String!): CustomFieldDefinitionConnection
 }
 
 type Subscription {
@@ -10796,6 +10808,13 @@ type Mutation {
   retentionRuleCheck(input: RetentionRuleAddInput): Int!
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations
   dataSanityOperationRequestRun(operation_name: String!): ID
+  dataSanityOperationStop(operation_name: String!): ID
+  customFieldDefinitionAdd(input: CustomFieldDefinitionAddInput!): CustomFieldDefinition
+  customFieldDefinitionDelete(id: ID!): ID
+  customFieldDefinitionFieldPatch(id: ID!, input: [EditInput!]!): CustomFieldDefinition
+  customFieldDefinitionAddEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition
+  customFieldDefinitionUpdateEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition
+  customFieldDefinitionRemoveEntityType(id: ID!, entityType: String!): CustomFieldDefinition
 }
 
 enum WorkflowExecutionStatus {
@@ -12631,6 +12650,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   response_types: [String!]
   severity: String
   priority: String
+  customFieldValues: [CustomFieldValue!]
 }
 
 enum CaseIncidentsOrdering {
@@ -12699,6 +12719,7 @@ input CaseIncidentAddInput {
   update: Boolean
   authorized_members: [MemberAccessInput!]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type RfiRequestAccessConfiguration {
@@ -15776,6 +15797,7 @@ type FintelDesign implements BasicObject & InternalObject {
   gradiantFromColor: String
   gradiantToColor: String
   textColor: String
+  default: Boolean
 }
 
 input FintelDesignAddInput {
@@ -15785,6 +15807,7 @@ input FintelDesignAddInput {
   gradiantFromColor: String
   gradiantToColor: String
   textColor: String
+  default: Boolean
   file: Upload
 }
 
@@ -15801,6 +15824,7 @@ type FintelDesignConnection {
 enum FintelDesignOrdering {
   _score
   name
+  default
   created_at
 }
 
@@ -16276,6 +16300,7 @@ type GroupsMapping {
   groups_mapping: [MappingEntry!]!
   auto_create_groups: Boolean!
   prevent_default_groups: Boolean!
+  extend_platform_groups: Boolean
 }
 
 input GroupsMappingInput {
@@ -16285,6 +16310,7 @@ input GroupsMappingInput {
   groups_mapping: [MappingEntryInput!]!
   auto_create_groups: Boolean!
   prevent_default_groups: Boolean!
+  extend_platform_groups: Boolean!
 }
 
 type OrganizationsMapping {
@@ -16954,4 +16980,87 @@ type DataSanityImpactedElement {
 
 type DataSanityDryRunOutput {
   estimated_impact: [DataSanityImpactedElement!]!
+}
+
+type CustomFieldValue {
+  field_id: ID!
+  field_name: String!
+  int_value: Int
+  string_value: String
+  boolean_value: Boolean
+  date_value: DateTime
+  select_value: String
+  select_values: [String!]
+}
+
+input CustomFieldValueAddInput {
+  field_id: ID!
+  field_name: String!
+  int_value: Int
+  string_value: String
+  boolean_value: Boolean
+  date_value: DateTime
+  select_value: String
+  select_values: [String!]
+}
+
+type CustomFieldEntityTypeSetting {
+  entity_type: String!
+  mandatory: Boolean!
+  default_value: String
+}
+
+type CustomFieldDefinition implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  representative: Representative!
+  parent_types: [String!]!
+  metrics: [Metric]
+  created: DateTime
+  modified: DateTime
+  name: String!
+  label: String!
+  field_type: String!
+  entity_types: [String!]
+  entity_type_settings: [CustomFieldEntityTypeSetting!]
+  multiple: Boolean!
+  description: String
+  min_value: Int
+  max_value: Int
+  select_options: [String!]
+}
+
+enum CustomFieldDefinitionsOrdering {
+  name
+  label
+  field_type
+  created
+  _score
+}
+
+type CustomFieldDefinitionConnection {
+  pageInfo: PageInfo!
+  edges: [CustomFieldDefinitionEdge!]!
+}
+
+type CustomFieldDefinitionEdge {
+  cursor: String!
+  node: CustomFieldDefinition!
+}
+
+input CustomFieldDefinitionAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  label: String!
+  field_type: String!
+  entity_types: [String!]
+  multiple: Boolean
+  description: String
+  created: DateTime
+  min_value: Int
+  max_value: Int
+  select_options: [String!]
 }

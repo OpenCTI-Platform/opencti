@@ -182,7 +182,7 @@ const AuditsNumber: FunctionComponent<AuditsNumberProps> = ({
           queryRef={queryRef!}
           entityType={entityType}
           label={translatedNumberLabel}
-          isUnique={Boolean(selection.unique)}
+          isUnique={Boolean(selection?.unique)}
           onShowWarning={setShowWarning}
         />
       </AuditsWidgetRenderContent>

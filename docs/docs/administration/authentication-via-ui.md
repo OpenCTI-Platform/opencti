@@ -190,9 +190,10 @@ The secret name (`oidc_client_secret` in this example) will appear in the **Use 
 
 Now that a configuration is defined, you can define the group mapping for all authentications (except Local).
 
-All authentications have these two options: 
+All authentications have these options: 
 - **Prevent platform default group association:** in OpenCTI you can allow some groups to be granted by default at user creation. This option allows you to define whether you want any new user created through the defined authentication to get these default groups granted by default. **By default, users will be granted platform default group**.
 - **Auto create groups:** you can decide to automatically create the groups that you have mapped. Please be aware that a group requires a role for a user to have rights [(more information)](../administration/users.md). When performing group mapping, you can enable an option to automatically create specific groups within OpenCTI.
+- **Extend platform groups:** you can decide to have the system retain groups set within OpenCTI that aren't managed by the authentication provider. This option allows you to manage assigning users to groups that are specific to OpenCTI and not have the groups overwritten when the user logs in.
 
 Then for each authentication, you need to provide: 
 - the group expression: identification of where to find the group information 

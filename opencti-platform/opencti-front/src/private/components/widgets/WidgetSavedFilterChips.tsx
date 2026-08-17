@@ -71,7 +71,7 @@ const WidgetSavedFilterChipsComponent = ({
 };
 
 interface WidgetSavedFilterChipsProps {
-  filterId: string;
+  filterId?: string | null;
   entityTypes?: string[];
   chipColor?: ChipOwnProps['color'];
 }
@@ -85,6 +85,9 @@ const WidgetSavedFilterChips: FunctionComponent<WidgetSavedFilterChipsProps> = (
   entityTypes,
   chipColor,
 }) => {
+  if (!filterId) {
+    return null;
+  }
   const [queryRef] = useQueryLoadingWithLoadQuery<WidgetSavedFilterChipsQuery>(
     widgetSavedFilterChipsQuery,
     { id: filterId },

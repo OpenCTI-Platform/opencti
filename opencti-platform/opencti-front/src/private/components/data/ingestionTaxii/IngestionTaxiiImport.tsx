@@ -7,7 +7,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import XtmHubDialogConnectivityLost from '@components/xtm_hub/dialog/connectivity-lost';
 import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { RelayError } from '../../../../relay/relayTypes';
 import useXtmHubDownloadDocument from '../../../../utils/hooks/useXtmHubDownloadDocument';
 import { PaginationOptions } from '../../../../components/list_lines';
 import { IngestionTaxiiImportQuery$data } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiImportQuery.graphql';
@@ -54,8 +53,7 @@ const IngestionTaxiiImport: FunctionComponent<IngestionTaxiiImportProps> = ({ pa
         inputFileRef.current.value = '';
       }
     } catch (e) {
-      const { errors } = (e as unknown as RelayError).res;
-      MESSAGING$.notifyError(errors.at(0)?.message);
+      MESSAGING$.notifyRelayError(e);
     }
   };
 

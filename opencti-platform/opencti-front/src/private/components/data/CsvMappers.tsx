@@ -22,7 +22,6 @@ import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import type { Theme } from '../../../components/Theme';
 import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
-import { RelayError } from '../../../relay/relayTypes';
 
 export const LOCAL_STORAGE_KEY_CSV_MAPPERS = 'csvMappers';
 
@@ -138,8 +137,7 @@ const CsvMappers = () => {
           setImportedFileData(csvMapperAddInputFromImport);
         })
         .catch((e) => {
-          const { errors } = (e as unknown as RelayError).res;
-          MESSAGING$.notifyError(errors.at(0)?.message);
+          MESSAGING$.notifyRelayError(e);
         });
     }
   };

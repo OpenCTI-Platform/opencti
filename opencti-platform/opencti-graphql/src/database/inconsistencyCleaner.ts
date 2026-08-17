@@ -1,9 +1,8 @@
 import type { AuthContext, AuthUser } from '../types/user';
 import { isBypassUser } from '../utils/access';
 import { internalId } from '../schema/attribute-definition';
-import { elRawSearch, elRawUpdateByQuery, ES_MAX_PAGINATION } from './engine';
+import { elRawSearch, elRawUpdateByQuery, ES_MAX_PAGINATION, wrapEngineError } from './engine';
 import { READ_DATA_INDICES_WITHOUT_INFERRED } from './utils';
-import { DatabaseError } from '../config/errors';
 import { REL_INDEX_PREFIX } from '../schema/general';
 import { isSingleRelationsRef } from '../schema/stixEmbeddedRelationship';
 import { isStixRefUnidirectionalRelationship } from '../schema/stixRefRelationship';
@@ -52,7 +51,7 @@ const loadRawElement = async (context: AuthContext, user: AuthUser, internal_id:
     body: { query },
   };
   const rawDocument = await elRawSearch(context, user, 'None', rawSearchQuery).catch((err: any) => {
-    throw DatabaseError('Find direct ids fail', { cause: err, rawSearchQuery });
+    throw wrapEngineError('Find direct ids fail', err, { rawSearchQuery });
   });
 
   if (rawDocument.hits?.hits?.length === 0) {

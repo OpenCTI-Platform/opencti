@@ -1,9 +1,9 @@
 import {
-  AutoAwesomeOutlined,
   CloudDownloadOutlined,
   ExtensionOutlined,
   FileDownloadOutlined,
   InputOutlined,
+  PostAdd,
   StreamOutlined,
   TroubleshootOutlined,
   UploadFileOutlined,
@@ -21,7 +21,7 @@ export type IngestionConnectorType
 
 const CONNECTOR_TYPE_ICONS: Record<IngestionConnectorType, SvgIconComponent> = {
   EXTERNAL_IMPORT: CloudDownloadOutlined,
-  INTERNAL_ENRICHMENT: AutoAwesomeOutlined,
+  INTERNAL_ENRICHMENT: PostAdd,
   INTERNAL_ANALYSIS: TroubleshootOutlined,
   INTERNAL_EXPORT_FILE: FileDownloadOutlined,
   INTERNAL_IMPORT_FILE: UploadFileOutlined,

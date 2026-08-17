@@ -133,6 +133,7 @@ class ThreatActorGroup:
             goals
             sophistication
             resource_level
+            x_opencti_score
             primary_motivation
             secondary_motivations
             personal_motivations
@@ -387,6 +388,8 @@ class ThreatActorGroup:
         :type sophistication: str
         :param resource_level: (optional) describe the actors resource_level in text
         :type resource_level: str
+        :param x_opencti_score: (optional) score of the threat actor group (0-100)
+        :type x_opencti_score: int
         :param primary_motivation: (optional) describe the actors primary_motivation in text
         :type primary_motivation: str
         :param secondary_motivations: (optional) describe the actors secondary_motivations in list of string
@@ -423,6 +426,7 @@ class ThreatActorGroup:
         goals = kwargs.get("goals", None)
         sophistication = kwargs.get("sophistication", None)
         resource_level = kwargs.get("resource_level", None)
+        x_opencti_score = kwargs.get("x_opencti_score", None)
         primary_motivation = kwargs.get("primary_motivation", None)
         secondary_motivations = kwargs.get("secondary_motivations", None)
         personal_motivations = kwargs.get("personal_motivations", None)
@@ -474,6 +478,7 @@ class ThreatActorGroup:
                         "goals": goals,
                         "sophistication": sophistication,
                         "resource_level": resource_level,
+                        "x_opencti_score": x_opencti_score,
                         "primary_motivation": primary_motivation,
                         "secondary_motivations": secondary_motivations,
                         "personal_motivations": personal_motivations,
@@ -527,6 +532,10 @@ class ThreatActorGroup:
             if "x_opencti_modified_at" not in stix_object:
                 stix_object["x_opencti_modified_at"] = (
                     self.opencti.get_attribute_in_extension("modified_at", stix_object)
+                )
+            if "x_opencti_score" not in stix_object:
+                stix_object["x_opencti_score"] = (
+                    self.opencti.get_attribute_in_extension("score", stix_object)
                 )
             if "opencti_upsert_operations" not in stix_object:
                 stix_object["opencti_upsert_operations"] = (
@@ -588,6 +597,11 @@ class ThreatActorGroup:
                 resource_level=(
                     stix_object["resource_level"]
                     if "resource_level" in stix_object
+                    else None
+                ),
+                x_opencti_score=(
+                    stix_object["x_opencti_score"]
+                    if "x_opencti_score" in stix_object
                     else None
                 ),
                 primary_motivation=(

@@ -13,6 +13,7 @@ export interface FintelTemplate {
   template_content: string;
   fintel_template_widgets: [FintelTemplateWidget];
   start_date: string;
+  default?: boolean;
 }
 
 // region Database types
@@ -24,6 +25,7 @@ export interface BasicStoreEntityFintelTemplate extends BasicStoreEntity {
   template_content: string;
   fintel_template_widgets: [FintelTemplateWidget];
   start_date: string;
+  default?: boolean;
 }
 
 export interface StoreEntityFintelTemplate extends StoreEntity {
@@ -34,6 +36,7 @@ export interface StoreEntityFintelTemplate extends StoreEntity {
   template_content: string;
   fintel_template_widgets: [FintelTemplateWidget];
   start_date: string;
+  default?: boolean;
 }
 // endregion
 
@@ -46,6 +49,7 @@ export interface StixFintelTemplate extends StixObject {
   template_content: string;
   fintel_template_widgets: [FintelTemplateWidget];
   start_date: string;
+  default: boolean;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };

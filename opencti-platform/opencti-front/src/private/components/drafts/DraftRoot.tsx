@@ -21,7 +21,6 @@ import ErrorNotFound from '../../../components/ErrorNotFound';
 import { getCurrentTab } from '../../../utils/tabUtils';
 import { useFormatter } from '../../../components/i18n';
 import { MESSAGING$ } from '../../../relay/environment';
-import { RelayError } from '../../../relay/relayTypes';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { TEN_SECONDS } from '../../../utils/Time';
 import useGranted, { KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
@@ -151,8 +150,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           MESSAGING$.notifySuccess(<span>{t_i18n('You are now in Draft Mode')}</span>);
         },
         onError: (error) => {
-          const { errors } = (error as unknown as RelayError).res;
-          MESSAGING$.notifyError(errors.at(0)?.message);
+          MESSAGING$.notifyRelayError(error);
         },
       });
     }

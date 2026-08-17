@@ -2,6 +2,7 @@ import { graphql } from 'relay-runtime';
 import Insights from '@mui/icons-material/Insights';
 import { useTheme } from '@mui/material';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
+import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import DataTable from '../../../../../components/dataGrid/DataTable';
 import { DataTableVariant } from '../../../../../components/dataGrid/dataTableTypes';
 import { useFormatter } from '../../../../../components/i18n';
@@ -80,13 +81,13 @@ const customViewsLinesFragment = graphql`
 `;
 
 const DATA_COLUMNS = {
-  name: { percentWidth: 30, isSortable: false },
+  name: { percentWidth: 30, isSortable: true },
   description: { percentWidth: 40, isSortable: false },
   customViewDefault: {
     id: 'default',
     label: 'Default',
     percentWidth: 15,
-    isSortable: false,
+    isSortable: true,
     render: ({ default: isDefault }: CustomViewsSettingsDataTable_node$data) => {
       const DefaultCell = () => {
         const theme = useTheme();
@@ -131,11 +132,21 @@ const CustomViewsSettingsDataTable = ({
   };
   const storageKey = `custom-views-${targetType}`;
 
-  const queryPaginationOptions: CustomViewsSettingsDataTablePaginationQuery['variables'] = {
-    entityType: targetType,
-    orderBy: 'default',
-    orderMode: 'desc',
+  const initialValues = {
+    sortBy: 'default',
+    orderAsc: false,
   };
+
+  const { paginationOptions, helpers } = usePaginationLocalStorage<CustomViewsSettingsDataTablePaginationQuery['variables']>(
+    storageKey,
+    initialValues,
+  );
+
+  const queryPaginationOptions = {
+    entityType: targetType,
+    orderBy: paginationOptions.orderBy,
+    orderMode: paginationOptions.orderMode,
+  } as CustomViewsSettingsDataTablePaginationQuery['variables'];
 
   const queryRef = useQueryLoading<CustomViewsSettingsDataTablePaginationQuery>(
     customViewsLinesQuery,
@@ -151,11 +162,12 @@ const CustomViewsSettingsDataTable = ({
     linesFragment: customViewsLinesFragment,
     queryRef,
     nodePath: ['customViews', 'pageInfo', 'globalCount'],
+    setNumberOfElements: helpers.handleSetNumberOfElements,
   };
 
   return (
     <DataTable
-      initialValues={{ sortBy: 'default', orderAsc: false }}
+      initialValues={initialValues}
       dataColumns={DATA_COLUMNS}
       storageKey={storageKey}
       variant={DataTableVariant.inline}

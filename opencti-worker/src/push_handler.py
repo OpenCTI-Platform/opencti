@@ -273,6 +273,12 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             # Nack message and discard
             return "nack"
         finally:
-            self.bundles_global_counter.add(len(imported_items))
-            processing_delta = datetime.datetime.now() - start_processing
-            self.bundles_processing_time_gauge.record(processing_delta.seconds)
+            try:
+                self.bundles_global_counter.add(len(imported_items))
+                processing_delta = datetime.datetime.now() - start_processing
+                self.bundles_processing_time_gauge.record(processing_delta.seconds)
+            except Exception as telemetry_ex:  # pylint: disable=broad-except
+                self.logger.error(
+                    "Failed to record bundle processing telemetry",
+                    {"reason": str(telemetry_ex)},
+                )

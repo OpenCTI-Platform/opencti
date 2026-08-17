@@ -2,6 +2,7 @@ import { graphql } from 'react-relay';
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import type { enrollPlaybookDrawerIdsQuery$data } from './__generated__/enrollPlaybookDrawerIdsQuery.graphql';
 import type { enrollPlaybookDrawerFiltersQuery$data } from './__generated__/enrollPlaybookDrawerFiltersQuery.graphql';
+import type { GraphQLTaggedNode } from 'relay-runtime';
 
 export const playbooksForEnrollmentIdsQuery = graphql`
   query enrollPlaybookDrawerIdsQuery($ids: [String!]!) {
@@ -40,7 +41,7 @@ export interface FetchPlaybooksParams {
   entityIds?: string[];
 }
 
-export type Fetcher = (query: unknown, variables: Record<string, unknown>) => Promise<unknown>;
+export type Fetcher = (query: GraphQLTaggedNode, variables: Record<string, unknown>) => Promise<unknown>;
 
 export function mapIdsResponse(data: IdsResponseData): Playbook[] {
   return (data.playbooksForEnrollment ?? [])

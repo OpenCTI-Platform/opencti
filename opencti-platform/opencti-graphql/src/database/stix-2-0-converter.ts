@@ -4,6 +4,7 @@ import type * as SDO from '../types/stix-2-0-sdo';
 import type * as SCO from '../types/stix-2-0-sco';
 import type * as SMO from '../types/stix-2-0-smo';
 import { INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS } from '../schema/general';
+import { flattenCustomFieldValuesForStix } from '../modules/customField/custom-field-stix-utils';
 import {
   INPUT_OPERATING_SYSTEM,
   INPUT_SAMPLE,
@@ -218,6 +219,7 @@ const buildStixObject = (instance: StoreObject): S.StixObject => {
 
 // General
 export const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObject => {
+  const customFieldValues = 'custom_field_values' in instance ? instance.custom_field_values : undefined;
   return {
     ...buildStixObject(instance),
     created: convertToStixDate(instance.created),
@@ -229,6 +231,7 @@ export const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDo
     object_marking_refs: (instance[INPUT_MARKINGS] ?? []).map((m) => m.standard_id),
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
+    ...flattenCustomFieldValuesForStix(customFieldValues),
   };
 };
 const buildStixRelationship = (instance: StoreRelation): S.StixRelationshipObject => {

@@ -10,6 +10,7 @@ import { CustomView_Query } from './__generated__/CustomView_Query.graphql';
 import { DashboardConfig } from 'src/components/dashboard/dashboard-types';
 import DashboardTimeFilters from 'src/components/dashboard/DashboardTimeFilters';
 import { Stack } from '@mui/material';
+import { useFormatter } from 'src/components/i18n';
 
 const customViewQuery = graphql`
   query CustomView_Query($id: ID!) {
@@ -27,9 +28,10 @@ interface CustomViewComponentProps {
 }
 
 const CustomViewComponent = ({ queryRef, entityId, entityType }: CustomViewComponentProps) => {
+  const { t_i18n } = useFormatter();
   const { customView } = usePreloadedQuery(customViewQuery, queryRef);
   if (!customView) {
-    MESSAGING$.notifyError('Failed to load custom view');
+    MESSAGING$.notifyError(t_i18n('Failed to load custom view'));
     return null;
   }
   if (!customView?.manifest) {

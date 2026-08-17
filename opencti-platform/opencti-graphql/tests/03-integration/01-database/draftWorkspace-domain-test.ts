@@ -144,7 +144,7 @@ describe('Drafts workspace domain testing', () => {
   it('should checkDraftInContext as editor throw error on closed draft', async () => {
     await expect(async () => {
       await checkDraftInContext(testDraftContext);
-    }).rejects.toThrowError('Draft is in a locked state, no request can be done within this draft');
+    }).rejects.toThrowError('Cannot execute request in a draft that is not in an open state');
   });
 
   it('should return null draft version for non-draft index', () => {

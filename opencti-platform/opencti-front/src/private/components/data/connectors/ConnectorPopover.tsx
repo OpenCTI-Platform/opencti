@@ -100,7 +100,7 @@ const ConnectorPopover = ({ connector, onRefreshData, onOpenEditConfiguration }:
         connectorId: connector.id,
       },
       onCompleted: () => {
-        MESSAGING$.notifySuccess('The connector works have been cleared');
+        MESSAGING$.notifySuccess(t_i18n('The connector works have been cleared'));
         setClearing(false);
         setDisplayClearWorks(false);
       },
@@ -123,7 +123,7 @@ const ConnectorPopover = ({ connector, onRefreshData, onOpenEditConfiguration }:
       },
       onError: (_error) => {
         setResetting(false);
-        MESSAGING$.notifyError('Failed to reset connector state');
+        MESSAGING$.notifyError(t_i18n('Failed to reset connector state'));
       },
     });
   };

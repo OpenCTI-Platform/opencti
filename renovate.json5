@@ -26,6 +26,24 @@
     'enabled': false,
   },
   packageRules: [
+    // sticks to Node 22.x docker image, matching engines.node (>= 22.0.0)
+    {
+      matchDatasources: [
+        'docker',
+      ],
+      matchPackageNames: [
+        'node',
+      ],
+      allowedVersions: '<23',
+      description: 'Keep node docker image at version 22.x',
+    },
+    {
+      matchDepNames: [
+        '@types/node',
+      ],
+      allowedVersions: '<23',
+      description: 'Keep @types/node at version 22.x, matching engines.node',
+    },
     // sticks to MIT version of apexcharts
     {
       matchDepNames: [
