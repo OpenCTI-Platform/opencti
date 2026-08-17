@@ -37,7 +37,8 @@ import ExperienceFeatureTile from './experience/ExperienceFeatureTile';
 import ValidateTermsOfUseDialog from './ValidateTermsOfUseDialog';
 import { useChatbot } from '@components/chatbox/ChatbotContext';
 import Divider from '@mui/material/Divider';
-import GlobalExportBundleDrawer from '@components/settings/experience/GlobarExportBundleDrawer';
+import useHelper from 'src/utils/hooks/useHelper';
+import GlobalExportBundleDrawer from '../settings/experience/GlobarExportBundleDrawer';
 
 export enum CGUStatus {
   pending = 'pending',
@@ -111,6 +112,8 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
   const [openEEChanges, setOpenEEChanges] = useState(false);
   const [openValidateTermsOfUse, setOpenValidateTermsOfUse] = useState(false);
   const [openGlobalExport, setOpenGlobalExport] = useState(false);
+  const { isFeatureEnable } = useHelper();
+  const featureFlagGlobalExport = isFeatureEnable('GLOBAL_EXPORT_BUNDLE');
   const experienceValidation = () => Yup.object().shape({
     enterprise_license: Yup.string().nullable(),
     filigran_chatbot_ai_cgu_status: Yup.mixed<CGUStatus>().oneOf([CGUStatus.enabled, CGUStatus.disabled, CGUStatus.pending]),
@@ -208,7 +211,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
       <Stack direction="row" gap={1.5} flexWrap="wrap" justifyContent="flex-end">
         {isEnterpriseEditionActivated ? eeActivatedFooter : eeCommunityFooter}
       </Stack>
-      {isGrantedToParameters && (
+      {isGrantedToParameters && featureFlagGlobalExport && (
         <>
           <Divider sx={{ width: '100%' }} />
           <Button
