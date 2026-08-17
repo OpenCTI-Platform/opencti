@@ -99,7 +99,7 @@ export const lineChartOptions = (
 ) => ({
   chart: {
     type: 'line',
-    background: theme.palette.background.secondary,
+    background: theme.palette.background.paper,
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     width: '100%',
@@ -193,7 +193,7 @@ export const areaChartOptions = (
 ) => ({
   chart: {
     type: 'area',
-    background: theme.palette.background.secondary,
+    background: theme.palette.background.paper,
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked: isStacked,
@@ -303,7 +303,7 @@ export const verticalBarsChartOptions = (
 ) => ({
   chart: {
     type: 'bar',
-    background: theme.palette.background.secondary,
+    background: theme.palette.background.paper,
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked: isStacked,
@@ -414,7 +414,7 @@ export const horizontalBarsChartOptions = (
   events: ['xAxisLabelClick'],
   chart: {
     type: 'bar',
-    background: theme.palette.background.secondary,
+    background: theme.palette.background.paper,
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked,
@@ -726,7 +726,7 @@ export const polarAreaChartOptions = (
   return {
     chart: {
       type: 'polarArea',
-      background: theme.palette.background.secondary,
+      background: theme.palette.background.paper,
       toolbar: toolbarOptions,
       foreColor: theme.palette.text.secondary,
       width: '100%',
@@ -843,7 +843,7 @@ export const donutChartOptions = (
   return {
     chart: {
       type: 'donut',
-      background: withBackground ? theme.palette.background.secondary : 'transparent',
+      background: withBackground ? theme.palette.background.paper : 'transparent',
       toolbar: toolbarOptions,
       foreColor: theme.palette.text.secondary,
       width: '100%',
@@ -901,7 +901,7 @@ export const donutChartOptions = (
           value: {
             show: displayValue,
           },
-          background: theme.palette.background.secondary,
+          background: theme.palette.background.paper,
           size: `${size}%`,
         },
       },
@@ -925,7 +925,7 @@ export const treeMapOptions = (
   return {
     chart: {
       type: 'treemap',
-      background: theme.palette.background.secondary,
+      background: theme.palette.background.paper,
       toolbar: toolbarOptions,
       foreColor: theme.palette.text.secondary,
       width: '100%',
@@ -1007,7 +1007,7 @@ export const heatMapOptions = (
 ) => ({
   chart: {
     type: 'heatmap',
-    background: theme.palette.background.secondary,
+    background: theme.palette.background.paper,
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked: isStacked,
