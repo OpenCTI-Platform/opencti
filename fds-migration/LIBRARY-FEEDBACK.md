@@ -1305,3 +1305,42 @@ viewport wide enough not to overflow, and the defect only appears below a
 `design-system-host.css`, load the knowledge graph of any container at a 1280px
 viewport, scroll right: the rail must stay at the left edge and must keep the
 pixel at its own centre. If it does, the workaround is retired.
+
+## 39. `Chip` normalises its label's type but not its own root, which makes the component impossible to inspect correctly
+
+**Not a rendering defect.** Raised because it cost a round of confusion on a
+change that was correct: Sandy read 14px on the EE chip where the pin bump had
+just taken it to 12px, and both readings were true of different nodes.
+
+**What is measured.** The component sets its typography class on the LABEL span
+only. The root — the visible, clickable box — declares no font size, so it
+inherits the host's. Measured in the running application, on the EE chip inside
+OpenCTI's Ask Ariane button, at pin `f86e76e`:
+
+| node | `font-size` | `font-weight` | box |
+|---|---|---|---|
+| label span (`content-compact-medium`) | **12px** | 500 | 14.19 × 18 |
+| **chip root** (`inline-flex h-6 items-center`) | **14px** | 600 | **30.19 × 24** |
+| host `<span class="text-gradient-ia">` | 14px | 600 | 106.44 × 24 |
+| host `<button>` (Ask Ariane) | 14px | 600 | 166.44 × 36 |
+| `<header>` | 14.4px | 400 | 1464 × 68 |
+
+The root's 14px/600 is the host button's, inherited through two levels. Nothing
+renders wrongly: the height is pinned by `h-6` and the truncation by a fixed
+`max-w-[250px]`, so no dimension is derived from the inherited size.
+
+**Why it still matters.** An element picker selects the box, not the text node
+inside it, so the DevTools Computed panel reports the HOST's size for the chip —
+14px here — while the label renders 12px one level down. The component therefore
+cannot be verified by inspecting it, only by knowing in advance which descendant
+to select. **And it will recur in every host context with a different
+typography**: the number the root reports is a property of the surrounding page,
+not of the chip.
+
+**Asked.** Let the root normalise its own type rather than leaving the label to
+do it alone — the root declaring the same size the label resolves to would make
+the two agree, and would make the rendered chip independent of whatever type
+scale the host happens to apply around it.
+
+**Removal test.** Render the chip inside a container at 20px, inspect the chip
+root: its computed `font-size` must be the chip's own value, not 20px.
