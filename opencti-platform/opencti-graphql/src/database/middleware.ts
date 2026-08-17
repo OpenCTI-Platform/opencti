@@ -3000,11 +3000,6 @@ export const updateAttribute = async <T extends StoreObject>(
     // If element really updated, try to enrich if needed
     await triggerEntityUpdateAutoEnrichment(context, user, data.element as BasicStoreBase);
   }
-  if (data.event && isFeatureEnabled('ENTITIES_WORKFLOW') && inputs.some((i) => i.key === X_WORKFLOW_ID)) {
-    // Legacy status was patched: ensure a WorkflowInstance exists for entity types with a configured workflow
-    // (no-op if not configured or already existing).
-    await initializeEntityWorkflow(context, user, data.element as BasicStoreBase);
-  }
   return data;
 };
 type PatchAttributeOpts = UpdateAttributeOpts & {
@@ -4249,8 +4244,13 @@ export const internalDeleteElementById = async <T extends StoreObject>(
     if (lock) await lock.unlock();
   }
   // - TRANSACTION END
-  if (isFeatureEnabled('ENTITIES_WORKFLOW')) {
-    // Clean up the WorkflowInstance (if any) so it doesn't stay orphaned after its entity is deleted.
+  const isTrashableElement = !isInferredIndex(element._index)
+    && (isStixCoreObject(element.entity_type) || isStixCoreRelationship(element.entity_type) || isStixSightingRelationship(element.entity_type));
+  const isPermanentDelete = !!opts.forceDelete || !conf.get('app:trash:enabled') || !isTrashableElement;
+  if (isFeatureEnabled('ENTITIES_WORKFLOW') && isPermanentDelete) {
+    // Clean up the WorkflowInstance (if any) so it doesn't stay orphaned after its entity is permanently deleted.
+    // Skipped for trash (soft) deletions: the `has-workflow` relation is kept for restoration and must still
+    // point to a live WorkflowInstance, otherwise restoring the entity from trash would fail.
     try {
       await cleanupEntityWorkflow(context, user, element as BasicStoreBase);
     } catch (err) {

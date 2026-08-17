@@ -12,7 +12,7 @@ import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
 import { addWorkflowPublishCount } from '../../../manager/telemetryManager';
 import type { BasicStoreEntity } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { bypassDraftContext } from '../../../utils/draftContext';
+import { bypassDraftContext, getDraftContext } from '../../../utils/draftContext';
 import { SYSTEM_USER, WORKFLOW_MANAGER_USER } from '../../../utils/access';
 import { findByType as findEntitySettingByType } from '../../entitySetting/entitySetting-domain';
 import type { BasicStoreEntityEntitySetting } from '../../entitySetting/entitySetting-types';
@@ -1072,6 +1072,8 @@ export const initializeEntityWorkflow = async (
   // Avoid self-referential/unnecessary work for the internal objects created by workflow
   // initialization itself: the `has-workflow` relationship and the WorkflowInstance entity.
   if (entity.entity_type === RELATION_HAS_WORKFLOW || entity.entity_type === ENTITY_TYPE_WORKFLOW_INSTANCE) return;
+  // Never eagerly initialize a workflow for an entity created/updated inside a draft
+  if (getDraftContext(context, user)) return;
   const executionContext = bypassDraftContext(context);
   const executionUser = bypassDraftUser(user);
   const entitySetting = await getWorkflowConfig(executionContext, executionUser, entity.entity_type);
