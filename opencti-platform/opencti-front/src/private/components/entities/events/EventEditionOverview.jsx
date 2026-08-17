@@ -147,12 +147,17 @@ const EventEditionOverviewComponent = (props) => {
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      editor.fieldPatch({
-        variables: {
-          id: event.id,
-          input: { key: name, value: finalValue ?? '' },
-        },
-      });
+      eventValidator
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          editor.fieldPatch({
+            variables: {
+              id: event.id,
+              input: { key: name, value: finalValue ?? [null] },
+            },
+          });
+        })
+        .catch(() => false);
     }
   };
 

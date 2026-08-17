@@ -149,8 +149,8 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
     { setSubmitting, setErrors, resetForm },
   ) => {
     const allNames = splitMultilines(values.name);
-    const variables: EventCreationMutation$variables[] = allNames.map((name) => ({
-      input: {
+    const variables: EventCreationMutation$variables[] = allNames.map((name) => {
+      const input: EventCreationMutation$variables['input'] = {
         ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
@@ -163,8 +163,9 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
         objectMarking: values.objectMarking.map((v) => v.value),
         objectLabel: values.objectLabel.map((v) => v.value),
         externalReferences: values.externalReferences.map(({ value }) => value),
-      } as unknown as EventCreationMutation$variables['input'],
-    }));
+      };
+      return { input };
+    });
 
     bulkCommit({
       variables,
