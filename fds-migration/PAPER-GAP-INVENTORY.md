@@ -1100,3 +1100,80 @@ raison, `no-hardcoded-padding` reste armée.
 
 **Pourquoi MUI doit rester là** : un composant passé à MUI via `component=`
 reçoit des props MUI (`variant`, `sx`) que le Paper de la lib n'accepte pas.
+
+---
+
+## 22. AUDIT COULEURS — les 35 surfaces, mesuré au DOM
+
+Planche : `audit-dark.png`, `audit-light.png` — servie sur
+**http://127.0.0.1:5311/audit.html**.
+
+### La mesure décisive
+
+`MuiPaper` peint `palette.background.paper`, que le pont câble sur
+`--bg-elevation-default-layer-1`. Mesuré au DOM, dans le vrai thème, sur un
+`MuiPaper` **sans surcharge** face au `Paper` de la lib :
+
+| thème | MuiPaper nu | Paper lib couche 1 | verdict |
+|---|---|---|---|
+| sombre | `rgb(13,23,43)` | `rgb(13,23,43)` | **même pixel** |
+| clair | `rgb(255,255,255)` | `rgb(255,255,255)` | **même pixel** |
+| client `#3b2450` | `rgb(59,36,80)` | `rgb(59,36,80)` | **même pixel** |
+
+**Donc oui : ton attente est juste, et toute surface qui ne surcharge pas son
+fond peint déjà exactement le token de la lib.** C'est prouvé, pas affirmé.
+
+### Fond — 32 coïncident, 3 divergent
+
+| surfaces | verdict |
+|---|---|
+| **32 / 35** | aucune surcharge → **coïncident au pixel** |
+| T1 `HistoryLineContent.tsx:107` | `background: 0` → `rgba(0,0,0,0)`, la page se voit au travers |
+| T2 `UserHistoryLine.tsx:339` | `background: 0` via `classes.paper` — **la surcharge est dans le makeStyles, pas sur la balise** |
+| G1 `ExperienceCard.tsx:57` | dégradé d'accent, fond annulé |
+
+Les trois sont déjà hors vague. **Aucune surface Paper du périmètre ne peint un
+littéral en dur.**
+
+### Le vrai littéral en dur est AILLEURS : le motif carte
+
+C'est la ligne que tu cherchais, et elle n'est pas dans les 35.
+
+| | sombre | clair |
+|---|---|---|
+| `Card` (222 sites) peint `background.secondary` | **`rgb(12,21,36)` = `#0C1524`** | `rgb(255,255,255)` |
+| couche 1 de la lib | `rgb(13,23,43)` | `rgb(255,255,255)` |
+| verdict | **DIVERGE — littéral hors pont** | coïncide |
+
+`#0C1524` n'est **aucun** pas de l'échelle. En clair le littéral vaut `#FFFFFF`,
+qui **est** layer-1 : l'écart est **propre au thème sombre**, sur **222 sites**.
+C'est le même défaut que la carte du login, dont la correction au site n'a traité
+qu'un cas sur 223.
+
+### Bordure — aujourd'hui ce n'est PAS un token
+
+| surfaces | ce qui est peint aujourd'hui | origine |
+|---|---|---|
+| 21 « outlined » | `rgba(255,255,255,0.12)` sombre · `rgba(0,0,0,0.12)` clair | **défaut interne de MUI** — le produit ne déclare **jamais** `palette.divider` |
+| 7 sans bordure | rien, + une ombre d'élévation MUI | — |
+| **N9** | `0.5px rgba(66,202,255,0.3)` sombre · `rgba(0,21,168,0.3)` clair | **`border.primary` = l'accent du CLIENT à 30 %** |
+| après conversion | `1px` du token `--border-elevation-subtle-soft` à 15 % | pont de tokens |
+
+**Aucune bordure du périmètre ne vient d'un token Filigran aujourd'hui.** La
+conversion est la première fois qu'elle en vient une. Et N9 est la seule qui
+suive le client — d'où sa sortie de vague.
+
+### Titres et actions — la couleur suit le client, celle de la lib non
+
+| | `h4` (N4, N7) | `h3` (H9) | rangée `title` de la lib |
+|---|---|---|---|
+| taille / graisse | 12px / **500** | 13px / 400 | 12px / 400 |
+| famille | IBM Plex Sans | **Geologica** | IBM Plex Sans |
+| couleur | **`text_color`** = `theme_text_color` du client | idem | **`--text-default-secondary`**, token fixe |
+| casse rendue | `none` | `none` | `none` — identique |
+| hauteur | 15px | 15px | **24px** |
+
+La divergence qui compte n'est pas la typographie, c'est la **couleur** : le titre
+produit suit le `theme_text_color` du client, celui de la lib est un token fixe.
+**Adopter `title`/`action` fait perdre au titre le suivi de la couleur de texte du
+client.** À peser dans ta décision.
