@@ -6710,24 +6710,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eventsource-parser@npm:4.1.0":
+"eventsource-parser@npm:4.1.0, eventsource-parser@npm:^4.0.0":
   version: 4.1.0
   resolution: "eventsource-parser@npm:4.1.0"
   checksum: 10c0/0591250f4f3df7ebef56ddfbba0e19aee5450d81347609d7d2417f08191060aea3fbb3aa71a02c25515b198ee17bd0c94d30190f576e0aa937c93c9e9f605e6f
   languageName: node
   linkType: hard
 
-"eventsource@npm:2.0.2":
-  version: 2.0.2
-  resolution: "eventsource@npm:2.0.2"
-  checksum: 10c0/0b8c70b35e45dd20f22ff64b001be9d530e33b92ca8bdbac9e004d0be00d957ab02ef33c917315f59bf2f20b178c56af85c52029bc8e6cc2d61c31d87d943573
-  languageName: node
-  linkType: hard
-
-"eventsource@patch:eventsource@2.0.2#./patch/eventsource-2.0.2.patch::locator=opencti-graphql%40workspace%3A.":
-  version: 2.0.2
-  resolution: "eventsource@patch:eventsource@npm%3A2.0.2#./patch/eventsource-2.0.2.patch::version=2.0.2&hash=524b62&locator=opencti-graphql%40workspace%3A."
-  checksum: 10c0/e99a3d20317304aab046d3434c39c58486731da1a508862e6da20bacc9dfac919fe961ab44bbe49461c300339366d6f191066b2c5553eadedfab3828e45354ac
+"eventsource@npm:5.1.0":
+  version: 5.1.0
+  resolution: "eventsource@npm:5.1.0"
+  dependencies:
+    eventsource-parser: "npm:^4.0.0"
+  checksum: 10c0/f81eee5a19264fb0186c723c9641b9c058c8c6e8db0bb145e28b1df27077417a132a7596bd1208e6f5e545a00f5585b5399e3a169ee0477e40946a5799cfe058
   languageName: node
   linkType: hard
 
@@ -9930,7 +9925,7 @@ __metadata:
     eslint-import-resolver-typescript: "npm:4.4.5"
     eslint-plugin-import: "npm:2.32.0"
     eslint-plugin-import-newlines: "npm:2.0.0"
-    eventsource: "npm:2.0.2"
+    eventsource: "npm:5.1.0"
     eventsource-parser: "npm:4.1.0"
     express: "npm:5.2.1"
     express-rate-limit: "npm:8.6.2"
