@@ -5,19 +5,12 @@ import { Stix2Splitter } from '../../../src/utils/stix2-splitter';
 
 // Golden fixtures reused as-is from client-python/tests/data, so the Node.js port can be
 // validated against the exact same input/expected-count pairs as pycti's own test suite
-// (client-python/tests/01-unit/utils/test_opencti_stix2_splitter.py).
-//
-// Beyond these 3 assertions, this port was also verified with a differential test harness
-// that ran the real pycti OpenCTIStix2Splitter (loaded directly from
-// client-python/pycti/utils/opencti_stix2_splitter.py) side by side with this module, on
-// 18 inputs across both cleanupInconsistentBundle modes (36 scenarios total): 13 adversarial
-// cases (cycles, self-references, dangling refs, sightings, external-reference/kill-chain-phase
-// dedup, internal-id extension aliasing, unsupported ref types, sort-stability ties) plus 5
-// real-world fixtures, including enterprise-attack.json (10MB, 7016 expectations) and
-// mitre_att_capec.json (2610 expectations, ~4MB - not committed here to keep the repo lean).
-// Every bundle, field, nb_deps value, ordering, and incompatible-item classification matched
-// exactly. That harness was a temporary, throwaway script (not committed) - this file is the
-// permanent regression suite.
+// (client-python/tests/01-unit/utils/test_opencti_stix2_splitter.py): the base test bundle,
+// mono-object entity/relationship cases, and the adversarial cycles/dangling-refs/internal-id
+// fixtures below. The larger real-world fixtures from pycti's suite (enterprise-attack.json,
+// mitre_att_capec.json, several MB each) were also run once against this port during
+// development with matching results, but are intentionally not committed here to keep the
+// repo lean - the fixtures below are the permanent, committed regression suite.
 const fixturePath = (name: string) => join(__dirname, '../../data/stix2-splitter', name);
 
 describe('Stix2Splitter: split_bundle_with_expectations parity with pycti', () => {
@@ -71,6 +64,51 @@ describe('Stix2Splitter: split_bundle_with_expectations parity with pycti', () =
     const cleanupSplitter = new Stix2Splitter();
     const cleanupResult = cleanupSplitter.splitBundleWithExpectations(content, true, undefined, true);
     expect(cleanupResult.numberExpectations).toEqual(0);
+  });
+
+  // Adversarial fixtures reused as-is from pycti's own splitter test suite
+  // (client-python/tests/data, client-python/tests/01-unit/utils/test_opencti_stix2_splitter.py),
+  // so cycles/self-references/dangling-refs/internal-id-aliasing coverage is checked against the
+  // same expected values pycti's own CI already verifies, not values derived independently here.
+  it('should resolve cyclic references, dedupe external references and markings, and count 6 expectations', () => {
+    const content = readFileSync(fixturePath('cyclic-bundle.json'), 'utf-8');
+    const splitter = new Stix2Splitter();
+    const { numberExpectations, bundles } = splitter.splitBundleWithExpectations(content);
+
+    expect(numberExpectations).toEqual(6);
+    const reportBundle = (bundles as string[])
+      .map((bundle) => JSON.parse(bundle).objects[0])
+      .find((object) => object.id === 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
+    expect(reportBundle.external_references).toHaveLength(1);
+    expect(reportBundle.object_refs).toHaveLength(2);
+    expect(reportBundle.object_marking_refs).toEqual(['marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27']);
+  });
+
+  it('should keep 4 expectations for missing refs, dropping to 3 once inconsistent refs are cleaned up', () => {
+    const content = readFileSync(fixturePath('missing_refs.json'), 'utf-8');
+
+    const splitter = new Stix2Splitter();
+    expect(splitter.splitBundleWithExpectations(content).numberExpectations).toEqual(4);
+
+    const cleanupSplitter = new Stix2Splitter();
+    expect(cleanupSplitter.splitBundleWithExpectations(content, true, undefined, true).numberExpectations).toEqual(3);
+  });
+
+  it('should resolve internal-id extension aliasing and count 4 expectations regardless of cleanup mode', () => {
+    const content = readFileSync(fixturePath('bundle_with_internal_ids.json'), 'utf-8');
+
+    const splitter = new Stix2Splitter();
+    const { numberExpectations, bundles } = splitter.splitBundleWithExpectations(content);
+    expect(numberExpectations).toEqual(4);
+
+    const cleanupSplitter = new Stix2Splitter();
+    const cleanupResult = cleanupSplitter.splitBundleWithExpectations(content, true, undefined, true);
+    expect(cleanupResult.numberExpectations).toEqual(4);
+
+    const relationshipBundle = (bundles as string[])
+      .map((bundle) => JSON.parse(bundle).objects[0])
+      .find((object) => object.id === 'relationship--10e8c71d-a1b4-4e35-bca8-2e4a3785ea04');
+    expect(relationshipBundle.created_by_ref).toEqual('ced3e53e-9663-4c96-9c60-07d2e778d931');
   });
 
   it('should produce identical, uncontaminated results when the same instance is reused across two different bundles', () => {
