@@ -29,10 +29,10 @@ const CardAccordion = ({
 
   const containerSx: SxProps = {
     padding: theme.spacing(3),
-    // Même correction que `Card.tsx` : `background.secondary` est un littéral en
-    // dur (`#0C1524` en sombre), aucun pas de l'échelle d'élévation. Ce panneau
-    // appartient à la famille carte et suit donc la même surface — sinon il
-    // resterait seul sur l'ancienne valeur.
+    // Same correction as `Card.tsx`: `background.secondary` is a hardcoded
+    // literal (`#0C1524` in dark), no step of the elevation scale. This panel
+    // belongs to the card family and so follows the same surface — otherwise it
+    // would be left alone on the old value.
     background: theme.palette.background.paper,
   };
 

@@ -149,9 +149,9 @@ const DecayDialogContent: FunctionComponent<DecayDialogContentProps> = ({ indica
           />
         </Grid>
         <Grid item xs={5}>
-          {/* Surface = Paper de la lib ; le TableContainer redevient un simple
-              conteneur de défilement. Décision de Sandy : l'ombre d'élévation MUI
-              laisse place à la bordure de la lib. */}
+          {/* Surface = the library Paper; TableContainer goes back to being a
+              plain scroll container. Arbitrated: the MUI elevation shadow gives
+              way to the library border. */}
           <Paper padding={0}>
             <TableContainer>
               <Table sx={{ maxHeight: 440 }} size="small" aria-label="lifecycle history">

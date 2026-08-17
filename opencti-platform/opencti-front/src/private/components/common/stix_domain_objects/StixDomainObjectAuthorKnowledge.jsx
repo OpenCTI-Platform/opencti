@@ -265,8 +265,8 @@ const StixDomainObjectAuthorKnowledge = ({ t, fsd, n, classes, stixDomainObjectI
           <Typography variant="h4" gutterBottom={true}>
             {t('Created entities')}
           </Typography>
-          {/* padding 20/20/0/20 -> 16 uniforme : décision de Sandy sur planche
-              (16 et non 24, pour l'homogénéite des trois sites asymétriques) */}
+          {/* padding 20/20/0/20 -> a uniform 16, arbitrated from a board: 16 and
+              not 24, to keep the three asymmetric sites consistent */}
           <Paper
             padding={16}
             style={{ marginTop: 8, height: 300 }}

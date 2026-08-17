@@ -51,8 +51,8 @@ const RequestAccessSettings = ({ subTypeId, data, dataConfiguration }: RequestAc
   }));
   const requestAccessWorkflowDisabled = statusList.length === 0;
 
-  // Le padding passe au Paper (prop `padding`) et le rayon tombe : 4px est
-  // déjà le `rounded-sm` de la lib, mesuré identique avant/après.
+  // The padding moves to the Paper (`padding` prop) and the radius drops: 4px
+  // is already the library's `rounded-sm`, measured identical before/after.
   const paperStyle: CSSProperties = {
     marginTop: theme.spacing(1),
     position: 'relative',

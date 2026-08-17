@@ -122,9 +122,9 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
   // for the body `data-theme` attribute the product's own stylesheets target
   // (`body[data-theme="dark"]`). Deriving both from one call is what keeps
   // MUI, the product CSS and FDS from disagreeing on a custom theme name.
-  // Le thème est « client » dès que sa couleur de panneau s'écarte du défaut
-  // du mode : c'est le même test que `hasCustomColor(theme, 'theme_paper')`,
-  // appliqué ici sur la source plutôt que sur la palette construite.
+  // A theme counts as CUSTOMER-set as soon as its paper colour departs from the
+  // mode's default: the same test as `hasCustomColor(theme, 'theme_paper')`,
+  // applied here to the source rather than to the assembled palette.
   const resolvedName = themeToUse?.name ?? defaultTheme.name;
   const resolvedPaper = themeToUse?.theme_paper ?? defaultTheme.theme_paper;
   const defaultPaper = resolvedName === 'Light' ? THEME_LIGHT_DEFAULT_PAPER : THEME_DARK_DEFAULT_PAPER;

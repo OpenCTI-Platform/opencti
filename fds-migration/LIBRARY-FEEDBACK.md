@@ -920,7 +920,7 @@ directions.
 ---
 
 Raised during: the **Paper pilot, phase 0** — bump from pin `35a4768` to
-`a22b188b28bc151f930d19d4f8ed7114df581e6e` (tête d'`origin/main`, carrying
+`a22b188b28bc151f930d19d4f8ed7114df581e6e` (head of `origin/main`, carrying
 #121, #123/#124 and #125). Everything below is measured on the DOM rendered by
 the installed build, in this product's real MUI theme, with the app's complete
 stylesheet stack loaded. Entries 30-33 are Paper gaps; 34-35 are method

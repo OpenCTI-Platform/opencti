@@ -1,10 +1,10 @@
 import { Delete } from '@mui/icons-material';
 import { IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
 import { Paper } from '@filigran/design-system';
-// FICHIER MIXTE, assumé : la balise <Paper> est celle de la lib, mais
-// `TableContainer component=` doit rester le Paper de MUI — un composant
-// passé en prop à MUI reçoit des props MUI (`variant`, `sx`) que le Paper
-// de la lib ne comprend pas. Déclaré dans migration-state.json, pas esquivé.
+// MIXED FILE, declared as such: the <Paper> tag is the library's, but
+// `TableContainer component=` has to stay MUI's Paper — a component passed to
+// MUI as a prop receives MUI props (`variant`, `sx`) that the library Paper
+// does not understand. Declared in migration-state.json rather than dodged.
 import MuiPaper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { useState } from 'react';

@@ -174,9 +174,9 @@ function checkForbiddenPatterns(state, results) {
 }
 
 /**
- * Extrait le texte de chaque balise ouvrante `<Paper …>` d'un fichier, en
- * suivant l'imbrication des accolades — un `sx={{ … }}` contient des `>` et
- * une regex qui s'arrête au premier ne verrait qu'un morceau de la balise.
+ * Extracts the text of every `<Paper …>` opening tag in a file, tracking brace
+ * depth — an `sx={{ … }}` contains `>` characters, and a regex that stops at the
+ * first one would only ever see a fragment of the tag.
  */
 function paperOpeningTags(content) {
   const tags = [];
@@ -196,23 +196,23 @@ function paperOpeningTags(content) {
   return tags;
 }
 
-/** Un padding re-déclaré à la main sur un Paper de la lib — className, sx ou style. */
+/** A padding re-declared by hand on a library Paper — className, sx or style. */
 const HARDCODED_PADDING = [
-  // classes utilitaires : p-4, px-2, pt-[15px], et leurs variantes préfixées
+  // utility classes: p-4, px-2, pt-[15px], and their prefixed variants
   /className\s*=\s*(["'`])[^"'`]*(?:^|\s|:)p[trblxy]?-\[?[\w.]/,
-  // objets sx / style : padding, paddingTop, p, px, py, pt…
+  // sx / style objects: padding, paddingTop, p, px, py, pt…
   /(?:sx|style)\s*=\s*\{\{[^}]*\b(?:padding(?:Top|Right|Bottom|Left|Block|Inline)?|p[trblxy]?)\s*:/,
 ];
 
 /**
- * Motif Paper. Pour chaque fichier déclaré converti :
- *  - `imported-from-library` : le fichier prend Paper dans la lib et NE prend
- *    plus le Paper de MUI — ni en import nommé, ni en import par défaut
- *    profond (`@mui/material/Paper`). Un fichier MIXTE se déclare, il
- *    n'esquive pas la regex (leçon OpenAEV, LIBRARY-FEEDBACK #31 là-bas).
- *  - `no-hardcoded-padding` : rougit si un padding réapparaît en dur sur un
- *    Paper de la lib. C'est la garde que la prop `padding` rend possible ;
- *    sans elle, la migration se paierait en compensations invisibles.
+ * Paper motif. For every file declared converted:
+ *  - `imported-from-library`: the file takes Paper from the library and NO
+ *    longer from MUI — neither as a named import nor as a deep default import
+ *    (`@mui/material/Paper`). A MIXED file declares itself; it does not dodge
+ *    the regex (OpenAEV lesson, their LIBRARY-FEEDBACK #31).
+ *  - `no-hardcoded-padding`: reddens if a padding reappears hardcoded on a
+ *    library Paper. This is the guard the `padding` prop makes possible;
+ *    without it, the migration would be paid for in invisible compensations.
  */
 function checkPaperPattern(state, results) {
   const pattern = state.paperPattern;
@@ -239,8 +239,8 @@ function checkPaperPattern(state, results) {
         ? { check: "paper:imported-from-library", file: entry.file, status: "FOUND", detail: detail.join("; ") }
         : { check: "paper:imported-from-library", file: entry.file, status: "OK" });
     } else if (entry.mixed) {
-      // Fichier MIXTE assumé : la garde d'import est désarmée, avec sa raison
-      // et le symbole qui a le droit de rester. Déclaré, pas contourné.
+      // Declared MIXED file: the import guard is disarmed, with its reason and
+      // the symbol allowed to remain. Declared, not worked around.
       results.push({
         check: "paper:imported-from-library",
         file: entry.file,
