@@ -72,4 +72,20 @@ describe('Stix2Splitter: split_bundle_with_expectations parity with pycti', () =
     const cleanupResult = cleanupSplitter.splitBundleWithExpectations(content, true, undefined, true);
     expect(cleanupResult.numberExpectations).toEqual(0);
   });
+
+  it('should produce identical, uncontaminated results when the same instance is reused across two different bundles', () => {
+    const first = JSON.stringify({ id: 'bundle--first', type: 'bundle', objects: [{ id: 'malware--a', type: 'malware' }, { id: 'malware--b', type: 'malware' }] });
+    const second = JSON.stringify({ id: 'bundle--second', type: 'bundle', objects: [{ id: 'malware--c', type: 'malware' }] });
+
+    const reusedSplitter = new Stix2Splitter();
+    const firstResult = reusedSplitter.splitBundleWithExpectations(first);
+    const secondResult = reusedSplitter.splitBundleWithExpectations(second);
+
+    const freshSecondResult = new Stix2Splitter().splitBundleWithExpectations(second);
+    expect(secondResult.numberExpectations).toEqual(freshSecondResult.numberExpectations);
+    expect(secondResult.bundles).toEqual(freshSecondResult.bundles);
+    // The second call's output must not carry over any state (cached elements/refs) from the first.
+    expect(firstResult.numberExpectations).toEqual(2);
+    expect(secondResult.numberExpectations).toEqual(1);
+  });
 });

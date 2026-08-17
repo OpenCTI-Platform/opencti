@@ -413,6 +413,22 @@ describe('rabbitmq: buildSplitMessages (Proposal B - Node.js bundle splitting)',
     expect(expectations).toBe(2);
   });
 
+  it('reports the deduped expectations count (not the raw object count) when dedup collapses a multi-object bundle down to a single message', () => {
+    // Regression test: two array entries sharing the same id collapse to a single bundle after
+    // dedup. The raw objectCount (2) must never leak into expectations/messages here - doing so
+    // previously caused the worker to see a non-no_split message and re-split/re-count on top.
+    const objects = [
+      { id: 'malware--dup', type: 'malware', name: 'First' },
+      { id: 'malware--dup', type: 'malware', name: 'Second' },
+    ];
+    const message = { type: 'bundle', work_id: 'work-1', content: toBundle(objects) };
+    const { messages: splitMessages, expectations } = buildSplitMessages(message);
+    expect(splitMessages).toHaveLength(1);
+    expect(expectations).toBe(1);
+    expect((splitMessages[0] as { no_split: boolean }).no_split).toBe(true);
+    expect(decode((splitMessages[0] as { content: string }).content).objects).toHaveLength(1);
+  });
+
   it('throws when a multi-object bundle contains an object with no id (known pycti-parity limitation)', () => {
     // Unlike the single-object case (short-circuited before the splitter runs), a multi-object
     // bundle still reaches the dependency walk, which indexes objects by `id`. This matches

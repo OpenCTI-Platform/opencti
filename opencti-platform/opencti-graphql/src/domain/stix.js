@@ -80,8 +80,7 @@ export const sendStixBundle = async (context, user, connectorId, bundle, work_id
       content,
       work_id: target_work_id,
       update: true,
-      // Only this call is responsible for the work's expectations when it created it; a caller
-      // supplying an existing work_id is expected to manage expectations for that work itself.
+      // Only track expectations here if this call created the work.
       trackExpectations: createdWorkHere,
     });
     return true;

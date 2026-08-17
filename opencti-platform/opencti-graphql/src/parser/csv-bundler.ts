@@ -53,6 +53,7 @@ const sendBundleToWorker = async (context: AuthContext, bundle: BundleBuilder, o
     work_id: opts.workId,
     content: bundleContentAsString,
     draft_id: opts.draftId ?? '',
+    trackExpectations: true,
   });
   return objectCount;
 };

@@ -301,6 +301,12 @@ export class Stix2Splitter {
 
   // Mirrors split_bundle_with_expectations
   splitBundleWithExpectations(bundle: string | StixObject, useJson = true, eventVersion?: string | null, cleanupInconsistentBundle = false): SplitResult {
+    // Reset per-call state so a single instance can safely be reused across multiple splits.
+    this.cacheIndex = new Map();
+    this.cacheRefs = new Map();
+    this.elements = [];
+    this.incompatibleItems = [];
+
     let bundleData: StixObject;
     if (useJson) {
       try {

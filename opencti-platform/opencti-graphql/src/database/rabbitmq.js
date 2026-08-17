@@ -454,10 +454,7 @@ const amqpExecute = async (execute) => {
  * In rare edge cases around connection failures, duplicate delivery
  * is possible (at-least-once semantics). Consumers should be idempotent.
  *
- * Not exported on purpose: this is the low-level publish primitive for this module.
- * Callers outside rabbitmq.js must go through pushToConnector or pushBundleToWorker,
- * so every message to a worker/connector queue is guaranteed to go through their
- * respective splitting/expectations/routing logic instead of bypassing it.
+ * Not exported on purpose: callers must go through pushToConnector or pushBundleToWorker.
  */
 const send = async (exchangeName, routingKey, message) => {
   let attemptNumber = 0;
@@ -705,9 +702,11 @@ export const rabbitMQIsAlive = async () => {
 /**
  * Pure splitting decision for an outgoing worker message.
  * Returns { messages, expectations }:
- * - messages: the message(s) to actually publish. The original message, unchanged, when no
- *   split occurs (not a bundle, already flagged no_split, or the bundle only has a single
- *   object); one message per resulting chunk otherwise.
+ * - messages: the message(s) to actually publish. The original message, unchanged, when the
+ *   splitter never runs (not a bundle, already flagged no_split, or the bundle only has a single
+ *   object pre-split); otherwise one message per bundle produced by the splitter (which may be
+ *   fewer than the raw object count once duplicates/incompatible items are removed, including
+ *   down to a single message or none at all).
  * - expectations: the total number of STIX objects the bundle represents, used by callers that
  *   opt in to centralized expectation tracking (see `trackExpectations` on pushBundleToWorker).
  *   null when the message isn't a STIX bundle at all (e.g. sync 'event' messages), since those
@@ -733,11 +732,13 @@ export const buildSplitMessages = (message) => {
   if (message.no_split || objectCount <= 1) {
     return unsplit(objectCount);
   }
+  // Once the splitter has run, its output (deduped/filtered) is authoritative for both the
+  // messages to publish and the expectation count - including the 0- and 1-bundle cases, which
+  // can differ from the raw objectCount when the bundle contains duplicate ids or incompatible
+  // items. Always flagging no_split: true here also prevents the worker from re-splitting (and
+  // re-adding expectations for) content we already split.
   const splitter = new Stix2Splitter();
   const { bundles, numberExpectations } = splitter.splitBundleWithExpectations(bundleContent);
-  if (bundles.length <= 1) {
-    return unsplit(objectCount);
-  }
   const messages = bundles.map((bundle) => ({ ...message, content: toBase64(bundle), no_split: true }));
   return { messages, expectations: numberExpectations };
 };
@@ -754,6 +755,9 @@ export const buildSplitMessages = (message) => {
 export const pushBundleToWorker = async (context, user, connectorId, message) => {
   const routingKey = pushRouting(connectorId);
   const { messages, expectations } = buildSplitMessages(message);
+  if (message.type === 'bundle') {
+    logApp.debug('[WORKER] Bundle split into queue messages', { connectorId, work_id: message.work_id, messageCount: messages.length, expectations });
+  }
   const shouldTrackExpectations = message.trackExpectations && message.work_id && context && user && expectations > 0;
   if (shouldTrackExpectations) {
     await updateExpectationsNumber(context, user, message.work_id, expectations);
