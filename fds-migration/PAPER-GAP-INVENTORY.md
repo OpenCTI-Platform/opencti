@@ -697,7 +697,7 @@ En clair, `ThemeLight.ts:98-100` pose `#FFFFFF`, qui **est** exactement layer 1 
 ### Pourquoi je ne corrige pas
 
 `background.secondary` a **9 consommateurs directs**, et `Card.tsx` en est un —
-c'est-à-dire **les 222 sites de Card** (décompte mesuré ; le brief annonçait 164), explicitement hors périmètre de cette
+c'est-à-dire **les 219 sites de Card** (décompte mesuré ; le brief annonçait 164), explicitement hors périmètre de cette
 vague. Passer `#0C1524` au token layer 1 est une seule ligne, mais elle repeint
 toutes les cartes du produit en thème sombre par défaut. Ce n'est pas une
 correction de vague pilote, c'est une décision à part entière.
@@ -792,7 +792,7 @@ le renommage, cette colonne aurait affiché le bleu Filigran.
 
 Le correctif est **au site d'appel**, pas sur `background.secondary` : `LoginPage.tsx`
 pose `backgroundColor: 'background.paper'` sur ses deux `Card`. Le champ de
-palette reste **intact** pour ses 9 consommateurs et les 222 autres cartes.
+palette reste **intact** pour ses 9 consommateurs et les 219 autres cartes.
 
 `background.paper` résout sur `--bg-elevation-default-layer-1` et **continue de
 suivre le `theme_paper` d'un client** — c'est déjà ce que `Card` fait sur sa
@@ -998,7 +998,7 @@ explicite : ne rien convertir avant que Sandy rende la feuille annotée.
 | 4 | **padding hors échelle** | **6** | 15px ×4, 20px ×2 ; hors échelle → 0px en silence |
 | 5 | **surface hébergeant une structure** | **3** (déjà comptés ailleurs) | grille interne + `.paper-for-grid` non-layerée qui gagne (#16) |
 | 6 | **gouttières de liste** | **0** en périmètre | motif déjà validé et appliqué sur N11/N12/N13 |
-| 7 | **motif carte** | **222 sites** | **pas des Paper directs** |
+| 7 | **motif carte** | **219 sites** | **pas des Paper directs** |
 
 ### Deux classes sont vides, et pas pour la même raison
 
@@ -1015,8 +1015,23 @@ donc **pas des `<Paper>` directs** : les convertir n'est pas un échange de
 balise mais un remplacement de composant, et leur fond passe par
 `background.secondary` — le champ que le login contourne désormais au site.
 
-Décompte mesuré aujourd'hui : **222 sites `<Card>` dans 167 fichiers**. Le brief
-annonçait 164 ; l'écart est signalé, pas absorbé. **222 est le chiffre qui dimensionne le chantier Card.**
+Décompte mesuré aujourd'hui : **219 sites `<Card>` dans 166 fichiers**, dont
+**174 portent `title=`** (36 d'entre eux un nœud composé), **34 portent `action=`**
+et **30 sont des cartes-liens** (`to` ou `onClick`). Le brief annonçait 164 ;
+l'écart est signalé, pas absorbé. **219 est le chiffre qui dimensionne le chantier Card.**
+
+> **Ne pas « recorriger » vers 222, 216 ou 123.** Trois chiffres faux ont circulé
+> avant celui-ci ; voici d'où ils venaient, pour que personne ne les restaure.
+> **222 / 167** comptait *toutes* les balises `<Card>` du front, en y mêlant les
+> **3 sites, dans 1 fichier**, qui utilisent le `Card` de **MUI** et non le wrapper
+> produit (`StixDomainObjectAuthorKnowledge.jsx`) — 219 + 3 = 222, 166 + 1 = 167.
+> **216 / 163** venait d'un filtre d'import ne reconnaissant que les chemins
+> longs, qui ratait les trois imports relatifs `'./Card'` (`CardAccordion.tsx`,
+> `CardNumber.tsx`, `CardStatistic.tsx`). **123** venait d'un `grep` de ligne,
+> aveugle aux balises ouvrantes multilignes : il en ratait 51.
+> Le décompte de référence est l'analyseur à profondeur d'accolades — le même que
+> celui de `scripts/check-fds-conformity.mjs` — qui distingue le wrapper produit
+> du composant MUI par son import.
 
 ### Recouvrements assumés
 
@@ -1141,12 +1156,12 @@ C'est la ligne que tu cherchais, et elle n'est pas dans les 35.
 
 | | sombre | clair |
 |---|---|---|
-| `Card` (222 sites) peint `background.secondary` | **`rgb(12,21,36)` = `#0C1524`** | `rgb(255,255,255)` |
+| `Card` (219 sites) peint `background.secondary` | **`rgb(12,21,36)` = `#0C1524`** | `rgb(255,255,255)` |
 | couche 1 de la lib | `rgb(13,23,43)` | `rgb(255,255,255)` |
 | verdict | **DIVERGE — littéral hors pont** | coïncide |
 
 `#0C1524` n'est **aucun** pas de l'échelle. En clair le littéral vaut `#FFFFFF`,
-qui **est** layer-1 : l'écart est **propre au thème sombre**, sur **222 sites**.
+qui **est** layer-1 : l'écart est **propre au thème sombre**, sur **219 sites**.
 C'est le même défaut que la carte du login, dont la correction au site n'a traité
 qu'un cas sur 223.
 
@@ -1177,3 +1192,63 @@ La divergence qui compte n'est pas la typographie, c'est la **couleur** : le tit
 produit suit le `theme_text_color` du client, celui de la lib est un token fixe.
 **Adopter `title`/`action` fait perdre au titre le suivi de la couleur de texte du
 client.** À peser dans ta décision.
+
+---
+
+## 23. Suivi séparé — les quatre barres qui peignent sur toute la largeur
+
+**Décidé par Sandy : pas maintenant.** Consigné ici pour ne pas le perdre, avec le
+chiffrage et le fichier qui montre déjà la bonne forme.
+
+### Le motif
+
+Quatre barres flottantes peignent leur fond sur **toute la largeur de la fenêtre**
+et ne décalent que leur **contenu**, par `padding-left` :
+
+| fichier | ligne du décalage | empilement déclaré |
+|---|---|---|
+| `components/graph/GraphToolbar.tsx` | `paddingLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH` (58) | `zIndex: 1` (57) |
+| `private/components/common/containers/ContainertKnowledgeTimeLineBar.tsx` | idem (91) | `zIndex: 1` (23) |
+| `private/components/common/files/workbench/WorkbenchFileToolbar.jsx` | idem (176) | `zIndex: 1` (31) |
+| `private/components/settings/sub_types/ToolBar.tsx` | idem (176) | `zIndex: 1` (31) |
+
+Mesuré au DOM sur le graphe de connaissance et la chronologie, fenêtre 1440,
+rail ouvert : la barre fait **1440 px de large**, commence à **x = 0**, et son
+fond recouvre donc les **180 px** du rail. Le décalage du contenu est correct
+(180 px = `OPEN_BAR_WIDTH`, 48 px replié) : ce n'est pas un problème de valeur,
+c'est un problème de **surface peinte**.
+
+### Pourquoi c'est fragile
+
+Ces quatre barres ne sont correctes que **parce qu'une autre surface les masque**.
+Elles dépendent du rail pour ne pas se voir, au lieu de ne pas se peindre là.
+C'est exactement ce qui a transformé une propriété manquante sur le rail
+(`z-index`) en régression visible sur quatre écrans — voir `LIBRARY-FEEDBACK.md`
+n° 38. Le correctif appliqué (`.app-navbar { z-index: 1200 }`) rétablit le rendu
+mais **ne retire pas la dépendance** : il remet le couvercle.
+
+### La forme correcte existe déjà dans le produit
+
+`private/components/data/ToolBar.jsx:97` fait la même chose avec la bonne
+propriété :
+
+```js
+marginLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
+```
+
+Avec `marginLeft`, la barre **ne commence pas** avant la fin du rail : elle ne
+peint rien sous lui, et son rendu ne dépend plus d'un empilement. Mesuré sur la
+liste des rapports avec 21 lignes sélectionnées : la barre reste dans la zone de
+contenu, aucun recouvrement du rail.
+
+### Proposition, quand ce sera repris
+
+Passer les quatre `paddingLeft` en `marginLeft` — 4 fichiers, 4 lignes — puis
+retirer le `z-index: 1200` du rail et vérifier que le test de retrait de
+l'entrée 38 passe toujours. Le gain n'est pas visuel : c'est que la coque cesse
+d'être responsable de masquer le contenu des écrans.
+
+**Réserve à lever avant de le faire** : `marginLeft` réduit la largeur utile de la
+barre de 48 ou 180 px selon l'état du rail. Il faut vérifier au DOM que les
+contrôles de chacune des quatre barres tiennent dans la largeur restante à
+1024 px, sinon le remède déplace le défaut.

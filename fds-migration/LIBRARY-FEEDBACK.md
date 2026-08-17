@@ -1230,7 +1230,78 @@ a `<Paper title="…">` header renders in that colour rather than in
 `--text-default-secondary`. Until then OpenCTI keeps its own header above the
 surface and does not pass `title`/`action`.
 
-**Scope of what this unblocks, measured.** `Card.tsx` has **222 call sites**, and
-**123 of them pass `title=`** — 55 %. So the `title`/`action` question and the
+**Scope of what this unblocks, measured.** `Card.tsx` has **219 call sites**, and
+**174 of them pass `title=`** — 79 %. So the `title`/`action` question and the
 Card component question are **one decision, not two**: the day the header colour
-is reachable, 123 sites become expressible in one move.
+is reachable, 174 sites become expressible in one move.
+
+## 38. `Navbar` declares neither an anchoring inset nor a stacking level, so every host invents both
+
+**Raised from a regression this pilot shipped and did not see.** Two defects were
+reported on the running application after the wave closed. Both trace to the same
+missing contract, and neither was visible to `tsc`, to eslint, to the build, to
+the conformity gate or to the unit tests.
+
+**What the component does today.** The `<nav>` it renders carries a background
+and a width, and nothing else about where it sits in the page. It declares:
+
+| | value shipped |
+|---|---|
+| `position` | none — the host must choose |
+| horizontal inset | none |
+| `z-index` | none (`auto`) |
+
+**Why that is not neutral.** The rail is not an ordinary block: it is the
+application's persistent shell. Two properties are load-bearing for it and for
+no other component, so leaving them unset does not defer a style choice — it
+defers a correctness requirement.
+
+*Anchoring.* OpenCTI gave it `position: sticky` with a `top` inset (its own
+rail-height workaround, #11). Sticky anchors only on the axes it is given an
+inset for, so the rail held vertically and rode the horizontal scroll. Measured
+drift, against a master build of the component it replaced:
+
+| viewport | content overflow | legacy MUI Drawer paper | this component, `sticky` + `top` |
+|---|---|---|---|
+| 1024 | 376px | `fixed` — drift **0** | drift **−376px** — rail off screen |
+| 1280 | 120px | `fixed` — drift **0** | drift **−120px** |
+| 1440 | 0 | drift 0 | drift 0 |
+
+*Stacking.* The legacy Drawer's paper painted at `z-index: 1200`. The `<nav>`
+paints at `auto`, so a `z-index: 1` sibling wins. Four OpenCTI toolbars paint a
+full-viewport background and offset only their content (`padding-left`); all four
+declare `z-index: 1`. Measured with `elementFromPoint` at the centre of the rail:
+
+| | legacy Drawer | this component |
+|---|---|---|
+| knowledge graph | rail wins the pixel | **bar wins** |
+| container timeline | rail wins the pixel | **bar wins** |
+
+**The signal is that the two hosts answered differently.** OpenAEV anchors its
+rail with `position: fixed; left: 0` — measured drift 0, so it does not have the
+anchoring defect. But its rail also paints at `z-index: auto`, so it carries the
+same stacking gap; it is simply not reachable there, because OpenAEV has no
+toolbar that aligns itself on the rail width (zero occurrences of a rail-width
+offset in `openaev-front`). One missing contract, two different host answers, one
+latent defect and one shipped regression.
+
+**Asked.** Ship a documented default the host can override, rather than nothing:
+
+1. a **stacking level** on the rail — ideally through a token in the same family
+   as `--fds-z-overlay`, e.g. `--fds-z-navbar`, defaulting above ordinary
+   application chrome and below overlays, so a host that needs a different order
+   redeclares one custom property instead of reverse-engineering a value;
+2. an **anchoring contract** — either the component anchors itself, or the
+   documentation states which axes the host must pin and warns that a
+   single-axis `sticky` leaves the other axis scrolling.
+
+**Why it stayed invisible.** The value that mattered (`z-index: 1200`) lived on
+the MUI Drawer that the migration deleted. Nothing carried it forward, and
+nothing failed: the types are satisfied, the rendered rail is correct at any
+viewport wide enough not to overflow, and the defect only appears below a
+1400px-wide shell — a width no test exercises.
+
+**Removal test.** Delete the `.app-navbar { left: 0; z-index: 1200 }` block from
+`design-system-host.css`, load the knowledge graph of any container at a 1280px
+viewport, scroll right: the rail must stay at the left edge and must keep the
+pixel at its own centre. If it does, the workaround is retired.
