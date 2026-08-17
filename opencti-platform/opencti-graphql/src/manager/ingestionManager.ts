@@ -688,6 +688,8 @@ export const jsonExecutor = async (context: AuthContext) => {
     if (isMustExecuteIteration(ingestion.last_execution_date, ingestion.scheduling_period)) {
       const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
       if (messages_number === 0) { // If no more ingestion to do
+        const ingestionLogger = createIngestionLogger(ingestion.internal_id, ingestion.name, 'json');
+        ingestionLogger.info('Feed execution started', { uri: ingestion.uri });
         try {
           logApp.info(`[OPENCTI-MODULE] Executing Json ingestion for ${ingestion.name}`);
           const { objects, variables, nextExecutionState } = await executeJsonQuery(context, ingestion, {
@@ -706,13 +708,16 @@ export const jsonExecutor = async (context: AuthContext) => {
           }
           // Save new state for next execution
           const ingestionState = mergeQueryState(ingestion.query_attributes, variables, nextExecutionState);
-          const state = { ingestion_json_state: ingestionState, last_execution_date: now() };
+          const state = { ingestion_json_state: ingestionState, last_execution_date: now(), last_execution_status: 'success' };
           await patchJsonIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
           await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state: ingestionState });
+          await ingestionLogger.success('Feed execution succeeded', { itemCount: objects.length });
         } catch (e) {
           logApp.warn('[OPENCTI-MODULE] INGESTION - Json ingestion execution', { cause: e, name: ingestion.name });
+          await ingestionLogger.error('Feed execution failed', buildIngestionErrorMeta(e as Error))
+            .catch((reason) => logApp.error('[OPENCTI-MODULE] INGESTION Json, error on pushing ingestion error log', { cause: reason }));
           // In case of error we need also to take in account the min_interval_minutes with last_execution_date update.
-          await patchJsonIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() })
+          await patchJsonIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now(), last_execution_status: 'error' })
             .catch((reason) => logApp.error('[OPENCTI-MODULE] INGESTION Json, error on updating status', { cause: reason }));
         }
       } else {
