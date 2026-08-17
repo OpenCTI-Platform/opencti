@@ -182,6 +182,18 @@ describe('validateAndNormalizeEmailInput', () => {
     expect(input.value).toEqual(['John']);
   });
 
+  it('should reject whitespace-only email values', async () => {
+    const input = { key: 'user_email', value: ['   '] };
+    await expect(validateAndNormalizeEmailInput(context, userId, input))
+      .rejects.toThrow('The email you have provided is not valid');
+  });
+
+  it('should reject a non-string email value', async () => {
+    const input = { key: 'user_email', value: [42] };
+    await expect(validateAndNormalizeEmailInput(context, 'user-id', input))
+      .rejects.toThrow('The email you have provided is not valid');
+  });
+
   it('should lowercase and trim the email before checking for duplicates', async () => {
     (elLoadBy as any).mockResolvedValue(null);
     const input = { key: 'user_email', value: ['  Victim@Example.COM  '] };
