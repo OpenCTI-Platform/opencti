@@ -513,8 +513,9 @@ const convertVulnerabilityToStix = (instance: StoreEntity, type: string): SDO.St
 };
 const convertThreatActorGroupToStix = (instance: StoreEntity, type: string): SDO.StixThreatActor => {
   assertType(ENTITY_TYPE_THREAT_ACTOR_GROUP, type);
+  const threatActorGroup = buildStixDomain(instance);
   return {
-    ...buildStixDomain(instance),
+    ...threatActorGroup,
     name: instance.name,
     description: instance.description,
     threat_actor_types: instance.threat_actor_types,
@@ -528,6 +529,12 @@ const convertThreatActorGroupToStix = (instance: StoreEntity, type: string): SDO
     primary_motivation: instance.primary_motivation,
     secondary_motivations: instance.secondary_motivations,
     personal_motivations: instance.personal_motivations,
+    extensions: {
+      [STIX_EXT_OCTI]: cleanObject({
+        ...threatActorGroup.extensions[STIX_EXT_OCTI],
+        score: instance.x_opencti_score,
+      }),
+    },
   };
 };
 const convertInfrastructureToStix = (instance: StoreEntity, type: string): SDO.StixInfrastructure => {
@@ -545,8 +552,9 @@ const convertInfrastructureToStix = (instance: StoreEntity, type: string): SDO.S
 };
 const convertIntrusionSetToStix = (instance: StoreEntity, type: string): SDO.StixIntrusionSet => {
   assertType(ENTITY_TYPE_INTRUSION_SET, type);
+  const intrusionSet = buildStixDomain(instance);
   return {
-    ...buildStixDomain(instance),
+    ...intrusionSet,
     name: instance.name,
     description: instance.description,
     aliases: instance.aliases,
@@ -556,6 +564,12 @@ const convertIntrusionSetToStix = (instance: StoreEntity, type: string): SDO.Sti
     resource_level: instance.resource_level,
     primary_motivation: instance.primary_motivation,
     secondary_motivations: instance.secondary_motivations,
+    extensions: {
+      [STIX_EXT_OCTI]: cleanObject({
+        ...intrusionSet.extensions[STIX_EXT_OCTI],
+        score: instance.x_opencti_score,
+      }),
+    },
   };
 };
 
@@ -574,8 +588,9 @@ const convertCourseOfActionToStix = (instance: StoreEntity, type: string): SDO.S
 };
 const convertMalwareToStix = (instance: StoreEntity, type: string): SDO.StixMalware => {
   assertType(ENTITY_TYPE_MALWARE, type);
+  const malware = buildStixDomain(instance);
   return {
-    ...buildStixDomain(instance),
+    ...malware,
     name: instance.name,
     description: instance.description,
     malware_types: instance.malware_types,
@@ -589,6 +604,12 @@ const convertMalwareToStix = (instance: StoreEntity, type: string): SDO.StixMalw
     capabilities: instance.capabilities,
     operating_system_refs: (instance[INPUT_OPERATING_SYSTEM] ?? []).map((m) => m.standard_id),
     sample_refs: (instance[INPUT_SAMPLE] ?? []).map((m) => m.standard_id),
+    extensions: {
+      [STIX_EXT_OCTI]: cleanObject({
+        ...malware.extensions[STIX_EXT_OCTI],
+        score: instance.x_opencti_score,
+      }),
+    },
   };
 };
 const convertAttackPatternToStix = (instance: StoreEntity, type: string): SDO.StixAttackPattern => {
