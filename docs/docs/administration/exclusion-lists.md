@@ -62,3 +62,119 @@ From now on, when an indicator is about to be created, if its pattern contains a
 This applies regardless of the source of ingestion: Manual, Connectors, Feed ingestors (CSV, RSS, TAXII) and also Playbook.
 
 ![Exclusion lists indicator creation](./assets/exclusion-lists/exclusion-lists-indicator-creation.png)
+
+## Updating an Exclusion List via API (Python script)
+
+For large exclusion lists or automation purposes, you can update an existing exclusion list programmatically using the OpenCTI GraphQL API.
+
+### Prerequisites
+
+- Python 3.x + `requests` library (`pip install requests`)
+- An OpenCTI API token with administrator permissions
+- Your exclusion list as a `.txt` file (one value per line)
+
+### How to find the Exclusion List ID
+
+The ID is not visible in the UI. To retrieve it, you have two ways :
+1. With your **browser's Developer Tools > Network** tab, trigger an update on the target list in **Settings > Customization > Exclusion lists**, and inspect the GraphQL request payload : the `id` field in `variables` is your Exclusion List ID. (to help you, you can use the [GraphQL Network Inspector Browser Extension](https://chromewebstore.google.com/detail/graphql-network-inspector/ndlbedplllcgconngcnfmkadhokfaaln)
+
+2. With a GraphQL request : 
+```graphql
+query GetExclusionLists {
+  exclusionLists {
+    edges {
+      node {
+        id
+        name
+        description
+      }
+    }
+  }
+}
+```
+OR 
+
+```graphql
+query GetExclusionListByName {
+  exclusionLists(
+    filters: {
+      mode: and
+      filters: [{ key: "name", values: ["my_exclusionlist_name"] }]
+      filterGroups: []
+    }
+  ) {
+    edges {
+      node {
+        id
+        name
+      }
+    }
+  }
+}
+```
+
+### Configuration
+
+Update the following variables before running the script:
+
+| Variable | Description |
+|---|---|
+| `OPENCTI_URL` | Base URL of your OpenCTI instance |
+| `API_TOKEN` | Your OpenCTI API token (found in your profile settings) |
+| `EXCLUSION_LIST_ID` | ID of the exclusion list to update (see above) |
+| `FILE_PATH` | Path to your `.txt` exclusion list file |
+
+> **Note:** If your source file is in another format (e.g. `.json`), convert it to `.txt` first.
+
+### Script
+
+```python
+import requests
+
+OPENCTI_URL = "https://your_opencti_instance.io/" #TO_BE_MODIFIED
+API_TOKEN = "your_api_token" #TO_BE_COMPLETED
+EXCLUSION_LIST_ID = "g50ea9c3-2aaa-4843-aa94-f0235162c6bf" #TO_BE_MODIFIED. You can find it in the network traffic view when you update your exclusion list.
+FILE_PATH = "/your_path/your_exclusion_list.txt" #TO_BE_MODIFIED. you would have to add a step here to convert your .json file to .txt
+
+MUTATION = """
+  mutation exclusionListFileUpdate($id: ID!, $input: [EditInput!], $file: Upload) {
+    exclusionListFieldPatch(id: $id, input: $input, file: $file) {
+      id
+      file_id
+      exclusion_list_values_count
+      exclusion_list_file_size
+    }
+  }
+"""
+
+# GraphQL multipart request (https://github.com/jaydenseric/graphql-multipart-request-spec)
+operations = {
+    "query": MUTATION,
+    "variables": {
+        "id": EXCLUSION_LIST_ID,
+        "input": [],   
+        "file": None   
+    }
+}
+
+map_data = {
+    "0": ["variables.file"]
+}
+
+with open(FILE_PATH, "rb") as f:
+    response = requests.post(
+        f"{OPENCTI_URL}/graphql",
+        headers={"Authorization": f"Bearer {API_TOKEN}"},
+        data={
+            "operations": __import__("json").dumps(operations),
+            "map": __import__("json").dumps(map_data),
+        },
+        files={"0": (FILE_PATH.split("/")[-1], f, "text/plain")},
+    )
+
+print(response.json())
+```
+
+> After a successful update, the exclusion list will be replaced with the content of your text file.
+
+*For any question : please contact Emma Cagnazzo*
