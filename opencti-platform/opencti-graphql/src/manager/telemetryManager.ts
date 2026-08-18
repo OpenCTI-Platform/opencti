@@ -57,7 +57,6 @@ import {
   ENTITY_TYPE_INGESTION_TAXII_COLLECTION,
 } from '../modules/ingestion/ingestion-types';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
-import { getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 import { FilterMode } from '../generated/graphql';
 import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../database/redis';
 import type { AuthUser } from '../types/user';
@@ -490,8 +489,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // composer-managed connectors resolve to the catalog contract slug
     // through their stored container image; manually registered connectors
     // fall back to their registered name, flagged managed=false.
-    const contractsByImage = await getSupportedContractsByImage();
-    manager.setActiveConnectorsByIdentity(computeActiveConnectorsByIdentity(activeConnectors, contractsByImage));
+    manager.setActiveConnectorsByIdentity(computeActiveConnectorsByIdentity(activeConnectors));
     // endregion
 
     // region Roles with draft capability information
