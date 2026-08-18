@@ -85,11 +85,13 @@ const Card = ({
    * which is what a host redeclaring a layer is entitled to expect.
    *
    * Fixed HERE, in the wrapper, deliberately — not in the theme. Repointing
-   * `background.secondary` itself would move its seven other consumers
-   * (date pickers, drawer header, saved-filters autocomplete, relationship
-   * header, chatbot) which are inputs and chrome, not card surfaces, and were
-   * never part of this question. Same shape as the login-page correction: at
-   * the site that paints, not on the shared field.
+   * `background.secondary` itself would move its EIGHT other consumer lines,
+   * in seven files: the platform search input (`SearchInput.jsx:100`), the two
+   * date pickers, the drawer header, the saved-filters autocomplete, the
+   * relationship-creation header, and the chatbot (two lines). They are inputs
+   * and chrome, not card surfaces, and were never part of this question. Same
+   * shape as the login-page correction: at the site that paints, not on the
+   * shared field.
    */
   const backgroundColor = 'var(--bg-elevation-default-layer-1)';
 

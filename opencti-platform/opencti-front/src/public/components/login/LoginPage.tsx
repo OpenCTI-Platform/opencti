@@ -22,24 +22,6 @@ interface LoginPageProps {
   settings: LoginRootPublicQuery$data['publicSettings'];
 }
 
-/**
- * The login page's surfaces sit on ELEVATION LAYER 1.
- *
- * `Card` paints `background.secondary` on the built-in themes, and that field
- * is a hardcoded `#0C1524` in dark — no elevation step at all (RGB distance 7
- * from layer 1, 15 from layer 0). In light it is `#FFFFFF`, which already IS
- * layer 1, so only dark moves.
- *
- * The correction is AT THE SITE, exactly as it was done in OpenAEV: the panel
- * stops taking that field and falls back to the right layer. `background.paper`
- * resolves to `--bg-elevation-default-layer-1` and keeps following a customer's
- * `theme_paper` — which is what `Card` itself already does on a custom theme.
- * `background.secondary` is left untouched for its 9 consumers and Card's 164
- * other sites; repointing the field would repaint all of them and is a separate
- * decision.
- */
-const LOGIN_SURFACE_SX = { backgroundColor: 'background.paper' } as const;
-
 const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
   const { t_i18n } = useFormatter();
   const { resetPwdStep, forcePasswordChange } = useLoginContext();
@@ -89,7 +71,7 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
         <AlertMfa />
 
         {providers.length === 0 && (
-          <Card sx={LOGIN_SURFACE_SX}>
+          <Card>
             <Typography textAlign="center" variant="body2">
               {t_i18n('No authentication provider available')}
             </Typography>
@@ -118,7 +100,6 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
           && (
             <Card
               sx={{
-                ...LOGIN_SURFACE_SX,
                 display: 'flex',
                 flexDirection: 'column',
               }}
