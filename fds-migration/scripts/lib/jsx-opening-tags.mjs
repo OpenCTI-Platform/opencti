@@ -1,4 +1,51 @@
 /**
+ * Blanks out comments, preserving offsets and line breaks so every position and
+ * line number in the result still matches the original file.
+ *
+ * Needed because a `<Paper>` written inside a comment is not a call site, and a
+ * padding class shown in a commented EXAMPLE is not a violation. Both happened:
+ * two of the "27" Paper sites were the words `<Paper>` inside the MIXED-file
+ * note at the top of TokenList.tsx and UserTokenList.tsx.
+ *
+ * Strings and template literals are tracked, so a `//` inside a URL or a
+ * `/* *\/` inside a string is not mistaken for a comment.
+ *
+ * @param {string} content File contents.
+ * @returns {string} Same length, comments replaced by spaces.
+ */
+export function stripComments(content) {
+  const out = content.split("");
+  let i = 0;
+  let quote = null;
+  while (i < content.length) {
+    const ch = content[i];
+    const next = content[i + 1];
+    if (quote) {
+      if (ch === "\\") { i += 2; continue; }
+      if (ch === quote) quote = null;
+      i += 1;
+      continue;
+    }
+    if (ch === '"' || ch === "'" || ch === "`") { quote = ch; i += 1; continue; }
+    if (ch === "/" && next === "/") {
+      while (i < content.length && content[i] !== "\n") { out[i] = " "; i += 1; }
+      continue;
+    }
+    if (ch === "/" && next === "*") {
+      out[i] = " "; out[i + 1] = " "; i += 2;
+      while (i < content.length && !(content[i] === "*" && content[i + 1] === "/")) {
+        if (content[i] !== "\n") out[i] = " ";
+        i += 1;
+      }
+      if (i < content.length) { out[i] = " "; out[i + 1] = " "; i += 2; }
+      continue;
+    }
+    i += 1;
+  }
+  return out.join("");
+}
+
+/**
  * THE declared analyser for JSX opening tags. One implementation, imported by
  * both the conformity gate and the surface counter, so a count and a guard can
  * never disagree about what a call site is.
@@ -14,7 +61,9 @@
  *   `/` or `>`).
  * @returns {string[]} The full text of each opening tag, `<Tag …>` included.
  */
-export function openingTags(content, tagName) {
+export function openingTags(rawContent, tagName) {
+  // Comments are blanked first: a tag inside a comment is not a call site.
+  const content = stripComments(rawContent);
   const tags = [];
   const re = new RegExp(`<${tagName}(?=[\\s/>])`, "g");
   let m;

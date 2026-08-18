@@ -107,17 +107,30 @@ const Card = ({
      * from MUI's built-in `divider` default — which is what an `outlined`
      * MUI Card would otherwise draw, and which the product never declares.
      *
+     * Read from the PER-LAYER hook, not from the semantic alias. The alias
+     * `--border-elevation-subtle-soft` resolves from layer 0 — the one variable
+     * `useFdsThemeScope` does not push — so on a customer theme the card edge
+     * stayed on the built-in `#2b4f8d` while every library `Paper` had moved to
+     * the customer's `#3b2450`. Measured, before this line: card border
+     * `color(srgb 0.168627 0.309804 0.552941 / 0.15)` on BOTH the dark and the
+     * customer theme; Paper border `color(srgb 0.231373 0.141176 0.313726 / 0.15)`
+     * on the customer theme. Same rule as the surface, same assumed
+     * consequence: on a customised theme the edge becomes invisible because it
+     * coincides with the surface, and on the shipped themes nothing changes.
+     *
      * Deliberately ONE LINE here rather than swapping `CardMui` for the
      * library `Paper`. The surface colour and the radius already match the
      * library (see `backgroundColor` above; radius is 4px on both sides), so
-     * an exchange would buy this border and nothing else — while forcing 45
-     * `sx` call sites onto `style`, giving 25 `variant="outlined"` sites a
-     * background they do not have, dropping the asymmetric padding of 11
-     * sites plus part of the 126 dashboard tiles, and leaving a hybrid
-     * wrapper the real Card migration would have to undo. Same rendering,
-     * none of the debt.
+     * an exchange would buy this border and nothing else — while forcing the
+     * **44** `sx` call sites onto `style`, giving the **13**
+     * `variant="outlined"` sites a background they do not have, dropping the
+     * asymmetric padding of 11 sites plus part of the 126 dashboard tiles, and
+     * leaving a hybrid wrapper the real Card migration would have to undo. Same
+     * rendering, none of the debt. Those two counts come from
+     * `fds-migration/scripts/count-surfaces.mjs`; the 45 and 25 written here
+     * before were hand-counted and wrong.
      */
-    border: '1px solid var(--border-elevation-subtle-soft)',
+    border: '1px solid var(--border-elevation-subtle-soft-layer-1-transparency-15)',
     ...(applyStyleToContainer ? paddingStyle : {}),
     ...(applyStyleToContainer ? sx : {}),
   };

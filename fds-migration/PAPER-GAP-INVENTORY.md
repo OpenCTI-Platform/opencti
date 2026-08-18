@@ -58,19 +58,24 @@ not surface them. `-transparency-50` was NOT renamed and was left untouched.
 
 ---
 
-## 2. Perimeter — 27 library-Paper call sites in 19 files
+## 2. Perimeter — 25 library-Paper call sites in 19 files
 
 Counted by the analyser, not by hand:
 
 | | count |
 |---|---|
-| `<Paper>` call sites importing from the library | **27** in **19 files** |
+| `<Paper>` call sites importing from the library | **25** in **19 files** |
 | files still importing MUI's `Paper` | **7** |
 
-The hand-kept figure for this was **21 "surfaces"**, which counted a group of
-identical headers as one surface; the analyser counts call sites, and a file may
-hold several (three in each of two SSO field components, two in four others). The
-tree is the truth: **27 sites, 19 files**.
+Two earlier figures were wrong for two different reasons, and both are worth
+knowing. **21 "surfaces"** was hand-kept and folded a group of identical headers
+into one; the analyser counts call sites, and a file may hold several (three in
+each of two SSO field components, two in four others). **27** was the analyser's
+own first answer, and it counted two `<Paper>` occurrences written inside a
+COMMENT — the MIXED-file note at the top of `TokenList.tsx` and
+`UserTokenList.tsx`. The analyser now blanks comments before matching, which also
+stops a commented padding example from reddening the gate. The tree is the truth:
+**25 sites, 19 files**.
 
 The perimeter examined was wider than the sites converted: a `<Paper` grep never
 sees the surfaces injected as `<TableContainer component={Paper}>`, which is how
@@ -149,8 +154,29 @@ The `paperPattern` motif in `check-fds-conformity.mjs`, driven entirely by
 - `no-hardcoded-padding` — reddens if a padding reappears hardcoded on a library
   Paper, in `className`, `sx` or `style`.
 
-Both guards were **seen red before being trusted green**: a `p-4` className, a
-`style padding:15`, and a deep MUI import each reddened the gate on demand.
+Both guards were **seen red before being trusted green**, on a real converted
+file, for every shape they claim to catch:
+
+| shape | verdict |
+|---|---|
+| `className="p-4"`, alone or first in the list | RED |
+| `className="px-2"`, `pt-[15px]` in leading position | RED |
+| `className="flex p-4 flex-col"` | RED |
+| a padding AFTER a nested object: `style={{ nested: { a: 1 }, padding: 8 }}` | RED |
+| a NAMED object: `style={paperStyle}` where `paperStyle` declares a padding | RED |
+| a deep MUI import, `@mui/material/Paper` | RED |
+| a commented example carrying a padding class | green, correctly |
+| classes without padding | green |
+
+The named-object shape is not hypothetical: `RequestAccessSettings.tsx` passes
+`style={paperStyle}`, and `paperStyle` is precisely the object this wave emptied
+of its padding — a regression there would have been invisible. The guard resolves
+the identifier back to its `const` in the same file.
+
+**Declared limits, not implied ones.** A padding assembled at runtime (clsx, a
+variable, a template hole), an object imported from another module, or one spread
+from a prop: no static reader follows those, and the guard says so in its
+comment.
 
 **MIXED files are declared, not dodged.** `TokenList` and `UserTokenList` keep
 MUI's Paper for `TableContainer component=` — a component passed to MUI as a

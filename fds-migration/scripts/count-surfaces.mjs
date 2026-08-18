@@ -31,7 +31,7 @@ const rel = (f) => f.slice(SRC.length + 1);
 const tally = {
   paperLibrary: { sites: 0, files: new Set() },
   paperMui: { sites: 0, files: new Set() },
-  cardWrapper: { sites: 0, files: new Set(), title: 0, composedTitle: 0, action: 0, link: 0 },
+  cardWrapper: { sites: 0, files: new Set(), title: 0, composedTitle: 0, action: 0, link: 0, sx: 0, outlined: 0 },
   cardMui: { sites: 0, files: new Set() },
 };
 
@@ -59,6 +59,8 @@ for (const file of files) {
         if (/\btitle\s*=/.test(tag)) tally.cardWrapper.title += 1;
         if (/\baction\s*=/.test(tag)) tally.cardWrapper.action += 1;
         if (/\bto\s*=|\bonClick\s*=/.test(tag)) tally.cardWrapper.link += 1;
+        if (/\bsx\s*=/.test(tag)) tally.cardWrapper.sx += 1;
+        if (/\bvariant\s*=\s*(["'])outlined\1/.test(tag)) tally.cardWrapper.outlined += 1;
         const m = tag.match(/\btitle=\{([\s\S]*)\}/);
         if (m && /<|\?|&&|\.map\(/.test(m[1])) tally.cardWrapper.composedTitle += 1;
       }
@@ -80,6 +82,8 @@ line("  with title=", tally.cardWrapper.title);
 line("    of which a composed node", tally.cardWrapper.composedTitle);
 line("  with action=", tally.cardWrapper.action);
 line("  card-links (to / onClick)", tally.cardWrapper.link);
+line("  with sx=", tally.cardWrapper.sx);
+line("  with variant=\"outlined\"", tally.cardWrapper.outlined);
 console.log("\nCARD (MUI's own, out of the wrapper's scope)");
 line("  sites", tally.cardMui.sites);
 line("  files", tally.cardMui.files.size);
