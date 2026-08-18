@@ -81,7 +81,7 @@ export interface GraphqlCatalog {
 // region Database types
 
 export const ENTITY_TYPE_CATALOG_CONTRACT = 'CatalogContract';
-export const ENTITY_TYPE_CATALOG_MANIFEST = 'CatalogManifest';
+export const ENTITY_TYPE_CATALOG = 'Catalog';
 
 /**
  * Fields specific to the `CatalogContract` entity.
@@ -127,7 +127,7 @@ export interface BasicStoreEntityCatalogContract extends BasicStoreEntity, Catal
 
 export interface StoreEntityCatalogContract extends StoreEntity, CatalogContractEntityFields {}
 
-interface CatalogManifestEntityFields {
+interface CatalogEntityFields {
   revision: string;
   source_uri: string;
   catalog_id: string;
@@ -136,9 +136,9 @@ interface CatalogManifestEntityFields {
   version: string;
 }
 
-export interface BasicStoreEntityCatalogManifest extends BasicStoreEntity, CatalogManifestEntityFields {}
+export interface BasicStoreEntityCatalog extends BasicStoreEntity, CatalogEntityFields {}
 
-export interface StoreEntityCatalogManifest extends StoreEntity, CatalogManifestEntityFields {}
+export interface StoreEntityCatalog extends StoreEntity, CatalogEntityFields {}
 
 export interface CatalogContractDeletion {
   idToDelete: string;
@@ -150,5 +150,5 @@ export type CatalogContractUpdate = Required<{
 
 export type CatalogContractCreation = CatalogContractEntityFields & { internal_id: string; standard_id: string };
 
-export type CatalogManifestUpsert = CatalogManifestEntityFields & { internal_id: string; standard_id: string };
+export type CatalogUpsert = CatalogEntityFields & { internal_id: string; standard_id: string };
 // endregion
