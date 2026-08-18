@@ -31,6 +31,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { openingTags } from "./lib/jsx-opening-tags.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FDS_MIGRATION_DIR = path.resolve(__dirname, "..");
@@ -173,33 +174,23 @@ function checkForbiddenPatterns(state, results) {
   }
 }
 
-/**
- * Extracts the text of every `<Paper …>` opening tag in a file, tracking brace
- * depth — an `sx={{ … }}` contains `>` characters, and a regex that stops at the
- * first one would only ever see a fragment of the tag.
- */
-function paperOpeningTags(content) {
-  const tags = [];
-  const re = /<Paper(?=[\s/>])/g;
-  let m;
-  while ((m = re.exec(content)) !== null) {
-    let depth = 0;
-    let i = m.index + "<Paper".length;
-    for (; i < content.length; i += 1) {
-      const ch = content[i];
-      if (ch === "{") depth += 1;
-      else if (ch === "}") depth -= 1;
-      else if (ch === ">" && depth === 0) break;
-    }
-    tags.push(content.slice(m.index, i + 1));
-  }
-  return tags;
-}
 
 /** A padding re-declared by hand on a library Paper — className, sx or style. */
 const HARDCODED_PADDING = [
-  // utility classes: p-4, px-2, pt-[15px], and their prefixed variants
-  /className\s*=\s*(["'`])[^"'`]*(?:^|\s|:)p[trblxy]?-\[?[\w.]/,
+  // Utility classes: p-4, px-2, pt-[15px], and their prefixed variants.
+  //
+  // The leading position is the one that matters. An earlier form of this regex
+  // required a whitespace or a colon before the class, with `^` as the third
+  // alternative — but `^` only ever matches the start of the FILE, so a padding
+  // class that opened the attribute (`className="p-4"`, or `p-4` first in a
+  // list) passed the gate green. That is the commonest shape, and the one the
+  // library's own guidance warns about. Proved on the gate before and after.
+  //
+  // `\{?` also covers the expression forms `className={"p-0"}` and
+  // className={`p-4 ${x}`}. Still NOT covered, and declared rather than
+  // implied: a padding class assembled at runtime (clsx, a variable, a
+  // template hole) — no static regex reaches that.
+  /className\s*=\s*\{?\s*(["'`])(?:[^"'`]*[\s:])?p[trblxy]?-\[?[\w.]/,
   // sx / style objects: padding, paddingTop, p, px, py, pt…
   /(?:sx|style)\s*=\s*\{\{[^}]*\b(?:padding(?:Top|Right|Bottom|Left|Block|Inline)?|p[trblxy]?)\s*:/,
 ];
@@ -250,7 +241,7 @@ function checkPaperPattern(state, results) {
     }
 
     if (guards.includes("no-hardcoded-padding")) {
-      const offenders = paperOpeningTags(content).filter((t) => HARDCODED_PADDING.some((re) => re.test(t)));
+      const offenders = openingTags(content, "Paper").filter((t) => HARDCODED_PADDING.some((re) => re.test(t)));
       results.push(offenders.length
         ? {
           check: "paper:no-hardcoded-padding",
