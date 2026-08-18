@@ -3205,7 +3205,7 @@ export const elLoadBy = async <T extends BasicStoreBase>(
   user: AuthUser,
   field: string,
   value: any,
-  type = null,
+  type: string | null = null,
   indices: string[] = READ_DATA_INDICES,
 ) => {
   const filters = {

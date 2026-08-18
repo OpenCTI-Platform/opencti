@@ -11,6 +11,7 @@ import {
   shortMapping,
   shortStringFormats,
   textMapping,
+  versionMapping,
 } from '../schema/attribute-definition';
 import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../schema/general';
 import { INTERNAL_RELATIONSHIPS } from '../schema/internalRelationship';
@@ -26,6 +27,9 @@ export const engineMappingGenerator = (engine: ElkClient | OpenClient): Record<s
 // Engine mapping generation on attributes definition
 const attributeMappingGenerator = (entityAttribute: AttributeDefinition, engine: ElkClient | OpenClient): any => {
   if (entityAttribute.type === 'string') {
+    if (entityAttribute.format === 'version') {
+      return versionMapping;
+    }
     if (shortStringFormats.includes(entityAttribute.format)) {
       return shortMapping;
     }

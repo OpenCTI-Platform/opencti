@@ -1,7 +1,8 @@
+import { PLATFORM_VERSION } from '../../config/conf';
 import { elDeleteInstances, elIndex, elIndexElements, elLoadBy } from '../../database/engine';
 import { fullEntitiesList } from '../../database/middleware-loader';
-import { INDEX_INTERNAL_OBJECTS } from '../../database/utils';
-import { FilterMode, FilterOperator } from '../../generated/graphql';
+import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { FilterMode, FilterOperator, OrderingMode } from '../../generated/graphql';
 import type { BasicStoreBase } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
 import {
@@ -24,7 +25,16 @@ export const findCatalogManifestByCatalogId = async (
   user: AuthUser,
   catalogId: string,
 ) => {
-  const catalog = await elLoadBy<BasicStoreEntityCatalogManifest>(context, user, 'catalog_id', catalogId);
+  const catalog = await elLoadBy<BasicStoreEntityCatalogManifest>(context, user, 'catalog_id', catalogId, ENTITY_TYPE_CATALOG_MANIFEST);
+  return catalog;
+};
+
+export const findCatalogManifestBySourceUri = async (
+  context: AuthContext,
+  user: AuthUser,
+  sourceUri: string,
+) => {
+  const catalog = await elLoadBy<BasicStoreEntityCatalogManifest>(context, user, 'source_uri', sourceUri);
   return catalog;
 };
 
@@ -49,7 +59,7 @@ export const findCatalogs = async (context: AuthContext, user: AuthUser, exclude
     context,
     user,
     [ENTITY_TYPE_CATALOG_MANIFEST],
-    { filters },
+    { indices: [READ_INDEX_INTERNAL_OBJECTS], filters },
   );
   return catalogs;
 };
@@ -72,6 +82,7 @@ export const findCatalogContractsByCatalogId = async (
     user,
     [ENTITY_TYPE_CATALOG_CONTRACT],
     {
+      indices: [READ_INDEX_INTERNAL_OBJECTS],
       filters: {
         filters: [{
           key: ['catalog_id'],
@@ -82,9 +93,66 @@ export const findCatalogContractsByCatalogId = async (
       },
     },
   );
-  // TODO: check if filter with support_version
   return contracts.reduce((map, contract) => {
     map.set(contract.contract_id, contract);
+    return map;
+  }, new Map<string, BasicStoreEntityCatalogContract>());
+};
+
+export const findLatestCompatibleCatalogContractsByCatalogId = async (
+  context: AuthContext,
+  user: AuthUser,
+  catalogId: string,
+) => {
+  const contracts = await fullEntitiesList<BasicStoreEntityCatalogContract>(
+    context,
+    user,
+    [ENTITY_TYPE_CATALOG_CONTRACT],
+    {
+      indices: [READ_INDEX_INTERNAL_OBJECTS],
+      filters: {
+        filters: [{
+          key: ['catalog_id'],
+          values: [catalogId],
+        }],
+        filterGroups: [
+          {
+            mode: FilterMode.Or,
+            filters: [],
+            filterGroups: [
+              {
+                mode: FilterMode.And,
+                filters: [{
+                  key: ['support_version'],
+                  values: [PLATFORM_VERSION],
+                  operator: FilterOperator.Lte,
+                }],
+                filterGroups: [],
+              },
+              {
+                mode: FilterMode.And,
+                filters: [{
+                  key: ['support_version'],
+                  values: ['EXISTS'],
+                  operator: FilterOperator.NotEq,
+                }],
+                filterGroups: [],
+              },
+            ],
+          },
+        ],
+        mode: FilterMode.And,
+      },
+      orderBy: 'contract_version',
+      orderMode: OrderingMode.Desc,
+    },
+  );
+  // Keep latest compatible version by slug (results are sorted by version desc).
+  return contracts.reduce((map, contract) => {
+    if (map.has(contract.slug)) {
+      return map;
+    }
+    map.set(contract.slug, contract);
     return map;
   }, new Map<string, BasicStoreEntityCatalogContract>());
 };
@@ -99,18 +167,45 @@ export const findLatestCompatibleCatalogContractBySlug = async (
     user,
     [ENTITY_TYPE_CATALOG_CONTRACT],
     {
+      indices: [READ_INDEX_INTERNAL_OBJECTS],
       filters: {
         filters: [{
           key: ['slug'],
           values: [contractSlug],
         }],
-        filterGroups: [],
+        filterGroups: [
+          {
+            mode: FilterMode.Or,
+            filters: [],
+            filterGroups: [
+              {
+                mode: FilterMode.And,
+                filters: [{
+                  key: ['support_version'],
+                  values: [PLATFORM_VERSION],
+                  operator: FilterOperator.Lte,
+                }],
+                filterGroups: [],
+              },
+              {
+                mode: FilterMode.And,
+                filters: [{
+                  key: ['support_version'],
+                  values: ['EXISTS'],
+                  operator: FilterOperator.NotEq,
+                }],
+                filterGroups: [],
+              },
+            ],
+          },
+        ],
         mode: FilterMode.And,
       },
+      orderBy: 'contract_version',
+      orderMode: OrderingMode.Desc,
+      first: 1,
     },
   );
-  // Filter with support_version
-  // Sort by version DESC
   return contracts[0];
 };
 
@@ -124,18 +219,45 @@ export const findLatestCompatibleCatalogContractByImageName = async (
     user,
     [ENTITY_TYPE_CATALOG_CONTRACT],
     {
+      indices: [READ_INDEX_INTERNAL_OBJECTS],
       filters: {
         filters: [{
           key: ['image'],
           values: [imageName],
         }],
-        filterGroups: [],
+        filterGroups: [
+          {
+            mode: FilterMode.Or,
+            filters: [],
+            filterGroups: [
+              {
+                mode: FilterMode.And,
+                filters: [{
+                  key: ['support_version'],
+                  values: [PLATFORM_VERSION],
+                  operator: FilterOperator.Lte,
+                }],
+                filterGroups: [],
+              },
+              {
+                mode: FilterMode.And,
+                filters: [{
+                  key: ['support_version'],
+                  values: ['EXISTS'],
+                  operator: FilterOperator.NotEq,
+                }],
+                filterGroups: [],
+              },
+            ],
+          },
+        ],
         mode: FilterMode.And,
       },
+      orderBy: 'contract_version',
+      orderMode: OrderingMode.Desc,
+      first: 1,
     },
   );
-  // Filter with support_version
-  // Sort by version DESC
   return contracts[0];
 };
 
@@ -144,7 +266,12 @@ export const insertCatalogContracts = async (
   user: AuthUser,
   contracts: CatalogContractCreation[],
 ) => {
-  await elIndexElements(context, user, ENTITY_TYPE_CATALOG_CONTRACT, contracts);
+  const contractsToIndex = contracts.map((contract) => ({
+    ...contract,
+    _index: INDEX_INTERNAL_OBJECTS,
+    entity_type: ENTITY_TYPE_CATALOG_CONTRACT,
+  }));
+  await elIndexElements(context, user, ENTITY_TYPE_CATALOG_CONTRACT, contractsToIndex);
 };
 
 export const updateCatalogContracts = async (
@@ -153,7 +280,12 @@ export const updateCatalogContracts = async (
   updates: CatalogContractUpdate[],
 ) => {
   // We can use bulk `index` as we provide the entire documents
-  await elIndexElements(context, user, ENTITY_TYPE_CATALOG_CONTRACT, updates);
+  const contractsToIndex = updates.map((update) => ({
+    ...update,
+    _index: INDEX_INTERNAL_OBJECTS,
+    entity_type: ENTITY_TYPE_CATALOG_CONTRACT,
+  }));
+  await elIndexElements(context, user, ENTITY_TYPE_CATALOG_CONTRACT, contractsToIndex);
 };
 
 export const deleteCatalogContracts = async (
