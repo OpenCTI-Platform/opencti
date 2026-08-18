@@ -15,6 +15,7 @@ import { UnsupportedError } from '../../config/errors';
 import type { ConnectorContractConfiguration, ContractConfigInput } from '../../generated/graphql';
 import type { ValidateFunction } from 'ajv';
 import { findCatalogByCatalogId, findCatalogs, findLatestCompatibleCatalogContractBySlug, findLatestCompatibleCatalogContractsByCatalogId } from './catalog-repository';
+import { logApp } from '../../config/conf';
 
 const validatorCache = new Map<string, ValidateFunction>();
 const EXCLUDED_CONFIG_VARS = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
@@ -290,9 +291,25 @@ export const validateContractConfigurations = (
   ].join('|');
 
   const validate = getOrCompileValidator(cacheKey, jsonValidation);
+  logApp.debug('[OPENCTI-MODULE] Validating connector contract configuration', {
+    module: 'catalog',
+    contractSlug: targetContract.slug,
+    contractTitle: targetContract.title,
+    requiredCount: filteredRequired.length,
+    providedCount: contractConfigurations.length,
+    validatedFieldsCount: Object.keys(validationProperties).length,
+  });
   const validContractObject = validate(contractObject);
 
   if (!validContractObject) {
+    logApp.warn('[OPENCTI-MODULE] Invalid connector contract configuration', {
+      module: 'catalog',
+      contractSlug: targetContract.slug,
+      contractTitle: targetContract.title,
+      requiredCount: filteredRequired.length,
+      providedCount: contractConfigurations.length,
+      errorsCount: validate.errors?.length ?? 0,
+    });
     const formattedError = formatValidationErrors(validate.errors, targetContract.title);
     throw UnsupportedError(formattedError, { errors: validate.errors });
   }
@@ -305,6 +322,9 @@ export const computeConnectorTargetContract = (
   currentManagerContractConfiguration?: ConnectorContractConfiguration[],
 ): ConnectorContractConfiguration[] => {
   const targetConfig = getContractConfigSchemaWithoutExcludedRuntimeVars(targetContract.config_schema);
+  let passwordCount = 0;
+  let defaultedCount = 0;
+  let reusedCount = 0;
 
   // Create maps for efficient lookups
   const configMap = new Map(configurations.map((c) => [c.key, c]));
@@ -318,6 +338,7 @@ export const computeConnectorTargetContract = (
   Object.entries(targetConfig.properties).forEach(([propKey, propSchema]) => {
     const inputConfig = configMap.get(propKey);
     const existingConfig = currentConfigMap.get(propKey);
+    const isPassword = propSchema.format === 'password';
 
     // Only process fields that are:
     // 1. Required (will use default if available)
@@ -337,6 +358,16 @@ export const computeConnectorTargetContract = (
       return; // Skip this field entirely
     }
 
+    if (!hasInput && !hasExisting && (propSchema.default !== undefined && propSchema.default !== null)) {
+      defaultedCount += 1;
+    }
+    if (hasExisting && !hasInput) {
+      reusedCount += 1;
+    }
+    if (isPassword && hasInput && inputConfig?.value !== existingConfig?.value) {
+      passwordCount += 1;
+    }
+
     const finalConfig = resolveConfigurationValue(
       propKey,
       propSchema,
@@ -352,6 +383,16 @@ export const computeConnectorTargetContract = (
 
   // Validate the configurations
   validateContractConfigurations(contractConfigurations, targetContract);
+  logApp.debug('[OPENCTI-MODULE] Computed connector contract configuration', {
+    module: 'catalog',
+    contractSlug: targetContract.slug,
+    contractTitle: targetContract.title,
+    inputCount: configurations.length,
+    resolvedCount: contractConfigurations.length,
+    passwordCount,
+    defaultedCount,
+    reusedCount,
+  });
 
   return contractConfigurations;
 };
@@ -376,15 +417,30 @@ const mapCatalogToGraphqlCatalog = (
 export const queryCatalogById = async (context: AuthContext, user: AuthUser, catalogId: string) => {
   const catalog = await findCatalogByCatalogId(context, user, catalogId);
   if (!catalog) {
+    logApp.debug('[OPENCTI-MODULE] Catalog query by id returned no catalog', {
+      module: 'catalog',
+      catalogId,
+    });
     return null;
   }
   const contracts = await findLatestCompatibleCatalogContractsByCatalogId(context, user, catalogId);
+  logApp.debug('[OPENCTI-MODULE] Catalog query by id resolved', {
+    module: 'catalog',
+    catalogId,
+    contractsCount: contracts.size,
+  });
   return mapCatalogToGraphqlCatalog(catalog, [...contracts.values()]);
 };
 
 export const queryCatalogs = async (context: AuthContext, user: AuthUser) => {
   const catalogs = await findCatalogs(context, user);
   const contracts = await Promise.all(catalogs.map((catalog) => findLatestCompatibleCatalogContractsByCatalogId(context, user, catalog.catalog_id)));
+  const contractsTotalCount = contracts.reduce((total, contractsByCatalog) => total + contractsByCatalog.size, 0);
+  logApp.debug('[OPENCTI-MODULE] Catalogs query resolved', {
+    module: 'catalog',
+    catalogsCount: catalogs.length,
+    contractsTotalCount,
+  });
   const ret = catalogs.map((catalog, idx) => {
     return mapCatalogToGraphqlCatalog(catalog, [...contracts[idx].values()]);
   });
@@ -394,8 +450,18 @@ export const queryCatalogs = async (context: AuthContext, user: AuthUser) => {
 export const queryContractBySlug = async (context: AuthContext, user: AuthUser, contractSlug: string) => {
   const contract = await findLatestCompatibleCatalogContractBySlug(context, user, contractSlug);
   if (!contract) {
+    logApp.debug('[OPENCTI-MODULE] Contract query by slug returned no contract', {
+      module: 'catalog',
+      contractSlug,
+    });
     return null;
   }
+  logApp.debug('[OPENCTI-MODULE] Contract query by slug resolved', {
+    module: 'catalog',
+    contractSlug,
+    catalogId: contract.catalog_id,
+    contractVersion: contract.contract_version,
+  });
   return {
     catalog_id: contract.catalog_id,
     contract: JSON.stringify(mapContractEntityFieldsToGraphqlCatalogContract(contract, { excludeRuntimeConfigVars: true })),
