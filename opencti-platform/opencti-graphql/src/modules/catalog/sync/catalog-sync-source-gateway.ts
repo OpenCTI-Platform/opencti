@@ -1,11 +1,17 @@
 import { readFile } from 'node:fs/promises';
-import type { CatalogContract, CatalogDefinition, TypedProperty } from '../catalog-types';
-import type { CatalogContractSyncSource, CatalogSyncSource, CatalogSyncSourceConfig } from './catalog-sync-types';
 import conf, { logApp } from '../../../config/conf';
 import { isEmptyField } from '../../../database/utils';
 import { UnsupportedError } from '../../../config/errors';
 import { getOrCompileValidator } from '../catalog-domain';
 import { getHttpClient } from '../../../utils/http-client';
+import type { CatalogContract, CatalogDefinition, TypedProperty } from '../catalog-types';
+import type { CatalogContractSyncSource, CatalogSyncSource, CatalogSyncSourceConfig } from './catalog-sync-types';
+
+/**
+ * Data Transfer Objects (DTOs), in several versions.
+ * - V0: the format used in the embedded catalog manifest, before the decoupling project
+ * - V1: the format specced during the decoupling project
+ */
 
 type CatalogContractDtoV0 = CatalogContract;
 type CatalogDtoV0 = CatalogDefinition;
@@ -26,8 +32,8 @@ type CatalogContractDtoV1 = {
   license_type: 'Free' | 'Commercial' | null;
   contact: string | null;
   solution_categories: string[];
-  version: string | null;
-  image_name: string | null;
+  version: string;
+  image_name: string;
   image_type: string;
   additional_properties: Record<string, unknown>;
   config_schema: Record<string, unknown>;
@@ -67,7 +73,7 @@ const withAbortTimeout = async <T>(timeoutMs: number, call: (signal: AbortSignal
 };
 
 class EmbeddedCatalogSyncSource implements CatalogSyncSourceAdapter {
-  constructor(private _sourceConfig: Extract<CatalogSyncSourceConfig, { kind: 'embedded' }>) {}
+  constructor(_sourceConfig: Extract<CatalogSyncSourceConfig, { kind: 'embedded' }>) {}
 
   async fetch() {
     const data = await import('../../../__generated__/opencti-manifest.json');
@@ -165,6 +171,10 @@ const DEFAULT_CONFIG_SCHEMA: CatalogContractDtoV0['config_schema'] = {
   additionalProperties: true,
 };
 
+const DEFAULT_PLAYBOOK_SUPPORTED = false;
+
+const DEFAULT_MAX_CONFIDENCE = 100;
+
 const normalizeConfigSchema = (configSchema: unknown): CatalogContractDtoV0['config_schema'] => {
   if (!configSchema || typeof configSchema !== 'object' || Array.isArray(configSchema)) {
     return DEFAULT_CONFIG_SCHEMA;
@@ -194,8 +204,11 @@ const normalizeSupportVersion = (supportVersion: string | null | undefined): str
   return normalized.length > 0 ? normalized : null;
 };
 
-const mapCatalogContractDtoV1ToCatalogContractDtoV0 = (contractDto: CatalogContractDtoV1): CatalogContractDtoV0 => {
+const mapCatalogContractDtoV1ToCatalogContractSyncSource = (contractDto: CatalogContractDtoV1): CatalogContractSyncSource => {
+  const playbook_supported = contractDto.additional_properties['playbook_supported'];
+  const max_confidence_level = contractDto.additional_properties['max_confidence_level'];
   return {
+    id: contractDto.id,
     title: contractDto.title,
     slug: contractDto.slug,
     description: contractDto.description,
@@ -204,14 +217,20 @@ const mapCatalogContractDtoV1ToCatalogContractDtoV0 = (contractDto: CatalogContr
     use_cases: contractDto.use_cases,
     verified: contractDto.verified,
     last_verified_date: contractDto.last_verified_date,
-    playbook_supported: false,
-    max_confidence_level: 100,
-    support_version: normalizeSupportVersion(contractDto.support_version),
+    playbook_supported:
+      typeof playbook_supported === 'boolean'
+        ? playbook_supported
+        : DEFAULT_PLAYBOOK_SUPPORTED,
+    max_confidence_level:
+      typeof max_confidence_level === 'number'
+        ? max_confidence_level
+        : DEFAULT_MAX_CONFIDENCE,
+    support_version: contractDto.support_version,
     subscription_link: contractDto.subscription_link,
     source_code: contractDto.source_code ?? '',
     manager_supported: contractDto.manager_supported,
-    container_version: contractDto.version ?? '',
-    container_image: contractDto.image_name ?? '',
+    container_version: contractDto.version,
+    container_image: contractDto.image_name,
     container_type: contractDto.image_type,
     config_schema: normalizeConfigSchema(contractDto.config_schema),
     license_type: contractDto.license_type,
@@ -235,7 +254,7 @@ export const mapCatalogContractDtoToCatalogContractSyncSource = (
   };
 };
 
-export const mapCatalogDtoToCatalogSyncSource = (catalog: CatalogDtoV0 | CatalogDtoV1) => {
+export const mapCatalogDtoToCatalogSyncSource = (catalog: CatalogDtoV0 | CatalogDtoV1): CatalogSyncSource => {
   if (isCatalogDtoV1(catalog)) {
     return {
       id: catalog.id,
@@ -243,11 +262,7 @@ export const mapCatalogDtoToCatalogSyncSource = (catalog: CatalogDtoV0 | Catalog
       description: catalog.description,
       version: catalog.product_version,
       contracts: catalog.contracts.map((contractDto) => {
-        const normalizedContractDto = mapCatalogContractDtoV1ToCatalogContractDtoV0(contractDto);
-        return {
-          id: contractDto.id,
-          ...normalizedContractDto,
-        };
+        return mapCatalogContractDtoV1ToCatalogContractSyncSource(contractDto);
       }),
     };
   }
@@ -263,10 +278,35 @@ export const fetchSourceCatalog = async (sourceConfig: CatalogSyncSourceConfig):
   const raw = await adapter.fetch();
   const syncSource = mapCatalogDtoToCatalogSyncSource(raw);
   validateSyncSource(syncSource);
+  logApp.debug('[OPENCTI-MODULE] Fetched and validated catalog source', {
+    module: 'catalog',
+    sourceKind: sourceConfig.kind,
+    sourceUri: sourceConfig.uri,
+    catalogId: syncSource.id,
+    contractsCount: syncSource.contracts.length,
+    manifestSchemaVersion: isCatalogDtoV1(raw) ? raw.manifest_schema_version : '0',
+  });
   return syncSource;
 };
 
 export const fetchSourceCatalogRevisionHint = async (sourceConfig: CatalogSyncSourceConfig): Promise<string | undefined> => {
   const adapter = getCatalogSourceAdapter(sourceConfig);
-  return adapter.fetchRevisionHint?.();
+  const revisionHint = await adapter.fetchRevisionHint?.();
+  if (sourceConfig.kind === 'remote') {
+    if (revisionHint) {
+      logApp.debug('[OPENCTI-MODULE] Fetched catalog source revision hint', {
+        module: 'catalog',
+        sourceKind: sourceConfig.kind,
+        sourceUri: sourceConfig.uri,
+        revisionHint,
+      });
+    } else {
+      logApp.debug('[OPENCTI-MODULE] Catalog source revision hint unavailable', {
+        module: 'catalog',
+        sourceKind: sourceConfig.kind,
+        sourceUri: sourceConfig.uri,
+      });
+    }
+  }
+  return revisionHint;
 };
