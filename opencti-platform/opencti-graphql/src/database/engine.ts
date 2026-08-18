@@ -165,6 +165,7 @@ import {
   shortStringFormats,
   standardId,
   textMapping,
+  versionMapping,
 } from '../schema/attribute-definition';
 import { connections as connectionsAttribute } from '../modules/attributes/basicRelationship-registrationAttributes';
 import { schemaTypesDefinition } from '../schema/schema-types';
@@ -1179,6 +1180,9 @@ const updateCoreSettings = async (): Promise<void> => {
 // Engine mapping generation on attributes definition
 const attributeMappingGenerator = (entityAttribute: AttributeDefinition): any => {
   if (entityAttribute.type === 'string') {
+    if (entityAttribute.format === 'version') {
+      return versionMapping;
+    }
     if (shortStringFormats.includes(entityAttribute.format)) {
       return shortMapping;
     }
@@ -3496,7 +3500,7 @@ export const elLoadBy = async <T extends BasicStoreBase>(
   user: AuthUser,
   field: string,
   value: any,
-  type = null,
+  type: string | null = null,
   indices: string[] = READ_DATA_INDICES,
 ) => {
   const filters = {
