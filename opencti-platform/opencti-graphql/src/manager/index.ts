@@ -8,3 +8,4 @@ import './exclusionListCacheBuildManager';
 import './exclusionListCacheSyncManager';
 import './pirManager';
 import './dataSanityManager';
+import '../modules/catalog/catalog-manager';
