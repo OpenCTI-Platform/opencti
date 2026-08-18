@@ -43,7 +43,24 @@ describe('maskToken', () => {
     expect(maskToken('abc')).toBe('****');
     expect(maskToken(undefined)).toBe('****');
     expect(maskToken(null)).toBe('****');
-    expect(maskToken('abcd')).toBe('****abcd');
+    // Exactly 4 is the interesting one: "the last 4 characters" of a 4-character string
+    // is the whole string, so revealing it would echo the header back in full.
+    expect(maskToken('abcd')).toBe('****');
+  });
+
+  it('never returns the whole input, at any length', () => {
+    // The property behind the case above, stated once so a future change to the
+    // threshold cannot quietly reintroduce a full echo. Something is always hidden.
+    for (let length = 0; length <= 12; length += 1) {
+      const value = 'abcdefghijkl'.slice(0, length);
+      const masked = maskToken(value);
+      expect(masked.startsWith('****')).toBe(true);
+      const revealed = masked.slice(4);
+      expect(revealed.length).toBeLessThan(Math.max(value.length, 1));
+      if (revealed.length > 0) {
+        expect(value.endsWith(revealed)).toBe(true);
+      }
+    }
   });
 
   it('is byte-identical to the previous stored mask for every real token length', () => {

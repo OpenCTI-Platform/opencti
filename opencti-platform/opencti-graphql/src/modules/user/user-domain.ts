@@ -197,13 +197,21 @@ export const revokeUserTokenByAdmin = async (context: AuthContext, user: AuthUse
  * so a "Cannot identify user with token" log line could not be matched to the token
  * displayed on a user's profile without decrypting the database.
  *
- * Only the last 4 characters are ever revealed, and nothing at all when there are fewer
- * than 4, so an arbitrary string arriving in an Authorization header is not echoed back
- * into the logs.
+ * Only the last 4 characters are ever revealed, and nothing at all when the value is 4
+ * characters or shorter — at exactly 4 the "last 4" would be the whole value, so an
+ * arbitrary string arriving in an Authorization header would be echoed back into the
+ * logs verbatim. The mask must never be the input.
+ *
+ * That cannot cost traceability on a real token: the three call sites that mask a stored
+ * token all carry at least 36 characters by construction — generateSecureToken emits
+ * `flgrn_octi_tkn_` + 64, the legacy migration masks a UUID, and initializeAdminUser
+ * refuses to start unless the configured admin token passes validator.isUUID. The only
+ * call site that can be handed a short value is the authentication-failure log, and
+ * there the value is whatever the caller put in the Authorization header.
  */
 export const maskToken = (token: string | undefined | null): string => {
   const value = token ?? '';
-  return value.length < 4 ? '****' : `****${value.slice(-4)}`;
+  return value.length <= 4 ? '****' : `****${value.slice(-4)}`;
 };
 
 /**
