@@ -1,7 +1,7 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 
 // region DTO types
-export type IngestionConnectorType = 'INTERNAL_ENRICHMENT' | 'EXTERNAL_IMPORT' | 'INTERNAL_EXPORT_FILE' | 'INTERNAL_IMPORT_FILE';
+export type IngestionConnectorType = string;
 
 type TypeMap = {
   string: string;
@@ -11,14 +11,14 @@ type TypeMap = {
   boolean: boolean;
 };
 
-type TypedProperty<K extends keyof TypeMap = keyof TypeMap> = {
+export type TypedProperty<K extends keyof TypeMap = keyof TypeMap> = {
   type: K;
   default?: TypeMap[K];
   description?: string;
   format?: string;
 };
 
-export interface CatalogContractDtoV0 {
+export interface CatalogContract {
   title: string;
   slug: string;
   description: string;
@@ -51,18 +51,13 @@ export interface CatalogContractDtoV0 {
   contact: string | null;
 }
 
-export interface CatalogDtoV0 {
+export interface CatalogDefinition {
   id: string;
   name: string;
   description: string;
   version: string;
-  contracts: Array<CatalogContractDtoV0>;
+  contracts: Array<CatalogContract>;
 }
-// endregion
-
-// region Domain types
-export type CatalogContract = CatalogContractDtoV0;
-export type CatalogDefinition = CatalogDtoV0;
 // endregion
 
 export interface CatalogType {
@@ -71,7 +66,7 @@ export interface CatalogType {
 }
 
 // region Api types
-export type GraphqlCatalogContract = CatalogContractDtoV0;
+export type GraphqlCatalogContract = CatalogContract;
 export interface GraphqlCatalog {
   id: string;
   entity_type: string;
@@ -111,6 +106,7 @@ export interface CatalogContractEntityFields {
   source_code?: string;
   manager_supported: boolean;
   version: string;
+  contract_version: string;
   image: string;
   connector_type: IngestionConnectorType;
   config_schema: {
@@ -151,9 +147,9 @@ export interface CatalogContractDeletion {
 
 export type CatalogContractUpdate = Required<{
   [TKey in keyof CatalogContractEntityFields]: CatalogContractEntityFields[TKey] | null;
-}>;
+}> & { internal_id: string; standard_id: string };
 
-export type CatalogContractCreation = CatalogContractEntityFields;
+export type CatalogContractCreation = CatalogContractEntityFields & { internal_id: string; standard_id: string };
 
-export type CatalogManifestUpsert = CatalogManifestEntityFields;
+export type CatalogManifestUpsert = CatalogManifestEntityFields & { internal_id: string; standard_id: string };
 // endregion

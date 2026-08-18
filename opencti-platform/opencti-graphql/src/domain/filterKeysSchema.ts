@@ -63,7 +63,7 @@ import { CUSTOM_FIELDS_FEATURE_FLAG, isFeatureEnabled } from '../config/conf';
 
 export type FilterDefinition = {
   filterKey: string;
-  type: string; // possible values: boolean, date, integer, float, string, id, vocabulary, text, enum, object, nested
+  type: string; // possible values: boolean, date, integer, float, version, string, id, vocabulary, text, enum, object, nested
   label: string; // filter key translation in English
   multiple: boolean; // if the field can have multiple values
   subEntityTypes: string[]; // entity types that have the given type as parent and have this filter key in their schema
@@ -89,6 +89,8 @@ const buildFilterDefinitionFromAttributeDefinition = (attributeDefinition: Attri
     if ((attributeDefinition as StringAttribute).format === 'id') {
       type = 'id';
       elementsForFilterValuesSearch = (attributeDefinition as IdAttribute).entityTypes;
+    } else if ((attributeDefinition as StringAttribute).format === 'version') {
+      type = 'version';
     } else if ((attributeDefinition as StringAttribute).format === 'short') {
       type = 'string';
     } else if ((attributeDefinition as StringAttribute).format === 'vocabulary') {
@@ -100,7 +102,7 @@ const buildFilterDefinitionFromAttributeDefinition = (attributeDefinition: Attri
       type = 'enum';
       elementsForFilterValuesSearch = (attributeDefinition as EnumAttribute).values;
     } else {
-      throw Error(`A string attribute definition format can be 'id', 'short', 'text' or 'json', but not ${attributeDefinition.format}`);
+      throw Error(`A string attribute definition format can be 'id', 'short', 'version', 'text' or 'json', but not ${attributeDefinition.format}`);
     }
   }
   // return the filter definition

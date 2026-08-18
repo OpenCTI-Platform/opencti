@@ -34,7 +34,12 @@ type CatalogEdge {
 
 # Queries
 type Query {
+  # Returns only the latest compatible version of each contract for
+  # backwards compatibility.
   catalog(id: String!): Catalog @auth(for: [INGESTION])
+  # Returns only the latest compatible version of each contract for
+  # backwards compatibility.
   catalogs: [Catalog!]! @auth(for: [INGESTION])
+  # Returns only the latest compatible version for backwards compatibility.
   contract(slug: String!): ExtendedContract @auth(for: [INGESTION])
 }
