@@ -1,4 +1,4 @@
-import { PLATFORM_VERSION } from '../../config/conf';
+import { logApp, PLATFORM_VERSION } from '../../config/conf';
 import { elDeleteInstances, elIndex, elIndexElements, elLoadBy } from '../../database/engine';
 import { fullEntitiesList } from '../../database/middleware-loader';
 import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
@@ -147,6 +147,12 @@ export const findLatestCompatibleCatalogContractsByCatalogId = async (
       orderMode: OrderingMode.Desc,
     },
   );
+  logApp.debug('[OPENCTI-MODULE] Loaded compatible catalog contracts', {
+    module: 'catalog',
+    catalogId,
+    platformVersion: PLATFORM_VERSION,
+    compatibleContractsCount: contracts.length,
+  });
   // Keep latest compatible version by slug (results are sorted by version desc).
   return contracts.reduce((map, contract) => {
     if (map.has(contract.slug)) {
@@ -258,7 +264,23 @@ export const findLatestCompatibleCatalogContractByImageName = async (
       first: 1,
     },
   );
-  return contracts[0];
+  const selectedContract = contracts[0];
+  if (!selectedContract) {
+    logApp.debug('[OPENCTI-MODULE] No compatible catalog contract found by image', {
+      module: 'catalog',
+      imageName,
+      platformVersion: PLATFORM_VERSION,
+    });
+  } else {
+    logApp.debug('[OPENCTI-MODULE] Selected compatible catalog contract by image', {
+      module: 'catalog',
+      imageName,
+      contractId: selectedContract.contract_id,
+      contractVersion: selectedContract.contract_version,
+      catalogId: selectedContract.catalog_id,
+    });
+  }
+  return selectedContract;
 };
 
 export const insertCatalogContracts = async (
@@ -271,6 +293,13 @@ export const insertCatalogContracts = async (
     _index: INDEX_INTERNAL_OBJECTS,
     entity_type: ENTITY_TYPE_CATALOG_CONTRACT,
   }));
+  if (contracts.length > 0) {
+    logApp.debug('[OPENCTI-MODULE] Inserting catalog contracts', {
+      module: 'catalog',
+      count: contracts.length,
+      catalogIds: [...new Set(contracts.map((contract) => contract.catalog_id))],
+    });
+  }
   await elIndexElements(context, user, ENTITY_TYPE_CATALOG_CONTRACT, contractsToIndex);
 };
 
@@ -285,6 +314,21 @@ export const updateCatalogContracts = async (
     _index: INDEX_INTERNAL_OBJECTS,
     entity_type: ENTITY_TYPE_CATALOG_CONTRACT,
   }));
+  if (updates.length > 0) {
+    if (updates.length > 100) {
+      logApp.warn('[OPENCTI-MODULE] High volume of catalog contracts updates', {
+        module: 'catalog',
+        count: updates.length,
+        catalogIds: [...new Set(updates.map((update) => update.catalog_id))],
+      });
+    } else {
+      logApp.debug('[OPENCTI-MODULE] Updating catalog contracts', {
+        module: 'catalog',
+        count: updates.length,
+        catalogIds: [...new Set(updates.map((update) => update.catalog_id))],
+      });
+    }
+  }
   await elIndexElements(context, user, ENTITY_TYPE_CATALOG_CONTRACT, contractsToIndex);
 };
 
@@ -297,5 +341,11 @@ export const deleteCatalogContracts = async (
     _index: INDEX_INTERNAL_OBJECTS,
     _id: deletion.idToDelete,
   } as BasicStoreBase));
+  if (deletions.length > 0) {
+    logApp.debug('[OPENCTI-MODULE] Deleting catalog contracts', {
+      module: 'catalog',
+      count: deletions.length,
+    });
+  }
   await elDeleteInstances(context, docs);
 };
