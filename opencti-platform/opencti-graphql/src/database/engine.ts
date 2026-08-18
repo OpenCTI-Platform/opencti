@@ -217,6 +217,18 @@ export const ES_IS_OLD_MAPPING: boolean = ES_INIT_MAPPING_MIGRATION === 'old';
 export const ES_IS_INIT_MIGRATION: boolean = ES_INIT_MAPPING_MIGRATION === 'standard' || ES_IS_OLD_MAPPING;
 export const ES_MINIMUM_FIXED_PAGINATION: number = 20; // When really low pagination is better by default
 export const ES_DEFAULT_PAGINATION: number = conf.get('elasticsearch:default_pagination_result') || 500;
+// POC (ingestion bench, work-log task 0020 lineage): ES write refresh policy. refresh:true on
+// every write is the platform's read-your-writes guarantee (the dedup existence check is a
+// SEARCH: an unrefreshed create is invisible and would be re-created). These knobs allow
+// benching wait_for/false per write class; defaults keep the product behavior.
+// 'true' | 'wait_for' | 'false' via APP__PERFORMANCE__ES_WRITE_REFRESH_{CREATE,UPDATE}
+const parseRefreshConf = (key: string): boolean | 'wait_for' => {
+  const v = String(conf.get(key) ?? 'true');
+  return v === 'wait_for' ? 'wait_for' : v !== 'false';
+};
+const ES_REFRESH_CREATE = parseRefreshConf('app:performance:es_write_refresh_create');
+const ES_REFRESH_UPDATE = parseRefreshConf('app:performance:es_write_refresh_update');
+
 export const ES_MAX_PAGINATION: number = conf.get('elasticsearch:max_pagination_result') || 5000;
 export const MAX_BULK_OPERATIONS: number = conf.get('elasticsearch:max_bulk_operations') || 5000;
 export const MAX_RUNTIME_RESOLUTION_SIZE: number = conf.get('elasticsearch:max_runtime_resolutions') || 5000;
@@ -4141,7 +4153,7 @@ export const elUpdate = async (
       index: indexName,
       retry_on_conflict: retry,
       timeout: BULK_TIMEOUT,
-      refresh: true,
+      refresh: ES_REFRESH_UPDATE,
       body: documentBody,
     };
     try {
@@ -4827,7 +4839,7 @@ export const elIndexElements = async (
       });
       if (body.length > 0) {
         meterManager.directBulk(body.length, { type: indexingType });
-        await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body });
+        await elBulk(context, { refresh: ES_REFRESH_CREATE, timeout: BULK_TIMEOUT, body });
       }
     }
     // 02. If relation, generate impacts for from and to sides
@@ -4943,7 +4955,7 @@ export const elIndexElements = async (
         ]);
         if (bodyUpdate.length > 0) {
           meterManager.sideBulk(bodyUpdate.length, { type: indexingType });
-          const bulkPromise = elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+          const bulkPromise = elBulk(context, { refresh: ES_REFRESH_CREATE, timeout: BULK_TIMEOUT, body: bodyUpdate });
           await Promise.all([bulkPromise]);
         }
       }
@@ -4968,7 +4980,7 @@ export const elUpdateRelationConnections = async (context: AuthContext, elements
       { update: { _index: doc._index, _id: doc._id ?? doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
       { script: { source, params: { id: doc.toReplace, changes: doc.data } } },
     ]);
-    const bulkPromise = elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+    const bulkPromise = elBulk(context, { refresh: ES_REFRESH_UPDATE, timeout: BULK_TIMEOUT, body: bodyUpdate });
     await Promise.all([bulkPromise]);
   }
 };
@@ -5006,7 +5018,7 @@ export const elUpdateEntityConnections = async (context: AuthContext, elements: 
         },
       ];
     });
-    await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+    await elBulk(context, { refresh: ES_REFRESH_UPDATE, timeout: BULK_TIMEOUT, body: bodyUpdate });
   }
 };
 
@@ -5015,7 +5027,7 @@ const elUpdateConnectionsOfElement = async (documentId: string, documentBody: an
     + 'for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
   return elRawUpdateByQuery({
     index: READ_RELATIONSHIPS_INDICES,
-    refresh: true,
+    refresh: ES_REFRESH_UPDATE !== false, // update_by_query only accepts booleans (no wait_for)
     conflicts: 'proceed',
     slices: 'auto', // improve performance by slicing the request
     wait_for_completion: false, // async (query can update a lot of elements)
