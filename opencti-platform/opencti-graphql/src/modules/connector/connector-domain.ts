@@ -3,6 +3,7 @@ import { logApp } from '../../config/conf';
 import { publishUserAction } from '../../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { findLatestCompatibleCatalogContractBySlug } from '../catalog/catalog-repository';
+import { mapContractEntityFieldsToEmbeddedConnectorManagerContract } from '../catalog/catalog-domain';
 import { findManagedConnectorsByCatalogId } from './connector-repository';
 import type { BasicStoreEntityConnector } from '../../types/connector';
 import { patchAttribute } from '../../database/middleware';
@@ -46,7 +47,7 @@ const autoUpgradeManagedConnector = async (
     }
     // Update connector
     const patch: Partial<BasicStoreEntityConnector> = {
-      manager_contract: latestCompatibleContract,
+      manager_contract: mapContractEntityFieldsToEmbeddedConnectorManagerContract(latestCompatibleContract),
       manager_contract_image: latestCompatibleContract.image,
     };
     await patchAttribute(context, user, managedConnector.id, ENTITY_TYPE_CONNECTOR, patch);
