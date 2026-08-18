@@ -9,6 +9,7 @@ export default class LeftBarPage {
     const isOpenButtonVisible = await this.page.getByTestId('ChevronRightIcon').isVisible();
     if (isOpenButtonVisible) {
       await this.page.getByTestId('ChevronRightIcon').click();
+      await expect(this.page.getByTestId('ChevronLeftIcon')).toBeVisible();
     }
   }
 
@@ -19,17 +20,21 @@ export default class LeftBarPage {
     // Here to be sure we are opening the menu instead of closing it, we open
     // an other one before, as we can have only one menu open at a time.
     const otherMenu = menuName === 'Threats' ? 'Arsenal' : 'Threats';
-    await this.page.getByRole('menuitem', { name: otherMenu, exact: true }).click();
 
-    await this.page.getByRole('menuitem', { name: menuName, exact: true }).click();
+    expect(await this.page.getByTestId(`nav-button-${otherMenu.toLowerCase()}`).isVisible());
+    await this.page.getByTestId(`nav-button-${otherMenu.toLowerCase()}`).click();
+
+    expect(await this.page.getByTestId(`nav-button-${menuName.toLowerCase()}`).isVisible());
+    await this.page.getByTestId(`nav-button-${menuName.toLowerCase()}`).click();
     if (subMenuItem) {
-      expect(await this.page.getByRole('menuitem', { name: subMenuItem }).isVisible());
-      await this.page.getByRole('menuitem', { name: subMenuItem }).click();
+      expect(await this.page.getByTestId(`sub-menu-${subMenuItem.toLowerCase()}`).isVisible());
+      await this.page.getByTestId(`sub-menu-${subMenuItem.toLowerCase()}`).click();
     }
   }
 
   async getSubItem(subMenuItem: string) {
-    await this.page.getByLabel(subMenuItem, { exact: true }).click();
+    expect(await this.page.getByTestId(`sub-menu-${subMenuItem.toLowerCase()}`).isVisible());
+    await this.page.getByTestId(`sub-menu-${subMenuItem.toLowerCase()}`).click();
   }
 
   async expectBreadcrumb(...items: string[]) {

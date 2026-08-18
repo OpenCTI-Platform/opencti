@@ -246,6 +246,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
     return inCollapse ? (
       <ListItemButton
         key={`sub-menu-${index}`}
+        data-testid={`sub-menu-${item.label.toLowerCase()}`}
         component={Link}
         to={item.link}
         dense
@@ -263,6 +264,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
     ) : (
       <MenuItem
         key={`sub-menu-${index}`}
+        data-testid={`sub-menu-${item.label.toLowerCase()}`}
         component={Link}
         to={item.link}
         dense
@@ -307,6 +309,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
         component={Link}
         to={link}
         aria-label={label}
+        data-testid={`nav-button-${label.toLowerCase()}`}
         dense
         onClick={onClick}
         sx={getMenuStyles(isParentSelected)}
@@ -326,6 +329,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
           aria-expanded={isMenuOpen}
           aria-controls={`nav-${label}-collapse`}
           aria-label={label}
+          data-testid={`nav-button-${label.toLowerCase()}`}
           onClick={handleParentClick}
           sx={getMenuStyles(isParentSelected)}
         >
@@ -358,6 +362,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
         ref={anchorRef}
         tabIndex={0}
         id={`nav-${label}`}
+        data-testid={`nav-button-${label.toLowerCase()}`}
         aria-expanded={isMenuOpen ? 'true' : undefined}
         aria-controls={isMenuOpen ? `${label}-sub-menu` : undefined}
         aria-haspopup="true"
