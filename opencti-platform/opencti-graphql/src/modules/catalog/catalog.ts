@@ -9,6 +9,7 @@ import {
   type StoreEntityCatalogManifest,
 } from './catalog-types';
 import type { AttributeDefinition } from '../../schema/attribute-definition';
+import { UnsupportedError } from '../../config/errors';
 
 export const CATALOG_CONTRACT_MAPPINGS: AttributeDefinition[] = [
   { name: 'catalog_id', label: 'Catalog ID', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
@@ -24,11 +25,12 @@ export const CATALOG_CONTRACT_MAPPINGS: AttributeDefinition[] = [
   { name: 'last_verified_date', label: 'Last verified date', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'playbook_supported', label: 'Playbook supported', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   { name: 'max_confidence_level', label: 'Max confidence level', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-  { name: 'support_version', label: 'Support version', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+  { name: 'support_version', label: 'Support version', type: 'string', format: 'version', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'subscription_link', label: 'Subscription link', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'source_code', label: 'Source code', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'manager_supported', label: 'Manager supported', type: 'boolean', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   { name: 'version', label: 'Version', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+  { name: 'contract_version', label: 'Contract version', type: 'string', format: 'version', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'image', label: 'Image', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   { name: 'connector_type', label: 'Connector type', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   { name: 'config_schema', label: 'Configuration schema', type: 'object', format: 'raw', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
@@ -47,7 +49,9 @@ const CATALOG_CONTRACT_DEFINITION: ModuleDefinition<StoreEntityCatalogContract, 
     aliased: false,
   },
   identifier: {
-    definition: {},
+    definition: {
+      [ENTITY_TYPE_CATALOG_CONTRACT]: [{ src: 'catalog_id' }, { src: 'contract_id' }],
+    },
     resolvers: {},
   },
   attributes: CATALOG_CONTRACT_MAPPINGS,
@@ -55,10 +59,10 @@ const CATALOG_CONTRACT_DEFINITION: ModuleDefinition<StoreEntityCatalogContract, 
   // Irrelevant as no corresponding Stix object.
   // To remove once entity/module definition helper is reworked.
   representative: () => {
-    throw new Error('Should not be called');
+    throw UnsupportedError('Catalog contract representative should not be called');
   },
   converter_2_1: () => {
-    throw new Error('Should not be called');
+    throw UnsupportedError('Catalog contract converter_2_1 should not be called');
   },
 };
 
@@ -87,10 +91,10 @@ const CATALOG_MANIFEST_DEFINITION: ModuleDefinition<StoreEntityCatalogManifest, 
   // Irrelevant as no corresponding Stix object.
   // To remove once entity/module definition helper is reworked.
   representative: () => {
-    throw new Error('Should not be called');
+    throw UnsupportedError('Catalog manifest representative should not be called');
   },
   converter_2_1: () => {
-    throw new Error('Should not be called');
+    throw UnsupportedError('Catalog manifest converter_2_1 should not be called');
   },
 };
 

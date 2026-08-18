@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { GraphQLDateTime } from 'graphql-scalars';
 import { RULE_PREFIX } from './general';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import type { AttributeDefinition, AttrType, BasicStoreAttribute, ComplexAttributeWithMappings, MappingDefinition, RawObjectAttribute } from './attribute-definition';
+import type { AttributeDefinition, AttrType, ComplexAttributeWithMappings, MappingDefinition } from './attribute-definition';
 import { shortStringFormats } from './attribute-definition';
 import { getParentTypes } from './schemaUtils';
 import { isFeatureEnabled } from '../config/conf';
@@ -22,11 +22,8 @@ export const depsKeysRegister = {
 
 const isMandatoryAttributeDefinition = (schemaDef: AttributeDefinition) => schemaDef.mandatoryType === 'external' || schemaDef.mandatoryType === 'internal';
 const isDateAttributeDefinition = (schemaDef: AttributeDefinition) => schemaDef.type === 'date';
-const isNonFlatObjectAttributeDefinition = (schemaDef: AttributeDefinition): schemaDef is ComplexAttributeWithMappings => { // handy typeguard
-  return schemaDef.type === 'object' && schemaDef.format !== 'flat';
-};
-const isRawObjectAttributeDefinition = (schemaDef: AttributeDefinition): schemaDef is RawObjectAttribute<BasicStoreAttribute> => { // handy typeguard
-  return schemaDef.type === 'object' && schemaDef.format === 'raw';
+const isObjectAttributeWithMappings = (schemaDef: AttributeDefinition): schemaDef is ComplexAttributeWithMappings => { // handy typeguard
+  return schemaDef.type === 'object' && (schemaDef.format === 'standard' || schemaDef.format === 'nested');
 };
 
 /**
@@ -38,7 +35,7 @@ const getAttributeMappingFromPath = (path: string, schemaDef: AttributeDefinitio
   if (pathTokens.length === 1) {
     return schemaDef;
   }
-  if (!isNonFlatObjectAttributeDefinition(schemaDef)) {
+  if (!isObjectAttributeWithMappings(schemaDef)) {
     throw FunctionalError(`Cannot resolve path [${path}], [${schemaDef.name}] is not an object`);
   }
   const mapping = schemaDef.mappings.find((m) => m.name === pathTokens[1]);
@@ -289,6 +286,10 @@ export const isNumericAttribute = (k: string): boolean => (
 export const isDateNumericOrBooleanAttribute = (k: string): boolean => (
   schemaAttributesDefinition.isSpecificTypeAttribute(k, 'date', 'numeric', 'boolean')
 );
+export const isVersionAttribute = (k: string): boolean => {
+  const attribute = schemaAttributesDefinition.getAttributeByName(k);
+  return attribute?.type === 'string' && attribute?.format === 'version';
+};
 export const isObjectAttribute = (k: string): boolean => (
   schemaAttributesDefinition.isSpecificTypeAttribute(k, 'object')
 );
@@ -327,7 +328,7 @@ const validateInputAgainstSchema = (input: any, schemaDef: AttributeDefinition) 
     }
   }
 
-  if (isNonFlatObjectAttributeDefinition(schemaDef)) {
+  if (isObjectAttributeWithMappings(schemaDef)) {
     if (!isMandatory && R.isNil(input)) {
       return; // nothing to check (happens on 'remove' operation for instance
     }
@@ -337,10 +338,6 @@ const validateInputAgainstSchema = (input: any, schemaDef: AttributeDefinition) 
     }
     if (!schemaDef.multiple && (Array.isArray(input) || !R.is(Object, input))) {
       throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: value must be an object`);
-    }
-
-    if (isRawObjectAttributeDefinition(schemaDef)) {
-      return; // raw objects are not recursively validated
     }
 
     const inputValues = Array.isArray(input) ? input : [input];

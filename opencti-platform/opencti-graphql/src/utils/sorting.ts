@@ -1,9 +1,10 @@
-import { isDateNumericOrBooleanAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
+import { isDateNumericOrBooleanAttribute, isVersionAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
 import type { AuthContext, AuthUser } from '../types/user';
 
 const PIR_ORDERING_CRITERIA = ['pir_score', 'last_pir_score_date'];
+const VERSION_ORDERING_CRITERIA = ['version', 'support_version'];
 
 export const buildElasticSortingForAttributeCriteria = async (
   context: AuthContext,
@@ -47,10 +48,13 @@ export const buildElasticSortingForAttributeCriteria = async (
 
   // criteria not in schema, attempt keyword sorting as a last resort
   if (!definition) {
+    if (VERSION_ORDERING_CRITERIA.includes(orderCriteria)) {
+      return { [orderCriteria]: { order: orderMode, missing: '_last' } };
+    }
     return { [`${orderCriteria}.keyword`]: { order: orderMode, missing: '_last' } };
   }
 
-  if (isDateNumericOrBooleanAttribute(orderCriteria)) {
+  if (isDateNumericOrBooleanAttribute(orderCriteria) || isVersionAttribute(orderCriteria) || VERSION_ORDERING_CRITERIA.includes(orderCriteria)) {
     // sorting on null dates results to an error, one way to fix it is to use missing: 0
     // see https://github.com/elastic/elasticsearch/issues/81960
     return { [orderCriteria]: { order: orderMode, missing: definition.type === 'date' ? 0 : '_last' } };
