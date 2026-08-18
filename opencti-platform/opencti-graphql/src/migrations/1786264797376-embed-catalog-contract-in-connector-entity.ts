@@ -10,6 +10,8 @@ import openCtiManifest from '../__generated__/opencti-manifest.json';
 import type { CatalogContract, CatalogDefinition } from '../modules/catalog/catalog-types';
 import { mapContractDtoV0ToContractEntityFields } from '../modules/catalog/catalog-domain';
 import { listCatalogContractLogos, storeCatalogContractLogo } from '../modules/catalog/catalog-logo-storage';
+import { computeContractContentHash } from '../modules/catalog/sync/catalog-sync-domain';
+import { mapCatalogContractDtoToCatalogContractSyncSource } from '../modules/catalog/sync/catalog-sync-source-gateway';
 
 const message = '[MIGRATION] managed connectors contract snapshot';
 
@@ -17,7 +19,7 @@ export const up = async (next: (error?: Error) => void) => {
   logMigration.info(`${message} > started`);
   const context = executionContext('migration');
 
-  const filigranCatalog = openCtiManifest as CatalogDefinition;
+  const filigranCatalog = openCtiManifest as unknown as CatalogDefinition;
 
   // Load all managed connectors which have their contract definition in the embedded catalog manifest
   const managedConnectorsArgs = {
@@ -52,9 +54,13 @@ export const up = async (next: (error?: Error) => void) => {
             storedLogos.add(result.filename);
           }
         }
+        const contractContentHash = computeContractContentHash(
+          mapCatalogContractDtoToCatalogContractSyncSource(contractDto),
+        );
         patch.manager_contract = mapContractDtoV0ToContractEntityFields({
           catalogId: filigranCatalog.id,
           contractDto,
+          contractContentHash,
           logoUri: result.logoUri,
         });
       }

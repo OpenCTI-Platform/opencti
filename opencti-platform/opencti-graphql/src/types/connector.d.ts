@@ -1,3 +1,4 @@
+import type { ConnectorContractConfiguration } from '../generated/graphql';
 import type { CatalogContractEntityFields } from '../modules/catalog/catalog-types';
 import type { BasicStoreEntity, StoreEntity } from './store';
 
@@ -30,6 +31,7 @@ export interface BasicStoreEntityConnector extends StoreEntity {
   // region composer (set only on composer-managed connectors)
   catalog_id?: string;
   manager_contract_image?: string;
+  manager_contract_configuration?: ConnectorContractConfiguration[];
   manager_contract?: ConnectorManagerContract;
   manager_upgrade_strategy?: string;
   // endregion

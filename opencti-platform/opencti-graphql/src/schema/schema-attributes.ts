@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { GraphQLDateTime } from 'graphql-scalars';
 import { RULE_PREFIX } from './general';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import type { AttributeDefinition, AttrType, ComplexAttributeWithMappings, MappingDefinition } from './attribute-definition';
+import type { AttributeDefinition, AttrType, BasicStoreAttribute, ComplexAttributeWithMappings, MappingDefinition, RawObjectAttribute } from './attribute-definition';
 import { shortStringFormats } from './attribute-definition';
 import { getParentTypes } from './schemaUtils';
 import { isFeatureEnabled } from '../config/conf';
@@ -25,7 +25,7 @@ const isDateAttributeDefinition = (schemaDef: AttributeDefinition) => schemaDef.
 const isNonFlatObjectAttributeDefinition = (schemaDef: AttributeDefinition): schemaDef is ComplexAttributeWithMappings => { // handy typeguard
   return schemaDef.type === 'object' && schemaDef.format !== 'flat';
 };
-const isRawObjectAttributeDefinition = (schemaDef: AttributeDefinition): schemaDef is ComplexAttributeWithMappings => { // handy typeguard
+const isRawObjectAttributeDefinition = (schemaDef: AttributeDefinition): schemaDef is RawObjectAttribute<BasicStoreAttribute> => { // handy typeguard
   return schemaDef.type === 'object' && schemaDef.format === 'raw';
 };
 

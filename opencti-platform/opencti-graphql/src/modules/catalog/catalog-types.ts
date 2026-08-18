@@ -13,8 +13,8 @@ type TypeMap = {
 
 type TypedProperty<K extends keyof TypeMap = keyof TypeMap> = {
   type: K;
-  default: TypeMap[K];
-  description: string;
+  default?: TypeMap[K];
+  description?: string;
   format?: string;
 };
 
@@ -26,7 +26,7 @@ export interface CatalogContractDtoV0 {
   logo: string | null;
   use_cases: string[];
   verified: boolean;
-  last_verified_date: string;
+  last_verified_date: string | null;
   playbook_supported: boolean;
   max_confidence_level: number;
   support_version: string | null;
@@ -55,6 +55,7 @@ export interface CatalogDtoV0 {
   id: string;
   name: string;
   description: string;
+  version: string;
   contracts: Array<CatalogContractDtoV0>;
 }
 // endregion
@@ -94,6 +95,7 @@ export const ENTITY_TYPE_CATALOG_MANIFEST = 'CatalogManifest';
 export interface CatalogContractEntityFields {
   catalog_id: string;
   contract_id: string;
+  content_hash: string;
   title: string;
   slug: string;
   description: string;
@@ -131,14 +133,27 @@ export interface BasicStoreEntityCatalogContract extends BasicStoreEntity, Catal
 export interface StoreEntityCatalogContract extends StoreEntity, CatalogContractEntityFields {}
 
 interface CatalogManifestEntityFields {
+  revision: string;
   source_uri: string;
   catalog_id: string;
-  revision: string;
-  manifest_version?: string;
-  version?: string;
+  name: string;
+  description: string;
+  version: string;
 }
 
 export interface BasicStoreEntityCatalogManifest extends BasicStoreEntity, CatalogManifestEntityFields {}
 
 export interface StoreEntityCatalogManifest extends StoreEntity, CatalogManifestEntityFields {}
+
+export interface CatalogContractDeletion {
+  idToDelete: string;
+}
+
+export type CatalogContractUpdate = Required<{
+  [TKey in keyof CatalogContractEntityFields]: CatalogContractEntityFields[TKey] | null;
+}>;
+
+export type CatalogContractCreation = CatalogContractEntityFields;
+
+export type CatalogManifestUpsert = CatalogManifestEntityFields;
 // endregion

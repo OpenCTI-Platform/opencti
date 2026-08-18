@@ -13,6 +13,7 @@ import type { AttributeDefinition } from '../../schema/attribute-definition';
 export const CATALOG_CONTRACT_MAPPINGS: AttributeDefinition[] = [
   { name: 'catalog_id', label: 'Catalog ID', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   { name: 'contract_id', label: 'Catalog Contract ID', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+  { name: 'content_hash', label: 'Catalog Contract content hash', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   { name: 'title', label: 'Title', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   { name: 'slug', label: 'Slug', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
@@ -77,11 +78,10 @@ const CATALOG_MANIFEST_DEFINITION: ModuleDefinition<StoreEntityCatalogManifest, 
     resolvers: {},
   },
   attributes: [
-    { name: 'source_uri', label: 'Source URI', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'catalog_id', label: 'Catalog ID', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'revision', label: 'Revision', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'manifest_version', label: 'Manifest version', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
-    { name: 'version', label: 'Product version', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    { name: 'source_uri', label: 'Source URI', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'catalog_id', label: 'Catalog ID', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'revision', label: 'Revision', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'version', label: 'Product version', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: false },
   ],
   relations: [],
   // Irrelevant as no corresponding Stix object.
