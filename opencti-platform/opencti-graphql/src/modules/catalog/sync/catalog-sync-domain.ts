@@ -1,10 +1,11 @@
 import { createHash } from 'node:crypto';
-import conf, { logApp } from '../../../config/conf';
+import conf, { isFeatureEnabled, logApp, PLATFORM_VERSION } from '../../../config/conf';
 import {
   deleteCatalogContracts,
   deleteCatalogs,
   findCatalogContractsByCatalogId,
   findCatalogManifestByCatalogId,
+  findCatalogManifestBySourceUri,
   findCatalogs,
   insertCatalogContracts,
   updateCatalogContracts,
@@ -27,10 +28,40 @@ import type {
   CatalogManifestUpsert,
 } from '../catalog-types';
 import type { CatalogContractSyncSource, CatalogSyncSource, CatalogSyncSourceConfig } from './catalog-sync-types';
-import { fetchSourceCatalog } from './catalog-sync-source-gateway';
+import { fetchSourceCatalog, fetchSourceCatalogRevisionHint } from './catalog-sync-source-gateway';
+import { generateStandardId, idGenFromData } from '../../../schema/identifier';
+import { ENTITY_TYPE_CATALOG_CONTRACT, ENTITY_TYPE_CATALOG_MANIFEST } from '../catalog-types';
+import { UnsupportedError } from '../../../config/errors';
+
+const DECOUPLING_VERSIONS_FEATURE_FLAG = 'DECOUPLING_VERSIONS';
+
+const getDecouplingRemoteUri = (): string | undefined => {
+  const xtmHubUrl = conf.get('xtm:xtmhub_url');
+  if (!isFeatureEnabled(DECOUPLING_VERSIONS_FEATURE_FLAG) || typeof xtmHubUrl !== 'string' || xtmHubUrl.length === 0) {
+    return undefined;
+  }
+  const normalized = xtmHubUrl.endsWith('/') ? xtmHubUrl.slice(0, -1) : xtmHubUrl;
+  return `${normalized}/opencti/${encodeURIComponent(PLATFORM_VERSION)}/connector/manifests/latest`;
+};
 
 const computeCatalogRevision = (rawManifest: unknown): string => {
   return createHash('sha256').update(JSON.stringify(rawManifest)).digest('hex');
+};
+
+const buildCatalogContractIds = (catalogId: string, contractId: string) => {
+  const keyData = { catalog_id: catalogId, contract_id: contractId };
+  return {
+    internal_id: idGenFromData(ENTITY_TYPE_CATALOG_CONTRACT, keyData),
+    standard_id: generateStandardId(ENTITY_TYPE_CATALOG_CONTRACT, keyData),
+  };
+};
+
+const buildCatalogManifestIds = (catalogId: string) => {
+  const keyData = { catalog_id: catalogId };
+  return {
+    internal_id: idGenFromData(ENTITY_TYPE_CATALOG_MANIFEST, keyData),
+    standard_id: generateStandardId(ENTITY_TYPE_CATALOG_MANIFEST, keyData),
+  };
 };
 
 export const computeContractContentHash = (contract: CatalogContractSyncSource) => {
@@ -54,7 +85,7 @@ const computeCatalogLogosSyncOps = (
   for (const sourceContract of sourceCatalog.contracts) {
     const logoOperationResult = computeCatalogContractLogoUploadOperation(sourceContract, plannedLogos);
     if (logoOperationResult.result === 'failed') {
-      throw new Error(`Error while preparing logo for contract ${sourceContract.id}`, {
+      throw UnsupportedError(`Error while preparing logo for contract ${sourceContract.id}`, {
         cause: logoOperationResult.error,
       });
     }
@@ -65,7 +96,7 @@ const computeCatalogLogosSyncOps = (
     plannedLogos.add(logoOperationResult.filename);
     if (!logoOperationResult.existed) {
       if (!logoOperationResult.operation) {
-        throw new Error(`Missing logo upload operation for contract ${sourceContract.id}`);
+        throw UnsupportedError(`Missing logo upload operation for contract ${sourceContract.id}`);
       }
       uploadOperations.push(logoOperationResult.operation);
     }
@@ -103,7 +134,9 @@ const computeCatalogSyncOps = (params: {
     const sourceContractHash = params.sourceCatalogContractsHashes.get(sourceContract.id)!;
     const currentContract = params.currentContracts.get(sourceContract.id);
     if (!currentContract) {
+      const ids = buildCatalogContractIds(params.sourceCatalog.id, sourceContract.id);
       const contractCreation: CatalogContractCreation = {
+        ...ids,
         catalog_id: params.sourceCatalog.id,
         contract_id: sourceContract.id,
         content_hash: sourceContractHash,
@@ -122,6 +155,7 @@ const computeCatalogSyncOps = (params: {
         source_code: sourceContract.source_code ?? undefined,
         manager_supported: sourceContract.manager_supported,
         version: sourceContract.container_version,
+        contract_version: sourceContract.container_version,
         image: sourceContract.container_image,
         connector_type: sourceContract.container_type,
         config_schema: sourceContract.config_schema,
@@ -135,7 +169,10 @@ const computeCatalogSyncOps = (params: {
     if (sourceContractHash === currentContract.content_hash) {
       return;
     }
+    const ids = buildCatalogContractIds(params.sourceCatalog.id, sourceContract.id);
     const contractUpdate: CatalogContractUpdate = {
+      internal_id: currentContract.internal_id ?? currentContract.id,
+      standard_id: ids.standard_id,
       catalog_id: params.sourceCatalog.id,
       contract_id: sourceContract.id,
       content_hash: sourceContractHash,
@@ -153,6 +190,7 @@ const computeCatalogSyncOps = (params: {
       subscription_link: sourceContract.subscription_link,
       manager_supported: sourceContract.manager_supported,
       version: sourceContract.container_version,
+      contract_version: sourceContract.container_version,
       image: sourceContract.container_image,
       connector_type: sourceContract.container_type,
       config_schema: sourceContract.config_schema,
@@ -170,7 +208,9 @@ const computeCatalogSyncOps = (params: {
       return;
     }
   });
+  const catalogManifestIds = buildCatalogManifestIds(params.sourceCatalog.id);
   const catalogManifestUpsert: CatalogManifestUpsert = {
+    ...catalogManifestIds,
     revision: params.revision,
     source_uri: params.sourceConfig.uri,
     catalog_id: params.sourceCatalog.id,
@@ -188,6 +228,30 @@ const computeCatalogSyncOps = (params: {
 
 const synchronizeCatalog = async (context: AuthContext, user: AuthUser, sourceConfig: CatalogSyncSourceConfig) => {
   try {
+    logApp.debug('[OPENCTI-MODULE] Synchronizing catalog', {
+      sourceKind: sourceConfig.kind,
+      sourceUri: sourceConfig.uri,
+    });
+    const currentCatalogBySourceUri = sourceConfig.kind === 'remote'
+      ? await findCatalogManifestBySourceUri(context, user, sourceConfig.uri)
+      : undefined;
+    const remoteRevisionHint = sourceConfig.kind === 'remote'
+      ? await fetchSourceCatalogRevisionHint(sourceConfig)
+      : undefined;
+    if (sourceConfig.kind === 'remote' && currentCatalogBySourceUri?.revision) {
+      if (remoteRevisionHint && remoteRevisionHint === currentCatalogBySourceUri.revision) {
+        logApp.info('[OPENCTI-MODULE] Catalog manager manifest unchanged (remote ETag match)', {
+          sourceKind: sourceConfig.kind,
+          catalogId: currentCatalogBySourceUri.catalog_id,
+          revision: remoteRevisionHint,
+          module: 'catalog',
+        });
+        return {
+          synced: false,
+          catalogId: currentCatalogBySourceUri.catalog_id,
+        } as const;
+      }
+    }
     // Fetch source catalog
     const sourceCatalog = await fetchSourceCatalog(sourceConfig);
     // Find existing persisted data in the database corresponding to the catalog id
@@ -206,16 +270,16 @@ const synchronizeCatalog = async (context: AuthContext, user: AuthUser, sourceCo
         module: 'catalog',
       });
     }
-    if (currentCatalog && currentCatalog.id !== sourceCatalog.id) {
+    if (currentCatalogBySourceUri && currentCatalogBySourceUri.catalog_id !== sourceCatalog.id) {
       logApp.warn('[OPENCTI-MODULE] Same catalog source with different ID', {
         sourceKind: sourceConfig.kind,
-        knownId: currentCatalog.id,
+        knownId: currentCatalogBySourceUri.catalog_id,
         newId: sourceCatalog.id,
         module: 'catalog',
       });
     }
     // Compute revision and compare with persisted, return early if equal.
-    const revision = computeCatalogRevision(sourceCatalog);
+    const revision = remoteRevisionHint ?? computeCatalogRevision(sourceCatalog);
     if (currentRevision && revision === currentRevision) {
       logApp.info('[OPENCTI-MODULE] Catalog manager manifest unchanged (revision match)', {
         sourceKind: sourceConfig.kind,
@@ -230,7 +294,7 @@ const synchronizeCatalog = async (context: AuthContext, user: AuthUser, sourceCo
     }
     // Fetch all current contracts, logos & compute sync diff
     const currentContracts = currentCatalog
-      ? await findCatalogContractsByCatalogId(context, user, currentCatalog.id)
+      ? await findCatalogContractsByCatalogId(context, user, currentCatalog.catalog_id)
       : new Map<string, BasicStoreEntityCatalogContract>();
     const currentLogos = await listCatalogContractLogos();
     const logoSyncOps = computeCatalogLogosSyncOps(sourceCatalog, currentLogos);
@@ -248,6 +312,14 @@ const synchronizeCatalog = async (context: AuthContext, user: AuthUser, sourceCo
       currentContracts,
     });
     // Persist refreshed catalog, contracts & logos
+    // Something's fishy if this occurs too frequently.
+    logApp.warn('[OPENCTI-MODULE] Persisting catalog & contracts', {
+      catalogId: sourceCatalog.id,
+      contractsCreationsCount: catalogSyncDiff.contractsCreations.length,
+      contractsUpdatesCount: catalogSyncDiff.contractsUpdates.length,
+      contractsDeletionsCount: catalogSyncDiff.contractsDeletions.length,
+      module: 'catalog',
+    });
     await uploadCatalogContractLogos(logoSyncOps.uploadOperations);
     await insertCatalogContracts(context, user, catalogSyncDiff.contractsCreations);
     if (catalogSyncDiff.contractsUpdates.length > 0) {
@@ -280,19 +352,32 @@ const synchronizeCatalog = async (context: AuthContext, user: AuthUser, sourceCo
   }
 };
 
+const EMBEDDED_CATALOG_SYNC_SOURCE: CatalogSyncSourceConfig = { kind: 'embedded', uri: 'embedded' } as const;
+
 const initSyncSources = () => {
   // Build catalog sources configs from env vars/app settings
-  const sources: CatalogSyncSourceConfig[] = [{
-    kind: 'embedded' as const,
-    uri: 'embedded',
-  }];
+  const sources: CatalogSyncSourceConfig[] = [];
+  const decouplingRemoteUri = getDecouplingRemoteUri();
+  if (decouplingRemoteUri) {
+    sources.push({ kind: 'remote', uri: decouplingRemoteUri });
+  } else {
+    sources.push(EMBEDDED_CATALOG_SYNC_SOURCE);
+  }
   const CUSTOM_CATALOGS: string[] = conf.get('app:custom_catalogs') ?? [];
   if (CUSTOM_CATALOGS) {
-    sources.push(...CUSTOM_CATALOGS.map((customCatalog) => ({
-      kind: 'local' as const,
-      filepath: customCatalog,
-      uri: 'file:///' + customCatalog, // TODO: normalize
-    })));
+    sources.push(...CUSTOM_CATALOGS.map((customCatalog) => {
+      if (customCatalog.startsWith('http://') || customCatalog.startsWith('https://')) {
+        return {
+          kind: 'remote' as const,
+          uri: customCatalog,
+        };
+      }
+      return {
+        kind: 'local' as const,
+        filepath: customCatalog,
+        uri: 'file:///' + customCatalog, // TODO: normalize
+      };
+    }));
   }
   return sources;
 };
@@ -311,15 +396,28 @@ const cleanupObsoleteCatalogs = async (context: AuthContext, syncedCatalogs: str
 
 export const synchronizeCatalogs = async (context: AuthContext, user: AuthUser) => {
   const sources = initSyncSources();
+  const decouplingRemoteUri = getDecouplingRemoteUri();
   logApp.debug('[OPENCTI-MODULE] Synchronizing catalogs', {
     count: sources.length,
+    decouplingRemoteUri,
     module: 'catalog',
   });
   const syncedCatalogs: string[] = [];
   const syncedCatalogsWithChanges: string[] = [];
   // Sync catalogs from sources
   for (const source of sources) {
-    const result = await synchronizeCatalog(context, user, source);
+    let result = await synchronizeCatalog(context, user, source);
+    if (source.kind === 'remote' && result.error && decouplingRemoteUri && source.uri === decouplingRemoteUri) {
+      const alreadyPersistedRemoteCatalog = await findCatalogManifestBySourceUri(context, user, source.uri);
+      if (!alreadyPersistedRemoteCatalog) {
+        logApp.error('[OPENCTI-MODULE] Remote catalog source failed before first successful persistence, falling back to embedded source', {
+          sourceKind: source.kind,
+          sourceUri: source.uri,
+          module: 'catalog',
+        });
+        result = await synchronizeCatalog(context, user, EMBEDDED_CATALOG_SYNC_SOURCE);
+      }
+    }
     if (!result.error) {
       syncedCatalogs.push(result.catalogId);
       if (result.synced) {
