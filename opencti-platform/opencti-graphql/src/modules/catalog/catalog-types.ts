@@ -105,7 +105,6 @@ export interface CatalogContractEntityFields {
   subscription_link?: string;
   source_code?: string;
   manager_supported: boolean;
-  version: string;
   contract_version: string;
   image: string;
   connector_type: IngestionConnectorType;
