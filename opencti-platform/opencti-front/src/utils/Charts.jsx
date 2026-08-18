@@ -608,9 +608,8 @@ export const radarChartOptions = (
   chartColors = [],
   legend = false,
   // Ninth factory. Its background is a DEFAULT PARAMETER, not a `background:`
-  // key, which is why the first sweep of this file missed it: a grep for
-  // `background:` cannot see it. Same rule as the other eight — the chart sits
-  // inside the card and is meant to disappear against it.
+  // key, so a grep for `background:` cannot see it. Same rule as the other
+  // eight — the chart sits inside the card and is meant to disappear against it.
   background = theme.palette.background.paper,
   size = undefined,
   handleClick = undefined,

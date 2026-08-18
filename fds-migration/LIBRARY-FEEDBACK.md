@@ -1177,7 +1177,7 @@ all 20 explicitly, the way `src/tokens/index.css` already safelists the five
 ## 37. `Paper`'s title row cannot follow the host's text colour, and that blocks adoption
 
 **Raised during the Paper pilot, from a measurement that changed the decision.**
-Sandy's arbitration was to adopt `title`/`action`; this entry is why OpenCTI is
+The arbitration was to adopt `title`/`action`; this entry is why OpenCTI is
 not adopting them yet.
 
 **Needed.** OpenCTI's theme is customer-configurable per tenant, and
@@ -1312,7 +1312,7 @@ pixel at its own centre. If it does, the workaround is retired.
 ## 39. `Chip` normalises its label's type but not its own root, which makes the component impossible to inspect correctly
 
 **Not a rendering defect.** Raised because it cost a round of confusion on a
-change that was correct: Sandy read 14px on the EE chip where the pin bump had
+change that was correct: 14px was read on the EE chip where the pin bump had
 just taken it to 12px, and both readings were true of different nodes.
 
 **What is measured.** The component sets its typography class on the LABEL span

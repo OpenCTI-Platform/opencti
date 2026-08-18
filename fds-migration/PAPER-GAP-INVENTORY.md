@@ -67,15 +67,11 @@ Counted by the analyser, not by hand:
 | `<Paper>` call sites importing from the library | **25** in **19 files** |
 | files still importing MUI's `Paper` | **7** |
 
-Two earlier figures were wrong for two different reasons, and both are worth
-knowing. **21 "surfaces"** was hand-kept and folded a group of identical headers
-into one; the analyser counts call sites, and a file may hold several (three in
-each of two SSO field components, two in four others). **27** was the analyser's
-own first answer, and it counted two `<Paper>` occurrences written inside a
-COMMENT — the MIXED-file note at the top of `TokenList.tsx` and
-`UserTokenList.tsx`. The analyser now blanks comments before matching, which also
-stops a commented padding example from reddening the gate. The tree is the truth:
-**25 sites, 19 files**.
+A file may hold several call sites (three in each of two SSO field components,
+two in four others), so a count of "surfaces" is not a count of sites. The
+analyser blanks comments before matching — a `<Paper>` inside a comment is not a
+call site, and the same rule stops a commented padding example from reddening the
+guard. Superseded figures are listed in §6.
 
 The perimeter examined was wider than the sites converted: a `<Paper` grep never
 sees the surfaces injected as `<TableContainer component={Paper}>`, which is how
@@ -206,14 +202,16 @@ by import so MUI's own `Card` is not counted as a wrapper call site:
 > `node fds-migration/scripts/count-surfaces.mjs` prints every number in this
 > table, and it is the only method that counts.
 >
-> Four wrong figures circulated before it existed, each from a different shortcut,
+> Five wrong figures circulated before it existed, each from a different shortcut,
 > named here so none is restored. **222 / 167** counted every `<Card>` tag in the
 > front, mixing in the 3 MUI sites — 219 + 3 = 222, 166 + 1 = 167. **216 / 163**
 > came from an import filter that recognised only long paths and missed three
 > relative `'./Card'` imports (`CardAccordion.tsx`, `CardNumber.tsx`,
 > `CardStatistic.tsx`). **123** came from a line grep blind to multi-line opening
-> tags: it missed 51. And **21 surfaces** for the Paper perimeter was a
-> hand-maintained tally, not a count — see §2.
+> tags: it missed 51. **21 surfaces** for the Paper perimeter was a
+> hand-maintained tally, not a count. And **27** was this counter's own first
+> answer, before it blanked comments: two of the `<Paper>` it counted were words
+> inside the MIXED-file note in `TokenList.tsx` and `UserTokenList.tsx`.
 
 **`title`/`action` and the Card wave are one decision, not two.** 174 of the 219
 sites pass `title=`, and the library title row cannot follow the host's text

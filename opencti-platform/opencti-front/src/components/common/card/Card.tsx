@@ -67,22 +67,11 @@ const Card = ({
   /**
    * ELEVATION LAYER 1, in every theme.
    *
-   * This used to branch: `background.paper` on a customer theme, and
-   * `background.secondary` otherwise. That second field is a hardcoded literal
-   * — `#0C1524` in dark, which is NO step of the elevation scale (layer-1 is
-   * `#0d172b`). Measured at the DOM, every card in the product painted it. In
-   * light the same field is `#FFFFFF`, which IS layer-1, so the drift was
-   * dark-only — and invisible to anyone reading the theme rather than the
-   * rendered pixel.
-   *
    * The value read is the LIBRARY'S OWN per-layer hook,
    * `--bg-elevation-default-layer-1`, not MUI's `background.paper`. Both carry
    * the same colour today, so this changes no pixel — but they are two
-   * different levers, and that difference was a blind spot: pushing the hook
-   * alone moved every library `Paper` and left every card behind. Measured on a
-   * customer theme, before this line: hook forced to red, Paper red, card still
-   * on the customer's `#3b2450`. Cards and panels now answer the same gesture,
-   * which is what a host redeclaring a layer is entitled to expect.
+   * different levers: overriding the hook must move cards and library panels
+   * together, which is what a host redeclaring a layer is entitled to expect.
    *
    * Fixed HERE, in the wrapper, deliberately — not in the theme. Repointing
    * `background.secondary` itself would move its EIGHT other consumer lines,
@@ -109,14 +98,11 @@ const Card = ({
      *
      * Read from the PER-LAYER hook, not from the semantic alias. The alias
      * `--border-elevation-subtle-soft` resolves from layer 0 — the one variable
-     * `useFdsThemeScope` does not push — so on a customer theme the card edge
-     * stayed on the built-in `#2b4f8d` while every library `Paper` had moved to
-     * the customer's `#3b2450`. Measured, before this line: card border
-     * `color(srgb 0.168627 0.309804 0.552941 / 0.15)` on BOTH the dark and the
-     * customer theme; Paper border `color(srgb 0.231373 0.141176 0.313726 / 0.15)`
-     * on the customer theme. Same rule as the surface, same assumed
-     * consequence: on a customised theme the edge becomes invisible because it
-     * coincides with the surface, and on the shipped themes nothing changes.
+     * `useFdsThemeScope` does not push — so reading the alias leaves the card
+     * edge behind on a customer theme while every library `Paper` moves. Same
+     * rule as the surface, same assumed consequence: on a customised theme the
+     * edge becomes invisible because it coincides with the surface, and on the
+     * shipped themes nothing changes.
      *
      * Deliberately ONE LINE here rather than swapping `CardMui` for the
      * library `Paper`. The surface colour and the radius already match the
@@ -126,9 +112,8 @@ const Card = ({
      * `variant="outlined"` sites a background they do not have, dropping the
      * asymmetric padding of 11 sites plus part of the 126 dashboard tiles, and
      * leaving a hybrid wrapper the real Card migration would have to undo. Same
-     * rendering, none of the debt. Those two counts come from
-     * `fds-migration/scripts/count-surfaces.mjs`; the 45 and 25 written here
-     * before were hand-counted and wrong.
+     * rendering, none of the debt. Both counts come from
+     * `fds-migration/scripts/count-surfaces.mjs`.
      */
     border: '1px solid var(--border-elevation-subtle-soft-layer-1-transparency-15)',
     ...(applyStyleToContainer ? paddingStyle : {}),

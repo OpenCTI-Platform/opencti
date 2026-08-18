@@ -52,11 +52,10 @@ export type FdsThemeMode = 'light' | 'dark';
  * Layer 1 only: that is the Paper default elevation, and the customer supplies
  * exactly one paper colour. The other layers keep the Filigran ramp.
  *
- * Sandy's arbitration: the border takes the CUSTOMER'S CARD COLOUR, and only on
+ * Arbitrated: the border takes the CUSTOMER'S CARD COLOUR, and only on
  * a custom theme. Accepted consequence — a 15% dilution of the surface colour
  * over that same surface composites back to the surface, so a customised
- * install has NO visible edge on its panels. That is wanted, not a defect, and
- * it is shown on the checkpoint board rather than corrected.
+ * install has NO visible edge on its panels. That is wanted, not a defect.
  */
 const SURFACE_BASE = '--bg-elevation-default-layer-1';
 const BORDER_BASE = '--border-elevation-subtle-soft-layer-1';

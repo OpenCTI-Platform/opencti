@@ -15,7 +15,7 @@ const GLYPH_COLOR = 'var(--color-filigran-brand-primary)';
  * the glyph lives in an `aria-hidden` span, so a badge nested in there is
  * outside the accessibility tree and its `aria-describedby` lands on a node no
  * screen reader ever reaches. No `tone`: the library default is red and this
- * bar takes it (decision, Sandy, 2026-08-13).
+ * bar takes it (arbitrated 2026-08-13).
  */
 interface TopBarIconLinkBadge {
   /** The total, announced in full even when the visual reduces to a dot. */
