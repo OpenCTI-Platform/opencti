@@ -6939,15 +6939,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"file-type@npm:22.0.1":
-  version: 22.0.1
-  resolution: "file-type@npm:22.0.1"
+"file-type@npm:22.0.2":
+  version: 22.0.2
+  resolution: "file-type@npm:22.0.2"
   dependencies:
     "@tokenizer/inflate": "npm:^0.4.1"
     strtok3: "npm:^10.3.5"
     token-types: "npm:^6.1.2"
     uint8array-extras: "npm:^1.5.0"
-  checksum: 10c0/45b70a10196d46965eadd7835ec408c1c07b4fd2ed395e9bbcc0ad63d93f7bf6d076d0e970673b754577002019c8858825bc71ccc07ca7c0e49ac0c2b7e1839f
+  checksum: 10c0/1ad23ecb6afd60ea59046b213ac834c51ab0706e185c9509c5a2adce290db05cc4672b197390268a145ea489d489768e10cfd7df802da2b492a45a0aa0231be8
   languageName: node
   linkType: hard
 
@@ -9945,7 +9945,7 @@ __metadata:
     express-rate-limit: "npm:8.6.2"
     express-session: "npm:1.19.0"
     fast-json-patch: "npm:3.1.1"
-    file-type: "npm:22.0.1"
+    file-type: "npm:22.0.2"
     github-api: "npm:3.4.0"
     globals: "npm:17.11.0"
     graphql: "npm:17.0.2"
