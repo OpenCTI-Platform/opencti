@@ -114,7 +114,7 @@ import { safeRender } from '../utils/safeEjs.client';
 import { totp } from '../utils/totp';
 import { pushAll } from '../utils/arrayUtil';
 import { apiTokens } from '../modules/attributes/internalObject-registrationAttributes';
-import { addUserTokenByAdmin, generateTokenHmac } from '../modules/user/user-domain';
+import { addUserTokenByAdmin, generateTokenHmac, maskToken } from '../modules/user/user-domain';
 import { verifyXtmJwt, isOwnIssuer } from './xtm-auth';
 import { getSettings } from './settings';
 import passport from 'passport';
@@ -2236,12 +2236,13 @@ export const authenticateUserFromRequest = async (context, req) => {
     try {
       return await authenticateUserByToken(context, req, bearerToken);
     } catch (err) {
-      const tokenPrefix = bearerToken.substring(0, 20);
       const userAgent = req.headers['user-agent'] || 'unknown';
       const origin = req.headers.origin || req.headers.referer || 'unknown';
       logApp.warn('Error resolving user by token', {
         cause: err,
-        token_prefix: `${tokenPrefix}...`,
+        // Same mask, and same field name, as the token shown on the user's profile —
+        // that is what makes this line traceable back to a user.
+        masked_token: maskToken(bearerToken),
         user_agent: userAgent,
         origin,
       });
@@ -2313,7 +2314,7 @@ const initAdmin = async (context, email, password, tokenValue) => {
     name: 'Base token',
     hash: await generateTokenHmac(tokenValue),
     created_at: now,
-    masked_token: `****${tokenValue.slice(-4)}`,
+    masked_token: maskToken(tokenValue),
   };
   tokensWithoutBaseOne.push(newToken);
   const updates = [{ key: apiTokens.name, value: tokensWithoutBaseOne, operation: UPDATE_OPERATION_REPLACE }];
