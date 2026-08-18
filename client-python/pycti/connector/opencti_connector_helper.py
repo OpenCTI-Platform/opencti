@@ -2614,7 +2614,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :type bundle: str
         :param entities_types: List of entity types in the bundle
         :type entities_types: list
-        :param update: Whether this is an update operation
+        :param update: Whether to force-merge entities that ambiguously match multiple
+            existing records during creation. Has no effect on the standard single-match
+            upsert path, as OpenCTI always upserts by standard id/hash regardless of this flag.
         :type update: bool
         :return: Message bundle dictionary
         :rtype: dict
@@ -3508,7 +3510,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :type draft_id: str, optional
         :param entities_types: List of entity types to filter (default: None)
         :type entities_types: list, optional
-        :param update: Whether to update existing data in the database (default: False)
+        :param update: Whether to force-merge entities that ambiguously match multiple
+            existing records during creation (default: False). OpenCTI always upserts
+            data by standard id/hash regardless of this flag; it only affects the rare
+            case where a single incoming entity matches more than one existing entity.
         :type update: bool, optional
         :param event_version: Event version for the bundle (default: None)
         :type event_version: str, optional
@@ -3790,7 +3795,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :type sequence: int, optional
         :param entities_types: List of entity types to filter (default: None)
         :type entities_types: list, optional
-        :param update: Whether to update existing data in the database (default: False)
+        :param update: Whether to force-merge entities that ambiguously match multiple
+            existing records during creation (default: False). OpenCTI always upserts
+            data by standard id/hash regardless of this flag; it only affects the rare
+            case where a single incoming entity matches more than one existing entity.
         :type update: bool, optional
         :param draft_id: Draft context ID for the bundle (default: None)
         :type draft_id: str, optional

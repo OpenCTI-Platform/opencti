@@ -300,7 +300,10 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
         :type externalReferences: list
         :param objectOrganization: (optional) list of organization IDs
         :type objectOrganization: list
-        :param update: (optional) whether to update if exists (default: False)
+        :param update: (optional) whether to force-merge entities that ambiguously match
+            multiple existing records during creation (default: False). OpenCTI always
+            upserts data by standard id/hash regardless of this flag; it only affects the
+            rare case where a single incoming entity matches more than one existing entity.
         :type update: bool
         :param resolve_result_indicators: (optional) resolve result indicators (default: True)
         :type resolve_result_indicators: bool
