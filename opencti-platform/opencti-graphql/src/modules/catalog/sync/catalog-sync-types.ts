@@ -1,4 +1,4 @@
-import type { CatalogContractDtoV0 } from '../catalog-types';
+import type { CatalogContract } from '../catalog-types';
 
 export type CatalogSyncSourceConfig = {
   kind: 'embedded';
@@ -7,9 +7,12 @@ export type CatalogSyncSourceConfig = {
   kind: 'local';
   filepath: string;
   uri: string;
+} | {
+  kind: 'remote';
+  uri: string;
 };
 
-export type CatalogContractSyncSource = CatalogContractDtoV0 & {
+export type CatalogContractSyncSource = CatalogContract & {
   id: string; // slug-version
 };
 
