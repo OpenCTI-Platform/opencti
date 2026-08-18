@@ -6,20 +6,29 @@ import {
   type BasicStoreEntityCatalogContract,
   type BasicStoreEntityCatalogManifest,
   type CatalogContract,
-  type CatalogContractDtoV0,
   type CatalogContractEntityFields,
   type GraphqlCatalog,
   type GraphqlCatalogContract,
 } from './catalog-types';
 import { isEmptyField } from '../../database/utils';
 import { UnsupportedError } from '../../config/errors';
-import { idGenFromData } from '../../schema/identifier';
-import { logApp } from '../../config/conf';
 import type { ConnectorContractConfiguration, ContractConfigInput } from '../../generated/graphql';
 import type { ValidateFunction } from 'ajv';
-import { findCatalogContractsByCatalogId, findCatalogManifestByCatalogId, findCatalogs, findLatestCompatibleCatalogContractBySlug } from './catalog-repository';
+import { findCatalogManifestByCatalogId, findCatalogs, findLatestCompatibleCatalogContractBySlug, findLatestCompatibleCatalogContractsByCatalogId } from './catalog-repository';
 
 const validatorCache = new Map<string, ValidateFunction>();
+const EXCLUDED_CONFIG_VARS = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
+
+const getContractConfigSchemaWithoutExcludedRuntimeVars = (configSchema: CatalogContract['config_schema']) => {
+  const filteredProperties = Object.fromEntries(
+    Object.entries(configSchema.properties).filter(([property]) => !EXCLUDED_CONFIG_VARS.includes(property)),
+  );
+  return {
+    ...configSchema,
+    properties: filteredProperties,
+    required: configSchema.required.filter((property) => !EXCLUDED_CONFIG_VARS.includes(property)),
+  };
+};
 
 /**
  * Compiles (or retrieves from cache) an AJV validator for a given schema.
@@ -226,7 +235,7 @@ export const validateContractConfigurations = (
   contractConfigurations: ConnectorContractConfiguration[],
   targetContract: Pick<CatalogContract, 'config_schema' | 'slug' | 'title'>,
 ) => {
-  const targetConfig = targetContract.config_schema;
+  const targetConfig = getContractConfigSchemaWithoutExcludedRuntimeVars(targetContract.config_schema);
 
   // Build validation object from configurations
   // For AJV validation, arrays need to be actual arrays, not comma-separated strings
@@ -295,7 +304,7 @@ export const computeConnectorTargetContract = (
   publicKey: string,
   currentManagerContractConfiguration?: ConnectorContractConfiguration[],
 ): ConnectorContractConfiguration[] => {
-  const targetConfig = targetContract.config_schema;
+  const targetConfig = getContractConfigSchemaWithoutExcludedRuntimeVars(targetContract.config_schema);
 
   // Create maps for efficient lookups
   const configMap = new Map(configurations.map((c) => [c.key, c]));
@@ -347,25 +356,6 @@ export const computeConnectorTargetContract = (
   return contractConfigurations;
 };
 
-const EXCLUDED_CONFIG_VARS = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
-
-export const mapCatalogContractToGraphqlCatalogContractWithoutExcludedConfigVars = (
-  contract: BasicStoreEntityCatalogContract,
-): GraphqlCatalogContract => {
-  const finalContract = mapContractEntityFieldsToGraphqlCatalogContract(contract);
-  if (finalContract.manager_supported) {
-    if (!finalContract.config_schema) {
-      logApp.warn('A contract has manager_supported=true but is missing config_schema', { contractTitle: finalContract.title });
-    } else {
-      EXCLUDED_CONFIG_VARS.forEach((property) => {
-        delete finalContract.config_schema.properties[property];
-      });
-      finalContract.config_schema.required = contract.config_schema.required.filter((item) => !EXCLUDED_CONFIG_VARS.includes(item));
-    }
-  }
-  return finalContract;
-};
-
 const mapCatalogToGraphqlCatalog = (
   catalog: BasicStoreEntityCatalogManifest,
   contracts: BasicStoreEntityCatalogContract[],
@@ -374,11 +364,11 @@ const mapCatalogToGraphqlCatalog = (
     id: catalog.catalog_id,
     name: catalog.name,
     description: catalog.description,
-    entity_type: 'Catalog',
-    parent_types: ['Internal'],
-    standard_id: idGenFromData('catalog', { id: catalog.id }),
+    entity_type: catalog.entity_type,
+    parent_types: catalog.parent_types,
+    standard_id: catalog.standard_id,
     contracts: contracts.map((c) =>
-      JSON.stringify(mapCatalogContractToGraphqlCatalogContractWithoutExcludedConfigVars(c)),
+      JSON.stringify(mapContractEntityFieldsToGraphqlCatalogContract(c, { excludeRuntimeConfigVars: true })),
     ),
   };
 };
@@ -388,14 +378,17 @@ export const queryCatalogById = async (context: AuthContext, user: AuthUser, cat
   if (!catalog) {
     return null;
   }
-  const contracts = await findCatalogContractsByCatalogId(context, user, catalogId);
-  return mapCatalogToGraphqlCatalog(catalog, Object.values(contracts));
+  const contracts = await findLatestCompatibleCatalogContractsByCatalogId(context, user, catalogId);
+  return mapCatalogToGraphqlCatalog(catalog, [...contracts.values()]);
 };
 
 export const queryCatalogs = async (context: AuthContext, user: AuthUser) => {
   const catalogs = await findCatalogs(context, user);
-  const contracts = await Promise.all(catalogs.map((catalog) => findCatalogContractsByCatalogId(context, user, catalog.id)));
-  return catalogs.map((catalog, idx) => mapCatalogToGraphqlCatalog(catalog, Object.values(contracts[idx])));
+  const contracts = await Promise.all(catalogs.map((catalog) => findLatestCompatibleCatalogContractsByCatalogId(context, user, catalog.catalog_id)));
+  const ret = catalogs.map((catalog, idx) => {
+    return mapCatalogToGraphqlCatalog(catalog, [...contracts[idx].values()]);
+  });
+  return ret;
 };
 
 export const queryContractBySlug = async (context: AuthContext, user: AuthUser, contractSlug: string) => {
@@ -405,17 +398,23 @@ export const queryContractBySlug = async (context: AuthContext, user: AuthUser, 
   }
   return {
     catalog_id: contract.catalog_id,
-    contract: JSON.stringify(mapCatalogContractToGraphqlCatalogContractWithoutExcludedConfigVars(contract)),
+    contract: JSON.stringify(mapContractEntityFieldsToGraphqlCatalogContract(contract, { excludeRuntimeConfigVars: true })),
   };
 };
 
 export const mapContractDtoV0ToContractEntityFields = (params: {
   catalogId: string;
-  contractDto: CatalogContractDtoV0;
+  contractDto: CatalogContract;
   contractContentHash: string;
   logoUri: string | null;
 }): CatalogContractEntityFields => {
   const { catalogId, contractDto, contractContentHash, logoUri } = params;
+  const supportVersionValue = contractDto.support_version
+    ? contractDto.support_version.replace(/^\s*>=\s*/, '').trim()
+    : null;
+  const normalizedSupportVersion = supportVersionValue && supportVersionValue.length > 0
+    ? supportVersionValue
+    : null;
   return {
     catalog_id: catalogId,
     contract_id: `${contractDto.slug}-${contractDto.container_version}`,
@@ -430,11 +429,12 @@ export const mapContractDtoV0ToContractEntityFields = (params: {
     last_verified_date: contractDto.last_verified_date ?? undefined,
     playbook_supported: contractDto.playbook_supported,
     max_confidence_level: contractDto.max_confidence_level,
-    support_version: contractDto.support_version ?? undefined,
+    support_version: normalizedSupportVersion ?? undefined,
     subscription_link: contractDto.subscription_link ?? undefined,
     source_code: contractDto.source_code ?? undefined,
     manager_supported: contractDto.manager_supported,
     version: contractDto.container_version,
+    contract_version: contractDto.container_version,
     image: contractDto.container_image,
     connector_type: contractDto.container_type,
     config_schema: contractDto.config_schema,
@@ -444,7 +444,14 @@ export const mapContractDtoV0ToContractEntityFields = (params: {
   };
 };
 
-export const mapContractEntityFieldsToGraphqlCatalogContract = (contract: CatalogContractEntityFields): GraphqlCatalogContract => {
+export const mapContractEntityFieldsToGraphqlCatalogContract = (
+  contract: CatalogContractEntityFields,
+  options: { excludeRuntimeConfigVars?: boolean } = {},
+): GraphqlCatalogContract => {
+  const { excludeRuntimeConfigVars = false } = options;
+  const configSchema = excludeRuntimeConfigVars
+    ? getContractConfigSchemaWithoutExcludedRuntimeVars(contract.config_schema)
+    : contract.config_schema;
   return {
     title: contract.title,
     slug: contract.slug,
@@ -463,9 +470,68 @@ export const mapContractEntityFieldsToGraphqlCatalogContract = (contract: Catalo
     container_version: contract.version,
     container_image: contract.image,
     container_type: contract.connector_type,
-    config_schema: contract.config_schema,
+    config_schema: configSchema,
     license_type: contract.license_type ?? null,
     solution_categories: contract.solution_categories ?? [],
     contact: contract.contact ?? null,
+  };
+};
+
+export const mapContractEntityFieldsToEmbeddedConnectorManagerContract = (
+  contract: CatalogContractEntityFields,
+): CatalogContractEntityFields => {
+  const {
+    catalog_id,
+    contract_id,
+    content_hash,
+    title,
+    slug,
+    description,
+    short_description,
+    logo_uri,
+    use_cases,
+    verified,
+    last_verified_date,
+    playbook_supported,
+    max_confidence_level,
+    support_version,
+    subscription_link,
+    source_code,
+    manager_supported,
+    version,
+    contract_version,
+    image,
+    connector_type,
+    config_schema,
+    license_type,
+    solution_categories,
+    contact,
+  } = contract;
+  return {
+    catalog_id,
+    contract_id,
+    content_hash,
+    title,
+    slug,
+    description,
+    short_description,
+    logo_uri,
+    use_cases,
+    verified,
+    last_verified_date,
+    playbook_supported,
+    max_confidence_level,
+    support_version,
+    subscription_link,
+    source_code,
+    manager_supported,
+    version,
+    contract_version,
+    image,
+    connector_type,
+    config_schema,
+    license_type,
+    solution_categories,
+    contact,
   };
 };
