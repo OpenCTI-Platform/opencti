@@ -6,6 +6,13 @@ import { CATALOG_LOGO_VIEW_PATH } from './catalog-http';
 
 export const CATALOG_CONTRACT_LOGOS_DIR = 'catalog-logos';
 
+export type CatalogContractLogoUploadOperation = {
+  filename: string;
+  s3Key: string;
+  body: Buffer;
+  logoUri: string;
+};
+
 export const listCatalogContractLogos = async () => {
   const result = await rawListObjects(CATALOG_CONTRACT_LOGOS_DIR, false);
   if (!result.Contents) {
@@ -57,12 +64,44 @@ const isLikelyBase64 = (payload: string) => {
   return /^[A-Za-z0-9+/]*={0,2}$/.test(sanitizedPayload);
 };
 
-const computeLogoHash = async (logoContent: Buffer) => {
-  const hash = crypto.createHash('md5').update(logoContent).digest('hex');
-  return hash;
+const computeLogoHash = (logoContent: Buffer) => {
+  return crypto.createHash('md5').update(logoContent).digest('hex');
 };
 
 export const storeCatalogContractLogo = async (
+  contractDto: CatalogContractDtoV0,
+  existingLogos: Set<string>,
+) => {
+  const operationResult = computeCatalogContractLogoUploadOperation(contractDto, existingLogos);
+  if (operationResult.result !== 'success' || operationResult.existed) {
+    return operationResult;
+  }
+  if (!operationResult.operation) {
+    const error = new Error('Missing logo upload operation');
+    return {
+      result: 'failed' as const,
+      logoUri: null,
+      error,
+    };
+  }
+
+  const uploadResult = await uploadCatalogContractLogoOperation(operationResult.operation);
+  if (uploadResult.result === 'failed') {
+    return {
+      result: 'failed' as const,
+      logoUri: null,
+      error: uploadResult.error,
+    };
+  }
+  return {
+    result: 'success' as const,
+    existed: false,
+    logoUri: operationResult.logoUri,
+    filename: operationResult.filename,
+  };
+};
+
+export const computeCatalogContractLogoUploadOperation = (
   contractDto: CatalogContractDtoV0,
   existingLogos: Set<string>,
 ) => {
@@ -135,7 +174,7 @@ export const storeCatalogContractLogo = async (
       error,
     };
   }
-  const hash = await computeLogoHash(decodedData);
+  const hash = computeLogoHash(decodedData);
   const extension = getExtensionFromImageMimeType(mimeType);
   const filename = `${hash}${extension}`;
   const s3Key = `${CATALOG_CONTRACT_LOGOS_DIR}/${filename}`;
@@ -148,22 +187,34 @@ export const storeCatalogContractLogo = async (
       filename,
     };
   }
+  const operation: CatalogContractLogoUploadOperation = {
+    filename,
+    s3Key,
+    body: decodedData,
+    logoUri,
+  };
+  return {
+    result: 'success' as const,
+    existed: false,
+    logoUri,
+    filename,
+    operation,
+  };
+};
+
+export const uploadCatalogContractLogoOperation = async (operation: CatalogContractLogoUploadOperation) => {
   try {
-    await rawUpload(s3Key, decodedData);
+    await rawUpload(operation.s3Key, operation.body);
   } catch (err: unknown) {
     const error = new Error('Failed to upload logo content to file storage', {
       cause: err,
     });
     return {
       result: 'failed' as const,
-      logoUri: null,
       error,
     };
   }
   return {
     result: 'success' as const,
-    existed: false,
-    logoUri,
-    filename,
   };
 };

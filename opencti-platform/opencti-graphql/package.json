@@ -17,7 +17,7 @@
     "frontend:stack:analysis": "node ./script/script-stack-analysis front",
     "lint": "DEBUG=eslint:cli-engine TIMING=1 eslint --quiet --cache --config eslint.config.js src",
     "build": "run install:python && run build:prod",
-    "start": "run build:dev && node --enable-source-maps build/back.mjs",
+    "start": "run build:dev && node --enable-source-maps --inspect build/back.mjs",
     "start:e2e": "run build:dev && APP__BASE_PATH=/e2e APP__ENABLED_DEV_FEATURES='[\"*\"]' EXPIRATION_SCHEDULER__ENABLED=false REDIS__NAMESPACE=e2e-start RABBITMQ__QUEUE_PREFIX=e2e MINIO__BUCKET_NAME=e2e-start-bucket ELASTICSEARCH__INDEX_PREFIX=e2e-start node build/back.mjs",
     "start:light": "NODE_ENV=development node --enable-source-maps build/back.mjs",
     "start:cluster": "NODE_ENV=cluster node --enable-source-maps build/back.mjs",
