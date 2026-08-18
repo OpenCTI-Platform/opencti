@@ -1,5 +1,5 @@
-import { queryCatalogById, queryCatalogs, queryContractBySlug } from './catalog-domain';
 import type { Resolvers } from '../../generated/graphql';
+import { queryCatalogById, queryCatalogs, queryContractBySlug } from './catalog-domain';
 
 const catalogResolver: Resolvers = {
   Query: {
