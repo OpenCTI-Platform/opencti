@@ -18,17 +18,11 @@ import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
-import {
-  allFilesForPaths,
-  deleteDocumentIndex,
-  EMBEDDED_STORAGE_PATH,
-  EXPORT_STORAGE_PATH,
-  findById as documentFindById,
-  FROM_TEMPLATE_STORAGE_PATH,
-  IMPORT_STORAGE_PATH,
-  indexFileToDocument,
-  SUPPORT_STORAGE_PATH,
-} from '../modules/internal/document/document-domain';
+import { allFilesForPaths, deleteDocumentIndex, findById as documentFindById, indexFileToDocument } from '../modules/internal/document/document-domain';
+// Storage path constants are imported directly from this dependency-free module (not document-domain.ts)
+// to avoid a circular import evaluation-order issue where these constants could be undefined
+// at the time ALL_MERGEABLE_FOLDERS/ALL_ROOT_FOLDERS are computed below.
+import { EMBEDDED_STORAGE_PATH, EXPORT_STORAGE_PATH, FROM_TEMPLATE_STORAGE_PATH, IMPORT_STORAGE_PATH, SUPPORT_STORAGE_PATH } from '../modules/internal/document/document-types';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, SYSTEM_USER, validateMarking } from '../utils/access';
 import { internalLoadById } from './middleware-loader';
