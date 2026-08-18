@@ -4,6 +4,7 @@ import { downloadFile } from '../../database/raw-file-storage';
 import { logApp } from '../../config/conf';
 import { setCookieError } from '../../http/httpUtils';
 import { CATALOG_CONTRACT_LOGOS_DIR, getMimeTypeFromImageExtension } from './catalog-logo-storage';
+import { ResourceNotFoundError, UnsupportedError, UnknownError } from '../../config/errors';
 
 export const CATALOG_LOGO_VIEW_PATH = '/catalog/logo/*file';
 
@@ -14,14 +15,16 @@ export const handleCatalogLogoViewRequest: RequestHandler = async (req, res) => 
       res.sendStatus(403);
       return;
     }
-    const file = req.params.file;
+    const fileParam = req.params.file;
+    const file = Array.isArray(fileParam) ? fileParam[0] : fileParam;
+    logApp.debug('Catalog logo view handler', { file });
     if (typeof file !== 'string') {
-      throw new Error('Invalid URL format');
+      throw UnsupportedError('Invalid URL format');
     }
     const s3Key = `${CATALOG_CONTRACT_LOGOS_DIR}/${file}`;
     const stream = await downloadFile(s3Key);
     if (!stream) {
-      const error = new Error('Catalog logo not found');
+      const error = ResourceNotFoundError('Catalog logo not found');
       logApp.error('Failed to download catalog logo', { cause: error });
       res.status(404).send({ status: 'error', error: error.message });
       return;
@@ -38,7 +41,7 @@ export const handleCatalogLogoViewRequest: RequestHandler = async (req, res) => 
     }
     stream.pipe(res);
   } catch (exception) {
-    const error = exception instanceof Error ? exception : new Error('Unknown error');
+    const error = exception instanceof Error ? exception : UnknownError('Unknown error');
     setCookieError(res, error.message);
     logApp.error('Error viewing catalog logo', { cause: error });
     res.status(503).send({ status: 'error', error: error.message });

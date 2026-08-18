@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { rawListObjects, rawUpload } from '../../database/raw-file-storage';
 import { parseDataUrl } from '../../utils/data-url';
-import type { CatalogContractDtoV0 } from './catalog-types';
+import type { CatalogContract } from './catalog-types';
 import { CATALOG_LOGO_VIEW_PATH } from './catalog-http';
 
 export const CATALOG_CONTRACT_LOGOS_DIR = 'catalog-logos';
@@ -69,7 +69,7 @@ const computeLogoHash = (logoContent: Buffer) => {
 };
 
 export const storeCatalogContractLogo = async (
-  contractDto: CatalogContractDtoV0,
+  contractDto: CatalogContract,
   existingLogos: Set<string>,
 ) => {
   const operationResult = computeCatalogContractLogoUploadOperation(contractDto, existingLogos);
@@ -102,7 +102,7 @@ export const storeCatalogContractLogo = async (
 };
 
 export const computeCatalogContractLogoUploadOperation = (
-  contractDto: CatalogContractDtoV0,
+  contractDto: CatalogContract,
   existingLogos: Set<string>,
 ) => {
   const { logo } = contractDto;
@@ -178,7 +178,7 @@ export const computeCatalogContractLogoUploadOperation = (
   const extension = getExtensionFromImageMimeType(mimeType);
   const filename = `${hash}${extension}`;
   const s3Key = `${CATALOG_CONTRACT_LOGOS_DIR}/${filename}`;
-  const logoUri = CATALOG_LOGO_VIEW_PATH.replace('*file', s3Key);
+  const logoUri = CATALOG_LOGO_VIEW_PATH.replace('*file', filename);
   if (existingLogos.has(filename)) {
     return {
       result: 'success' as const,

@@ -20,6 +20,7 @@ export interface HandlerInput {
 export interface ManagerCronScheduler {
   handler: (input?: any) => Promise<void>;
   shutdown?: () => void;
+  delayToStart?: number; // Defaults to `interval`
   interval: number;
   lockKey: string;
   infiniteInterval?: number;
