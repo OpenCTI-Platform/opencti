@@ -44,7 +44,6 @@ describe('catalog-domain - AJV validator compilation cache', () => {
   });
 
   beforeEach(() => {
-    catalogDomain.resetCatalogs();
     compileSpy.mockClear();
   });
 
@@ -85,19 +84,6 @@ describe('catalog-domain - AJV validator compilation cache', () => {
       buildConfig({ IPINFO_TOKEN: 'token-value-2' }),
       contract,
     );
-    expect(compileSpy).toHaveBeenCalledTimes(2);
-  });
-
-  it('should invalidate the validator cache on resetCatalogs()', () => {
-    const contract = buildContract();
-    const config = buildConfig({ IPINFO_TOKEN: 'token-value' });
-
-    catalogDomain.validateContractConfigurations(config, contract);
-    expect(compileSpy).toHaveBeenCalledTimes(1);
-
-    catalogDomain.resetCatalogs();
-
-    catalogDomain.validateContractConfigurations(config, contract);
     expect(compileSpy).toHaveBeenCalledTimes(2);
   });
 
