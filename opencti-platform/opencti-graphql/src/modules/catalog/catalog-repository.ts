@@ -8,40 +8,40 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import {
   type BasicStoreEntityCatalogContract,
   ENTITY_TYPE_CATALOG_CONTRACT,
-  type BasicStoreEntityCatalogManifest,
+  type BasicStoreEntityCatalog,
   type CatalogContractCreation,
   type CatalogContractUpdate,
   type CatalogContractDeletion,
-  type CatalogManifestUpsert,
-  ENTITY_TYPE_CATALOG_MANIFEST,
+  type CatalogUpsert,
+  ENTITY_TYPE_CATALOG,
 } from './catalog-types';
 
 /**
  * Catalog data accessors & mutators
  */
 
-export const findCatalogManifestByCatalogId = async (
+export const findCatalogByCatalogId = async (
   context: AuthContext,
   user: AuthUser,
   catalogId: string,
 ) => {
-  const catalog = await elLoadBy<BasicStoreEntityCatalogManifest>(context, user, 'catalog_id', catalogId, ENTITY_TYPE_CATALOG_MANIFEST);
+  const catalog = await elLoadBy<BasicStoreEntityCatalog>(context, user, 'catalog_id', catalogId, ENTITY_TYPE_CATALOG);
   return catalog;
 };
 
-export const findCatalogManifestBySourceUri = async (
+export const findCatalogBySourceUri = async (
   context: AuthContext,
   user: AuthUser,
   sourceUri: string,
 ) => {
-  const catalog = await elLoadBy<BasicStoreEntityCatalogManifest>(context, user, 'source_uri', sourceUri);
+  const catalog = await elLoadBy<BasicStoreEntityCatalog>(context, user, 'source_uri', sourceUri);
   return catalog;
 };
 
-export const upsertCatalog = async (_context: AuthContext, _user: AuthUser, update: CatalogManifestUpsert) => {
+export const upsertCatalog = async (_context: AuthContext, _user: AuthUser, update: CatalogUpsert) => {
   await elIndex(INDEX_INTERNAL_OBJECTS, {
     ...update,
-    entity_type: ENTITY_TYPE_CATALOG_MANIFEST,
+    entity_type: ENTITY_TYPE_CATALOG,
   });
 };
 
@@ -55,16 +55,16 @@ export const findCatalogs = async (context: AuthContext, user: AuthUser, exclude
     filterGroups: [],
     mode: FilterMode.And,
   } : null;
-  const catalogs = await fullEntitiesList<BasicStoreEntityCatalogManifest>(
+  const catalogs = await fullEntitiesList<BasicStoreEntityCatalog>(
     context,
     user,
-    [ENTITY_TYPE_CATALOG_MANIFEST],
+    [ENTITY_TYPE_CATALOG],
     { indices: [READ_INDEX_INTERNAL_OBJECTS], filters },
   );
   return catalogs;
 };
 
-export const deleteCatalogs = async (context: AuthContext, catalogEntities: BasicStoreEntityCatalogManifest[]) => {
+export const deleteCatalogs = async (context: AuthContext, catalogEntities: BasicStoreEntityCatalog[]) => {
   await elDeleteInstances(context, catalogEntities);
 };
 

@@ -2,11 +2,11 @@ import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import {
   type BasicStoreEntityCatalogContract,
-  type BasicStoreEntityCatalogManifest,
-  ENTITY_TYPE_CATALOG_MANIFEST,
+  type BasicStoreEntityCatalog,
+  ENTITY_TYPE_CATALOG,
   ENTITY_TYPE_CATALOG_CONTRACT,
   type StoreEntityCatalogContract,
-  type StoreEntityCatalogManifest,
+  type StoreEntityCatalog,
 } from './catalog-types';
 import type { AttributeDefinition } from '../../schema/attribute-definition';
 import { UnsupportedError } from '../../config/errors';
@@ -67,16 +67,16 @@ const CATALOG_CONTRACT_DEFINITION: ModuleDefinition<StoreEntityCatalogContract, 
 
 registerDefinition<StoreEntityCatalogContract, any>(CATALOG_CONTRACT_DEFINITION);
 
-const CATALOG_MANIFEST_DEFINITION: ModuleDefinition<StoreEntityCatalogManifest, any> = {
+const CATALOG_DEFINITION: ModuleDefinition<StoreEntityCatalog, any> = {
   type: {
-    id: 'catalogManifests',
-    name: ENTITY_TYPE_CATALOG_MANIFEST,
+    id: 'catalogs',
+    name: ENTITY_TYPE_CATALOG,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_CATALOG_MANIFEST]: [{ src: 'catalog_id' }],
+      [ENTITY_TYPE_CATALOG]: [{ src: 'catalog_id' }],
     },
     resolvers: {},
   },
@@ -90,13 +90,13 @@ const CATALOG_MANIFEST_DEFINITION: ModuleDefinition<StoreEntityCatalogManifest, 
   // Irrelevant as no corresponding Stix object.
   // To remove once entity/module definition helper is reworked.
   representative: () => {
-    throw UnsupportedError('Catalog manifest representative should not be called');
+    throw UnsupportedError('Catalog representative should not be called');
   },
   converter_2_1: () => {
-    throw UnsupportedError('Catalog manifest converter_2_1 should not be called');
+    throw UnsupportedError('Catalog converter_2_1 should not be called');
   },
 };
 
-registerDefinition<StoreEntityCatalogManifest, any>(CATALOG_MANIFEST_DEFINITION);
+registerDefinition<StoreEntityCatalog, any>(CATALOG_DEFINITION);
 
-export type { BasicStoreEntityCatalogContract, BasicStoreEntityCatalogManifest };
+export type { BasicStoreEntityCatalogContract, BasicStoreEntityCatalog };

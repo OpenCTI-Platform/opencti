@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import type { AuthContext, AuthUser } from '../../types/user';
 import {
   type BasicStoreEntityCatalogContract,
-  type BasicStoreEntityCatalogManifest,
+  type BasicStoreEntityCatalog,
   type CatalogContract,
   type CatalogContractEntityFields,
   type GraphqlCatalog,
@@ -14,7 +14,7 @@ import { isEmptyField } from '../../database/utils';
 import { UnsupportedError } from '../../config/errors';
 import type { ConnectorContractConfiguration, ContractConfigInput } from '../../generated/graphql';
 import type { ValidateFunction } from 'ajv';
-import { findCatalogManifestByCatalogId, findCatalogs, findLatestCompatibleCatalogContractBySlug, findLatestCompatibleCatalogContractsByCatalogId } from './catalog-repository';
+import { findCatalogByCatalogId, findCatalogs, findLatestCompatibleCatalogContractBySlug, findLatestCompatibleCatalogContractsByCatalogId } from './catalog-repository';
 
 const validatorCache = new Map<string, ValidateFunction>();
 const EXCLUDED_CONFIG_VARS = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
@@ -357,7 +357,7 @@ export const computeConnectorTargetContract = (
 };
 
 const mapCatalogToGraphqlCatalog = (
-  catalog: BasicStoreEntityCatalogManifest,
+  catalog: BasicStoreEntityCatalog,
   contracts: BasicStoreEntityCatalogContract[],
 ): GraphqlCatalog => {
   return {
@@ -374,7 +374,7 @@ const mapCatalogToGraphqlCatalog = (
 };
 
 export const queryCatalogById = async (context: AuthContext, user: AuthUser, catalogId: string) => {
-  const catalog = await findCatalogManifestByCatalogId(context, user, catalogId);
+  const catalog = await findCatalogByCatalogId(context, user, catalogId);
   if (!catalog) {
     return null;
   }
