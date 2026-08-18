@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import conf, { isFeatureEnabled, logApp, PLATFORM_VERSION } from '../../../config/conf';
 import {
   deleteCatalogContracts,
@@ -354,6 +355,24 @@ const synchronizeCatalog = async (context: AuthContext, user: AuthUser, sourceCo
 
 const EMBEDDED_CATALOG_SYNC_SOURCE: CatalogSyncSourceConfig = { kind: 'embedded', uri: 'embedded' } as const;
 
+const parseCustomCatalogEndpointUri = (uri: string): CatalogSyncSourceConfig => {
+  if (uri.startsWith('http://') || uri.startsWith('https://')) {
+    return { kind: 'remote', uri };
+  }
+  if (uri.startsWith('file://')) {
+    const filepath = fileURLToPath(uri);
+    return {
+      kind: 'local',
+      filepath,
+      uri,
+    };
+  }
+  throw UnsupportedError('Unsupported custom catalog endpoint URI protocol', {
+    uri,
+    supportedProtocols: ['file://', 'http://', 'https://'],
+  });
+};
+
 const initSyncSources = () => {
   // Build catalog sources configs from env vars/app settings
   const sources: CatalogSyncSourceConfig[] = [];
@@ -362,6 +381,10 @@ const initSyncSources = () => {
     sources.push({ kind: 'remote', uri: decouplingRemoteUri });
   } else {
     sources.push(EMBEDDED_CATALOG_SYNC_SOURCE);
+  }
+  const customCatalogRefreshEndpointUri = conf.get('catalog_manager:custom_catalog_refresh_endpoint_uri');
+  if (typeof customCatalogRefreshEndpointUri === 'string' && customCatalogRefreshEndpointUri.length > 0) {
+    sources.push(parseCustomCatalogEndpointUri(customCatalogRefreshEndpointUri));
   }
   const CUSTOM_CATALOGS: string[] = conf.get('app:custom_catalogs') ?? [];
   if (CUSTOM_CATALOGS) {
@@ -375,11 +398,11 @@ const initSyncSources = () => {
       return {
         kind: 'local' as const,
         filepath: customCatalog,
-        uri: 'file:///' + customCatalog, // TODO: normalize
+        uri: pathToFileURL(customCatalog).toString(),
       };
     }));
   }
-  return sources;
+  return sources.filter((source, idx, all) => all.findIndex((candidate) => candidate.uri === source.uri) === idx);
 };
 
 const cleanupObsoleteCatalogs = async (context: AuthContext, syncedCatalogs: string[]) => {
