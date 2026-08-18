@@ -26,7 +26,7 @@ const autoUpgradeManagedConnector = async (
     });
     return;
   }
-  const { slug, version, content_hash } = manager_contract;
+  const { slug, contract_version, content_hash } = manager_contract;
   try {
     const latestCompatibleContract = await findLatestCompatibleCatalogContractBySlug(context, user, slug);
     if (!latestCompatibleContract) {
@@ -36,12 +36,12 @@ const autoUpgradeManagedConnector = async (
       // the connector ?
       return;
     }
-    if (semver.eq(version, latestCompatibleContract.version)
+    if (semver.eq(contract_version, latestCompatibleContract.contract_version)
       && content_hash === latestCompatibleContract.content_hash) {
       logApp.debug('[OPENCTI-MODULE] Managed connector already uses latest compatible version', {
         module: 'connector',
         connectorId: managedConnector.id,
-        version,
+        version: contract_version,
       });
       return;
     }
@@ -51,13 +51,13 @@ const autoUpgradeManagedConnector = async (
       manager_contract_image: latestCompatibleContract.image,
     };
     await patchAttribute(context, user, managedConnector.id, ENTITY_TYPE_CONNECTOR, patch);
-    if (semver.lt(version, latestCompatibleContract.version)) {
+    if (semver.lt(contract_version, latestCompatibleContract.contract_version)) {
       logApp.info('[OPENCTI-MODULE] Upgraded connector to latest compatible version', {
         module: 'connector',
         connectorId: managedConnector.id,
         contractSlug: slug,
-        previousVersion: version,
-        newVersion: latestCompatibleContract.version,
+        previousVersion: contract_version,
+        newVersion: latestCompatibleContract.contract_version,
       });
       // Activity log
       // Unsure how correct this is. Maybe the context_data is too big here.
@@ -73,13 +73,13 @@ const autoUpgradeManagedConnector = async (
           input: patch,
         },
       });
-    } else if (semver.gt(version, latestCompatibleContract.version)) {
+    } else if (semver.gt(contract_version, latestCompatibleContract.contract_version)) {
       logApp.info('[OPENCTI-MODULE] Downgraded connector to latest compatible version', {
         module: 'connector',
         connectorId: managedConnector.id,
         contractSlug: slug,
-        previousVersion: version,
-        newVersion: latestCompatibleContract.version,
+        previousVersion: contract_version,
+        newVersion: latestCompatibleContract.contract_version,
       });
       // Activity log
       // Unsure how correct this is. Maybe the context_data is too big here.
@@ -95,12 +95,12 @@ const autoUpgradeManagedConnector = async (
           input: patch,
         },
       });
-    } else if (semver.eq(version, latestCompatibleContract.version)) {
+    } else if (semver.eq(contract_version, latestCompatibleContract.contract_version)) {
       // Shouldn't happen: either a Release issue or a logic/code error.
       logApp.warn('[OPENCTI-MODULE] Inconsistent connector data, same connector version with different contract content hash', {
         module: 'connector',
         contractSlug: slug,
-        contractVersion: version,
+        contractVersion: contract_version,
       });
       // Activity log
       // Unsure how correct this is. Maybe the context_data is too big here.
@@ -123,7 +123,7 @@ const autoUpgradeManagedConnector = async (
     logApp.error('[OPENCTI-MODULE] Failed to auto-upgrade connector to latest compatible version', {
       module: 'connector',
       contractSlug: slug,
-      contractVersion: version,
+      contractVersion: contract_version,
       cause: exception,
     });
   }
