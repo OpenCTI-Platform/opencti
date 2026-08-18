@@ -56,7 +56,7 @@ const ThemeLight = (
       text: { primary: '#881106' },
     },
     success: { main: '#1CA55E', dark: '#0D7E39' },
-    primary: { main: primary || THEME_LIGHT_DEFAULT_PRIMARY, light: primary ? alpha(primary, 0.08) : '#7587FF' },
+    primary: { main: primary || THEME_LIGHT_DEFAULT_PRIMARY, light: primary ? alpha(primary, 0.08) : '#6978EE' },
     secondary: { main: secondary || THEME_LIGHT_DEFAULT_SECONDARY },
     gradient: { main: '#00BD94' },
     border: {
@@ -108,9 +108,9 @@ const ThemeLight = (
     },
     text: {
       secondary: THEME_LIGHT_DEFAULT_TEXT,
-      tertiary: '#717172',
+      tertiary: '#5F5F60',
       light: '#494A50',
-      disabled: '#6E7788',
+      disabled: '#5F6B7A',
     },
     leftBar: {
       header: {

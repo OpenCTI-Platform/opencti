@@ -129,6 +129,7 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
                       askAi={false}
                       multiline={true}
                       minRows={5}
+                      autoFocus
                     />
                     <MyOrganizationField
                       name="organizations"
