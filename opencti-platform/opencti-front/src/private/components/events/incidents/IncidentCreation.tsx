@@ -122,9 +122,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
       ...buildCreationFilesInput(values.file ? [values.file] : []),
       ...cleanedValues,
       confidence: parseInt(String(cleanedValues.confidence), 10),
-      x_opencti_score: cleanedValues.x_opencti_score !== undefined && cleanedValues.x_opencti_score !== ''
-        ? parseInt(cleanedValues.x_opencti_score, 10)
-        : undefined,
+      x_opencti_score: cleanedValues.x_opencti_score ? parseInt(cleanedValues.x_opencti_score, 10) : undefined,
       createdBy: cleanedValues.createdBy?.value,
       objectMarking: cleanedValues.objectMarking.map((v) => v.value),
       objectAssignee: cleanedValues.objectAssignee.map(({ value }) => value),
