@@ -59,7 +59,7 @@ const EVENT_TYPE = 'Event';
 interface EventAddInput {
   name: string;
   description: string;
-  x_opencti_score: string | undefined;
+  x_opencti_score: string | null;
   confidence: number | null;
   event_types: string[];
   start_time: Date | null;
@@ -155,7 +155,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
         name,
         description: values.description,
         event_types: values.event_types,
-        x_opencti_score: values.x_opencti_score ? parseInt(values.x_opencti_score, 10) : undefined,
+        x_opencti_score: values.x_opencti_score ? parseInt(values.x_opencti_score, 10) : null,
         confidence: parseInt(String(values.confidence), 10),
         start_time: values.start_time ? parse(values.start_time).format() : null,
         stop_time: values.stop_time ? parse(values.stop_time).format() : null,
@@ -185,7 +185,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
   const initialValues = useDefaultValues(EVENT_TYPE, {
     name: inputValue ?? '',
     description: '',
-    x_opencti_score: undefined,
+    x_opencti_score: null,
     event_types: [],
     start_time: null,
     confidence: null,
