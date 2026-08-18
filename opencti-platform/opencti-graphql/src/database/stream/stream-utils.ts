@@ -159,7 +159,6 @@ export const buildUpdateEvent = (
   // Build and send the event
   const stix = convertStoreToStix_2_1(instance) as StixCoreObject;
   const previousStix = convertStoreToStix_2_1(previous) as StixCoreObject;
-  // Stamp both sides so the diff only reflects an actual status change, not the mere presence of the name
   if (workflowStatuses?.current) {
     stix.extensions[STIX_EXT_OCTI].workflow_status_name = workflowStatuses.current.name;
     stix.extensions[STIX_EXT_OCTI].workflow_status_scope = workflowStatuses.current.scope;

@@ -102,7 +102,6 @@ const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
   return null;
 };
 
-// Exported for unit testing: pure transform, no dependency on syncManagerInstance's closure state.
 export const transformDataWithReverseIdAndFilesData = async (sync, httpClient, data, context) => {
   const { uri } = sync;
   const processingData = { ...data };
@@ -111,14 +110,11 @@ export const transformDataWithReverseIdAndFilesData = async (sync, httpClient, d
     entityType: octiExtension.type,
     entityId: octiExtension.id,
   };
-  // Reverse patch the id if modified
   const idOperation = (context?.reverse_patch ?? []).find((patch) => patch.path === '/id');
-  // Map the remote workflow status onto the local one with the same name/scope (both carried in the event, no remote call needed), or drop it if not configured locally
   const remoteWorkflowId = processingData.extensions[STIX_EXT_OCTI].workflow_id;
   const remoteWorkflowStatusName = processingData.extensions[STIX_EXT_OCTI].workflow_status_name;
   const remoteWorkflowStatusScope = processingData.extensions[STIX_EXT_OCTI].workflow_status_scope;
   if (remoteWorkflowId) {
-    // Opt-in per entity type, gated behind the feature flag while the capability is still experimental
     const entitySetting = await getEntitySettingFromCache(executionContext('sync_manager'), octiExtension.type);
     const localWorkflowId = isFeatureEnabled(SYNC_WORKFLOW_STATUS_BY_NAME_FEATURE_FLAG) && (entitySetting?.sync_workflow_status_by_name ?? false)
       ? await resolveSyncedWorkflowId(executionContext('sync_manager'), SYSTEM_USER, octiExtension.type, remoteWorkflowStatusScope, remoteWorkflowStatusName)
@@ -131,7 +127,6 @@ export const transformDataWithReverseIdAndFilesData = async (sync, httpClient, d
     delete processingData.extensions[STIX_EXT_OCTI].workflow_status_name;
     delete processingData.extensions[STIX_EXT_OCTI].workflow_status_scope;
   }
-  // Handle file enrichment
   const entityFiles = processingData.extensions[STIX_EXT_OCTI].files ?? [];
   for (let index = 0; index < entityFiles.length; index += 1) {
     const entityFile = entityFiles[index];

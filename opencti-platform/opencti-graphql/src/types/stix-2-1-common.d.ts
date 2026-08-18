@@ -64,7 +64,6 @@ interface StixOpenctiExtension {
   modified_at: StixDate;
   is_inferred: boolean;
   workflow_id: string | undefined;
-  // Name/scope of the workflow_id's status, resolved at write time so consumers can match statuses by name instead of id
   workflow_status_name?: string;
   workflow_status_scope?: string;
   assignee_ids: string[];

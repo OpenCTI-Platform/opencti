@@ -33,17 +33,14 @@ export const initializeStreamStack = async () => {
   }
 };
 
-// Resolve the human-readable status template name/scope for an instance's x_opencti_workflow_id, so the wire event stays self-sufficient
 const resolveWorkflowStatusName = async (context: AuthContext, user: AuthUser, instance: StoreObject): Promise<{ name: string; scope: string } | undefined> => {
   const workflowId = instance.x_opencti_workflow_id;
   if (!workflowId) return undefined;
   try {
-    // The cached status entities already carry the associated template name (merged in by the cache manager), no separate template lookup needed.
     const platformStatuses = await getEntitiesMapFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
     const status = platformStatuses.get(workflowId);
     return status?.name ? { name: status.name, scope: status.scope } : undefined;
   } catch (e) {
-    // Enrichment for sync only, must never fail the write itself (e.g. cache not warmed up yet)
     logApp.warn('[OPENCTI] Unable to resolve workflow status name for stream event', { error: e });
     return undefined;
   }

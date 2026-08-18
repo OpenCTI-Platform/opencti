@@ -5,7 +5,6 @@ const mockResolveSyncedWorkflowId = vi.fn();
 const mockGetEntitySettingFromCache = vi.fn();
 const mockIsFeatureEnabled = vi.fn();
 
-// Mock every non-trivial dependency of syncManager.js so the module can be imported in isolation.
 vi.mock('../../../src/config/conf', async (importOriginal) => {
   const actual = await importOriginal() as Record<string, unknown>;
   return {
@@ -74,7 +73,6 @@ const buildRemoteData = (extensionOverrides: Record<string, unknown>) => ({
 
 describe('syncManager transformDataWithReverseIdAndFilesData - workflow status remap', () => {
   beforeEach(() => {
-    // Opt-in toggle and feature flag enabled by default for existing tests; overridden per-test where needed.
     mockGetEntitySettingFromCache.mockResolvedValue({ sync_workflow_status_by_name: true });
     mockIsFeatureEnabled.mockReturnValue(true);
   });

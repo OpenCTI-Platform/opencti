@@ -701,8 +701,6 @@ interface BasicWorkflowStatus extends BasicStoreEntity {
   template_id: string;
   type: string;
   scope: StatusScope;
-  // Merged in by the cache manager (workflowStatuses) from the associated status template;
-  // not present when the status is read directly from the store (e.g. fullEntitiesList/pageEntitiesConnection).
   name?: string;
 }
 

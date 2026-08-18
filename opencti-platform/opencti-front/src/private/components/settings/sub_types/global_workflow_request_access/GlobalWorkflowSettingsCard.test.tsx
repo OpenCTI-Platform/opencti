@@ -68,7 +68,6 @@ const makeSubType = (availableSettings: string[], syncWorkflowStatusByName = fal
 
 describe('GlobalWorkflowSettingsCard', () => {
   beforeEach(() => {
-    // Feature flag enabled by default; overridden in the dedicated disabled-flag test.
     mockIsFeatureEnable.mockReturnValue(true);
   });
 
