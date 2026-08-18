@@ -607,7 +607,11 @@ export const radarChartOptions = (
   xFormatter = null,
   chartColors = [],
   legend = false,
-  background = theme.palette.background.secondary,
+  // Ninth factory. Its background is a DEFAULT PARAMETER, not a `background:`
+  // key, which is why the first sweep of this file missed it: a grep for
+  // `background:` cannot see it. Same rule as the other eight — the chart sits
+  // inside the card and is meant to disappear against it.
+  background = theme.palette.background.paper,
   size = undefined,
   handleClick = undefined,
 ) => ({
@@ -693,7 +697,8 @@ export const radarChartOptions = (
           theme.palette.mode === 'dark'
             ? 'rgba(255, 255, 255, .1)'
             : 'rgba(0, 0, 0, .1)',
-        fill: { colors: [theme.palette.background.secondary] },
+        // Coincides with the carrying surface, same rule as the chart background.
+        fill: { colors: [theme.palette.background.paper] },
       },
     },
   },
@@ -868,7 +873,9 @@ export const donutChartOptions = (
     stroke: {
       curve: 'smooth',
       width: 3,
-      colors: [theme.palette.background.secondary],
+      // The slice separator reads as the surface showing through, so it follows
+      // the surface: layer 1, not the hardcoded literal.
+      colors: [theme.palette.background.paper],
     },
     tooltip: {
       enabled: displayTooltip,
@@ -956,7 +963,9 @@ export const treeMapOptions = (
     stroke: {
       curve: 'smooth',
       width: 3,
-      colors: [theme.palette.background.secondary],
+      // The slice separator reads as the surface showing through, so it follows
+      // the surface: layer 1, not the hardcoded literal.
+      colors: [theme.palette.background.paper],
     },
     legend: {
       show: true,
@@ -1019,7 +1028,8 @@ export const heatMapOptions = (
     enabled: false,
   },
   stroke: {
-    colors: [theme.palette.background.secondary],
+    // Same rule as the other separators: it follows the carrying surface.
+    colors: [theme.palette.background.paper],
     width: 1,
   },
   states: {
