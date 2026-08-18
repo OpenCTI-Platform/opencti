@@ -5,8 +5,8 @@ import {
   deleteCatalogContracts,
   deleteCatalogs,
   findCatalogContractsByCatalogId,
-  findCatalogManifestByCatalogId,
-  findCatalogManifestBySourceUri,
+  findCatalogByCatalogId,
+  findCatalogBySourceUri,
   findCatalogs,
   insertCatalogContracts,
   updateCatalogContracts,
@@ -22,16 +22,16 @@ import {
 } from '../catalog-logo-storage';
 import type {
   BasicStoreEntityCatalogContract,
-  BasicStoreEntityCatalogManifest,
+  BasicStoreEntityCatalog,
   CatalogContractCreation,
   CatalogContractDeletion,
   CatalogContractUpdate,
-  CatalogManifestUpsert,
+  CatalogUpsert,
 } from '../catalog-types';
 import type { CatalogContractSyncSource, CatalogSyncSource, CatalogSyncSourceConfig } from './catalog-sync-types';
 import { fetchSourceCatalog, fetchSourceCatalogRevisionHint } from './catalog-sync-source-gateway';
 import { generateStandardId, idGenFromData } from '../../../schema/identifier';
-import { ENTITY_TYPE_CATALOG_CONTRACT, ENTITY_TYPE_CATALOG_MANIFEST } from '../catalog-types';
+import { ENTITY_TYPE_CATALOG_CONTRACT, ENTITY_TYPE_CATALOG } from '../catalog-types';
 import { UnsupportedError } from '../../../config/errors';
 
 const DECOUPLING_VERSIONS_FEATURE_FLAG = 'DECOUPLING_VERSIONS';
@@ -57,11 +57,11 @@ const buildCatalogContractIds = (catalogId: string, contractId: string) => {
   };
 };
 
-const buildCatalogManifestIds = (catalogId: string) => {
+const buildCatalogIds = (catalogId: string) => {
   const keyData = { catalog_id: catalogId };
   return {
-    internal_id: idGenFromData(ENTITY_TYPE_CATALOG_MANIFEST, keyData),
-    standard_id: generateStandardId(ENTITY_TYPE_CATALOG_MANIFEST, keyData),
+    internal_id: idGenFromData(ENTITY_TYPE_CATALOG, keyData),
+    standard_id: generateStandardId(ENTITY_TYPE_CATALOG, keyData),
   };
 };
 
@@ -123,7 +123,7 @@ const computeCatalogSyncOps = (params: {
   sourceCatalog: CatalogSyncSource;
   sourceCatalogContractsHashes: Map<string, string>;
   sourceCatalogLogosUris: Map<string, string>;
-  currentCatalog: BasicStoreEntityCatalogManifest | undefined;
+  currentCatalog: BasicStoreEntityCatalog | undefined;
   currentContracts: Map<string, BasicStoreEntityCatalogContract>;
 }) => {
   const sourceContractsIds = new Set(params.sourceCatalogContractsHashes.keys());
@@ -207,9 +207,9 @@ const computeCatalogSyncOps = (params: {
       return;
     }
   });
-  const catalogManifestIds = buildCatalogManifestIds(params.sourceCatalog.id);
-  const catalogManifestUpsert: CatalogManifestUpsert = {
-    ...catalogManifestIds,
+  const catalogIds = buildCatalogIds(params.sourceCatalog.id);
+  const catalogUpsert: CatalogUpsert = {
+    ...catalogIds,
     revision: params.revision,
     source_uri: params.sourceConfig.uri,
     catalog_id: params.sourceCatalog.id,
@@ -221,7 +221,7 @@ const computeCatalogSyncOps = (params: {
     contractsCreations,
     contractsUpdates,
     contractsDeletions,
-    catalogManifestUpsert,
+    catalogUpsert,
   };
 };
 
@@ -232,7 +232,7 @@ const synchronizeCatalog = async (context: AuthContext, user: AuthUser, sourceCo
       sourceUri: sourceConfig.uri,
     });
     const currentCatalogBySourceUri = sourceConfig.kind === 'remote'
-      ? await findCatalogManifestBySourceUri(context, user, sourceConfig.uri)
+      ? await findCatalogBySourceUri(context, user, sourceConfig.uri)
       : undefined;
     const remoteRevisionHint = sourceConfig.kind === 'remote'
       ? await fetchSourceCatalogRevisionHint(sourceConfig)
@@ -254,7 +254,7 @@ const synchronizeCatalog = async (context: AuthContext, user: AuthUser, sourceCo
     // Fetch source catalog
     const sourceCatalog = await fetchSourceCatalog(sourceConfig);
     // Find existing persisted data in the database corresponding to the catalog id
-    const currentCatalog = await findCatalogManifestByCatalogId(context, user, sourceCatalog.id);
+    const currentCatalog = await findCatalogByCatalogId(context, user, sourceCatalog.id);
     const currentRevision = currentCatalog?.revision;
     if (currentCatalog) {
       logApp.debug('[OPENCTI-MODULE] Found existing persisted catalog', {
@@ -334,7 +334,7 @@ const synchronizeCatalog = async (context: AuthContext, user: AuthUser, sourceCo
       await updateCatalogContracts(context, user, catalogSyncDiff.contractsUpdates);
     }
     await deleteCatalogContracts(context, user, catalogSyncDiff.contractsDeletions);
-    await upsertCatalog(context, user, catalogSyncDiff.catalogManifestUpsert);
+    await upsertCatalog(context, user, catalogSyncDiff.catalogUpsert);
     const isNotNil = (str: string | null | undefined): str is string => Boolean(str);
     let usedLogos = catalogSyncDiff.contractsCreations.map(({ logo_uri }) => logo_uri).filter(isNotNil);
     usedLogos = usedLogos.concat(catalogSyncDiff.contractsUpdates.map(({ logo_uri }) => logo_uri).filter(isNotNil));
@@ -429,7 +429,7 @@ export const synchronizeCatalogs = async (context: AuthContext, user: AuthUser) 
   for (const source of sources) {
     let result = await synchronizeCatalog(context, user, source);
     if (source.kind === 'remote' && result.error && decouplingRemoteUri && source.uri === decouplingRemoteUri) {
-      const alreadyPersistedRemoteCatalog = await findCatalogManifestBySourceUri(context, user, source.uri);
+      const alreadyPersistedRemoteCatalog = await findCatalogBySourceUri(context, user, source.uri);
       if (!alreadyPersistedRemoteCatalog) {
         logApp.error('[OPENCTI-MODULE] Remote catalog source failed before first successful persistence, falling back to embedded source', {
           sourceKind: source.kind,
