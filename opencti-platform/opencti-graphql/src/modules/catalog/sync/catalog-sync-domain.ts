@@ -1,19 +1,11 @@
 import { createHash } from 'node:crypto';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import conf, { isFeatureEnabled, logApp, PLATFORM_VERSION } from '../../../config/conf';
-import {
-  deleteCatalogContracts,
-  deleteCatalogs,
-  findCatalogContractsByCatalogId,
-  findCatalogByCatalogId,
-  findCatalogBySourceUri,
-  findCatalogs,
-  insertCatalogContracts,
-  updateCatalogContracts,
-  upsertCatalog,
-} from '../catalog-repository';
 import { SYSTEM_USER } from '../../../utils/access';
 import type { AuthContext, AuthUser } from '../../../types/user';
+import { generateStandardId, idGenFromData } from '../../../schema/identifier';
+import { UnsupportedError } from '../../../config/errors';
+import { ENTITY_TYPE_CATALOG_CONTRACT, ENTITY_TYPE_CATALOG } from '../catalog-types';
 import {
   type CatalogContractLogoUploadOperation,
   computeCatalogContractLogoUploadOperation,
@@ -28,11 +20,19 @@ import type {
   CatalogContractUpdate,
   CatalogUpsert,
 } from '../catalog-types';
+import {
+  deleteCatalogContracts,
+  deleteCatalogs,
+  findCatalogContractsByCatalogId,
+  findCatalogByCatalogId,
+  findCatalogBySourceUri,
+  findCatalogs,
+  insertCatalogContracts,
+  updateCatalogContracts,
+  upsertCatalog,
+} from '../catalog-repository';
 import type { CatalogContractSyncSource, CatalogSyncSource, CatalogSyncSourceConfig } from './catalog-sync-types';
 import { fetchSourceCatalog, fetchSourceCatalogRevisionHint } from './catalog-sync-source-gateway';
-import { generateStandardId, idGenFromData } from '../../../schema/identifier';
-import { ENTITY_TYPE_CATALOG_CONTRACT, ENTITY_TYPE_CATALOG } from '../catalog-types';
-import { UnsupportedError } from '../../../config/errors';
 
 const DECOUPLING_VERSIONS_FEATURE_FLAG = 'DECOUPLING_VERSIONS';
 
@@ -384,6 +384,9 @@ const initSyncSources = () => {
   if (typeof customCatalogRefreshEndpointUri === 'string' && customCatalogRefreshEndpointUri.length > 0) {
     sources.push(parseCustomCatalogEndpointUri(customCatalogRefreshEndpointUri));
   }
+  // We will consider removing the support for these CUSTOM_CATALOGS
+  // as it historically only supported local files and wasn't explicitly
+  // documented.
   const CUSTOM_CATALOGS: string[] = conf.get('app:custom_catalogs') ?? [];
   if (CUSTOM_CATALOGS) {
     sources.push(...CUSTOM_CATALOGS.map((customCatalog) => {
