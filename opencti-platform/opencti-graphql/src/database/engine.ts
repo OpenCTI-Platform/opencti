@@ -2183,7 +2183,9 @@ type ProcessSearchArgs = {
   historyFiltering?: boolean;
 };
 
+// Hard cap user-provided search input to limit normalization + query parsing cost
 const MAX_SEARCH_LENGTH = 512;
+
 function processSearch(
   search: string,
   args: ProcessSearchArgs,
