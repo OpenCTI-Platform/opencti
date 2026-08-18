@@ -5546,7 +5546,6 @@ enum ThreatActorsOrdering {
   updated_at
   x_opencti_workflow_id
   confidence
-  x_opencti_score
   sophistication
   resource_level
   _score
@@ -5656,7 +5655,6 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
-  x_opencti_score: Int
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -9728,6 +9726,7 @@ type Query {
   ingestionCsvLogs(id: String!): [IngestionEntry]
   ingestionJson(id: String!): IngestionJson
   ingestionJsons(first: Int, after: ID, orderBy: IngestionJsonOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionJsonConnection
+  ingestionJsonLogs(id: String!): [IngestionEntry]
   indicator(id: String!): Indicator
   indicators(first: Int, after: ID, orderBy: IndicatorsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): IndicatorConnection
   indicatorsTimeSeries(objectId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, filters: FilterGroup): [TimeSeries]
@@ -14172,6 +14171,8 @@ type IngestionJson implements InternalObject & BasicObject {
   user: Creator
   ingestion_running: Boolean
   last_execution_date: DateTime
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry]
   markings: [String!]
   ssl_verify: Boolean
   toConfigurationExport: String!

@@ -16,6 +16,7 @@ import FormView from '@components/data/forms/view/FormView';
 import { BuiltInIntegrationKind, getBuiltInIntegration, isBuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
 import IngestionTaxiiLogsTab from '@components/data/ingestionTaxii/IngestionTaxiiLogsTab';
 import IngestionCsvLogsTab from '@components/data/ingestionCsv/IngestionCsvLogsTab';
+import IngestionJsonLogsTab from '@components/data/ingestionJson/IngestionJsonLogsTab';
 import { ConnectorWorksSection } from '@components/data/connectors/Connector';
 import { connectorIdFromIngestId } from '@components/integrations/deployed/useDeployedIntegrations';
 import useHelper from '../../../../utils/hooks/useHelper';
@@ -286,9 +287,9 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
   const { setTitle } = useConnectedDocumentModifier();
   const { isFeatureEnable } = useHelper();
   const definition = getBuiltInIntegration(kind);
-  // Only TAXII, CSV and RSS feeds get the Overview / Works / Logs tabs,
+  // Only TAXII, CSV, RSS and JSON feeds get the Overview / Works / Logs tabs,
   // mirroring the connector detail page. Other feed kinds keep single-page layout.
-  const hasTabs = kind === 'taxii' || kind === 'csv' || kind === 'rss';
+  const hasTabs = kind === 'taxii' || kind === 'csv' || kind === 'rss' || kind === 'json';
   const [tabValue, setTabValue] = useState(0);
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -568,12 +569,13 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
         <ConnectorWorksSection connectorId={connectorIdFromIngestId(node.id)} />
       )}
 
-      {/* "Logs" tab content for TAXII, CSV and RSS feeds. */}
+      {/* "Logs" tab content for TAXII, CSV, RSS and JSON feeds. */}
       {isIngestionFeedLogsEnabled && hasTabs && tabValue === 2 && (
         <>
           {kind === 'taxii' && <IngestionTaxiiLogsTab feedId={node.id} feedName={node.name} />}
           {kind === 'csv' && <IngestionCsvLogsTab feedId={node.id} feedName={node.name} />}
           {kind === 'rss' && <IngestionRssLogsTab feedId={node.id} feedName={node.name} />}
+          {kind === 'json' && <IngestionJsonLogsTab feedId={node.id} feedName={node.name} />}
         </>
       )}
     </PageContainer>
