@@ -187,6 +187,7 @@ export interface StixIncident extends StixDomainObject {
   aliases: Array<string>;
   source: string;
   severity: string;
+  x_opencti_score: number;
 }
 
 // Container specific Properties
