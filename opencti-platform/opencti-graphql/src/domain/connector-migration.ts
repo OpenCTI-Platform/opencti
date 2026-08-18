@@ -1,9 +1,9 @@
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logApp } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { patchAttribute } from '../database/middleware';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { notify } from '../database/redis';
-import { completeConnector, connector } from '../database/repository';
+import { completeConnector, connector, connectors } from '../database/repository';
 import type { Connector, ConnectorContractConfiguration, ContractConfigInput } from '../generated/graphql';
 import { publishUserAction } from '../listener/UserActionListener';
 import { addConnectorDeployedCount } from '../manager/telemetryManager';
@@ -206,6 +206,42 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
   };
 };
 
+// Resolve a unique connector name to avoid collision with existing (managed) connectors.
+// The name collision is checked (and rejected) on managedConnectorAdd; during migration we
+// cannot simply reject, so on collision we prefix the name to keep it unique. Two managed
+// connectors sharing the same name make the composer fail to reconciliate and redeploy forever.
+const resolveUniqueConnectorName = async (
+  context: AuthContext,
+  user: AuthUser,
+  desiredName: string,
+  currentConnectorId: string,
+): Promise<string> => {
+  const existingConnectors = await connectors(context, user);
+  const usedNames = new Set(
+    existingConnectors
+      .filter((c) => c.internal_id !== currentConnectorId)
+      .map((c) => c.name),
+  );
+
+  if (!usedNames.has(desiredName)) {
+    return desiredName;
+  }
+
+  // First try a simple 'migrated-' prefix, then fall back to appending a timestamp.
+  const candidates = [
+    `migrated-${desiredName}`,
+    `migrated-${Date.now()}-${desiredName}`,
+  ];
+  const uniqueName = candidates.find((candidate) => !usedNames.has(candidate))
+    ?? `migrated-${Date.now()}-${Math.floor(Math.random() * 1e6)}-${desiredName}`;
+
+  logApp.info(
+    `[CONNECTOR] Name collision detected during migration: connector name '${desiredName}' already exists, renaming to '${uniqueName}'`,
+    { connector_id: currentConnectorId },
+  );
+  return uniqueName;
+};
+
 export const migrateConnectorToManaged = async (
   context: AuthContext,
   user: AuthUser,
@@ -329,6 +365,13 @@ export const migrateConnectorToManaged = async (
     manager_contract_configuration: filteredConfigurations,
     manager_requested_status: 'stopped',
   };
+
+  // Ensure the migrated connector name does not collide with an existing (managed) connector.
+  // Name collision is rejected on managedConnectorAdd; here we resolve it by prefixing the name.
+  const uniqueName = await resolveUniqueConnectorName(context, user, existingConnector.name, existingConnector.internal_id);
+  if (uniqueName !== existingConnector.name) {
+    managedConnectorData.name = uniqueName;
+  }
 
   // Reset connector state if requested
   if (resetConnectorState && existingConnector.connector_state) {
