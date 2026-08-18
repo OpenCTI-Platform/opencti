@@ -55,7 +55,7 @@ import { isCompatibleVersionWithMinimal } from '../utils/version';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import type { BasicStoreCommon, StoreEntity } from '../types/store';
 import { addConnectorDeployedCount, addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '../manager/telemetryManager';
-import { computeConnectorTargetContract } from '../modules/catalog/catalog-domain';
+import { computeConnectorTargetContract, mapContractEntityFieldsToEmbeddedConnectorManagerContract } from '../modules/catalog/catalog-domain';
 import { getEntitiesMapFromCache } from '../database/cache';
 
 import { createOnTheFlyUser } from '../modules/user/user-domain';
@@ -290,7 +290,7 @@ export const managedConnectorAdd = async (
     connector_user_id: connectorUser.id,
     manager_contract_image: input.manager_contract_image,
     manager_contract_configuration: contractConfigurations,
-    manager_contract: targetContract,
+    manager_contract: mapContractEntityFieldsToEmbeddedConnectorManagerContract(targetContract),
     manager_requested_status: 'stopped',
     connector_state_timestamp: now(),
     built_in: false,

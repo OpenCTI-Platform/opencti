@@ -7,7 +7,11 @@ import { completeConnector, connector, connectors } from '../database/repository
 import type { Connector, ConnectorContractConfiguration, ContractConfigInput } from '../generated/graphql';
 import { publishUserAction } from '../listener/UserActionListener';
 import { addConnectorDeployedCount } from '../manager/telemetryManager';
-import { computeConnectorTargetContract, mapCatalogContractToGraphqlCatalogContractWithoutExcludedConfigVars } from '../modules/catalog/catalog-domain';
+import {
+  computeConnectorTargetContract,
+  mapContractEntityFieldsToEmbeddedConnectorManagerContract,
+  mapContractEntityFieldsToGraphqlCatalogContract,
+} from '../modules/catalog/catalog-domain';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER } from '../schema/internalObject';
 import type { BasicStoreEntityConnectorManager } from '../types/connector';
@@ -148,7 +152,7 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
     throw FunctionalError('Contract not found', { container_image: containerImage });
   }
 
-  const contract = mapCatalogContractToGraphqlCatalogContractWithoutExcludedConfigVars(contractData);
+  const contract = mapContractEntityFieldsToGraphqlCatalogContract(contractData, { excludeRuntimeConfigVars: true });
 
   // Check type are correct
   if (existingConnector.connector_type !== contract.container_type) {
@@ -256,7 +260,7 @@ export const migrateConnectorToManaged = async (
     throw FunctionalError('Contract not found', { container_image: containerImage });
   }
 
-  const contract = mapCatalogContractToGraphqlCatalogContractWithoutExcludedConfigVars(contractData);
+  const contract = mapContractEntityFieldsToGraphqlCatalogContract(contractData, { excludeRuntimeConfigVars: true });
 
   if (!contract.manager_supported) {
     throw FunctionalError('Connector is not managed by composer');
@@ -357,7 +361,7 @@ export const migrateConnectorToManaged = async (
     title: existingConnector.name,
     catalog_id: contractData.catalog_id,
     manager_contract_image: contract.container_image,
-    manager_contract: contractData,
+    manager_contract: mapContractEntityFieldsToEmbeddedConnectorManagerContract(contractData),
     manager_contract_configuration: filteredConfigurations,
     manager_requested_status: 'stopped',
   };
