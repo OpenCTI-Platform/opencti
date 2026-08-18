@@ -4,6 +4,20 @@ What a later reader needs from this wave: the reference measurements, the
 decisions with their reason, what was deliberately NOT converted, and the traps
 that cost time. Organised by purpose, not by the order the work happened.
 
+**Which method is authoritative.** Every figure in this document, in the PR body
+and in `LIBRARY-FEEDBACK.md` comes from `scripts/count-surfaces.mjs`, which
+imports the same analyser the conformity gate uses
+(`scripts/lib/jsx-opening-tags.mjs`: brace-depth tag parsing, import origin
+resolved including relative paths). Re-run it rather than trusting a number in
+prose:
+
+```
+node fds-migration/scripts/count-surfaces.mjs
+```
+
+No figure below comes from a grep. Where a grep-derived figure circulated
+earlier, it is named and corrected in §6.
+
 Companion documents:
 - `LIBRARY-FEEDBACK.md` — every library-imposed gap, numbered, each with a
   removal test. Entries 30-39 come from this wave.
@@ -44,10 +58,23 @@ not surface them. `-transparency-50` was NOT renamed and was left untouched.
 
 ---
 
-## 2. Perimeter — 21 of 35 surfaces converted
+## 2. Perimeter — 27 library-Paper call sites in 19 files
 
-The real perimeter was **35**, not the 28 announced: a `<Paper` grep never sees
-the seven surfaces injected as `<TableContainer component={Paper}>`.
+Counted by the analyser, not by hand:
+
+| | count |
+|---|---|
+| `<Paper>` call sites importing from the library | **27** in **19 files** |
+| files still importing MUI's `Paper` | **7** |
+
+The hand-kept figure for this was **21 "surfaces"**, which counted a group of
+identical headers as one surface; the analyser counts call sites, and a file may
+hold several (three in each of two SSO field components, two in four others). The
+tree is the truth: **27 sites, 19 files**.
+
+The perimeter examined was wider than the sites converted: a `<Paper` grep never
+sees the surfaces injected as `<TableContainer component={Paper}>`, which is how
+seven more entered the inventory during the wave.
 
 ### Not converted (14), with the measured reason
 
@@ -149,13 +176,18 @@ by import so MUI's own `Card` is not counted as a wrapper call site:
 | card-links (`to` / `onClick`) | **30** |
 | `<Card>` sites using MUI's Card, out of scope | 3 in 1 file (`StixDomainObjectAuthorKnowledge.jsx`) |
 
-> **Do not "re-correct" towards 222, 216 or 123.** Three wrong figures
-> circulated; here is where each came from, so none is restored. **222 / 167**
-> counted every `<Card>` tag in the front, mixing in the 3 MUI sites —
-> 219 + 3 = 222, 166 + 1 = 167. **216 / 163** came from an import filter that
-> only recognised long paths and missed three relative `'./Card'` imports
-> (`CardAccordion.tsx`, `CardNumber.tsx`, `CardStatistic.tsx`). **123** came
-> from a line grep blind to multi-line opening tags: it missed 51.
+> **Do not "re-correct" these figures. Re-run the counter instead.**
+> `node fds-migration/scripts/count-surfaces.mjs` prints every number in this
+> table, and it is the only method that counts.
+>
+> Four wrong figures circulated before it existed, each from a different shortcut,
+> named here so none is restored. **222 / 167** counted every `<Card>` tag in the
+> front, mixing in the 3 MUI sites — 219 + 3 = 222, 166 + 1 = 167. **216 / 163**
+> came from an import filter that recognised only long paths and missed three
+> relative `'./Card'` imports (`CardAccordion.tsx`, `CardNumber.tsx`,
+> `CardStatistic.tsx`). **123** came from a line grep blind to multi-line opening
+> tags: it missed 51. And **21 surfaces** for the Paper perimeter was a
+> hand-maintained tally, not a count — see §2.
 
 **`title`/`action` and the Card wave are one decision, not two.** 174 of the 219
 sites pass `title=`, and the library title row cannot follow the host's text

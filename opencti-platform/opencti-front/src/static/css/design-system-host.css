@@ -23,9 +23,8 @@
    Navbar declares neither — remove when the component ships a documented
    default the host can override — see fds-migration/LIBRARY-FEEDBACK.md #38
 
-   Both values reproduce, at the pixel, what the legacy MUI docked Drawer did
-   (LeftBar.jsx: a `variant="permanent"` Drawer whose PAPER was
-   `position: fixed; z-index: 1200`). Measured on a master build, not assumed.
+   `left: 0` reproduces what the legacy MUI docked Drawer did. `z-index: 1200`
+   does NOT, and the difference is deliberate — see below.
 
    `left: 0` — the rail already carries `position: sticky` from the rail-height
    workaround (NavBar.tsx, FDS-WORKAROUND #11), but sticky only anchors on the
@@ -43,8 +42,23 @@
    full-width bars that paint their background across the whole viewport and
    offset only their CONTENT (`padding-left`) painted OVER it: measured
    `z-index: 1` beating the rail at the pixel on the knowledge graph and the
-   timeline. 1200 restores the paper's own value: above those bars, below the
-   system banner (1202) and below the library overlays (1300).
+   timeline.
+
+   1200 is ONE NOTCH ABOVE the legacy rail, not parity with it. The legacy
+   Drawer's paper carried `z-index: 1200`, but that paper sat inside the stacking
+   context its own root created: the root was a FLEX ITEM of the shell with
+   `z-index: 999`, and z-index applies to flex items even when they are static.
+   So the rail's effective level against outside siblings was 999, and the
+   paper's 1200 only ordered things within it. Chosen anyway, because the four
+   bars this defends against sit at `z-index: 1` and a value in the 1000-1199
+   band would have left the rail below the application header (1100) it stands
+   beside. Consequence, measured: anything positioned in 1000-1199 that OVERLAPS
+   the rail would now pass under it, where it passed over the legacy rail. On
+   every screen reachable on a seeded instance — dashboard, list, knowledge graph
+   and overview, rail open and collapsed — the only element in that band is the
+   application header, which starts exactly where the rail ends and never
+   overlaps it. Still below the system banner (1202) and the library overlays
+   (1300).
 
    Fragile by construction, and knowingly left so: those four bars rely on this
    stacking to hide a background they paint anyway, and the robust fix would be

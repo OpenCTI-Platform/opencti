@@ -1267,7 +1267,10 @@ drift, against a master build of the component it replaced:
 | 1280 | 120px | `fixed` — drift **0** | drift **−120px** |
 | 1440 | 0 | drift 0 | drift 0 |
 
-*Stacking.* The legacy Drawer's paper painted at `z-index: 1200`. The `<nav>`
+*Stacking.* The legacy rail's effective level was **999**: its Drawer paper
+carried `z-index: 1200`, but that paper sat inside the stacking context its own
+root created — the root was a FLEX ITEM of the shell carrying `z-index: 999`, and
+z-index applies to flex items even when static. The `<nav>`
 paints at `auto`, so a `z-index: 1` sibling wins. Four OpenCTI toolbars paint a
 full-viewport background and offset only their content (`padding-left`); all four
 declare `z-index: 1`. Measured with `elementFromPoint` at the centre of the rail:
@@ -1295,7 +1298,7 @@ latent defect and one shipped regression.
    documentation states which axes the host must pin and warns that a
    single-axis `sticky` leaves the other axis scrolling.
 
-**Why it stayed invisible.** The value that mattered (`z-index: 1200`) lived on
+**Why it stayed invisible.** The level that mattered (an effective 999) lived on
 the MUI Drawer that the migration deleted. Nothing carried it forward, and
 nothing failed: the types are satisfied, the rendered rail is correct at any
 viewport wide enough not to overflow, and the defect only appears below a
