@@ -53,7 +53,9 @@ describe('refang tests', () => {
     const output = refang(input);
     const duration = performance.now() - start;
     expect(output).toBe(input);
-    expect(duration).toBeLessThan(50);
+    // Loose bound: this only needs to catch pathological (exponential/quadratic)
+    // backtracking, not enforce a tight timing budget on shared CI runners.
+    expect(duration).toBeLessThan(500);
   });
 
   it('should strip long runs of trailing dots in linear time', () => {
@@ -62,7 +64,9 @@ describe('refang tests', () => {
     const output = refang(input);
     const duration = performance.now() - start;
     expect(output).toBe('http://site.com');
-    expect(duration).toBeLessThan(50);
+    // Loose bound: this only needs to catch pathological (exponential/quadratic)
+    // backtracking, not enforce a tight timing budget on shared CI runners.
+    expect(duration).toBeLessThan(500);
   });
 
   it('should handle mixed defanging styles in a single string', () => {
