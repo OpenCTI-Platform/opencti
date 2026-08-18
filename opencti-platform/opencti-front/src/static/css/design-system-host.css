@@ -60,6 +60,17 @@
    overlaps it. Still below the system banner (1202) and the library overlays
    (1300).
 
+   ONE element does flip, and it is deliberately left alone: the Suspense
+   fallback of the top bar (TopBar.tsx, `classes.appBar`) is an
+   `AppBar position="fixed"` at `theme.zIndex.drawer - 1` = 1199, full width from
+   x=0, so it overlaps the rail and now passes UNDER it where it passed over the
+   legacy rail. Do NOT "fix" this by giving it a left offset. That bar is the
+   loading placeholder and it is EMPTY — it carries no content to hide — so a rail
+   that stays visible while the bar loads is better than a placeholder painting
+   over the navigation. Nothing is masked either way; the only difference is which
+   of the two the user sees during the wait, and the rail is the more useful
+   answer.
+
    Fragile by construction, and knowingly left so: those four bars rely on this
    stacking to hide a background they paint anyway, and the robust fix would be
    to offset their margin rather than their content, the way
