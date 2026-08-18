@@ -53,7 +53,7 @@ interface IncidentAddInput {
   name: string;
   description: string;
   confidence: number | undefined;
-  x_opencti_score: string | undefined;
+  x_opencti_score?: string;
   incident_type: string;
   severity: string;
   source: string;
