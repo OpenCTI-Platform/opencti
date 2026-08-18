@@ -29,7 +29,6 @@ export const CATALOG_CONTRACT_MAPPINGS: AttributeDefinition[] = [
   { name: 'subscription_link', label: 'Subscription link', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'source_code', label: 'Source code', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'manager_supported', label: 'Manager supported', type: 'boolean', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-  { name: 'version', label: 'Version', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   { name: 'contract_version', label: 'Contract version', type: 'string', format: 'version', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'image', label: 'Image', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   { name: 'connector_type', label: 'Connector type', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
@@ -39,7 +38,7 @@ export const CATALOG_CONTRACT_MAPPINGS: AttributeDefinition[] = [
   { name: 'contact', label: 'Contact', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
 ];
 
-// CatalogContract = one persisted entry per (slug, version).
+// CatalogContract = one persisted entry per (slug, contract_version).
 // All connector metadata lives here since any field can vary between versions.
 const CATALOG_CONTRACT_DEFINITION: ModuleDefinition<StoreEntityCatalogContract, any> = {
   type: {
