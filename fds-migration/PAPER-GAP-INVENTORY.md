@@ -21,15 +21,6 @@ the INSTALLED build and proved by the SERVED BYTES, never by the lockfile.
 the bytes say what the browser will execute. Reading the changelog or the types
 instead has cost this pilot real time twice.
 
-Gate points, all four verified at `a22b188b`:
-
-| gate point | result |
-|---|---|
-| `padding` prop on the 0/8/16/24/32 scale | five classes `p-0 p-2 p-4 p-6 p-8` present in the shipped CSS |
-| `title` / `action` as real props | present |
-| host-theme contract, BOTH directions | per-layer base repaints surface and border; overriding the semantic alias does nothing |
-| border on `--border-elevation-subtle-soft` | present, at 15 % dilution |
-
 **Bridge freshness is verified by hashing, never by trusting a sibling
 checkout.** `theme.css` sha256 at both pins: `87f2d00abcbf4b6a` — unchanged, so
 the token bridge was not regenerated for the closing bump.
@@ -40,27 +31,16 @@ discovery of the dynamic-import routes from a browser before concluding
 anything. A 3-second install is not evidence — the chunk filename changing is
 (`chunk-CBU64Y6F` → `chunk-WX3UX5G2` at the closing bump).
 
-### Dead references after a token rename — three found, all three silent
+### Dead references after a token rename
 
-The `-transparency` → `-transparency-10` rename killed three product references.
-Neither `tsc`, nor eslint, nor the build complained about any of them.
-
-| reference | site | why silent |
-|---|---|---|
-| `var(--color-filigran-brand-primary-transparency)` READ | `TopBarIconLink.tsx:8` | a dangling `var()` inside a string |
-| the same token DECLARED | `NavBar.tsx:101` | the rail declared the old name while the library read the new one, so a selected row painted Filigran blue instead of the customer accent |
-| the dead literal ASSERTED | `TopBarIconLink.test.tsx:29` | the test asserted the dead string and stayed green |
+A `-transparency` → `-transparency-10` rename killed three product references in
+this wave, and **all three were silent**: neither `tsc`, nor eslint, nor the
+build complained about any of them.
 
 **Rule this leaves.** After any token rename, search the product for BOTH shapes
 — the utility class as a bare literal, and `var(--token)` inside a string — and
 cross-check against the installed `dist/index.css`. Regenerating the bridge does
 not surface them. `-transparency-50` was NOT renamed and was left untouched.
-
-### Expected, not a regression
-
-The warning colour darkens in LIGHT mode only: `--color-feedback-warning-primary`
-`#e6700f` → `#b8550a`, tertiary `#884106` → `#572a05`; dark unchanged. Read at
-`ThemeLight.ts:50,130,202`. Shown, not fixed.
 
 ---
 
@@ -68,16 +48,6 @@ The warning colour darkens in LIGHT mode only: `--color-feedback-warning-primary
 
 The real perimeter was **35**, not the 28 announced: a `<Paper` grep never sees
 the seven surfaces injected as `<TableContainer component={Paper}>`.
-
-### Converted (21)
-
-| group | sites |
-|---|---|
-| SSO headers | `AuthProviderGroupsFields` ×3, `AuthProviderOrganizationsFields` ×3, `AuthProviderUserInfoFields`, `HeaderStrategyForm` |
-| pilot lot | `StreamConsumersDrawer`, `ImportFilesFormSelector`, `TokenList`, `UserTokenList`, `RequestAccessSettings` |
-| padding on the scale | `ConnectorWorksErrorLine` ×2, `DraftRoot`, `ScaleConfiguration` (15→16), `HeaderField`, `QueryAttributeField` (20→24), `StixDomainObjectAuthorKnowledge` (asymmetric→16) |
-| injected, form B | `DecayDialogContent`, `ConnectorWorkLine`, `TasksList` ×2 |
-| lost shadow | `ImageCarousel` |
 
 ### Not converted (14), with the measured reason
 
@@ -124,69 +94,23 @@ reason is what lets a later reader apply it to a site this wave never saw.
 
 ---
 
-## 4. Product-side corrections made in this wave
+## 4. Two rules the product-side corrections leave
 
-Four fixes that were not tag swaps. Each is at the SITE that paints, never on a
-shared field, so that consumers outside the question are untouched.
+Four surfaces were corrected in this wave rather than swapped: the `#0C1524`
+literal on 219 cards, the card border, eight chart factories and the login page.
+The diffs are in git and each site carries its reason in a comment. Two rules
+transfer.
 
-### The `#0C1524` literal — 219 cards
-
-`Card.tsx` painted `palette.background.secondary`, a hardcoded literal that is
-**no step of the elevation scale** (`#0C1524` against layer-1 `#0d172b`). In
-light the same field is `#FFFFFF`, which IS layer-1, so the drift was dark-only
-— and invisible to anyone reading the theme rather than the rendered pixel.
-
-Collapsed to `background.paper`, which resolves to
-`--bg-elevation-default-layer-1` through the bridge and already follows a
-customer's `theme_paper`. A customised install renders exactly as before.
-
-Fixed in the wrapper, deliberately not in the theme: repointing
-`background.secondary` itself would have moved its seven other consumers — date
-pickers, drawer header, saved-filters autocomplete, relationship header, chatbot
-— which are inputs and chrome, not card surfaces. `CardAccordion` follows the
-same correction, otherwise it would sit alone on the old value.
-
-### The card border, in one line
-
-`border: '1px solid var(--border-elevation-subtle-soft)'` in `Card.tsx`.
-
-**Why not swap `CardMui` for the library Paper.** Surface colour and radius
-already match (4px both sides), so the exchange would buy the border and nothing
-else, while forcing 45 `sx` call sites onto `style`, giving 25
-`variant="outlined"` sites a background they do not have, dropping the
-asymmetric padding of 11 sites plus part of the dashboard tiles, and leaving a
-hybrid the real Card wave would have to undo — the 45 `sx` sites paid twice.
-Same rendering, none of the debt.
-
-### Chart backgrounds — 8 factories
-
-Fixing the card literal made a mismatch visible: charts painted
-`background.secondary` inside a card that now painted layer-1. Eight factories
-in `Charts.jsx` realigned onto the carrying surface. `radarChartOptions` has no
-background line and stays transparent; `donutChartOptions` keeps its
-`withBackground` branch.
-
-**The distinction that decided the sweep.** A chart lives INSIDE the card and is
-meant to be invisible against it. Inputs and bands live NEXT TO the card and are
-meant to contrast: the three outlined-input consumers of `background.secondary`
-paint `#0C1524`, which is the application's standard input colour, and
-`DrawerHeader` sits on `background.nav` (`#070d18`), not on a card. Nothing else
-was touched.
-
-### Login page and the customer-theme contract
-
-The login form is a `MuiCard` going through the `Card` wrapper, painted by
-`background.secondary` — so it was corrected at the site, with
-`backgroundColor: 'background.paper'` on both cards.
-
-Customer theme: the host redeclares the **base per layer** for surface AND
-border (`--bg-elevation-default-layer-1`,
-`--border-elevation-subtle-soft-layer-1`) in `useFdsThemeScope`. Overriding the
-semantic alias does nothing — substitution happens at computed-value time on the
-declaring element. Assumed consequence, shown and not fixed: in a custom theme
-the border takes the customer's card colour, so there is no visible edge.
-
----
+1. **Correct at the SITE that paints, never on the shared field.** Repointing
+   `background.secondary` itself would have moved its seven other consumers —
+   date pickers, drawer header, saved-filters autocomplete, relationship header,
+   chatbot — which are inputs and chrome, not card surfaces, and were never part
+   of the question.
+2. **"Inside the surface" and "next to the surface" are not the same case.** A
+   chart lives INSIDE the card and is meant to disappear against it, so it
+   follows the card. Inputs and bands live NEXT TO it and are meant to contrast,
+   so they keep their own colour. This distinction is what stopped the card fix
+   from cascading into five unrelated surfaces.
 
 ## 5. Gate and guards
 

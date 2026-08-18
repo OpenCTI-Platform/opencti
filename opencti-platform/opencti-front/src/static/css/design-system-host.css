@@ -44,7 +44,12 @@
    offset only their CONTENT (`padding-left`) painted OVER it: measured
    `z-index: 1` beating the rail at the pixel on the knowledge graph and the
    timeline. 1200 restores the paper's own value: above those bars, below the
-   system banner (1202) and below the library overlays (1300). */
+   system banner (1202) and below the library overlays (1300).
+
+   Fragile by construction, and knowingly left so: those four bars rely on this
+   stacking to hide a background they paint anyway, and the robust fix would be
+   to offset their margin rather than their content, the way
+   private/components/data/ToolBar.jsx:97 already does. */
 .app-navbar {
   left: 0;
   z-index: 1200;
