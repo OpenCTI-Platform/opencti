@@ -89,7 +89,7 @@ the seven surfaces injected as `<TableContainer component={Paper}>`.
 | F1-F3 | floating surfaces belonging to Dialog / Menu |
 | injected form A ×3 | explicitly border-less; the library Paper always draws its edge |
 | the dashboard tile | arbitrated out: 126 tiles, own luster gradient |
-| `Card` wrapper + its sites | its own wave, sized in §7 |
+| `Card` wrapper + its sites | its own wave, sized in §6 |
 | `ExperienceCard` | OpenAEV surface, out of this product's perimeter |
 
 **Rule.** If the library component cannot reproduce something the product does
@@ -188,35 +188,7 @@ the border takes the customer's card colour, so there is no visible edge.
 
 ---
 
-## 5. A regression this wave shipped, and the fix
-
-Found after the wave closed, on the running application. Kept here because the
-mechanism generalises.
-
-**Two defects, one missing contract.** The library `Navbar` declares neither an
-anchoring inset nor a stacking level, so the host invents both — see
-`LIBRARY-FEEDBACK.md` #38.
-
-| | legacy MUI docked Drawer | this wave, before the fix | after |
-|---|---|---|---|
-| horizontal drift at a 1280px viewport | `fixed` paper — **0** | `sticky` + `top` only — **−120px** | **0** |
-| stacking | paper at `z-index: 1200` | `auto`, so a `z-index: 1` bar won the pixel | **1200** |
-
-Fixed in `design-system-host.css` with `left: 0` and `z-index: 1200` on
-`.app-navbar`. `left: 0` gives sticky the horizontal inset it lacked and holds
-for ANY overflow, because the inset resolves against the viewport rather than
-the content width; the rail stays in flow, so its 48/180px column is still
-reserved and the content does not shift.
-
-**What this was NOT.** The horizontal scroll itself is not from this wave.
-`private/Index.tsx` has carried `minWidth: 1400` on the shell since 2023-06-16
-(`ad7f3340c8`), the threshold is identical on master and on this branch at four
-viewport widths, and OpenAEV carries the same constraint. Raised as a separate
-product issue, not touched here.
-
----
-
-## 6. Gate and guards
+## 5. Gate and guards
 
 The `paperPattern` motif in `check-fds-conformity.mjs`, driven entirely by
 `migration-state.json`:
@@ -240,7 +212,7 @@ a fragment of the tag.
 
 ---
 
-## 7. Sizing for the next waves
+## 6. Sizing for the next waves
 
 Measured with the brace-depth parser that `check-fds-conformity.mjs` uses, split
 by import so MUI's own `Card` is not counted as a wrapper call site:
@@ -268,44 +240,7 @@ become expressible in one move.
 
 ---
 
-## 8. Follow-up: four bars that paint across the full width
-
-Arbitrated as a separate follow-up, not part of this wave.
-
-Four floating bars paint their background across the **whole viewport** and
-offset only their CONTENT, with `padding-left`:
-
-| file | offset line | declared stacking |
-|---|---|---|
-| `components/graph/GraphToolbar.tsx` | 58 | `zIndex: 1` (57) |
-| `private/components/common/containers/ContainertKnowledgeTimeLineBar.tsx` | 91 | `zIndex: 1` (23) |
-| `private/components/common/files/workbench/WorkbenchFileToolbar.jsx` | 176 | `zIndex: 1` (31) |
-| `private/components/settings/sub_types/ToolBar.tsx` | 176 | `zIndex: 1` (31) |
-
-Measured on the knowledge graph and the container timeline, 1440px viewport,
-rail expanded: the bar is 1440px wide, starts at x=0, and its background covers
-the rail's 180px. The content offset is correct (180px expanded, 48px collapsed)
-— this is not a wrong value, it is a painted surface.
-
-**Why it is fragile.** These bars are only correct BECAUSE another surface hides
-them. They depend on the rail not to be seen, instead of not painting there. The
-`z-index: 1200` fix restores the rendering but does not remove the dependency.
-
-**The correct form already exists in this product.**
-`private/components/data/ToolBar.jsx:97` uses `marginLeft` instead, so the bar
-does not begin before the rail ends and its rendering depends on no stacking
-order. Measured on the reports list with 21 rows selected: no overlap.
-
-**Proposal, when this is picked up.** Move the four `paddingLeft` to
-`marginLeft` — 4 files, 4 lines — then remove the rail's `z-index: 1200` and
-check that entry #38's removal test still passes. **Reserve to lift first:**
-`marginLeft` costs the bar 48 or 180px of usable width, so verify at the DOM
-that each bar's controls still fit at a 1024px viewport, or the remedy just
-moves the defect.
-
----
-
-## 9. Measurement lessons
+## 7. Measurement lessons
 
 The traps that produced a wrong result, or nearly did. Each one is cheap to
 avoid once named.
