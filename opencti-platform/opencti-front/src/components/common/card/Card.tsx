@@ -75,10 +75,14 @@ const Card = ({
    * dark-only — and invisible to anyone reading the theme rather than the
    * rendered pixel.
    *
-   * `background.paper` resolves to `--bg-elevation-default-layer-1` through the
-   * token bridge and already follows a customer's `theme_paper`, which is why
-   * the custom-theme branch used it. Collapsing to it changes the DEFAULT
-   * themes only; a customised install renders exactly as before.
+   * The value read is the LIBRARY'S OWN per-layer hook,
+   * `--bg-elevation-default-layer-1`, not MUI's `background.paper`. Both carry
+   * the same colour today, so this changes no pixel — but they are two
+   * different levers, and that difference was a blind spot: pushing the hook
+   * alone moved every library `Paper` and left every card behind. Measured on a
+   * customer theme, before this line: hook forced to red, Paper red, card still
+   * on the customer's `#3b2450`. Cards and panels now answer the same gesture,
+   * which is what a host redeclaring a layer is entitled to expect.
    *
    * Fixed HERE, in the wrapper, deliberately — not in the theme. Repointing
    * `background.secondary` itself would move its seven other consumers
@@ -87,7 +91,7 @@ const Card = ({
    * never part of this question. Same shape as the login-page correction: at
    * the site that paints, not on the shared field.
    */
-  const backgroundColor = theme.palette.background.paper;
+  const backgroundColor = 'var(--bg-elevation-default-layer-1)';
 
   const containerSx: SxProps = {
     position: 'relative',

@@ -29,11 +29,10 @@ const CardAccordion = ({
 
   const containerSx: SxProps = {
     padding: theme.spacing(3),
-    // Same correction as `Card.tsx`: `background.secondary` is a hardcoded
-    // literal (`#0C1524` in dark), no step of the elevation scale. This panel
-    // belongs to the card family and so follows the same surface — otherwise it
-    // would be left alone on the old value.
-    background: theme.palette.background.paper,
+    // Follows `Card.tsx` exactly, including WHICH lever it reads: the library's
+    // per-layer hook, so this panel answers a host redeclaring a layer the same
+    // way cards and library Papers now do.
+    background: 'var(--bg-elevation-default-layer-1)',
   };
 
   const summarySx: SxProps = {
