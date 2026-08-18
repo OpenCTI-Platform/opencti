@@ -1004,6 +1004,7 @@
   "Subject public key modulus": "対象公開鍵モジュラス",
   "Submission date": "分析開始日",
   "SWID": "SWID",
+  "Sync workflow statuses by name": "ワークフローのステータスを名前で同期する",
   "Synchronized": "同期",
   "Tags": "調査対象",
   "Target entity": "ターゲットエンティティ",

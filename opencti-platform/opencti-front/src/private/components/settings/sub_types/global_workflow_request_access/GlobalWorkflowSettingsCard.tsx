@@ -66,7 +66,7 @@ const GlobalWorkflowSettingsCard = () => {
                 <Tooltip
                   title={!isSyncWorkflowStatusByNameAvailable
                     ? t_i18n('This configuration is not available for this entity type')
-                    : t_i18n('When enabled, an organization synchronizer maps a remote workflow status onto the local status with the same name and scope, instead of dropping it.')
+                    : t_i18n("When enabled, stream synchronizations will try to name-match the incoming entities' statuses with this instance's statuses, instead of dropping them.")
                   }
                 >
                   <InformationOutline
@@ -76,7 +76,7 @@ const GlobalWorkflowSettingsCard = () => {
                 </Tooltip>
               )}
               >
-                {t_i18n('Sync workflow status by name')}
+                {t_i18n('Sync workflow statuses by name')}
               </Label>
               <FormGroup>
                 <FormControlLabel
@@ -87,7 +87,7 @@ const GlobalWorkflowSettingsCard = () => {
                       onChange={handleToggleSyncWorkflowStatusByName}
                     />
                   )}
-                  label={t_i18n('Sync workflow status by name')}
+                  label={t_i18n('Sync workflow statuses by name')}
                 />
               </FormGroup>
             </>
