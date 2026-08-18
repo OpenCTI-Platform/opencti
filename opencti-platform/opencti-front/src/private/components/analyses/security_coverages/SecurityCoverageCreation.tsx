@@ -70,6 +70,13 @@ const DEFAULT_ENTITY_TYPES = [
   'Incident',
 ];
 
+enum StepKey {
+  MODE = 'mode',
+  OBJECT_COVERED = 'objectCovered',
+  COMPATIBLE_ENTITIES = 'compatibleEntities',
+  COVERAGE_DETAILS = 'coverageDetails',
+}
+
 // Type definitions for GraphQL responses
 interface StixCoreObjectNode {
   id: string;
@@ -309,7 +316,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
   const navigate = useNavigate();
 
   // Stepper state - if we have a preselected entity, start at step 0 (choose type)
-  const [activeStep, setActiveStep] = useState(0);
+  const [activeStep, setActiveStep] = useState<StepKey>(StepKey.MODE);
   const [mode, setMode] = useState<'manual' | 'automated' | null>(null);
   const [selectedEntity, setSelectedEntity] = useState<StixCoreObjectNode | null>(preSelectedEntity);
 
@@ -340,16 +347,14 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
   const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Domain-Object', filters);
 
   // When we have a preselected entity, we skip the "Select entity" step
-  const steps = preSelectedEntityId
-    ? [
-        t_i18n('Choose type'),
-        t_i18n('Coverage details'),
-      ]
-    : [
-        t_i18n('Choose type'),
-        t_i18n('Select entity to cover'),
-        t_i18n('Coverage details'),
-      ];
+  const steps = [
+    { title: t_i18n('Choose type'), step: StepKey.MODE },
+    ...(preSelectedEntityId ? [] : [{ title: t_i18n('Select entity to cover'), step: StepKey.OBJECT_COVERED }]),
+    ...(mode === 'manual' ? [{ title: t_i18n('Select object covered entities'), step: StepKey.COMPATIBLE_ENTITIES }] : []),
+    { title: t_i18n('Coverage details'), step: StepKey.COVERAGE_DETAILS },
+  ];
+
+  const activeStepIndex = Math.max(0, steps.findIndex(({ step }) => step === activeStep));
 
   const buildColumns = () => {
     return {
@@ -383,9 +388,15 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
 
   const handleSelectMode = (newMode: 'manual' | 'automated') => {
     setMode(newMode);
-    // If we have a preselected entity, go directly to coverage details (step 1)
-    // Otherwise, go to entity selection (step 1)
-    setActiveStep(1);
+    // If no preselected entity, go to entity selection (step object covered)
+    // If we have a preselected entity :
+    // option 1 : manual mode : go directly to covered entities selection
+    // option 2 : automated mode : go directly to coverage details
+    if (!preSelectedEntityId) {
+      setActiveStep(StepKey.OBJECT_COVERED);
+    } else {
+      setActiveStep(newMode === 'manual' ? StepKey.COMPATIBLE_ENTITIES : StepKey.COVERAGE_DETAILS);
+    }
   };
 
   const handleSelectEntity = (entity: StixCoreObjectNode, setFieldValue?: (field: string, value: unknown) => void) => {
@@ -394,15 +405,15 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
     if (setFieldValue && (entity.representative?.main || entity.name)) {
       setFieldValue('name', entity.representative?.main || entity.name);
     }
-    // Automatically move to the coverage details step
-    setActiveStep(preSelectedEntityId ? 1 : 2);
+    // Automatically move to the select covered entities step (if manual mode) or coverage details otherwise
+    setActiveStep(mode === 'manual' ? StepKey.COMPATIBLE_ENTITIES : StepKey.COVERAGE_DETAILS);
   };
 
   // Removed handleBack - users should click on stepper steps directly
 
   const handleClose = () => {
     // Reset all state when closing drawer
-    setActiveStep(0);
+    setActiveStep(StepKey.MODE);
     setMode(null);
     setSelectedEntity(null);
     helpers.handleClearAllFilters();
@@ -499,23 +510,16 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
   );
 
   const renderStepContent = (
-    step: number,
+    step: StepKey,
     values: SecurityCoverageFormValues,
     setFieldValue: (field: string, value: unknown) => void,
     isSubmitting: boolean,
     _submitForm: () => void,
     _resetForm: () => void,
   ) => {
-    // If we have a preselected entity, we only have 2 steps (type selection and coverage details)
-    // Map step 0 -> 0 (Choose type), step 1 -> 2 (Coverage details)
-    let actualStep = step;
-    if (preSelectedEntityId) {
-      actualStep = step === 1 ? 2 : step;
-    }
-
-    switch (actualStep) {
-      case 0:
-        // Step 1: Choose Type (Manual or Automated)
+    switch (step) {
+      case StepKey.MODE:
+        // Choose Type (all cases)
         return (
           <Box>
             <Box
@@ -600,8 +604,8 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
           </Box>
         );
 
-      case 1: {
-        // Step 2: Select Entity to Cover
+      case StepKey.OBJECT_COVERED: {
+        // Select Entity to Cover (when creation from security coverage view, either manual or automated case)
         const queryPaginationOptions = {
           types: DEFAULT_ENTITY_TYPES,
           search: searchTerm,
@@ -680,8 +684,12 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
         );
       }
 
-      case 2:
-        // Step 3: Coverage Details Form
+      case StepKey.COMPATIBLE_ENTITIES:
+        // Select covered entities (manual mode)
+        return <></>;
+
+      case StepKey.COVERAGE_DETAILS:
+        // Coverage Details Form (all cases)
         return (
           <Box>
             <Field
@@ -812,18 +820,18 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
   return (
     <Box>
       <div className={classes.stepperContainer}>
-        <Stepper activeStep={activeStep}>
-          {steps.map((label, index) => (
-            <Step key={label}>
+        <Stepper activeStep={activeStepIndex}>
+          {steps.map(({ title, step }, index) => (
+            <Step key={step}>
               <StepLabel
                 onClick={() => {
-                  if (index < activeStep) {
-                    setActiveStep(index);
+                  if (index < activeStepIndex) {
+                    setActiveStep(step);
                   }
                 }}
-                style={{ cursor: index < activeStep ? 'pointer' : 'default' }}
+                style={{ cursor: index < activeStepIndex ? 'pointer' : 'default' }}
               >
-                {label}
+                {title}
               </StepLabel>
             </Step>
           ))}
