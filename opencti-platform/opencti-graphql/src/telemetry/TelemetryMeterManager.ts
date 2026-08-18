@@ -1,6 +1,7 @@
 import { MeterProvider } from '@opentelemetry/sdk-metrics';
 import type { ObservableResult } from '@opentelemetry/api';
 import { ValueType } from '@opentelemetry/api';
+import type { CatalogContractEntityFields } from '../modules/catalog/catalog-types';
 
 export const TELEMETRY_SERVICE_NAME = 'opencti-telemetry';
 
@@ -32,6 +33,7 @@ export const normalizeTelemetryTags = (rawTags: string | null | undefined): stri
 export interface ConnectorIdentitySource {
   catalog_id?: string | null;
   manager_contract_image?: string | null;
+  manager_contract?: CatalogContractEntityFields | null;
   name?: string | null;
   connector_type?: string | null;
 }
@@ -75,13 +77,12 @@ export const stripImageToRepositoryPath = (imageReference: string | null | undef
 // available identity, flagged managed=false.
 export const computeActiveConnectorsByIdentity = (
   activeConnectors: ConnectorIdentitySource[],
-  contractsByImage: ReadonlyMap<string, { slug: string }>,
 ): DimensionalGaugeItem[] => {
   const connectorsByIdentity = new Map<string, DimensionalGaugeItem>();
   activeConnectors.forEach((connector) => {
     const isManaged = (connector.catalog_id ?? '').length > 0;
     const slug = isManaged
-      ? (contractsByImage.get(connector.manager_contract_image ?? '')?.slug ?? stripImageToRepositoryPath(connector.manager_contract_image))
+      ? (connector.manager_contract?.slug ?? stripImageToRepositoryPath(connector.manager_contract_image))
       : (connector.name ?? '').trim().toLowerCase();
     if (slug.length === 0) {
       return;

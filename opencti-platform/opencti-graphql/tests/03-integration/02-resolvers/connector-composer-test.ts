@@ -8,7 +8,6 @@ import { wait } from '../../../src/database/utils';
 import { XTMComposerMock } from '../../utils/XTMComposerMock';
 import type { ApiConnector } from '../../utils/XTMComposerMock';
 import { catalogHelper } from '../../utils/catalogHelper';
-import { resetCatalogs } from '../../../src/modules/catalog/catalog-domain';
 import * as UserActionListener from '../../../src/listener/UserActionListener';
 import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 
@@ -258,9 +257,6 @@ describe('Connector Composer and Managed Connectors', () => {
     // Set up test catalog path in environment
     const testCatalogUrl = new URL('../../utils/opencti-manifest.json', import.meta.url);
     process.env.APP__CUSTOM_CATALOGS = JSON.stringify([fileURLToPath(testCatalogUrl)]);
-
-    // Reset catalogs to ensure test catalog is loaded
-    resetCatalogs();
 
     // Validate that we're using the test catalog
     catalogHelper.validateTestCatalog();

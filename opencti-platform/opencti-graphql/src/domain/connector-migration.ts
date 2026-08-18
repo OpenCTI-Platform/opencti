@@ -7,16 +7,15 @@ import { completeConnector, connector, connectors } from '../database/repository
 import type { Connector, ConnectorContractConfiguration, ContractConfigInput } from '../generated/graphql';
 import { publishUserAction } from '../listener/UserActionListener';
 import { addConnectorDeployedCount } from '../manager/telemetryManager';
-import { computeConnectorTargetContract, findContractByContainerImage, mapContractDtoV0ToContractEntityFields } from '../modules/catalog/catalog-domain';
+import { computeConnectorTargetContract, mapCatalogContractToGraphqlCatalogContractWithoutExcludedConfigVars } from '../modules/catalog/catalog-domain';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER } from '../schema/internalObject';
 import type { BasicStoreEntityConnectorManager } from '../types/connector';
 import type { AuthContext, AuthUser } from '../types/user';
 import { isServiceAccountUser } from '../utils/access';
 import { resolveUserByIdFromCache, userEditField } from './user';
-import type { CatalogContractDtoV0 } from '../modules/catalog/catalog-types';
 import { now } from '../utils/format';
-import { listCatalogContractLogos, storeCatalogContractLogo } from '../modules/catalog/catalog-logo-storage';
+import { findLatestCompatibleCatalogContractByImageName } from '../modules/catalog/catalog-repository';
 
 type ConfigInput = {
   key: string;
@@ -144,17 +143,12 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
     throw FunctionalError('Connector is already managed', { id: connectorId });
   }
 
-  const contractData = await findContractByContainerImage(context, user, containerImage);
+  const contractData = await findLatestCompatibleCatalogContractByImageName(context, user, containerImage);
   if (!contractData) {
     throw FunctionalError('Contract not found', { container_image: containerImage });
   }
 
-  let contract: CatalogContractDtoV0;
-  try {
-    contract = JSON.parse(contractData.contract) as CatalogContractDtoV0;
-  } catch {
-    throw FunctionalError('Cannot parse contract found');
-  }
+  const contract = mapCatalogContractToGraphqlCatalogContractWithoutExcludedConfigVars(contractData);
 
   // Check type are correct
   if (existingConnector.connector_type !== contract.container_type) {
@@ -257,17 +251,12 @@ export const migrateConnectorToManaged = async (
   convertUserToServiceAccount: boolean = true,
   resetConnectorState: boolean = false,
 ) => {
-  const contractData = await findContractByContainerImage(context, user, containerImage);
+  const contractData = await findLatestCompatibleCatalogContractByImageName(context, user, containerImage);
   if (!contractData) {
     throw FunctionalError('Contract not found', { container_image: containerImage });
   }
 
-  let contract;
-  try {
-    contract = JSON.parse(contractData.contract);
-  } catch {
-    throw FunctionalError('Cannot parse contract');
-  }
+  const contract = mapCatalogContractToGraphqlCatalogContractWithoutExcludedConfigVars(contractData);
 
   if (!contract.manager_supported) {
     throw FunctionalError('Connector is not managed by composer');
@@ -310,7 +299,7 @@ export const migrateConnectorToManaged = async (
   );
 
   const invalidKeys: string[] = [];
-  userConfig.forEach((value: string, key: string) => {
+  userConfig.forEach((_value: string, key: string) => {
     if (!schemaKeysUpper.has(key)) {
       invalidKeys.push(key);
     }
@@ -364,19 +353,11 @@ export const migrateConnectorToManaged = async (
     );
   }
 
-  const existingLogos = await listCatalogContractLogos();
-  const logoStorageResult = await storeCatalogContractLogo(contract, existingLogos);
-  const managerContract = mapContractDtoV0ToContractEntityFields({
-    catalogId: contractData.catalog_id,
-    contractDto: contract,
-    logoUri: logoStorageResult.logoUri,
-  });
-
   const managedConnectorData: any = {
     title: existingConnector.name,
     catalog_id: contractData.catalog_id,
     manager_contract_image: contract.container_image,
-    manager_contract: managerContract,
+    manager_contract: contractData,
     manager_contract_configuration: filteredConfigurations,
     manager_requested_status: 'stopped',
   };

@@ -46,6 +46,9 @@ const createMitreContract = (): CatalogContract => ({
     required: ['MITRE_URL'], // CONNECTOR_QUEUE_THRESHOLD is NOT required
     additionalProperties: false,
   },
+  license_type: null,
+  solution_categories: [],
+  contact: null,
 });
 
 describe('CONNECTOR_QUEUE_THRESHOLD bug fix', () => {
