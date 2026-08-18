@@ -3,6 +3,7 @@ paths:
   - opencti-platform/opencti-front/src
   - opencti-platform/opencti-graphql/src
   - opencti-worker/src
+  - client-python/pycti
 paths-ignore:
   - opencti-platform/opencti-front/src/static
   - opencti-platform/opencti-graphql/src/generated
