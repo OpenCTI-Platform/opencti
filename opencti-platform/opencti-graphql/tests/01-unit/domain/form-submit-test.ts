@@ -468,7 +468,7 @@ describe('formSubmit', () => {
     const pushSpy = vi.mocked(rabbitmq.pushBundleToWorker);
     expect(pushSpy).toHaveBeenCalledOnce();
     const message = pushSpy.mock.calls[0][3];
-    expect(message).toMatchObject({ no_split: true, trackExpectations: true });
+    expect(message).toMatchObject({ no_split: true });
   });
 
   it('should bypass mandatory attributes when creating draft from form intake', async () => {

@@ -72,7 +72,6 @@ export const pushBundleToConnectorQueue = async (context: AuthContext, ingestion
     content,
     work_id: work.id,
     update: true,
-    trackExpectations: true,
   });
   return work.id;
 };

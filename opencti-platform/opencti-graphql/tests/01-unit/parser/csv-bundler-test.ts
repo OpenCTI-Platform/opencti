@@ -28,7 +28,7 @@ describe('csv-bundler: worker expectations tracking', () => {
     pushBundleToWorkerMock.mockClear();
   });
 
-  it('opts in to trackExpectations so the worker gets real per-object expectations', async () => {
+  it('sends the bundle with the work_id so pushBundleToWorker tracks real per-object expectations', async () => {
     const opts = {
       workId: 'work--1',
       applicantUser: { id: 'user--1', internal_id: 'user--1' } as any,
@@ -41,6 +41,6 @@ describe('csv-bundler: worker expectations tracking', () => {
 
     expect(pushBundleToWorkerMock).toHaveBeenCalledTimes(1);
     const message = pushBundleToWorkerMock.mock.calls[0][3];
-    expect(message).toMatchObject({ work_id: 'work--1', trackExpectations: true });
+    expect(message).toMatchObject({ work_id: 'work--1' });
   });
 });

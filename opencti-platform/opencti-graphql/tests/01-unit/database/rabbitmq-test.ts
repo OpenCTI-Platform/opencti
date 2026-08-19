@@ -468,9 +468,9 @@ describe('rabbitmq: pushBundleToWorker (centralized expectations tracking)', () 
     mockConnection.createConfirmChannel.mockImplementation((cb: (err: unknown, channel: unknown) => void) => cb(null, mockChannel));
   });
 
-  it('tracks expectations exactly once for a single-object bundle opted-in via trackExpectations', async () => {
+  it('tracks expectations for a single-object bundle whenever a work_id is present', async () => {
     const objects = [{ id: 'malware--a', type: 'malware' }];
-    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1', trackExpectations: true };
+    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1' };
 
     await pushBundleToWorker(context, user, 'connector-1', message);
 
@@ -479,30 +479,9 @@ describe('rabbitmq: pushBundleToWorker (centralized expectations tracking)', () 
     expect(mockChannelPublish).toHaveBeenCalledTimes(1);
   });
 
-  it('does NOT track expectations when trackExpectations is false, even with a work_id present (CSV ingestion safety)', async () => {
-    // This is the exact guard that prevents CSV's own flat upfront expectation (set once per job)
-    // from being incremented again here - a regression here would silently break CSV job completion.
-    const objects = [{ id: 'malware--a', type: 'malware' }, { id: 'malware--b', type: 'malware' }];
-    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-csv', trackExpectations: false };
-
-    await pushBundleToWorker(context, user, 'connector-1', message);
-
-    expect(updateExpectationsNumber).not.toHaveBeenCalled();
-    expect(mockChannelPublish).toHaveBeenCalledTimes(2);
-  });
-
-  it('does NOT track expectations when trackExpectations is omitted entirely, defaulting to opt-out', async () => {
+  it('does NOT track expectations when work_id is missing', async () => {
     const objects = [{ id: 'malware--a', type: 'malware' }];
-    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1' };
-
-    await pushBundleToWorker(context, user, 'connector-1', message);
-
-    expect(updateExpectationsNumber).not.toHaveBeenCalled();
-  });
-
-  it('does NOT track expectations when work_id is missing, even if trackExpectations is true', async () => {
-    const objects = [{ id: 'malware--a', type: 'malware' }];
-    const message = { type: 'bundle', content: toBundle(objects), trackExpectations: true };
+    const message = { type: 'bundle', content: toBundle(objects) };
 
     await pushBundleToWorker(context, user, 'connector-1', message);
 
@@ -510,9 +489,9 @@ describe('rabbitmq: pushBundleToWorker (centralized expectations tracking)', () 
     expect(mockChannelPublish).toHaveBeenCalledTimes(1);
   });
 
-  it('does NOT track expectations for non-bundle messages (e.g. sync "event" type) even with trackExpectations true', async () => {
+  it('does NOT track expectations for non-bundle messages (e.g. sync "event" type), even with a work_id present', async () => {
     // buildSplitMessages returns expectations: null for non-bundle messages, so `expectations > 0` is false.
-    const message = { type: 'event', event_id: 'evt-1', work_id: 'work-1', trackExpectations: true };
+    const message = { type: 'event', event_id: 'evt-1', work_id: 'work-1' };
 
     await pushBundleToWorker(context, user, 'connector-1', message);
 
@@ -526,7 +505,7 @@ describe('rabbitmq: pushBundleToWorker (centralized expectations tracking)', () 
       { id: 'malware--b', type: 'malware' },
       { id: 'malware--c', type: 'malware' },
     ];
-    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1', trackExpectations: true };
+    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1' };
 
     await pushBundleToWorker(context, user, 'connector-1', message);
 
@@ -542,7 +521,7 @@ describe('rabbitmq: pushBundleToWorker (centralized expectations tracking)', () 
       { id: 'malware--dup', type: 'malware', name: 'Second' },
       { id: 'malware--other', type: 'malware' },
     ];
-    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1', trackExpectations: true };
+    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1' };
 
     await pushBundleToWorker(context, user, 'connector-1', message);
 
@@ -562,7 +541,7 @@ describe('rabbitmq: pushBundleToWorker (centralized expectations tracking)', () 
       return true;
     });
     const objects = [{ id: 'malware--a', type: 'malware' }, { id: 'malware--b', type: 'malware' }];
-    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1', trackExpectations: true };
+    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1' };
 
     await pushBundleToWorker(context, user, 'connector-1', message);
 
@@ -583,7 +562,7 @@ describe('rabbitmq: pushBundleToWorker (centralized expectations tracking)', () 
       { id: 'malware--a', type: 'malware' },
       { id: 'malware--b', type: 'malware' },
     ];
-    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1', trackExpectations: true };
+    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1' };
 
     await pushBundleToWorker(context, user, 'connector-1', message);
 
@@ -593,7 +572,7 @@ describe('rabbitmq: pushBundleToWorker (centralized expectations tracking)', () 
 
   it('publishes the single unsplit message unchanged when no split occurs, without invoking the splitter logic on it', async () => {
     const objects = [{ id: 'malware--a', type: 'malware' }];
-    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1', trackExpectations: true, applicant_id: 'user-1' };
+    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1', applicant_id: 'user-1' };
 
     await pushBundleToWorker(context, user, 'connector-1', message);
 
@@ -608,7 +587,7 @@ describe('rabbitmq: pushBundleToWorker (centralized expectations tracking)', () 
       { id: 'malware--a', type: 'malware' },
       { id: 'malware--b', type: 'malware' },
     ];
-    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1', trackExpectations: true };
+    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1' };
 
     await pushBundleToWorker(context, user, 'connector-1', message);
 
@@ -623,7 +602,6 @@ describe('rabbitmq: pushBundleToWorker (centralized expectations tracking)', () 
       type: 'bundle',
       content: Buffer.from('not valid json{{{', 'utf-8').toString('base64'),
       work_id: 'work-1',
-      trackExpectations: true,
     };
 
     await expect(pushBundleToWorker(context, user, 'connector-1', message)).rejects.toThrow(/Invalid stix bundle content/);
@@ -633,7 +611,7 @@ describe('rabbitmq: pushBundleToWorker (centralized expectations tracking)', () 
   });
 
   it('rejects a bundle with missing content instead of publishing it', async () => {
-    const message = { type: 'bundle', work_id: 'work-1', trackExpectations: true };
+    const message = { type: 'bundle', work_id: 'work-1' };
 
     await expect(pushBundleToWorker(context, user, 'connector-1', message)).rejects.toThrow(/Invalid stix bundle content/);
 

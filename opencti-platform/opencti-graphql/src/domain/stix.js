@@ -80,8 +80,6 @@ export const sendStixBundle = async (context, user, connectorId, bundle, work_id
       content,
       work_id: target_work_id,
       update: true,
-      // Only track expectations here if this call created the work.
-      trackExpectations: createdWorkHere,
     });
     return true;
   } catch (err) {

@@ -796,7 +796,6 @@ export const validateDraftWorkspace = async (context: AuthContext, user: AuthUse
     update: true,
     work_id: work.id,
     draft_id: '',
-    trackExpectations: true,
   });
   const draftValidationInput = [{ key: 'draft_status', value: [DRAFT_STATUS_VALIDATED] }, { key: 'validation_work_id', value: [work.id] }];
   const { element } = await updateAttribute(context, user, draft_id, ENTITY_TYPE_DRAFT_WORKSPACE, draftValidationInput);

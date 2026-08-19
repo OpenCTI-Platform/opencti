@@ -265,9 +265,6 @@ const buildAndSendBundle = async (context, user, task, objects, opts) => {
     work_id: task.work_id,
     draft_id: task.draft_context ?? null,
     no_split: forceNoSplit,
-    // Only this call is responsible for the work's expectations when the worker won't split
-    // anything further (single object, or splitting explicitly disabled for this task).
-    trackExpectations: objects.length === 1 || forceNoSplit,
   });
 };
 

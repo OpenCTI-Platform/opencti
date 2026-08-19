@@ -210,7 +210,7 @@ const PLAYBOOK_INGESTION_COMPONENT: PlaybookComponent<IngestionConfiguration> = 
       applicant_id: AUTOMATION_MANAGER_USER_UUID,
       content,
       update: false,
-      // No work_id on playbook messages, so trackExpectations is intentionally omitted here.
+      // No work_id on playbook messages, so pushBundleToWorker never tracks expectations for this call.
     });
     return { output_port: undefined, bundle, forceBundleTracking: true };
   },

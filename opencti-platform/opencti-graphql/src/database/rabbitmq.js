@@ -712,10 +712,10 @@ export const rabbitMQIsAlive = async () => {
  *   object pre-split); otherwise one message per bundle produced by the splitter (which may be
  *   fewer than the raw object count once duplicates/incompatible items are removed, including
  *   down to a single message or none at all).
- * - expectations: the total number of STIX objects the bundle represents, used by callers that
- *   opt in to centralized expectation tracking (see `trackExpectations` on pushBundleToWorker).
- *   null when the message isn't a STIX bundle at all (e.g. sync 'event' messages), since those
- *   don't carry expectation semantics here.
+ * - expectations: the total number of STIX objects the bundle represents, used by
+ *   pushBundleToWorker to keep the work's expected completion count in sync. null when the
+ *   message isn't a STIX bundle at all (e.g. sync 'event' messages), since those don't carry
+ *   expectation semantics here.
  */
 export const buildSplitMessages = (message) => {
   const unsplit = (expectations) => ({ messages: [message], expectations });
@@ -750,12 +750,11 @@ export const buildSplitMessages = (message) => {
 
 /**
  * Publishes a message to a connector's worker queue.
- * When message.trackExpectations is true and message.work_id is set, the work's expected
- * completion count is updated to reflect the actual number of STIX objects being sent - whether
- * the bundle ends up split into several messages or sent as a single one. This is opt-in
- * (rather than inferred from work_id's presence) because some callers, like CSV ingestion, track
- * a work's expectations themselves under a different model (one expectation for the whole job) and
- * must not have it incremented again here.
+ * Whenever message.work_id is set, the work's expected completion count is incremented by the
+ * actual number of STIX objects being sent - whether the bundle ends up split into several
+ * messages or sent as a single one. Tracking is additive (Redis HINCRBY), so this is safe to do
+ * unconditionally: every caller's objects are new work for that work_id, never a resend of an
+ * already-counted total.
  */
 export const pushBundleToWorker = async (context, user, connectorId, message) => {
   const routingKey = pushRouting(connectorId);
@@ -763,7 +762,7 @@ export const pushBundleToWorker = async (context, user, connectorId, message) =>
   if (message.type === 'bundle') {
     logApp.debug('[WORKER] Bundle split into queue messages', { connectorId, work_id: message.work_id, messageCount: messages.length, expectations });
   }
-  const shouldTrackExpectations = message.trackExpectations && message.work_id && context && user && expectations > 0;
+  const shouldTrackExpectations = message.work_id && context && user && expectations > 0;
   if (shouldTrackExpectations) {
     await updateExpectationsNumber(context, user, message.work_id, expectations);
   }

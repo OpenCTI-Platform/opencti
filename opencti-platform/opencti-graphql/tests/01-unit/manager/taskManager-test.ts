@@ -132,13 +132,10 @@ describe('TaskManager sendResultToQueue tests', () => {
       expect(call[0]).toBe(context);
       expect(call[1]).toBe(user);
       expect(call[2]).toBe('connector-456');
-      const message = call[3] as { type: string; content: string; work_id: string; no_split: boolean; trackExpectations: boolean };
+      const message = call[3] as { type: string; content: string; work_id: string; no_split: boolean };
       expect(message.type).toBe('bundle');
       expect(message.work_id).toBe('work-123');
       expect(message.no_split).toBe(false);
-      // A single-object bundle is never split further, so this call is responsible
-      // for tracking its own expectation (delegated to pushBundleToWorker itself).
-      expect(message.trackExpectations).toBe(true);
       const bundle = JSON.parse(Buffer.from(message.content, 'base64').toString('utf-8'));
       expect(bundle.type).toBe('bundle');
       expect(bundle.objects).toHaveLength(1);
@@ -166,12 +163,10 @@ describe('TaskManager sendResultToQueue tests', () => {
     expect(call[0]).toBe(context);
     expect(call[1]).toBe(user);
     expect(call[2]).toBe('connector-456');
-    const message = call[3] as { type: string; content: string; work_id: string; no_split: boolean; trackExpectations: boolean };
+    const message = call[3] as { type: string; content: string; work_id: string; no_split: boolean };
     expect(message.type).toBe('bundle');
     expect(message.work_id).toBe('work-123');
     expect(message.no_split).toBe(true);
-    // Splitting is explicitly disabled here, so this call must still track its own expectation.
-    expect(message.trackExpectations).toBe(true);
 
     // All objects should be in the single bundle
     const bundle = JSON.parse(Buffer.from(message.content, 'base64').toString('utf-8'));
