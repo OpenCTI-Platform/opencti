@@ -2,6 +2,7 @@ import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useState } from 'react';
 import { Field } from 'formik';
+import { createFilterOptions } from '@mui/material/Autocomplete';
 import type { Theme } from '../../../../components/Theme';
 import { fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -47,6 +48,9 @@ export interface OptionMember extends FieldOption {
 }
 
 type MemberType = 'Group' | 'Organization' | 'User';
+
+// Filter on the full label: AutocompleteField's default getOptionLabel truncates it, which broke matching on long names
+const filterOptions = createFilterOptions<OptionMember>({ stringify: (option) => option.label });
 
 interface ObjectMembersFieldProps {
   name: string;
@@ -155,6 +159,7 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
         style={style}
         noOptionsText={t_i18n('No available options')}
         options={members}
+        filterOptions={filterOptions}
         groupBy={(option: OptionMember) => option.type}
         onInputChange={searchMembers}
         renderOption={(
