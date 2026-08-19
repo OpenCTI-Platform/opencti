@@ -2,7 +2,7 @@ import { logApp, PLATFORM_VERSION } from '../../config/conf';
 import { elDeleteInstances, elIndex, elIndexElements, elLoadBy } from '../../database/engine';
 import { fullEntitiesList } from '../../database/middleware-loader';
 import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
-import { FilterMode, FilterOperator, OrderingMode } from '../../generated/graphql';
+import { FilterMode, FilterOperator } from '../../generated/graphql';
 import type { BasicStoreBase } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
 import {
@@ -15,6 +15,7 @@ import {
   type CatalogUpsert,
   ENTITY_TYPE_CATALOG,
 } from './catalog-types';
+import { filterAndSortLatestCompatibleContracts } from './catalog-version-utils';
 
 /**
  * Catalog data accessors & mutators
@@ -115,46 +116,20 @@ export const findLatestCompatibleCatalogContractsByCatalogId = async (
           key: ['catalog_id'],
           values: [catalogId],
         }],
-        filterGroups: [
-          {
-            mode: FilterMode.Or,
-            filters: [],
-            filterGroups: [
-              {
-                mode: FilterMode.And,
-                filters: [{
-                  key: ['support_version'],
-                  values: [PLATFORM_VERSION],
-                  operator: FilterOperator.Lte,
-                }],
-                filterGroups: [],
-              },
-              {
-                mode: FilterMode.And,
-                filters: [{
-                  key: ['support_version'],
-                  values: ['EXISTS'],
-                  operator: FilterOperator.NotEq,
-                }],
-                filterGroups: [],
-              },
-            ],
-          },
-        ],
+        filterGroups: [],
         mode: FilterMode.And,
       },
-      orderBy: 'contract_version',
-      orderMode: OrderingMode.Desc,
     },
   );
+  const compatibleContracts = filterAndSortLatestCompatibleContracts(contracts);
   logApp.debug('[OPENCTI-MODULE] Loaded compatible catalog contracts', {
     module: 'catalog',
     catalogId,
     platformVersion: PLATFORM_VERSION,
-    compatibleContractsCount: contracts.length,
+    compatibleContractsCount: compatibleContracts.length,
   });
   // Keep latest compatible version by slug (results are sorted by version desc).
-  return contracts.reduce((map, contract) => {
+  return compatibleContracts.reduce((map, contract) => {
     if (map.has(contract.slug)) {
       return map;
     }
@@ -179,40 +154,12 @@ export const findLatestCompatibleCatalogContractBySlug = async (
           key: ['slug'],
           values: [contractSlug],
         }],
-        filterGroups: [
-          {
-            mode: FilterMode.Or,
-            filters: [],
-            filterGroups: [
-              {
-                mode: FilterMode.And,
-                filters: [{
-                  key: ['support_version'],
-                  values: [PLATFORM_VERSION],
-                  operator: FilterOperator.Lte,
-                }],
-                filterGroups: [],
-              },
-              {
-                mode: FilterMode.And,
-                filters: [{
-                  key: ['support_version'],
-                  values: ['EXISTS'],
-                  operator: FilterOperator.NotEq,
-                }],
-                filterGroups: [],
-              },
-            ],
-          },
-        ],
+        filterGroups: [],
         mode: FilterMode.And,
       },
-      orderBy: 'contract_version',
-      orderMode: OrderingMode.Desc,
-      first: 1,
     },
   );
-  return contracts[0];
+  return filterAndSortLatestCompatibleContracts(contracts)[0];
 };
 
 export const findLatestCompatibleCatalogContractByImageName = async (
@@ -231,40 +178,12 @@ export const findLatestCompatibleCatalogContractByImageName = async (
           key: ['image'],
           values: [imageName],
         }],
-        filterGroups: [
-          {
-            mode: FilterMode.Or,
-            filters: [],
-            filterGroups: [
-              {
-                mode: FilterMode.And,
-                filters: [{
-                  key: ['support_version'],
-                  values: [PLATFORM_VERSION],
-                  operator: FilterOperator.Lte,
-                }],
-                filterGroups: [],
-              },
-              {
-                mode: FilterMode.And,
-                filters: [{
-                  key: ['support_version'],
-                  values: ['EXISTS'],
-                  operator: FilterOperator.NotEq,
-                }],
-                filterGroups: [],
-              },
-            ],
-          },
-        ],
+        filterGroups: [],
         mode: FilterMode.And,
       },
-      orderBy: 'contract_version',
-      orderMode: OrderingMode.Desc,
-      first: 1,
     },
   );
-  const selectedContract = contracts[0];
+  const selectedContract = filterAndSortLatestCompatibleContracts(contracts)[0];
   if (!selectedContract) {
     logApp.debug('[OPENCTI-MODULE] No compatible catalog contract found by image', {
       module: 'catalog',
