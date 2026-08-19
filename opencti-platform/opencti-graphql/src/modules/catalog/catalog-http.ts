@@ -8,9 +8,11 @@ import { ResourceNotFoundError, UnsupportedError, UnknownError } from '../../con
 
 export const CATALOG_LOGO_VIEW_PATH = '/catalog/logo/*file';
 
+const CONTEXT_SOURCE = 'catalog_logo_view';
+
 export const handleCatalogLogoViewRequest: RequestHandler = async (req, res) => {
   try {
-    const context = await createAuthenticatedContext(req, res, 'catalog_logo_view');
+    const context = await createAuthenticatedContext(req, res, CONTEXT_SOURCE);
     if (!context.user) {
       res.sendStatus(403);
       return;
