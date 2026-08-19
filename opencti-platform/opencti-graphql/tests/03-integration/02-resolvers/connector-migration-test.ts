@@ -197,7 +197,6 @@ describe('Check connector migration', () => {
         const RUNTIME_KEYS = ['OPENCTI_TOKEN', 'CONNECTOR_ID', 'CONNECTOR_TYPE', 'HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY', 'HTTPS_PROXY_REJECT_UNAUTHORIZED'];
         const managedConnector = managedConnectorResult.data.connectorMigrateToManaged;
         const rawConfig = managedConnector.manager_contract_configuration;
-        rawConfig.filter((c: any) => !RUNTIME_KEYS.includes(c.key));
 
         const actualConfig = rawConfig.filter((c: { key: string }) => !RUNTIME_KEYS.includes(c.key));
         RUNTIME_KEYS.forEach((runtimeKey) => {
