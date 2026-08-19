@@ -205,7 +205,7 @@ describe('NavBarView accent compensation', () => {
     expect(nav?.style.getPropertyValue('--color-filigran-brand-primary')).toBe('#ff9800');
     // The tint is a derived token declared on `:root`; overriding only the
     // base token left the row tinted Filigran blue under a custom theme.
-    expect(nav?.style.getPropertyValue('--color-filigran-brand-primary-transparency'))
+    expect(nav?.style.getPropertyValue('--color-filigran-brand-primary-transparency-10'))
       .toBe('color-mix(in srgb, #ff9800 10%, transparent)');
   });
 
@@ -226,7 +226,24 @@ describe('NavBarView accent compensation', () => {
    * is not enough: the first version of this guard passed while the row tint
    * was in fact still blue, because the rule it checked mentioned the base
    * token and the tint came from a derived one.
+   *
+   * NOT_ACCENT_DERIVED is the one escape, and it is deliberately a closed list
+   * rather than a filter on the token name. A property lands here only when the
+   * library paints the selected row with it ON PURPOSE in a tone that is not
+   * the accent — overriding it would be the bug, not the fix. Everything else,
+   * including any property a future pin introduces, must still be overridden or
+   * this test goes red. That is the whole point: the failure mode being guarded
+   * against is silent, so the guard must be the thing that has to be updated
+   * by hand, with a reason, each time the library's selected-row rules move.
    */
+  const NOT_ACCENT_DERIVED: Record<string, string> = {
+    // lib pin a22b188 (#123): a selected row's GLYPH takes the ordinary primary
+    // text tone, not the accent — `group-[[aria-current=page]]:text-default-primary`
+    // on NavbarItem's icon span. Tinting it with `theme_primary` would repaint an
+    // icon the Figma component set says stays neutral when selected.
+    '--text-default-primary': 'selected-row glyph colour, neutral by design',
+  };
+
   it('overrides every custom property the installed library resolves for the selected row', () => {
     const require = createRequire(import.meta.url);
     const cssPath = require.resolve('@filigran/design-system/dist/index.css');
@@ -245,6 +262,16 @@ describe('NavBarView accent compensation', () => {
     const { container } = renderNav({ accentColor: '#ff9800' });
     const nav = container.querySelector('nav');
     referenced.forEach((property) => {
+      const exempt = NOT_ACCENT_DERIVED[property];
+      if (exempt) {
+        // Still assert the opposite direction, so the exemption cannot rot into
+        // a blanket ignore: an exempt property must NOT be overridden either.
+        expect(
+          nav?.style.getPropertyValue(property),
+          `${property} is exempt (${exempt}) and must be left alone by the rail`,
+        ).toBe('');
+        return;
+      }
       expect(
         nav?.style.getPropertyValue(property),
         `the rail must override ${property}, which the library resolves for aria-current rows`,
