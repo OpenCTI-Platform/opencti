@@ -10,7 +10,7 @@ import themeDark, {
   THEME_DARK_DEFAULT_SECONDARY,
   THEME_DARK_DEFAULT_TEXT,
 } from './ThemeDark';
-import themeLight from './ThemeLight';
+import themeLight, { THEME_LIGHT_DEFAULT_PAPER } from './ThemeLight';
 import { useDocumentFaviconModifier, useDocumentThemeModifier } from '../utils/hooks/useDocumentModifier';
 import useFdsThemeScope from '../utils/hooks/useFdsThemeScope';
 import { AppThemeProvider_settings$data } from './__generated__/AppThemeProvider_settings.graphql';
@@ -122,7 +122,14 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
   // for the body `data-theme` attribute the product's own stylesheets target
   // (`body[data-theme="dark"]`). Deriving both from one call is what keeps
   // MUI, the product CSS and FDS from disagreeing on a custom theme name.
-  const themeMode = useFdsThemeScope(themeToUse?.name ?? defaultTheme.name);
+  // A theme counts as CUSTOMER-set as soon as its paper colour departs from the
+  // mode's default: the same test as `hasCustomColor(theme, 'theme_paper')`,
+  // applied here to the source rather than to the assembled palette.
+  const resolvedName = themeToUse?.name ?? defaultTheme.name;
+  const resolvedPaper = themeToUse?.theme_paper ?? defaultTheme.theme_paper;
+  const defaultPaper = resolvedName === 'Light' ? THEME_LIGHT_DEFAULT_PAPER : THEME_DARK_DEFAULT_PAPER;
+  const customPaper = resolvedPaper && resolvedPaper !== defaultPaper ? resolvedPaper : null;
+  const themeMode = useFdsThemeScope(resolvedName, customPaper);
   useDocumentThemeModifier(themeMode);
 
   return <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>;

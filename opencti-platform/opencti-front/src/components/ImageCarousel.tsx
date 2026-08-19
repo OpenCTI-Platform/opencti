@@ -3,7 +3,7 @@ import Carousel from 'react-material-ui-carousel';
 import makeStyles from '@mui/styles/makeStyles';
 import { ImageListItem, ImageListItemBar, Modal } from '@mui/material';
 import Skeleton from '@mui/material/Skeleton';
-import Paper from '@mui/material/Paper';
+import { Paper } from '@filigran/design-system';
 import IconButton from '@common/button/IconButton';
 import { ZoomOutMapOutlined } from '@mui/icons-material';
 import Box from '@mui/material/Box';
@@ -140,7 +140,8 @@ const ImageCarousel: FunctionComponent<ImageCarouselProps> = ({ data }) => {
             </ImageListItem>
           ))
         ) : (
-          <Paper elevation={1} sx={{ width: '100%', height: '100%' }}>
+          // FDS-WORKAROUND #16: height inline, `h-full` loses to the host's unlayered CSS — see fds-migration/LIBRARY-FEEDBACK.md #16
+          <Paper padding={0} style={{ width: '100%', height: '100%' }}>
             <Skeleton
               variant="rectangular"
               width="100%"
