@@ -701,7 +701,6 @@ interface BasicWorkflowStatus extends BasicStoreEntity {
   template_id: string;
   type: string;
   scope: StatusScope;
-  name?: string;
 }
 
 interface BasicTaskEntity extends BasicStoreEntity {
