@@ -4,8 +4,9 @@ import { fullEntitiesList, storeLoadById, storeLoadByIds } from '../../database/
 import { FilterMode, FilterOperator } from '../../generated/graphql';
 import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../schema/internalObject';
 import { isBasicObject } from '../../schema/stixCoreObject';
-import { isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import type { AuthContext, AuthUser } from '../../types/user';
+import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES } from '../../utils/authorizedMembers';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import { ActionDefinitions } from './registry/workflow-actions';
 import type { WorkflowValidationError } from './types/workflow-types';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from './types/workflow-types';
@@ -279,10 +280,12 @@ export const validateWorkflowDefinitionData = async (
     });
   }
 
-  if (isStixDomainObjectContainer(entityType) && hasUpdateAuthorizedMembersAction) {
+  const isAuthorizedMembersSupportedType = entityType === ENTITY_TYPE_DRAFT_WORKSPACE
+    || AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES.includes(entityType);
+  if (hasUpdateAuthorizedMembersAction && !isAuthorizedMembersSupportedType) {
     errors.push({
-      type: 'AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED_FOR_CONTAINER',
-      message: 'Update authorized members action is not allowed for Container entity types',
+      type: 'AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED_FOR_ENTITY_TYPE',
+      message: 'Update authorized members action is only allowed for entity types that support authorized members (Container, Organization or DraftWorkspace)',
     });
   }
 
