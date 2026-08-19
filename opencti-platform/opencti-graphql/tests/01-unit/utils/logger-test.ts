@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { describe, expect, it } from 'vitest';
-import { appLogLevelMaxArraySize, appLogLevelMaxStringSize, prepareLogMetadata } from '../../../src/config/conf';
+import { appLogLevelMaxArraySize, appLogLevelMaxStringSize, logApp, prepareLogMetadata } from '../../../src/config/conf';
 import { FunctionalError } from '../../../src/config/errors';
 
 // region objects definition
@@ -116,6 +116,15 @@ const WITH_ERROR_OBJECT = {
 // endregion
 
 describe('Logger test suite', () => {
+  it('should expose child logger helpers', () => {
+    const child = logApp.child({ module: 'catalog', source: 'backend' });
+    expect(child).toBeDefined();
+    expect(typeof child.info).toBe('function');
+    expect(typeof child.warn).toBe('function');
+    expect(typeof child.error).toBe('function');
+    expect(typeof child.debug).toBe('function');
+  });
+
   it('Log object is correctly untouched', () => {
     const cleanObject = prepareLogMetadata(CLASSIC_OBJECT);
     const classicCompare = R.dissoc('version', CLASSIC_OBJECT);
