@@ -134,7 +134,7 @@ jobs:
     - name: Insert test datasets
       run: |
         docker exec opencti-e2e-start \
-          node build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy
+          node /home/workspace/opencti-platform/opencti-graphql/build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy
 
     - name: e2e tests
       run: |
