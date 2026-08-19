@@ -353,6 +353,7 @@ export const rawListObjects = async (directory: string, recursive: boolean, cont
 const STORAGE_USED_SIZE_CACHE_INTERVAL_MS = 300_000;
 let storageUsedSizeCacheInBytes = 0;
 let storageUsedSizeCacheDate = 0;
+let storageUsedSizeFailureCacheDate = 0;
 let storageUsedSizeCachePromise: Promise<number> | null = null;
 
 const fetchStorageUsedSize = async (): Promise<number> => {
@@ -373,6 +374,11 @@ export const getStorageUsedSize = async (): Promise<number> => {
   if (storageUsedSizeCacheDate > 0 && now - storageUsedSizeCacheDate < STORAGE_USED_SIZE_CACHE_INTERVAL_MS) {
     return storageUsedSizeCacheInBytes;
   }
+  if (storageUsedSizeCacheDate === 0
+    && storageUsedSizeFailureCacheDate > 0
+    && now - storageUsedSizeFailureCacheDate < STORAGE_USED_SIZE_CACHE_INTERVAL_MS) {
+    throw Error('Storage used size currently unavailable');
+  }
   if (storageUsedSizeCachePromise) {
     return storageUsedSizeCachePromise;
   }
@@ -380,11 +386,17 @@ export const getStorageUsedSize = async (): Promise<number> => {
     .then((sizeInBytes) => {
       storageUsedSizeCacheInBytes = sizeInBytes;
       storageUsedSizeCacheDate = Date.now();
+      storageUsedSizeFailureCacheDate = 0;
       return sizeInBytes;
     })
     .catch((error) => {
-      logApp.warn('[FILE STORAGE] Unable to fetch used size for health endpoint, returning last cached value', { cause: error });
-      return storageUsedSizeCacheInBytes;
+      logApp.warn('[FILE STORAGE] Unable to fetch used size for health endpoint, returning stale cache or propagating failure', { cause: error });
+      if (storageUsedSizeCacheDate > 0) {
+        storageUsedSizeCacheDate = Date.now();
+        return storageUsedSizeCacheInBytes;
+      }
+      storageUsedSizeFailureCacheDate = Date.now();
+      throw error;
     })
     .finally(() => {
       storageUsedSizeCachePromise = null;
