@@ -160,7 +160,7 @@ jobs:
       with:
         name: frontend-test-results${{ matrix.artifact_suffix }}
         path: ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-front/test-results
-        retention-days: 15
+        retention-days: 10
 
 
     - name: Logs opencti-e2e-start

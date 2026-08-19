@@ -165,35 +165,6 @@ jobs:
           paths:
             - opencti_musl
 
-  build_platform_musl_rolling:
-    working_directory: ~/opencti_musl
-    docker:
-      - image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
-    resource_class: medium+
-    steps:
-      - run:
-          command: apk update && apk upgrade && apk --no-cache add git tini gcc g++ make musl-dev python3 python3-dev postfix postfix-pcre build-base libmagic libffi-dev curl
-      - run:
-          command: npm install -g node-gyp
-      - attach_workspace:
-          at: ~/
-      - run:
-          name: Replace pycti requirement of stable version with latest master branch code
-          command: find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti.git@master#subdirectory=client-python|' -i {} \;          
-      - run:
-          working_directory: ~/opencti_musl/opencti-platform/opencti-graphql
-          command: yarn install
-      - run:
-          working_directory: ~/opencti_musl/opencti-platform/opencti-graphql
-          command: yarn build
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - opencti_musl
-
   tag_package:
     working_directory: ~/opencti
     docker:
@@ -215,33 +186,6 @@ jobs:
       - run:
           working_directory: ~/opencti/release
           command: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T opencti-${CIRCLE_TAG}.tar.gz "https://filigran.jfrog.io/artifactory/opencti/opencti-${CIRCLE_TAG}.tar.gz"
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
-
-  package_rolling_musl:
-    working_directory: ~/opencti_musl
-    docker:
-      - image: circleci/node:current
-    resource_class: medium+
-    steps:
-      - attach_workspace:
-          at: ~/
-      - add_ssh_keys
-      - run: sudo apt-get update -qq && sudo apt install curl
-      - run: mkdir release
-      - run: rm -Rf ./opencti-platform/opencti-graphql/.yarn/cache
-      - run: cp -a ./opencti-platform/opencti-graphql release/opencti
-      - run: cp -a ./opencti-platform/.yarnrc.yml release/opencti/
-      - run: cp -a ./opencti-worker/src release/opencti/worker
-      - run: cd release/opencti && git clone https://github.com/OpenCTI-Platform/docker
-      - run: cd release/opencti && git clone https://github.com/OpenCTI-Platform/connectors
-      - run:
-          working_directory: ~/opencti_musl/release
-          command: tar -zcvf "opencti-$(date '+%Y%m%d')_musl.tar.gz" opencti
-      - run:
-          working_directory: ~/opencti_musl/release
-          command: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T opencti-$(date '+%Y%m%d')_musl.tar.gz "https://filigran.jfrog.io/artifactory/opencti/opencti-$(date '+%Y%m%d')_musl.tar.gz"
       - slack/notify:
           event: fail
           template: basic_fail_1
@@ -611,20 +555,6 @@ workflows:
           requires:
             - build_frontend
             - wait_for_connector_release
-      - build_platform_musl_rolling:
-          filters:
-            branches:
-              only:
-                - master
-          requires:
-            - build_frontend
-      - package_rolling_musl:
-          requires:
-            - build_platform_musl_rolling
-          filters:
-            branches:
-              only:
-                - master                
       - tag_package:
           requires:
             - build_platform
