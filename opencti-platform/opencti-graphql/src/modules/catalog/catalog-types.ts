@@ -133,7 +133,9 @@ interface CatalogEntityFields {
   catalog_id: string;
   name: string;
   description: string;
-  version: string;
+  product_version: string;
+  manifest_version: string | null;
+  manifest_schema_version: '0' | '1';
 }
 
 export interface BasicStoreEntityCatalog extends BasicStoreEntity, CatalogEntityFields {}
