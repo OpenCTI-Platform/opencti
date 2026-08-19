@@ -34,7 +34,7 @@ const CATALOG_MANAGER_DEFINITION: ManagerDefinition = {
   enabledToStart(): boolean {
     return this.enabledByConfig && !!CATALOG_MANAGER_LOCK_KEY;
   },
-  enterpriseEditionOnly: true,
+  enterpriseEditionOnly: false,
   cronSchedulerHandler: {
     handler: catalogManagerHandler,
     interval: CATALOG_MANAGER_INTERVAL,
