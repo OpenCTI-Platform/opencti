@@ -204,7 +204,7 @@ export const isFilterGroupFormatCorrect = (value: unknown): boolean => {
 
 export const isUniqFilter = (key: string, filterKeysSchema: Map<string, Map<string, FilterDefinition>>) => {
   const filterDefinition = filterKeysSchema.get('Stix-Core-Object')?.get(key);
-  return !!(filterDefinition && ['boolean', 'date', 'integer', 'float', 'version'].includes(filterDefinition.type));
+  return !!(filterDefinition && ['boolean', 'date', 'integer', 'float'].includes(filterDefinition.type));
 };
 
 // basic text filters are filters of type string or text that are not entity types filters
@@ -220,7 +220,7 @@ export const isBasicTextFilter = (
 export const isNumericFilter = (
   filterType?: string,
 ) => {
-  return filterType === 'integer' || filterType === 'float' || filterType === 'version';
+  return filterType === 'integer' || filterType === 'float';
 };
 
 /**
