@@ -29,7 +29,7 @@ const {
   mockUpsertCatalog: vi.fn(),
   mockDeleteCatalogs: vi.fn(),
   mockListCatalogContractLogos: vi.fn(),
-  mockConfGet: vi.fn((key: string) => {
+  mockConfGet: vi.fn((key: string): any => {
     if (key === 'redis:ca') return [];
     if (key === 'redis:use_ssl') return false;
     return undefined;
