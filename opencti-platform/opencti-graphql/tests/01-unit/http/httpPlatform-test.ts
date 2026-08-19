@@ -154,8 +154,8 @@ describe('httpPlatform: /health details behavior', () => {
     const app: any = {
       set: vi.fn(),
       use: vi.fn(),
-      get: vi.fn((path: string, handler: any) => {
-        if (typeof handler === 'function') {
+      get: vi.fn((path: unknown, handler: any) => {
+        if (typeof path === 'string' && typeof handler === 'function') {
           routes.set(path, handler);
         }
       }),
