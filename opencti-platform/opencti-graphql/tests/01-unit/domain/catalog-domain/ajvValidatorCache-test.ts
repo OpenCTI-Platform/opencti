@@ -1,12 +1,9 @@
-import { fileURLToPath } from 'node:url';
 import Ajv from 'ajv';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CatalogContract } from '../../../../src/modules/catalog/catalog-types';
 import type { ConnectorContractConfiguration } from '../../../../src/generated/graphql';
 
 const compileSpy = vi.spyOn(Ajv.prototype, 'compile');
-
-const TEST_CATALOG_URL = new URL('../../../utils/opencti-manifest.json', import.meta.url);
 
 let catalogDomain: typeof import('../../../../src/modules/catalog/catalog-domain');
 
@@ -33,17 +30,9 @@ const buildContract = (overrides: Partial<CatalogContract> = {}): CatalogContrac
 const buildConfig = (entries: Record<string, string>): ConnectorContractConfiguration[] => Object.entries(entries).map(([key, value]) => ({ key, value }));
 
 describe('catalog-domain - AJV validator compilation cache', () => {
-  beforeAll(async () => {
-    process.env.APP__CUSTOM_CATALOGS = JSON.stringify([fileURLToPath(TEST_CATALOG_URL)]);
+  beforeEach(async () => {
     vi.resetModules();
     catalogDomain = await import('../../../../src/modules/catalog/catalog-domain');
-  });
-
-  afterAll(() => {
-    delete process.env.APP__CUSTOM_CATALOGS;
-  });
-
-  beforeEach(() => {
     compileSpy.mockClear();
   });
 

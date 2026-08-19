@@ -68,9 +68,9 @@ describe('Active connectors by catalog identity', () => {
   const managed = (image: string, type = 'EXTERNAL_IMPORT'): ConnectorIdentitySource => ({
     catalog_id: 'catalog-1',
     manager_contract_image: image,
-    manager_contract: {
-      slug: CONTRACTS.get(image)!.slug,
-    } as CatalogContractEntityFields,
+    manager_contract: CONTRACTS.has(image) ? {
+      slug: CONTRACTS.get(image)?.slug,
+    } as CatalogContractEntityFields : undefined,
     name: 'User Renamed Me',
     connector_type: type,
   });
