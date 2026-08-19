@@ -11,7 +11,7 @@ import withTheme from '@mui/styles/withTheme';
 import { DescriptionOutlined, DeviceHubOutlined } from '@mui/icons-material';
 import { HexagonMultipleOutline } from 'mdi-material-ui';
 import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
+import { Paper } from '@filigran/design-system';
 import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo, now, yearsAgo } from '../../../../utils/Time';
@@ -27,11 +27,6 @@ const styles = (theme) => ({
     marginBottom: 20,
     borderRadius: 4,
     position: 'relative',
-  },
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '20px 20px 0 20px',
-    borderRadius: 4,
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -270,10 +265,11 @@ const StixDomainObjectAuthorKnowledge = ({ t, fsd, n, classes, stixDomainObjectI
           <Typography variant="h4" gutterBottom={true}>
             {t('Created entities')}
           </Typography>
+          {/* padding 20/20/0/20 -> a uniform 16, arbitrated from a board: 16 and
+              not 24, to keep the three asymmetric sites consistent */}
           <Paper
-            classes={{ root: classes.paper }}
-            variant="outlined"
-            style={{ height: 300 }}
+            padding={16}
+            style={{ marginTop: 8, height: 300 }}
           >
             <QueryRenderer
               query={

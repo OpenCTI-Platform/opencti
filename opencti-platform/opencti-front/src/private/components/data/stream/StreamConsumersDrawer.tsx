@@ -5,7 +5,7 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import { ExpandMore, InfoOutlined } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
+import { Paper } from '@filigran/design-system';
 import Chip from '@mui/material/Chip';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
@@ -113,17 +113,11 @@ interface MetricBlockProps {
 
 const MetricBlock: FunctionComponent<MetricBlockProps> = ({ label, value, theme, tooltip }) => {
   return (
+    // FDS-WORKAROUND #16: `h-full` loses to the product's unlayered `.paper-for-grid`; height stays inline — see fds-migration/LIBRARY-FEEDBACK.md #16
     <Paper
-      variant="outlined"
-      className="paper-for-grid"
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: theme.spacing(2),
-        height: '100%',
-      }}
+      padding={16}
+      className="paper-for-grid flex flex-col items-center justify-center"
+      style={{ height: '100%' }}
     >
       <Typography
         variant="caption"
