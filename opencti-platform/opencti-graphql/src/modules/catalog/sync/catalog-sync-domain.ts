@@ -32,7 +32,7 @@ import {
   upsertCatalog,
 } from '../catalog-repository';
 import type { CatalogContractSyncSource, CatalogSyncSource, CatalogSyncSourceConfig } from './catalog-sync-types';
-import { fetchSourceCatalog, fetchSourceCatalogRevisionHint } from './catalog-sync-source-gateway';
+import { type CatalogSyncSourceGatewayOptions, fetchSourceCatalog, fetchSourceCatalogRevisionHint } from './catalog-sync-source-gateway';
 
 const DECOUPLING_VERSIONS_FEATURE_FLAG = 'DECOUPLING_VERSIONS';
 
@@ -227,7 +227,12 @@ const computeCatalogSyncOps = (params: {
   };
 };
 
-const synchronizeCatalog = async (context: AuthContext, user: AuthUser, sourceConfig: CatalogSyncSourceConfig) => {
+const synchronizeCatalog = async (
+  context: AuthContext,
+  user: AuthUser,
+  sourceConfig: CatalogSyncSourceConfig,
+  options?: CatalogSyncSourceGatewayOptions,
+) => {
   try {
     logApp.debug('[OPENCTI-MODULE] Synchronizing catalog', {
       sourceKind: sourceConfig.kind,
@@ -237,7 +242,7 @@ const synchronizeCatalog = async (context: AuthContext, user: AuthUser, sourceCo
       ? await findCatalogBySourceUri(context, user, sourceConfig.uri)
       : undefined;
     const remoteRevisionHint = sourceConfig.kind === 'remote'
-      ? await fetchSourceCatalogRevisionHint(sourceConfig)
+      ? await fetchSourceCatalogRevisionHint(sourceConfig, options)
       : undefined;
     if (sourceConfig.kind === 'remote' && currentCatalogBySourceUri?.revision) {
       if (remoteRevisionHint && remoteRevisionHint === currentCatalogBySourceUri.revision) {
@@ -254,7 +259,7 @@ const synchronizeCatalog = async (context: AuthContext, user: AuthUser, sourceCo
       }
     }
     // Fetch source catalog
-    const sourceCatalog = await fetchSourceCatalog(sourceConfig);
+    const sourceCatalog = await fetchSourceCatalog(sourceConfig, options);
     // Find existing persisted data in the database corresponding to the catalog id
     const currentCatalog = await findCatalogByCatalogId(context, user, sourceCatalog.id);
     const currentRevision = currentCatalog?.revision;
@@ -315,12 +320,7 @@ const synchronizeCatalog = async (context: AuthContext, user: AuthUser, sourceCo
     });
     // Persist refreshed catalog, contracts & logos
     // Something's fishy if this occurs too frequently.
-<<<<<<< HEAD
     logApp.warn('[OPENCTI-MODULE] Persisting catalog & contracts', {
-=======
-    logCatalog.debug('[OPENCTI-MODULE] Persisting catalog & contracts', {
-      executionContext: context.source,
->>>>>>> bf47229a2b (refactor(catalog): tune manager gating and sync log levels (#0))
       catalogId: sourceCatalog.id,
       contractsCreationsCount: catalogSyncDiff.contractsCreations.length,
       contractsUpdatesCount: catalogSyncDiff.contractsUpdates.length,
@@ -432,15 +432,15 @@ const cleanupObsoleteCatalogs = async (context: AuthContext, syncedCatalogs: str
   }
 };
 
-export const synchronizeCatalogs = async (context: AuthContext, user: AuthUser) => {
+export const synchronizeCatalogs = async (
+  context: AuthContext,
+  user: AuthUser,
+  options?: CatalogSyncSourceGatewayOptions,
+) => {
   const sources = initSyncSources();
   const filigranCatalogRemoteUri = getFiligranCatalogRemoteUri();
-<<<<<<< HEAD
   logApp.debug('[OPENCTI-MODULE] Synchronizing catalogs', {
     module: 'catalog',
-=======
-  logCatalog.info('[OPENCTI-MODULE] Synchronizing catalogs', {
->>>>>>> bf47229a2b (refactor(catalog): tune manager gating and sync log levels (#0))
     executionContext: context.source,
     count: sources.length,
     filigranCatalogRemoteUri,
@@ -449,7 +449,7 @@ export const synchronizeCatalogs = async (context: AuthContext, user: AuthUser) 
   const syncedCatalogsWithChanges: string[] = [];
   // Sync catalogs from sources
   for (const source of sources) {
-    let result = await synchronizeCatalog(context, user, source);
+    let result = await synchronizeCatalog(context, user, source, options);
     if (source.kind === 'remote' && result.error && filigranCatalogRemoteUri && source.uri === filigranCatalogRemoteUri) {
       const alreadyPersistedRemoteCatalog = await findCatalogBySourceUri(context, user, source.uri);
       if (!alreadyPersistedRemoteCatalog) {
@@ -458,7 +458,7 @@ export const synchronizeCatalogs = async (context: AuthContext, user: AuthUser) 
           sourceUri: source.uri,
           module: 'catalog',
         });
-        result = await synchronizeCatalog(context, user, EMBEDDED_CATALOG_SYNC_SOURCE);
+        result = await synchronizeCatalog(context, user, EMBEDDED_CATALOG_SYNC_SOURCE, options);
       }
     }
     if (!result.error) {
