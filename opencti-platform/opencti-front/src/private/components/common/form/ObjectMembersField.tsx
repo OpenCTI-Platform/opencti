@@ -151,6 +151,7 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
         style={style}
         noOptionsText={t_i18n('No available options')}
         options={members}
+        filterOptions={(options) => options}
         groupBy={(option: OptionMember) => option.type}
         onInputChange={(search: string, meta: ComboboxChangeMeta) => {
           if (meta.cause === 'type') searchMembers(search);
