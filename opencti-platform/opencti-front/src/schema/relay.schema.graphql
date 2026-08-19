@@ -5580,9 +5580,9 @@ enum ThreatActorsOrdering {
   updated_at
   x_opencti_workflow_id
   confidence
-  x_opencti_score
   sophistication
   resource_level
+  x_opencti_score
   _score
   threat_actor_types
   objectMarking
@@ -5691,7 +5691,6 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
-  x_opencti_score: Int
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5740,6 +5739,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   goals: [String]
   sophistication: String
   resource_level: String
+  x_opencti_score: Int
   primary_motivation: String
   secondary_motivations: [String]
   personal_motivations: [String]
