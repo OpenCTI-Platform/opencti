@@ -1360,6 +1360,14 @@ describe('Connector Composer and Managed Connectors', () => {
       });
       expect(definition.config_schema).toBeDefined();
       expect(definition.config_schema.properties).toBeDefined();
+      const runtimeKeys = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
+      runtimeKeys.forEach((runtimeKey) => {
+        expect(definition.config_schema.properties[runtimeKey]).toBeUndefined();
+      });
+      expect(Array.isArray(definition.config_schema.required)).toBeTruthy();
+      runtimeKeys.forEach((runtimeKey) => {
+        expect(definition.config_schema.required).not.toContain(runtimeKey);
+      });
 
       const excerpt = connectorData.manager_contract_excerpt;
       expect(excerpt).toBeDefined();
@@ -1477,6 +1485,12 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(result.data).toBeDefined();
       expect(result.data?.managedConnectorEdit.name).toEqual('Updated IpInfo Connector');
       expect(result.data?.managedConnectorEdit.manager_contract_configuration).toBeDefined();
+      const runtimeKeys = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
+      runtimeKeys.forEach((runtimeKey) => {
+        const found = result.data?.managedConnectorEdit.manager_contract_configuration
+          .find((c: any) => c.key === runtimeKey);
+        expect(found).toBeUndefined();
+      });
       const autoConfig = result.data?.managedConnectorEdit.manager_contract_configuration
         .find((c: any) => c.key === 'CONNECTOR_AUTO');
       expect(autoConfig.value).toEqual('false');
