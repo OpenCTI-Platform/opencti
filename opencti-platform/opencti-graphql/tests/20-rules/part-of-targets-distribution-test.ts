@@ -5,7 +5,7 @@ import { IdentityType } from '../../src/generated/graphql';
 import { addOrganization } from '../../src/modules/organization/organization-domain';
 import { stixCoreRelationshipsDistribution } from '../../src/domain/stixCoreRelationship';
 import { createRelation, deleteElementById } from '../../src/database/middleware';
-import { SYSTEM_USER } from '../../src/utils/access';
+import { executionContext, SYSTEM_USER } from '../../src/utils/access';
 import { RELATION_PART_OF, RELATION_TARGETS } from '../../src/schema/stixCoreRelationship';
 import { ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_INTRUSION_SET } from '../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../src/modules/organization/organization-types';
@@ -59,7 +59,8 @@ describe('Stix core relationships distribution - inferred relation explanations 
   }, 120000);
 
   it('should count the inferred relation once, not once per explanation', async () => {
-    const distribution = await stixCoreRelationshipsDistribution(testContext, SYSTEM_USER, {
+    const distributionContext = executionContext('testing', SYSTEM_USER);
+    const distribution = await stixCoreRelationshipsDistribution(distributionContext, SYSTEM_USER, {
       field: 'internal_id',
       operation: 'count',
       fromId: [intrusionSetId],
