@@ -28,7 +28,7 @@ import CardPage from '../model/card.pageModel';
  * Delete incident response.
  * Check deletion.
  */
-test('Incident Response Creation', { tag: ['@ce'] }, async ({ page }) => {
+test('Incident Response Creation', { tag: ['@ce', '@group1'] }, async ({ page }) => {
   await fakeDate(page, 'April 1 2024 12:00:00');
   const cardPage = new CardPage(page);
   const leftNavigation = new LeftBarPage(page);
