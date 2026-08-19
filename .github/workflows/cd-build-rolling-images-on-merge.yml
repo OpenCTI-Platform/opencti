@@ -58,11 +58,10 @@ jobs:
       - name: Build front production and prune devDependencies
         run: |
           docker run --rm \
-            -v ${{ github.workspace }}/opencti-platform/opencti-front:/opt/opencti/opencti-front \
-            -v ${{ github.workspace }}/opencti-platform/opencti-graphql:/opt/opencti/opencti-graphql \
+            -v ${{ github.workspace }}/opencti-platform:/opt/opencti \
             -w /opt/opencti/opencti-front \
             filigran/builder:${{ github.sha }} \
-            sh -c "mkdir -p /opt/opencti/opencti-graphql/public && yarn install --immutable && yarn build && yarn workspaces focus --production"
+            sh -c "mkdir -p ../opencti-graphql/public && yarn install --immutable && yarn build && yarn workspaces focus --production"
 
       - name: Install Syft
         uses: anchore/sbom-action/download-syft@e22c389904149dbc22b58101806040fa8d37a610 #v0.24.0
