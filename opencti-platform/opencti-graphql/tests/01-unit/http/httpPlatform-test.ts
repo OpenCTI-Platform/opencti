@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { decodeStoragePath, sanitizeReferer } from '../../../src/http/httpPlatform';
+import nconf from 'nconf';
+import createApp, { decodeStoragePath, sanitizeReferer, shouldIncludeHealthDetails } from '../../../src/http/httpPlatform';
+import * as engineModule from '../../../src/database/engine';
+import * as storageModule from '../../../src/database/raw-file-storage';
+import * as rabbitMQModule from '../../../src/database/rabbitmq';
+import * as redisModule from '../../../src/database/redis';
 import { getBaseUrl, logApp } from '../../../src/config/conf';
 
 vi.mock('../../../src/config/conf', async (importOriginal) => {
@@ -112,5 +117,109 @@ describe('httpPlatform: sanitizeReferer function', () => {
       expect(result).toBe(`${baseUrl}/22.0.0.1/path/one`);
       expect(logApp.info).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe('httpPlatform: shouldIncludeHealthDetails function', () => {
+  it('should include details when access key is private and query parameter is true', () => {
+    expect(shouldIncludeHealthDetails('secret', 'true')).toBe(true);
+  });
+
+  it('should include details when query parameter is case-insensitive true', () => {
+    expect(shouldIncludeHealthDetails('secret', 'TRUE')).toBe(true);
+  });
+
+  it('should not include details when endpoint is public', () => {
+    expect(shouldIncludeHealthDetails('public', 'true')).toBe(false);
+  });
+
+  it('should not include details for any non-true query value', () => {
+    expect(shouldIncludeHealthDetails('secret', '1')).toBe(false);
+    expect(shouldIncludeHealthDetails('secret', 'false')).toBe(false);
+    expect(shouldIncludeHealthDetails('secret', undefined)).toBe(false);
+  });
+});
+
+describe('httpPlatform: /health details behavior', () => {
+  const buildResponse = () => {
+    const res: any = {};
+    res.set = vi.fn().mockReturnValue(res);
+    res.status = vi.fn().mockReturnValue(res);
+    res.send = vi.fn().mockReturnValue(res);
+    return res;
+  };
+
+  const setupHealthHandler = async () => {
+    const routes = new Map<string, (req: any, res: any) => Promise<void>>();
+    const app: any = {
+      set: vi.fn(),
+      use: vi.fn(),
+      get: vi.fn((path: string, handler: any) => {
+        if (typeof handler === 'function') {
+          routes.set(path, handler);
+        }
+      }),
+      post: vi.fn(),
+      delete: vi.fn(),
+      put: vi.fn(),
+      patch: vi.fn(),
+      all: vi.fn(),
+    };
+    await createApp(app, {} as any);
+    const healthRoute = Array.from(routes.entries()).find(([path]) => path.endsWith('/health'));
+    return healthRoute?.[1];
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.spyOn(nconf, 'get').mockImplementation((key: string) => {
+      if (key === 'app:health_access_key') {
+        return 'secret';
+      }
+      return undefined;
+    });
+    vi.spyOn(engineModule, 'isEngineAlive').mockResolvedValue(undefined as any);
+    vi.spyOn(storageModule, 'isStorageAlive').mockResolvedValue(undefined as any);
+    vi.spyOn(rabbitMQModule, 'rabbitMQIsAlive').mockResolvedValue(undefined as any);
+    vi.spyOn(redisModule, 'redisIsAlive').mockResolvedValue(undefined as any);
+    vi.spyOn(rabbitMQModule, 'getIngestionUnits').mockResolvedValue(5 as any);
+  });
+
+  it('should return null detailed metrics on per-metric failures when details=true', async () => {
+    vi.spyOn(engineModule, 'getEngineUsedSize').mockRejectedValue(new Error('es unavailable'));
+    vi.spyOn(storageModule, 'getStorageUsedSize').mockRejectedValue(new Error('storage unavailable'));
+    vi.spyOn(rabbitMQModule, 'getIngestionUnits').mockRejectedValue(new Error('rmq unavailable'));
+    const healthHandler = await setupHealthHandler();
+    const res = buildResponse();
+
+    await healthHandler?.({ query: { health_access_key: 'secret', details: 'true' } }, res);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith({
+      status: 'success',
+      es_used_size: null,
+      s3_used_size: null,
+      ingestion_units: null,
+    });
+  });
+
+  it('should ignore details=true when health access is public', async () => {
+    vi.spyOn(nconf, 'get').mockImplementation((key: string) => {
+      if (key === 'app:health_access_key') {
+        return 'public';
+      }
+      return undefined;
+    });
+    const getEngineUsedSizeSpy = vi.spyOn(engineModule, 'getEngineUsedSize').mockResolvedValue(10);
+    const getStorageUsedSizeSpy = vi.spyOn(storageModule, 'getStorageUsedSize').mockResolvedValue(20);
+    const healthHandler = await setupHealthHandler();
+    const res = buildResponse();
+
+    await healthHandler?.({ query: { details: 'true' } }, res);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith({ status: 'success' });
+    expect(getEngineUsedSizeSpy).not.toHaveBeenCalled();
+    expect(getStorageUsedSizeSpy).not.toHaveBeenCalled();
   });
 });
