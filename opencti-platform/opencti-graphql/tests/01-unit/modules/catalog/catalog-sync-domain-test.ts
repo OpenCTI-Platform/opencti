@@ -132,7 +132,7 @@ describe('catalog-sync-domain', () => {
     mockFetchSourceCatalog.mockResolvedValue(buildSourceCatalog('embedded-catalog'));
     const result = await synchronizeCatalogs({ source: 'test' } as any, { id: 'user-1' } as any);
     expect(result).toEqual(['embedded-catalog']);
-    expect(mockFetchSourceCatalog).toHaveBeenCalledWith({ kind: 'embedded', uri: 'embedded' }, { source: 'test' });
+    expect(mockFetchSourceCatalog).toHaveBeenCalledWith({ kind: 'embedded', uri: 'embedded' }, undefined);
     expect(mockFindCatalogs).toHaveBeenCalled();
   });
 
@@ -168,7 +168,7 @@ describe('catalog-sync-domain', () => {
     mockFetchSourceCatalog.mockResolvedValue(buildSourceCatalog('embedded-catalog'));
     await synchronizeCatalogs({ source: 'test' } as any, { id: 'user-1' } as any);
     expect(mockFetchSourceCatalog).toHaveBeenCalledTimes(1);
-    expect(mockFetchSourceCatalog).toHaveBeenCalledWith({ kind: 'embedded', uri: 'embedded' }, { source: 'test' });
+    expect(mockFetchSourceCatalog).toHaveBeenCalledWith({ kind: 'embedded', uri: 'embedded' }, undefined);
   });
 
   it('should use custom catalog manager endpoint instead of xtm hub source when decoupling feature is enabled', async () => {
@@ -184,7 +184,7 @@ describe('catalog-sync-domain', () => {
     mockFetchSourceCatalog.mockResolvedValue(buildSourceCatalog('custom-catalog'));
     await synchronizeCatalogs({ source: 'test' } as any, { id: 'user-1' } as any);
     expect(mockFetchSourceCatalog).toHaveBeenCalledTimes(1);
-    expect(mockFetchSourceCatalog).toHaveBeenCalledWith({ kind: 'remote', uri: 'https://catalog.example.org/custom.json' }, { source: 'test' });
+    expect(mockFetchSourceCatalog).toHaveBeenCalledWith({ kind: 'remote', uri: 'https://catalog.example.org/custom.json' }, undefined);
   });
 
   it('should fallback to embedded when remote decoupling source fails before first persistence', async () => {

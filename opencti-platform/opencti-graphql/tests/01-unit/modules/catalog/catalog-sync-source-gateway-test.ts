@@ -15,6 +15,12 @@ vi.mock('../../../../src/config/conf', () => ({
   default: {
     get: vi.fn(() => undefined),
   },
+  logApp: {
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  },
   TEST_MODE: true,
   ENABLED_METRICS: false,
   booleanConf: vi.fn(() => false),

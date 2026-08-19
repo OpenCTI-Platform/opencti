@@ -10,13 +10,24 @@ const CATALOG_MANAGER_CONTEXT = 'catalog_manager';
 const CATALOG_MANAGER_ENABLED = booleanConf('catalog_manager:enabled', true);
 const CATALOG_MANAGER_LOCK_KEY = conf.get('catalog_manager:lock_key') ?? 'catalog_manager_lock';
 const CATALOG_MANAGER_INTERVAL = conf.get('catalog_manager:interval') ?? 60_000;
+const DEFAULT_CATALOG_SYNC_REMOTE_TIMEOUT_MS = 30_000;
+
+const resolveCatalogSyncRemoteTimeoutMs = () => {
+  const configuredTimeout = Number(conf.get('catalog_manager:catalog_sync_remote_timeout') ?? conf.get('app:request_timeout'));
+  if (!Number.isFinite(configuredTimeout) || configuredTimeout <= 0) {
+    return DEFAULT_CATALOG_SYNC_REMOTE_TIMEOUT_MS;
+  }
+  return configuredTimeout;
+};
 
 export const isCatalogManagerEnabled = () => CATALOG_MANAGER_ENABLED;
 
 const catalogManagerHandler = async () => {
   const context = executionContext('catalog_manager');
   // Sync catalogs to ES
-  const syncedCatalogsWithChanges = await synchronizeCatalogs(context, SYSTEM_USER);
+  const syncedCatalogsWithChanges = await synchronizeCatalogs(context, SYSTEM_USER, {
+    remoteCatalogTimeoutMs: resolveCatalogSyncRemoteTimeoutMs(),
+  });
   // Apply upgrade strategy.
   // Should be moved another manager maybe (connectorManager).
   // Consider using an event to invert the dependency.
