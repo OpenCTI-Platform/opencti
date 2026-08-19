@@ -1243,6 +1243,113 @@ describe('Transition comments – Domain', () => {
       expect(transitions).toHaveLength(1);
       expect(transitions[0].event).toBe('review');
     });
+
+    it('should default requiresShareOrganizationInput and requiresUnshareOrganizationInput to false when the transition does not define them', async () => {
+      (WorkflowFactory.createDefinition as any).mockImplementation(() => ({
+        getInitialState: () => 'draft',
+        hasState: () => true,
+        getTransitions: () => [
+          { event: 'review', to: 'reviewed', actionTypes: [] },
+        ],
+      }));
+      (loadEntity as any).mockResolvedValue({ id: 'instance-id', internal_id: 'instance-id', currentState: 'draft', history: '[]' });
+
+      const transitions = await getAllowedTransitions(mockContext, mockUser, 'entity-id');
+
+      expect(transitions).toHaveLength(1);
+      expect(transitions[0].requiresShareOrganizationInput).toBe(false);
+      expect(transitions[0].requiresUnshareOrganizationInput).toBe(false);
+    });
+
+    it('should propagate requiresShareOrganizationInput and requiresUnshareOrganizationInput flags from the transition', async () => {
+      (WorkflowFactory.createDefinition as any).mockImplementation(() => ({
+        getInitialState: () => 'draft',
+        hasState: () => true,
+        getTransitions: () => [
+          { event: 'share', to: 'shared', actionTypes: ['shareWithOrganizations'], requiresShareOrganizationInput: true },
+          { event: 'unshare', to: 'unshared', actionTypes: ['unshareFromOrganizations'], requiresUnshareOrganizationInput: true },
+        ],
+      }));
+      (loadEntity as any).mockResolvedValue({ id: 'instance-id', internal_id: 'instance-id', currentState: 'draft', history: '[]' });
+
+      const transitions = await getAllowedTransitions(mockContext, mockUser, 'entity-id');
+
+      expect(transitions).toHaveLength(2);
+      const shareTransition = transitions.find((t) => t.event === 'share');
+      const unshareTransition = transitions.find((t) => t.event === 'unshare');
+      expect(shareTransition?.requiresShareOrganizationInput).toBe(true);
+      expect(shareTransition?.requiresUnshareOrganizationInput).toBe(false);
+      expect(unshareTransition?.requiresShareOrganizationInput).toBe(false);
+      expect(unshareTransition?.requiresUnshareOrganizationInput).toBe(true);
+    });
+
+    it('should use pre-fetched entity, entitySetting, definitionData and instanceEntity from options instead of performing redundant lookups', async () => {
+      (WorkflowFactory.createDefinition as any).mockImplementation(() => ({
+        getInitialState: () => 'draft',
+        hasState: () => true,
+        getTransitions: () => [
+          { event: 'review', to: 'reviewed', actionTypes: [] },
+        ],
+      }));
+
+      const entity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' };
+      const entitySetting = { id: 'setting-id', workflow_id: 'workflow-def-id' };
+      const definitionData = {
+        id: 'workflow-def-id',
+        name: 'Workflow',
+        initialState: 'draft',
+        states: [{ statusId: 'draft' }, { statusId: 'reviewed' }],
+        transitions: [],
+        published: true,
+        hasPublishedVersion: true,
+        errors: [],
+      };
+      const instanceEntity = { id: 'instance-id', internal_id: 'instance-id', currentState: 'draft', history: '[]' };
+
+      const transitions = await getAllowedTransitions(mockContext, mockUser, 'entity-id', {
+        entity, entitySetting, definitionData, instanceEntity,
+      } as any);
+
+      expect(transitions).toHaveLength(1);
+      expect(transitions[0].event).toBe('review');
+      expect(storeLoadById).not.toHaveBeenCalled();
+      expect(findByType).not.toHaveBeenCalled();
+      expect(loadEntity).not.toHaveBeenCalled();
+    });
+
+    it('should still fall back to a fresh lookup for any option not provided', async () => {
+      (WorkflowFactory.createDefinition as any).mockImplementation(() => ({
+        getInitialState: () => 'draft',
+        hasState: () => true,
+        getTransitions: () => [
+          { event: 'review', to: 'reviewed', actionTypes: [] },
+        ],
+      }));
+
+      const entity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' };
+      const entitySetting = { id: 'setting-id', workflow_id: 'workflow-def-id' };
+      const definitionData = {
+        id: 'workflow-def-id',
+        name: 'Workflow',
+        initialState: 'draft',
+        states: [{ statusId: 'draft' }, { statusId: 'reviewed' }],
+        transitions: [],
+        published: true,
+        hasPublishedVersion: true,
+        errors: [],
+      };
+      // instanceEntity is intentionally omitted from options: it must still be looked up via loadEntity
+      (loadEntity as any).mockResolvedValue({ id: 'instance-id', internal_id: 'instance-id', currentState: 'draft', history: '[]' });
+
+      const transitions = await getAllowedTransitions(mockContext, mockUser, 'entity-id', {
+        entity, entitySetting, definitionData,
+      } as any);
+
+      expect(transitions).toHaveLength(1);
+      expect(storeLoadById).not.toHaveBeenCalled();
+      expect(findByType).not.toHaveBeenCalled();
+      expect(loadEntity).toHaveBeenCalled();
+    });
   });
 
   describe('triggerWorkflowEvent – comment handling', () => {
