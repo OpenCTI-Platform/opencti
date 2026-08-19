@@ -54,7 +54,7 @@ const validateNotifier = (notifier: { notifier_connector_id: string; notifier_co
   }
 };
 
-export const addNotifier = async (context: AuthContext, user: AuthUser, notifier: NotifierAddInput): Promise<BasicStoreEntityNotifier> => {
+export const addNotifier = async (context: AuthContext, user: AuthUser, notifier: NotifierAddInput & { internal_id?: string }): Promise<BasicStoreEntityNotifier> => {
   validateNotifier(notifier);
   const notifierToCreate = { ...notifier, created: now(), updated: now(), authorized_authorities: ['SETTINGS_SETCUSTOMIZATION'] };
   const created = await createEntity(context, user, notifierToCreate, ENTITY_TYPE_NOTIFIER);
@@ -142,7 +142,8 @@ export const getNotifierConnector = (context: AuthContext, user: AuthUser, conne
 };
 
 export const initDefaultNotifiers = (context: AuthContext) => {
-  return Promise.all([DEFAULT_TEAM_MESSAGE, DEFAULT_TEAM_DIGEST_MESSAGE].map((notifier) => addNotifier(context, SYSTEM_USER, notifier)));
+  const notifiers: (NotifierAddInput & { internal_id: string })[] = [DEFAULT_TEAM_MESSAGE, DEFAULT_TEAM_DIGEST_MESSAGE];
+  return Promise.all(notifiers.map((notifier) => addNotifier(context, SYSTEM_USER, notifier)));
 };
 
 export const testNotifier = async (context: AuthContext, user: AuthUser, notifier: NotifierTestInput) => {
