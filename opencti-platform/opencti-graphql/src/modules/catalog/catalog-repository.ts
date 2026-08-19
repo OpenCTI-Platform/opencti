@@ -47,11 +47,11 @@ export const upsertCatalog = async (_context: AuthContext, _user: AuthUser, upda
 
 export const findCatalogs = async (context: AuthContext, user: AuthUser, excludedIds?: string[]) => {
   const filters = excludedIds?.length ? {
-    filters: [{
+    filters: excludedIds.map((catalogId) => ({
       key: ['catalog_id'],
-      values: excludedIds,
+      values: [catalogId],
       operator: FilterOperator.NotEq,
-    }],
+    })),
     filterGroups: [],
     mode: FilterMode.And,
   } : null;

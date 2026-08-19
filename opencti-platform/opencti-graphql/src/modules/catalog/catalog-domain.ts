@@ -20,14 +20,33 @@ import { logApp } from '../../config/conf';
 const validatorCache = new Map<string, ValidateFunction>();
 const EXCLUDED_CONFIG_VARS = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
 
-const getContractConfigSchemaWithoutExcludedRuntimeVars = (configSchema: CatalogContract['config_schema']) => {
+const normalizeContractConfigSchema = (
+  configSchema: CatalogContract['config_schema'] | null | undefined,
+): CatalogContract['config_schema'] => {
+  const schema = (configSchema && typeof configSchema === 'object') ? configSchema : {} as CatalogContract['config_schema'];
+  const properties = (schema.properties && typeof schema.properties === 'object' && !Array.isArray(schema.properties))
+    ? schema.properties
+    : {};
+  const required = Array.isArray(schema.required) ? schema.required.filter((property) => typeof property === 'string') : [];
+  return {
+    $schema: typeof schema.$schema === 'string' ? schema.$schema : 'https://json-schema.org/draft/2020-12/schema',
+    $id: typeof schema.$id === 'string' ? schema.$id : '',
+    type: typeof schema.type === 'string' ? schema.type : 'object',
+    properties,
+    required,
+    additionalProperties: typeof schema.additionalProperties === 'boolean' ? schema.additionalProperties : true,
+  };
+};
+
+const getContractConfigSchemaWithoutExcludedRuntimeVars = (configSchema: CatalogContract['config_schema'] | null | undefined) => {
+  const normalizedConfigSchema = normalizeContractConfigSchema(configSchema);
   const filteredProperties = Object.fromEntries(
-    Object.entries(configSchema.properties).filter(([property]) => !EXCLUDED_CONFIG_VARS.includes(property)),
+    Object.entries(normalizedConfigSchema.properties).filter(([property]) => !EXCLUDED_CONFIG_VARS.includes(property)),
   );
   return {
-    ...configSchema,
+    ...normalizedConfigSchema,
     properties: filteredProperties,
-    required: configSchema.required.filter((property) => !EXCLUDED_CONFIG_VARS.includes(property)),
+    required: normalizedConfigSchema.required.filter((property) => !EXCLUDED_CONFIG_VARS.includes(property)),
   };
 };
 
@@ -514,9 +533,10 @@ export const mapContractEntityFieldsToGraphqlCatalogContract = (
   options: { excludeRuntimeConfigVars?: boolean } = {},
 ): GraphqlCatalogContract => {
   const { excludeRuntimeConfigVars = false } = options;
+  const normalizedConfigSchema = normalizeContractConfigSchema(contract.config_schema);
   const configSchema = excludeRuntimeConfigVars
-    ? getContractConfigSchemaWithoutExcludedRuntimeVars(contract.config_schema)
-    : contract.config_schema;
+    ? getContractConfigSchemaWithoutExcludedRuntimeVars(normalizedConfigSchema)
+    : normalizedConfigSchema;
   return {
     title: contract.title,
     slug: contract.slug,

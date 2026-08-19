@@ -171,14 +171,14 @@ export const computeManagerConnectorImage = async (cn) => {
     return '';
   }
   const managerContract = cn.manager_contract;
-  if (!managerContract.image || !managerContract.version) {
+  if (!managerContract.image || !managerContract.contract_version) {
     throw FunctionalError('Invalid manager contract snapshot', {
       connectorId: cn.id ?? cn.internal_id,
       image: managerContract.image,
-      version: managerContract.version,
+      version: managerContract.contract_version,
     });
   }
-  return `${managerContract.image}:${managerContract.version}`;
+  return `${managerContract.image}:${managerContract.contract_version}`;
 };
 
 export const computeManagerContractHash = async (context, user, cn) => {
