@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import conf, { logApp } from '../../../config/conf';
+import { logApp } from '../../../config/conf';
 import { isEmptyField } from '../../../database/utils';
 import { UnsupportedError } from '../../../config/errors';
 import { getOrCompileValidator } from '../catalog-domain';
@@ -59,8 +59,12 @@ interface CatalogSyncSourceAdapter {
 }
 
 const DEFAULT_REMOTE_CATALOG_TIMEOUT_MS = 30000;
-const resolveRemoteCatalogTimeoutMs = () => {
-  const configuredTimeout = Number(conf.get('app:catalog_sync_remote_timeout') ?? conf.get('app:request_timeout'));
+export type CatalogSyncSourceGatewayOptions = {
+  remoteCatalogTimeoutMs?: number;
+};
+
+const resolveRemoteCatalogTimeoutMs = (options?: CatalogSyncSourceGatewayOptions) => {
+  const configuredTimeout = Number(options?.remoteCatalogTimeoutMs);
   if (!Number.isFinite(configuredTimeout) || configuredTimeout <= 0) {
     return DEFAULT_REMOTE_CATALOG_TIMEOUT_MS;
   }
@@ -96,17 +100,20 @@ class LocalCatalogSyncSource implements CatalogSyncSourceAdapter {
 }
 
 class RemoteCatalogSyncSource implements CatalogSyncSourceAdapter {
-  constructor(private sourceConfig: Extract<CatalogSyncSourceConfig, { kind: 'remote' }>) {}
+  constructor(
+    private sourceConfig: Extract<CatalogSyncSourceConfig, { kind: 'remote' }>,
+    private options?: CatalogSyncSourceGatewayOptions,
+  ) {}
 
   async fetch() {
-    const timeout = resolveRemoteCatalogTimeoutMs();
+    const timeout = resolveRemoteCatalogTimeoutMs(this.options);
     const client = getHttpClient({ responseType: 'text', timeout });
     const response = await withAbortTimeout(timeout, (signal) => client.get(this.sourceConfig.uri, { signal }));
     return JSON.parse(response.data);
   }
 
   async fetchRevisionHint() {
-    const timeout = resolveRemoteCatalogTimeoutMs();
+    const timeout = resolveRemoteCatalogTimeoutMs(this.options);
     const client = getHttpClient({ responseType: 'text', timeout });
     const response = await withAbortTimeout(timeout, (signal) => client.head(this.sourceConfig.uri, { signal }));
     const etagHeader = response.headers?.etag;
@@ -118,7 +125,10 @@ class RemoteCatalogSyncSource implements CatalogSyncSourceAdapter {
   }
 }
 
-const getCatalogSourceAdapter = (config: CatalogSyncSourceConfig): CatalogSyncSourceAdapter => {
+const getCatalogSourceAdapter = (
+  config: CatalogSyncSourceConfig,
+  options?: CatalogSyncSourceGatewayOptions,
+): CatalogSyncSourceAdapter => {
   switch (config.kind) {
     case 'local': {
       return new LocalCatalogSyncSource(config);
@@ -127,7 +137,7 @@ const getCatalogSourceAdapter = (config: CatalogSyncSourceConfig): CatalogSyncSo
       return new EmbeddedCatalogSyncSource(config);
     }
     case 'remote': {
-      return new RemoteCatalogSyncSource(config);
+      return new RemoteCatalogSyncSource(config, options);
     }
     default:
       throw UnsupportedError(`Unknown catalog sync source kind (${JSON.stringify(config)})`);
@@ -318,8 +328,11 @@ const mapCatalogDtoV0ToCatalogSyncSource = (catalog: CatalogDtoV0): CatalogSyncS
   };
 };
 
-export const fetchSourceCatalog = async (sourceConfig: CatalogSyncSourceConfig): Promise<CatalogSyncSource> => {
-  const adapter = getCatalogSourceAdapter(sourceConfig);
+export const fetchSourceCatalog = async (
+  sourceConfig: CatalogSyncSourceConfig,
+  options?: CatalogSyncSourceGatewayOptions,
+): Promise<CatalogSyncSource> => {
+  const adapter = getCatalogSourceAdapter(sourceConfig, options);
   const raw = await adapter.fetch();
   const syncSource = mapCatalogDtoToCatalogSyncSource(raw);
   validateSyncSource(syncSource);
@@ -336,8 +349,11 @@ export const fetchSourceCatalog = async (sourceConfig: CatalogSyncSourceConfig):
   return syncSource;
 };
 
-export const fetchSourceCatalogRevisionHint = async (sourceConfig: CatalogSyncSourceConfig): Promise<string | undefined> => {
-  const adapter = getCatalogSourceAdapter(sourceConfig);
+export const fetchSourceCatalogRevisionHint = async (
+  sourceConfig: CatalogSyncSourceConfig,
+  options?: CatalogSyncSourceGatewayOptions,
+): Promise<string | undefined> => {
+  const adapter = getCatalogSourceAdapter(sourceConfig, options);
   const revisionHint = await adapter.fetchRevisionHint?.();
   if (sourceConfig.kind === 'remote') {
     if (revisionHint) {
