@@ -1,6 +1,7 @@
 import { getHeapStatistics } from 'node:v8';
 import nconf from 'nconf';
 import ipaddr from 'ipaddr.js';
+import pjson from '../../package.json';
 import { createEntity, fullEntitiesOrRelationsList, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
 import conf, { ACCOUNT_STATUSES, booleanConf, BUS_TOPICS, ENABLED_DEMO_MODE, ENABLED_FEATURE_FLAGS, getBaseUrl, PLATFORM_VERSION, PLAYGROUND_ENABLED } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
@@ -429,3 +430,74 @@ export const getCriticalAlerts = async (context, user) => {
   // no alert
   return [];
 };
+
+// export global config part //
+export const generateSettingsBrandingExportConfiguration = async (context) => {
+  const settings = await getSettings(context);
+  return JSON.stringify({
+    openCTI_version: pjson.version,
+    type: 'settingsBranding',
+    configuration: {
+      platform_title: settings.platform_title,
+      platform_favicon: settings.platform_favicon,
+      platform_whitemark: settings.platform_whitemark,
+      platform_map_tile_server_dark: settings.platform_map_tile_server_dark,
+      platform_map_tile_server_light: settings.platform_map_tile_server_light,
+    },
+  });
+};
+
+export const generateSettingsThemeExportConfiguration = async (context) => {
+  const settings = await getSettings(context); // platform_theme is already resolved to the full Theme object
+  return JSON.stringify({
+    openCTI_version: pjson.version,
+    type: 'settingsTheme',
+    configuration: {
+      name: settings.platform_theme.name,
+      theme_background: settings.platform_theme.theme_background,
+      theme_paper: settings.platform_theme.theme_paper,
+      theme_nav: settings.platform_theme.theme_nav,
+      theme_primary: settings.platform_theme.theme_primary,
+      theme_secondary: settings.platform_theme.theme_secondary,
+      theme_accent: settings.platform_theme.theme_accent,
+      theme_logo: settings.platform_theme.theme_logo,
+      theme_logo_collapsed: settings.platform_theme.theme_logo_collapsed,
+      theme_logo_login: settings.platform_theme.theme_logo_login,
+      theme_text_color: settings.platform_theme.theme_text_color,
+      theme_login_aside_color: settings.platform_theme.theme_login_aside_color,
+      theme_login_aside_gradient_start: settings.platform_theme.theme_login_aside_gradient_start,
+      theme_login_aside_gradient_end: settings.platform_theme.theme_login_aside_gradient_end,
+      theme_login_aside_image: settings.platform_theme.theme_login_aside_image,
+      built_in: settings.platform_theme.built_in,
+    },
+  });
+};
+
+export const generateSettingsLanguageExportConfiguration = async (context) => {
+  const settings = await getSettings(context);
+  return JSON.stringify({
+    openCTI_version: pjson.version,
+    type: 'settingsLanguage',
+    configuration: {
+      platform_language: settings.platform_language,
+      platform_translations: settings.platform_translations,
+    },
+  });
+};
+
+export const generateSettingsMessagesExportConfiguration = async (context) => {
+  const settings = await getSettings(context);
+  return JSON.stringify({
+    openCTI_version: pjson.version,
+    type: 'settingsMessages',
+    configuration: {
+      platform_banner_text: settings.platform_banner_text,
+      platform_banner_level: settings.platform_banner_level,
+      platform_login_message: settings.platform_login_message,
+      platform_consent_message: settings.platform_consent_message,
+      platform_consent_confirm_text: settings.platform_consent_confirm_text,
+      platform_no_access_message: settings.platform_no_access_message,
+    },
+  });
+};
+// endzone //

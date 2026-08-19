@@ -9836,6 +9836,7 @@ type Query {
   customFieldDefinition(id: String!): CustomFieldDefinition
   customFieldDefinitions(first: Int, after: ID, orderBy: CustomFieldDefinitionsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): CustomFieldDefinitionConnection
   customFieldDefinitionsForEntityType(entityType: String!): CustomFieldDefinitionConnection
+  globalConfigurationExport(entityTypes: [String!]!): String!
 }
 
 type Subscription {

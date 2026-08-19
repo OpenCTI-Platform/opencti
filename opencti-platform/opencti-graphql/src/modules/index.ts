@@ -171,4 +171,5 @@ import './retentionRules/retentionRules-graphql';
 import './dataSanity/dataSanity-graphql';
 import './workflow/api/workflow-graphql';
 import './customField/custom-field-graphql';
+import './globalExport/globalExport-graphql';
 // endregion
