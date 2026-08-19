@@ -24731,6 +24731,7 @@ export type Query = {
   fintelTemplate?: Maybe<FintelTemplate>;
   form?: Maybe<Form>;
   forms?: Maybe<FormConnection>;
+  globalConfigurationExport: Scalars['String']['output'];
   globalSearch?: Maybe<StixCoreObjectConnection>;
   group?: Maybe<Group>;
   grouping?: Maybe<Grouping>;
@@ -25918,6 +25919,11 @@ export type QueryFormsArgs = {
   orderBy?: InputMaybe<FormsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryGlobalConfigurationExportArgs = {
+  entityTypes: Array<Scalars['String']['input']>;
 };
 
 
@@ -49850,6 +49856,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   fintelTemplate?: Resolver<Maybe<ResolversTypes['FintelTemplate']>, ParentType, ContextType, RequireFields<QueryFintelTemplateArgs, 'id'>>;
   form?: Resolver<Maybe<ResolversTypes['Form']>, ParentType, ContextType, RequireFields<QueryFormArgs, 'id'>>;
   forms?: Resolver<Maybe<ResolversTypes['FormConnection']>, ParentType, ContextType, Partial<QueryFormsArgs>>;
+  globalConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<QueryGlobalConfigurationExportArgs, 'entityTypes'>>;
   globalSearch?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryGlobalSearchArgs>>;
   group?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<QueryGroupArgs, 'id'>>;
   grouping?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<QueryGroupingArgs, 'id'>>;
