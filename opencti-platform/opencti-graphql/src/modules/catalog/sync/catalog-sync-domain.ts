@@ -266,7 +266,8 @@ const synchronizeCatalog = async (context: AuthContext, user: AuthUser, sourceCo
         module: 'catalog',
       });
     } else {
-      logApp.debug('[OPENCTI-MODULE] New catalog source', {
+      logApp.info('[OPENCTI-MODULE] New catalog source', {
+        executionContext: context.source,
         sourceKind: sourceConfig.kind,
         module: 'catalog',
       });
@@ -314,7 +315,12 @@ const synchronizeCatalog = async (context: AuthContext, user: AuthUser, sourceCo
     });
     // Persist refreshed catalog, contracts & logos
     // Something's fishy if this occurs too frequently.
+<<<<<<< HEAD
     logApp.warn('[OPENCTI-MODULE] Persisting catalog & contracts', {
+=======
+    logCatalog.debug('[OPENCTI-MODULE] Persisting catalog & contracts', {
+      executionContext: context.source,
+>>>>>>> bf47229a2b (refactor(catalog): tune manager gating and sync log levels (#0))
       catalogId: sourceCatalog.id,
       contractsCreationsCount: catalogSyncDiff.contractsCreations.length,
       contractsUpdatesCount: catalogSyncDiff.contractsUpdates.length,
@@ -429,8 +435,12 @@ const cleanupObsoleteCatalogs = async (context: AuthContext, syncedCatalogs: str
 export const synchronizeCatalogs = async (context: AuthContext, user: AuthUser) => {
   const sources = initSyncSources();
   const filigranCatalogRemoteUri = getFiligranCatalogRemoteUri();
+<<<<<<< HEAD
   logApp.debug('[OPENCTI-MODULE] Synchronizing catalogs', {
     module: 'catalog',
+=======
+  logCatalog.info('[OPENCTI-MODULE] Synchronizing catalogs', {
+>>>>>>> bf47229a2b (refactor(catalog): tune manager gating and sync log levels (#0))
     executionContext: context.source,
     count: sources.length,
     filigranCatalogRemoteUri,
