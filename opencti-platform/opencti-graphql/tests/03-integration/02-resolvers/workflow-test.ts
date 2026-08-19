@@ -810,7 +810,7 @@ describe('Workflow Resolver', () => {
       it('should lazily materialize a real WorkflowInstance when the legacy x_opencti_workflow_id is patched', async () => {
         // No instance should exist yet: the workflow was configured after entity creation.
         const beforePatch = await findWorkflowInstance(reportId);
-        expect(beforePatch).toBeNull();
+        expect(beforePatch).toBeUndefined();
 
         await queryAsAdmin({
           query: STIX_DOMAIN_OBJECT_FIELD_PATCH_MUTATION,
@@ -867,7 +867,7 @@ describe('Workflow Resolver', () => {
       });
 
       const after = await findWorkflowInstance(cleanupWorkspaceId);
-      expect(after).toBeNull();
+      expect(after).toBeUndefined();
     });
   });
 });
