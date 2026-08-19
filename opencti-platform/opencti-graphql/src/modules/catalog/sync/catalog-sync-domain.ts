@@ -36,7 +36,7 @@ import { fetchSourceCatalog, fetchSourceCatalogRevisionHint } from './catalog-sy
 
 const DECOUPLING_VERSIONS_FEATURE_FLAG = 'DECOUPLING_VERSIONS';
 
-const getDecouplingRemoteUri = (): string | undefined => {
+const getFiligranCatalogRemoteUri = (): string | undefined => {
   const xtmHubUrl = conf.get('xtm:xtmhub_url');
   if (!isFeatureEnabled(DECOUPLING_VERSIONS_FEATURE_FLAG) || typeof xtmHubUrl !== 'string' || xtmHubUrl.length === 0) {
     return undefined;
@@ -376,15 +376,21 @@ const parseCustomCatalogEndpointUri = (uri: string): CatalogSyncSourceConfig => 
 const initSyncSources = () => {
   // Build catalog sources configs from env vars/app settings
   const sources: CatalogSyncSourceConfig[] = [];
-  const decouplingRemoteUri = getDecouplingRemoteUri();
-  if (decouplingRemoteUri) {
-    sources.push({ kind: 'remote', uri: decouplingRemoteUri });
+  if (isFeatureEnabled(DECOUPLING_VERSIONS_FEATURE_FLAG)) {
+    const customCatalogRefreshEndpointUri = conf.get('catalog_manager:custom_catalog_refresh_endpoint_uri');
+    if (typeof customCatalogRefreshEndpointUri === 'string' && customCatalogRefreshEndpointUri.length > 0) {
+      // Custom decoupling source overrides XTM hub source when configured.
+      sources.push(parseCustomCatalogEndpointUri(customCatalogRefreshEndpointUri));
+    } else {
+      const decouplingRemoteUri = getFiligranCatalogRemoteUri();
+      if (decouplingRemoteUri) {
+        sources.push({ kind: 'remote', uri: decouplingRemoteUri });
+      } else {
+        sources.push(EMBEDDED_CATALOG_SYNC_SOURCE);
+      }
+    }
   } else {
     sources.push(EMBEDDED_CATALOG_SYNC_SOURCE);
-  }
-  const customCatalogRefreshEndpointUri = conf.get('catalog_manager:custom_catalog_refresh_endpoint_uri');
-  if (typeof customCatalogRefreshEndpointUri === 'string' && customCatalogRefreshEndpointUri.length > 0) {
-    sources.push(parseCustomCatalogEndpointUri(customCatalogRefreshEndpointUri));
   }
   // We will consider removing the support for these CUSTOM_CATALOGS
   // as it historically only supported local files and wasn't explicitly
@@ -422,18 +428,19 @@ const cleanupObsoleteCatalogs = async (context: AuthContext, syncedCatalogs: str
 
 export const synchronizeCatalogs = async (context: AuthContext, user: AuthUser) => {
   const sources = initSyncSources();
-  const decouplingRemoteUri = getDecouplingRemoteUri();
+  const filigranCatalogRemoteUri = getFiligranCatalogRemoteUri();
   logApp.debug('[OPENCTI-MODULE] Synchronizing catalogs', {
-    count: sources.length,
-    decouplingRemoteUri,
     module: 'catalog',
+    executionContext: context.source,
+    count: sources.length,
+    filigranCatalogRemoteUri,
   });
   const syncedCatalogs: string[] = [];
   const syncedCatalogsWithChanges: string[] = [];
   // Sync catalogs from sources
   for (const source of sources) {
     let result = await synchronizeCatalog(context, user, source);
-    if (source.kind === 'remote' && result.error && decouplingRemoteUri && source.uri === decouplingRemoteUri) {
+    if (source.kind === 'remote' && result.error && filigranCatalogRemoteUri && source.uri === filigranCatalogRemoteUri) {
       const alreadyPersistedRemoteCatalog = await findCatalogBySourceUri(context, user, source.uri);
       if (!alreadyPersistedRemoteCatalog) {
         logApp.error('[OPENCTI-MODULE] Remote catalog source failed before first successful persistence, falling back to embedded source', {
