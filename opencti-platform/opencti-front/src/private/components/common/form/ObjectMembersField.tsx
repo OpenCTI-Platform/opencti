@@ -127,7 +127,7 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
           value: n?.node.id,
           type: n?.node.entity_type,
         })).sort((a, b) => (b.type ? -b.type.localeCompare(a.type) : 0));
-        const templateValues = [...members, ...NewMembers];
+        const templateValues = [...dynamicMembers, ...NewMembers];
         // Keep only the unique list of options
         const uniqTemplates = templateValues.filter((item, index) => {
           return (
@@ -155,7 +155,6 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
         style={style}
         noOptionsText={t_i18n('No available options')}
         options={members}
-        filterOptions={(options) => options}
         groupBy={(option: OptionMember) => option.type}
         onInputChange={searchMembers}
         renderOption={(
