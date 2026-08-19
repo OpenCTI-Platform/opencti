@@ -99,7 +99,7 @@ export const lineChartOptions = (
 ) => ({
   chart: {
     type: 'line',
-    background: theme.palette.background.secondary,
+    background: theme.palette.background.paper,
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     width: '100%',
@@ -193,7 +193,7 @@ export const areaChartOptions = (
 ) => ({
   chart: {
     type: 'area',
-    background: theme.palette.background.secondary,
+    background: theme.palette.background.paper,
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked: isStacked,
@@ -303,7 +303,7 @@ export const verticalBarsChartOptions = (
 ) => ({
   chart: {
     type: 'bar',
-    background: theme.palette.background.secondary,
+    background: theme.palette.background.paper,
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked: isStacked,
@@ -414,7 +414,7 @@ export const horizontalBarsChartOptions = (
   events: ['xAxisLabelClick'],
   chart: {
     type: 'bar',
-    background: theme.palette.background.secondary,
+    background: theme.palette.background.paper,
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked,
@@ -607,7 +607,10 @@ export const radarChartOptions = (
   xFormatter = null,
   chartColors = [],
   legend = false,
-  background = theme.palette.background.secondary,
+  // Ninth factory. Its background is a DEFAULT PARAMETER, not a `background:`
+  // key, so a grep for `background:` cannot see it. Same rule as the other
+  // eight — the chart sits inside the card and is meant to disappear against it.
+  background = theme.palette.background.paper,
   size = undefined,
   handleClick = undefined,
 ) => ({
@@ -693,7 +696,8 @@ export const radarChartOptions = (
           theme.palette.mode === 'dark'
             ? 'rgba(255, 255, 255, .1)'
             : 'rgba(0, 0, 0, .1)',
-        fill: { colors: [theme.palette.background.secondary] },
+        // Coincides with the carrying surface, same rule as the chart background.
+        fill: { colors: [theme.palette.background.paper] },
       },
     },
   },
@@ -726,7 +730,7 @@ export const polarAreaChartOptions = (
   return {
     chart: {
       type: 'polarArea',
-      background: theme.palette.background.secondary,
+      background: theme.palette.background.paper,
       toolbar: toolbarOptions,
       foreColor: theme.palette.text.secondary,
       width: '100%',
@@ -843,7 +847,7 @@ export const donutChartOptions = (
   return {
     chart: {
       type: 'donut',
-      background: withBackground ? theme.palette.background.secondary : 'transparent',
+      background: withBackground ? theme.palette.background.paper : 'transparent',
       toolbar: toolbarOptions,
       foreColor: theme.palette.text.secondary,
       width: '100%',
@@ -868,7 +872,9 @@ export const donutChartOptions = (
     stroke: {
       curve: 'smooth',
       width: 3,
-      colors: [theme.palette.background.secondary],
+      // The slice separator reads as the surface showing through, so it follows
+      // the surface: layer 1, not the hardcoded literal.
+      colors: [theme.palette.background.paper],
     },
     tooltip: {
       enabled: displayTooltip,
@@ -901,7 +907,7 @@ export const donutChartOptions = (
           value: {
             show: displayValue,
           },
-          background: theme.palette.background.secondary,
+          background: theme.palette.background.paper,
           size: `${size}%`,
         },
       },
@@ -925,7 +931,7 @@ export const treeMapOptions = (
   return {
     chart: {
       type: 'treemap',
-      background: theme.palette.background.secondary,
+      background: theme.palette.background.paper,
       toolbar: toolbarOptions,
       foreColor: theme.palette.text.secondary,
       width: '100%',
@@ -956,7 +962,9 @@ export const treeMapOptions = (
     stroke: {
       curve: 'smooth',
       width: 3,
-      colors: [theme.palette.background.secondary],
+      // The slice separator reads as the surface showing through, so it follows
+      // the surface: layer 1, not the hardcoded literal.
+      colors: [theme.palette.background.paper],
     },
     legend: {
       show: true,
@@ -1007,7 +1015,7 @@ export const heatMapOptions = (
 ) => ({
   chart: {
     type: 'heatmap',
-    background: theme.palette.background.secondary,
+    background: theme.palette.background.paper,
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked: isStacked,
@@ -1019,7 +1027,8 @@ export const heatMapOptions = (
     enabled: false,
   },
   stroke: {
-    colors: [theme.palette.background.secondary],
+    // Same rule as the other separators: it follows the carrying surface.
+    colors: [theme.palette.background.paper],
     width: 1,
   },
   states: {

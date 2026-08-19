@@ -11,7 +11,7 @@ import { DraftRootQuery } from '@components/drafts/__generated__/DraftRootQuery.
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { interval } from 'rxjs';
 import ConnectorWorkLine from '@components/data/connectors/ConnectorWorkLine';
-import Paper from '@mui/material/Paper';
+import { Paper } from '@filigran/design-system';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import ImportFilesContent from '@components/data/import/ImportFilesContent';
@@ -202,8 +202,8 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           {validationWork && (
             <Paper
               key={validationWork.id}
-              style={{ margin: '10px 0 20px 0', padding: '15px', borderRadius: 4, position: 'relative' }}
-              variant="outlined"
+              padding={16}
+              style={{ margin: '10px 0 20px 0', position: 'relative' }}
             >
               <ConnectorWorkLine
                 workId={validationWork.id}

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+// FDS-WORKAROUND #36: top margin posed in `style`, the shipped sheet has no `mt-*` — remove when it ships consumer utilities — see fds-migration/LIBRARY-FEEDBACK.md #36
+import { Paper } from '@filigran/design-system';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
@@ -313,7 +314,7 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
                 {({ push, remove, form }) => {
                   const entries = (form.values as HeaderStrategyFormValues).headers_audit;
                   return (
-                    <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
+                    <Paper padding={0} className="overflow-hidden" style={{ marginTop: 16 }}>
                       <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Headers audit')}</Typography>
                         <IconButton
