@@ -115,6 +115,7 @@ class Event:
             modified
             name
             description
+            x_opencti_score
             aliases
             event_types
             start_time
@@ -226,6 +227,7 @@ class Event:
             modified
             name
             description
+            x_opencti_score
             aliases
             event_types
             start_time
@@ -461,6 +463,8 @@ class Event:
         :type name: str
         :param description: description (optional)
         :type description: str
+        :param x_opencti_score: score level 0-100 (optional)
+        :type x_opencti_score: int
         :param aliases: list of aliases (optional)
         :type aliases: list
         :param start_time: start time of the event (optional)
@@ -494,6 +498,7 @@ class Event:
         modified = kwargs.get("modified", None)
         name = kwargs.get("name", None)
         description = kwargs.get("description", None)
+        x_opencti_score = kwargs.get("x_opencti_score", None)
         aliases = kwargs.get("aliases", None)
         start_time = kwargs.get("start_time", None)
         stop_time = kwargs.get("stop_time", None)
@@ -532,6 +537,7 @@ class Event:
                 "modified": modified,
                 "name": name,
                 "description": description,
+                "x_opencti_score": x_opencti_score,
                 "aliases": aliases,
                 "start_time": start_time,
                 "stop_time": stop_time,
@@ -616,6 +622,11 @@ class Event:
                     self.opencti.stix2.convert_markdown(stix_object["description"])
                     if "description" in stix_object
                     else None
+                ),
+                x_opencti_score=(
+                    stix_object["x_opencti_score"]
+                    if "x_opencti_score" in stix_object
+                    else self.opencti.get_attribute_in_extension("score", stix_object)
                 ),
                 aliases=self.opencti.stix2.pick_aliases(stix_object),
                 event_types=(
