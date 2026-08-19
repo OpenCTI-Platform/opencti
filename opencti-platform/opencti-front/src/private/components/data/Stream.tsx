@@ -261,7 +261,7 @@ const Stream = () => {
             />
           )}
           actions={(node) => (
-            <div onClick={(event) => stopEvent(event)}>
+            <div>
               <Security needs={[TAXIIAPI]}>
                 <StreamPopover
                   streamCollection={node}
