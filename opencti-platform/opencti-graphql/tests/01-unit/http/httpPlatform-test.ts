@@ -172,7 +172,7 @@ describe('httpPlatform: /health details behavior', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(nconf, 'get').mockImplementation((key: string) => {
+    vi.spyOn(nconf, 'get').mockImplementation((key?: string) => {
       if (key === 'app:health_access_key') {
         return 'secret';
       }
@@ -204,7 +204,7 @@ describe('httpPlatform: /health details behavior', () => {
   });
 
   it('should ignore details=true when health access is public', async () => {
-    vi.spyOn(nconf, 'get').mockImplementation((key: string) => {
+    vi.spyOn(nconf, 'get').mockImplementation((key?: string) => {
       if (key === 'app:health_access_key') {
         return 'public';
       }
