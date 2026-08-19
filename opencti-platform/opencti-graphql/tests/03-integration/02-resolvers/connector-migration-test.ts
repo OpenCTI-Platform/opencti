@@ -200,6 +200,10 @@ describe('Check connector migration', () => {
         rawConfig.filter((c: any) => !RUNTIME_KEYS.includes(c.key));
 
         const actualConfig = rawConfig.filter((c: { key: string }) => !RUNTIME_KEYS.includes(c.key));
+        RUNTIME_KEYS.forEach((runtimeKey) => {
+          const found = rawConfig.find((c: { key: string }) => c.key === runtimeKey);
+          expect(found).toBeUndefined();
+        });
         const schemaProperties = contractFound.config_schema.properties;
 
         const expectedKeys = Object.keys(schemaProperties);
