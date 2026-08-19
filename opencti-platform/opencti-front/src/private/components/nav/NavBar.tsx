@@ -98,7 +98,7 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
   if (accentColor) {
     navStyle['--color-filigran-brand-primary'] = accentColor;
     // FDS-WORKAROUND #6: re-derive the brand tint tokens — remove when derived tokens follow a subtree override — see fds-migration/LIBRARY-FEEDBACK.md #6
-    navStyle['--color-filigran-brand-primary-transparency'] = `color-mix(in srgb, ${accentColor} 10%, transparent)`;
+    navStyle['--color-filigran-brand-primary-transparency-10'] = `color-mix(in srgb, ${accentColor} 10%, transparent)`;
     navStyle['--color-filigran-brand-primary-transparency-50'] = `color-mix(in srgb, ${accentColor} 50%, transparent)`;
   }
 

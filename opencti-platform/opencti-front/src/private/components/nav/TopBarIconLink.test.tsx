@@ -26,7 +26,7 @@ describe('TopBarIconLink', () => {
     const link = screen.getByRole('link', { name: 'Notifications' });
     expect(link).toHaveAttribute('aria-current', 'page');
     // The token, never a literal: a hardcoded colour would not follow the theme.
-    expect(link.style.backgroundColor).toBe('var(--color-filigran-brand-primary-transparency)');
+    expect(link.style.backgroundColor).toBe('var(--color-filigran-brand-primary-transparency-10)');
   });
 
   it('leaves a non-current link untinted', () => {

@@ -1,7 +1,8 @@
 import React from 'react';
+// FDS-WORKAROUND #36: top margin posed in `style`, the shipped sheet has no `mt-*` — remove when it ships consumer utilities — see fds-migration/LIBRARY-FEEDBACK.md #36
+import { Paper } from '@filigran/design-system';
 import { Field, FieldArray } from 'formik';
 import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import { Add, Delete } from '@mui/icons-material';
 import TextField from '../../../../components/TextField';
@@ -51,7 +52,7 @@ const AuthProviderGroupsFields = () => {
         {({ push, remove, form }) => {
           const entries = (form.values as { groups_mapping: GroupsMappingValues }).groups_mapping.default_groups ?? [];
           return (
-            <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
+            <Paper padding={0} className="overflow-hidden" style={{ marginTop: 16 }}>
               <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Default groups')}</Typography>
                 <IconButton
@@ -94,7 +95,7 @@ const AuthProviderGroupsFields = () => {
         {({ push, remove, form }) => {
           const entries = (form.values as { groups_mapping: GroupsMappingValues }).groups_mapping.groups_expr ?? [];
           return (
-            <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
+            <Paper padding={0} className="overflow-hidden" style={{ marginTop: 16 }}>
               <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Groups expressions')}</Typography>
                 <IconButton
@@ -147,7 +148,7 @@ const AuthProviderGroupsFields = () => {
         {({ push, remove, form }) => {
           const entries = (form.values as { groups_mapping: GroupsMappingValues }).groups_mapping.groups_mapping ?? [];
           return (
-            <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
+            <Paper padding={0} className="overflow-hidden" style={{ marginTop: 16 }}>
               <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Groups mapping')}</Typography>
                 <IconButton

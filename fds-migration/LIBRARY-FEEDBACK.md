@@ -916,3 +916,434 @@ Both are guarded by tests now.
 (entry 13's `IconButton asChild` gap is what forces one here) must forward ref
 and rest props, or it is not a drop-in — and the failure is silent in both
 directions.
+
+---
+
+Raised during: the **Paper pilot, phase 0** — bump from pin `35a4768` to
+`a22b188b28bc151f930d19d4f8ed7114df581e6e` (head of `origin/main`, carrying
+#121, #123/#124 and #125). Everything below is measured on the DOM rendered by
+the installed build, in this product's real MUI theme, with the app's complete
+stylesheet stack loaded. Entries 30-33 are Paper gaps; 34-35 are method
+findings the next bump will hit again.
+
+**Closed by this bump, re-measured rather than assumed:** the `padding` prop
+exists on the 0/8/16/24/32 scale and all five classes ship in `dist/index.css`;
+`title`/`action` are real props rendering a header row above the surface;
+the host-theme contract works in both directions (re-declaring the per-layer
+base repaints, re-declaring the alias does nothing); the border is its own
+`--border-elevation-subtle-soft` token at 15 % dilution.
+
+## 30. An off-scale `padding` still renders 0px — and OpenCTI's two commonest values are off-scale
+
+Same defect OpenAEV raised as its #32, unchanged at this pin, but the blast
+radius here is different enough to re-state.
+
+**Measured on the installed build:** `<Paper padding={15}>` and
+`<Paper padding={20}>` both render **no padding class at all** — computed
+padding **0px**. Not the default 24, not the nearest step, no warning.
+
+**Why it is worse in this product.** OpenAEV's call sites were at 0 and 16, so
+the trap was reachable only by mistake. OpenCTI's 28 container surfaces measure:
+
+| padding | sites |
+|---|---|
+| 0 | 15 |
+| **15** | **4** |
+| 16 | 3 |
+| **20** | **2** |
+| asymmetric | 3 |
+
+**15 and 20 are the values an agent converting these files will reach for
+first**, because they are what the source says. TypeScript rejects them in a
+`.tsx`, but `StixDomainObjectAuthorKnowledge.jsx` is `.jsx` and this product's
+tsconfig sets `allowJs` without `checkJs` — no prop checking at all there. A
+dynamic value escapes the types even in `.tsx`.
+
+**Ask.** Unchanged from OpenAEV #32: make the runtime say something, per
+AGENTS.md "Prop contract violations — dev-only warning, never throw". The
+`warnOnUnsupportedProps` helper already shipped in this pin covers *unknown*
+props; it does not cover a *known* prop with an off-scale value. That is the
+one line missing.
+
+---
+
+## 31. The `padding` scale cannot express 15px, 20px, or any asymmetric padding
+
+**Needed.** An iso-density migration: each converted surface keeps exactly the
+padding it renders today.
+
+**Today.** The scale is 0/8/16/24/32 and the prop is **uniform**. Measured
+against OpenCTI's real values, **9 of 28 sites (32 %) are inexpressible**:
+
+| value | sites | nearest expressible | cost |
+|---|---|---|---|
+| `15px` | 4 | 16 | **+1px on all four sides** |
+| `20px` | 2 | 16 or 24 | **±4px, equidistant** — no "nearest" exists |
+| `8px 15px 0 15px` | 2 | — | asymmetric, **inexpressible** |
+| `20px 20px 0 20px` | 1 | — | asymmetric, **inexpressible** |
+
+**The escape hatch does not exist here.** OpenCTI does not compile Tailwind; it
+consumes the pre-built sheet, so `className="p-[15px]"` resolves to nothing.
+And re-adding a hardcoded padding class on a library Paper is exactly what this
+migration's conformity guard is meant to redden.
+
+**Ask.** Two separable questions, and the first is the cheap one:
+
+1. **Is the scale the whole answer?** 15 and 20 are not design decisions in
+   OpenCTI, they are pre-token legacy — a design arbitration that says "15
+   becomes 16" would close 4 sites at a stroke. That is Sandy's call, not the
+   library's, but the library should say whether it *wants* to grow steps or
+   wants products to converge onto the scale.
+2. **Asymmetric padding.** Three sites use a bottom-less padding
+   (`… 0 …`) so that a child's own trailing margin does not double up. If the
+   answer is "never", those three leave the Paper waves permanently and should
+   be recorded as such, the way `DetailHero` was.
+
+---
+
+## 32. `Paper`'s border cannot be turned off, and it has no shadow — 7 sites need both
+
+**Needed.** OpenCTI's container surfaces are **not** uniform. Measured:
+
+| | sites | border | shadow |
+|---|---|---|---|
+| `variant="outlined"` | **21 / 28** | `1px solid rgba(255,255,255,.12)` | `none` |
+| no `variant` | **7 / 28** | **`0px none`** | **MUI elevation shadow** (`rgba(0,0,0,.2) 0 2px 1px -1px, …`) |
+
+The library `Paper` draws a border at every elevation, always, and measures
+`box-shadow: none` at all four. So for those 7 sites a swap **adds** a border
+that is not there and **removes** a shadow that is — two losses at once, and
+neither is expressible.
+
+For the other 21 this entry does not apply: the border is present on both
+sides and only the tone differs (product 1,32:1 against its own surface; library
+1,09:1 dark, 1,15:1 light). That is the tone #125 deliberately chose and it is
+not raised as a defect.
+
+**Ask.** Not necessarily a `border={false}` prop. The question to settle is
+whether a surface that delimits itself by **shadow** rather than by **border**
+is a Paper at all in this design system, or a different component — the same
+shape of question `DetailHero` forced. Either answer unblocks these 7; no
+answer leaves them on MUI while everything around them moves.
+
+---
+
+## 33. `title` / `action` exist now, and are still not adoptable here
+
+**Not a blocker** — the wave's arbitration already says the product keeps its
+own header when the library's is not ISO. Recorded with OpenCTI's numbers so the
+decision is not re-litigated per product.
+
+Two sites have a title above the surface (`ScaleConfiguration.tsx:209`,
+`StixDomainObjectAuthorKnowledge.jsx:273`), both
+`<Typography variant="h4" gutterBottom>`. Measured against the library's row:
+
+| | product | library |
+|---|---|---|
+| height | **15,0 px** | **24,0 px** |
+| weight | 500 | 400 |
+| line-height | 14,82 px | 18 px |
+| letter-spacing | `normal` | 0,09 px |
+| colour | primary `rgb(242,242,243)` | secondary `rgb(175,176,182)` |
+| gap to surface | 4,2 px | 8,0 px |
+
+**+12,8 px of vertical per panel**, plus a weight and colour change. Not ISO.
+
+**The second half matters more.** OpenCTI's dominant "titled panel" shape is not
+a title above the surface at all — it is a **banner inside** it: eight sites
+(`sso_definitions/*`) render `<Box sx={{ px: 2, py: 1.5, backgroundColor:
+'action.hover' }}>` as the Paper's first child, clipped to the radius by
+`overflow: hidden`. `title` renders **above** the surface, outside the border,
+with no background. It cannot express this shape at any typography.
+
+**Ask.** Nothing urgent. But if a titled-surface variant is ever specified,
+the inset-banner shape is the one this product actually uses, 8 times to 2.
+
+---
+
+## 34. The token rename left three dead references in this product — and all three were silent
+
+OpenAEV raised this as its #33 with three dead references, one of them loud (a
+TypeScript error). **In OpenCTI all three are silent**: `tsc --noEmit` passes
+with zero errors, eslint passes, the build passes.
+
+| reference | file | shape | measured consequence |
+|---|---|---|---|
+| `var(--color-filigran-brand-primary-transparency)` **read** | `TopBarIconLink.tsx:8` | dangling `var()` in a string | the selected top-bar link's background has no value. `TopBar` and `NavBar` are **siblings** (`private/Index.tsx:122-123`), so no product ancestor declared it. |
+| `--color-filigran-brand-primary-transparency` **declared** | `NavBar.tsx:101` | a product-set custom property nothing reads any more | the library's Navbar renders `bg-filigran-brand-primary-transparency-10`, which reads the **new** name. Measured: the selected row painted `srgb(0.259,0.792,1)` — **Filigran default blue** — instead of the customer accent `#ff8a3d`. |
+| the same literal, **asserted** | `TopBarIconLink.test.tsx:29` | the test compares the string, not the resolved colour | it stayed **green** on a dead reference. |
+
+The second one is the new shape worth naming: a rename breaks not only what a
+product **reads** but also what it **writes**. A host that re-declares a token
+to theme a library component is, by construction, coupled to the token's name —
+and there is no signal at all when the library stops reading it.
+
+**Ask.** Unchanged and still small: a machine-readable rename map in the
+release (old name → new name) so a consumer can grep for the old names rather
+than having to notice their absence. The write direction makes it more valuable,
+not less — a consumer can only audit its own declarations against a list of what
+the library actually reads.
+
+**Method note for the next bump, OpenCTI included.** Regenerating the bridge is
+necessary and not sufficient. Grep the whole product source — not the
+`wiredFiles` — for `var(--token)` in string literals **and** for library utility
+classes written as literals, then cross-check every hit against the tokens and
+classes actually present in the **installed** `dist/index.css`. Add a third
+sweep the OpenAEV entry did not have: **every custom property the product sets**
+(inline `style`, CSS files) whose name belongs to the library's namespace.
+
+---
+
+## 35. A product `:focus { outline: 0 }` is here too
+
+Exactly OpenAEV's #34, same rule, same file role: `src/static/css/index.css:26`
+carries `:focus { outline: 0 }`, applying to every focusable element in the
+application, and it wins over the library sheet.
+
+Nothing is broken today — #123 replaced the navbar's focus ring with an **inset
+border**, and a border is not an outline. But the library's own accessibility
+contract mandates a `focus-visible:ring-2` pattern for every interactive
+component, and a ring is `outline`-based in Tailwind. **Every other library
+component this product adopts is one `:focus { outline: 0 }` away from having no
+visible focus indicator**, and no gate in either repo would report it.
+
+**Ask (both cheap, first one cheapest).** Document the host prerequisite in the
+consumer section next to the theme class, the fonts and the no-preflight rule:
+a host must not neutralise `outline` globally, and here is the rule shape the
+library relies on. Then decide whether the inset-border indicator is a
+deliberate robustness property worth generalising.
+
+**Product-side note.** The rule is old, broad, and not this migration's to
+remove — deleting it changes focus rendering across the whole application. It is
+flagged, not touched.
+
+---
+
+## 36. The shipped stylesheet carries only the utilities the library itself happens to use
+
+Raised while converting the warm-up lot (the 8 SSO header panels), and it is
+the same root cause that priced the asymmetric-padding question.
+
+**Needed.** Two things the eight panels do today and must keep doing: a top
+margin (`mt: 2` → 16px, `mt: 2.5` → 20px on one of them) and
+`overflow: hidden`, which is load-bearing — it clips the inner title banner to
+the surface's 4px radius. Neither is a padding, so neither belongs in the
+`padding` prop.
+
+**Today.** Measured against the installed `dist/index.css` at pin `a22b188`:
+
+| class | in the shipped sheet |
+|---|---|
+| `overflow-hidden` | ✅ present |
+| `mt-4` (16px) | ❌ **absent** |
+| `mt-5` (20px) | ❌ **absent** |
+
+So `overflow` could stay a class and the margin could not. This product does
+not compile Tailwind — it consumes the pre-built sheet — so an absent class
+resolves to nothing at all, silently. The margin is posed in `style` instead,
+marked `FDS-WORKAROUND #36` in all four files.
+
+**The same absence prices a design decision.** The per-side padding classes an
+asymmetric `padding` API would need are present only where some library
+component happens to use them:
+
+| | 0 | 8 | 16 | 24 | 32 |
+|---|---|---|---|---|---|
+| `pt-` | ❌ | ❌ | ✅ | ❌ | ❌ |
+| `pr-` | ❌ | ✅ | ✅ | ❌ | ✅ |
+| `pb-` | ❌ | ✅ | ❌ | ❌ | ❌ |
+| `pl-` | ❌ | ❌ | ✅ | ✅ | ✅ |
+
+**8 of the 20 exist, by accident.** This is exactly the `p-8` situation before
+#125 — a class the API would emit, absent from the sheet, resolving to 0px with
+no error — multiplied by four sides. Any per-side padding API has to safelist
+all 20 explicitly, the way `src/tokens/index.css` already safelists the five
+`p-*`, and `paper-padding-emission.test.ts` has to assert all 20 compile.
+
+**Ask.** Not "ship all of Tailwind". Two narrower things:
+
+1. **Safelist the utilities the library's own public API can emit**, and pin
+   them with the emission test. That is a closed, enumerable set — it is what
+   #125 did for `p-8` — and it makes the sheet's contents a consequence of the
+   API rather than of which component happened to use what.
+2. **Say, in the consumer docs, that the sheet is not general-purpose.** A
+   consuming agent's reasonable assumption is that a Tailwind-looking class
+   works; the failure when it does not is silent and visual-only. One sentence
+   plus the safelist list would close the whole class of bug — the same shape
+   of ask as the `title`-is-not-a-slot documentation line in #33.
+
+---
+
+## 37. `Paper`'s title row cannot follow the host's text colour, and that blocks adoption
+
+**Raised during the Paper pilot, from a measurement that changed the decision.**
+The arbitration was to adopt `title`/`action`; this entry is why OpenCTI is
+not adopting them yet.
+
+**Needed.** OpenCTI's theme is customer-configurable per tenant, and
+`theme_text_color` is one of the editable fields. Both of the product's panel
+heading levels take it:
+
+```ts
+// ThemeDark.ts / ThemeLight.ts — typography
+h3: { fontSize: 13, fontWeight: 400, fontFamily: 'Geologica', color: text_color, … }
+h4: { fontSize: 12, fontWeight: 500, color: text_color, … }
+```
+
+`text_color` is the 9th argument of the theme factory — the tenant's
+`theme_text_color`. A titled panel therefore follows the customer's text colour
+today, on every screen.
+
+**Today.** The library's title row paints `text-default-secondary`, a fixed
+token. Measured at the DOM on three representative titles:
+
+| | product `h4` | product `h3` | library `title` row |
+|---|---|---|---|
+| colour | `text_color` — **the customer's** | idem | **`--text-default-secondary`**, fixed |
+| size / weight | 12px / 500 | 13px / 400 | 12px / 400 |
+| family | IBM Plex Sans | **Geologica** | IBM Plex Sans |
+| height | 15px | 15px | **24px** |
+| rendered `text-transform` | `none` | `none` | `none` — identical |
+
+**Consequence.** On a tenant with a customised `theme_text_color`, adopting
+`title` makes every converted heading **stop following that colour**. That is
+not a change of style — it is a **regression of a configured behaviour**, and it
+is exactly the class of defect entry #28 raised for the surface colour and the
+15%-border round then fixed for the border. The header is the third property of
+the same component, and the only one still unreachable.
+
+Worth noting what is NOT the problem: the typography differences above are real
+but arbitrable, and the `text-transform` scare is not one — OpenCTI's theme
+declares `lowercase` on `h3`/`h4` but `MuiTypography.styleOverrides.root` sets
+`textTransform: 'none'` and wins, so the rendered text is identical on both
+sides. Only the colour blocks.
+
+**Ask.** Let the title row's colour be reachable by the host, the same way the
+surface and the border already are — a per-layer base the host may re-declare,
+or a documented custom property. The mechanism from #28 is already proven in
+this product: re-declaring `--bg-elevation-default-layer-1` repaints the
+surface, `--border-elevation-subtle-soft-layer-1` repaints the border. A
+`--text-*` equivalent for the header row would close it.
+
+**Removal test.** On a tenant whose `theme_text_color` differs from the default,
+a `<Paper title="…">` header renders in that colour rather than in
+`--text-default-secondary`. Until then OpenCTI keeps its own header above the
+surface and does not pass `title`/`action`.
+
+**Scope of what this unblocks, measured.** `Card.tsx` has **219 call sites**, and
+**174 of them pass `title=`** — 79 %. So the `title`/`action` question and the
+Card component question are **one decision, not two**: the day the header colour
+is reachable, 174 sites become expressible in one move.
+
+## 38. `Navbar` declares neither an anchoring inset nor a stacking level, so every host invents both
+
+**Raised from a regression this pilot shipped and did not see.** Two defects were
+reported on the running application after the wave closed. Both trace to the same
+missing contract, and neither was visible to `tsc`, to eslint, to the build, to
+the conformity gate or to the unit tests.
+
+**What the component does today.** The `<nav>` it renders carries a background
+and a width, and nothing else about where it sits in the page. It declares:
+
+| | value shipped |
+|---|---|
+| `position` | none — the host must choose |
+| horizontal inset | none |
+| `z-index` | none (`auto`) |
+
+**Why that is not neutral.** The rail is not an ordinary block: it is the
+application's persistent shell. Two properties are load-bearing for it and for
+no other component, so leaving them unset does not defer a style choice — it
+defers a correctness requirement.
+
+*Anchoring.* OpenCTI gave it `position: sticky` with a `top` inset (its own
+rail-height workaround, #11). Sticky anchors only on the axes it is given an
+inset for, so the rail held vertically and rode the horizontal scroll. Measured
+drift, against a master build of the component it replaced:
+
+| viewport | content overflow | legacy MUI Drawer paper | this component, `sticky` + `top` |
+|---|---|---|---|
+| 1024 | 376px | `fixed` — drift **0** | drift **−376px** — rail off screen |
+| 1280 | 120px | `fixed` — drift **0** | drift **−120px** |
+| 1440 | 0 | drift 0 | drift 0 |
+
+*Stacking.* The legacy rail's effective level was **999**: its Drawer paper
+carried `z-index: 1200`, but that paper sat inside the stacking context its own
+root created — the root was a FLEX ITEM of the shell carrying `z-index: 999`, and
+z-index applies to flex items even when static. The `<nav>`
+paints at `auto`, so a `z-index: 1` sibling wins. Four OpenCTI toolbars paint a
+full-viewport background and offset only their content (`padding-left`); all four
+declare `z-index: 1`. Measured with `elementFromPoint` at the centre of the rail:
+
+| | legacy Drawer | this component |
+|---|---|---|
+| knowledge graph | rail wins the pixel | **bar wins** |
+| container timeline | rail wins the pixel | **bar wins** |
+
+**The signal is that the two hosts answered differently.** OpenAEV anchors its
+rail with `position: fixed; left: 0` — measured drift 0, so it does not have the
+anchoring defect. But its rail also paints at `z-index: auto`, so it carries the
+same stacking gap; it is simply not reachable there, because OpenAEV has no
+toolbar that aligns itself on the rail width (zero occurrences of a rail-width
+offset in `openaev-front`). One missing contract, two different host answers, one
+latent defect and one shipped regression.
+
+**Asked.** Ship a documented default the host can override, rather than nothing:
+
+1. a **stacking level** on the rail — ideally through a token in the same family
+   as `--fds-z-overlay`, e.g. `--fds-z-navbar`, defaulting above ordinary
+   application chrome and below overlays, so a host that needs a different order
+   redeclares one custom property instead of reverse-engineering a value;
+2. an **anchoring contract** — either the component anchors itself, or the
+   documentation states which axes the host must pin and warns that a
+   single-axis `sticky` leaves the other axis scrolling.
+
+**Why it stayed invisible.** The level that mattered (an effective 999) lived on
+the MUI Drawer that the migration deleted. Nothing carried it forward, and
+nothing failed: the types are satisfied, the rendered rail is correct at any
+viewport wide enough not to overflow, and the defect only appears below a
+1400px-wide shell — a width no test exercises.
+
+**Removal test.** Delete the `.app-navbar { left: 0; z-index: 1200 }` block from
+`design-system-host.css`, load the knowledge graph of any container at a 1280px
+viewport, scroll right: the rail must stay at the left edge and must keep the
+pixel at its own centre. If it does, the workaround is retired.
+
+## 39. `Chip` normalises its label's type but not its own root, which makes the component impossible to inspect correctly
+
+**Not a rendering defect.** Raised because it cost a round of confusion on a
+change that was correct: 14px was read on the EE chip where the pin bump had
+just taken it to 12px, and both readings were true of different nodes.
+
+**What is measured.** The component sets its typography class on the LABEL span
+only. The root — the visible, clickable box — declares no font size, so it
+inherits the host's. Measured in the running application, on the EE chip inside
+OpenCTI's Ask Ariane button, at pin `f86e76e`:
+
+| node | `font-size` | `font-weight` | box |
+|---|---|---|---|
+| label span (`content-compact-medium`) | **12px** | 500 | 14.19 × 18 |
+| **chip root** (`inline-flex h-6 items-center`) | **14px** | 600 | **30.19 × 24** |
+| host `<span class="text-gradient-ia">` | 14px | 600 | 106.44 × 24 |
+| host `<button>` (Ask Ariane) | 14px | 600 | 166.44 × 36 |
+| `<header>` | 14.4px | 400 | 1464 × 68 |
+
+The root's 14px/600 is the host button's, inherited through two levels. Nothing
+renders wrongly: the height is pinned by `h-6` and the truncation by a fixed
+`max-w-[250px]`, so no dimension is derived from the inherited size.
+
+**Why it still matters.** An element picker selects the box, not the text node
+inside it, so the DevTools Computed panel reports the HOST's size for the chip —
+14px here — while the label renders 12px one level down. The component therefore
+cannot be verified by inspecting it, only by knowing in advance which descendant
+to select. **And it will recur in every host context with a different
+typography**: the number the root reports is a property of the surrounding page,
+not of the chip.
+
+**Asked.** Let the root normalise its own type rather than leaving the label to
+do it alone — the root declaring the same size the label resolves to would make
+the two agree, and would make the rendered chip independent of whatever type
+scale the host happens to apply around it.
+
+**Removal test.** Render the chip inside a container at 20px, inspect the chip
+root: its computed `font-size` must be the chip's own value, not 20px.

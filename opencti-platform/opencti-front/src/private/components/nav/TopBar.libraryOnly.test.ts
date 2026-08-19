@@ -61,7 +61,7 @@ const RETIRED = ['MuiBadge-', 'MuiStack-', 'CircularProgress'];
 /**
  * NAMED EXEMPTIONS — the only MUI the bar may render, besides glyphs.
  *
- * Exactly two, each granted explicitly and re-confirmed by Sandy on 2026-08-14:
+ * Exactly two, each granted explicitly and re-confirmed on 2026-08-14:
  *   1. The segmented control, together with the NLQ dropdown that depends on it
  *      — its caret lives inside a `ToggleButton`.
  *   2. `Popover`, which the library has not designed yet.
@@ -152,7 +152,7 @@ describe('the admin top bar is built from library components', () => {
 
   it('grants no exemption beyond the two that were named', () => {
     // The failure guarded against here is a THIRD kind of exemption appearing.
-    // Every reason must trace to one Sandy granted, so the list can grow only
+    // Every reason must trace to one explicitly granted, so the list can grow only
     // where an exemption already applies — never by accretion.
     const NAMED = [
       '#24', // the segmented control, and everything that depends on it
@@ -255,7 +255,7 @@ describe('the admin top bar is built from library components', () => {
   });
 
   it('leaves the unread marker on the library default tone', () => {
-    // Red, on both products — Sandy, 2026-08-14. No `tone` anywhere on the
+    // Red, on both products — arbitrated 2026-08-14. No `tone` anywhere on the
     // path from the call site to the anchor: the library default IS the
     // decision, and overriding it later has to be written down when it is made.
     const bar = SOURCES.get('src/private/components/nav/TopBar.tsx') as string;

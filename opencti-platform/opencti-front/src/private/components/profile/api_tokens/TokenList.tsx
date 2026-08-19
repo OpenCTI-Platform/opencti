@@ -1,5 +1,11 @@
 import { Delete } from '@mui/icons-material';
-import { Alert, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
+import { Alert, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
+import { Paper } from '@filigran/design-system';
+// MIXED FILE, declared as such: the <Paper> tag is the library's, but
+// `TableContainer component=` has to stay MUI's Paper — a component passed to
+// MUI as a prop receives MUI props (`variant`, `sx`) that the library Paper
+// does not understand. Declared in migration-state.json rather than dodged.
+import MuiPaper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
@@ -111,7 +117,7 @@ export const TokenListBase: React.FC<TokenListProps> = ({ node }) => {
 
   if (tokens.length === 0) {
     return (
-      <Paper variant="outlined">
+      <Paper padding={0}>
         <div className={classes.empty}>
           {t_i18n('No tokens found. Click "Generate Token" to create one.')}
         </div>
@@ -121,7 +127,7 @@ export const TokenListBase: React.FC<TokenListProps> = ({ node }) => {
 
   return (
     <div>
-      <TableContainer component={Paper} variant="outlined" sx={{ border: 'none' }}>
+      <TableContainer component={MuiPaper} variant="outlined" sx={{ border: 'none' }}>
         <Table
           size="small"
           aria-label="token list"
