@@ -136,6 +136,9 @@ jobs:
         docker exec opencti-e2e-start \
           sh -c 'set -eux
             pwd
+            ls -lart
+            cd /opt/opencti
+            find . | grep "insert-dataset"
             node /opt/opencti/build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy
           '
 
