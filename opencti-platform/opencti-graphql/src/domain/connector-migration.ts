@@ -371,6 +371,7 @@ export const migrateConnectorToManaged = async (
   const uniqueName = await resolveUniqueConnectorName(context, user, existingConnector.name, existingConnector.internal_id);
   if (uniqueName !== existingConnector.name) {
     managedConnectorData.name = uniqueName;
+    managedConnectorData.title = uniqueName;
   }
 
   // Reset connector state if requested
