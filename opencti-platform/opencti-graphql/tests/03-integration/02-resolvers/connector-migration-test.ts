@@ -89,7 +89,7 @@ const READ_CONNECTOR_QUERY = gql`
 const TEST_CN_ID = '5ed680de-75e2-4aa0-bec0-4e8e5a0d1695';
 const TEST_CN_NAME = 'TestConnector';
 
-describe.todo('Check connector migration', () => {
+describe('Check connector migration', () => {
   let userId: string;
 
   /**
