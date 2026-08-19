@@ -1,7 +1,8 @@
 // Node.js port of client-python's OpenCTIStix2Splitter (pycti/utils/opencti_stix2_splitter.py).
-// This is an isolated, standalone port (Proposal B POC step 1): it duplicates pycti's
-// behavior on purpose, including its static supported-type list, so the two implementations
-// can be validated against the same golden fixtures before anything is wired to a call site.
+// Duplicates pycti's behavior on purpose, including its static supported-type list, so the two
+// implementations stay verifiably in parity. Parity is asserted by dedicated tests
+// (stix2-splitter-test.ts) against golden fixtures shared with pycti's own test suite. Wired in
+// as the authoritative splitter for outgoing worker messages via buildSplitMessages (rabbitmq.js).
 import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
 import jsonCanonicalize from 'canonicalize';
 import { OASIS_NAMESPACE } from '../schema/general';

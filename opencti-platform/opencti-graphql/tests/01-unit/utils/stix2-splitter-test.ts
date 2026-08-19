@@ -7,10 +7,8 @@ import { Stix2Splitter } from '../../../src/utils/stix2-splitter';
 // validated against the exact same input/expected-count pairs as pycti's own test suite
 // (client-python/tests/01-unit/utils/test_opencti_stix2_splitter.py): the base test bundle,
 // mono-object entity/relationship cases, and the adversarial cycles/dangling-refs/internal-id
-// fixtures below. The larger real-world fixtures from pycti's suite (enterprise-attack.json,
-// mitre_att_capec.json, several MB each) were also run once against this port during
-// development with matching results, but are intentionally not committed here to keep the
-// repo lean - the fixtures below are the permanent, committed regression suite.
+// fixtures below. These committed, runnable tests are the full extent of the parity claim -
+// no other validation beyond what's asserted here is claimed for this port.
 const fixturePath = (name: string) => join(__dirname, '../../data/stix2-splitter', name);
 
 describe('Stix2Splitter: split_bundle_with_expectations parity with pycti', () => {
