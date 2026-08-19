@@ -10,7 +10,7 @@ import { createListTask } from '../../../domain/backgroundTask-common';
 import { type EditInput, FilterMode, FilterOperator } from '../../../generated/graphql';
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
 import { addWorkflowPublishCount } from '../../../manager/telemetryManager';
-import type { BasicStoreEntity } from '../../../types/store';
+import type { BasicStoreCommon, BasicStoreEntity } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { bypassDraftContext, getDraftContext } from '../../../utils/draftContext';
 import { SYSTEM_USER, WORKFLOW_MANAGER_USER } from '../../../utils/access';
@@ -758,7 +758,8 @@ export const getWorkflowInstance = async (
   const instanceEntity = await findWorkflowInstanceEntity(context, user, effectiveEntityId);
   const currentState = instanceEntity?.currentState ?? definitionData.initialState;
 
-  const allowedTransitions = await getAllowedTransitions(context, user, entityId);
+  // Pass entitySetting and definitionData to avoid redundant lookups in getAllowedTransitions
+  const allowedTransitions = await getAllowedTransitions(context, user, entityId, { entity, entitySetting, definitionData, instanceEntity });
   const id = instanceEntity?.internal_id ?? instanceEntity?.id ?? `initial-${effectiveEntityId}`;
 
   // Parse pending transition and enrich with live Work data
@@ -826,21 +827,27 @@ export const getAllowedTransitions = async (
   context: AuthContext,
   user: AuthUser,
   entityId: string,
+  options?: {
+    entity?: BasicStoreCommon;
+    entitySetting?: BasicStoreEntityEntitySetting;
+    definitionData?: WorkflowDefinitionResponse | null;
+    instanceEntity?: WorkflowInstanceStoreEntity | null;
+  },
 ): Promise<Array<{ event: string; toState: string; comment?: string; actions: string[]; requiresShareOrganizationInput: boolean; requiresUnshareOrganizationInput: boolean }>> => {
-  const entity = await storeLoadById(context, user, entityId, 'Basic-Object');
+  const entity = options?.entity ?? await storeLoadById(context, user, entityId, 'Basic-Object');
   if (!entity) {
     return [];
   }
 
-  const entitySetting = await getWorkflowConfig(context, user, entity.entity_type);
-  const definitionData = await getDefinitionData(context, user, entitySetting);
+  const entitySetting = options?.entitySetting ?? await getWorkflowConfig(context, user, entity.entity_type);
+  const definitionData = options?.definitionData ?? await getDefinitionData(context, user, entitySetting);
 
   if (!definitionData) {
     return [];
   }
 
   const effectiveEntityId = entity.internal_id || entity.id;
-  const instanceEntity = await findWorkflowInstanceEntity(context, user, effectiveEntityId);
+  const instanceEntity = options?.instanceEntity ?? await findWorkflowInstanceEntity(context, user, effectiveEntityId);
   const currentStateId = instanceEntity?.currentState ?? definitionData.initialState;
 
   const definition = WorkflowFactory.createDefinition(definitionData);
