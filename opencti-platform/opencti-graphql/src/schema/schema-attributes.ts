@@ -286,10 +286,6 @@ export const isNumericAttribute = (k: string): boolean => (
 export const isDateNumericOrBooleanAttribute = (k: string): boolean => (
   schemaAttributesDefinition.isSpecificTypeAttribute(k, 'date', 'numeric', 'boolean')
 );
-export const isVersionAttribute = (k: string): boolean => {
-  const attribute = schemaAttributesDefinition.getAttributeByName(k);
-  return attribute?.type === 'string' && attribute?.format === 'version';
-};
 export const isObjectAttribute = (k: string): boolean => (
   schemaAttributesDefinition.isSpecificTypeAttribute(k, 'object')
 );
