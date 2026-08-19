@@ -20,7 +20,6 @@ export const shortMapping = {
   },
 };
 export const textMapping = { type: 'text' };
-export const versionMapping = { type: 'version' };
 export const dateMapping = { type: 'date' };
 export const booleanMapping = { type: 'boolean' };
 export const numericMapping = (precision: string) => ({ type: precision, coerce: false });
@@ -77,7 +76,7 @@ export type DateAttribute = { type: 'date' } & BasicDefinition;
 export type BooleanAttribute = { type: 'boolean' } & BasicDefinition;
 export type NumericAttribute = { type: 'numeric'; precision: 'integer' | 'long' | 'float'; scalable?: boolean } & BasicDefinition;
 export type IdAttribute = { type: 'string'; format: 'id'; entityTypes: string[]; attrRawIds?: GetRawIdsFn<string>; representative?: RepresentativeFn<string> } & BasicDefinition;
-export type TextAttribute = { type: 'string'; format: 'short' | 'text' | 'version' } & BasicDefinition;
+export type TextAttribute = { type: 'string'; format: 'short' | 'text' } & BasicDefinition;
 export type EnumAttribute = { type: 'string'; format: 'enum'; values: string[] } & BasicDefinition;
 export type VocabAttribute = { type: 'string'; format: 'vocabulary'; vocabularyCategory: string } & BasicDefinition;
 export type JsonAttribute = { type: 'string'; format: 'json'; attrRawIds?: GetRawIdsFn<string>; representative?: RepresentativeFn<string>; multiple: false; schemaDef?: Record<string, any> } & BasicDefinition;
@@ -94,7 +93,7 @@ export type ComplexAttributeWithMappings<T extends BasicStoreAttribute = BasicSt
 export type AttributeDefinition<T extends BasicStoreAttribute = BasicStoreAttribute> = NumericAttribute | DateAttribute | BooleanAttribute
   | StringAttribute | ComplexAttribute<T> | RefAttribute;
 
-export const shortStringFormats = ['id', 'short', 'enum', 'vocabulary', 'version'];
+export const shortStringFormats = ['id', 'short', 'enum', 'vocabulary'];
 export const longStringFormats = ['text', 'json'];
 
 // -- GLOBAL --
