@@ -79,7 +79,7 @@ export const computeManagerConnectorContract = async (_context, _user, cn) => {
   if (!cn.manager_contract) {
     return null;
   }
-  return JSON.stringify(mapContractEntityFieldsToGraphqlCatalogContract(cn.manager_contract));
+  return JSON.stringify(mapContractEntityFieldsToGraphqlCatalogContract(cn.manager_contract, { excludeRuntimeConfigVars: true }));
 };
 
 export const computeManagerConnectorExcerpt = async (_context, _user, cn) => {
