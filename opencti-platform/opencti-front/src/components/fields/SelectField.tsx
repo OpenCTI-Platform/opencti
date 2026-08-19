@@ -32,8 +32,8 @@ const fieldToSelect = (muiProps: SelectFieldProps) => {
     ...muiProps,
     disabled: disabled ?? isSubmitting,
     error: showError,
-    onBlur: () => {},
-    onChange: fieldOnChange ?? (() => {}),
+    onBlur: () => { },
+    onChange: fieldOnChange ?? (() => { }),
     onClose: onClose ?? (async (e) => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -96,7 +96,7 @@ const SelectField = (muiProps: SelectFieldProps) => {
       <InputLabel
         style={{ color: muiProps.disabled ? '#4f4f4f' : '' }}
         variant={muiProps.variant}
-        id={labelId}
+        id={`${labelId} mui-component-select-${name}`}
         required={required}
       >
         {muiProps.label}
