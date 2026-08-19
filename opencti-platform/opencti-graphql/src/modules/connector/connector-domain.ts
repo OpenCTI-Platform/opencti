@@ -63,14 +63,18 @@ const autoUpgradeManagedConnector = async (
       // Unsure how correct this is. Maybe the context_data is too big here.
       void publishUserAction({
         event_type: 'mutation',
-        event_access: 'extended',
+        event_access: 'administration',
         event_scope: 'update',
-        message: 'Upgraded connector to latest compatible version',
+        message: 'upgrades connector to latest compatible version',
         user,
         context_data: {
           entity_type: ENTITY_TYPE_CONNECTOR,
           id: managedConnector.id,
-          input: patch,
+          input: {
+            slug,
+            previousVersion: contract_version,
+            newVersion: latestCompatibleContract.contract_version,
+          },
         },
       });
     } else if (semver.gt(contract_version, latestCompatibleContract.contract_version)) {
@@ -82,17 +86,20 @@ const autoUpgradeManagedConnector = async (
         newVersion: latestCompatibleContract.contract_version,
       });
       // Activity log
-      // Unsure how correct this is. Maybe the context_data is too big here.
       void publishUserAction({
         event_type: 'mutation',
-        event_access: 'extended',
+        event_access: 'administration',
         event_scope: 'update',
-        message: 'Downgraded connector to latest compatible version',
+        message: 'downgrades connector to latest compatible version',
         user,
         context_data: {
           entity_type: ENTITY_TYPE_CONNECTOR,
           id: managedConnector.id,
-          input: patch,
+          input: {
+            slug,
+            previousVersion: contract_version,
+            newVersion: latestCompatibleContract.contract_version,
+          },
         },
       });
     } else if (semver.eq(contract_version, latestCompatibleContract.contract_version)) {
@@ -103,17 +110,20 @@ const autoUpgradeManagedConnector = async (
         contractVersion: contract_version,
       });
       // Activity log
-      // Unsure how correct this is. Maybe the context_data is too big here.
       void publishUserAction({
         event_type: 'mutation',
-        event_access: 'extended',
+        event_access: 'administration',
         event_scope: 'update',
-        message: 'Upgraded connector to latest compatible identical version',
+        message: 'upgrades connector to latest compatible identical version',
         user,
         context_data: {
           entity_type: ENTITY_TYPE_CONNECTOR,
           id: managedConnector.id,
-          input: patch,
+          input: {
+            slug,
+            previousVersion: contract_version,
+            newVersion: latestCompatibleContract.contract_version,
+          },
         },
       });
     } else {
