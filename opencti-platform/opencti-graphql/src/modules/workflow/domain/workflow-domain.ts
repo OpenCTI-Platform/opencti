@@ -15,6 +15,7 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import { bypassDraftContext, getDraftContext } from '../../../utils/draftContext';
 import { SYSTEM_USER, WORKFLOW_MANAGER_USER } from '../../../utils/access';
 import { findByType as findEntitySettingByType } from '../../entitySetting/entitySetting-domain';
+import { validateSetting } from '../../entitySetting/entitySetting-validators';
 import type { BasicStoreEntityEntitySetting } from '../../entitySetting/entitySetting-types';
 import { now } from '../../../utils/format';
 import { addNotification } from '../../notification/notification-domain';
@@ -398,6 +399,8 @@ export const setWorkflowDefinition = async (
   entityType: string,
   definition: string,
 ): Promise<EntitySettingWithWorkflowResponse> => {
+  validateSetting(entityType, 'workflow_id');
+
   const entitySetting = await getWorkflowConfig(context, user, entityType);
   if (!entitySetting) {
     throw FunctionalError('Entity setting not found for type', { entityType });
@@ -410,6 +413,11 @@ export const setWorkflowDefinition = async (
   } catch (_error) {
     throw FunctionalError('Invalid workflow definition JSON');
   }
+
+  const executionContext = bypassDraftContext(context);
+  const executionUser = bypassDraftUser(user);
+
+  const errors = await validateWorkflowDefinitionData(executionContext, executionUser, definition, entityType, entitySetting.workflow_id ?? undefined);
 
   // Check if the definition uses EE-only features (actions/conditions on transitions
   // or onEnter/onExit actions on states), except for the 'validateDraft' action which is CE.
@@ -425,11 +433,6 @@ export const setWorkflowDefinition = async (
   if (definitionRequiresEE) {
     await checkEnterpriseEdition(context);
   }
-
-  const executionContext = bypassDraftContext(context);
-  const executionUser = bypassDraftUser(user);
-
-  const errors = await validateWorkflowDefinitionData(executionContext, executionUser, definition, entityType, entitySetting.workflow_id ?? undefined);
 
   const workflowName = definitionObj.name || `Workflow for ${entityType}`;
 
