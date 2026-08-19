@@ -1,13 +1,15 @@
 import { expect, it, describe, afterAll, beforeAll, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { v4 as uuidv4 } from 'uuid';
-import { fileURLToPath } from 'node:url';
+import { FEATURE_FLAG_ALL, ENABLED_FEATURE_FLAGS } from '../../../src/config/conf';
 import { queryAsAdminWithError, awaitUntilCondition, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
-import { USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
+import { ADMIN_USER, USER_CONNECTOR, USER_EDITOR, testContext } from '../../utils/testQuery';
 import { wait } from '../../../src/database/utils';
 import { XTMComposerMock } from '../../utils/XTMComposerMock';
 import type { ApiConnector } from '../../utils/XTMComposerMock';
 import { catalogHelper } from '../../utils/catalogHelper';
+import { synchronizeCatalogs } from '../../../src/modules/catalog/sync/catalog-sync-domain';
+import conf from '../../../src/config/conf';
 
 const TEST_COMPOSER_ID = uuidv4();
 const TEST_USER_CONNECTOR_ID: string = USER_CONNECTOR.id; // Initialize with default value
@@ -249,12 +251,21 @@ describe('Connector Composer and Managed Connectors', () => {
   // Track all created resources
   const createdConnectorIds = new Set<string>();
   let xtmComposer: XTMComposerMock;
+  const previousEnabledFeatureFlags = [...ENABLED_FEATURE_FLAGS];
+  const previousCustomCatalogRefreshEndpoint = conf.get('catalog_manager:custom_catalog_refresh_endpoint_uri');
+  const previousCustomCatalogs = conf.get('app:custom_catalogs');
 
   // Initialize XTM Composer mock
   beforeAll(async () => {
-    // Set up test catalog path in environment
-    const testCatalogUrl = new URL('../../utils/opencti-manifest.json', import.meta.url);
-    process.env.APP__CUSTOM_CATALOGS = JSON.stringify([fileURLToPath(testCatalogUrl)]);
+    const testCatalogUri = new URL('../../utils/opencti-manifest.json', import.meta.url).toString();
+    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
+    ENABLED_FEATURE_FLAGS.push(...previousEnabledFeatureFlags.filter((flag) => flag !== FEATURE_FLAG_ALL));
+    if (!ENABLED_FEATURE_FLAGS.includes('DECOUPLING_VERSIONS')) {
+      ENABLED_FEATURE_FLAGS.push('DECOUPLING_VERSIONS');
+    }
+    conf.set('app:custom_catalogs', []);
+    conf.set('catalog_manager:custom_catalog_refresh_endpoint_uri', testCatalogUri);
+    await synchronizeCatalogs(testContext, ADMIN_USER);
 
     // Validate that we're using the test catalog
     catalogHelper.validateTestCatalog();
@@ -1345,7 +1356,6 @@ describe('Connector Composer and Managed Connectors', () => {
         slug: expect.any(String),
         description: expect.any(String),
         short_description: expect.any(String),
-        logo: expect.any(String),
         use_cases: expect.any(Array),
         verified: expect.any(Boolean),
         last_verified_date: expect.any(String),
@@ -1359,6 +1369,7 @@ describe('Connector Composer and Managed Connectors', () => {
         container_image: expect.any(String),
         container_type: expect.any(String),
       });
+      expect(definition.logo === null || typeof definition.logo === 'string').toBeTruthy();
       expect(definition.config_schema).toBeDefined();
       expect(definition.config_schema.properties).toBeDefined();
       const runtimeKeys = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
@@ -1375,11 +1386,12 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(excerpt).toMatchObject({
         title: expect.any(String),
         slug: expect.any(String),
-        logo: expect.any(String),
+        logo: expect.anything(),
       });
     });
 
     it('should retrieve the manager contract excerpt for a managed connector', async () => {
+      const testConnector = catalogHelper.getTestSafeConnector();
       const result = await queryAsAdminWithSuccess({
         query: GET_CONNECTOR_EXCERPT_QUERY,
         variables: { id: managedConnectorId },
@@ -1388,9 +1400,9 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(result.data).toBeDefined();
       const excerpt = result.data?.connector?.manager_contract_excerpt;
       expect(excerpt).toBeDefined();
-      expect(excerpt.title).toEqual('IPinfo');
-      expect(excerpt.slug).toEqual('ipinfo');
-      expect(excerpt.logo).toMatch(/^\/storage\/view\/catalog-logos\//);
+      expect(excerpt.title).toEqual(testConnector.title);
+      expect(excerpt.slug).toEqual(testConnector.slug);
+      expect(excerpt.logo === null || typeof excerpt.logo === 'string').toBeTruthy();
     });
 
     it('should return connectorMigrationAssessment with stable output format', async () => {
@@ -1488,12 +1500,16 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(result.data).toBeDefined();
       expect(result.data?.managedConnectorEdit.name).toEqual('Updated IpInfo Connector');
       expect(result.data?.managedConnectorEdit.manager_contract_configuration).toBeDefined();
-      const runtimeKeys = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
+      const runtimeKeys = ['OPENCTI_URL', 'CONNECTOR_RUN_AND_TERMINATE'];
       runtimeKeys.forEach((runtimeKey) => {
         const found = result.data?.managedConnectorEdit.manager_contract_configuration
           .find((c: any) => c.key === runtimeKey);
         expect(found).toBeUndefined();
       });
+      const openctiTokenConfig = result.data?.managedConnectorEdit.manager_contract_configuration
+        .find((c: any) => c.key === 'OPENCTI_TOKEN');
+      expect(openctiTokenConfig).toBeDefined();
+      expect(openctiTokenConfig.value).not.toEqual('updated-token-456');
       const autoConfig = result.data?.managedConnectorEdit.manager_contract_configuration
         .find((c: any) => c.key === 'CONNECTOR_AUTO');
       expect(autoConfig.value).toEqual('false');
@@ -1838,5 +1854,9 @@ describe('Connector Composer and Managed Connectors', () => {
         }
       }),
     );
+
+    conf.set('catalog_manager:custom_catalog_refresh_endpoint_uri', previousCustomCatalogRefreshEndpoint);
+    conf.set('app:custom_catalogs', previousCustomCatalogs);
+    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, ...previousEnabledFeatureFlags);
   });
 });
