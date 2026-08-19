@@ -540,7 +540,7 @@ const createApp = async (app, schema) => {
           const rabbitMQAlive = healthCheckTimeout(rabbitMQIsAlive(), 'Timeout checking rabbitmq health');
           const redisAlive = healthCheckTimeout(redisIsAlive(), 'Timeout checking redis health');
           await Promise.all([engineAlive, storageAlive, rabbitMQAlive, redisAlive]);
-          const withDetails = String(req.query?.details ?? '').toLowerCase() === 'true';
+const withDetails = configAccessKey !== 'public' && String(req.query?.details ?? '').toLowerCase() === 'true';
           if (withDetails) {
             const engineUsedSize = healthCheckTimeout(getEngineUsedSize(), 'Timeout checking elastic/opensearch used size').catch(() => null);
             const storageUsedSize = healthCheckTimeout(getStorageUsedSize(), 'Timeout checking storage used size').catch(() => null);
