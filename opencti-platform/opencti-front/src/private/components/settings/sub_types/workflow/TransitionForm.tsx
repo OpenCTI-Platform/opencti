@@ -11,7 +11,7 @@ import WorkflowConditionFilters from './WorkflowConditionFilters';
 import { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import WorkflowFieldList from './WorkflowFieldList';
 import { CommentMode, CommentModeType, FEATURE_NAME, WorkflowActionType, WorkflowDataType } from './utils';
-import { CONTAINER_TYPES } from '../../../data/forms/FormUtils';
+import { AUTHORIZED_MEMBERS_ENTITY_TYPES } from '../../../../../utils/authorizedMembers';
 
 const TransitionForm = ({ entityType }: { entityType: string }) => {
   const { t_i18n } = useFormatter();
@@ -130,7 +130,7 @@ const TransitionForm = ({ entityType }: { entityType: string }) => {
         </Box>
       </Box>
 
-      {!CONTAINER_TYPES.includes(entityType) && (
+      {AUTHORIZED_MEMBERS_ENTITY_TYPES.includes(entityType) && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
           <Typography variant="h6">
             {t_i18n('Authorized members')} <EEChip feature={t_i18n(FEATURE_NAME)} />

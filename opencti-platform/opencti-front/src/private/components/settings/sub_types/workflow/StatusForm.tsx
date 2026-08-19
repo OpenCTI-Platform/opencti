@@ -7,8 +7,7 @@ import WorkflowFieldList from './WorkflowFieldList';
 import { FEATURE_NAME, WorkflowActionType, WorkflowDataType } from './utils';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import EEChip from '../../../common/entreprise_edition/EEChip';
-import { CREATOR_AUTHORIZED_CONFIG } from '../../../../../utils/authorizedMembers';
-import { CONTAINER_TYPES } from '../../../data/forms/FormUtils';
+import { AUTHORIZED_MEMBERS_ENTITY_TYPES } from '../../../../../utils/authorizedMembers';
 
 const StatusForm = ({ entityType }: { entityType: string }) => {
   const { t_i18n } = useFormatter();
@@ -20,7 +19,7 @@ const StatusForm = ({ entityType }: { entityType: string }) => {
   const handleToggleUpdateAuthorizedMembers = (field: 'onEnter' | 'onExit', checked: boolean) => {
     const currentActions = values[field] ?? [];
     if (checked) {
-      const newAction = { type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [{ label: 'Creator', type: CREATOR_AUTHORIZED_CONFIG.type, value: CREATOR_AUTHORIZED_CONFIG.id, accessRight: 'admin' as const, groupsRestriction: [] }] } };
+      const newAction = { type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [{ label: 'Creators', type: 'Dynamic options', value: 'CREATORS', accessRight: 'admin' as const, groupsRestriction: [] }] } };
       setFieldValue(field, [...currentActions, newAction]);
     } else {
       setFieldValue(field, currentActions.filter((a) => a.type !== WorkflowActionType.updateAuthorizedMembers));
@@ -35,7 +34,7 @@ const StatusForm = ({ entityType }: { entityType: string }) => {
         setFieldValue={(field, { value, label, color }) => setFieldValue(field, { id: value, name: label, color })}
         helpertext=""
       />
-      {!CONTAINER_TYPES.includes(entityType) && (
+      {AUTHORIZED_MEMBERS_ENTITY_TYPES.includes(entityType) && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
           <Typography variant="h6">
             {t_i18n('On enter actions')} <EEChip feature={t_i18n(FEATURE_NAME)} />
@@ -53,7 +52,7 @@ const StatusForm = ({ entityType }: { entityType: string }) => {
           {hasUpdateAuthorizedMembersOnEnter && <WorkflowFieldList name={WorkflowDataType.onEnter} />}
         </Box>
       )}
-      {!CONTAINER_TYPES.includes(entityType) && (
+      {AUTHORIZED_MEMBERS_ENTITY_TYPES.includes(entityType) && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
           <Typography variant="h6">
             {t_i18n('On exit actions')} <EEChip feature={t_i18n(FEATURE_NAME)} />

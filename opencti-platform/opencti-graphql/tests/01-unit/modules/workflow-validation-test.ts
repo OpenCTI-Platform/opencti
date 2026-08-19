@@ -843,57 +843,7 @@ describe('Workflow Validation – transition comment field', () => {
     expect(result.some((e) => e.type === 'SCHEMA_VALIDATION_FAILED')).toBe(true);
   });
 
-  it('should return error for updateAuthorizedMembers action in syncActions for Container entity type', async () => {
-    const invalid = {
-      initialState: 'existing-state',
-      states: [{ statusId: 'existing-state' }, { statusId: 'in-progress' }],
-      transitions: [
-        {
-          from: 'existing-state',
-          to: 'in-progress',
-          event: 'start',
-          syncActions: [{ type: 'updateAuthorizedMembers', params: { authorized_members: [] } }],
-        },
-      ],
-    };
-
-    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Report');
-    expect(errors.some((e) => e.type === 'AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED_FOR_CONTAINER')).toBe(true);
-  });
-
-  it('should return error for updateAuthorizedMembers action in state onEnter for Container entity type', async () => {
-    const invalid = {
-      initialState: 'existing-state',
-      states: [
-        {
-          statusId: 'existing-state',
-          onEnter: [{ type: 'updateAuthorizedMembers', params: { authorized_members: [] } }],
-        },
-      ],
-      transitions: [],
-    };
-
-    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Report');
-    expect(errors.some((e) => e.type === 'AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED_FOR_CONTAINER')).toBe(true);
-  });
-
-  it('should return error for updateAuthorizedMembers action in state onExit for Container entity type', async () => {
-    const invalid = {
-      initialState: 'existing-state',
-      states: [
-        {
-          statusId: 'existing-state',
-          onExit: [{ type: 'updateAuthorizedMembers', params: { authorized_members: [] } }],
-        },
-      ],
-      transitions: [],
-    };
-
-    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Case-Incident');
-    expect(errors.some((e) => e.type === 'AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED_FOR_CONTAINER')).toBe(true);
-  });
-
-  it('should not return error for updateAuthorizedMembers action for a non-Container entity type', async () => {
+  it('should not return error for updateAuthorizedMembers action in syncActions for a supported Container entity type', async () => {
     const valid = {
       initialState: 'existing-state',
       states: [{ statusId: 'existing-state' }, { statusId: 'in-progress' }],
@@ -907,7 +857,109 @@ describe('Workflow Validation – transition comment field', () => {
       ],
     };
 
-    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'Incident');
-    expect(errors.some((e) => e.type === 'AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED_FOR_CONTAINER')).toBe(false);
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'Report');
+    expect(errors.some((e) => e.type === 'AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED_FOR_ENTITY_TYPE')).toBe(false);
+  });
+
+  it('should not return error for updateAuthorizedMembers action in state onEnter for a supported Container entity type', async () => {
+    const valid = {
+      initialState: 'existing-state',
+      states: [
+        {
+          statusId: 'existing-state',
+          onEnter: [{ type: 'updateAuthorizedMembers', params: { authorized_members: [] } }],
+        },
+      ],
+      transitions: [],
+    };
+
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'Report');
+    expect(errors.some((e) => e.type === 'AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED_FOR_ENTITY_TYPE')).toBe(false);
+  });
+
+  it('should not return error for updateAuthorizedMembers action in state onExit for a supported Container entity type', async () => {
+    const valid = {
+      initialState: 'existing-state',
+      states: [
+        {
+          statusId: 'existing-state',
+          onExit: [{ type: 'updateAuthorizedMembers', params: { authorized_members: [] } }],
+        },
+      ],
+      transitions: [],
+    };
+
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'Case-Incident');
+    expect(errors.some((e) => e.type === 'AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED_FOR_ENTITY_TYPE')).toBe(false);
+  });
+
+  it('should not return error for updateAuthorizedMembers action for the Organization entity type', async () => {
+    const valid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'in-progress' }],
+      transitions: [
+        {
+          from: 'existing-state',
+          to: 'in-progress',
+          event: 'start',
+          syncActions: [{ type: 'updateAuthorizedMembers', params: { authorized_members: [] } }],
+        },
+      ],
+    };
+
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'Organization');
+    expect(errors.some((e) => e.type === 'AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED_FOR_ENTITY_TYPE')).toBe(false);
+  });
+
+  it('should not return error for updateAuthorizedMembers action for the DraftWorkspace entity type', async () => {
+    const valid = {
+      initialState: 'existing-state',
+      states: [
+        {
+          statusId: 'existing-state',
+          onEnter: [{ type: 'updateAuthorizedMembers', params: { authorized_members: [] } }],
+        },
+      ],
+      transitions: [],
+    };
+
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'DraftWorkspace');
+    expect(errors.some((e) => e.type === 'AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED_FOR_ENTITY_TYPE')).toBe(false);
+  });
+
+  it('should return error for updateAuthorizedMembers action for a non-supported entity type', async () => {
+    const invalid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'in-progress' }],
+      transitions: [
+        {
+          from: 'existing-state',
+          to: 'in-progress',
+          event: 'start',
+          syncActions: [{ type: 'updateAuthorizedMembers', params: { authorized_members: [] } }],
+        },
+      ],
+    };
+
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident');
+    expect(errors.some((e) => e.type === 'AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED_FOR_ENTITY_TYPE')).toBe(true);
+  });
+
+  it('should return error for updateAuthorizedMembers action for a Container type that does not support authorized members', async () => {
+    const invalid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'in-progress' }],
+      transitions: [
+        {
+          from: 'existing-state',
+          to: 'in-progress',
+          event: 'start',
+          syncActions: [{ type: 'updateAuthorizedMembers', params: { authorized_members: [] } }],
+        },
+      ],
+    };
+
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Task');
+    expect(errors.some((e) => e.type === 'AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED_FOR_ENTITY_TYPE')).toBe(true);
   });
 });

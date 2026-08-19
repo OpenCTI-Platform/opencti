@@ -418,13 +418,13 @@ describe('TransitionForm – entityType-based section visibility', () => {
     expect(screen.queryByText(/draft validation/i)).toBeNull();
   });
 
-  it('renders "Authorized members" section for a non-container entityType', () => {
+  it('hides "Authorized members" section for a non-supported entityType', () => {
     renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, vi.fn(), 'Malware');
-    expect(screen.queryByRole('heading', { name: /authorized members/i })).not.toBeNull();
+    expect(screen.queryByRole('heading', { name: /authorized members/i })).toBeNull();
   });
 
-  it('hides "Authorized members" section for a Container entityType', () => {
+  it('renders "Authorized members" section for a Container entityType that supports authorized members', () => {
     renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, vi.fn(), 'Report');
-    expect(screen.queryByRole('heading', { name: /authorized members/i })).toBeNull();
+    expect(screen.queryByRole('heading', { name: /authorized members/i })).not.toBeNull();
   });
 });
