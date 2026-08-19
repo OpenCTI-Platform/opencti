@@ -215,7 +215,9 @@ const computeCatalogSyncOps = (params: {
     catalog_id: params.sourceCatalog.id,
     name: params.sourceCatalog.name,
     description: params.sourceCatalog.description,
-    version: params.sourceCatalog.version,
+    product_version: params.sourceCatalog.product_version,
+    manifest_version: params.sourceCatalog.manifest_version,
+    manifest_schema_version: params.sourceCatalog.manifest_schema_version,
   };
   return {
     contractsCreations,
