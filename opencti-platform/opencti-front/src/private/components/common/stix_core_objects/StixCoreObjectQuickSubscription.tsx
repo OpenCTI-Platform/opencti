@@ -527,6 +527,7 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
                     aria-label={expandedLines ? t_i18n('Collapse') : t_i18n('Expand')}
                     onClick={handleToggleLine}
                     aria-haspopup="true"
+                    aria-expanded={expandedLines}
                   >
                     {expandedLines ? <ExpandLess /> : <ExpandMore />}
                   </IconButton>
