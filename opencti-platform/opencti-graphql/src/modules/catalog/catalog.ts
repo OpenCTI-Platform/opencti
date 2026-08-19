@@ -81,10 +81,12 @@ const CATALOG_DEFINITION: ModuleDefinition<StoreEntityCatalog, any> = {
     resolvers: {},
   },
   attributes: [
-    { name: 'source_uri', label: 'Source URI', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'catalog_id', label: 'Catalog ID', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'revision', label: 'Revision', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'version', label: 'Product version', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    { name: 'source_uri', label: 'Source URI', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'catalog_id', label: 'Catalog ID', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'revision', label: 'Revision', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'product_version', label: 'Product version', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'manifest_version', label: 'Manifest version', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'manifest_schema_version', label: 'Manifest schema version', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   relations: [],
   // Irrelevant as no corresponding Stix object.

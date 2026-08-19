@@ -12,6 +12,7 @@ import type { CatalogContractSyncSource, CatalogSyncSource, CatalogSyncSourceCon
  * - V0: the format used in the embedded catalog manifest, before the decoupling project
  * - V1: the format specced during the decoupling project
  */
+const MANIFEST_SCHEMA_VERSION_1 = '1';
 
 type CatalogContractDtoV0 = CatalogContract;
 type CatalogDtoV0 = CatalogDefinition;
@@ -42,14 +43,18 @@ type CatalogDtoV1 = {
   id: string;
   name: string;
   description: string;
-  manifest_schema_version: '1';
+  manifest_schema_version: typeof MANIFEST_SCHEMA_VERSION_1;
   manifest_version: string;
   product_version: string;
   contracts: Array<CatalogContractDtoV1>;
 };
 
+interface CatalogDtoWithExplicitSchemaVersion {
+  manifest_schema_version: string;
+}
+
 interface CatalogSyncSourceAdapter {
-  fetch: () => Promise<CatalogDtoV0 | CatalogDtoV1>;
+  fetch: () => Promise<unknown>;
   fetchRevisionHint?: () => Promise<string | undefined>;
 }
 
@@ -239,8 +244,26 @@ const mapCatalogContractDtoV1ToCatalogContractSyncSource = (contractDto: Catalog
   };
 };
 
-const isCatalogDtoV1 = (catalog: CatalogDtoV0 | CatalogDtoV1): catalog is CatalogDtoV1 => {
-  return typeof (catalog as CatalogDtoV1).manifest_schema_version === 'string';
+const isCatalogDtoV1 = (catalog: CatalogDtoWithExplicitSchemaVersion): catalog is CatalogDtoV1 => {
+  return catalog.manifest_schema_version === MANIFEST_SCHEMA_VERSION_1;
+};
+
+const isCatalogDtoV0 = (catalog: unknown): catalog is CatalogDtoV0 => {
+  return typeof catalog === 'object'
+    && catalog !== null
+    && 'id' in catalog
+    && 'version' in catalog
+    && typeof catalog.id === 'string'
+    && typeof catalog.version === 'string';
+};
+
+const isCatalogDtoWithExplicitSchemaVersion = (
+  catalog: unknown,
+): catalog is CatalogDtoWithExplicitSchemaVersion => {
+  return typeof catalog === 'object'
+    && catalog !== null
+    && 'manifest_schema_version' in catalog
+    && typeof catalog.manifest_schema_version === 'string';
 };
 
 export const mapCatalogContractDtoToCatalogContractSyncSource = (
@@ -254,23 +277,45 @@ export const mapCatalogContractDtoToCatalogContractSyncSource = (
   };
 };
 
-export const mapCatalogDtoToCatalogSyncSource = (catalog: CatalogDtoV0 | CatalogDtoV1): CatalogSyncSource => {
-  if (isCatalogDtoV1(catalog)) {
-    return {
-      id: catalog.id,
-      name: catalog.name,
-      description: catalog.description,
-      version: catalog.product_version,
-      contracts: catalog.contracts.map((contractDto) => {
-        return mapCatalogContractDtoV1ToCatalogContractSyncSource(contractDto);
-      }),
-    };
+const mapCatalogDtoToCatalogSyncSource = (catalog: unknown): CatalogSyncSource => {
+  if (isCatalogDtoV0(catalog)) {
+    return mapCatalogDtoV0ToCatalogSyncSource(catalog);
   }
-  const syncSource = {
+  if (!isCatalogDtoWithExplicitSchemaVersion(catalog)) {
+    throw UnsupportedError('Unrecognized catalog format: no manifest_schema_version');
+  }
+  if (isCatalogDtoV1(catalog)) {
+    return mapCatalogDtoV1ToCatalogSyncSource(catalog);
+  }
+  throw UnsupportedError('Unsupported catalog schema version', {
+    cause: {
+      manifest_schema_version: catalog.manifest_schema_version,
+    },
+  });
+};
+
+const mapCatalogDtoV1ToCatalogSyncSource = (catalog: CatalogDtoV1): CatalogSyncSource => {
+  return {
+    id: catalog.id,
+    name: catalog.name,
+    description: catalog.description,
+    product_version: catalog.product_version,
+    manifest_version: catalog.manifest_version,
+    manifest_schema_version: catalog.manifest_schema_version,
+    contracts: catalog.contracts.map((contractDto) => {
+      return mapCatalogContractDtoV1ToCatalogContractSyncSource(contractDto);
+    }),
+  };
+};
+
+const mapCatalogDtoV0ToCatalogSyncSource = (catalog: CatalogDtoV0): CatalogSyncSource => {
+  return {
     ...catalog,
+    product_version: catalog.version,
+    manifest_version: null,
+    manifest_schema_version: '0' as const,
     contracts: catalog.contracts.map(mapCatalogContractDtoToCatalogContractSyncSource),
   };
-  return syncSource;
 };
 
 export const fetchSourceCatalog = async (sourceConfig: CatalogSyncSourceConfig): Promise<CatalogSyncSource> => {
@@ -284,7 +329,9 @@ export const fetchSourceCatalog = async (sourceConfig: CatalogSyncSourceConfig):
     sourceUri: sourceConfig.uri,
     catalogId: syncSource.id,
     contractsCount: syncSource.contracts.length,
-    manifestSchemaVersion: isCatalogDtoV1(raw) ? raw.manifest_schema_version : '0',
+    manifestSchemaVersion: syncSource.manifest_schema_version,
+    productVersion: syncSource.product_version,
+    manifestVersion: syncSource.manifest_version,
   });
   return syncSource;
 };
