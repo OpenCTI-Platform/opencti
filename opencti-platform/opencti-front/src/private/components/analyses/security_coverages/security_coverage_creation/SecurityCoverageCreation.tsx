@@ -3,97 +3,38 @@ import { SecurityCoveragesLinesPaginationQuery$variables } from '@components/ana
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import OpenVocabField from '@components/common/form/OpenVocabField';
-import { AutoModeOutlined, EditOutlined } from '@mui/icons-material';
-import { Box, CardContent, Step, StepLabel, Stepper, Typography } from '@mui/material';
+import { Box, Step, StepLabel, Stepper } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
-import { Theme } from '@mui/material/styles/createTheme';
-import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
-import Card from '../../../../components/common/card/Card';
-import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
-import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
-import PeriodicityField from '../../../../components/fields/PeriodicityField';
-import SelectField from '../../../../components/fields/SelectField';
-import SwitchField from '../../../../components/fields/SwitchField';
-import { useFormatter } from '../../../../components/i18n';
-import ListLines from '../../../../components/list_lines/ListLines';
-import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import TextField from '../../../../components/TextField';
-import { handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
-import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
-import useFiltersState from '../../../../utils/filters/useFiltersState';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
-import { insertNode } from '../../../../utils/store';
-import { CoverageInformationFieldAdd } from '../../common/form/CoverageInformationField';
-import CreatedByField from '../../common/form/CreatedByField';
-import ObjectLabelField from '../../common/form/ObjectLabelField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import SecurityCoverageEntityLine from './SecurityCoverageEntityLine';
+import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
+import CreateEntityControlledDial from '../../../../../components/CreateEntityControlledDial';
+import MarkdownField from '../../../../../components/fields/markdownField/MarkdownField';
+import PeriodicityField from '../../../../../components/fields/PeriodicityField';
+import SelectField from '../../../../../components/fields/SelectField';
+import SwitchField from '../../../../../components/fields/SwitchField';
+import { useFormatter } from '../../../../../components/i18n';
+import Loader, { LoaderVariant } from '../../../../../components/Loader';
+import TextField from '../../../../../components/TextField';
+import { handleErrorInForm, QueryRenderer } from '../../../../../relay/environment';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import useDefaultValues from '../../../../../utils/hooks/useDefaultValues';
+import useMarkdownCreationFilesInput from '../../../../../utils/markdown/useMarkdownCreationFilesInput';
+import { insertNode } from '../../../../../utils/store';
+import { CoverageInformationFieldAdd } from '../../../common/form/CoverageInformationField';
+import CreatedByField from '../../../common/form/CreatedByField';
+import ObjectLabelField from '../../../common/form/ObjectLabelField';
+import ObjectMarkingField from '../../../common/form/ObjectMarkingField';
 import { useNavigate } from 'react-router-dom';
-import { SecurityCoverageCreationMutation } from '@components/analyses/security_coverages/__generated__/SecurityCoverageCreationMutation.graphql';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  stepperContainer: {
-    marginBottom: 20,
-  },
-}));
-
-const CARD_WIDTH = 400;
-const CARD_HEIGHT = 250;
-
-// Default entity types for coverage
-const DEFAULT_ENTITY_TYPES = [
-  'Report',
-  'Grouping',
-  'Case-Incident',
-  'Intrusion-Set',
-  'Campaign',
-  'Incident',
-];
-
-enum StepKey {
-  MODE = 'mode',
-  OBJECT_COVERED = 'objectCovered',
-  COMPATIBLE_ENTITIES = 'compatibleEntities',
-  COVERAGE_DETAILS = 'coverageDetails',
-}
-
-// Type definitions for GraphQL responses
-interface StixCoreObjectNode {
-  id: string;
-  name?: string;
-  entity_type: string;
-  created_at: string;
-  representative?: { main: string };
-  createdBy?: { id: string; name: string };
-  objectLabel?: { id: string; value: string; color: string }[];
-  objectMarking?: { id: string; definition_type: string; definition: string; x_opencti_order: number; x_opencti_color: string }[];
-}
-
-interface EntitiesQueryProps {
-  stixCoreObjects?: {
-    edges: Array<{ node: StixCoreObjectNode }>;
-  };
-}
+import { SecurityCoverageCreationMutation } from './__generated__/SecurityCoverageCreationMutation.graphql';
+import ChooseModeStep from './ChooseModeStep';
+import SelectCoveredEntityStep from './SelectCoveredEntityStep';
+import { SecurityCoverageMode, StepKey, StixCoreObjectNode } from './securityCoverageCreation-types';
 
 interface ConnectorsQueryProps {
   connectors?: Array<{
@@ -131,68 +72,6 @@ const securityCoverageConnectorsQuery = graphql`
       active
       connector_type
       connector_scope
-    }
-  }
-`;
-
-// Query for fetching entities to be covered
-const securityCoverageEntitiesQuery = graphql`
-  query SecurityCoverageCreationEntitiesQuery(
-    $types: [String]
-    $search: String
-    $count: Int!
-    $cursor: ID
-    $orderBy: StixCoreObjectsOrdering
-    $orderMode: OrderingMode
-    $filters: FilterGroup
-  ) {
-    stixCoreObjects(
-      types: $types
-      search: $search
-      first: $count
-      after: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    ) @connection(key: "Pagination_stixCoreObjects") {
-      edges {
-        node {
-          id
-          standard_id
-          entity_type
-          created_at
-          representative {
-            main
-          }
-          createdBy {
-            ... on Identity {
-              id
-              name
-            }
-          }
-          creators {
-            id
-            name
-          }
-          objectLabel {
-            id
-            value
-            color
-          }
-          objectMarking {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
-      }
-      pageInfo {
-        endCursor
-        hasNextPage
-        globalCount
-      }
     }
   }
 `;
@@ -311,82 +190,25 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
   preSelectedEntity,
   shouldRedirect,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
 
   // Stepper state - if we have a preselected entity, start at step 0 (choose type)
   const [activeStep, setActiveStep] = useState<StepKey>(StepKey.MODE);
-  const [mode, setMode] = useState<'manual' | 'automated' | null>(null);
+  const [mode, setMode] = useState<SecurityCoverageMode | null>(null);
   const [selectedEntity, setSelectedEntity] = useState<StixCoreObjectNode | null>(preSelectedEntity);
-
-  // Entity selection state - not persisted to local storage or URL
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('created_at');
-  const [orderAsc, setOrderAsc] = useState(false);
-  const initialFilters = {
-    ...emptyFilterGroup,
-    filters: [
-      {
-        key: 'regardingOf',
-        operator: 'not_eq',
-        values: [
-          {
-            key: 'relationship_type',
-            values: [
-              'object-covered',
-            ],
-          },
-        ],
-        mode: 'or',
-      },
-    ],
-  };
-
-  const [filters, helpers] = useFiltersState(initialFilters);
-  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Domain-Object', filters);
 
   // When we have a preselected entity, we skip the "Select entity" step
   const steps = [
     { title: t_i18n('Choose type'), step: StepKey.MODE },
     ...(preSelectedEntityId ? [] : [{ title: t_i18n('Select entity to cover'), step: StepKey.OBJECT_COVERED }]),
-    ...(mode === 'manual' ? [{ title: t_i18n('Select object covered entities'), step: StepKey.COMPATIBLE_ENTITIES }] : []),
+    ...(mode === SecurityCoverageMode.MANUAL ? [{ title: t_i18n('Select object covered entities'), step: StepKey.COMPATIBLE_ENTITIES }] : []),
     { title: t_i18n('Coverage details'), step: StepKey.COVERAGE_DETAILS },
   ];
 
   const activeStepIndex = Math.max(0, steps.findIndex(({ step }) => step === activeStep));
 
-  const buildColumns = () => {
-    return {
-      entity_type: {
-        label: 'Type',
-        width: '12%',
-        isSortable: true,
-      },
-      value: {
-        label: 'Value',
-        width: '28%',
-        isSortable: false,
-      },
-      createdBy: {
-        label: 'Author',
-        width: '12%',
-        isSortable: true,
-      },
-      objectLabel: {
-        label: 'Labels',
-        width: '22%',
-        isSortable: false,
-      },
-      objectMarking: {
-        label: 'Marking',
-        width: '16%',
-        isSortable: false,
-      },
-    };
-  };
-
-  const handleSelectMode = (newMode: 'manual' | 'automated') => {
+  const handleSelectMode = (newMode: SecurityCoverageMode) => {
     setMode(newMode);
     // If no preselected entity, go to entity selection (step object covered)
     // If we have a preselected entity :
@@ -395,18 +217,18 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
     if (!preSelectedEntityId) {
       setActiveStep(StepKey.OBJECT_COVERED);
     } else {
-      setActiveStep(newMode === 'manual' ? StepKey.COMPATIBLE_ENTITIES : StepKey.COVERAGE_DETAILS);
+      setActiveStep(newMode === SecurityCoverageMode.MANUAL ? StepKey.COMPATIBLE_ENTITIES : StepKey.COVERAGE_DETAILS);
     }
   };
 
-  const handleSelectEntity = (entity: StixCoreObjectNode, setFieldValue?: (field: string, value: unknown) => void) => {
+  const handleSelectEntity = (entity: StixCoreObjectNode, setFieldValue: (field: string, value: unknown) => void) => {
     setSelectedEntity(entity);
     // Update the form name with the selected entity's representative name
-    if (setFieldValue && (entity.representative?.main || entity.name)) {
+    if (entity.representative?.main || entity.name) {
       setFieldValue('name', entity.representative?.main || entity.name);
     }
     // Automatically move to the select covered entities step (if manual mode) or coverage details otherwise
-    setActiveStep(mode === 'manual' ? StepKey.COMPATIBLE_ENTITIES : StepKey.COVERAGE_DETAILS);
+    setActiveStep(mode === SecurityCoverageMode.MANUAL ? StepKey.COMPATIBLE_ENTITIES : StepKey.COVERAGE_DETAILS);
   };
 
   // Removed handleBack - users should click on stepper steps directly
@@ -416,7 +238,6 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
     setActiveStep(StepKey.MODE);
     setMode(null);
     setSelectedEntity(null);
-    helpers.handleClearAllFilters();
     if (onClose) {
       onClose();
     }
@@ -443,7 +264,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
       name: values.name,
       description: values.description,
       objectCovered: selectedEntity.id,
-      ...(mode === 'manual' ? {
+      ...(mode === SecurityCoverageMode.MANUAL ? {
         coverage_information: values.coverage_information.map((info) => ({
           coverage_name: info.coverage_name,
           coverage_score: Number(info.coverage_score),
@@ -459,7 +280,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       confidence: parseInt(String(values.confidence), 10),
-      add_related_entities: mode === 'manual',
+      add_related_entities: mode === SecurityCoverageMode.MANUAL,
     };
 
     commit({
@@ -499,7 +320,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
       createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       confidence: defaultConfidence,
-      auto_enrichment_disable: mode === 'manual',
+      auto_enrichment_disable: mode === SecurityCoverageMode.MANUAL,
       objectLabel: defaultLabels,
       coverage_information: [],
       periodicity: 'P1D',
@@ -519,170 +340,23 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
   ) => {
     switch (step) {
       case StepKey.MODE:
-        // Choose Type (all cases)
+      // Choose Type (all cases)
         return (
-          <Box>
-            <Box
-              sx={{
-                display: 'flex',
-                gap: 4,
-                justifyContent: 'center',
-                alignItems: 'center',
-                minHeight: '40vh',
-                flexWrap: 'wrap',
-                marginTop: 4,
-              }}
-            >
-              <Card
-                aria-label={t_i18n('Manual Input')}
-                variant="outlined"
-                onClick={() => handleSelectMode('manual')}
-                sx={{
-                  width: CARD_WIDTH,
-                  height: CARD_HEIGHT,
-                  textAlign: 'center',
-                }}
-              >
-                <CardContent>
-                  <EditOutlined sx={{ fontSize: 40 }} color="primary" />
-                  <Typography
-                    gutterBottom
-                    variant="h2"
-                    style={{ marginTop: 20 }}
-                  >
-                    {t_i18n('Manual Input')}
-                  </Typography>
-                  <br />
-                  <Typography variant="body1">
-                    {t_i18n('Manually enter security coverage metrics and scores for this entity')}
-                  </Typography>
-                </CardContent>
-              </Card>
-
-              <Card
-                variant="outlined"
-                aria-label={t_i18n('Automated using enrichment')}
-                onClick={() => hasEnrichmentConnectors && handleSelectMode('automated')}
-                disabled={!hasEnrichmentConnectors}
-                sx={{
-                  width: CARD_WIDTH,
-                  height: CARD_HEIGHT,
-                  textAlign: 'center',
-                  opacity: hasEnrichmentConnectors ? 1 : 0.5,
-                }}
-              >
-                <CardContent>
-                  <AutoModeOutlined sx={{ fontSize: 40 }} color={hasEnrichmentConnectors ? 'primary' : 'disabled'} />
-                  <Typography
-                    gutterBottom
-                    variant="h2"
-                    style={{ marginTop: 20 }}
-                    color={hasEnrichmentConnectors ? 'textPrimary' : 'textSecondary'}
-                  >
-                    {t_i18n('Automated using enrichment')}
-                  </Typography>
-                  <br />
-                  <Typography
-                    variant="body1"
-                    color={hasEnrichmentConnectors ? 'textPrimary' : 'textSecondary'}
-                  >
-                    {hasEnrichmentConnectors
-                      ? t_i18n('OpenAEV (or other AEV platforms) can be used to automate security coverage assessment')
-                      : t_i18n('No enrichment connector available for Security Coverage')}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Box>
-            <div className={classes.buttons} style={{ marginTop: 20 }}>
-              <Button
-                onClick={handleClose}
-                classes={{ root: classes.button }}
-              >
-                {t_i18n('Cancel')}
-              </Button>
-            </div>
-          </Box>
+          <ChooseModeStep
+            hasEnrichmentConnectors={hasEnrichmentConnectors}
+            onSelectMode={handleSelectMode}
+            onClose={handleClose}
+          />
         );
 
-      case StepKey.OBJECT_COVERED: {
+      case StepKey.OBJECT_COVERED:
         // Select Entity to Cover (when creation from security coverage view, either manual or automated case)
-        const queryPaginationOptions = {
-          types: DEFAULT_ENTITY_TYPES,
-          search: searchTerm,
-          filters: contextFilters,
-          orderBy: sortBy,
-          orderMode: orderAsc ? 'asc' : 'desc' as 'asc' | 'desc',
-          count: 50,
-          cursor: null,
-        };
-
-        const handleSort = (field: string, order: boolean) => {
-          setSortBy(field);
-          setOrderAsc(order);
-        };
-        const handleSearch = (value: string) => {
-          setSearchTerm(value);
-        };
-
         return (
-          <>
-            <ListLines
-              helpers={helpers}
-              sortBy={sortBy}
-              orderAsc={orderAsc}
-              dataColumns={buildColumns()}
-              handleSort={handleSort}
-              handleSearch={handleSearch}
-              handleAddFilter={helpers.handleAddSingleValueFilter}
-              handleRemoveFilter={helpers.handleRemoveRepresentationFilter}
-              handleSwitchFilter={helpers.handleSwitchGlobalMode}
-              handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-              handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-              keyword={searchTerm}
-              filters={filters}
-              paginationOptions={queryPaginationOptions}
-              numberOfElements={{ number: 0, symbol: '' }}
-              availableFilterKeys={['entity_type', 'objectLabel', 'createdBy', 'objectMarking', 'created_start_date', 'created_end_date', 'created_at_start_date', 'created_at_end_date']}
-              availableEntityTypes={DEFAULT_ENTITY_TYPES}
-              noPadding={true}
-              disableCards={true}
-              noHeaders={false}
-              iconExtension
-            >
-              <QueryRenderer
-                query={securityCoverageEntitiesQuery}
-                variables={queryPaginationOptions}
-                render={(renderProps: { props: EntitiesQueryProps | null }) => {
-                  const { props } = renderProps;
-                  if (!props || !props.stixCoreObjects) {
-                    return <Loader variant={LoaderVariant.inElement} />;
-                  }
-                  return (
-                    <ListLinesContent
-                      initialLoading={false}
-                      loadMore={() => {}}
-                      hasMore={() => false}
-                      isLoading={() => false}
-                      dataList={props.stixCoreObjects.edges.slice(0, 50)}
-                      globalCount={Math.min(props.stixCoreObjects.edges.length, 50)}
-                      LineComponent={SecurityCoverageEntityLine}
-                      DummyLineComponent={() => null}
-                      dataColumns={buildColumns()}
-                      paginationOptions={queryPaginationOptions}
-                      selectedElements={{}}
-                      selectAll={false}
-                      onToggleEntity={(entity: StixCoreObjectNode) => handleSelectEntity(entity, setFieldValue)}
-                      onLabelClick={helpers.handleAddSingleValueFilter}
-                      redirectionMode={undefined}
-                      selectedEntity={selectedEntity}
-                    />
-                  );
-                }}
-              />
-            </ListLines>
-          </>
+          <SelectCoveredEntityStep
+            onSelectEntity={(entity) => handleSelectEntity(entity, setFieldValue)}
+            selectedEntity={selectedEntity}
+          />
         );
-      }
 
       case StepKey.COMPATIBLE_ENTITIES:
         // Select covered entities (manual mode)
@@ -718,11 +392,11 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
             />
             <PeriodicityField
               name="periodicity"
-              label={mode === 'automated' ? t_i18n('Coverage recurrence (every x)') : t_i18n('Coverage validity period')}
+              label={mode === SecurityCoverageMode.AUTO ? t_i18n('Coverage recurrence (every x)') : t_i18n('Coverage validity period')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
-            {mode === 'automated' && (
+            {mode === SecurityCoverageMode.AUTO && (
               <>
                 <PeriodicityField
                   name="duration"
@@ -761,7 +435,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
               label={t_i18n('Force manual coverage (prevent enrichment connectors from running)')}
               containerstyle={fieldSpacingContainerStyle}
             />
-            {mode === 'manual' && (
+            {mode === SecurityCoverageMode.MANUAL && (
               <>
                 <CoverageInformationFieldAdd
                   name="coverage_information"
@@ -804,7 +478,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting || !values.name || (mode === 'manual' && (!values.coverage_information || values.coverage_information.length === 0))}
+                disabled={isSubmitting || !values.name || (mode === SecurityCoverageMode.MANUAL && (!values.coverage_information || values.coverage_information.length === 0))}
               >
                 {t_i18n('Create')}
               </Button>
@@ -819,7 +493,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
 
   return (
     <Box>
-      <div className={classes.stepperContainer}>
+      <Box sx={{ marginBottom: 2.5 }}>
         <Stepper activeStep={activeStepIndex}>
           {steps.map(({ title, step }, index) => (
             <Step key={step}>
@@ -836,12 +510,12 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
             </Step>
           ))}
         </Stepper>
-      </div>
+      </Box>
 
       <Formik<SecurityCoverageFormValues>
         enableReinitialize
         initialValues={initialValues}
-        validationSchema={securityCoverageValidation(t_i18n, mode === 'automated')}
+        validationSchema={securityCoverageValidation(t_i18n, mode === SecurityCoverageMode.AUTO)}
         onSubmit={onSubmit}
       >
         {({ values, isSubmitting, setFieldValue, resetForm, submitForm }) => (
