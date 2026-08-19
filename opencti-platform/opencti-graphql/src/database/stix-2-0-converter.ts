@@ -297,6 +297,7 @@ export const convertIncidentToStix = (instance: StoreEntity): SDO.StixIncident =
     incident_type: instance.incident_type,
     severity: instance.severity,
     source: instance.source,
+    x_opencti_score: instance.x_opencti_score,
   };
 };
 

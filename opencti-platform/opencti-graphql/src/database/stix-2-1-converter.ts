@@ -414,10 +414,11 @@ const convertIncidentToStix = (instance: StoreEntity, type: string): SDO.StixInc
     severity: instance.severity,
     source: instance.source,
     extensions: {
-      [STIX_EXT_OCTI]: {
+      [STIX_EXT_OCTI]: cleanObject({
         ...incident.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',
-      },
+        score: instance.x_opencti_score,
+      }),
     },
   };
 };
