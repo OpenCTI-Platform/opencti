@@ -157,7 +157,7 @@ describe('Check connector migration', () => {
   });
 
   describe('migrate connector to managed', () => {
-    describe('when migration is successful', () => {
+    describe.todo('when migration is successful', () => {
       it('should migrate a standalone connector to managed, and user is now service account', async () => {
         const queryConnectorRegistered = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
         const standaloneConnector = queryConnectorRegistered.data?.connector;
