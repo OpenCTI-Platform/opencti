@@ -46,35 +46,37 @@ vi.mock('../../../../src/config/conf', () => ({
 
 import { autoUpgradeManagedConnectors } from '../../../../src/modules/connector/connector-domain';
 
-const buildManagedConnector = (overrides: Partial<BasicStoreEntityConnector> = {}): BasicStoreEntityConnector => ({
-  id: 'connector-1',
-  internal_id: 'connector-1',
-  name: 'Managed connector',
-  title: 'Managed connector',
-  connector_type: 'EXTERNAL_IMPORT',
-  active: true,
-  auto: true,
-  built_in: false,
-  only_contextual: false,
-  connector_scope: [],
-  updated_at: '',
-  connector_user_id: 'user-1',
-  connector_info: {} as any,
-  playbook_compatible: false,
-  xtm_one_intent: null,
-  connector_state: '',
-  connector_state_reset: false,
-  connector_trigger_filters: '',
-  catalog_id: 'catalog-1',
-  manager_upgrade_strategy: 'latest',
-  manager_contract_image: 'opencti/connector-test:1.0.0',
-  manager_contract: {
-    slug: 'ipinfo',
-    contract_version: '1.0.0',
-    content_hash: 'hash-1',
-  } as any,
-  ...overrides,
-});
+const buildManagedConnector = (overrides: Partial<BasicStoreEntityConnector> = {}): BasicStoreEntityConnector => {
+  const connector = {
+    id: 'connector-1',
+    internal_id: 'connector-1',
+    name: 'Managed connector',
+    connector_type: 'EXTERNAL_IMPORT',
+    active: true,
+    auto: true,
+    built_in: false,
+    only_contextual: false,
+    connector_scope: '*',
+    updated_at: new Date(),
+    connector_user_id: 'user-1',
+    connector_info: {} as any,
+    playbook_compatible: false,
+    xtm_one_intent: null,
+    connector_state: '',
+    connector_state_reset: false,
+    connector_trigger_filters: '',
+    catalog_id: 'catalog-1',
+    manager_upgrade_strategy: 'latest',
+    manager_contract_image: 'opencti/connector-test:1.0.0',
+    manager_contract: {
+      slug: 'ipinfo',
+      contract_version: '1.0.0',
+      content_hash: 'hash-1',
+    } as any,
+    ...overrides,
+  };
+  return connector as BasicStoreEntityConnector;
+};
 
 const latestCompatibleContract = {
   slug: 'ipinfo',
