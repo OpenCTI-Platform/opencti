@@ -92,7 +92,9 @@ jobs:
         docker run -d --network runner-docker-network \
           --name opencti-e2e-start \
           -p 4500:4100 \
-          -v ${{ github.workspace }}/frontend-e2e-test:/opt/opencti \
+          -v ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-graphql/script:/opt/opencti/script \
+          -v ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-graphql/tests:/opt/opencti/tests \
+          -v ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-graphql/src/python/testing:/opt/opencti/src/python/testing \
           -e APP__PORT=4100 \
           -e APP__ENABLED_DEV_FEATURES='${{ matrix.dev_features }}' \
           -e APP__ADMIN__PASSWORD=admin \
@@ -137,9 +139,8 @@ jobs:
             pwd
             find .
             ls -lart
-            cd /opt/opencti/opencti-platform/opencti-graphql/script
-            ls
-            node script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy
+            ls script
+            node script/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy
           '
 
     - name: e2e tests
