@@ -3,7 +3,7 @@ import { AutoModeOutlined, EditOutlined } from '@mui/icons-material';
 import { useFormatter } from 'src/components/i18n';
 import Card from 'src/components/common/card/Card';
 import Button from 'src/components/common/button/Button';
-import { SecurityCoverageMode } from './securityCoverageCreation-types';
+import { SecurityCoverageMode } from './SecurityCoverageCreation-types';
 
 const CARD_WIDTH = 400;
 const CARD_HEIGHT = 250;

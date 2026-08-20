@@ -7,7 +7,8 @@ import SecurityCoverageEntityLine from '../SecurityCoverageEntityLine';
 import Loader, { LoaderVariant } from 'src/components/Loader';
 import { graphql } from 'react-relay';
 import useFiltersState from 'src/utils/filters/useFiltersState';
-import { StixCoreObjectNode } from './securityCoverageCreation-types';
+import { StixCoreObjectNode } from './SecurityCoverageCreation-types';
+import { DATA_COLUMNS } from './SecurityCoverageCreation';
 
 interface SelectCoveredEntityStepProps {
   onSelectEntity: (entity: StixCoreObjectNode) => void;
@@ -110,34 +111,6 @@ const initialFilters = {
   ],
 };
 
-const COLUMNS = {
-  entity_type: {
-    label: 'Type',
-    width: '12%',
-    isSortable: true,
-  },
-  value: {
-    label: 'Value',
-    width: '28%',
-    isSortable: false,
-  },
-  createdBy: {
-    label: 'Author',
-    width: '12%',
-    isSortable: true,
-  },
-  objectLabel: {
-    label: 'Labels',
-    width: '22%',
-    isSortable: false,
-  },
-  objectMarking: {
-    label: 'Marking',
-    width: '16%',
-    isSortable: false,
-  },
-};
-
 const SelectCoveredEntityStep = (
   {
     onSelectEntity,
@@ -174,7 +147,7 @@ const SelectCoveredEntityStep = (
         helpers={helpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
-        dataColumns={COLUMNS}
+        dataColumns={DATA_COLUMNS}
         handleSort={handleSort}
         handleSearch={handleSearch}
         handleAddFilter={helpers.handleAddSingleValueFilter}
@@ -211,7 +184,7 @@ const SelectCoveredEntityStep = (
                 globalCount={Math.min(props.stixCoreObjects.edges.length, 50)}
                 LineComponent={SecurityCoverageEntityLine}
                 DummyLineComponent={() => null}
-                dataColumns={COLUMNS}
+                dataColumns={DATA_COLUMNS}
                 paginationOptions={queryPaginationOptions}
                 selectedElements={{}}
                 selectAll={false}

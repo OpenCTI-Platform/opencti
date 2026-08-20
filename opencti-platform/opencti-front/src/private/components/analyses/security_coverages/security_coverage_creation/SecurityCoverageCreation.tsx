@@ -1,40 +1,28 @@
-import Button from '@common/button/Button';
 import { SecurityCoveragesLinesPaginationQuery$variables } from '@components/analyses/__generated__/SecurityCoveragesLinesPaginationQuery.graphql';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
-import ConfidenceField from '@components/common/form/ConfidenceField';
-import OpenVocabField from '@components/common/form/OpenVocabField';
 import { Box, Step, StepLabel, Stepper } from '@mui/material';
-import MenuItem from '@mui/material/MenuItem';
-import { Field, Form, Formik } from 'formik';
+import { Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
-import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
 import CreateEntityControlledDial from '../../../../../components/CreateEntityControlledDial';
-import MarkdownField from '../../../../../components/fields/markdownField/MarkdownField';
-import PeriodicityField from '../../../../../components/fields/PeriodicityField';
-import SelectField from '../../../../../components/fields/SelectField';
-import SwitchField from '../../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
-import TextField from '../../../../../components/TextField';
 import { handleErrorInForm, QueryRenderer } from '../../../../../relay/environment';
-import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
+import { FieldOption } from '../../../../../utils/field';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../../utils/hooks/useDefaultValues';
 import useMarkdownCreationFilesInput from '../../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { insertNode } from '../../../../../utils/store';
-import { CoverageInformationFieldAdd } from '../../../common/form/CoverageInformationField';
-import CreatedByField from '../../../common/form/CreatedByField';
-import ObjectLabelField from '../../../common/form/ObjectLabelField';
-import ObjectMarkingField from '../../../common/form/ObjectMarkingField';
 import { useNavigate } from 'react-router-dom';
 import { SecurityCoverageCreationMutation } from './__generated__/SecurityCoverageCreationMutation.graphql';
 import ChooseModeStep from './ChooseModeStep';
 import SelectCoveredEntityStep from './SelectCoveredEntityStep';
-import { SecurityCoverageMode, StepKey, StixCoreObjectNode } from './securityCoverageCreation-types';
+import { SecurityCoverageFormValues, SecurityCoverageMode, StepKey, StixCoreObjectNode } from './SecurityCoverageCreation-types';
+import CoverageDetailsStep from './CoverageDetailsStep';
+import SelectEntitiesToCoverStep from './SelectEntitiesToCoverStep';
 
 interface ConnectorsQueryProps {
   connectors?: Array<{
@@ -75,6 +63,34 @@ const securityCoverageConnectorsQuery = graphql`
     }
   }
 `;
+
+export const DATA_COLUMNS = {
+  entity_type: {
+    label: 'Type',
+    width: '12%',
+    isSortable: true,
+  },
+  value: {
+    label: 'Value',
+    width: '28%',
+    isSortable: false,
+  },
+  createdBy: {
+    label: 'Author',
+    width: '12%',
+    isSortable: true,
+  },
+  objectLabel: {
+    label: 'Labels',
+    width: '22%',
+    isSortable: false,
+  },
+  objectMarking: {
+    label: 'Marking',
+    width: '16%',
+    isSortable: false,
+  },
+};
 
 const securityCoverageValidation = (t: (value: string) => string, isAutomated: boolean) => {
   const baseShape = {
@@ -117,22 +133,6 @@ export interface SecurityCoverageFormProps {
   hasEnrichmentConnectors?: boolean;
   preSelectedEntityId?: string;
   preSelectedEntityName?: string;
-}
-
-interface SecurityCoverageFormValues {
-  name: string;
-  description: string;
-  external_uri: string;
-  auto_enrichment_disable: boolean;
-  confidence: number | undefined;
-  createdBy?: FieldOption;
-  objectMarking: { value: string }[];
-  objectLabel: { value: string; label: string }[];
-  coverage_information: { coverage_name: string; coverage_score: number | string }[];
-  periodicity?: string;
-  duration?: string;
-  type_affinity: 'ENDPOINT';
-  platforms_affinity: string[];
 }
 
 // Query for fetching a single entity when preselected
@@ -360,130 +360,19 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
 
       case StepKey.COMPATIBLE_ENTITIES:
         // Select covered entities (manual mode)
-        return <></>;
+        return <SelectEntitiesToCoverStep />;
 
       case StepKey.COVERAGE_DETAILS:
         // Coverage Details Form (all cases)
         return (
-          <Box>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t_i18n('Name')}
-              fullWidth={true}
-              required
-            />
-            <Field
-              component={MarkdownField}
-              name="description"
-              label={t_i18n('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows={4}
-              style={fieldSpacingContainerStyle}
-              autoPersistOnBlur={false}
-              registerMarkdownImagesController={registerMarkdownImagesController}
-              uploadFileMarkings={values.objectMarking.map((v) => v.value)}
-            />
-            <ConfidenceField
-              containerStyle={fieldSpacingContainerStyle}
-              entityType="Security-Coverage"
-            />
-            <PeriodicityField
-              name="periodicity"
-              label={mode === SecurityCoverageMode.AUTO ? t_i18n('Coverage recurrence (every x)') : t_i18n('Coverage validity period')}
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-            />
-            {mode === SecurityCoverageMode.AUTO && (
-              <>
-                <PeriodicityField
-                  name="duration"
-                  label={t_i18n('Duration')}
-                  style={fieldSpacingContainerStyle}
-                  setFieldValue={setFieldValue}
-                />
-                <Field
-                  component={SelectField}
-                  variant="standard"
-                  name="type_affinity"
-                  onChange={(name: string, value: string) => setFieldValue(name, value)}
-                  label={t_i18n('Type affinity')}
-                  fullWidth={true}
-                  containerstyle={{ width: '100%', marginTop: 20 }}
-                >
-                  <MenuItem key="ENDPOINT" value="ENDPOINT">
-                    {t_i18n('Endpoint')}
-                  </MenuItem>
-                </Field>
-                <OpenVocabField
-                  label={t_i18n('Platform(s) affinity')}
-                  type="platforms_ov"
-                  name="platforms_affinity"
-                  onChange={(name, value) => setFieldValue(name, value)}
-                  containerStyle={fieldSpacingContainerStyle}
-                  multiple={true}
-                />
-              </>
-            )}
-            <Field
-              component={SwitchField}
-              type="checkbox"
-              disabled={true}
-              name="auto_enrichment_disable"
-              label={t_i18n('Force manual coverage (prevent enrichment connectors from running)')}
-              containerstyle={fieldSpacingContainerStyle}
-            />
-            {mode === SecurityCoverageMode.MANUAL && (
-              <>
-                <CoverageInformationFieldAdd
-                  name="coverage_information"
-                  values={values.coverage_information}
-                  setFieldValue={setFieldValue}
-                />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="external_uri"
-                  label={t_i18n('Source external link')}
-                  fullWidth={true}
-                  style={fieldSpacingContainerStyle}
-                />
-              </>
-            )}
-            <CreatedByField
-              name="createdBy"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-            />
-            <ObjectLabelField
-              name="objectLabel"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              values={values.objectLabel}
-            />
-            <ObjectMarkingField
-              name="objectMarking"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-            />
-            <FormButtonContainer>
-              <Button
-                variant="secondary"
-                onClick={handleClose}
-                disabled={isSubmitting}
-              >
-                {t_i18n('Cancel')}
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting || !values.name || (mode === SecurityCoverageMode.MANUAL && (!values.coverage_information || values.coverage_information.length === 0))}
-              >
-                {t_i18n('Create')}
-              </Button>
-            </FormButtonContainer>
-          </Box>
+          <CoverageDetailsStep
+            values={values}
+            mode={mode}
+            setFieldValue={setFieldValue}
+            onClose={handleClose}
+            isSubmitting={isSubmitting}
+            registerMarkdownImagesController={registerMarkdownImagesController}
+          />
         );
 
       default:
