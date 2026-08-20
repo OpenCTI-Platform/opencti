@@ -195,8 +195,8 @@ export const addFintelTemplate = async (
   const finalInput: FintelTemplateAddInput = {
     ...input,
     default: input.default ?? false,
-    includeCoverPageByDefault: input.includeCoverPageByDefault ?? true,
-    includeBackPageByDefault: input.includeBackPageByDefault ?? true,
+    include_cover_page_by_default: input.include_cover_page_by_default ?? true,
+    include_back_page_by_default: input.include_back_page_by_default ?? true,
     template_content: input.template_content ?? '',
     fintel_template_widgets: widgetsWithIds,
   };
@@ -371,8 +371,8 @@ export const fintelTemplateExport = async (context: AuthContext, user: AuthUser,
     start_date,
     fintel_template_widgets,
     default: isDefault,
-    includeCoverPageByDefault,
-    includeBackPageByDefault,
+    include_cover_page_by_default,
+    include_back_page_by_default,
   } = template;
 
   const widgets = fintel_template_widgets.map(({ widget }) => ({
@@ -402,8 +402,8 @@ export const fintelTemplateExport = async (context: AuthContext, user: AuthUser,
       start_date,
       fintel_template_widgets: exportWidgets,
       default: isDefault ?? false,
-      includeCoverPageByDefault: includeCoverPageByDefault ?? true,
-      includeBackPageByDefault: includeBackPageByDefault ?? true,
+      include_cover_page_by_default: include_cover_page_by_default ?? true,
+      include_back_page_by_default: include_back_page_by_default ?? true,
     },
   });
 };

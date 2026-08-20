@@ -215,8 +215,8 @@ describe('Fintel template resolver standard behavior', () => {
       variables: {
         id: fintelTemplateInternalId,
         input: [
-          { key: 'includeCoverPageByDefault', value: [false] },
-          { key: 'includeBackPageByDefault', value: [false] },
+          { key: 'include_cover_page_by_default', value: [false] },
+          { key: 'include_back_page_by_default', value: [false] },
         ],
       },
     });
@@ -229,8 +229,8 @@ describe('Fintel template resolver standard behavior', () => {
       variables: {
         id: fintelTemplateInternalId,
         input: [
-          { key: 'includeCoverPageByDefault', value: [true] },
-          { key: 'includeBackPageByDefault', value: [true] },
+          { key: 'include_cover_page_by_default', value: [true] },
+          { key: 'include_back_page_by_default', value: [true] },
         ],
       },
     });

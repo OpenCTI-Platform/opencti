@@ -167,8 +167,8 @@ describe('fintel template page option defaults', () => {
 
     const inputSent = createEntitySpy.mock.calls[0][2] as Record<string, boolean>;
     expect(inputSent.default).toEqual(false);
-    expect(inputSent.includeCoverPageByDefault).toEqual(true);
-    expect(inputSent.includeBackPageByDefault).toEqual(true);
+    expect(inputSent.include_cover_page_by_default).toEqual(true);
+    expect(inputSent.include_back_page_by_default).toEqual(true);
   });
 
   it('should export true defaults when values are absent', async () => {
@@ -185,8 +185,8 @@ describe('fintel template page option defaults', () => {
     } as never);
 
     const parsed = JSON.parse(exported);
-    expect(parsed.configuration.includeCoverPageByDefault).toEqual(true);
-    expect(parsed.configuration.includeBackPageByDefault).toEqual(true);
+    expect(parsed.configuration.include_cover_page_by_default).toEqual(true);
+    expect(parsed.configuration.include_back_page_by_default).toEqual(true);
   });
 
   it('should preserve explicit false defaults in export', async () => {
@@ -200,13 +200,13 @@ describe('fintel template page option defaults', () => {
       start_date: '2025-01-01T00:00:00.000Z',
       fintel_template_widgets: [],
       default: false,
-      includeCoverPageByDefault: false,
-      includeBackPageByDefault: false,
+      include_cover_page_by_default: false,
+      include_back_page_by_default: false,
     } as never);
 
     const parsed = JSON.parse(exported);
-    expect(parsed.configuration.includeCoverPageByDefault).toEqual(false);
-    expect(parsed.configuration.includeBackPageByDefault).toEqual(false);
+    expect(parsed.configuration.include_cover_page_by_default).toEqual(false);
+    expect(parsed.configuration.include_back_page_by_default).toEqual(false);
   });
 
   it('should fallback converter values to true', () => {
@@ -220,8 +220,8 @@ describe('fintel template page option defaults', () => {
       start_date: '2025-01-01T00:00:00.000Z',
     } as never);
 
-    expect(stix.includeCoverPageByDefault).toEqual(true);
-    expect(stix.includeBackPageByDefault).toEqual(true);
+    expect(stix.include_cover_page_by_default).toEqual(true);
+    expect(stix.include_back_page_by_default).toEqual(true);
   });
 
   it('should keep explicit false converter values', () => {
@@ -233,17 +233,17 @@ describe('fintel template page option defaults', () => {
       template_content: '',
       fintel_template_widgets: [],
       start_date: '2025-01-01T00:00:00.000Z',
-      includeCoverPageByDefault: false,
-      includeBackPageByDefault: false,
+      include_cover_page_by_default: false,
+      include_back_page_by_default: false,
     } as never);
 
-    expect(stix.includeCoverPageByDefault).toEqual(false);
-    expect(stix.includeBackPageByDefault).toEqual(false);
+    expect(stix.include_cover_page_by_default).toEqual(false);
+    expect(stix.include_back_page_by_default).toEqual(false);
   });
 
   it('should expose page default attributes in module definition', () => {
     const attributeNames = FINTEL_TEMPLATE_DEFINITION.attributes.map((attribute) => attribute.name);
-    expect(attributeNames).toContain('includeCoverPageByDefault');
-    expect(attributeNames).toContain('includeBackPageByDefault');
+    expect(attributeNames).toContain('include_cover_page_by_default');
+    expect(attributeNames).toContain('include_back_page_by_default');
   });
 });

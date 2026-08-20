@@ -38,8 +38,8 @@ input FintelTemplateAddInput {
   start_date: DateTime
   fintel_template_widgets: [FintelTemplateWidgetAddInput!]
   default: Boolean
-  includeCoverPageByDefault: Boolean
-  includeBackPageByDefault: Boolean
+  include_cover_page_by_default: Boolean
+  include_back_page_by_default: Boolean
 }
 
 # Relay connections
