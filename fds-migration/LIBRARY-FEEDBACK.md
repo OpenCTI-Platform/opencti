@@ -1347,3 +1347,60 @@ scale the host happens to apply around it.
 
 **Removal test.** Render the chip inside a container at 20px, inspect the chip
 root: its computed `font-size` must be the chip's own value, not 20px.
+
+## 40. A product global `a:hover` / `a:focus` reset removes the breadcrumb link's only affordance
+
+Third in the family of #16 and #35: a broad, old product rule in
+`src/static/css/index.css` reaching a library component. This one is the first
+where the property it neutralises is the component's accessibility mechanism.
+
+**Needed.** Since the library's 2026-08-20 redesign a linked and an unlinked
+breadcrumb entry paint the SAME colour token (`--text-default-secondary`), so
+the permanent underline is the only visual means saying which entry is
+clickable. The component's own RFC (§9 Q12) makes it load-bearing and locks it
+with two named guards, and states that hover and focus keep it while the label
+brightens to primary.
+
+**Today.** `index.css:33-37` carries
+`a, a:hover, a:visited, a:focus { text-decoration: none }`, loaded after the
+library stylesheet. Measured in a real browser, both modes, on the converted
+wrapper:
+
+| state | `text-decoration-line` / `-thickness` |
+|---|---|
+| rest | `underline` / `from-font` — the library wins, `.underline` (0,1,0) over `a` (0,0,1) |
+| hover | `none` / `auto` — `a:hover` is (0,1,1), one pseudo-class above the utility |
+| real keyboard focus | `none` / `auto` — same, via `a:focus` |
+
+Not a layer problem, and worth stating because #16 says otherwise for its own
+case: `dist/index.css` declares only `@layer properties`, its utilities are
+UNLAYERED, so plain specificity decides here. The focus ring is unaffected —
+Tailwind v4 draws it with `box-shadow`, measured present on a real Tab despite
+the `:focus { outline: 0 }` of #35, which answers the worry that entry raised.
+
+**Consequence.** Nothing is non-conforming: 1.4.1 asks for the cue to exist, and
+it does at rest, which is where the component places it. But the cue vanishes
+exactly when the pointer or the keyboard reaches the link, which is not the
+contract, and no gate in either repository can see it — the library's guards run
+against the library's own stylesheet, and the product has no rendered-CSS check.
+The product restores it with a rule scoped to `#page-breadcrumb`, the id its own
+wrapper always sets.
+
+**Ask.** Name this in the consumer prerequisites next to the theme class, the
+fonts, the no-preflight rule and #35's `outline`: a host must not neutralise
+`text-decoration` on `a:hover` / `a:focus`, because a component may carry a
+non-colour affordance there. The general form of the ask is the one #35 already
+made and this entry makes concrete — the library relies on host CSS it never
+states, and each such reliance costs a product a workaround it cannot discover
+except by measuring.
+
+**Removal test.** Delete the `FDS-WORKAROUND #40` block from
+`design-system-host.css`; hover a breadcrumb ancestor link and read
+`text-decoration-line`. It must stay `underline`. Measured today with the block
+removed: `none`, both modes.
+
+**Product-side note.** The global rule is old and broad, and removing it would
+change anchor rendering across the whole application. Flagged, not touched —
+same treatment as #35.
+
+---
