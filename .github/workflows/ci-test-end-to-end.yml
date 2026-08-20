@@ -121,12 +121,15 @@ jobs:
             apk add build-base git
             pwd
             ls
-            cd /home/workspace
-            find .
-            cd /home/workspace/client-python
+            cd frontend-e2e-test
+            ls
+            cd frontend-e2e-test/client-python
             pip install -r requirements.txt
             pip install -e .[dev,doc]
-            cd /home/workspace/opencti-platform/opencti-graphql
+            cd -
+            pwd
+            ls
+            cd frontend-e2e-test/opencti-platform/opencti-graphql
             npm install -g corepack
             yarn install
             yarn install:python
