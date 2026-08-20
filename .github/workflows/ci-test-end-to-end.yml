@@ -92,9 +92,7 @@ jobs:
         docker run -d --network runner-docker-network \
           --name opencti-e2e-start \
           -p 4500:4100 \
-          -v ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-graphql/script:/opt/opencti/script \
-          -v ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-graphql/tests:/opt/opencti/tests \
-          -v ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-graphql/src/python/testing:/opt/opencti/src/python/testing \
+          -v ${{ github.workspace }}/frontend-e2e-start:/home/workspace \
           -e APP__PORT=4100 \
           -e APP__ENABLED_DEV_FEATURES='${{ matrix.dev_features }}' \
           -e APP__ADMIN__PASSWORD=admin \
@@ -118,7 +116,20 @@ jobs:
           -e SUBSCRIPTION_SCHEDULER__ENABLED=false \
           -e PUBLISHER_MANAGER__ENABLED=false \
           -e SMTP__ENABLED=false \
-          filigran/platform:${{ github.sha }}
+          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
+          sh -c 'set -eux
+            apk add build-base git
+            cd /home/workspace/client-python
+            pip install -r requirements.txt
+            pip install -e .[dev,doc]
+            cd /home/workspace/opencti-platform/opencti-graphql
+            npm install -g corepack
+            yarn install
+            yarn install:python
+            yarn build:dev
+            yarn wait-api && node build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy &
+            NODE_OPTIONS=--max_old_space_size=8192 yarn start
+            ';
 
     - name: Start e2e worker instance
       run: |
