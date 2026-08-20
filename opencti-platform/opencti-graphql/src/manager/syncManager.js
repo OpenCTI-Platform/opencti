@@ -36,6 +36,73 @@ const FILE_FETCH_TIMEOUT = conf.get('sync_manager:file_fetch_timeout') || 300_00
 
 const waitLoopTimer = new InterruptibleTimer();
 
+const isStringTooLongError = (error) => {
+  const errorMessage = error?.message ?? '';
+  return error?.code === 'ERR_STRING_TOO_LONG'
+    || errorMessage.includes('Cannot create a string longer than');
+};
+
+const dropAttachedFilesData = (syncData) => {
+  const files = syncData?.extensions?.[STIX_EXT_OCTI]?.files;
+  if (!Array.isArray(files) || files.length === 0) {
+    return [];
+  }
+
+  const droppedFiles = [];
+  for (let index = 0; index < files.length; index += 1) {
+    const file = files[index];
+    if (typeof file?.data === 'string' && file.data.length > 0) {
+      droppedFiles.push({
+        fileUri: file.uri,
+        dataLength: file.data.length,
+      });
+      delete file.data;
+    }
+  }
+  return droppedFiles;
+};
+
+const encodeEventPayloadToBase64 = (payload) => Buffer.from(payload, 'utf-8').toString('base64');
+
+const buildSyncEventContent = ({
+  syncId,
+  lastEventId,
+  eventType,
+  syncData,
+  eventContext,
+  encodeToBase64 = encodeEventPayloadToBase64,
+  logger = logApp,
+}) => {
+  const buildPayload = () => JSON.stringify({
+    id: lastEventId,
+    type: eventType,
+    data: syncData,
+    context: eventContext,
+  });
+  try {
+    return encodeToBase64(buildPayload());
+  } catch (encodingError) {
+    if (!isStringTooLongError(encodingError)) {
+      throw encodingError;
+    }
+    const droppedFiles = dropAttachedFilesData(syncData);
+    if (droppedFiles.length === 0) {
+      throw encodingError;
+    }
+    logger.error('[OPENCTI] Sync: Event payload too large, dropping attached files data and retrying.', {
+      id: syncId,
+      eventId: lastEventId,
+      entityId: syncData?.extensions?.[STIX_EXT_OCTI]?.id,
+      entityType: syncData?.extensions?.[STIX_EXT_OCTI]?.type,
+      droppedFilesCount: droppedFiles.length,
+      droppedFiles,
+      code: encodingError.code,
+      message: encodingError.message,
+    });
+    return encodeToBase64(buildPayload());
+  }
+};
+
 const hasEmbeddedStorageRef = (markdown) => {
   return markdown.includes('embedded/')
     || markdown.includes('/storage/get/embedded/')
@@ -164,7 +231,25 @@ export const transformDataWithReverseIdAndFilesData = async (sync, httpClient, d
         continue;
       }
       const response = await httpClient.get(fetchUri);
-      entityFile.data = Buffer.from(response.data).toString('base64');
+      try {
+        entityFile.data = Buffer.from(response.data).toString('base64');
+      } catch (encodingError) {
+        if (isStringTooLongError(encodingError)) {
+          const attachmentByteLength = Buffer.isBuffer(response?.data)
+            ? response.data.length
+            : response?.data?.byteLength;
+          logApp.error('[OPENCTI] Sync: Attached file too large to encode, skipping file data.', {
+            fileUri,
+            entityId: markdownEntityContext.entityId,
+            entityType: markdownEntityContext.entityType,
+            attachmentByteLength,
+            code: encodingError.code,
+            message: encodingError.message,
+          });
+          continue;
+        }
+        throw encodingError;
+      }
     } catch (e) {
       logApp.warn('[OPENCTI] Sync: Error when trying to get file from storage. Skipping file.', { fileUri, message: e.message });
     }
@@ -361,8 +446,13 @@ const syncManagerInstance = (syncId) => {
             while (!processed && running) {
               try {
                 const { data: syncData, previous_standard } = await transformDataWithReverseIdAndFilesData(sync, httpClient, stixData, eventContext);
-                const enrichedEvent = JSON.stringify({ id: lastEventId, type: eventType, data: syncData, context: eventContext });
-                const content = Buffer.from(enrichedEvent, 'utf-8').toString('base64');
+                const content = buildSyncEventContent({
+                  syncId,
+                  lastEventId,
+                  eventType,
+                  syncData,
+                  eventContext,
+                });
                 await pushBundleToWorker(context, SYSTEM_USER, sync.internal_id, {
                   type: 'event',
                   event_id,
@@ -500,4 +590,5 @@ const initSyncManager = () => {
 };
 const syncManager = initSyncManager();
 
+export { isStringTooLongError, dropAttachedFilesData, buildSyncEventContent };
 export default syncManager;
