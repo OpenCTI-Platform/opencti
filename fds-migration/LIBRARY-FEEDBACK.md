@@ -16,6 +16,10 @@ library pin `56f7e59823cae7d815a451206e3cb4cb1d31022d`, then re-checked at
 pin `486cec92c3abf006997ac269d34ff0fcc23f178f` (2026-08-06) and at pin
 `5960966216533f620393a2174213c666f57af7dd` (2026-08-11, the token pass).
 
+Then re-opened for the Combobox reconnaissance at pin
+`f86e76e192bccaecb88cece466a02221070bf656` (2026-08-20) — entries 40 to 42,
+measured on the Autocomplete surface, no conversion written.
+
 Closed so far: entries 5 and 12, both at the 2026-08-11 pin. Every other entry
 was re-checked against that pin's source and its removal condition is still
 unmet — the compensations stay, with the reason stated in each entry.
@@ -1347,3 +1351,164 @@ scale the host happens to apply around it.
 
 **Removal test.** Render the chip inside a container at 20px, inspect the chip
 root: its computed `font-size` must be the chip's own value, not 20px.
+
+## 40. `ComboboxChips` gives the value chips no tone at all, and a per-value colour is what OpenCTI's field is *for*
+
+**This is the blocking entry for the Combobox adoption in this product.** Not a
+polish item: the colour is the product's own data, rendered today by default on
+the largest Autocomplete surface here.
+
+**Needed.** A selected value's chip carries a colour that comes from the
+database. Labels (`label.color`), marking definitions
+(`markingDefinition.x_opencti_color`), workflow statuses
+(`status.template.color`) and kill-chain phases all store a free-form hex an
+administrator picks in Settings. Nothing about it is decorative: on a marking
+chip the colour *is* the classification.
+
+**How the product does it today.** `components/common/tag/Tag.tsx`, reached
+through `AutocompleteField`'s own `defaultRenderTags` — so it is the DEFAULT of
+the pivot field, not something a call site opts into:
+
+- background: `alpha(color, 0.2)` — the data colour never contributes more than
+  20 % of the composited background;
+- text: **never set**, inherited from the theme;
+- invalid input: `alpha()` throwing is caught and falls back to the neutral.
+
+**Measured, and this is the part worth carrying into the library's design.** The
+legibility guarantee comes from the 20 % ceiling, not from any computation on
+the colour. Sweeping the entire RGB cube against the real surfaces
+(`#ffffff` light, `#0d172b` dark):
+
+| pair | light | dark |
+|---|---|---|
+| label text over `alpha(data, 0.2)` — **worst case over the whole cube** | **10.78:1** | **9.57:1** |
+| same, best case | 17.59:1 | 16.67:1 |
+
+So an arbitrary colour capped at 20 % over a known surface cannot fail 4.5:1 —
+the minimum is computable once per (surface token, text token) pair and holds
+for every colour a user can enter. That is a gate-able property, not a
+per-value check.
+
+**Three parts of the same product pattern that must NOT be copied**, measured
+the same way:
+
+| what | light | dark |
+|---|---|---|
+| the chip with **no** data colour: neutral at full opacity | **3.25:1** | **2.95:1** |
+| the decorative chip icon, tinted with the raw colour at full strength | worst **1.00:1** | worst **1.00:1** |
+| the delete icon, hardcoded `#F2F2F3` (not a token) | worst **1.00:1** | 8.55:1 |
+
+The uncoloured chip is the one that fails today, which is the opposite of what
+one expects going in.
+
+**Today, library side.** `ComboboxChips` renders
+`<Chip label={getOptionLabel(option)} onDelete deleteTabIndex={-1} disabled />`
+and nothing else. There is no render prop, no per-value hook, and no way to
+reach `ChipProps.severity` or `ChipProps.entity`. **Even mapping a value onto
+one of the 16 tones the library already ships is impossible** — that half needs
+no colour arbitration at all.
+
+**Count.** 32 sites need a tone on their chips: 15 pivot call sites in
+multiple mode whose module builds a colour (structural — the pivot's default
+tag renderer reads `option.color`), and 17 direct MUI sites by the same test
+(upper bound: a module may build a colour for something other than its chips).
+26 of the 40 modules that mount an Autocomplete here construct a colour key.
+Behind those sites sit the 692 mount points the business wrappers shield.
+
+**Asked.** Two things, separable and worth separating:
+
+1. a way to select a chip's tone per value from the tones the library already
+   defines — no new colour, no contrast question;
+2. for a genuinely arbitrary hex: a documented ceiling mechanism (the 20 %
+   composite above is the measured, transposable one) so the library can accept
+   a data colour *and* keep its own contrast guarantee.
+
+**Removal test.** Render a `Combobox multiple` whose selected values carry
+`#000000` and `#ffffff` — the two extremes of the cube — in both modes.
+Every chip label must measure ≥ 4.5:1 against its own rendered background, and
+the two chips must be visually distinguishable from an uncoloured one. Then
+delete the product's `Tag`-based `renderTags` from `AutocompleteField` and check
+that no marking, label or status chip loses its colour.
+
+## 41. No way to select the input text when the field takes focus
+
+**Needed.** Focusing a filled field and typing replaces the previous value
+instead of appending to it. In this product it is not a per-site choice:
+`AutocompleteField` sets `selectOnFocus` unconditionally on its own MUI element,
+so every one of its call sites has always behaved that way, and no call site
+overrides it.
+
+**Today.** Absent from the shipped API — verified on the installed build at pin
+`f86e76e`, not on the source: `selectOnFocus`, `openOnFocus` and `autoSelect`
+appear nowhere in `index.d.ts`.
+
+**Consequence.** 86 sites are affected: the 54 pivot call sites, which inherit
+it, and 32 of the 47 direct MUI sites. It is the **sole** blocker on 42 of them,
+so it is the single highest-leverage gap on this surface: closing it alone takes
+the wave from 7 convertible sites to 49.
+
+**Not a workaround the product should invent.** `ComboboxInput` is typed
+`Omit<ComponentPropsWithoutRef<"input">, "value" | "onChange" | "role" | "type">`,
+so it forwards `onFocus`, and `onFocus={(e) => e.currentTarget.select()}` is
+expressible through the public API. It is deliberately NOT used here: MUI's
+behaviour is entangled with blur handling and with resetting the input value, so
+a one-line imitation would silently differ. The product waits for the library.
+
+**Asked.** A prop on `Combobox` for selecting the field's text on focus. While
+the question is open, `openOnFocus` sits on the same 10 sites (all 10 also carry
+`selectOnFocus`) and belongs to the same arbitration.
+
+**Removal test.** With the prop on, focus a field holding a value and type one
+character: the field must contain that character alone. With it off, the same
+keystroke must append. Then delete the `selectOnFocus` line from
+`AutocompleteField` and confirm the 54 call sites keep the behaviour.
+
+## 42. The rest of the Autocomplete gap list, so one library session can close it in one pass
+
+Recorded together on purpose: this surface was measured once, exhaustively, and
+splitting six small gaps across six sessions is what the measurement was meant
+to avoid. Counts are over the 101 authored sites in scope (54 pivot call sites +
+47 direct MUI sites) at `design-system/current` @ `4a2007398d`.
+
+| gap | sites | what is lost | can a site do without it? |
+|---|---|---|---|
+| create-on-the-fly affordance in the field line | 8 (pivot) | the `+` control that opens a creation form for a label, external reference or status without leaving the field. The pivot renders it as an absolutely-positioned `IconButton` over the field | no — no slot exists |
+| custom chip content | 6 | composed chips (icon, tooltip, own layout) — MUI's `renderTags` | no equivalent |
+| free text / value absent from the list | 3 | typing a value that does not exist yet. Already deferred to v2 in `Combobox.rfc.md` §7 | no |
+| an adornment slot in the field line | 2 (pivot) | an entity-type selector rendered *inside* the field, and a creation button | structurally `ComboboxControls`/`ComboboxField` accept children, but the drawn 24/48px geometry does not plan for a third control — a design question more than an API one |
+| `disablePortal`, `clearOnEscape`, inline `autoComplete` | 3 | one non-portalled panel, one Escape-clears, one inline completion | yes, individually negligible |
+| empty-string normalisation | — | Formik initialises a multi-value field to `''`; the engine maps a non-array to `[value]`, so `''` becomes one empty chip where MUI plus the pivot's own guard produce none | one line, library side |
+
+**Three candidates that measurement removed** — worth stating so the next
+session does not re-add them:
+
+- `autoSelect`: 7 sites, **all passing `false`**, which is MUI's own default. A
+  no-op.
+- the pivot's non-array crash guard: the engine already normalises `null` and
+  `undefined` to `[]`, so only the `''` case above remains.
+- `renderInput` (47 sites), `noOptionsText` (70 → `emptyMessage`),
+  `disableClearable` (11 → `clearable`, including the 27 sites that hid the
+  clear control through `classes={{ clearIndicator: { display: 'none' } }}`),
+  `getOptionDisabled` (4 → `isOptionDisabled`), `handleHomeEndKeys` (3),
+  `autoHighlight` (35, native and unconditional), `slotProps.listbox`
+  (→ `listClassName`), `sx`/`style` (→ `className`): all already paired.
+
+**What the wave delivers**, same 101 sites, each line closing one more gap:
+
+| state | sites delivered |
+|---|---|
+| today | **7** (and 0 of the 54 pivot call sites) |
+| + entry 41 | 49 |
+| + entry 40 | 73 |
+| + `openOnFocus` | 82 |
+| + create affordance | 90 |
+| + the remaining four rows above | **101** |
+
+**Not a library gap, but it will cost the product session** — recorded here so
+it is not rediscovered as a surprise: 84 `renderOption` bodies must be
+rewritten, because 82 of them build their own `<li>`/`ListItem` and 68 spread
+MUI's `{...props}` onto it, while the library keeps the row and takes only its
+content. Five of those bodies render their own `Checkbox`, which would collide
+with the one the library places in multiple mode. `variant: 'standard'` on 47
+sites and `size="small"` on 28 meet a single 36px field (`--spacing-9`), a
+density delta to measure in the DOM on a converted screen.

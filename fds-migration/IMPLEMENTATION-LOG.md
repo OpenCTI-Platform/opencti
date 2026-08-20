@@ -836,3 +836,118 @@ symbol.
 Both grafts are test-only. The rendered bar at this head is identical to the one
 measured above, so the checkpoint was not re-run: there is nothing new to look
 at, and re-photographing an unchanged bar would only look like evidence.
+
+## 2026-08-20 — Combobox reconnaissance: measured, nothing converted
+
+Session goal was to adopt the library `Combobox` on the `AutocompleteField`
+pivot and the direct MUI sites. **No product component code was written**: the
+session stopped twice on the conditions it was given, and the library work is
+now sequenced first. What follows is the measurement, so the next session does
+not repeat it.
+
+Measured with a TypeScript AST pass (not a grep) on a fresh worktree at
+`origin/design-system/current` @ `4a2007398d`, resolving the `@common/*` and
+`@components/*` aliases, including `.jsx`/`.js` and `src/public`, and resolving
+Formik `component=`/`as=`/`render=` to the component actually mounted. The
+library API was read on the `dist/` actually installed at pin `f86e76e`, not on
+the library's source.
+
+### The real numbers
+
+| axis | measured | note |
+|---|---|---|
+| `AutocompleteField` pivot | **54 sites / 46 files** | |
+| business wrappers delegating to it | 46 modules, **692 mount points** / 207 files | 32 of them live in `common/form/` (669 mounts / 194 files) |
+| direct MUI `<Autocomplete>` | **49 sites / 29 files** | 47 in scope: one is the pivot's own element, one is `AutocompleteFreeSoloField.jsx` (out of scope) |
+| wrappers over a direct MUI site | 27 modules, 59 mount points | |
+| authored sites in scope | **101** | 54 pivot call sites + 47 direct |
+
+The 49/29 figure agrees, independently, with the count the library's own
+`Combobox.rfc.md` recorded for OpenCTI on 2026-08-11 ("49 in 29 files").
+
+**Eleven files carrying a direct MUI Autocomplete were missing from the brief's
+list of sixteen** — 13 in-scope sites. They are the same family of entity and
+option pickers as the listed ones, not search fields and not `Select`s:
+
+```
+private/components/common/lists/FilterAutocomplete.tsx                                  1
+private/components/common/lists/ListFilters.tsx                                         1
+private/components/data/csvMapper/representations/CsvMapperConditionalEntityMapping.tsx  2
+private/components/data/csvMapper/representations/CsvMapperRepresentationForm.tsx        1
+private/components/data/csvMapper/.../CsvMapperRepresentationAttributeForm.tsx           1
+private/components/data/csvMapper/.../CsvMapperRepresentationAttributeRefForm.tsx        2
+private/components/data/jsonMapper/representations/JsonMapperRepresentationForm.tsx      1
+private/components/data/jsonMapper/.../JsonMapperRepresentationAttributeRefForm.tsx      1
+private/components/settings/custom_fields/CustomFieldCreation.tsx                        1
+private/components/settings/custom_fields/CustomFieldEdition.tsx                         1
+private/components/settings/users/edition/ConfidenceOverrideField.tsx                    1
+```
+
+Ten of those thirteen carry `selectOnFocus`, so under the current arbitration
+only one of them would convert today anyway — the omission cost little in
+delivery and a lot in confidence.
+
+### The two blockers
+
+1. **The pivot cannot convert while `selectOnFocus` sends a site back to MUI.**
+   `AutocompleteField` sets `selectOnFocus` unconditionally on its own MUI
+   element (`components/AutocompleteField.tsx:150`) and no call site overrides
+   it, so all 54 sites — and the 692 mount points behind them — inherit a
+   behaviour the library does not offer. `LIBRARY-FEEDBACK.md` entry 41.
+2. **The value chips cannot carry the product's data colour**, which is the
+   pivot's default rendering, not an option. `LIBRARY-FEEDBACK.md` entry 40,
+   with the contrast measurements and the reason the existing 20 %-composite
+   pattern is transposable.
+
+Entry 42 carries the remaining six gaps and the delivery table: 7 of the 101
+sites convert today, 49 once entry 41 is closed, 101 with everything closed.
+
+### Two defects found in this repository's own tooling
+
+**The conformity analyser is blind to JSX written with type parameters.**
+`fds-migration/scripts/lib/jsx-opening-tags.mjs` matches `<Name` only when the
+next character is whitespace, `/` or `>`; a site written
+`<MUIAutocomplete<CsvMapperRepresentationFormData, true>` therefore never
+matches. Measured on this surface: the product analyser sees **40 sites / 22
+files** where the AST sees **49 / 29** — 9 sites and 7 files invisible, in
+`AIInsights.tsx`, `ResponseDialog.tsx`, `ConfidenceOverrideField.tsx`,
+`JsonMapperRepresentationForm.tsx`, `JsonMapperRepresentationAttributeRefForm.tsx`,
+`CsvMapperRepresentationForm.tsx` and `CsvMapperRepresentationAttributeRefForm.tsx`.
+Reproduce by counting `<Autocomplete` sites with both implementations over
+`opencti-front/src`.
+
+The same shape is in the library's own template, so it affects every product:
+fixed upstream in `filigran-design-system` PR #131, with the failing case proven
+red first — the guard did not merely miss a generic site, it reported `DRIFT`
+("declared adoption site renders none of the component") on a file that renders
+it.
+
+**This product's `check-fds-conformity.mjs` has diverged from the template it
+declares itself a verbatim copy of, and regenerating would silently drop
+coverage.** The header says "GENERATED TEMPLATE, copied verbatim … Do not
+hand-edit here", but the local copy imports a product-only
+`scripts/lib/jsx-opening-tags.mjs` the generator never ships, and implements a
+bespoke `paper` check (`openingTags` + `reDeclaresPadding`, driven by
+`migration-state.json`'s `paperPattern`). The template has since generalised
+that into a `lib-component-usage` check driven by a `libComponentUsage` section —
+which this product's `migration-state.json` does not have.
+
+Consequence, measured by generating to a scratch directory and diffing
+(`--out-dir`, no product write): a regeneration overwrites `AGENTS.md` (84
+diverging lines), `COMPONENT-MAPPING.md` (34) and
+`scripts/check-fds-conformity.mjs` (430), and keeps `IMPLEMENTATION-LOG.md`,
+`IMPLEMENTATION-ROADMAP.md` and `migration-state.json` (scaffold-once files).
+So it would replace the working Paper padding check with a generic one that is
+**inert until `libComponentUsage` is declared** — losing Paper coverage without
+a single red gate.
+
+**Regenerate only together with a `libComponentUsage` entry for Paper in the
+same change set.** That pairing is a mission of its own; it was not done here.
+
+### Also stale, not fixed here
+
+`fds-migration/AGENTS.md` rule 5 still reads "This phase is TOKENS ONLY … do not
+start it here unless explicitly asked". The library's template replaced that
+rule with "The component phase has started — declare every adoption" some time
+ago; three component pilots have shipped since. The file is generated, so the
+fix is the regeneration above, not an edit.
