@@ -38,7 +38,7 @@ describe('syncManager storage fetch URI encoding', () => {
 
     it('builds a valid URL whose path (after host) no longer contains a raw fragment delimiter', () => {
       const fileUri = '/storage/get/import/Report/abc/weird#name?x.csv';
-      const fetchUri = buildSyncStorageFetchUri(syncUri, fileUri);
+      const fetchUri = buildSyncStorageFetchUri(syncUri, fileUri) as string;
       const parsed = new URL(fetchUri);
       expect(parsed.hash).toBe('');
       expect(parsed.search).toBe('');
