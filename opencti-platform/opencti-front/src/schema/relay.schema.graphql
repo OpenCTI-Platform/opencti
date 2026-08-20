@@ -713,6 +713,9 @@ type Synchronizer {
   user: Creator
   running: Boolean!
   current_state_date: DateTime
+  last_execution_date: DateTime
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry]
   listen_deletion: Boolean!
   no_dependencies: Boolean!
   ssl_verify: Boolean
@@ -9487,6 +9490,7 @@ type Query {
   rules: [Rule]
   ruleManagerInfo: RuleManager
   synchronizer(id: String!): Synchronizer
+  synchronizerLogs(id: String!): [IngestionEntry]
   synchronizerAddInputFromImport(file: Upload!): SynchronizerAddInputFromImport!
   synchronizers(first: Int, after: ID, orderBy: SynchronizersOrdering, orderMode: OrderingMode, search: String): SynchronizerConnection
   synchronizerFetch(input: SynchronizerFetchInput): [RemoteStreamCollection]
