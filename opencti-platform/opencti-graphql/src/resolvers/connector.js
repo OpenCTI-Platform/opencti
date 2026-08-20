@@ -73,6 +73,7 @@ import { ConnectorPriorityGroup } from '../generated/graphql';
 import { assessConnectorMigration, migrateConnectorToManaged } from '../domain/connector-migration';
 import { loadCreator } from '../database/members';
 import { readSyncConsumerMetrics } from '../graphql/syncConsumerMetrics';
+import { findIngestionLogsForFeed } from '../modules/ingestion/ingestion-common';
 
 export const PLATFORM_VERSION = pjson.version;
 
@@ -90,6 +91,10 @@ const connectorResolvers = {
     work: (_, { id }, context) => findById(context, context.user, id),
     isWorkAlive: (_, { id }, context) => isWorkAlive(context, context.user, id),
     synchronizer: (_, { id }, context) => findSyncById(context, context.user, id),
+    synchronizerLogs: async (_, { id }, context) => {
+      await findSyncById(context, context.user, id);
+      return findIngestionLogsForFeed(id);
+    },
     synchronizerAddInputFromImport: (_, { file }) => syncAddInputFromImport(file),
     synchronizers: (_, args, context) => findSyncPaginated(context, context.user, args),
     synchronizerFetch: (_, { input }, context) => fetchRemoteStreams(context, context.user, input),
@@ -144,6 +149,7 @@ const connectorResolvers = {
     queue_messages: async (sync, _, context) => getConnectorQueueSize(context, context.user, sync.id),
     toConfigurationExport: (synchronizer) => synchronizerExport(synchronizer),
     consumer_metrics: (sync) => readSyncConsumerMetrics(sync.id),
+    ingestionLogs: (sync) => findIngestionLogsForFeed(sync.internal_id ?? sync.id),
   },
   Mutation: {
     deleteConnector: (_, { id }, context) => connectorDelete(context, context.user, id),
