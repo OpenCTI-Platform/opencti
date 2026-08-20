@@ -126,7 +126,7 @@ describe('syncManager transformDataWithReverseIdAndFilesData - workflow status r
     expect(data.extensions[STIX_EXT_OCTI].workflow_id).toBeUndefined();
   });
 
-  it('should not attempt resolution and should drop the workflow id when the entity type has not opted in', async () => {
+  it('should keep the raw remote workflow id untouched when the entity type has not opted in', async () => {
     mockGetEntitySettingFromCache.mockResolvedValue({ sync_workflow_status_by_name: false });
     const { transformDataWithReverseIdAndFilesData } = await import('../../../src/manager/syncManager');
 
@@ -138,12 +138,12 @@ describe('syncManager transformDataWithReverseIdAndFilesData - workflow status r
     const { data } = await transformDataWithReverseIdAndFilesData({ uri: 'http://remote' }, {}, remoteData, {});
 
     expect(mockResolveSyncedWorkflowId).not.toHaveBeenCalled();
-    expect(data.extensions[STIX_EXT_OCTI].workflow_id).toBeUndefined();
+    expect(data.extensions[STIX_EXT_OCTI].workflow_id).toBe('remote-status-id');
     expect(data.extensions[STIX_EXT_OCTI].workflow_status_name).toBeUndefined();
     expect(data.extensions[STIX_EXT_OCTI].workflow_status_scope).toBeUndefined();
   });
 
-  it('should not attempt resolution when there is no entity setting configured for the type', async () => {
+  it('should keep the raw remote workflow id untouched when there is no entity setting configured for the type', async () => {
     mockGetEntitySettingFromCache.mockResolvedValue(undefined);
     const { transformDataWithReverseIdAndFilesData } = await import('../../../src/manager/syncManager');
 
@@ -155,10 +155,10 @@ describe('syncManager transformDataWithReverseIdAndFilesData - workflow status r
     const { data } = await transformDataWithReverseIdAndFilesData({ uri: 'http://remote' }, {}, remoteData, {});
 
     expect(mockResolveSyncedWorkflowId).not.toHaveBeenCalled();
-    expect(data.extensions[STIX_EXT_OCTI].workflow_id).toBeUndefined();
+    expect(data.extensions[STIX_EXT_OCTI].workflow_id).toBe('remote-status-id');
   });
 
-  it('should not attempt resolution when the entity setting is undefined', async () => {
+  it('should keep the raw remote workflow id untouched when the entity setting is undefined', async () => {
     mockGetEntitySettingFromCache.mockResolvedValue({});
     const { transformDataWithReverseIdAndFilesData } = await import('../../../src/manager/syncManager');
 
@@ -170,10 +170,10 @@ describe('syncManager transformDataWithReverseIdAndFilesData - workflow status r
     const { data } = await transformDataWithReverseIdAndFilesData({ uri: 'http://remote' }, {}, remoteData, {});
 
     expect(mockResolveSyncedWorkflowId).not.toHaveBeenCalled();
-    expect(data.extensions[STIX_EXT_OCTI].workflow_id).toBeUndefined();
+    expect(data.extensions[STIX_EXT_OCTI].workflow_id).toBe('remote-status-id');
   });
 
-  it('should not attempt resolution when the feature flag is disabled, even if the entity type has opted in', async () => {
+  it('should keep the raw remote workflow id untouched when the feature flag is disabled, even if the entity type has opted in', async () => {
     mockIsFeatureEnabled.mockReturnValue(false);
     const { transformDataWithReverseIdAndFilesData } = await import('../../../src/manager/syncManager');
 
@@ -185,7 +185,7 @@ describe('syncManager transformDataWithReverseIdAndFilesData - workflow status r
     const { data } = await transformDataWithReverseIdAndFilesData({ uri: 'http://remote' }, {}, remoteData, {});
 
     expect(mockResolveSyncedWorkflowId).not.toHaveBeenCalled();
-    expect(data.extensions[STIX_EXT_OCTI].workflow_id).toBeUndefined();
+    expect(data.extensions[STIX_EXT_OCTI].workflow_id).toBe('remote-status-id');
     expect(data.extensions[STIX_EXT_OCTI].workflow_status_name).toBeUndefined();
     expect(data.extensions[STIX_EXT_OCTI].workflow_status_scope).toBeUndefined();
   });

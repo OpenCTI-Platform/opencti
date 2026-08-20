@@ -116,13 +116,15 @@ export const transformDataWithReverseIdAndFilesData = async (sync, httpClient, d
   const remoteWorkflowStatusScope = processingData.extensions[STIX_EXT_OCTI].workflow_status_scope;
   if (remoteWorkflowId) {
     const entitySetting = await getEntitySettingFromCache(executionContext('sync_manager'), octiExtension.type);
-    const localWorkflowId = isFeatureEnabled(SYNC_WORKFLOW_STATUS_BY_NAME_FEATURE_FLAG) && (entitySetting?.sync_workflow_status_by_name ?? false)
-      ? await resolveSyncedWorkflowId(executionContext('sync_manager'), SYSTEM_USER, octiExtension.type, remoteWorkflowStatusScope, remoteWorkflowStatusName)
-      : undefined;
-    if (localWorkflowId) {
-      processingData.extensions[STIX_EXT_OCTI].workflow_id = localWorkflowId;
-    } else {
-      delete processingData.extensions[STIX_EXT_OCTI].workflow_id;
+    const syncWorkflowStatusByName = isFeatureEnabled(SYNC_WORKFLOW_STATUS_BY_NAME_FEATURE_FLAG) && (entitySetting?.sync_workflow_status_by_name ?? false);
+    // Not opted in: keep the raw remote workflow_id untouched, same as pre-existing behavior.
+    if (syncWorkflowStatusByName) {
+      const localWorkflowId = await resolveSyncedWorkflowId(executionContext('sync_manager'), SYSTEM_USER, octiExtension.type, remoteWorkflowStatusScope, remoteWorkflowStatusName);
+      if (localWorkflowId) {
+        processingData.extensions[STIX_EXT_OCTI].workflow_id = localWorkflowId;
+      } else {
+        delete processingData.extensions[STIX_EXT_OCTI].workflow_id;
+      }
     }
     delete processingData.extensions[STIX_EXT_OCTI].workflow_status_name;
     delete processingData.extensions[STIX_EXT_OCTI].workflow_status_scope;
