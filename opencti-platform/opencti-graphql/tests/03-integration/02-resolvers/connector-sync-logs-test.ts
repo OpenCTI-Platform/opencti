@@ -1,11 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { createEntity, deleteElementById } from '../../../src/database/middleware';
-import {
-  getClientBase,
-  redisDeleteIngestionLogHistory,
-  redisPushIngestionLog,
-} from '../../../src/database/redis';
+import { getClientBase, redisDeleteIngestionLogHistory, redisPushIngestionLog } from '../../../src/database/redis';
 import { ENTITY_TYPE_SYNC } from '../../../src/schema/internalObject';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { queryAsAdmin, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
