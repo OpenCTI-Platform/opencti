@@ -119,6 +119,10 @@ jobs:
           nikolaik/python-nodejs:python3.11-nodejs22-alpine \
           sh -c 'set -eux
             apk add build-base git
+            pwd
+            find .
+            cd /home/workspace
+            find .
             cd /home/workspace/client-python
             pip install -r requirements.txt
             pip install -e .[dev,doc]
