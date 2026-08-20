@@ -118,7 +118,7 @@ describe('Ingestion manager - jsonExecutor', () => {
     expect(patchJsonIngestionMock).toHaveBeenCalledTimes(1);
   });
 
-  it('should catch query errors, log them and only update the last execution date', async () => {
+  it('should catch query errors, log them and update the execution metadata', async () => {
     executeJsonQueryMock.mockRejectedValue(new Error('Remote server unreachable'));
 
     const { jsonExecutor } = await import('../../../../src/manager/ingestionManager');
@@ -132,13 +132,16 @@ describe('Ingestion manager - jsonExecutor', () => {
       expect.stringContaining('Json ingestion execution'),
       expect.objectContaining({ cause: expect.any(Error), name: 'My JSON feed' }),
     );
-    // Only the last execution date is updated to respect the min interval on next run
+    // Error path updates execution metadata while preserving scheduler behavior.
     expect(patchJsonIngestionMock).toHaveBeenCalledTimes(1);
     expect(patchJsonIngestionMock).toHaveBeenCalledWith(
       expect.anything(),
       expect.anything(),
       'json-internal--1',
-      { last_execution_date: expect.any(String) },
+      expect.objectContaining({
+        last_execution_date: expect.any(String),
+        last_execution_status: 'error',
+      }),
     );
   });
 
