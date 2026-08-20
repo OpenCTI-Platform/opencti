@@ -41,8 +41,8 @@ describe('Component: FintelTemplateForm', () => {
         description: null,
         published: false,
         default: false,
-        includeCoverPageByDefault: true,
-        includeBackPageByDefault: true,
+        include_cover_page_by_default: true,
+        include_back_page_by_default: true,
       },
       expect.anything(),
     );
@@ -62,8 +62,8 @@ describe('Component: FintelTemplateForm', () => {
           description: null,
           published: true,
           default: false,
-          includeCoverPageByDefault: true,
-          includeBackPageByDefault: true,
+          include_cover_page_by_default: true,
+          include_back_page_by_default: true,
         }}
         editingProps={{ onDefaultToggle: vi.fn() }}
       />,
@@ -71,6 +71,6 @@ describe('Component: FintelTemplateForm', () => {
 
     await user.click(screen.getByLabelText('Include cover page by default'));
 
-    expect(onSubmitField).toHaveBeenCalledWith('includeCoverPageByDefault', false);
+    expect(onSubmitField).toHaveBeenCalledWith('include_cover_page_by_default', false);
   });
 });

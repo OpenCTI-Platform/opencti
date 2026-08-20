@@ -21,7 +21,7 @@ import { LogoXtmOneIcon } from 'filigran-icon';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { FileExportOutline, FilePdfBox, InformationOutline, LanguageMarkdownOutline } from 'mdi-material-ui';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as Yup from 'yup';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import Alert from '../../../../components/Alert';
@@ -52,8 +52,8 @@ export type ConnectorOption = FieldOption & {
 
 export type TemplateOption = FieldOption & {
   isDefault?: boolean;
-  includeCoverPageByDefault?: boolean;
-  includeBackPageByDefault?: boolean;
+  include_cover_page_by_default?: boolean;
+  include_back_page_by_default?: boolean;
 };
 
 export interface StixCoreObjectFileExportFormInputs {
@@ -130,9 +130,16 @@ const StixCoreObjectFileExportForm = ({
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured } = useAI();
+  const lastAppliedPageDefaultsSource = useRef<string | null>(null);
   const [stepIndex, setStepIndex] = useState(defaultValues?.format ? 1 : 0);
   const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState<string[]>([]);
   const isBuiltInConnector = (connector?: string) => [BUILT_IN_FROM_TEMPLATE.value, BUILT_IN_HTML_TO_PDF.value].includes(connector ?? '');
+
+  useEffect(() => {
+    if (!isOpen) {
+      lastAppliedPageDefaultsSource.current = null;
+    }
+  }, [isOpen]);
 
   const handleSelectedContentMaxMarkingsChange = (
     values: FieldOption[] | undefined,
@@ -269,8 +276,11 @@ const StixCoreObjectFileExportForm = ({
         useEffect(() => {
           const defaults = values.template;
           if (!defaults) return;
-          setFieldValue('includeCoverPage', defaults.includeCoverPageByDefault ?? true);
-          setFieldValue('includeBackPage', defaults.includeBackPageByDefault ?? true);
+          const sourceKey = `template:${defaults.value}`;
+          if (lastAppliedPageDefaultsSource.current === sourceKey) return;
+          lastAppliedPageDefaultsSource.current = sourceKey;
+          setFieldValue('includeCoverPage', defaults.include_cover_page_by_default ?? true);
+          setFieldValue('includeBackPage', defaults.include_back_page_by_default ?? true);
         }, [setFieldValue, values.template?.value]);
 
         useEffect(() => {
@@ -278,10 +288,13 @@ const StixCoreObjectFileExportForm = ({
           if (!values.fileToExport?.value.startsWith('fromTemplate/')) return;
           const originTemplateId = values.fileToExport.fintelTemplateId;
           if (!originTemplateId) return;
+          const sourceKey = `file:${values.fileToExport.value}:${originTemplateId}`;
+          if (lastAppliedPageDefaultsSource.current === sourceKey) return;
           const originTemplate = (templates ?? []).find((template) => template.value === originTemplateId);
           if (!originTemplate) return;
-          setFieldValue('includeCoverPage', originTemplate.includeCoverPageByDefault ?? true);
-          setFieldValue('includeBackPage', originTemplate.includeBackPageByDefault ?? true);
+          lastAppliedPageDefaultsSource.current = sourceKey;
+          setFieldValue('includeCoverPage', originTemplate.include_cover_page_by_default ?? true);
+          setFieldValue('includeBackPage', originTemplate.include_back_page_by_default ?? true);
         }, [setFieldValue, templates, values.connector?.value, values.fileToExport?.value, values.fileToExport?.fintelTemplateId]);
 
         const shouldDisplayFintelDesign = (

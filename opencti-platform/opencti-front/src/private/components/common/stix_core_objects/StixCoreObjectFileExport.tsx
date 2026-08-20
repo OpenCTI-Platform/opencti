@@ -228,8 +228,8 @@ const StixCoreObjectFileExportComponent = ({
     value: t.id,
     label: t.name,
     isDefault: t.default ?? false,
-    includeCoverPageByDefault: t.includeCoverPageByDefault ?? true,
-    includeBackPageByDefault: t.includeBackPageByDefault ?? true,
+    include_cover_page_by_default: t.includeCoverPageByDefault ?? true,
+    include_back_page_by_default: t.includeBackPageByDefault ?? true,
   }));
 
   const defaultTemplate = templateOptions.find((t) => t.isDefault);

@@ -17,8 +17,8 @@ export interface FintelTemplateFormInputs {
   description: string | null;
   published: boolean;
   default: boolean;
-  includeCoverPageByDefault: boolean;
-  includeBackPageByDefault: boolean;
+  include_cover_page_by_default: boolean;
+  include_back_page_by_default: boolean;
 }
 
 export type FintelTemplateFormInputKeys = keyof FintelTemplateFormInputs;
@@ -47,8 +47,8 @@ const FintelTemplateForm = ({
     description: Yup.string().nullable(),
     published: Yup.boolean().required(t_i18n('This field is required')),
     default: Yup.boolean().required(t_i18n('This field is required')),
-    includeCoverPageByDefault: Yup.boolean().required(t_i18n('This field is required')),
-    includeBackPageByDefault: Yup.boolean().required(t_i18n('This field is required')),
+    include_cover_page_by_default: Yup.boolean().required(t_i18n('This field is required')),
+    include_back_page_by_default: Yup.boolean().required(t_i18n('This field is required')),
   });
 
   const initialValues: FintelTemplateFormInputs = defaultValues ?? {
@@ -56,12 +56,12 @@ const FintelTemplateForm = ({
     description: null,
     published: false,
     default: false,
-    includeCoverPageByDefault: true,
-    includeBackPageByDefault: true,
+    include_cover_page_by_default: true,
+    include_back_page_by_default: true,
   };
 
   const updateField = async (field: FintelTemplateFormInputKeys, value: unknown) => {
-    const normalizedValue = ['published', 'default', 'includeCoverPageByDefault', 'includeBackPageByDefault'].includes(field)
+    const normalizedValue = ['published', 'default', 'include_cover_page_by_default', 'include_back_page_by_default'].includes(field)
       ? value === true || value === 'true'
       : value;
     validation.validateAt(field, { [field]: normalizedValue })
@@ -139,7 +139,7 @@ const FintelTemplateForm = ({
             <Field
               component={SwitchField}
               type="checkbox"
-              name="includeCoverPageByDefault"
+              name="include_cover_page_by_default"
               label={t_i18n('Include cover page by default')}
               containerstyle={{ marginTop: 10 }}
               onChange={onUpdate}
@@ -147,7 +147,7 @@ const FintelTemplateForm = ({
             <Field
               component={SwitchField}
               type="checkbox"
-              name="includeBackPageByDefault"
+              name="include_back_page_by_default"
               label={t_i18n('Include back page by default')}
               containerstyle={{ marginTop: 10 }}
               onChange={onUpdate}

@@ -15,8 +15,8 @@ export const convertFintelTemplateToStix = (instance: StoreEntityFintelTemplate)
     fintel_template_widgets: instance.fintel_template_widgets ?? [],
     start_date: instance.start_date,
     default: Boolean(instance.default),
-    includeCoverPageByDefault: instance.includeCoverPageByDefault ?? true,
-    includeBackPageByDefault: instance.includeBackPageByDefault ?? true,
+    include_cover_page_by_default: instance.include_cover_page_by_default ?? true,
+    include_back_page_by_default: instance.include_back_page_by_default ?? true,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],

@@ -10067,8 +10067,8 @@ export type FintelTemplateAddInput = {
   default?: InputMaybe<Scalars['Boolean']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   fintel_template_widgets?: InputMaybe<Array<FintelTemplateWidgetAddInput>>;
-  includeBackPageByDefault?: InputMaybe<Scalars['Boolean']['input']>;
-  includeCoverPageByDefault?: InputMaybe<Scalars['Boolean']['input']>;
+  include_back_page_by_default?: InputMaybe<Scalars['Boolean']['input']>;
+  include_cover_page_by_default?: InputMaybe<Scalars['Boolean']['input']>;
   instance_filters?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   settings_types: Array<Scalars['String']['input']>;

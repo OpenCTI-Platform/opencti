@@ -1,4 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
+import type { BasicStoreEntityFintelTemplate } from './fintelTemplate-types';
 import { addFintelTemplate, findById, fintelTemplateConfigurationImport, fintelTemplateDelete, fintelTemplateEditField, fintelTemplateExport } from './fintelTemplate-domain';
 
 const fintelTemplateResolvers: Resolvers = {
@@ -6,8 +7,8 @@ const fintelTemplateResolvers: Resolvers = {
     fintelTemplate: (_, { id }, context) => findById(context, context.user, id),
   },
   FintelTemplate: {
-    includeCoverPageByDefault: (fintelTemplate) => fintelTemplate.includeCoverPageByDefault ?? true,
-    includeBackPageByDefault: (fintelTemplate) => fintelTemplate.includeBackPageByDefault ?? true,
+    includeCoverPageByDefault: (fintelTemplate: BasicStoreEntityFintelTemplate) => fintelTemplate.include_cover_page_by_default ?? true,
+    includeBackPageByDefault: (fintelTemplate: BasicStoreEntityFintelTemplate) => fintelTemplate.include_back_page_by_default ?? true,
     toConfigurationExport: (fintelTemplate, _, context) => fintelTemplateExport(context, context.user, fintelTemplate),
   },
   Mutation: {
