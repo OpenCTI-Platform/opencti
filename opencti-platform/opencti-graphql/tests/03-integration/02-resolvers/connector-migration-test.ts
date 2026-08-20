@@ -86,8 +86,8 @@ const READ_CONNECTOR_QUERY = gql`
   }
 `;
 
-const TEST_CN_ID = '5ed680de-75e2-4aa0-bec0-4e8e5a0d1695';
-const TEST_CN_NAME = 'TestConnector';
+const TEST_CN_MIGRATION_ID = '5ed680de-75e2-4aa0-bec0-4e8e5a0d1696';
+const TEST_CN_MIGRATION_NAME = 'TestConnectorMigration';
 
 describe('Check connector migration', () => {
   let userId: string;
@@ -113,8 +113,8 @@ describe('Check connector migration', () => {
     userId = user.data.userAdd.id;
 
     const connectorData = {
-      id: TEST_CN_ID,
-      name: TEST_CN_NAME,
+      id: TEST_CN_MIGRATION_ID,
+      name: TEST_CN_MIGRATION_NAME,
       type: ConnectorType.ExternalImport,
       scope: ['Observable'],
       auto: true,
@@ -136,8 +136,8 @@ describe('Check connector migration', () => {
     );
 
     expect(connector).not.toBeNull();
-    expect(connector.name).toEqual(TEST_CN_NAME);
-    expect(connector.id).toEqual(TEST_CN_ID);
+    expect(connector.name).toEqual(TEST_CN_MIGRATION_NAME);
+    expect(connector.id).toEqual(TEST_CN_MIGRATION_ID);
   });
 
   /**
@@ -146,9 +146,9 @@ describe('Check connector migration', () => {
    */
   afterAll(async () => {
     // Delete the connector
-    await queryAsAdminWithSuccess({ query: DELETE_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
+    await queryAsAdminWithSuccess({ query: DELETE_CONNECTOR_QUERY, variables: { id: TEST_CN_MIGRATION_ID } });
     // Verify is no longer found
-    const queryResult = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
+    const queryResult = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_MIGRATION_ID } });
 
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.connector).toBeNull();
@@ -159,7 +159,7 @@ describe('Check connector migration', () => {
   describe('migrate connector to managed', () => {
     describe('when migration is successful', () => {
       it('should migrate a standalone connector to managed, and user is now service account', async () => {
-        const queryConnectorRegistered = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
+        const queryConnectorRegistered = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_MIGRATION_ID } });
         const standaloneConnector = queryConnectorRegistered.data?.connector;
         expect(standaloneConnector).not.toBeNull();
 
