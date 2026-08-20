@@ -24974,6 +24974,7 @@ export type Query = {
   synchronizer?: Maybe<Synchronizer>;
   synchronizerAddInputFromImport: SynchronizerAddInputFromImport;
   synchronizerFetch?: Maybe<Array<Maybe<RemoteStreamCollection>>>;
+  synchronizerLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   synchronizers?: Maybe<SynchronizerConnection>;
   system?: Maybe<System>;
   systemMembers?: Maybe<MemberConnection>;
@@ -27920,6 +27921,11 @@ export type QuerySynchronizerAddInputFromImportArgs = {
 
 export type QuerySynchronizerFetchArgs = {
   input?: InputMaybe<SynchronizerFetchInput>;
+};
+
+
+export type QuerySynchronizerLogsArgs = {
+  id: Scalars['String']['input'];
 };
 
 
@@ -33654,6 +33660,9 @@ export type Synchronizer = {
   consumer_metrics?: Maybe<StreamCollectionConsumer>;
   current_state_date?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['ID']['output'];
+  ingestionLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
+  last_execution_date?: Maybe<Scalars['DateTime']['output']>;
+  last_execution_status?: Maybe<Scalars['String']['output']>;
   listen_deletion: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   no_dependencies: Scalars['Boolean']['output'];
@@ -50113,6 +50122,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   synchronizer?: Resolver<Maybe<ResolversTypes['Synchronizer']>, ParentType, ContextType, RequireFields<QuerySynchronizerArgs, 'id'>>;
   synchronizerAddInputFromImport?: Resolver<ResolversTypes['SynchronizerAddInputFromImport'], ParentType, ContextType, RequireFields<QuerySynchronizerAddInputFromImportArgs, 'file'>>;
   synchronizerFetch?: Resolver<Maybe<Array<Maybe<ResolversTypes['RemoteStreamCollection']>>>, ParentType, ContextType, Partial<QuerySynchronizerFetchArgs>>;
+  synchronizerLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType, RequireFields<QuerySynchronizerLogsArgs, 'id'>>;
   synchronizers?: Resolver<Maybe<ResolversTypes['SynchronizerConnection']>, ParentType, ContextType, Partial<QuerySynchronizersArgs>>;
   system?: Resolver<Maybe<ResolversTypes['System']>, ParentType, ContextType, Partial<QuerySystemArgs>>;
   systemMembers?: Resolver<Maybe<ResolversTypes['MemberConnection']>, ParentType, ContextType>;
@@ -52021,6 +52031,9 @@ export type SynchronizerResolvers<ContextType = any, ParentType extends Resolver
   consumer_metrics?: Resolver<Maybe<ResolversTypes['StreamCollectionConsumer']>, ParentType, ContextType>;
   current_state_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  ingestionLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType>;
+  last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_execution_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   listen_deletion?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   no_dependencies?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;

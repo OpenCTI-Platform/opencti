@@ -19,6 +19,7 @@ import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
 import { clearSyncConsumerMetrics, storeSyncConsumerMetrics } from '../graphql/syncConsumerMetrics';
 import { createParser } from 'eventsource-parser';
 import { InterruptibleTimer } from './interruptible-timer';
+import { buildIngestionErrorMeta, createIngestionLogger } from './ingestionManager/ingestionManagerUtils';
 import {
   ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET,
   extractMarkdownImageReferences,
@@ -263,6 +264,8 @@ const syncManagerInstance = (syncId) => {
       running = true;
       logApp.info(`[OPENCTI] Sync ${syncId}: starting manager`);
       const sync = await storeLoadById(context, SYSTEM_USER, syncId, ENTITY_TYPE_SYNC);
+      const syncLogger = createIngestionLogger(sync.internal_id, sync.name, 'sync');
+      syncLogger.info('Feed execution started');
       const synchronized = sync.synchronized ?? false;
       const { ssl_verify: ssl = false } = sync;
       const token = await decryptSynchronizerCredential(sync.token);
@@ -290,6 +293,13 @@ const syncManagerInstance = (syncId) => {
               connectionId = connectedData.connectionId;
               connectedAt = new Date().toISOString();
               logApp.info(`[OPENCTI] Sync ${syncId}: listening ${sseUri} with id ${connectionId}`);
+              await patchSync(context, SYSTEM_USER, syncId, {
+                last_execution_date: new Date().toISOString(),
+                last_execution_status: 'success',
+              });
+              await syncLogger.success('Feed execution succeeded', {
+                connection_id: connectionId,
+              });
               continue;
             }
             // Handle heartbeat - just save state, no data to process
@@ -335,6 +345,11 @@ const syncManagerInstance = (syncId) => {
                 logApp.error('[OPENCTI-MODULE] Sync manager event handling error, retrying...', {
                   cause: processingError, id: syncId, manager: 'SYNC_MANAGER',
                 });
+                await patchSync(context, SYSTEM_USER, syncId, {
+                  last_execution_date: new Date().toISOString(),
+                  last_execution_status: 'error',
+                });
+                await syncLogger.error('Feed execution failed', buildIngestionErrorMeta(processingError));
                 await wait(5000);
               }
             }
@@ -348,6 +363,11 @@ const syncManagerInstance = (syncId) => {
           logApp.warn('[OPENCTI] Sync stream error, reconnecting...', {
             id: syncId, manager: 'SYNC_MANAGER', cause: streamError,
           });
+          await patchSync(context, SYSTEM_USER, syncId, {
+            last_execution_date: new Date().toISOString(),
+            last_execution_status: 'error',
+          });
+          await syncLogger.error('Feed execution failed', buildIngestionErrorMeta(streamError));
           await wait(5000);
         }
       }

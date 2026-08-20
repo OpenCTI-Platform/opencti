@@ -669,6 +669,9 @@ type Synchronizer {
   user: Creator
   running: Boolean!
   current_state_date: DateTime
+  last_execution_date: DateTime
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry] @ff(flags: ["INGESTION_FEED_LOGS"])
   listen_deletion: Boolean!
   no_dependencies: Boolean!
   ssl_verify: Boolean
@@ -14936,6 +14939,7 @@ type Query {
   rules: [Rule] @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   ruleManagerInfo: RuleManager @auth(for: [SETTINGS_SETCUSTOMIZATION])
   synchronizer(id: String!): Synchronizer @auth(for: [INGESTION])
+  synchronizerLogs(id: String!): [IngestionEntry] @auth(for: [INGESTION]) @ff(flags: ["INGESTION_FEED_LOGS"])
   synchronizerAddInputFromImport(file: Upload!): SynchronizerAddInputFromImport! @auth(for: [CONNECTORAPI])
 
   synchronizers(

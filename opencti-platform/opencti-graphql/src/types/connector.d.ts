@@ -39,7 +39,9 @@ export interface BasicStoreEntitySynchronizer extends BasicStoreEntity {
   token?: string | null;
   stream_id: string;
   running: boolean;
-  current_state_date: Date;
+  current_state_date?: Date;
+  last_execution_date?: Date;
+  last_execution_status?: string;
   listen_deletion: boolean;
   no_dependencies: boolean;
   ssl_verify: boolean;

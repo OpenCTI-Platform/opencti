@@ -17,6 +17,7 @@ import { BuiltInIntegrationKind, getBuiltInIntegration, isBuiltInIntegrationKind
 import IngestionTaxiiLogsTab from '@components/data/ingestionTaxii/IngestionTaxiiLogsTab';
 import IngestionCsvLogsTab from '@components/data/ingestionCsv/IngestionCsvLogsTab';
 import IngestionJsonLogsTab from '@components/data/ingestionJson/IngestionJsonLogsTab';
+import SyncLogsTab from '@components/data/sync/SyncLogsTab';
 import { ConnectorWorksSection } from '@components/data/connectors/Connector';
 import { connectorIdFromIngestId } from '@components/integrations/deployed/useDeployedIntegrations';
 import useHelper from '../../../../utils/hooks/useHelper';
@@ -44,6 +45,7 @@ const feedDetailSyncQuery = graphql`
       stream_id
       running
       current_state_date
+      last_execution_status
       listen_deletion
       no_dependencies
       ssl_verify
@@ -197,6 +199,7 @@ export interface FeedDetailNode {
   queue_messages?: number | null;
   added_after_start?: string | null;
   current_state_date?: string | null;
+  last_execution_status?: string | null;
   current_state_cursor?: string | null;
   current_state_hash?: string | null;
   last_execution_date?: string | null;
@@ -287,9 +290,11 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
   const { setTitle } = useConnectedDocumentModifier();
   const { isFeatureEnable } = useHelper();
   const definition = getBuiltInIntegration(kind);
-  // Only TAXII, CSV, RSS and JSON feeds get the Overview / Works / Logs tabs,
-  // mirroring the connector detail page. Other feed kinds keep single-page layout.
-  const hasTabs = kind === 'taxii' || kind === 'csv' || kind === 'rss' || kind === 'json';
+  // TAXII, CSV, RSS, JSON and stream feeds get tabs. Stream feeds don't expose
+  // works, so they only display Overview + Logs.
+  const hasTabs = kind === 'taxii' || kind === 'csv' || kind === 'rss' || kind === 'json' || kind === 'sync';
+  const hasWorksTab = hasTabs && kind !== 'sync';
+  const logsTabIndex = hasWorksTab ? 2 : 1;
   const [tabValue, setTabValue] = useState(0);
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -418,7 +423,7 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={tabValue} onChange={handleTabChange}>
             <Tab label={t_i18n('Overview')} />
-            <Tab label={t_i18n('Works')} disabled={!isConnectorReader} />
+            {hasWorksTab && <Tab label={t_i18n('Works')} disabled={!isConnectorReader} />}
             {isIngestionFeedLogsEnabled && <Tab label={t_i18n('Logs')} />}
           </Tabs>
         </Box>
@@ -565,13 +570,14 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
           completed), exactly like the connector detail pages. Synchronizers
           consume streams directly and never register works. For tabbed feeds
           this now lives in its own "Works" tab instead of the single page. */}
-      {isConnectorReader && kind !== 'sync' && (!hasTabs || tabValue === 1) && (
+      {isConnectorReader && hasWorksTab && (!hasTabs || tabValue === 1) && (
         <ConnectorWorksSection connectorId={connectorIdFromIngestId(node.id)} />
       )}
 
-      {/* "Logs" tab content for TAXII, CSV, RSS and JSON feeds. */}
-      {isIngestionFeedLogsEnabled && hasTabs && tabValue === 2 && (
+      {/* "Logs" tab content for TAXII, CSV, RSS, JSON and stream feeds. */}
+      {isIngestionFeedLogsEnabled && hasTabs && tabValue === logsTabIndex && (
         <>
+          {kind === 'sync' && <SyncLogsTab feedId={node.id} feedName={node.name} />}
           {kind === 'taxii' && <IngestionTaxiiLogsTab feedId={node.id} feedName={node.name} />}
           {kind === 'csv' && <IngestionCsvLogsTab feedId={node.id} feedName={node.name} />}
           {kind === 'rss' && <IngestionRssLogsTab feedId={node.id} feedName={node.name} />}
