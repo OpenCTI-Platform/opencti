@@ -73,4 +73,3 @@ export const filterAndSortLatestCompatibleContracts = (
     .filter((contract) => isSupportVersionCompatible(contract, options))
     .sort(compareContractVersionDesc);
 };
-
