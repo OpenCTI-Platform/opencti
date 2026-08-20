@@ -137,9 +137,11 @@ jobs:
           sh -c 'set -eux
             pwd
             ls -lart
-            cd /opt/opencti
-            find . | grep "insert-dataset"
-            node /opt/opencti/build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy
+            ls /home/workspace/
+            ls /home/workspace/opencti-platform/
+            ls /home/workspace/opencti-platform/opencti-graphql
+            cd /home/workspace/opencti-platform/opencti-graphql
+            node build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy
           '
 
     - name: e2e tests
