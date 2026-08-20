@@ -88,6 +88,8 @@ const HistoryIcon = ({
         color: theme.palette.text.primary,
         cursor: canClick ? 'pointer' : 'auto',
       }}
+      role={canClick ? 'button' : undefined}
+      tabIndex={canClick ? 0 : undefined}
       aria-label={canClick ? t_i18n('View commit message') : undefined}
       onClick={canClick ? onClick : undefined}
     >

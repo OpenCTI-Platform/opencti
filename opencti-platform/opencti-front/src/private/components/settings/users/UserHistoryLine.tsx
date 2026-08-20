@@ -256,6 +256,8 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
             }}
             onClick={() => commit && handleOpen()}
             aria-label={commit ? t_i18n('View commit message') : undefined}
+            role={commit ? 'button' : undefined}
+            tabIndex={commit ? 0 : undefined}
           >
             <LinkVariantRemove fontSize="small" />
           </Avatar>
@@ -322,6 +324,8 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
         }}
         onClick={() => commit && handleOpen()}
         aria-label={commit ? t_i18n('View commit message') : undefined}
+        role={commit ? 'button' : undefined}
+        tabIndex={commit ? 0 : undefined}
       >
         {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
         <ItemIcon type={eventScope} size="small" />
