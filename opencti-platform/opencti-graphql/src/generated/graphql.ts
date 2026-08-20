@@ -30329,7 +30329,7 @@ export type SecurityCoverageToStixArgs = {
 };
 
 export type SecurityCoverageAddInput = {
-  add_related_entities?: InputMaybe<Scalars['Boolean']['input']>;
+  add_all_related_entities?: InputMaybe<Scalars['Boolean']['input']>;
   auto_enrichment_disable: Scalars['Boolean']['input'];
   confidence?: InputMaybe<Scalars['Int']['input']>;
   coverage_information?: InputMaybe<Array<SecurityCoverageExpectation>>;
@@ -30341,6 +30341,7 @@ export type SecurityCoverageAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   duration?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
+  entities_to_add?: InputMaybe<Array<Scalars['String']['input']>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   external_uri?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;

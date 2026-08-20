@@ -123,12 +123,16 @@ export const deleteSecurityCoverageResult = async (
  * @param context
  * @param user User making the request.
  * @param securityCoverageResultId ID of the security coverage result to populate.
+ * @param entitiesToAdd Optional explicit list of entity IDs to target. When provided
+ * and non-empty, auto-discovery of related entities (targets/uses/container objects) is
+ * skipped entirely and these IDs are used as-is.
  * @returns The created background task.
  */
 export const createHasCoveredRelTask = async (
   context: AuthContext,
   user: AuthUser,
   securityCoverageResultId: string,
+  entitiesToAdd?: string[],
 ) => {
   const securityCoverageResult = await storeLoadByIdWithRefs<StoreEntitySecurityCoverageResult>(
     context,
@@ -139,28 +143,33 @@ export const createHasCoveredRelTask = async (
     throw FunctionalError(`No security coverage result found for the id ${securityCoverageResultId}`);
   }
 
-  const coveredId = securityCoverageResult[INPUT_RESULT_OF][RELATION_COVERED];
-  const coveredEntity = await storeLoadByIdWithRefs<StoreEntity>(context, user, coveredId);
-  if (!coveredEntity) {
-    throw FunctionalError(`No covered entity found for the id ${coveredId}`);
-  }
-
-  let targets: string[] = [];
-  if (isStixDomainObjectContainer(coveredEntity.entity_type)) {
-    // In case of containers add entities from the ones contained.
-    targets = (coveredEntity.objects ?? []).flatMap((o) => {
-      if (!HAS_COVERED_TARGETS_TYPE.includes(o.entity_type)) return [];
-      return o.id;
-    });
+  let targets: string[];
+  if (entitiesToAdd && entitiesToAdd.length > 0) {
+    targets = entitiesToAdd;
   } else {
-    // In case of non-containers add entities from targets and uses relationships.
-    await fullRelationsList(context, user, [RELATION_TARGETS, RELATION_USES], {
-      fromId: coveredEntity.id,
-      toTypes: HAS_COVERED_TARGETS_TYPE,
-      callback: async (relationships) => {
-        targets.push(...relationships.map((r) => r.toId));
-      },
-    });
+    const coveredId = securityCoverageResult[INPUT_RESULT_OF][RELATION_COVERED];
+    const coveredEntity = await storeLoadByIdWithRefs<StoreEntity>(context, user, coveredId);
+    if (!coveredEntity) {
+      throw FunctionalError(`No covered entity found for the id ${coveredId}`);
+    }
+
+    targets = [];
+    if (isStixDomainObjectContainer(coveredEntity.entity_type)) {
+      // In case of containers add entities from the ones contained.
+      targets = (coveredEntity.objects ?? []).flatMap((o) => {
+        if (!HAS_COVERED_TARGETS_TYPE.includes(o.entity_type)) return [];
+        return o.id;
+      });
+    } else {
+      // In case of non-containers add entities from targets and uses relationships.
+      await fullRelationsList(context, user, [RELATION_TARGETS, RELATION_USES], {
+        fromId: coveredEntity.id,
+        toTypes: HAS_COVERED_TARGETS_TYPE,
+        callback: async (relationships) => {
+          targets.push(...relationships.map((r) => r.toId));
+        },
+      });
+    }
   }
 
   logApp.info(
@@ -169,7 +178,7 @@ export const createHasCoveredRelTask = async (
   );
 
   return createListTask(context, user, {
-    description: `Create has-covered relationships with related covered entities for SCR ${securityCoverageResultId}`,
+    description: `Create has-covered relationships for SCR ${securityCoverageResultId}`,
     scope: 'KNOWLEDGE',
     ids: targets,
     actions: [{ type: ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES, id: securityCoverageResultId }],
