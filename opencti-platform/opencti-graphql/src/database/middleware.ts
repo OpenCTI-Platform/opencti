@@ -2161,7 +2161,8 @@ const getPreviousInstanceValue = (key: string, instance: Record<string, any>) =>
   if (key.includes('.')) {
     const [base, target] = key.split('.');
     const data = instance[base]?.[target];
-    return data ? [data] : data;
+    // Always return an array (or undefined) so callers relying on Array methods (e.g. draft consolidation) never crash on falsy scalars
+    return isEmptyField(data) ? undefined : [data];
   }
   const data = instance[key];
   if (isEmptyField(data)) {

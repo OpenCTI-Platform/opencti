@@ -16,7 +16,7 @@ import * as R from 'ramda';
 import type { JSONSchemaType } from 'ajv';
 import { type PlaybookComponent } from './playbook-types';
 import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, SYSTEM_USER } from '../../utils/access';
-import { pushToConnector, pushToWorkerForConnector } from '../../database/rabbitmq';
+import { pushToConnector, pushBundleToWorker } from '../../database/rabbitmq';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import type { BasicStoreRelation, StoreRelation } from '../../types/store';
 import { utcDate } from '../../utils/format';
@@ -201,14 +201,16 @@ const PLAYBOOK_INGESTION_COMPONENT: PlaybookComponent<IngestionConfiguration> = 
   configuration_schema: undefined,
   schema: async () => undefined,
   executor: async ({ eventId, bundle, playbookId }) => {
+    const context = executionContext('playbook_components');
     const content = Buffer.from(JSON.stringify(bundle), 'utf-8').toString('base64');
-    await pushToWorkerForConnector(playbookId, {
+    await pushBundleToWorker(context, AUTOMATION_MANAGER_USER, playbookId, {
       type: 'bundle',
       event_id: eventId,
       playbook_id: playbookId,
       applicant_id: AUTOMATION_MANAGER_USER_UUID,
       content,
       update: false,
+      // No work_id on playbook messages, so pushBundleToWorker never tracks expectations for this call.
     });
     return { output_port: undefined, bundle, forceBundleTracking: true };
   },

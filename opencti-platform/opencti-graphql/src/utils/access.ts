@@ -688,7 +688,7 @@ export const isServiceAccountUser = (user: AuthUser): boolean => {
 export const isUserHasCapability = (user: AuthUser, capability: string, options?: { forceCapabilityInDraft?: boolean }): boolean => {
   const isInDraftContext = !!user.draft_context;
   const isIncludedInCapabilities = (user.capabilities || []).some((s) => capability !== BYPASS && s.name.includes(capability));
-  const isIncludedInDraftCapabilities = (user.capabilitiesInDraft || []).some((s) => s.name.includes(capability));
+  const isIncludedInDraftCapabilities = (user.capabilitiesInDraft || []).some((s) => capability !== BYPASS && s.name.includes(capability));
   const checkCapabilitiesInDraft = !!options?.forceCapabilityInDraft || isInDraftContext;
   return isBypassUser(user) || isIncludedInCapabilities || (checkCapabilitiesInDraft && isIncludedInDraftCapabilities);
 };

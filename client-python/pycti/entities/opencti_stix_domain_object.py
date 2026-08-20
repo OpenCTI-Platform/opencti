@@ -34,6 +34,10 @@ class StixDomainObject:
                 standard_id
                 name
             }
+            creators {
+                id
+                name
+            }
             createdBy {
                 ... on Identity {
                     id
@@ -561,6 +565,10 @@ class StixDomainObject:
             objectOrganization {
                 id
                 standard_id
+                name
+            }
+            creators {
+                id
                 name
             }
             createdBy {

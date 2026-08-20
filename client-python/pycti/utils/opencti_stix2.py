@@ -379,7 +379,10 @@ class OpenCTIStix2:
 
         :param file_path: Valid path to the file
         :type file_path: str
-        :param update: Whether to update data in the database, defaults to False
+        :param update: Whether to force-merge entities that ambiguously match multiple
+            existing records during creation, defaults to False. OpenCTI always upserts
+            data by standard id/hash regardless of this flag; it only affects the rare
+            case where a single incoming entity matches more than one existing entity.
         :type update: bool, optional
         :param types: List of STIX2 types to filter, defaults to None
         :type types: list, optional
@@ -405,7 +408,10 @@ class OpenCTIStix2:
 
         :param json_data: JSON data as string or bytes
         :type json_data: str or bytes
-        :param update: Whether to update data in the database, defaults to False
+        :param update: Whether to force-merge entities that ambiguously match multiple
+            existing records during creation, defaults to False. OpenCTI always upserts
+            data by standard id/hash regardless of this flag; it only affects the rare
+            case where a single incoming entity matches more than one existing entity.
         :type update: bool, optional
         :param types: List of STIX2 types to filter, defaults to None
         :type types: list, optional
@@ -1268,7 +1274,10 @@ class OpenCTIStix2:
 
         :param stix_object: Valid STIX2 object to import
         :type stix_object: Dict
-        :param update: Whether to update data in the database, defaults to False
+        :param update: Whether to force-merge entities that ambiguously match multiple
+            existing records during creation, defaults to False. OpenCTI always upserts
+            data by standard id/hash regardless of this flag; it only affects the rare
+            case where a single incoming entity matches more than one existing entity.
         :type update: bool, optional
         :param types: List of STIX2 types to filter, defaults to None
         :type types: list, optional
@@ -1398,7 +1407,10 @@ class OpenCTIStix2:
 
         :param stix_object: Valid STIX2 cyber observable object
         :type stix_object: Dict
-        :param update: Whether to update existing data in the database, defaults to False
+        :param update: Whether to force-merge entities that ambiguously match multiple
+            existing records during creation, defaults to False. OpenCTI always upserts
+            data by standard id/hash regardless of this flag; it only affects the rare
+            case where a single incoming entity matches more than one existing entity.
         :type update: bool, optional
         :param types: List of STIX2 types to filter, defaults to None
         :type types: list, optional
@@ -1610,7 +1622,10 @@ class OpenCTIStix2:
 
         :param stix_relation: Valid STIX2 relationship object
         :type stix_relation: Dict
-        :param update: Whether to update existing data in the database, defaults to False
+        :param update: Whether to force-merge entities that ambiguously match multiple
+            existing records during creation, defaults to False. OpenCTI always upserts
+            data by standard id/hash regardless of this flag; it only affects the rare
+            case where a single incoming entity matches more than one existing entity.
         :type update: bool, optional
         :param types: List of STIX2 types to filter, defaults to None
         :type types: list, optional
@@ -1723,7 +1738,10 @@ class OpenCTIStix2:
         :type from_id: str
         :param to_id: ID of the target entity (where_sighted_ref)
         :type to_id: str
-        :param update: Whether to update existing data in the database, defaults to False
+        :param update: Whether to force-merge entities that ambiguously match multiple
+            existing records during creation, defaults to False. OpenCTI always upserts
+            data by standard id/hash regardless of this flag; it only affects the rare
+            case where a single incoming entity matches more than one existing entity.
         :type update: bool, optional
         :param types: List of STIX2 types to filter, defaults to None
         :type types: list, optional
@@ -3389,7 +3407,10 @@ class OpenCTIStix2:
 
         :param item: STIX2 item to import
         :type item: dict
-        :param update: Whether to update existing data, defaults to False
+        :param update: Whether to force-merge entities that ambiguously match multiple
+            existing records during creation, defaults to False. OpenCTI always upserts
+            data by standard id/hash regardless of this flag; it only affects the rare
+            case where a single incoming entity matches more than one existing entity.
         :type update: bool, optional
         :param types: List of STIX2 types to filter, defaults to None
         :type types: List, optional
@@ -3540,7 +3561,10 @@ class OpenCTIStix2:
 
         :param item: STIX2 item to import
         :type item: dict
-        :param update: Whether to update existing data, defaults to False
+        :param update: Whether to force-merge entities that ambiguously match multiple
+            existing records during creation, defaults to False. OpenCTI always upserts
+            data by standard id/hash regardless of this flag; it only affects the rare
+            case where a single incoming entity matches more than one existing entity.
         :type update: bool, optional
         :param types: List of STIX2 types to filter, defaults to None
         :type types: List, optional
@@ -3671,7 +3695,10 @@ class OpenCTIStix2:
 
         :param stix_bundle: STIX2 bundle dictionary to import
         :type stix_bundle: Dict
-        :param update: Whether to update existing data, defaults to False
+        :param update: Whether to force-merge entities that ambiguously match multiple
+            existing records during creation, defaults to False. OpenCTI always upserts
+            data by standard id/hash regardless of this flag; it only affects the rare
+            case where a single incoming entity matches more than one existing entity.
         :type update: bool, optional
         :param types: List of STIX2 types to filter, defaults to None
         :type types: List, optional

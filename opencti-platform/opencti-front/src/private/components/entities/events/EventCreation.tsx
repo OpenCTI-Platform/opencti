@@ -9,6 +9,7 @@ import { FormikConfig } from 'formik/dist/types';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
+import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
@@ -58,6 +59,7 @@ const EVENT_TYPE = 'Event';
 interface EventAddInput {
   name: string;
   description: string;
+  x_opencti_score?: string;
   confidence: number | null;
   event_types: string[];
   start_time: Date | null;
@@ -97,6 +99,10 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
+    x_opencti_score: Yup.number().integer(t_i18n('The value must be an integer'))
+      .nullable()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100')),
     confidence: Yup.number().nullable(),
     event_types: Yup.array().nullable(),
     start_time: Yup.date()
@@ -143,12 +149,13 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
     { setSubmitting, setErrors, resetForm },
   ) => {
     const allNames = splitMultilines(values.name);
-    const variables: EventCreationMutation$variables[] = allNames.map((name) => ({
-      input: {
+    const variables: EventCreationMutation$variables[] = allNames.map((name) => {
+      const input: EventCreationMutation$variables['input'] = {
         ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         event_types: values.event_types,
+        x_opencti_score: values.x_opencti_score ? parseInt(values.x_opencti_score, 10) : undefined,
         confidence: parseInt(String(values.confidence), 10),
         start_time: values.start_time ? parse(values.start_time).format() : null,
         stop_time: values.stop_time ? parse(values.stop_time).format() : null,
@@ -156,8 +163,9 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
         objectMarking: values.objectMarking.map((v) => v.value),
         objectLabel: values.objectLabel.map((v) => v.value),
         externalReferences: values.externalReferences.map(({ value }) => value),
-      },
-    }));
+      };
+      return { input };
+    });
 
     bulkCommit({
       variables,
@@ -177,6 +185,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
   const initialValues = useDefaultValues(EVENT_TYPE, {
     name: inputValue ?? '',
     description: '',
+    x_opencti_score: undefined,
     event_types: [],
     start_time: null,
     confidence: null,
@@ -281,6 +290,16 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
             <ConfidenceField
               entityType="Event"
               containerStyle={fieldSpacingContainerStyle}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="x_opencti_score"
+              required={(mandatoryAttributes.includes('x_opencti_score'))}
+              label={t_i18n('Score')}
+              fullWidth={true}
+              type="number"
+              style={fieldSpacingContainerStyle}
             />
             <CreatedByField
               name="createdBy"

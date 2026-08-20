@@ -1,7 +1,7 @@
 services:
   opencti-dev-redis:
     container_name: opencti-dev-redis
-    image: redis:8.6.3
+    image: redis:8.6.4
     restart: unless-stopped
     ports:
       - 6379:6379
@@ -14,7 +14,7 @@ services:
       - 5540:5540
   opencti-dev-elasticsearch:
     container_name: opencti-dev-elasticsearch
-    image: elasticsearch:8.19.18
+    image: elasticsearch:8.19.19
     volumes:
       - esdata:/usr/share/elasticsearch/data
       - essnapshots:/usr/share/elasticsearch/snapshots
@@ -22,6 +22,7 @@ services:
       - discovery.type=single-node
       - xpack.ml.enabled=false
       - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms2G -Xmx2G"
     restart: unless-stopped
     ulimits:
       memlock:
@@ -35,7 +36,7 @@ services:
       - 9300:9300
   opencti-dev-kibana:
     container_name: opencti-dev-kibana
-    image: kibana:8.19.18
+    image: kibana:8.19.20
     environment:
       - ELASTICSEARCH_HOSTS=http://opencti-dev-elasticsearch:9200
     restart: unless-stopped
@@ -69,6 +70,7 @@ services:
       - discovery.type=single-node
       - plugins.security.disabled=true
       - bootstrap.memory_lock=true
+      - OPENSEARCH_JAVA_OPTS=-Xms2G -Xmx2G
       - OPENSEARCH_INITIAL_ADMIN_PASSWORD=GraceH00per! # minimum 8 character password and must contain at least one uppercase letter, one lowercase letter, one digit, and one special character that is strong.
     ulimits:
       memlock:
@@ -111,7 +113,7 @@ services:
     restart: unless-stopped
   opencti-dev-rabbitmq:
     container_name: opencti-dev-rabbitmq
-    image: rabbitmq:4.3.2-management
+    image: rabbitmq:4.3.4-management
     restart: unless-stopped
     volumes:
       - ./rabbitmq.config:/etc/rabbitmq/conf.d/90-userdefined.conf
@@ -141,7 +143,7 @@ services:
       - "telemetry"
   opencti-dev-telemetry-otlp:
     container_name: opencti-dev-telemetry-otlp
-    image: otel/opentelemetry-collector-contrib:0.155.0
+    image: otel/opentelemetry-collector-contrib:0.158.0
     restart: unless-stopped
     volumes:
       - "./otlp-config.yaml:/etc/config/otlp-config.yaml"
@@ -154,7 +156,7 @@ services:
       - "telemetry"
   opencti-dev-telemetry-prometheus:
     container_name: opencti-dev-telemetry-prometheus
-    image: prom/prometheus:v3.13.0
+    image: prom/prometheus:v3.13.2
     restart: unless-stopped
     volumes:
       - "./prometheus.yml:/etc/prometheus/prometheus.yml"
@@ -169,6 +171,10 @@ services:
       - "3100:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - opencti-dev-telemetry-prometheus
+    profiles:
+      - "telemetry"
 
   # SAML / OpenId provider with keycloak - disabled by default
   # docker compose --profile keycloak up -d

@@ -83,6 +83,10 @@ const EventEditionOverviewComponent = (props) => {
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
+    x_opencti_score: Yup.number().integer(t_i18n('The value must be an integer'))
+      .nullable()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100')),
     confidence: Yup.number().nullable(),
     event_types: Yup.array().nullable(),
     start_time: Yup.date().typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')).nullable(),
@@ -143,12 +147,17 @@ const EventEditionOverviewComponent = (props) => {
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      editor.fieldPatch({
-        variables: {
-          id: event.id,
-          input: { key: name, value: finalValue ?? '' },
-        },
-      });
+      eventValidator
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          editor.fieldPatch({
+            variables: {
+              id: event.id,
+              input: { key: name, value: finalValue ?? [null] },
+            },
+          });
+        })
+        .catch(() => false);
     }
   };
 
@@ -157,6 +166,7 @@ const EventEditionOverviewComponent = (props) => {
     references: event.references || [],
     event_types: event.event_types || [],
     description: event.description || '',
+    x_opencti_score: event.x_opencti_score,
     start_time: buildDate(event.start_time),
     stop_time: buildDate(event.stop_time),
     confidence: event.confidence,
@@ -266,6 +276,24 @@ const EventEditionOverviewComponent = (props) => {
             editContext={context}
             variant="edit"
           />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="x_opencti_score"
+            required={(mandatoryAttributes.includes('x_opencti_score'))}
+            label={t_i18n('Score')}
+            type="number"
+            fullWidth={true}
+            style={{ marginTop: 20 }}
+            onFocus={editor.changeFocus}
+            onSubmit={(name, value) => handleSubmitField(name, (value === '' ? null : value))}
+            helperText={(
+              <SubscriptionFocus
+                context={context}
+                fieldName="x_opencti_score"
+              />
+            )}
+          />
           {event.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
@@ -324,6 +352,7 @@ export default createFragmentContainer(EventEditionOverviewComponent, {
         description
         start_time
         confidence
+        x_opencti_score
         entity_type
         stop_time
         createdBy {
