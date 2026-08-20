@@ -136,7 +136,6 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                   <IconButton
                     aria-label={expandedLines[element.id] ? t_i18n('Collapse') : t_i18n('Expand')}
                     onClick={() => handleToggleLine(element.id)}
-                    aria-haspopup="true"
                     aria-expanded={expandedLines[element.id]}
                   >
                     {expandedLines[element.id]
