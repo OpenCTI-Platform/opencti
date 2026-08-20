@@ -57,7 +57,7 @@ export const findAudits = (context: AuthContext, user: AuthUser, args: QueryAudi
 };
 
 export const findAuditById = async (context: AuthContext, user: AuthUser, auditId: string) => {
-  const types = computeAuditTypes(user);
+  const types = computeAuditTypes(user, [ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY]);
   return storeLoadById(context, user, auditId, types, { historyFiltering: true });
 };
 
