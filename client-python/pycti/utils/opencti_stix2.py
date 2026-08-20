@@ -65,8 +65,6 @@ EXPECTED_FUNCTIONAL_ERROR_DOC_CODES = [
 
 #: Maximum size of the item payload reported as bundle too large
 MAX_REPORTED_SOURCE_LENGTH = 50000
-#: Number of characters of the error message appended to the import error log
-ERROR_LOG_PREVIEW_LENGTH = 300
 
 #: STIX Extension ID for OpenCTI custom objects and properties
 STIX_EXT_OCTI: str = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
@@ -3695,14 +3693,12 @@ class OpenCTIStix2:
                     )
                     if is_expected_functional_error:
                         worker_logger.warning(
-                            "Functional error during bundle import: "
-                            + error[:ERROR_LOG_PREVIEW_LENGTH],
+                            "Functional error during bundle import",
                             {"error": error},
                         )
                     else:
                         worker_logger.error(
-                            "Unrecognized error during bundle import: "
-                            + error[:ERROR_LOG_PREVIEW_LENGTH],
+                            "Unrecognized error during bundle import",
                             {"error": error},
                         )
                     # In both cases the item is rejected and must appear in the work status
