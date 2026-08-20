@@ -9578,10 +9578,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-base64@npm:3.9.2":
-  version: 3.9.2
-  resolution: "js-base64@npm:3.9.2"
-  checksum: 10c0/59bfa7f05953aa3e630812d3fcf96ea56597100b4baf367fdaacb696712e5b774cbb95f90185f88cf0ccbb864fcf62b1f75e8eed283214076d6bec8952f621dc
+"js-base64@npm:3.9.3":
+  version: 3.9.3
+  resolution: "js-base64@npm:3.9.3"
+  checksum: 10c0/bb293c11b946139a45624b1daf7ba8a996994ffd1694a2676f2df30047df96335967b9b1a8159ae58dd9dd6978c841e9f7a478bc378609bbe586835a36a9e4e7
   languageName: node
   linkType: hard
 
@@ -11825,7 +11825,7 @@ __metadata:
     invert-color: "npm:3.0.0"
     ipaddr.js: "npm:2.5.0"
     is-svg: "npm:6.1.0"
-    js-base64: "npm:3.9.2"
+    js-base64: "npm:3.9.3"
     js-file-download: "npm:0.4.12"
     jsdom: "npm:29.1.1"
     json5: "npm:2.2.3"
