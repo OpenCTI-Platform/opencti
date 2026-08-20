@@ -136,11 +136,9 @@ jobs:
         docker exec opencti-e2e-start \
           sh -c 'set -eux
             pwd
+            find .
             ls -lart
-            ls /home/workspace/
-            ls /home/workspace/opencti-platform/
-            ls /home/workspace/opencti-platform/opencti-graphql
-            cd /home/workspace/opencti-platform/opencti-graphql
+            ls build
             node build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy
           '
 
