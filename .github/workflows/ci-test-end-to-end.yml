@@ -92,7 +92,7 @@ jobs:
         docker run -d --network runner-docker-network \
           --name opencti-e2e-start \
           -p 4500:4100 \
-          -v ${{ github.workspace }}/frontend-e2e-start:/home/workspace \
+          -v ${{ github.workspace }}:/home/workspace \
           -e APP__PORT=4100 \
           -e APP__ENABLED_DEV_FEATURES='${{ matrix.dev_features }}' \
           -e APP__ADMIN__PASSWORD=admin \
@@ -120,7 +120,7 @@ jobs:
           sh -c 'set -eux
             apk add build-base git
             pwd
-            find .
+            ls
             cd /home/workspace
             find .
             cd /home/workspace/client-python
