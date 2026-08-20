@@ -18,11 +18,11 @@ export const handleCatalogLogoViewRequest: RequestHandler = async (req, res) => 
       return;
     }
     const fileParam = req.params.file;
-const file = Array.isArray(fileParam) ? fileParam[0] : fileParam;
-logApp.debug('Catalog logo view handler', { file });
-if (typeof file !== 'string' || file.includes('..') || file.includes('/') || file.includes('\\')) {
-  throw UnsupportedError('Invalid URL format');
-}
+    const file = Array.isArray(fileParam) ? fileParam[0] : fileParam;
+    logApp.debug('Catalog logo view handler', { file });
+    if (typeof file !== 'string' || file.includes('..') || file.includes('/') || file.includes('\\')) {
+      throw UnsupportedError('Invalid URL format');
+    }
     const s3Key = `${CATALOG_CONTRACT_LOGOS_DIR}/${file}`;
     const stream = await downloadFile(s3Key);
     if (!stream) {
