@@ -269,6 +269,15 @@ export const itemColor = (
   return stringToColour(normalizedType, reversed);
 };
 
+/**
+ * Colours entered by users are rendered through MUI's alpha(), which only understands hex,
+ * rgb() and hsl(). A CSS colour name such as "red" makes alpha() throw, callers fall back to a
+ * default colour, and the user sees their choice silently ignored. Validate at the form instead.
+ */
+export const HEX_COLOR_REGEX = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+
+export const isHexColor = (color?: string | null) => !!color && HEX_COLOR_REGEX.test(color);
+
 export const hexToRGB = (hex?: string, transp: number = 0.1) => {
   if (!hex) return `rgb(${50}, ${50}, ${50}, ${transp})`;
   const r = parseInt(hex.slice(1, 3), 16);
