@@ -176,7 +176,7 @@ describe('findAuditById — applies computeAuditTypes', () => {
     expect(storeLoadById).toHaveBeenCalledTimes(1);
     const [, , auditId, types, opts] = storeLoadById.mock.calls[0];
     expect(auditId).toBe('audit-1');
-    expect(types).toEqual([ENTITY_TYPE_HISTORY, ENTITY_TYPE_ACTIVITY]);
+    expect(types).toEqual([ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY]);
     expect(opts).toEqual({ historyFiltering: true });
   });
 
