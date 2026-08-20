@@ -349,10 +349,12 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         isOptionEqualToValue={(option, val) => option.value === val.value}
         renderInput={(paramsInput) => (
           <TextField
+            role="search"
             {...paramsInput}
             slotProps={{
               input: {
                 ...paramsInput.InputProps,
+                type: 'search',
                 endAdornment: isStixObjectTypes.includes(fKey)
                   ? renderSearchScopeSelection(fKey)
                   : paramsInput.InputProps.endAdornment,
@@ -470,7 +472,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     const finalFilterDefinition = useFilterDefinition(fKey, entityTypes, subKey);
     return (
       <>
-        { availableOperators.length > 0 && (
+        {availableOperators.length > 0 && (
           <Select
             labelId="change-operator-select-label"
             id="change-operator-select"

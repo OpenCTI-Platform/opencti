@@ -122,6 +122,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && handleOpen()}
+            aria-label={commit ? t_i18n('View commit message') : undefined}
           >
             <LinkOutlined fontSize="small" />
           </Avatar>
@@ -139,6 +140,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && handleOpen()}
+            aria-label={commit ? t_i18n('View commit message') : undefined}
           >
             <LinkOffOutlined fontSize="small" />
           </Avatar>
@@ -157,6 +159,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && handleOpen()}
+            aria-label={commit ? t_i18n('View commit message') : undefined}
           >
             {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
             <ItemIcon type={eventScope} size="small" />
@@ -175,6 +178,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && handleOpen()}
+            aria-label={commit ? t_i18n('View commit message') : undefined}
           >
             <Merge fontSize="small" />
           </Avatar>
@@ -195,6 +199,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && handleOpen()}
+            aria-label={commit ? t_i18n('View commit message') : undefined}
           >
             {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
             <ItemIcon type={eventScope} size="small" />
@@ -213,6 +218,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && handleOpen()}
+            aria-label={commit ? t_i18n('View commit message') : undefined}
           >
             {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
             <ItemIcon type={eventScope} size="small" />
@@ -231,6 +237,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && handleOpen()}
+            aria-label={commit ? t_i18n('View full details') : undefined}
           >
             <LinkVariantPlus fontSize="small" />
           </Avatar>
@@ -248,6 +255,9 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && handleOpen()}
+            aria-label={commit ? t_i18n('View commit message') : undefined}
+            role={commit ? 'button' : undefined}
+            tabIndex={commit ? 0 : undefined}
           >
             <LinkVariantRemove fontSize="small" />
           </Avatar>
@@ -313,6 +323,9 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
           color: theme.palette.text?.primary,
         }}
         onClick={() => commit && handleOpen()}
+        aria-label={commit ? t_i18n('View commit message') : undefined}
+        role={commit ? 'button' : undefined}
+        tabIndex={commit ? 0 : undefined}
       >
         {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
         <ItemIcon type={eventScope} size="small" />
