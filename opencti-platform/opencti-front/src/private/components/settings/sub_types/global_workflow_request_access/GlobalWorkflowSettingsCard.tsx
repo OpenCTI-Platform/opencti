@@ -62,21 +62,23 @@ const GlobalWorkflowSettingsCard = () => {
           }
           {isSyncWorkflowStatusByNameFeatureEnabled && (
             <>
-              <Label action={(
-                <Tooltip
-                  title={!isSyncWorkflowStatusByNameAvailable
-                    ? t_i18n('This configuration is not available for this entity type')
-                    : t_i18n("When enabled, stream synchronizations will try to name-match the incoming entities' statuses with this instance's statuses, instead of dropping them.")
-                  }
-                >
-                  <InformationOutline
-                    fontSize="small"
-                    color="primary"
-                  />
-                </Tooltip>
-              )}
+              <Label
+                sx={{ marginTop: 4 }}
+                action={(
+                  <Tooltip
+                    title={!isSyncWorkflowStatusByNameAvailable
+                      ? t_i18n('This configuration is not available for this entity type')
+                      : t_i18n("When enabled, stream synchronizations will try to name-match the incoming entities' statuses with this instance's statuses, instead of dropping them.")
+                    }
+                  >
+                    <InformationOutline
+                      fontSize="small"
+                      color="primary"
+                    />
+                  </Tooltip>
+                )}
               >
-                {t_i18n('Sync workflow statuses by name')}
+                {t_i18n('Entity status sync')}
               </Label>
               <FormGroup>
                 <FormControlLabel
@@ -87,7 +89,7 @@ const GlobalWorkflowSettingsCard = () => {
                       onChange={handleToggleSyncWorkflowStatusByName}
                     />
                   )}
-                  label={t_i18n('Sync workflow statuses by name')}
+                  label={t_i18n("Update entities' statuses by name match")}
                 />
               </FormGroup>
             </>

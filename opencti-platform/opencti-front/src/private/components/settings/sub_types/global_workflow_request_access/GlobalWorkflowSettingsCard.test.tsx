@@ -154,7 +154,7 @@ describe('GlobalWorkflowSettingsCard', () => {
 
     renderWithTheme(<GlobalWorkflowSettingsCard />);
 
-    expect(screen.queryByText('Sync workflow statuses by name')).not.toBeInTheDocument();
+    expect(screen.queryByText("Update entities' statuses by name match")).not.toBeInTheDocument();
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
   });
 });
