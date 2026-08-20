@@ -41,7 +41,6 @@ vi.mock('../../../src/database/middleware-loader', () => ({
   storeLoadById: (...args: any[]) => storeLoadById(...args),
 }));
 
-// eslint-disable-next-line import/first
 import {
   computeAuditTypes,
   findHistory,
@@ -53,7 +52,7 @@ import {
   auditsTimeSeries,
   auditsMultiTimeSeries,
 } from '../../../src/domain/log';
-// eslint-disable-next-line import/first
+
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 
 const ENTITY_TYPE_ACTIVITY = 'Activity';
@@ -274,4 +273,3 @@ describe('auditsMultiTimeSeries — applies computeAuditTypes per series', () =>
     expect(timeSeriesHistory.mock.calls[1][2].types).toEqual([ENTITY_TYPE_ACTIVITY]);
   });
 });
-
