@@ -21,7 +21,7 @@ OpenCTI is an open and modular platform. A lot of [connectors, plugins, and clie
 
     ---
 
-    Empower your journey with OpenCTI training courses for both analyst and
+    Empower your journey with OpenCTI training courses for both analysts and
     administrators, and get your certificate.
 
     [:octicons-arrow-right-24:{ .middle } Learn](https://academy.filigran.io)
