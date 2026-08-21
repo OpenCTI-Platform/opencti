@@ -1,5 +1,4 @@
 import Button from '@common/button/Button';
-import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import IngestionTaxiiEditionContainer, { ingestionTaxiiEditionContainerQuery } from '@components/data/ingestionTaxii/IngestionTaxiiEditionContainer';
 import { IngestionTaxiiEditionContainerQuery } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiEditionContainerQuery.graphql';
@@ -11,6 +10,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { PopoverProps } from '@mui/material/Popover';
+import ToggleButton from '@mui/material/ToggleButton';
 import fileDownload from 'js-file-download';
 import React, { Dispatch, FunctionComponent, Suspense, UIEvent, useState } from 'react';
 import { graphql, useQueryLoader } from 'react-relay';
@@ -48,6 +48,7 @@ const ingestionTaxiiPopoverExportQuery = graphql`
 interface IngestionTaxiiPopoverProps {
   ingestionTaxiiId: string;
   running?: boolean | null;
+  showStartStop?: boolean;
   paginationOptions?: IngestionTaxiiLinesPaginationQuery$variables | null | undefined;
   setStateValue: Dispatch<string>;
   // Called after a successful deletion (e.g. to leave the detail page).
@@ -57,6 +58,7 @@ interface IngestionTaxiiPopoverProps {
 const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
   ingestionTaxiiId,
   running,
+  showStartStop = true,
   paginationOptions,
   setStateValue,
   onDeleteComplete,
@@ -205,26 +207,26 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
 
   return (
     <div style={{ margin: 0 }}>
-      <IconButton
-        aria-label={t_i18n('Open menu')}
+      <ToggleButton
         onClick={handleOpen}
         aria-haspopup="true"
-        style={{ marginTop: 3 }}
+        value="popover"
         color="primary"
+        size="small"
       >
-        <MoreVert />
-      </IconButton>
+        <MoreVert fontSize="small" color="primary" />
+      </ToggleButton>
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
-        {!running && (
+        {showStartStop && !running && (
           <MenuItem onClick={handleOpenStart}>
             {t_i18n('Start')}
           </MenuItem>
         )}
-        {running && (
+        {showStartStop && running && (
           <MenuItem onClick={handleOpenStop}>
             {t_i18n('Stop')}
           </MenuItem>
