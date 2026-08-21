@@ -1,5 +1,4 @@
 import Button from '@common/button/Button';
-import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import MoreVert from '@mui/icons-material/MoreVert';
 import DialogActions from '@mui/material/DialogActions';
@@ -7,6 +6,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Slide from '@mui/material/Slide';
+import ToggleButton from '@mui/material/ToggleButton';
 import withStyles from '@mui/styles/withStyles';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
@@ -57,6 +57,15 @@ const ingestionRssPopoverExportQuery = graphql`
   }
 `;
 
+const ingestionRssPopoverResetStateMutation = graphql`
+  mutation IngestionRssPopoverResetStateMutation($id: ID!) {
+    ingestionRssResetState(id: $id) {
+      id
+      current_state_date
+    }
+  }
+`;
+
 const ingestionRssEditionQuery = graphql`
   query IngestionRssPopoverEditionQuery($id: String!) {
     ingestionRss(id: $id) {
@@ -82,6 +91,8 @@ class IngestionRssPopover extends Component {
       starting: false,
       displayStop: false,
       stopping: false,
+      displayResetState: false,
+      resetting: false,
     };
   }
 
@@ -127,6 +138,15 @@ class IngestionRssPopover extends Component {
 
   handleCloseStop() {
     this.setState({ displayStop: false });
+  }
+
+  handleOpenResetState() {
+    this.setState({ displayResetState: true });
+    this.handleClose();
+  }
+
+  handleCloseResetState() {
+    this.setState({ displayResetState: false });
   }
 
   submitDelete() {
@@ -204,30 +224,44 @@ class IngestionRssPopover extends Component {
     });
   }
 
+  submitResetState() {
+    this.setState({ resetting: true });
+    commitMutation({
+      mutation: ingestionRssPopoverResetStateMutation,
+      variables: {
+        id: this.props.ingestionRssId,
+      },
+      onCompleted: () => {
+        this.setState({ resetting: false });
+        this.handleCloseResetState();
+      },
+    });
+  }
+
   render() {
-    const { classes, t, ingestionRssId, running } = this.props;
+    const { classes, t, ingestionRssId, running, showStartStop } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton
-          aria-label={t('Open menu')}
+        <ToggleButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
-          style={{ marginTop: 3 }}
+          value="popover"
           color="primary"
+          size="small"
         >
-          <MoreVert />
-        </IconButton>
+          <MoreVert fontSize="small" color="primary" />
+        </ToggleButton>
         <Menu
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
         >
-          {!running && (
+          {showStartStop && !running && (
             <MenuItem onClick={this.handleOpenStart.bind(this)}>
               {t('Start')}
             </MenuItem>
           )}
-          {running && (
+          {showStartStop && running && (
             <MenuItem onClick={this.handleOpenStop.bind(this)}>
               {t('Stop')}
             </MenuItem>
@@ -237,6 +271,9 @@ class IngestionRssPopover extends Component {
           </MenuItem>
           <MenuItem onClick={this.handleExport.bind(this)}>
             {t('Export')}
+          </MenuItem>
+          <MenuItem onClick={this.handleOpenResetState.bind(this)}>
+            {t('Reset state')}
           </MenuItem>
           <MenuItem onClick={this.handleOpenDelete.bind(this)}>
             {t('Delete')}
@@ -331,6 +368,30 @@ class IngestionRssPopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
+        <Dialog
+          open={this.state.displayResetState}
+          onClose={this.handleCloseResetState.bind(this)}
+          title={t('Are you sure?')}
+        >
+          <DialogContentText>
+            {t('Do you want to reset the state of this RSS ingester? It will restart ingestion from the beginning.')}
+          </DialogContentText>
+          <DialogActions>
+            <Button
+              variant="secondary"
+              onClick={this.handleCloseResetState.bind(this)}
+              disabled={this.state.resetting}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              onClick={this.submitResetState.bind(this)}
+              disabled={this.state.resetting}
+            >
+              {t('Reset state')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }
@@ -339,10 +400,15 @@ class IngestionRssPopover extends Component {
 IngestionRssPopover.propTypes = {
   ingestionRssId: PropTypes.string,
   running: PropTypes.bool,
+  showStartStop: PropTypes.bool,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   onDeleteComplete: PropTypes.func,
+};
+
+IngestionRssPopover.defaultProps = {
+  showStartStop: true,
 };
 
 export default compose(inject18n, withStyles(styles))(IngestionRssPopover);

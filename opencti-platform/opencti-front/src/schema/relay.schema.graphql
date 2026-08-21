@@ -9722,6 +9722,7 @@ type Query {
   ingestionRss(id: String!): IngestionRss
   ingestionRsss(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionRssConnection
   ingestionRssAddInputFromImport(file: Upload!): IngestionRssAddInputFromImport!
+  ingestionRssLogs(id: String!): [IngestionEntry]
   ingestionTaxii(id: String!): IngestionTaxii
   ingestionTaxiis(first: Int, after: ID, orderBy: IngestionTaxiiOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiConnection
   taxiiFeedAddInputFromImport(file: Upload!): TaxiiFeedAddInputFromImport!
@@ -10638,6 +10639,7 @@ type Mutation {
   ingestionRssDelete(id: ID!): ID
   ingestionRssFieldPatch(id: ID!, input: [EditInput!]!): IngestionRss
   ingestionRssAddAutoUser(id: ID!, input: IngestionRssAddAutoUserInput!): IngestionRss
+  ingestionRssResetState(id: ID!): IngestionRss
   ingestionTaxiiAdd(input: IngestionTaxiiAddInput!): IngestionTaxii
   ingestionTaxiiDelete(id: ID!): ID
   ingestionTaxiiResetState(id: ID!): IngestionTaxii
@@ -13467,7 +13469,7 @@ type Notifier implements InternalObject & BasicObject {
   description: String
   notifier_connector: NotifierConnector!
   notifier_connector_id: String!
-  notifier_configuration: String!
+  notifier_configuration: String
   authorized_members: [MemberAccess!]
 }
 
@@ -13810,6 +13812,8 @@ type IngestionRss implements InternalObject & BasicObject {
   report_types: [String!]
   current_state_date: DateTime
   last_execution_date: DateTime
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry]
   ingestion_running: Boolean
   ssl_verify: Boolean
   toConfigurationExport: String!

@@ -14086,8 +14086,10 @@ export type IngestionRss = BasicObject & InternalObject & {
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  ingestionLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
   last_execution_date?: Maybe<Scalars['DateTime']['output']>;
+  last_execution_status?: Maybe<Scalars['String']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
@@ -17382,6 +17384,7 @@ export type Mutation = {
   ingestionRssAddAutoUser?: Maybe<IngestionRss>;
   ingestionRssDelete?: Maybe<Scalars['ID']['output']>;
   ingestionRssFieldPatch?: Maybe<IngestionRss>;
+  ingestionRssResetState?: Maybe<IngestionRss>;
   ingestionTaxiiAdd?: Maybe<IngestionTaxii>;
   ingestionTaxiiAddAutoUser?: Maybe<IngestionTaxii>;
   ingestionTaxiiCollectionAdd?: Maybe<IngestionTaxiiCollection>;
@@ -18821,6 +18824,11 @@ export type MutationIngestionRssDeleteArgs = {
 export type MutationIngestionRssFieldPatchArgs = {
   id: Scalars['ID']['input'];
   input: Array<EditInput>;
+};
+
+
+export type MutationIngestionRssResetStateArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -21664,7 +21672,7 @@ export type Notifier = BasicObject & InternalObject & {
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
-  notifier_configuration: Scalars['String']['output'];
+  notifier_configuration?: Maybe<Scalars['String']['output']>;
   notifier_connector: NotifierConnector;
   notifier_connector_id: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
@@ -24777,6 +24785,7 @@ export type Query = {
   ingestionJsons?: Maybe<IngestionJsonConnection>;
   ingestionRss?: Maybe<IngestionRss>;
   ingestionRssAddInputFromImport: IngestionRssAddInputFromImport;
+  ingestionRssLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   ingestionRsss?: Maybe<IngestionRssConnection>;
   ingestionTaxii?: Maybe<IngestionTaxii>;
   ingestionTaxiiCollection?: Maybe<IngestionTaxiiCollection>;
@@ -26211,6 +26220,11 @@ export type QueryIngestionRssArgs = {
 
 export type QueryIngestionRssAddInputFromImportArgs = {
   file: Scalars['Upload']['input'];
+};
+
+
+export type QueryIngestionRssLogsArgs = {
+  id: Scalars['String']['input'];
 };
 
 
@@ -46596,8 +46610,10 @@ export type IngestionRssResolvers<ContextType = any, ParentType extends Resolver
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  ingestionLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_execution_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
@@ -48046,6 +48062,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   ingestionRssAddAutoUser?: Resolver<Maybe<ResolversTypes['IngestionRss']>, ParentType, ContextType, RequireFields<MutationIngestionRssAddAutoUserArgs, 'id' | 'input'>>;
   ingestionRssDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationIngestionRssDeleteArgs, 'id'>>;
   ingestionRssFieldPatch?: Resolver<Maybe<ResolversTypes['IngestionRss']>, ParentType, ContextType, RequireFields<MutationIngestionRssFieldPatchArgs, 'id' | 'input'>>;
+  ingestionRssResetState?: Resolver<Maybe<ResolversTypes['IngestionRss']>, ParentType, ContextType, RequireFields<MutationIngestionRssResetStateArgs, 'id'>>;
   ingestionTaxiiAdd?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiAddArgs, 'input'>>;
   ingestionTaxiiAddAutoUser?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiAddAutoUserArgs, 'id' | 'input'>>;
   ingestionTaxiiCollectionAdd?: Resolver<Maybe<ResolversTypes['IngestionTaxiiCollection']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiCollectionAddArgs, 'input'>>;
@@ -48708,7 +48725,7 @@ export type NotifierResolvers<ContextType = any, ParentType extends ResolversPar
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  notifier_configuration?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  notifier_configuration?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notifier_connector?: Resolver<ResolversTypes['NotifierConnector'], ParentType, ContextType>;
   notifier_connector_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
@@ -49907,6 +49924,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   ingestionJsons?: Resolver<Maybe<ResolversTypes['IngestionJsonConnection']>, ParentType, ContextType, Partial<QueryIngestionJsonsArgs>>;
   ingestionRss?: Resolver<Maybe<ResolversTypes['IngestionRss']>, ParentType, ContextType, RequireFields<QueryIngestionRssArgs, 'id'>>;
   ingestionRssAddInputFromImport?: Resolver<ResolversTypes['IngestionRssAddInputFromImport'], ParentType, ContextType, RequireFields<QueryIngestionRssAddInputFromImportArgs, 'file'>>;
+  ingestionRssLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType, RequireFields<QueryIngestionRssLogsArgs, 'id'>>;
   ingestionRsss?: Resolver<Maybe<ResolversTypes['IngestionRssConnection']>, ParentType, ContextType, Partial<QueryIngestionRsssArgs>>;
   ingestionTaxii?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<QueryIngestionTaxiiArgs, 'id'>>;
   ingestionTaxiiCollection?: Resolver<Maybe<ResolversTypes['IngestionTaxiiCollection']>, ParentType, ContextType, RequireFields<QueryIngestionTaxiiCollectionArgs, 'id'>>;
