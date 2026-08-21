@@ -95,13 +95,35 @@ describe('the page path is the design-system landmark', () => {
     expect(screen.getByRole('navigation').className).not.toContain('mb-2');
   });
 
-  it('renders the sensitive-zone chip next to the landmark, never inside its list', () => {
+  it('puts the sensitive-zone chip in the adornment slot: inside the landmark, outside the list', () => {
     testRender(<Breadcrumbs elements={PATH} isSensitive />);
     const nav = screen.getByRole('navigation');
+    const list = screen.getByRole('list');
     const chip = screen.getByText('Danger Zone');
-    expect(nav.contains(chip)).toBe(false);
-    expect(nav.parentElement?.contains(chip)).toBe(true);
-    // The row owns the margin once it exists, so the chip shares the baseline.
-    expect(nav.parentElement?.className).toContain('mb-2');
+    // Inside the landmark — this wrapper no longer builds a row of its own,
+    // and that row is what made the landmark a shrink-to-fit flex item.
+    expect(nav.contains(chip)).toBe(true);
+    // Outside the list — it is not a step of the path, so it is not an <li>
+    // and assistive technology never announces it as one.
+    expect(list.contains(chip)).toBe(false);
+    expect(chip.closest('li')).toBeNull();
+  });
+
+  it('forwards a host adornment to the same slot', () => {
+    testRender(
+      <Breadcrumbs elements={PATH} adornment={<span data-testid="info-icon">i</span>} />,
+    );
+    const nav = screen.getByRole('navigation');
+    const icon = screen.getByTestId('info-icon');
+    expect(nav.contains(icon)).toBe(true);
+    expect(screen.getByRole('list').contains(icon)).toBe(false);
+  });
+
+  it('keeps both when a sensitive page also passes an adornment', () => {
+    testRender(
+      <Breadcrumbs elements={PATH} isSensitive adornment={<span data-testid="info-icon">i</span>} />,
+    );
+    expect(screen.getByText('Danger Zone')).toBeInTheDocument();
+    expect(screen.getByTestId('info-icon')).toBeInTheDocument();
   });
 });

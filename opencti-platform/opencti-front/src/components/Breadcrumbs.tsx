@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Breadcrumbs as FdsBreadcrumbs } from '@filigran/design-system';
 import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
@@ -14,6 +14,18 @@ interface BreadcrumbsProps {
   elements: element[];
   noMargin?: boolean;
   isSensitive?: boolean;
+  /**
+   * Content shown beside the path — an information icon and its tooltip, a
+   * status marker. It lands in the library's `adornment` slot: inside the
+   * landmark, OUTSIDE the list, so assistive technology never announces it as
+   * a step of the path.
+   *
+   * Use this instead of wrapping this component in a row of your own. Wrapping
+   * is what made the current entry collapse on the trash page: the landmark
+   * became a shrink-to-fit flex item, and the width cap it carried then
+   * resolved against its own content.
+   */
+  adornment?: ReactNode;
 }
 
 /**
@@ -38,7 +50,7 @@ interface BreadcrumbsProps {
  * already on. The library warns when it detects that; the warning stays silent
  * here because this wrapper passes `to`.
  */
-const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, noMargin = false, isSensitive = false }) => {
+const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, noMargin = false, isSensitive = false, adornment }) => {
   const { t_i18n } = useFormatter();
 
   // Labels go through WHOLE. The library truncates in CSS and keeps the full
@@ -50,30 +62,28 @@ const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, noMargin =
     ...(!current && link ? { to: link } : {}),
   }));
 
-  const path = (
+  // The sensitive-zone chip is not a path entry, so it goes in the adornment
+  // slot rather than inside the list. It used to be rendered as a sibling of
+  // the landmark inside a row this wrapper built itself — the slot removes that
+  // row, and with it the layout hazard the row created.
+  const beside = isSensitive ? (
+    <>
+      <DangerZoneChip />
+      {adornment}
+    </>
+  ) : adornment;
+
+  return (
     <FdsBreadcrumbs
       items={items}
       linkComponent={Link}
+      adornment={beside}
       label={t_i18n('Breadcrumb')}
       id="page-breadcrumb"
       data-testid="navigation"
-      className={!noMargin && !isSensitive ? 'mb-2' : undefined}
+      className={noMargin ? undefined : 'mb-2'}
     />
   );
-
-  // The sensitive-zone chip is not a path entry, so it sits NEXT TO the
-  // landmark instead of inside its list. The row then owns the margin, so the
-  // chip and the path stay on one baseline.
-  if (isSensitive) {
-    return (
-      <div className={noMargin ? 'flex items-center gap-2' : 'flex items-center gap-2 mb-2'}>
-        {path}
-        <DangerZoneChip />
-      </div>
-    );
-  }
-
-  return path;
 };
 
 export default Breadcrumbs;
