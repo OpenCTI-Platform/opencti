@@ -6,7 +6,7 @@
  * `getNotifications`, which both the live (getLiveNotifications) and digest
  * (getDigestNotifications) pipelines build upon.
  */
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AuthUser } from '../../../src/types/user';
 
 // ─── Cache mock: getNotifications reads triggers/users/settings from cache ─────
@@ -139,5 +139,9 @@ describe('getNotifications — excludes inactive/expired accounts', () => {
     const definedUserIds = new Set((definedResolved?.users ?? []).map((u: AuthUser) => u.id));
     expect(definedUserIds.has('active')).toBe(true);
     expect(definedUserIds.has('disabled')).toBe(false);
+  });
+
+  afterAll(() => {
+    vi.restoreAllMocks();
   });
 });
