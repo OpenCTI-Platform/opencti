@@ -78,8 +78,8 @@ input ThemeAddInput {
 
 # Mutations
 type Mutation {
-  themeAdd(input: ThemeAddInput!): Theme @auth(for: [KNOWLEDGE_KNUPDATE])
-  themeDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  themeFieldPatch(id: ID!,input: [EditInput!]!): Theme @auth(for: [KNOWLEDGE_KNUPDATE])
-  themeImport(file: Upload!): Theme @auth(for: [KNOWLEDGE_KNUPDATE])
+  themeAdd(input: ThemeAddInput!): Theme @auth(for: [SETTINGS_SETPARAMETERS])
+  themeDelete(id: ID!): ID @auth(for: [SETTINGS_SETPARAMETERS])
+  themeFieldPatch(id: ID!,input: [EditInput!]!): Theme @auth(for: [SETTINGS_SETPARAMETERS])
+  themeImport(file: Upload!): Theme @auth(for: [SETTINGS_SETPARAMETERS])
 }
