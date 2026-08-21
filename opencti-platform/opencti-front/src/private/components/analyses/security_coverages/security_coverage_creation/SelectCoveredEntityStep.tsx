@@ -8,7 +8,6 @@ import Loader, { LoaderVariant } from 'src/components/Loader';
 import { graphql } from 'react-relay';
 import useFiltersState from 'src/utils/filters/useFiltersState';
 import { StixCoreObjectNode } from './SecurityCoverageCreation-types';
-import { DATA_COLUMNS } from './SecurityCoverageCreation';
 
 interface SelectCoveredEntityStepProps {
   onSelectEntity: (entity: StixCoreObjectNode) => void;
@@ -45,6 +44,7 @@ const securityCoverageEntitiesQuery = graphql`
           id
           standard_id
           entity_type
+          parent_types
           created_at
           representative {
             main
@@ -91,6 +91,34 @@ const DEFAULT_ENTITY_TYPES = [
   'Campaign',
   'Incident',
 ];
+
+const DATA_COLUMNS = {
+  entity_type: {
+    label: 'Type',
+    width: '12%',
+    isSortable: true,
+  },
+  value: {
+    label: 'Value',
+    width: '28%',
+    isSortable: false,
+  },
+  createdBy: {
+    label: 'Author',
+    width: '12%',
+    isSortable: true,
+  },
+  objectLabel: {
+    label: 'Labels',
+    width: '22%',
+    isSortable: false,
+  },
+  objectMarking: {
+    label: 'Marking',
+    width: '16%',
+    isSortable: false,
+  },
+};
 
 const initialFilters = {
   ...emptyFilterGroup,

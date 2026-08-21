@@ -64,34 +64,6 @@ const securityCoverageConnectorsQuery = graphql`
   }
 `;
 
-export const DATA_COLUMNS = {
-  entity_type: {
-    label: 'Type',
-    width: '12%',
-    isSortable: true,
-  },
-  value: {
-    label: 'Value',
-    width: '28%',
-    isSortable: false,
-  },
-  createdBy: {
-    label: 'Author',
-    width: '12%',
-    isSortable: true,
-  },
-  objectLabel: {
-    label: 'Labels',
-    width: '22%',
-    isSortable: false,
-  },
-  objectMarking: {
-    label: 'Marking',
-    width: '16%',
-    isSortable: false,
-  },
-};
-
 const securityCoverageValidation = (t: (value: string) => string, isAutomated: boolean) => {
   const baseShape = {
     name: Yup.string().required(t('This field is required')),
@@ -142,6 +114,7 @@ const securityCoveragePreselectedEntityQuery = graphql`
       id
       standard_id
       entity_type
+      parent_types
       created_at
       representative {
         main
@@ -231,7 +204,14 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
     setActiveStep(mode === SecurityCoverageMode.MANUAL ? StepKey.COMPATIBLE_ENTITIES : StepKey.COVERAGE_DETAILS);
   };
 
-  // Removed handleBack - users should click on stepper steps directly
+  const [entitiesToCover, setEntitiesToCover] = useState<string[]>([]);
+  const [selectAllEntities, setSelectAllEntities] = useState<boolean>(false);
+
+  const handleSelectEntitiesToCover = (selection: string[], selectAll: boolean) => {
+    setEntitiesToCover(selection);
+    setSelectAllEntities(selectAll);
+    setActiveStep(StepKey.COVERAGE_DETAILS);
+  };
 
   const handleClose = () => {
     // Reset all state when closing drawer
@@ -280,7 +260,8 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       confidence: parseInt(String(values.confidence), 10),
-      add_related_entities: mode === SecurityCoverageMode.MANUAL,
+      add_all_related_entities: selectAllEntities,
+      entities_to_add: selectAllEntities ? [] : entitiesToCover,
     };
 
     commit({
@@ -360,7 +341,13 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
 
       case StepKey.COMPATIBLE_ENTITIES:
         // Select covered entities (manual mode)
-        return <SelectEntitiesToCoverStep />;
+        if (!selectedEntity) return null; // unreachable: this step is only entered after an entity is selected
+        return (
+          <SelectEntitiesToCoverStep
+            coveredEntity={selectedEntity}
+            onSelectEntities={handleSelectEntitiesToCover}
+          />
+        );
 
       case StepKey.COVERAGE_DETAILS:
         // Coverage Details Form (all cases)

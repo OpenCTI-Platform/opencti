@@ -5,6 +5,7 @@ export interface StixCoreObjectNode {
   id: string;
   name?: string;
   entity_type: string;
+  parent_types: string[];
   created_at: string;
   representative?: { main: string };
   createdBy?: { id: string; name: string };
