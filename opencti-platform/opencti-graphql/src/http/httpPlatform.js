@@ -44,6 +44,8 @@ import {
   postAgentMessage,
   postAgentMessageStream,
   getLegacyChatbotProxy,
+  postChatbotMessageApprove,
+  getChatbotPendingApprovals,
 } from './httpChatbotProxy';
 import { PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
@@ -561,6 +563,11 @@ const createApp = async (app, schema) => {
   app.delete(`${basePath}/chatbot/sessions/:conversationId`, deleteChatbotSession);
   app.post(`${basePath}/chatbot/messages`, postChatbotMessage);
   app.post(`${basePath}/chatbot/messages/steer`, postChatbotMessageSteer);
+  // Human-in-the-loop tool approval: the decision channel back into a turn
+  // paused mid-answer, and the recovery read a reloaded page uses to get the
+  // prompt (and the `tool_call_id`s a decision must name) back.
+  app.post(`${basePath}/chatbot/messages/approve`, postChatbotMessageApprove);
+  app.get(`${basePath}/chatbot/conversations/:conversationId/pending-approvals`, getChatbotPendingApprovals);
   app.post(`${basePath}/chatbot/upload`, postChatbotUpload);
   app.get(`${basePath}/chatbot/files/:fileId/download`, getChatbotFileDownload);
   app.post(`${basePath}/chatbot/agent`, postAgentMessage);

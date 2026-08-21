@@ -15,7 +15,7 @@ import xtmOneClient from '../modules/xtm/one/xtm-one-client';
 import { issueXtmJwt } from '../domain/xtm-auth';
 import type { AuthContext } from '../types/user';
 import { getHttpClient, getResponseError } from '../utils/http-client';
-import { redisGetXtmAgentResponse, redisSetXtmAgentResponse } from '../database/redis';
+import { redisDeleteXtmAgentResponse, redisGetXtmAgentResponse, redisSetXtmAgentResponse } from '../database/redis';
 import { checkDraftInContext } from './httpServer-draft';
 import { addAiInsightRequestCount, addChatbotMessageCount, addXtmAgentCallCount } from '../manager/telemetryManager';
 
@@ -309,6 +309,123 @@ export const postChatbotMessageSteer = async (req: Express.Request, res: Express
     } else {
       res.status(503).send({ status: 'error', error: message });
     }
+  }
+};
+
+// Whether this request is driven by a signed-in person in a browser, as opposed
+// to an API token.
+//
+// `context.user_with_session` alone does not answer that: it only records that
+// a session cookie was present, while `authenticateUserFromRequest` returns on
+// the bearer-token branch before it ever looks at the session (`domain/user.js`).
+// A request carrying a service token *and* any user's cookie therefore
+// authenticates as the token identity while still looking session-backed — which
+// would let an agent identity approve the very call it proposed. Require that the
+// identity actually resolved from the session, by matching it against the session
+// user and refusing any request that presents an Authorization header at all.
+const isBrowserSessionRequest = (req: Express.Request, context: AuthContext): boolean => {
+  if (req.headers.authorization) return false;
+  if (!context.user_with_session) return false;
+  const sessionUserId = (req as Express.Request & { session?: { user?: { id?: string } } }).session?.user?.id;
+  return !!sessionUserId && sessionUserId === context.user?.id;
+};
+
+// ── POST /chatbot/messages/approve ──────────────────────────────────────
+// Human-in-the-loop: answers a turn that XTM One paused because the agent
+// proposed a tool call needing a person's consent. Shaped exactly like the
+// steer handler above — the widget already knows how to POST into a running
+// turn, so a decision travels the same way.
+//
+// The body is forwarded whole (`{ conversation_id, decisions: [...] }`) and
+// upstream statuses are passed through untouched: the chatbot distinguishes
+// 409 (nothing is waiting any more — the turn finished, was cancelled or was
+// answered elsewhere) from a transport failure, and keeps the prompt on
+// screen with the controls re-armed on anything else.
+export const postChatbotMessageApprove = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    // An approval is a person's consent, so it must come from a real browser
+    // session. Agent and service identities authenticate with an API token
+    // and have no business approving a tool call — least of all one they
+    // proposed themselves, which would defeat the whole control.
+    if (!isBrowserSessionRequest(req, context)) {
+      res.status(403).json({ status: 'error', error: 'Tool approval requires a user session' });
+      return;
+    }
+    if (!req.body) {
+      res.status(400).json({ error: 'Request body is missing' });
+      return;
+    }
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
+    const httpClient = getXtmClient('json', {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    });
+    const response = await httpClient.post('/api/v1/platform/chat/messages/approve', req.body, {
+      timeout: DEFAULT_XTM_TIMEOUT,
+    });
+    res.status(response.status).json(response.data);
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot tool approval', { cause: e });
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    if (httpErr) {
+      const detail = httpErr.data?.detail ?? httpErr.data?.message ?? message;
+      res.status(httpErr.status).send({ status: 'error', error: detail });
+    } else {
+      res.status(503).send({ status: 'error', error: message });
+    }
+  }
+};
+
+// ── GET /chatbot/conversations/:conversationId/pending-approvals ─────────
+// What a paused turn in this conversation is still waiting on.
+//
+// `approval_required` is a single event on the SSE stream, so a page reload
+// loses it — including the `tool_call_id`s a decision has to name — while the
+// turn goes on waiting for an answer nobody can give any more. The widget
+// therefore re-reads this on mount and on every conversation switch, and
+// polls it after answering a recovered prompt (`turn: running | idle` is the
+// stop condition, because the resumed turn writes to the connection the
+// reload closed and nothing arrives live).
+//
+// An empty `proposals` array is the ordinary answer, not an error: most
+// conversations are not paused. Reaching this route also tells XTM One a
+// client is still present, which is what keeps a displayed prompt from being
+// discarded as abandoned.
+export const getChatbotPendingApprovals = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    // Same gate as the decision route. The proposals payload spells out the tool
+    // name, its arguments and its input schema, and merely reaching this route
+    // tells XTM One a client is still watching — which is what keeps a displayed
+    // prompt from being discarded as abandoned. Neither belongs to an API token.
+    if (!isBrowserSessionRequest(req, context)) {
+      res.status(403).json({ status: 'error', error: 'Tool approval requires a user session' });
+      return;
+    }
+    const conversationId = String(req.params.conversationId ?? '');
+    if (!conversationId || !UUID_RE.test(conversationId)) {
+      res.status(400).json({ error: 'Invalid conversation id' });
+      return;
+    }
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
+    const httpClient = getXtmClient('json', {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    });
+    const response = await httpClient.get(`/api/v1/platform/chat/conversations/${conversationId}/pending-approvals`, {
+      timeout: DEFAULT_XTM_TIMEOUT,
+    });
+    res.status(response.status).json(response.data);
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot pending approvals', { cause: e });
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
   }
 };
 
@@ -705,6 +822,33 @@ const writeAgentStreamHeaders = (res: Express.Response): void => {
   res.setHeader('X-Accel-Buffering', 'no');
 };
 
+// Whether an agent answer is XTM One's "I stopped, a human has to approve
+// this" message rather than a real answer.
+//
+// Unattended callers (AI Insights, NLQ search, playbook nodes) never declare
+// `supports_tool_approval`, so a gated tool ends their turn with this prose
+// instead of running. That degradation is correct for a reader — but not for a
+// cache: `extractFinalContent` cannot tell it from an answer, so caching it
+// would pin "I need approval before running X" to an entity for
+// `ai:agents_refresh_timeout` minutes (24h by default) and replay it to every
+// user, long after an administrator whitelists the tool.
+//
+// Prose matching because that is all XTM One emits here — the message is
+// deliberately plain, with no structured marker behind it (see
+// `docs/deployment/chat-approvals-in-clients.md` upstream). A wording change
+// upstream degrades to "cached for the TTL" rather than to a failure.
+//
+// Matched anywhere in the content rather than only at the start: the agent can
+// answer part of the question and *then* stop for approval ("Here is what I
+// found… I need approval before running `x`"), and a prefix test would let that
+// half-answer be cached with a stale approval request glued to it. Caching one
+// answer too few costs a re-run; caching this costs every user who opens the
+// entity for the next `ai:agents_refresh_timeout`.
+const APPROVAL_REQUIRED_MARKER = 'i need approval before running';
+const isApprovalRequiredMessage = (content: string): boolean => {
+  return content.toLowerCase().includes(APPROVAL_REQUIRED_MARKER);
+};
+
 // Parse a buffered SSE stream and return the content of the final `done` event,
 // or null if the stream did not complete successfully (e.g. produced an error
 // event, was aborted, or never emitted a `done`). Used to avoid caching
@@ -783,7 +927,14 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
     const cacheKey = cacheEnabled ? buildAgentCacheKey(agent_slug, draftId, content) : null;
     if (cacheEnabled && cacheKey && !force_refresh) {
       const cached = await redisGetXtmAgentResponse(cacheKey);
-      if (cached) {
+      // A build without the write guard below could have cached an approval
+      // notice, and Redis outlives the deployment that wrote it. Drop such an
+      // entry on read instead of replaying it for the rest of its TTL — long
+      // after an administrator may have whitelisted the tool.
+      if (cached && isApprovalRequiredMessage(cached.content)) {
+        logApp.info('Evicting cached agent response that stopped for tool approval', { agent_slug });
+        await redisDeleteXtmAgentResponse(cacheKey);
+      } else if (cached) {
         logApp.info('Agent response served from cache', { agent_slug });
         // Telemetry: AI Insight served from cache.
         addAiInsightRequestCount('hit');
@@ -856,9 +1007,14 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
       if (!cacheEnabled || !cacheKey || clientAborted || streamErrored || captureOverflow) return;
       const raw = Buffer.concat(captureChunks).toString('utf-8');
       const finalContent = extractFinalContent(raw);
-      if (finalContent !== null && finalContent.length > 0) {
-        await redisSetXtmAgentResponse(cacheKey, finalContent, AI_AGENTS_REFRESH_TIMEOUT_SECONDS);
+      if (finalContent === null || finalContent.length === 0) return;
+      // A turn that stopped for human approval is not an answer — never cache
+      // it, or the entity keeps showing it until the TTL expires.
+      if (isApprovalRequiredMessage(finalContent)) {
+        logApp.info('Agent response not cached: turn stopped for tool approval', { agent_slug });
+        return;
       }
+      await redisSetXtmAgentResponse(cacheKey, finalContent, AI_AGENTS_REFRESH_TIMEOUT_SECONDS);
     });
 
     response.data.pipe(res);
