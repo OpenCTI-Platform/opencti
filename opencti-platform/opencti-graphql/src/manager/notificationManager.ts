@@ -6,7 +6,7 @@ import { type SizedNotifEvent, type StreamProcessor } from '../database/stream/s
 import { fetchRangeNotifications, storeNotificationEvent, createStreamProcessor } from '../database/stream/stream-handler';
 import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { booleanConf, logApp, ACCOUNT_STATUS_ACTIVE } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, INTERNAL_USERS, isUserCanAccessStixElement, isUserCanAccessStreamUpdateEvent, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
 import type { DataEvent, SseEvent, StreamNotifEvent, UpdateEvent } from '../types/event';
@@ -117,6 +117,15 @@ export const isDigest = (n: ResolvedTrigger): n is ResolvedDigest => {
   return n.trigger.trigger_type === 'digest';
 };
 
+export const isNotificationRecipientActive = (user: AuthUser): boolean => {
+  // Account expiration date reached
+  if (user.account_lock_after_date && utcDate().isAfter(utcDate(user.account_lock_after_date))) {
+    return false;
+  }
+  // Account not active (disabled / inactive / expired status)
+  return user.account_status === ACCOUNT_STATUS_ACTIVE;
+};
+
 const generateAssigneeTrigger = (user: AuthUser) => {
   const filters = {
     mode: 'or',
@@ -182,7 +191,9 @@ const generateRequestAccessAuthorizeTrigger = (user: AuthUser) => {
 
 export const getNotifications = async (context: AuthContext): Promise<Array<ResolvedTrigger>> => {
   const triggers = await getEntitiesListFromCache<BasicStoreEntityTrigger>(context, SYSTEM_USER, ENTITY_TYPE_TRIGGER);
-  const platformUsers = await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  // Exclude inactive/expired/disabled accounts: they must no longer receive any notification.
+  const platformUsers = (await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER))
+    .filter(isNotificationRecipientActive);
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const isAssigneeAutoTriggerEnabled = settings.platform_notifier_auto_trigger_assignee ?? true;
   const notificationTriggers = [];
