@@ -833,6 +833,7 @@ type FileMetadata {
   analysis_content_source: String
   analysis_content_type: String
   analysis_type: String
+  fintel_template_id: String
 }
 
 enum FileOrdering {
@@ -10026,7 +10027,7 @@ type StixCoreObjectEditMutations {
   askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean
-  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean, embedded: Boolean): File
+  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean, embedded: Boolean, fintelTemplateId: String): File
   uploadAndAskJobImport(file: Upload!, connectors: [ConnectorWithConfig!], fileMarkings: [String!], validationMode: ValidationMode, draftId: String, noTriggerImport: Boolean): File
   exportAsk(input: ExportAskInput!): [File!]
   exportPush(file: Upload!): Boolean
@@ -10050,7 +10051,7 @@ type StixDomainObjectEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!): StixDomainObject
   relationDelete(toId: StixRef!, relationship_type: String): StixDomainObject
-  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean, embedded: Boolean): File
+  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean, embedded: Boolean, fintelTemplateId: String): File
   exportAsk(input: ExportAskInput!): [File!]
   exportPush(file: Upload!, file_markings: [String]!): Boolean
   stixDomainObjectFileEdit(input: StixDomainObjectFileEditInput): StixDomainObject
@@ -15468,6 +15469,8 @@ type FintelTemplate implements BasicObject & InternalObject {
   fintel_template_widgets: [FintelTemplateWidget!]!
   toConfigurationExport: String!
   default: Boolean
+  includeCoverPageByDefault: Boolean
+  includeBackPageByDefault: Boolean
 }
 
 input FintelTemplateWidgetAddInput {
@@ -15486,6 +15489,8 @@ input FintelTemplateAddInput {
   start_date: DateTime
   fintel_template_widgets: [FintelTemplateWidgetAddInput!]
   default: Boolean
+  include_cover_page_by_default: Boolean
+  include_back_page_by_default: Boolean
 }
 
 type FintelTemplateEdge {

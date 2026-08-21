@@ -10,6 +10,8 @@ const fintelTemplateEditMutation = graphql`
       name
       description
       default
+      includeCoverPageByDefault
+      includeBackPageByDefault
       instance_filters
       settings_types
       start_date
