@@ -737,19 +737,24 @@ class OpenCTIApiClient:
             result = r.json()
             if "errors" in result:
                 main_error = result["errors"][0]
-                error_name = (
-                    main_error["name"]
-                    if "name" in main_error
-                    else main_error["message"]
+                extensions = main_error.get("extensions") or {}
+                # "name" is added at top level by the platform for compatibility,
+                # fallback on the GraphQL extensions code for older platforms.
+                error_name = main_error.get("name") or extensions.get(
+                    "code", main_error["message"]
                 )
                 error_detail = {
                     "name": error_name,
                     "error_message": main_error["message"],
                 }
-                meta_data = main_error["data"] if "data" in main_error else {}
+                # Contextual attributes of the error (type, doc_code, ...) are
+                # carried in the GraphQL extensions, keep the top level lookup
+                # for backward compatibility with older platforms.
+                meta_data = main_error.get("data") or extensions.get("data") or {}
                 # Prevent logging of input as bundle is logged differently
-                if meta_data.get("input") is not None:
-                    del meta_data["input"]
+                meta_data = {
+                    key: value for key, value in meta_data.items() if key != "input"
+                }
                 value_error = {**error_detail, **meta_data}
                 raise ValueError(value_error)
             else:

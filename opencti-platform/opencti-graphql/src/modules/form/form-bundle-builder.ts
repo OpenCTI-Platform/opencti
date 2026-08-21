@@ -9,7 +9,7 @@ import { isStixDomainObjectContainer, ENTITY_TYPE_MALWARE } from '../../schema/s
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
 import { detectObservableType, refangValues } from '../../utils/observable';
 import { createStixPattern } from '../../python/pythonBridge';
-import { FunctionalError } from '../../config/errors';
+import { DOC_INCORRECT_OBSERVABLE_FORMAT, FunctionalError } from '../../config/errors';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { checkObservableSyntax } from '../../utils/syntax';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
@@ -176,7 +176,7 @@ export const buildMainStixEntities = async (
             throw FunctionalError('Main entity observable is not correctly formatted', {
               type: mainEntity.entity_type,
               input: mainEntity,
-              doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
+              doc_code: DOC_INCORRECT_OBSERVABLE_FORMAT,
             });
           }
         }
@@ -228,7 +228,7 @@ export const buildMainStixEntities = async (
             throw FunctionalError('Main entity observable is not correctly formatted', {
               type: mainEntity.entity_type,
               input: mainEntity,
-              doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
+              doc_code: DOC_INCORRECT_OBSERVABLE_FORMAT,
             });
           }
         }
@@ -254,7 +254,7 @@ export const buildMainStixEntities = async (
           throw FunctionalError('Main entity observable is not correctly formatted', {
             type: mainEntity.entity_type,
             input: mainEntity,
-            doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
+            doc_code: DOC_INCORRECT_OBSERVABLE_FORMAT,
           });
         }
       }
@@ -341,7 +341,7 @@ export const buildAdditionalEntities = async (
                 throw FunctionalError(`Observable ${additionalEntity.label} is not correctly formatted`, {
                   type: newAdditionalEntity.entity_type,
                   input: newAdditionalEntity,
-                  doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
+                  doc_code: DOC_INCORRECT_OBSERVABLE_FORMAT,
                 });
               }
             }
@@ -399,7 +399,7 @@ export const buildAdditionalEntities = async (
                 throw FunctionalError(`Observable ${additionalEntity.label} is not correctly formatted`, {
                   type: newAdditionalEntity.entity_type,
                   input: newAdditionalEntity,
-                  doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
+                  doc_code: DOC_INCORRECT_OBSERVABLE_FORMAT,
                 });
               }
             }
@@ -446,7 +446,7 @@ export const buildAdditionalEntities = async (
                 throw FunctionalError(`Observable ${additionalEntity.label} is not correctly formatted`, {
                   type: newAdditionalEntity.entity_type,
                   input: newAdditionalEntity,
-                  doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
+                  doc_code: DOC_INCORRECT_OBSERVABLE_FORMAT,
                 });
               }
             }
