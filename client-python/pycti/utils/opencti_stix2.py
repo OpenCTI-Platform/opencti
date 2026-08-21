@@ -3558,11 +3558,11 @@ class OpenCTIStix2:
         bundles_success_counter.add(1)
         return True
 
-    def _report_item_error(self, work_id: str, item, error: str):
+    def _report_expectation_item_error(self, work_id: Optional[str], item, error: str):
         """Report an item-level import error as a work expectation.
 
         :param work_id: Work ID for tracking import progress, no-op when None
-        :type work_id: str
+        :type work_id: str, optional
         :param item: STIX2 item that failed to be imported
         :type item: dict
         :param error: error message to report in the work status
@@ -3702,12 +3702,12 @@ class OpenCTIStix2:
                             {"error": error},
                         )
                     # In both cases the item is rejected and must appear in the work status
-                    self._report_item_error(work_id, item, error)
+                    self._report_expectation_item_error(work_id, item, error)
                     return None
 
         max_retry_error_message = "Max number of retries reached, please see error logs of workers for more details. Bundle will be sent to dead letter queue."
         worker_logger.error(max_retry_error_message)
-        self._report_item_error(work_id, item, max_retry_error_message)
+        self._report_expectation_item_error(work_id, item, max_retry_error_message)
         item["rejection_info"] = {
             "reject_reason": "MAX_RETRY",
             "last_error_msg": error_msg,

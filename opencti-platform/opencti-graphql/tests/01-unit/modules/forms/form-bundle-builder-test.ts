@@ -58,14 +58,6 @@ vi.mock('../../../../src/python/pythonBridge', () => ({
   createStixPattern: vi.fn(async () => "[domain-name:value = 'evil.com']"),
 }));
 
-vi.mock('../../../../src/config/errors', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../../src/config/errors')>();
-  return {
-    ...actual,
-    // override only what you need, keep the rest
-  };
-});
-
 vi.mock('../../../../src/schema/stixCyberObservable', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../../src/schema/stixCyberObservable')>();
   return {

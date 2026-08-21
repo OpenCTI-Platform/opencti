@@ -77,7 +77,7 @@ The workers can have more or less verbose outputs:
     
     OpenCTI check the validity of the observable value.
 
-!!! warning "Indicator of type stix is contained in exclusion list"
+!!! warning "Indicator pattern is contained in an exclusion list"
 
     The Indicator pattern contains a value present in one of your exclusion lists, so the Indicator is rejected on purpose and the rest of the bundle keeps being imported.
 
