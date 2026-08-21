@@ -1007,6 +1007,14 @@ describe('User has no settings capability and is organization admin query behavi
       variables: { id: ADMIN_USER.id, input: { key: 'account_status', value: ['Inactive'] } },
     });
   });
+  it('Org admins should NOT update user_email without SETTINGS_SETACCESSES capability', async () => {
+    // USER_EDITOR is an organization admin (VIRTUAL_ORGANIZATION_ADMIN) but has no SETTINGS_SETACCESSES capability.
+    // Even for a user of its own administrated organization, editing user_email must be forbidden.
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: UPDATE_QUERY,
+      variables: { id: userInternalId, input: [{ key: 'user_email', value: ['test_email@org.com'] }] },
+    });
+  });
   it('should not update user from an other organization', async () => {
     await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: UPDATE_QUERY,
