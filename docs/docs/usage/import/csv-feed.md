@@ -5,7 +5,7 @@ CSV feed ingester enables users to import CSV files exposed on URLs.
 <a id="best-practices-section"></a>
 ## Best practices
 
-In OpenCTI, the "Data > Ingestion" section provides Service accounts with built-in functions for automated data import. These functions are designed for specific purposes and can be configured to seamlessly ingest data into the platform. Here, we'll explore the configuration process for the five built-in functions: Live Streams, TAXII Feeds, TAXII Push, RSS Feeds, and JSON/CSV Feeds.
+In OpenCTI, the **Integrations** section — accessible from the main navigation bar on the left — provides Service accounts with built-in functions for automated data import. These functions are designed for specific purposes and can be configured to seamlessly ingest data into the platform. Feeds and connectors are managed from the **Integrations** page, which is split into a **Deployed** tab (the feeds and connectors running on your platform) and an **Available** tab (the catalog of connectors and built-in feeds you can deploy). To create a new feed, open **Integrations > Deployed** and use the creation button. For a detailed description of these two tabs and their filters, see [Getting started](getting-started.md#the-integrations-menu). Here, we'll explore the configuration process for the five built-in functions: Live Streams, TAXII Feeds, TAXII Push, RSS Feeds, and JSON/CSV Feeds.
 
 Ensuring a secure and well-organized environment is paramount in OpenCTI. Here are two recommended best practices to enhance security, traceability, and overall organizational clarity:
 
@@ -56,7 +56,7 @@ To finalize the creation, click on "Verify" to run a check on the submitted URL 
 To start your new ingester, click on "Start", in the burger menu.
 
 ![CSV feeds creation: start](../assets/csv-feeds-creation-start.png)
-CSV feed ingestion is made possible thanks to the connector "ImportCSV". So you can track the progress in "Data > Ingestion > Connectors". On a regular basis, the ingestion is updated when new data is added to the CSV feed.
+CSV feed ingestion is made possible thanks to the connector "ImportCSV". So you can track the progress in "Integrations > Deployed". On a regular basis, the ingestion is updated when new data is added to the CSV feed.
 
 ![CSV feeds creation: connectors](../assets/csv-feeds-connectors.png)
 
