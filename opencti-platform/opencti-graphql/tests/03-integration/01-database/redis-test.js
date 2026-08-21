@@ -21,6 +21,7 @@ import {
   redisGetIngestionHistory,
   redisGetIngestionLogHistory,
   redisGetTelemetry,
+  redisDeleteXtmAgentResponse,
   redisGetXtmAgentResponse,
   redisInit,
   redisPushIngestionLog,
@@ -188,6 +189,22 @@ describe('Redis XTM agent response cache', () => {
     expect(cached).not.toBeNull();
     expect(cached.content).toEqual('<p>Agent summary</p>');
     expect(cached.cached_at).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+  });
+
+  it('should evict a cached agent response on demand', async () => {
+    // Used to drop an approval notice cached by an earlier build: the write guard
+    // in the proxy cannot reach an entry Redis already holds.
+    const cacheKey = `agent-cache-evict-${uuid()}`;
+    await redisSetXtmAgentResponse(cacheKey, 'I need approval before running: opencti_delete_entity.', 60);
+    expect(await redisGetXtmAgentResponse(cacheKey)).not.toBeNull();
+
+    await redisDeleteXtmAgentResponse(cacheKey);
+
+    expect(await redisGetXtmAgentResponse(cacheKey)).toBeNull();
+  });
+
+  it('should be a no-op when evicting a key that does not exist', async () => {
+    await expect(redisDeleteXtmAgentResponse(`agent-cache-absent-${uuid()}`)).resolves.toBeUndefined();
   });
 
   it('should expire a cached agent response after the TTL elapses', async () => {
