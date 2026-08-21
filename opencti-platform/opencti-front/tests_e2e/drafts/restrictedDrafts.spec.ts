@@ -33,7 +33,10 @@ test.describe('Draft Review Tab Navigation', { tag: ['@ce'] }, () => {
     await exitDraftButton.click();
     await expect(page).toHaveURL(/\/dashboard\/data\/import\/draft$/);
 
-    await Drafts.deleteDraft(draftName);
+    const draftRow = Drafts.getDraft(draftName);
+    await draftRow.getByLabel('Draft popover of actions').click();
+    await page.getByRole('menuitem', { name: 'Delete' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Confirm' }).click();
 
     // Verify deletion completed
     await page.reload();
