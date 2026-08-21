@@ -13,6 +13,7 @@ import IngestionCsvPopover from '@components/data/ingestionCsv/IngestionCsvPopov
 import IngestionJsonPopover from '@components/data/ingestionJson/IngestionJsonPopover';
 import IngestionRssLogsTab from '@components/data/ingestionRss/IngestionRssLogsTab';
 import FormView from '@components/data/forms/view/FormView';
+import FeedStartStopButton from '@components/integrations/feeds/FeedStartStopButton';
 import { BuiltInIntegrationKind, getBuiltInIntegration, isBuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
 import IngestionTaxiiLogsTab from '@components/data/ingestionTaxii/IngestionTaxiiLogsTab';
 import IngestionCsvLogsTab from '@components/data/ingestionCsv/IngestionCsvLogsTab';
@@ -245,13 +246,13 @@ const FeedActionsPopover = ({ kind, node }: FeedActionsPopoverProps) => {
     case 'sync':
       return <SyncPopover syncId={node.id} running={running} paginationOptions={{}} onDeleteComplete={onDeleteComplete} />;
     case 'rss':
-      return <IngestionRssPopover ingestionRssId={node.id} running={running} paginationOptions={{}} onDeleteComplete={onDeleteComplete} />;
+      return <IngestionRssPopover ingestionRssId={node.id} running={running} showStartStop={false} paginationOptions={{}} onDeleteComplete={onDeleteComplete} />;
     case 'taxii':
-      return <IngestionTaxiiPopover ingestionTaxiiId={node.id} running={running} setStateValue={noop} onDeleteComplete={onDeleteComplete} />;
+      return <IngestionTaxiiPopover ingestionTaxiiId={node.id} running={running} showStartStop={false} setStateValue={noop} onDeleteComplete={onDeleteComplete} />;
     case 'taxii-push':
       return <IngestionTaxiiCollectionPopover ingestionTaxiiId={node.id} running={running} onDeleteComplete={onDeleteComplete} />;
     case 'csv':
-      return <IngestionCsvPopover ingestionCsvId={node.id} running={running} setStateHash={noop} onDeleteComplete={onDeleteComplete} />;
+      return <IngestionCsvPopover ingestionCsvId={node.id} running={running} showStartStop={false} setStateHash={noop} onDeleteComplete={onDeleteComplete} />;
     case 'json':
     default:
       return <IngestionJsonPopover ingestionJsonId={node.id} running={running} onDeleteComplete={onDeleteComplete} />;
@@ -408,7 +409,12 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
           {/* Same gate as the legacy feed list lines: read-only INGESTION
               users do not get the mutation actions. */}
           <Security needs={[INGESTION_SETINGESTIONS]}>
-            <FeedActionsPopover kind={kind} node={node} />
+            <>
+              <FeedActionsPopover kind={kind} node={node} />
+              {(kind === 'rss' || kind === 'csv' || kind === 'taxii') && (
+                <FeedStartStopButton kind={kind} id={node.id} running={running} />
+              )}
+            </>
           </Security>
         </Stack>
       </Stack>
