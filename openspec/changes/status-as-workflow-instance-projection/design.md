@@ -1,3 +1,11 @@
+> **Note:** this design predates 14 rounds of adversarial review applied to
+> `plan.md`. Where the two disagree, `plan.md`'s Global Constraints and
+> per-task "per review" corrections are authoritative (e.g. the gating model
+> below, scope-in-mapping-key, the hook-registry anti-cycle fix, and the
+> creation-time status-resolution fix). This file's `Deployment strategy`
+> section has been updated to match; other sections reflect the original
+> brainstorm and should be cross-checked against `plan.md` before use.
+
 ## Design Summary
 
 OpenCTI has two disconnected status mechanisms: legacy `Status` (stamped on
@@ -98,13 +106,23 @@ history, and notifications stay intact.
   validate) are Enterprise Edition, matching draft-workspace precedent.
 
 ### Deployment strategy
-- Single `ENTITIES_WORKFLOW` flag gates the entire feature (backend wiring +
-  frontend UI) until all phases are production-ready; only `DraftWorkspace`
-  stays on its current dedicated path until then.
-- Phases 1.1 → 3 are backend-only and can ship dark (flag off)
-  incrementally; UI phases (1.2, 4-7) require the flag enabled.
-- Rollout respects the dependency order in the phase table; Phase 1.1 is
-  blocking for everything else.
+- **Corrected (per `plan.md`'s Global Constraints, this section previously
+  self-contradicted — do not use the old wording):** two independent gates,
+  not one. (1) The `ENTITIES_WORKFLOW` flag gates only user-visible/UI
+  wiring (the new workflow UI, apply-transition/bypass actions, mass-op
+  modes, unified Status column) for entity types other than `DraftWorkspace`.
+  (2) Backend mechanics (eager/lazy `WorkflowInstance` creation, projection,
+  external-write sync) are gated purely by **whether a given entity type has
+  a published `WorkflowDefinition`** — they run regardless of the UI flag.
+- Practical consequence: once the definition-migration task (2.3) publishes
+  a `WorkflowDefinition` for a migrated entity type, that type's backend
+  mechanics activate immediately — platform-wide, for every install with
+  that data — even with `ENTITIES_WORKFLOW` fully disabled. This is
+  intentional (staged backend-then-UI rollout) but must be run as an
+  explicit per-entity-type canary with monitoring, not a bulk migration; see
+  `plan.md`'s Task 6 canary-rollout guidance.
+- Rollout respects the dependency order in the phase table above; Phase 1.1
+  is blocking for everything else.
 
 ### Draft entities and workflow
 - Entities *inside* a Draft (DraftWorkspace content, not the DraftWorkspace
