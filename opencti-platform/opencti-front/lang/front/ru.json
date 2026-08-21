@@ -11,6 +11,8 @@
   "- your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "- ваш пользователь будет относиться к основной организации платформы в дополнение к любой организации, к которой принадлежит текущий пользователь",
   "... successfully deleted": "... успешно удалены",
   "... successfully duplicated": "{entity_type} успешно продублирован",
+  "task": "задача",
+  "tasks": "задачи",
   "“Yes, always” saves a preference for you. That tool will then run without asking — including on scheduled runs nobody is watching — until you revoke it.": "«Да, всегда» сохраняет настройку за вас. После этого инструмент будет запускаться без запроса — в том числе в рамках запланированных запусков, за которыми никто не наблюдает, — до тех пор, пока вы не отмените это разрешение.",
   "(+{count}) Click to view all the new resources on the Hub": "(+{count}) Нажмите, чтобы просмотреть все новые ресурсы на хабе",
   "(no output)": "(без вывода)",
