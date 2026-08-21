@@ -1,0 +1,153 @@
+import semver from 'semver';
+import { logApp } from '../../config/conf';
+import { publishUserAction } from '../../listener/UserActionListener';
+import type { AuthContext, AuthUser } from '../../types/user';
+import { findLatestCompatibleCatalogContractBySlug } from '../catalog/catalog-repository';
+import { mapContractEntityFieldsToEmbeddedConnectorManagerContract } from '../catalog/catalog-domain';
+import { findManagedConnectorsByCatalogId } from './connector-repository';
+import type { BasicStoreEntityConnector } from '../../types/connector';
+import { patchAttribute } from '../../database/middleware';
+import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
+
+const autoUpgradeManagedConnector = async (
+  context: AuthContext,
+  user: AuthUser,
+  managedConnector: BasicStoreEntityConnector,
+) => {
+  const { manager_upgrade_strategy, manager_contract } = managedConnector;
+  // Currently we only support the "upgrade to latest compatible version" strategy
+  if (manager_upgrade_strategy !== 'latest') {
+    return;
+  }
+  if (!manager_contract) {
+    logApp.warn('[OPENCTI-MODULE] Inconsistent connector data, unable to find manager_contract on managed connector', {
+      module: 'connector',
+      connectorId: managedConnector.id,
+    });
+    return;
+  }
+  const { slug, contract_version, content_hash } = manager_contract;
+  try {
+    const latestCompatibleContract = await findLatestCompatibleCatalogContractBySlug(context, user, slug);
+    if (!latestCompatibleContract) {
+      // Warning: we're running a connector that's not compatible anymore but
+      // there's no replacement version compatible !
+      // TODO: stop the connector and block the restart from the UI, or delete
+      // the connector ?
+      return;
+    }
+    if (semver.eq(contract_version, latestCompatibleContract.contract_version)
+      && content_hash === latestCompatibleContract.content_hash) {
+      logApp.debug('[OPENCTI-MODULE] Managed connector already uses latest compatible version', {
+        module: 'connector',
+        connectorId: managedConnector.id,
+        version: contract_version,
+      });
+      return;
+    }
+    // Update connector
+    const patch: Partial<BasicStoreEntityConnector> = {
+      manager_contract: mapContractEntityFieldsToEmbeddedConnectorManagerContract(latestCompatibleContract),
+      manager_contract_image: latestCompatibleContract.image,
+    };
+    await patchAttribute(context, user, managedConnector.id, ENTITY_TYPE_CONNECTOR, patch);
+    if (semver.lt(contract_version, latestCompatibleContract.contract_version)) {
+      logApp.info('[OPENCTI-MODULE] Upgraded connector to latest compatible version', {
+        module: 'connector',
+        connectorId: managedConnector.id,
+        contractSlug: slug,
+        previousVersion: contract_version,
+        newVersion: latestCompatibleContract.contract_version,
+      });
+      // Activity log
+      // Unsure how correct this is. Maybe the context_data is too big here.
+      void publishUserAction({
+        event_type: 'mutation',
+        event_access: 'administration',
+        event_scope: 'update',
+        message: 'upgrades connector to latest compatible version',
+        user,
+        context_data: {
+          entity_type: ENTITY_TYPE_CONNECTOR,
+          id: managedConnector.id,
+          input: {
+            slug,
+            previousVersion: contract_version,
+            newVersion: latestCompatibleContract.contract_version,
+          },
+        },
+      });
+    } else if (semver.gt(contract_version, latestCompatibleContract.contract_version)) {
+      logApp.info('[OPENCTI-MODULE] Downgraded connector to latest compatible version', {
+        module: 'connector',
+        connectorId: managedConnector.id,
+        contractSlug: slug,
+        previousVersion: contract_version,
+        newVersion: latestCompatibleContract.contract_version,
+      });
+      // Activity log
+      void publishUserAction({
+        event_type: 'mutation',
+        event_access: 'administration',
+        event_scope: 'update',
+        message: 'downgrades connector to latest compatible version',
+        user,
+        context_data: {
+          entity_type: ENTITY_TYPE_CONNECTOR,
+          id: managedConnector.id,
+          input: {
+            slug,
+            previousVersion: contract_version,
+            newVersion: latestCompatibleContract.contract_version,
+          },
+        },
+      });
+    } else if (semver.eq(contract_version, latestCompatibleContract.contract_version)) {
+      // Shouldn't happen: either a Release issue or a logic/code error.
+      logApp.warn('[OPENCTI-MODULE] Inconsistent connector data, same connector version with different contract content hash', {
+        module: 'connector',
+        contractSlug: slug,
+        contractVersion: contract_version,
+      });
+      // Activity log
+      void publishUserAction({
+        event_type: 'mutation',
+        event_access: 'administration',
+        event_scope: 'update',
+        message: 'upgrades connector to latest compatible identical version',
+        user,
+        context_data: {
+          entity_type: ENTITY_TYPE_CONNECTOR,
+          id: managedConnector.id,
+          input: {
+            slug,
+            previousVersion: contract_version,
+            newVersion: latestCompatibleContract.contract_version,
+          },
+        },
+      });
+    } else {
+      throw new Error('Unexpected case when comparing connector contract versions');
+    }
+  } catch (exception) {
+    logApp.error('[OPENCTI-MODULE] Failed to auto-upgrade connector to latest compatible version', {
+      module: 'connector',
+      contractSlug: slug,
+      contractVersion: contract_version,
+      cause: exception,
+    });
+  }
+};
+
+export const autoUpgradeManagedConnectors = async (
+  context: AuthContext,
+  user: AuthUser,
+  synchedCatalogs: string[],
+) => {
+  for (const catalogId of synchedCatalogs) {
+    const managedConnectors = await findManagedConnectorsByCatalogId(context, user, catalogId);
+    for (const managedConnector of managedConnectors) {
+      await autoUpgradeManagedConnector(context, user, managedConnector);
+    };
+  };
+};

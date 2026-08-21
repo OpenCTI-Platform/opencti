@@ -55,7 +55,7 @@ import { isCompatibleVersionWithMinimal } from '../utils/version';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import type { BasicStoreCommon, StoreEntity } from '../types/store';
 import { addConnectorDeployedCount, addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '../manager/telemetryManager';
-import { computeConnectorTargetContract, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
+import { computeConnectorTargetContract, mapContractEntityFieldsToEmbeddedConnectorManagerContract } from '../modules/catalog/catalog-domain';
 import { getEntitiesMapFromCache } from '../database/cache';
 
 import { createOnTheFlyUser } from '../modules/user/user-domain';
@@ -67,6 +67,7 @@ import { extractContentFrom } from '../utils/fileToContent';
 import type { FileHandle } from 'fs/promises';
 import { encryptSynchronizerCredential } from './connector-sync-crypto';
 import { verifyIngestionUri } from '../modules/ingestion/ingestion-common';
+import { findLatestCompatibleCatalogContractByImageName } from '../modules/catalog/catalog-repository';
 
 const MINIMAL_SYNCHRONIZER_COMPATIBLE_VERSION = '6.9.6';
 // Sanitize name for K8s/Docker
@@ -201,13 +202,12 @@ export const managedConnectorEdit = async (
   user: AuthUser,
   input: EditManagedConnectorInput,
 ) => {
-  const conn: any = await storeLoadById(context, user, input.id, ENTITY_TYPE_CONNECTOR);
+  const conn = await storeLoadById<BasicStoreEntityConnector>(context, user, input.id, ENTITY_TYPE_CONNECTOR);
   if (isEmptyField(conn)) {
     throw UnsupportedError('Connector not found', { id: input.id });
   }
-  const contractsMap = await getSupportedContractsByImage();
-  const targetContract: any = contractsMap.get(conn.manager_contract_image);
-  if (isEmptyField(targetContract)) {
+  const targetContract = conn.manager_contract;
+  if (!targetContract) {
     throw UnsupportedError('Target contract not found');
   }
   const connectorManagers = await fullEntitiesList<BasicStoreEntityConnectorManager>(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER]);
@@ -224,7 +224,7 @@ export const managedConnectorEdit = async (
   const patch: any = {
     name: input.name,
     title: input.title,
-    connector_type: targetContract.container_type,
+    connector_type: targetContract.connector_type,
     connector_user_id: input.connector_user_id,
     manager_contract_configuration: contractConfigurations,
   };
@@ -238,8 +238,7 @@ export const managedConnectorAdd = async (
   input: AddManagedConnectorInput,
 ) => {
   // Get contract
-  const contractsMap = await getSupportedContractsByImage();
-  const targetContract: any = contractsMap.get(input.manager_contract_image);
+  const targetContract = await findLatestCompatibleCatalogContractByImageName(context, user, input.manager_contract_image);
   if (isEmptyField(targetContract)) {
     throw UnsupportedError('Target contract not found');
   }
@@ -286,11 +285,12 @@ export const managedConnectorAdd = async (
   const connectorToCreate: any = {
     title: input.name,
     name: sanitizedName,
-    connector_type: targetContract.container_type,
+    connector_type: targetContract.connector_type,
     catalog_id: input.catalog_id,
     connector_user_id: connectorUser.id,
     manager_contract_image: input.manager_contract_image,
     manager_contract_configuration: contractConfigurations,
+    manager_contract: mapContractEntityFieldsToEmbeddedConnectorManagerContract(targetContract),
     manager_requested_status: 'stopped',
     connector_state_timestamp: now(),
     built_in: false,
