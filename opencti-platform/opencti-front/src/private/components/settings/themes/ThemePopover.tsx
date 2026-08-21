@@ -7,7 +7,7 @@ import { ThemeManager_data$data } from '@components/settings/themes/__generated_
 import { useFormatter } from '../../../../components/i18n';
 import ThemeEdition from './ThemeEdition';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNGETEXPORT_KNASKEXPORT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
 import ThemeType from './ThemeType';
 import handleExportJson from './ThemeExportHandler';
 import useDeletion from '../../../../utils/hooks/useDeletion';
@@ -162,11 +162,7 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
   return (
     <div>
       <Security
-        needs={[
-          KNOWLEDGE_KNUPDATE,
-          KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,
-          KNOWLEDGE_KNUPDATE_KNDELETE,
-        ]}
+        needs={[SETTINGS_SETPARAMETERS]}
       >
         <IconButton
           aria-label={t_i18n('Open menu')}
@@ -184,7 +180,7 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
         open={isMenuOpen}
         onClose={handleClose}
       >
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <Security needs={[SETTINGS_SETPARAMETERS]}>
           <MenuItem
             onClick={handleOpenUpdate}
             aria-label={t_i18n('Update')}
@@ -192,7 +188,7 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
             {t_i18n('Update')}
           </MenuItem>
         </Security>
-        <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
+        <Security needs={[SETTINGS_SETPARAMETERS]}>
           <MenuItem
             onClick={handleExport}
             aria-label={t_i18n('Export')}
@@ -201,7 +197,7 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
           </MenuItem>
         </Security>
         {!theme.system_default && (
-          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+          <Security needs={[SETTINGS_SETPARAMETERS]}>
             <MenuItem
               onClick={handleOpenDelete}
               aria-label={t_i18n('Delete')}
