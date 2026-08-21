@@ -1,5 +1,4 @@
 import Button from '@common/button/Button';
-import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import MoreVert from '@mui/icons-material/MoreVert';
 import DialogActions from '@mui/material/DialogActions';
@@ -7,6 +6,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Slide from '@mui/material/Slide';
+import ToggleButton from '@mui/material/ToggleButton';
 import withStyles from '@mui/styles/withStyles';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
@@ -205,29 +205,29 @@ class IngestionRssPopover extends Component {
   }
 
   render() {
-    const { classes, t, ingestionRssId, running } = this.props;
+    const { classes, t, ingestionRssId, running, showStartStop } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton
-          aria-label={t('Open menu')}
+        <ToggleButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
-          style={{ marginTop: 3 }}
+          value="popover"
           color="primary"
+          size="small"
         >
-          <MoreVert />
-        </IconButton>
+          <MoreVert fontSize="small" color="primary" />
+        </ToggleButton>
         <Menu
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
         >
-          {!running && (
+          {showStartStop && !running && (
             <MenuItem onClick={this.handleOpenStart.bind(this)}>
               {t('Start')}
             </MenuItem>
           )}
-          {running && (
+          {showStartStop && running && (
             <MenuItem onClick={this.handleOpenStop.bind(this)}>
               {t('Stop')}
             </MenuItem>
@@ -339,10 +339,15 @@ class IngestionRssPopover extends Component {
 IngestionRssPopover.propTypes = {
   ingestionRssId: PropTypes.string,
   running: PropTypes.bool,
+  showStartStop: PropTypes.bool,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   onDeleteComplete: PropTypes.func,
+};
+
+IngestionRssPopover.defaultProps = {
+  showStartStop: true,
 };
 
 export default compose(inject18n, withStyles(styles))(IngestionRssPopover);
