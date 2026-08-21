@@ -101,5 +101,6 @@ type Mutation {
     ingestionRssDelete(id: ID!): ID @auth(for: [INGESTION_SETINGESTIONS])
     ingestionRssFieldPatch(id: ID!, input: [EditInput!]!): IngestionRss @auth(for: [INGESTION_SETINGESTIONS])
     ingestionRssAddAutoUser(id: ID!, input: IngestionRssAddAutoUserInput!): IngestionRss @auth(for:[INGESTION_SETINGESTIONS])
+    ingestionRssResetState(id: ID!): IngestionRss @auth(for: [INGESTION_SETINGESTIONS])
 
 }

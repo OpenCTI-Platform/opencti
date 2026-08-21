@@ -17424,6 +17424,7 @@ export type Mutation = {
   ingestionRssAddAutoUser?: Maybe<IngestionRss>;
   ingestionRssDelete?: Maybe<Scalars['ID']['output']>;
   ingestionRssFieldPatch?: Maybe<IngestionRss>;
+  ingestionRssResetState?: Maybe<IngestionRss>;
   ingestionTaxiiAdd?: Maybe<IngestionTaxii>;
   ingestionTaxiiAddAutoUser?: Maybe<IngestionTaxii>;
   ingestionTaxiiCollectionAdd?: Maybe<IngestionTaxiiCollection>;
@@ -18864,6 +18865,11 @@ export type MutationIngestionRssDeleteArgs = {
 export type MutationIngestionRssFieldPatchArgs = {
   id: Scalars['ID']['input'];
   input: Array<EditInput>;
+};
+
+
+export type MutationIngestionRssResetStateArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -48241,6 +48247,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   ingestionRssAddAutoUser?: Resolver<Maybe<ResolversTypes['IngestionRss']>, ParentType, ContextType, RequireFields<MutationIngestionRssAddAutoUserArgs, 'id' | 'input'>>;
   ingestionRssDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationIngestionRssDeleteArgs, 'id'>>;
   ingestionRssFieldPatch?: Resolver<Maybe<ResolversTypes['IngestionRss']>, ParentType, ContextType, RequireFields<MutationIngestionRssFieldPatchArgs, 'id' | 'input'>>;
+  ingestionRssResetState?: Resolver<Maybe<ResolversTypes['IngestionRss']>, ParentType, ContextType, RequireFields<MutationIngestionRssResetStateArgs, 'id'>>;
   ingestionTaxiiAdd?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiAddArgs, 'input'>>;
   ingestionTaxiiAddAutoUser?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiAddAutoUserArgs, 'id' | 'input'>>;
   ingestionTaxiiCollectionAdd?: Resolver<Maybe<ResolversTypes['IngestionTaxiiCollection']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiCollectionAddArgs, 'input'>>;
