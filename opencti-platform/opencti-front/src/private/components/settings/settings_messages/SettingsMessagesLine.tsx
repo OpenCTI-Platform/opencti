@@ -123,7 +123,7 @@ export const SettingsMessagesLineDummy = ({
       classes={{ root: classes.item }}
       secondaryAction={(
         <Box sx={{ root: classes.itemIconDisabled }}>
-          <IconButton aria-label={t_i18n('Open menu')} disabled={true} aria-haspopup="true">
+          <IconButton aria-label={t_i18n('Open menu')} disabled={true}>
             <MoreVert />
           </IconButton>
         </Box>

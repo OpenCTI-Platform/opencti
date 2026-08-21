@@ -175,7 +175,6 @@ export const CaseTasksLineDummy = () => {
         <IconButton
           aria-label={t_i18n('Open menu')}
           disabled={true}
-          aria-haspopup="true"
           style={{ marginTop: 3 }}
         >
           <MoreVert />
