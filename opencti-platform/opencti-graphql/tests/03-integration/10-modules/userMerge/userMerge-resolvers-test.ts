@@ -140,6 +140,9 @@ describe('User merge resolvers', () => {
       expect(Object.keys(real.data.userMerge).sort()).toEqual(Object.keys(dry.data.userMerge).sort());
       expect(real.data.userMerge.dry_run).toBe(false);
       expect(dry.data.userMerge.dry_run).toBe(true);
+      // These two accounts own nothing in the test dataset; asserting it keeps a real merge
+      // from quietly rewriting shared fixtures if that ever stops being true.
+      expect(real.data.userMerge.report.total_updated).toEqual(0);
     });
 
     it('should carry the coverage in the report of every execution', async () => {
@@ -163,7 +166,7 @@ describe('User merge resolvers', () => {
       expect(data.userMerge.rights_strategy).toBe('UNION');
     });
 
-    it('should leave both users untouched while no handler covers them', async () => {
+    it('should leave the user entities themselves untouched', async () => {
       const sourceBefore = await readUser(USER_PARTICIPATE.id);
       const targetBefore = await readUser(USER_EDITOR.id);
       await queryAsAdminWithSuccess({
@@ -180,8 +183,9 @@ describe('User merge resolvers', () => {
       const { data } = await queryAsAdminWithSuccess({ query: USER_MERGE_COVERAGE_QUERY, variables: {} });
       expect(data.userMergeCoverage.total).toEqual(100);
       expect(data.userMergeCoverage.rows.length).toEqual(100);
-      // No handler ships in this chunk, so nothing may be reported as covered.
-      expect(data.userMergeCoverage.covered_count).toEqual(0);
+      // The register is what says the merge is incomplete, whatever the handlers claim.
+      expect(data.userMergeCoverage.covered_count).toBeGreaterThan(0);
+      expect(data.userMergeCoverage.uncovered_count).toEqual(100 - data.userMergeCoverage.covered_count);
       expect(data.userMergeCoverage.is_complete).toBe(false);
     });
 
