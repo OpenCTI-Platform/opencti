@@ -301,6 +301,10 @@ const StixCoreObjectFileExportForm = ({
           (values.connector?.value === BUILT_IN_FROM_TEMPLATE.value && values.format === 'application/pdf')
           || (values.connector?.value === BUILT_IN_HTML_TO_PDF.value && values.fileToExport?.value.startsWith('fromTemplate/'))
         );
+        const shouldDisplayPageOptions = (
+          values.connector?.value === BUILT_IN_HTML_TO_PDF.value
+          || (values.connector?.value === BUILT_IN_FROM_TEMPLATE.value && values.format === 'application/pdf')
+        );
 
         return (
 
@@ -529,7 +533,7 @@ const StixCoreObjectFileExportForm = ({
                         style={fieldSpacingContainerStyle}
                         setFieldValue={setFieldValue}
                       />
-                      {values.connector.value === BUILT_IN_HTML_TO_PDF.value && (
+                      {shouldDisplayPageOptions && (
                         <>
                           <Typography variant="h3" sx={{ marginTop: 3 }}>
                             {t_i18n('Page options')}
