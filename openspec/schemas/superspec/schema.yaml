@@ -1,0 +1,776 @@
+name: SuperSpec
+version: 4
+description: >
+  Spec-driven workflow integrated with Superpowers skills.
+  brainstorm → proposal → specs → tasks → plan → apply → verify → finalize.
+  design is optional (produced from brainstorm but not required by tasks).
+  Apply is both a DAG artifact (generates apply.md, a minimal receipt)
+  and a top-level apply: phase block (canonical /opsx:apply instruction
+  body). Verify requires apply, so /opsx:verify cannot run before
+  /opsx:apply has executed. Finalize requires verify and is reached via
+  /opsx:continue after verify reports PASS; its instruction executes
+  the git-side closeout directly (merge worktree branch back into the
+  feature branch, push the branch — which updates an existing spec
+  pre-review PR if one was opened between plan and apply, or creates
+  a remote tracking branch otherwise — and post a code-reviewer
+  onboarding comment on the PR if one exists) and records the outcome
+  in finalize.md.
+  Apply uses git worktrees + subagent-driven-development (brings TDD and
+  code-review transitively). executing-plans is documented only as a
+  fallback for platforms without subagent support. v3 (historical):
+  finalize was promoted from a manual post-verify step to a real DAG
+  artifact, with its instruction invoking
+  superpowers:finishing-a-development-branch. v4 (current): finalize's
+  instruction is rewritten to execute the git-side closeout directly;
+  the skill is retained as a manual escape hatch for non-canonical flows
+  (solo merge-to-main, brand-new PR via the skill, keep-as-is,
+  discard — note that "no pre-review PR" is handled by the
+  canonical closeout, not the escape hatch). Apply step 0
+  wording is also updated to recommend a user-created feature branch
+  as the canonical starting state (previously the schema recommended
+  starting on the integration branch).
+
+artifacts:
+  - id: brainstorm
+    generates: brainstorm.md
+    description: Collaborative design exploration using Superpowers brainstorming
+    template: brainstorm.md
+    instruction: |
+      Use the Skill tool to invoke **superpowers:brainstorming**.
+
+      IMPORTANT output redirection:
+      - Do NOT write to `docs/superpowers/specs/`. Instead, write the
+        brainstorming design output directly to this change's `brainstorm.md`.
+      - If brainstorming produces a design document, also write it to
+        this change's `design.md` (this will pre-fill the design artifact).
+
+      After brainstorming completes, summarize the agreed design in
+      brainstorm.md using the template structure.
+
+      The brainstorming skill will:
+      1. Explore project context
+      2. Ask clarifying questions (one at a time)
+      3. Propose 2-3 approaches with trade-offs
+      4. Present design sections for approval
+      5. Output the validated design
+    requires: []
+
+  - id: proposal
+    generates: proposal.md
+    description: Initial proposal document outlining the change
+    template: proposal.md
+    instruction: |
+      Create the proposal document based on the brainstorming output.
+
+      Read brainstorm.md for the validated design. Extract:
+      - **Why**: The motivation (from brainstorming discussion)
+      - **What Changes**: Specific changes agreed upon
+      - **Capabilities**: Identify which specs will be created or modified:
+        - **New Capabilities**: List capabilities being introduced. Each becomes a new `specs/<name>/spec.md`. Use kebab-case names.
+        - **Modified Capabilities**: List existing capabilities whose REQUIREMENTS are changing. Check `openspec/specs/` for existing spec names.
+      - **Impact**: Affected code, APIs, dependencies, or systems.
+
+      Since brainstorming already explored the problem space,
+      this should be a concise extraction, not a new exploration.
+
+      IMPORTANT: The Capabilities section is critical. It creates the contract between
+      proposal and specs phases. Each capability listed here will need a spec file.
+
+      Keep it concise (1-2 pages). Focus on the "why" not the "how".
+    requires:
+      - brainstorm
+
+  - id: design
+    generates: design.md
+    description: Technical design document with implementation details
+    template: design.md
+    instruction: |
+      Create the design document explaining HOW to implement the change.
+
+      Check if brainstorming already produced a design.md file.
+      If design.md already exists with content from brainstorming,
+      review and refine it rather than starting from scratch.
+
+      If design.md is empty or doesn't exist, create it from
+      the brainstorm.md output.
+
+      Sections:
+      - **Context**: Background, current state, constraints, stakeholders
+      - **Goals / Non-Goals**: What this design achieves and explicitly excludes
+      - **Decisions**: Key technical choices with rationale (why X over Y?). Include alternatives considered.
+      - **Risks / Trade-offs**: Known limitations, things that could go wrong. Format: [Risk] → Mitigation
+      - **Migration Plan**: Steps to deploy, rollback strategy (if applicable)
+      - **Open Questions**: Outstanding decisions or unknowns to resolve
+
+      Focus on architecture and approach, not line-by-line implementation.
+      Good design docs explain the "why" behind technical decisions.
+    requires:
+      - brainstorm
+
+  - id: specs
+    generates: "specs/**/*.md"
+    description: Detailed specifications for the change
+    template: spec.md
+    instruction: |
+      Create specification files that define WHAT the system should do.
+
+      Create one spec file per capability listed in the proposal's Capabilities section.
+      - New capabilities: use the exact kebab-case name from the proposal (specs/<capability>/spec.md).
+      - Modified capabilities: use the existing spec folder name from openspec/specs/<capability>/ when creating the delta spec at specs/<capability>/spec.md.
+
+      Delta operations (use ## headers):
+      - **ADDED Requirements**: New capabilities
+      - **MODIFIED Requirements**: Changed behavior - MUST include full updated content
+      - **REMOVED Requirements**: Deprecated features - MUST include **Reason** and **Migration**
+      - **RENAMED Requirements**: Name changes only - use FROM:/TO: format
+
+      Format requirements:
+      - Each requirement: `### Requirement: <name>` followed by description
+      - Use SHALL/MUST for normative requirements (avoid should/may)
+      - Each scenario: `#### Scenario: <name>` with WHEN/THEN format
+      - **CRITICAL**: Scenarios MUST use exactly 4 hashtags (`####`). Using 3 hashtags or bullets will fail silently.
+      - Every requirement MUST have at least one scenario.
+
+      Specs should be testable - each scenario is a potential test case.
+    requires:
+      - proposal
+
+  - id: tasks
+    generates: tasks.md
+    description: Implementation checklist with trackable tasks
+    template: tasks.md
+    instruction: |
+      Create the task list that breaks down the implementation work.
+
+      **IMPORTANT: Follow the template below exactly.** The apply phase parses
+      checkbox format to track progress. Tasks not using `- [ ]` won't be tracked.
+
+      Guidelines:
+      - Group related tasks under ## numbered headings
+      - Each task MUST be a checkbox: `- [ ] X.Y Task description`
+      - Tasks should be small enough to complete in one session
+      - Order tasks by dependency (what must be done first?)
+
+      Reference specs for what needs to be built. If design.md exists,
+      reference it for how to build it — but design is optional (see
+      openspec-conventions: design.md is only for changes that need to
+      explain non-trivial technical decisions).
+    requires:
+      - specs
+
+  - id: plan
+    generates: plan.md
+    description: Micro-task implementation plan using Superpowers writing-plans
+    template: plan.md
+    instruction: |
+      Use the Skill tool to invoke **superpowers:writing-plans**.
+
+      IMPORTANT output redirection:
+      - Do NOT write to `docs/superpowers/plans/`. Instead, write
+        the plan directly to this change's `plan.md`.
+
+      The writing-plans skill will:
+      1. Read the tasks.md and design.md for context
+      2. Break each task into 2-5 minute micro-steps (TDD style)
+      3. Include exact file paths, code snippets, test commands
+      4. Add commit points after each task
+
+      Pass the tasks.md content to the skill as the input for
+      decomposition. The plan should reference the specs and
+      design artifacts in this change directory.
+    requires:
+      - tasks
+
+  - id: apply
+    generates: apply.md
+    description: Implementation receipt confirming the apply phase completed
+    template: apply.md
+    instruction: |
+      This artifact is generated by `/opsx:apply`, not `/opsx:continue`.
+      If you reached this via `/opsx:continue`, exit and run `/opsx:apply`
+      instead. The canonical implementation instructions live in the
+      top-level `apply:` phase block below.
+
+      apply.md is a minimal receipt — its template lives at
+      `templates/apply.md`; its production is documented in the apply:
+      phase block. Verification outcome is recorded in verify.md
+      (Overall Decision section), not here.
+    requires:
+      - plan
+
+  - id: verify
+    generates: verify.md
+    description: Post-implementation verification against specs, design, and tasks
+    template: verify.md
+    instruction: |
+      Use the Skill tool to invoke **openspec-verify-change** (the
+      `/opsx:verify` slash command is its user-facing equivalent).
+
+      apply.md MUST exist before this artifact runs — the DAG enforces
+      this. If apply.md is missing, run `/opsx:apply` first. After every
+      apply iteration (whether the first or a re-run), verify should be
+      invoked so the convergence loop can decide whether more apply
+      iterations are needed.
+
+      verify.md is overwritten each run. Copy the `Iteration:` value
+      from apply.md so verify and apply stay in lockstep.
+
+      The verify step MUST perform the following checks and record
+      results in verify.md using the template:
+
+      1. **Structural validation**: Run `openspec validate --all --json`
+         in the repository root and confirm every item returns
+         `"valid": true`. If any item fails, record the issues and
+         return to fix the underlying artifact before proceeding.
+
+      2. **Task completion**: Confirm every checkbox in tasks.md is
+         `- [x]`. For any `- [ ]` remaining, document the reason
+         (e.g. manual / out-of-scope / blocked) and whether it blocks
+         archive.
+
+      3. **Delta spec sync state**: For each directory under
+         `openspec/changes/<name>/specs/`, compare against the
+         corresponding `openspec/specs/<capability>/spec.md` and
+         record one of:
+         - ✓ Already synced
+         - ✗ Needs sync (list the capabilities)
+         - N/A (no delta specs produced)
+
+      4. **Design/specs coherence**: Spot-check that design.md
+         decisions reference or align with the requirements listed
+         in specs/. Record any drift as a warning (non-blocking).
+
+      5. **Implementation signal**: Confirm all code changes are
+         committed (no unstaged files in the worktree). Cite the
+         commit range if known.
+
+      Recommended convergence loop:
+      - PASS → /opsx:continue advances to the finalize artifact, which
+        executes the git-side closeout directly (merge worktree →
+        feature branch, push the branch, update the PR if one exists,
+        post code-reviewer comment if a PR is present). The skill
+        superpowers:finishing-a-development-branch is retained as a
+        manual escape hatch for non-canonical flows. /opsx:archive
+        runs once finalize.md exists.
+      - PASS_WITH_WARNINGS → same path as PASS; warnings are recorded
+        but do not block.
+      - FAIL with code-fixable items → return to apply, re-run, re-verify.
+      - FAIL with artifact-level items (e.g. spec drift) → fix the
+        offending artifact, then re-enter apply.
+      - Iteration > 5 → stop looping; report to the user.
+
+      See docs/workflow-details.md for the full convergence pattern.
+
+      If `openspec-verify-change` skill is unavailable, fall back to
+      running the 5 checks manually and recording results in verify.md.
+    requires:
+      - apply
+
+  - id: finalize
+    generates: finalize.md
+    description: Git-side closeout — merge worktree back into feature branch, push, optionally open PR, post code-reviewer comment
+    template: finalize.md
+    instruction: |
+      The git-side closeout is Superspec's canonical finalize flow:
+      merge the implementation worktree branch back into your feature
+      branch locally, push the feature branch (which updates the
+      existing PR if one was opened manually between plan and apply
+      for spec pre-review, or creates a remote tracking branch if
+      not), write the finalize.md receipt, and — if a PR exists —
+      post a code-reviewer onboarding comment on it. The spec
+      pre-review PR is an optional team-workflow pattern; the
+      canonical closeout works either way.
+
+      Prerequisites for the git-side closeout (canonical path):
+      - You are on a feature branch in the main checkout (apply
+        step 0 should have recommended this — check `git branch
+        --show-current`).
+      - The feature branch is NOT the integration branch (main /
+        master); if it is, skip the git-side closeout and use the
+        escape hatch at the bottom of this instruction.
+      - Apply ran in a worktree at `.worktrees/<change-name>/` with
+        a worktree branch named `<change-name>`.
+
+      Optional precondition (recommended for team workflows):
+      - A PR for this feature branch already exists on the remote.
+        This is the "spec pre-review PR" — opened manually between
+        plan and apply so the logic reviewer can approve the
+        proposal/specs/plan before code is written. If you didn't
+        open a pre-review PR, the canonical git-side closeout
+        still works: it merges the worktree back, pushes the
+        feature branch (creating the remote tracking branch if
+        needed), and the code-reviewer comment subroutine
+        self-skips (recording `PR comment: skipped (no PR)` in
+        finalize.md). You can `gh pr create` after finalize
+        completes, or never open a PR at all.
+
+      If a structural prerequisite (feature branch, worktree) is
+      not met, skip the auto-executed flow below and invoke
+      `superpowers:finishing-a-development-branch` manually — see
+      "Escape hatch" at the bottom.
+
+      Git-side closeout execution steps:
+
+      1. Compute paths and discover branch names:
+
+         WORKTREE=$(git worktree list --porcelain | awk '/^worktree / {wt=$2} /^branch refs\/heads\/<change-name>/ {print wt; exit}')
+         # If WORKTREE is empty, list `git worktree list` and ask the
+         # user which path corresponds to this change.
+         WORKTREE_BRANCH="<change-name>"
+         FEATURE_BRANCH=$(git -C "$WORKTREE" log --format=%D -1 HEAD~$(git -C "$WORKTREE" rev-list --count HEAD ^"<integration-branch>") | tr ',' '\n' | grep -oE '^ *[^ ]+' | head -1)
+         # Fallback: ask the user to confirm FEATURE_BRANCH if
+         # detection is ambiguous.
+
+      2. Verify tests pass in the worktree:
+
+         cd "$WORKTREE"
+         <project test command, e.g. `npm test`, `cargo test`, `pytest`>
+         # Stop on failure — record the failure in finalize.md and
+         # do not proceed.
+
+      3. Switch to feature branch in main checkout and pull:
+
+         MAIN_ROOT=$(git -C "$WORKTREE" rev-parse --git-common-dir)/..
+         cd "$MAIN_ROOT"
+         git checkout "$FEATURE_BRANCH"
+         git pull
+
+      4. Merge worktree branch (fast-forward only):
+
+         git merge --ff-only "$WORKTREE_BRANCH"
+         # If fast-forward fails, stop. The feature branch diverged
+         # after worktree creation; the user must reconcile manually
+         # (rebase the worktree branch onto the feature branch, then
+         # re-enter finalize).
+
+      5. Re-verify tests on the merged result:
+
+         <project test command>
+         # Stop on failure — the worktree branch is still on disk for
+         # forensics until the user re-runs finalize.
+
+      6. Worktree cleanup with provenance guard
+         (borrowed from superpowers:finishing-a-development-branch
+         Step 6 — see "Borrowed logic" below for attribution and the
+         recreation method):
+
+         WORKTREE_REL=$(realpath --relative-to="$MAIN_ROOT" "$WORKTREE")
+         case "$WORKTREE_REL" in
+           .worktrees/*|worktrees/*) OWN=1 ;;
+           *) case "$WORKTREE" in
+                "$HOME/.config/superpowers/worktrees/"*) OWN=1 ;;
+                *) OWN=0 ;;
+              esac ;;
+         esac
+         if [ "$OWN" = "1" ]; then
+           git worktree remove "$WORKTREE"
+           git worktree prune
+         else
+           # Harness owns this worktree; leave it in place.
+           # Record this in finalize.md as Cleanup: preserved (harness-owned).
+           true
+         fi
+
+      7. Delete the local worktree branch:
+
+         git branch -d "$WORKTREE_BRANCH"
+
+      8. Write finalize.md per templates/finalize.md to
+         openspec/changes/<change-name>/finalize.md. Required values
+         for the git-side closeout:
+         - Outcome: `pr-updated`
+         - Branch: <feature-branch>
+         - Base branch: <integration branch, typically `main`>
+         - Final state: `pr-updated`
+         - PR URL: discovered via `gh pr view <feature-branch> --json url --jq .url`
+         - Worktree: <path or "removed">
+         - Cleanup: `removed` (or `preserved (harness-owned)`)
+         - Tests baseline status at finish: `passing`
+         - PR comment status: filled in by step 12 below (or by
+           step 11 if the user declines the PR-creation prompt /
+           the session is non-interactive)
+         - Next step: per templates/finalize.md `pr-updated` bullet
+           (archive → push → merge sequence).
+
+      9. Commit the receipt on the feature branch:
+
+         git add openspec/changes/<change-name>/finalize.md
+         git commit -m "docs(openspec): finalize receipt for <change-name>"
+
+      10. Push the feature branch:
+
+          git push origin "$FEATURE_BRANCH"
+          # If a PR already exists for this branch, it auto-updates
+          # with the merge commits, finalize.md, and the implementation
+          # history. If no PR exists, this push creates (or updates)
+          # the remote tracking branch — step 11 below will offer to
+          # open a PR.
+
+      11. Offer to open a code-review PR (interactive prompt). This
+          step makes finalize the SDLC-natural moment to open the PR
+          when the team didn't open one for spec pre-review:
+
+          PR_NUMBER=$(gh pr view "$FEATURE_BRANCH" --json number --jq .number 2>/dev/null)
+
+          If PR_NUMBER is non-empty:
+            A PR already exists (likely the spec pre-review PR).
+            Skip to step 12 — nothing to prompt.
+
+          If PR_NUMBER is empty AND the session is interactive:
+            a. Read proposal.md (if present at
+               openspec/changes/<change-name>/proposal.md) and infer
+               a conventional-commit type for the suggested title:
+                 - feat:     new capability or behavior change (default if unclear)
+                 - fix:      bug fix restoring expected behavior
+                 - refactor: internal restructuring without behavior change
+                 - docs:     documentation-only
+                 - test:     tests-only
+                 - chore:    tooling, deps, config
+               If a natural scope is obvious (e.g., an affected
+               capability name from proposal.md's Capabilities
+               section), format as
+               `<type>(<scope>): <change-name>`. Otherwise
+               `<type>: <change-name>`.
+
+            b. Prompt the user:
+
+                 No PR exists for <feature-branch>. Open one now?
+
+                 Suggested title: <generated conventional-commit title>
+
+                 1. Yes, create PR with the suggested title (recommended)
+                 2. Yes, create PR with a custom title (please provide it)
+                 3. No, skip PR creation — I'll open it later or never
+
+            c. If the user picks 1 or 2, create the PR:
+
+                 gh pr create --title "<title>" --body "$(cat <<'EOF'
+                 Implements OpenSpec change `<change-name>`.
+
+                 Full artifacts are in `openspec/changes/<change-name>/`. The
+                 superspec-generated code-reviewer orientation is posted as a
+                 comment on this PR.
+                 EOF
+                 )"
+
+               Capture the new PR URL and use it for the orientation
+               comment in step 12.
+
+            d. If the user picks 3:
+               Record `PR comment status: skipped (no PR)` in
+               finalize.md. Skip step 12 (which would self-skip
+               anyway).
+
+          If PR_NUMBER is empty AND the session is non-interactive:
+            Skip silently. Record
+            `PR comment status: skipped (no PR)` in finalize.md.
+            Skip step 12.
+
+      12. Run the comment-posting subroutine (see "Code-reviewer
+          onboarding comment subroutine" below). Update the
+          `PR comment status` field in finalize.md with the result
+          and amend the receipt commit (or add a follow-up commit
+          and push) so finalize.md is accurate. Non-blocking — on
+          subroutine failure, record `failed: <reason>` and continue.
+
+      Recommended (non-blocking): before step 8, write a short
+      retrospective.md in the change directory. Six suggested
+      sections: Wins, Misses, Plan deviations, Skill/workflow
+      compliance, Surprises, Promote candidates. Evidence first,
+      opinion second. Skippable for trivial single-commit fixes.
+
+      ------------------------------------------------------------
+      Code-reviewer onboarding comment subroutine
+      ------------------------------------------------------------
+
+      Assumption: the human who pre-reviewed the proposal/specs
+      (logic review) may not be the same human who reviews the code.
+      This subroutine posts a single PR comment to orient the code
+      reviewer. It is invoked from the git-side closeout (step 12)
+      AND from the escape hatch (step 3 of the escape-hatch
+      instructions below)
+      so that any PR present at finalize completion gets a comment.
+
+      Subroutine body:
+
+      a. Detect the PR:
+         PR_NUMBER=$(gh pr view "$FEATURE_BRANCH" --json number --jq .number 2>/dev/null)
+         If empty: record `PR comment: skipped (no PR)` in
+         finalize.md and return.
+
+      b. Build the comment body. The body starts with the literal
+         marker `<!-- superspec:finalize-comment -->` on its own
+         line, followed by sections per the body template. The
+         agent MUST summarize content from proposal.md /
+         retrospective.md in its own words (200-400 words target,
+         hard ceiling 600 words). Do NOT paste from the source
+         artifacts. Capability names are taken verbatim because
+         they are identifiers; everything else is paraphrased.
+
+         Body template:
+
+         <!-- superspec:finalize-comment -->
+         ## Superspec finalize — code review orientation
+
+         This PR contains the implementation and the full openspec
+         change directory at `openspec/changes/<change-name>/`.
+         The code is ready for review.
+
+         ### What this change is
+
+         <2-3 sentences SUMMARIZING proposal.md's Why and What
+         Changes sections in the agent's own words. Do NOT paste
+         from proposal.md.>
+
+         ### Capabilities affected
+
+         <Bulleted list, one bullet per capability. Capability
+         NAMES verbatim from proposal.md; per-bullet summary in
+         the agent's own words.>
+
+         ### Suggested code-reviewer reading order
+
+         1. `openspec/changes/<change-name>/proposal.md` — motivation
+         2. `openspec/changes/<change-name>/specs/<capability>/spec.md` — behavioral requirements (the code must match these scenarios)
+         3. `openspec/changes/<change-name>/design.md` *(if present)* — technical approach
+         4. PR diff — the actual code
+         5. `openspec/changes/<change-name>/verify.md` — validation results (look for warnings)
+
+         ### Implementation summary
+
+         - **Tasks**: <X> of <Y> complete (see `tasks.md`).
+         - **Apply iterations**: <N> (see `apply.md`).
+         - **Verify outcome**: <PASS / PASS_WITH_WARNINGS>.
+         - **Test baseline at finish**: passing.
+
+         ### Notable from the implementer
+
+         <2-4 bullets summarizing retrospective.md's Plan deviations
+         + Surprises sections in the agent's own words. If
+         retrospective.md is missing: "No retrospective notes
+         provided.">
+
+         ---
+         *Auto-generated by Superspec finalize. Full receipt at
+         `openspec/changes/<change-name>/finalize.md`. Re-running
+         finalize will edit this comment in place, not duplicate
+         it.*
+
+      c. Idempotency check: list existing PR comments and look for
+         one whose body starts with the marker:
+
+         REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
+         EXISTING=$(gh api "repos/$REPO/issues/$PR_NUMBER/comments" \
+           --jq '.[] | select(.body | startswith("<!-- superspec:finalize-comment -->")) | .id' | head -1)
+
+      d. If EXISTING is non-empty, edit in place:
+
+         gh api -X PATCH "repos/$REPO/issues/comments/$EXISTING" \
+           -f body=@/tmp/superspec-finalize-comment.md
+         Record `PR comment: edited-existing` in finalize.md.
+
+         Otherwise, post a new comment:
+
+         gh pr comment "$PR_NUMBER" --body-file /tmp/superspec-finalize-comment.md
+         Record `PR comment: posted` in finalize.md.
+
+      e. On any failure (gh missing, draft PR with comments
+         disabled, network/auth/rate-limit error), record
+         `PR comment: failed — <reason>` in finalize.md. Do NOT
+         roll back the merge/push. The change is git-clean; the
+         comment is a nice-to-have, not a correctness gate.
+
+      ------------------------------------------------------------
+      Borrowed logic and recreation method
+      ------------------------------------------------------------
+
+      The worktree-cleanup provenance guard (step 6) and the
+      structural pattern of test-verify → merge → test-verify →
+      cleanup → delete-branch are adapted from
+      superpowers:finishing-a-development-branch Step 5 (Option 1)
+      and Step 6 (Cleanup Workspace).
+
+      Upstream URL:
+      https://github.com/obra/superpowers/blob/main/skills/finishing-a-development-branch/SKILL.md
+      Commit at time of port: f2cbfbefebbfef77321e4c9abc9e949826bea9d7
+
+      To re-port if the upstream skill changes meaningfully: diff
+      the steps above against the upstream skill's current Step 5
+      (Option 1) and Step 6, port any meaningful behavioral
+      changes back into this instruction, then update the commit
+      hash above. A short subsection in docs/workflow-details.md
+      ("Borrowed logic and recreation method") restates this
+      discipline.
+
+      ------------------------------------------------------------
+      Escape hatch: manual skill invocation
+      ------------------------------------------------------------
+
+      If your workflow does not match the git-side closeout — solo /
+      local-only (skill Option 1 merge-locally to main); brand-new PR
+      via the skill (Option 2); keep the worktree alive for iteration
+      (Option 3); or discard the work (Option 4) — invoke
+      `superpowers:finishing-a-development-branch` directly via
+      the Skill tool and pick the matching option.
+
+      After the skill returns:
+      1. Hand-write finalize.md from
+         openspec/schemas/superspec/templates/finalize.md, picking
+         the matching Outcome value (`merge-locally`, `pr-created`,
+         `kept-as-is`, or `discarded`).
+      2. Commit finalize.md to whichever branch is appropriate for
+         the outcome.
+      3. Run the comment-posting subroutine above regardless of
+         which option ran. It self-skips when no PR exists
+         (Options 1, 3, 4) and posts/edits when a PR exists
+         (Option 2 or an earlier git-side closeout run left one).
+
+      This step 3 is the explicit guarantee that the code-reviewer
+      comment exists on any PR that exists at finalize completion,
+      even outside the canonical automation.
+
+      Once finalize.md exists, the change is git-clean and ready
+      for /opsx:archive. See docs/workflow-details.md Phase 6
+      (Archival) for the golden path.
+    requires:
+      - verify
+
+apply:
+  requires: [plan]
+  tracks: tasks.md
+  instruction: |
+    Before implementing, set up an isolated workspace and executor:
+
+    0. **Pre-flight — commit change artifacts to feature branch**:
+
+       Superspec's canonical starting state is a user-created feature
+       branch (e.g., `spec/<change-name>`, `feat/<change-name>`). The
+       artifact phases (brainstorm through plan) should have committed
+       their files to this branch. Step 0 ensures the change directory
+       is committed before the worktree is created.
+
+       Steps:
+       a. Run `git status --porcelain openspec/changes/<name>/` to
+          inspect state.
+       b. If the output contains untracked entries (lines starting
+          with `??`), stage and commit ONLY this change's directory
+          (do NOT use `git add -A`):
+
+          ```
+          git add openspec/changes/<name>/
+          git commit -m "docs(openspec): scaffold <name> change
+
+          Captures pre-implementation artifacts (brainstorm/proposal/
+          specs/tasks/plan) so the implementation worktree starts
+          with the change directory already tracked."
+          ```
+
+       c. If the output is empty (everything committed) or contains
+          only modifications (`M`) without untracked entries, skip
+          the commit — the change directory is already tracked.
+
+       d. **Branch-state checks** (v4):
+          - **Recommended**: a feature branch (any branch that is not
+            the project's integration branch — typically `main` or
+            `master`). This is the canonical starting state for the
+            git-side closeout. Finalize's git-side closeout will merge
+            the worktree back into this branch and push to update the
+            existing PR.
+          - **Tolerated with warning**: on the integration branch.
+            Proceed, but warn the user that (1) artifact commits will
+            land on the integration branch and (2) finalize's git-side
+            closeout will not produce a usable PR because there is no
+            separate feature branch to merge into; the user will need
+            to fall back to the manual escape hatch in finalize.
+          - **Detached HEAD**: warn the user that finalize's git-side
+            closeout will be skipped (no branch to merge into), and
+            the user will need to use the escape hatch. Proceed with
+            apply on the detached HEAD; the worktree will still be
+            created.
+
+    1. **Workspace**: Use the Skill tool to invoke
+       **superpowers:using-git-worktrees** to create an isolated
+       git worktree for this change.
+
+    2. **Executor** — on Claude Code, Cursor, or OpenCode, you should
+       **always use 2a**. 2b exists only as a fallback for platforms
+       without subagent support; see the 2b section for details.
+
+       **2a. Default — subagent-driven-development**:
+
+       Use the Skill tool to invoke
+       **superpowers:subagent-driven-development** to execute
+       the plan.md micro-tasks with fresh subagents per task.
+
+       Tell the executor:
+       - Read plan.md in this change directory for micro-tasks
+       - Update tasks.md checkboxes as coarse tasks complete
+       - Work within the created worktree
+
+       IMPORTANT — transitive skill activation:
+       subagent-driven-development internally enforces the
+       following skills, so you do NOT need to invoke them
+       manually:
+       - **superpowers:test-driven-development** — every task
+         follows RED-GREEN-REFACTOR. Implementation code written
+         before a failing test is deleted.
+       - **superpowers:requesting-code-review** — after each
+         task, a code-reviewer subagent is dispatched to catch
+         spec compliance and code quality issues. A final review
+         runs for the entire implementation before apply
+         concludes.
+
+       **2b. Fallback — executing-plans** (use ONLY when subagent
+       support is unavailable):
+
+       The superpowers:executing-plans SKILL.md itself states:
+       "If subagents are available, use superpowers:subagent-
+       driven-development instead of this skill." executing-plans
+       exists for platforms or sessions without Task-tool /
+       subagent support. On Claude Code, subagents ARE available,
+       so this path should not be used under normal circumstances.
+
+       If you must use 2b (e.g. running in a constrained runtime
+       without subagent support), use the Skill tool to invoke
+       **superpowers:executing-plans** and note that 2b does NOT
+       transitively activate TDD or code-review. You are
+       responsible for:
+       - Following TDD discipline manually (the executor will
+         not enforce it)
+       - Invoking **superpowers:requesting-code-review** yourself
+         after completing the plan, before proceeding to step 3
+
+    3. **Receipt**: Write `apply.md` per `templates/apply.md`. If a
+       previous `apply.md` exists in the change directory, read its
+       `Iteration:` field and increment by one; otherwise set
+       iteration to `1`. Overwrite the file with current state:
+       worktree path, branch, commit range, tasks completed X of Y,
+       remaining tasks, executor identity, and an ISO timestamp.
+       The receipt is the artifact that satisfies the DAG so
+       `verify` becomes reachable.
+
+    4. **Verification**: Once the receipt exists, produce the
+       `verify` artifact by invoking **openspec-verify-change**
+       to check completeness, correctness, and coherence. The DAG
+       blocks `verify` until apply.md exists.
+
+       Convergence loop — react to the verify outcome:
+       - PASS or PASS_WITH_WARNINGS → proceed via /opsx:continue to the
+         finalize artifact, which executes the git-side closeout
+         directly (merge worktree → feature branch, push the branch,
+         update the PR if one exists, post code-reviewer comment if a
+         PR is present) and writes finalize.md. The skill
+         superpowers:finishing-a-development-branch is retained as a
+         manual escape hatch for non-canonical flows. /opsx:archive
+         runs once finalize.md exists.
+       - FAIL with code-fixable items → return to step 2 (Executor),
+         re-run with the same iteration mechanics (apply.md is
+         overwritten, iteration counter increments), then re-run verify.
+       - FAIL with artifact-level items (e.g. spec drift) → fix the
+         offending artifact (specs / design / tasks / plan), then
+         re-enter step 2 with iteration N+1.
+       - Iteration > 5 → stop the loop and report to the user instead
+         of continuing automatically.
+
+    If any skill is unavailable, fall back to manual implementation
+    using the standard task-by-task loop from tasks.md.
