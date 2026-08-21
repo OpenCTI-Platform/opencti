@@ -61,7 +61,31 @@ const extractStorageRelativePath = (candidateUri) => {
   return normalizedUri.substring(pathIndex).replace(/^\/+/, '');
 };
 
-const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
+// Percent-encode each segment of a relative storage path so that reserved characters
+// present in filenames (e.g. '#', '?', ...) are not interpreted as URL fragment/query
+// delimiters by the HTTP client. Idempotent: already-encoded segments are not double-encoded.
+export const encodeStorageRelativePath = (relativePath) => {
+  return relativePath
+    .split('/')
+    .map((segment) => {
+      if (segment === '') {
+        return segment;
+      }
+      // Decode first so that already-encoded input is not double-encoded,
+      // then re-encode reserved characters consistently.
+      let decodedSegment;
+      try {
+        decodedSegment = decodeURIComponent(segment);
+      } catch {
+        // Malformed percent-sequence (e.g. a literal '%'): keep the raw segment as-is.
+        decodedSegment = segment;
+      }
+      return encodeURIComponent(decodedSegment);
+    })
+    .join('/');
+};
+
+export const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
   if (typeof storageUri !== 'string') {
     return null;
   }
@@ -78,7 +102,7 @@ const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
       const normalizedPath = decodeURIComponent((parsedUri.pathname || '').replace(/^\/+/, ''));
       if (normalizedPath.startsWith('embedded/')) {
         const resolvedEmbeddedPath = resolveEmbeddedStoragePathWithContext(normalizedPath, { entityType, entityId });
-        return `${httpBase(syncUri)}storage/get/${resolvedEmbeddedPath}`;
+        return `${httpBase(syncUri)}storage/get/${encodeStorageRelativePath(resolvedEmbeddedPath)}`;
       }
       return null;
     } catch {
@@ -88,13 +112,13 @@ const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
 
   const extractedPath = extractStorageRelativePath(trimmedStorageUri);
   if (extractedPath) {
-    return `${httpBase(syncUri)}${extractedPath}`;
+    return `${httpBase(syncUri)}${encodeStorageRelativePath(extractedPath)}`;
   }
 
   const normalizedPath = decodeURIComponent(trimmedStorageUri.replace(/^\/+/, ''));
   if (normalizedPath.startsWith('embedded/')) {
     const resolvedEmbeddedPath = resolveEmbeddedStoragePathWithContext(normalizedPath, { entityType, entityId });
-    return `${httpBase(syncUri)}storage/get/${resolvedEmbeddedPath}`;
+    return `${httpBase(syncUri)}storage/get/${encodeStorageRelativePath(resolvedEmbeddedPath)}`;
   }
 
   return null;
