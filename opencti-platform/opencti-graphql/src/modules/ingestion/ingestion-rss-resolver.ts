@@ -5,6 +5,7 @@ import {
   ingestionDelete,
   ingestionEditField,
   ingestionAddAutoUser,
+  ingestionRssResetState,
   rssFeedAddInputFromImport,
   rssFeedExport,
 } from './ingestion-rss-domain';
@@ -75,6 +76,9 @@ const ingestionRssResolvers: Resolvers = {
     },
     ingestionRssAddAutoUser: (_, { id, input }, context) => {
       return ingestionAddAutoUser(context, context.user, id, input);
+    },
+    ingestionRssResetState: (_, { id }, context) => {
+      return ingestionRssResetState(context, context.user, id);
     },
   },
 };
