@@ -37,7 +37,7 @@
   "dependencies": {
     "@analytics/google-analytics": "1.1.0",
     "@cfworker/json-schema": "4.1.1",
-    "@filigran/chatbot": "3.7.4",
+    "@filigran/chatbot": "3.9.0",
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2",
     "@filigran/rich-text-editor": "1.2.0",
     "@fontsource/geologica": "5.3.0",
@@ -122,6 +122,7 @@
     "reactflow": "11.11.4",
     "recharts": "3.10.1",
     "relay-runtime": "21.0.1",
+    "remark-breaks": "4.0.0",
     "remark-flexible-markers": "1.3.6",
     "remark-gfm": "4.0.1",
     "remark-parse": "11.0.0",

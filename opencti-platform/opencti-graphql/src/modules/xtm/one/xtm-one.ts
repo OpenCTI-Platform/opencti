@@ -62,6 +62,10 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
     enterprise_license_pem: pem,
     license_type: licenseType,
     business_vertical: 'cti',
+    // Ask Ariane renders `approval_required` prompts and posts verdicts back
+    // through `/chatbot/messages/approve`, so OpenCTI-contributed tools can
+    // gate normally instead of needing an administrator to exempt them.
+    supports_approval_prompts: true,
     intents: [
       { name: 'global.assistant', description: 'General-purpose assistant' },
       { name: 'global.make_it_shorter', description: 'Shorten / summarize content' },
