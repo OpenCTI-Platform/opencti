@@ -91,7 +91,8 @@ export const addSecurityCoverage = async (
   const {
     securityCoverageInput,
     securityCoverageResultInput,
-    add_related_entities,
+    add_all_related_entities,
+    entities_to_add,
     shouldCreateResult,
   } = splitSecurityCoverageInput(input);
 
@@ -118,7 +119,7 @@ export const addSecurityCoverage = async (
   }
 
   // 3. In case of manual creation, need to create associated has-covered relationships.
-  if (add_related_entities) {
+  if (add_all_related_entities || (entities_to_add ?? []).length > 0) {
     if (!result) {
       // We should not arrive here. If asked to add related entities, a SecurityCoverageResult
       // should have been created, otherwise there was an error.
@@ -127,7 +128,8 @@ export const addSecurityCoverage = async (
         { securityCoverageResultInput, shouldCreateResult },
       );
     } else {
-      await createHasCoveredRelTask(context, user, result.id);
+      const entitiesToAdd = add_all_related_entities ? undefined : (entities_to_add ?? undefined);
+      await createHasCoveredRelTask(context, user, result.id, entitiesToAdd);
     }
   }
 

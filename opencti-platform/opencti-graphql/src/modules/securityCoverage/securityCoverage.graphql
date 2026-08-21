@@ -323,7 +323,8 @@ input SecurityCoverageAddInput {
   coverage_information: [SecurityCoverageExpectation!]
   tenant_id: String
   tenant_name: String
-  add_related_entities: Boolean
+  add_all_related_entities: Boolean
+  entities_to_add: [String!]
 }
 
 type Mutation {
