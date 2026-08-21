@@ -54,12 +54,22 @@ jobs:
             sh -c "yarn install --immutable && apk add --no-cache git && yarn install:python && yarn build:prod && yarn workspaces focus --production"
 
       - name: Build front production and prune devDependencies
+        # The sh -c body is single-quoted on purpose: double quotes would make
+        # the RUNNER expand ${FDS_GIT_TOKEN}, putting the token on the docker
+        # command line where any process can read it. filigran/builder already
+        # ships git (installed in the Dockerfile builder stage).
+        env:
+          FDS_GIT_TOKEN: ${{ secrets.FDS_GIT_TOKEN }}
         run: |
           docker run --rm \
             -v ${{ github.workspace }}/opencti-platform/opencti-front:/opt/opencti/opencti-front \
             -w /opt/opencti/opencti-front \
+            -e FDS_GIT_TOKEN \
             filigran/builder:${{ github.sha }} \
-            sh -c "yarn install --immutable && yarn build && yarn workspaces focus --production"
+            sh -c 'set -eu
+              git config --global url."https://x-access-token:${FDS_GIT_TOKEN}@github.com/".insteadOf "https://github.com/"
+              yarn install --immutable && yarn build && yarn workspaces focus --production
+            '
 
       - name: Install Syft
         uses: anchore/sbom-action/download-syft@e22c389904149dbc22b58101806040fa8d37a610 #v0.24.0
@@ -158,6 +168,7 @@ jobs:
           checkout_ref: ${{ github.sha }}
           client_python_local: true
           docker_image_suffix: ${{ matrix.suffix }}
+          fds_git_token: ${{ secrets.FDS_GIT_TOKEN }}
 
   # -----------------------
   # Build worker images

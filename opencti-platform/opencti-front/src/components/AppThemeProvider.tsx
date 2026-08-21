@@ -10,8 +10,9 @@ import themeDark, {
   THEME_DARK_DEFAULT_SECONDARY,
   THEME_DARK_DEFAULT_TEXT,
 } from './ThemeDark';
-import themeLight from './ThemeLight';
+import themeLight, { THEME_LIGHT_DEFAULT_PAPER } from './ThemeLight';
 import { useDocumentFaviconModifier, useDocumentThemeModifier } from '../utils/hooks/useDocumentModifier';
+import useFdsThemeScope from '../utils/hooks/useFdsThemeScope';
 import { AppThemeProvider_settings$data } from './__generated__/AppThemeProvider_settings.graphql';
 import { useExportTheme } from '../utils/ExportThemeContext';
 
@@ -115,11 +116,20 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
     return createTheme(themeBuilder(appTheme) as ThemeOptions);
   }, [themeToUse]);
 
-  // Compute the lowercase palette mode used by the body `data-theme`
-  // attribute. This must match `theme.palette.mode` so that CSS files
-  // targeting `body[data-theme="dark"]` / `body[data-theme="light"]`
-  // apply on the very first render.
-  const themeMode = (themeToUse?.name ?? defaultTheme.name) === 'Light' ? 'light' : 'dark';
+  // Single defensive resolution of the theme name to a light/dark mode,
+  // owned by `useFdsThemeScope`: it writes the `.light`/`.dark` class FDS
+  // components read on the document root, and returns the mode reused here
+  // for the body `data-theme` attribute the product's own stylesheets target
+  // (`body[data-theme="dark"]`). Deriving both from one call is what keeps
+  // MUI, the product CSS and FDS from disagreeing on a custom theme name.
+  // A theme counts as CUSTOMER-set as soon as its paper colour departs from the
+  // mode's default: the same test as `hasCustomColor(theme, 'theme_paper')`,
+  // applied here to the source rather than to the assembled palette.
+  const resolvedName = themeToUse?.name ?? defaultTheme.name;
+  const resolvedPaper = themeToUse?.theme_paper ?? defaultTheme.theme_paper;
+  const defaultPaper = resolvedName === 'Light' ? THEME_LIGHT_DEFAULT_PAPER : THEME_DARK_DEFAULT_PAPER;
+  const customPaper = resolvedPaper && resolvedPaper !== defaultPaper ? resolvedPaper : null;
+  const themeMode = useFdsThemeScope(resolvedName, customPaper);
   useDocumentThemeModifier(themeMode);
 
   return <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>;

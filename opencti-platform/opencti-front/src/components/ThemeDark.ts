@@ -4,17 +4,18 @@ import LogoText from '../static/images/logo_text_dark.svg';
 import LogoCollapsed from '../static/images/logo_dark.svg';
 import { hexToRGB } from '../utils/Colors';
 import { alpha, darken, lighten } from '@mui/material';
+import { FDS } from './fds-tokens.generated';
 
 const EE_COLOR = '#00f18d';
 
-export const THEME_DARK_DEFAULT_BACKGROUND = '#070d19';
-const THEME_DARK_DEFAULT_BODY_END_GRADIENT = '#08101D';
-export const THEME_DARK_DEFAULT_PRIMARY = '#0fbcff';
-export const THEME_DARK_DEFAULT_SECONDARY = '#00f18d';
-export const THEME_DARK_DEFAULT_ACCENT = '#0f1e38';
-export const THEME_DARK_DEFAULT_PAPER = '#09101e';
-export const THEME_DARK_DEFAULT_TEXT = '#F2F2F3';
-const THEME_DARK_DEFAULT_NAV = '#070d19';
+export const THEME_DARK_DEFAULT_BACKGROUND = FDS.colors.dark['--bg-elevation-default-layer-0'];
+const THEME_DARK_DEFAULT_BODY_END_GRADIENT = FDS.colors.dark['--bg-elevation-default-layer-0-gradient'];
+export const THEME_DARK_DEFAULT_PRIMARY = FDS.colors.dark['--color-filigran-brand-primary'];
+export const THEME_DARK_DEFAULT_SECONDARY = FDS.colors.dark['--color-filigran-tonic-primary'];
+export const THEME_DARK_DEFAULT_ACCENT = FDS.colors.dark['--bg-elevation-default-layer-3'];
+export const THEME_DARK_DEFAULT_PAPER = FDS.colors.dark['--bg-elevation-default-layer-1'];
+export const THEME_DARK_DEFAULT_TEXT = FDS.colors.dark['--text-default-primary'];
+const THEME_DARK_DEFAULT_NAV = FDS.colors.dark['--bg-elevation-heading-layer-0'];
 export const THEME_DARK_DIALOG_BACKGROUND = '#0F1D34';
 
 const getAppBodyGradientEndColor = (background: string | null): string => {
@@ -33,7 +34,7 @@ const ThemeDark = (
   primary: string | null = null,
   secondary: string | null = null,
   accent: string | null = null,
-  text_color = THEME_DARK_DEFAULT_TEXT,
+  text_color: string = THEME_DARK_DEFAULT_TEXT,
 ): ExtendedThemeOptions => ({
   logo: logo || LogoText,
   logo_collapsed: logo_collapsed || LogoCollapsed,
@@ -42,20 +43,20 @@ const ThemeDark = (
     mode: 'dark',
     common: { white: '#ffffff', grey: '#95969D', lightGrey: '#E4E5E7' },
     error: {
-      main: '#F14337',
-      dark: '#881106',
+      main: FDS.colors.dark['--color-feedback-error-primary'],
+      dark: FDS.colors.dark['--color-feedback-error-secondary'],
     },
     warn: {
-      main: '#E6700F',
+      main: FDS.colors.dark['--color-feedback-warning-primary'],
     },
     dangerZone: {
-      main: '#F44336',
-      light: '#F8958C',
-      dark: '#881106',
+      main: FDS.colors.dark['--color-feedback-error-primary'],
+      light: FDS.colors.dark['--color-feedback-error-tertiary'],
+      dark: FDS.colors.dark['--color-feedback-error-secondary'],
       contrastText: '#000000',
-      text: { primary: '#F8958C' } },
-    success: { main: '#17AB1F', dark: '#094E0B' },
-    primary: { main: primary || THEME_DARK_DEFAULT_PRIMARY, light: primary ? alpha(primary, 0.08) : '#B2ECFF' },
+      text: { primary: FDS.colors.dark['--color-feedback-error-tertiary'] } },
+    success: { main: FDS.colors.dark['--color-feedback-success-primary'], dark: FDS.colors.dark['--color-feedback-success-secondary'] },
+    primary: { main: primary || THEME_DARK_DEFAULT_PRIMARY, light: primary ? alpha(primary, 0.08) : FDS.colors.dark['--color-filigran-brand-secondary'] },
     secondary: { main: secondary || THEME_DARK_DEFAULT_SECONDARY },
     gradient: { main: '#00f18d' },
     border: {
@@ -70,9 +71,9 @@ const ThemeDark = (
     },
     chip: { main: '#ffffff' },
     ai: {
-      main: '#B286FF',
-      light: '#D6C2FA',
-      dark: '#5E1AD5',
+      main: FDS.colors.dark['--color-filigran-ia-primary'],
+      light: FDS.colors.dark['--color-filigran-ia-secondary'],
+      dark: FDS.colors.dark['--color-filigran-ia-tertiary'],
       contrastText: '#000000',
       background: 'rgba(28, 47, 73, 0.94)',
     },
@@ -115,118 +116,139 @@ const ThemeDark = (
       header: {
         itemBackground: '#253348',
       },
-      popoverItem: '#070D19',
+      popoverItem: THEME_DARK_DEFAULT_BACKGROUND,
       hover: '#253348',
       text: '#F2F2F3',
     },
     severity: {
-      critical: '#EE3838',
-      high: '#E6700F',
-      medium: '#E1B823',
-      low: '#16AD34',
-      info: '#1565c0',
-      none: '#424242',
-      default: '#1C2F49',
+      // critical/high/medium/low/info mapped to the closest FDS feedback
+      // token (not 1:1 — see TOKEN-MAPPING.md). none/default now share the
+      // neutral feedback token (both are semantically "no severity set");
+      // this makes the two visually identical for the first time.
+      critical: FDS.colors.dark['--color-feedback-error-primary'],
+      high: FDS.colors.dark['--color-feedback-warning-primary'],
+      medium: FDS.colors.dark['--color-feedback-alert-primary'],
+      low: FDS.colors.dark['--color-feedback-success-primary'],
+      info: FDS.colors.dark['--color-feedback-info-primary'],
+      none: FDS.colors.dark['--color-feedback-neutral-primary'],
+      default: FDS.colors.dark['--color-feedback-neutral-primary'],
     },
+    // This block used to be hand-copied from Figma exports — every value
+    // below is now sourced from the generated FDS bridge (fds-tokens.generated.ts).
+    // Where no confident FDS equivalent exists, the original hardcoded value
+    // is kept as-is; see fds-migration/TOKEN-MAPPING.md for the full rationale.
     designSystem: {
+      // "filigran-brand" family: light/dark are the -secondary/-tertiary
+      // tiers of the same family as `main`.
       primary: {
-        main: '#0FBCFF',
-        light: '#B2ECFF',
-        dark: '#007399',
+        main: FDS.colors.dark['--color-filigran-brand-primary'],
+        light: FDS.colors.dark['--color-filigran-brand-secondary'],
+        dark: FDS.colors.dark['--color-filigran-brand-tertiary'],
       },
+      // "filigran-tonic" family.
       secondary: {
-        main: '#00F1BD',
-        light: '#BDFFED',
-        dark: '#009474',
+        main: FDS.colors.dark['--color-filigran-tonic-primary'],
+        light: FDS.colors.dark['--color-filigran-tonic-secondary'],
+        dark: FDS.colors.dark['--color-filigran-tonic-tertiary'],
       },
+      // No dedicated "destructive" family in FDS - feedback-error is the closest match.
       destructive: {
-        main: '#F44336',
-        light: '#F8958C',
-        dark: '#881106',
+        main: FDS.colors.dark['--color-feedback-error-primary'],
+        light: FDS.colors.dark['--color-feedback-error-tertiary'],
+        dark: FDS.colors.dark['--color-feedback-error-secondary'],
       },
+      // "filigran-ia" family.
       ia: {
-        main: '#B286FF',
-        light: '#D6C2FA',
-        dark: '#5E1AD5',
+        main: FDS.colors.dark['--color-filigran-ia-primary'],
+        light: FDS.colors.dark['--color-filigran-ia-secondary'],
+        dark: FDS.colors.dark['--color-filigran-ia-tertiary'],
       },
       background: {
-        main: '#070D19',
-        bg1: '#0C1524',
-        bg2: '#0D182A',
-        bg3: '#253348',
-        bg4: '#1C2F49',
-        disabled: '#363B46',
+        main: THEME_DARK_DEFAULT_BACKGROUND,
+        // bg1-bg4 map to the elevation-layer scale (layer-0..3, darkest to
+        // lightest); disabled uses the dedicated disabled-elevation token.
+        bg1: FDS.colors.dark['--bg-elevation-default-layer-0'],
+        bg2: FDS.colors.dark['--bg-elevation-default-layer-1'],
+        bg3: FDS.colors.dark['--bg-elevation-default-layer-2'],
+        bg4: FDS.colors.dark['--bg-elevation-default-layer-3'],
+        disabled: FDS.colors.dark['--bg-elevation-disabled'],
       },
+      // main uses the default elevation border; border1/border2 share the
+      // subtle elevation border (see TOKEN-MAPPING.md).
       border: {
-        main: '#2B3447',
-        border1: '#424751',
-        border2: '#1C253A',
+        main: FDS.colors.dark['--border-elevation-default'],
+        border1: FDS.colors.dark['--border-elevation-subtle'],
+        border2: FDS.colors.dark['--border-elevation-subtle'],
       },
       gradient: {
-        background: 'linear-gradient(100.35deg, #070D19 0%, #08101d 100%)',
-        ia: 'linear-gradient(90deg, #D6C2FA 0.67%, #B286FF 100.67%)',
-        focus: 'linear-gradient(90deg, #0FBCFF -3.68%, #00F1BD 106.62%)',
+        background: FDS.gradients.dark['--gradient-default'],
+        ia: FDS.gradients.dark['--gradient-ia'],
+        focus: FDS.gradients.dark['--gradient-focus'],
       },
       alert: {
         info: {
-          primary: '#4DCCFF',
-          secondary: '#004C66',
+          primary: FDS.colors.dark['--color-feedback-info-primary'],
+          secondary: FDS.colors.dark['--color-feedback-info-secondary'],
         },
         success: {
-          primary: '#17AB1F',
-          secondary: '#094E0B',
-          tertiary: '#75F8B9',
+          primary: FDS.colors.dark['--color-feedback-success-primary'],
+          secondary: FDS.colors.dark['--color-feedback-success-secondary'],
+          tertiary: FDS.colors.dark['--color-feedback-success-tertiary'],
         },
         alert: {
-          primary: '#F2BE3A',
-          secondary: '#573E05',
+          primary: FDS.colors.dark['--color-feedback-alert-primary'],
+          secondary: FDS.colors.dark['--color-feedback-alert-secondary'],
         },
         warning: {
-          primary: '#E6700F',
-          secondary: '#884106',
+          primary: FDS.colors.dark['--color-feedback-warning-primary'],
+          secondary: FDS.colors.dark['--color-feedback-warning-secondary'],
         },
         error: {
-          primary: '#F14337',
-          secondary: '#881106',
+          primary: FDS.colors.dark['--color-feedback-error-primary'],
+          secondary: FDS.colors.dark['--color-feedback-error-secondary'],
         },
       },
       tertiary: {
         grey: {
-          400: '#95969D',
-          700: '#494A50',
-          800: '#313235',
+          400: FDS.scalars['--gray-400'],
+          700: FDS.scalars['--gray-700'],
+          800: FDS.scalars['--gray-800'],
         },
+        // Mapped to the opaque feedback-info-secondary token (not its
+        // -transparency sibling proposed by the guide — see TOKEN-MAPPING.md,
+        // ScaleBar.tsx needs a solid fill). .500/.900 now share one value;
+        // .900 has zero live consumers today (same note in the guide itself).
         blue: {
-          500: '#0099CC',
-          900: '#003242',
+          500: FDS.colors.dark['--color-feedback-info-secondary'],
+          900: FDS.colors.dark['--color-feedback-info-secondary'],
         },
         darkBlue: {
-          300: '#7587FF',
-          500: '#0F2DFF',
+          300: FDS.scalars['--darkblue-300'],
+          500: FDS.scalars['--darkblue-500'],
         },
         turquoise: {
-          600: '#00BD94',
-          800: '#005744',
+          600: FDS.scalars['--turquoise-600'],
+          800: FDS.scalars['--turquoise-800'],
         },
         green: {
-          400: '#41E149',
-          600: '#17AB1F',
-          800: '#094E0B',
+          400: FDS.scalars['--green-400'],
+          600: FDS.scalars['--green-600'],
+          800: FDS.scalars['--green-800'],
         },
         red: {
-          100: '#FBCBC5',
-          200: '#F8958C',
-          400: '#F14337',
-          500: '#E51E10',
-          600: '#B8180A',
-          700: '#881106',
+          100: FDS.scalars['--red-100'],
+          200: FDS.scalars['--red-200'],
+          400: FDS.scalars['--red-400'],
+          500: FDS.scalars['--red-500'],
+          600: FDS.scalars['--red-600'],
+          700: FDS.scalars['--red-700'],
         },
         orange: {
-          400: '#F2933A',
-          500: '#E6700F',
+          400: FDS.scalars['--orange-400'],
+          500: FDS.scalars['--orange-500'],
         },
         yellow: {
-          400: '#F2BE3A',
+          400: FDS.scalars['--yellow-400'],
         },
       },
     },

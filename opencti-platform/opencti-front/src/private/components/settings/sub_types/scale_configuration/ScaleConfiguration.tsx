@@ -4,7 +4,8 @@ import * as Yup from 'yup';
 import { FormikErrors, FormikValues } from 'formik';
 import { clone } from 'ramda';
 import { Add } from '@mui/icons-material';
-import { FormControl, IconButton, InputLabel, MenuItem, Paper, Select, Typography } from '@mui/material';
+import { FormControl, IconButton, InputLabel, MenuItem, Select, Typography } from '@mui/material';
+import { Paper } from '@filigran/design-system';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import { allScales, customScaleName, findSelectedScaleName } from '../../../../../utils/hooks/useScale';
@@ -14,7 +15,7 @@ import ScaleBar from './ScaleBar';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>(() => ({
   container: {
     height: '100%',
     position: 'relative',
@@ -24,11 +25,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     float: 'left',
     marginTop: -15,
     marginBottom: 0,
-  },
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: 15,
-    borderRadius: 4,
   },
 }));
 
@@ -206,7 +202,7 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('Scale configuration')}
       </Typography>
-      <Paper classes={{ root: classes.paper }} variant="outlined">
+      <Paper padding={16} style={{ marginTop: 8 }}>
         <div className={classes.container}>
           <FormControl sx={{ m: 1, minWidth: 140, margin: 0 }}>
             <InputLabel id="scale-selector">
