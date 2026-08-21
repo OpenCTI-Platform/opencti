@@ -1160,7 +1160,12 @@ export const userEditField = async (context, user, userId, rawInputs) => {
         throw FunctionalError('The language you have provided is not valid');
       }
     }
-
+    if (input.key === 'user_service_account') {
+      // orgs admins can't update other users service account status
+      if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+        throw ForbiddenAccess();
+      }
+    }
     // Turn User into Service Account
     if (input.key === 'user_service_account' && !userToUpdate.user_service_account && input.value[0] === true) {
       inputs.push({ key: 'password', value: [null] });
