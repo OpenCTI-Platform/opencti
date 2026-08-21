@@ -93,6 +93,18 @@
     "child_locking_process": {
       "enabled": true
     },
+    "ingestion_sequencer": {
+      "enabled": false,
+      "mode": "passthrough",
+      "max_batch_size": 200,
+      "max_batch_bytes": 8388608,
+      "gather_window_ms": 0,
+      "park_deadline_ms": 5000,
+      "identity_map_size": 200000,
+      "identity_map_ttl_s": 600,
+      "coalesce_update_events": true,
+      "origin": "worker"
+    },
     "locked_account_statuses": {
       "Inactive": "Your account has been marked inactive. If you would like to reactivate your account, please contact your administrator.",
       "Locked": "Your account has been locked for security reasons. Please contact your administrator."
