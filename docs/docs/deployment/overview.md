@@ -52,6 +52,16 @@ roles on the platform:
 | RabbitMQ                   | >= 3.11            | 1 core    | ≥ 512MB      | Standard                     | ≥ 2GB           |
 | S3 / MinIO                 | >= RELEASE.2023-02 | 1 core    | ≥ 128MB      | SSD                          | ≥ 16GB          |
 
+!!! note "ElasticSearch / OpenSearch storage performance"
+
+    Use SSD-backed storage for ElasticSearch / OpenSearch in production.
+    For large or extra-large deployments, NVMe storage is recommended. OpenCTI
+    queries current and historical knowledge data (no hot/warm/cold tiering), so
+    storage performance affects both ingestion and analysis. Slower disks or slow
+    network-attached storage can limit indexing throughput before CPU or RAM are saturated.
+
+    For more information about indices that can grow rapidly, see the
+    [indices and rollover policies](advanced/rollover.md).
 
 ### Platform
 
