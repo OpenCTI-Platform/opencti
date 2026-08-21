@@ -49,7 +49,7 @@ The **Sort by** control on this tab offers **Name (A-Z)**, **Most deployed** (it
 
 ### Deployed tab
 
-The **Deployed** tab lists the integrations currently running on your platform: the registered connectors and the instances of the built-in feeds you have created. Each item shows live monitoring information, and its status is refreshed automatically. New feeds are created from this tab using the creation button. When no integration is deployed yet, a shortcut lets you jump to the catalog on the **Available** tab.
+The **Deployed** tab lists the integrations currently running on your platform: the registered connectors and the instances of the built-in feeds you have created. Each item shows live monitoring information, and its status is refreshed automatically. New feeds are created from the **Available** tab. When no integration is deployed yet, a shortcut lets you jump to the catalog on the **Available** tab.
 
 The filter sidebar of this tab offers the following facets:
 
