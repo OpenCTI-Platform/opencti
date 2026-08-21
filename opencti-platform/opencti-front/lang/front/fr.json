@@ -11,6 +11,8 @@
   "- your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "- votre utilisateur appartiendra à l'organisation principale de la plate-forme en plus de toute organisation à laquelle l'utilisateur actuel appartient",
   "... successfully deleted": "{entity_type} supprimé(e) avec succès",
   "... successfully duplicated": "{entity_type} dupliqué avec succès",
+  "task": "tâche",
+  "tasks": "tâches",
   "“Yes, always” saves a preference for you. That tool will then run without asking — including on scheduled runs nobody is watching — until you revoke it.": "« Oui, toujours » enregistre une préférence pour vous. Cet outil s’exécutera alors sans vous demander votre avis — y compris lors d’exécutions programmées que personne ne surveille — jusqu’à ce que vous révoquiez cette autorisation.",
   "(+{count}) Click to view all the new resources on the Hub": "(+{count}) Cliquez pour voir toutes les nouvelles ressources sur le Hub",
   "(no output)": "(pas de sortie)",

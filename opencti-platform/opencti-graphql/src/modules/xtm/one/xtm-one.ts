@@ -1,4 +1,5 @@
 import { PLATFORM_VERSION, logApp } from '../../../config/conf';
+import { CguStatus } from '../../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { BasicStoreSettings } from '../../../types/settings';
 import { getEntityFromCache } from '../../../database/cache';
@@ -53,6 +54,10 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
     // license info not available — CE or invalid PEM
   }
 
+  const isChatbotUsable = settings.filigran_chatbot_ai_cgu_status === CguStatus.Enabled
+    && pem !== undefined
+    && licenseType !== undefined;
+
   const result = await xtmOneClient.register({
     platform_identifier: 'opencti',
     platform_url: settings.platform_url || '',
@@ -65,7 +70,13 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
     // Ask Ariane renders `approval_required` prompts and posts verdicts back
     // through `/chatbot/messages/approve`, so OpenCTI-contributed tools can
     // gate normally instead of needing an administrator to exempt them.
-    supports_approval_prompts: true,
+    //
+    // Conditional on the assistant actually being reachable — the same CGU and
+    // license test `authenticateAndVerify` applies to every chatbot route. The
+    // flag is a promise that somebody can be asked; with the panel unusable
+    // there is nobody to ask, and a gated tool would stall or silently degrade
+    // for callers that cannot prompt at all (AI Insights, playbook nodes).
+    supports_approval_prompts: isChatbotUsable,
     intents: [
       { name: 'global.assistant', description: 'General-purpose assistant' },
       { name: 'global.make_it_shorter', description: 'Shorten / summarize content' },

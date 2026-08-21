@@ -11,6 +11,8 @@
   "- your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "- your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to",
   "... successfully deleted": "{entity_type} successfully deleted",
   "... successfully duplicated": "{entity_type} successfully duplicated",
+  "task": "task",
+  "tasks": "tasks",
   "“Yes, always” saves a preference for you. That tool will then run without asking — including on scheduled runs nobody is watching — until you revoke it.": "“Yes, always” saves a preference for you. That tool will then run without asking — including on scheduled runs nobody is watching — until you revoke it.",
   "(+{count}) Click to view all the new resources on the Hub": "(+{count}) Click to view all the new resources on the Hub",
   "(no output)": "(no output)",
