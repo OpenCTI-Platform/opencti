@@ -100,6 +100,8 @@ import {
   X_DETECTION,
   X_WORKFLOW_ID,
 } from '../schema/identifier';
+import { isSequencerEligible, sequencerScopedContext } from './sequencer/sequencer-eligibility';
+import { submitIntent } from './sequencer/sequencer-loop';
 import { notify, redisAddDeletions } from './redis';
 import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
 import { cleanStixIds } from './stix';
@@ -3600,7 +3602,7 @@ export const createRelationRaw = async (
     if (lock) await lock.unlock();
   }
 };
-export const createRelation = async (
+const createRelationDirect = async (
   context: AuthContext,
   user: AuthUser,
   input: Record<string, any>,
@@ -3608,6 +3610,31 @@ export const createRelation = async (
 ) => {
   const data = await createRelationRaw(context, user, input, opts);
   return data.element;
+};
+export const createRelation = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: Record<string, any>,
+  opts: CreateRelationRawOpts = {},
+) => {
+  // POC ingestion sequencer (plan 0009 B1): worker-origin STIX creates go through the sequencer,
+  // everything else takes the direct path unchanged.
+  const relationshipType = input.relationship_type;
+  if (isSequencerEligible(context, user, relationshipType, opts)) {
+    // Cheap candidate ids at intake: for core relationships/sightings the standard_id depends on
+    // resolved endpoints, so only explicit ids and endpoint references are known here (plan B2).
+    const candidateIds = [input.stix_id, ...(input.x_opencti_stix_ids ?? []), input.fromId, input.toId]
+      .filter((id) => typeof id === 'string' && id.length > 0);
+    return submitIntent(context, user, {
+      kind: 'relation',
+      type: relationshipType,
+      input,
+      opts,
+      candidateIds,
+      apply: () => createRelationDirect(sequencerScopedContext(context, 'applying'), user, input, opts),
+    });
+  }
+  return createRelationDirect(context, user, input, opts);
 };
 type RuleContent = {
   field: string;
@@ -4051,7 +4078,7 @@ const createEntityRaw = async (
   }
 };
 
-export const createEntity = async (
+const createEntityDirect = async (
   context: AuthContext,
   user: AuthUser,
   input: Record<string, any>,
@@ -4068,6 +4095,34 @@ export const createEntity = async (
     await triggerEntityUpdateAutoEnrichment(context, user, data.element);
   }
   return isCompleteResult ? data : data.element;
+};
+
+export const createEntity = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: Record<string, any>,
+  type: string,
+  opts: { complete?: boolean } & CreateEntityRawOpts = {},
+) => {
+  // POC ingestion sequencer (plan 0009 B1): worker-origin STIX creates go through the sequencer,
+  // everything else takes the direct path unchanged.
+  if (isSequencerEligible(context, user, type, opts)) {
+    let candidateIds: string[] = [];
+    try {
+      candidateIds = getInputIds(type, input, false);
+    } catch {
+      // invalid or incomplete input: the direct path will fail identically when applied
+    }
+    return submitIntent(context, user, {
+      kind: 'entity',
+      type,
+      input,
+      opts,
+      candidateIds,
+      apply: () => createEntityDirect(sequencerScopedContext(context, 'applying'), user, input, type, opts),
+    });
+  }
+  return createEntityDirect(context, user, input, type, opts);
 };
 
 export const createInferredEntity = async (

@@ -87,4 +87,5 @@ interface AuthContext {
   req?: Express.Request;
   requestAbortSignal?: AbortSignal;
   blocked_for_lts_validation?: boolean;
+  sequencer?: { scope: 'applying' | 'bypass' };
 }

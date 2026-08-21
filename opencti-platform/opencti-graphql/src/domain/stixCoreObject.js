@@ -115,6 +115,7 @@ import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
 import { buildTranslatedIdsMap } from '../database/data-changes';
 import { addAskAiQueryCount } from '../manager/telemetryManager';
+import { sequencerScopedContext } from '../database/sequencer/sequencer-eligibility';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -837,6 +838,11 @@ export const stixCoreObjectImportFile = async (context, user, id, file, args = {
 };
 
 export const stixCoreObjectImportPush = async (context, user, id, file, args = {}) => {
+  // POC ingestion sequencer (plan 0009 B1.6): this mutation creates the auto external reference
+  // while holding the entity's instance lock, without opts.locks. Mark the scope so the boundary
+  // always runs direct (sending the create through the sequencer here would deadlock the batch).
+  // eslint-disable-next-line no-param-reassign
+  context = sequencerScopedContext(context, 'bypass');
   let lock;
   const { noTriggerImport, version: fileVersion, fileMarkings: file_markings, importContextEntities, fromTemplate = false, embedded = false } = args;
   const previous = await storeLoadByIdWithRefs(context, user, id);

@@ -14,6 +14,8 @@ export interface SequencerConfig {
   maxBatchBytes: number;
   gatherWindowMs: number;
   parkDeadlineMs: number;
+  queueMaxIntents: number;
+  queueMaxBytes: number;
   identityMapSize: number;
   identityMapTtlS: number;
   coalesceUpdateEvents: boolean;
@@ -32,6 +34,8 @@ const readConfig = (): SequencerConfig => {
     maxBatchBytes: Number(conf.get('app:ingestion_sequencer:max_batch_bytes') ?? 8388608),
     gatherWindowMs: Number(conf.get('app:ingestion_sequencer:gather_window_ms') ?? 0),
     parkDeadlineMs: Number(conf.get('app:ingestion_sequencer:park_deadline_ms') ?? 5000),
+    queueMaxIntents: Number(conf.get('app:ingestion_sequencer:queue_max_intents') ?? 2000),
+    queueMaxBytes: Number(conf.get('app:ingestion_sequencer:queue_max_bytes') ?? 67108864),
     identityMapSize: Number(conf.get('app:ingestion_sequencer:identity_map_size') ?? 200000),
     identityMapTtlS: Number(conf.get('app:ingestion_sequencer:identity_map_ttl_s') ?? 600),
     coalesceUpdateEvents: booleanConf('app:ingestion_sequencer:coalesce_update_events', true),

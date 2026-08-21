@@ -11,6 +11,8 @@ describe('sequencer configuration defaults', () => {
     expect(SEQUENCER_CONFIG.maxBatchBytes).toBe(8388608);
     expect(SEQUENCER_CONFIG.gatherWindowMs).toBe(0);
     expect(SEQUENCER_CONFIG.parkDeadlineMs).toBe(5000);
+    expect(SEQUENCER_CONFIG.queueMaxIntents).toBe(2000);
+    expect(SEQUENCER_CONFIG.queueMaxBytes).toBe(67108864);
     expect(SEQUENCER_CONFIG.identityMapSize).toBe(200000);
     expect(SEQUENCER_CONFIG.identityMapTtlS).toBe(600);
     expect(SEQUENCER_CONFIG.coalesceUpdateEvents).toBe(true);
