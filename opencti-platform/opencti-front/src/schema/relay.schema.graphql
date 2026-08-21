@@ -2965,6 +2965,7 @@ interface StixDomainObject {
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -3086,6 +3087,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -3240,6 +3242,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
 }
@@ -3355,6 +3358,7 @@ interface Container {
   creators: [Creator!]
   workflowEnabled: Boolean
   status: Status
+  workflowInstance: WorkflowInstance
 }
 
 enum NotesOrdering {
@@ -3446,6 +3450,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -3595,6 +3600,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -3715,6 +3721,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -3862,6 +3869,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   deleteWithElementsCount: Int
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
@@ -3991,6 +3999,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -4114,6 +4123,7 @@ interface Identity {
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
 }
 
 input IdentityAddInput {
@@ -4236,6 +4246,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   isUser: Boolean
   pirInformation(pirId: ID!): PirInformation
 }
@@ -4365,6 +4376,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -4487,6 +4499,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -4616,6 +4629,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -4746,6 +4760,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
 }
@@ -4872,6 +4887,7 @@ interface Location {
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
 }
 
 input LocationAddInput {
@@ -4995,6 +5011,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5120,6 +5137,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5240,6 +5258,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5361,6 +5380,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5499,6 +5519,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5641,6 +5662,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5726,6 +5748,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5855,6 +5878,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -6025,6 +6049,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -6203,6 +6228,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
 }
@@ -9156,6 +9182,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   editContext: [EditUserContext!]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
 }
 
 input SecurityCoverageExpectation {
@@ -9272,6 +9299,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   editContext: [EditUserContext!]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
 }
 
 input StixSightingRelationshipAddInput {
@@ -11056,6 +11084,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -11205,6 +11234,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -11323,6 +11353,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -11452,6 +11483,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
 }
@@ -11581,6 +11613,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -11867,6 +11900,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
@@ -11984,6 +12018,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
@@ -12236,6 +12271,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -12354,6 +12390,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
@@ -12513,6 +12550,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
@@ -12645,6 +12683,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
   name: String!
@@ -12794,6 +12833,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   name: String!
   description: String
   content: String
@@ -12936,6 +12976,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   name: String!
   description: String
   content: String
@@ -13074,6 +13115,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
@@ -13330,6 +13372,7 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   product: String!
   version: String
@@ -13587,6 +13630,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
 }
@@ -14412,6 +14456,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -14632,6 +14677,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -15898,6 +15944,7 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -16018,6 +16065,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   coverage_last_result: DateTime
   coverage_valid_from: DateTime

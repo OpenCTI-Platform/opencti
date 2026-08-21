@@ -15,6 +15,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import { truncate } from '../../../utils/String';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import useAuth from '../../../utils/hooks/useAuth';
 
 const stixSightingsLineFragment = graphql`
   fragment StixSightingRelationshipsLine_node on StixSightingRelationship {
@@ -40,6 +41,16 @@ const stixSightingsLineFragment = graphql`
       }
     }
     workflowEnabled
+    workflowInstance {
+      id
+      currentStatus {
+        template {
+          id
+          name
+          color
+        }
+      }
+    }
     is_inferred
     x_opencti_inferences {
       rule {
@@ -278,6 +289,8 @@ const StixSightingRelationships = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Sightings | Events'));
+  const { platformModuleHelpers: { isFeatureEnable } } = useAuth();
+  const isWorkflowInstanceEnabled = isFeatureEnable('ENTITIES_WORKFLOW');
 
   const initialValues = {
     filters: {
@@ -357,7 +370,7 @@ const StixSightingRelationships = () => {
     first_seen: {},
     last_seen: {},
     confidence: {},
-    x_opencti_workflow_id: {},
+    ...(isWorkflowInstanceEnabled ? { workflowInstance: {} } : { x_opencti_workflow_id: {} }),
   };
 
   return (

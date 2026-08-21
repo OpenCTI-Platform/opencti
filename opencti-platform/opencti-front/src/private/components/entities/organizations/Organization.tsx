@@ -60,6 +60,16 @@ const organizationFragment = graphql`
         color
       }
     }
+    workflowInstance {
+      id
+      currentStatus {
+        template {
+          id
+          name
+          color
+        }
+      }
+    }
     workflowEnabled
     ...OrganizationDetails_organization
   }

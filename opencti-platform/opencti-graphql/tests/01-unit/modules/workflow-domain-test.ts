@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as ee from '../../../src/enterprise-edition/ee';
-import { createEntity, createRelation, loadEntity, updateAttribute } from '../../../src/database/middleware';
+import { createEntity, createRelation, deleteElementById, loadEntity, updateAttribute } from '../../../src/database/middleware';
 import { WorkflowFactory } from '../../../src/modules/workflow/engine/workflow-factory';
 import {
   setWorkflowDefinition,
@@ -14,7 +14,10 @@ import {
   triggerWorkflowEvent,
   clearWorkflowPendingState,
   getWorkflowPublishedVersionId,
+  cleanupEntityWorkflow,
 } from '../../../src/modules/workflow/domain/workflow-domain';
+import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
+import { FilterMode } from '../../../src/generated/graphql';
 import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../src/database/middleware-loader';
 import { resolveUserById } from '../../../src/domain/user';
 import { findByType } from '../../../src/modules/entitySetting/entitySetting-domain';
@@ -30,6 +33,7 @@ vi.mock('../../../src/database/middleware', () => ({
   createRelation: vi.fn(),
   loadEntity: vi.fn(),
   updateAttribute: vi.fn(),
+  deleteElementById: vi.fn(),
 }));
 
 vi.mock('../../../src/database/middleware-loader', () => ({
@@ -225,10 +229,10 @@ describe('Workflow Domain', () => {
 
     await setWorkflowDefinition(mockContext, mockUser, 'Incident', definition);
 
-    expect(validateWorkflowDefinitionData).toHaveBeenCalledWith(mockContext, mockContext.user, definition, 'Incident', 'workflow-id');
+    expect(validateWorkflowDefinitionData).toHaveBeenCalledWith(mockContext, mockUser, definition, 'Incident', 'workflow-id');
     expect(updateAttribute).toHaveBeenCalledWith(
       mockContext,
-      mockContext.user,
+      mockUser,
       'workflow-id',
       'WorkflowDefinition',
       expect.arrayContaining([
@@ -257,10 +261,10 @@ describe('Workflow Domain', () => {
 
     const result = await setWorkflowDefinition(mockContext, mockUser, 'Incident', definition);
 
-    expect(validateWorkflowDefinitionData).toHaveBeenCalledWith(mockContext, mockContext.user, definition, 'Incident', undefined);
+    expect(validateWorkflowDefinitionData).toHaveBeenCalledWith(mockContext, mockUser, definition, 'Incident', undefined);
     expect(createEntity).toHaveBeenCalledWith(
       mockContext,
-      mockContext.user,
+      mockUser,
       expect.objectContaining({
         name: 'Workflow for Incident',
         draft_version: expect.objectContaining({ content: definition }),
@@ -270,7 +274,7 @@ describe('Workflow Domain', () => {
     );
     expect(updateAttribute).toHaveBeenCalledWith(
       mockContext,
-      mockContext.user,
+      mockUser,
       'entity-setting-id',
       'EntitySetting',
       [{ key: 'workflow_id', value: ['workflow-id'] }],
@@ -384,7 +388,7 @@ describe('Workflow Domain', () => {
 
     expect(updateAttribute).toHaveBeenCalledWith(
       mockContext,
-      mockContext.user,
+      mockUser,
       'workflow-id',
       'WorkflowDefinition',
       expect.arrayContaining([
@@ -495,7 +499,7 @@ describe('Workflow Domain', () => {
 
     expect(updateAttribute).toHaveBeenCalledWith(
       mockContext,
-      mockContext.user,
+      mockUser,
       'workflow-id',
       'WorkflowDefinition',
       [
@@ -830,7 +834,7 @@ describe('Workflow Domain', () => {
 
     expect(updateAttribute).toHaveBeenCalledWith(
       mockContext,
-      mockContext.user,
+      mockUser,
       'entity-setting-id',
       'EntitySetting',
       [{ key: 'workflow_id', value: [null] }],
@@ -866,7 +870,7 @@ describe('Workflow Domain', () => {
 
     expect(updateAttribute).toHaveBeenCalledWith(
       mockContext,
-      mockContext.user,
+      mockUser,
       'workflow-id',
       'WorkflowDefinition',
       [{ key: 'draft_version', value: [] }],
@@ -1097,7 +1101,7 @@ describe('Workflow Domain', () => {
     expect(result.newState).toBe('closed');
     expect(createEntity).toHaveBeenCalledWith(
       mockContext,
-      mockContext.user,
+      mockUser,
       expect.objectContaining({
         entity_id: 'entity-1',
         workflow_id: 'workflow-id',
@@ -1107,7 +1111,7 @@ describe('Workflow Domain', () => {
     );
     expect(updateAttribute).toHaveBeenCalledWith(
       mockContext,
-      mockContext.user,
+      mockUser,
       'instance-1',
       'WorkflowInstance',
       expect.arrayContaining([
@@ -1238,6 +1242,113 @@ describe('Transition comments – Domain', () => {
 
       expect(transitions).toHaveLength(1);
       expect(transitions[0].event).toBe('review');
+    });
+
+    it('should default requiresShareOrganizationInput and requiresUnshareOrganizationInput to false when the transition does not define them', async () => {
+      (WorkflowFactory.createDefinition as any).mockImplementation(() => ({
+        getInitialState: () => 'draft',
+        hasState: () => true,
+        getTransitions: () => [
+          { event: 'review', to: 'reviewed', actionTypes: [] },
+        ],
+      }));
+      (loadEntity as any).mockResolvedValue({ id: 'instance-id', internal_id: 'instance-id', currentState: 'draft', history: '[]' });
+
+      const transitions = await getAllowedTransitions(mockContext, mockUser, 'entity-id');
+
+      expect(transitions).toHaveLength(1);
+      expect(transitions[0].requiresShareOrganizationInput).toBe(false);
+      expect(transitions[0].requiresUnshareOrganizationInput).toBe(false);
+    });
+
+    it('should propagate requiresShareOrganizationInput and requiresUnshareOrganizationInput flags from the transition', async () => {
+      (WorkflowFactory.createDefinition as any).mockImplementation(() => ({
+        getInitialState: () => 'draft',
+        hasState: () => true,
+        getTransitions: () => [
+          { event: 'share', to: 'shared', actionTypes: ['shareWithOrganizations'], requiresShareOrganizationInput: true },
+          { event: 'unshare', to: 'unshared', actionTypes: ['unshareFromOrganizations'], requiresUnshareOrganizationInput: true },
+        ],
+      }));
+      (loadEntity as any).mockResolvedValue({ id: 'instance-id', internal_id: 'instance-id', currentState: 'draft', history: '[]' });
+
+      const transitions = await getAllowedTransitions(mockContext, mockUser, 'entity-id');
+
+      expect(transitions).toHaveLength(2);
+      const shareTransition = transitions.find((t) => t.event === 'share');
+      const unshareTransition = transitions.find((t) => t.event === 'unshare');
+      expect(shareTransition?.requiresShareOrganizationInput).toBe(true);
+      expect(shareTransition?.requiresUnshareOrganizationInput).toBe(false);
+      expect(unshareTransition?.requiresShareOrganizationInput).toBe(false);
+      expect(unshareTransition?.requiresUnshareOrganizationInput).toBe(true);
+    });
+
+    it('should use pre-fetched entity, entitySetting, definitionData and instanceEntity from options instead of performing redundant lookups', async () => {
+      (WorkflowFactory.createDefinition as any).mockImplementation(() => ({
+        getInitialState: () => 'draft',
+        hasState: () => true,
+        getTransitions: () => [
+          { event: 'review', to: 'reviewed', actionTypes: [] },
+        ],
+      }));
+
+      const entity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' };
+      const entitySetting = { id: 'setting-id', workflow_id: 'workflow-def-id' };
+      const definitionData = {
+        id: 'workflow-def-id',
+        name: 'Workflow',
+        initialState: 'draft',
+        states: [{ statusId: 'draft' }, { statusId: 'reviewed' }],
+        transitions: [],
+        published: true,
+        hasPublishedVersion: true,
+        errors: [],
+      };
+      const instanceEntity = { id: 'instance-id', internal_id: 'instance-id', currentState: 'draft', history: '[]' };
+
+      const transitions = await getAllowedTransitions(mockContext, mockUser, 'entity-id', {
+        entity, entitySetting, definitionData, instanceEntity,
+      } as any);
+
+      expect(transitions).toHaveLength(1);
+      expect(transitions[0].event).toBe('review');
+      expect(storeLoadById).not.toHaveBeenCalled();
+      expect(findByType).not.toHaveBeenCalled();
+      expect(loadEntity).not.toHaveBeenCalled();
+    });
+
+    it('should still fall back to a fresh lookup for any option not provided', async () => {
+      (WorkflowFactory.createDefinition as any).mockImplementation(() => ({
+        getInitialState: () => 'draft',
+        hasState: () => true,
+        getTransitions: () => [
+          { event: 'review', to: 'reviewed', actionTypes: [] },
+        ],
+      }));
+
+      const entity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' };
+      const entitySetting = { id: 'setting-id', workflow_id: 'workflow-def-id' };
+      const definitionData = {
+        id: 'workflow-def-id',
+        name: 'Workflow',
+        initialState: 'draft',
+        states: [{ statusId: 'draft' }, { statusId: 'reviewed' }],
+        transitions: [],
+        published: true,
+        hasPublishedVersion: true,
+        errors: [],
+      };
+      // instanceEntity is intentionally omitted from options: it must still be looked up via loadEntity
+      (loadEntity as any).mockResolvedValue({ id: 'instance-id', internal_id: 'instance-id', currentState: 'draft', history: '[]' });
+
+      const transitions = await getAllowedTransitions(mockContext, mockUser, 'entity-id', {
+        entity, entitySetting, definitionData,
+      } as any);
+
+      expect(transitions).toHaveLength(1);
+      expect(storeLoadById).not.toHaveBeenCalled();
+      expect(findByType).not.toHaveBeenCalled();
+      expect(loadEntity).toHaveBeenCalled();
     });
   });
 
@@ -1807,7 +1918,7 @@ describe('getWorkflowPublishedVersionId', () => {
   it('returns null when entitySetting has no workflow_id', async () => {
     const entitySetting = { id: 'es-1', target_type: 'DraftWorkspace' } as any;
 
-    const result = await getWorkflowPublishedVersionId(mockContext, entitySetting);
+    const result = await getWorkflowPublishedVersionId(mockContext, mockUser, entitySetting);
 
     expect(result).toBeNull();
     expect(storeLoadById).not.toHaveBeenCalled();
@@ -1817,17 +1928,17 @@ describe('getWorkflowPublishedVersionId', () => {
     const entitySetting = { id: 'es-1', target_type: 'DraftWorkspace', workflow_id: 'wf-id' } as any;
     (storeLoadById as any).mockResolvedValue(undefined);
 
-    const result = await getWorkflowPublishedVersionId(mockContext, entitySetting);
+    const result = await getWorkflowPublishedVersionId(mockContext, mockUser, entitySetting);
 
     expect(result).toBeNull();
-    expect(storeLoadById).toHaveBeenCalledWith(mockContext, mockContext.user, 'wf-id', expect.any(String));
+    expect(storeLoadById).toHaveBeenCalledWith(mockContext, { ...mockUser, draft_context: undefined }, 'wf-id', expect.any(String));
   });
 
   it('returns null when the WorkflowDefinitionEntity has no published_version', async () => {
     const entitySetting = { id: 'es-1', target_type: 'DraftWorkspace', workflow_id: 'wf-id' } as any;
     (storeLoadById as any).mockResolvedValue({ id: 'wf-id', draft_version: { id: 'draft-v1' } });
 
-    const result = await getWorkflowPublishedVersionId(mockContext, entitySetting);
+    const result = await getWorkflowPublishedVersionId(mockContext, mockUser, entitySetting);
 
     expect(result).toBeNull();
   });
@@ -1840,7 +1951,7 @@ describe('getWorkflowPublishedVersionId', () => {
       draft_version: { id: 'draft-v2', timestamp: '2024-02-01T00:00:00Z' },
     });
 
-    const result = await getWorkflowPublishedVersionId(mockContext, entitySetting);
+    const result = await getWorkflowPublishedVersionId(mockContext, mockUser, entitySetting);
 
     expect(result).toBe('pub-v1');
   });
@@ -1852,8 +1963,77 @@ describe('getWorkflowPublishedVersionId', () => {
       published_version: { id: 'pub-v1', timestamp: '2024-01-01T00:00:00Z' },
     });
 
-    const result = await getWorkflowPublishedVersionId(mockContext, entitySetting);
+    const result = await getWorkflowPublishedVersionId(mockContext, mockUser, entitySetting);
 
     expect(result).toBe('pub-v1');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// cleanupEntityWorkflow
+// ---------------------------------------------------------------------------
+
+describe('cleanupEntityWorkflow', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('is a no-op when the deleted entity is itself a WorkflowInstance', async () => {
+    const entity = { id: 'wi-1', internal_id: 'wi-1', entity_type: ENTITY_TYPE_WORKFLOW_INSTANCE };
+
+    await cleanupEntityWorkflow(mockContext, mockUser, entity);
+
+    expect(loadEntity).not.toHaveBeenCalled();
+    expect(deleteElementById).not.toHaveBeenCalled();
+  });
+
+  it('is a no-op when no WorkflowInstance exists for the deleted entity', async () => {
+    (loadEntity as any).mockResolvedValue(null);
+    const entity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' };
+
+    await cleanupEntityWorkflow(mockContext, mockUser, entity);
+
+    expect(loadEntity).toHaveBeenCalledWith(mockContext, mockUser, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
+      filters: {
+        mode: FilterMode.And,
+        filters: [{ key: ['entity_id'], values: ['entity-id'] }],
+        filterGroups: [],
+      },
+    });
+    expect(deleteElementById).not.toHaveBeenCalled();
+  });
+
+  it('deletes the WorkflowInstance found for the deleted entity', async () => {
+    (loadEntity as any).mockResolvedValue({ id: 'inst-id', internal_id: 'inst-id', entity_type: ENTITY_TYPE_WORKFLOW_INSTANCE });
+    const entity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' };
+
+    await cleanupEntityWorkflow(mockContext, mockUser, entity);
+
+    expect(deleteElementById).toHaveBeenCalledWith(mockContext, mockUser, 'inst-id', ENTITY_TYPE_WORKFLOW_INSTANCE);
+  });
+
+  it('falls back to entity.id when internal_id is missing to look up the instance', async () => {
+    (loadEntity as any).mockResolvedValue({ id: 'inst-id', internal_id: 'inst-id', entity_type: ENTITY_TYPE_WORKFLOW_INSTANCE });
+    const entity = { id: 'entity-id', entity_type: 'Incident' };
+
+    await cleanupEntityWorkflow(mockContext, mockUser, entity);
+
+    expect(loadEntity).toHaveBeenCalledWith(mockContext, mockUser, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
+      filters: {
+        mode: FilterMode.And,
+        filters: [{ key: ['entity_id'], values: ['entity-id'] }],
+        filterGroups: [],
+      },
+    });
+    expect(deleteElementById).toHaveBeenCalledWith(mockContext, mockUser, 'inst-id', ENTITY_TYPE_WORKFLOW_INSTANCE);
+  });
+
+  it('falls back to instance.id when the found instance has no internal_id', async () => {
+    (loadEntity as any).mockResolvedValue({ id: 'inst-id', entity_type: ENTITY_TYPE_WORKFLOW_INSTANCE });
+    const entity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' };
+
+    await cleanupEntityWorkflow(mockContext, mockUser, entity);
+
+    expect(deleteElementById).toHaveBeenCalledWith(mockContext, mockUser, 'inst-id', ENTITY_TYPE_WORKFLOW_INSTANCE);
   });
 });

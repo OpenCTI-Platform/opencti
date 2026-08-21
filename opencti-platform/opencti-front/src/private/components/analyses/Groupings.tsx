@@ -66,6 +66,16 @@ const groupingLineFragment = graphql`
         color
       }
     }
+    workflowInstance {
+      id
+      currentStatus {
+        template {
+          id
+          name
+          color
+        }
+      }
+    }
     workflowEnabled
   }
 `;
@@ -145,7 +155,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Groupings | Analyses'));
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const { platformModuleHelpers: { isRuntimeFieldEnable, isFeatureEnable } } = useAuth();
 
   const initialValues = {
     filters: {
@@ -181,6 +191,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
   );
 
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
+  const isWorkflowInstanceEnabled = isFeatureEnable('ENTITIES_WORKFLOW');
   const dataColumns: DataTableProps['dataColumns'] = {
     name: { percentWidth: 25 },
     context: {},
@@ -188,7 +199,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
     creator: { isSortable: isRuntimeSort },
     objectLabel: {},
     created: { percentWidth: 10 },
-    x_opencti_workflow_id: {},
+    ...(isWorkflowInstanceEnabled ? { workflowInstance: {} } : { x_opencti_workflow_id: {} }),
     objectMarking: { isSortable: isRuntimeSort },
   };
 

@@ -14,7 +14,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from '../tasks/__generated__/CaseTasksLinesQuery.graphql';
 import ListLines from '../../../../components/list_lines/ListLines';
-import { tasksDataColumns } from '../tasks/tasksDataColumns';
+import { useTasksDataColumns } from '../tasks/useTasksDataColumns';
 import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
@@ -78,6 +78,16 @@ const caseRfiFragment = graphql`
         color
       }
     }
+    workflowInstance {
+      id
+      currentStatus {
+        template {
+          id
+          name
+          color
+        }
+      }
+    }
     workflowEnabled
     revoked
     x_opencti_request_access
@@ -110,6 +120,7 @@ interface CaseRfiProps {
 
 const CaseRfi: React.FC<CaseRfiProps> = ({ caseRfiData, enableReferences }) => {
   const { t_i18n } = useFormatter();
+  const tasksDataColumns = useTasksDataColumns();
   const ref = useRef(null);
   const caseRfi = useFragment(caseRfiFragment, caseRfiData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(caseRfi.entity_type);

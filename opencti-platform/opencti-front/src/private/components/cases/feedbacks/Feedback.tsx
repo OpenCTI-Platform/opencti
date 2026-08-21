@@ -62,6 +62,16 @@ const feedbackFragment = graphql`
         color
       }
     }
+    workflowInstance {
+      id
+      currentStatus {
+        template {
+          id
+          name
+          color
+        }
+      }
+    }
     workflowEnabled
     ...FeedbackDetails_case
     ...ContainerHeader_container

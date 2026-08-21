@@ -68,6 +68,13 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: Functio
   let redirectionLink = `${resolveLink(node.entity_type)}/${node.id}`;
   if (redirectionMode !== 'overview' && isContainer) redirectionLink += `/${redirectionMode}`;
 
+  const statusColumn = dataColumns.workflowInstance ?? dataColumns.x_opencti_workflow_id;
+  const workflowInstance = node.workflowInstance as unknown as { id?: string; currentStatus?: { template?: { name: string; color: string } | null } | null } | null;
+  const isNotMigrated = (workflowInstance?.id ?? '').startsWith('initial-');
+  const currentStatus = dataColumns.workflowInstance
+    ? (isNotMigrated ? (node.status ?? null) : (workflowInstance?.currentStatus ?? null))
+    : node.status;
+
   return (
     <ListItemButton
       classes={{ root: classes.item }}
@@ -123,11 +130,11 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: Functio
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.x_opencti_workflow_id.width }}
+              style={{ width: statusColumn.width }}
             >
               <ItemStatus
-                status={node.status}
-                disabled={!node.workflowEnabled}
+                status={currentStatus}
+                disabled={!currentStatus}
               />
             </div>
             <div
@@ -163,6 +170,16 @@ const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragment
             template {
               name
               color
+            }
+          }
+          workflowInstance {
+            id
+            currentStatus {
+              template {
+                id
+                name
+                color
+              }
             }
           }
           creators {
