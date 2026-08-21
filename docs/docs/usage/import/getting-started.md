@@ -14,7 +14,7 @@ By leveraging these automated import functionalities, OpenCTI users can build a 
 
 ## The Integrations menu
 
-All import methods are managed from the **Integrations** entry in the main navigation bar on the left. The page is organised in two tabs — **Deployed** and **Available** — sharing the same layout: a faceted filter sidebar on the left and the results (as cards or as a list) on the right.
+All import methods are managed from the **Integrations** entry in the main navigation bar on the left. The page is organized in two tabs — **Deployed** and **Available** — sharing the same layout: a faceted filter sidebar on the left and the results (as cards or as a list) on the right.
 
 Both tabs provide the same controls above the results:
 
