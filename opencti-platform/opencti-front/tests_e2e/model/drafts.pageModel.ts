@@ -28,9 +28,12 @@ export default class DraftsPage {
   }
 
   async deleteDraft(name: string) {
-    await this.getDraft(name).getByRole('checkbox').click();
-    // await this.page.getByTestId('delete-draftworkspace-button').click();
-    // await this.page.getByRole('button', { name: 'Delete' }).click();
+    await this.navigate();
+    const draftRow = this.getDraft(name);
+    await expect(draftRow).toBeVisible();
+    await draftRow.getByLabel('Draft popover of actions').click();
+    await this.page.getByRole('menuitem', { name: 'Delete' }).click();
+    await this.page.getByRole('dialog').getByRole('button', { name: 'Confirm' }).click();
   }
 
   getCreateDraftButton() {
