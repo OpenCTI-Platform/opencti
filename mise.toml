@@ -1,0 +1,32 @@
+[settings]
+lockfile = true
+
+[tools]
+python = "3.12"
+node = { version = "22.22.3", corepack = true }
+
+[env]
+_.python.venv = { path = "../.python-venv", create = true }
+
+[tasks.fix-python-link]
+description = "node-gyp fails linking native addons: it needs libpython, but the linker doesn't search python's install dir by default, wherever python was installed from. Alternative would be compiling python from source (--enable-shared), but that's much slower. On Windows, node-calls-python's own build script only detects a `python.exe` in PATH (mise only ships `python3.exe`), so it falls through to a broken system stub (e.g. the WindowsApps alias) instead."
+quiet = true
+run_windows = '''
+$pyDir = mise where python
+$pyExe = Join-Path $pyDir "python.exe"
+if (-not (Test-Path $pyExe)) {
+  Copy-Item (Join-Path $pyDir "python3.exe") $pyExe
+}
+'''
+run = '''
+LIBDIR="$(mise where python)/lib"
+NEW=$(printf '[env]\nLDFLAGS = "-L%s"\nLIBRARY_PATH = "-L%s"\n' "$LIBDIR" "$LIBDIR")
+if [ "$(cat .mise.local.toml 2>/dev/null)" != "$NEW" ]; then
+  printf '%s' "$NEW" > .mise.local.toml
+fi
+'''
+
+[hooks]
+# postinstall is a backup for enter: it fires on `mise install`/`mise trust` without needing a `cd`.
+enter = { task = "fix-python-link" }
+postinstall = { task = "fix-python-link" }
