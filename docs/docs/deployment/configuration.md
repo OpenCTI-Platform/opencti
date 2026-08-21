@@ -204,7 +204,7 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 | redis:database             | REDIS__DATABASE             |               | Database of the Redis Server (only work in single mode)                               |
 | redis:ca                   | REDIS__CA                   | []            | List of path(s) of the CA certificate(s)                                              |
 | redis:trimming             | REDIS__TRIMMING             | 2000000       | Number of elements to maintain in the stream. (0 = unlimited)                         |
-| redis:max_event_length     | REDIS__MAX_EVENT_LENGTH     | 10000000      | Maximum size (in bytes) of a stream event before its content is offloaded to file storage. (0 = disabled) |
+| redis:max_event_length     | REDIS__MAX_EVENT_LENGTH     | 0             | Maximum size (in bytes) of a stream event before its content is offloaded to file storage. (0 = disabled) |
 
 #### RabbitMQ
 
