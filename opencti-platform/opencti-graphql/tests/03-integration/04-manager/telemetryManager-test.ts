@@ -38,6 +38,7 @@ import { aiSummary } from '../../../src/domain/container';
 import { askEntityExport, askListExport } from '../../../src/domain/stix';
 import { ADMIN_USER, testContext, USER_EDITOR } from '../../utils/testQuery';
 import { addSavedFilter, deleteSavedFilter, savedFilterEditAuthorizedMembers } from '../../../src/modules/savedFilter/savedFilter-domain';
+import { awaitUntilCondition } from '../../utils/testQueryHelper';
 
 describe('Telemetry manager test coverage', () => {
   let filigranTelemetryMeterManager: TelemetryMeterManager;
@@ -115,11 +116,16 @@ describe('Telemetry manager test coverage', () => {
 
     test('shared saved filters count and permission changes are collected', async () => {
       // WHEN telemetry data is fetched after filter creation
-      await fetchTelemetryData(filigranTelemetryMeterManager);
-
       // THEN 1 shared saved filter should be counted (shared with non-creator members)
-      expect(filigranTelemetryMeterManager.sharedSavedFiltersCount).toEqual(1);
       // AND 1 permission change event was recorded (the share with USER_EDITOR)
+      // Fetching telemetry data is fire-and-forget under the hood, so poll until the values land.
+      await awaitUntilCondition(async () => {
+        await fetchTelemetryData(filigranTelemetryMeterManager);
+        return filigranTelemetryMeterManager.sharedSavedFiltersCount === 1
+          && filigranTelemetryMeterManager.sharedSavedFiltersPermissionChangesCount === 1;
+      }, 1000, 5, true, 'Shared saved filters telemetry counters were not updated in time');
+
+      expect(filigranTelemetryMeterManager.sharedSavedFiltersCount).toEqual(1);
       expect(filigranTelemetryMeterManager.sharedSavedFiltersPermissionChangesCount).toEqual(1);
     });
   });
