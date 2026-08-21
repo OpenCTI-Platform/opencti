@@ -74,8 +74,9 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
     // Conditional on the assistant actually being reachable — the same CGU and
     // license test `authenticateAndVerify` applies to every chatbot route. The
     // flag is a promise that somebody can be asked; with the panel unusable
-    // there is nobody to ask, and a gated tool would stall or silently degrade
-    // for callers that cannot prompt at all (AI Insights, playbook nodes).
+    // there is nobody to ask, so gating our tools would only degrade the callers
+    // that cannot prompt at all (AI Insights, NLQ search, playbook nodes), which
+    // get the plain approval message in place of a result.
     supports_approval_prompts: isChatbotUsable,
     intents: [
       { name: 'global.assistant', description: 'General-purpose assistant' },
