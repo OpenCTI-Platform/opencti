@@ -14,6 +14,8 @@ export interface ActionConfig {
  */
 export interface SerializedState {
   statusId: string; // Refers to the internal ID of a StatusTemplate entity
+  /** Manual fallback order, used only when topological order computation is ambiguous (see workflow-ordering.ts). */
+  order?: number;
   onEnter?: ActionConfig[];
   onExit?: ActionConfig[];
 }

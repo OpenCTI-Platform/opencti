@@ -157,6 +157,8 @@ export interface WorkflowConditionConfig {
 
 export interface WorkflowSerializedState {
   statusId: string;
+  /** Manual fallback order, used only when topological order computation is ambiguous (see workflow-ordering.ts). */
+  order?: number;
   onEnter?: WorkflowActionConfig[];
   onExit?: WorkflowActionConfig[];
 }

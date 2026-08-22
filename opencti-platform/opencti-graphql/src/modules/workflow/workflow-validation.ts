@@ -7,6 +7,7 @@ import { isBasicObject } from '../../schema/stixCoreObject';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES } from '../../utils/authorizedMembers';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
+import { computeStateOrder, findUnreachableStates } from './domain/workflow-ordering';
 import { ActionDefinitions } from './registry/workflow-actions';
 import type { WorkflowValidationError } from './types/workflow-types';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from './types/workflow-types';
@@ -40,6 +41,8 @@ export const workflowConditionConfigSchema = z.object({
 export const workflowSerializedStateSchema = z.object({
   statusId: z.string().max(255).optional(),
   name: z.string().max(255).optional(),
+  /** Manual fallback order, required only when topological order computation is ambiguous (a cycle). */
+  order: z.number().optional(),
   onEnter: z.array(workflowActionConfigSchema).optional(),
   onExit: z.array(workflowActionConfigSchema).optional(),
 });
@@ -324,6 +327,47 @@ export const validateWorkflowDefinitionData = async (
           message: `Transition/Action state '${stateId}' doesn't exist in the workflow definition states nor in the status templates in DB`,
         });
       }
+    }
+  }
+
+  // Every declared state must resolve to a canonical StatusTemplate id (statusId), not a bare `name`.
+  // A name-only state cannot be mapped/projected onto a Status by Task 2/Task 8's (type, scope, statusId)
+  // keyed logic, so this is rejected here (at save time) rather than left to drift silently.
+  states.forEach((state: z.infer<typeof workflowSerializedStateSchema>) => {
+    if (state.name && !state.statusId) {
+      errors.push({
+        type: 'MISSING_STATUS_ID',
+        message: `State '${state.name}' must reference a status template (statusId); name-only states are not supported`,
+      });
+    }
+  });
+
+  // Reachability: every declared/referenced state must be reachable from initialState via some
+  // transition path. An unreachable state is a definition bug (it can never be entered), not
+  // something a manual order value could fix, so it is always a hard error.
+  if (initialState !== '*') {
+    const allStateIds = [...extractAllStatesFromDefinition(validationResult.data)];
+    const unreachableStates = findUnreachableStates(initialState, allStateIds, transitions);
+    unreachableStates.forEach((stateId) => {
+      errors.push({
+        type: 'STATE_UNREACHABLE',
+        message: `State '${stateId}' is declared but not reachable from the initial state '${initialState}'`,
+      });
+    });
+
+    // Ordering: prefer topological (BFS) order derived from the transition graph. When the reachable
+    // subgraph contains a cycle, computeStateOrder returns null and every state must instead carry a
+    // manually supplied `order` value.
+    const computedOrder = computeStateOrder(initialState, transitions);
+    if (computedOrder === null) {
+      states.forEach((state: z.infer<typeof workflowSerializedStateSchema>) => {
+        if (state.order === undefined) {
+          errors.push({
+            type: 'MISSING_MANUAL_ORDER',
+            message: `State '${state.name || state.statusId}' must have a manual 'order' value: automatic ordering is ambiguous because the workflow graph contains a cycle`,
+          });
+        }
+      });
     }
   }
 
