@@ -1,29 +1,40 @@
+import Dialog from '@common/dialog/Dialog';
+import { ArrowDropDownOutlined, CheckCircle, ErrorOutline, LockOpenOutlined } from '@mui/icons-material';
+import { Alert, AlertTitle, Box, CircularProgress, DialogActions, DialogContentText, Divider, Menu, MenuItem, Stack, TextField, Tooltip, Typography } from '@mui/material';
+import { Form, Formik } from 'formik';
+import { Close } from 'mdi-material-ui';
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { useFragment } from 'react-relay';
-import { Alert, AlertTitle, Box, CircularProgress, DialogActions, DialogContentText, Divider, Menu, MenuItem, TextField, Tooltip, Typography } from '@mui/material';
-import { ArrowDropDownOutlined, ErrorOutline, LockOpenOutlined } from '@mui/icons-material';
-import { Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import Button from '../../../../components/common/button/Button';
-import { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import ItemStatus from '../../../../components/ItemStatus';
 import Transition from '../../../../components/Transition';
-import Dialog from '@common/dialog/Dialog';
-import { CommentMode } from '../../settings/sub_types/workflow/utils';
-import { workflowStatusFragment, COMMENT_MAX_LENGTH } from './WorkflowStatus.graphql';
-import { useTransitionWizard } from './useTransitionWizard';
-import { isBypassUser } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';
+import { isBypassUser } from '../../../../utils/hooks/useGranted';
 import useHelper from '../../../../utils/hooks/useHelper';
+import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
+import { CommentMode } from '../../settings/sub_types/workflow/utils';
+import { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
+import { useTransitionWizard } from './useTransitionWizard';
 import { isWorkflowUiEnabledForType } from './workflowFeatureFlag';
-import { Close } from 'mdi-material-ui';
+import { COMMENT_MAX_LENGTH, workflowStatusFragment } from './WorkflowStatus.graphql';
 
 interface WorkflowTransitionsProps {
   data: WorkflowStatus_data$key;
   // See WorkflowStatus's `entityType` prop for the rationale (plan.md Task 5, Step 2).
   entityType?: string;
 }
+
+// Task 9: a single "step pill" summarizing one of the sections shown in the consolidated Apply
+// Transition dialog (per the confirmed design: static/decorative labels, not a real sequential
+// wizard — every applicable section is rendered together in the same form).
+const StepPill: FunctionComponent<{ label: string }> = ({ label }) => (
+  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+    <CheckCircle fontSize="small" color="success" />
+    <Typography variant="caption">{label}</Typography>
+  </Box>
+);
 
 export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = ({ data, entityType = 'DraftWorkspace' }) => {
   const { t_i18n } = useFormatter();
@@ -36,16 +47,11 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
   const {
     wizard,
     setWizard,
-    commentValue,
-    setCommentValue,
-    currentStep,
     canBypassMandatoryFields,
     approving,
     clearing,
     handleTransition,
-    handleOrgPickerSubmit,
-    handleConfirmComment,
-    handleValidateDraft,
+    handleApplyWizard,
     handleClear,
     notifyBackgroundTransitionComplete,
   } = useTransitionWizard({ entityId: draft.id, entityNavigationId: draft.entity_id, draftId: draft.id });
@@ -149,6 +155,14 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
     return null;
   }
 
+  const activeTransition = wizard
+    ? workflowInstance.allowedTransitions.find((t) => t.event === wizard.event)
+    : null;
+  const requiresComment = wizard?.steps.includes('comment') ?? false;
+  const requiresOrgPicker = wizard?.steps.includes('org-picker') ?? false;
+  const requiresValidate = wizard?.steps.includes('validate') ?? false;
+  const commentRequired = wizard?.commentMode === CommentMode.required && !canBypassMandatoryFields;
+
   return (
     <>
       <Divider orientation="vertical" flexItem sx={{ marginRight: 1 }} />
@@ -202,22 +216,28 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
           </Menu>
         </>
       )}
-      {/* Step 1: org picker */}
+      {/* Task 9: single consolidated Apply Transition dialog — replaces the previous 3 sequential
+          dialogs (org-picker / comment / validate). Every applicable section for the selected
+          transition is shown together, submitted via one "Apply" button. */}
       <Formik
         initialValues={{
+          comment: '',
           shareOrganizations: [] as Array<{ value: string; label: string }>,
           unshareOrganizations: [] as Array<{ value: string; label: string }>,
         }}
         validationSchema={Yup.object({
+          comment: commentRequired
+            ? Yup.string().trim().required(t_i18n('This field is required'))
+            : Yup.string(),
           shareOrganizations: Yup.array(),
           unshareOrganizations: Yup.array(),
         })}
-        onSubmit={handleOrgPickerSubmit}
+        onSubmit={handleApplyWizard}
         enableReinitialize
       >
-        {({ submitForm, isSubmitting, resetForm }) => (
+        {({ submitForm, isSubmitting, resetForm, values, handleChange }) => (
           <Dialog
-            open={currentStep === 'org-picker'}
+            open={wizard !== null}
             slotProps={{ paper: { elevation: 1 } }}
             keepMounted={false}
             slots={{ transition: Transition }}
@@ -225,34 +245,87 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
               setWizard(null);
               resetForm();
             }}
-            title={t_i18n('Select organizations')}
-            size="small"
+            title={t_i18n('Apply transition')}
+            size="large"
           >
             <Form>
-              {wizard?.requiresShareOrg && (
+              {activeTransition?.toStatus && (
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  {t_i18n('Transitioning to')} <ItemStatus status={activeTransition.toStatus} />
+                </Typography>
+              )}
+              <Stack direction="row" spacing={2} sx={{ mb: 2, flexWrap: 'wrap' }}>
+                {requiresComment && <StepPill label={t_i18n('Add comment')} />}
+                {requiresOrgPicker && <StepPill label={t_i18n('Share with organization')} />}
+                {requiresValidate && <StepPill label={t_i18n('Validate draft')} />}
+              </Stack>
+              {requiresComment && (
                 <>
-                  <DialogContentText sx={{ mb: 2 }}>
-                    {t_i18n('Select the organizations to share the draft content with during this transition.')}
+                  <DialogContentText sx={{ mb: 1 }}>
+                    {commentRequired
+                      ? t_i18n('A comment is required before changing the status.')
+                      : t_i18n('You can optionally add a comment before changing the status.')}
                   </DialogContentText>
-                  <ObjectOrganizationField
-                    name="shareOrganizations"
-                    label={t_i18n('Organizations to share with')}
-                    multiple={true}
-                    style={{ width: '100%' }}
+                  <TextField
+                    autoFocus
+                    fullWidth
+                    multiline
+                    minRows={3}
+                    label={t_i18n('Comment')}
+                    name="comment"
+                    value={values.comment}
+                    onChange={handleChange}
+                    variant="outlined"
+                    size="small"
+                    required={commentRequired}
+                    slotProps={{ htmlInput: { maxLength: COMMENT_MAX_LENGTH } }}
+                    helperText={`${values.comment.length} / ${COMMENT_MAX_LENGTH}`}
+                    sx={{ mb: 2 }}
                   />
                 </>
               )}
-              {wizard?.requiresUnshareOrg && (
+              {requiresOrgPicker && (
                 <>
-                  <DialogContentText sx={{ mb: 2, mt: wizard?.requiresShareOrg ? 2 : 0 }}>
-                    {t_i18n('Select the organizations to unshare the draft content from during this transition.')}
+                  {wizard?.requiresShareOrg && (
+                    <>
+                      <DialogContentText sx={{ mb: 1 }}>
+                        {t_i18n('Select the organizations to share the content with during this transition.')}
+                      </DialogContentText>
+                      <ObjectOrganizationField
+                        name="shareOrganizations"
+                        label={t_i18n('Organizations to share with')}
+                        multiple={true}
+                        style={{ width: '100%', marginBottom: 16 }}
+                      />
+                    </>
+                  )}
+                  {wizard?.requiresUnshareOrg && (
+                    <>
+                      <DialogContentText sx={{ mb: 1 }}>
+                        {t_i18n('Select the organizations to unshare the content from during this transition.')}
+                      </DialogContentText>
+                      <ObjectOrganizationField
+                        name="unshareOrganizations"
+                        label={t_i18n('Organizations to unshare from')}
+                        multiple={true}
+                        style={{ width: '100%', marginBottom: 16 }}
+                      />
+                    </>
+                  )}
+                </>
+              )}
+              {requiresValidate && (
+                <>
+                  <DialogContentText sx={{ mb: 1 }}>
+                    {t_i18n('Do you want to approve this draft and send it to ingestion?')}
                   </DialogContentText>
-                  <ObjectOrganizationField
-                    name="unshareOrganizations"
-                    label={t_i18n('Organizations to unshare from')}
-                    multiple={true}
-                    style={{ width: '100%' }}
-                  />
+                  {draft.processingCount > 0 && (
+                    <Alert sx={{ mb: 2 }} severity="warning">
+                      <AlertTitle>{t_i18n('Ongoing processes')}</AlertTitle>
+                      {t_i18n('There are processes still running that could impact the data of the draft. '
+                        + 'By approving the draft now, the remaining changes that would have been applied by those processes will be ignored.')}
+                    </Alert>
+                  )}
                 </>
               )}
               <DialogActions>
@@ -267,94 +340,15 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
                 </Button>
                 <Button
                   onClick={submitForm}
-                  disabled={isSubmitting || approving}
+                  disabled={isSubmitting || approving || (commentRequired && values.comment.trim() === '')}
                 >
-                  {t_i18n('Confirm')}
+                  {t_i18n('Apply')}
                 </Button>
               </DialogActions>
             </Form>
           </Dialog>
         )}
       </Formik>
-      {/* Step 2: comment */}
-      <Dialog
-        open={currentStep === 'comment'}
-        slotProps={{ paper: { elevation: 1 } }}
-        keepMounted={false}
-        slots={{ transition: Transition }}
-        onClose={() => setWizard(null)}
-        title={t_i18n('Add a comment')}
-        size="large"
-      >
-        <DialogContentText sx={{ marginBottom: 2 }}>
-          {wizard?.commentMode === CommentMode.required
-            ? t_i18n('A comment is required before changing the status.')
-            : t_i18n('You can optionally add a comment before changing the status.')}
-        </DialogContentText>
-        <TextField
-          autoFocus
-          fullWidth
-          multiline
-          minRows={3}
-          label={t_i18n('Comment')}
-          value={commentValue}
-          onChange={(e) => setCommentValue(e.target.value)}
-          variant="outlined"
-          size="small"
-          required={wizard?.commentMode === CommentMode.required}
-          slotProps={{ htmlInput: { maxLength: COMMENT_MAX_LENGTH } }}
-          helperText={`${commentValue.length} / ${COMMENT_MAX_LENGTH}`}
-        />
-        <DialogActions>
-          <Button
-            variant="secondary"
-            onClick={() => setWizard(null)}
-          >
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            onClick={handleConfirmComment}
-            disabled={wizard?.commentMode === CommentMode.required && commentValue.trim() === '' && !canBypassMandatoryFields}
-          >
-            {t_i18n('Confirm')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-      {/* Step 3: validate draft */}
-      <Dialog
-        open={currentStep === 'validate'}
-        slotProps={{ paper: { elevation: 1 } }}
-        keepMounted={false}
-        slots={{ transition: Transition }}
-        onClose={() => setWizard(null)}
-        title={t_i18n('Are you sure?')}
-        size="small"
-      >
-        <DialogContentText>
-          {t_i18n('Do you want to approve this draft and send it to ingestion?')}
-          {draft.processingCount > 0 && (
-            <Alert sx={{ marginTop: 1 }} severity="warning">
-              <AlertTitle>{t_i18n('Ongoing processes')}</AlertTitle>
-              {t_i18n('There are processes still running that could impact the data of the draft. '
-                + 'By approving the draft now, the remaining changes that would have been applied by those processes will be ignored.')}
-            </Alert>
-          )}
-        </DialogContentText>
-        <DialogActions>
-          <Button
-            variant="secondary"
-            onClick={() => setWizard(null)}
-          >
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            onClick={handleValidateDraft}
-            disabled={approving}
-          >
-            {t_i18n('Approve')}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </>
   );
 };

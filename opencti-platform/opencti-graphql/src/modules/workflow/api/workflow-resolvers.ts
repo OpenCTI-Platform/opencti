@@ -13,6 +13,7 @@ import {
     publishWorkflowDefinition,
     restorePublishedWorkflowDefinition,
     setWorkflowDefinition,
+    setWorkflowStatus,
     triggerWorkflowEvent,
 } from '../domain/workflow-domain';
 
@@ -70,6 +71,18 @@ const workflowResolvers = {
         throw new GraphQLError(`Comment exceeds maximum allowed length of ${COMMENT_MAX_LENGTH} characters.`);
       }
       return triggerWorkflowEvent(context, context.user!, entityId, eventName, normalizedComment, runtimeParams ?? {});
+    },
+    setWorkflowStatus: (_: any, {
+      entityId,
+      targetStatusId,
+      applyTransitionActions,
+      comment,
+    }: { entityId: string; targetStatusId: string; applyTransitionActions: boolean; comment?: string | null }, context: AuthContext) => {
+      const normalizedComment = comment?.trim() ?? undefined;
+      if (normalizedComment !== undefined && normalizedComment.length > COMMENT_MAX_LENGTH) {
+        throw new GraphQLError(`Comment exceeds maximum allowed length of ${COMMENT_MAX_LENGTH} characters.`);
+      }
+      return setWorkflowStatus(context, context.user!, entityId, targetStatusId, applyTransitionActions, normalizedComment);
     },
     clearWorkflowPendingState: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return clearWorkflowPendingState(context, context.user!, entityId);
@@ -157,6 +170,22 @@ const workflowResolvers = {
       return context.batch.workflowInstancesBatchLoader.load(relationship);
     },
   },
+  // Task 9, Step 1: every concrete type implementing the StixDomainObject interface (see the
+  // matching `extend type` declarations in workflow.graphql) resolves through the same batch
+  // loader — resolves to null until the entity type's EntitySetting.workflow_id references a
+  // published WorkflowDefinition (see Task 6's migration).
+  ...Object.fromEntries(
+    [
+      'AttackPattern', 'Campaign', 'Note', 'ObservedData', 'Opinion', 'Report', 'CourseOfAction',
+      'Individual', 'Sector', 'System', 'Infrastructure', 'IntrusionSet', 'Position', 'City',
+      'Country', 'Region', 'Malware', 'ThreatActorGroup', 'Tool', 'Vulnerability', 'Incident',
+      'AdministrativeArea', 'CaseIncident', 'CaseRfi', 'CaseRft', 'Channel', 'DataComponent',
+      'DataSource', 'Event', 'Feedback', 'Grouping', 'Indicator', 'Language', 'MalwareAnalysis',
+      'Narrative', 'Organization', 'SecurityCoverage', 'SecurityPlatform', 'Task', 'ThreatActorIndividual',
+    ].map((typeName) => [typeName, {
+      workflowInstance: (entity: any, _: any, context: AuthContext) => context.batch.workflowInstancesBatchLoader.load(entity),
+    }]),
+  ),
   WorkflowDefinitionMutationResult: {
     errors: (result: any) => result.errors ?? [],
     published: (result: any) => result.published ?? false,

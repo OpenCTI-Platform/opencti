@@ -1,11 +1,11 @@
-import React from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
+import React from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
+import { CommentMode } from '../../settings/sub_types/workflow/utils';
+import type { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 import WorkflowStatus from './WorkflowStatus';
 import WorkflowTransitions from './WorkflowTransitions';
-import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
-import type { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
-import { CommentMode } from '../../settings/sub_types/workflow/utils';
 
 const withEntitiesWorkflowFlag = (enable: boolean) => createMockUserContext({
   settings: { platform_feature_flags: enable ? [{ id: 'ENTITIES_WORKFLOW', enable: true }] : [] },
@@ -296,7 +296,7 @@ describe('WorkflowTransitions', () => {
     const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
     expect(await screen.findByText('You can optionally add a comment before changing the status.')).toBeDefined();
-    expect(screen.getByText('Confirm').closest('button')).not.toBeDisabled();
+    expect(screen.getByText('Apply').closest('button')).not.toBeDisabled();
   });
 
   it('opens required comment dialog when transition has comment: "required"', async () => {
@@ -312,10 +312,10 @@ describe('WorkflowTransitions', () => {
     const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
     expect(await screen.findByText('A comment is required before changing the status.')).toBeDefined();
-    expect(screen.getByText('Confirm').closest('button')).toBeDisabled();
+    expect(screen.getByText('Apply').closest('button')).toBeDisabled();
   });
 
-  it('enables Confirm when a required comment is filled in', async () => {
+  it('enables Apply when a required comment is filled in', async () => {
     const draft = makeDraft({
       workflowInstance: {
         id: 'instance-1',
@@ -328,7 +328,7 @@ describe('WorkflowTransitions', () => {
     const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
     await user.type(await screen.findByLabelText(/Comment/), 'My mandatory comment');
-    expect(screen.getByText('Confirm').closest('button')).not.toBeDisabled();
+    expect(screen.getByText('Apply').closest('button')).not.toBeDisabled();
   });
 
   it('displays the character counter (0 / 1000) on dialog open', async () => {
@@ -362,7 +362,7 @@ describe('WorkflowTransitions', () => {
     expect(screen.getByText('5 / 1000')).toBeDefined();
   });
 
-  it('calls commit with trimmed comment on Confirm', async () => {
+  it('calls commit with trimmed comment on Apply', async () => {
     const draft = makeDraft({
       workflowInstance: {
         id: 'instance-1',
@@ -375,7 +375,7 @@ describe('WorkflowTransitions', () => {
     const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
     await user.type(await screen.findByLabelText(/Comment/), '  my comment  ');
-    await user.click(screen.getByText('Confirm'));
+    await user.click(screen.getByText('Apply'));
     await waitFor(() => {
       expect(mockCommit).toHaveBeenCalledOnce();
       expect(mockCommit.mock.calls[0][0].variables.comment).toBe('my comment');
@@ -395,7 +395,7 @@ describe('WorkflowTransitions', () => {
     const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
     await screen.findByLabelText(/Comment/);
-    await user.click(screen.getByText('Confirm'));
+    await user.click(screen.getByText('Apply'));
     await waitFor(() => {
       expect(mockCommit).toHaveBeenCalledOnce();
       expect(mockCommit.mock.calls[0][0].variables.comment).toBeUndefined();
@@ -414,13 +414,13 @@ describe('WorkflowTransitions', () => {
     });
     const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
-    const confirmButton = await screen.findByText('Confirm');
-    // Click the Cancel button that is in the same dialog as the Confirm button
+    const confirmButton = await screen.findByText('Apply');
+    // Click the Cancel button that is in the same dialog as the Apply button
     const cancelButton = confirmButton.closest('[role="dialog"]')
       ? confirmButton.closest('[role="dialog"]')!.querySelector('button[type="button"]')
       : screen.getAllByText('Cancel')[0];
     await user.click(cancelButton as HTMLElement);
-    await waitFor(() => expect(screen.queryByText('Confirm')).toBeNull());
+    await waitFor(() => expect(screen.queryByText('Apply')).toBeNull());
     expect(mockCommit).not.toHaveBeenCalled();
   });
 });

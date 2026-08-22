@@ -1,7 +1,7 @@
-import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { useTransitionWizard } from './useTransitionWizard';
+import { act, renderHook } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
+import { useTransitionWizard } from './useTransitionWizard';
 
 // ---------------------------------------------------------------------------
 // Hoisted mock functions — accessible inside vi.mock factory closures
@@ -93,7 +93,7 @@ describe('useTransitionWizard – handleTransition', () => {
     expect(result.current.wizard).toBeNull();
   });
 
-  it('opens wizard at org-picker step when requiresShareOrg=true', () => {
+  it('opens wizard with org-picker step when requiresShareOrg=true', () => {
     const { result } = renderWizard();
 
     act(() => {
@@ -101,38 +101,38 @@ describe('useTransitionWizard – handleTransition', () => {
     });
 
     expect(result.current.wizard).not.toBeNull();
-    expect(result.current.currentStep).toBe('org-picker');
+    expect(result.current.wizard!.steps).toEqual(['org-picker']);
     expect(mockCommit).not.toHaveBeenCalled();
   });
 
-  it('opens wizard at org-picker step when requiresUnshareOrg=true', () => {
+  it('opens wizard with org-picker step when requiresUnshareOrg=true', () => {
     const { result } = renderWizard();
 
     act(() => {
       result.current.handleTransition('submit', [], null, false, true);
     });
 
-    expect(result.current.currentStep).toBe('org-picker');
+    expect(result.current.wizard!.steps).toEqual(['org-picker']);
   });
 
-  it('opens wizard at comment step when comment mode is "allowed"', () => {
+  it('opens wizard with comment step when comment mode is "allowed"', () => {
     const { result } = renderWizard();
 
     act(() => {
       result.current.handleTransition('submit', [], CommentMode.allowed, false, false);
     });
 
-    expect(result.current.currentStep).toBe('comment');
+    expect(result.current.wizard!.steps).toEqual(['comment']);
   });
 
-  it('opens wizard at comment step when comment mode is "required"', () => {
+  it('opens wizard with comment step when comment mode is "required"', () => {
     const { result } = renderWizard();
 
     act(() => {
       result.current.handleTransition('submit', [], CommentMode.required, false, false);
     });
 
-    expect(result.current.currentStep).toBe('comment');
+    expect(result.current.wizard!.steps).toEqual(['comment']);
   });
 
   it('adds validate step when actions include validateDraft', () => {
@@ -142,28 +142,26 @@ describe('useTransitionWizard – handleTransition', () => {
       result.current.handleTransition('submit', ['validateDraft'], null, false, false);
     });
 
-    expect(result.current.currentStep).toBe('validate');
+    expect(result.current.wizard!.steps).toEqual(['validate']);
   });
 
-  it('queues org-picker → comment → validate when all are needed', () => {
+  it('includes org-picker, comment and validate together when all are needed', () => {
     const { result } = renderWizard();
 
     act(() => {
       result.current.handleTransition('submit', ['validateDraft'], CommentMode.required, true, false);
     });
 
-    expect(result.current.currentStep).toBe('org-picker');
-    // After org-picker, comment step should come next
     expect(result.current.wizard!.steps).toEqual(['org-picker', 'comment', 'validate']);
   });
 });
 
-describe('useTransitionWizard – handleOrgPickerSubmit', () => {
+describe('useTransitionWizard – handleApplyWizard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('advances with shareOrganizationIds in runtimeParams', () => {
+  it('fires the mutation once with shareOrganizationIds built from the form values, and closes the wizard', () => {
     const { result } = renderWizard();
 
     act(() => {
@@ -171,19 +169,20 @@ describe('useTransitionWizard – handleOrgPickerSubmit', () => {
     });
 
     act(() => {
-      result.current.handleOrgPickerSubmit(
-        { shareOrganizations: [{ value: 'org-1' }], unshareOrganizations: [] },
-        { resetForm: vi.fn() },
-      );
+      result.current.handleApplyWizard({
+        comment: '',
+        shareOrganizations: [{ value: 'org-1' }],
+        unshareOrganizations: [],
+      });
     });
 
-    // No more steps after org-picker with no comment or validate → mutation fires
     expect(mockCommit).toHaveBeenCalledTimes(1);
-    const [variables] = mockCommit.mock.calls[0];
-    expect(variables.variables.runtimeParams.shareOrganizationIds).toEqual(['org-1']);
+    const [{ variables }] = mockCommit.mock.calls[0];
+    expect(variables.runtimeParams.shareOrganizationIds).toEqual(['org-1']);
+    expect(result.current.wizard).toBeNull();
   });
 
-  it('advances with unshareOrganizationIds in runtimeParams', () => {
+  it('fires the mutation once with unshareOrganizationIds built from the form values', () => {
     const { result } = renderWizard();
 
     act(() => {
@@ -191,24 +190,19 @@ describe('useTransitionWizard – handleOrgPickerSubmit', () => {
     });
 
     act(() => {
-      result.current.handleOrgPickerSubmit(
-        { shareOrganizations: [], unshareOrganizations: [{ value: 'org-x' }] },
-        { resetForm: vi.fn() },
-      );
+      result.current.handleApplyWizard({
+        comment: '',
+        shareOrganizations: [],
+        unshareOrganizations: [{ value: 'org-x' }],
+      });
     });
 
     expect(mockCommit).toHaveBeenCalledTimes(1);
-    const [variables] = mockCommit.mock.calls[0];
-    expect(variables.variables.runtimeParams.unshareOrganizationIds).toEqual(['org-x']);
-  });
-});
-
-describe('useTransitionWizard – handleConfirmComment', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+    const [{ variables }] = mockCommit.mock.calls[0];
+    expect(variables.runtimeParams.unshareOrganizationIds).toEqual(['org-x']);
   });
 
-  it('fires mutation with the trimmed comment and clears commentValue', () => {
+  it('fires the mutation with the trimmed comment', () => {
     const { result } = renderWizard();
 
     act(() => {
@@ -216,17 +210,16 @@ describe('useTransitionWizard – handleConfirmComment', () => {
     });
 
     act(() => {
-      result.current.setCommentValue('  my comment  ');
-    });
-
-    act(() => {
-      result.current.handleConfirmComment();
+      result.current.handleApplyWizard({
+        comment: '  my comment  ',
+        shareOrganizations: [],
+        unshareOrganizations: [],
+      });
     });
 
     expect(mockCommit).toHaveBeenCalledTimes(1);
     const [{ variables }] = mockCommit.mock.calls[0];
     expect(variables.comment).toBe('my comment');
-    expect(result.current.commentValue).toBe('');
   });
 
   it('passes undefined comment when the comment field is empty', () => {
@@ -237,34 +230,44 @@ describe('useTransitionWizard – handleConfirmComment', () => {
     });
 
     act(() => {
-      result.current.handleConfirmComment();
+      result.current.handleApplyWizard({ comment: '', shareOrganizations: [], unshareOrganizations: [] });
     });
 
     expect(mockCommit).toHaveBeenCalledTimes(1);
     const [{ variables }] = mockCommit.mock.calls[0];
     expect(variables.comment).toBeUndefined();
   });
-});
 
-describe('useTransitionWizard – handleValidateDraft', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('advances the wizard (fires mutation when validate is the last step)', () => {
+  it('combines org picker and comment and validate in a single fire when all steps are included', () => {
     const { result } = renderWizard();
 
     act(() => {
-      result.current.handleTransition('submit', ['validateDraft'], null, false, false);
+      result.current.handleTransition('submit', ['validateDraft'], CommentMode.required, true, false);
     });
 
-    expect(result.current.currentStep).toBe('validate');
-
     act(() => {
-      result.current.handleValidateDraft();
+      result.current.handleApplyWizard({
+        comment: 'approved',
+        shareOrganizations: [{ value: 'org-1' }],
+        unshareOrganizations: [],
+      });
     });
 
     expect(mockCommit).toHaveBeenCalledTimes(1);
+    const [{ variables }] = mockCommit.mock.calls[0];
+    expect(variables.runtimeParams.shareOrganizationIds).toEqual(['org-1']);
+    expect(variables.comment).toBe('approved');
+    expect(result.current.wizard).toBeNull();
+  });
+
+  it('does nothing when called with no wizard open', () => {
+    const { result } = renderWizard();
+
+    act(() => {
+      result.current.handleApplyWizard({ comment: '', shareOrganizations: [], unshareOrganizations: [] });
+    });
+
+    expect(mockCommit).not.toHaveBeenCalled();
   });
 });
 
@@ -297,9 +300,9 @@ describe('useTransitionWizard – fireTransition response handling', () => {
       result.current.handleTransition('submit', ['validateDraft'], null, false, false);
     });
 
-    // validate step fires
+    // validate is the only step → apply immediately fires the transition
     act(() => {
-      result.current.handleValidateDraft();
+      result.current.handleApplyWizard({ comment: '', shareOrganizations: [], unshareOrganizations: [] });
     });
 
     const [{ onCompleted }] = mockCommit.mock.calls[0];

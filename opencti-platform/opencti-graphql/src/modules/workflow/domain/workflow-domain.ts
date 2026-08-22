@@ -1542,6 +1542,121 @@ export const triggerWorkflowEvent = async (
 };
 
 /**
+ * Task 9: bypass-update — sets an entity's `WorkflowInstance.currentState` directly to whatever
+ * state the given `targetStatusId` maps to, without requiring an allowed-transition edge from the
+ * current state (unlike `triggerWorkflowEvent`). Always records an `event_bypass` history entry
+ * (never `event_external`, reserved for Task 8's non-workflow-engine writers). When
+ * `applyTransitionActions` is true, runs only the current state's onExit and target state's
+ * onEnter actions-on-status — never edge-level actions-on-transition, since bypass mode has no
+ * edge to run them from.
+ */
+export const setWorkflowStatus = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityId: string,
+  targetStatusId: string,
+  applyTransitionActions: boolean,
+  comment?: string,
+): Promise<TriggerResult> => {
+  const entity = await storeLoadById(context, user, entityId, 'Basic-Object');
+  if (!entity) {
+    throw FunctionalError('Entity not found', { entityId });
+  }
+
+  const entitySetting = await getWorkflowConfig(context, user, entity.entity_type);
+  const definitionData = await getDefinitionData(context, user, entitySetting);
+  if (!definitionData) {
+    return {
+      success: false,
+      reason: `Workflows are not configured for entity type: ${entity.entity_type}`,
+    };
+  }
+
+  try {
+    const executionContext = bypassDraftContext(context);
+    const executionUser = executionContext.user!;
+
+    const instanceEntity = await ensureWorkflowInstance(executionContext, executionUser, entity, entitySetting, definitionData);
+
+    if (instanceEntity.pendingStatus === 'pending') {
+      return {
+        success: false,
+        reason: 'A workflow transition is already pending for this entity. Wait for it to complete, retry the failed action, or ask an admin to clear the pending state.',
+      };
+    }
+
+    const targetStatus = await storeLoadById<BasicWorkflowStatus>(executionContext, executionUser, targetStatusId, ENTITY_TYPE_STATUS);
+    const targetState = targetStatus ? (definitionData.states ?? []).find((s) => s.statusId === targetStatus.template_id) : undefined;
+    if (!targetState) {
+      return {
+        success: false,
+        reason: `Status "${targetStatusId}" does not map to any state of the published workflow`,
+      };
+    }
+
+    const currentStateId = instanceEntity.currentState;
+    const instanceId = instanceEntity.internal_id || instanceEntity.id;
+
+    if (applyTransitionActions) {
+      const definition = WorkflowFactory.createDefinition(definitionData);
+      const workflowContext = {
+        entity,
+        user: WORKFLOW_MANAGER_USER,
+        triggeringUser: executionUser,
+        context: executionContext,
+        runtimeParams: {},
+        __createListTask: createListTask,
+        __workflowInstanceId: instanceId,
+        __draftEntityIds: [],
+      };
+      const currentStateDef = definition.getStateDefinition(currentStateId);
+      for (const hook of currentStateDef?.onExit ?? []) {
+        await hook(workflowContext);
+      }
+      const targetStateDef = definition.getStateDefinition(targetState.statusId);
+      for (const hook of targetStateDef?.onEnter ?? []) {
+        await hook(workflowContext);
+      }
+    }
+
+    let history: any[];
+    try {
+      history = JSON.parse(instanceEntity.history || '[]');
+    } catch {
+      history = [];
+    }
+    history = appendWorkflowHistoryEntry(history, {
+      state: targetState.statusId,
+      user_id: user.id,
+      timestamp: new Date().toISOString(),
+      event: 'event_bypass',
+      ...(comment ? { comment } : {}),
+    });
+
+    await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+      { key: 'currentState', value: [targetState.statusId] },
+      { key: 'history', value: [JSON.stringify(history)] },
+    ]);
+
+    // Keep the legacy `x_opencti_workflow_id` in sync with the new state (same as triggerWorkflowEvent).
+    await projectWorkflowState(executionContext, entity as BasicStoreEntity, targetState.statusId, resolveProjectionScope(instanceEntity.scope));
+
+    const workflowInstance = await getWorkflowInstance(context, user, entityId);
+    if (comment?.trim()) {
+      await notifyWorkflowTransitionComment(executionContext, entity as BasicStoreEntity, 'event_bypass', comment, user.id);
+    }
+
+    return { success: true, newState: targetState.statusId, executionStatus: 'completed', instance: workflowInstance, entity };
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : 'Unknown error';
+    return {
+      success: false,
+      reason: `Workflow bypass update failed: ${reason}`,
+    };
+  }
+};
+
+/**
  * Initialize the workflow instance for a newly created entity and fire the
  * onEnter hooks of the initial state. No-op if no workflow is configured for
  * the entity type or if an instance already exists.

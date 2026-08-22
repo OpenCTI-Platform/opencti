@@ -32,6 +32,7 @@ import {
     registerWorkflowLifecycleHooks,
     restorePublishedWorkflowDefinition,
     setWorkflowDefinition,
+    setWorkflowStatus,
     syncWorkflowInstanceFromExternalWrite,
     triggerWorkflowEvent,
 } from '../../../src/modules/workflow/domain/workflow-domain';
@@ -3197,5 +3198,128 @@ describe('syncWorkflowInstanceFromExternalWrite (Task 8)', () => {
     // oldest entry got dropped, newest (event_external for this write) is present at the end
     expect(history[0]).toEqual(expect.objectContaining({ state: 'state-1' }));
     expect(history[history.length - 1]).toEqual(expect.objectContaining({ state: 'reviewing', event: 'event_external' }));
+  });
+});
+
+// ===========================================================================
+// Task 9: setWorkflowStatus — bypass status update (no allowedTransitions check)
+// ===========================================================================
+describe('setWorkflowStatus (Task 9)', () => {
+  const definitionContent = JSON.stringify({
+    initialState: 'draft',
+    states: [{ statusId: 'draft' }, { statusId: 'reviewing' }],
+    transitions: [],
+  });
+
+  const entity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' };
+  const existingInstance = { id: 'instance-id', internal_id: 'instance-id', currentState: 'draft', history: '[]' };
+
+  const setupDefinition = () => {
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'entity-id') return Promise.resolve(entity);
+      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      if (id === 'status-reviewing-id') return Promise.resolve({ id: 'status-reviewing-id', template_id: 'reviewing' });
+      return Promise.resolve(null);
+    });
+    // Defensive: some earlier suites leave projectWorkflowState mocked to reject (mockRejectedValue
+    // persists across clearAllMocks, which only clears calls, not implementations).
+    (projectWorkflowState as any).mockResolvedValue(undefined);
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('returns a failure result without touching the instance when the entity type has no published workflow', async () => {
+    (findByType as any).mockResolvedValue(undefined);
+    (storeLoadById as any).mockResolvedValue(entity);
+
+    const result = await setWorkflowStatus(mockContext, mockUser, 'entity-id', 'status-reviewing-id', false);
+
+    expect(result.success).toBe(false);
+    expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('returns a failure result when the target status does not map to any state of the workflow', async () => {
+    setupDefinition();
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'entity-id') return Promise.resolve(entity);
+      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      if (id === 'status-orphaned-id') return Promise.resolve({ id: 'status-orphaned-id', template_id: 'unrelated-state' });
+      return Promise.resolve(null);
+    });
+    (loadEntity as any).mockResolvedValue(existingInstance);
+
+    const result = await setWorkflowStatus(mockContext, mockUser, 'entity-id', 'status-orphaned-id', false);
+
+    expect(result.success).toBe(false);
+    expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('rejects when a workflow transition is already pending for this entity', async () => {
+    setupDefinition();
+    (loadEntity as any).mockResolvedValue({ ...existingInstance, pendingStatus: 'pending' });
+
+    const result = await setWorkflowStatus(mockContext, mockUser, 'entity-id', 'status-reviewing-id', false);
+
+    expect(result.success).toBe(false);
+    expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('jumps directly to the target state without requiring an allowed transition edge, recording an event_bypass history entry', async () => {
+    setupDefinition();
+    (loadEntity as any).mockResolvedValue(existingInstance);
+    (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-id' } });
+
+    const result = await setWorkflowStatus(mockContext, mockUser, 'entity-id', 'status-reviewing-id', false, 'skip ahead');
+
+    expect(result.success).toBe(true);
+    expect(result.newState).toBe('reviewing');
+    const [, , , , patches] = (updateAttribute as any).mock.calls[0];
+    expect(patches).toEqual(expect.arrayContaining([{ key: 'currentState', value: ['reviewing'] }]));
+    const historyPatch = patches.find((p: any) => p.key === 'history');
+    const history = JSON.parse(historyPatch.value[0]);
+    expect(history.at(-1)).toEqual(expect.objectContaining({ state: 'reviewing', event: 'event_bypass', comment: 'skip ahead' }));
+  });
+
+  it('when applyTransitionActions is false, does not run any state onEnter/onExit actions-on-status', async () => {
+    setupDefinition();
+    const onExitSpy = vi.fn();
+    const onEnterSpy = vi.fn();
+    (WorkflowFactory.createDefinition as any).mockImplementation(() => ({
+      getStateDefinition: (state: string) => {
+        if (state === 'draft') return { onExit: [onExitSpy] };
+        if (state === 'reviewing') return { onEnter: [onEnterSpy] };
+        return undefined;
+      },
+    }));
+    (loadEntity as any).mockResolvedValue(existingInstance);
+    (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-id' } });
+
+    await setWorkflowStatus(mockContext, mockUser, 'entity-id', 'status-reviewing-id', false);
+
+    expect(onExitSpy).not.toHaveBeenCalled();
+    expect(onEnterSpy).not.toHaveBeenCalled();
+  });
+
+  it('when applyTransitionActions is true, runs only the current state onExit and target state onEnter actions-on-status', async () => {
+    setupDefinition();
+    const onExitSpy = vi.fn();
+    const onEnterSpy = vi.fn();
+    (WorkflowFactory.createDefinition as any).mockImplementation(() => ({
+      getStateDefinition: (state: string) => {
+        if (state === 'draft') return { onExit: [onExitSpy] };
+        if (state === 'reviewing') return { onEnter: [onEnterSpy] };
+        return undefined;
+      },
+    }));
+    (loadEntity as any).mockResolvedValue(existingInstance);
+    (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-id' } });
+
+    await setWorkflowStatus(mockContext, mockUser, 'entity-id', 'status-reviewing-id', true);
+
+    expect(onExitSpy).toHaveBeenCalledTimes(1);
+    expect(onEnterSpy).toHaveBeenCalledTimes(1);
   });
 });

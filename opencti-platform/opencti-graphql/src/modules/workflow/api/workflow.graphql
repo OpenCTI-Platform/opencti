@@ -178,6 +178,70 @@ extend type Mutation {
     workflowDefinitionRestorePublished(entityType: String!): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionDelete(entityType: String!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
     triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
+    # Task 9: bypass-update — jump directly to any state of the published workflow, without
+    # requiring an allowed-transition edge from the current state (unlike triggerWorkflowEvent).
+    # `applyTransitionActions` runs only the current/target states' onEnter/onExit
+    # actions-on-status when true; edge-level actions-on-transition never run in bypass mode.
+    setWorkflowStatus(entityId: String!, targetStatusId: String!, applyTransitionActions: Boolean!, comment: String): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
     clearWorkflowPendingState(entityId: String!): WorkflowInstance! @auth(for: [SETTINGS])
     reportWorkflowAsyncActionResult(workflowInstanceId: String!, workflowActionId: String!, status: String!, error: String): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
 }
+
+# Task 9, Step 1: generic apply-transition/bypass-update UI mount point on the entity view
+# (Basic information section). Exposed on the StixDomainObject interface (and every concrete
+# type implementing it, per GraphQL SDL rules requiring explicit re-declaration) so any entity
+# type can surface workflowInstance once its EntitySetting.workflow_id references a published
+# WorkflowDefinition (see Task 6's migration) — resolves to null until then, same as today's
+# DraftWorkspace/StixSightingRelationship handling.
+extend interface StixDomainObject {
+    workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+# `Case` and `ThreatActor` are interfaces that themselves implement StixDomainObject, so per
+# GraphQL SDL rules they must also redeclare workflowInstance (in addition to their concrete
+# implementing types below).
+extend interface Case {
+    workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+extend interface ThreatActor {
+    workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+extend type AttackPattern { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type Campaign { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type Note { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type ObservedData { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type Opinion { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type Report { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type CourseOfAction { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type Individual { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type Sector { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type System { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type Infrastructure { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type IntrusionSet { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type Position { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type City { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type Country { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type Region { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type Malware { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type ThreatActorGroup { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type Tool { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type Vulnerability { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type Incident { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type AdministrativeArea { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type CaseIncident { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type CaseRfi { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type CaseRft { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type Channel { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type DataComponent { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type DataSource { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type Event { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type Feedback { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type Grouping { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type Indicator { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type Language { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type MalwareAnalysis { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type Narrative { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type Organization { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type SecurityCoverage { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type SecurityPlatform { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type Task { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }
+extend type ThreatActorIndividual { workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE]) }

@@ -2,7 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import workflowResolvers from '../../../src/modules/workflow/api/workflow-resolvers';
 import { reportWorkflowAsyncActionResult } from '../../../src/modules/workflow/domain/workflow-async-completion';
 import * as workflowDomain from '../../../src/modules/workflow/domain/workflow-domain';
-import { clearWorkflowPendingState, getAllowedTransitions, getWorkflowPublishedVersionId, triggerWorkflowEvent } from '../../../src/modules/workflow/domain/workflow-domain';
+import {
+    clearWorkflowPendingState,
+    getAllowedTransitions,
+    getWorkflowPublishedVersionId,
+    setWorkflowStatus,
+    triggerWorkflowEvent,
+} from '../../../src/modules/workflow/domain/workflow-domain';
 import type { AuthContext } from '../../../src/types/user';
 
 // Mock all workflow domain functions
@@ -17,6 +23,7 @@ vi.mock('../../../src/modules/workflow/domain/workflow-domain', () => ({
   deleteWorkflowDefinition: vi.fn(),
   restorePublishedWorkflowDefinition: vi.fn(),
   triggerWorkflowEvent: vi.fn(),
+  setWorkflowStatus: vi.fn(),
   clearWorkflowPendingState: vi.fn(),
   getWorkflowPublishedVersionId: vi.fn(),
 }));
@@ -153,6 +160,52 @@ describe('Mutation.triggerWorkflowEvent resolver – comment forwarding', () => 
       undefined,
       {},
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Mutation.setWorkflowStatus (Task 9) – bypass-update resolver
+// ---------------------------------------------------------------------------
+
+describe('Mutation.setWorkflowStatus resolver', () => {
+  it('should forward entityId, targetStatusId, applyTransitionActions and the trimmed comment', async () => {
+    (setWorkflowStatus as any).mockResolvedValue({ success: true, newState: 'reviewing', instance: {}, entity: {} });
+
+    await workflowResolvers.Mutation.setWorkflowStatus(
+      {},
+      { entityId: 'entity-id', targetStatusId: 'status-id', applyTransitionActions: true, comment: '  skip ahead  ' },
+      mockContext,
+    );
+
+    expect(setWorkflowStatus).toHaveBeenCalledWith(
+      mockContext, mockContext.user, 'entity-id', 'status-id', true, 'skip ahead',
+    );
+  });
+
+  it('should forward undefined comment when none is provided', async () => {
+    (setWorkflowStatus as any).mockResolvedValue({ success: true, newState: 'reviewing', instance: {}, entity: {} });
+
+    await workflowResolvers.Mutation.setWorkflowStatus(
+      {},
+      { entityId: 'entity-id', targetStatusId: 'status-id', applyTransitionActions: false },
+      mockContext,
+    );
+
+    expect(setWorkflowStatus).toHaveBeenCalledWith(
+      mockContext, mockContext.user, 'entity-id', 'status-id', false, undefined,
+    );
+  });
+
+  it('should throw GraphQLError when comment exceeds 1000 characters', () => {
+    const longComment = 'a'.repeat(1001);
+
+    expect(() =>
+      workflowResolvers.Mutation.setWorkflowStatus(
+        {},
+        { entityId: 'entity-id', targetStatusId: 'status-id', applyTransitionActions: false, comment: longComment },
+        mockContext,
+      ),
+    ).toThrow('Comment exceeds maximum allowed length of 1000 characters.');
   });
 });
 
@@ -730,6 +783,22 @@ describe('workflow-resolvers', () => {
         );
 
         expect(load).toHaveBeenCalledWith(relationship);
+        expect(result).toBe(mockInstance);
+      });
+    });
+  });
+
+  describe('Task 9: generic StixDomainObject type resolvers', () => {
+    describe('workflowInstance', () => {
+      it.each(['Report', 'Malware', 'Incident', 'Indicator', 'CaseIncident'])('%s loads through context.batch.workflowInstancesBatchLoader with the entity', async (typeName) => {
+        const mockInstance = { id: 'inst-9', currentState: 'new' };
+        const load = vi.fn().mockResolvedValue(mockInstance);
+        const batchContext = { ...mockContext, batch: { workflowInstancesBatchLoader: { load } } };
+
+        const entity = { id: 'entity-1' };
+        const result = await (workflowResolvers as any)[typeName].workflowInstance(entity, {}, batchContext as any);
+
+        expect(load).toHaveBeenCalledWith(entity);
         expect(result).toBe(mockInstance);
       });
     });

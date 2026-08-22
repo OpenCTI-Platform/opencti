@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { useMutation } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
-import useSwitchDraft from '../../drafts/useSwitchDraft';
-import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../../../../utils/hooks/useGranted';
 import { MESSAGING$ } from '../../../../relay/environment';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../../../../utils/hooks/useGranted';
+import useSwitchDraft from '../../drafts/useSwitchDraft';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
-import { workflowStatusTriggerMutation, workflowStatusClearMutation } from './WorkflowStatus.graphql';
-import type { WorkflowStatusTriggerMutation as WorkflowStatusTriggerMutationType } from './__generated__/WorkflowStatusTriggerMutation.graphql';
+import { workflowStatusClearMutation, workflowStatusTriggerMutation } from './WorkflowStatus.graphql';
 import type { WorkflowStatusClearMutation as WorkflowStatusClearMutationType } from './__generated__/WorkflowStatusClearMutation.graphql';
+import type { WorkflowStatusTriggerMutation as WorkflowStatusTriggerMutationType } from './__generated__/WorkflowStatusTriggerMutation.graphql';
 
 const DRAFT_COMMENT_SEEN_PREFIX = 'opencti-draft-comment-seen-';
 
@@ -38,7 +38,6 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId }: U
   const canBypassMandatoryFields = useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS]);
 
   const [wizard, setWizard] = useState<TransitionWizard | null>(null);
-  const [commentValue, setCommentValue] = useState('');
 
   const [commit, approving] = useMutation<WorkflowStatusTriggerMutationType>(workflowStatusTriggerMutation);
   const [commitClear, clearing] = useMutation<WorkflowStatusClearMutationType>(workflowStatusClearMutation);
@@ -82,24 +81,6 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId }: U
     });
   };
 
-  const advance = (patch?: { runtimeParams?: Record<string, unknown>; comment?: string }) => {
-    if (!wizard) return;
-    const next: TransitionWizard = {
-      ...wizard,
-      ...(patch?.runtimeParams !== undefined && {
-        runtimeParams: { ...wizard.runtimeParams, ...patch.runtimeParams },
-      }),
-      ...(patch?.comment !== undefined && { comment: patch.comment }),
-      steps: wizard.steps.slice(1),
-    };
-    if (next.steps.length === 0) {
-      setWizard(null);
-      fireTransition(next.event, next.actions, next.runtimeParams, next.comment);
-    } else {
-      setWizard(next);
-    }
-  };
-
   const handleTransition = (
     eventName: string,
     actions: readonly string[],
@@ -126,24 +107,21 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId }: U
     });
   };
 
-  const handleOrgPickerSubmit = (
-    values: { shareOrganizations: Array<{ value: string }>; unshareOrganizations: Array<{ value: string }> },
-    { resetForm }: { resetForm: () => void },
-  ) => {
-    const rp: Record<string, string[]> = {};
-    if (wizard?.requiresShareOrg) rp.shareOrganizationIds = values.shareOrganizations.map((o) => o.value);
-    if (wizard?.requiresUnshareOrg) rp.unshareOrganizationIds = values.unshareOrganizations.map((o) => o.value);
-    resetForm();
-    advance({ runtimeParams: rp });
-  };
-
-  const handleConfirmComment = () => {
-    advance({ comment: commentValue.trim() || undefined });
-    setCommentValue('');
-  };
-
-  const handleValidateDraft = () => {
-    advance();
+  // Task 9: single consolidated apply — replaces the previous one-step-at-a-time `advance()`
+  // model. All applicable sections (org picker, comment, validate-draft warning) are shown
+  // together in one dialog/form; this fires the transition exactly once with everything combined.
+  const handleApplyWizard = (values: {
+    comment: string;
+    shareOrganizations: Array<{ value: string }>;
+    unshareOrganizations: Array<{ value: string }>;
+  }) => {
+    if (!wizard) return;
+    const runtimeParams: Record<string, string[]> = {};
+    if (wizard.requiresShareOrg) runtimeParams.shareOrganizationIds = values.shareOrganizations.map((o) => o.value);
+    if (wizard.requiresUnshareOrg) runtimeParams.unshareOrganizationIds = values.unshareOrganizations.map((o) => o.value);
+    const comment = values.comment.trim() || undefined;
+    setWizard(null);
+    fireTransition(wizard.event, wizard.actions, runtimeParams, comment);
   };
 
   const handleClear = () => {
@@ -163,16 +141,11 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId }: U
   return {
     wizard,
     setWizard,
-    commentValue,
-    setCommentValue,
-    currentStep: wizard?.steps[0] ?? null,
     canBypassMandatoryFields,
     approving,
     clearing,
     handleTransition,
-    handleOrgPickerSubmit,
-    handleConfirmComment,
-    handleValidateDraft,
+    handleApplyWizard,
     handleClear,
     notifyBackgroundTransitionComplete,
   };

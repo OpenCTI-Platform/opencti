@@ -60,6 +60,65 @@ export const workflowStatusFragment = graphql`
   }
 `;
 
+// Task 9, Step 1: generic counterpart of WorkflowStatus_data for any StixDomainObject (Report,
+// Malware, Incident, etc.) — DraftWorkspace does not implement the StixDomainObject interface, so
+// a single shared fragment isn't possible; this mirrors the exact same workflowInstance shape.
+export const workflowStatusStixDomainObjectFragment = graphql`
+  fragment WorkflowStatusStixDomainObject_data on StixDomainObject {
+    id
+    entity_type
+    workflowInstance {
+      id
+      currentState
+      currentStatus {
+        id
+        template {
+          name
+          color
+        }
+      }
+      lastHistoryEntry {
+        comment
+      }
+      pendingStatus
+      pendingError
+      pendingTransition {
+        event
+        toState
+        triggeredAt
+        syncActions {
+          type
+        }
+        asyncActions {
+          id
+          type
+          status
+          processedCount
+          expectedCount
+          errors {
+            message
+          }
+        }
+      }
+      allowedTransitions {
+        event
+        toState
+        actions
+        comment
+        requiresShareOrganizationInput
+        requiresUnshareOrganizationInput
+        toStatus {
+          id
+          template {
+            name
+            color
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const workflowStatusTriggerMutation = graphql`
   mutation WorkflowStatusTriggerMutation($entityId: String!, $eventName: String!, $comment: String, $runtimeParams: JSON) {
     triggerWorkflowEvent(entityId: $entityId, eventName: $eventName, comment: $comment, runtimeParams: $runtimeParams) {
@@ -117,6 +176,57 @@ export const workflowStatusTriggerMutation = graphql`
         ... on DraftWorkspace {
           ...WorkflowStatus_data
         }
+        ... on StixDomainObject {
+          ...WorkflowStatusStixDomainObject_data
+        }
+      }
+    }
+  }
+`;
+
+// Task 9, Step 3: bypass-update — jumps directly to targetStatusId, bypassing allowedTransitions.
+export const workflowSetStatusMutation = graphql`
+  mutation WorkflowSetStatusMutation($entityId: String!, $targetStatusId: String!, $applyTransitionActions: Boolean!, $comment: String) {
+    setWorkflowStatus(entityId: $entityId, targetStatusId: $targetStatusId, applyTransitionActions: $applyTransitionActions, comment: $comment) {
+      success
+      reason
+      newState
+      executionStatus
+      instance {
+        id
+        currentState
+        pendingStatus
+        pendingError
+        currentStatus {
+          id
+          template {
+            name
+            color
+          }
+        }
+        allowedTransitions {
+          event
+          toState
+          actions
+          comment
+          requiresShareOrganizationInput
+          requiresUnshareOrganizationInput
+          toStatus {
+            id
+            template {
+              name
+              color
+            }
+          }
+        }
+      }
+      entity {
+        ... on DraftWorkspace {
+          ...WorkflowStatus_data
+        }
+        ... on StixDomainObject {
+          ...WorkflowStatusStixDomainObject_data
+        }
       }
     }
   }
@@ -146,3 +256,4 @@ export const workflowStatusClearMutation = graphql`
     }
   }
 `;
+
