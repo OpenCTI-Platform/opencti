@@ -1,11 +1,13 @@
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import mime from 'mime-types';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { booleanConf, isFeatureEnabled, logApp, SYNC_WORKFLOW_STATUS_BY_NAME_FEATURE_FLAG } from '../config/conf';
 import { decryptSynchronizerCredential } from '../domain/connector-sync-crypto';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { patchSync } from '../domain/connector';
+import { resolveSyncedWorkflowId } from '../domain/status';
+import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { lockResources } from '../lock/master-lock';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { utcDate } from '../utils/format';
@@ -100,6 +102,127 @@ const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
   return null;
 };
 
+export const transformDataWithReverseIdAndFilesData = async (sync, httpClient, data, context) => {
+  const { uri } = sync;
+  const processingData = { ...data };
+  const octiExtension = processingData.extensions?.[STIX_EXT_OCTI] || {};
+  const markdownEntityContext = {
+    entityType: octiExtension.type,
+    entityId: octiExtension.id,
+  };
+  const idOperation = (context?.reverse_patch ?? []).find((patch) => patch.path === '/id');
+  const remoteWorkflowId = processingData.extensions[STIX_EXT_OCTI].workflow_id;
+  const remoteWorkflowStatusName = processingData.extensions[STIX_EXT_OCTI].workflow_status_name;
+  const remoteWorkflowStatusScope = processingData.extensions[STIX_EXT_OCTI].workflow_status_scope;
+  if (remoteWorkflowId) {
+    const entitySetting = await getEntitySettingFromCache(executionContext('sync_manager'), octiExtension.type);
+    const syncWorkflowStatusByName = isFeatureEnabled(SYNC_WORKFLOW_STATUS_BY_NAME_FEATURE_FLAG) && (entitySetting?.sync_workflow_status_by_name ?? false);
+    // Not opted in: keep the raw remote workflow_id untouched, same as pre-existing behavior.
+    if (syncWorkflowStatusByName) {
+      const localWorkflowId = await resolveSyncedWorkflowId(executionContext('sync_manager'), SYSTEM_USER, octiExtension.type, remoteWorkflowStatusScope, remoteWorkflowStatusName);
+      if (localWorkflowId) {
+        processingData.extensions[STIX_EXT_OCTI].workflow_id = localWorkflowId;
+      } else {
+        delete processingData.extensions[STIX_EXT_OCTI].workflow_id;
+      }
+    }
+    delete processingData.extensions[STIX_EXT_OCTI].workflow_status_name;
+    delete processingData.extensions[STIX_EXT_OCTI].workflow_status_scope;
+  }
+  const entityFiles = processingData.extensions[STIX_EXT_OCTI].files ?? [];
+  for (let index = 0; index < entityFiles.length; index += 1) {
+    const entityFile = entityFiles[index];
+    const { uri: fileUri } = entityFile;
+    try {
+      const fetchUri = buildSyncStorageFetchUri(uri, fileUri);
+      if (!fetchUri) {
+        logApp.warn('[OPENCTI] Sync: Invalid storage file URI, skipping file fetch.', { fileUri });
+        continue;
+      }
+      const response = await httpClient.get(fetchUri);
+      entityFile.data = Buffer.from(response.data).toString('base64');
+    } catch (e) {
+      logApp.warn('[OPENCTI] Sync: Error when trying to get file from storage. Skipping file.', { fileUri, message: e.message });
+    }
+  }
+
+  const resolveEmbeddedImagesInMarkdownDescription = async (markdown) => {
+    const embeddedReferences = extractMarkdownImageReferences(markdown)
+      .filter((reference) => reference.isEmbeddedStorage);
+    if (embeddedReferences.length === 0) {
+      return markdown;
+    }
+
+    const uriByReferenceUrl = new Map();
+    const uniqueReferenceUrls = [...new Set(embeddedReferences.map((reference) => reference.url))];
+
+    for (let i = 0; i < uniqueReferenceUrls.length; i += 1) {
+      const embeddedStorageUri = uniqueReferenceUrls[i];
+      try {
+        const fetchUri = buildSyncStorageFetchUri(uri, embeddedStorageUri, markdownEntityContext);
+        if (!fetchUri) {
+          logApp.warn('[OPENCTI] Sync: Invalid embedded markdown storage URI, keeping original URI.', {
+            embeddedStorageUri,
+          });
+          uriByReferenceUrl.set(embeddedStorageUri, null);
+          continue;
+        }
+        const response = await httpClient.get(fetchUri);
+        const headerMimeType = extractMimeTypeFromHeader(response);
+        const pathMimeType = mime.lookup(embeddedStorageUri);
+        const detectedMime = headerMimeType || (pathMimeType || null);
+
+        if (!detectedMime || !ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET.has(detectedMime)) {
+          logApp.warn('[OPENCTI] Sync: Unsupported embedded markdown image mime type, keeping original URI.', {
+            embeddedStorageUri,
+            mimeType: detectedMime,
+          });
+          uriByReferenceUrl.set(embeddedStorageUri, null);
+          continue;
+        }
+
+        const base64Data = Buffer.from(response.data).toString('base64');
+        uriByReferenceUrl.set(embeddedStorageUri, `data:${detectedMime};base64,${base64Data}`);
+      } catch (e) {
+        logApp.warn('[OPENCTI] Sync: Error while resolving embedded markdown image, keeping original URI.', {
+          embeddedStorageUri,
+          message: e.message,
+        });
+        uriByReferenceUrl.set(embeddedStorageUri, null);
+      }
+    }
+
+    const { markdown: rewrittenMarkdown } = rewriteMarkdownImageUrls(markdown, (reference) => {
+      return uriByReferenceUrl.get(reference.url) ?? undefined;
+    });
+
+    return rewrittenMarkdown;
+  };
+
+  const resolveEmbeddedImagesMarkdownFields = async (payload) => {
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+      return;
+    }
+
+    for (let i = 0; i < MARKDOWN_FIELD_KEYS.length; i += 1) {
+      const key = MARKDOWN_FIELD_KEYS[i];
+      const value = payload[key];
+      if (typeof value === 'string' && hasEmbeddedStorageRef(value)) {
+        payload[key] = await resolveEmbeddedImagesInMarkdownDescription(value);
+      } else if (Array.isArray(value)) {
+        for (let j = 0; j < value.length; j += 1) {
+          if (typeof value[j] === 'string' && hasEmbeddedStorageRef(value[j])) {
+            value[j] = await resolveEmbeddedImagesInMarkdownDescription(value[j]);
+          }
+        }
+      }
+    }
+  };
+
+  await resolveEmbeddedImagesMarkdownFields(processingData);
+  return { data: processingData, previous_standard: idOperation?.value };
+};
+
 const syncManagerInstance = (syncId) => {
   // Variables
   let connectionId = null;
@@ -132,110 +255,6 @@ const syncManagerInstance = (syncId) => {
         yield queue.shift();
       }
     }
-  };
-  const transformDataWithReverseIdAndFilesData = async (sync, httpClient, data, context) => {
-    const { uri } = sync;
-    const processingData = { ...data };
-    const octiExtension = processingData.extensions?.[STIX_EXT_OCTI] || {};
-    const markdownEntityContext = {
-      entityType: octiExtension.type,
-      entityId: octiExtension.id,
-    };
-    // Reverse patch the id if modified
-    const idOperation = (context?.reverse_patch ?? []).find((patch) => patch.path === '/id');
-    // Handle file enrichment
-    const entityFiles = processingData.extensions[STIX_EXT_OCTI].files ?? [];
-    for (let index = 0; index < entityFiles.length; index += 1) {
-      const entityFile = entityFiles[index];
-      const { uri: fileUri } = entityFile;
-      try {
-        const fetchUri = buildSyncStorageFetchUri(uri, fileUri);
-        if (!fetchUri) {
-          logApp.warn('[OPENCTI] Sync: Invalid storage file URI, skipping file fetch.', { fileUri });
-          continue;
-        }
-        const response = await httpClient.get(fetchUri);
-        entityFile.data = Buffer.from(response.data).toString('base64');
-      } catch (e) {
-        logApp.warn('[OPENCTI] Sync: Error when trying to get file from storage. Skipping file.', { fileUri, message: e.message });
-      }
-    }
-
-    const resolveEmbeddedImagesInMarkdownDescription = async (markdown) => {
-      const embeddedReferences = extractMarkdownImageReferences(markdown)
-        .filter((reference) => reference.isEmbeddedStorage);
-      if (embeddedReferences.length === 0) {
-        return markdown;
-      }
-
-      const uriByReferenceUrl = new Map();
-      const uniqueReferenceUrls = [...new Set(embeddedReferences.map((reference) => reference.url))];
-
-      for (let i = 0; i < uniqueReferenceUrls.length; i += 1) {
-        const embeddedStorageUri = uniqueReferenceUrls[i];
-        try {
-          const fetchUri = buildSyncStorageFetchUri(uri, embeddedStorageUri, markdownEntityContext);
-          if (!fetchUri) {
-            logApp.warn('[OPENCTI] Sync: Invalid embedded markdown storage URI, keeping original URI.', {
-              embeddedStorageUri,
-            });
-            uriByReferenceUrl.set(embeddedStorageUri, null);
-            continue;
-          }
-          const response = await httpClient.get(fetchUri);
-          const headerMimeType = extractMimeTypeFromHeader(response);
-          const pathMimeType = mime.lookup(embeddedStorageUri);
-          const detectedMime = headerMimeType || (pathMimeType || null);
-
-          if (!detectedMime || !ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET.has(detectedMime)) {
-            logApp.warn('[OPENCTI] Sync: Unsupported embedded markdown image mime type, keeping original URI.', {
-              embeddedStorageUri,
-              mimeType: detectedMime,
-            });
-            uriByReferenceUrl.set(embeddedStorageUri, null);
-            continue;
-          }
-
-          const base64Data = Buffer.from(response.data).toString('base64');
-          uriByReferenceUrl.set(embeddedStorageUri, `data:${detectedMime};base64,${base64Data}`);
-        } catch (e) {
-          logApp.warn('[OPENCTI] Sync: Error while resolving embedded markdown image, keeping original URI.', {
-            embeddedStorageUri,
-            message: e.message,
-          });
-          uriByReferenceUrl.set(embeddedStorageUri, null);
-        }
-      }
-
-      const { markdown: rewrittenMarkdown } = rewriteMarkdownImageUrls(markdown, (reference) => {
-        return uriByReferenceUrl.get(reference.url) ?? undefined;
-      });
-
-      return rewrittenMarkdown;
-    };
-
-    const resolveEmbeddedImagesMarkdownFields = async (payload) => {
-      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-        return;
-      }
-
-      for (let i = 0; i < MARKDOWN_FIELD_KEYS.length; i += 1) {
-        const key = MARKDOWN_FIELD_KEYS[i];
-        const value = payload[key];
-        if (typeof value === 'string' && hasEmbeddedStorageRef(value)) {
-          payload[key] = await resolveEmbeddedImagesInMarkdownDescription(value);
-        } else if (Array.isArray(value)) {
-          for (let j = 0; j < value.length; j += 1) {
-            if (typeof value[j] === 'string' && hasEmbeddedStorageRef(value[j])) {
-              value[j] = await resolveEmbeddedImagesInMarkdownDescription(value[j]);
-            }
-          }
-        }
-      }
-    };
-
-    await resolveEmbeddedImagesMarkdownFields(processingData);
-    return { data: processingData, previous_standard: idOperation?.value };
   };
   const saveCurrentState = async (context, type, eventId) => {
     const currentTime = new Date().getTime();

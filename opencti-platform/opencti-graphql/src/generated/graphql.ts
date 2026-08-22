@@ -8878,6 +8878,7 @@ export type EntitySetting = BasicObject & InternalObject & {
   requestAccessConfiguration?: Maybe<RequestAccessConfiguration>;
   scaleAttributes: Array<ScaleAttribute>;
   standard_id: Scalars['String']['output'];
+  sync_workflow_status_by_name?: Maybe<Scalars['Boolean']['output']>;
   target_type: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
   workflow_configuration?: Maybe<Scalars['Boolean']['output']>;
@@ -44935,6 +44936,7 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   requestAccessConfiguration?: Resolver<Maybe<ResolversTypes['RequestAccessConfiguration']>, ParentType, ContextType>;
   scaleAttributes?: Resolver<Array<ResolversTypes['ScaleAttribute']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  sync_workflow_status_by_name?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   target_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflow_configuration?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;

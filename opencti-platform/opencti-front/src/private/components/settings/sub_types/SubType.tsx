@@ -27,6 +27,7 @@ export const subTypeQuery = graphql`
       settings {
         id
         availableSettings
+        sync_workflow_status_by_name
         ...EntitySettingsOverviewLayoutCustomization_entitySetting
         ...EntitySettingsFragment_entitySetting
         ...EntitySettingAttributes_entitySetting

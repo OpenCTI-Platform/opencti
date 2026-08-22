@@ -1004,6 +1004,7 @@
   "Subject public key modulus": "Модуль открытого ключа субъекта",
   "Submission date": "Дата представления",
   "SWID": "SWID",
+  "Sync workflow statuses by name": "Синхронизация статусов рабочих процессов по названию",
   "Synchronized": "Синхронизированный",
   "Tags": "Теги",
   "Target entity": "Целевая организация",
