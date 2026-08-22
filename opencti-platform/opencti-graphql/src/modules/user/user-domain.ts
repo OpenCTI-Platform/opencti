@@ -189,6 +189,32 @@ export const revokeUserTokenByAdmin = async (context: AuthContext, user: AuthUse
 };
 
 /**
+ * The one mask for an API token.
+ *
+ * Every surface that shows a token to a human must go through this: the stored
+ * masked_token (GraphQL and the UI read that field) and the platform logs. They used to
+ * disagree — logs printed the first 20 characters, the stored value printed the last 4 —
+ * so a "Cannot identify user with token" log line could not be matched to the token
+ * displayed on a user's profile without decrypting the database.
+ *
+ * Only the last 4 characters are ever revealed, and nothing at all when the value is 4
+ * characters or shorter — at exactly 4 the "last 4" would be the whole value, so an
+ * arbitrary string arriving in an Authorization header would be echoed back into the
+ * logs verbatim. The mask must never be the input.
+ *
+ * That cannot cost traceability on a real token: the three call sites that mask a stored
+ * token all carry at least 36 characters by construction — generateSecureToken emits
+ * `flgrn_octi_tkn_` + 64, the legacy migration masks a UUID, and initializeAdminUser
+ * refuses to start unless the configured admin token passes validator.isUUID. The only
+ * call site that can be handed a short value is the authentication-failure log, and
+ * there the value is whatever the caller put in the Authorization header.
+ */
+export const maskToken = (token: string | undefined | null): string => {
+  const value = token ?? '';
+  return value.length <= 4 ? '****' : `****${value.slice(-4)}`;
+};
+
+/**
  * Generate a secure random token.
  * 48 bytes = 384 bits of entropy.
  * Returns the plain token (to be shown once), the hash (to be stored), and a masked version.
@@ -198,7 +224,7 @@ export const generateSecureToken = async (): Promise<GeneratedToken> => {
   const random = crypto.randomBytes(48).toString('base64url');
   const token = `flgrn_octi_tkn_${random}`;
   const hash = await generateTokenHmac(token);
-  const masked_token = `****${token.slice(-4)}`;
+  const masked_token = maskToken(token);
   return { token, hash, masked_token };
 };
 
