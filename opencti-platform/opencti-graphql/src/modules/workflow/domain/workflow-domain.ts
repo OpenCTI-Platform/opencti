@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { booleanConf, logApp } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
-import { registerPostEntityCreationHook } from '../../../database/entity-lifecycle-hooks';
+import { registerPostAttributeUpdateHook, registerPostEntityCreationHook } from '../../../database/entity-lifecycle-hooks';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../database/members';
 import { createEntity, createRelation, loadEntity, updateAttribute } from '../../../database/middleware';
@@ -1338,6 +1338,18 @@ export const getAllowedTransitions = async (
 };
 
 /**
+ * Task 8, Step 5: `WorkflowInstance.history` is rewritten wholesale on every append, so an
+ * unbounded array means an ever-growing reindex cost on hot entities (e.g. routine connector
+ * re-writes synced by `syncWorkflowInstanceFromExternalWrite`). Bounds it to the most recent
+ * entries. Does not address the underlying per-write reindex cost of a monolithic array — a
+ * high-frequency writer may still need an append-only substore instead of this single array.
+ */
+const MAX_WORKFLOW_HISTORY_ENTRIES = 200;
+const appendWorkflowHistoryEntry = (history: any[], entry: any): any[] => {
+  return [...history, entry].slice(-MAX_WORKFLOW_HISTORY_ENTRIES);
+};
+
+/**
  * Trigger a workflow event on an entity.
  * This is the main entry point for the backend logic.
  *
@@ -1496,7 +1508,7 @@ export const triggerWorkflowEvent = async (
       history = [];
     }
 
-    history.push({
+    history = appendWorkflowHistoryEntry(history, {
       state: newState,
       user_id: user.id,
       timestamp: new Date().toISOString(),
@@ -1569,6 +1581,79 @@ export const initializeEntityWorkflow = async (
 let workflowLifecycleHooksRegistered = false;
 
 /**
+ * Task 8: reacts to a direct/concurrent write of `x_opencti_workflow_id` — any writer other than
+ * the workflow engine's own projection (`projectWorkflowState`, marked `workflowInternalWrite` and
+ * filtered out before this hook chain runs, see `middleware.ts`'s `updateAttribute`) — keeping the
+ * entity's `WorkflowInstance` in sync. Registered into the shared post-attribute-update hook
+ * registry so it fires generically for every such writer: playbooks
+ * (`manipulate-knowledge-component.ts`), mass/background operations, the public GraphQL API, and
+ * the sync manager.
+ *
+ * Step 3.4 write-path audit: the only other direct writer of `x_opencti_workflow_id` found in this
+ * codebase is `requestAccess-domain.ts`, which sets it at entity *creation* time (not via
+ * `updateAttribute`) — that path never reaches this hook, and does not need to: Task 3's
+ * `initializeEntityWorkflow` (fired by the post-entity-creation hook) already resolves that same
+ * supplied status at creation time via `resolveSuppliedStatus`, so the instance starts in the
+ * correct state without this hook's involvement. No other direct-write path outside
+ * `updateAttribute` was found.
+ */
+export const syncWorkflowInstanceFromExternalWrite = async (
+  context: AuthContext,
+  entity: Record<string, any>,
+  newStatusId: string,
+): Promise<void> => {
+  const executionContext = { ...bypassDraftContext(context), user: WORKFLOW_MANAGER_USER };
+
+  // Step 0.6: gated by published-workflow existence, not by any UI-only feature flag.
+  const entitySetting = await getWorkflowConfig(executionContext, WORKFLOW_MANAGER_USER, entity.entity_type);
+  const definitionData = await getDefinitionData(executionContext, WORKFLOW_MANAGER_USER, entitySetting);
+  if (!definitionData) return;
+
+  const effectiveEntityId = entity.internal_id || entity.id;
+  const instanceEntity = await findWorkflowInstanceEntity(executionContext, WORKFLOW_MANAGER_USER, effectiveEntityId);
+  // No instance yet: nothing to sync onto. The next read via getWorkflowInstance lazily
+  // backfills one (Task 3) at the definition's initialState.
+  if (!instanceEntity) return;
+
+  const instanceId = instanceEntity.internal_id || instanceEntity.id;
+  const status = await storeLoadById<BasicWorkflowStatus>(executionContext, WORKFLOW_MANAGER_USER, newStatusId, ENTITY_TYPE_STATUS);
+  const matchedState = status ? (definitionData.states ?? []).find((s) => s.statusId === status.template_id) : undefined;
+
+  if (!matchedState) {
+    // Unmapped-status write policy: keep the write, do not guess a nearest state, do not reject —
+    // just surface a diagnostic and leave currentState untouched.
+    await updateAttribute(executionContext, WORKFLOW_MANAGER_USER, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+      { key: 'pendingError', value: [`Direct write set x_opencti_workflow_id to Status "${newStatusId}", which does not map to any state of the published workflow`] },
+    ]);
+    return;
+  }
+
+  if (matchedState.statusId === instanceEntity.currentState) {
+    // Already at the mapped state: idempotent no-op, nothing to record.
+    return;
+  }
+
+  let history: any[];
+  try {
+    history = JSON.parse(instanceEntity.history || '[]');
+  } catch {
+    history = [];
+  }
+  history = appendWorkflowHistoryEntry(history, {
+    state: matchedState.statusId,
+    user_id: WORKFLOW_MANAGER_USER.id,
+    timestamp: now(),
+    event: 'event_external',
+  });
+
+  await updateAttribute(executionContext, WORKFLOW_MANAGER_USER, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+    { key: 'currentState', value: [matchedState.statusId] },
+    { key: 'history', value: [JSON.stringify(history)] },
+    { key: 'pendingError', value: [null] },
+  ]);
+};
+
+/**
  * Registers this module's post-entity-creation side effects (eager `WorkflowInstance`
  * initialization) into the decoupled hook registry in `entity-lifecycle-hooks.ts`. Must be
  * called exactly once from the server's central bootstrap sequence (`boot.ts`), before any
@@ -1578,6 +1663,9 @@ let workflowLifecycleHooksRegistered = false;
 export const registerWorkflowLifecycleHooks = (): void => {
   if (workflowLifecycleHooksRegistered) return;
   registerPostEntityCreationHook(initializeEntityWorkflow);
+  registerPostAttributeUpdateHook(async (context, _user, entity, _field, newValue) => {
+    await syncWorkflowInstanceFromExternalWrite(context, entity, newValue);
+  });
   workflowLifecycleHooksRegistered = true;
 };
 

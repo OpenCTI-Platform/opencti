@@ -70,7 +70,7 @@ export const projectWorkflowState = async (
 
     await updateAttribute(executionContext, executionUser, entityId, entityType, [
       { key: 'x_opencti_workflow_id', value: [statusId] },
-    ]);
+    ], { workflowInternalWrite: true });
   } catch (error) {
     logApp.warn('[OPENCTI-MODULE] Failed to project workflow state onto entity', { cause: error, entityType, scope, stateId, entityId });
   }

@@ -225,7 +225,7 @@ import {
     ROLE_FROM,
     ROLE_TO,
 } from './engine';
-import { runPostEntityCreationHooks } from './entity-lifecycle-hooks';
+import { runPostAttributeUpdateHooks, runPostEntityCreationHooks } from './entity-lifecycle-hooks';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { elUpdateRemovedFiles } from './file-search';
 import { deleteAllObjectFiles, deleteFile, moveAllFilesFromEntityToAnother, storeFileConverter, uploadToStorage } from './file-storage';
@@ -2110,6 +2110,9 @@ const prepareAttributesForUpdate = async (
     if (input.key === X_WORKFLOW_ID) {
       const workflowId = R.head(input.value);
       const instanceTypeStatuses = platformStatuses.filter((status) => status.type === instance.entity_type);
+      // Type-only guard (not scope-aware): a write to a Status of the right entity_type but wrong
+      // scope passes through here on purpose — Task 8's syncWorkflowInstanceFromExternalWrite is
+      // where scope mismatches are caught (unmapped-status pendingError policy), not here.
       // If workflow is not found for current entity type, remove the input
       if (instanceTypeStatuses?.length === 0 || !instanceTypeStatuses.some((entityStatus) => entityStatus.internal_id === workflowId)) {
         return null;
@@ -2978,7 +2981,14 @@ const triggerEntityUpdateAutoEnrichment = async (context: AuthContext, user: Aut
   const loaders = generateEnrichmentLoaders(context, user, element);
   await updateEntityAutoEnrichment(context, user, element, element.entity_type, loaders);
 };
-type UpdateAttributeOpts = LoadByIdsWithDependeciesOpts & UpdateAttributeMetaResolvedOpts;
+type UpdateAttributeOpts = LoadByIdsWithDependeciesOpts & UpdateAttributeMetaResolvedOpts & {
+  /**
+   * Task 8: marks this write as originating from the workflow engine's own projection
+   * (`projectWorkflowState`), so the post-attribute-update hook chain below never treats it as
+   * an external write and re-syncs it back — that would be a feedback loop.
+   */
+  workflowInternalWrite?: boolean;
+};
 export const updateAttribute = async <T extends StoreObject>(
   context: AuthContext,
   user: AuthUser,
@@ -2999,6 +3009,17 @@ export const updateAttribute = async <T extends StoreObject>(
   if (!opts.noEnrich && data.event) {
     // If element really updated, try to enrich if needed
     await triggerEntityUpdateAutoEnrichment(context, user, data.element as BasicStoreBase);
+  }
+  // Task 8: notify the decoupled post-attribute-update hook registry of direct
+  // `x_opencti_workflow_id` writes (playbooks, requestAccess, public API, sync manager, etc.),
+  // so the workflow engine can keep its `WorkflowInstance` in sync — but never for its own
+  // projection writes (`workflowInternalWrite`), and only when the write actually changed
+  // something (`data.event`).
+  if (data.event && !opts.workflowInternalWrite) {
+    const workflowStatusInput = inputs.find((input) => input.key === 'x_opencti_workflow_id');
+    if (workflowStatusInput) {
+      await runPostAttributeUpdateHooks(context, user, data.element as Record<string, any>, 'x_opencti_workflow_id', workflowStatusInput.value[0]);
+    }
   }
   return data;
 };

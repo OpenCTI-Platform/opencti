@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { booleanConf } from '../../../src/config/conf';
-import { registerPostEntityCreationHook } from '../../../src/database/entity-lifecycle-hooks';
+import { registerPostAttributeUpdateHook, registerPostEntityCreationHook } from '../../../src/database/entity-lifecycle-hooks';
 import { extractEntityRepresentativeName } from '../../../src/database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../src/database/members';
 import { createEntity, createRelation, loadEntity, updateAttribute } from '../../../src/database/middleware';
@@ -32,6 +32,7 @@ import {
     registerWorkflowLifecycleHooks,
     restorePublishedWorkflowDefinition,
     setWorkflowDefinition,
+    syncWorkflowInstanceFromExternalWrite,
     triggerWorkflowEvent,
 } from '../../../src/modules/workflow/domain/workflow-domain';
 import { projectWorkflowState, resolveMappedStatusId } from '../../../src/modules/workflow/domain/workflow-projection';
@@ -115,6 +116,7 @@ vi.mock('../../../src/domain/status', () => ({
 
 vi.mock('../../../src/database/entity-lifecycle-hooks', () => ({
   registerPostEntityCreationHook: vi.fn(),
+  registerPostAttributeUpdateHook: vi.fn(),
 }));
 
 vi.mock('../../../src/modules/workflow/domain/workflow-projection', () => ({
@@ -2395,12 +2397,19 @@ describe('registerWorkflowLifecycleHooks', () => {
     expect(registerPostEntityCreationHook).toHaveBeenCalledWith(initializeEntityWorkflow);
   });
 
+  it('Task 8: also registers a post-attribute-update hook that syncs on external x_opencti_workflow_id writes', () => {
+    registerWorkflowLifecycleHooks();
+
+    expect(registerPostAttributeUpdateHook).toHaveBeenCalledTimes(1);
+  });
+
   it('is idempotent — calling it twice only registers once', () => {
     registerWorkflowLifecycleHooks();
     registerWorkflowLifecycleHooks();
     registerWorkflowLifecycleHooks();
 
     expect(registerPostEntityCreationHook).toHaveBeenCalledTimes(1);
+    expect(registerPostAttributeUpdateHook).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -3031,5 +3040,162 @@ describe('batchWorkflowInstances', () => {
       expect.stringContaining('batchWorkflowInstances hit its WorkflowInstance query bound'),
       expect.objectContaining({ bound: 5000 }),
     );
+  });
+});
+
+// ===========================================================================
+// Task 8: syncWorkflowInstanceFromExternalWrite — direct/concurrent Status writers
+// ===========================================================================
+describe('syncWorkflowInstanceFromExternalWrite (Task 8)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const entity = { id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident' };
+  const definitionContent = JSON.stringify({
+    initialState: 'draft',
+    states: [{ statusId: 'draft' }, { statusId: 'reviewing' }],
+    transitions: [],
+  });
+
+  const setupPublishedDefinition = () => {
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+  };
+
+  it('Step 0.1: no-ops when the entity type has no published WorkflowDefinition', async () => {
+    (findByType as any).mockResolvedValue(undefined);
+
+    await syncWorkflowInstanceFromExternalWrite(mockContext, entity, 'status-reviewing-id');
+
+    expect(loadEntity).not.toHaveBeenCalled();
+    expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('Step 0.6: no-ops when no WorkflowInstance exists yet for the entity (left for lazy backfill on next read)', async () => {
+    setupPublishedDefinition();
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'workflow-def-id') {
+        return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      }
+      return Promise.resolve(null);
+    });
+    (loadEntity as any).mockResolvedValue(null);
+
+    await syncWorkflowInstanceFromExternalWrite(mockContext, entity, 'status-reviewing-id');
+
+    expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('Step 1.1/1.2: a direct write mapped to a different state updates currentState and appends an event_external history entry, under WORKFLOW_MANAGER_USER', async () => {
+    setupPublishedDefinition();
+    const existingInstance = {
+      id: 'instance-1', internal_id: 'instance-1', currentState: 'draft', history: '[]', scope: StatusScope.Global,
+    };
+    (loadEntity as any).mockResolvedValue(existingInstance);
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'workflow-def-id') {
+        return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      }
+      if (id === 'status-reviewing-id') {
+        return Promise.resolve({ id: 'status-reviewing-id', template_id: 'reviewing', scope: StatusScope.Global });
+      }
+      return Promise.resolve(null);
+    });
+    (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-1' } });
+
+    await syncWorkflowInstanceFromExternalWrite(mockContext, entity, 'status-reviewing-id');
+
+    expect(updateAttribute).toHaveBeenCalledWith(
+      expect.objectContaining({ user: WORKFLOW_MANAGER_USER }),
+      WORKFLOW_MANAGER_USER,
+      'instance-1',
+      ENTITY_TYPE_WORKFLOW_INSTANCE,
+      expect.arrayContaining([
+        { key: 'currentState', value: ['reviewing'] },
+        expect.objectContaining({ key: 'history' }),
+      ]),
+    );
+    const [, , , , patches] = (updateAttribute as any).mock.calls[0];
+    const historyPatch = patches.find((p: any) => p.key === 'history');
+    const history = JSON.parse(historyPatch.value[0]);
+    expect(history).toEqual([expect.objectContaining({ state: 'reviewing', event: 'event_external' })]);
+  });
+
+  it('Step 2.1/2.2: no-op (idempotent) when the direct write already maps to the current state', async () => {
+    setupPublishedDefinition();
+    const existingInstance = {
+      id: 'instance-1', internal_id: 'instance-1', currentState: 'reviewing', history: '[]', scope: StatusScope.Global,
+    };
+    (loadEntity as any).mockResolvedValue(existingInstance);
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'workflow-def-id') {
+        return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      }
+      if (id === 'status-reviewing-id') {
+        return Promise.resolve({ id: 'status-reviewing-id', template_id: 'reviewing', scope: StatusScope.Global });
+      }
+      return Promise.resolve(null);
+    });
+
+    await syncWorkflowInstanceFromExternalWrite(mockContext, entity, 'status-reviewing-id');
+
+    expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('Step 3.1/3.2: an unmapped status write (no matching state) leaves currentState untouched and records a pendingError diagnostic, without rejecting the write', async () => {
+    setupPublishedDefinition();
+    const existingInstance = {
+      id: 'instance-1', internal_id: 'instance-1', currentState: 'draft', history: '[]', scope: StatusScope.Global,
+    };
+    (loadEntity as any).mockResolvedValue(existingInstance);
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'workflow-def-id') {
+        return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      }
+      if (id === 'status-orphaned-id') {
+        return Promise.resolve({ id: 'status-orphaned-id', template_id: 'some-unrelated-state', scope: StatusScope.Global });
+      }
+      return Promise.resolve(null);
+    });
+    (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-1' } });
+
+    await syncWorkflowInstanceFromExternalWrite(mockContext, entity, 'status-orphaned-id');
+
+    expect(updateAttribute).toHaveBeenCalledWith(
+      expect.objectContaining({ user: WORKFLOW_MANAGER_USER }),
+      WORKFLOW_MANAGER_USER,
+      'instance-1',
+      ENTITY_TYPE_WORKFLOW_INSTANCE,
+      [{ key: 'pendingError', value: [expect.any(String)] }],
+    );
+  });
+
+  it('Step 5: bounds history to the most recent entries instead of growing it unboundedly', async () => {
+    setupPublishedDefinition();
+    const oversizedHistory = Array.from({ length: 200 }, (_, i) => ({ state: `state-${i}`, event: 'event_external' }));
+    const existingInstance = {
+      id: 'instance-1', internal_id: 'instance-1', currentState: 'draft', history: JSON.stringify(oversizedHistory), scope: StatusScope.Global,
+    };
+    (loadEntity as any).mockResolvedValue(existingInstance);
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'workflow-def-id') {
+        return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      }
+      if (id === 'status-reviewing-id') {
+        return Promise.resolve({ id: 'status-reviewing-id', template_id: 'reviewing', scope: StatusScope.Global });
+      }
+      return Promise.resolve(null);
+    });
+    (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-1' } });
+
+    await syncWorkflowInstanceFromExternalWrite(mockContext, entity, 'status-reviewing-id');
+
+    const [, , , , patches] = (updateAttribute as any).mock.calls[0];
+    const historyPatch = patches.find((p: any) => p.key === 'history');
+    const history = JSON.parse(historyPatch.value[0]);
+    expect(history.length).toBe(200);
+    // oldest entry got dropped, newest (event_external for this write) is present at the end
+    expect(history[0]).toEqual(expect.objectContaining({ state: 'state-1' }));
+    expect(history[history.length - 1]).toEqual(expect.objectContaining({ state: 'reviewing', event: 'event_external' }));
   });
 });

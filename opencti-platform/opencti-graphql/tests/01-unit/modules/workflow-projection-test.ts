@@ -54,6 +54,7 @@ describe('projectWorkflowState', () => {
       'entity-1',
       'Incident',
       [{ key: 'x_opencti_workflow_id', value: ['status-progress-id'] }],
+      { workflowInternalWrite: true },
     );
   });
 
@@ -73,6 +74,7 @@ describe('projectWorkflowState', () => {
       'internal-id',
       'Incident',
       [{ key: 'x_opencti_workflow_id', value: ['status-id'] }],
+      { workflowInternalWrite: true },
     );
   });
 
@@ -93,5 +95,19 @@ describe('projectWorkflowState', () => {
     await expect(projectWorkflowState(mockContext, entity, 'tpl-a', StatusScope.Global)).resolves.toBeUndefined();
     expect(updateAttribute).not.toHaveBeenCalled();
     expect(logApp.warn).toHaveBeenCalledOnce();
+  });
+
+  it('Task 8, Step 0.2: should mark its own write as internal so Task 8\'s external-write sync hook never treats it as an external write (anti feedback-loop)', async () => {
+    (fullEntitiesList as any).mockResolvedValue([
+      {
+        id: 'status-progress-id', type: 'Incident', scope: StatusScope.Global, template_id: 'tpl-progress', order: 1,
+      },
+    ]);
+    const entity = { id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident' };
+
+    await projectWorkflowState(mockContext, entity, 'tpl-progress', StatusScope.Global);
+
+    const [, , , , , opts] = (updateAttribute as any).mock.calls[0];
+    expect(opts).toEqual({ workflowInternalWrite: true });
   });
 });
