@@ -1,6 +1,7 @@
 import base64
 import datetime
 import json
+import math
 import mimetypes
 import os
 import random
@@ -76,6 +77,70 @@ STIX_EXT_OCTI_SCO: str = "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd56
 STIX_EXT_MITRE: str = "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
 PROCESSING_COUNT: int = 4
 MAX_PROCESSING_COUNT: int = 100
+
+
+def _env_bool(name: str, default: bool) -> bool:
+    """Read a boolean flag from the environment; unknown values fall back to the default."""
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    value = raw.strip().lower()
+    if value in ("1", "true", "yes", "on"):
+        return True
+    if value in ("0", "false", "no", "off"):
+        return False
+    return default
+
+
+def _env_float(name: str, default: float, minimum: float) -> float:
+    """Read a float tuning knob from the environment, tolerant to misconfiguration.
+
+    A malformed value falls back to the default (no crash at import time), and the result is
+    clamped to `minimum` so a bad value cannot produce negative sleeps.
+    """
+    raw = os.getenv(name)
+    if raw is None or raw.strip() == "":
+        return default
+    try:
+        value = float(raw)
+    except ValueError:
+        return default
+    if not math.isfinite(value):
+        return default
+    return max(value, minimum)
+
+
+# Missing-reference retry schedule.
+# Default (flag off): legacy flat wait, random.uniform(1, 3) s before each retry.
+# Opt-in (OPENCTI_MISSING_REF_RETRY_EXPONENTIAL=true): fast-first exponential with +-50%
+# jitter. Most missing references are a short race (the referenced entity lands well under a
+# second later), so the first retry comes quickly; later steps grow so the total wait budget
+# stays ~7.5s and slow dependencies keep their chances. Delays (mean): 0.5s, 1s, 2s, 4s.
+# Initial delay >= 0 (0 disables the wait); factor >= 1 (1 = constant delay).
+MISSING_REF_RETRY_EXPONENTIAL: bool = _env_bool(
+    "OPENCTI_MISSING_REF_RETRY_EXPONENTIAL", default=False
+)
+MISSING_REF_RETRY_INITIAL_DELAY: float = _env_float(
+    "OPENCTI_MISSING_REF_RETRY_INITIAL_DELAY", default=0.5, minimum=0.0
+)
+MISSING_REF_RETRY_FACTOR: float = _env_float(
+    "OPENCTI_MISSING_REF_RETRY_FACTOR", default=2.0, minimum=1.0
+)
+
+
+def missing_ref_retry_delay(attempt_index: int) -> float:
+    """Seconds to wait before missing-reference retry number `attempt_index` (0-based).
+
+    Legacy schedule unless MISSING_REF_RETRY_EXPONENTIAL is on, see the module constants.
+    """
+    if not MISSING_REF_RETRY_EXPONENTIAL:
+        return round(random.uniform(1, 3), 2)
+    base_delay = MISSING_REF_RETRY_INITIAL_DELAY * (
+        MISSING_REF_RETRY_FACTOR**attempt_index
+    )
+    return round(random.uniform(base_delay * 0.5, base_delay * 1.5), 2)
+
+
 MARKDOWN_EXPORT_FIELDS: Tuple[str, ...] = (
     "description",
     "x_opencti_description",
@@ -3638,9 +3703,11 @@ class OpenCTIStix2:
                     processing_count += 1
                 # Platform detects a missing reference and have to retry
                 elif ERROR_TYPE_MISSING_REFERENCE in error_msg and in_retry:
-                    bundles_missing_reference_error_counter.add(1)
-                    sleep_jitter = round(random.uniform(1, 3), 2)
-                    time.sleep(sleep_jitter)
+                    # attempt is 1-based: 1 = first retry, PROCESSING_COUNT = last one
+                    bundles_missing_reference_error_counter.add(
+                        1, {"attempt": processing_count + 1}
+                    )
+                    time.sleep(missing_ref_retry_delay(processing_count))
                     processing_count += 1
                 # A bad gateway error occurs
                 elif ERROR_TYPE_BAD_GATEWAY in error_msg:

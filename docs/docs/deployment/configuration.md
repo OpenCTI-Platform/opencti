@@ -526,6 +526,16 @@ Can be configured manually using the configuration file `config.yml` or through 
 |:------------------------|:------------------------|:--------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | worker:objects_max_refs | WORKER_OBJECTS_MAX_REFS | 0             | The refs amount threshold: if set to a value higher than 0, all objects that have a number of refs higher than this will be sent to a dead letter queue and not ingested |
 
+#### Missing-reference retry schedule
+
+When the platform rejects an object because a referenced entity is not ingested yet (`MISSING_REFERENCE_ERROR`), the worker waits and retries up to 4 times. By default it waits a flat random 1 to 3 seconds before each retry. The exponential schedule waits less on the first retry and more on the last ones (0.5 s, 1 s, 2 s, 4 s on average, with jitter), which fits the common case where the referenced entity lands a fraction of a second later. These settings are environment variables only (read by the `pycti` library, so they also apply to connectors importing bundles directly).
+
+| Parameter | Environment variable                      | Default value | Description                                                                                                      |
+|:----------|:------------------------------------------|:--------------|:-----------------------------------------------------------------------------------------------------------------|
+| -         | OPENCTI_MISSING_REF_RETRY_EXPONENTIAL     | false         | Enable the exponential retry schedule for missing references (`true` / `false`)                                  |
+| -         | OPENCTI_MISSING_REF_RETRY_INITIAL_DELAY   | 0.5           | Exponential schedule only: average wait in seconds before the first retry (minimum 0)                            |
+| -         | OPENCTI_MISSING_REF_RETRY_FACTOR          | 2             | Exponential schedule only: multiplier applied to the wait at each retry (minimum 1, 1 = constant wait)           |
+
 #### Telemetry
 
 | Parameter                          | Environment variable               | Default value | Description                               |
