@@ -1,51 +1,51 @@
-import { lstatSync, readFileSync, existsSync } from 'node:fs';
-import path from 'node:path';
+import { GraphQLError } from 'graphql';
+import { HttpProxyAgent } from 'http-proxy-agent';
+import { HttpsProxyAgent } from 'https-proxy-agent';
+import ipaddr from 'ipaddr.js';
 import nconf from 'nconf';
+import { existsSync, lstatSync, readFileSync } from 'node:fs';
+import path from 'node:path';
 import * as R from 'ramda';
 import { isEmpty } from 'ramda';
-import winston, { format } from 'winston';
-import ipaddr from 'ipaddr.js';
-import DailyRotateFile from 'winston-daily-rotate-file';
-import { HttpsProxyAgent } from 'https-proxy-agent';
-import { HttpProxyAgent } from 'http-proxy-agent';
 import { ProxyAgent } from 'undici';
 import { v4 as uuid } from 'uuid';
-import { GraphQLError } from 'graphql';
-import * as O from '../schema/internalObject';
-import * as M from '../schema/stixMetaObject';
-import {
-  ABSTRACT_INTERNAL_OBJECT,
-  ABSTRACT_STIX_CORE_OBJECT,
-  ABSTRACT_STIX_CORE_RELATIONSHIP,
-  ABSTRACT_STIX_CYBER_OBSERVABLE,
-  ABSTRACT_STIX_DOMAIN_OBJECT,
-  ABSTRACT_STIX_OBJECT,
-  ABSTRACT_STIX_REF_RELATIONSHIP,
-} from '../schema/general';
-import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
+import winston, { format } from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
 import pjson from '../../package.json';
+import { AI_BUS } from '../modules/ai/ai-types';
+import { ENTITY_TYPE_AUTHENTICATION_PROVIDER } from '../modules/authenticationProvider/authenticationProvider-types';
 import { ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
-import { ENTITY_TYPE_NOTIFICATION, ENTITY_TYPE_TRIGGER, NOTIFICATION_NUMBER } from '../modules/notification/notification-types';
-import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
-import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
-import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
-import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
-import { ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
-import { UNKNOWN_ERROR, UnknownError, UnsupportedError } from './errors';
-import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
-import { AI_BUS } from '../modules/ai/ai-types';
-import { SUPPORT_BUS } from '../modules/support/support-types';
-import { ENTITY_TYPE_EXCLUSION_LIST } from '../modules/exclusionList/exclusionList-types';
-import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
 import { ENTITY_TYPE_DISSEMINATION_LIST } from '../modules/disseminationList/disseminationList-types';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
-import { ENTITY_TYPE_FINTEL_DESIGN } from '../modules/fintelDesign/fintelDesign-types';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
-import { ENTITY_TYPE_AUTHENTICATION_PROVIDER } from '../modules/authenticationProvider/authenticationProvider-types';
+import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
+import { ENTITY_TYPE_EXCLUSION_LIST } from '../modules/exclusionList/exclusionList-types';
+import { ENTITY_TYPE_FINTEL_DESIGN } from '../modules/fintelDesign/fintelDesign-types';
+import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
+import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
+import { ENTITY_TYPE_NOTIFICATION, ENTITY_TYPE_TRIGGER, NOTIFICATION_NUMBER } from '../modules/notification/notification-types';
+import { ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
+import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
+import { SUPPORT_BUS } from '../modules/support/support-types';
+import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
+import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_NEWS_FEED_ITEM, NEWS_FEED_NUMBER } from '../modules/xtm/hub/news-feed/news-feed-types';
+import {
+    ABSTRACT_INTERNAL_OBJECT,
+    ABSTRACT_STIX_CORE_OBJECT,
+    ABSTRACT_STIX_CORE_RELATIONSHIP,
+    ABSTRACT_STIX_CYBER_OBSERVABLE,
+    ABSTRACT_STIX_DOMAIN_OBJECT,
+    ABSTRACT_STIX_OBJECT,
+    ABSTRACT_STIX_REF_RELATIONSHIP,
+} from '../schema/general';
+import * as O from '../schema/internalObject';
+import * as M from '../schema/stixMetaObject';
+import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
+import { UNKNOWN_ERROR, UnknownError, UnsupportedError } from './errors';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -594,6 +594,11 @@ export const isFeatureEnabled = (feature) => ENABLED_FEATURE_FLAGS.includes(FEAT
 
 // Custom fields feature flag (use isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG) to check activation)
 export const CUSTOM_FIELDS_FEATURE_FLAG = 'CUSTOM_FIELDS';
+
+// Extended workflow engine/UI feature flag (use isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) to
+// check activation). When disabled, only DraftWorkspace uses the workflow engine and UI; other
+// entity types with a published WorkflowDefinition behave as before this change (plan.md Task 5).
+export const ENTITIES_WORKFLOW_FEATURE_FLAG = 'ENTITIES_WORKFLOW';
 
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;

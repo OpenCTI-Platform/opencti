@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
-import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { Formik, Form } from 'formik';
-import testRender from '../../../../utils/tests/test-render';
+import { Form, Formik } from 'formik';
+import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
 import { fetchQuery } from '../../../../relay/environment';
+import type { UserContextType } from '../../../../utils/hooks/useAuth';
+import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
 import StatusField from './StatusField';
 
 vi.mock('../../../../relay/environment', async () => {
@@ -45,7 +45,7 @@ const mockStatusesResponse = {
   },
 };
 
-const renderStatusField = (props: Record<string, unknown> = {}) => {
+const renderStatusField = (props: Record<string, unknown> = {}, userContext?: Partial<UserContextType>) => {
   return testRender(
     <Formik
       initialValues={{ x_opencti_workflow_id: null }}
@@ -59,6 +59,7 @@ const renderStatusField = (props: Record<string, unknown> = {}) => {
         />
       </Form>
     </Formik>,
+    userContext ? { userContext } : undefined,
   );
 };
 
@@ -122,3 +123,59 @@ describe('StatusField', () => {
     });
   });
 });
+
+describe('StatusField - workflow read-only guard', () => {
+  const fetchQueryMock = fetchQuery as Mock;
+
+  const withWorkflowDefinitionPublished = (hasPublishedWorkflowDefinition: boolean) => {
+    fetchQueryMock.mockImplementation((_query: unknown, variables: { entityType?: string }) => {
+      if (variables?.entityType) {
+        return { toPromise: () => Promise.resolve({ workflowDefinitionPublished: hasPublishedWorkflowDefinition }) };
+      }
+      return { toPromise: () => Promise.resolve(mockStatusesResponse) };
+    });
+  };
+
+  const enabledFlagUserContext = () => createMockUserContext({
+    settings: { platform_feature_flags: [{ id: 'ENTITIES_WORKFLOW', enable: true }] },
+  }) as Partial<UserContextType>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('keeps the field editable when the ENTITIES_WORKFLOW flag is disabled, even if a published WorkflowDefinition exists for the type', async () => {
+    withWorkflowDefinitionPublished(true);
+
+    renderStatusField({ type: 'StixSightingRelationship' });
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Status')).not.toBeDisabled();
+    });
+  });
+
+  it('keeps the field editable when the flag is enabled but no published WorkflowDefinition exists for the type', async () => {
+    withWorkflowDefinitionPublished(false);
+
+    renderStatusField({ type: 'StixSightingRelationship' }, enabledFlagUserContext());
+
+    await waitFor(() => {
+      expect(fetchQueryMock).toHaveBeenCalledWith(
+        expect.anything(),
+        { entityType: 'StixSightingRelationship' },
+      );
+    });
+    expect(screen.getByLabelText('Status')).not.toBeDisabled();
+  });
+
+  it('renders the field read-only when the flag is enabled and a published WorkflowDefinition exists for the type', async () => {
+    withWorkflowDefinitionPublished(true);
+
+    renderStatusField({ type: 'StixSightingRelationship' }, enabledFlagUserContext());
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Status')).toBeDisabled();
+    });
+  });
+});
+

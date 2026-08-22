@@ -8,6 +8,7 @@ import type { AuthContext } from '../../../src/types/user';
 // Mock all workflow domain functions
 vi.mock('../../../src/modules/workflow/domain/workflow-domain', () => ({
   getWorkflowDefinition: vi.fn(),
+  hasPublishedWorkflowDefinition: vi.fn(),
   getWorkflowInstance: vi.fn(),
   getAllowedTransitions: vi.fn(),
   setWorkflowDefinition: vi.fn(),
@@ -315,6 +316,37 @@ describe('workflow-resolvers', () => {
           true,
         );
         expect(result).toBe(mockDefinition);
+      });
+    });
+
+    describe('workflowDefinitionPublished', () => {
+      it('should call hasPublishedWorkflowDefinition with correct arguments and return its result', async () => {
+        vi.mocked(workflowDomain.hasPublishedWorkflowDefinition).mockResolvedValue(true);
+
+        const result = await workflowResolvers.Query.workflowDefinitionPublished(
+          {},
+          { entityType: 'StixSightingRelationship' },
+          mockContext,
+        );
+
+        expect(workflowDomain.hasPublishedWorkflowDefinition).toHaveBeenCalledWith(
+          mockContext,
+          mockContext.user,
+          'StixSightingRelationship',
+        );
+        expect(result).toBe(true);
+      });
+
+      it('should return false when no published definition exists', async () => {
+        vi.mocked(workflowDomain.hasPublishedWorkflowDefinition).mockResolvedValue(false);
+
+        const result = await workflowResolvers.Query.workflowDefinitionPublished(
+          {},
+          { entityType: 'Incident' },
+          mockContext,
+        );
+
+        expect(result).toBe(false);
       });
     });
 

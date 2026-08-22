@@ -3,9 +3,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import WorkflowStatus from './WorkflowStatus';
 import WorkflowTransitions from './WorkflowTransitions';
-import testRender from '../../../../utils/tests/test-render';
+import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
 import type { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
+
+const withEntitiesWorkflowFlag = (enable: boolean) => createMockUserContext({
+  settings: { platform_feature_flags: enable ? [{ id: 'ENTITIES_WORKFLOW', enable: true }] : [] },
+});
 
 // ---------------------------------------------------------------------------
 // Relay mocks
@@ -90,6 +94,30 @@ describe('WorkflowStatus', () => {
     expect(container.firstChild).toBeNull();
   });
 
+  it('renders for DraftWorkspace regardless of the ENTITIES_WORKFLOW flag (default entityType)', () => {
+    const { container } = testRender(
+      <WorkflowStatus data={makeDraft()} />,
+      { userContext: withEntitiesWorkflowFlag(false) },
+    );
+    expect(container.firstChild).not.toBeNull();
+  });
+
+  it('renders null for a non-DraftWorkspace entityType when the ENTITIES_WORKFLOW flag is off', () => {
+    const { container } = testRender(
+      <WorkflowStatus data={makeDraft()} entityType="Incident" />,
+      { userContext: withEntitiesWorkflowFlag(false) },
+    );
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('renders for a non-DraftWorkspace entityType when the ENTITIES_WORKFLOW flag is on', () => {
+    const { container } = testRender(
+      <WorkflowStatus data={makeDraft()} entityType="Incident" />,
+      { userContext: withEntitiesWorkflowFlag(true) },
+    );
+    expect(container.firstChild).not.toBeNull();
+  });
+
   it('does not render a comment icon when lastHistoryEntry has no comment', () => {
     testRender(<WorkflowStatus data={makeDraft()} />);
     expect(document.querySelector('[data-testid="CommentOutlinedIcon"]')).toBeNull();
@@ -165,6 +193,40 @@ describe('WorkflowTransitions', () => {
       <WorkflowTransitions data={makeDraft()} />,
     );
     expect(container.firstChild).toBeNull();
+  });
+
+  it('renders null for a non-DraftWorkspace entityType when the ENTITIES_WORKFLOW flag is off', () => {
+    const draft = makeDraft({
+      workflowInstance: {
+        id: 'instance-1',
+        currentState: 'in_review',
+        currentStatus: makeStatus(),
+        lastHistoryEntry: null,
+        allowedTransitions: [makeTransition({ event: 'approve' })],
+      },
+    });
+    const { container } = testRender(
+      <WorkflowTransitions data={draft} entityType="Incident" />,
+      { userContext: withEntitiesWorkflowFlag(false) },
+    );
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('renders transitions for a non-DraftWorkspace entityType when the ENTITIES_WORKFLOW flag is on', () => {
+    const draft = makeDraft({
+      workflowInstance: {
+        id: 'instance-1',
+        currentState: 'in_review',
+        currentStatus: makeStatus(),
+        lastHistoryEntry: null,
+        allowedTransitions: [makeTransition({ event: 'approve' })],
+      },
+    });
+    testRender(
+      <WorkflowTransitions data={draft} entityType="Incident" />,
+      { userContext: withEntitiesWorkflowFlag(true) },
+    );
+    expect(screen.getByText('approve')).toBeDefined();
   });
 
   it('renders one button per transition when fewer than 3 transitions', () => {

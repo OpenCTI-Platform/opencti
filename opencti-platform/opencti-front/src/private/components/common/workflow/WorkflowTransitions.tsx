@@ -15,17 +15,22 @@ import { workflowStatusFragment, COMMENT_MAX_LENGTH } from './WorkflowStatus.gra
 import { useTransitionWizard } from './useTransitionWizard';
 import { isBypassUser } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';
+import useHelper from '../../../../utils/hooks/useHelper';
+import { isWorkflowUiEnabledForType } from './workflowFeatureFlag';
 import { Close } from 'mdi-material-ui';
 
 interface WorkflowTransitionsProps {
   data: WorkflowStatus_data$key;
+  // See WorkflowStatus's `entityType` prop for the rationale (plan.md Task 5, Step 2).
+  entityType?: string;
 }
 
-export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = ({ data }) => {
+export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = ({ data, entityType = 'DraftWorkspace' }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { me } = useAuth();
   const isBypass = isBypassUser(me);
+  const { isFeatureEnable } = useHelper();
 
   const draft = useFragment(workflowStatusFragment, data);
   const {
@@ -63,7 +68,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
     prevSyncActionsRef.current = pendingTransition?.syncActions ?? null;
   });
 
-  if (!workflowInstance) {
+  if (!workflowInstance || !isWorkflowUiEnabledForType(entityType, isFeatureEnable)) {
     return null;
   }
 

@@ -1,16 +1,19 @@
-import React, { FunctionComponent, useCallback, useState } from 'react';
-import { Field } from 'formik';
-import { graphql } from 'react-relay';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
-import { fetchQuery } from '../../../../relay/environment';
+import { Field } from 'formik';
+import React, { FunctionComponent, useCallback, useEffect, useState } from 'react';
+import { graphql } from 'react-relay';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
+import { fetchQuery } from '../../../../relay/environment';
 import { hexToRGB } from '../../../../utils/Colors';
-import { StatusScopeEnum } from '../../../../utils/statusConstants';
 import { FieldOption } from '../../../../utils/field';
 import useDebounceCallback from '../../../../utils/hooks/useDebounceCallback';
+import useHelper from '../../../../utils/hooks/useHelper';
+import { StatusScopeEnum } from '../../../../utils/statusConstants';
+import { isWorkflowUiEnabledForType } from '../workflow/workflowFeatureFlag';
 import type { StatusFieldStatusesSearchQuery$data } from './__generated__/StatusFieldStatusesSearchQuery.graphql';
+import type { StatusFieldWorkflowDefinitionPublishedQuery$data } from './__generated__/StatusFieldWorkflowDefinitionPublishedQuery.graphql';
 
 interface StatusOption extends FieldOption {
   order: number;
@@ -70,6 +73,17 @@ export const statusFieldStatusesSearchQuery = graphql`
   }
 `;
 
+// Task 5, Step 4.5: lightweight, non-admin-gated check for whether `type` currently has a
+// published WorkflowDefinition (new engine). When combined with the `ENTITIES_WORKFLOW` feature
+// flag, this decides whether the legacy free-choice Status dropdown must become read-only for
+// that entity type, so users can't bypass the new engine's enforced transitions via this
+// pre-existing field (plan.md Task 5, "StatusField is a free-choice bypass" design gap).
+export const statusFieldWorkflowDefinitionPublishedQuery = graphql`
+  query StatusFieldWorkflowDefinitionPublishedQuery($entityType: String!) {
+    workflowDefinitionPublished(entityType: $entityType)
+  }
+`;
+
 const StatusField: FunctionComponent<StatusFieldProps> = ({
   name,
   type,
@@ -82,7 +96,9 @@ const StatusField: FunctionComponent<StatusFieldProps> = ({
   disabled = false,
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const [keyword, setKeyword] = useState<string>('');
+  const [hasPublishedWorkflowDefinition, setHasPublishedWorkflowDefinition] = useState<boolean>(false);
   const [statuses, setStatuses] = useState<StatusOption[]>(
     defaultStatus
       ? [{
@@ -94,6 +110,22 @@ const StatusField: FunctionComponent<StatusFieldProps> = ({
         }]
       : [],
   );
+
+  useEffect(() => {
+    if (!type || !isWorkflowUiEnabledForType(type, isFeatureEnable)) {
+      setHasPublishedWorkflowDefinition(false);
+      return;
+    }
+    fetchQuery(statusFieldWorkflowDefinitionPublishedQuery, { entityType: type })
+      .toPromise()
+      .then((data) => {
+        const queryData = data as StatusFieldWorkflowDefinitionPublishedQuery$data;
+        setHasPublishedWorkflowDefinition(!!queryData?.workflowDefinitionPublished);
+      });
+  }, [type, isFeatureEnable]);
+
+  const isWorkflowManaged = !!type && isWorkflowUiEnabledForType(type, isFeatureEnable) && hasPublishedWorkflowDefinition;
+
 
   const searchStatuses = useCallback((searchKeyword: string = '') => {
     fetchQuery(statusFieldStatusesSearchQuery, {
@@ -153,11 +185,13 @@ const StatusField: FunctionComponent<StatusFieldProps> = ({
       style={style}
       name={name}
       required={required}
-      disabled={disabled}
+      disabled={disabled || isWorkflowManaged}
       textfieldprops={{
         variant: 'standard',
         label: t_i18n('Status'),
-        helperText: helpertext,
+        helperText: isWorkflowManaged
+          ? t_i18n('This status is managed by the workflow. Use the workflow transitions to change it.')
+          : helpertext,
         onFocus: handleFocus,
       }}
       noOptionsText={t_i18n('No available options')}

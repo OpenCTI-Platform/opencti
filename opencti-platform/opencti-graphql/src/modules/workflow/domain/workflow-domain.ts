@@ -431,6 +431,24 @@ export const getWorkflowDefinition = async (
 };
 
 /**
+ * Lightweight, non-admin-gated check for whether an entity type currently has a *published*
+ * WorkflowDefinition (new engine). Used by the frontend's `StatusField` shared guard (Task 5,
+ * Step 4.5) to decide whether the legacy free-choice Status dropdown must become read-only for
+ * that type — deliberately exposed at a lower auth level than `workflowDefinition` (which is
+ * `SETTINGS_SETCUSTOMIZATION`-gated and returns the full definition content), since knowledge
+ * editors need this boolean on every entity edition form, not just settings admins.
+ */
+export const hasPublishedWorkflowDefinition = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+): Promise<boolean> => {
+  const entitySetting = await getWorkflowConfig(context, user, entityType);
+  const definitionData = await getDefinitionData(context, user, entitySetting, false);
+  return !!definitionData;
+};
+
+/**
  * Returns the ID of the published version for the given entity setting's workflow, or null if not published.
  */
 export const getWorkflowPublishedVersionId = async (
@@ -999,6 +1017,21 @@ export const __resetReadRepairRateLimitForTest = (): void => {
 };
 
 /**
+ * Task 5, Step 0.7: per-request cap on read-repair writes. Read batching (`batchWorkflowInstances`)
+ * only solves the read-burst case; a page of N entities that all diverge at once (e.g. right after
+ * a type is migrated, before backfill) would otherwise still fire up to N concurrent repair writes
+ * in a single GraphQL request. Keyed by the request's own `AuthContext` object identity (a fresh
+ * context is created per request), so this never leaks across requests/nodes.
+ */
+const READ_REPAIR_WRITE_CAP_PER_REQUEST = 20;
+let readRepairWriteCountByContext = new WeakMap<AuthContext, number>();
+
+/** Test-only: resets the per-request repair-write cap so tests can exercise it from a clean state. */
+export const __resetReadRepairWriteCapForTest = (): void => {
+  readRepairWriteCountByContext = new WeakMap<AuthContext, number>();
+};
+
+/**
  * Pre-resolved per-entity data a batched caller (`batchWorkflowInstances`) has already fetched
  * in bulk, so a single `getWorkflowInstance`/`getAllowedTransitions` call doesn't redo the same
  * per-entity store round trips (entity fetch, entitySetting/definition resolution, WorkflowInstance
@@ -1062,10 +1095,16 @@ export const getWorkflowInstance = async (
         const scope = resolveProjectionScope(instanceEntity.scope);
         const expectedStatusId = await resolveMappedStatusId(context, entity.entity_type, scope, currentState);
         if (expectedStatusId && (entity as BasicStoreEntity).x_opencti_workflow_id !== expectedStatusId) {
-          readRepairLastAttemptByEntity.set(effectiveEntityId, Date.now());
-          const repairContext = { ...bypassDraftContext(context), user: WORKFLOW_MANAGER_USER };
-          await projectWorkflowState(repairContext, entity as BasicStoreEntity, currentState, scope);
-          logApp.info('[OPENCTI-MODULE] Repaired x_opencti_workflow_id divergence from WorkflowInstance.currentState', { entityId: effectiveEntityId, entityType: entity.entity_type, currentState });
+          const requestWriteCount = readRepairWriteCountByContext.get(context) ?? 0;
+          if (requestWriteCount >= READ_REPAIR_WRITE_CAP_PER_REQUEST) {
+            logApp.warn('[OPENCTI-MODULE] Skipping read-repair write: per-request cap reached, entity remains unrepaired until a later request', { entityId: effectiveEntityId, cap: READ_REPAIR_WRITE_CAP_PER_REQUEST });
+          } else {
+            readRepairWriteCountByContext.set(context, requestWriteCount + 1);
+            readRepairLastAttemptByEntity.set(effectiveEntityId, Date.now());
+            const repairContext = { ...bypassDraftContext(context), user: WORKFLOW_MANAGER_USER };
+            await projectWorkflowState(repairContext, entity as BasicStoreEntity, currentState, scope);
+            logApp.info('[OPENCTI-MODULE] Repaired x_opencti_workflow_id divergence from WorkflowInstance.currentState', { entityId: effectiveEntityId, entityType: entity.entity_type, currentState });
+          }
         }
       } catch (error) {
         logApp.warn('[OPENCTI-MODULE] Failed to read-repair x_opencti_workflow_id, returning unrepaired instance', { cause: error, entityId: effectiveEntityId });

@@ -1,7 +1,7 @@
-import type { Node, Edge } from 'reactflow';
-import type { SubTypeWorkflowQuery$data } from '../__generated__/SubTypeWorkflowQuery.graphql';
+import type { Edge, Node } from 'reactflow';
 import { AuthorizedMemberOption } from '../../../../../utils/authorizedMembers';
 import type { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
+import type { SubTypeWorkflowQuery$data } from '../__generated__/SubTypeWorkflowQuery.graphql';
 
 export type Condition = { field: string; operator: string; value: string }
   | { type: string };
@@ -38,6 +38,32 @@ export const FEATURE_NAME = 'Workflow';
 export const NEW_EVENT_NAME = 'NEW_EVENT';
 
 export const NEW_STATUS_NAME = 'NEW_STATUS';
+
+// Container entity types (mirrors backend STIX_DOMAIN_OBJECT_CONTAINERS /
+// schema/stixDomainObject.ts). Duplicated locally rather than imported from
+// data/forms/FormUtils.ts's CONTAINER_TYPES to avoid a cross-folder coupling
+// between the workflow settings UI and the custom-forms feature.
+export const WORKFLOW_CONTAINER_TYPES = [
+  'Case-Incident',
+  'Case-Rfi',
+  'Case-Rft',
+  'Feedback',
+  'Task',
+  'Note',
+  'Observed-Data',
+  'Opinion',
+  'Report',
+  'Grouping',
+];
+
+// The "Draft validation" transition action is only meaningful for the
+// DraftWorkspace workflow (it validates a draft into its target entity).
+export const isDraftValidationActionAllowedForType = (entityType: string): boolean => entityType === 'DraftWorkspace';
+
+// The "Update authorized members" transition action is only meaningful for
+// DraftWorkspace (draft sharing) or Container entity types (which support
+// authorized-members-based sharing).
+export const isAuthorizedMembersActionAllowedForType = (entityType: string): boolean => entityType === 'DraftWorkspace' || WORKFLOW_CONTAINER_TYPES.includes(entityType);
 
 export enum WorkflowNodeType {
   status = 'status',
@@ -186,7 +212,7 @@ const isElementStatus = (selectedElement: Node) => (selectedElement?.type === Wo
 const isNewElementStatus = (selectedElement: Node) => (selectedElement?.type === WorkflowNodeType.placeholder);
 
 export {
-  transformToWorkflowDefinition,
-  isElementStatus,
-  isNewElementStatus,
+    isElementStatus,
+    isNewElementStatus, transformToWorkflowDefinition
 };
+

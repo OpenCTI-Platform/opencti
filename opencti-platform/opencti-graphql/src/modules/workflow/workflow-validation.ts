@@ -4,6 +4,7 @@ import { fullEntitiesList, storeLoadById, storeLoadByIds } from '../../database/
 import { FilterMode, FilterOperator } from '../../generated/graphql';
 import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../schema/internalObject';
 import { isBasicObject } from '../../schema/stixCoreObject';
+import { isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { computeStateOrder, findUnreachableStates } from './domain/workflow-ordering';
 import { ActionDefinitions } from './registry/workflow-actions';
@@ -262,6 +263,18 @@ export const validateWorkflowDefinitionData = async (
         validateAction(action, `transition ${transition.event} (syncActions)`);
         if (action.type === 'validateDraft') {
           hasValidateDraft = true;
+          if (entityType !== 'DraftWorkspace') {
+            errors.push({
+              type: 'VALIDATE_DRAFT_ACTION_NOT_ALLOWED',
+              message: `Action 'validateDraft' in transition '${transition.event}' is only allowed for DraftWorkspace workflows`,
+            });
+          }
+        }
+        if (action.type === 'updateAuthorizedMembers' && entityType !== 'DraftWorkspace' && !isStixDomainObjectContainer(entityType)) {
+          errors.push({
+            type: 'UPDATE_AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED',
+            message: `Action 'updateAuthorizedMembers' in transition '${transition.event}' is only allowed for DraftWorkspace or Container entity types`,
+          });
         }
       }
     }

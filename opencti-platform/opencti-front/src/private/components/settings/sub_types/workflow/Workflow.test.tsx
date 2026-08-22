@@ -1,13 +1,13 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createTheme, ThemeOptions, ThemeProvider } from '@mui/material/styles';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ThemeProvider, createTheme, ThemeOptions } from '@mui/material/styles';
+import type { PreloadedQuery } from 'react-relay';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import ThemeDark from '../../../../../components/ThemeDark';
+import { SubTypeWorkflowDependenciesQuery } from '../__generated__/SubTypeWorkflowDependenciesQuery.graphql';
+import { SubTypeWorkflowQuery } from '../__generated__/SubTypeWorkflowQuery.graphql';
 import Workflow from './Workflow';
 import { WorkflowNodeType } from './utils';
-import ThemeDark from '../../../../../components/ThemeDark';
-import type { PreloadedQuery } from 'react-relay';
-import { SubTypeWorkflowQuery } from '../__generated__/SubTypeWorkflowQuery.graphql';
-import { SubTypeWorkflowDependenciesQuery } from '../__generated__/SubTypeWorkflowDependenciesQuery.graphql';
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
@@ -318,6 +318,21 @@ describe('Workflow Component', () => {
           expect(calls[0][0]).toMatchObject({
             variables: expect.objectContaining({
               entityType: 'DraftWorkspace',
+            }),
+          });
+        }
+      }, { timeout: 2000 });
+    });
+
+    it('should call saveWorkflowDefinition with the custom entityType prop when provided', async () => {
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="Report" />);
+
+      await waitFor(() => {
+        const calls = mockSaveWorkflowDefinition.mock.calls;
+        if (calls.length > 0) {
+          expect(calls[0][0]).toMatchObject({
+            variables: expect.objectContaining({
+              entityType: 'Report',
             }),
           });
         }

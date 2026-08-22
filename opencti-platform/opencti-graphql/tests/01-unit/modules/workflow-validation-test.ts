@@ -821,6 +821,84 @@ describe('Workflow Validation', () => {
     await expect(validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident'))
       .rejects.toThrow("doesn't exist");
   });
+
+  it('should reject a validateDraft syncAction for a non-DraftWorkspace entity type', async () => {
+    const invalid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'done' }],
+      transitions: [
+        {
+          from: 'existing-state',
+          to: 'done',
+          event: 'publish',
+          syncActions: [{ type: 'validateDraft' }],
+        },
+      ],
+    };
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident');
+    expect(errors).toContainEqual(expect.objectContaining({
+      type: 'VALIDATE_DRAFT_ACTION_NOT_ALLOWED',
+    }));
+  });
+
+  it('should reject an updateAuthorizedMembers syncAction for a non-DraftWorkspace, non-Container entity type', async () => {
+    const invalid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'done' }],
+      transitions: [
+        {
+          from: 'existing-state',
+          to: 'done',
+          event: 'publish',
+          syncActions: [{ type: 'updateAuthorizedMembers', params: { authorized_members: [] } }],
+        },
+      ],
+    };
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident');
+    expect(errors).toContainEqual(expect.objectContaining({
+      type: 'UPDATE_AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED',
+    }));
+  });
+
+  it('should allow an updateAuthorizedMembers syncAction for a Container entity type', async () => {
+    const valid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'done' }],
+      transitions: [
+        {
+          from: 'existing-state',
+          to: 'done',
+          event: 'publish',
+          syncActions: [{ type: 'updateAuthorizedMembers', params: { authorized_members: [] } }],
+        },
+      ],
+    };
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'Report');
+    expect(errors).not.toContainEqual(expect.objectContaining({
+      type: 'UPDATE_AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED',
+    }));
+  });
+
+  it('should allow a validateDraft and updateAuthorizedMembers syncAction for DraftWorkspace', async () => {
+    const valid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'done' }],
+      transitions: [
+        {
+          from: 'existing-state',
+          to: 'done',
+          event: 'publish',
+          syncActions: [
+            { type: 'validateDraft' },
+            { type: 'updateAuthorizedMembers', params: { authorized_members: [] } },
+          ],
+        },
+      ],
+    };
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'DraftWorkspace');
+    expect(errors).not.toContainEqual(expect.objectContaining({ type: 'VALIDATE_DRAFT_ACTION_NOT_ALLOWED' }));
+    expect(errors).not.toContainEqual(expect.objectContaining({ type: 'UPDATE_AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED' }));
+  });
 });
 
 describe('Workflow Validation – transition comment field', () => {

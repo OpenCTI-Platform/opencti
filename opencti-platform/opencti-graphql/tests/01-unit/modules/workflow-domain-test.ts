@@ -15,6 +15,7 @@ import { ENTITY_TYPE_ENTITY_SETTING } from '../../../src/modules/entitySetting/e
 import { addNotification } from '../../../src/modules/notification/notification-domain';
 import {
     __resetReadRepairRateLimitForTest,
+    __resetReadRepairWriteCapForTest,
     __resetWorkflowLifecycleHooksRegisteredForTest,
     batchWorkflowInstances,
     clearWorkflowPendingState,
@@ -23,6 +24,7 @@ import {
     getWorkflowDefinition,
     getWorkflowInstance,
     getWorkflowPublishedVersionId,
+    hasPublishedWorkflowDefinition,
     initializeEntityWorkflow,
     isStatusTemplateUsedInWorkflows,
     publishWorkflowDefinition,
@@ -2053,6 +2055,47 @@ describe('getWorkflowInstance', () => {
   });
 });
 
+describe('hasPublishedWorkflowDefinition', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('returns true when the entity type has a published WorkflowDefinition', async () => {
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    (storeLoadById as any).mockResolvedValue({
+      id: 'workflow-def-id',
+      name: 'Test Workflow',
+      published_version: { id: 'v1', content: JSON.stringify({ initialState: 'draft', states: [{ statusId: 'draft' }], transitions: [] }), validation_errors: [] },
+    });
+
+    const result = await hasPublishedWorkflowDefinition(mockContext, mockUser, 'StixSightingRelationship');
+
+    expect(result).toBe(true);
+  });
+
+  it('returns false when the entity type has no EntitySetting/workflow configuration at all', async () => {
+    (findByType as any).mockResolvedValue(undefined);
+
+    const result = await hasPublishedWorkflowDefinition(mockContext, mockUser, 'Incident');
+
+    expect(result).toBe(false);
+  });
+
+  it('returns false when the WorkflowDefinition exists but has no published_version (draft-only)', async () => {
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    (storeLoadById as any).mockResolvedValue({
+      id: 'workflow-def-id',
+      name: 'Test Workflow',
+      draft_version: { id: 'draft-v1', content: JSON.stringify({ initialState: 'draft', states: [{ statusId: 'draft' }], transitions: [] }), validation_errors: [] },
+      published_version: undefined,
+    });
+
+    const result = await hasPublishedWorkflowDefinition(mockContext, mockUser, 'StixSightingRelationship');
+
+    expect(result).toBe(false);
+  });
+});
+
 // ===========================================================================
 // triggerWorkflowEvent — async/pending path + lock + error handling
 // ===========================================================================
@@ -2607,6 +2650,7 @@ describe('getWorkflowInstance — read-repair (Task 2, Step 4)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     __resetReadRepairRateLimitForTest();
+    __resetReadRepairWriteCapForTest();
     (booleanConf as any).mockReturnValue(false);
   });
 
@@ -2683,6 +2727,61 @@ describe('getWorkflowInstance — read-repair (Task 2, Step 4)', () => {
 
     expect(resolveMappedStatusId).not.toHaveBeenCalled();
     expect(projectWorkflowState).not.toHaveBeenCalled();
+  });
+});
+
+// ===========================================================================
+// Task 5, Step 0.7: getWorkflowInstance — per-request cap on read-repair writes
+// ===========================================================================
+describe('getWorkflowInstance — read-repair per-request write cap (Task 5, Step 0.7)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    __resetReadRepairRateLimitForTest();
+    __resetReadRepairWriteCapForTest();
+    (booleanConf as any).mockReturnValue(false);
+  });
+
+  const definitionContent = JSON.stringify({
+    initialState: 'draft',
+    states: [{ statusId: 'draft' }, { statusId: 'reviewing' }],
+    transitions: [],
+  });
+
+  const setupEntities = (count: number) => {
+    const entities = Array.from({ length: count }, (_, i) => ({
+      id: `entity-${i}`, internal_id: `entity-${i}`, entity_type: 'Incident', x_opencti_workflow_id: 'stale-status-id',
+    }));
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      const found = entities.find((e) => e.id === id);
+      if (found) return Promise.resolve(found);
+      if (id === 'workflow-def-id') {
+        return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      }
+      return Promise.resolve(null);
+    });
+    (loadEntity as any).mockResolvedValue({ id: 'instance-id', internal_id: 'instance-id', currentState: 'reviewing', history: '[]', scope: 'GLOBAL' });
+    return entities;
+  };
+
+  it('caps repair writes at a fixed maximum per request, leaving the rest unrepaired', async () => {
+    const entities = setupEntities(25);
+    (resolveMappedStatusId as any).mockResolvedValue('correct-status-id');
+
+    await Promise.all(entities.map((e) => getWorkflowInstance(mockContext, mockUser, e.id)));
+
+    expect(projectWorkflowState).toHaveBeenCalledTimes(20);
+  });
+
+  it('does not share the cap across two different requests (contexts)', async () => {
+    const entities = setupEntities(25);
+    (resolveMappedStatusId as any).mockResolvedValue('correct-status-id');
+    const otherContext = { user: { id: 'other-ctx-user' } } as any;
+
+    await Promise.all(entities.slice(0, 20).map((e) => getWorkflowInstance(mockContext, mockUser, e.id)));
+    await getWorkflowInstance(otherContext, mockUser, entities[20].id);
+
+    expect(projectWorkflowState).toHaveBeenCalledTimes(21);
   });
 });
 

@@ -7,18 +7,25 @@ import { workflowStatusFragment } from './WorkflowStatus.graphql';
 import { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 import IconButton from '../../../../components/common/button/IconButton';
 import { useFormatter } from '../../../../components/i18n';
+import useHelper from '../../../../utils/hooks/useHelper';
+import { isWorkflowUiEnabledForType } from './workflowFeatureFlag';
 export { WorkflowTransitions } from './WorkflowTransitions';
 
 interface WorkflowStatusProps {
   data: WorkflowStatus_data$key;
+  // Entity type the displayed WorkflowInstance belongs to. Defaults to 'DraftWorkspace' (the only
+  // caller today, via DraftToolbar.tsx); other entity types are gated behind the ENTITIES_WORKFLOW
+  // feature flag (plan.md Task 5, Step 2).
+  entityType?: string;
 }
 
-const WorkflowStatus: FunctionComponent<WorkflowStatusProps> = ({ data }) => {
+const WorkflowStatus: FunctionComponent<WorkflowStatusProps> = ({ data, entityType = 'DraftWorkspace' }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const draft = useFragment(workflowStatusFragment, data);
   const [commentAnchorEl, setCommentAnchorEl] = useState<HTMLButtonElement | null>(null);
 
-  if (!draft.workflowInstance) {
+  if (!draft.workflowInstance || !isWorkflowUiEnabledForType(entityType, isFeatureEnable)) {
     return null;
   }
 

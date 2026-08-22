@@ -1,13 +1,13 @@
-import { Formik, Form } from 'formik';
-import Drawer from '@components/common/drawer/Drawer';
-import FormButtonContainer from '@common/form/FormButtonContainer';
 import Button from '@common/button/Button';
-import StatusForm from './StatusForm';
-import TransitionForm from './TransitionForm';
+import FormButtonContainer from '@common/form/FormButtonContainer';
+import Drawer from '@components/common/drawer/Drawer';
+import { Form, Formik } from 'formik';
+import { Edge, Node } from 'reactflow';
 import { useFormatter } from '../../../../../components/i18n';
 import { useWorkflowForm } from './hooks/useWorkflowForm';
+import StatusForm from './StatusForm';
+import TransitionForm from './TransitionForm';
 import { Status, Transition, WorkflowDataType } from './utils';
-import { Node, Edge } from 'reactflow';
 
 export type WorkflowEditionFormValues = Status & Transition;
 export type WorkflowFormStatus = {
@@ -20,9 +20,10 @@ interface WorkflowEditionDrawerProps {
   open: boolean;
   selectedElement: Node | Edge;
   onClose: () => void;
+  entityType?: string;
 }
 
-const WorkflowEditionDrawer = ({ open, selectedElement, onClose }: WorkflowEditionDrawerProps) => {
+const WorkflowEditionDrawer = ({ open, selectedElement, onClose, entityType = 'DraftWorkspace' }: WorkflowEditionDrawerProps) => {
   const { t_i18n } = useFormatter();
   const {
     drawerTitle,
@@ -44,7 +45,7 @@ const WorkflowEditionDrawer = ({ open, selectedElement, onClose }: WorkflowEditi
         >
           {({ submitForm, isSubmitting }) => (
             <Form style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-              {isStatus ? (<StatusForm />) : (<TransitionForm />)}
+              {isStatus ? (<StatusForm />) : (<TransitionForm entityType={entityType} />)}
               <FormButtonContainer>
                 {isNewStatus ? (
                   <Button variant="secondary" onClick={onDelete} disabled={isSubmitting}>

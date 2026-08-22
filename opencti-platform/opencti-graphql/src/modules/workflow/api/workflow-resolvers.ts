@@ -2,16 +2,17 @@ import { GraphQLError } from 'graphql';
 import type { AuthContext } from '../../../types/user';
 import { reportWorkflowAsyncActionResult } from '../domain/workflow-async-completion';
 import {
-  clearWorkflowPendingState,
-  deleteWorkflowDefinition,
-  getAllowedTransitions,
-  getWorkflowDefinition,
-  getWorkflowInstance,
-  getWorkflowPublishedVersionId,
-  publishWorkflowDefinition,
-  restorePublishedWorkflowDefinition,
-  setWorkflowDefinition,
-  triggerWorkflowEvent,
+    clearWorkflowPendingState,
+    deleteWorkflowDefinition,
+    getAllowedTransitions,
+    getWorkflowDefinition,
+    getWorkflowInstance,
+    getWorkflowPublishedVersionId,
+    hasPublishedWorkflowDefinition,
+    publishWorkflowDefinition,
+    restorePublishedWorkflowDefinition,
+    setWorkflowDefinition,
+    triggerWorkflowEvent,
 } from '../domain/workflow-domain';
 
 const COMMENT_MAX_LENGTH = 1000; // Keep in sync with COMMENT_MAX_LENGTH in opencti-front/src/private/components/common/workflow/WorkflowStatus.tsx
@@ -20,6 +21,9 @@ const workflowResolvers = {
   Query: {
     workflowDefinition: (_: any, { entityType, allowDraft = false }: { entityType: string; allowDraft?: boolean }, context: AuthContext) => {
       return getWorkflowDefinition(context, context.user!, entityType, allowDraft);
+    },
+    workflowDefinitionPublished: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
+      return hasPublishedWorkflowDefinition(context, context.user!, entityType);
     },
     workflowInstance: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return getWorkflowInstance(context, context.user!, entityId);

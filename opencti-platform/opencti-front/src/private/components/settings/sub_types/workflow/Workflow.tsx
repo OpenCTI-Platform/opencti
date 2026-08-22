@@ -1,30 +1,30 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import ReactFlow, { Edge, EdgeMouseHandler, Node, NodeMouseHandler, Panel, useEdgesState, useNodesState, useReactFlow } from 'reactflow';
-import 'reactflow/dist/style.css';
-import WorkflowEditionDrawer from './WorkflowEditionDrawer';
-import useWorkflowLayout, { LayoutOptions, Direction } from './hooks/useWorkflowLayout';
-import nodeTypes from './NodeTypes';
-import edgeTypes from './EdgeTypes';
 import Button from '@common/button/Button';
 import { Box, Typography } from '@mui/material';
-import { NEW_STATUS_NAME, transformToWorkflowDefinition, WorkflowNodeType } from './utils';
-import { graphql, PreloadedQuery, usePreloadedQuery, useMutation } from 'react-relay';
-import { workflowDependenciesQuery, workflowQuery } from '../SubTypeWorkflow';
-import { SubTypeWorkflowQuery, SubTypeWorkflowQuery$data } from '../__generated__/SubTypeWorkflowQuery.graphql';
-import { SubTypeWorkflowDependenciesQuery } from '../__generated__/SubTypeWorkflowDependenciesQuery.graphql';
-import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import { useTheme } from '@mui/material/styles';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { graphql, PreloadedQuery, useMutation, usePreloadedQuery } from 'react-relay';
+import ReactFlow, { Edge, EdgeMouseHandler, Node, NodeMouseHandler, Panel, useEdgesState, useNodesState, useReactFlow } from 'reactflow';
+import 'reactflow/dist/style.css';
+import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
+import { MESSAGING$ } from '../../../../../relay/environment';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import { workflowDependenciesQuery, workflowQuery } from '../SubTypeWorkflow';
+import { SubTypeWorkflowDependenciesQuery } from '../__generated__/SubTypeWorkflowDependenciesQuery.graphql';
+import { SubTypeWorkflowQuery, SubTypeWorkflowQuery$data } from '../__generated__/SubTypeWorkflowQuery.graphql';
+import edgeTypes from './EdgeTypes';
+import nodeTypes from './NodeTypes';
+import PublishButton from './PublishButton';
+import RestoreConfirmDialog from './RestoreConfirmDialog';
+import WorkflowEditionDrawer from './WorkflowEditionDrawer';
 import { WorkflowDefinitionMutation } from './__generated__/WorkflowDefinitionMutation.graphql';
 import { WorkflowPublishMutation } from './__generated__/WorkflowPublishMutation.graphql';
 import { WorkflowRestorePublishedMutation } from './__generated__/WorkflowRestorePublishedMutation.graphql';
-import { useWorkflowInitialElements, convertEdgesToObject } from './hooks/useWorkflowInitialElements';
 import { usePlaceholdersSync } from './hooks/usePlaceholdersSync';
 import { useStatusConnection } from './hooks/useStatusConnection';
-import { useTheme } from '@mui/material/styles';
-import type { Theme } from '../../../../../components/Theme';
-import PublishButton from './PublishButton';
-import RestoreConfirmDialog from './RestoreConfirmDialog';
-import { MESSAGING$ } from '../../../../../relay/environment';
+import { convertEdgesToObject, useWorkflowInitialElements } from './hooks/useWorkflowInitialElements';
+import useWorkflowLayout, { Direction, LayoutOptions } from './hooks/useWorkflowLayout';
+import { NEW_STATUS_NAME, transformToWorkflowDefinition, WorkflowNodeType } from './utils';
 
 export interface WorkflowValidationError {
   type: string;
@@ -137,10 +137,12 @@ const Workflow = ({
   queryRef,
   depsQueryRef,
   onRefetch,
+  entityType = 'DraftWorkspace',
 }: {
   queryRef: PreloadedQuery<SubTypeWorkflowQuery>;
   depsQueryRef: PreloadedQuery<SubTypeWorkflowDependenciesQuery>;
   onRefetch: () => void;
+  entityType?: string;
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -242,7 +244,7 @@ const Workflow = ({
     previousSchemaRef.current = schemaString;
 
     saveWorkflowDefinition({
-      variables: { entityType: 'DraftWorkspace', definition: schemaString },
+      variables: { entityType, definition: schemaString },
       onCompleted: (response) => {
         if (response.workflowDefinitionSet) {
           const { errors } = response.workflowDefinitionSet;
@@ -273,7 +275,7 @@ const Workflow = ({
     const emptySchemaString = JSON.stringify(transformToWorkflowDefinition([], [], workflowDefinition));
     previousSchemaRef.current = emptySchemaString;
     saveWorkflowDefinition({
-      variables: { entityType: 'DraftWorkspace', definition: emptySchemaString },
+      variables: { entityType, definition: emptySchemaString },
       onCompleted: (response) => {
         if (response.workflowDefinitionSet) {
           const { errors } = response.workflowDefinitionSet;
@@ -305,7 +307,7 @@ const Workflow = ({
       return;
     }
     commitPublish({
-      variables: { entityType: 'DraftWorkspace' },
+      variables: { entityType },
       onCompleted: () => {
         MESSAGING$.notifySuccess(t_i18n('Workflow successfully published'));
         setWorkflowDefinitionStatus({
@@ -333,7 +335,7 @@ const Workflow = ({
   // Handle restore action — reloads the published version into the draft
   const handleRestore = () => {
     restoreWorkflowDefinition({
-      variables: { entityType: 'DraftWorkspace' },
+      variables: { entityType },
       onCompleted: () => {
         // Directly reset local state to `initialNodes`/`initialEdges`.
         // The Relay store already holds the published states (only full queries update
@@ -472,6 +474,7 @@ const Workflow = ({
       <WorkflowEditionDrawer
         open={open}
         selectedElement={selectedElement}
+        entityType={entityType}
         onClose={() => {
           setSelectedElement(emptyElement);
           setOpen(false);

@@ -1,13 +1,12 @@
-import React from 'react';
-import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
-import { Formik, Form } from 'formik';
-import TransitionForm from './TransitionForm';
-import testRender from '../../../../../utils/tests/test-render';
-import { WorkflowActionType, CommentMode } from './utils';
-import type { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
-import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
+import { Form, Formik } from 'formik';
 import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
+import testRender from '../../../../../utils/tests/test-render';
+import TransitionForm from './TransitionForm';
+import { CommentMode, WorkflowActionType } from './utils';
+import type { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 
 // ---------------------------------------------------------------------------
 // Mock heavy sub-components with no relevance to the tested logic
@@ -39,11 +38,11 @@ vi.mock('../../../common/form/ObjectOrganizationField', () => ({
 // ---------------------------------------------------------------------------
 // Helper: render TransitionForm inside a Formik context
 // ---------------------------------------------------------------------------
-const renderForm = (initialValues: Partial<WorkflowEditionFormValues>, onSubmit = vi.fn()) => {
+const renderForm = (initialValues: Partial<WorkflowEditionFormValues>, onSubmit = vi.fn(), entityType?: string) => {
   return testRender(
     <Formik initialValues={initialValues as WorkflowEditionFormValues} onSubmit={onSubmit}>
       <Form>
-        <TransitionForm />
+        <TransitionForm entityType={entityType} />
       </Form>
     </Formik>,
   );
@@ -323,6 +322,33 @@ describe('TransitionForm – rendering', () => {
   it('renders WorkflowFieldList when syncActions are defined', () => {
     renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] });
     expect(screen.getByTestId('workflow-field-list')).toBeDefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// entityType-based section gating
+// ---------------------------------------------------------------------------
+describe('TransitionForm – entityType gating', () => {
+  beforeEach(() => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(true);
+  });
+
+  it('renders "Draft validation" and "Authorized members" sections by default (DraftWorkspace)', () => {
+    renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] });
+    expect(screen.getByRole('checkbox', { name: /validate draft/i })).toBeDefined();
+    expect(screen.getByRole('checkbox', { name: /update authorized members/i })).toBeDefined();
+  });
+
+  it('hides "Draft validation" and "Authorized members" sections for a non-Container entity type', () => {
+    renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, vi.fn(), 'Incident');
+    expect(screen.queryByRole('checkbox', { name: /validate draft/i })).toBeNull();
+    expect(screen.queryByRole('checkbox', { name: /update authorized members/i })).toBeNull();
+  });
+
+  it('shows "Authorized members" but hides "Draft validation" for a Container entity type', () => {
+    renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, vi.fn(), 'Report');
+    expect(screen.queryByRole('checkbox', { name: /validate draft/i })).toBeNull();
+    expect(screen.getByRole('checkbox', { name: /update authorized members/i })).toBeDefined();
   });
 });
 

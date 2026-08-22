@@ -1,7 +1,7 @@
-import { CSSProperties } from 'react';
 import { FlagOutlined } from '@mui/icons-material';
 import { Alert, Box, FormControlLabel, Icon, Switch, Typography } from '@mui/material';
 import { Field, useFormikContext } from 'formik';
+import { CSSProperties } from 'react';
 import TextField from '../../../../../components/TextField';
 import { useFormatter } from '../../../../../components/i18n';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
@@ -10,9 +10,21 @@ import ObjectOrganizationField from '../../../common/form/ObjectOrganizationFiel
 import WorkflowConditionFilters from './WorkflowConditionFilters';
 import { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import WorkflowFieldList from './WorkflowFieldList';
-import { CommentMode, CommentModeType, FEATURE_NAME, WorkflowActionType, WorkflowDataType } from './utils';
+import {
+    CommentMode,
+    CommentModeType,
+    FEATURE_NAME,
+    isAuthorizedMembersActionAllowedForType,
+    isDraftValidationActionAllowedForType,
+    WorkflowActionType,
+    WorkflowDataType,
+} from './utils';
 
-const TransitionForm = () => {
+interface TransitionFormProps {
+  entityType?: string;
+}
+
+const TransitionForm = ({ entityType = 'DraftWorkspace' }: TransitionFormProps) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { values, setFieldValue } = useFormikContext<WorkflowEditionFormValues>();
@@ -129,28 +141,30 @@ const TransitionForm = () => {
         </Box>
       </Box>
 
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
-        <Typography variant="h6">
-          {t_i18n('Authorized members')} <EEChip feature={t_i18n(FEATURE_NAME)} />
-        </Typography>
-        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-          <FormControlLabel
-            control={(
-              <Switch
-                checked={hasUpdateAuthorizedMembers}
-                disabled={!isEnterpriseEdition}
-                onChange={(e) => handleToggleAction(WorkflowActionType.updateAuthorizedMembers, e.target.checked)}
-              />
+      {isAuthorizedMembersActionAllowedForType(entityType) && (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
+          <Typography variant="h6">
+            {t_i18n('Authorized members')} <EEChip feature={t_i18n(FEATURE_NAME)} />
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+            <FormControlLabel
+              control={(
+                <Switch
+                  checked={hasUpdateAuthorizedMembers}
+                  disabled={!isEnterpriseEdition}
+                  onChange={(e) => handleToggleAction(WorkflowActionType.updateAuthorizedMembers, e.target.checked)}
+                />
+              )}
+              label={t_i18n('Update authorized members')}
+            />
+            {values.syncActions && (
+              <Box style={disabledEEStyle}>
+                <WorkflowFieldList name={WorkflowDataType.syncActions} />
+              </Box>
             )}
-            label={t_i18n('Update authorized members')}
-          />
-          {values.syncActions && (
-            <Box style={disabledEEStyle}>
-              <WorkflowFieldList name={WorkflowDataType.syncActions} />
-            </Box>
-          )}
+          </Box>
         </Box>
-      </Box>
+      )}
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
         <Typography variant="h6">
@@ -185,27 +199,29 @@ const TransitionForm = () => {
         </Box>
       </Box>
 
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
-        <Typography variant="h6">
-          {t_i18n('Draft validation')}
-        </Typography>
-        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-          <FormControlLabel
-            control={(
-              <Switch
-                checked={hasValidateDraft}
-                onChange={(e) => handleToggleAction(WorkflowActionType.validateDraft, e.target.checked)}
-              />
-            )}
-            label={(
-              <Box style={{ display: 'flex', alignItems: 'center' }}>
-                {t_i18n('Validate draft')}
-                <Icon color="primary" fontSize="small" style={{ marginLeft: 8 }}><FlagOutlined /></Icon>
-              </Box>
-            )}
-          />
+      {isDraftValidationActionAllowedForType(entityType) && (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
+          <Typography variant="h6">
+            {t_i18n('Draft validation')}
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+            <FormControlLabel
+              control={(
+                <Switch
+                  checked={hasValidateDraft}
+                  onChange={(e) => handleToggleAction(WorkflowActionType.validateDraft, e.target.checked)}
+                />
+              )}
+              label={(
+                <Box style={{ display: 'flex', alignItems: 'center' }}>
+                  {t_i18n('Validate draft')}
+                  <Icon color="primary" fontSize="small" style={{ marginLeft: 8 }}><FlagOutlined /></Icon>
+                </Box>
+              )}
+            />
+          </Box>
         </Box>
-      </Box>
+      )}
     </>
   );
 };

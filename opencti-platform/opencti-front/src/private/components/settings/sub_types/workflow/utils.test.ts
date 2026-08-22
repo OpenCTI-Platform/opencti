@@ -1,7 +1,15 @@
-import { describe, it, expect } from 'vitest';
-import { transformToWorkflowDefinition, isElementStatus, isNewElementStatus, WorkflowNodeType, WorkflowActionType } from './utils';
-import type { Node, Edge } from 'reactflow';
+import type { Edge, Node } from 'reactflow';
+import { describe, expect, it } from 'vitest';
 import { SubTypeWorkflowQuery$data } from '../__generated__/SubTypeWorkflowQuery.graphql';
+import {
+    isAuthorizedMembersActionAllowedForType,
+    isDraftValidationActionAllowedForType,
+    isElementStatus,
+    isNewElementStatus,
+    transformToWorkflowDefinition,
+    WorkflowActionType,
+    WorkflowNodeType,
+} from './utils';
 
 describe('Workflow utils', () => {
   const mockWorkflowDefinition = {
@@ -142,5 +150,34 @@ describe('Workflow utils', () => {
     expect(isNewElementStatus(statusNode)).toBe(false);
     expect(isNewElementStatus(placeholderNode)).toBe(true);
     expect(isNewElementStatus(transitionNode)).toBe(false);
+  });
+
+  describe('isDraftValidationActionAllowedForType', () => {
+    it('returns true for DraftWorkspace', () => {
+      expect(isDraftValidationActionAllowedForType('DraftWorkspace')).toBe(true);
+    });
+
+    it('returns false for a non-DraftWorkspace entity type', () => {
+      expect(isDraftValidationActionAllowedForType('Incident')).toBe(false);
+    });
+
+    it('returns false for a Container entity type', () => {
+      expect(isDraftValidationActionAllowedForType('Report')).toBe(false);
+    });
+  });
+
+  describe('isAuthorizedMembersActionAllowedForType', () => {
+    it('returns true for DraftWorkspace', () => {
+      expect(isAuthorizedMembersActionAllowedForType('DraftWorkspace')).toBe(true);
+    });
+
+    it('returns true for a Container entity type', () => {
+      expect(isAuthorizedMembersActionAllowedForType('Report')).toBe(true);
+      expect(isAuthorizedMembersActionAllowedForType('Case-Incident')).toBe(true);
+    });
+
+    it('returns false for a non-DraftWorkspace, non-Container entity type', () => {
+      expect(isAuthorizedMembersActionAllowedForType('Incident')).toBe(false);
+    });
   });
 });
