@@ -48,6 +48,28 @@ type WorkflowEntityRef {
     entity_type: String!
 }
 
+type WorkflowMigrationDiagnostic {
+    type: String!
+    message: String!
+    statusId: String
+}
+
+# Task 6, Step 2.1: one result per `StatusScope` present in the entity type's current legacy
+# `Status` set (never a single merged/blended definition across scopes, see
+# convertStatusToDefinition in status-to-definition-converter.ts).
+type WorkflowMigrationScopeResult {
+    scope: StatusScope!
+    initialState: String!
+    states: [WorkflowSerializedState!]!
+    transitions: [WorkflowSerializedTransition!]!
+    diagnostics: [WorkflowMigrationDiagnostic!]!
+}
+
+type WorkflowMigrationPreview {
+    entityType: String!
+    results: [WorkflowMigrationScopeResult!]!
+}
+
 extend type EntitySetting {
     workflow_configuration: Boolean
     workflow_id: String
@@ -145,6 +167,7 @@ extend type StixSightingRelationship {
 extend type Query {
     workflowDefinition(entityType: String!, allowDraft: Boolean): WorkflowSchema @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionPublished(entityType: String!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
+    workflowMigrationPreview(entityType: String!): WorkflowMigrationPreview @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowInstance(entityId: String!): WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE], forDraft: [KNOWLEDGE_KNUPDATE])
     allowedTransitions(entityId: String!): [WorkflowTransition!]! @auth(for: [KNOWLEDGE_KNUPDATE])
 }

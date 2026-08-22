@@ -23,6 +23,7 @@ import {
     getAllowedTransitions,
     getWorkflowDefinition,
     getWorkflowInstance,
+    getWorkflowMigrationPreview,
     getWorkflowPublishedVersionId,
     hasPublishedWorkflowDefinition,
     initializeEntityWorkflow,
@@ -37,7 +38,7 @@ import { projectWorkflowState, resolveMappedStatusId } from '../../../src/module
 import { WorkflowFactory } from '../../../src/modules/workflow/engine/workflow-factory';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
 import { validateWorkflowDefinitionData } from '../../../src/modules/workflow/workflow-validation';
-import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
+import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../src/schema/internalObject';
 import { WORKFLOW_MANAGER_USER } from '../../../src/utils/access';
 import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 
@@ -2093,6 +2094,45 @@ describe('hasPublishedWorkflowDefinition', () => {
     const result = await hasPublishedWorkflowDefinition(mockContext, mockUser, 'StixSightingRelationship');
 
     expect(result).toBe(false);
+  });
+});
+
+describe('getWorkflowMigrationPreview', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('groups legacy Status data by scope and delegates to the pure converter', async () => {
+    (fullEntitiesList as any).mockImplementation((_ctx: any, _user: any, types: string[]) => {
+      if (types.includes(ENTITY_TYPE_STATUS)) {
+        return Promise.resolve([
+          { id: 's1', template_id: 't1', type: 'Incident', scope: StatusScope.Global, order: 1 },
+          { id: 's2', template_id: 't2', type: 'Incident', scope: StatusScope.RequestAccess, order: 1 },
+        ]);
+      }
+      if (types.includes(ENTITY_TYPE_STATUS_TEMPLATE)) {
+        return Promise.resolve([
+          { id: 't1', name: 'New' },
+          { id: 't2', name: 'Pending Approval' },
+        ]);
+      }
+      return Promise.resolve([]);
+    });
+
+    const { byScope } = await getWorkflowMigrationPreview(mockContext, mockUser, 'Incident');
+
+    expect(byScope[StatusScope.Global]?.definition.states.map((s) => s.statusId)).toEqual(['t1']);
+    expect(byScope[StatusScope.RequestAccess]?.definition.states.map((s) => s.statusId)).toEqual(['t2']);
+  });
+
+  it('filters Status lookup by entity type only, so both scopes are included', async () => {
+    (fullEntitiesList as any).mockResolvedValue([]);
+
+    await getWorkflowMigrationPreview(mockContext, mockUser, 'Incident');
+
+    const statusCall = (fullEntitiesList as any).mock.calls.find(([, , types]: [any, any, string[]]) => types.includes(ENTITY_TYPE_STATUS));
+    const [, , , args] = statusCall;
+    expect(args.filters.filters).toEqual([{ key: ['type'], values: ['Incident'] }]);
   });
 });
 

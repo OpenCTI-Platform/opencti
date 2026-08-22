@@ -9,6 +9,7 @@ import type { AuthContext } from '../../../src/types/user';
 vi.mock('../../../src/modules/workflow/domain/workflow-domain', () => ({
   getWorkflowDefinition: vi.fn(),
   hasPublishedWorkflowDefinition: vi.fn(),
+  getWorkflowMigrationPreview: vi.fn(),
   getWorkflowInstance: vi.fn(),
   getAllowedTransitions: vi.fn(),
   setWorkflowDefinition: vi.fn(),
@@ -347,6 +348,55 @@ describe('workflow-resolvers', () => {
         );
 
         expect(result).toBe(false);
+      });
+    });
+
+    describe('workflowMigrationPreview', () => {
+      it('should shape byScope into a results array per scope', async () => {
+        vi.mocked(workflowDomain.getWorkflowMigrationPreview).mockResolvedValue({
+          byScope: {
+            GLOBAL: {
+              definition: { initialState: 't1', states: [{ statusId: 't1' }], transitions: [] },
+              diagnostics: [],
+            },
+          },
+        } as any);
+
+        const result = await workflowResolvers.Query.workflowMigrationPreview(
+          {},
+          { entityType: 'Incident' },
+          mockContext,
+        );
+
+        expect(workflowDomain.getWorkflowMigrationPreview).toHaveBeenCalledWith(
+          mockContext,
+          mockContext.user,
+          'Incident',
+        );
+        expect(result).toEqual({
+          entityType: 'Incident',
+          results: [
+            {
+              scope: 'GLOBAL',
+              initialState: 't1',
+              states: [{ statusId: 't1' }],
+              transitions: [],
+              diagnostics: [],
+            },
+          ],
+        });
+      });
+
+      it('should return an empty results array when no scope has any Status data', async () => {
+        vi.mocked(workflowDomain.getWorkflowMigrationPreview).mockResolvedValue({ byScope: {} } as any);
+
+        const result = await workflowResolvers.Query.workflowMigrationPreview(
+          {},
+          { entityType: 'Incident' },
+          mockContext,
+        );
+
+        expect(result).toEqual({ entityType: 'Incident', results: [] });
       });
     });
 

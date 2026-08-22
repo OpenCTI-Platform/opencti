@@ -9640,6 +9640,7 @@ type Query {
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
   workflowDefinition(entityType: String!, allowDraft: Boolean): WorkflowSchema
   workflowDefinitionPublished(entityType: String!): Boolean
+  workflowMigrationPreview(entityType: String!): WorkflowMigrationPreview
   workflowInstance(entityId: String!): WorkflowInstance
   allowedTransitions(entityId: String!): [WorkflowTransition!]!
   csvMapperTest(configuration: String!, content: String!): CsvMapperTestResult @deprecated(reason: "[>=6.4 & <6.7]. Use `csvMapperTest mutation`.")
@@ -10871,6 +10872,25 @@ type WorkflowValidationError {
 type WorkflowEntityRef {
   id: String!
   entity_type: String!
+}
+
+type WorkflowMigrationDiagnostic {
+  type: String!
+  message: String!
+  statusId: String
+}
+
+type WorkflowMigrationScopeResult {
+  scope: StatusScope!
+  initialState: String!
+  states: [WorkflowSerializedState!]!
+  transitions: [WorkflowSerializedTransition!]!
+  diagnostics: [WorkflowMigrationDiagnostic!]!
+}
+
+type WorkflowMigrationPreview {
+  entityType: String!
+  results: [WorkflowMigrationScopeResult!]!
 }
 
 type EntitySetting implements InternalObject & BasicObject {

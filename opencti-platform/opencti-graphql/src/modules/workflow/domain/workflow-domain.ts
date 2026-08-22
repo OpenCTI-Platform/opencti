@@ -15,7 +15,7 @@ import { type EditInput, FilterMode, FilterOperator, StatusScope } from '../../.
 import { addWorkflowPublishCount } from '../../../manager/telemetryManager';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema/internalObject';
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
-import type { BasicStoreEntity, BasicWorkflowStatus } from '../../../types/store';
+import type { BasicStoreEntity, BasicWorkflowStatus, BasicWorkflowTemplateEntity } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { SYSTEM_USER, WORKFLOW_MANAGER_USER } from '../../../utils/access';
 import { bypassDraftContext } from '../../../utils/draftContext';
@@ -28,6 +28,7 @@ import { addNotification } from '../../notification/notification-domain';
 import type { NotificationAddInput } from '../../notification/notification-types';
 import { WorkflowFactory } from '../engine/workflow-factory';
 import type { WorkflowSchema } from '../engine/workflow-schema';
+import { type ConvertStatusToDefinitionResult, convertStatusToDefinition } from '../migration/status-to-definition-converter';
 import {
     type AsyncActionSlot,
     ENTITY_TYPE_WORKFLOW_DEFINITION,
@@ -446,6 +447,30 @@ export const hasPublishedWorkflowDefinition = async (
   const entitySetting = await getWorkflowConfig(context, user, entityType);
   const definitionData = await getDefinitionData(context, user, entitySetting, false);
   return !!definitionData;
+};
+
+/**
+ * Task 6, Step 2.1: read-only preview of what migrating an entity type's legacy `Status` set to a
+ * `WorkflowDefinition` would produce, one result per `StatusScope` present — no persisted changes.
+ * Pure conversion logic lives in `convertStatusToDefinition`; this just gathers the `Status`/
+ * `StatusTemplate` input data for `entityType` (all scopes, matching `byScope`'s shape).
+ */
+export const getWorkflowMigrationPreview = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+): Promise<ConvertStatusToDefinitionResult> => {
+  const executionContext = bypassDraftContext(context);
+  const executionUser = executionContext.user!;
+  const statuses = await fullEntitiesList<BasicWorkflowStatus>(executionContext, executionUser, [ENTITY_TYPE_STATUS], {
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: ['type'], values: [entityType] }],
+      filterGroups: [],
+    },
+  });
+  const templates = await fullEntitiesList<BasicWorkflowTemplateEntity>(executionContext, executionUser, [ENTITY_TYPE_STATUS_TEMPLATE]);
+  return convertStatusToDefinition(statuses, templates);
 };
 
 /**

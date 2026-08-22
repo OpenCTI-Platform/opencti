@@ -7,6 +7,7 @@ import {
     getAllowedTransitions,
     getWorkflowDefinition,
     getWorkflowInstance,
+    getWorkflowMigrationPreview,
     getWorkflowPublishedVersionId,
     hasPublishedWorkflowDefinition,
     publishWorkflowDefinition,
@@ -24,6 +25,19 @@ const workflowResolvers = {
     },
     workflowDefinitionPublished: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return hasPublishedWorkflowDefinition(context, context.user!, entityType);
+    },
+    workflowMigrationPreview: async (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
+      const { byScope } = await getWorkflowMigrationPreview(context, context.user!, entityType);
+      return {
+        entityType,
+        results: Object.entries(byScope).map(([scope, result]) => ({
+          scope,
+          initialState: result!.definition.initialState,
+          states: result!.definition.states,
+          transitions: result!.definition.transitions,
+          diagnostics: result!.diagnostics,
+        })),
+      };
     },
     workflowInstance: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return getWorkflowInstance(context, context.user!, entityId);
