@@ -1,18 +1,22 @@
-import { environment, getStoppingState, logApp, setStoppingState } from './config/conf';
-import platformInit, { checkFeatureFlags } from './initialization';
-import cacheManager from './manager/cacheManager';
-import { shutdownRedisClients } from './database/redis';
-import { shutdownModules, startModules } from './managers';
-import { initLockFork } from './lock/master-lock';
 import { checkSystemDependencies } from './boot-utils';
-import { startLivenessServer, stopLivenessServer } from './http/httpLiveness';
+import { environment, getStoppingState, logApp, setStoppingState } from './config/conf';
 import { startEngineHealthMonitor, stopEngineHealthMonitor } from './database/engine-monitoring';
+import { shutdownRedisClients } from './database/redis';
+import { startLivenessServer, stopLivenessServer } from './http/httpLiveness';
+import platformInit, { checkFeatureFlags } from './initialization';
+import { initLockFork } from './lock/master-lock';
+import cacheManager from './manager/cacheManager';
+import { shutdownModules, startModules } from './managers';
+import { registerWorkflowLifecycleHooks } from './modules/workflow/domain/workflow-domain';
 
 // region platform start and stop
 export const platformStart = async () => {
   const startTime = Date.now();
   logApp.info('[OPENCTI] Starting platform', { environment });
   try {
+    // Register post-entity-creation lifecycle hooks (e.g. eager WorkflowInstance
+    // initialization) before any mutation handling begins.
+    registerWorkflowLifecycleHooks();
     // Start the liveness probe first so orchestrators can detect the process is alive
     try {
       startLivenessServer();

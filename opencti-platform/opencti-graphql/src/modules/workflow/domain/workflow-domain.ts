@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { logApp } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
+import { registerPostEntityCreationHook } from '../../../database/entity-lifecycle-hooks';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../database/members';
 import { createEntity, createRelation, loadEntity, updateAttribute } from '../../../database/middleware';
@@ -28,19 +29,20 @@ import type { NotificationAddInput } from '../../notification/notification-types
 import { WorkflowFactory } from '../engine/workflow-factory';
 import type { WorkflowSchema } from '../engine/workflow-schema';
 import {
-  type AsyncActionSlot,
-  ENTITY_TYPE_WORKFLOW_DEFINITION,
-  ENTITY_TYPE_WORKFLOW_INSTANCE,
-  type TriggerResult,
-  type WorkflowActionConfig,
-  type WorkflowDefinitionData,
-  type WorkflowPendingTransition,
-  type WorkflowSerializedState,
-  type WorkflowSerializedTransition,
-  type WorkflowValidationError,
+    type AsyncActionSlot,
+    ENTITY_TYPE_WORKFLOW_DEFINITION,
+    ENTITY_TYPE_WORKFLOW_INSTANCE,
+    type TriggerResult,
+    type WorkflowActionConfig,
+    type WorkflowDefinitionData,
+    type WorkflowPendingTransition,
+    type WorkflowSerializedState,
+    type WorkflowSerializedTransition,
+    type WorkflowValidationError,
 } from '../types/workflow-types';
 import { extractAllStatesFromDefinition, validateWorkflowDefinitionData } from '../workflow-validation';
 import { computeStateOrder } from './workflow-ordering';
+import { projectWorkflowState } from './workflow-projection';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
 // 'validateDraft' is a CE feature and must NOT be listed here.
@@ -197,6 +199,13 @@ interface WorkflowInstanceStoreEntity extends BasicStoreEntity {
   pendingError?: string | null;
   pendingTransition?: string | null;
   entity_id: string;
+  /**
+   * Scope tag for this instance — `'standard'` by default, or the `StatusScope` value of the
+   * `Status` the instance was initialized from when the entity was created with an explicit,
+   * resolvable `x_opencti_workflow_id` (e.g. `'REQUEST_ACCESS'`). Missing on rows created before
+   * this field existed (all pre-existing `DraftWorkspace` instances) — treat as `'standard'`.
+   */
+  scope?: string;
 }
 
 const getWorkflowConfig = async (
@@ -280,28 +289,75 @@ const findWorkflowInstanceEntity = async (
   }) as WorkflowInstanceStoreEntity;
 };
 
+/**
+ * Resolves a caller-supplied `x_opencti_workflow_id` (a `Status` id) to a workflow state at
+ * entity-creation time, per Task 3 Step 2.5. Returns `null` if the status doesn't exist or
+ * doesn't map to any state of the published definition — the caller must not treat this as an
+ * error, only as "not resolvable" (case (b) of the three-case creation logic).
+ */
+const resolveSuppliedStatus = async (
+  context: AuthContext,
+  user: AuthUser,
+  definitionData: WorkflowDefinitionResponse,
+  suppliedStatusId: string,
+): Promise<{ stateId: string; scope: string } | null> => {
+  const status = await storeLoadById<BasicWorkflowStatus>(context, user, suppliedStatusId, ENTITY_TYPE_STATUS);
+  if (!status) return null;
+  const matchesState = (definitionData.states ?? []).some((s) => s.statusId === status.template_id);
+  if (!matchesState) return null;
+  return { stateId: status.template_id, scope: status.scope };
+};
+
 const initializeWorkflowInstance = async (
   context: AuthContext,
   user: AuthUser,
-  entity: BasicStoreEntity & { id?: string; internal_id?: string },
+  entity: BasicStoreEntity & { id?: string; internal_id?: string; x_opencti_workflow_id?: string },
   entitySetting: BasicStoreEntityEntitySetting,
   definitionData: WorkflowDefinitionResponse,
 ): Promise<WorkflowInstanceStoreEntity> => {
-  const initialState = definitionData.initialState;
   const entityId = entity.id || entity.internal_id;
-  const instanceInput = {
+  const executionContext = bypassDraftContext(context);
+  const executionUser = executionContext.user!;
+
+  // Resolve-then-project (Task 3, Step 2.4/2.5): three cases —
+  // (a) explicit status resolves to a valid state: start there, no projection write.
+  // (b) explicit status does not resolve: start at initialState with a pendingError
+  //     diagnostic, no projection write — the caller-supplied field is never overwritten.
+  // (c) no status supplied: start at initialState and project it onto the entity.
+  let currentState = definitionData.initialState;
+  let scope = 'standard';
+  let pendingError: string | undefined;
+  let shouldProject = false;
+
+  const suppliedStatusId = entity.x_opencti_workflow_id;
+  if (suppliedStatusId) {
+    const resolved = await resolveSuppliedStatus(executionContext, executionUser, definitionData, suppliedStatusId);
+    if (resolved) {
+      currentState = resolved.stateId;
+      scope = resolved.scope;
+    } else {
+      pendingError = `Supplied x_opencti_workflow_id "${suppliedStatusId}" does not resolve to any state of the published workflow`;
+    }
+  } else {
+    shouldProject = true;
+  }
+
+  const instanceInput: Record<string, unknown> = {
     entity_id: entityId,
     workflow_id: entitySetting.workflow_id || 'manual',
-    currentState: initialState,
+    currentState,
+    scope,
     history: JSON.stringify([{
-      state: initialState,
+      state: currentState,
       user_id: user.id,
       timestamp: new Date().toISOString(),
       event: 'initialization',
     }]),
   };
-  const executionContext = bypassDraftContext(context);
-  const executionUser = executionContext.user!;
+  if (pendingError) {
+    instanceInput.pendingError = pendingError;
+  }
+
   const instance = await createEntity(executionContext, executionUser, instanceInput, ENTITY_TYPE_WORKFLOW_INSTANCE) as WorkflowInstanceStoreEntity;
 
   await createRelation(executionContext, executionUser, {
@@ -309,6 +365,12 @@ const initializeWorkflowInstance = async (
     toId: instance.id || instance.internal_id,
     relationship_type: RELATION_HAS_WORKFLOW,
   });
+
+  if (shouldProject) {
+    // Only the Global scope is reconciled by Task 1's status mapping today; 'standard'
+    // (this hook's default when no explicit status was supplied) maps onto it.
+    await projectWorkflowState(executionContext, entity, currentState, StatusScope.Global);
+  }
 
   return instance;
 };
@@ -941,7 +1003,23 @@ export const getWorkflowInstance = async (
   }
 
   const effectiveEntityId = entity.internal_id || entity.id;
-  const instanceEntity = await findWorkflowInstanceEntity(context, user, effectiveEntityId);
+  let instanceEntity = await findWorkflowInstanceEntity(context, user, effectiveEntityId);
+  if (!instanceEntity) {
+    // Lazy backfill (Task 3, Step 3): a pre-existing entity created before this change has no
+    // WorkflowInstance row yet. Create one now, under the system identity (never the reading
+    // caller's), so future reads/reconciliation have a real instance to work with. A failed
+    // backfill write must not fail this read — fall back to the pre-this-change synthesized
+    // in-memory placeholder below.
+    try {
+      // `initializeWorkflowInstance`/`findWorkflowInstanceEntity` derive their execution
+      // identity from `context.user` (via `bypassDraftContext`), not from a separately-passed
+      // user argument — so the WORKFLOW_MANAGER_USER identity must be set on the context itself.
+      const executionContext = { ...bypassDraftContext(context), user: WORKFLOW_MANAGER_USER };
+      instanceEntity = await ensureWorkflowInstance(executionContext, WORKFLOW_MANAGER_USER, entity, entitySetting!, definitionData);
+    } catch (error) {
+      logApp.warn('[OPENCTI-MODULE] Failed to lazily backfill WorkflowInstance for entity, falling back to synthesized instance', { cause: error, entityId: effectiveEntityId });
+    }
+  }
   const currentState = instanceEntity?.currentState ?? definitionData.initialState;
 
   const allowedTransitions = await getAllowedTransitions(context, user, entityId);
@@ -1002,6 +1080,7 @@ export const getWorkflowInstance = async (
     pendingStatus: instanceEntity?.pendingStatus ?? null,
     pendingError: instanceEntity?.pendingError ?? null,
     pendingTransition: pendingTransitionData,
+    scope: instanceEntity?.scope ?? 'standard',
   };
 };
 
@@ -1264,6 +1343,26 @@ export const initializeEntityWorkflow = async (
   const definitionData = await getDefinitionData(executionContext, executionUser, entitySetting);
   if (!definitionData) return;
   await ensureWorkflowInstance(executionContext, executionUser, entity, entitySetting, definitionData);
+};
+
+let workflowLifecycleHooksRegistered = false;
+
+/**
+ * Registers this module's post-entity-creation side effects (eager `WorkflowInstance`
+ * initialization) into the decoupled hook registry in `entity-lifecycle-hooks.ts`. Must be
+ * called exactly once from the server's central bootstrap sequence (`boot.ts`), before any
+ * mutation handling begins — guarded here so repeated calls (e.g. from multiple module import
+ * paths) are safe no-ops.
+ */
+export const registerWorkflowLifecycleHooks = (): void => {
+  if (workflowLifecycleHooksRegistered) return;
+  registerPostEntityCreationHook(initializeEntityWorkflow);
+  workflowLifecycleHooksRegistered = true;
+};
+
+/** Test-only: resets the idempotency guard so tests can exercise registration from a clean state. */
+export const __resetWorkflowLifecycleHooksRegisteredForTest = (): void => {
+  workflowLifecycleHooksRegistered = false;
 };
 
 export const isStatusTemplateUsedInWorkflows = async (

@@ -1,37 +1,37 @@
 import { loadAssignees, loadCreators, loadParticipants } from '../../database/members';
 import { findById as findWorkById, worksForDraft } from '../../domain/work';
 import type { Resolvers, StixRefRelationshipAddInput } from '../../generated/graphql';
-import { getAuthorizedMembers } from '../../utils/authorizedMembers';
-import { getWorkflowInstance, initializeEntityWorkflow } from '../workflow/domain/workflow-domain';
-import {
-  addDraftWorkspace,
-  deleteDraftWorkspace,
-  draftWorkspaceAddRelation,
-  draftWorkspaceDeleteRelation,
-  draftWorkspaceEditAuthorizedMembers,
-  draftWorkspaceEditContext,
-  draftWorkspaceEditField,
-  draftWorkspacesDistribution,
-  draftWorkspacesNumber,
-  draftWorkspacesTimeSeries,
-  findById,
-  findDraftWorkspacePaginated,
-  findDraftWorkspaceRestrictedPaginated,
-  getCurrentUserAccessRight,
-  getEntityContainerRefs,
-  getEntityFields,
-  getEntityRelations,
-  getObjectsCount,
-  getProcessingCount,
-  listDraftObjects,
-  listDraftRelations,
-  listDraftSightingRelations,
-  listDraftContainerObjects,
-  resolveIdRepresentatives,
-  validateDraftWorkspace,
-} from './draftWorkspace-domain';
 import { loadThroughDenormalized } from '../../resolvers/stix';
 import { INPUT_CREATED_BY } from '../../schema/general';
+import { getAuthorizedMembers } from '../../utils/authorizedMembers';
+import { getWorkflowInstance } from '../workflow/domain/workflow-domain';
+import {
+    addDraftWorkspace,
+    deleteDraftWorkspace,
+    draftWorkspaceAddRelation,
+    draftWorkspaceDeleteRelation,
+    draftWorkspaceEditAuthorizedMembers,
+    draftWorkspaceEditContext,
+    draftWorkspaceEditField,
+    draftWorkspacesDistribution,
+    draftWorkspacesNumber,
+    draftWorkspacesTimeSeries,
+    findById,
+    findDraftWorkspacePaginated,
+    findDraftWorkspaceRestrictedPaginated,
+    getCurrentUserAccessRight,
+    getEntityContainerRefs,
+    getEntityFields,
+    getEntityRelations,
+    getObjectsCount,
+    getProcessingCount,
+    listDraftContainerObjects,
+    listDraftObjects,
+    listDraftRelations,
+    listDraftSightingRelations,
+    resolveIdRepresentatives,
+    validateDraftWorkspace,
+} from './draftWorkspace-domain';
 
 const draftWorkspaceResolvers: Resolvers = {
   Query: {
@@ -73,9 +73,10 @@ const draftWorkspaceResolvers: Resolvers = {
   },
   Mutation: {
     draftWorkspaceAdd: async (_, { input }, context) => {
-      const draft = await addDraftWorkspace(context, context.user, input);
-      await initializeEntityWorkflow(context, context.user, draft);
-      return draft;
+      // Note: `addDraftWorkspace` creates the entity through the generic `createEntity` path,
+      // which now runs `initializeEntityWorkflow` itself via the post-entity-creation hook
+      // registry (Task 3) — no explicit call needed here anymore.
+      return addDraftWorkspace(context, context.user, input);
     },
     draftWorkspaceEdit: (_, { id }, context): any => ({
       relationAdd: ({ input }: { input: StixRefRelationshipAddInput }) => draftWorkspaceAddRelation(context, context.user, id, input),
