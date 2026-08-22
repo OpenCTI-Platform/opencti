@@ -3,6 +3,7 @@ import { reportWorkflowAsyncActionResult } from '../../../src/modules/workflow/d
 import { updateAttribute } from '../../../src/database/middleware';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { ActionRegistry } from '../../../src/modules/workflow/registry/workflow-actions';
+import { projectWorkflowState } from '../../../src/modules/workflow/domain/workflow-projection';
 
 vi.mock('../../../src/database/middleware', () => ({
   updateAttribute: vi.fn(),
@@ -23,6 +24,11 @@ vi.mock('../../../src/config/conf', () => ({
 // ActionRegistry is mocked at module level so individual tests can override entries
 vi.mock('../../../src/modules/workflow/registry/workflow-actions', () => ({
   ActionRegistry: {},
+}));
+
+vi.mock('../../../src/modules/workflow/domain/workflow-projection', () => ({
+  projectWorkflowState: vi.fn(),
+  resolveProjectionScope: vi.fn((scope: string | undefined) => scope ?? 'GLOBAL'),
 }));
 
 // ---------------------------------------------------------------------------
@@ -589,6 +595,75 @@ describe('reportWorkflowAsyncActionResult', () => {
       // The action must see the full entity with RELATION_CREATED_BY so AUTHOR can resolve
       expect(entitySeenByAction).toEqual(fullEntity);
       expect(entitySeenByAction[RELATION_CREATED_BY]).toBe('org-author-id');
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Status projection (Task 2, Step 3): keep the legacy x_opencti_workflow_id in sync
+  // with the completed async transition's target state.
+  // ---------------------------------------------------------------------------
+
+  describe('status projection on completion', () => {
+    it('calls projectWorkflowState with the target entity, toState and resolved scope after advancing state', async () => {
+      const fullEntity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'DraftWorkspace' };
+      const pt = makePendingTransition({
+        asyncActions: [{ id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' }],
+        syncActions: [],
+        onEnterActions: [],
+      });
+      const instance = makeInstance({ pendingTransition: JSON.stringify(pt), scope: 'GLOBAL' });
+
+      (storeLoadById as any)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(fullEntity);
+      (updateAttribute as any).mockResolvedValue({});
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      expect(projectWorkflowState).toHaveBeenCalledWith(
+        expect.anything(),
+        fullEntity,
+        'reviewing',
+        'GLOBAL',
+      );
+    });
+
+    it('logs a warning and skips projection when the full entity could not be loaded', async () => {
+      const pt = makePendingTransition({
+        asyncActions: [{ id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' }],
+        syncActions: [],
+        onEnterActions: [],
+      });
+      const instance = makeInstance({ pendingTransition: JSON.stringify(pt) });
+
+      (storeLoadById as any)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(null);
+      (updateAttribute as any).mockResolvedValue({});
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      expect(projectWorkflowState).not.toHaveBeenCalled();
+      const { logApp } = await import('../../../src/config/conf');
+      expect((logApp.warn as any)).toHaveBeenCalledWith(
+        expect.stringContaining('Skipping status projection'),
+        expect.objectContaining({ entityId: 'entity-id' }),
+      );
+    });
+
+    it('does not call projectWorkflowState while other slots are still pending', async () => {
+      const pt = makePendingTransition({
+        asyncActions: [
+          { id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' },
+          { id: 'slot-2', workId: 'work-2', type: 'asyncBulkAction', status: 'pending' },
+        ],
+      });
+      (storeLoadById as any).mockResolvedValueOnce(makeInstance({ pendingTransition: JSON.stringify(pt) }));
+      (updateAttribute as any).mockResolvedValue({});
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      expect(projectWorkflowState).not.toHaveBeenCalled();
     });
   });
 });

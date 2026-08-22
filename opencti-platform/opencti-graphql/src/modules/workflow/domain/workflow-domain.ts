@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { logApp } from '../../../config/conf';
+import { booleanConf, logApp } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
 import { registerPostEntityCreationHook } from '../../../database/entity-lifecycle-hooks';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
@@ -42,7 +42,7 @@ import {
 } from '../types/workflow-types';
 import { extractAllStatesFromDefinition, validateWorkflowDefinitionData } from '../workflow-validation';
 import { computeStateOrder } from './workflow-ordering';
-import { projectWorkflowState } from './workflow-projection';
+import { projectWorkflowState, resolveMappedStatusId, resolveProjectionScope } from './workflow-projection';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
 // 'validateDraft' is a CE feature and must NOT be listed here.
@@ -984,6 +984,21 @@ export const restorePublishedWorkflowDefinition = async (
 };
 
 /**
+ * Task 2, Step 4.6: per-process, per-entity rate limit for read-repair writes, so a page of
+ * repeated reads for the same entity doesn't trigger a repair write on every single read.
+ * Known limitation: this cache is per-process, so a multi-node deployment can still perform
+ * one redundant repair per node within the TTL window — acceptable since repairs are
+ * idempotent no-ops once consistent (see plan.md Task 2 Step 4.6).
+ */
+const READ_REPAIR_RATE_LIMIT_TTL_MS = 5000;
+const readRepairLastAttemptByEntity = new Map<string, number>();
+
+/** Test-only: clears the read-repair rate-limit cache so tests can exercise it from a clean state. */
+export const __resetReadRepairRateLimitForTest = (): void => {
+  readRepairLastAttemptByEntity.clear();
+};
+
+/**
  * Get workflow instance for an entity, with live pending transition data.
  */
 export const getWorkflowInstance = async (
@@ -1021,6 +1036,28 @@ export const getWorkflowInstance = async (
     }
   }
   const currentState = instanceEntity?.currentState ?? definitionData.initialState;
+
+  // Task 2, Step 4: read-repair — correct `x_opencti_workflow_id` divergence from `currentState`.
+  // Never runs under the reading caller's identity, never fails/delays the read on error, and is
+  // rate-limited per entity so repeated reads don't repeatedly re-write an already-consistent field.
+  if (instanceEntity && currentState && !booleanConf('workflow:disable_read_repair', false)) {
+    const lastAttempt = readRepairLastAttemptByEntity.get(effectiveEntityId);
+    const withinRateLimit = lastAttempt !== undefined && (Date.now() - lastAttempt) < READ_REPAIR_RATE_LIMIT_TTL_MS;
+    if (!withinRateLimit) {
+      try {
+        const scope = resolveProjectionScope(instanceEntity.scope);
+        const expectedStatusId = await resolveMappedStatusId(context, entity.entity_type, scope, currentState);
+        if (expectedStatusId && (entity as BasicStoreEntity).x_opencti_workflow_id !== expectedStatusId) {
+          readRepairLastAttemptByEntity.set(effectiveEntityId, Date.now());
+          const repairContext = { ...bypassDraftContext(context), user: WORKFLOW_MANAGER_USER };
+          await projectWorkflowState(repairContext, entity as BasicStoreEntity, currentState, scope);
+          logApp.info('[OPENCTI-MODULE] Repaired x_opencti_workflow_id divergence from WorkflowInstance.currentState', { entityId: effectiveEntityId, entityType: entity.entity_type, currentState });
+        }
+      } catch (error) {
+        logApp.warn('[OPENCTI-MODULE] Failed to read-repair x_opencti_workflow_id, returning unrepaired instance', { cause: error, entityId: effectiveEntityId });
+      }
+    }
+  }
 
   const allowedTransitions = await getAllowedTransitions(context, user, entityId);
   const id = instanceEntity?.internal_id ?? instanceEntity?.id ?? `initial-${effectiveEntityId}`;
@@ -1310,6 +1347,10 @@ export const triggerWorkflowEvent = async (
       { key: 'currentState', value: [newState] },
       { key: 'history', value: [JSON.stringify(history)] },
     ]);
+
+    // Task 2, Step 2.2: keep the legacy `x_opencti_workflow_id` in sync with the new state.
+    // `projectWorkflowState` never throws (best-effort, logs and skips on failure).
+    await projectWorkflowState(executionContext, entity as BasicStoreEntity, newState, resolveProjectionScope(instanceEntity.scope));
 
     const workflowInstance = await getWorkflowInstance(context, user, entityId);
     // Notify assignees and participants when a non-empty comment was provided

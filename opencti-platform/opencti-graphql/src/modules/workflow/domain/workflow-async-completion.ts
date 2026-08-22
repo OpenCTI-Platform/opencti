@@ -2,7 +2,8 @@
  * Leaf module for async workflow action completion reporting.
  *
  * Design constraints:
- * - This file imports ONLY generic DB primitives (middleware, middleware-loader).
+ * - This file imports ONLY generic DB primitives (middleware, middleware-loader) plus the
+ *   equally-leaf `workflow-projection.ts` (no import chain back to `middleware.ts`).
  * - It does NOT import from work.js or workflow-domain.ts to avoid circular dependencies.
  * - work.js and workflow-domain.ts can safely import from here.
  */
@@ -13,6 +14,7 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import { bypassDraftContext } from '../../../utils/draftContext';
 import { ActionRegistry } from '../registry/workflow-actions';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE, type WorkflowPendingTransition } from '../types/workflow-types';
+import { projectWorkflowState, resolveProjectionScope } from './workflow-projection';
 
 /**
  * Called when a background task associated with a workflow async action completes.
@@ -174,6 +176,14 @@ export const reportWorkflowAsyncActionResult = async (
     { key: 'pendingError', value: [null] },
     { key: 'pendingTransition', value: [null] },
   ]);
+
+  // Task 2, Step 3.2: keep the legacy `x_opencti_workflow_id` in sync with the completed state.
+  // `projectWorkflowState` never throws (best-effort, logs and skips on failure).
+  if (fullEntity) {
+    await projectWorkflowState(executionContext, fullEntity, pendingTransition.toState, resolveProjectionScope(instanceEntity.scope));
+  } else {
+    logApp.warn('[workflow-async-completion] Skipping status projection: entity could not be loaded', { entityId: instanceEntity.entity_id });
+  }
 
   logApp.info('[workflow-async-completion] Transition completed', {
     workflowInstanceId,
