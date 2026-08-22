@@ -1,15 +1,9 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import workflowResolvers from '../../../src/modules/workflow/api/workflow-resolvers';
-import type { AuthContext } from '../../../src/types/user';
-import * as workflowDomain from '../../../src/modules/workflow/domain/workflow-domain';
-import {
-  getAllowedTransitions,
-  triggerWorkflowEvent,
-  clearWorkflowPendingState,
-  getWorkflowInstance,
-  getWorkflowPublishedVersionId,
-} from '../../../src/modules/workflow/domain/workflow-domain';
 import { reportWorkflowAsyncActionResult } from '../../../src/modules/workflow/domain/workflow-async-completion';
+import * as workflowDomain from '../../../src/modules/workflow/domain/workflow-domain';
+import { clearWorkflowPendingState, getAllowedTransitions, getWorkflowPublishedVersionId, triggerWorkflowEvent } from '../../../src/modules/workflow/domain/workflow-domain';
+import type { AuthContext } from '../../../src/types/user';
 
 // Mock all workflow domain functions
 vi.mock('../../../src/modules/workflow/domain/workflow-domain', () => ({
@@ -607,41 +601,53 @@ describe('workflow-resolvers', () => {
 
   describe('DraftWorkspace type resolvers', () => {
     describe('workflowInstance', () => {
-      it('should call getWorkflowInstance with draft id', async () => {
+      it('should load through context.batch.workflowInstancesBatchLoader with the draft entity', async () => {
         const mockInstance = { id: 'inst-2', currentState: 'draft' };
-        vi.mocked(workflowDomain.getWorkflowInstance).mockResolvedValue(mockInstance);
+        const load = vi.fn().mockResolvedValue(mockInstance);
+        const batchContext = { ...mockContext, batch: { workflowInstancesBatchLoader: { load } } };
 
         const draft = { id: 'draft-123' };
         const result = await workflowResolvers.DraftWorkspace.workflowInstance(
           draft,
           {},
-          mockContext,
+          batchContext as any,
         );
 
-        expect(workflowDomain.getWorkflowInstance).toHaveBeenCalledWith(
-          mockContext,
-          mockContext.user,
-          'draft-123',
-        );
+        expect(load).toHaveBeenCalledWith(draft);
         expect(result).toBe(mockInstance);
       });
 
-      it('should call getWorkflowInstance with internal_id when id is not present', async () => {
-        const mockInstance = { id: 'inst-3', currentState: 'draft' };
-        vi.mocked(workflowDomain.getWorkflowInstance).mockResolvedValue(mockInstance);
+      it('should pass through the entity object as-is (no id extraction needed for the batch loader)', async () => {
+        const load = vi.fn().mockResolvedValue(null);
+        const batchContext = { ...mockContext, batch: { workflowInstancesBatchLoader: { load } } };
 
         const draft = { internal_id: 'internal-draft-456' };
-        const result = await workflowResolvers.DraftWorkspace.workflowInstance(
+        await workflowResolvers.DraftWorkspace.workflowInstance(
           draft,
           {},
-          mockContext,
+          batchContext as any,
         );
 
-        expect(workflowDomain.getWorkflowInstance).toHaveBeenCalledWith(
-          mockContext,
-          mockContext.user,
-          'internal-draft-456',
+        expect(load).toHaveBeenCalledWith(draft);
+      });
+    });
+  });
+
+  describe('StixSightingRelationship type resolvers', () => {
+    describe('workflowInstance', () => {
+      it('should load through context.batch.workflowInstancesBatchLoader with the relationship entity', async () => {
+        const mockInstance = { id: 'inst-5', currentState: 'open' };
+        const load = vi.fn().mockResolvedValue(mockInstance);
+        const batchContext = { ...mockContext, batch: { workflowInstancesBatchLoader: { load } } };
+
+        const relationship = { id: 'sighting-1', entity_type: 'stix-sighting-relationship' };
+        const result = await workflowResolvers.StixSightingRelationship.workflowInstance(
+          relationship,
+          {},
+          batchContext as any,
         );
+
+        expect(load).toHaveBeenCalledWith(relationship);
         expect(result).toBe(mockInstance);
       });
     });
@@ -850,29 +856,33 @@ describe('WorkflowTriggerResult resolver – executionStatus and pendingTransiti
 // ---------------------------------------------------------------------------
 
 describe('DraftWorkspace.workflowInstance resolver', () => {
-  it('calls getWorkflowInstance with the draft entity id', async () => {
-    (getWorkflowInstance as any).mockResolvedValue({ id: 'inst-id', currentState: 'draft' });
+  it('loads through context.batch.workflowInstancesBatchLoader with the draft entity', async () => {
+    const load = vi.fn().mockResolvedValue({ id: 'inst-id', currentState: 'draft' });
+    const batchContext = { ...mockContext, batch: { workflowInstancesBatchLoader: { load } } };
+    const draft = { id: 'draft-id', internal_id: 'draft-id' };
 
     const result = await workflowResolvers.DraftWorkspace.workflowInstance(
-      { id: 'draft-id', internal_id: 'draft-id' },
+      draft,
       {},
-      mockContext,
+      batchContext as any,
     );
 
-    expect(getWorkflowInstance).toHaveBeenCalledWith(mockContext, mockContext.user, 'draft-id');
+    expect(load).toHaveBeenCalledWith(draft);
     expect(result).toEqual({ id: 'inst-id', currentState: 'draft' });
   });
 
-  it('uses internal_id when id is not present', async () => {
-    (getWorkflowInstance as any).mockResolvedValue(null);
+  it('passes the draft entity through unchanged regardless of which id fields are present', async () => {
+    const load = vi.fn().mockResolvedValue(null);
+    const batchContext = { ...mockContext, batch: { workflowInstancesBatchLoader: { load } } };
+    const draft = { internal_id: 'draft-internal-id' };
 
     await workflowResolvers.DraftWorkspace.workflowInstance(
-      { internal_id: 'draft-internal-id' },
+      draft,
       {},
-      mockContext,
+      batchContext as any,
     );
 
-    expect(getWorkflowInstance).toHaveBeenCalledWith(mockContext, mockContext.user, 'draft-internal-id');
+    expect(load).toHaveBeenCalledWith(draft);
   });
 });
 

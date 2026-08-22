@@ -125,9 +125,18 @@ const workflowResolvers = {
     },
   },
   DraftWorkspace: {
+    // Task 5, Step 0.7: batched via context.batch.workflowInstancesBatchLoader (see
+    // httpAuthenticatedContext.js/computeLoaders) instead of calling getWorkflowInstance directly,
+    // so a paginated list of entities embedding this field issues one bulk lookup, not N.
     workflowInstance: (draft: any, _: any, context: AuthContext) => {
-      const draftId = draft.id || draft.internal_id;
-      return getWorkflowInstance(context, context.user!, draftId);
+      return context.batch.workflowInstancesBatchLoader.load(draft);
+    },
+  },
+  // Task 5, Step 0.3: the only other entity type with a configurable workflow today
+  // (see entitySetting-utils.ts's `workflow_id` allow-list).
+  StixSightingRelationship: {
+    workflowInstance: (relationship: any, _: any, context: AuthContext) => {
+      return context.batch.workflowInstancesBatchLoader.load(relationship);
     },
   },
   WorkflowDefinitionMutationResult: {

@@ -4,7 +4,6 @@ import type { Resolvers, StixRefRelationshipAddInput } from '../../generated/gra
 import { loadThroughDenormalized } from '../../resolvers/stix';
 import { INPUT_CREATED_BY } from '../../schema/general';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
-import { getWorkflowInstance } from '../workflow/domain/workflow-domain';
 import {
     addDraftWorkspace,
     deleteDraftWorkspace,
@@ -64,7 +63,8 @@ const draftWorkspaceResolvers: Resolvers = {
       return worksForDraft(context, context.user, draft.id, args) as unknown as any;
     },
     validationWork: (draft, _, context) => (draft.validation_work_id ? findWorkById(context, context.user, draft.validation_work_id) as any : null),
-    workflowInstance: (draft, _, context) => getWorkflowInstance(context, context.user, draft.id),
+    // workflowInstance is resolved by workflow-resolvers.ts's DraftWorkspace.workflowInstance —
+    // consolidated there (Task 5, Step 0.2) as the single authoritative owner.
     authorizedMembers: (workspace, _, context) => getAuthorizedMembers(context, context.user, workspace),
     currentUserAccessRight: (workspace, _, context) => getCurrentUserAccessRight(context.user, workspace),
     objectParticipant: async (workspace, _, context) => loadParticipants(context, context.user, workspace),

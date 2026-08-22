@@ -999,26 +999,40 @@ export const __resetReadRepairRateLimitForTest = (): void => {
 };
 
 /**
+ * Pre-resolved per-entity data a batched caller (`batchWorkflowInstances`) has already fetched
+ * in bulk, so a single `getWorkflowInstance`/`getAllowedTransitions` call doesn't redo the same
+ * per-entity store round trips (entity fetch, entitySetting/definition resolution, WorkflowInstance
+ * lookup) for every row of a batch (Task 5, Step 0.7).
+ */
+interface WorkflowInstancePrefetch {
+  entity: any;
+  entitySetting: BasicStoreEntityEntitySetting | undefined;
+  definitionData: WorkflowDefinitionResponse | null;
+  instanceEntity: WorkflowInstanceStoreEntity | null;
+}
+
+/**
  * Get workflow instance for an entity, with live pending transition data.
  */
 export const getWorkflowInstance = async (
   context: AuthContext,
   user: AuthUser,
   entityId: string,
+  prefetched?: WorkflowInstancePrefetch,
 ): Promise<any> => {
-  const entity = await storeLoadById(context, user, entityId, 'Basic-Object');
+  const entity = prefetched ? prefetched.entity : await storeLoadById(context, user, entityId, 'Basic-Object');
   if (!entity) {
     return null;
   }
 
-  const entitySetting = await getWorkflowConfig(context, user, entity.entity_type);
-  const definitionData = await getDefinitionData(context, user, entitySetting);
+  const entitySetting = prefetched ? prefetched.entitySetting : await getWorkflowConfig(context, user, entity.entity_type);
+  const definitionData = prefetched ? prefetched.definitionData : await getDefinitionData(context, user, entitySetting);
   if (!definitionData) {
     return null;
   }
 
   const effectiveEntityId = entity.internal_id || entity.id;
-  let instanceEntity = await findWorkflowInstanceEntity(context, user, effectiveEntityId);
+  let instanceEntity = prefetched ? prefetched.instanceEntity : await findWorkflowInstanceEntity(context, user, effectiveEntityId);
   if (!instanceEntity) {
     // Lazy backfill (Task 3, Step 3): a pre-existing entity created before this change has no
     // WorkflowInstance row yet. Create one now, under the system identity (never the reading
@@ -1059,7 +1073,12 @@ export const getWorkflowInstance = async (
     }
   }
 
-  const allowedTransitions = await getAllowedTransitions(context, user, entityId);
+  const allowedTransitions = await getAllowedTransitions(
+    context,
+    user,
+    entityId,
+    { entity, entitySetting, definitionData, instanceEntity },
+  );
   const id = instanceEntity?.internal_id ?? instanceEntity?.id ?? `initial-${effectiveEntityId}`;
 
   // Parse pending transition and enrich with live Work data
@@ -1122,27 +1141,91 @@ export const getWorkflowInstance = async (
 };
 
 /**
+ * Bound on the bulk `WorkflowInstance` lookup issued by `batchWorkflowInstances` for a single
+ * batch. Mirrors the same defensive bound used elsewhere for WorkflowInstance bulk reads
+ * (`src/utils/filtering/workflow-status-filter.ts`) — a single GraphQL request embedding this
+ * field on a paginated list is expected to stay well under this, but a real production list page
+ * size would never realistically approach it either.
+ */
+const WORKFLOW_INSTANCE_BATCH_BOUND = 5000;
+
+/**
+ * Batched `getWorkflowInstance` for a page of entities (Task 5, Step 0.7). Resolving
+ * `workflowInstance` as an embedded field on a list of N entities would otherwise issue N
+ * sequential `WorkflowInstance` store lookups (plus N redundant entitySetting/definition
+ * resolutions) — this collapses that into one bulk `WorkflowInstance` query (by `entity_id`)
+ * and one config resolution per distinct entity type, then delegates the remaining per-entity
+ * enrichment (pending-transition Work/BackgroundTask lookups, allowed-transition condition
+ * evaluation) to `getWorkflowInstance` via its `prefetched` param so it skips redoing the lookups
+ * already done here. Intended to be wired behind `batchLoader` (see `httpAuthenticatedContext.js`),
+ * which is why results are returned in the same order as the input `entities` array.
+ */
+export const batchWorkflowInstances = async (
+  context: AuthContext,
+  user: AuthUser,
+  entities: any[],
+): Promise<any[]> => {
+  const configByType = new Map<string, { entitySetting: BasicStoreEntityEntitySetting | undefined; definitionData: WorkflowDefinitionResponse | null }>();
+  const distinctTypes = [...new Set(entities.map((e) => e.entity_type))];
+  await Promise.all(distinctTypes.map(async (type) => {
+    const entitySetting = await getWorkflowConfig(context, user, type);
+    const definitionData = await getDefinitionData(context, user, entitySetting);
+    configByType.set(type, { entitySetting, definitionData });
+  }));
+
+  const executionContext = bypassDraftContext(context);
+  const executionUser = executionContext.user!;
+  const effectiveIds = entities.map((e) => e.internal_id || e.id);
+  const bulkInstances = effectiveIds.length > 0
+    ? await fullEntitiesList<WorkflowInstanceStoreEntity>(executionContext, executionUser, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
+        first: WORKFLOW_INSTANCE_BATCH_BOUND,
+        filters: {
+          mode: FilterMode.And,
+          filters: [{ key: ['entity_id'], values: effectiveIds, operator: FilterOperator.Eq, mode: FilterMode.Or }],
+          filterGroups: [],
+        },
+      })
+    : [];
+  if (bulkInstances.length === WORKFLOW_INSTANCE_BATCH_BOUND) {
+    logApp.warn('[OPENCTI-MODULE] batchWorkflowInstances hit its WorkflowInstance query bound, results may be incomplete', { requestedCount: entities.length, bound: WORKFLOW_INSTANCE_BATCH_BOUND });
+  }
+  const instanceByEntityId = new Map(bulkInstances.map((i) => [i.entity_id, i]));
+
+  return Promise.all(entities.map((entity) => {
+    const effectiveEntityId = entity.internal_id || entity.id;
+    const config = configByType.get(entity.entity_type);
+    return getWorkflowInstance(context, user, effectiveEntityId, {
+      entity,
+      entitySetting: config?.entitySetting,
+      definitionData: config?.definitionData ?? null,
+      instanceEntity: instanceByEntityId.get(effectiveEntityId) ?? null,
+    });
+  }));
+};
+
+/**
  * Get allowed transitions for an entity.
  */
 export const getAllowedTransitions = async (
   context: AuthContext,
   user: AuthUser,
   entityId: string,
+  prefetched?: WorkflowInstancePrefetch,
 ): Promise<Array<{ event: string; toState: string; comment?: string; actions: string[]; requiresShareOrganizationInput: boolean; requiresUnshareOrganizationInput: boolean }>> => {
-  const entity = await storeLoadById(context, user, entityId, 'Basic-Object');
+  const entity = prefetched ? prefetched.entity : await storeLoadById(context, user, entityId, 'Basic-Object');
   if (!entity) {
     return [];
   }
 
-  const entitySetting = await getWorkflowConfig(context, user, entity.entity_type);
-  const definitionData = await getDefinitionData(context, user, entitySetting);
+  const entitySetting = prefetched ? prefetched.entitySetting : await getWorkflowConfig(context, user, entity.entity_type);
+  const definitionData = prefetched ? prefetched.definitionData : await getDefinitionData(context, user, entitySetting);
 
   if (!definitionData) {
     return [];
   }
 
   const effectiveEntityId = entity.internal_id || entity.id;
-  const instanceEntity = await findWorkflowInstanceEntity(context, user, effectiveEntityId);
+  const instanceEntity = prefetched ? prefetched.instanceEntity : await findWorkflowInstanceEntity(context, user, effectiveEntityId);
   const currentStateId = instanceEntity?.currentState ?? definitionData.initialState;
 
   const definition = WorkflowFactory.createDefinition(definitionData);

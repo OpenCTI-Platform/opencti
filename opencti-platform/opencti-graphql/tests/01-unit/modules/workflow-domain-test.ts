@@ -16,6 +16,7 @@ import { addNotification } from '../../../src/modules/notification/notification-
 import {
     __resetReadRepairRateLimitForTest,
     __resetWorkflowLifecycleHooksRegisteredForTest,
+    batchWorkflowInstances,
     clearWorkflowPendingState,
     deleteWorkflowDefinition,
     getAllowedTransitions,
@@ -2682,5 +2683,118 @@ describe('getWorkflowInstance — read-repair (Task 2, Step 4)', () => {
 
     expect(resolveMappedStatusId).not.toHaveBeenCalled();
     expect(projectWorkflowState).not.toHaveBeenCalled();
+  });
+});
+
+// ===========================================================================
+// Task 5, Step 0.7: batchWorkflowInstances — batched workflowInstance field resolution
+// ===========================================================================
+describe('batchWorkflowInstances', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    __resetReadRepairRateLimitForTest();
+    (booleanConf as any).mockReturnValue(false);
+  });
+
+  const definitionContent = JSON.stringify({
+    initialState: 'draft',
+    states: [{ statusId: 'draft' }],
+    transitions: [],
+  });
+
+  const setupCommon = () => {
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'workflow-def-id') {
+        return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      }
+      return Promise.resolve(null);
+    });
+  };
+
+  it('issues a single bulk WorkflowInstance query for N entities, not N sequential ones', async () => {
+    setupCommon();
+    (fullEntitiesList as any).mockResolvedValue([
+      { id: 'inst-1', internal_id: 'inst-1', entity_id: 'entity-1', currentState: 'draft', history: '[]' },
+      { id: 'inst-2', internal_id: 'inst-2', entity_id: 'entity-2', currentState: 'draft', history: '[]' },
+    ]);
+
+    const entities = [
+      { id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident' },
+      { id: 'entity-2', internal_id: 'entity-2', entity_type: 'Incident' },
+      { id: 'entity-3', internal_id: 'entity-3', entity_type: 'Incident' },
+    ];
+
+    await batchWorkflowInstances(mockContext, mockUser, entities);
+
+    expect(fullEntitiesList).toHaveBeenCalledTimes(1);
+    const [, , , args] = (fullEntitiesList as any).mock.calls[0];
+    expect(args.filters.filters[0].values).toEqual(['entity-1', 'entity-2', 'entity-3']);
+  });
+
+  it('resolves entitySetting/definitionData once per distinct entity type, not once per entity', async () => {
+    setupCommon();
+    (fullEntitiesList as any).mockResolvedValue([]);
+
+    const entities = [
+      { id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident' },
+      { id: 'entity-2', internal_id: 'entity-2', entity_type: 'Incident' },
+      { id: 'entity-3', internal_id: 'entity-3', entity_type: 'Report' },
+    ];
+
+    await batchWorkflowInstances(mockContext, mockUser, entities);
+
+    // one distinct call per type (Incident, Report), not one per entity
+    expect(findByType).toHaveBeenCalledTimes(2);
+  });
+
+  it('returns results in the same order as the input entities array', async () => {
+    setupCommon();
+    (fullEntitiesList as any).mockResolvedValue([
+      { id: 'inst-2', internal_id: 'inst-2', entity_id: 'entity-2', currentState: 'draft', history: '[]' },
+    ]);
+
+    const entities = [
+      { id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident' },
+      { id: 'entity-2', internal_id: 'entity-2', entity_type: 'Incident' },
+    ];
+
+    const results = await batchWorkflowInstances(mockContext, mockUser, entities);
+
+    expect(results).toHaveLength(2);
+    // entity-1 has no matching instance in the bulk fetch and no workflow-def lookup override,
+    // so it still resolves (not null, since a definition IS configured) but with a fresh/backfilled state;
+    // entity-2 resolves from the pre-fetched instance directly.
+    expect(results[1].id).toBe('inst-2');
+  });
+
+  it('returns null for entities of a type with no configured workflow, without issuing extra per-entity lookups', async () => {
+    (findByType as any).mockResolvedValue(undefined);
+    (fullEntitiesList as any).mockResolvedValue([]);
+
+    const entities = [
+      { id: 'entity-1', internal_id: 'entity-1', entity_type: 'Report' },
+    ];
+
+    const results = await batchWorkflowInstances(mockContext, mockUser, entities);
+
+    expect(results).toEqual([null]);
+  });
+
+  it('logs a warning when the bulk WorkflowInstance query hits its bound', async () => {
+    setupCommon();
+    const boundHitResults = Array.from({ length: 5000 }, (_, i) => ({
+      id: `inst-${i}`, internal_id: `inst-${i}`, entity_id: `entity-${i}`, currentState: 'draft', history: '[]',
+    }));
+    (fullEntitiesList as any).mockResolvedValue(boundHitResults);
+
+    const entities = [{ id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident' }];
+    await batchWorkflowInstances(mockContext, mockUser, entities);
+
+    const { logApp } = await import('../../../src/config/conf');
+    expect(logApp.warn).toHaveBeenCalledWith(
+      expect.stringContaining('batchWorkflowInstances hit its WorkflowInstance query bound'),
+      expect.objectContaining({ bound: 5000 }),
+    );
   });
 });

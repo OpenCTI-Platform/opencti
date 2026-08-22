@@ -133,6 +133,15 @@ extend type DraftWorkspace {
     workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE], forDraft: [KNOWLEDGE_KNUPDATE])
 }
 
+# Task 5, Step 0.3: workflowInstance is embedded per-type (strategy A), matching the existing
+# per-type x_opencti_workflow_id pattern, on every entity type with a configurable workflow
+# (i.e. `workflow_id` in its EntitySetting allow-list — see entitySetting-utils.ts). Only
+# StixSightingRelationship and DraftWorkspace qualify today. The `forDraft` auth variant is
+# DraftWorkspace-specific and does not apply here (frozen auth matrix, plan.md Task 5).
+extend type StixSightingRelationship {
+    workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+
 extend type Query {
     workflowDefinition(entityType: String!, allowDraft: Boolean): WorkflowSchema @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowInstance(entityId: String!): WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE], forDraft: [KNOWLEDGE_KNUPDATE])
