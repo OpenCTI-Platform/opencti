@@ -1,118 +1,88 @@
 import { BUS_TOPICS, logApp } from '../../config/conf';
-import { FunctionalError, UnsupportedError, ForbiddenAccess } from '../../config/errors';
+import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
+import { getEntitiesListFromCache } from '../../database/cache';
 import { elDeleteDraftContextFromUsers, elDeleteDraftContextFromWorks, elDeleteDraftElements, resolveDraftUpdateFiles } from '../../database/draft-engine';
 import { buildUpdateFieldPatch } from '../../database/draft-utils';
 import { elAggregationCount, elCount, elFindByIds, elList, elLoadById, loadDraftElement } from '../../database/engine';
+import { extractEntityRepresentativeName } from '../../database/entity-representative';
+import { deleteAllDraftFiles } from '../../database/file-storage';
 import {
-  createEntity,
-  createRelation,
-  deleteElementById,
-  deleteRelationsByFromAndTo,
-  distributionEntities,
-  stixLoadByIds,
-  timeSeriesEntities,
-  updateAttribute,
+    createEntity,
+    createRelation,
+    deleteElementById,
+    deleteRelationsByFromAndTo,
+    distributionEntities,
+    stixLoadByIds,
+    timeSeriesEntities,
+    updateAttribute,
 } from '../../database/middleware';
 import { type EntityOptions, fullEntitiesList, fullRelationsList, pageEntitiesConnection, pageRelationsConnection, storeLoadById } from '../../database/middleware-loader';
+import { resolveEmbeddedImagesInDescriptionFieldsForExport } from '../../database/middlewareEmbeddedImages';
 import { pushBundleToWorker } from '../../database/rabbitmq';
 import { notify, setEditContext } from '../../database/redis';
 import { buildStixBundle } from '../../database/stix-2-1-converter';
 import { buildPagination, computeSumOfList, cursorToOffset, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { createWork } from '../../domain/work';
+import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import {
-  DraftChangeType,
-  type DraftWorkspaceAddInput,
-  type EditContext,
-  type EditInput,
-  FilterMode,
-  FilterOperator,
-  type MemberAccessInput,
-  type QueryDraftWorkspaceEntitiesArgs,
-  type QueryDraftWorkspaceRelationshipsArgs,
-  type QueryDraftWorkspacesArgs,
-  type QueryDraftWorkspaceSightingRelationshipsArgs,
-  type StixRefRelationshipAddInput,
+    DraftChangeType,
+    type DraftWorkspaceAddInput,
+    type EditContext,
+    type EditInput,
+    FilterMode,
+    FilterOperator,
+    type MemberAccessInput,
+    type QueryDraftWorkspaceEntitiesArgs,
+    type QueryDraftWorkspaceRelationshipsArgs,
+    type QueryDraftWorkspacesArgs,
+    type QueryDraftWorkspaceSightingRelationshipsArgs,
+    type StixRefRelationshipAddInput,
 } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { addDraftCreationCount, addDraftValidationCount } from '../../manager/telemetryManager';
 import { authorizedMembers } from '../../schema/attribute-definition';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_STATUS_TEMPLATE, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
-import { RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../../schema/stixRefRelationship';
-import { getEntitiesListFromCache } from '../../database/cache';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
-import { isStixRefRelationship, RELATION_OBJECT } from '../../schema/stixRefRelationship';
-import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
-import { isStixRelationshipExceptRef } from '../../schema/stixRelationship';
-import { isStixDomainObject, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
-import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
-import { deleteAllDraftFiles } from '../../database/file-storage';
-import { resolveEmbeddedImagesInDescriptionFieldsForExport } from '../../database/middlewareEmbeddedImages';
+import { isStixCyberObservable } from '../../schema/stixCyberObservable';
+import { isStixDomainObject, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
+import { isStixRefRelationship, RELATION_OBJECT, RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../../schema/stixRefRelationship';
+import { isStixRelationshipExceptRef } from '../../schema/stixRelationship';
+import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation, StoreEntity } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
 import {
-  getUserAccessRight,
-  isUserHasCapability,
-  KNOWLEDGE_KNUPDATE_KNDELETE,
-  KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS,
-  MEMBER_ACCESS_RIGHT_ADMIN,
-  MEMBER_ACCESS_RIGHT_EDIT,
-  SYSTEM_USER,
+    getUserAccessRight,
+    isUserHasCapability,
+    KNOWLEDGE_KNUPDATE_KNDELETE,
+    KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS,
+    MEMBER_ACCESS_RIGHT_ADMIN,
+    MEMBER_ACCESS_RIGHT_EDIT,
+    SYSTEM_USER,
 } from '../../utils/access';
 import { editAuthorizedMembers, sanitizeAuthorizedMembers } from '../../utils/authorizedMembers';
 import { bypassDraftContext, getDraftContext } from '../../utils/draftContext';
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import { WORKFLOW_INSTANCE_STATUS_FILTER } from '../../utils/filtering/filtering-constants';
-import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../workflow/types/workflow-types';
+import { resolveWorkflowStatusFilter } from '../../utils/filtering/workflow-status-filter';
 import { now } from '../../utils/format';
+import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../workflow/types/workflow-types';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE } from './draftOperations';
 import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from './draftStatuses';
 import { DRAFT_VALIDATION_CONNECTOR } from './draftWorkspace-connector';
 import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE, type StoreEntityDraftWorkspace } from './draftWorkspace-types';
-import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
-import { extractEntityRepresentativeName } from '../../database/entity-representative';
 
 // Helper: translates workflowInstanceCurrentState filter into an entity id filter
 // by performing a two-step lookup on WorkflowInstance entities.
 // WorkflowInstance.currentState stores the StatusTemplate internal ID directly
 // (per workflow-schema.ts: statusId refers to StatusTemplate internal ID).
-const resolveWorkflowInstanceStatusFilter = async (context: AuthContext, user: AuthUser, args: any): Promise<any> => {
-  const filters = args.filters;
-  if (!filters) return args;
-
-  const workflowStatusFilters = filters.filters?.filter((f: any) => f.key?.includes(WORKFLOW_INSTANCE_STATUS_FILTER)) ?? [];
-  if (workflowStatusFilters.length === 0) return args;
-
-  // Filter values are StatusTemplate IDs — WorkflowInstance.currentState stores them directly.
-  const statusTemplateIds: string[] = workflowStatusFilters.flatMap((f: any) => f.values as string[]);
-  const executionCtx = bypassDraftContext(context);
-
-  const workflowInstances = await fullEntitiesList(executionCtx, executionCtx.user!, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
-    first: 5000,
-    filters: {
-      mode: FilterMode.And,
-      filters: [{ key: ['currentState'], values: statusTemplateIds, operator: FilterOperator.Eq, mode: FilterMode.Or }],
-      filterGroups: [],
-    },
-  });
-
-  const entityIds = workflowInstances
-    .map((wi: any) => wi.entity_id as string)
-    .filter(Boolean);
-
-  const remainingFilters = filters.filters.filter((f: any) => !f.key?.includes(WORKFLOW_INSTANCE_STATUS_FILTER));
-  const idFilter = { key: ['id'], values: entityIds.length > 0 ? entityIds : ['<no-match>'], operator: FilterOperator.Eq, mode: FilterMode.Or };
-
-  return {
-    ...args,
-    filters: {
-      ...filters,
-      filters: [...remainingFilters, idFilter],
-    },
-  };
-};
+// Generalized (Task 4, plan.md option (b)) into resolveWorkflowStatusFilter, explicitly
+// parameterized by entity type — kept as a thin, type-bound wrapper here so call sites below
+// don't repeat ENTITY_TYPE_DRAFT_WORKSPACE.
+const resolveWorkflowInstanceStatusFilter = (context: AuthContext, user: AuthUser, args: any): Promise<any> => (
+  resolveWorkflowStatusFilter(context, user, ENTITY_TYPE_DRAFT_WORKSPACE, args)
+);
 
 export const checkAndReturnDraft = async (context: AuthContext, user: AuthUser, draftId: string) => {
   const draft = await findById(context, user, draftId);
