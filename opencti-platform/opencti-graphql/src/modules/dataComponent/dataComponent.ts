@@ -12,7 +12,6 @@ import { objectOrganization } from '../../schema/stixRefRelationship';
 
 const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, StixDataComponent, Stix2DataComponent> = {
   type: {
-    id: 'dataComponents',
     name: ENTITY_TYPE_DATA_COMPONENT,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: false,

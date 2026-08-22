@@ -40,7 +40,9 @@ vi.mock('../../../src/listener/UserActionListener', () => ({
   publishUserAction: vi.fn(), completeContextDataForEntity: vi.fn(),
 }));
 vi.mock('../../../src/modules/catalog/catalog-domain', () => ({
-  computeConnectorTargetContract: vi.fn(), getSupportedContractsByImage: vi.fn(),
+  computeConnectorTargetContract: vi.fn(),
+  getSupportedContractByImage: vi.fn(),
+  mapCatalogContractToConnectorManagerContract: vi.fn(),
 }));
 vi.mock('../../../src/database/cache', () => ({ getEntitiesMapFromCache: vi.fn() }));
 vi.mock('../../../src/manager/telemetryManager', () => ({
@@ -68,19 +70,24 @@ vi.mock('../../../src/utils/http-client', () => ({ getHttpClient: vi.fn() }));
 vi.mock('../../../src/utils/confidence-level', () => ({ controlUserConfidenceAgainstElement: vi.fn() }));
 vi.mock('../../../src/config/conf', async () => {
   const actual = await vi.importActual('../../../src/config/conf');
-  return { ...actual, logApp: { warn: vi.fn(), error: vi.fn(), info: vi.fn(), debug: vi.fn() } };
+  return {
+    ...actual,
+    isFeatureEnabled: (feature: string) => feature === 'DECOUPLING_CONNECTOR_VERSIONS',
+    logApp: { warn: vi.fn(), error: vi.fn(), info: vi.fn(), debug: vi.fn() },
+  };
 });
 
 import { encryptSynchronizerCredential } from '../../../src/domain/connector-sync-crypto';
 import { testSync } from '../../../src/domain/connector-utils';
-import { updateAttribute, createEntity } from '../../../src/database/middleware';
-import { storeLoadById } from '../../../src/database/middleware-loader';
+import { updateAttribute, createEntity, patchAttribute } from '../../../src/database/middleware';
+import { storeLoadById, fullEntitiesList } from '../../../src/database/middleware-loader';
 import { notify } from '../../../src/database/redis';
 import { getHttpClient } from '../../../src/utils/http-client';
 import { createOnTheFlyUser } from '../../../src/modules/user/user-domain';
 import { verifyIngestionUri } from '../../../src/modules/ingestion/ingestion-common';
-import { syncEditField, registerSync, findSyncById, testSync as connectorTestSync, fetchRemoteStreams } from '../../../src/domain/connector';
+import { syncEditField, registerSync, findSyncById, testSync as connectorTestSync, fetchRemoteStreams, managedConnectorEdit } from '../../../src/domain/connector';
 import { publishUserAction } from '../../../src/listener/UserActionListener';
+import { computeConnectorTargetContract, getSupportedContractByImage, mapCatalogContractToConnectorManagerContract } from '../../../src/modules/catalog/catalog-domain';
 
 const fakeContext = {} as any;
 const fakeUser = { id: 'user-1', name: 'Test User', capabilities: [] } as any;
@@ -327,5 +334,58 @@ describe('connector.ts — fetchRemoteStreams deny-list coverage', () => {
     } as never)).rejects.toThrow('This URI is not allowed for ingestion.');
 
     expect(getHttpClient).not.toHaveBeenCalled();
+  });
+});
+describe('connector.ts — managedConnectorEdit contract resolution', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(fullEntitiesList).mockResolvedValue([{ public_key: 'pub-key' }] as never);
+    vi.mocked(computeConnectorTargetContract).mockReturnValue([{ key: 'CONNECTOR_LOG_LEVEL', value: 'info' }] as never);
+    vi.mocked(mapCatalogContractToConnectorManagerContract).mockImplementation((contract: any) => contract);
+    vi.mocked(patchAttribute).mockResolvedValue({ element: { id: 'connector-id' } } as never);
+  });
+
+  it('should resolve target contract from connector snapshot first', async () => {
+    const snapshotContract = { container_type: 'EXTERNAL_IMPORT', config_schema: { properties: {}, required: [] } };
+    vi.mocked(storeLoadById).mockResolvedValue({
+      id: 'connector-id',
+      manager_contract_image: 'opencti/connector-ipinfo',
+      manager_contract: snapshotContract,
+      manager_contract_configuration: [],
+      manager_upgrade_strategy: 'latest',
+    } as never);
+
+    await managedConnectorEdit(fakeContext, fakeUser, {
+      id: 'connector-id',
+      name: 'updated-name',
+      title: 'updated-title',
+      connector_user_id: 'user-connector',
+      manager_contract_configuration: [],
+    } as never);
+
+    expect(getSupportedContractByImage).not.toHaveBeenCalled();
+    expect(computeConnectorTargetContract).toHaveBeenCalledWith([], snapshotContract, 'pub-key', []);
+  });
+
+  it('should fallback to catalog contract when snapshot is missing', async () => {
+    const catalogContract = { container_type: 'EXTERNAL_IMPORT', config_schema: { properties: {}, required: [] } };
+    vi.mocked(storeLoadById).mockResolvedValue({
+      id: 'connector-id',
+      manager_contract_image: 'opencti/connector-ipinfo',
+      manager_contract_configuration: [],
+      manager_upgrade_strategy: 'latest',
+    } as never);
+    vi.mocked(getSupportedContractByImage).mockResolvedValue(catalogContract as never);
+
+    await managedConnectorEdit(fakeContext, fakeUser, {
+      id: 'connector-id',
+      name: 'updated-name',
+      title: 'updated-title',
+      connector_user_id: 'user-connector',
+      manager_contract_configuration: [],
+    } as never);
+
+    expect(getSupportedContractByImage).toHaveBeenCalledWith('opencti/connector-ipinfo');
+    expect(computeConnectorTargetContract).toHaveBeenCalledWith([], catalogContract, 'pub-key', []);
   });
 });

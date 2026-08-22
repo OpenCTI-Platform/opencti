@@ -7,7 +7,6 @@ import { convertFintelTemplateToStix } from './fintelTemplate-converter';
 
 export const FINTEL_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityFintelTemplate, StixFintelTemplate> = {
   type: {
-    id: 'fintelTemplates',
     name: ENTITY_TYPE_FINTEL_TEMPLATE,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

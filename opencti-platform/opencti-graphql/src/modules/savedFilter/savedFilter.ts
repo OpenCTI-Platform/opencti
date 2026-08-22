@@ -7,7 +7,6 @@ import { authorizedMembers, creators, createdAt } from '../../schema/attribute-d
 
 const SAVED_FILTER_DEFINITION: ModuleDefinition<StoreEntitySavedFilter, StixSavedFilter> = {
   type: {
-    id: 'saved-filter',
     name: ENTITY_TYPE_SAVED_FILTER,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

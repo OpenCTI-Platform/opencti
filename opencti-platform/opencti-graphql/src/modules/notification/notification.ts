@@ -23,7 +23,6 @@ import { MEMBERS_ENTITY_TYPES } from '../../utils/access';
 // Triggers
 const TRIGGER_DEFINITION: ModuleDefinition<StoreEntityTrigger, StixTrigger> = {
   type: {
-    id: 'triggers',
     name: ENTITY_TYPE_TRIGGER,
     category: ABSTRACT_INTERNAL_OBJECT,
   },
@@ -62,7 +61,6 @@ registerDefinition(TRIGGER_DEFINITION);
 // Notifications
 const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNotification> = {
   type: {
-    id: 'notifications',
     name: ENTITY_TYPE_NOTIFICATION,
     category: ABSTRACT_INTERNAL_OBJECT,
   },

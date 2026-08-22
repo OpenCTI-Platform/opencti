@@ -3851,10 +3851,47 @@ export type CatalogConnection = {
   pageInfo: PageInfo;
 };
 
+export type CatalogConnector = {
+  __typename?: 'CatalogConnector';
+  description?: Maybe<Scalars['String']['output']>;
+  last_verified_date?: Maybe<Scalars['String']['output']>;
+  logo?: Maybe<Scalars['String']['output']>;
+  manager_supported?: Maybe<Scalars['Boolean']['output']>;
+  playbook_supported?: Maybe<Scalars['Boolean']['output']>;
+  short_description?: Maybe<Scalars['String']['output']>;
+  slug: Scalars['String']['output'];
+  source_code?: Maybe<Scalars['String']['output']>;
+  subscription_link?: Maybe<Scalars['String']['output']>;
+  title: Scalars['String']['output'];
+  use_cases?: Maybe<Array<Scalars['String']['output']>>;
+  verified?: Maybe<Scalars['Boolean']['output']>;
+};
+
+export type CatalogConnectorContract = {
+  __typename?: 'CatalogConnectorContract';
+  config_schema?: Maybe<Scalars['JSON']['output']>;
+  container_image?: Maybe<Scalars['String']['output']>;
+  container_type?: Maybe<Scalars['String']['output']>;
+  container_version?: Maybe<Scalars['String']['output']>;
+  format_version?: Maybe<Scalars['String']['output']>;
+  is_latest?: Maybe<Scalars['Boolean']['output']>;
+  max_confidence_level?: Maybe<Scalars['Int']['output']>;
+  slug: Scalars['String']['output'];
+  support_version?: Maybe<Scalars['String']['output']>;
+  version: Scalars['String']['output'];
+};
+
 export type CatalogEdge = {
   __typename?: 'CatalogEdge';
   cursor: Scalars['String']['output'];
   node: Catalog;
+};
+
+export type CatalogVersionInfo = {
+  __typename?: 'CatalogVersionInfo';
+  revision?: Maybe<Scalars['String']['output']>;
+  status: Scalars['String']['output'];
+  updated_at?: Maybe<Scalars['String']['output']>;
 };
 
 export enum CatalogsOrdering {
@@ -4570,6 +4607,7 @@ export type Connector = BasicObject & InternalObject & {
   manager_current_status?: Maybe<Scalars['String']['output']>;
   manager_health_metrics?: Maybe<ConnectorHealthMetrics>;
   manager_requested_status?: Maybe<Scalars['String']['output']>;
+  manager_upgrade_strategy?: Maybe<ManagerUpgradeStrategy>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   only_contextual?: Maybe<Scalars['Boolean']['output']>;
@@ -16551,6 +16589,7 @@ export type ManagedConnector = BasicObject & InternalObject & {
   manager_current_status?: Maybe<Scalars['String']['output']>;
   manager_health_metrics?: Maybe<ConnectorHealthMetrics>;
   manager_requested_status: Scalars['String']['output'];
+  manager_upgrade_strategy?: Maybe<ManagerUpgradeStrategy>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
@@ -16585,6 +16624,11 @@ export type ManagerContractExcerpt = {
   slug: Scalars['String']['output'];
   title: Scalars['String']['output'];
 };
+
+export enum ManagerUpgradeStrategy {
+  Latest = 'latest',
+  Pinned = 'pinned'
+}
 
 export type MappedConfigKey = {
   __typename?: 'MappedConfigKey';
@@ -17492,6 +17536,7 @@ export type Mutation = {
   publicDashboardDelete?: Maybe<Scalars['ID']['output']>;
   publicDashboardFieldPatch?: Maybe<PublicDashboard>;
   queryTaskAdd: BackgroundTask;
+  refreshCatalog: Scalars['Boolean']['output'];
   regionAdd?: Maybe<Region>;
   regionEdit?: Maybe<RegionEditMutations>;
   registerConnector?: Maybe<Connector>;
@@ -24641,6 +24686,10 @@ export type Query = {
   caseTemplates?: Maybe<CaseTemplateConnection>;
   cases?: Maybe<CaseConnection>;
   catalog?: Maybe<Catalog>;
+  catalogConnector?: Maybe<CatalogConnector>;
+  catalogConnectorContract?: Maybe<CatalogConnectorContract>;
+  catalogConnectors: Array<CatalogConnector>;
+  catalogVersionInfo: CatalogVersionInfo;
   catalogs: Array<Catalog>;
   channel?: Maybe<Channel>;
   channels?: Maybe<ChannelConnection>;
@@ -25318,6 +25367,17 @@ export type QueryCasesArgs = {
 
 export type QueryCatalogArgs = {
   id: Scalars['String']['input'];
+};
+
+
+export type QueryCatalogConnectorArgs = {
+  slug: Scalars['String']['input'];
+};
+
+
+export type QueryCatalogConnectorContractArgs = {
+  slug: Scalars['String']['input'];
+  version?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -39892,7 +39952,10 @@ export type ResolversTypes = ResolversObject<{
   CasesOrdering: CasesOrdering;
   Catalog: ResolverTypeWrapper<GraphqlCatalog>;
   CatalogConnection: ResolverTypeWrapper<Omit<CatalogConnection, 'edges'> & { edges: Array<ResolversTypes['CatalogEdge']> }>;
+  CatalogConnector: ResolverTypeWrapper<CatalogConnector>;
+  CatalogConnectorContract: ResolverTypeWrapper<CatalogConnectorContract>;
   CatalogEdge: ResolverTypeWrapper<Omit<CatalogEdge, 'node'> & { node: ResolversTypes['Catalog'] }>;
+  CatalogVersionInfo: ResolverTypeWrapper<CatalogVersionInfo>;
   CatalogsOrdering: CatalogsOrdering;
   CertAuthConfig: ResolverTypeWrapper<CertAuthConfig>;
   CertAuthConfigInput: CertAuthConfigInput;
@@ -40369,6 +40432,7 @@ export type ResolversTypes = ResolversObject<{
   ManagerConfiguration: ResolverTypeWrapper<BasicStoreEntityManagerConfiguration>;
   ManagerContractConfiguration: ResolverTypeWrapper<ManagerContractConfiguration>;
   ManagerContractExcerpt: ResolverTypeWrapper<ManagerContractExcerpt>;
+  ManagerUpgradeStrategy: ManagerUpgradeStrategy;
   MappedConfigKey: ResolverTypeWrapper<MappedConfigKey>;
   MappedEntity: ResolverTypeWrapper<Omit<MappedEntity, 'matchedEntity'> & { matchedEntity: ResolversTypes['StixCoreObject'] }>;
   MappedEntityInput: MappedEntityInput;
@@ -41037,7 +41101,10 @@ export type ResolversParentTypes = ResolversObject<{
   CaseTemplateEdge: Omit<CaseTemplateEdge, 'node'> & { node: ResolversParentTypes['CaseTemplate'] };
   Catalog: GraphqlCatalog;
   CatalogConnection: Omit<CatalogConnection, 'edges'> & { edges: Array<ResolversParentTypes['CatalogEdge']> };
+  CatalogConnector: CatalogConnector;
+  CatalogConnectorContract: CatalogConnectorContract;
   CatalogEdge: Omit<CatalogEdge, 'node'> & { node: ResolversParentTypes['Catalog'] };
+  CatalogVersionInfo: CatalogVersionInfo;
   CertAuthConfig: CertAuthConfig;
   CertAuthConfigInput: CertAuthConfigInput;
   ChangePasswordInput: ChangePasswordInput;
@@ -43164,9 +43231,43 @@ export type CatalogConnectionResolvers<ContextType = any, ParentType extends Res
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
 }>;
 
+export type CatalogConnectorResolvers<ContextType = any, ParentType extends ResolversParentTypes['CatalogConnector'] = ResolversParentTypes['CatalogConnector']> = ResolversObject<{
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_verified_date?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  logo?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  manager_supported?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  playbook_supported?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  short_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  source_code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  subscription_link?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  use_cases?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  verified?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+}>;
+
+export type CatalogConnectorContractResolvers<ContextType = any, ParentType extends ResolversParentTypes['CatalogConnectorContract'] = ResolversParentTypes['CatalogConnectorContract']> = ResolversObject<{
+  config_schema?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
+  container_image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  container_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  container_version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  format_version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  is_latest?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  max_confidence_level?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  support_version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type CatalogEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CatalogEdge'] = ResolversParentTypes['CatalogEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Catalog'], ParentType, ContextType>;
+}>;
+
+export type CatalogVersionInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['CatalogVersionInfo'] = ResolversParentTypes['CatalogVersionInfo']> = ResolversObject<{
+  revision?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type CertAuthConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['CertAuthConfig'] = ResolversParentTypes['CertAuthConfig']> = ResolversObject<{
@@ -43405,6 +43506,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   manager_current_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   manager_health_metrics?: Resolver<Maybe<ResolversTypes['ConnectorHealthMetrics']>, ParentType, ContextType>;
   manager_requested_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  manager_upgrade_strategy?: Resolver<Maybe<ResolversTypes['ManagerUpgradeStrategy']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   only_contextual?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -47487,6 +47589,7 @@ export type ManagedConnectorResolvers<ContextType = any, ParentType extends Reso
   manager_current_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   manager_health_metrics?: Resolver<Maybe<ResolversTypes['ConnectorHealthMetrics']>, ParentType, ContextType>;
   manager_requested_status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  manager_upgrade_strategy?: Resolver<Maybe<ResolversTypes['ManagerUpgradeStrategy']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
@@ -48148,6 +48251,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   publicDashboardDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPublicDashboardDeleteArgs, 'id'>>;
   publicDashboardFieldPatch?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<MutationPublicDashboardFieldPatchArgs, 'id' | 'input'>>;
   queryTaskAdd?: Resolver<ResolversTypes['BackgroundTask'], ParentType, ContextType, RequireFields<MutationQueryTaskAddArgs, 'input'>>;
+  refreshCatalog?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   regionAdd?: Resolver<Maybe<ResolversTypes['Region']>, ParentType, ContextType, RequireFields<MutationRegionAddArgs, 'input'>>;
   regionEdit?: Resolver<Maybe<ResolversTypes['RegionEditMutations']>, ParentType, ContextType, RequireFields<MutationRegionEditArgs, 'id'>>;
   registerConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, Partial<MutationRegisterConnectorArgs>>;
@@ -49764,6 +49868,10 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   caseTemplates?: Resolver<Maybe<ResolversTypes['CaseTemplateConnection']>, ParentType, ContextType, Partial<QueryCaseTemplatesArgs>>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<QueryCasesArgs>>;
   catalog?: Resolver<Maybe<ResolversTypes['Catalog']>, ParentType, ContextType, RequireFields<QueryCatalogArgs, 'id'>>;
+  catalogConnector?: Resolver<Maybe<ResolversTypes['CatalogConnector']>, ParentType, ContextType, RequireFields<QueryCatalogConnectorArgs, 'slug'>>;
+  catalogConnectorContract?: Resolver<Maybe<ResolversTypes['CatalogConnectorContract']>, ParentType, ContextType, RequireFields<QueryCatalogConnectorContractArgs, 'slug'>>;
+  catalogConnectors?: Resolver<Array<ResolversTypes['CatalogConnector']>, ParentType, ContextType>;
+  catalogVersionInfo?: Resolver<ResolversTypes['CatalogVersionInfo'], ParentType, ContextType>;
   catalogs?: Resolver<Array<ResolversTypes['Catalog']>, ParentType, ContextType>;
   channel?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType, RequireFields<QueryChannelArgs, 'id'>>;
   channels?: Resolver<Maybe<ResolversTypes['ChannelConnection']>, ParentType, ContextType, Partial<QueryChannelsArgs>>;
@@ -53828,7 +53936,10 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   CaseTemplateEdge?: CaseTemplateEdgeResolvers<ContextType>;
   Catalog?: CatalogResolvers<ContextType>;
   CatalogConnection?: CatalogConnectionResolvers<ContextType>;
+  CatalogConnector?: CatalogConnectorResolvers<ContextType>;
+  CatalogConnectorContract?: CatalogConnectorContractResolvers<ContextType>;
   CatalogEdge?: CatalogEdgeResolvers<ContextType>;
+  CatalogVersionInfo?: CatalogVersionInfoResolvers<ContextType>;
   CertAuthConfig?: CertAuthConfigResolvers<ContextType>;
   Channel?: ChannelResolvers<ContextType>;
   ChannelConnection?: ChannelConnectionResolvers<ContextType>;

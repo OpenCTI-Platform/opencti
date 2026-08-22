@@ -22,7 +22,6 @@ import { draftChange } from '../../schema/attribute-definition';
 
 const ENTITY_PLAYBOOK_DEFINITION: ModuleDefinition<StoreEntityPlaybook, StixPlaybook> = {
   type: {
-    id: 'playbook',
     name: ENTITY_TYPE_PLAYBOOK,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

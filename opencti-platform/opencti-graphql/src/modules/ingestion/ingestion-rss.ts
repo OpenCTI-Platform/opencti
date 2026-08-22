@@ -8,7 +8,6 @@ import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
 const INGESTION_RSS_DEFINITION: ModuleDefinition<StoreEntityIngestionRss, StixIngestionRss> = {
   type: {
-    id: 'ingestion-rss',
     name: ENTITY_TYPE_INGESTION_RSS,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

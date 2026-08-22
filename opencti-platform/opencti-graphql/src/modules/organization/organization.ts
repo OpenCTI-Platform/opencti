@@ -30,7 +30,6 @@ import convertOrganizationToStix, { convertOrganizationToStix_2_0 } from './orga
 
 const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrganization, Stix2Organization> = {
   type: {
-    id: 'organization',
     name: ENTITY_TYPE_IDENTITY_ORGANIZATION,
     category: ENTITY_TYPE_IDENTITY,
   },

@@ -7,7 +7,6 @@ import { ENTITY_TYPE_THEME } from '../../schema/internalObject';
 
 const THEME_DEFINITION: ModuleDefinition<StoreEntityTheme, StixTheme> = {
   type: {
-    id: 'theme',
     name: ENTITY_TYPE_THEME,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

@@ -8,7 +8,6 @@ import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
 const STREAM_COLLECTION_DEFINITION: ModuleDefinition<StoreEntityStreamCollection, StixStreamCollection> = {
   type: {
-    id: 'stream-collection',
     name: ENTITY_TYPE_STREAM_COLLECTION,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

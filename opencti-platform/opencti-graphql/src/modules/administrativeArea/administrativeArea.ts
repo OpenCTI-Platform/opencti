@@ -12,7 +12,6 @@ import { entityLocationType } from '../../schema/attribute-definition';
 
 const ADMINISTRATIVE_AREA_DEFINITION: ModuleDefinition<StoreEntityAdministrativeArea, StixLocation> = {
   type: {
-    id: 'administrativeAreas',
     name: ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA,
     category: ENTITY_TYPE_LOCATION,
     aliased: true,

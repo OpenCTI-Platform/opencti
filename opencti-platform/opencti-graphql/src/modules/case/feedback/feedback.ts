@@ -9,7 +9,6 @@ import { ENTITY_TYPE_CONTAINER_FEEDBACK, type Stix2Feedback, type StixFeedback, 
 
 const FEEDBACK_DEFINITION: ModuleDefinition<StoreEntityFeedback, StixFeedback, Stix2Feedback> = {
   type: {
-    id: 'feedback',
     name: ENTITY_TYPE_CONTAINER_FEEDBACK,
     category: ENTITY_TYPE_CONTAINER_CASE,
     aliased: false,

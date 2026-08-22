@@ -1,4 +1,4 @@
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, isFeatureEnabled } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { patchAttribute } from '../database/middleware';
 import { fullEntitiesList } from '../database/middleware-loader';
@@ -7,7 +7,11 @@ import { completeConnector, connector } from '../database/repository';
 import type { Connector, ConnectorContractConfiguration, ContractConfigInput } from '../generated/graphql';
 import { publishUserAction } from '../listener/UserActionListener';
 import { addConnectorDeployedCount } from '../manager/telemetryManager';
-import { computeConnectorTargetContract, findContractByContainerImage } from '../modules/catalog/catalog-domain';
+import {
+  computeConnectorTargetContract,
+  findContractByContainerImage,
+  mapCatalogContractToConnectorManagerContract,
+} from '../modules/catalog/catalog-domain';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER } from '../schema/internalObject';
 import type { BasicStoreEntityConnectorManager } from '../types/connector';
@@ -43,6 +47,8 @@ type IgnoredKey = {
   value: string;
   reason: string;
 };
+
+const DECOUPLING_CONNECTOR_VERSIONS = isFeatureEnabled('DECOUPLING_CONNECTOR_VERSIONS');
 
 const buildConfigMap = (configuration: ConfigInput[]): Map<string, string> => {
   const configMap = new Map<string, string>();
@@ -329,6 +335,10 @@ export const migrateConnectorToManaged = async (
     manager_contract_configuration: filteredConfigurations,
     manager_requested_status: 'stopped',
   };
+  if (DECOUPLING_CONNECTOR_VERSIONS) {
+    managedConnectorData.manager_contract = mapCatalogContractToConnectorManagerContract(contract);
+    managedConnectorData.manager_upgrade_strategy = 'latest';
+  }
 
   // Reset connector state if requested
   if (resetConnectorState && existingConnector.connector_state) {

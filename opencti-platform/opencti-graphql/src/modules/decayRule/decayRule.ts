@@ -6,7 +6,6 @@ import convertDecayRuleToStix from './decayRule-converter';
 
 const DECAY_RULE_DEFINITION: ModuleDefinition<StoreEntityDecayRule, StixDecayRule> = {
   type: {
-    id: 'decayRule',
     name: ENTITY_TYPE_DECAY_RULE,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

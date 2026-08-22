@@ -7,7 +7,6 @@ import { ENTITY_TYPE_TASK_TEMPLATE } from './task-template-types';
 
 const TASK_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityTaskTemplate, StixTaskTemplate> = {
   type: {
-    id: 'task-template',
     name: ENTITY_TYPE_TASK_TEMPLATE,
     category: ABSTRACT_INTERNAL_OBJECT,
   },

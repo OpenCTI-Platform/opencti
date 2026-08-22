@@ -6,7 +6,6 @@ import { convertFintelDesignToStix } from './fintelDesign-converter';
 
 export const FINTEL_DESIGN_DEFINITION: ModuleDefinition<StoreEntityFintelDesign, StixFintelDesign> = {
   type: {
-    id: 'fintelDesign',
     name: ENTITY_TYPE_FINTEL_DESIGN,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

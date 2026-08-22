@@ -72,7 +72,6 @@ const attributeConfiguration: JSONSchemaType<AttributeConfiguration[]> = {
 
 export const ENTITY_SETTING_DEFINITION: ModuleDefinition<StoreEntityEntitySetting, StixEntitySetting> = {
   type: {
-    id: 'entitysettings',
     name: ENTITY_TYPE_ENTITY_SETTING,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

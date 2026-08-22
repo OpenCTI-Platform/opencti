@@ -5,7 +5,6 @@ import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../types/workflow-types';
 
 const WORKFLOW_INSTANCE_DEFINITION: ModuleDefinition<any, any> = {
   type: {
-    id: 'workflowinstances',
     name: ENTITY_TYPE_WORKFLOW_INSTANCE,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

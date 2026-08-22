@@ -1,4 +1,5 @@
 import type { BasicStoreEntity, StoreEntity } from './store';
+import type { ConnectorManagerContract, ManagerUpgradeStrategy } from '../modules/catalog/catalog-types';
 
 export interface ConnectorInfo {
   run_and_terminate: boolean;
@@ -27,6 +28,8 @@ export interface BasicStoreEntityConnector extends StoreEntity {
   // region composer (set only on composer-managed connectors)
   catalog_id?: string;
   manager_contract_image?: string;
+  manager_upgrade_strategy?: ManagerUpgradeStrategy;
+  manager_contract?: ConnectorManagerContract;
   // endregion
 }
 export interface BasicStoreEntityConnectorManager extends BasicStoreEntity {

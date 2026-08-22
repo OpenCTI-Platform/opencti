@@ -8,7 +8,6 @@ import { objectMarking, objectOrganization } from '../../schema/stixRefRelations
 
 const DELETE_OPERATION_DEFINITION: ModuleDefinition<StoreEntityDeleteOperation, StixDeleteOperation> = {
   type: {
-    id: 'deleteOperation',
     name: ENTITY_TYPE_DELETE_OPERATION,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

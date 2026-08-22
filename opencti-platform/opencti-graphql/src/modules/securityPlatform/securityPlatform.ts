@@ -10,7 +10,6 @@ import { objectOrganization } from '../../schema/stixRefRelationship';
 
 const SECURITY_PLATFORM_DEFINITION: ModuleDefinition<StoreEntitySecurityPlatform, StixSecurityPlatform, Stix2SecurityPlatform> = {
   type: {
-    id: 'security-platform',
     name: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM,
     category: ENTITY_TYPE_IDENTITY,
     aliased: false,

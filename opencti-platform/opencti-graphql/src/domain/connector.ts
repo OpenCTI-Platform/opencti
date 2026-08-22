@@ -46,7 +46,7 @@ import {
   type UpdateConnectorManagerStatusInput,
   ValidationMode,
 } from '../generated/graphql';
-import { BUS_TOPICS, logApp, PLATFORM_VERSION } from '../config/conf';
+import { BUS_TOPICS, isFeatureEnabled, logApp, PLATFORM_VERSION } from '../config/conf';
 import { deleteWorkForConnector } from './work';
 import { testSync as testSyncUtils } from './connector-utils';
 import { defaultValidationMode, loadFile, uploadJobImport } from '../database/file-storage';
@@ -55,7 +55,11 @@ import { isCompatibleVersionWithMinimal } from '../utils/version';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import type { BasicStoreCommon, StoreEntity } from '../types/store';
 import { addConnectorDeployedCount, addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '../manager/telemetryManager';
-import { computeConnectorTargetContract, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
+import {
+  computeConnectorTargetContract,
+  getSupportedContractByImage,
+  mapCatalogContractToConnectorManagerContract,
+} from '../modules/catalog/catalog-domain';
 import { getEntitiesMapFromCache } from '../database/cache';
 
 import { createOnTheFlyUser } from '../modules/user/user-domain';
@@ -69,6 +73,7 @@ import { encryptSynchronizerCredential } from './connector-sync-crypto';
 import { verifyIngestionUri } from '../modules/ingestion/ingestion-common';
 
 const MINIMAL_SYNCHRONIZER_COMPATIBLE_VERSION = '6.9.6';
+const DECOUPLING_CONNECTOR_VERSIONS = isFeatureEnabled('DECOUPLING_CONNECTOR_VERSIONS');
 // Sanitize name for K8s/Docker
 const sanitizeContainerName = (label: string): string => {
   let sanitized = label
@@ -205,8 +210,8 @@ export const managedConnectorEdit = async (
   if (isEmptyField(conn)) {
     throw UnsupportedError('Connector not found', { id: input.id });
   }
-  const contractsMap = await getSupportedContractsByImage();
-  const targetContract: any = contractsMap.get(conn.manager_contract_image);
+  const targetContract: any = (DECOUPLING_CONNECTOR_VERSIONS ? conn.manager_contract : undefined)
+    ?? await getSupportedContractByImage(conn.manager_contract_image);
   if (isEmptyField(targetContract)) {
     throw UnsupportedError('Target contract not found');
   }
@@ -228,6 +233,10 @@ export const managedConnectorEdit = async (
     connector_user_id: input.connector_user_id,
     manager_contract_configuration: contractConfigurations,
   };
+  if (DECOUPLING_CONNECTOR_VERSIONS) {
+    patch.manager_contract = mapCatalogContractToConnectorManagerContract(targetContract);
+    patch.manager_upgrade_strategy = conn.manager_upgrade_strategy ?? 'latest';
+  }
   const { element } = await patchAttribute(context, user, input.id, ENTITY_TYPE_CONNECTOR, patch);
   return element;
 };
@@ -238,8 +247,7 @@ export const managedConnectorAdd = async (
   input: AddManagedConnectorInput,
 ) => {
   // Get contract
-  const contractsMap = await getSupportedContractsByImage();
-  const targetContract: any = contractsMap.get(input.manager_contract_image);
+  const targetContract: any = await getSupportedContractByImage(input.manager_contract_image);
   if (isEmptyField(targetContract)) {
     throw UnsupportedError('Target contract not found');
   }
@@ -295,6 +303,10 @@ export const managedConnectorAdd = async (
     connector_state_timestamp: now(),
     built_in: false,
   };
+  if (DECOUPLING_CONNECTOR_VERSIONS) {
+    connectorToCreate.manager_contract = mapCatalogContractToConnectorManagerContract(targetContract);
+    connectorToCreate.manager_upgrade_strategy = 'latest';
+  }
 
   const createdConnector: any = await createEntity(context, user, connectorToCreate, ENTITY_TYPE_CONNECTOR);
   // Increment telemetry for connector deployed via composer

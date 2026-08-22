@@ -9,11 +9,11 @@ import { BUILTIN_NOTIFIERS_CONNECTORS } from '../modules/notifier/notifier-stati
 import { builtInConnector, builtInConnectorsRuntime } from '../connector/connector-domain';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { shortHash } from '../schema/schemaUtils';
-import { encryptValue, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
+import { encryptValue, getSupportedContractsByImage, mapCatalogContractToConnectorManagerContract } from '../modules/catalog/catalog-domain';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { getEntitiesMapFromCache } from './cache';
 import { SYSTEM_USER } from '../utils/access';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { booleanConf, isFeatureEnabled, logApp } from '../config/conf';
 import { ConnectorPriorityGroup } from '../generated/graphql';
 import { injectProxyConfiguration } from '../config/proxy-config';
 import { getPlatformCrypto } from '../utils/platformCrypto';
@@ -25,6 +25,7 @@ import { lockResources } from '../lock/master-lock';
 import { LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';
 
 export const CONNECTOR_PRIORITY_GROUP_VALUES = Object.values(ConnectorPriorityGroup);
+const DECOUPLING_CONNECTOR_VERSIONS = isFeatureEnabled('DECOUPLING_CONNECTOR_VERSIONS');
 
 const getJWTKeyPair = memoize(async () => {
   const factory = await getPlatformCrypto();
@@ -77,9 +78,28 @@ export const connector = async (context, user, id) => {
   return element;
 };
 
-export const computeManagerConnectorContract = async (_context, _user, cn) => {
+const resolveManagerContract = async (cn) => {
+  if (DECOUPLING_CONNECTOR_VERSIONS && cn.manager_contract) {
+    return cn.manager_contract;
+  }
+  if (!cn.manager_contract_image) {
+    return null;
+  }
   const contracts = await getSupportedContractsByImage();
   const contract = contracts.get(cn.manager_contract_image);
+  if (contract && DECOUPLING_CONNECTOR_VERSIONS) {
+    logApp.warn('Connector is missing manager_contract snapshot; using catalog fallback', {
+      connectorId: cn.internal_id,
+      connectorName: cn.name,
+      managerContractImage: cn.manager_contract_image,
+    });
+    return mapCatalogContractToConnectorManagerContract(contract);
+  }
+  return contract ?? null;
+};
+
+export const computeManagerConnectorContract = async (_context, _user, cn) => {
+  const contract = await resolveManagerContract(cn);
   return contract ? JSON.stringify(contract) : contract;
 };
 
@@ -88,8 +108,7 @@ export const computeManagerConnectorExcerpt = async (_context, _user, cn) => {
     return null;
   }
 
-  const contracts = await getSupportedContractsByImage();
-  const contract = contracts.get(cn.manager_contract_image);
+  const contract = await resolveManagerContract(cn);
 
   if (!contract) {
     logApp.warn('No contract found for', { connectorName: cn.name });
@@ -173,10 +192,10 @@ export const computeManagerConnectorConfiguration = async (context, _, cn, { wit
 };
 
 export const computeManagerConnectorImage = async (cn) => {
-  const contracts = await getSupportedContractsByImage();
-  const contract = contracts.get(cn.manager_contract_image);
+  const contract = await resolveManagerContract(cn);
   if (!contract) return '';
-  return isNotEmptyField(cn.manager_contract_image) ? `${cn.manager_contract_image}:${contract.container_version}` : null;
+  const containerImage = contract.container_image ?? cn.manager_contract_image;
+  return isNotEmptyField(containerImage) ? `${containerImage}:${contract.container_version}` : null;
 };
 
 export const computeManagerContractHash = async (context, user, cn) => {

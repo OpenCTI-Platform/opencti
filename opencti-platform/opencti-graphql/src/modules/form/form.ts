@@ -8,7 +8,6 @@ import { convertFormToStix } from './form-converter';
 
 export const FORM_DEFINITION: ModuleDefinition<StoreEntityForm, StixForm> = {
   type: {
-    id: 'forms',
     name: ENTITY_TYPE_FORM,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

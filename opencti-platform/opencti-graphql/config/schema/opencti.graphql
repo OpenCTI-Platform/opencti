@@ -2121,6 +2121,11 @@ enum ConnectorCurrentStatus {
   stopped
 }
 
+enum ManagerUpgradeStrategy {
+  latest
+  pinned
+}
+
 type ManagerContractConfiguration {
   key: String
   value: String
@@ -2233,6 +2238,7 @@ type Connector implements BasicObject & InternalObject {
   is_managed: Boolean
   manager_current_status: String
   manager_requested_status: String
+  manager_upgrade_strategy: ManagerUpgradeStrategy
   manager_contract_image: String
   manager_contract_definition: String
   manager_contract_excerpt: ManagerContractExcerpt
@@ -2262,6 +2268,7 @@ type ManagedConnector implements BasicObject & InternalObject {
   ## Manager
   manager: ConnectorManager
   manager_contract_image: String!
+  manager_upgrade_strategy: ManagerUpgradeStrategy
   manager_current_status: String
   manager_requested_status: String!
   manager_contract_configuration: [ConnectorContractConfiguration!]!

@@ -6,7 +6,6 @@ import convertManagerConfigurationToStix from './managerConfiguration-converter'
 
 const MANAGER_CONFIGURATION_DEFINITION: ModuleDefinition<StoreEntityManagerConfiguration, StixManagerConfiguration> = {
   type: {
-    id: 'managerConfigurations',
     name: ENTITY_TYPE_MANAGER_CONFIGURATION,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

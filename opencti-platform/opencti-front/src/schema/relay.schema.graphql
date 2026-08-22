@@ -9644,7 +9644,11 @@ type Query {
   channels(first: Int, after: ID, orderBy: ChannelsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ChannelConnection
   catalog(id: String!): Catalog
   catalogs: [Catalog!]!
+  catalogVersionInfo: CatalogVersionInfo!
   contract(slug: String!): ExtendedContract
+  catalogConnectors: [CatalogConnector!]!
+  catalogConnector(slug: String!): CatalogConnector
+  catalogConnectorContract(slug: String!, version: String): CatalogConnectorContract
   language(id: String!): Language
   languages(first: Int, after: ID, orderBy: LanguagesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LanguageConnection
   event(id: String!): Event
@@ -10501,6 +10505,7 @@ type Mutation {
   channelContextClean(id: ID!): Channel
   channelRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   channelRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Channel
+  refreshCatalog: Boolean!
   languageAdd(input: LanguageAddInput!): Language
   languageDelete(id: ID!): ID
   languageFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Language
@@ -11130,6 +11135,40 @@ type Catalog implements InternalObject & BasicObject {
 type ExtendedContract {
   catalog_id: String!
   contract: String!
+}
+
+type CatalogConnector {
+  slug: String!
+  title: String!
+  description: String
+  short_description: String
+  logo: String
+  use_cases: [String!]
+  verified: Boolean
+  last_verified_date: String
+  playbook_supported: Boolean
+  manager_supported: Boolean
+  subscription_link: String
+  source_code: String
+}
+
+type CatalogConnectorContract {
+  slug: String!
+  version: String!
+  config_schema: JSON
+  container_type: String
+  container_version: String
+  container_image: String
+  support_version: String
+  max_confidence_level: Int
+  is_latest: Boolean
+  format_version: String
+}
+
+type CatalogVersionInfo {
+  status: String!
+  revision: String
+  updated_at: String
 }
 
 enum CatalogsOrdering {

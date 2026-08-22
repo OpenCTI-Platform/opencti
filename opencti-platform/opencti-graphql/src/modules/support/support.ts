@@ -6,7 +6,6 @@ import convertSupportPackageToStix from './support-converter';
 
 const SUPPORT_PACKAGE_DEFINITION: ModuleDefinition<StoreEntitySupportPackage, StixSupportPackage> = {
   type: {
-    id: 'support-package',
     name: ENTITY_TYPE_SUPPORT_PACKAGE,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

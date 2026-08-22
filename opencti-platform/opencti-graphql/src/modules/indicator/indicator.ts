@@ -9,7 +9,6 @@ import { REL_BUILT_IN } from '../../database/stix';
 
 const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator, Stix2Indicator> = {
   type: {
-    id: 'indicator',
     name: ENTITY_TYPE_INDICATOR,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: false,

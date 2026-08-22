@@ -43,7 +43,6 @@ const versionMappings: MappingDefinition<any>[] = [
 
 const WORKFLOW_DEFINITION_DEFINITION: ModuleDefinition<any, any> = {
   type: {
-    id: 'workflowdefinitions',
     name: ENTITY_TYPE_WORKFLOW_DEFINITION,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,
