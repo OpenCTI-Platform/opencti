@@ -631,6 +631,9 @@ type Status {
   order: Int!
   disabled: Boolean
   scope: StatusScope
+  # Set when a Status becomes orphaned by a workflow republish; hard-deleted once past this date
+  # if it is still unreferenced (see the workflow status-projection cleanup manager).
+  to_be_deleted_at: DateTime
 }
 type StatusConnection {
   pageInfo: PageInfo!

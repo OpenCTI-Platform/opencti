@@ -671,6 +671,7 @@ type Status {
   order: Int!
   disabled: Boolean
   scope: StatusScope
+  to_be_deleted_at: DateTime
 }
 
 type StatusConnection {
@@ -10833,6 +10834,7 @@ type WorkflowActionConfig {
 
 type WorkflowSerializedState {
   statusId: String!
+  order: Int
   onEnter: [WorkflowActionConfig!]
   onExit: [WorkflowActionConfig!]
 }
@@ -13466,7 +13468,7 @@ type Notifier implements InternalObject & BasicObject {
   description: String
   notifier_connector: NotifierConnector!
   notifier_connector_id: String!
-  notifier_configuration: String!
+  notifier_configuration: String
   authorized_members: [MemberAccess!]
 }
 

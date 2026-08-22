@@ -1,10 +1,14 @@
 import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import * as R from 'ramda';
-import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
+import { BUS_TOPICS } from '../config/conf';
+import { FunctionalError } from '../config/errors';
+import { telemetry } from '../config/tracing';
+import { getEntitiesListFromCache } from '../database/cache';
+import { elCount } from '../database/engine';
 import { createEntity, deleteElementById, internalDeleteElementById, updateAttribute } from '../database/middleware';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
-import { findById as findSubTypeById } from './subType';
-import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
+import { delEditContext, notify, setEditContext } from '../database/redis';
+import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import {
   type EditContext,
   type EditInput,
@@ -19,16 +23,14 @@ import {
   type StatusTemplate,
   type StatusTemplateAddInput,
 } from '../generated/graphql';
-import type { AuthContext, AuthUser } from '../types/user';
-import { delEditContext, notify, setEditContext } from '../database/redis';
-import { BUS_TOPICS } from '../config/conf';
-import type { BasicStoreEntity, BasicWorkflowStatus, StoreEntity } from '../types/store';
-import { getEntitiesListFromCache } from '../database/cache';
-import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
-import { elCount } from '../database/engine';
 import { publishUserAction } from '../listener/UserActionListener';
 import { validateSetting } from '../modules/entitySetting/entitySetting-validators';
-import { telemetry } from '../config/tracing';
+import { isStatusTemplateUsedInWorkflows } from '../modules/workflow/domain/workflow-domain';
+import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
+import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
+import type { BasicStoreEntity, BasicWorkflowStatus, StoreEntity } from '../types/store';
+import type { AuthContext, AuthUser } from '../types/user';
+import { findById as findSubTypeById } from './subType';
 
 export const findTemplateById = (context: AuthContext, user: AuthUser, statusTemplateId: string): StatusTemplate => {
   return storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE) as unknown as StatusTemplate;
@@ -182,6 +184,13 @@ export const statusTemplateEditField = async (context: AuthContext, user: AuthUs
 };
 export const statusDelete = async (context: AuthContext, user: AuthUser, subTypeId: string, statusId: string) => {
   validateSetting(subTypeId, 'workflow_configuration');
+  const status = await storeLoadById<BasicWorkflowStatus>(context, user, statusId, ENTITY_TYPE_STATUS);
+  if (status) {
+    const isUsedInWorkflow = await isStatusTemplateUsedInWorkflows(context, user, status.template_id);
+    if (isUsedInWorkflow) {
+      throw FunctionalError('Cannot delete a status that is used in a published or draft workflow');
+    }
+  }
   const { element: deleted } = await internalDeleteElementById(context, user, statusId, ENTITY_TYPE_STATUS);
   await publishUserAction({
     user,
@@ -194,8 +203,6 @@ export const statusDelete = async (context: AuthContext, user: AuthUser, subType
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, deleted, user);
   return findSubTypeById(subTypeId);
 };
-import { isStatusTemplateUsedInWorkflows } from '../modules/workflow/domain/workflow-domain';
-import { FunctionalError } from '../config/errors';
 
 export const statusTemplateDelete = async (context: AuthContext, user: AuthUser, statusTemplateId: string) => {
   const isUsedInWorkflow = await isStatusTemplateUsedInWorkflows(context, user, statusTemplateId);
