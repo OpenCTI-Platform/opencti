@@ -16,6 +16,10 @@ import {
 import type { HelmetOptions } from 'helmet';
 import { type Options, ipKeyGenerator } from 'express-rate-limit';
 import { BlockList } from 'node:net';
+import type { AuthUser } from '../types/user';
+import { publishUserAction } from '../listener/UserActionListener';
+import { delUserContext } from '../database/redis';
+import { killUserSessions } from '../database/session';
 
 export const setCookieError = (res: Response, message: string) => {
   // Map error messages to safe, non-sensitive codes exposed to the client.
@@ -285,4 +289,22 @@ export const buildRateLimiterOptions = (): Options => {
     },
   };
   return rateLimitOptions as Options;
+};
+
+export const logOutUser = async (user: AuthUser) => {
+  try {
+    if (user) {
+      await publishUserAction({
+        user: { ...user, origin: { socket: 'query', user_id: user.id } },
+        event_type: 'authentication',
+        event_access: 'administration',
+        event_scope: 'logout',
+        context_data: undefined,
+      });
+      await delUserContext(user);
+      await killUserSessions(user.id);
+    }
+  } catch (e) {
+    logApp.error('Error logout', { cause: e });
+  }
 };
