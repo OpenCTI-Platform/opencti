@@ -75,6 +75,21 @@
       "file": "opencti-platform/opencti-front/src/components/ThemeLight.ts",
       "pattern": "003242",
       "reason": "Old hand-copied designSystem.tertiary.blue.900 value (pre-FDS gap, resolved 2026-07-28 to --color-feedback-info-secondary)."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/Breadcrumbs.tsx",
+      "pattern": "truncate\\(",
+      "reason": "Character truncation reintroduced in the page-path wrapper. The library ellipsizes in CSS and keeps the full label in the DOM and in title; a JS cut (30/50 chars here before the conversion) drops the rest with no way to read it."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/Breadcrumbs.tsx",
+      "pattern": "@mui/",
+      "reason": "MUI drawing the page path again. The wrapper renders the library Breadcrumbs and imports no MUI symbol; a Typography or useTheme coming back means the hand-built path was restored."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/Breadcrumbs.tsx",
+      "pattern": "\\{ href:",
+      "reason": "An entry destination passed as href. react-router's Link spreads rest props before assigning its own href, so the destination is REPLACED by the current location: a valid, focusable link to the page the user is already on. The field is 'to'."
     }
   ],
   "migratedZones": [
