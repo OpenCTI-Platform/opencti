@@ -2529,6 +2529,102 @@ describe('initializeEntityWorkflow — creation-time status resolution', () => {
 });
 
 // ===========================================================================
+// Task 7: request_access scope routing at entity-creation time.
+// An entity type can have a dedicated request_access-scoped WorkflowDefinition
+// (EntitySetting.request_access_workflow.workflow_definition_id) alongside its
+// standard one (EntitySetting.workflow_id). initializeEntityWorkflow must detect
+// the scope from the supplied status's own `scope` field (a property of the Status,
+// not something the caller declares) and route to the matching definition, falling
+// back to the standard one when no dedicated request_access definition is configured.
+// ===========================================================================
+describe('initializeEntityWorkflow — Task 7: request_access scope routing', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const standardDefinitionContent = JSON.stringify({
+    initialState: 'draft',
+    states: [{ statusId: 'draft' }, { statusId: 'reviewing' }],
+    transitions: [],
+  });
+
+  const requestAccessDefinitionContent = JSON.stringify({
+    initialState: 'pending',
+    states: [{ statusId: 'pending' }, { statusId: 'approved' }, { statusId: 'declined' }],
+    transitions: [],
+  });
+
+  const setupCommon = () => {
+    (loadEntity as any).mockResolvedValue(null); // no existing WorkflowInstance yet
+    (createEntity as any).mockResolvedValue({ id: 'instance-id', internal_id: 'instance-id' });
+    (createRelation as any).mockResolvedValue({});
+  };
+
+  it('initializes against the dedicated request_access WorkflowDefinition when the supplied status is request_access-scoped and one is configured', async () => {
+    setupCommon();
+    (findByType as any).mockResolvedValue({
+      id: 'setting-id',
+      workflow_id: 'standard-def-id',
+      request_access_workflow: { workflow_definition_id: 'ra-def-id' },
+    });
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'standard-def-id') {
+        return Promise.resolve({ id: 'standard-def-id', name: 'standard', published_version: { id: 'v1', content: standardDefinitionContent, validation_errors: [] } });
+      }
+      if (id === 'ra-def-id') {
+        return Promise.resolve({ id: 'ra-def-id', name: 'request-access', published_version: { id: 'v1', content: requestAccessDefinitionContent, validation_errors: [] } });
+      }
+      if (id === 'status-pending-id') {
+        return Promise.resolve({ id: 'status-pending-id', template_id: 'pending', scope: StatusScope.RequestAccess });
+      }
+      return Promise.resolve(null);
+    });
+
+    const entity = {
+      id: 'entity-1', internal_id: 'entity-1', entity_type: 'CaseRfi', x_opencti_workflow_id: 'status-pending-id',
+    };
+    await initializeEntityWorkflow(mockContext, mockUser, entity);
+
+    expect(createEntity).toHaveBeenCalledWith(
+      mockContext,
+      mockContext.user,
+      expect.objectContaining({ currentState: 'pending', scope: StatusScope.RequestAccess, workflow_id: 'ra-def-id' }),
+      ENTITY_TYPE_WORKFLOW_INSTANCE,
+    );
+  });
+
+  it('falls back to the standard WorkflowDefinition when no dedicated request_access WorkflowDefinition is configured, even if the supplied status is request_access-scoped', async () => {
+    setupCommon();
+    (findByType as any).mockResolvedValue({
+      id: 'setting-id',
+      workflow_id: 'standard-def-id',
+      // no request_access_workflow.workflow_definition_id configured
+    });
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'standard-def-id') {
+        return Promise.resolve({ id: 'standard-def-id', name: 'standard', published_version: { id: 'v1', content: requestAccessDefinitionContent, validation_errors: [] } });
+      }
+      if (id === 'status-pending-id') {
+        return Promise.resolve({ id: 'status-pending-id', template_id: 'pending', scope: StatusScope.RequestAccess });
+      }
+      return Promise.resolve(null);
+    });
+
+    const entity = {
+      id: 'entity-1', internal_id: 'entity-1', entity_type: 'CaseRfi', x_opencti_workflow_id: 'status-pending-id',
+    };
+    await initializeEntityWorkflow(mockContext, mockUser, entity);
+
+    expect(createEntity).toHaveBeenCalledWith(
+      mockContext,
+      mockContext.user,
+      expect.objectContaining({ currentState: 'pending', scope: StatusScope.RequestAccess, workflow_id: 'standard-def-id' }),
+      ENTITY_TYPE_WORKFLOW_INSTANCE,
+    );
+  });
+});
+
+// ===========================================================================
 // Task 3: getWorkflowInstance — lazy backfill on first read
 // ===========================================================================
 describe('getWorkflowInstance — lazy backfill', () => {

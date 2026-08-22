@@ -1,6 +1,6 @@
-import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
+import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { FintelTemplate } from '../fintelTemplate/fintelTemplate-types';
 
 export const ENTITY_TYPE_ENTITY_SETTING = 'EntitySetting';
@@ -66,6 +66,12 @@ export interface RequestAccessFlow {
   approved_workflow_id?: string;
   declined_workflow_id?: string;
   approval_admin: string[];
+  /**
+   * Task 7: id of the dedicated request_access-scoped WorkflowDefinition for this entity type,
+   * if configured. Falls back to the standard `workflow_id` (on the enclosing EntitySetting)
+   * when unset — an entity type need not have a separate request_access WorkflowDefinition.
+   */
+  workflow_definition_id?: string;
 }
 
 export interface StoreEntityEntitySetting extends StoreEntity {

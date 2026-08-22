@@ -220,21 +220,33 @@ const getWorkflowConfig = async (
 
 /**
  * Get workflow definition data based on allowDraft parameter.
+ *
+ * Task 7, Step 1.3/2.1-2.2: `scope` selects which WorkflowDefinition id to resolve from the
+ * EntitySetting — `StatusScope.RequestAccess` prefers the dedicated
+ * `request_access_workflow.workflow_definition_id` when configured, falling back to the standard
+ * `workflow_id` otherwise (an entity type need not have a separate request_access
+ * WorkflowDefinition to be usable within that scope). Defaults to `StatusScope.Global`,
+ * preserving today's behavior for all existing callers.
  */
 const getDefinitionData = async (
   context: AuthContext,
   user: AuthUser,
   entitySetting: BasicStoreEntityEntitySetting | undefined,
   allowDraft: boolean = false,
+  scope: StatusScope = StatusScope.Global,
 ): Promise<WorkflowDefinitionResponse | null> => {
   if (!entitySetting) return null;
 
-  if (entitySetting.workflow_id) {
+  const workflowDefinitionId = scope === StatusScope.RequestAccess
+    ? (entitySetting.request_access_workflow?.workflow_definition_id ?? entitySetting.workflow_id)
+    : entitySetting.workflow_id;
+
+  if (workflowDefinitionId) {
     const executionContext = bypassDraftContext(context);
     const workflowDefinitionEntity = await storeLoadById(
       executionContext,
       executionContext.user!,
-      entitySetting.workflow_id,
+      workflowDefinitionId,
       ENTITY_TYPE_WORKFLOW_DEFINITION,
     ) as WorkflowDefinitionEntity | undefined;
     if (workflowDefinitionEntity) {
@@ -345,7 +357,9 @@ const initializeWorkflowInstance = async (
 
   const instanceInput: Record<string, unknown> = {
     entity_id: entityId,
-    workflow_id: entitySetting.workflow_id || 'manual',
+    // Task 7: the definition actually resolved (standard or request_access-scoped) — not
+    // necessarily entitySetting.workflow_id, which only ever holds the standard definition's id.
+    workflow_id: definitionData.id || 'manual',
     currentState,
     scope,
     history: JSON.stringify([{
@@ -1520,6 +1534,24 @@ export const triggerWorkflowEvent = async (
  * onEnter hooks of the initial state. No-op if no workflow is configured for
  * the entity type or if an instance already exists.
  */
+/**
+ * Task 7, Step 1.4: detects which WorkflowDefinition scope a newly-created entity should
+ * initialize against. Scope is a property of the supplied `Status` itself (its own `scope`
+ * field), not something the caller declares separately — so any caller that supplies a
+ * request_access-scoped Status id at creation (e.g. requestAccess-domain.ts's CaseRfi creation)
+ * is routed correctly, with no entity-type-specific hardcoding. Defaults to `StatusScope.Global`
+ * when no status is supplied, or when the supplied status cannot be found.
+ */
+const resolveEntityCreationScope = async (
+  context: AuthContext,
+  user: AuthUser,
+  entity: { x_opencti_workflow_id?: string },
+): Promise<StatusScope> => {
+  if (!entity.x_opencti_workflow_id) return StatusScope.Global;
+  const status = await storeLoadById<BasicWorkflowStatus>(context, user, entity.x_opencti_workflow_id, ENTITY_TYPE_STATUS);
+  return status?.scope ?? StatusScope.Global;
+};
+
 export const initializeEntityWorkflow = async (
   context: AuthContext,
   user: AuthUser,
@@ -1528,7 +1560,8 @@ export const initializeEntityWorkflow = async (
   const executionContext = bypassDraftContext(context);
   const executionUser = executionContext.user!;
   const entitySetting = await getWorkflowConfig(executionContext, executionUser, entity.entity_type);
-  const definitionData = await getDefinitionData(executionContext, executionUser, entitySetting);
+  const scope = await resolveEntityCreationScope(executionContext, executionUser, entity);
+  const definitionData = await getDefinitionData(executionContext, executionUser, entitySetting, false, scope);
   if (!definitionData) return;
   await ensureWorkflowInstance(executionContext, executionUser, entity, entitySetting, definitionData);
 };
