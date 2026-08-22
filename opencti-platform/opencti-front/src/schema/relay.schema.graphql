@@ -9645,6 +9645,7 @@ type Query {
   catalog(id: String!): Catalog
   catalogs: [Catalog!]!
   contract(slug: String!): ExtendedContract
+  catalogVersionInfo: CatalogVersionInfo!
   language(id: String!): Language
   languages(first: Int, after: ID, orderBy: LanguagesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LanguageConnection
   event(id: String!): Event
@@ -11130,6 +11131,12 @@ type Catalog implements InternalObject & BasicObject {
 type ExtendedContract {
   catalog_id: String!
   contract: String!
+}
+
+type CatalogVersionInfo {
+  status: String!
+  revision: String
+  updated_at: DateTime
 }
 
 enum CatalogsOrdering {

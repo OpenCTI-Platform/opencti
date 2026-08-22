@@ -46,6 +46,7 @@ import './workflow/workflow';
 import './workspace/workspace';
 import './malwareAnalysis/malwareAnalysis';
 import './managerConfiguration/managerConfiguration';
+import './catalog/catalog-entity';
 import './notifier/notifier';
 import './threatActorIndividual/threatActorIndividual';
 import './playbook/playbook';

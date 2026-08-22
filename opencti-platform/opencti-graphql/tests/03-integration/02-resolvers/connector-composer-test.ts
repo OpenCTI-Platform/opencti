@@ -8,7 +8,7 @@ import { wait } from '../../../src/database/utils';
 import { XTMComposerMock } from '../../utils/XTMComposerMock';
 import type { ApiConnector } from '../../utils/XTMComposerMock';
 import { catalogHelper } from '../../utils/catalogHelper';
-import { resetCatalogs } from '../../../src/modules/catalog/catalog-domain';
+import { getSupportedContractsByImage, resetCatalogs } from '../../../src/modules/catalog/catalog-domain';
 
 const TEST_COMPOSER_ID = uuidv4();
 const TEST_USER_CONNECTOR_ID: string = USER_CONNECTOR.id; // Initialize with default value
@@ -192,6 +192,15 @@ describe('Connector Composer and Managed Connectors', () => {
 
     // Validate that we're using the test catalog
     catalogHelper.validateTestCatalog();
+
+    // In CI, catalog manager refresh runs in background. Wait until the
+    // connector contract used by these tests is effectively available in the
+    // backend contract map before executing mutations.
+    const testConnector = catalogHelper.getTestSafeConnector();
+    await awaitUntilCondition(async () => {
+      const contractsByImage = await getSupportedContractsByImage();
+      return contractsByImage.has(testConnector.container_image);
+    }, 1000, 30, true, `Catalog contract ${testConnector.container_image} is not ready`);
 
     xtmComposer = new XTMComposerMock({
       operationDelay: 100, // Faster for testing
@@ -1251,6 +1260,8 @@ describe('Connector Composer and Managed Connectors', () => {
     });
 
     it('should retrieve the manager contract excerpt for a managed connector', async () => {
+      const testConnector = catalogHelper.getTestSafeConnector();
+
       const result = await queryAsAdminWithSuccess({
         query: GET_CONNECTOR_EXCERPT_QUERY,
         variables: { id: managedConnectorId },
@@ -1259,9 +1270,9 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(result.data).toBeDefined();
       const excerpt = result.data?.connector?.manager_contract_excerpt;
       expect(excerpt).toBeDefined();
-      expect(excerpt.title).toEqual('IPinfo');
-      expect(excerpt.slug).toEqual('ipinfo');
-      expect(excerpt.logo).toMatch(/^data:image\/.+;base64,[A-Za-z0-9+/]+=*$/);
+      expect(excerpt.title).toEqual(testConnector.title);
+      expect(excerpt.slug).toEqual(testConnector.slug);
+      expect(excerpt.logo).toEqual(testConnector.logo);
     });
 
     it('should edit managed connector', async () => {

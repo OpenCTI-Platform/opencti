@@ -450,6 +450,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('User')).toBe(entitiesCounter.User);
     expect(entityTypeMap.get('Vocabulary')).toBe(entitiesCounter.Vocabulary);
     expect(entityTypeMap.get('RetentionRule')).toBe(entitiesCounter.RetentionRule);
+    expect(entityTypeMap.get('CatalogManifest')).toBe(entitiesCounter.CatalogManifest);
     expect(data.edges.length).toEqual(entitiesCounterTotal);
     const filterBaseTypes = [...new Set(data.edges.map((e) => e.node.base_type))];
     expect(filterBaseTypes.length).toEqual(1);
@@ -527,7 +528,8 @@ describe('Elasticsearch pagination', () => {
     let data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: 'malicious' });
     expect(data.edges.length).toEqual(28);
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: 'with malicious' });
-    expect(data.edges.length).toEqual(61);
+    // Catalog internal entities are now part of broad entity search.
+    expect(data.edges.length).toEqual(63);
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: '"with malicious"' });
     expect(data.edges.length).toEqual(2);
   });
@@ -602,6 +604,9 @@ describe('Elasticsearch pagination', () => {
       { type: 'Tracking-Number', size: entitiesCounter.TrackingNumber },
       { type: 'User', size: entitiesCounter.User },
       { type: 'Vocabulary', size: entitiesCounter.Vocabulary },
+      { type: 'CatalogContract', size: entitiesCounter.CatalogContract },
+      { type: 'CatalogLogo', size: entitiesCounter.CatalogLogo },
+      { type: 'CatalogManifest', size: entitiesCounter.CatalogManifest },
     ];
     const mapKeys = Array.from(entityTypeMap.keys());
     expect(mapKeys.length).toBe(testingSet.length);
@@ -749,6 +754,9 @@ describe('Elasticsearch pagination', () => {
       { type: 'External-Reference', size: entitiesCounter.ExternalReference },
       { type: 'EmailTemplate', size: entitiesCounter.EmailTemplate },
       { type: 'RetentionRule', size: entitiesCounter.RetentionRule },
+      { type: 'CatalogContract', size: entitiesCounter.CatalogContract },
+      { type: 'CatalogLogo', size: entitiesCounter.CatalogLogo },
+      { type: 'CatalogManifest', size: entitiesCounter.CatalogManifest },
     ];
     const mapKeys = Array.from(entityTypeMap.keys());
     expect(mapKeys.length).toBe(testingSet.length);

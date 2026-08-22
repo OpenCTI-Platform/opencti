@@ -7,10 +7,16 @@ import { isEmptyField } from '../../database/utils';
 import { UnsupportedError } from '../../config/errors';
 import { idGenFromData } from '../../schema/identifier';
 import filigranCatalog from '../../__generated__/opencti-manifest.json';
-import conf, { logApp } from '../../config/conf';
+import conf, { isFeatureEnabled, logApp } from '../../config/conf';
 import type { ConnectorContractConfiguration, ContractConfigInput } from '../../generated/graphql';
 import { readFile } from 'node:fs/promises';
 import type { ValidateFunction } from 'ajv';
+import { isCatalogManagerEnabled } from './catalogManager';
+import { findCatalogFromES, findContractFromESByContainerImage, findContractFromESBySlug } from './catalog-repository';
+import { DECOUPLING_CONNECTOR_VERSIONS } from './catalog-constants';
+import { executionContext, SYSTEM_USER } from '../../utils/access';
+import { sanitizeManagerConfigSchema } from './catalog-config-schema';
+import { validateManagerSupportedContract } from './catalog-contract-validation';
 
 const validatorCache = new Map<string, ValidateFunction>();
 
@@ -55,32 +61,14 @@ const buildCatalogMap = async (): Promise<Record<string, CatalogType>> => {
     // Validate each contract
     for (let contractIndex = 0; contractIndex < catalog.contracts.length; contractIndex += 1) {
       const contract = catalog.contracts[contractIndex];
-      if (contract.manager_supported) {
-        if (!contract.config_schema) {
-          logApp.warn('A contract has manager_supported=true but is missing config_schema', { contractTitle: contract.title });
-        } else {
-          if (isEmptyField(contract.container_image)) {
-            throw UnsupportedError('Contract must define container_image field', { contractTitle: contract.title });
-          }
-          if (isEmptyField(contract.container_type)) {
-            throw UnsupportedError('Contract must define container_type field', { contractTitle: contract.title });
-          }
-
-          if (contract.config_schema) {
-            const jsonValidation = {
-              type: contract.config_schema.type,
-              properties: contract.config_schema.properties,
-              required: contract.config_schema.required,
-              additionalProperties: contract.config_schema.additionalProperties,
-            };
-            try {
-              getOrCompileValidator(`catalog-contract:${catalog.id}:${contract.slug}`, jsonValidation);
-            } catch (err) {
-              throw UnsupportedError('Contract must be a valid json schema definition', { cause: err });
-            }
-          }
-        }
-      }
+      validateManagerSupportedContract({
+        catalogId: catalog.id,
+        contract,
+        compileValidator: getOrCompileValidator,
+        onMissingConfigSchema: (contractTitle) => {
+          logApp.warn('A contract has manager_supported=true but is missing config_schema', { contractTitle });
+        },
+      });
     }
     newCatalogMap[catalog.id] = {
       definition: catalog,
@@ -97,11 +85,7 @@ const buildCatalogMap = async (): Promise<Record<string, CatalogType>> => {
             if (!finalContract.config_schema) {
               logApp.warn('A contract has manager_supported=true but is missing config_schema', { contractTitle: finalContract.title });
             } else {
-              const EXCLUDED_CONFIG_VARS = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
-              EXCLUDED_CONFIG_VARS.forEach((property) => {
-                delete finalContract.config_schema.properties[property];
-              });
-              finalContract.config_schema.required = c.config_schema.required.filter((item) => !EXCLUDED_CONFIG_VARS.includes(item));
+              finalContract.config_schema = sanitizeManagerConfigSchema(finalContract.config_schema);
             }
           }
           return JSON.stringify(finalContract);
@@ -112,6 +96,41 @@ const buildCatalogMap = async (): Promise<Record<string, CatalogType>> => {
   return newCatalogMap;
 };
 
+const useCatalogFromES = () => isFeatureEnabled(DECOUPLING_CONNECTOR_VERSIONS) && isCatalogManagerEnabled();
+
+const resolveCatalogReadAccess = (context?: AuthContext, user?: AuthUser): { context: AuthContext; user: AuthUser } => {
+  const resolvedUser = user ?? context?.user ?? SYSTEM_USER;
+  const resolvedContext = context ?? executionContext('catalog-domain', resolvedUser);
+  return { context: resolvedContext, user: resolvedUser };
+};
+
+const buildCatalogMapFromES = async (context: AuthContext, user: AuthUser): Promise<Record<string, CatalogType>> => {
+  const newCatalogMap: Record<string, CatalogType> = {};
+  const graphqlCatalogs = await findCatalogFromES(context, user);
+
+  for (let i = 0; i < graphqlCatalogs.length; i += 1) {
+    const graphqlCatalog = graphqlCatalogs[i];
+    const parsedContracts = graphqlCatalog.contracts.map((contract) => JSON.parse(contract) as CatalogContract);
+    const firstContract = parsedContracts[0];
+    const catalogId = firstContract?.slug ?? graphqlCatalog.id;
+
+    newCatalogMap[catalogId] = {
+      definition: {
+        id: catalogId,
+        name: graphqlCatalog.name,
+        description: graphqlCatalog.description,
+        contracts: parsedContracts,
+      },
+      graphql: {
+        ...graphqlCatalog,
+        id: catalogId,
+      },
+    };
+  }
+
+  return newCatalogMap;
+};
+
 // Enable custom catalogs - clears cache and enables live catalog loading
 export const resetCatalogs = () => {
   catalogMap = undefined;
@@ -119,7 +138,12 @@ export const resetCatalogs = () => {
   validatorCache.clear();
 };
 
-const getCatalogs = async (): Promise<Record<string, CatalogType>> => {
+const getCatalogs = async (context?: AuthContext, user?: AuthUser): Promise<Record<string, CatalogType>> => {
+  if (useCatalogFromES()) {
+    const readAccess = resolveCatalogReadAccess(context, user);
+    return buildCatalogMapFromES(readAccess.context, readAccess.user);
+  }
+
   if (!catalogMap) {
     // We memoize the Promise immediately (not after it resolves) so that
     // all concurrent calls share the same in-flight execution.
@@ -442,10 +466,16 @@ export const computeConnectorTargetContract = (
   return contractConfigurations;
 };
 
-export const getSupportedContractsByImage = async (): Promise<Map<string, CatalogContract>> => {
+export const getSupportedContractsByImage = async (context?: AuthContext, user?: AuthUser): Promise<Map<string, CatalogContract>> => {
+  if (useCatalogFromES()) {
+    const catalogDefinitions = await getCatalogs(context, user);
+    const contracts = Object.values(catalogDefinitions).map((catalog) => catalog.definition.contracts).flat();
+    return new Map(contracts.map((contract) => [contract.container_image, contract]));
+  }
+
   if (!contractsByImageCache) {
     contractsByImageCache = (async () => {
-      const catalogDefinitions = await getCatalogs();
+      const catalogDefinitions = await getCatalogs(context, user);
       const contracts = Object.values(catalogDefinitions).map((catalog) => catalog.definition.contracts).flat();
       return new Map(contracts.map((contract) => [contract.container_image, contract]));
     })().catch((err) => {
@@ -456,27 +486,44 @@ export const getSupportedContractsByImage = async (): Promise<Map<string, Catalo
   return contractsByImageCache;
 };
 
-export const findById = async (_context: AuthContext, _user: AuthUser, catalogId: string) => {
-  const catalogDefinitions = await getCatalogs();
+export const findById = async (context: AuthContext, user: AuthUser, catalogId: string) => {
+  const catalogDefinitions = await getCatalogs(context, user);
   return catalogDefinitions[catalogId].graphql;
 };
 
-export const findCatalog = async (_context: AuthContext, _user: AuthUser) => {
-  const catalogDefinitions = await getCatalogs();
+export const findCatalog = async (context: AuthContext, user: AuthUser) => {
+  const catalogDefinitions = await getCatalogs(context, user);
   return Object.values(catalogDefinitions).map((catalog) => catalog.graphql);
 };
 
-const findContract = async (_context: AuthContext, _user: AuthUser, predicate: (contract: any) => boolean) => {
-  const catalogDefinitions = await getCatalogs();
-  if (!catalogDefinitions) {
+type FindContractOptions = {
+  slug?: string;
+  containerImage?: string;
+};
+
+const findContract = async (context: AuthContext, user: AuthUser, options: FindContractOptions) => {
+  if (useCatalogFromES()) {
+    if (options.slug) {
+      return findContractFromESBySlug(context, user, options.slug);
+    }
+    if (options.containerImage) {
+      return findContractFromESByContainerImage(context, user, options.containerImage);
+    }
     return null;
   }
+
+  const catalogDefinitions = await getCatalogs(context, user);
+  const predicate = (contract: CatalogContract) => {
+    if (options.slug) return contract.slug === options.slug;
+    if (options.containerImage) return contract.container_image === options.containerImage;
+    return false;
+  };
 
   const catalogs = Object.values(catalogDefinitions).map((catalog) => catalog.graphql);
   const foundContract = catalogs
     .map((catalog) => {
       const contract = catalog.contracts.find((contractStr: string) => {
-        const parsedContract = JSON.parse(contractStr);
+        const parsedContract = JSON.parse(contractStr) as CatalogContract;
         return predicate(parsedContract);
       });
       return contract ? { catalog_id: catalog.id, contract } : null;
@@ -487,9 +534,9 @@ const findContract = async (_context: AuthContext, _user: AuthUser, predicate: (
 };
 
 export const findContractBySlug = (context: AuthContext, user: AuthUser, contractSlug: string) => {
-  return findContract(context, user, (contract) => contract.slug === contractSlug);
+  return findContract(context, user, { slug: contractSlug });
 };
 
 export const findContractByContainerImage = (context: AuthContext, user: AuthUser, containerImage: string) => {
-  return findContract(context, user, (contract) => contract.container_image === containerImage);
+  return findContract(context, user, { containerImage });
 };

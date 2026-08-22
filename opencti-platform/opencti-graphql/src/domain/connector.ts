@@ -205,7 +205,7 @@ export const managedConnectorEdit = async (
   if (isEmptyField(conn)) {
     throw UnsupportedError('Connector not found', { id: input.id });
   }
-  const contractsMap = await getSupportedContractsByImage();
+  const contractsMap = await getSupportedContractsByImage(context, user);
   const targetContract: any = contractsMap.get(conn.manager_contract_image);
   if (isEmptyField(targetContract)) {
     throw UnsupportedError('Target contract not found');
@@ -238,7 +238,7 @@ export const managedConnectorAdd = async (
   input: AddManagedConnectorInput,
 ) => {
   // Get contract
-  const contractsMap = await getSupportedContractsByImage();
+  const contractsMap = await getSupportedContractsByImage(context, user);
   const targetContract: any = contractsMap.get(input.manager_contract_image);
   if (isEmptyField(targetContract)) {
     throw UnsupportedError('Target contract not found');
