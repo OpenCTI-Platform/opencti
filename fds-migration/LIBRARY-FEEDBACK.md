@@ -1404,3 +1404,55 @@ change anchor rendering across the whole application. Flagged, not touched —
 same treatment as #35.
 
 ---
+
+## 41. The bridge-freshness guard compares two stale copies instead of the installed package
+
+Not a token problem and not this product's: a structural blind spot in the
+GENERATED conformity script, so it holds for every product that copies it.
+
+**What it claims.** `check-fds-conformity.mjs` names its second check
+`bridge-freshness`: "Best-effort freshness vs the design system's current
+theme.css, IF filigran-design-system is checked out as a sibling repo."
+
+**What it does.** It hashes `PRODUCT_ROOT/../filigran-design-system/packages/
+filigran-design-system/src/tokens/theme.css` — a SIBLING WORKING TREE, on
+whatever commit that checkout happens to sit — and compares it to the hash
+recorded in the bridge sidecar. It never looks at
+`node_modules/@filigran/design-system`, which is the only copy the product
+actually consumes, and whose version is pinned in `package.json`.
+
+**Measured here, on the pin bump that landed the disabled ramp:**
+
+| | sha256 |
+|---|---|
+| hash recorded in the bridge sidecar | `87f2d00a…` |
+| sibling working tree (15 commits behind `main`) | `87f2d00a…` ← what the gate compares |
+| **theme.css actually installed at the pin** | **`3c0ef256…`** |
+
+Two stale copies agreed with each other, so the gate reported
+`bridge-freshness: OK` while the bridge was a whole token release out of date.
+Exit 0, 57 checks, nothing to read as a warning.
+
+**Why it matters more than it looks.** The failure is silent AND
+self-reinforcing: the staler the sibling checkout, the greener the gate. A
+product whose developer never pulls the library repo gets a permanently green
+freshness check. And the sibling checkout is not declared anywhere — it is
+resolved by relative path, so nothing states which commit the verdict was
+computed against.
+
+**Ask.** Hash the INSTALLED package
+(`node_modules/@filigran/design-system/packages/filigran-design-system/dist/tokens/theme.css`),
+which exists in every consumer by construction and matches the pin by
+definition. Keep the sibling path as a fallback if useful, but report WHICH
+source produced the verdict, and skip loudly rather than pass when the
+installed copy is missing.
+
+**Removal test.** Bump the pin across a token release without regenerating the
+bridge. `bridge-freshness` must go STALE. Measured today: it says OK.
+
+**Product-side note.** Nothing to work around here — the bridge was regenerated
+in this change set from a library worktree checked out AT THE PIN, and the
+sidecar now records `3c0ef256…`. The gate would have said OK either way, which
+is the whole point of this entry.
+
+---
