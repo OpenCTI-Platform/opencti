@@ -22,6 +22,8 @@ class MeterManager {
 
   private latencyHistogram: Histogram | null = null;
 
+  private migrationDurationHistogram: Histogram | null = null;
+
   private directBulkGauge: Gauge | null = null;
 
   private sideBulkGauge: Gauge | null = null;
@@ -44,6 +46,14 @@ class MeterManager {
 
   latency(val: number, attributes: any) {
     this.latencyHistogram?.record(val, attributes);
+  }
+
+  migrationDuration(val: number, attributes: {
+    migrationTitle: string;
+  }) {
+    this.migrationDurationHistogram?.record(val, {
+      'opencti.migration.title': attributes.migrationTitle,
+    });
   }
 
   directBulk(val: number, attributes: any) {
@@ -74,6 +84,12 @@ class MeterManager {
       valueType: ValueType.INT,
       description: 'Latency computing per query',
       advice: { explicitBucketBoundaries: [0, 100, 500, 2000, 5000, 10000, 20000, 30000] },
+    });
+    this.migrationDurationHistogram = meter.createHistogram('opencti_api_migration_duration', {
+      valueType: ValueType.INT,
+      description: 'Duration of each migration',
+      unit: 's',
+      advice: { explicitBucketBoundaries: [1, 5, 15, 30, 60, 120, 300, 3600, 18000] },
     });
     // - Gauges
     this.directBulkGauge = meter.createGauge('opencti_api_direct_bulk', {
