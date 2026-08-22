@@ -2,7 +2,17 @@ import { getHeapStatistics } from 'node:v8';
 import nconf from 'nconf';
 import ipaddr from 'ipaddr.js';
 import { createEntity, fullEntitiesOrRelationsList, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
-import conf, { ACCOUNT_STATUSES, booleanConf, BUS_TOPICS, ENABLED_DEMO_MODE, ENABLED_FEATURE_FLAGS, getBaseUrl, PLATFORM_VERSION, PLAYGROUND_ENABLED } from '../config/conf';
+import conf, {
+  ACCOUNT_STATUSES,
+  booleanConf,
+  BUILD_COMMIT,
+  BUS_TOPICS,
+  ENABLED_DEMO_MODE,
+  ENABLED_FEATURE_FLAGS,
+  getBaseUrl,
+  PLATFORM_VERSION,
+  PLAYGROUND_ENABLED,
+} from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
@@ -41,6 +51,7 @@ export const getMemoryStatistics = () => {
 
 export const getApplicationInfo = () => ({
   version: PLATFORM_VERSION,
+  buildCommit: BUILD_COMMIT,
   debugStats: {}, // Lazy loaded
 });
 

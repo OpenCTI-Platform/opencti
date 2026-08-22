@@ -289,6 +289,9 @@ type AppInfo {
   """The OpenCTI application version"""
   version: String!
 
+  """The short commit hash used to build the OpenCTI application"""
+  buildCommit: String
+
   """The OpenCTI api current memory usage"""
   memory: AppMemory
 

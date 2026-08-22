@@ -281,6 +281,10 @@ type AppInfo {
   """
   version: String! @auth
   """
+  The short commit hash used to build the OpenCTI application
+  """
+  buildCommit: String @auth
+  """
   The OpenCTI api current memory usage
   """
   memory: AppMemory @auth(for: [SETTINGS_SETPARAMETERS])
