@@ -1,5 +1,15 @@
 {
   "__generated": "Skeleton scaffolded once by pnpm generate:fds-migration --product opencti --write-to-product (filigran-design-system repo) — created only if missing, never overwritten on re-run. Fields below are then maintained by agents during the pilot (wiredFiles/forbiddenPatterns as theme files are wired, migratedZones/lastReconciled during the reconciliation loop).",
+  "__gateProvenance": {
+    "__doc": "Where this product's copy of check-fds-conformity.mjs comes from. Recorded here and NOT in the script header: the script is copied verbatim from the library template and says so in its own first line, so a note added to it by hand would be erased by the next generate:fds-migration run — the opposite of reproducible. The generator stamps no provenance of its own; until it does, this is the record.",
+    "script": "fds-migration/scripts/check-fds-conformity.mjs",
+    "scriptSha256": "sha256:5a531b9af59ec4b3318dff7f69664a36bf5d9f34e4bae9e7e909bcc8a56d9a27",
+    "templateCommit": "88a488552b320b6b7df4d6ae842af74355321d1d",
+    "templateCommitSubject": "fix(gates): three silent-failure fixes — bridge freshness, token family ramps, Combobox native reset (#145)",
+    "generatorCommit": "114854de2367e51838c3fc841f808c4ad3ba85de",
+    "runtimePin": "78f89936f3cbf32b2f5d7ff113d7323432a1c88b",
+    "note": "The gate script is NEWER than the runtime pin, deliberately: the pin is bumped only for rendered behaviour the product consumes, while a gate fix is worth taking as soon as it exists. Verified by bytes rather than asserted — the sha256 above equals the template at 88a4885, and differs from the template at the runtime pin (ed4c3e3447b3c28193a843c6ad5e0f9fca569165dcbc091a4e4df0bea0559d57). Nothing in the script depends on the installed package version; it reads the state file and the installed theme.css, both present at any pin."
+  },
   "product": "opencti",
   "frontDir": "opencti-platform/opencti-front",
   "generatedBridgeFiles": [
