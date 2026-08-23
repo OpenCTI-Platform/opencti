@@ -57,7 +57,7 @@ const RootSubType = () => {
       <Routes>
         <Route path="/" element={<SubType />}>
           <Route index element={<SubTypeIndexRedirect />} />
-          <Route path={SUBTYPE_TAB_WORKFLOW} element={isWorkflowEditorEnabled ? <SubTypeWorkflow /> : <GlobalWorkflowSettingsCard />} />
+          <Route path={SUBTYPE_TAB_WORKFLOW} element={isWorkflowEditorEnabled ? <SubTypeWorkflow entityType={subTypeId} /> : <GlobalWorkflowSettingsCard />} />
           <Route path={SUBTYPE_TAB_TEMPLATES} element={<FintelTemplatesManager />} />
           <Route
             path={SUBTYPE_TAB_ATTRIBUTES}
