@@ -1,15 +1,15 @@
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
+import { Grid } from '@mui/material';
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Grid } from '@mui/material';
-import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
+import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
+import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
+import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
+import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
+import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import { System_system$key } from './__generated__/System_system.graphql';
 import SystemDetails from './SystemDetails';
-import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
-import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
-import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
-import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
-import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
-import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 
 const systemFragment = graphql`
   fragment System_system on System {
@@ -60,6 +60,7 @@ const systemFragment = graphql`
         }
       }
       workflowEnabled
+      ...WorkflowStatusStixDomainObject_data
       ...SystemDetails_system
     }
 `;

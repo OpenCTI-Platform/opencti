@@ -4,8 +4,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
 import type { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
-import WorkflowStatus from './WorkflowStatus';
-import WorkflowTransitions from './WorkflowTransitions';
+import type { WorkflowStatusStixDomainObject_data$key } from './__generated__/WorkflowStatusStixDomainObject_data.graphql';
+import WorkflowStatus, { WorkflowStatusForEntity } from './WorkflowStatus';
+import WorkflowTransitions, { WorkflowTransitionsForEntity } from './WorkflowTransitions';
 
 const withEntitiesWorkflowFlag = (enable: boolean) => createMockUserContext({
   settings: { platform_feature_flags: enable ? [{ id: 'ENTITIES_WORKFLOW', enable: true }] : [] },
@@ -422,5 +423,88 @@ describe('WorkflowTransitions', () => {
     await user.click(cancelButton as HTMLElement);
     await waitFor(() => expect(screen.queryByText('Apply')).toBeNull());
     expect(mockCommit).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// WorkflowStatusForEntity / WorkflowTransitionsForEntity (generic StixDomainObject wrappers)
+// ---------------------------------------------------------------------------
+describe('WorkflowStatusForEntity', () => {
+  const makeEntity = (overrides: Record<string, unknown> = {}) => ({
+    id: 'entity-1',
+    entity_type: 'Report',
+    workflowInstance: {
+      id: 'instance-1',
+      currentState: 'in_review',
+      currentStatus: makeStatus(),
+      lastHistoryEntry: null,
+      allowedTransitions: [],
+    },
+    ...overrides,
+  } as unknown as WorkflowStatusStixDomainObject_data$key);
+
+  it('renders null when workflowInstance is absent', () => {
+    const { container } = testRender(
+      <WorkflowStatusForEntity data={makeEntity({ workflowInstance: null })} entityType="Report" />,
+      { userContext: withEntitiesWorkflowFlag(true) },
+    );
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('renders null when the ENTITIES_WORKFLOW flag is off', () => {
+    const { container } = testRender(
+      <WorkflowStatusForEntity data={makeEntity()} entityType="Report" />,
+      { userContext: withEntitiesWorkflowFlag(false) },
+    );
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('renders the status when the ENTITIES_WORKFLOW flag is on', () => {
+    const { container } = testRender(
+      <WorkflowStatusForEntity data={makeEntity()} entityType="Report" />,
+      { userContext: withEntitiesWorkflowFlag(true) },
+    );
+    expect(container.firstChild).not.toBeNull();
+  });
+});
+
+describe('WorkflowTransitionsForEntity', () => {
+  const makeEntity = (overrides: Record<string, unknown> = {}) => ({
+    id: 'entity-1',
+    entity_type: 'Report',
+    workflowInstance: {
+      id: 'instance-1',
+      currentState: 'in_review',
+      currentStatus: makeStatus(),
+      lastHistoryEntry: null,
+      allowedTransitions: [makeTransition({ event: 'approve' })],
+    },
+    ...overrides,
+  } as unknown as WorkflowStatusStixDomainObject_data$key);
+
+  it('renders null when the ENTITIES_WORKFLOW flag is off', () => {
+    const { container } = testRender(
+      <WorkflowTransitionsForEntity data={makeEntity()} entityType="Report" />,
+      { userContext: withEntitiesWorkflowFlag(false) },
+    );
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('renders transition buttons when the ENTITIES_WORKFLOW flag is on', () => {
+    testRender(
+      <WorkflowTransitionsForEntity data={makeEntity()} entityType="Report" />,
+      { userContext: withEntitiesWorkflowFlag(true) },
+    );
+    expect(screen.getByText('approve')).toBeDefined();
+  });
+
+  it('calls commit when clicking a transition button', async () => {
+    mockCommit.mockReset();
+    const { user } = testRender(
+      <WorkflowTransitionsForEntity data={makeEntity()} entityType="Report" />,
+      { userContext: withEntitiesWorkflowFlag(true) },
+    );
+    await user.click(screen.getByText('approve'));
+    expect(mockCommit).toHaveBeenCalledOnce();
   });
 });

@@ -1,14 +1,14 @@
-import React, { FunctionComponent } from 'react';
-import { graphql } from 'relay-runtime';
-import { Grid } from '@mui/material';
-import { useFragment } from 'react-relay';
 import ContainerStixObjectsOrStixRelationships from '@components/common/containers/ContainerStixObjectsOrStixRelationships';
 import StixCoreObjectLatestHistory from '@components/common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixDomainObjectOverview from '@components/common/stix_domain_objects/StixDomainObjectOverview';
+import { Grid } from '@mui/material';
+import { FunctionComponent } from 'react';
+import { useFragment } from 'react-relay';
+import { graphql } from 'relay-runtime';
+import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
 import { Note_note$key } from './__generated__/Note_note.graphql';
 import NoteDetails from './NoteDetails';
-import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
 const NoteComponentFragment = graphql`
   fragment Note_note on Note {
@@ -54,6 +54,7 @@ const NoteComponentFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...NoteDetails_note
     ...ContainerHeader_container
     ...ContainerStixObjectsOrStixRelationships_container

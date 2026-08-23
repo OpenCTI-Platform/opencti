@@ -3,6 +3,7 @@ import IconButton from '@common/button/IconButton';
 import Card from '@common/card/Card';
 import Dialog from '@common/dialog/Dialog';
 import { Add, BrushOutlined, Delete } from '@mui/icons-material';
+import Box from '@mui/material/Box';
 import DialogActions from '@mui/material/DialogActions';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
@@ -31,8 +32,12 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
 import StixCoreObjectOpinions from '../../analyses/opinions/StixCoreObjectOpinions';
 import ProcessingStatusOverview from '../../cases/case_rfis/ProcessingStatusOverview';
+import { WorkflowBypassStatus } from '../workflow/WorkflowBypassStatus';
+import { WorkflowStatusForEntity, WorkflowTransitionsForEntity } from '../workflow/WorkflowStatus';
+import { isWorkflowUiEnabledForType } from '../workflow/workflowFeatureFlag';
 import ObjectAssigneeField from '../form/ObjectAssigneeField';
 import ObjectParticipantField from '../form/ObjectParticipantField';
 import StixCoreObjectLabelsView from '../stix_core_objects/StixCoreObjectLabelsView';
@@ -50,6 +55,7 @@ const StixDomainObjectOverview = ({
 }) => {
   const theme = useTheme();
   const { t_i18n, fldt } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const [openStixIds, setOpenStixIds] = useState(false);
   const [openAddAssignee, setOpenAddAssignee] = useState(false);
   const [openAddParticipant, setOpenAddParticipant] = useState(false);
@@ -132,6 +138,10 @@ const StixDomainObjectOverview = ({
     : stixDomainObject.x_opencti_reliability;
 
   const isRequestAccessRFI = stixDomainObject.x_opencti_request_access;
+  // Task 9: entities managed by a published WorkflowDefinition (new engine) render the
+  // apply-transition action + bypass-update popover instead of the legacy read-only ItemStatus.
+  const isWorkflowManaged = isWorkflowUiEnabledForType(stixDomainObject.entity_type, isFeatureEnable)
+    && !!stixDomainObject.workflowInstance;
 
   return (
     <>
@@ -222,10 +232,18 @@ const StixDomainObjectOverview = ({
                 <Label sx={{ marginTop: withPattern ? 2 : 0 }}>
                   {t_i18n('Processing status')}
                 </Label>
-                <ItemStatus
-                  status={stixDomainObject.status}
-                  disabled={!stixDomainObject.workflowEnabled}
-                />
+                {isWorkflowManaged ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                    <WorkflowStatusForEntity data={stixDomainObject} entityType={stixDomainObject.entity_type} />
+                    <WorkflowTransitionsForEntity data={stixDomainObject} entityType={stixDomainObject.entity_type} />
+                    <WorkflowBypassStatus entityId={stixDomainObject.id} entityType={stixDomainObject.entity_type} />
+                  </Box>
+                ) : (
+                  <ItemStatus
+                    status={stixDomainObject.status}
+                    disabled={!stixDomainObject.workflowEnabled}
+                  />
+                )}
               </>
             )}
             {displayAssignees && (

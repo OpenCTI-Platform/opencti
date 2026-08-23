@@ -1,16 +1,15 @@
-import React from 'react';
-import { graphql, useFragment } from 'react-relay';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
-import InfrastructureDetails from './InfrastructureDetails';
-import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
+import { graphql, useFragment } from 'react-relay';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
+import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
-import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
+import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import { Infrastructure_infrastructure$key } from './__generated__/Infrastructure_infrastructure.graphql';
+import InfrastructureDetails from './InfrastructureDetails';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -68,6 +67,7 @@ const infrastructureFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...InfrastructureDetails_infrastructure
   }
 `;

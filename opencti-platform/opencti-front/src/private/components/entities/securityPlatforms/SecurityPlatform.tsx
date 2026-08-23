@@ -1,16 +1,16 @@
-import { graphql } from 'relay-runtime';
-import React from 'react';
-import { useFragment } from 'react-relay';
-import { Grid } from '@mui/material';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import { SecurityPlatform_securityPlatform$key } from '@components/entities/securityPlatforms/__generated__/SecurityPlatform_securityPlatform.graphql';
 import SecurityPlatformDetails from '@components/entities/securityPlatforms/SecurityPlatformDetails';
-import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
-import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
-import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
-import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
+import { Grid } from '@mui/material';
+import React from 'react';
+import { useFragment } from 'react-relay';
+import { graphql } from 'relay-runtime';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
-import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
+import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
+import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
+import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 
 export const securityPlatformFragment = graphql`
   fragment SecurityPlatform_securityPlatform on SecurityPlatform {
@@ -62,6 +62,7 @@ export const securityPlatformFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...SecurityPlatformDetails_securityPlatform
   }
 `;

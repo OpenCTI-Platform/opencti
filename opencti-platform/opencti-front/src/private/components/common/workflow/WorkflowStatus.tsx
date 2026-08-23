@@ -1,15 +1,16 @@
-import React, { FunctionComponent, useState } from 'react';
-import { useFragment } from 'react-relay';
-import { Box, Popover, Typography } from '@mui/material';
 import { CommentOutlined } from '@mui/icons-material';
-import ItemStatus from '../../../../components/ItemStatus';
-import { workflowStatusFragment } from './WorkflowStatus.graphql';
-import { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
+import { Box, Popover, Typography } from '@mui/material';
+import { FunctionComponent, useState } from 'react';
+import { useFragment } from 'react-relay';
 import IconButton from '../../../../components/common/button/IconButton';
 import { useFormatter } from '../../../../components/i18n';
+import ItemStatus from '../../../../components/ItemStatus';
 import useHelper from '../../../../utils/hooks/useHelper';
+import { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
+import { WorkflowStatusStixDomainObject_data$key } from './__generated__/WorkflowStatusStixDomainObject_data.graphql';
 import { isWorkflowUiEnabledForType } from './workflowFeatureFlag';
-export { WorkflowTransitions } from './WorkflowTransitions';
+import { workflowStatusFragment, workflowStatusStixDomainObjectFragment } from './WorkflowStatus.graphql';
+export { WorkflowTransitions, WorkflowTransitionsForEntity } from './WorkflowTransitions';
 
 interface WorkflowStatusProps {
   data: WorkflowStatus_data$key;
@@ -19,17 +20,21 @@ interface WorkflowStatusProps {
   entityType?: string;
 }
 
-const WorkflowStatus: FunctionComponent<WorkflowStatusProps> = ({ data, entityType = 'DraftWorkspace' }) => {
+interface WorkflowStatusForEntityProps {
+  data: WorkflowStatusStixDomainObject_data$key;
+  entityType: string;
+}
+
+// Task 9: presentational view shared by the DraftWorkspace-bound `WorkflowStatus` and the generic
+// StixDomainObject-bound `WorkflowStatusForEntity` — both resolve their own Relay fragment then
+// delegate to this component with plain, already-resolved data.
+const WorkflowStatusView: FunctionComponent<{
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  workflowInstance: any;
+}> = ({ workflowInstance }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const draft = useFragment(workflowStatusFragment, data);
   const [commentAnchorEl, setCommentAnchorEl] = useState<HTMLButtonElement | null>(null);
 
-  if (!draft.workflowInstance || !isWorkflowUiEnabledForType(entityType, isFeatureEnable)) {
-    return null;
-  }
-
-  const { workflowInstance } = draft;
   const currentStatus = workflowInstance.currentStatus;
   const lastComment = workflowInstance.lastHistoryEntry?.comment ?? null;
 
@@ -62,6 +67,30 @@ const WorkflowStatus: FunctionComponent<WorkflowStatusProps> = ({ data, entityTy
       <ItemStatus status={currentStatus} />
     </>
   );
+};
+
+const WorkflowStatus: FunctionComponent<WorkflowStatusProps> = ({ data, entityType = 'DraftWorkspace' }) => {
+  const { isFeatureEnable } = useHelper();
+  const draft = useFragment(workflowStatusFragment, data);
+
+  if (!draft.workflowInstance || !isWorkflowUiEnabledForType(entityType, isFeatureEnable)) {
+    return null;
+  }
+
+  return <WorkflowStatusView workflowInstance={draft.workflowInstance} />;
+};
+
+// Task 9: generic counterpart for any StixDomainObject-implementing entity type, mounted from
+// StixDomainObjectOverview.jsx, gated by the ENTITIES_WORKFLOW feature flag.
+export const WorkflowStatusForEntity: FunctionComponent<WorkflowStatusForEntityProps> = ({ data, entityType }) => {
+  const { isFeatureEnable } = useHelper();
+  const entity = useFragment(workflowStatusStixDomainObjectFragment, data);
+
+  if (!entity.workflowInstance || !isWorkflowUiEnabledForType(entityType, isFeatureEnable)) {
+    return null;
+  }
+
+  return <WorkflowStatusView workflowInstance={entity.workflowInstance} />;
 };
 
 export default WorkflowStatus;

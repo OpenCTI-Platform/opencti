@@ -1,15 +1,15 @@
+import { ObservedData_observedData$key } from '@components/events/observed_data/__generated__/ObservedData_observedData.graphql';
+import Grid from '@mui/material/Grid';
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Grid from '@mui/material/Grid';
-import { ObservedData_observedData$key } from '@components/events/observed_data/__generated__/ObservedData_observedData.graphql';
-import ObservedDataDetails from './ObservedDataDetails';
-import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
+import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
-import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
-import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
+import ObservedDataDetails from './ObservedDataDetails';
 
 export const observedDataFragment = graphql`
   fragment ObservedData_observedData on ObservedData {
@@ -57,6 +57,7 @@ export const observedDataFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...ObservedDataDetails_observedData
     ...ContainerHeader_container
   }

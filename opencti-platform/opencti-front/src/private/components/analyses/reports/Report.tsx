@@ -1,13 +1,13 @@
+import StixCoreObjectLatestHistory from '@components/common/stix_core_objects/StixCoreObjectLatestHistory';
+import StixDomainObjectOverview from '@components/common/stix_domain_objects/StixDomainObjectOverview';
 import { Grid } from '@mui/material';
 import React from 'react';
-import StixDomainObjectOverview from '@components/common/stix_domain_objects/StixDomainObjectOverview';
-import StixCoreObjectLatestHistory from '@components/common/stix_core_objects/StixCoreObjectLatestHistory';
 import { graphql, useFragment } from 'react-relay';
-import ReportDetails from './ReportDetails';
+import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import { Report_report$key } from './__generated__/Report_report.graphql';
-import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import ReportDetails from './ReportDetails';
 
 const reportComponentFragment = graphql`
   fragment Report_report on Report {
@@ -66,6 +66,7 @@ const reportComponentFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     currentUserAccessRight
     ...ReportDetails_report
     ...ContainerHeader_container

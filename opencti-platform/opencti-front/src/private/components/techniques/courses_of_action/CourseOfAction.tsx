@@ -1,15 +1,15 @@
+import { CourseOfAction_courseOfAction$key } from '@components/techniques/courses_of_action/__generated__/CourseOfAction_courseOfAction.graphql';
+import Grid from '@mui/material/Grid';
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Grid from '@mui/material/Grid';
-import { CourseOfAction_courseOfAction$key } from '@components/techniques/courses_of_action/__generated__/CourseOfAction_courseOfAction.graphql';
-import CourseOfActionDetails from './CourseOfActionDetails';
-import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
+import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
+import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
-import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
-import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
+import CourseOfActionDetails from './CourseOfActionDetails';
 
 export const courssOfActionFragment = graphql`
   fragment CourseOfAction_courseOfAction on CourseOfAction {
@@ -59,6 +59,7 @@ export const courssOfActionFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...CourseOfActionDetails_courseOfAction
   }
 `;

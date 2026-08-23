@@ -1,18 +1,18 @@
-import React, { Suspense } from 'react';
-import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import Grid from '@mui/material/Grid2';
-import SecurityCoverageDetails from './SecurityCoverageDetails';
+import { Suspense } from 'react';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
-import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import SecurityCoverageAttackPatterns from './SecurityCoverageAttackPatterns';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { SecurityCoverage_securityCoverage$key } from './__generated__/SecurityCoverage_securityCoverage.graphql';
 import { SecurityCoverageKillChainsQuery } from './__generated__/SecurityCoverageKillChainsQuery.graphql';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import SecurityCoverageTestedEntitiesChart from './SecurityCoverageTestedEntitiesChart';
+import SecurityCoverageAttackPatterns from './SecurityCoverageAttackPatterns';
+import SecurityCoverageDetails from './SecurityCoverageDetails';
 import SecurityCoverageMainInfo from './SecurityCoverageMainInfo';
+import SecurityCoverageTestedEntitiesChart from './SecurityCoverageTestedEntitiesChart';
 
 const securityCoverageKillChainsQuery = graphql`
   query SecurityCoverageKillChainsQuery {
@@ -69,6 +69,7 @@ const securityCoverageFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     objectCovered {
       ... on Report {
         id

@@ -16,14 +16,24 @@ import useHelper from '../../../../utils/hooks/useHelper';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
 import { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
+import { WorkflowStatusStixDomainObject_data$key } from './__generated__/WorkflowStatusStixDomainObject_data.graphql';
 import { useTransitionWizard } from './useTransitionWizard';
 import { isWorkflowUiEnabledForType } from './workflowFeatureFlag';
-import { COMMENT_MAX_LENGTH, workflowStatusFragment } from './WorkflowStatus.graphql';
+import { COMMENT_MAX_LENGTH, workflowStatusFragment, workflowStatusStixDomainObjectFragment } from './WorkflowStatus.graphql';
 
+// Task 9: plain-data shape shared by both the DraftWorkspace-bound and generic StixDomainObject-
+// bound wrappers below, since DraftWorkspace does not implement StixDomainObject and a single
+// Relay fragment cannot cover both — each wrapper resolves its own fragment then delegates to the
+// same presentational `WorkflowTransitionsView` component.
 interface WorkflowTransitionsProps {
   data: WorkflowStatus_data$key;
   // See WorkflowStatus's `entityType` prop for the rationale (plan.md Task 5, Step 2).
   entityType?: string;
+}
+
+interface WorkflowTransitionsForEntityProps {
+  data: WorkflowStatusStixDomainObject_data$key;
+  entityType: string;
 }
 
 // Task 9: a single "step pill" summarizing one of the sections shown in the consolidated Apply
@@ -36,14 +46,21 @@ const StepPill: FunctionComponent<{ label: string }> = ({ label }) => (
   </Box>
 );
 
-export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = ({ data, entityType = 'DraftWorkspace' }) => {
+const WorkflowTransitionsView: FunctionComponent<{
+  entityId: string;
+  entityNavigationId?: string | null;
+  draftId?: string;
+  processingCount?: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  workflowInstance: any;
+  entityType: string;
+}> = ({ entityId, entityNavigationId, draftId, processingCount = 0, workflowInstance, entityType }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { me } = useAuth();
   const isBypass = isBypassUser(me);
   const { isFeatureEnable } = useHelper();
 
-  const draft = useFragment(workflowStatusFragment, data);
   const {
     wizard,
     setWizard,
@@ -54,9 +71,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
     handleApplyWizard,
     handleClear,
     notifyBackgroundTransitionComplete,
-  } = useTransitionWizard({ entityId: draft.id, entityNavigationId: draft.entity_id, draftId: draft.id });
-
-  const workflowInstance = draft.workflowInstance;
+  } = useTransitionWizard({ entityId, entityNavigationId, draftId });
   const isPending = workflowInstance?.pendingStatus === 'pending';
   const pendingTransition = workflowInstance?.pendingTransition ?? null;
 
@@ -319,7 +334,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
                   <DialogContentText sx={{ mb: 1 }}>
                     {t_i18n('Do you want to approve this draft and send it to ingestion?')}
                   </DialogContentText>
-                  {draft.processingCount > 0 && (
+                  {processingCount > 0 && (
                     <Alert sx={{ mb: 2 }} severity="warning">
                       <AlertTitle>{t_i18n('Ongoing processes')}</AlertTitle>
                       {t_i18n('There are processes still running that could impact the data of the draft. '
@@ -350,6 +365,42 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
         )}
       </Formik>
     </>
+  );
+};
+
+export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = ({ data, entityType = 'DraftWorkspace' }) => {
+  const { isFeatureEnable } = useHelper();
+  const draft = useFragment(workflowStatusFragment, data);
+  if (!draft.workflowInstance || !isWorkflowUiEnabledForType(entityType, isFeatureEnable)) {
+    return null;
+  }
+  return (
+    <WorkflowTransitionsView
+      entityId={draft.id}
+      entityNavigationId={draft.entity_id}
+      draftId={draft.id}
+      processingCount={draft.processingCount}
+      workflowInstance={draft.workflowInstance}
+      entityType={entityType}
+    />
+  );
+};
+
+// Task 9: generic counterpart for any StixDomainObject-implementing entity type (Report, Malware,
+// Incident, etc.), gated by the ENTITIES_WORKFLOW feature flag (isWorkflowUiEnabledForType).
+export const WorkflowTransitionsForEntity: FunctionComponent<WorkflowTransitionsForEntityProps> = ({ data, entityType }) => {
+  const { isFeatureEnable } = useHelper();
+  const entity = useFragment(workflowStatusStixDomainObjectFragment, data);
+  if (!entity.workflowInstance || !isWorkflowUiEnabledForType(entityType, isFeatureEnable)) {
+    return null;
+  }
+  return (
+    <WorkflowTransitionsView
+      entityId={entity.id}
+      entityNavigationId={entity.id}
+      workflowInstance={entity.workflowInstance}
+      entityType={entityType}
+    />
   );
 };
 

@@ -119,6 +119,7 @@ const Opinion = createFragmentContainer(OpinionComponent, {
         }
       }
       workflowEnabled
+      ...WorkflowStatusStixDomainObject_data
       ...OpinionDetails_opinion
       ...ContainerHeader_container
       ...ContainerStixObjectsOrStixRelationships_container

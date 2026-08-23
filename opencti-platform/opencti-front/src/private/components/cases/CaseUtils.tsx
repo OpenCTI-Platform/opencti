@@ -1,4 +1,4 @@
-import { graphql, ConnectionHandler, Variables } from 'react-relay';
+import { ConnectionHandler, graphql, Variables } from 'react-relay';
 
 export const generateConnectionId = ({ recordId, key, params }: { recordId?: string; key: string; params?: Variables }) => ConnectionHandler.getConnectionID(recordId ?? 'root', key, params ?? {});
 
@@ -207,6 +207,7 @@ export const caseFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...CaseIncidentDetails_case
     ...FeedbackDetails_case
     ...CaseRftDetails_case

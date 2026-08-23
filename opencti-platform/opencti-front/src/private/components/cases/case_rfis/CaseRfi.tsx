@@ -1,26 +1,26 @@
 import Grid from '@mui/material/Grid2';
 import React, { useRef } from 'react';
 import { graphql, useFragment } from 'react-relay';
+import Card from '../../../../components/common/card/Card';
+import { useFormatter } from '../../../../components/i18n';
+import ListLines from '../../../../components/list_lines/ListLines';
 import { convertMarkings } from '../../../../utils/edition';
+import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
-import CaseTasksLines, { caseTasksLinesQuery } from '../tasks/CaseTasksLines';
-import CaseRfiDetails from './CaseRfiDetails';
-import { useFormatter } from '../../../../components/i18n';
-import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from '../tasks/__generated__/CaseTasksLinesQuery.graphql';
-import ListLines from '../../../../components/list_lines/ListLines';
-import { tasksDataColumns } from '../tasks/tasksDataColumns';
 import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
-import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
-import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
-import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import CaseTasksLines, { caseTasksLinesQuery } from '../tasks/CaseTasksLines';
+import { tasksDataColumns } from '../tasks/tasksDataColumns';
 import { CaseRfi_caseRfi$key } from './__generated__/CaseRfi_caseRfi.graphql';
-import Card from '../../../../components/common/card/Card';
+import CaseRfiDetails from './CaseRfiDetails';
 
 const caseRfiFragment = graphql`
   fragment CaseRfi_caseRfi on CaseRfi {
@@ -79,6 +79,7 @@ const caseRfiFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     revoked
     x_opencti_request_access
     requestAccessConfiguration {
