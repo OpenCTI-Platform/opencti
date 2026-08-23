@@ -1,6 +1,10 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { wait } from '../../../src/database/utils';
+import { findHistory } from '../../../src/domain/log';
+import { FilterMode, LogsOrdering, OrderingMode } from '../../../src/generated/graphql';
+import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
+import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 
 const WORKFLOW_DEFINITION_ADD_MUTATION = gql`
   mutation WorkflowDefinitionSet($entityType: String!, $definition: String!) {
@@ -597,5 +601,166 @@ describe('Workflow Resolver', () => {
       expect(publishResult.errors).toBeDefined();
       expect(publishResult.errors?.[0].message).toContain('validation errors');
     });
+  });
+});
+
+// Task 2, Step 6.1 / tasks.md 2.7: unlike the DraftWorkspace-only tests above, `Report` is a
+// legacy-Status entity type (per Task 6's migration scope) with no built-in WorkflowInstance
+// support until a WorkflowDefinition is published for it — exercising this path proves the
+// generalized StixDomainObject-level `workflowInstance` field (Task 5) and the legacy
+// `x_opencti_workflow_id`/`status` projection (Task 2) both work end-to-end for an arbitrary SDO,
+// not just the one type built directly on the new engine from day one.
+describe('Workflow projection onto legacy Status field (Report)', () => {
+  let reportInternalId: string;
+  const reportWorkflowDefinition = JSON.stringify({
+    id: 'report-workflow',
+    name: 'Report Workflow',
+    initialState: 'open',
+    states: [{ statusId: 'open' }, { statusId: 'validated' }],
+    transitions: [{ from: 'open', to: 'validated', event: 'validate_event' }],
+  });
+
+  const REPORT_ADD_MUTATION = gql`
+    mutation ReportAddForWorkflowTest($input: ReportAddInput!) {
+      reportAdd(input: $input) {
+        id
+      }
+    }
+  `;
+
+  const REPORT_STATUS_QUERY = gql`
+    query ReportStatusForWorkflowTest($id: String!) {
+      report(id: $id) {
+        status {
+          id
+        }
+        workflowInstance {
+          currentState
+        }
+      }
+    }
+  `;
+
+  const REPORT_WORKFLOW_INSTANCE_AUTH_QUERY = gql`
+    query ReportWorkflowInstanceAuth($id: String!) {
+      report(id: $id) {
+        workflowInstance {
+          currentState
+        }
+      }
+    }
+  `;
+
+  beforeAll(async () => {
+    // Reports are content-addressed (standard_id derived from name + published), so a unique
+    // name/published pair per test run avoids colliding with any entity left over by a prior,
+    // interrupted local run of this suite.
+    const reportResult = await queryAsAdminWithSuccess({
+      query: REPORT_ADD_MUTATION,
+      variables: {
+        input: { name: `Workflow Projection Test Report ${Date.now()}`, published: new Date().toISOString() },
+      },
+    });
+    reportInternalId = reportResult.data.reportAdd.id;
+
+    // Defensive cleanup: remove any WorkflowDefinition left over on 'Report' by a prior,
+    // interrupted local run, so `workflowDefinitionSet` below cannot silently no-op.
+    await queryAsAdmin({
+      query: WORKFLOW_DEFINITION_DELETE_MUTATION,
+      variables: { entityType: 'Report' },
+    });
+
+    await queryAsAdminWithSuccess({
+      query: WORKFLOW_DEFINITION_ADD_MUTATION,
+      variables: { entityType: 'Report', definition: reportWorkflowDefinition },
+    });
+    await queryAsAdminWithSuccess({
+      query: WORKFLOW_DEFINITION_PUBLISH_MUTATION,
+      variables: { entityType: 'Report' },
+    });
+  });
+
+  afterAll(async () => {
+    await queryAsAdmin({
+      query: WORKFLOW_DEFINITION_DELETE_MUTATION,
+      variables: { entityType: 'Report' },
+    });
+    await queryAsAdmin({
+      query: gql`
+        mutation ReportDeleteForWorkflowTest($id: ID!) {
+          reportDelete(id: $id)
+        }
+      `,
+      variables: { id: reportInternalId },
+    });
+  });
+
+  it('should eagerly create a WorkflowInstance and project the initial state onto the legacy status field', async () => {
+    const result = await queryAsAdminWithSuccess({
+      query: REPORT_STATUS_QUERY,
+      variables: { id: reportInternalId },
+    });
+    expect(result.data.report.workflowInstance.currentState).toBe('open');
+    expect(result.data.report.status.id).toBeDefined();
+  });
+
+  it('should deny workflowInstance access to a user without KNOWLEDGE_KNUPDATE (auth matrix, tasks.md 5.0.4)', async () => {
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
+      query: REPORT_WORKFLOW_INSTANCE_AUTH_QUERY,
+      variables: { id: reportInternalId },
+    });
+  });
+
+  it('should update both the WorkflowInstance state and the projected legacy status on transition, emitting a normal update event', async () => {
+    const before = await queryAsAdminWithSuccess({
+      query: REPORT_STATUS_QUERY,
+      variables: { id: reportInternalId },
+    });
+    const initialStatusId = before.data.report.status.id;
+
+    const triggerResult = await queryAsAdminWithSuccess({
+      query: TRIGGER_WORKFLOW_EVENT_MUTATION,
+      variables: { entityId: reportInternalId, eventName: 'validate_event' },
+    });
+    expect(triggerResult.data.triggerWorkflowEvent.success).toBe(true);
+    expect(triggerResult.data.triggerWorkflowEvent.newState).toBe('validated');
+
+    const after = await queryAsAdminWithSuccess({
+      query: REPORT_STATUS_QUERY,
+      variables: { id: reportInternalId },
+    });
+    expect(after.data.report.workflowInstance.currentState).toBe('validated');
+    expect(after.data.report.status.id).toBeDefined();
+    expect(after.data.report.status.id).not.toBe(initialStatusId);
+
+    // A normal update event (the same pipeline feeding the live stream) must have been recorded
+    // for the legacy `x_opencti_workflow_id` projection write, proving it is not a silent/internal-
+    // only write (Task 2, Step 2.2's `workflowInternalWrite` flag only suppresses the Task 8
+    // anti-loop hook, never the standard event/history pipeline). The history manager consumes the
+    // event stream asynchronously (and, on a freshly-started platform, may not even be subscribed
+    // yet by the time this assertion runs) - poll with retries instead of a single fixed wait.
+    const findWorkflowHistoryLogs = () => findHistory(testContext, ADMIN_USER, {
+      filters: {
+        mode: FilterMode.And,
+        filterGroups: [],
+        filters: [
+          { key: ['context_data.id'], values: [reportInternalId] },
+          { key: ['event_type'], values: ['mutation', 'create', 'update', 'delete', 'merge'] },
+          { key: ['event_scope'], values: ['update'] },
+        ],
+      },
+      orderBy: LogsOrdering.CreatedAt,
+      orderMode: OrderingMode.Desc,
+    });
+    let logs = await findWorkflowHistoryLogs();
+    for (let attempt = 0; attempt < 15 && logs.edges.length === 0; attempt += 1) {
+      await wait(1000);
+      logs = await findWorkflowHistoryLogs();
+    }
+    expect(logs.edges.length).toBeGreaterThan(0);
+    const workflowFieldChange = logs.edges
+      .flatMap((edge) => edge.node.context_data.history_changes)
+      .find((change) => change.field?.includes('x_opencti_workflow_id'));
+    expect(workflowFieldChange).toBeDefined();
   });
 });

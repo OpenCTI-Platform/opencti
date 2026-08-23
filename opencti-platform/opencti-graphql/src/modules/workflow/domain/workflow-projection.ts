@@ -1,7 +1,7 @@
 import { logApp } from '../../../config/conf';
 import { updateAttribute } from '../../../database/middleware';
 import { fullEntitiesList } from '../../../database/middleware-loader';
-import { FilterMode, type StatusScope } from '../../../generated/graphql';
+import { FilterMode, StatusScope } from '../../../generated/graphql';
 import { ENTITY_TYPE_STATUS } from '../../../schema/internalObject';
 import type { BasicStoreEntity, BasicWorkflowStatus } from '../../../types/store';
 import type { AuthContext } from '../../../types/user';
