@@ -1,9 +1,18 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { baseOperationBuilder, buildContainersElementsBundle, sendResultToQueue } from '../../../src/manager/taskManager';
+import {
+  ACTION_TYPE_WORKFLOW_TRANSITION,
+  baseOperationBuilder,
+  buildContainersElementsBundle,
+  isWorkflowTransitionAction,
+  sendResultToQueue,
+  workflowTransitionOperationCallback,
+} from '../../../src/manager/taskManager';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import { pushBundleToWorker } from '../../../src/database/rabbitmq';
 import { updateExpectationsNumber } from '../../../src/domain/work';
+import { updateTask } from '../../../src/domain/backgroundTask';
+import { setWorkflowStatus } from '../../../src/modules/workflow/domain/workflow-domain';
 import {
   ACTION_TYPE_ADD_GROUPS,
   ACTION_TYPE_ADD_ORGANIZATIONS,
@@ -34,6 +43,22 @@ vi.mock('../../../src/domain/work', async (importOriginal) => {
   return {
     ...actual,
     updateExpectationsNumber: vi.fn(),
+  };
+});
+
+vi.mock('../../../src/domain/backgroundTask', async (importOriginal) => {
+  const actual: object = await importOriginal();
+  return {
+    ...actual,
+    updateTask: vi.fn(),
+  };
+});
+
+vi.mock('../../../src/modules/workflow/domain/workflow-domain', async (importOriginal) => {
+  const actual: object = await importOriginal();
+  return {
+    ...actual,
+    setWorkflowStatus: vi.fn(),
   };
 });
 
@@ -454,5 +479,102 @@ describe('baseOperationBuilder', () => {
     const result = baseOperationBuilder('UNKNOWN_ACTION', [], baseElement);
 
     expect(result).toEqual({});
+  });
+});
+
+// Task 10: mass status update modes
+describe('isWorkflowTransitionAction', () => {
+  it('should expose a dedicated pseudo action type distinct from KNOWLEDGE_CHANGE', () => {
+    expect(ACTION_TYPE_WORKFLOW_TRANSITION).toBe('WORKFLOW_TRANSITION');
+  });
+
+  it('should return true for a REPLACE on x_opencti_workflow_id with applyTransitionActions option', () => {
+    const action = {
+      type: 'REPLACE',
+      context: { field: 'x_opencti_workflow_id', type: 'ATTRIBUTE', values: ['status-id'], options: { applyTransitionActions: true } },
+    };
+
+    expect(isWorkflowTransitionAction(action)).toBe(true);
+  });
+
+  it('should return false when applyTransitionActions option is absent (status-only mode)', () => {
+    const action = {
+      type: 'REPLACE',
+      context: { field: 'x_opencti_workflow_id', type: 'ATTRIBUTE', values: ['status-id'] },
+    };
+
+    expect(isWorkflowTransitionAction(action)).toBe(false);
+  });
+
+  it('should return false when applyTransitionActions option is explicitly false', () => {
+    const action = {
+      type: 'REPLACE',
+      context: { field: 'x_opencti_workflow_id', type: 'ATTRIBUTE', values: ['status-id'], options: { applyTransitionActions: false } },
+    };
+
+    expect(isWorkflowTransitionAction(action)).toBe(false);
+  });
+
+  it('should return false for a REPLACE on a different field even with the option set', () => {
+    const action = {
+      type: 'REPLACE',
+      context: { field: 'description', type: 'ATTRIBUTE', values: ['x'], options: { applyTransitionActions: true } },
+    };
+
+    expect(isWorkflowTransitionAction(action)).toBe(false);
+  });
+
+  it('should return false for an ADD action on x_opencti_workflow_id even with the option set', () => {
+    const action = {
+      type: 'ADD',
+      context: { field: 'x_opencti_workflow_id', type: 'ATTRIBUTE', values: ['status-id'], options: { applyTransitionActions: true } },
+    };
+
+    expect(isWorkflowTransitionAction(action)).toBe(false);
+  });
+});
+
+describe('workflowTransitionOperationCallback', () => {
+  const context = testContext;
+  const user = ADMIN_USER;
+  const task = { id: 'task-id', task_processed_number: 0 };
+  const operations = [{
+    type: 'REPLACE',
+    context: { field: 'x_opencti_workflow_id', type: 'ATTRIBUTE', values: ['target-status-id'], options: { applyTransitionActions: true } },
+  }];
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should call setWorkflowStatus with applyTransitionActions=true for each element', async () => {
+    const elements = [{ internal_id: 'entity-1' }, { internal_id: 'entity-2' }];
+
+    const callback = workflowTransitionOperationCallback(context, user, task, operations);
+    await callback(elements);
+
+    expect(setWorkflowStatus).toHaveBeenCalledTimes(2);
+    expect(setWorkflowStatus).toHaveBeenNthCalledWith(1, context, user, 'entity-1', 'target-status-id', true);
+    expect(setWorkflowStatus).toHaveBeenNthCalledWith(2, context, user, 'entity-2', 'target-status-id', true);
+  });
+
+  it('should update task_processed_number after processing elements', async () => {
+    const elements = [{ internal_id: 'entity-1' }, { internal_id: 'entity-2' }, { internal_id: 'entity-3' }];
+
+    const callback = workflowTransitionOperationCallback(context, user, task, operations);
+    await callback(elements);
+
+    expect(updateTask).toHaveBeenCalledWith(context, task.id, { task_processed_number: 3 });
+  });
+
+  it('should not stop processing remaining elements when setWorkflowStatus throws for one element', async () => {
+    const elements = [{ internal_id: 'entity-1' }, { internal_id: 'entity-2' }];
+    vi.mocked(setWorkflowStatus).mockRejectedValueOnce(new Error('boom')).mockResolvedValueOnce({ success: true });
+
+    const callback = workflowTransitionOperationCallback(context, user, task, operations);
+    await expect(callback(elements)).resolves.not.toThrow();
+
+    expect(setWorkflowStatus).toHaveBeenCalledTimes(2);
+    expect(updateTask).toHaveBeenCalledWith(context, task.id, { task_processed_number: 2 });
   });
 });

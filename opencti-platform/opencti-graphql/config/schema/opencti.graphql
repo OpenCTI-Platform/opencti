@@ -1065,6 +1065,10 @@ type BackgroundTaskConnection {
 
 input BackgroundTaskContextOptionsInput {
   includeNeighbours: Boolean
+  # Task 10: when the action targets `x_opencti_workflow_id` with a REPLACE, selects the
+  # "apply transition actions" update mode (executes current/target state onExit/onEnter
+  # actions) instead of the default status-only update.
+  applyTransitionActions: Boolean
 }
 
 input BackgroundTaskContextInput {

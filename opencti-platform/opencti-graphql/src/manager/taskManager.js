@@ -65,6 +65,7 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
 import { objects as getContainerObjects } from '../domain/container';
 import { doYield } from '../utils/eventloop-utils';
+import { setWorkflowStatus } from '../modules/workflow/domain/workflow-domain';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -153,6 +154,20 @@ const isShareAction = (actionType) => {
 
 const isUnshareAction = (actionType) => {
   return actionType === ACTION_TYPE_UNSHARE || actionType === ACTION_TYPE_UNSHARE_MULTIPLE;
+};
+
+// Task 10: pseudo action type used to route a mass status update through `setWorkflowStatus`
+// (running onExit/onEnter transition actions) instead of the generic attribute-patch bundle.
+const WORKFLOW_TRANSITION_FIELD = 'x_opencti_workflow_id';
+export const ACTION_TYPE_WORKFLOW_TRANSITION = 'WORKFLOW_TRANSITION';
+
+// A REPLACE action on the workflow status field, with `applyTransitionActions` explicitly
+// requested, must run through the workflow engine (onExit/onEnter actions) rather than the
+// generic KNOWLEDGE_CHANGE attribute patch (which only supports the passive "status-only" mode).
+export const isWorkflowTransitionAction = (action) => {
+  return action.type === ACTION_TYPE_REPLACE
+    && action.context?.field === WORKFLOW_TRANSITION_FIELD
+    && action.context?.options?.applyTransitionActions === true;
 };
 
 export const baseOperationBuilder = (actionType, operations, element) => {
@@ -582,6 +597,28 @@ const customFieldValuesRemoveOperationCallback = async (context, user, task, ope
   };
 };
 
+// Task 10: apply a mass status update in "apply transition actions" mode. Unlike the generic
+// KNOWLEDGE_CHANGE bundle patch (routed through the worker and only ever landing in the passive
+// status-only sync hook), this calls `setWorkflowStatus` directly and synchronously so that
+// current-state onExit / target-state onEnter side effects are executed for each element.
+export const workflowTransitionOperationCallback = (context, user, task, operations) => {
+  const targetStatusId = operations[0]?.context?.values?.[0];
+  let totalProcessed = task.task_processed_number;
+  return async (elements) => {
+    for (let index = 0; index < elements.length; index += 1) {
+      await doYield();
+      const element = elements[index];
+      try {
+        await setWorkflowStatus(context, user, element.internal_id, targetStatusId, true);
+      } catch (error) {
+        logApp.error('[OPENCTI-MODULE][TASK-MANAGER] Task manager error during workflow transition operation, skipping element', { cause: error, id: element.internal_id });
+      }
+    }
+    totalProcessed += elements.length;
+    await updateTask(context, task.id, { task_processed_number: totalProcessed });
+  };
+};
+
 const computeOperationCallback = async (context, user, task, actionType, operations) => {
   // Handle specific case of adding elements in container
   if (actionType === 'KNOWLEDGE_CONTAINER') {
@@ -598,6 +635,10 @@ const computeOperationCallback = async (context, user, task, actionType, operati
   // Handle specific case of removing a deleted custom field definition values from entities
   if (actionType === ACTION_TYPE_REMOVE_CUSTOM_FIELD_VALUES) {
     return customFieldValuesRemoveOperationCallback(context, user, task, operations);
+  }
+  // Handle specific case of a mass status update requesting transition actions (Task 10)
+  if (actionType === ACTION_TYPE_WORKFLOW_TRANSITION) {
+    return workflowTransitionOperationCallback(context, user, task, operations);
   }
   // Handle specific sharing operation, as container must share inner object
   if (isShareAction(actionType) || isUnshareAction(actionType)) {
@@ -689,6 +730,10 @@ const taskHandlerGenerator = (context) => {
       // Support specific container add operation
       if (action.context?.field === 'container-object') {
         return 'KNOWLEDGE_CONTAINER';
+      }
+      // Support mass status update requesting transition actions (Task 10)
+      if (isWorkflowTransitionAction(action)) {
+        return ACTION_TYPE_WORKFLOW_TRANSITION;
       }
       // Support generic knowledge
       if ([ACTION_TYPE_ADD, ACTION_TYPE_REPLACE, ACTION_TYPE_REMOVE].includes(action.type)) {

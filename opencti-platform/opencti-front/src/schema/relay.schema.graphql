@@ -1128,6 +1128,7 @@ type BackgroundTaskConnection {
 
 input BackgroundTaskContextOptionsInput {
   includeNeighbours: Boolean
+  applyTransitionActions: Boolean
 }
 
 input BackgroundTaskContextInput {

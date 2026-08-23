@@ -1,11 +1,22 @@
-import { assert, describe, expect, it } from 'vitest';
-import { STIX_EXT_OCTI } from '../../../../../src/types/stix-2-1-extensions';
-import type { StixThreatActor } from '../../../../../src/types/stix-2-1-sdo';
+import { assert, describe, expect, it, vi } from 'vitest';
+import { PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT, type ManipulateConfiguration } from '../../../../../src/modules/playbook/components/manipulate-knowledge-component';
+import { setWorkflowStatus } from '../../../../../src/modules/workflow/domain/workflow-domain';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../../../../../src/schema/general';
 import { ENTITY_TYPE_INCIDENT } from '../../../../../src/schema/stixDomainObject';
-import { PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT, type ManipulateConfiguration } from '../../../../../src/modules/playbook/components/manipulate-knowledge-component';
-import { testBundleObject, testExecutor } from './playbook-components-test-utils';
 import type { StixDomainObject } from '../../../../../src/types/stix-2-1-common';
+import { STIX_EXT_OCTI } from '../../../../../src/types/stix-2-1-extensions';
+import type { StixThreatActor } from '../../../../../src/types/stix-2-1-sdo';
+import { testBundleObject, testExecutor } from './playbook-components-test-utils';
+
+// Task 10: the workflow-transition-actions mode calls `setWorkflowStatus` directly (it runs the
+// full workflow engine — onExit/onEnter hooks — which is out of scope for this bundle-only suite).
+vi.mock('../../../../../src/modules/workflow/domain/workflow-domain', async (importOriginal) => {
+  const actual: object = await importOriginal();
+  return {
+    ...actual,
+    setWorkflowStatus: vi.fn().mockResolvedValue({ success: true }),
+  };
+});
 
 describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
   const THREAT_ACTOR_ID = 'threat--09bd862a-f030-55f2-920a-900c4913d9fd';
@@ -496,6 +507,70 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
       const campaignExtensions = campaignResult?.extensions[STIX_EXT_OCTI];
       expect(malwareExtensions?.opencti_upsert_operations).toBeUndefined();
       expect(campaignExtensions?.opencti_upsert_operations?.length).toEqual(1);
+    });
+  });
+
+  describe('workflow status update modes (Task 10)', () => {
+    const WORKFLOW_ENTITY_ID = 'threat--09bd862a-f030-55f2-920a-900c4913d900';
+    const TARGET_STATUS_ID = 'status-id-123';
+
+    it('should apply the status via setWorkflowStatus with transition actions when apply_transition_actions is true', async () => {
+      const bundleObjects = [testBundleObject<StixThreatActor>({
+        id: WORKFLOW_ENTITY_ID,
+        type: ENTITY_TYPE_THREAT_ACTOR,
+      })];
+
+      const configuration: ManipulateConfiguration = {
+        applyToElements: 'only-main',
+        actions: [{
+          op: 'replace',
+          attribute: 'x_opencti_workflow_id',
+          value: [{ label: 'In progress', value: TARGET_STATUS_ID, patch_value: TARGET_STATUS_ID }],
+          apply_transition_actions: true,
+        }],
+      };
+
+      const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+        mainId: WORKFLOW_ENTITY_ID,
+        bundleObjects,
+        configuration,
+      }));
+
+      expect(setWorkflowStatus).toHaveBeenCalledWith(expect.anything(), expect.anything(), WORKFLOW_ENTITY_ID, TARGET_STATUS_ID, true);
+      const objectExtensions = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
+      // The generic field patch must be bypassed entirely for this attribute in transition-actions mode
+      expect(objectExtensions.opencti_upsert_operations ?? []).toEqual([]);
+    });
+
+    it('should fall back to the generic field patch (status-only mode) when apply_transition_actions is not set', async () => {
+      const bundleObjects = [testBundleObject<StixThreatActor>({
+        id: WORKFLOW_ENTITY_ID,
+        type: ENTITY_TYPE_THREAT_ACTOR,
+      })];
+
+      const configuration: ManipulateConfiguration = {
+        applyToElements: 'only-main',
+        actions: [{
+          op: 'replace',
+          attribute: 'x_opencti_workflow_id',
+          value: [{ label: 'In progress', value: TARGET_STATUS_ID, patch_value: TARGET_STATUS_ID }],
+        }],
+      };
+
+      const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+        mainId: WORKFLOW_ENTITY_ID,
+        bundleObjects,
+        configuration,
+      }));
+
+      expect(setWorkflowStatus).not.toHaveBeenCalled();
+      const objectExtensions = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
+      if (!objectExtensions.opencti_upsert_operations || !objectExtensions.opencti_upsert_operations[0]) {
+        assert.fail('Field patch missing');
+      }
+      expect(objectExtensions.opencti_upsert_operations[0].key).toBe('x_opencti_workflow_id');
+      expect(objectExtensions.opencti_upsert_operations[0].operation).toBe('replace');
+      expect(objectExtensions.opencti_upsert_operations[0].value[0]).toBe(TARGET_STATUS_ID);
     });
   });
 });

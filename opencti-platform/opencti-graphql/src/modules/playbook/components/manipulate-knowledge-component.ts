@@ -31,6 +31,11 @@ import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
 import { applyOperationFieldPatch, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
 import { pushAll } from '../../../utils/arrayUtil';
+import { logApp } from '../../../config/conf';
+import { setWorkflowStatus } from '../../workflow/domain/workflow-domain';
+
+// Task 10: attribute updated by this component when a mass status update / transition-action mode is requested.
+const WORKFLOW_ID_ATTRIBUTE = 'x_opencti_workflow_id';
 
 const attributePathMapping: any = {
   [INPUT_MARKINGS]: {
@@ -64,7 +69,7 @@ const attributePathMapping: any = {
   x_opencti_detection: {
     [ENTITY_TYPE_INDICATOR]: `/extensions/${STIX_EXT_OCTI}/detection`,
   },
-  x_opencti_workflow_id: {
+  [WORKFLOW_ID_ATTRIBUTE]: {
     [ABSTRACT_STIX_DOMAIN_OBJECT]: `/extensions/${STIX_EXT_OCTI}/workflow_id`,
     [ABSTRACT_STIX_CYBER_OBSERVABLE]: `/extensions/${STIX_EXT_OCTI}/workflow_id`,
     [ABSTRACT_STIX_RELATIONSHIP]: `/extensions/${STIX_EXT_OCTI}/workflow_id`,
@@ -88,7 +93,15 @@ const attributePathMapping: any = {
 };
 
 export interface ManipulateConfiguration {
-  actions: { op: 'add' | 'replace' | 'remove'; attribute: string; value: UpdateValueConfiguration[] }[];
+  actions: {
+    op: 'add' | 'replace' | 'remove';
+    attribute: string;
+    value: UpdateValueConfiguration[];
+    // Task 10: only meaningful for a 'replace' action on `x_opencti_workflow_id` — when true, the
+    // status change is applied via `setWorkflowStatus` (running onExit/onEnter transition actions)
+    // instead of the generic attribute patch (status-only mode, the default).
+    apply_transition_actions?: boolean;
+  }[];
   applyToElements: PlaybookBundleElementsToApply;
   applyWithFilters?: string;
 }
@@ -130,6 +143,7 @@ const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<ManipulateC
               required: ['label', 'value', 'patch_value'],
             },
           },
+          apply_transition_actions: { type: 'boolean', nullable: true, default: false },
         },
         required: ['op', 'attribute', 'value'],
       },
@@ -159,6 +173,14 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
     const context = executionContext('playbook_components');
     const cacheIds = await getEntitiesMapFromCache(context, AUTOMATION_MANAGER_USER, ENTITY_TYPE_MARKING_DEFINITION);
     const { actions, applyToElements, applyWithFilters } = playbookNode.configuration;
+
+    // Task 10: 'replace' actions on the workflow status field that request transition-actions mode
+    // must run through `setWorkflowStatus` (onExit/onEnter side effects) instead of the generic
+    // attribute patch below, which only ever produces the passive "status-only" update.
+    const workflowTransitionActions = actions.filter(
+      (action) => action.attribute === WORKFLOW_ID_ATTRIBUTE && action.op === EditOperation.Replace && action.apply_transition_actions === true,
+    );
+    const genericActions = actions.filter((action) => !workflowTransitionActions.includes(action));
 
     // Compute if the attribute is defined as multiple in schema definition
     const isAttributeMultiple = (entityType: string, attribute: string) => {
@@ -198,7 +220,21 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
       const isMatchingFilters = await isBundleElementMatchFilters(context, element, applyWithFilters);
       if (isMatchingScope && isMatchingFilters) {
         const { type, id } = element.extensions[STIX_EXT_OCTI];
-        const elementOperations = actions
+        // Task 10: apply workflow-transition-mode status changes directly against the persisted
+        // entity (existing entities only — matches `applyOperationFieldPatch`'s own `if (id)` guard).
+        if (id) {
+          for (const workflowAction of workflowTransitionActions) {
+            const targetStatusId = R.head(workflowAction.value)?.value;
+            if (targetStatusId) {
+              try {
+                await setWorkflowStatus(context, AUTOMATION_MANAGER_USER, id, targetStatusId, true);
+              } catch (error) {
+                logApp.error('[OPENCTI-MODULE][PLAYBOOK] Manipulate knowledge component error during workflow transition, skipping element', { cause: error, id });
+              }
+            }
+          }
+        }
+        const elementOperations = genericActions
           .map((action) => {
             const attrPath = computeAttributePath(type, action.attribute);
             const multiple = isAttributeMultiple(type, action.attribute);
