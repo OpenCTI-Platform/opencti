@@ -3091,6 +3091,130 @@ describe('batchWorkflowInstances', () => {
 });
 
 // ===========================================================================
+// Task 6, Step 3.4: reconcile external writes made during a rollback window on republish
+// ===========================================================================
+describe('publishWorkflowDefinition — republish reconciliation (Task 6, Step 3.4)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const definitionContent = JSON.stringify({
+    initialState: 'open',
+    states: [{ statusId: 'open' }, { statusId: 'reviewing' }],
+    transitions: [{ from: 'open', to: 'reviewing', event: 'start_review' }],
+  });
+  const version = {
+    id: 'version-1',
+    timestamp: '2024-01-01T00:00:00Z',
+    createdBy: 'user-1',
+    content: definitionContent,
+    validation_errors: [],
+  };
+  const workflowDefinitionEntity = {
+    id: 'workflow-id',
+    name: 'Test Workflow',
+    published_version: version,
+    draft_version: version,
+    all_versions: [version],
+  };
+
+  const setup = () => {
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'workflow-id') return Promise.resolve(workflowDefinitionEntity);
+      if (id === 'status-reviewing-id') return Promise.resolve({ id: 'status-reviewing-id', template_id: 'reviewing', scope: StatusScope.Global });
+      return Promise.resolve(null);
+    });
+    (updateAttribute as any).mockImplementation((_ctx: any, _user: any, id: string, type: string) => {
+      if (type === 'WorkflowDefinition') return Promise.resolve({ element: workflowDefinitionEntity });
+      return Promise.resolve({ element: { id } });
+    });
+  };
+
+  it('reconciles (status wins) an entity whose Status was written more recently than its stale WorkflowInstance', async () => {
+    setup();
+    const staleEntity = {
+      id: 'entity-1',
+      internal_id: 'entity-1',
+      entity_type: 'Incident',
+      x_opencti_workflow_id: 'status-reviewing-id',
+      updated_at: new Date('2024-06-01T00:00:00Z'),
+    };
+    const staleInstance = {
+      id: 'instance-1',
+      internal_id: 'instance-1',
+      currentState: 'open',
+      history: '[]',
+      scope: StatusScope.Global,
+      updated_at: new Date('2024-01-01T00:00:00Z'),
+    };
+    (fullEntitiesList as any).mockImplementation((_ctx: any, _user: any, types: string[]) => (
+      types[0] === 'Incident' ? Promise.resolve([staleEntity]) : Promise.resolve([])
+    ));
+    (loadEntity as any).mockResolvedValue(staleInstance);
+
+    await publishWorkflowDefinition(mockContext, mockUser, 'Incident');
+
+    expect(updateAttribute).toHaveBeenCalledWith(
+      expect.anything(),
+      WORKFLOW_MANAGER_USER,
+      'instance-1',
+      ENTITY_TYPE_WORKFLOW_INSTANCE,
+      expect.arrayContaining([{ key: 'currentState', value: ['reviewing'] }]),
+    );
+  });
+
+  it('does not reconcile an entity whose WorkflowInstance is already at least as fresh', async () => {
+    setup();
+    const freshlyRepairedEntity = {
+      id: 'entity-1',
+      internal_id: 'entity-1',
+      entity_type: 'Incident',
+      x_opencti_workflow_id: 'status-reviewing-id',
+      updated_at: new Date('2024-01-01T00:00:00Z'),
+    };
+    const freshInstance = {
+      id: 'instance-1',
+      internal_id: 'instance-1',
+      currentState: 'open',
+      history: '[]',
+      scope: StatusScope.Global,
+      updated_at: new Date('2024-06-01T00:00:00Z'),
+    };
+    (fullEntitiesList as any).mockImplementation((_ctx: any, _user: any, types: string[]) => (
+      types[0] === 'Incident' ? Promise.resolve([freshlyRepairedEntity]) : Promise.resolve([])
+    ));
+    (loadEntity as any).mockResolvedValue(freshInstance);
+
+    await publishWorkflowDefinition(mockContext, mockUser, 'Incident');
+
+    expect(updateAttribute).not.toHaveBeenCalledWith(
+      expect.anything(),
+      WORKFLOW_MANAGER_USER,
+      'instance-1',
+      ENTITY_TYPE_WORKFLOW_INSTANCE,
+      expect.anything(),
+    );
+  });
+
+  it('does not run reconciliation on a type\'s very first-ever publish (no published_version before this call)', async () => {
+    setup();
+    // First-ever publish: the entity loaded before publishing has no published_version yet.
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'workflow-id') {
+        return Promise.resolve({ id: 'workflow-id', name: 'Test Workflow', published_version: null, draft_version: version, all_versions: [version] });
+      }
+      return Promise.resolve(null);
+    });
+    (fullEntitiesList as any).mockImplementation((_ctx: any, _user: any, types: string[]) => (
+      types[0] === 'Incident' ? Promise.reject(new Error('should not scan entities on a first-ever publish')) : Promise.resolve([])
+    ));
+
+    await publishWorkflowDefinition(mockContext, mockUser, 'Incident');
+  });
+});
+
+// ===========================================================================
 // Task 8: syncWorkflowInstanceFromExternalWrite — direct/concurrent Status writers
 // ===========================================================================
 describe('syncWorkflowInstanceFromExternalWrite (Task 8)', () => {

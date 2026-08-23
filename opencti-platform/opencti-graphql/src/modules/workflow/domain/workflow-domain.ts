@@ -964,6 +964,13 @@ export const publishWorkflowDefinition = async (
 
   await updateAttribute(executionContext, executionUser, workflowDefinitionEntity.id, ENTITY_TYPE_WORKFLOW_DEFINITION, updates);
 
+  if (workflowDefinitionEntity.published_version) {
+    // Task 6, Step 3.4: this is a republish (not the entity type's very first-ever publish) —
+    // reconcile any entity whose Status was written directly while mechanics were inactive
+    // (e.g. during a rollback window), so the next read's repair doesn't silently discard it.
+    await reconcileExternalWritesOnRepublish(executionContext, executionUser, entityType);
+  }
+
   const updatedWorkflow = await storeLoadById(
     executionContext,
     executionUser,
@@ -1777,6 +1784,59 @@ export const syncWorkflowInstanceFromExternalWrite = async (
     { key: 'history', value: [JSON.stringify(history)] },
     { key: 'pendingError', value: [null] },
   ]);
+};
+
+/**
+ * Task 6, Step 3.4: on republish (a definition that already had a `published_version` before this
+ * call — never the entity type's very first-ever publish), reconciles any entity whose
+ * `x_opencti_workflow_id` was written directly while workflow mechanics were inactive (e.g. during
+ * a rollback window where `EntitySetting.workflow_id` had been cleared, per Step 3.3's rollback
+ * guidance — both read-repair and this module's own external-write sync no-op without a published
+ * definition). Without this, the next ordinary read would trigger read-repair (instance wins) and
+ * silently discard that legitimate external write — the opposite direction from
+ * `syncWorkflowInstanceFromExternalWrite`'s own handling (status wins). Last-write-wins: only
+ * entities whose own `updated_at` is strictly newer than their `WorkflowInstance`'s `updated_at`
+ * are reconciled (status wins for those); an instance already at least as fresh is left untouched,
+ * since read-repair remains correct for it.
+ *
+ * Known cost (per Step 3.5): a full scan of all entities of `entityType`, run once per republish —
+ * acceptable for the infrequent, admin-triggered republish/re-enable operation, unlike the hot
+ * per-entity-creation path Step 3.5 is concerned with.
+ */
+const reconcileExternalWritesOnRepublish = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+): Promise<void> => {
+  const executionContext = bypassDraftContext(context);
+  const executionUser = executionContext.user!;
+
+  const entities = await fullEntitiesList<BasicStoreEntity & { x_opencti_workflow_id?: string }>(
+    executionContext,
+    executionUser,
+    [entityType],
+  );
+
+  for (const entity of entities) {
+    if (!entity.x_opencti_workflow_id) continue;
+
+    const effectiveEntityId = entity.internal_id || entity.id;
+    const instanceEntity = await findWorkflowInstanceEntity(executionContext, executionUser, effectiveEntityId);
+    // No instance yet: nothing to reconcile — the next read lazily backfills one (Task 3).
+    if (!instanceEntity) continue;
+
+    const entityUpdatedAt = entity.updated_at ? new Date(entity.updated_at).getTime() : 0;
+    const instanceUpdatedAt = instanceEntity.updated_at ? new Date(instanceEntity.updated_at).getTime() : 0;
+    // Instance at least as fresh as the entity: read-repair's instance-wins direction is already
+    // correct for it, nothing to reconcile.
+    if (entityUpdatedAt <= instanceUpdatedAt) continue;
+
+    try {
+      await syncWorkflowInstanceFromExternalWrite(executionContext, entity, entity.x_opencti_workflow_id);
+    } catch (error) {
+      logApp.warn('[OPENCTI-MODULE] Failed to reconcile external write on republish', { cause: error, entityId: effectiveEntityId, entityType });
+    }
+  }
 };
 
 /**
