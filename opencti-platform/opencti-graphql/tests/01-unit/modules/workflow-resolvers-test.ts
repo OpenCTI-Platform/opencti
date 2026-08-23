@@ -42,6 +42,18 @@ beforeEach(() => {
 // WorkflowTransition field resolver
 // ---------------------------------------------------------------------------
 
+describe('WorkflowTransition resolver – isClosingTransition field', () => {
+  it('should return true when isClosingTransition is true on the transition', () => {
+    const transition = { event: 'close', toState: 'closed', isClosingTransition: true, actions: [] };
+    expect(workflowResolvers.WorkflowTransition.isClosingTransition(transition)).toBe(true);
+  });
+
+  it('should return false when isClosingTransition is undefined on the transition', () => {
+    const transition = { event: 'review', toState: 'reviewed', actions: [] };
+    expect(workflowResolvers.WorkflowTransition.isClosingTransition(transition)).toBe(false);
+  });
+});
+
 describe('WorkflowTransition resolver – comment field', () => {
   it('should return the comment when it is defined on the transition', () => {
     const transition = { event: 'review', toState: 'reviewed', comment: 'Requires approval', actions: [] };
@@ -140,6 +152,7 @@ describe('Mutation.triggerWorkflowEvent resolver – comment forwarding', () => 
       'review',
       'Approved for review',
       {},
+      undefined,
     );
   });
 
@@ -159,7 +172,40 @@ describe('Mutation.triggerWorkflowEvent resolver – comment forwarding', () => 
       'review',
       undefined,
       {},
+      undefined,
     );
+  });
+
+  it('should forward the closingReason to the domain function when provided', async () => {
+    (triggerWorkflowEvent as any).mockResolvedValue({ success: true, newState: 'reviewed', instance: {}, entity: {} });
+
+    await workflowResolvers.Mutation.triggerWorkflowEvent(
+      {},
+      { entityId: 'entity-id', eventName: 'review', closingReason: 'No longer relevant' },
+      mockContext,
+    );
+
+    expect(triggerWorkflowEvent).toHaveBeenCalledWith(
+      mockContext,
+      mockContext.user,
+      'entity-id',
+      'review',
+      undefined,
+      {},
+      'No longer relevant',
+    );
+  });
+
+  it('should throw GraphQLError when closingReason exceeds 1000 characters', () => {
+    const longReason = 'a'.repeat(1001);
+
+    expect(() =>
+      workflowResolvers.Mutation.triggerWorkflowEvent(
+        {},
+        { entityId: 'entity-id', eventName: 'review', closingReason: longReason },
+        mockContext,
+      ),
+    ).toThrow('Closing reason exceeds maximum allowed length of 1000 characters.');
   });
 });
 
@@ -178,7 +224,7 @@ describe('Mutation.setWorkflowStatus resolver', () => {
     );
 
     expect(setWorkflowStatus).toHaveBeenCalledWith(
-      mockContext, mockContext.user, 'entity-id', 'status-id', true, 'skip ahead',
+      mockContext, mockContext.user, 'entity-id', 'status-id', true, 'skip ahead', undefined,
     );
   });
 
@@ -192,7 +238,7 @@ describe('Mutation.setWorkflowStatus resolver', () => {
     );
 
     expect(setWorkflowStatus).toHaveBeenCalledWith(
-      mockContext, mockContext.user, 'entity-id', 'status-id', false, undefined,
+      mockContext, mockContext.user, 'entity-id', 'status-id', false, undefined, undefined,
     );
   });
 
@@ -206,6 +252,32 @@ describe('Mutation.setWorkflowStatus resolver', () => {
         mockContext,
       ),
     ).toThrow('Comment exceeds maximum allowed length of 1000 characters.');
+  });
+
+  it('should forward the closingReason to the domain function when provided', async () => {
+    (setWorkflowStatus as any).mockResolvedValue({ success: true, newState: 'reviewing', instance: {}, entity: {} });
+
+    await workflowResolvers.Mutation.setWorkflowStatus(
+      {},
+      { entityId: 'entity-id', targetStatusId: 'status-id', applyTransitionActions: false, closingReason: '  skip ahead reason  ' },
+      mockContext,
+    );
+
+    expect(setWorkflowStatus).toHaveBeenCalledWith(
+      mockContext, mockContext.user, 'entity-id', 'status-id', false, undefined, 'skip ahead reason',
+    );
+  });
+
+  it('should throw GraphQLError when closingReason exceeds 1000 characters', () => {
+    const longReason = 'a'.repeat(1001);
+
+    expect(() =>
+      workflowResolvers.Mutation.setWorkflowStatus(
+        {},
+        { entityId: 'entity-id', targetStatusId: 'status-id', applyTransitionActions: false, closingReason: longReason },
+        mockContext,
+      ),
+    ).toThrow('Closing reason exceeds maximum allowed length of 1000 characters.');
   });
 });
 
@@ -276,7 +348,7 @@ describe('Mutation.triggerWorkflowEvent resolver – comment validation', () => 
     ).resolves.not.toThrow();
 
     expect(triggerWorkflowEvent).toHaveBeenCalledWith(
-      mockContext, mockContext.user, 'entity-id', 'review', exactComment, {},
+      mockContext, mockContext.user, 'entity-id', 'review', exactComment, {}, undefined,
     );
   });
 
@@ -290,7 +362,7 @@ describe('Mutation.triggerWorkflowEvent resolver – comment validation', () => 
     );
 
     expect(triggerWorkflowEvent).toHaveBeenCalledWith(
-      mockContext, mockContext.user, 'entity-id', 'review', 'trimmed comment', {},
+      mockContext, mockContext.user, 'entity-id', 'review', 'trimmed comment', {}, undefined,
     );
   });
 
@@ -304,7 +376,7 @@ describe('Mutation.triggerWorkflowEvent resolver – comment validation', () => 
     );
 
     expect(triggerWorkflowEvent).toHaveBeenCalledWith(
-      mockContext, mockContext.user, 'entity-id', 'review', undefined, {},
+      mockContext, mockContext.user, 'entity-id', 'review', undefined, {}, undefined,
     );
   });
 });
@@ -616,6 +688,7 @@ describe('workflow-resolvers', () => {
           'close',
           undefined,
           {},
+          undefined,
         );
         expect(result).toBe(mockResult);
       });

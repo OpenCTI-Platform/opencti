@@ -19,7 +19,7 @@ import { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.gra
 import { WorkflowStatusStixDomainObject_data$key } from './__generated__/WorkflowStatusStixDomainObject_data.graphql';
 import { useTransitionWizard } from './useTransitionWizard';
 import { isWorkflowUiEnabledForType } from './workflowFeatureFlag';
-import { COMMENT_MAX_LENGTH, workflowStatusFragment, workflowStatusStixDomainObjectFragment } from './WorkflowStatus.graphql';
+import { CLOSING_REASON_MAX_LENGTH, COMMENT_MAX_LENGTH, workflowStatusFragment, workflowStatusStixDomainObjectFragment } from './WorkflowStatus.graphql';
 
 // Task 9: plain-data shape shared by both the DraftWorkspace-bound and generic StixDomainObject-
 // bound wrappers below, since DraftWorkspace does not implement StixDomainObject and a single
@@ -176,6 +176,7 @@ const WorkflowTransitionsView: FunctionComponent<{
   const requiresComment = wizard?.steps.includes('comment') ?? false;
   const requiresOrgPicker = wizard?.steps.includes('org-picker') ?? false;
   const requiresValidate = wizard?.steps.includes('validate') ?? false;
+  const requiresClosingReason = wizard?.steps.includes('closing-reason') ?? false;
   const commentRequired = wizard?.commentMode === CommentMode.required && !canBypassMandatoryFields;
 
   return (
@@ -193,6 +194,7 @@ const WorkflowTransitionsView: FunctionComponent<{
                 transition.comment,
                 transition.requiresShareOrganizationInput,
                 transition.requiresUnshareOrganizationInput,
+                transition.isClosingTransition,
               )}
               disabled={approving}
             >
@@ -222,6 +224,7 @@ const WorkflowTransitionsView: FunctionComponent<{
                     transition.comment,
                     transition.requiresShareOrganizationInput,
                     transition.requiresUnshareOrganizationInput,
+                    transition.isClosingTransition,
                   );
                 }}
               >
@@ -237,6 +240,7 @@ const WorkflowTransitionsView: FunctionComponent<{
       <Formik
         initialValues={{
           comment: '',
+          closingReason: '',
           shareOrganizations: [] as Array<{ value: string; label: string }>,
           unshareOrganizations: [] as Array<{ value: string; label: string }>,
         }}
@@ -244,6 +248,7 @@ const WorkflowTransitionsView: FunctionComponent<{
           comment: commentRequired
             ? Yup.string().trim().required(t_i18n('This field is required'))
             : Yup.string(),
+          closingReason: Yup.string(),
           shareOrganizations: Yup.array(),
           unshareOrganizations: Yup.array(),
         })}
@@ -272,6 +277,7 @@ const WorkflowTransitionsView: FunctionComponent<{
               <Stack direction="row" spacing={2} sx={{ mb: 2, flexWrap: 'wrap' }}>
                 {requiresComment && <StepPill label={t_i18n('Add comment')} />}
                 {requiresOrgPicker && <StepPill label={t_i18n('Share with organization')} />}
+                {requiresClosingReason && <StepPill label={t_i18n('Closing reason')} />}
                 {requiresValidate && <StepPill label={t_i18n('Validate draft')} />}
               </Stack>
               {requiresComment && (
@@ -295,6 +301,27 @@ const WorkflowTransitionsView: FunctionComponent<{
                     required={commentRequired}
                     slotProps={{ htmlInput: { maxLength: COMMENT_MAX_LENGTH } }}
                     helperText={`${values.comment.length} / ${COMMENT_MAX_LENGTH}`}
+                    sx={{ mb: 2 }}
+                  />
+                </>
+              )}
+              {requiresClosingReason && (
+                <>
+                  <DialogContentText sx={{ mb: 1 }}>
+                    {t_i18n('You can optionally provide a reason for closing this item.')}
+                  </DialogContentText>
+                  <TextField
+                    fullWidth
+                    multiline
+                    minRows={3}
+                    label={t_i18n('Closing reason')}
+                    name="closingReason"
+                    value={values.closingReason}
+                    onChange={handleChange}
+                    variant="outlined"
+                    size="small"
+                    slotProps={{ htmlInput: { maxLength: CLOSING_REASON_MAX_LENGTH } }}
+                    helperText={`${values.closingReason.length} / ${CLOSING_REASON_MAX_LENGTH}`}
                     sx={{ mb: 2 }}
                   />
                 </>

@@ -19731,6 +19731,7 @@ export type MutationSessionKillArgs = {
 
 export type MutationSetWorkflowStatusArgs = {
   applyTransitionActions: Scalars['Boolean']['input'];
+  closingReason?: InputMaybe<Scalars['String']['input']>;
   comment?: InputMaybe<Scalars['String']['input']>;
   entityId: Scalars['String']['input'];
   targetStatusId: Scalars['String']['input'];
@@ -20247,6 +20248,7 @@ export type MutationTriggerKnowledgeLiveAddArgs = {
 
 
 export type MutationTriggerWorkflowEventArgs = {
+  closingReason?: InputMaybe<Scalars['String']['input']>;
   comment?: InputMaybe<Scalars['String']['input']>;
   entityId: Scalars['String']['input'];
   eventName: Scalars['String']['input'];
@@ -38511,6 +38513,7 @@ export type WorkflowInstance = {
 
 export type WorkflowLastHistoryEntry = {
   __typename?: 'WorkflowLastHistoryEntry';
+  closing_reason?: Maybe<Scalars['String']['output']>;
   comment?: Maybe<Scalars['String']['output']>;
   event: Scalars['String']['output'];
   state: Scalars['String']['output'];
@@ -38598,6 +38601,7 @@ export type WorkflowTransition = {
   actions?: Maybe<Array<Scalars['String']['output']>>;
   comment?: Maybe<Scalars['String']['output']>;
   event: Scalars['String']['output'];
+  isClosingTransition?: Maybe<Scalars['Boolean']['output']>;
   requiresShareOrganizationInput?: Maybe<Scalars['Boolean']['output']>;
   requiresUnshareOrganizationInput?: Maybe<Scalars['Boolean']['output']>;
   toState: Scalars['String']['output'];
@@ -53695,6 +53699,7 @@ export type WorkflowInstanceResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type WorkflowLastHistoryEntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowLastHistoryEntry'] = ResolversParentTypes['WorkflowLastHistoryEntry']> = ResolversObject<{
+  closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   comment?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   event?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   state?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -53773,6 +53778,7 @@ export type WorkflowTransitionResolvers<ContextType = any, ParentType extends Re
   actions?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   comment?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   event?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  isClosingTransition?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   requiresShareOrganizationInput?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   requiresUnshareOrganizationInput?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   toState?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

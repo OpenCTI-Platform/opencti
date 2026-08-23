@@ -111,3 +111,18 @@ export const findUnreachableStates = (
   }
   return allStates.filter((state) => !reachable.has(state));
 };
+
+/**
+ * True if `stateId` never appears in any transition's `from` list — i.e. it has no outgoing
+ * transitions and is a terminal ("closing") state of the workflow. A wildcard `from: '*'`
+ * transition does not count as an outgoing transition of any specific state, mirroring the same
+ * convention already used for "ending state" detection in `publishWorkflowDefinition`
+ * (workflow-domain.ts) and `workflow-validation.ts`. Used by Task 11's closing-reason capture to
+ * decide whether a transition landing on this state qualifies as "closing" the entity.
+ */
+export const isEndingState = (transitions: OrderingTransition[], stateId: string): boolean => {
+  return !transitions.some((transition) => {
+    const fromStates = Array.isArray(transition.from) ? transition.from : [transition.from];
+    return fromStates.includes(stateId);
+  });
+};

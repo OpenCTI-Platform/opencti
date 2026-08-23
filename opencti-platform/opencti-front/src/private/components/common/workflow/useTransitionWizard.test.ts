@@ -154,6 +154,26 @@ describe('useTransitionWizard – handleTransition', () => {
 
     expect(result.current.wizard!.steps).toEqual(['org-picker', 'comment', 'validate']);
   });
+
+  it('adds closing-reason step when the transition is closing', () => {
+    const { result } = renderWizard();
+
+    act(() => {
+      result.current.handleTransition('submit', [], null, false, false, true);
+    });
+
+    expect(result.current.wizard!.steps).toEqual(['closing-reason']);
+  });
+
+  it('does NOT add closing-reason step when the transition is not closing', () => {
+    const { result } = renderWizard();
+
+    act(() => {
+      result.current.handleTransition('submit', [], null, false, false, false);
+    });
+
+    expect(result.current.wizard).toBeNull();
+  });
 });
 
 describe('useTransitionWizard – handleApplyWizard', () => {
@@ -220,6 +240,48 @@ describe('useTransitionWizard – handleApplyWizard', () => {
     expect(mockCommit).toHaveBeenCalledTimes(1);
     const [{ variables }] = mockCommit.mock.calls[0];
     expect(variables.comment).toBe('my comment');
+  });
+
+  it('fires the mutation with the trimmed closing reason', () => {
+    const { result } = renderWizard();
+
+    act(() => {
+      result.current.handleTransition('submit', [], null, false, false, true);
+    });
+
+    act(() => {
+      result.current.handleApplyWizard({
+        comment: '',
+        closingReason: '  no longer needed  ',
+        shareOrganizations: [],
+        unshareOrganizations: [],
+      });
+    });
+
+    expect(mockCommit).toHaveBeenCalledTimes(1);
+    const [{ variables }] = mockCommit.mock.calls[0];
+    expect(variables.closingReason).toBe('no longer needed');
+  });
+
+  it('passes undefined closingReason when the closing reason field is empty', () => {
+    const { result } = renderWizard();
+
+    act(() => {
+      result.current.handleTransition('submit', [], null, false, false, true);
+    });
+
+    act(() => {
+      result.current.handleApplyWizard({
+        comment: '',
+        closingReason: '',
+        shareOrganizations: [],
+        unshareOrganizations: [],
+      });
+    });
+
+    expect(mockCommit).toHaveBeenCalledTimes(1);
+    const [{ variables }] = mockCommit.mock.calls[0];
+    expect(variables.closingReason).toBeUndefined();
   });
 
   it('passes undefined comment when the comment field is empty', () => {

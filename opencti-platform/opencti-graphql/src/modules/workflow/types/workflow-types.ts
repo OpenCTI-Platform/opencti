@@ -45,6 +45,9 @@ export interface WorkflowPendingTransition {
   triggeredAt: string; // ISO 8601
   runtimeParams: Record<string, unknown>;
   comment?: string;
+  /** Task 11: optional dedicated closing reason, propagated the same way as `comment` into the
+   *  final history entry once the async transition completes (see workflow-async-completion.ts). */
+  closingReason?: string;
   asyncActions: AsyncActionSlot[];
   syncActions: WorkflowActionConfig[];
   onEnterActions?: WorkflowActionConfig[]; // onEnter actions of the target state, serialized so phase 2 can replay them.

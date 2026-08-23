@@ -18,6 +18,7 @@ import {
 } from '../domain/workflow-domain';
 
 const COMMENT_MAX_LENGTH = 1000; // Keep in sync with COMMENT_MAX_LENGTH in opencti-front/src/private/components/common/workflow/WorkflowStatus.tsx
+const CLOSING_REASON_MAX_LENGTH = 1000; // Keep in sync with CLOSING_REASON_MAX_LENGTH in opencti-front/src/private/components/common/workflow/WorkflowStatus.graphql.ts
 
 const workflowResolvers = {
   Query: {
@@ -65,24 +66,34 @@ const workflowResolvers = {
       eventName,
       comment,
       runtimeParams,
-    }: { entityId: string; eventName: string; comment?: string | null; runtimeParams?: Record<string, unknown> }, context: AuthContext) => {
+      closingReason,
+    }: { entityId: string; eventName: string; comment?: string | null; runtimeParams?: Record<string, unknown>; closingReason?: string | null }, context: AuthContext) => {
       const normalizedComment = comment?.trim() ?? undefined;
       if (normalizedComment !== undefined && normalizedComment.length > COMMENT_MAX_LENGTH) {
         throw new GraphQLError(`Comment exceeds maximum allowed length of ${COMMENT_MAX_LENGTH} characters.`);
       }
-      return triggerWorkflowEvent(context, context.user!, entityId, eventName, normalizedComment, runtimeParams ?? {});
+      const normalizedClosingReason = closingReason?.trim() ?? undefined;
+      if (normalizedClosingReason !== undefined && normalizedClosingReason.length > CLOSING_REASON_MAX_LENGTH) {
+        throw new GraphQLError(`Closing reason exceeds maximum allowed length of ${CLOSING_REASON_MAX_LENGTH} characters.`);
+      }
+      return triggerWorkflowEvent(context, context.user!, entityId, eventName, normalizedComment, runtimeParams ?? {}, normalizedClosingReason);
     },
     setWorkflowStatus: (_: any, {
       entityId,
       targetStatusId,
       applyTransitionActions,
       comment,
-    }: { entityId: string; targetStatusId: string; applyTransitionActions: boolean; comment?: string | null }, context: AuthContext) => {
+      closingReason,
+    }: { entityId: string; targetStatusId: string; applyTransitionActions: boolean; comment?: string | null; closingReason?: string | null }, context: AuthContext) => {
       const normalizedComment = comment?.trim() ?? undefined;
       if (normalizedComment !== undefined && normalizedComment.length > COMMENT_MAX_LENGTH) {
         throw new GraphQLError(`Comment exceeds maximum allowed length of ${COMMENT_MAX_LENGTH} characters.`);
       }
-      return setWorkflowStatus(context, context.user!, entityId, targetStatusId, applyTransitionActions, normalizedComment);
+      const normalizedClosingReason = closingReason?.trim() ?? undefined;
+      if (normalizedClosingReason !== undefined && normalizedClosingReason.length > CLOSING_REASON_MAX_LENGTH) {
+        throw new GraphQLError(`Closing reason exceeds maximum allowed length of ${CLOSING_REASON_MAX_LENGTH} characters.`);
+      }
+      return setWorkflowStatus(context, context.user!, entityId, targetStatusId, applyTransitionActions, normalizedComment, normalizedClosingReason);
     },
     clearWorkflowPendingState: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return clearWorkflowPendingState(context, context.user!, entityId);
@@ -122,6 +133,7 @@ const workflowResolvers = {
   WorkflowTransition: {
     toStatus: (transition: any) => ({ id: transition.toState, template_id: transition.toState }),
     comment: (transition: any) => transition.comment ?? null,
+    isClosingTransition: (transition: any) => transition.isClosingTransition ?? false,
     actions: (transition: any) => transition.actions ?? [],
     requiresShareOrganizationInput: (transition: any) => transition.requiresShareOrganizationInput ?? false,
     requiresUnshareOrganizationInput: (transition: any) => transition.requiresUnshareOrganizationInput ?? false,

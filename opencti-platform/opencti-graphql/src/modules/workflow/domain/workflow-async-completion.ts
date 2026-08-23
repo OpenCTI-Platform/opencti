@@ -167,6 +167,7 @@ export const reportWorkflowAsyncActionResult = async (
     event: pendingTransition.event,
     completedAt: new Date().toISOString(),
     ...(pendingTransition.comment ? { comment: pendingTransition.comment } : {}),
+    ...(pendingTransition.closingReason ? { closing_reason: pendingTransition.closingReason } : {}),
   });
 
   await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [

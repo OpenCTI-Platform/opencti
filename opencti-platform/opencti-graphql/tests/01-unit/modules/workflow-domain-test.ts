@@ -1648,6 +1648,26 @@ describe('Transition comments – Domain', () => {
       expect(transitions[0].comment).toBeUndefined();
     });
 
+    it('should mark a transition as closing when its target state has no outgoing transitions', async () => {
+      (loadEntity as any).mockResolvedValue({ id: 'instance-id', internal_id: 'instance-id', currentState: 'reviewed', history: '[]' });
+
+      const transitions = await getAllowedTransitions(mockContext, mockUser, 'entity-id');
+
+      expect(transitions).toHaveLength(1);
+      expect(transitions[0].event).toBe('publish');
+      expect(transitions[0].isClosingTransition).toBe(true);
+    });
+
+    it('should NOT mark a transition as closing when its target state has outgoing transitions', async () => {
+      (loadEntity as any).mockResolvedValue({ id: 'instance-id', internal_id: 'instance-id', currentState: 'draft', history: '[]' });
+
+      const transitions = await getAllowedTransitions(mockContext, mockUser, 'entity-id');
+
+      expect(transitions).toHaveLength(1);
+      expect(transitions[0].event).toBe('review');
+      expect(transitions[0].isClosingTransition).toBe(false);
+    });
+
     it('should exclude transitions whose conditions are not met by the requesting user', async () => {
       (WorkflowFactory.createDefinition as any).mockImplementation(() => ({
         getInitialState: () => 'draft',
@@ -1725,6 +1745,32 @@ describe('Transition comments – Domain', () => {
       await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'review', '');
 
       expect(getLastHistoryEntry()).not.toHaveProperty('comment');
+    });
+
+    it('should include the closing reason in the history entry as closing_reason', async () => {
+      setupMocks();
+
+      await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'review', undefined, {}, 'No longer needed');
+
+      expect(getLastHistoryEntry().closing_reason).toBe('No longer needed');
+    });
+
+    it('should NOT include a closing_reason key in the history entry when no closing reason is provided', async () => {
+      setupMocks();
+
+      await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'review');
+
+      expect(getLastHistoryEntry()).not.toHaveProperty('closing_reason');
+    });
+
+    it('should include both comment and closing_reason in the history entry when both are provided', async () => {
+      setupMocks();
+
+      await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'review', 'Reviewed', {}, 'No longer needed');
+
+      const entry = getLastHistoryEntry();
+      expect(entry.comment).toBe('Reviewed');
+      expect(entry.closing_reason).toBe('No longer needed');
     });
   });
 
@@ -3281,6 +3327,32 @@ describe('setWorkflowStatus (Task 9)', () => {
     const historyPatch = patches.find((p: any) => p.key === 'history');
     const history = JSON.parse(historyPatch.value[0]);
     expect(history.at(-1)).toEqual(expect.objectContaining({ state: 'reviewing', event: 'event_bypass', comment: 'skip ahead' }));
+  });
+
+  it('records a closing_reason in the event_bypass history entry when provided', async () => {
+    setupDefinition();
+    (loadEntity as any).mockResolvedValue(existingInstance);
+    (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-id' } });
+
+    await setWorkflowStatus(mockContext, mockUser, 'entity-id', 'status-reviewing-id', false, undefined, 'No longer relevant');
+
+    const [, , , , patches] = (updateAttribute as any).mock.calls[0];
+    const historyPatch = patches.find((p: any) => p.key === 'history');
+    const history = JSON.parse(historyPatch.value[0]);
+    expect(history.at(-1)).toEqual(expect.objectContaining({ state: 'reviewing', event: 'event_bypass', closing_reason: 'No longer relevant' }));
+  });
+
+  it('does not add a closing_reason key in the event_bypass history entry when not provided', async () => {
+    setupDefinition();
+    (loadEntity as any).mockResolvedValue(existingInstance);
+    (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-id' } });
+
+    await setWorkflowStatus(mockContext, mockUser, 'entity-id', 'status-reviewing-id', false);
+
+    const [, , , , patches] = (updateAttribute as any).mock.calls[0];
+    const historyPatch = patches.find((p: any) => p.key === 'history');
+    const history = JSON.parse(historyPatch.value[0]);
+    expect(history.at(-1)).not.toHaveProperty('closing_reason');
   });
 
   it('when applyTransitionActions is false, does not run any state onEnter/onExit actions-on-status', async () => {

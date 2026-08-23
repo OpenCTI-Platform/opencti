@@ -42,7 +42,7 @@ import {
     type WorkflowValidationError,
 } from '../types/workflow-types';
 import { extractAllStatesFromDefinition, validateWorkflowDefinitionData } from '../workflow-validation';
-import { computeStateOrder } from './workflow-ordering';
+import { computeStateOrder, isEndingState } from './workflow-ordering';
 import { projectWorkflowState, resolveMappedStatusId, resolveProjectionScope } from './workflow-projection';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
@@ -1289,7 +1289,7 @@ export const getAllowedTransitions = async (
   user: AuthUser,
   entityId: string,
   prefetched?: WorkflowInstancePrefetch,
-): Promise<Array<{ event: string; toState: string; comment?: string; actions: string[]; requiresShareOrganizationInput: boolean; requiresUnshareOrganizationInput: boolean }>> => {
+): Promise<Array<{ event: string; toState: string; comment?: string; isClosingTransition: boolean; actions: string[]; requiresShareOrganizationInput: boolean; requiresUnshareOrganizationInput: boolean }>> => {
   const entity = prefetched ? prefetched.entity : await storeLoadById(context, user, entityId, 'Basic-Object');
   if (!entity) {
     return [];
@@ -1327,6 +1327,10 @@ export const getAllowedTransitions = async (
         event: transition.event,
         toState: transition.to,
         comment: transition.comment,
+        // Task 11: the target state has no outgoing transitions of its own (a terminal/"closing"
+        // state) — the frontend uses this to offer closing-reason capture only for transitions
+        // that actually close the entity, not every transition.
+        isClosingTransition: isEndingState(definitionData.transitions ?? [], transition.to),
         actions: transition.actionTypes || [],
         requiresShareOrganizationInput: transition.requiresShareOrganizationInput ?? false,
         requiresUnshareOrganizationInput: transition.requiresUnshareOrganizationInput ?? false,
@@ -1359,6 +1363,8 @@ const appendWorkflowHistoryEntry = (history: any[], entry: any): any[] => {
  * @param eventName The name of the event to trigger
  * @param comment Optional comment entered by the user when performing the transition
  * @param runtimeParams Optional runtime parameters (e.g. organizationIds for share actions). Persisted for retry.
+ * @param closingReason Task 11: optional dedicated reason captured when the transition lands on a
+ *   closing (ending) state — stored separately from `comment` in the workflow history entry.
  * @returns {Promise<TriggerResult>} The result of the trigger
  */
 export const triggerWorkflowEvent = async (
@@ -1368,6 +1374,7 @@ export const triggerWorkflowEvent = async (
   eventName: string,
   comment?: string,
   runtimeParams: Record<string, unknown> = {},
+  closingReason?: string,
 ): Promise<TriggerResult> => {
   // 1. Fetch the entity
   const entity = await storeLoadById(context, user, entityId, 'Basic-Object');
@@ -1479,6 +1486,7 @@ export const triggerWorkflowEvent = async (
         triggeredAt: new Date().toISOString(),
         runtimeParams,
         ...(comment ? { comment } : {}),
+        ...(closingReason ? { closingReason } : {}),
         asyncActions: rawSlots,
         syncActions: serializedTransitions,
         ...(serializedOnEnterActions.length > 0 ? { onEnterActions: serializedOnEnterActions } : {}),
@@ -1514,6 +1522,7 @@ export const triggerWorkflowEvent = async (
       timestamp: new Date().toISOString(),
       event: eventName,
       ...(comment ? { comment } : {}),
+      ...(closingReason ? { closing_reason: closingReason } : {}),
     });
 
     await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
@@ -1557,6 +1566,7 @@ export const setWorkflowStatus = async (
   targetStatusId: string,
   applyTransitionActions: boolean,
   comment?: string,
+  closingReason?: string,
 ): Promise<TriggerResult> => {
   const entity = await storeLoadById(context, user, entityId, 'Basic-Object');
   if (!entity) {
@@ -1631,6 +1641,7 @@ export const setWorkflowStatus = async (
       timestamp: new Date().toISOString(),
       event: 'event_bypass',
       ...(comment ? { comment } : {}),
+      ...(closingReason ? { closing_reason: closingReason } : {}),
     });
 
     await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [

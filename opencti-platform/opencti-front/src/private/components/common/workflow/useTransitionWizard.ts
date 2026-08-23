@@ -12,7 +12,7 @@ import type { WorkflowStatusTriggerMutation as WorkflowStatusTriggerMutationType
 
 const DRAFT_COMMENT_SEEN_PREFIX = 'opencti-draft-comment-seen-';
 
-export type WizardStep = 'org-picker' | 'comment' | 'validate';
+export type WizardStep = 'org-picker' | 'comment' | 'closing-reason' | 'validate';
 
 export interface TransitionWizard {
   event: string;
@@ -23,6 +23,7 @@ export interface TransitionWizard {
   requiresShareOrg: boolean;
   requiresUnshareOrg: boolean;
   commentMode?: string;
+  isClosingTransition?: boolean;
 }
 
 interface UseTransitionWizardArgs {
@@ -59,9 +60,12 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId }: U
     actions: readonly string[],
     runtimeParams?: Record<string, unknown>,
     comment?: string,
+    closingReason?: string,
   ) => {
     commit({
-      variables: { entityId, eventName, runtimeParams, comment },
+      variables: {
+        entityId, eventName, runtimeParams, comment, closingReason,
+      },
       onCompleted: (response) => {
         const newTimestamp = response.triggerWorkflowEvent?.instance?.lastHistoryEntry?.timestamp;
         if (newTimestamp && draftId) {
@@ -87,10 +91,12 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId }: U
     comment?: string | null,
     requiresShareOrg?: boolean | null,
     requiresUnshareOrg?: boolean | null,
+    isClosingTransition?: boolean | null,
   ) => {
     const steps: WizardStep[] = [];
     if (requiresShareOrg || requiresUnshareOrg) steps.push('org-picker');
     if (comment === CommentMode.allowed || comment === CommentMode.required) steps.push('comment');
+    if (isClosingTransition) steps.push('closing-reason');
     if (actions.includes('validateDraft')) steps.push('validate');
 
     if (steps.length === 0) {
@@ -104,6 +110,7 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId }: U
       requiresShareOrg: !!requiresShareOrg,
       requiresUnshareOrg: !!requiresUnshareOrg,
       commentMode: comment ?? undefined,
+      isClosingTransition: !!isClosingTransition,
     });
   };
 
@@ -112,6 +119,7 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId }: U
   // together in one dialog/form; this fires the transition exactly once with everything combined.
   const handleApplyWizard = (values: {
     comment: string;
+    closingReason?: string;
     shareOrganizations: Array<{ value: string }>;
     unshareOrganizations: Array<{ value: string }>;
   }) => {
@@ -120,8 +128,9 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId }: U
     if (wizard.requiresShareOrg) runtimeParams.shareOrganizationIds = values.shareOrganizations.map((o) => o.value);
     if (wizard.requiresUnshareOrg) runtimeParams.unshareOrganizationIds = values.unshareOrganizations.map((o) => o.value);
     const comment = values.comment.trim() || undefined;
+    const closingReason = values.closingReason?.trim() || undefined;
     setWizard(null);
-    fireTransition(wizard.event, wizard.actions, runtimeParams, comment);
+    fireTransition(wizard.event, wizard.actions, runtimeParams, comment, closingReason);
   };
 
   const handleClear = () => {

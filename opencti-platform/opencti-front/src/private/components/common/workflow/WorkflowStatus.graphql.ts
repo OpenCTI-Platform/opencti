@@ -3,6 +3,9 @@ import { graphql } from 'react-relay';
 // Keep in sync with COMMENT_MAX_LENGTH in opencti-graphql/src/modules/workflow/api/workflow-resolvers.ts
 export const COMMENT_MAX_LENGTH = 1000;
 
+// Keep in sync with CLOSING_REASON_MAX_LENGTH in opencti-graphql/src/modules/workflow/api/workflow-resolvers.ts
+export const CLOSING_REASON_MAX_LENGTH = 1000;
+
 export const workflowStatusFragment = graphql`
   fragment WorkflowStatus_data on DraftWorkspace {
     id
@@ -20,6 +23,7 @@ export const workflowStatusFragment = graphql`
       }
       lastHistoryEntry {
         comment
+        closing_reason
       }
       pendingStatus
       pendingError
@@ -46,6 +50,7 @@ export const workflowStatusFragment = graphql`
         toState
         actions
         comment
+        isClosingTransition
         requiresShareOrganizationInput
         requiresUnshareOrganizationInput
         toStatus {
@@ -79,6 +84,7 @@ export const workflowStatusStixDomainObjectFragment = graphql`
       }
       lastHistoryEntry {
         comment
+        closing_reason
       }
       pendingStatus
       pendingError
@@ -105,6 +111,7 @@ export const workflowStatusStixDomainObjectFragment = graphql`
         toState
         actions
         comment
+        isClosingTransition
         requiresShareOrganizationInput
         requiresUnshareOrganizationInput
         toStatus {
@@ -120,8 +127,8 @@ export const workflowStatusStixDomainObjectFragment = graphql`
 `;
 
 export const workflowStatusTriggerMutation = graphql`
-  mutation WorkflowStatusTriggerMutation($entityId: String!, $eventName: String!, $comment: String, $runtimeParams: JSON) {
-    triggerWorkflowEvent(entityId: $entityId, eventName: $eventName, comment: $comment, runtimeParams: $runtimeParams) {
+  mutation WorkflowStatusTriggerMutation($entityId: String!, $eventName: String!, $comment: String, $runtimeParams: JSON, $closingReason: String) {
+    triggerWorkflowEvent(entityId: $entityId, eventName: $eventName, comment: $comment, runtimeParams: $runtimeParams, closingReason: $closingReason) {
       success
       reason
       newState
@@ -158,6 +165,7 @@ export const workflowStatusTriggerMutation = graphql`
           toState
           actions
           comment
+          isClosingTransition
           requiresShareOrganizationInput
           requiresUnshareOrganizationInput
           toStatus {
@@ -186,8 +194,8 @@ export const workflowStatusTriggerMutation = graphql`
 
 // Task 9, Step 3: bypass-update — jumps directly to targetStatusId, bypassing allowedTransitions.
 export const workflowSetStatusMutation = graphql`
-  mutation WorkflowSetStatusMutation($entityId: String!, $targetStatusId: String!, $applyTransitionActions: Boolean!, $comment: String) {
-    setWorkflowStatus(entityId: $entityId, targetStatusId: $targetStatusId, applyTransitionActions: $applyTransitionActions, comment: $comment) {
+  mutation WorkflowSetStatusMutation($entityId: String!, $targetStatusId: String!, $applyTransitionActions: Boolean!, $comment: String, $closingReason: String) {
+    setWorkflowStatus(entityId: $entityId, targetStatusId: $targetStatusId, applyTransitionActions: $applyTransitionActions, comment: $comment, closingReason: $closingReason) {
       success
       reason
       newState
@@ -209,6 +217,7 @@ export const workflowSetStatusMutation = graphql`
           toState
           actions
           comment
+          isClosingTransition
           requiresShareOrganizationInput
           requiresUnshareOrganizationInput
           toStatus {

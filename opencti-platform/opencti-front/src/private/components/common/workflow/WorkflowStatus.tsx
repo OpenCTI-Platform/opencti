@@ -1,4 +1,4 @@
-import { CommentOutlined } from '@mui/icons-material';
+import { AssignmentTurnedInOutlined, CommentOutlined } from '@mui/icons-material';
 import { Box, Popover, Typography } from '@mui/material';
 import { FunctionComponent, useState } from 'react';
 import { useFragment } from 'react-relay';
@@ -34,9 +34,11 @@ const WorkflowStatusView: FunctionComponent<{
 }> = ({ workflowInstance }) => {
   const { t_i18n } = useFormatter();
   const [commentAnchorEl, setCommentAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const [closingReasonAnchorEl, setClosingReasonAnchorEl] = useState<HTMLButtonElement | null>(null);
 
   const currentStatus = workflowInstance.currentStatus;
   const lastComment = workflowInstance.lastHistoryEntry?.comment ?? null;
+  const lastClosingReason = workflowInstance.lastHistoryEntry?.closing_reason ?? null;
 
   return (
     <>
@@ -59,6 +61,30 @@ const WorkflowStatusView: FunctionComponent<{
             <Box sx={{ p: 2, maxWidth: 400 }}>
               <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
                 {lastComment}
+              </Typography>
+            </Box>
+          </Popover>
+        </>
+      )}
+      {lastClosingReason && (
+        <>
+          <IconButton
+            aria-label={t_i18n('View closing reason')}
+            onClick={(e) => setClosingReasonAnchorEl(e.currentTarget)}
+            sx={{ marginRight: 0.5 }}
+          >
+            <AssignmentTurnedInOutlined fontSize="small" />
+          </IconButton>
+          <Popover
+            open={Boolean(closingReasonAnchorEl)}
+            anchorEl={closingReasonAnchorEl}
+            onClose={() => setClosingReasonAnchorEl(null)}
+            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+            transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          >
+            <Box sx={{ p: 2, maxWidth: 400 }}>
+              <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+                {lastClosingReason}
               </Typography>
             </Box>
           </Popover>

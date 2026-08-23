@@ -172,6 +172,56 @@ describe('WorkflowStatus', () => {
     await user.keyboard('{Escape}');
     await waitFor(() => expect(screen.queryByText('Looks good')).toBeNull());
   });
+
+  it('does not render a closing-reason icon when lastHistoryEntry has no closing_reason', () => {
+    testRender(<WorkflowStatus data={makeDraft()} />);
+    expect(document.querySelector('[data-testid="AssignmentTurnedInOutlinedIcon"]')).toBeNull();
+  });
+
+  it('renders a closing-reason icon when lastHistoryEntry has a closing_reason', () => {
+    const draft = makeDraft({
+      workflowInstance: {
+        id: 'instance-1',
+        currentState: 'in_review',
+        currentStatus: makeStatus(),
+        lastHistoryEntry: { closing_reason: 'No longer relevant' },
+        allowedTransitions: [],
+      },
+    });
+    testRender(<WorkflowStatus data={draft} />);
+    expect(document.querySelector('[data-testid="AssignmentTurnedInOutlinedIcon"]')).not.toBeNull();
+  });
+
+  it('opens a popover with the closing-reason text when the closing-reason icon is clicked', async () => {
+    const draft = makeDraft({
+      workflowInstance: {
+        id: 'instance-1',
+        currentState: 'in_review',
+        currentStatus: makeStatus(),
+        lastHistoryEntry: { closing_reason: 'No longer relevant' },
+        allowedTransitions: [],
+      },
+    });
+    const { user } = testRender(<WorkflowStatus data={draft} />);
+    const iconButton = document.querySelector('[aria-label="View closing reason"]') as HTMLElement;
+    await user.click(iconButton);
+    expect(await screen.findByText('No longer relevant')).toBeDefined();
+  });
+
+  it('renders both the comment and closing-reason icons when both are present on the same history entry', () => {
+    const draft = makeDraft({
+      workflowInstance: {
+        id: 'instance-1',
+        currentState: 'in_review',
+        currentStatus: makeStatus(),
+        lastHistoryEntry: { comment: 'Looks good', closing_reason: 'No longer relevant' },
+        allowedTransitions: [],
+      },
+    });
+    testRender(<WorkflowStatus data={draft} />);
+    expect(document.querySelector('[data-testid="CommentOutlinedIcon"]')).not.toBeNull();
+    expect(document.querySelector('[data-testid="AssignmentTurnedInOutlinedIcon"]')).not.toBeNull();
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -282,6 +332,55 @@ describe('WorkflowTransitions', () => {
     const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
     expect(mockCommit).toHaveBeenCalledOnce();
+  });
+
+  it('opens the closing-reason dialog when the transition isClosingTransition is true', async () => {
+    const draft = makeDraft({
+      workflowInstance: {
+        id: 'instance-1',
+        currentState: 'in_review',
+        currentStatus: makeStatus(),
+        lastHistoryEntry: null,
+        allowedTransitions: [makeTransition({ event: 'approve', comment: null, isClosingTransition: true })],
+      },
+    });
+    const { user } = testRender(<WorkflowTransitions data={draft} />);
+    await user.click(screen.getByText('approve'));
+    expect(await screen.findByLabelText(/Closing reason/)).toBeDefined();
+  });
+
+  it('does not open the closing-reason dialog when the transition isClosingTransition is false', async () => {
+    const draft = makeDraft({
+      workflowInstance: {
+        id: 'instance-1',
+        currentState: 'in_review',
+        currentStatus: makeStatus(),
+        lastHistoryEntry: null,
+        allowedTransitions: [makeTransition({ event: 'approve', comment: null, isClosingTransition: false })],
+      },
+    });
+    const { user } = testRender(<WorkflowTransitions data={draft} />);
+    await user.click(screen.getByText('approve'));
+    expect(mockCommit).toHaveBeenCalledOnce();
+  });
+
+  it('calls commit with the trimmed closing reason on Apply', async () => {
+    const draft = makeDraft({
+      workflowInstance: {
+        id: 'instance-1',
+        currentState: 'in_review',
+        currentStatus: makeStatus(),
+        lastHistoryEntry: null,
+        allowedTransitions: [makeTransition({ event: 'approve', comment: null, isClosingTransition: true })],
+      },
+    });
+    const { user } = testRender(<WorkflowTransitions data={draft} />);
+    await user.click(screen.getByText('approve'));
+    await user.type(await screen.findByLabelText(/Closing reason/), '  no longer needed  ');
+    await user.click(screen.getByText('Apply'));
+    await waitFor(() => {
+      expect(mockCommit.mock.calls[0][0].variables.closingReason).toBe('no longer needed');
+    });
   });
 
   it('opens optional comment dialog when transition has comment: "allowed"', async () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeStateOrder, findUnreachableStates } from '../../../src/modules/workflow/domain/workflow-ordering';
+import { computeStateOrder, findUnreachableStates, isEndingState } from '../../../src/modules/workflow/domain/workflow-ordering';
 
 describe('workflow-ordering: computeStateOrder', () => {
   it('yields sequential orders 0,1,2,3 for a linear chain', () => {
@@ -72,5 +72,45 @@ describe('workflow-ordering: findUnreachableStates', () => {
       { from: 'B', to: 'A' },
     ]);
     expect(unreachable).toEqual([]);
+  });
+});
+
+describe('workflow-ordering: isEndingState', () => {
+  const transitions = [
+    { from: 'open', to: 'in_progress' },
+    { from: 'in_progress', to: 'resolved' },
+    { from: 'in_progress', to: 'closed' },
+  ];
+
+  it('returns true for a state that never appears in any from list', () => {
+    expect(isEndingState(transitions, 'resolved')).toBe(true);
+    expect(isEndingState(transitions, 'closed')).toBe(true);
+  });
+
+  it('returns false for a state with at least one outgoing transition', () => {
+    expect(isEndingState(transitions, 'open')).toBe(false);
+    expect(isEndingState(transitions, 'in_progress')).toBe(false);
+  });
+
+  it('supports transitions with a from array (multiple source states)', () => {
+    const multiFrom = [{ from: ['open', 'in_progress'], to: 'closed' }];
+    expect(isEndingState(multiFrom, 'open')).toBe(false);
+    expect(isEndingState(multiFrom, 'in_progress')).toBe(false);
+    expect(isEndingState(multiFrom, 'closed')).toBe(true);
+  });
+
+  it('does not treat a wildcard from ("*") as an outgoing transition of a specific state', () => {
+    const withWildcard = [
+      { from: 'open', to: 'in_progress' },
+      { from: '*', to: 'cancelled' },
+    ];
+    // 'in_progress' has no explicit outgoing transition of its own — only reachable via the
+    // global wildcard — so it is still considered an ending state (matches the existing
+    // "ending state" convention used by publishWorkflowDefinition/workflow-validation.ts).
+    expect(isEndingState(withWildcard, 'in_progress')).toBe(true);
+  });
+
+  it('returns true for a state absent from every transition entirely (isolated state)', () => {
+    expect(isEndingState(transitions, 'unrelated_state')).toBe(true);
   });
 });

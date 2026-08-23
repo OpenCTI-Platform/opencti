@@ -126,6 +126,10 @@ type WorkflowTransition {
     toState: String!
     toStatus: Status
     comment: String
+    # Task 11: true when this transition's target state has no outgoing transitions of its own
+    # (a terminal "closing" state) — the frontend uses this to offer dedicated closing-reason
+    # capture only for transitions that actually close the entity.
+    isClosingTransition: Boolean
     actions: [String!]
     requiresShareOrganizationInput: Boolean
     requiresUnshareOrganizationInput: Boolean
@@ -137,6 +141,8 @@ type WorkflowLastHistoryEntry {
     user_id: String!
     timestamp: String!
     comment: String
+    # Task 11: dedicated closing-reason field, stored and displayed separately from `comment`.
+    closing_reason: String
 }
 
 type WorkflowInstance {
@@ -177,12 +183,12 @@ extend type Mutation {
     workflowDefinitionPublish(entityType: String!): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionRestorePublished(entityType: String!): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionDelete(entityType: String!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
-    triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
+    triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON, closingReason: String): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
     # Task 9: bypass-update — jump directly to any state of the published workflow, without
     # requiring an allowed-transition edge from the current state (unlike triggerWorkflowEvent).
     # `applyTransitionActions` runs only the current/target states' onEnter/onExit
     # actions-on-status when true; edge-level actions-on-transition never run in bypass mode.
-    setWorkflowStatus(entityId: String!, targetStatusId: String!, applyTransitionActions: Boolean!, comment: String): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
+    setWorkflowStatus(entityId: String!, targetStatusId: String!, applyTransitionActions: Boolean!, comment: String, closingReason: String): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
     clearWorkflowPendingState(entityId: String!): WorkflowInstance! @auth(for: [SETTINGS])
     reportWorkflowAsyncActionResult(workflowInstanceId: String!, workflowActionId: String!, status: String!, error: String): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
 }
