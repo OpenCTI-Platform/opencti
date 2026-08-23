@@ -2319,16 +2319,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/openai@npm:1.5.7":
-  version: 1.5.7
-  resolution: "@langchain/openai@npm:1.5.7"
+"@langchain/openai@npm:1.5.9":
+  version: 1.5.9
+  resolution: "@langchain/openai@npm:1.5.9"
   dependencies:
     js-tiktoken: "npm:^1.0.12"
-    openai: "npm:^6.41.0"
+    openai: "npm:^7.5.0"
     zod: "npm:^3.25.76 || ^4"
   peerDependencies:
-    "@langchain/core": ^1.2.6
-  checksum: 10c0/833530c9a0ee6be8123aa1432c39e66f5399ee18301f4fc477e7961505ad1116e403f3e6f02fbd0f2533f923c8110c506b039d15abaccef2132cd6a539ffc030
+    "@langchain/core": ^1.2.9
+  checksum: 10c0/2e7ea7216f53719d6d2aef9284ec5a2d519c01470879dbe86ab165a026c849942a2b119a8ce35feeba5ea0154bb2bbcf2126124cdfd4a4667e381470efe30535
   languageName: node
   linkType: hard
 
@@ -9797,7 +9797,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:7.5.0":
+"openai@npm:7.5.0, openai@npm:^7.5.0":
   version: 7.5.0
   resolution: "openai@npm:7.5.0"
   peerDependencies:
@@ -9818,30 +9818,6 @@ __metadata:
     zod:
       optional: true
   checksum: 10c0/b16541492ea03cdc1646db9ae2aaea44571fb779708704108ca94256efa9a65d9ca4044723d1e4f579653f5a6ad84724d5bc1079b9572512820d1668495dc07c
-  languageName: node
-  linkType: hard
-
-"openai@npm:^6.41.0":
-  version: 6.49.0
-  resolution: "openai@npm:6.49.0"
-  peerDependencies:
-    "@aws-sdk/credential-provider-node": ">=3.972.0 <4"
-    "@smithy/hash-node": ">=4.3.0 <5"
-    "@smithy/signature-v4": ">=5.4.0 <6"
-    ws: ^8.18.0
-    zod: ^3.25 || ^4.0
-  peerDependenciesMeta:
-    "@aws-sdk/credential-provider-node":
-      optional: true
-    "@smithy/hash-node":
-      optional: true
-    "@smithy/signature-v4":
-      optional: true
-    ws:
-      optional: true
-    zod:
-      optional: true
-  checksum: 10c0/c9e748e8a813f948ed925949e857d758505d246d7ec7e939f79cc2ab3383083ccdefff953479afb9dcb0f634cfddb0d442fcf02b6203cc9d6b7c95d3ddbc20ef
   languageName: node
   linkType: hard
 
@@ -9867,7 +9843,7 @@ __metadata:
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
     "@langchain/core": "npm:1.2.9"
     "@langchain/mistralai": "npm:1.2.0"
-    "@langchain/openai": "npm:1.5.7"
+    "@langchain/openai": "npm:1.5.9"
     "@lezer/javascript": "npm:1.5.4"
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
     "@mistralai/mistralai": "npm:1.15.1"
