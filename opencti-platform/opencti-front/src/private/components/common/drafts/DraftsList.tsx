@@ -1,13 +1,13 @@
 import React, { CSSProperties, ReactNode, useRef } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { useFormatter } from '../../../../components/i18n';
-import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCoreObjects';
+import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCoreObjects';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
+import { useFormatter } from '../../../../components/i18n';
 import type { WidgetColumn, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DraftsListQuery } from './__generated__/DraftsListQuery.graphql';
 
@@ -64,6 +64,7 @@ export const draftsListQuery = graphql`
             name
           }
           workflowInstance {
+            id
             currentStatus {
               id
               template {

@@ -1,42 +1,44 @@
-import React, { CSSProperties, ReactNode } from 'react';
-import Chip from '@mui/material/Chip';
+import SecurityCoverageScores from '@components/analyses/security_coverages/SecurityCoverageScores';
+import { DraftChip, DraftStatusChip } from '@components/common/draft/DraftChip';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
+import { isWorkflowUiEnabledForType } from '@components/common/workflow/workflowFeatureFlag';
+import { Pirs_PirFragment$data } from '@components/pir/__generated__/Pirs_PirFragment.graphql';
+import { HorizontalRule, Security } from '@mui/icons-material';
+import { Stack } from '@mui/material';
+import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
-import { DraftChip, DraftStatusChip } from '@components/common/draft/DraftChip';
-import { HorizontalRule, Security } from '@mui/icons-material';
-import { Pirs_PirFragment$data } from '@components/pir/__generated__/Pirs_PirFragment.graphql';
-import SecurityCoverageScores from '@components/analyses/security_coverages/SecurityCoverageScores';
-import ItemCvssScore from '../ItemCvssScore';
-import type { DataTableColumn } from './dataTableTypes';
-import { DataTableProps } from './dataTableTypes';
-import ItemMarkings from '../ItemMarkings';
-import ItemStatus from '../ItemStatus';
-import ItemPriority from '../ItemPriority';
-import RatingField from '../fields/RatingField';
-import ItemConfidence from '../ItemConfidence';
-import ItemPatternType from '../ItemPatternType';
-import type { Theme } from '../Theme';
-import { getMainRepresentative } from '../../utils/defaultRepresentatives';
-import ItemEntityType from '../ItemEntityType';
-import ItemScore from '../ItemScore';
-import ItemOpenVocab from '../ItemOpenVocab';
-import ItemBoolean from '../ItemBoolean';
-import ItemSeverity from '../ItemSeverity';
-import ItemOperations from '../ItemOperations';
-import ItemDueDate from '../ItemDueDate';
-import { findFlagUrl } from '../../utils/flags';
-import FieldOrEmpty from '../FieldOrEmpty';
-import ItemHistory from '../ItemHistory';
-import { useFormatter } from '../i18n';
-import Tag from '../common/tag/Tag';
-import { resolveLink } from '../../utils/Entity';
-import { typesWithNoAnalysesTab } from '../../utils/hooks/useAttributes';
+import { CSSProperties, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import TagsOverflow from '../common/tag/TagsOverflow';
+import { getMainRepresentative } from '../../utils/defaultRepresentatives';
+import { resolveLink } from '../../utils/Entity';
+import { findFlagUrl } from '../../utils/flags';
+import { typesWithNoAnalysesTab } from '../../utils/hooks/useAttributes';
+import useHelper from '../../utils/hooks/useHelper';
 import { VocabularyDefinition } from '../../utils/hooks/useVocabularyCategory';
 import { EMPTY_VALUE } from '../../utils/String';
-import { Stack } from '@mui/material';
+import Tag from '../common/tag/Tag';
+import TagsOverflow from '../common/tag/TagsOverflow';
+import FieldOrEmpty from '../FieldOrEmpty';
+import RatingField from '../fields/RatingField';
+import { useFormatter } from '../i18n';
+import ItemBoolean from '../ItemBoolean';
+import ItemConfidence from '../ItemConfidence';
+import ItemCvssScore from '../ItemCvssScore';
+import ItemDueDate from '../ItemDueDate';
+import ItemEntityType from '../ItemEntityType';
+import ItemHistory from '../ItemHistory';
+import ItemMarkings from '../ItemMarkings';
+import ItemOpenVocab from '../ItemOpenVocab';
+import ItemOperations from '../ItemOperations';
+import ItemPatternType from '../ItemPatternType';
+import ItemPriority from '../ItemPriority';
+import ItemScore from '../ItemScore';
+import ItemSeverity from '../ItemSeverity';
+import ItemStatus from '../ItemStatus';
+import type { Theme } from '../Theme';
+import type { DataTableColumn } from './dataTableTypes';
+import { DataTableProps } from './dataTableTypes';
 
 const chipStyle: CSSProperties = {
   fontSize: '12px',
@@ -126,6 +128,33 @@ export const renderObservableValue = (observable: any, theme: Theme) => {
         observable.draftVersion,
       );
   }
+};
+
+// Task 12: single shared render used by both the `workflowInstance` column (DraftWorkspace lists,
+// which have no legacy `status` field) and the `x_opencti_workflow_id` column (every other entity
+// type, whose legacy `status` field is kept live via the workflow-instance projection, see Task 2).
+// Prefers `workflowInstance.currentStatus` when present; falls back to the legacy `status` field
+// otherwise (which stays correct on its own thanks to the projection, so no behavior change for
+// entity types that don't yet select `workflowInstance` in their list fragment).
+const renderStatusColumn: NonNullable<DataTableColumn['render']> = (
+  { workflowInstance, status, workflowEnabled, entity_type: entityType = 'DraftWorkspace' },
+  helpers,
+) => {
+  const { isFeatureEnable } = useHelper();
+  // Transitional safety net (Task 12.2): a `workflowInstance` synthesized in-memory as an error
+  // fallback (id starting with "initial-") isn't a persisted/live state — ignore it and fall back
+  // to the legacy Status field rather than rendering a stale/synthetic value.
+  const isInitialPlaceholder = typeof workflowInstance?.id === 'string' && workflowInstance.id.startsWith('initial-');
+  if (workflowInstance && !isInitialPlaceholder && isWorkflowUiEnabledForType(entityType, isFeatureEnable)) {
+    return <ItemStatus status={workflowInstance.currentStatus ?? null} disabled={!workflowInstance.currentStatus} />;
+  }
+  return (
+    <ItemStatus
+      status={status ?? null}
+      disabled={!workflowEnabled}
+      onClick={helpers?.storageHelpers?.handleAddFilter}
+    />
+  );
 };
 
 const defaultColumns: DataTableProps['dataColumns'] = {
@@ -350,9 +379,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Workflow status',
     percentWidth: 12,
     isSortable: false,
-    render: ({ workflowInstance }) => (
-      <ItemStatus status={workflowInstance?.currentStatus ?? null} disabled={!workflowInstance?.currentStatus} />
-    ),
+    render: renderStatusColumn,
   },
   draft_status: {
     id: 'draft_status',
@@ -1538,16 +1565,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Processing status',
     percentWidth: 8,
     isSortable: true,
-    render: (
-      { status, workflowEnabled },
-      { storageHelpers: { handleAddFilter } },
-    ) => (
-      <ItemStatus
-        status={status}
-        disabled={!workflowEnabled}
-        onClick={handleAddFilter}
-      />
-    ),
+    render: renderStatusColumn,
   },
   x_opencti_aliases: {
     id: 'x_opencti_aliases',
