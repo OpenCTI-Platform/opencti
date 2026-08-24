@@ -57,7 +57,7 @@ const FintelTemplateHeader = ({ entitySettingId, data, currentDefaultName }: Fin
     { label: t_i18n('Entity types'), link: customizationLink },
     { label: t_i18n(`entity_${subTypeId}`), link: subTypeLink },
     { label: t_i18n('FINTEL Templates') },
-    { label: template.name },
+    { label: template.name, current: true },
   ];
 
   const onSubmit = () => {

@@ -578,6 +578,7 @@
   "Bookmarks are not supported in public dashboards": "Закладки не поддерживаются в публичных панелях инструментов",
   "Boolean": "Булево значение",
   "Both latitude and longitude must be provided together": "Необходимо указать и широту, и долготу",
+  "Breadcrumb": "Навигационная цепочка",
   "Browse agents": "Просмотр агентов",
   "Browse files": "Просмотр файлов",
   "Browse More": "Подробнее",

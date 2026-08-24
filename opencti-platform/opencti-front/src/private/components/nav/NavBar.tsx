@@ -99,7 +99,7 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
     navStyle['--color-filigran-brand-primary'] = accentColor;
     // FDS-WORKAROUND #6: re-derive the brand tint tokens — remove when derived tokens follow a subtree override — see fds-migration/LIBRARY-FEEDBACK.md #6
     navStyle['--color-filigran-brand-primary-transparency-10'] = `color-mix(in srgb, ${accentColor} 10%, transparent)`;
-    navStyle['--color-filigran-brand-primary-transparency-50'] = `color-mix(in srgb, ${accentColor} 50%, transparent)`;
+    navStyle['--color-filigran-brand-primary-transparency-55'] = `color-mix(in srgb, ${accentColor} 55%, transparent)`;
   }
 
   // FDS-WORKAROUND #2: submenu icons composed product-side — remove when a slotted child keeps icon handling — see fds-migration/LIBRARY-FEEDBACK.md #2

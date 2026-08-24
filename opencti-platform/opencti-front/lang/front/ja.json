@@ -578,6 +578,7 @@
   "Bookmarks are not supported in public dashboards": "ブックマークはパブリックダッシュボードではサポートされていません。",
   "Boolean": "ブール値",
   "Both latitude and longitude must be provided together": "緯度と経度の両方を記入しなければならない。",
+  "Breadcrumb": "パンくずリスト",
   "Browse agents": "エージェントを閲覧する",
   "Browse files": "ファイル閲覧",
   "Browse More": "もっと見る",
