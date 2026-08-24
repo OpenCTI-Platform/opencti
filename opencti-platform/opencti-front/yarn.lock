@@ -11869,7 +11869,7 @@ __metadata:
     react-material-ui-carousel: "npm:3.4.2"
     react-mde: "npm:11.5.0"
     react-otp-input: "npm:3.1.1"
-    react-pdf: "npm:10.4.1"
+    react-pdf: "npm:10.5.0"
     react-rectangle-selection: "npm:1.0.4"
     react-relay: "npm:21.0.1"
     react-relay-network-modern: "npm:6.2.2"
@@ -13079,9 +13079,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-pdf@npm:10.4.1":
-  version: 10.4.1
-  resolution: "react-pdf@npm:10.4.1"
+"react-pdf@npm:10.5.0":
+  version: 10.5.0
+  resolution: "react-pdf@npm:10.5.0"
   dependencies:
     clsx: "npm:^2.0.0"
     dequal: "npm:^2.0.3"
@@ -13098,7 +13098,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10c0/958917374d76c9d1bc0b0ece6468582e741c66b60d2b1738e1a15fc183db61be070c2202c25179734be2003785de3e4d6ca3cc9532cc891f89b0043b647cbfa7
+  checksum: 10c0/49bd1e567acbfe49495cc10a234616b35f7f6c53c55d029f71b83be284a70863b032d221c11233ec2a986353e4ec04e5fc652b9ba200d5bb79e55023daf55982
   languageName: node
   linkType: hard
 
