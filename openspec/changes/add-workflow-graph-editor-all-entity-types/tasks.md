@@ -15,14 +15,14 @@
 
 ## 2. Global/RequestAccess scope switcher
 
-- [ ] 2.1 Add a `scope: StatusScope.Global | StatusScope.RequestAccess`
+- [x] 2.1 Add a `scope: StatusScope.Global | StatusScope.RequestAccess`
       prop/selector to `Workflow.tsx`, defaulting to `GLOBAL`.
-- [ ] 2.2 Gate the `RequestAccess` scope option on `hasRequestAccessConfig`
+- [x] 2.2 Gate the `RequestAccess` scope option on `hasRequestAccessConfig`
       (EE + `request_access_workflow` in `availableSettings`), matching the
       existing check in `GlobalWorkflowSettingsCard.tsx`.
-- [ ] 2.3 Update the `workflowDefinition` query/loader in `SubTypeWorkflow.tsx`
+- [x] 2.3 Update the `workflowDefinition` query/loader in `SubTypeWorkflow.tsx`
       to accept and pass through the selected `scope`.
-- [ ] 2.4 Add frontend tests for scope switching (RequestAccess hidden/shown
+- [x] 2.4 Add frontend tests for scope switching (RequestAccess hidden/shown
       per gating, switching reloads the correct definition).
 
 ## 3. Legacy status migration entry point
