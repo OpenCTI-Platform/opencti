@@ -181,6 +181,10 @@ extend type StixSightingRelationship {
 extend type Query {
     workflowDefinition(entityType: String!, allowDraft: Boolean, scope: StatusScope): WorkflowSchema @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionPublished(entityType: String!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
+    # Task 11 fix: distinct transition event names of the published GLOBAL-scope WorkflowDefinition,
+    # exposed below workflowDefinition's SETTINGS_SETCUSTOMIZATION gate so the mass-edit "Apply
+    # transition" toolbar option works for any KNOWLEDGE_KNUPDATE user (not just settings admins).
+    workflowTransitionEvents(entityType: String!): [String!]! @auth(for: [KNOWLEDGE_KNUPDATE])
     workflowMigrationPreview(entityType: String!): WorkflowMigrationPreview @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowInstance(entityId: String!): WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE], forDraft: [KNOWLEDGE_KNUPDATE])
     allowedTransitions(entityId: String!): [WorkflowTransition!]! @auth(for: [KNOWLEDGE_KNUPDATE])

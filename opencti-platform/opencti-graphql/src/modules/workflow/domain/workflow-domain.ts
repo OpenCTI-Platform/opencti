@@ -465,6 +465,24 @@ export const hasPublishedWorkflowDefinition = async (
 };
 
 /**
+ * Lightweight, non-admin-gated list of the published GLOBAL-scope WorkflowDefinition's distinct
+ * transition event names for an entity type — used by the mass-edit "Apply transition" toolbar
+ * option (Task 11), which must be usable by any KNOWLEDGE_KNUPDATE user, not just settings admins
+ * (mirrors hasPublishedWorkflowDefinition's rationale for being exposed below workflowDefinition's
+ * SETTINGS_SETCUSTOMIZATION gate).
+ */
+export const getWorkflowTransitionEvents = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+): Promise<string[]> => {
+  const entitySetting = await getWorkflowConfig(context, user, entityType);
+  const definitionData = await getDefinitionData(context, user, entitySetting, false);
+  const events = (definitionData?.transitions ?? []).map((t) => t.event);
+  return [...new Set(events)].sort();
+};
+
+/**
  * Task 6, Step 2.1: read-only preview of what migrating an entity type's legacy `Status` set to a
  * `WorkflowDefinition` would produce, one result per `StatusScope` present — no persisted changes.
  * Pure conversion logic lives in `convertStatusToDefinition`; this just gathers the `Status`/

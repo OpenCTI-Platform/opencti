@@ -299,11 +299,7 @@ const toolBarQueryTaskAddMutation = graphql`
 
 const dataTableToolBarWorkflowTransitionEventsQuery = graphql`
   query DataTableToolBarWorkflowTransitionEventsQuery($entityType: String!) {
-    workflowDefinition(entityType: $entityType, allowDraft: false, scope: GLOBAL) {
-      transitions {
-        event
-      }
-    }
+    workflowTransitionEvents(entityType: $entityType)
   }
 `;
 
@@ -1432,7 +1428,7 @@ export class DataTableToolBar extends Component {
       .toPromise()
       .then((data) => {
         const transitionEvents = this.constructor.buildTransitionEventOptions(
-          data?.workflowDefinition?.transitions,
+          (data?.workflowTransitionEvents ?? []).map((event) => ({ event })),
         );
         this.setState({ transitionEvents: R.union(this.state.transitionEvents, transitionEvents) });
       });

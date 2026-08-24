@@ -9664,6 +9664,7 @@ type Query {
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
   workflowDefinition(entityType: String!, allowDraft: Boolean, scope: StatusScope): WorkflowSchema
   workflowDefinitionPublished(entityType: String!): Boolean
+  workflowTransitionEvents(entityType: String!): [String!]!
   workflowMigrationPreview(entityType: String!): WorkflowMigrationPreview
   workflowInstance(entityId: String!): WorkflowInstance
   allowedTransitions(entityId: String!): [WorkflowTransition!]!

@@ -25,6 +25,7 @@ import {
     getWorkflowInstance,
     getWorkflowMigrationPreview,
     getWorkflowPublishedVersionId,
+    getWorkflowTransitionEvents,
     hasPublishedWorkflowDefinition,
     initializeEntityWorkflow,
     isStatusTemplateUsedInWorkflows,
@@ -2181,6 +2182,60 @@ describe('hasPublishedWorkflowDefinition', () => {
     const result = await hasPublishedWorkflowDefinition(mockContext, mockUser, 'StixSightingRelationship');
 
     expect(result).toBe(false);
+  });
+});
+
+describe('getWorkflowTransitionEvents', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('returns the deduped, sorted distinct transition event names of the published WorkflowDefinition', async () => {
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    (storeLoadById as any).mockResolvedValue({
+      id: 'workflow-def-id',
+      name: 'Test Workflow',
+      published_version: {
+        id: 'v1',
+        content: JSON.stringify({
+          initialState: 'draft',
+          states: [{ statusId: 'draft' }, { statusId: 'reviewing' }],
+          transitions: [
+            { from: 'draft', to: 'reviewing', event: 'submit' },
+            { from: 'reviewing', to: 'draft', event: 'reject' },
+            { from: 'reviewing', to: 'approved', event: 'approve' },
+            { from: 'draft', to: 'approved', event: 'approve' },
+          ],
+        }),
+        validation_errors: [],
+      },
+    });
+
+    const result = await getWorkflowTransitionEvents(mockContext, mockUser, 'StixSightingRelationship');
+
+    expect(result).toEqual(['approve', 'reject', 'submit']);
+  });
+
+  it('returns an empty array when the entity type has no EntitySetting/workflow configuration at all', async () => {
+    (findByType as any).mockResolvedValue(undefined);
+
+    const result = await getWorkflowTransitionEvents(mockContext, mockUser, 'Incident');
+
+    expect(result).toEqual([]);
+  });
+
+  it('returns an empty array when the WorkflowDefinition exists but has no published_version (draft-only)', async () => {
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    (storeLoadById as any).mockResolvedValue({
+      id: 'workflow-def-id',
+      name: 'Test Workflow',
+      draft_version: { id: 'draft-v1', content: JSON.stringify({ initialState: 'draft', states: [{ statusId: 'draft' }], transitions: [] }), validation_errors: [] },
+      published_version: undefined,
+    });
+
+    const result = await getWorkflowTransitionEvents(mockContext, mockUser, 'StixSightingRelationship');
+
+    expect(result).toEqual([]);
   });
 });
 
