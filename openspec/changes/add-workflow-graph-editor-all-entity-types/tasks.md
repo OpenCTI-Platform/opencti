@@ -123,13 +123,19 @@
 
 ## 7. Mass bypass forced status update (frontend only)
 
-- [ ] 7.1 Create a bulk-selection variant of `WorkflowBypassStatus.tsx`
+- [x] 7.1 Create a bulk-selection variant of `WorkflowBypassStatus.tsx`
       (target status + apply-actions toggle + comment) for use from
-      `DataTableToolBar.jsx`, gated on `isBypassUser`.
-- [ ] 7.2 Wire it to the existing `applyTransitionActions` mass-op backend
+      `DataTableToolBar.jsx`, gated on `isBypassUser`. Built as
+      `WorkflowBypassMassStatus.tsx` WITHOUT a comment field — verified
+      `workflowTransitionOperationCallback` in `taskManager.js` never reads/
+      forwards a comment for the mass path (only 4 args passed to
+      `setWorkflowStatus`, always `applyTransitionActions: true` when routed
+      there), so a comment input would be a silent no-op; reviewed and
+      approved as correct (see task-12-report.md).
+- [x] 7.2 Wire it to the existing `applyTransitionActions` mass-op backend
       path (already implemented, calls `setWorkflowStatus` per element) —
       no backend changes needed for this task.
-- [ ] 7.3 Add frontend tests for the bypass mass-update UI (visibility gated
+- [x] 7.3 Add frontend tests for the bypass mass-update UI (visibility gated
       to bypass users, correct mutation variables submitted).
 
 ## 8. Rollout
