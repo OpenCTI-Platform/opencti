@@ -1694,6 +1694,25 @@ describe('Transition comments – Domain', () => {
       expect(transitions).toHaveLength(1);
       expect(transitions[0].event).toBe('review');
     });
+
+    // Task 7: entitySetting only has a RequestAccess-scope workflow configured (no `workflow_id`)
+    // — transitions must resolve scope from the entity's own `x_opencti_workflow_id`, not default
+    // to Global, or `getDefinitionData` finds nothing and no transitions are returned.
+    it('resolves a RequestAccess-scope WorkflowDefinition when the entity\'s current status is RequestAccess-scoped', async () => {
+      (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+        if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident', x_opencti_workflow_id: 'status-ra-id' });
+        if (id === 'ra-workflow-def-id') return Promise.resolve({ id: 'ra-workflow-def-id', published_version: { id: 'v1', content: definitionWithComments, timestamp: '', createdBy: '', validation_errors: [] } });
+        if (id === 'status-ra-id') return Promise.resolve({ id: 'status-ra-id', template_id: 'draft', scope: StatusScope.RequestAccess });
+        return Promise.resolve(null);
+      });
+      (findByType as any).mockResolvedValue({ id: 'setting-id', request_access_workflow: { workflow_definition_id: 'ra-workflow-def-id' } });
+      (loadEntity as any).mockResolvedValue({ id: 'instance-id', internal_id: 'instance-id', currentState: 'draft', history: '[]' });
+
+      const transitions = await getAllowedTransitions(mockContext, mockUser, 'entity-id');
+
+      expect(transitions).toHaveLength(1);
+      expect(transitions[0].event).toBe('review');
+    });
   });
 
   describe('triggerWorkflowEvent – comment handling', () => {
@@ -2102,6 +2121,25 @@ describe('getWorkflowInstance', () => {
     const slot = result.pendingTransition.asyncActions[0];
     expect(slot.expectedCount).toBe(0);
     expect(slot.processedCount).toBe(0);
+  });
+
+  // Task 7: entitySetting only has a RequestAccess-scope workflow configured (no `workflow_id`) —
+  // the instance must resolve scope from the entity's own `x_opencti_workflow_id`, not default to
+  // Global, or `getDefinitionData` finds nothing and the function returns null.
+  it('resolves a RequestAccess-scope WorkflowDefinition when the entity\'s current status is RequestAccess-scoped', async () => {
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident', x_opencti_workflow_id: 'status-ra-id' });
+      if (id === 'ra-workflow-def-id') return Promise.resolve({ id: 'ra-workflow-def-id', name: 'RA Workflow', published_version: { id: 'v1', content: JSON.stringify({ initialState: 'draft', states: [{ statusId: 'draft' }], transitions: [] }), validation_errors: [] } });
+      if (id === 'status-ra-id') return Promise.resolve({ id: 'status-ra-id', template_id: 'draft', scope: StatusScope.RequestAccess });
+      return Promise.resolve(null);
+    });
+    (findByType as any).mockResolvedValue({ id: 'setting-id', request_access_workflow: { workflow_definition_id: 'ra-workflow-def-id' } });
+    (loadEntity as any).mockResolvedValue({ id: 'inst-id', internal_id: 'inst-id', currentState: 'draft', history: '[]' });
+
+    const result = await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(result).not.toBeNull();
+    expect(result.currentState).toBe('draft');
   });
 });
 
@@ -2833,6 +2871,34 @@ describe('triggerWorkflowEvent — status projection (Task 2, Step 2)', () => {
 
     expect(projectWorkflowState).not.toHaveBeenCalled();
   });
+
+  // Task 7: entitySetting only has a RequestAccess-scope workflow configured (no `workflow_id`) —
+  // the entity's own currently-assigned status is RequestAccess-scoped, so the transition must
+  // resolve that scope's WorkflowDefinition, not default to Global (which finds nothing here).
+  it('resolves a RequestAccess-scope WorkflowDefinition when the entity\'s current status is RequestAccess-scoped', async () => {
+    const raEntity = { ...entity, x_opencti_workflow_id: 'status-ra-id' };
+    (storeLoadById as any).mockImplementation((ctx: any, user: any, id: any, type: any) => {
+      if (type === 'Basic-Object') return raEntity;
+      if (type === 'WorkflowDefinition') {
+        return { id: 'workflow-id', name: 'Workflow', published_version: version, all_versions: [version] };
+      }
+      if (type === ENTITY_TYPE_STATUS) return { id: 'status-ra-id', template_id: 'open', scope: StatusScope.RequestAccess };
+      return null;
+    });
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', request_access_workflow: { workflow_definition_id: 'workflow-id' } });
+    (loadEntity as any).mockResolvedValue(existingInstance);
+    (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-1' } });
+    (WorkflowFactory.getInstance as any).mockReturnValue({
+      start: vi.fn(),
+      trigger: vi.fn().mockResolvedValue({ success: true }),
+      getCurrentState: vi.fn().mockReturnValue('closed'),
+    });
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'close');
+
+    expect(result.success).toBe(true);
+    expect(updateAttribute).toHaveBeenCalled();
+  });
 });
 
 // ===========================================================================
@@ -3087,6 +3153,30 @@ describe('batchWorkflowInstances', () => {
       expect.stringContaining('batchWorkflowInstances hit its WorkflowInstance query bound'),
       expect.objectContaining({ bound: 5000 }),
     );
+  });
+
+  // Task 7: entitySetting only has a RequestAccess-scope workflow configured (no `workflow_id`) —
+  // entities of the same type must resolve `definitionData` per-entity from their own current
+  // status scope (cached by `${entityType}:${scope}`), not once per type defaulting to Global.
+  it('resolves a RequestAccess-scope WorkflowDefinition for entities whose current status is RequestAccess-scoped, distinct from Global-scope entities of the same type', async () => {
+    (findByType as any).mockResolvedValue({ id: 'setting-id', request_access_workflow: { workflow_definition_id: 'ra-def-id' } });
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'ra-def-id') return Promise.resolve({ id: 'ra-def-id', name: 'ra-wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      if (id === 'status-ra-id') return Promise.resolve({ id: 'status-ra-id', template_id: 'draft', scope: StatusScope.RequestAccess });
+      return Promise.resolve(null);
+    });
+    (fullEntitiesList as any).mockResolvedValue([]);
+
+    const entities = [
+      { id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident' }, // Global scope: no matching definition
+      { id: 'entity-2', internal_id: 'entity-2', entity_type: 'Incident', x_opencti_workflow_id: 'status-ra-id' }, // RequestAccess scope
+    ];
+
+    const results = await batchWorkflowInstances(mockContext, mockUser, entities);
+
+    expect(results).toHaveLength(2);
+    expect(results[0]).toBeNull();
+    expect(results[1]).not.toBeNull();
   });
 });
 
@@ -3369,6 +3459,43 @@ describe('syncWorkflowInstanceFromExternalWrite (Task 8)', () => {
     expect(history[0]).toEqual(expect.objectContaining({ state: 'state-1' }));
     expect(history[history.length - 1]).toEqual(expect.objectContaining({ state: 'reviewing', event: 'event_external' }));
   });
+
+  // Task 7: the entity type only has a RequestAccess-scope WorkflowDefinition configured (no
+  // standard `workflow_id`) — the sync must resolve scope from the written status itself, not
+  // default to Global, or it will find no definition and no-op.
+  it('resolves a RequestAccess-scope WorkflowDefinition when the written status is RequestAccess-scoped', async () => {
+    (findByType as any).mockResolvedValue({
+      id: 'setting-id',
+      request_access_workflow: { workflow_definition_id: 'ra-workflow-def-id' },
+    });
+    const raDefinitionContent = JSON.stringify({
+      initialState: 'new', states: [{ statusId: 'new' }, { statusId: 'approved' }], transitions: [],
+    });
+    const existingInstance = {
+      id: 'instance-1', internal_id: 'instance-1', currentState: 'new', history: '[]', scope: StatusScope.RequestAccess,
+    };
+    (loadEntity as any).mockResolvedValue(existingInstance);
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'ra-workflow-def-id') {
+        return Promise.resolve({ id: 'ra-workflow-def-id', name: 'ra-wf', published_version: { id: 'v1', content: raDefinitionContent, validation_errors: [] } });
+      }
+      if (id === 'status-approved-id') {
+        return Promise.resolve({ id: 'status-approved-id', template_id: 'approved', scope: StatusScope.RequestAccess });
+      }
+      return Promise.resolve(null);
+    });
+    (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-1' } });
+
+    await syncWorkflowInstanceFromExternalWrite(mockContext, { id: 'rfi-1', internal_id: 'rfi-1', entity_type: 'Case-Rfi' }, 'status-approved-id');
+
+    expect(updateAttribute).toHaveBeenCalledWith(
+      expect.objectContaining({ user: WORKFLOW_MANAGER_USER }),
+      WORKFLOW_MANAGER_USER,
+      'instance-1',
+      ENTITY_TYPE_WORKFLOW_INSTANCE,
+      expect.arrayContaining([{ key: 'currentState', value: ['approved'] }]),
+    );
+  });
 });
 
 // ===========================================================================
@@ -3517,6 +3644,36 @@ describe('setWorkflowStatus (Task 9)', () => {
 
     expect(onExitSpy).toHaveBeenCalledTimes(1);
     expect(onEnterSpy).toHaveBeenCalledTimes(1);
+  });
+
+  // Task 7: entitySetting only has a RequestAccess-scope workflow configured (no `workflow_id`) —
+  // the entity's own currently-assigned status is RequestAccess-scoped, so the status change must
+  // resolve that scope's WorkflowDefinition, not default to Global (which finds nothing here).
+  it('resolves a RequestAccess-scope WorkflowDefinition when the entity\'s current status is RequestAccess-scoped', async () => {
+    const raEntity = { ...entity, x_opencti_workflow_id: 'status-current-ra-id' };
+    (findByType as any).mockResolvedValue({ id: 'setting-id', request_access_workflow: { workflow_definition_id: 'workflow-def-id' } });
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'entity-id') return Promise.resolve(raEntity);
+      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      if (id === 'status-current-ra-id') return Promise.resolve({ id: 'status-current-ra-id', template_id: 'draft', scope: StatusScope.RequestAccess });
+      if (id === 'status-reviewing-id') return Promise.resolve({ id: 'status-reviewing-id', template_id: 'reviewing' });
+      return Promise.resolve(null);
+    });
+    (loadEntity as any).mockResolvedValue(existingInstance);
+    (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-id' } });
+    (projectWorkflowState as any).mockResolvedValue(undefined);
+    // Defensive: an earlier test in this suite permanently overrides `createDefinition` to a
+    // shape without `hasState`, which the internal `getWorkflowInstance` re-fetch below needs.
+    (WorkflowFactory.createDefinition as any).mockImplementation(() => ({
+      getInitialState: () => 'draft',
+      hasState: () => true,
+      getTransitions: () => [],
+    }));
+
+    const result = await setWorkflowStatus(mockContext, mockUser, 'entity-id', 'status-reviewing-id', false);
+
+    expect(result.success).toBe(true);
+    expect(result.newState).toBe('reviewing');
   });
 });
 

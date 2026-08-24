@@ -1151,7 +1151,11 @@ export const getWorkflowInstance = async (
   }
 
   const entitySetting = prefetched ? prefetched.entitySetting : await getWorkflowConfig(context, user, entity.entity_type);
-  const definitionData = prefetched ? prefetched.definitionData : await getDefinitionData(context, user, entitySetting);
+  // Task 7: scope is a property of the entity's own currently-assigned status, not a hardcoded
+  // default — a `RequestAccess`-scoped entity must resolve its dedicated definition, not Global's.
+  const definitionData = prefetched
+    ? prefetched.definitionData
+    : await getDefinitionData(context, user, entitySetting, false, await resolveStatusScope(context, user, (entity as BasicStoreEntity).x_opencti_workflow_id));
   if (!definitionData) {
     return null;
   }
@@ -1296,12 +1300,32 @@ export const batchWorkflowInstances = async (
   user: AuthUser,
   entities: any[],
 ): Promise<any[]> => {
-  const configByType = new Map<string, { entitySetting: BasicStoreEntityEntitySetting | undefined; definitionData: WorkflowDefinitionResponse | null }>();
+  // entitySetting only depends on entity type, so it's still resolved once per distinct type
+  // regardless of how many distinct scopes are present among entities of that type.
+  const entitySettingByType = new Map<string, BasicStoreEntityEntitySetting | undefined>();
   const distinctTypes = [...new Set(entities.map((e) => e.entity_type))];
   await Promise.all(distinctTypes.map(async (type) => {
-    const entitySetting = await getWorkflowConfig(context, user, type);
-    const definitionData = await getDefinitionData(context, user, entitySetting);
-    configByType.set(type, { entitySetting, definitionData });
+    entitySettingByType.set(type, await getWorkflowConfig(context, user, type));
+  }));
+
+  // Task 7: scope is a property of each entity's own currently-assigned status — entities of the
+  // same type but different scope (e.g. Global vs RequestAccess) may resolve to different
+  // WorkflowDefinitions, so the definitionData cache below is keyed by `${entityType}:${scope}`.
+  const scopeByEntity = new Map<any, StatusScope>();
+  await Promise.all(entities.map(async (entity) => {
+    scopeByEntity.set(entity, await resolveStatusScope(context, user, entity.x_opencti_workflow_id));
+  }));
+
+  const configByType = new Map<string, { entitySetting: BasicStoreEntityEntitySetting | undefined; definitionData: WorkflowDefinitionResponse | null }>();
+  const distinctTypeScopeKeys = new Map<string, { type: string; scope: StatusScope }>();
+  entities.forEach((entity) => {
+    const scope = scopeByEntity.get(entity)!;
+    distinctTypeScopeKeys.set(`${entity.entity_type}:${scope}`, { type: entity.entity_type, scope });
+  });
+  await Promise.all([...distinctTypeScopeKeys.entries()].map(async ([key, { type, scope }]) => {
+    const entitySetting = entitySettingByType.get(type);
+    const definitionData = await getDefinitionData(context, user, entitySetting, false, scope);
+    configByType.set(key, { entitySetting, definitionData });
   }));
 
   const executionContext = bypassDraftContext(context);
@@ -1324,7 +1348,7 @@ export const batchWorkflowInstances = async (
 
   return Promise.all(entities.map((entity) => {
     const effectiveEntityId = entity.internal_id || entity.id;
-    const config = configByType.get(entity.entity_type);
+    const config = configByType.get(`${entity.entity_type}:${scopeByEntity.get(entity)}`);
     return getWorkflowInstance(context, user, effectiveEntityId, {
       entity,
       entitySetting: config?.entitySetting,
@@ -1349,7 +1373,9 @@ export const getAllowedTransitions = async (
   }
 
   const entitySetting = prefetched ? prefetched.entitySetting : await getWorkflowConfig(context, user, entity.entity_type);
-  const definitionData = prefetched ? prefetched.definitionData : await getDefinitionData(context, user, entitySetting);
+  const definitionData = prefetched
+    ? prefetched.definitionData
+    : await getDefinitionData(context, user, entitySetting, false, await resolveStatusScope(context, user, (entity as BasicStoreEntity).x_opencti_workflow_id));
 
   if (!definitionData) {
     return [];
@@ -1437,7 +1463,9 @@ export const triggerWorkflowEvent = async (
 
   // 2. Fetch its EntitySetting to get the workflow configuration
   const entitySetting = await getWorkflowConfig(context, user, entity.entity_type);
-  const definitionData = await getDefinitionData(context, user, entitySetting);
+  // Task 7: resolve scope from the entity's own currently-assigned status, not a hardcoded Global default.
+  const scope = await resolveStatusScope(context, user, (entity as BasicStoreEntity).x_opencti_workflow_id);
+  const definitionData = await getDefinitionData(context, user, entitySetting, false, scope);
 
   if (!definitionData) {
     return {
@@ -1627,7 +1655,9 @@ export const setWorkflowStatus = async (
   }
 
   const entitySetting = await getWorkflowConfig(context, user, entity.entity_type);
-  const definitionData = await getDefinitionData(context, user, entitySetting);
+  // Task 7: resolve scope from the entity's own currently-assigned status, not a hardcoded Global default.
+  const scope = await resolveStatusScope(context, user, (entity as BasicStoreEntity).x_opencti_workflow_id);
+  const definitionData = await getDefinitionData(context, user, entitySetting, false, scope);
   if (!definitionData) {
     return {
       success: false,
@@ -1726,22 +1756,34 @@ export const setWorkflowStatus = async (
  * the entity type or if an instance already exists.
  */
 /**
- * Task 7, Step 1.4: detects which WorkflowDefinition scope a newly-created entity should
- * initialize against. Scope is a property of the supplied `Status` itself (its own `scope`
- * field), not something the caller declares separately — so any caller that supplies a
- * request_access-scoped Status id at creation (e.g. requestAccess-domain.ts's CaseRfi creation)
- * is routed correctly, with no entity-type-specific hardcoding. Defaults to `StatusScope.Global`
- * when no status is supplied, or when the supplied status cannot be found.
+ * Task 7: detects which WorkflowDefinition scope a `Status` id belongs to. Scope is a property
+ * of the `Status` itself (its own `scope` field), not something the caller declares separately —
+ * so any caller resolving a request_access-scoped Status id (e.g. an entity's current
+ * `x_opencti_workflow_id`, or a status being written to it) is routed correctly, with no
+ * entity-type-specific hardcoding. Defaults to `StatusScope.Global` when no status id is supplied,
+ * or when the supplied status cannot be found.
+ */
+const resolveStatusScope = async (
+  context: AuthContext,
+  user: AuthUser,
+  statusId?: string,
+): Promise<StatusScope> => {
+  if (!statusId) return StatusScope.Global;
+  const status = await storeLoadById<BasicWorkflowStatus>(context, user, statusId, ENTITY_TYPE_STATUS);
+  return status?.scope ?? StatusScope.Global;
+};
+
+/**
+ * Task 7, Step 1.4: thin wrapper of `resolveStatusScope` for the entity-creation call site — so
+ * any caller that supplies a request_access-scoped Status id at creation (e.g.
+ * requestAccess-domain.ts's CaseRfi creation) is routed correctly, with no entity-type-specific
+ * hardcoding.
  */
 const resolveEntityCreationScope = async (
   context: AuthContext,
   user: AuthUser,
   entity: { x_opencti_workflow_id?: string },
-): Promise<StatusScope> => {
-  if (!entity.x_opencti_workflow_id) return StatusScope.Global;
-  const status = await storeLoadById<BasicWorkflowStatus>(context, user, entity.x_opencti_workflow_id, ENTITY_TYPE_STATUS);
-  return status?.scope ?? StatusScope.Global;
-};
+): Promise<StatusScope> => resolveStatusScope(context, user, entity.x_opencti_workflow_id);
 
 export const initializeEntityWorkflow = async (
   context: AuthContext,
@@ -1783,9 +1825,14 @@ export const syncWorkflowInstanceFromExternalWrite = async (
 ): Promise<void> => {
   const executionContext = { ...bypassDraftContext(context), user: WORKFLOW_MANAGER_USER };
 
+  // Task 7: the written status's own scope determines which WorkflowDefinition applies (e.g. a
+  // RequestAccess-scoped status written by requestAccess-domain.ts), not a hardcoded Global default.
+  const status = await storeLoadById<BasicWorkflowStatus>(executionContext, WORKFLOW_MANAGER_USER, newStatusId, ENTITY_TYPE_STATUS);
+  const scope = status?.scope ?? StatusScope.Global;
+
   // Step 0.6: gated by published-workflow existence, not by any UI-only feature flag.
   const entitySetting = await getWorkflowConfig(executionContext, WORKFLOW_MANAGER_USER, entity.entity_type);
-  const definitionData = await getDefinitionData(executionContext, WORKFLOW_MANAGER_USER, entitySetting);
+  const definitionData = await getDefinitionData(executionContext, WORKFLOW_MANAGER_USER, entitySetting, false, scope);
   if (!definitionData) return;
 
   const effectiveEntityId = entity.internal_id || entity.id;
@@ -1795,7 +1842,6 @@ export const syncWorkflowInstanceFromExternalWrite = async (
   if (!instanceEntity) return;
 
   const instanceId = instanceEntity.internal_id || instanceEntity.id;
-  const status = await storeLoadById<BasicWorkflowStatus>(executionContext, WORKFLOW_MANAGER_USER, newStatusId, ENTITY_TYPE_STATUS);
   const matchedState = status ? (definitionData.states ?? []).find((s) => s.statusId === status.template_id) : undefined;
 
   if (!matchedState) {
