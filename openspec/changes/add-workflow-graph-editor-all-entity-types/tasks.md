@@ -89,15 +89,37 @@
       `triggerWorkflowEvent` per selected element for a given `eventName`,
       reusing the existing per-element try/catch error-tolerance pattern
       from `workflowTransitionOperationCallback`.
-- [ ] 6.2 Ensure the new action type is authorized the same as the
+- [x] 6.2 Ensure the new action type is authorized the same as the
       single-entity `triggerWorkflowEvent` mutation (`KNOWLEDGE_KNUPDATE`).
-- [ ] 6.3 In `DataTableToolBar.jsx`, add a mass-edit UI mode to pick a
+      The mass-op task itself is created via the toolbar's existing generic
+      task-creation mutation (same capability gate as every other mass-edit
+      field in `DataTableToolBar.jsx`); the new `workflowTransitionEvents`
+      query added to populate the event picker is explicitly
+      `@auth(for: [KNOWLEDGE_KNUPDATE])`, matching `triggerWorkflowEvent`
+      exactly (fixed after review — see task-11-fix-report.md).
+- [x] 6.3 In `DataTableToolBar.jsx`, add a mass-edit UI mode to pick a
       workflow transition (by `event`) for the current bulk selection's
       entity type, submitting via the new action type.
 - [ ] 6.4 Add backend tests for the new mass-op action (eligible elements
       transition, ineligible elements are skipped/error-counted, unauthorized
-      users rejected).
-- [ ] 6.5 Add frontend tests for the new mass transition UI option.
+      users rejected). Eligible-transition and per-element error-tolerance
+      are covered (Task 10's `taskManager-test.ts` additions); a dedicated
+      "unauthorized user rejected" test was NOT added, since authorization
+      for mass-op tasks happens at the generic pre-existing task-creation
+      layer (shared by every mass-edit field, not workflow-specific), not
+      inside `workflowMassTransitionOperationCallback` itself — left
+      unchecked pending a decision on whether a dedicated test of that
+      shared, pre-existing layer belongs in this change's scope.
+- [x] 6.5 Add frontend tests for the new mass transition UI option. Covered
+      via pure-function unit tests of the extracted `buildTransitionEventOptions`
+      (dedup/sort) and `buildActionFromInput` (sentinel-field remap, incl. a
+      regression guard that the internal-only field name never leaks into
+      the submitted payload) helpers, rather than a full RTL render/interaction
+      test — this legacy class component has no pre-existing tests of any
+      kind and its MUI `Select`s have no discoverable accessible names, so a
+      full end-to-end interaction test was judged impractical relative to its
+      value; reviewed and approved as an acceptable, documented trade-off
+      (see task-11-report.md).
 
 ## 7. Mass bypass forced status update (frontend only)
 
