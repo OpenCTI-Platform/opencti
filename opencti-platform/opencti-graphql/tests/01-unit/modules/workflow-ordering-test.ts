@@ -89,7 +89,9 @@ describe('workflow-ordering: computeStateOrder', () => {
   it('bounds the DFS with a step cap and does not hang on a densely-connected acyclic graph', () => {
     // Complete DAG on 15 nodes (edges i -> j for every i < j) has 2^13 simple paths from s0 to
     // s14 — far more than any reasonable step cap — so the cap must kick in and the call must
-    // still return promptly instead of exploring every path.
+    // still return promptly instead of exploring every path. With only 15 states, every one of
+    // them is still reached during the very first (deepest-first) descent, long before the cap is
+    // hit, so nothing here ends up null — the cap only bounds exploration of redundant paths.
     const nodeCount = 15;
     const transitions = [];
     for (let i = 0; i < nodeCount; i += 1) {
@@ -99,8 +101,29 @@ describe('workflow-ordering: computeStateOrder', () => {
     }
     const order = computeStateOrder('s0', transitions);
     expect(order.size).toBe(nodeCount);
-    // The cap fallback nulls affected states rather than hanging or throwing.
-    expect(Array.from(order.values()).some((value) => value === null)).toBe(true);
+    expect(Array.from(order.values()).every((value) => value !== null)).toBe(true);
+  });
+
+  it('keeps real order values for states already computed before the step cap is hit, only nulling the states the cap prevented from ever being reached', () => {
+    // A short linear chain with an injected, artificially low step cap: the DFS visits each state
+    // once, in strictly increasing order, so hitting the cap partway through leaves a clean,
+    // deterministic boundary between "computed before the cap" and "never reached because of it".
+    const order = computeStateOrder('s0', [
+      { from: 's0', to: 's1' },
+      { from: 's1', to: 's2' },
+      { from: 's2', to: 's3' },
+      { from: 's3', to: 's4' },
+      { from: 's4', to: 's5' },
+    ], 3); // cap hit right after computing s0, s1, s2
+    // States computed before the cap was hit must keep their real, sequential order values — not
+    // be forced to null just because the cap is hit later on in the same computation.
+    expect(order.get('s0')).toBe(0);
+    expect(order.get('s1')).toBe(1);
+    expect(order.get('s2')).toBe(2);
+    // States the DFS never got to before the cap kicked in must be null.
+    expect(order.get('s3')).toBeNull();
+    expect(order.get('s4')).toBeNull();
+    expect(order.get('s5')).toBeNull();
   });
 });
 
