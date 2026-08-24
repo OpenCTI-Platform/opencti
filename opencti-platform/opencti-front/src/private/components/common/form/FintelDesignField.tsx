@@ -5,7 +5,7 @@ import { FintelDesignFieldQuery } from '@components/common/form/__generated__/Fi
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField from '../../../../components/ComboboxField';
 import ItemIcon from '../../../../components/ItemIcon';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
@@ -92,30 +92,26 @@ const FintelDesignFieldComponent: FunctionComponent<FintelDesignFieldComponentPr
   return (
     <div style={{ width: '100%' }}>
       <Field
-        component={AutocompleteField}
+        component={ComboboxField}
         name={name}
         multiple={false}
         disabled={false}
-        textfieldprops={{
-          variant: 'standard',
-          label: label ?? t_i18n('Fintel designs'),
-          helperText,
-        }}
+        label={label ?? t_i18n('Fintel designs')}
+        helperText={helperText}
         required={required}
         onChange={onChange}
         style={fieldSpacingContainerStyle ?? style}
         noOptionsText={t_i18n('No available options')}
         options={fintelDesigns}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: { label: string },
-        ) => (
-          <li {...props} style={{ display: 'flex', alignItems: 'center' }}>
+        // Was `classes={{ clearIndicator: { display: 'none' } }}` — the library
+        // has a real prop for it rather than a hidden control.
+        clearable={false}
+        renderOption={(option: { label: string }) => (
+          <>
             <ItemIcon type="Fintel-Design" />
             <div style={{ flexGrow: 1, marginLeft: 10 }}>{option.label}</div>
-          </li>
+          </>
         )}
-        classes={{ clearIndicator: { display: 'none' } }}
       />
     </div>
   );
@@ -129,15 +125,12 @@ const FintelDesignField = ({ ...props }: FintelDesignFieldProps) => {
   return queryRef ? (
     <React.Suspense fallback={(
       <Field
-        component={AutocompleteField}
+        component={ComboboxField}
         name={name}
         disabled={true}
-        fullWidth={true}
         options={[]}
         renderOption={() => null}
-        textfieldprops={{
-          label,
-        }}
+        label={label}
       />
     )}
     >

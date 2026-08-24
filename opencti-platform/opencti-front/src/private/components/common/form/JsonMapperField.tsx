@@ -4,7 +4,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Field } from 'formik';
 import { JsonMapperFieldSearchQuery } from '@components/common/form/__generated__/JsonMapperFieldSearchQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField from '../../../../components/ComboboxField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ItemIcon from '../../../../components/ItemIcon';
 
@@ -65,30 +65,23 @@ const JsonMapperField: FunctionComponent<JsonMapperFieldComponentProps> = ({
   return (
     <>
       <Field
-        component={AutocompleteField}
+        component={ComboboxField}
         style={fieldSpacingContainerStyle}
         name={name}
         multiple={false}
-        textfieldprops={{
-          variant: 'standard',
-          label: t_i18n('JSON Mappers'),
-        }}
+        label={t_i18n('JSON Mappers')}
         required={required}
         noOptionsText={t_i18n('No available options')}
         options={jsonMappersPreloaded}
         isOptionEqualToValue={isOptionEqualToValue}
         onChange={onChange}
-        classes={{ clearIndicator: classes.autoCompleteIndicator }}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: FieldOption,
-        ) => (
-          <li {...props}>
+        renderOption={(option: FieldOption) => (
+          <>
             <div className={classes.icon} style={{ color: option.color }}>
               <ItemIcon type="jsonmapper" />
             </div>
             <div className={classes.text}>{option.label}</div>
-          </li>
+          </>
         )}
       />
     </>
