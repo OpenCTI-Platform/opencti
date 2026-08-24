@@ -69,16 +69,16 @@
 
 ## 5. Cycle-scoped state ordering
 
-- [ ] 5.1 Rewrite `computeStateOrder` in `workflow-ordering.ts` to compute,
+- [x] 5.1 Rewrite `computeStateOrder` in `workflow-ordering.ts` to compute,
       per state, the longest simple path length from `initialState` via DFS
       with a path-scoped (not global) visited set.
-- [ ] 5.2 Add a bounded work cap (constant, informed by realistic max
+- [x] 5.2 Add a bounded work cap (constant, informed by realistic max
       state/transition counts) with graceful per-state fallback to `null`
       when exceeded, rather than an unbounded computation.
-- [ ] 5.3 Update `workflow-validation.ts`'s `MISSING_MANUAL_ORDER` handling
+- [x] 5.3 Update `workflow-validation.ts`'s `MISSING_MANUAL_ORDER` handling
       to consume the new per-state result shape (only affected states
       require manual `order`, not the whole graph).
-- [ ] 5.4 Add unit tests for `computeStateOrder`: acyclic graphs unchanged,
+- [x] 5.4 Add unit tests for `computeStateOrder`: acyclic graphs unchanged,
       a cycle isolated from an unrelated branch still allows that branch to
       auto-order, states on/entangled with a cycle still require manual
       order, and the bounded-cap fallback path.
