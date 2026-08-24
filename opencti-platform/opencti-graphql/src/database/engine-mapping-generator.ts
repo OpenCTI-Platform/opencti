@@ -1,5 +1,3 @@
-import { Client as ElkClient } from '@elastic/elasticsearch';
-import { Client as OpenClient } from '@opensearch-project/opensearch';
 import { UnsupportedError } from '../config/errors';
 import { rule_definitions } from '../rules/rules-definition';
 import {
@@ -19,12 +17,12 @@ import { schemaTypesDefinition } from '../schema/schema-types';
 import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 
-export const engineMappingGenerator = (engine: ElkClient | OpenClient): Record<string, any> => {
-  return { ...attributesMappingGenerator(engine), ...ruleMappingGenerator(engine), ...denormalizeRelationsMappingGenerator() };
+export const engineMappingGenerator = (isElk: boolean): Record<string, any> => {
+  return { ...attributesMappingGenerator(isElk), ...ruleMappingGenerator(isElk), ...denormalizeRelationsMappingGenerator() };
 };
 
 // Engine mapping generation on attributes definition
-const attributeMappingGenerator = (entityAttribute: AttributeDefinition, engine: ElkClient | OpenClient): any => {
+const attributeMappingGenerator = (entityAttribute: AttributeDefinition, isElk: boolean): any => {
   if (entityAttribute.type === 'string') {
     if (shortStringFormats.includes(entityAttribute.format)) {
       return shortMapping;
@@ -46,13 +44,13 @@ const attributeMappingGenerator = (entityAttribute: AttributeDefinition, engine:
   if (entityAttribute.type === 'object') {
     // For flat object
     if (entityAttribute.format === 'flat') {
-      return { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' };
+      return { type: isElk ? 'flattened' : 'flat_object' };
     }
     // For standard object
     const properties: Record<string, any> = {};
     for (let i = 0; i < entityAttribute.mappings.length; i += 1) {
       const mapping = entityAttribute.mappings[i];
-      properties[mapping.name] = attributeMappingGenerator(mapping, engine);
+      properties[mapping.name] = attributeMappingGenerator(mapping, isElk);
     }
     const config: { dynamic: string; properties: any; type?: string } = { dynamic: 'strict', properties };
     // Add nested option if needed
@@ -63,7 +61,7 @@ const attributeMappingGenerator = (entityAttribute: AttributeDefinition, engine:
   }
   throw UnsupportedError('Cant generated mapping', { type: entityAttribute.type });
 };
-const ruleMappingGenerator = (engine: ElkClient | OpenClient): Record<string, { dynamic: string; properties: any }> => {
+const ruleMappingGenerator = (isElk: boolean): Record<string, { dynamic: string; properties: any }> => {
   const schemaProperties: Record<string, { dynamic: string; properties: any }> = {};
   for (let attrIndex = 0; attrIndex < rule_definitions.length; attrIndex += 1) {
     const rule = rule_definitions[attrIndex];
@@ -73,7 +71,7 @@ const ruleMappingGenerator = (engine: ElkClient | OpenClient): Record<string, { 
         explanation: shortMapping,
         dependencies: shortMapping,
         hash: shortMapping,
-        data: { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' },
+        data: { type: isElk ? 'flattened' : 'flat_object' },
       },
     };
   }
@@ -100,12 +98,12 @@ const denormalizeRelationsMappingGenerator = (): Record<string, { dynamic: strin
   return schemaProperties;
 };
 
-const attributesMappingGenerator = (engine: ElkClient | OpenClient): Record<string, any> => {
+const attributesMappingGenerator = (isElk: boolean): Record<string, any> => {
   const entityAttributes = schemaAttributesDefinition.getAllAttributes();
   const schemaProperties: Record<string, any> = {};
   for (let attrIndex = 0; attrIndex < entityAttributes.length; attrIndex += 1) {
     const entityAttribute = entityAttributes[attrIndex];
-    schemaProperties[entityAttribute.name] = attributeMappingGenerator(entityAttribute, engine);
+    schemaProperties[entityAttribute.name] = attributeMappingGenerator(entityAttribute, isElk);
   }
   return schemaProperties;
 };
@@ -113,8 +111,8 @@ const attributesMappingGenerator = (engine: ElkClient | OpenClient): Record<stri
 // Only useful for option ES_INIT_RETRO_MAPPING_MIGRATION
 // This mode let the platform initialize old mapping protection before direct stop
 // Its only useful when old platform needs to be reindex
-export const getRetroCompatibleMappings = (engine: ElkClient | OpenClient): any => {
-  const flattenedType = engine instanceof ElkClient ? 'flattened' : 'flat_object';
+export const getRetroCompatibleMappings = (isElk: boolean): any => {
+  const flattenedType = isElk ? 'flattened' : 'flat_object';
   return {
     internal_id: {
       type: 'text',
