@@ -70,6 +70,14 @@ type WorkflowMigrationPreview {
     results: [WorkflowMigrationScopeResult!]!
 }
 
+# Task 5: result of triggering the legacy-status migration for one entity type. `status` mirrors
+# `MigrateEntityTypeStatusStatus` in migrate-status-to-workflow-definition.ts
+# ('migrated' | 'skipped_no_data' | 'skipped_already_migrated').
+type MigrateEntityTypeStatusResult {
+    entityType: String!
+    status: String!
+}
+
 extend type EntitySetting {
     workflow_configuration: Boolean
     workflow_id: String
@@ -183,6 +191,10 @@ extend type Mutation {
     workflowDefinitionPublish(entityType: String!, scope: StatusScope): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionRestorePublished(entityType: String!, scope: StatusScope): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionDelete(entityType: String!, scope: StatusScope): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    # Task 5: triggers the legacy Status -> WorkflowDefinition migration for one entity type.
+    # Only `scope: GLOBAL` is currently supported; RequestAccess-scoped migration is rejected
+    # until a later task implements RequestAccessFlow.workflow_definition_id routing.
+    migrateEntityTypeStatusToWorkflowDefinition(entityType: String!, scope: StatusScope!): MigrateEntityTypeStatusResult! @auth(for: [SETTINGS_SETCUSTOMIZATION])
     triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON, closingReason: String): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
     # Task 9: bypass-update — jump directly to any state of the published workflow, without
     # requiring an allowed-transition edge from the current state (unlike triggerWorkflowEvent).

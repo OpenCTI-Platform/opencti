@@ -1,5 +1,5 @@
 import { GraphQLError } from 'graphql';
-import type { StatusScope } from '../../../generated/graphql';
+import { StatusScope } from '../../../generated/graphql';
 import type { AuthContext } from '../../../types/user';
 import { reportWorkflowAsyncActionResult } from '../domain/workflow-async-completion';
 import {
@@ -17,6 +17,7 @@ import {
     setWorkflowStatus,
     triggerWorkflowEvent,
 } from '../domain/workflow-domain';
+import { migrateEntityTypeStatusToWorkflowDefinition } from '../migration/migrate-status-to-workflow-definition';
 
 const COMMENT_MAX_LENGTH = 1000; // Keep in sync with COMMENT_MAX_LENGTH in opencti-front/src/private/components/common/workflow/WorkflowStatus.tsx
 const CLOSING_REASON_MAX_LENGTH = 1000; // Keep in sync with CLOSING_REASON_MAX_LENGTH in opencti-front/src/private/components/common/workflow/WorkflowStatus.graphql.ts
@@ -61,6 +62,18 @@ const workflowResolvers = {
     },
     workflowDefinitionDelete: (_: any, { entityType, scope }: { entityType: string; scope?: StatusScope }, context: AuthContext) => {
       return deleteWorkflowDefinition(context, context.user!, entityType, scope);
+    },
+    // Task 5: only GLOBAL scope is supported until a later task implements request_access
+    // routing (RequestAccessFlow.workflow_definition_id) — see migrate-status-to-workflow-definition.ts.
+    migrateEntityTypeStatusToWorkflowDefinition: (_: any, { entityType, scope }: { entityType: string; scope: StatusScope }, context: AuthContext) => {
+      if (scope !== StatusScope.Global) {
+        throw new GraphQLError(
+          'Cannot migrate: only Global-scope migration is currently supported. RequestAccess-scoped '
+          + 'migration requires additional routing support (RequestAccessFlow.workflow_definition_id) '
+          + 'that has not been implemented yet.',
+        );
+      }
+      return migrateEntityTypeStatusToWorkflowDefinition(context, context.user!, entityType);
     },
     triggerWorkflowEvent: (_: any, {
       entityId,
