@@ -601,7 +601,7 @@ export const ensureFullStatusMapping = async (
     if (!state.statusId || existingTemplateIds.has(state.statusId)) {
       continue;
     }
-    const order = computedOrder?.get(state.statusId) ?? state.order ?? 0;
+    const order = computedOrder.get(state.statusId) ?? state.order ?? 0;
     await createStatus(executionContext, executionUser, entityType, {
       template_id: state.statusId,
       order,
