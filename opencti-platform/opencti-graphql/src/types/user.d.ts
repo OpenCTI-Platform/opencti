@@ -87,5 +87,15 @@ interface AuthContext {
   req?: Express.Request;
   requestAbortSignal?: AbortSignal;
   blocked_for_lts_validation?: boolean;
-  sequencer?: { scope: 'applying' | 'bypass' };
+  sequencer?: {
+    scope: 'applying' | 'bypass';
+    // Stage C identity map, served through the context so engine.ts needs no sequencer import
+    resolutions?: {
+      serveBare: (context: AuthContext, user: AuthUser, ids: string[], opts: Record<string, unknown>)
+      => Promise<{ hits: any[]; misses: string[] } | null>;
+      serveWithRefs: (context: AuthContext, user: AuthUser, ids: string[], opts: Record<string, unknown>)
+      => Promise<{ hits: any[]; misses: string[] } | null>;
+      ingestBare: (elements: any[]) => void;
+    };
+  };
 }

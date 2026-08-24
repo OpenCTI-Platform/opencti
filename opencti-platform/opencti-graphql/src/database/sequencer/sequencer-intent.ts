@@ -21,6 +21,7 @@ export interface SequencerIntent {
   source: string;
   sizeBytes: number;
   candidateIds: string[];
+  referencedIds: string[];
   apply: () => Promise<any>;
   resolve: (value: any) => void;
   reject: (err: any) => void;
@@ -35,6 +36,7 @@ interface BuildIntentArgs {
   context: AuthContext;
   opts: Record<string, any>;
   candidateIds: string[];
+  referencedIds?: string[];
   apply: () => Promise<any>;
 }
 
@@ -65,6 +67,7 @@ export const buildIntent = (args: BuildIntentArgs): SequencerIntent => {
     source: args.user.origin?.applicant_id ?? args.user.id,
     sizeBytes: intentSize(args.input),
     candidateIds: args.candidateIds,
+    referencedIds: args.referencedIds ?? [],
     apply: args.apply,
     resolve,
     reject,

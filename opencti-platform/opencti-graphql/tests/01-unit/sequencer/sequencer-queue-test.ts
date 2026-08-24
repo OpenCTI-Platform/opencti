@@ -73,4 +73,40 @@ describe('sequencer queue (plan 0009 B4)', () => {
     expect(q.size()).toBe(1);
     SEQUENCER_CONFIG.queueMaxBytes = 1024 * 1024;
   });
+
+  it('takeBatch drains everything queued round-robin, up to the size cap', async () => {
+    const q = new SequencerQueue();
+    await q.put(intentFrom('connA', 'a1'));
+    await q.put(intentFrom('connA', 'a2'));
+    await q.put(intentFrom('connB', 'b1'));
+    const batch = await q.takeBatch(10, 1024 * 1024, 0);
+    expect(batch.map((i) => i.input.name)).toEqual(['a1', 'b1', 'a2']);
+    expect(q.size()).toBe(0);
+    await q.put(intentFrom('connA', 'a3'));
+    await q.put(intentFrom('connA', 'a4'));
+    await q.put(intentFrom('connA', 'a5'));
+    const capped = await q.takeBatch(2, 1024 * 1024, 0);
+    expect(capped.length).toBe(2);
+    expect(q.size()).toBe(1);
+  });
+
+  it('takeBatch respects the byte cap and keeps the overflow queued', async () => {
+    const q = new SequencerQueue();
+    const first = intentFrom('connA', 'small');
+    const second = intentFrom('connA', 'this-name-is-way-larger-than-the-remaining-byte-budget');
+    await q.put(first);
+    await q.put(second);
+    const batch = await q.takeBatch(10, first.sizeBytes + 5, 0);
+    expect(batch.map((i) => i.input.name)).toEqual(['small']);
+    expect(q.size()).toBe(1);
+    const next = await q.takeBatch(10, 1024 * 1024, 0);
+    expect(next.map((i) => i.input.name)).toEqual(['this-name-is-way-larger-than-the-remaining-byte-budget']);
+  });
+
+  it('takeBatch awaits the first intent when the queue is empty', async () => {
+    const q = new SequencerQueue();
+    const taking = q.takeBatch(10, 1024 * 1024, 0);
+    await q.put(intentFrom('connA', 'late'));
+    expect((await taking).map((i) => i.input.name)).toEqual(['late']);
+  });
 });

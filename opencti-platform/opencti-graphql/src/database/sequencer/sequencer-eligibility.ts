@@ -8,6 +8,7 @@ import { getDraftContext } from '../../utils/draftContext';
 import { isStixObject } from '../../schema/stixCoreObject';
 import { isStixRelationship } from '../../schema/stixRelationship';
 import { SEQUENCER_CONFIG } from './sequencer-config';
+import { sequencerIdentityMap } from './sequencer-identity-map';
 import type { AuthContext, AuthUser } from '../../types/user';
 
 // Worker origin (D2): only pycti's import_item_with_retries sets the opencti-retry-number header,
@@ -43,6 +44,12 @@ export const isSequencerEligible = (
 
 // Marks a context so every boundary call below it runs direct. Used by the loop when applying an
 // intent (re-entrancy) and by denylisted lock-holding mutations (stixCoreObjectImportPush).
+// An 'applying' scope also carries the identity map (Stage C4): the read chokepoints
+// (elFindByIds, storeLoadByIdsWithRefs) serve from it through context.sequencer.resolutions.
+// The map itself refuses to serve outside batch mode, so pass-through semantics are untouched.
 export const sequencerScopedContext = (context: AuthContext, scope: 'applying' | 'bypass'): AuthContext => {
+  if (scope === 'applying') {
+    return { ...context, sequencer: { scope, resolutions: sequencerIdentityMap } };
+  }
   return { ...context, sequencer: { scope } };
 };

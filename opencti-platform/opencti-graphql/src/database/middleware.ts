@@ -101,7 +101,7 @@ import {
   X_WORKFLOW_ID,
 } from '../schema/identifier';
 import { isSequencerEligible, sequencerScopedContext } from './sequencer/sequencer-eligibility';
-import { submitIntent } from './sequencer/sequencer-loop';
+import { registerSequencerLoaders, submitIntent } from './sequencer/sequencer-loop';
 import { notify, redisAddDeletions } from './redis';
 import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
 import { cleanStixIds } from './stix';
@@ -602,10 +602,26 @@ const loadByFiltersWithDependencies = async (
 };
 // Get element with every elements connected element -> rel -> to
 export const storeLoadByIdsWithRefs = async <T extends StoreObject> (context: AuthContext, user: AuthUser, ids: string[], opts: LoadByIdsWithDependeciesOpts = {}) => {
+  // POC ingestion sequencer (plan 0009 C4): under an applying batch, upsert targets pre-loaded
+  // by the batch pre-resolution are served from the identity map's with-refs level.
+  const sequencerResolutions = context.sequencer?.resolutions;
+  if (sequencerResolutions) {
+    const served = await sequencerResolutions.serveWithRefs(context, user, ids, opts as Record<string, unknown>);
+    if (served) {
+      if (served.misses.length === 0) return served.hits as T[];
+      const missed = await loadByIdsWithDependencies(context, user, served.misses, { ...opts, onlyMarking: false }) as T[];
+      return [...served.hits, ...missed] as T[];
+    }
+  }
   // When loading with explicit references, data must be loaded without internal rels
   // As rels are here for search and sort there is some data that conflict after references explication resolutions
   return await loadByIdsWithDependencies(context, user, ids, { ...opts, onlyMarking: false }) as T[];
 };
+// late-bound registration: the sequencer batch pre-resolution loads upsert targets through
+// this loader without importing middleware (no import cycle)
+registerSequencerLoaders({
+  storeLoadByIdsWithRefs: (context, user, ids) => storeLoadByIdsWithRefs(context, user, ids),
+});
 export const storeLoadByIdWithRefs = async <T extends StoreObject>(
   context: AuthContext,
   user: AuthUser,
@@ -1002,6 +1018,41 @@ const depsKeys = (type: string): { src: string; dst?: string; types?: string[] }
 
 const idVocabulary = (nameOrId: string, category: string) => {
   return isAnId(nameOrId) ? nameOrId : generateStandardId(ENTITY_TYPE_VOCABULARY, { name: nameOrId, category });
+};
+
+// POC ingestion sequencer (plan 0009 B2/C2): the ids an input references, extracted with the
+// same depsKeys walk as inputResolveRefs, so the batch pre-resolution can warm the identity
+// map before the intent applies. Labels are normalized like inputResolveRefs (value or id);
+// open-vocab fields are skipped in v1 (their id needs the category resolution, the apply-time
+// inputResolveRefs fills the map on first miss instead). Best-effort only: an id missed here
+// is resolved by the unchanged path at apply time.
+const sequencerReferencedIds = (type: string, input: Record<string, any>): string[] => {
+  const out = new Set<string>();
+  try {
+    const dependencyKeys = depsKeys(type);
+    for (let index = 0; index < dependencyKeys.length; index += 1) {
+      const { src, dst, types: depTypes } = dependencyKeys[index];
+      if (depTypes && depTypes.length > 0 && !depTypes.includes(type)) continue;
+      const value: any = input[src];
+      if (isEmptyField(value)) continue;
+      const alreadyResolved = Array.isArray(value) ? value[0]?._id : value?._id;
+      if (alreadyResolved) continue;
+      if (src === INPUT_LABELS) {
+        (value as string[]).forEach((label) => out.add(idLabel(label)));
+      } else if (isEntityFieldAnOpenVocabulary(dst || src, type)) {
+        // skipped in v1 (category-dependent id computation)
+      } else if (Array.isArray(value)) {
+        value.forEach((v: any) => {
+          if (typeof v === 'string' && v.length > 0) out.add(v);
+        });
+      } else if (typeof value === 'string') {
+        out.add(value);
+      }
+    }
+  } catch {
+    // extraction is an optimization: never let it fail an intent
+  }
+  return Array.from(out);
 };
 
 /**
@@ -3631,6 +3682,7 @@ export const createRelation = async (
       input,
       opts,
       candidateIds,
+      referencedIds: sequencerReferencedIds(relationshipType, input),
       apply: () => createRelationDirect(sequencerScopedContext(context, 'applying'), user, input, opts),
     });
   }
@@ -4119,6 +4171,7 @@ export const createEntity = async (
       input,
       opts,
       candidateIds,
+      referencedIds: sequencerReferencedIds(type, input),
       apply: () => createEntityDirect(sequencerScopedContext(context, 'applying'), user, input, type, opts),
     });
   }

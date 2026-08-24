@@ -1945,13 +1945,29 @@ export const elFindByIds = async <T extends BasicStoreBase>(
   } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const types = (Array.isArray(type) || isEmptyField(type)) ? type : [type] as string[];
-  const processIds = idsArray.filter((id) => isNotEmptyField(id));
+  let processIds = idsArray.filter((id) => isNotEmptyField(id));
   if (processIds.length === 0) {
     return toMap ? {} as Record<string, T> : [] as T[];
   }
+  const hits: T[] = [];
+  // POC ingestion sequencer (plan 0009 C4): under an applying batch, the identity map serves
+  // known ids from memory (user-filtered) and only the misses reach ES; fresh ES hits feed the
+  // map below. The map itself refuses ineligible opts (withoutRels:false, relCount, drafts...).
+  const sequencerResolutions = context.sequencer?.resolutions;
+  let sequencerServed = false;
+  if (sequencerResolutions) {
+    const served = await sequencerResolutions.serveBare(context, user, processIds, opts as Record<string, unknown>);
+    if (served) {
+      sequencerServed = true;
+      pushAll(hits, served.hits as T[]);
+      processIds = served.misses;
+      if (processIds.length === 0) {
+        return toMap ? elConvertHitsToMap<T>(hits, { mapWithAllIds }) : hits;
+      }
+    }
+  }
   const queryIndices = computeQueryIndices(indices, types);
   const computedIndices = getIndicesToQuery(context, user, queryIndices);
-  const hits: T[] = [];
   // Leave room in split size compared to max pagination to minimize data loss risk in case of duplicated ids in database
   const splitSize = Math.max(ES_MAX_PAGINATION / 2, ES_DEFAULT_PAGINATION);
   const groupIds = R.splitEvery(splitSize, processIds);
@@ -2044,6 +2060,10 @@ export const elFindByIds = async <T extends BasicStoreBase>(
     }
     if (elements.length > 0) {
       const convertedHits = await elConvertHits<T>(elements);
+      if (sequencerServed) {
+        // fresh ES results (bare, with security docvalues merged) feed the identity map
+        sequencerResolutions?.ingestBare(convertedHits as any[]);
+      }
       pushAll(hits, convertedHits);
     }
   }

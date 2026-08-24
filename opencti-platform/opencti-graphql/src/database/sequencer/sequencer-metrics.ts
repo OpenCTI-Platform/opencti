@@ -84,8 +84,8 @@ class SequencerMetrics {
     });
   }
 
-  intent(outcome: IntentOutcome, count = 1) {
-    this.intents?.add(count, { outcome });
+  intent(outcome: IntentOutcome, kind?: 'entity' | 'relation') {
+    this.intents?.add(1, kind ? { outcome, kind } : { outcome });
   }
 
   batchCommitted(size: number) {

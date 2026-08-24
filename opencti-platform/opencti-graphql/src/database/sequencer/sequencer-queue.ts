@@ -92,4 +92,39 @@ export class SequencerQueue {
     if (intent) return intent;
     return new Promise<SequencerIntent>((resolve) => this.takeWaiters.push(resolve));
   }
+
+  // Batch formation (plan 0009 §2.6, C1): the loop takes EVERYTHING queued when it becomes
+  // free (round-robin per source through pop), bounded by the size/bytes caps. No fixed
+  // timer: the gathering window IS the previous batch's commit. gather_window_ms (default 0)
+  // optionally waits once after the first intent, for mid-load batching.
+  async takeBatch(maxCount: number, maxBytes: number, gatherWindowMs: number): Promise<SequencerIntent[]> {
+    const first = await this.take();
+    if (gatherWindowMs > 0) {
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, gatherWindowMs);
+      });
+    }
+    const batch: SequencerIntent[] = [first];
+    let bytes = first.sizeBytes;
+    while (batch.length < maxCount) {
+      const next = this.pop();
+      if (!next) break;
+      if (bytes + next.sizeBytes > maxBytes) {
+        // over the byte cap: put it back at the front of its source lane for the next batch
+        const lane = this.bySource.get(next.source);
+        if (lane) {
+          lane.unshift(next);
+        } else {
+          this.bySource.set(next.source, [next]);
+          this.ring.push(next.source);
+        }
+        this.count += 1;
+        this.bytes += next.sizeBytes;
+        break;
+      }
+      batch.push(next);
+      bytes += next.sizeBytes;
+    }
+    return batch;
+  }
 }
