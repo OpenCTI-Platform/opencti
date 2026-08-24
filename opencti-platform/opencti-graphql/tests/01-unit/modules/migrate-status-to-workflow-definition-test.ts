@@ -63,8 +63,8 @@ describe('migrateEntityTypeStatusToWorkflowDefinition', () => {
     expect(setWorkflowDefinition).not.toHaveBeenCalled();
   });
 
-  it('throws loudly when request_access-scoped Status data is present (Task 7 not implemented yet)', async () => {
-    (findByType as any).mockResolvedValue({ id: 'setting-1', workflow_id: undefined });
+  it('migrates RequestAccess-scoped legacy Status data instead of throwing', async () => {
+    (findByType as any).mockResolvedValue({ id: 'setting-1', workflow_id: undefined, request_access_workflow: undefined });
     (fullEntitiesList as any).mockImplementation((_ctx: any, _user: any, types: string[]) => {
       if (types.includes(ENTITY_TYPE_STATUS)) {
         return Promise.resolve([
@@ -74,9 +74,38 @@ describe('migrateEntityTypeStatusToWorkflowDefinition', () => {
       return Promise.resolve([{ id: 't1', name: 'Pending' }]);
     });
 
-    await expect(migrateEntityTypeStatusToWorkflowDefinition(mockContext, mockUser, 'CaseRfi'))
-      .rejects.toThrow('request_access-scoped Status data');
+    const result = await migrateEntityTypeStatusToWorkflowDefinition(mockContext, mockUser, 'CaseRfi', StatusScope.RequestAccess);
 
+    expect(result).toEqual({ entityType: 'CaseRfi', status: 'migrated' });
+    expect(setWorkflowDefinition).toHaveBeenCalledTimes(1);
+    const [, , entityTypeArg, definitionArg, scopeArg] = (setWorkflowDefinition as any).mock.calls[0];
+    expect(entityTypeArg).toBe('CaseRfi');
+    expect(JSON.parse(definitionArg).states.map((s: any) => s.statusId)).toEqual(['t1']);
+    expect(scopeArg).toBe(StatusScope.RequestAccess);
+    expect(publishWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockUser, 'CaseRfi', StatusScope.RequestAccess);
+  });
+
+  it('skips (no-op) when the entity type already has a request_access_workflow.workflow_definition_id configured', async () => {
+    (findByType as any).mockResolvedValue({
+      id: 'setting-1',
+      workflow_id: undefined,
+      request_access_workflow: { workflow_definition_id: 'existing-ra-def' },
+    });
+
+    const result = await migrateEntityTypeStatusToWorkflowDefinition(mockContext, mockUser, 'CaseRfi', StatusScope.RequestAccess);
+
+    expect(result).toEqual({ entityType: 'CaseRfi', status: 'skipped_already_migrated' });
+    expect(setWorkflowDefinition).not.toHaveBeenCalled();
+    expect(publishWorkflowDefinition).not.toHaveBeenCalled();
+  });
+
+  it('skips (no-op) when the entity type has no legacy RequestAccess-scoped Status data', async () => {
+    (findByType as any).mockResolvedValue({ id: 'setting-1', workflow_id: undefined, request_access_workflow: undefined });
+    (fullEntitiesList as any).mockResolvedValue([]);
+
+    const result = await migrateEntityTypeStatusToWorkflowDefinition(mockContext, mockUser, 'CaseRfi', StatusScope.RequestAccess);
+
+    expect(result).toEqual({ entityType: 'CaseRfi', status: 'skipped_no_data' });
     expect(setWorkflowDefinition).not.toHaveBeenCalled();
   });
 
@@ -105,7 +134,7 @@ describe('migrateEntityTypeStatusToWorkflowDefinition', () => {
     const [, , entityTypeArg, definitionArg] = (setWorkflowDefinition as any).mock.calls[0];
     expect(entityTypeArg).toBe('Incident');
     expect(JSON.parse(definitionArg).states.map((s: any) => s.statusId)).toEqual(['t1', 't2']);
-    expect(publishWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockUser, 'Incident');
+    expect(publishWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockUser, 'Incident', StatusScope.Global);
   });
 
   it('still migrates GLOBAL data even when the entity type also has request_access data flagged separately', async () => {

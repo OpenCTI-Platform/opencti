@@ -63,17 +63,10 @@ const workflowResolvers = {
     workflowDefinitionDelete: (_: any, { entityType, scope }: { entityType: string; scope?: StatusScope }, context: AuthContext) => {
       return deleteWorkflowDefinition(context, context.user!, entityType, scope);
     },
-    // Task 5: only GLOBAL scope is supported until a later task implements request_access
-    // routing (RequestAccessFlow.workflow_definition_id) — see migrate-status-to-workflow-definition.ts.
+    // Task 8: scope-driven — GLOBAL and RequestAccess-scoped migration are both supported,
+    // see migrate-status-to-workflow-definition.ts.
     migrateEntityTypeStatusToWorkflowDefinition: (_: any, { entityType, scope }: { entityType: string; scope: StatusScope }, context: AuthContext) => {
-      if (scope !== StatusScope.Global) {
-        throw new GraphQLError(
-          'Cannot migrate: only Global-scope migration is currently supported. RequestAccess-scoped '
-          + 'migration requires additional routing support (RequestAccessFlow.workflow_definition_id) '
-          + 'that has not been implemented yet.',
-        );
-      }
-      return migrateEntityTypeStatusToWorkflowDefinition(context, context.user!, entityType);
+      return migrateEntityTypeStatusToWorkflowDefinition(context, context.user!, entityType, scope);
     },
     triggerWorkflowEvent: (_: any, {
       entityId,

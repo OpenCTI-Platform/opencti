@@ -14,7 +14,7 @@ beforeEach(() => {
 });
 
 describe('Mutation resolver – migrateEntityTypeStatusToWorkflowDefinition', () => {
-  it('calls the domain migration function (3-arg signature) when scope is GLOBAL', async () => {
+  it('calls the domain migration function with the scope argument when scope is GLOBAL', async () => {
     const mockResult = { entityType: 'Incident', status: 'migrated' };
     vi.mocked(migrateEntityTypeStatusToWorkflowDefinition).mockResolvedValue(mockResult as any);
 
@@ -28,19 +28,27 @@ describe('Mutation resolver – migrateEntityTypeStatusToWorkflowDefinition', ()
       mockContext,
       mockContext.user,
       'Incident',
+      StatusScope.Global,
     );
     expect(result).toBe(mockResult);
   });
 
-  it('rejects with a clear error when scope is RequestAccess (not yet supported)', () => {
-    expect(() =>
-      workflowResolvers.Mutation.migrateEntityTypeStatusToWorkflowDefinition(
-        {},
-        { entityType: 'CaseRfi', scope: StatusScope.RequestAccess },
-        mockContext,
-      ),
-    ).toThrow(/Global-scope migration is currently supported/);
+  it('calls the domain migration function with the scope argument when scope is RequestAccess', async () => {
+    const mockResult = { entityType: 'CaseRfi', status: 'migrated' };
+    vi.mocked(migrateEntityTypeStatusToWorkflowDefinition).mockResolvedValue(mockResult as any);
 
-    expect(migrateEntityTypeStatusToWorkflowDefinition).not.toHaveBeenCalled();
+    const result = await workflowResolvers.Mutation.migrateEntityTypeStatusToWorkflowDefinition(
+      {},
+      { entityType: 'CaseRfi', scope: StatusScope.RequestAccess },
+      mockContext,
+    );
+
+    expect(migrateEntityTypeStatusToWorkflowDefinition).toHaveBeenCalledWith(
+      mockContext,
+      mockContext.user,
+      'CaseRfi',
+      StatusScope.RequestAccess,
+    );
+    expect(result).toBe(mockResult);
   });
 });
