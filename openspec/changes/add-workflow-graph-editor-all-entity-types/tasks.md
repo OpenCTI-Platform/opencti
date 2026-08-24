@@ -53,12 +53,12 @@
       `WorkflowDefinition` for a real entity, so `requestAccess-domain.ts`'s
       approve/decline writes would silently fail to sync the
       `WorkflowInstance` projection (see design.md D4b).
-- [ ] 4.2 In `migrate-status-to-workflow-definition.ts`, remove the
+- [x] 4.2 In `migrate-status-to-workflow-definition.ts`, remove the
       `FunctionalError` thrown for `RequestAccess`-scoped Status data, and
       persist `byScope[StatusScope.RequestAccess]`'s conversion output via
       `setWorkflowDefinition`/`publishWorkflowDefinition`, scoped correctly
       alongside the existing `GLOBAL` handling.
-- [ ] 4.3 Add/update backend tests for migrating `RequestAccess`-scoped
+- [x] 4.3 Add/update backend tests for migrating `RequestAccess`-scoped
       legacy Status data (success case, no-data no-op case, idempotency when
       `workflow_id` already set).
 - [ ] 4.4 Add backend tests for 4.1 covering `RequestAccess` scope in each
