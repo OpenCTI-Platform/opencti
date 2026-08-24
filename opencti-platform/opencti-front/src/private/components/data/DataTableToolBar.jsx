@@ -80,6 +80,7 @@ import {
   EXPLORE_EXUPDATE_EXDELETE,
   EXPLORE_EXUPDATE_PUBLISH,
   INVESTIGATION_INUPDATE_INDELETE,
+  isBypassUser,
   KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
   KNOWLEDGE_KNUPDATE_KNMERGE,
@@ -95,6 +96,7 @@ import { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMar
 import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectParticipantField';
 import { vocabularyQuery } from '../common/form/OpenVocabField';
 import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
+import { WorkflowBypassMassStatus } from '../common/workflow/WorkflowBypassMassStatus';
 import { isWorkflowUiEnabledForType } from '../common/workflow/workflowFeatureFlag';
 import { identitySearchIdentitiesSearchQuery } from '../common/identities/IdentitySearch';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
@@ -714,6 +716,23 @@ export class DataTableToolBar extends Component {
       R.assoc(key, value, actionsInputs[i]?.options || {}),
       actionsInputs[i] || {},
     );
+    this.setState({ actionsInputs });
+  }
+
+  // Task 12: bypass-only mass status update — sets both the target status and the
+  // applyTransitionActions option in one go, from WorkflowBypassMassStatus's onApply callback.
+  // Extracted as a static, pure helper so it's directly unit-testable (see buildActionFromInput).
+  static buildBypassStatusActionInput(currentInput, statusId, applyTransitionActions) {
+    return {
+      ...(currentInput || {}),
+      values: [statusId],
+      options: { applyTransitionActions },
+    };
+  }
+
+  handleApplyBypassStatus(i, statusId, applyTransitionActions) {
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = this.constructor.buildBypassStatusActionInput(actionsInputs[i], statusId, applyTransitionActions);
     this.setState({ actionsInputs });
   }
 
@@ -1795,47 +1814,58 @@ export class DataTableToolBar extends Component {
         );
       case 'x_opencti_workflow_id':
         return (
-          <Autocomplete
-            disabled={disabled}
-            size="small"
-            fullWidth={true}
-            selectOnFocus={true}
-            autoHighlight={true}
-            getOptionLabel={(option) => (option.label ? option.label : '')}
-            value={actionsInputs[i]?.values[0] || []}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                onFocus={this.searchStatuses.bind(this, i, selectedTypes)}
-                style={{ marginTop: 3 }}
+          <UserContext.Consumer>
+            {({ me }) => (isBypassUser(me) ? (
+              <WorkflowBypassMassStatus
+                entityType={selectedTypes[0]}
+                me={me}
+                disabled={disabled}
+                onApply={this.handleApplyBypassStatus.bind(this, i)}
               />
-            )}
-            noOptionsText={t('No available options')}
-            options={this.state.statuses}
-            onInputChange={this.searchStatuses.bind(this, i, selectedTypes)}
-            inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
-                <div className={classes.icon}>
-                  <Avatar
-                    variant="square"
-                    style={{
-                      color: option.color,
-                      borderColor: option.color,
-                      backgroundColor: hexToRGB(option.color),
-                    }}
-                  >
-                    {option.order}
-                  </Avatar>
-                </div>
-                <div className={classes.text}>{option.label}</div>
-              </li>
-            )}
-          />
+            ) : (
+              <Autocomplete
+                disabled={disabled}
+                size="small"
+                fullWidth={true}
+                selectOnFocus={true}
+                autoHighlight={true}
+                getOptionLabel={(option) => (option.label ? option.label : '')}
+                value={actionsInputs[i]?.values[0] || []}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    variant="standard"
+                    label={t('Values')}
+                    fullWidth={true}
+                    onFocus={this.searchStatuses.bind(this, i, selectedTypes)}
+                    style={{ marginTop: 3 }}
+                  />
+                )}
+                noOptionsText={t('No available options')}
+                options={this.state.statuses}
+                onInputChange={this.searchStatuses.bind(this, i, selectedTypes)}
+                inputValue={actionsInputs[i]?.inputValue || ''}
+                onChange={this.handleChangeActionInputValues.bind(this, i)}
+                renderOption={(props, option) => (
+                  <li {...props}>
+                    <div className={classes.icon}>
+                      <Avatar
+                        variant="square"
+                        style={{
+                          color: option.color,
+                          borderColor: option.color,
+                          backgroundColor: hexToRGB(option.color),
+                        }}
+                      >
+                        {option.order}
+                      </Avatar>
+                    </div>
+                    <div className={classes.text}>{option.label}</div>
+                  </li>
+                )}
+              />
+            ))}
+          </UserContext.Consumer>
         );
       case 'x_opencti_workflow_id_transition':
         return (

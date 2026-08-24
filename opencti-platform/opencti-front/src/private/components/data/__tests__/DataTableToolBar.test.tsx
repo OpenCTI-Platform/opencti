@@ -99,4 +99,57 @@ describe('DataTableToolBar - Apply transition (mass real-transition frontend)', 
       });
     });
   });
+
+  describe('buildBypassStatusActionInput', () => {
+    it('sets values to the target status and options.applyTransitionActions to true, preserving other existing keys on the input', () => {
+      const result = DataTableToolBar.buildBypassStatusActionInput(
+        { type: 'REPLACE', field: 'x_opencti_workflow_id', fieldType: 'ATTRIBUTE' },
+        'status-1',
+        true,
+      );
+      expect(result).toEqual({
+        type: 'REPLACE',
+        field: 'x_opencti_workflow_id',
+        fieldType: 'ATTRIBUTE',
+        values: ['status-1'],
+        options: { applyTransitionActions: true },
+      });
+    });
+
+    it('sets options.applyTransitionActions to false when the toggle is off', () => {
+      const result = DataTableToolBar.buildBypassStatusActionInput(
+        { type: 'REPLACE', field: 'x_opencti_workflow_id', fieldType: 'ATTRIBUTE' },
+        'status-2',
+        false,
+      );
+      expect(result.options).toEqual({ applyTransitionActions: false });
+      expect(result.values).toEqual(['status-2']);
+    });
+
+    it('handles an undefined/empty current input', () => {
+      const result = DataTableToolBar.buildBypassStatusActionInput(undefined, 'status-3', true);
+      expect(result).toEqual({
+        values: ['status-3'],
+        options: { applyTransitionActions: true },
+      });
+    });
+
+    it('feeds correctly into buildActionFromInput, producing the exact wire shape the pre-existing ACTION_TYPE_WORKFLOW_TRANSITION backend detector expects', () => {
+      const input = DataTableToolBar.buildBypassStatusActionInput(
+        { type: 'REPLACE', field: 'x_opencti_workflow_id', fieldType: 'ATTRIBUTE' },
+        'status-1',
+        true,
+      );
+      const action = DataTableToolBar.buildActionFromInput(input);
+      expect(action).toEqual({
+        type: 'REPLACE',
+        context: {
+          field: 'x_opencti_workflow_id',
+          type: 'ATTRIBUTE',
+          values: ['status-1'],
+          options: { applyTransitionActions: true },
+        },
+      });
+    });
+  });
 });
