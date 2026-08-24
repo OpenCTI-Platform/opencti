@@ -85,7 +85,7 @@
 
 ## 6. Mass real-transition apply (backend + frontend)
 
-- [ ] 6.1 In `taskManager.js`, add a new mass-op action type that calls
+- [x] 6.1 In `taskManager.js`, add a new mass-op action type that calls
       `triggerWorkflowEvent` per selected element for a given `eventName`,
       reusing the existing per-element try/catch error-tolerance pattern
       from `workflowTransitionOperationCallback`.
