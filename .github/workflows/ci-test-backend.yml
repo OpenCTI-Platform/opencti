@@ -116,8 +116,11 @@ jobs:
             cp -a /opt/opencti/opencti-graphql/node_modules ./node_modules
             mkdir -p ./src/__generated__
             cp -a /opt/opencti/opencti-graphql/src/__generated__/. ./src/__generated__/
-            # some tests (e.g. safeEjs worker) spawn a worker_thread pointing at the compiled bundle
-            cp -a /opt/opencti/opencti-graphql/build ./build
+            # Only the safeEjs worker_thread entry point is loaded from build/ at test runtime (see
+            # src/utils/safeEjs.client.ts). The rest of build/ (~1GB: back.mjs, scripts, sourcemaps)
+            # is production bundle output nothing here touches - do not copy it wholesale.
+            mkdir -p ./build
+            cp -a /opt/opencti/opencti-graphql/build/safeEjs.worker.mjs ./build/safeEjs.worker.mjs
             apk add --no-cache git # required by pip to install pycti from a git reference
             yarn install:python
             NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-integration-sync --coverage
@@ -259,8 +262,11 @@ jobs:
               cp -a /opt/opencti/opencti-graphql/node_modules ./node_modules
               mkdir -p ./src/__generated__
               cp -a /opt/opencti/opencti-graphql/src/__generated__/. ./src/__generated__/
-              # some tests (e.g. safeEjs worker) spawn a worker_thread pointing at the compiled bundle
-              cp -a /opt/opencti/opencti-graphql/build ./build
+              # Only the safeEjs worker_thread entry point is loaded from build/ at test runtime (see
+              # src/utils/safeEjs.client.ts). The rest of build/ (~1GB: back.mjs, scripts, sourcemaps)
+              # is production bundle output nothing here touches - do not copy it wholesale.
+              mkdir -p ./build
+              cp -a /opt/opencti/opencti-graphql/build/safeEjs.worker.mjs ./build/safeEjs.worker.mjs
               apk add --no-cache git # required by pip to install pycti from a git reference
               yarn install:python
               NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules-and-others --coverage
@@ -342,8 +348,11 @@ jobs:
             cp -a /opt/opencti/opencti-graphql/node_modules ./node_modules
             mkdir -p ./src/__generated__
             cp -a /opt/opencti/opencti-graphql/src/__generated__/. ./src/__generated__/
-            # some tests (e.g. safeEjs worker) spawn a worker_thread pointing at the compiled bundle
-            cp -a /opt/opencti/opencti-graphql/build ./build
+            # Only the safeEjs worker_thread entry point is loaded from build/ at test runtime (see
+            # src/utils/safeEjs.client.ts). The rest of build/ (~1GB: back.mjs, scripts, sourcemaps)
+            # is production bundle output nothing here touches - do not copy it wholesale.
+            mkdir -p ./build
+            cp -a /opt/opencti/opencti-graphql/build/safeEjs.worker.mjs ./build/safeEjs.worker.mjs
         '
 
     - name: Backend type checking and linting
