@@ -5,6 +5,7 @@ import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import GlobalWorkflowSettings from './GlobalWorkflowSettings';
 import RequestAccessSettings from './RequestAccessSettings';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
+import { hasRequestAccessWorkflowConfig } from '../../../common/workflow/hasRequestAccessWorkflowConfig';
 
 const GlobalWorkflowSettingsCard = () => {
   const { t_i18n } = useFormatter();
@@ -13,9 +14,7 @@ const GlobalWorkflowSettingsCard = () => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const requestAccessConfiguration = subType.settings.requestAccessConfiguration;
 
-  const hasRequestAccessConfig = isEnterpriseEdition
-    && subType.settings.availableSettings.includes('request_access_workflow')
-    && !!requestAccessConfiguration;
+  const hasRequestAccessConfig = hasRequestAccessWorkflowConfig(subType, isEnterpriseEdition);
 
   return (
     <Card title={t_i18n('Workflow')}>

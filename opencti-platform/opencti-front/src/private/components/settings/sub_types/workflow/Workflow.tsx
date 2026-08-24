@@ -1,5 +1,5 @@
 import Button from '@common/button/Button';
-import { Box, Typography } from '@mui/material';
+import { Box, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { graphql, PreloadedQuery, useMutation, usePreloadedQuery } from 'react-relay';
@@ -9,6 +9,7 @@ import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
 import { MESSAGING$ } from '../../../../../relay/environment';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import { StatusScopeEnum } from '../../../../../utils/statusConstants';
 import { workflowDependenciesQuery, workflowQuery } from '../SubTypeWorkflow';
 import { SubTypeWorkflowDependenciesQuery } from '../__generated__/SubTypeWorkflowDependenciesQuery.graphql';
 import { SubTypeWorkflowQuery, SubTypeWorkflowQuery$data } from '../__generated__/SubTypeWorkflowQuery.graphql';
@@ -138,11 +139,17 @@ const Workflow = ({
   depsQueryRef,
   onRefetch,
   entityType = 'DraftWorkspace',
+  canSwitchScope = false,
+  scope = StatusScopeEnum.GLOBAL,
+  onScopeChange,
 }: {
   queryRef: PreloadedQuery<SubTypeWorkflowQuery>;
   depsQueryRef: PreloadedQuery<SubTypeWorkflowDependenciesQuery>;
   onRefetch: () => void;
   entityType?: string;
+  canSwitchScope?: boolean;
+  scope?: StatusScopeEnum;
+  onScopeChange?: (scope: StatusScopeEnum) => void;
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -393,6 +400,24 @@ const Workflow = ({
 
   return (
     <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden' }}>
+      {canSwitchScope && (
+        <Box sx={{ position: 'absolute', top: 12, left: 12, zIndex: 5 }}>
+          <ToggleButtonGroup
+            size="small"
+            color="primary"
+            exclusive
+            value={scope}
+            onChange={(_, newScope: StatusScopeEnum | null) => {
+              if (newScope !== null && newScope !== scope) {
+                onScopeChange?.(newScope);
+              }
+            }}
+          >
+            <ToggleButton value={StatusScopeEnum.GLOBAL}>{t_i18n('Global')}</ToggleButton>
+            <ToggleButton value={StatusScopeEnum.REQUEST_ACCESS}>{t_i18n('Request Access')}</ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
+      )}
       <ReactFlow
         nodes={nodes}
         edges={edges}

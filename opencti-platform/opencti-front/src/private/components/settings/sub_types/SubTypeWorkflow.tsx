@@ -2,15 +2,20 @@ import Workflow from './workflow/Workflow';
 import { ReactFlowProvider } from 'reactflow';
 import { ErrorBoundary } from '../../Error';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { useOutletContext } from 'react-router-dom';
 import useQueryLoading, { useQueryLoadingWithLoadQuery } from '../../../../utils/hooks/useQueryLoading';
 import { SubTypeWorkflowQuery, SubTypeWorkflowQuery$data } from './__generated__/SubTypeWorkflowQuery.graphql';
 import { SubTypeWorkflowDependenciesQuery } from './__generated__/SubTypeWorkflowDependenciesQuery.graphql';
 import Loader from '../../../../components/Loader';
-import { Suspense, useCallback } from 'react';
+import { Suspense, useCallback, useContext, useState } from 'react';
+import { UserContext } from '../../../../utils/hooks/useAuth';
+import { StatusScopeEnum } from '../../../../utils/statusConstants';
+import { hasRequestAccessWorkflowConfig } from '../../common/workflow/hasRequestAccessWorkflowConfig';
+import { SubTypeOutletContext } from './SubTypeOutletContext';
 
 export const workflowQuery = graphql`
-  query SubTypeWorkflowQuery($entityType: String!, $allowDraft: Boolean) {
-    workflowDefinition(entityType: $entityType, allowDraft: $allowDraft) {
+  query SubTypeWorkflowQuery($entityType: String!, $allowDraft: Boolean, $scope: StatusScope) {
+    workflowDefinition(entityType: $entityType, allowDraft: $allowDraft, scope: $scope) {
       id
       name
       published
@@ -121,9 +126,12 @@ interface WorkflowWithDependenciesProps {
   queryRef: PreloadedQuery<SubTypeWorkflowQuery>;
   onRefetch: () => void;
   entityType: string;
+  canSwitchScope: boolean;
+  scope: StatusScopeEnum;
+  onScopeChange: (scope: StatusScopeEnum) => void;
 }
 
-const WorkflowWithDependencies = ({ queryRef, onRefetch, entityType }: WorkflowWithDependenciesProps) => {
+const WorkflowWithDependencies = ({ queryRef, onRefetch, entityType, canSwitchScope, scope, onScopeChange }: WorkflowWithDependenciesProps) => {
   const { workflowDefinition } = usePreloadedQuery<SubTypeWorkflowQuery>(workflowQuery, queryRef);
   const memberIds = extractWorkflowMembersIds(workflowDefinition);
 
@@ -139,7 +147,15 @@ const WorkflowWithDependencies = ({ queryRef, onRefetch, entityType }: WorkflowW
 
   return (
     <Suspense fallback={<Loader />}>
-      <Workflow queryRef={queryRef} depsQueryRef={depsQueryRef} onRefetch={onRefetch} entityType={entityType} />
+      <Workflow
+        queryRef={queryRef}
+        depsQueryRef={depsQueryRef}
+        onRefetch={onRefetch}
+        entityType={entityType}
+        canSwitchScope={canSwitchScope}
+        scope={scope}
+        onScopeChange={onScopeChange}
+      />
     </Suspense>
   );
 };
@@ -149,18 +165,31 @@ interface SubTypeWorkflowProps {
 }
 
 const SubTypeWorkflow = ({ entityType }: SubTypeWorkflowProps) => {
+  const outletContext = useOutletContext<SubTypeOutletContext | undefined>();
+  const { settings } = useContext(UserContext);
+  const isEnterpriseEdition = !!settings?.platform_enterprise_edition?.license_validated;
+  const canSwitchScope = outletContext?.subType
+    ? hasRequestAccessWorkflowConfig(outletContext.subType, isEnterpriseEdition)
+    : false;
+
+  const [scope, setScope] = useState<StatusScopeEnum>(StatusScopeEnum.GLOBAL);
+
   const [workflowQueryRef, loadWorkflowQuery] = useQueryLoadingWithLoadQuery<SubTypeWorkflowQuery>(
     workflowQuery,
-    { entityType, allowDraft: entityType === 'DraftWorkspace' },
+    { entityType, scope, allowDraft: entityType === 'DraftWorkspace' },
     { fetchPolicy: 'network-only' },
   );
 
   const handleRefetch = useCallback(() => {
     loadWorkflowQuery(
-      { entityType, allowDraft: entityType === 'DraftWorkspace' },
+      { entityType, scope, allowDraft: entityType === 'DraftWorkspace' },
       { fetchPolicy: 'network-only' },
     );
-  }, [loadWorkflowQuery, entityType]);
+  }, [loadWorkflowQuery, entityType, scope]);
+
+  const handleScopeChange = useCallback((newScope: StatusScopeEnum) => {
+    setScope(newScope);
+  }, []);
 
   if (!workflowQueryRef) {
     return <Loader />;
@@ -175,6 +204,9 @@ const SubTypeWorkflow = ({ entityType }: SubTypeWorkflowProps) => {
               queryRef={workflowQueryRef}
               onRefetch={handleRefetch}
               entityType={entityType}
+              canSwitchScope={canSwitchScope}
+              scope={scope}
+              onScopeChange={handleScopeChange}
             />
           </ReactFlowProvider>
         </div>

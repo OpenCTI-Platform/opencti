@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import type { PreloadedQuery } from 'react-relay';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import ThemeDark from '../../../../../components/ThemeDark';
+import { StatusScopeEnum } from '../../../../../utils/statusConstants';
 import { SubTypeWorkflowDependenciesQuery } from '../__generated__/SubTypeWorkflowDependenciesQuery.graphql';
 import { SubTypeWorkflowQuery } from '../__generated__/SubTypeWorkflowQuery.graphql';
 import Workflow from './Workflow';
@@ -613,6 +614,70 @@ describe('Workflow Component', () => {
       await waitFor(() => {
         expect(screen.getByTestId('publish-button')).toHaveTextContent('Published');
       });
+    });
+  });
+
+  describe('Scope switcher', () => {
+    it('does not render a scope switcher when canSwitchScope is false', () => {
+      renderWithTheme(
+        <Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} canSwitchScope={false} />,
+      );
+
+      expect(screen.queryByRole('button', { name: 'Global' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Request Access' })).not.toBeInTheDocument();
+    });
+
+    it('renders Global/Request Access options when canSwitchScope is true', () => {
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+          canSwitchScope
+          scope={StatusScopeEnum.GLOBAL}
+        />,
+      );
+
+      expect(screen.getByRole('button', { name: 'Global' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Request Access' })).toBeInTheDocument();
+    });
+
+    it('calls onScopeChange with the new scope when switching to Request Access', async () => {
+      const user = userEvent.setup();
+      const mockOnScopeChange = vi.fn();
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+          canSwitchScope
+          scope={StatusScopeEnum.GLOBAL}
+          onScopeChange={mockOnScopeChange}
+        />,
+      );
+
+      await user.click(screen.getByRole('button', { name: 'Request Access' }));
+
+      expect(mockOnScopeChange).toHaveBeenCalledWith(StatusScopeEnum.REQUEST_ACCESS);
+    });
+
+    it('does not call onScopeChange when clicking the already-selected option', async () => {
+      const user = userEvent.setup();
+      const mockOnScopeChange = vi.fn();
+      renderWithTheme(
+        <Workflow
+          queryRef={mockQueryRef}
+          depsQueryRef={mockDepsQueryRef}
+          onRefetch={mockOnRefetch}
+          canSwitchScope
+          scope={StatusScopeEnum.GLOBAL}
+          onScopeChange={mockOnScopeChange}
+        />,
+      );
+
+      await user.click(screen.getByRole('button', { name: 'Global' }));
+
+      expect(mockOnScopeChange).not.toHaveBeenCalled();
     });
   });
 });
