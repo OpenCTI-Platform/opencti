@@ -31,12 +31,12 @@
       in `workflow-resolvers.ts`/`workflow.graphql` wrapping the domain
       migration function, auth-gated the same as `workflowMigrationPreview`
       (`SETTINGS_SETCUSTOMIZATION`).
-- [ ] 3.2 In the frontend editor, when opening a type/scope with no
+- [x] 3.2 In the frontend editor, when opening a type/scope with no
       `workflow_id` configured, call the existing `workflowMigrationPreview`
       query and render a confirmation dialog with its diagnostics.
-- [ ] 3.3 Wire the dialog's confirm action to the new mutation from 3.1; on
+- [x] 3.3 Wire the dialog's confirm action to the new mutation from 3.1; on
       success, reload the editor with the newly published definition.
-- [ ] 3.4 Add tests: preview diagnostics render correctly, migration mutation
+- [x] 3.4 Add tests: preview diagnostics render correctly, migration mutation
       is only called after explicit confirm, subsequent visits skip the
       confirmation once `workflow_id` is set.
 
