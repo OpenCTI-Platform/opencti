@@ -400,24 +400,6 @@ const Workflow = ({
 
   return (
     <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden' }}>
-      {canSwitchScope && (
-        <Box sx={{ position: 'absolute', top: 12, left: 12, zIndex: 5 }}>
-          <ToggleButtonGroup
-            size="small"
-            color="primary"
-            exclusive
-            value={scope}
-            onChange={(_, newScope: StatusScopeEnum | null) => {
-              if (newScope !== null && newScope !== scope) {
-                onScopeChange?.(newScope);
-              }
-            }}
-          >
-            <ToggleButton value={StatusScopeEnum.GLOBAL}>{t_i18n('Global')}</ToggleButton>
-            <ToggleButton value={StatusScopeEnum.REQUEST_ACCESS}>{t_i18n('Request Access')}</ToggleButton>
-          </ToggleButtonGroup>
-        </Box>
-      )}
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -436,6 +418,24 @@ const Workflow = ({
         zoomOnDoubleClick={false}
         proOptions={proOptions}
       >
+        {canSwitchScope && (
+          <Panel position="top-left">
+            <ToggleButtonGroup
+              size="small"
+              color="primary"
+              exclusive
+              value={scope}
+              onChange={(_, newScope: StatusScopeEnum | null) => {
+                if (newScope !== null && newScope !== scope) {
+                  onScopeChange?.(newScope);
+                }
+              }}
+            >
+              <ToggleButton value={StatusScopeEnum.GLOBAL}>{t_i18n('Global')}</ToggleButton>
+              <ToggleButton value={StatusScopeEnum.REQUEST_ACCESS}>{t_i18n('Request Access')}</ToggleButton>
+            </ToggleButtonGroup>
+          </Panel>
+        )}
         {nodes.length ? (
           <Panel position="top-right" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <PublishButton
