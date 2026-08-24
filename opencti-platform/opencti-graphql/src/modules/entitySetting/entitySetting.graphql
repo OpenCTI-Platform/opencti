@@ -47,6 +47,7 @@ type EntitySetting implements InternalObject & BasicObject {
   platform_entity_files_ref: Boolean @auth
   platform_hidden_type: Boolean @auth
   enforce_reference: Boolean @auth
+  sync_workflow_status_by_name: Boolean @auth @ff(flags: ["SYNC_WORKFLOW_STATUS_BY_NAME"], softFail: true, defaultValue: "false")
   attributes_configuration: String @auth(for: [SETTINGS_SETCUSTOMIZATION])
   # Attribute definitions (name/label/mandatory/...) are schema metadata also needed by
   # knowledge-level read views (e.g. the draft Review diff panel) to display field labels.

@@ -1007,6 +1007,7 @@
   "Subject public key modulus": "Modulo della chiave pubblica del soggetto",
   "Submission date": "Data di invio",
   "SWID": "SWID",
+  "Sync workflow statuses by name": "Sincronizza gli stati del flusso di lavoro in base al nome",
   "Synchronized": "Sincronizzato",
   "Tags": "Tag",
   "Target entity": "Entità target",

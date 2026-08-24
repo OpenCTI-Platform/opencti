@@ -1007,6 +1007,7 @@
   "Subject public key modulus": "주제 공개 키 모듈러스",
   "Submission date": "제출 날짜",
   "SWID": "SWID",
+  "Sync workflow statuses by name": "이름별로 워크플로 상태 동기화",
   "Synchronized": "동기화됨",
   "Tags": "태그",
   "Target entity": "대상 엔터티",

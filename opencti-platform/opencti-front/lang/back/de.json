@@ -1007,6 +1007,7 @@
   "Subject public key modulus": "Betreff öffentlicher Schlüsselmodul",
   "Submission date": "Datum der Einreichung",
   "SWID": "SWID",
+  "Sync workflow statuses by name": "Workflow-Status nach Namen synchronisieren",
   "Synchronized": "Synchronisiert",
   "Tags": "Tags",
   "Target entity": "Ziel-Entität",
