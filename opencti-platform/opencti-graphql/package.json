@@ -129,7 +129,7 @@
     "https-proxy-agent": "9.1.0",
     "ioredis": "5.8.2",
     "ipaddr.js": "2.5.0",
-    "jose": "6.2.9",
+    "jose": "6.2.10",
     "js-deep-equals": "2.1.1",
     "json-to-plain-text": "1.2.0",
     "jsonpath-plus": "10.4.0",
