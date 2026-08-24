@@ -278,6 +278,43 @@ describe('NavBarView accent compensation', () => {
       ).not.toBe('');
     });
   });
+
+  /**
+   * The tint set itself, in both directions.
+   *
+   * The sweep above only sees properties an `aria-current` rule resolves, and
+   * the brand tints are not among them: the selected row is not what consumes
+   * them. Measured on the installed stylesheet at this pin, the tints are
+   * referenced by 8 rules and by ZERO aria-current rules — so renaming the tint
+   * the rail re-derives passed all of this file's other tests. That is how
+   * `-transparency-50` survived after the library moved the alpha to 55%: the
+   * rail kept re-deriving a property nothing resolves any more, and the
+   * customised accent fell back to Filigran blue on every secondary control
+   * inside the rail, silently.
+   *
+   * So the assertion is set equality against the SERVED stylesheet, not a
+   * spelling. A tint the library consumes and the rail does not override is the
+   * original defect; a tint the rail overrides and the library no longer
+   * consumes is dead compensation, which is the same defect one pin later.
+   */
+  it('re-derives exactly the brand tints the installed library consumes', () => {
+    const require = createRequire(import.meta.url);
+    const css = readFileSync(require.resolve('@filigran/design-system/dist/index.css'), 'utf8');
+    const tint = /--color-filigran-brand-primary-transparency-\d+/g;
+    const consumed = new Set(
+      [...css.matchAll(new RegExp(`var\\((${tint.source})\\)`, 'g'))].map((m) => m[1]),
+    );
+    // A stylesheet that resolves no tint at all would make the comparison
+    // below pass against an empty rail.
+    expect(consumed.size).toBeGreaterThan(0);
+
+    const { container } = renderNav({ accentColor: '#ff9800' });
+    const nav = container.querySelector('nav');
+    const reDerived = new Set(
+      [...(nav?.getAttribute('style') ?? '').matchAll(tint)].map((m) => m[0]),
+    );
+    expect([...reDerived].sort()).toEqual([...consumed].sort());
+  });
 });
 
 describe('NavBarView rail width', () => {

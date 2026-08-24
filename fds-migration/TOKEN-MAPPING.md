@@ -363,11 +363,15 @@ resolves per-layer elevation tokens distinctly, so each `bgN` maps to its own
 | `background.bg2` | `#0D182A` → `--bg-elevation-default-layer-1` (`#0d172b`) | `#FFFFFF` → `--bg-elevation-default-layer-1` (`#ffffff`, exact match) |
 | `background.bg3` | `#253348` → `--bg-elevation-default-layer-2` (`#13213e`) | `#E4E4E4` → `--bg-elevation-default-layer-2` (`#f4f4f6`) |
 | `background.bg4` | `#1C2F49` → `--bg-elevation-default-layer-3` (`#1f3965`) | `#DDE1FE` → `--bg-elevation-default-layer-3` (`#e4e5e7`) |
-| `background.disabled` | `#363B46` → `--bg-elevation-disabled` (`#18191b`) | `#DFDFDF` → `--bg-elevation-disabled` (`#c8d6ee`) |
+| `background.disabled` | declared `#363B46` → `--bg-elevation-disabled` (`#18191b`) — **NOT applied**: `ThemeDark.ts` still holds the literal | declared `#DFDFDF` → `--bg-elevation-disabled` (`#c8d6ee`) — **NOT applied**: `ThemeLight.ts` still holds the literal |
 
-Usage: `bg1` → `TopBar.tsx`; `bg4` → `DraftToolbar.tsx`. `bg2`/`bg3`/`disabled`
-are declared on the theme but no direct consumer was found in this sweep —
-still real, now-tokenized properties that could be consumed at any point.
+Usage: `bg1` → `TopBar.tsx`; `bg4` → `DraftToolbar.tsx`. `bg2`/`bg3` are
+declared on the theme with no direct consumer found in this sweep — still real,
+now-tokenized properties that could be consumed at any point. `disabled` is the
+exception on both counts (corrected 2026-08-24): the mapping above was declared
+but never applied, and it does have a consumer — `getDisabledSx` in
+`components/common/button/Button.utils.ts` paints it as the background of a
+disabled primary Button. Rewiring it is a rendered change, not a no-op.
 
 ### 4. `designSystem.border.main` / `.border1` / `.border2` — ✅ RESOLVED 2026-07-28
 
