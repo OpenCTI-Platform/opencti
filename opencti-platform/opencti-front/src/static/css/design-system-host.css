@@ -84,3 +84,33 @@
 :root {
   --fds-z-overlay: 1300;
 }
+
+/* FDS-WORKAROUND #40: the product's global anchor reset removes the breadcrumb
+   link's underline on hover and on focus — remove when index.css no longer
+   neutralises text-decoration on `a:hover` / `a:focus` — see
+   fds-migration/LIBRARY-FEEDBACK.md #40
+
+   `index.css` carries `a, a:hover, a:visited, a:focus { text-decoration: none }`.
+   At rest the library wins: `.underline` (0,1,0) beats the bare `a` (0,0,1),
+   measured `text-decoration-line: underline` in both modes. On hover and on
+   focus it loses: `a:hover` and `a:focus` are (0,1,1), one pseudo-class above
+   the utility, so the shorthand resets the line to `none` — measured, both
+   modes, and it also resets the thickness the library sets to `from-font`.
+
+   That underline is not decoration: since the library's 2026-08-20 redesign a
+   linked and an unlinked entry paint the SAME colour token, so the underline is
+   the only thing that says which entry is clickable. It survives at rest, which
+   is where the 1.4.1 cue has to be, so nothing is non-conforming today — but the
+   cue disappearing exactly when the user reaches the link is not the component's
+   contract, and no gate in either repository can see it.
+
+   Scoped to the landmark through `#page-breadcrumb`, the id this product's own
+   wrapper always sets and which the data grid already keys a height on. The
+   global rule itself is old, broad, and not this migration's to remove: deleting
+   it would change anchor rendering across the whole application. Same treatment
+   as the `:focus { outline: 0 }` of entry #35. */
+#page-breadcrumb a:hover,
+#page-breadcrumb a:focus {
+  text-decoration-line: underline;
+  text-decoration-thickness: from-font;
+}
