@@ -159,7 +159,7 @@ testDeletedCounter.software = 1;
 testDeletedCounter.iccid = 3;
 testDeletedCounter.imei = 2;
 testDeletedCounter.imsi = 1;
-testDeletedCounter['security-coverage'] = 11;
+testDeletedCounter['security-coverage'] = 15;
 testDeletedCounter['security-coverage-result'] = 10;
 
 export const doTotal = (eventCounter: Record<string, number>) => {
