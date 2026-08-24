@@ -578,6 +578,7 @@
   "Bookmarks are not supported in public dashboards": "No se admiten marcadores en los cuadros de mando públicos",
   "Boolean": "Booleano",
   "Both latitude and longitude must be provided together": "Tanto la latitud como la longitud deben indicarse juntas",
+  "Breadcrumb": "Ruta de navegación",
   "Browse agents": "Explorar agentes",
   "Browse files": "Buscar archivos",
   "Browse More": "Ver más",
