@@ -34,6 +34,7 @@ import { findById as findThemeById } from '../modules/theme/theme-domain';
 import { buildAvailableProviders } from './setting-auth';
 import { CguStatus } from '../generated/graphql';
 import { getXtmOneRegistrationVersion } from '../modules/xtm/one/xtm-one';
+import { getBuildCommit } from '../utils/build-info';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -41,6 +42,7 @@ export const getMemoryStatistics = () => {
 
 export const getApplicationInfo = () => ({
   version: PLATFORM_VERSION,
+  buildCommit: getBuildCommit(),
   debugStats: {}, // Lazy loaded
 });
 

@@ -7,11 +7,15 @@ import { initLockFork } from './lock/master-lock';
 import { checkSystemDependencies } from './boot-utils';
 import { startLivenessServer, stopLivenessServer } from './http/httpLiveness';
 import { startEngineHealthMonitor, stopEngineHealthMonitor } from './database/engine-monitoring';
+import { getBuildCommit } from './utils/build-info';
 
 // region platform start and stop
 export const platformStart = async () => {
   const startTime = Date.now();
   logApp.info('[OPENCTI] Starting platform', { environment });
+  if (!getBuildCommit()) {
+    logApp.warn('[OPENCTI] Build commit metadata is unavailable');
+  }
   try {
     // Start the liveness probe first so orchestrators can detect the process is alive
     try {

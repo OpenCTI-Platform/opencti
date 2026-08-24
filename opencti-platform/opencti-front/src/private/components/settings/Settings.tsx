@@ -41,6 +41,7 @@ import HiddenTypesField from './hidden_types/HiddenTypesField';
 import SettingsAnalytics from './settings_analytics/SettingsAnalytics';
 import SettingsMessages from './settings_messages/SettingsMessages';
 import { useChatbot } from '@components/chatbox/ChatbotContext';
+import { formatOpenCTIVersion } from './SettingsUtils';
 
 const AI_TYPE_MAP: Record<string, string> = {
   mistralai: 'MistralAI',
@@ -118,6 +119,7 @@ const settingsQuery = graphql`
     }
     about {
       version
+      buildCommit
       dependencies {
         name
         version
@@ -214,7 +216,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
   };
 
   const modules = settings.platform_modules;
-  const { version, dependencies } = about || { version: '', dependencies: [] };
+  const { version, buildCommit, dependencies } = about || { version: '', buildCommit: null, dependencies: [] };
   const isEnterpriseEditionActivated = settings.platform_enterprise_edition.license_enterprise;
   const isEnterpriseEditionByConfig = settings.platform_enterprise_edition.license_by_configuration;
   const isEnterpriseEditionValid = settings.platform_enterprise_edition.license_validated;
@@ -592,7 +594,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     <ListItem divider={true}>
                       <ListItemText primary={t_i18n('Version')} />
                       <ItemBoolean
-                        neutralLabel={version}
+                        neutralLabel={formatOpenCTIVersion(version, buildCommit)}
                         status={null}
                       />
                     </ListItem>
