@@ -348,6 +348,7 @@ export const validateWorkflowDefinitionData = async (
   if (initialState !== '*') {
     const allStateIds = [...extractAllStatesFromDefinition(validationResult.data)];
     const unreachableStates = findUnreachableStates(initialState, allStateIds, transitions);
+    const unreachableStateIds = new Set(unreachableStates);
     unreachableStates.forEach((stateId) => {
       errors.push({
         type: 'STATE_UNREACHABLE',
@@ -358,9 +359,12 @@ export const validateWorkflowDefinitionData = async (
     // Ordering: prefer the longest-simple-path order derived from the transition graph. Only the
     // specific states entangled in a cycle (or affected by the DFS step cap) come back `null` from
     // computeStateOrder — those, and only those, must instead carry a manually supplied `order` value.
+    // Unreachable states are excluded here: they already get STATE_UNREACHABLE above, and would
+    // otherwise also get a misleading "contains a cycle" MISSING_MANUAL_ORDER message.
     const computedOrder = computeStateOrder(initialState, transitions);
     states.forEach((state: z.infer<typeof workflowSerializedStateSchema>) => {
       if (!state.statusId) return;
+      if (unreachableStateIds.has(state.statusId)) return;
       const stateOrder = computedOrder.get(state.statusId);
       if ((stateOrder === null || stateOrder === undefined) && state.order === undefined) {
         errors.push({
