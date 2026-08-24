@@ -42,7 +42,7 @@
 
 ## 4. RequestAccess-scope migration support
 
-- [ ] 4.1 Generalize `resolveEntityCreationScope` into a shared
+- [x] 4.1 Generalize `resolveEntityCreationScope` into a shared
       `resolveStatusScope(context, user, statusId?)` helper, and use it \u2014
       instead of the hardcoded `StatusScope.Global` default \u2014 in
       `syncWorkflowInstanceFromExternalWrite`, `getWorkflowInstance`,
