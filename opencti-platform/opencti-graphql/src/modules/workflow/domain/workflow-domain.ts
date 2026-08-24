@@ -440,9 +440,10 @@ export const getWorkflowDefinition = async (
   user: AuthUser,
   entityType: string,
   allowDraft: boolean = false,
+  scope: StatusScope = StatusScope.Global,
 ): Promise<WorkflowDefinitionResponse | null> => {
   const entitySetting = await getWorkflowConfig(context, user, entityType);
-  return getDefinitionData(context, user, entitySetting, allowDraft);
+  return getDefinitionData(context, user, entitySetting, allowDraft, scope);
 };
 
 /**
@@ -506,6 +507,20 @@ export const getWorkflowPublishedVersionId = async (
 };
 
 /**
+ * `scope` selects which of an entity type's two possible WorkflowDefinition ids (the standard
+ * `workflow_id`, or the dedicated `request_access_workflow.workflow_definition_id`) a CRUD
+ * operation reads/writes. Mirrors `getDefinitionData`'s own scope resolution (Task 7) but without
+ * its Global-fallback, since authoring operations must know precisely whether a dedicated
+ * RequestAccess definition already exists.
+ */
+const resolveScopedWorkflowDefinitionId = (
+  entitySetting: BasicStoreEntityEntitySetting,
+  scope: StatusScope,
+): string | null | undefined => (
+  scope === StatusScope.RequestAccess ? entitySetting.request_access_workflow?.workflow_definition_id : entitySetting.workflow_id
+);
+
+/**
  * Create or update workflow definition for an entity type.
  */
 export const setWorkflowDefinition = async (
@@ -513,6 +528,7 @@ export const setWorkflowDefinition = async (
   user: AuthUser,
   entityType: string,
   definition: string,
+  scope: StatusScope = StatusScope.Global,
 ): Promise<EntitySettingWithWorkflowResponse> => {
   const entitySetting = await getWorkflowConfig(context, user, entityType);
   if (!entitySetting) {
@@ -545,7 +561,8 @@ export const setWorkflowDefinition = async (
   const executionContext = bypassDraftContext(context);
   const executionUser = executionContext.user!;
 
-  const errors = await validateWorkflowDefinitionData(executionContext, executionUser, definition, entityType, entitySetting.workflow_id ?? undefined);
+  const existingDefinitionId = resolveScopedWorkflowDefinitionId(entitySetting, scope);
+  const errors = await validateWorkflowDefinitionData(executionContext, executionUser, definition, entityType, existingDefinitionId ?? undefined);
 
   const workflowName = definitionObj.name || `Workflow for ${entityType}`;
 
@@ -559,11 +576,11 @@ export const setWorkflowDefinition = async (
   };
 
   // 1. Check if we have an existing workflow linked
-  if (entitySetting.workflow_id) {
+  if (existingDefinitionId) {
     const existingWorkflow = await storeLoadById(
       executionContext,
       executionUser,
-      entitySetting.workflow_id,
+      existingDefinitionId,
       ENTITY_TYPE_WORKFLOW_DEFINITION,
     ) as WorkflowDefinitionEntity | undefined;
     if (existingWorkflow) {
@@ -593,6 +610,7 @@ export const setWorkflowDefinition = async (
 
       return {
         ...entitySetting,
+        workflow_id: existingDefinitionId,
         errors,
         published,
       } as EntitySettingWithWorkflowResponse;
@@ -617,6 +635,20 @@ export const setWorkflowDefinition = async (
   validateVersionConsistency(workflowDefinition);
 
   // 3. Link it to the EntitySetting
+  if (scope === StatusScope.RequestAccess) {
+    const { element } = await updateAttribute(executionContext, executionUser, entitySetting.id, 'EntitySetting', [
+      { key: 'request_access_workflow', value: [{ ...entitySetting.request_access_workflow, workflow_definition_id: workflowDefinition.id }] },
+    ]);
+    const raElementWithSetting = element as unknown as BasicStoreEntityEntitySetting;
+    return {
+      id: raElementWithSetting.id,
+      workflow_id: workflowDefinition.id,
+      target_type: raElementWithSetting.target_type,
+      errors,
+      published: false,
+    } as EntitySettingWithWorkflowResponse;
+  }
+
   const { element } = await updateAttribute(executionContext, executionUser, entitySetting.id, 'EntitySetting', [
     { key: 'workflow_id', value: [workflowDefinition.id] },
   ]);
@@ -641,10 +673,18 @@ export const deleteWorkflowDefinition = async (
   context: AuthContext,
   user: AuthUser,
   entityType: string,
+  scope: StatusScope = StatusScope.Global,
 ): Promise<BasicStoreEntityEntitySetting | undefined> => {
   const entitySetting = await getWorkflowConfig(context, user, entityType);
-  if (entitySetting?.workflow_id) {
+  const existingDefinitionId = entitySetting ? resolveScopedWorkflowDefinitionId(entitySetting, scope) : undefined;
+  if (entitySetting && existingDefinitionId) {
     const executionContext = bypassDraftContext(context);
+    if (scope === StatusScope.RequestAccess) {
+      const { element } = await updateAttribute(executionContext, executionContext.user!, entitySetting.id, 'EntitySetting', [
+        { key: 'request_access_workflow', value: [{ ...entitySetting.request_access_workflow, workflow_definition_id: null }] },
+      ]);
+      return element as unknown as BasicStoreEntityEntitySetting;
+    }
     const { element } = await updateAttribute(executionContext, executionContext.user!, entitySetting.id, 'EntitySetting', [
       { key: 'workflow_id', value: [null] },
     ]);
@@ -668,6 +708,7 @@ export const ensureFullStatusMapping = async (
   user: AuthUser,
   entityType: string,
   definitionData: WorkflowDefinitionData,
+  scope: StatusScope = StatusScope.Global,
 ): Promise<void> => {
   const states = definitionData.states ?? [];
   if (states.length === 0) return;
@@ -680,7 +721,7 @@ export const ensureFullStatusMapping = async (
       mode: FilterMode.And,
       filters: [
         { key: ['type'], values: [entityType] },
-        { key: ['scope'], values: [StatusScope.Global] },
+        { key: ['scope'], values: [scope] },
       ],
       filterGroups: [],
     },
@@ -697,7 +738,7 @@ export const ensureFullStatusMapping = async (
     await createStatus(executionContext, executionUser, entityType, {
       template_id: state.statusId,
       order,
-      scope: StatusScope.Global,
+      scope,
     });
   }
 };
@@ -757,6 +798,7 @@ const reconcileOrphanedStatuses = async (
   entityType: string,
   oldDefinitionData: WorkflowDefinitionData,
   newDefinitionData: WorkflowDefinitionData,
+  scope: StatusScope = StatusScope.Global,
 ): Promise<void> => {
   const oldTemplateIds = new Set((oldDefinitionData.states ?? []).map((s) => s.statusId).filter((id): id is string => !!id));
   const newTemplateIds = new Set((newDefinitionData.states ?? []).map((s) => s.statusId).filter((id): id is string => !!id));
@@ -766,7 +808,7 @@ const reconcileOrphanedStatuses = async (
       mode: FilterMode.And,
       filters: [
         { key: ['type'], values: [entityType] },
-        { key: ['scope'], values: [StatusScope.Global] },
+        { key: ['scope'], values: [scope] },
       ],
       filterGroups: [],
     },
@@ -813,7 +855,7 @@ export const isStatusOrphaned = async (
   user: AuthUser,
   status: BasicWorkflowStatus,
 ): Promise<boolean> => {
-  const definitionData = await getWorkflowDefinition(context, user, status.type, false);
+  const definitionData = await getWorkflowDefinition(context, user, status.type, false, status.scope);
   const stillMapped = !!definitionData
     && (definitionData.states ?? []).some((s: { statusId?: string }) => s.statusId === status.template_id);
   if (stillMapped) return false;
@@ -833,13 +875,15 @@ export const publishWorkflowDefinition = async (
   context: AuthContext,
   user: AuthUser,
   entityType: string,
+  scope: StatusScope = StatusScope.Global,
 ): Promise<EntitySettingWithWorkflowResponse> => {
   const entitySetting = await getWorkflowConfig(context, user, entityType);
   if (!entitySetting) {
     throw FunctionalError('Entity setting not found for type', { entityType });
   }
 
-  if (!entitySetting.workflow_id) {
+  const existingDefinitionId = resolveScopedWorkflowDefinitionId(entitySetting, scope);
+  if (!existingDefinitionId) {
     throw FunctionalError('No workflow definition to publish', { entityType });
   }
 
@@ -849,11 +893,11 @@ export const publishWorkflowDefinition = async (
   const workflowDefinitionEntity = await storeLoadById(
     executionContext,
     executionUser,
-    entitySetting.workflow_id,
+    existingDefinitionId,
     ENTITY_TYPE_WORKFLOW_DEFINITION,
   ) as WorkflowDefinitionEntity | undefined;
   if (!workflowDefinitionEntity) {
-    throw FunctionalError('Workflow definition not found', { workflowId: entitySetting.workflow_id });
+    throw FunctionalError('Workflow definition not found', { workflowId: existingDefinitionId });
   }
 
   const draftVersion = workflowDefinitionEntity.draft_version;
@@ -929,7 +973,7 @@ export const publishWorkflowDefinition = async (
       // marked for deferred deletion (grace period) unless still referenced by an entity or by a
       // request-access workflow config; a Status still pending deletion that is reintroduced by
       // the new definition has its pending mark cleared (restore wins over a concurrent purge).
-      await reconcileOrphanedStatuses(executionContext, executionUser, entityType, oldDef, newDef);
+      await reconcileOrphanedStatuses(executionContext, executionUser, entityType, oldDef, newDef, scope);
     }
   }
 
@@ -952,7 +996,7 @@ export const publishWorkflowDefinition = async (
     // Malformed content will already have failed validation earlier; nothing to reconcile here.
   }
   if (publishedDefinitionData) {
-    await ensureFullStatusMapping(executionContext, executionUser, entityType, publishedDefinitionData);
+    await ensureFullStatusMapping(executionContext, executionUser, entityType, publishedDefinitionData, scope);
   }
 
   // CONSISTENCY GUARANTEE: published_version will be in all_versions (already there via draft)
@@ -985,7 +1029,7 @@ export const publishWorkflowDefinition = async (
   const entitySettingWithWorkflow = entitySetting as BasicStoreEntityEntitySetting;
   return {
     id: entitySettingWithWorkflow.id,
-    workflow_id: entitySettingWithWorkflow.workflow_id,
+    workflow_id: workflowDefinitionEntity.id,
     target_type: entitySettingWithWorkflow.target_type,
     errors: [],
     published: true,
@@ -1000,13 +1044,15 @@ export const restorePublishedWorkflowDefinition = async (
   context: AuthContext,
   user: AuthUser,
   entityType: string,
+  scope: StatusScope = StatusScope.Global,
 ): Promise<EntitySettingWithWorkflowResponse> => {
   const entitySetting = await getWorkflowConfig(context, user, entityType);
   if (!entitySetting) {
     throw FunctionalError('Entity setting not found for type', { entityType });
   }
 
-  if (!entitySetting.workflow_id) {
+  const existingDefinitionId = resolveScopedWorkflowDefinitionId(entitySetting, scope);
+  if (!existingDefinitionId) {
     throw FunctionalError('No workflow definition found', { entityType });
   }
 
@@ -1016,11 +1062,11 @@ export const restorePublishedWorkflowDefinition = async (
   const workflowDefinitionEntity = await storeLoadById(
     executionContext,
     executionUser,
-    entitySetting.workflow_id,
+    existingDefinitionId,
     ENTITY_TYPE_WORKFLOW_DEFINITION,
   ) as WorkflowDefinitionEntity | undefined;
   if (!workflowDefinitionEntity) {
-    throw FunctionalError('Workflow definition not found', { workflowId: entitySetting.workflow_id });
+    throw FunctionalError('Workflow definition not found', { workflowId: existingDefinitionId });
   }
 
   if (!workflowDefinitionEntity.published_version) {
@@ -1040,7 +1086,7 @@ export const restorePublishedWorkflowDefinition = async (
   const entitySettingWithWorkflow = entitySetting as BasicStoreEntityEntitySetting;
   return {
     id: entitySettingWithWorkflow.id,
-    workflow_id: entitySettingWithWorkflow.workflow_id,
+    workflow_id: workflowDefinitionEntity.id,
     target_type: entitySettingWithWorkflow.target_type,
     errors: [],
     published: true,

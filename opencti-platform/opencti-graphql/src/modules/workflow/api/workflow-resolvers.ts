@@ -1,4 +1,5 @@
 import { GraphQLError } from 'graphql';
+import type { StatusScope } from '../../../generated/graphql';
 import type { AuthContext } from '../../../types/user';
 import { reportWorkflowAsyncActionResult } from '../domain/workflow-async-completion';
 import {
@@ -22,8 +23,8 @@ const CLOSING_REASON_MAX_LENGTH = 1000; // Keep in sync with CLOSING_REASON_MAX_
 
 const workflowResolvers = {
   Query: {
-    workflowDefinition: (_: any, { entityType, allowDraft = false }: { entityType: string; allowDraft?: boolean }, context: AuthContext) => {
-      return getWorkflowDefinition(context, context.user!, entityType, allowDraft);
+    workflowDefinition: (_: any, { entityType, allowDraft = false, scope }: { entityType: string; allowDraft?: boolean; scope?: StatusScope }, context: AuthContext) => {
+      return getWorkflowDefinition(context, context.user!, entityType, allowDraft, scope);
     },
     workflowDefinitionPublished: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return hasPublishedWorkflowDefinition(context, context.user!, entityType);
@@ -49,17 +50,17 @@ const workflowResolvers = {
     },
   },
   Mutation: {
-    workflowDefinitionSet: (_: any, { entityType, definition }: { entityType: string; definition: string }, context: AuthContext) => {
-      return setWorkflowDefinition(context, context.user!, entityType, definition);
+    workflowDefinitionSet: (_: any, { entityType, definition, scope }: { entityType: string; definition: string; scope?: StatusScope }, context: AuthContext) => {
+      return setWorkflowDefinition(context, context.user!, entityType, definition, scope);
     },
-    workflowDefinitionPublish: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
-      return publishWorkflowDefinition(context, context.user!, entityType);
+    workflowDefinitionPublish: (_: any, { entityType, scope }: { entityType: string; scope?: StatusScope }, context: AuthContext) => {
+      return publishWorkflowDefinition(context, context.user!, entityType, scope);
     },
-    workflowDefinitionRestorePublished: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
-      return restorePublishedWorkflowDefinition(context, context.user!, entityType);
+    workflowDefinitionRestorePublished: (_: any, { entityType, scope }: { entityType: string; scope?: StatusScope }, context: AuthContext) => {
+      return restorePublishedWorkflowDefinition(context, context.user!, entityType, scope);
     },
-    workflowDefinitionDelete: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
-      return deleteWorkflowDefinition(context, context.user!, entityType);
+    workflowDefinitionDelete: (_: any, { entityType, scope }: { entityType: string; scope?: StatusScope }, context: AuthContext) => {
+      return deleteWorkflowDefinition(context, context.user!, entityType, scope);
     },
     triggerWorkflowEvent: (_: any, {
       entityId,

@@ -3519,3 +3519,259 @@ describe('setWorkflowStatus (Task 9)', () => {
     expect(onEnterSpy).toHaveBeenCalledTimes(1);
   });
 });
+
+// ===========================================================================
+// Task 3: getWorkflowDefinition/setWorkflowDefinition/publishWorkflowDefinition/
+// restorePublishedWorkflowDefinition/deleteWorkflowDefinition now accept a `scope` argument,
+// routing reads/writes to entitySetting.request_access_workflow.workflow_definition_id instead
+// of entitySetting.workflow_id when scope is RequestAccess. Defaults to StatusScope.Global
+// everywhere so every existing (scope-less) caller is unaffected.
+// ===========================================================================
+describe('getWorkflowDefinition — scope (Task 3)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('defaults to Global scope and resolves via entitySetting.workflow_id when scope is omitted', async () => {
+    (findByType as any).mockResolvedValue({
+      id: 'setting-id',
+      workflow_id: 'standard-def-id',
+      request_access_workflow: { workflow_definition_id: 'ra-def-id' },
+    });
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'standard-def-id') {
+        return Promise.resolve({ id: 'standard-def-id', name: 'standard', published_version: { id: 'v1', content: '{"initialState":"draft","states":[],"transitions":[]}', validation_errors: [] } });
+      }
+      return Promise.resolve(null);
+    });
+
+    const result = await getWorkflowDefinition(mockContext, mockUser, 'Incident');
+
+    expect(result?.id).toBe('standard-def-id');
+  });
+
+  it('resolves the dedicated RequestAccess-scope WorkflowDefinition when scope=RequestAccess is passed explicitly', async () => {
+    (findByType as any).mockResolvedValue({
+      id: 'setting-id',
+      workflow_id: 'standard-def-id',
+      request_access_workflow: { workflow_definition_id: 'ra-def-id' },
+    });
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'ra-def-id') {
+        return Promise.resolve({ id: 'ra-def-id', name: 'request-access', published_version: { id: 'v1', content: '{"initialState":"pending","states":[],"transitions":[]}', validation_errors: [] } });
+      }
+      return Promise.resolve(null);
+    });
+
+    const result = await getWorkflowDefinition(mockContext, mockUser, 'Incident', false, StatusScope.RequestAccess);
+
+    expect(result?.id).toBe('ra-def-id');
+  });
+});
+
+describe('setWorkflowDefinition — scope (Task 3)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('creates a RequestAccess-scope WorkflowDefinition and stores its id on request_access_workflow.workflow_definition_id, not workflow_id, preserving existing approval fields', async () => {
+    const definition = JSON.stringify({ name: 'RA workflow', initialState: 'pending', states: [], transitions: [] });
+    (findByType as any).mockResolvedValue({
+      id: 'setting-id',
+      workflow_id: 'standard-def-id',
+      request_access_workflow: { approved_workflow_id: 'approved-id', declined_workflow_id: 'declined-id', approval_admin: ['admin-1'] },
+    });
+    const versionObj = { id: 'v1', timestamp: '', createdBy: '', content: definition, validation_errors: [] };
+    (createEntity as any).mockResolvedValue({ id: 'ra-def-id', name: 'RA workflow', all_versions: [versionObj], draft_version: versionObj });
+    (updateAttribute as any).mockResolvedValue({ element: { id: 'setting-id', target_type: 'Incident' } });
+
+    const result = await setWorkflowDefinition(mockContext, mockUser, 'Incident', definition, StatusScope.RequestAccess);
+
+    // The existing definition id used for validation/lookup must come from the RequestAccess
+    // sub-object, not the (unrelated, unset in this test) standard workflow_id.
+    expect(validateWorkflowDefinitionData).toHaveBeenCalledWith(mockContext, mockContext.user, definition, 'Incident', undefined);
+    expect(updateAttribute).toHaveBeenCalledWith(
+      mockContext,
+      mockContext.user,
+      'setting-id',
+      'EntitySetting',
+      [{
+        key: 'request_access_workflow',
+        value: [{ approved_workflow_id: 'approved-id', declined_workflow_id: 'declined-id', approval_admin: ['admin-1'], workflow_definition_id: 'ra-def-id' }],
+      }],
+    );
+    // The standard workflow_id must never be touched by a RequestAccess-scope write.
+    expect(updateAttribute).not.toHaveBeenCalledWith(
+      mockContext,
+      mockContext.user,
+      'setting-id',
+      'EntitySetting',
+      [{ key: 'workflow_id', value: ['ra-def-id'] }],
+    );
+    expect(result).toMatchObject({ workflow_id: 'ra-def-id', published: false });
+  });
+
+  it('updates the existing RequestAccess-scope WorkflowDefinition (not the standard one) when request_access_workflow.workflow_definition_id is already set', async () => {
+    const definition = JSON.stringify({ name: 'RA workflow v2', initialState: 'pending', transitions: [] });
+    (findByType as any).mockResolvedValue({
+      id: 'setting-id',
+      workflow_id: 'standard-def-id',
+      request_access_workflow: { workflow_definition_id: 'ra-def-id' },
+    });
+    const existingVersionData = {
+      id: 'version-1', timestamp: '2024-01-01T00:00:00Z', createdBy: 'user-1', content: '{}', validation_errors: [],
+    };
+    (storeLoadById as any)
+      .mockResolvedValueOnce({ id: 'ra-def-id', name: 'RA workflow', all_versions: [existingVersionData], draft_version: existingVersionData })
+      .mockResolvedValueOnce({
+        id: 'ra-def-id',
+        name: 'RA workflow v2',
+        all_versions: [expect.objectContaining({ content: definition }), existingVersionData],
+        draft_version: expect.objectContaining({ content: definition }),
+      });
+
+    await setWorkflowDefinition(mockContext, mockUser, 'Incident', definition, StatusScope.RequestAccess);
+
+    expect(validateWorkflowDefinitionData).toHaveBeenCalledWith(mockContext, mockContext.user, definition, 'Incident', 'ra-def-id');
+    expect(storeLoadById).toHaveBeenCalledWith(mockContext, mockContext.user, 'ra-def-id', 'WorkflowDefinition');
+    expect(createEntity).not.toHaveBeenCalled();
+  });
+});
+
+describe('publishWorkflowDefinition — scope-aware orphan reconciliation (Task 3, Step 5 regression)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  // Filters the fixture Status list by the `scope` value the code under test actually put in its
+  // fullEntitiesList filter — a stricter mock than most sibling tests in this file, deliberately,
+  // since the bug being guarded against here is exactly "the wrong scope value gets used".
+  const byScopeFilter = (statuses: any[], args: any) => {
+    const scopeFilter = args?.filters?.filters?.find((f: any) => f.key[0] === 'scope')?.values?.[0];
+    return scopeFilter ? statuses.filter((s) => s.scope === scopeFilter) : statuses;
+  };
+
+  it('creates missing Status records in the RequestAccess scope (not Global) on first publish of a RequestAccess-scope definition', async () => {
+    const draftVersion = {
+      id: 'draft-version-1',
+      timestamp: '2024-01-01T00:00:00Z',
+      createdBy: 'user-1',
+      content: JSON.stringify({
+        name: 'RA workflow',
+        initialState: 'tpl-pending',
+        states: [{ statusId: 'tpl-pending' }, { statusId: 'tpl-approved' }],
+        transitions: [{ from: 'tpl-pending', to: 'tpl-approved', event: 'approve' }],
+      }),
+      validation_errors: [],
+    };
+
+    (findByType as any).mockResolvedValue({
+      id: 'entity-setting-id',
+      workflow_id: 'standard-def-id',
+      request_access_workflow: { workflow_definition_id: 'ra-workflow-id' },
+    });
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'ra-workflow-id') {
+        return Promise.resolve({ id: 'ra-workflow-id', name: 'RA workflow', draft_version: draftVersion, all_versions: [draftVersion] });
+      }
+      return Promise.resolve(null);
+    });
+    (updateAttribute as any).mockImplementation((_ctx: any, _user: any, id: string, type: string) => {
+      if (type === 'WorkflowDefinition') {
+        return Promise.resolve({ element: { id: 'ra-workflow-id', name: 'RA workflow', published_version: draftVersion, draft_version: draftVersion, all_versions: [draftVersion] } });
+      }
+      return Promise.resolve({ element: { id } });
+    });
+
+    // A Global-scope Status already exists for every state (must be left untouched); only
+    // tpl-pending already has a RequestAccess-scope Status — tpl-approved's is missing.
+    const fixtureStatuses = [
+      { id: 'status-global-pending', type: 'CaseRfi', scope: StatusScope.Global, template_id: 'tpl-pending', order: 0 },
+      { id: 'status-global-approved', type: 'CaseRfi', scope: StatusScope.Global, template_id: 'tpl-approved', order: 1 },
+      { id: 'status-ra-pending', type: 'CaseRfi', scope: StatusScope.RequestAccess, template_id: 'tpl-pending', order: 0 },
+    ];
+    (fullEntitiesList as any).mockImplementation((_ctx: any, _user: any, types: string[], args: any) => (
+      types[0] === ENTITY_TYPE_STATUS ? Promise.resolve(byScopeFilter(fixtureStatuses, args)) : Promise.resolve([])
+    ));
+
+    await publishWorkflowDefinition(mockContext, mockUser, 'CaseRfi', StatusScope.RequestAccess);
+
+    expect(createStatus).toHaveBeenCalledTimes(1);
+    expect(createStatus).toHaveBeenCalledWith(
+      mockContext,
+      mockContext.user,
+      'CaseRfi',
+      { template_id: 'tpl-approved', order: 1, scope: StatusScope.RequestAccess },
+    );
+  });
+
+  it('marks only the RequestAccess-scope orphaned Status for deletion on a RequestAccess-scope republish, leaving a same-template_id Global-scope Status untouched', async () => {
+    const publishedVersion = {
+      id: 'pub-1',
+      timestamp: '2024-01-01T00:00:00Z',
+      createdBy: 'user-1',
+      content: JSON.stringify({
+        initialState: 'tpl-pending',
+        states: [{ statusId: 'tpl-pending' }, { statusId: 'tpl-declined' }],
+        transitions: [{ from: 'tpl-pending', to: 'tpl-declined', event: 'decline' }],
+      }),
+      validation_errors: [],
+    };
+    // Draft removes tpl-declined (an ending state, safe to remove).
+    const draftVersion = {
+      id: 'draft-1',
+      timestamp: '2024-01-02T00:00:00Z',
+      createdBy: 'user-1',
+      content: JSON.stringify({ initialState: 'tpl-pending', states: [{ statusId: 'tpl-pending' }], transitions: [] }),
+      validation_errors: [],
+    };
+
+    (findByType as any).mockResolvedValue({
+      id: 'entity-setting-id',
+      workflow_id: 'standard-def-id',
+      request_access_workflow: { workflow_definition_id: 'ra-workflow-id' },
+    });
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'ra-workflow-id') {
+        return Promise.resolve({
+          id: 'ra-workflow-id', name: 'RA workflow', published_version: publishedVersion, draft_version: draftVersion, all_versions: [draftVersion, publishedVersion],
+        });
+      }
+      return Promise.resolve(null);
+    });
+    (updateAttribute as any).mockImplementation((_ctx: any, _user: any, id: string, type: string) => {
+      if (type === 'WorkflowDefinition') {
+        return Promise.resolve({ element: { id: 'ra-workflow-id', name: 'RA workflow', published_version: draftVersion, draft_version: null, all_versions: [draftVersion, publishedVersion] } });
+      }
+      return Promise.resolve({ element: { id } });
+    });
+
+    const fixtureStatuses = [
+      { id: 'status-global-declined', type: 'CaseRfi', scope: StatusScope.Global, template_id: 'tpl-declined', order: 1 },
+      { id: 'status-ra-pending', type: 'CaseRfi', scope: StatusScope.RequestAccess, template_id: 'tpl-pending', order: 0 },
+      { id: 'status-ra-declined', type: 'CaseRfi', scope: StatusScope.RequestAccess, template_id: 'tpl-declined', order: 1 },
+    ];
+    (fullEntitiesList as any).mockImplementation((_ctx: any, _user: any, types: string[], args: any) => {
+      if (types[0] === ENTITY_TYPE_STATUS) return Promise.resolve(byScopeFilter(fixtureStatuses, args));
+      // No entity currently references status-ra-declined, and no request-access config does either.
+      return Promise.resolve([]);
+    });
+
+    await publishWorkflowDefinition(mockContext, mockUser, 'CaseRfi', StatusScope.RequestAccess);
+
+    expect(updateAttribute).toHaveBeenCalledWith(
+      mockContext,
+      mockContext.user,
+      'status-ra-declined',
+      ENTITY_TYPE_STATUS,
+      [{ key: 'to_be_deleted_at', value: [expect.any(Date)] }],
+    );
+    expect(updateAttribute).not.toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      'status-global-declined',
+      ENTITY_TYPE_STATUS,
+      expect.anything(),
+    );
+  });
+});

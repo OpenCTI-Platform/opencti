@@ -414,6 +414,7 @@ describe('workflow-resolvers', () => {
           mockContext.user,
           'Case',
           false,
+          undefined,
         );
         expect(result).toBe(mockDefinition);
       });
@@ -440,6 +441,7 @@ describe('workflow-resolvers', () => {
           mockContext.user,
           'Incident',
           true,
+          undefined,
         );
         expect(result).toBe(mockDefinition);
       });
@@ -590,6 +592,7 @@ describe('workflow-resolvers', () => {
           mockContext.user,
           'Report',
           definitionJson,
+          undefined,
         );
         expect(result).toBe(mockDefinition);
       });
@@ -616,6 +619,7 @@ describe('workflow-resolvers', () => {
           mockContext,
           mockContext.user,
           'Task',
+          undefined,
         );
         expect(result).toBe(mockPublished);
       });
@@ -639,6 +643,7 @@ describe('workflow-resolvers', () => {
           mockContext,
           mockContext.user,
           'Case',
+          undefined,
         );
         expect(result).toBe(mockDeleted);
       });
@@ -665,6 +670,7 @@ describe('workflow-resolvers', () => {
           mockContext,
           mockContext.user,
           'Incident',
+          undefined,
         );
         expect(result).toBe(mockRestored);
       });
