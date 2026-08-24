@@ -9904,6 +9904,7 @@ export type FileMetadata = {
   errors?: Maybe<Array<Maybe<WorkMessage>>>;
   external_reference_id?: Maybe<Scalars['String']['output']>;
   file_markings?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  fintel_template_id?: Maybe<Scalars['String']['output']>;
   inCarousel?: Maybe<Scalars['Boolean']['output']>;
   labels?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   labels_text?: Maybe<Scalars['String']['output']>;
@@ -10048,6 +10049,8 @@ export type FintelTemplate = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   fintel_template_widgets: Array<FintelTemplateWidget>;
   id: Scalars['ID']['output'];
+  includeBackPageByDefault?: Maybe<Scalars['Boolean']['output']>;
+  includeCoverPageByDefault?: Maybe<Scalars['Boolean']['output']>;
   instance_filters?: Maybe<Scalars['String']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
@@ -10064,6 +10067,8 @@ export type FintelTemplateAddInput = {
   default?: InputMaybe<Scalars['Boolean']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   fintel_template_widgets?: InputMaybe<Array<FintelTemplateWidgetAddInput>>;
+  include_back_page_by_default?: InputMaybe<Scalars['Boolean']['input']>;
+  include_cover_page_by_default?: InputMaybe<Scalars['Boolean']['input']>;
   instance_filters?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   settings_types: Array<Scalars['String']['input']>;
@@ -21662,7 +21667,7 @@ export type Notifier = BasicObject & InternalObject & {
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
-  notifier_configuration: Scalars['String']['output'];
+  notifier_configuration?: Maybe<Scalars['String']['output']>;
   notifier_connector: NotifierConnector;
   notifier_connector_id: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
@@ -31362,6 +31367,7 @@ export type StixCoreObjectEditMutationsImportPushArgs = {
   embedded?: InputMaybe<Scalars['Boolean']['input']>;
   file: Scalars['Upload']['input'];
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  fintelTemplateId?: InputMaybe<Scalars['String']['input']>;
   fromTemplate?: InputMaybe<Scalars['Boolean']['input']>;
   noTriggerImport?: InputMaybe<Scalars['Boolean']['input']>;
   version?: InputMaybe<Scalars['DateTime']['input']>;
@@ -32386,6 +32392,7 @@ export type StixDomainObjectEditMutationsImportPushArgs = {
   embedded?: InputMaybe<Scalars['Boolean']['input']>;
   file: Scalars['Upload']['input'];
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  fintelTemplateId?: InputMaybe<Scalars['String']['input']>;
   fromTemplate?: InputMaybe<Scalars['Boolean']['input']>;
   noTriggerImport?: InputMaybe<Scalars['Boolean']['input']>;
   version?: InputMaybe<Scalars['DateTime']['input']>;
@@ -45291,6 +45298,7 @@ export type FileMetadataResolvers<ContextType = any, ParentType extends Resolver
   errors?: Resolver<Maybe<Array<Maybe<ResolversTypes['WorkMessage']>>>, ParentType, ContextType>;
   external_reference_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   file_markings?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  fintel_template_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   inCarousel?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   labels?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   labels_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -45360,6 +45368,8 @@ export type FintelTemplateResolvers<ContextType = any, ParentType extends Resolv
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   fintel_template_widgets?: Resolver<Array<ResolversTypes['FintelTemplateWidget']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  includeBackPageByDefault?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  includeCoverPageByDefault?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   instance_filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -48698,7 +48708,7 @@ export type NotifierResolvers<ContextType = any, ParentType extends ResolversPar
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  notifier_configuration?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  notifier_configuration?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notifier_connector?: Resolver<ResolversTypes['NotifierConnector'], ParentType, ContextType>;
   notifier_connector_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
