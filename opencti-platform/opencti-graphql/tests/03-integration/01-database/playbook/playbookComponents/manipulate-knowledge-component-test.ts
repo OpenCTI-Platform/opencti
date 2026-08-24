@@ -270,6 +270,50 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
     expect(objectExtensions.score).toBe(88);
   });
 
+  it('should replace score on Organization identity by field patch', async () => {
+    const organizationId = 'identity--09bd862a-f030-55f2-920a-900c4913d9fe';
+    const organization = testBundleObject<StixDomainObject>({
+      id: organizationId,
+      type: 'identity',
+      octiExtension: {
+        type: 'identity',
+      },
+    });
+    (organization as any).identity_class = 'organization';
+    const bundleObjects = [organization];
+
+    const configuration: ManipulateConfiguration = {
+      applyToElements: 'only-main',
+      actions: [{
+        op: 'replace' as const,
+        attribute: 'x_opencti_score',
+        value: [
+          {
+            label: 'Set score to 42',
+            value: '42',
+            patch_value: '42',
+          },
+        ],
+      }],
+    };
+
+    const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+      mainId: organizationId,
+      bundleObjects,
+      configuration,
+    }));
+
+    const organizationResult = result.bundle.objects.find((o) => o.id === organizationId) as StixDomainObject;
+    const objectExtensions = organizationResult.extensions[STIX_EXT_OCTI];
+    if (!objectExtensions.opencti_upsert_operations || !objectExtensions.opencti_upsert_operations[0]) {
+      assert.fail('Field patch missing');
+    }
+    expect(objectExtensions.opencti_upsert_operations[0].operation).toBe('replace');
+    expect(objectExtensions.opencti_upsert_operations[0].key).toBe('x_opencti_score');
+    expect(objectExtensions.opencti_upsert_operations[0].value[0]).toBe('42');
+    expect((organizationResult.extensions[STIX_EXT_OCTI] as any).score).toBe(42);
+  });
+
   describe('Bundle scope', () => {
     it('should add label only on main element', async () => {
       const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
