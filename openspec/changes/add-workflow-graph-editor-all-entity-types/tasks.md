@@ -27,7 +27,7 @@
 
 ## 3. Legacy status migration entry point
 
-- [ ] 3.1 Add a GraphQL mutation (e.g. `migrateEntityTypeStatusToWorkflowDefinition(entityType: String!, scope: StatusScope!)`)
+- [x] 3.1 Add a GraphQL mutation (e.g. `migrateEntityTypeStatusToWorkflowDefinition(entityType: String!, scope: StatusScope!)`)
       in `workflow-resolvers.ts`/`workflow.graphql` wrapping the domain
       migration function, auth-gated the same as `workflowMigrationPreview`
       (`SETTINGS_SETCUSTOMIZATION`).
