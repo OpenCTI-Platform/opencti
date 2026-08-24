@@ -7,11 +7,12 @@ import useQueryLoading, { useQueryLoadingWithLoadQuery } from '../../../../utils
 import { SubTypeWorkflowQuery, SubTypeWorkflowQuery$data } from './__generated__/SubTypeWorkflowQuery.graphql';
 import { SubTypeWorkflowDependenciesQuery } from './__generated__/SubTypeWorkflowDependenciesQuery.graphql';
 import Loader from '../../../../components/Loader';
-import { Suspense, useCallback, useContext, useState } from 'react';
+import { Suspense, useCallback, useContext, useEffect, useState } from 'react';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { StatusScopeEnum } from '../../../../utils/statusConstants';
 import { hasRequestAccessWorkflowConfig } from '../../common/workflow/hasRequestAccessWorkflowConfig';
 import { SubTypeOutletContext } from './SubTypeOutletContext';
+import WorkflowMigrationConfirmDialog from './workflow/WorkflowMigrationConfirmDialog';
 
 export const workflowQuery = graphql`
   query SubTypeWorkflowQuery($entityType: String!, $allowDraft: Boolean, $scope: StatusScope) {
@@ -135,6 +136,14 @@ const WorkflowWithDependencies = ({ queryRef, onRefetch, entityType, canSwitchSc
   const { workflowDefinition } = usePreloadedQuery<SubTypeWorkflowQuery>(workflowQuery, queryRef);
   const memberIds = extractWorkflowMembersIds(workflowDefinition);
 
+  // Gates entry to the graph editor while `workflowDefinition` is null (no workflow authored yet
+  // for this entityType/scope) and legacy `Status` data exists to migrate. Reset whenever the
+  // entityType/scope changes so a rescoped view gets its own gate.
+  const [migrationGateCleared, setMigrationGateCleared] = useState(false);
+  useEffect(() => {
+    setMigrationGateCleared(false);
+  }, [entityType, scope]);
+
   const depsQueryRef = useQueryLoading<SubTypeWorkflowDependenciesQuery>(workflowDependenciesQuery,
     {
       memberFilters: memberIds.length
@@ -142,6 +151,23 @@ const WorkflowWithDependencies = ({ queryRef, onRefetch, entityType, canSwitchSc
         : null,
     },
   );
+
+  if (!workflowDefinition && !migrationGateCleared) {
+    return (
+      <Suspense fallback={<Loader />}>
+        <WorkflowMigrationConfirmDialog
+          entityType={entityType}
+          scope={scope}
+          onConfirm={() => {
+            setMigrationGateCleared(true);
+            onRefetch();
+          }}
+          onCancel={() => setMigrationGateCleared(true)}
+          onNoLegacyData={() => setMigrationGateCleared(true)}
+        />
+      </Suspense>
+    );
+  }
 
   if (!depsQueryRef) return <Loader />;
 

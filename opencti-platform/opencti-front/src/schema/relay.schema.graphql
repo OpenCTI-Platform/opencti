@@ -10519,6 +10519,7 @@ type Mutation {
   workflowDefinitionPublish(entityType: String!, scope: StatusScope): WorkflowDefinitionMutationResult
   workflowDefinitionRestorePublished(entityType: String!, scope: StatusScope): WorkflowDefinitionMutationResult
   workflowDefinitionDelete(entityType: String!, scope: StatusScope): EntitySetting
+  migrateEntityTypeStatusToWorkflowDefinition(entityType: String!, scope: StatusScope!): MigrateEntityTypeStatusResult!
   triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON, closingReason: String): WorkflowTriggerResult!
   setWorkflowStatus(entityId: String!, targetStatusId: String!, applyTransitionActions: Boolean!, comment: String, closingReason: String): WorkflowTriggerResult!
   clearWorkflowPendingState(entityId: String!): WorkflowInstance!
@@ -10916,6 +10917,11 @@ type WorkflowMigrationScopeResult {
 type WorkflowMigrationPreview {
   entityType: String!
   results: [WorkflowMigrationScopeResult!]!
+}
+
+type MigrateEntityTypeStatusResult {
+  entityType: String!
+  status: String!
 }
 
 type EntitySetting implements InternalObject & BasicObject {

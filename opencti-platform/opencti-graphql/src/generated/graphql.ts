@@ -17152,6 +17152,12 @@ export type MigrateConnectorToManagedInput = {
   resetConnectorState?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
+export type MigrateEntityTypeStatusResult = {
+  __typename?: 'MigrateEntityTypeStatusResult';
+  entityType: Scalars['String']['output'];
+  status: Scalars['String']['output'];
+};
+
 export type MigrationAssessment = {
   __typename?: 'MigrationAssessment';
   connector_id: Scalars['ID']['output'];
@@ -17455,6 +17461,7 @@ export type Mutation = {
   markingDefinitionEdit?: Maybe<MarkingDefinitionEditMutations>;
   meEdit?: Maybe<MeUser>;
   metricPatch?: Maybe<BasicObject>;
+  migrateEntityTypeStatusToWorkflowDefinition: MigrateEntityTypeStatusResult;
   narrativeAdd?: Maybe<Narrative>;
   narrativeContextClean?: Maybe<Narrative>;
   narrativeContextPatch?: Maybe<Narrative>;
@@ -19110,6 +19117,12 @@ export type MutationMeEditArgs = {
 export type MutationMetricPatchArgs = {
   id: Scalars['ID']['input'];
   input: PatchMetricInput;
+};
+
+
+export type MutationMigrateEntityTypeStatusToWorkflowDefinitionArgs = {
+  entityType: Scalars['String']['input'];
+  scope: StatusScope;
 };
 
 
@@ -40505,6 +40518,7 @@ export type ResolversTypes = ResolversObject<{
   MetricDefinition: ResolverTypeWrapper<MetricDefinition>;
   MetricsByMimeType: ResolverTypeWrapper<MetricsByMimeType>;
   MigrateConnectorToManagedInput: MigrateConnectorToManagedInput;
+  MigrateEntityTypeStatusResult: ResolverTypeWrapper<MigrateEntityTypeStatusResult>;
   MigrationAssessment: ResolverTypeWrapper<MigrationAssessment>;
   MigrationAssessmentSummary: ResolverTypeWrapper<MigrationAssessmentSummary>;
   MissingConfigKey: ResolverTypeWrapper<MissingConfigKey>;
@@ -41580,6 +41594,7 @@ export type ResolversParentTypes = ResolversObject<{
   MetricDefinition: MetricDefinition;
   MetricsByMimeType: MetricsByMimeType;
   MigrateConnectorToManagedInput: MigrateConnectorToManagedInput;
+  MigrateEntityTypeStatusResult: MigrateEntityTypeStatusResult;
   MigrationAssessment: MigrationAssessment;
   MigrationAssessmentSummary: MigrationAssessmentSummary;
   MissingConfigKey: MissingConfigKey;
@@ -47921,6 +47936,11 @@ export type MetricsByMimeTypeResolvers<ContextType = any, ParentType extends Res
   size?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
 }>;
 
+export type MigrateEntityTypeStatusResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['MigrateEntityTypeStatusResult'] = ResolversParentTypes['MigrateEntityTypeStatusResult']> = ResolversObject<{
+  entityType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type MigrationAssessmentResolvers<ContextType = any, ParentType extends ResolversParentTypes['MigrationAssessment'] = ResolversParentTypes['MigrationAssessment']> = ResolversObject<{
   connector_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   connector_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -48217,6 +48237,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   markingDefinitionEdit?: Resolver<Maybe<ResolversTypes['MarkingDefinitionEditMutations']>, ParentType, ContextType, RequireFields<MutationMarkingDefinitionEditArgs, 'id'>>;
   meEdit?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType, RequireFields<MutationMeEditArgs, 'input'>>;
   metricPatch?: Resolver<Maybe<ResolversTypes['BasicObject']>, ParentType, ContextType, RequireFields<MutationMetricPatchArgs, 'id' | 'input'>>;
+  migrateEntityTypeStatusToWorkflowDefinition?: Resolver<ResolversTypes['MigrateEntityTypeStatusResult'], ParentType, ContextType, RequireFields<MutationMigrateEntityTypeStatusToWorkflowDefinitionArgs, 'entityType' | 'scope'>>;
   narrativeAdd?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<MutationNarrativeAddArgs, 'input'>>;
   narrativeContextClean?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<MutationNarrativeContextCleanArgs, 'id'>>;
   narrativeContextPatch?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<MutationNarrativeContextPatchArgs, 'id' | 'input'>>;
@@ -54330,6 +54351,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   MetricAttributes?: MetricAttributesResolvers<ContextType>;
   MetricDefinition?: MetricDefinitionResolvers<ContextType>;
   MetricsByMimeType?: MetricsByMimeTypeResolvers<ContextType>;
+  MigrateEntityTypeStatusResult?: MigrateEntityTypeStatusResultResolvers<ContextType>;
   MigrationAssessment?: MigrationAssessmentResolvers<ContextType>;
   MigrationAssessmentSummary?: MigrationAssessmentSummaryResolvers<ContextType>;
   MissingConfigKey?: MissingConfigKeyResolvers<ContextType>;
