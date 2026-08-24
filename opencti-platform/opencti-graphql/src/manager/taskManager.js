@@ -65,7 +65,7 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
 import { objects as getContainerObjects } from '../domain/container';
 import { doYield } from '../utils/eventloop-utils';
-import { setWorkflowStatus } from '../modules/workflow/domain/workflow-domain';
+import { setWorkflowStatus, triggerWorkflowEvent } from '../modules/workflow/domain/workflow-domain';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -168,6 +168,19 @@ export const isWorkflowTransitionAction = (action) => {
   return action.type === ACTION_TYPE_REPLACE
     && action.context?.field === WORKFLOW_TRANSITION_FIELD
     && action.context?.options?.applyTransitionActions === true;
+};
+
+// Mass real-transition apply: pseudo action type used to route a mass status update through the
+// real workflow engine (`triggerWorkflowEvent`), checking eligible `from` states, instead of the
+// bypass path above which forces the target status regardless of the current state.
+export const ACTION_TYPE_WORKFLOW_MASS_TRANSITION = 'WORKFLOW_MASS_TRANSITION';
+
+// An action on the workflow status field carrying a fixed `eventName` must run through
+// `triggerWorkflowEvent` per element (real transition, eligibility-checked) rather than the
+// generic attribute patch or the `applyTransitionActions` bypass.
+export const isWorkflowMassTransitionAction = (action) => {
+  return action.context?.field === WORKFLOW_TRANSITION_FIELD
+    && typeof action.context?.options?.eventName === 'string';
 };
 
 export const baseOperationBuilder = (actionType, operations, element) => {
@@ -619,6 +632,27 @@ export const workflowTransitionOperationCallback = (context, user, task, operati
   };
 };
 
+// Mass real-transition apply: calls `triggerWorkflowEvent` per element for a fixed `eventName`,
+// tolerating per-element errors (e.g. an element not currently in an eligible `from` state) the
+// same way `workflowTransitionOperationCallback` tolerates errors for the bypass path.
+export const workflowMassTransitionOperationCallback = (context, user, task, operations) => {
+  const eventName = operations[0]?.context?.options?.eventName;
+  let totalProcessed = task.task_processed_number;
+  return async (elements) => {
+    for (let index = 0; index < elements.length; index += 1) {
+      await doYield();
+      const element = elements[index];
+      try {
+        await triggerWorkflowEvent(context, user, element.internal_id, eventName);
+      } catch (error) {
+        logApp.error('[OPENCTI-MODULE][TASK-MANAGER] Task manager error during mass workflow transition, skipping element', { cause: error, id: element.internal_id });
+      }
+    }
+    totalProcessed += elements.length;
+    await updateTask(context, task.id, { task_processed_number: totalProcessed });
+  };
+};
+
 const computeOperationCallback = async (context, user, task, actionType, operations) => {
   // Handle specific case of adding elements in container
   if (actionType === 'KNOWLEDGE_CONTAINER') {
@@ -639,6 +673,10 @@ const computeOperationCallback = async (context, user, task, actionType, operati
   // Handle specific case of a mass status update requesting transition actions (Task 10)
   if (actionType === ACTION_TYPE_WORKFLOW_TRANSITION) {
     return workflowTransitionOperationCallback(context, user, task, operations);
+  }
+  // Handle specific case of a mass real-transition apply, checking eligible from-states
+  if (actionType === ACTION_TYPE_WORKFLOW_MASS_TRANSITION) {
+    return workflowMassTransitionOperationCallback(context, user, task, operations);
   }
   // Handle specific sharing operation, as container must share inner object
   if (isShareAction(actionType) || isUnshareAction(actionType)) {
@@ -730,6 +768,11 @@ const taskHandlerGenerator = (context) => {
       // Support specific container add operation
       if (action.context?.field === 'container-object') {
         return 'KNOWLEDGE_CONTAINER';
+      }
+      // Support mass real-transition apply (checked before the bypass action below, since both
+      // target x_opencti_workflow_id and are distinguished by eventName vs. applyTransitionActions)
+      if (isWorkflowMassTransitionAction(action)) {
+        return ACTION_TYPE_WORKFLOW_MASS_TRANSITION;
       }
       // Support mass status update requesting transition actions (Task 10)
       if (isWorkflowTransitionAction(action)) {
