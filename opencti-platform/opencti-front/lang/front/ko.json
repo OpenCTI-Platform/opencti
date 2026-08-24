@@ -578,6 +578,7 @@
   "Bookmarks are not supported in public dashboards": "공개 대시보드에서는 북마크가 지원되지 않습니다",
   "Boolean": "부울",
   "Both latitude and longitude must be provided together": "위도와 경도를 모두 함께 제공해야 합니다",
+  "Breadcrumb": "탐색 경로",
   "Browse agents": "에이전트 둘러보기",
   "Browse files": "파일 찾아보기",
   "Browse More": "자세히 보기",

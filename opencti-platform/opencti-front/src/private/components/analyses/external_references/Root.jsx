@@ -7,6 +7,7 @@ import ExternalReference from './ExternalReference';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 
 const subscription = graphql`
     subscription RootExternalReferenceSubscription($id: ID!) {
@@ -20,6 +21,9 @@ const externalReferenceQuery = graphql`
     query RootExternalReferenceQuery($id: String!) {
         externalReference(id: $id) {
             standard_id
+            representative {
+                main
+            }
             ...ExternalReference_externalReference
         }
         connectorsForImport {
@@ -54,6 +58,7 @@ const RootExternalReference = () => {
                   <Breadcrumbs elements={[
                     { label: t_i18n('Analyses') },
                     { label: t_i18n('External references'), link: '/dashboard/analyses/external_references' },
+                    { label: getMainRepresentative(props.externalReference), current: true },
                   ]}
                   />
                   <ExternalReference
