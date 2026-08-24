@@ -253,6 +253,38 @@ describe('RSS ingestion resolver standard behavior', () => {
     expect(queryResult.data?.user).toBeNull();
   });
 
+  it('should reset RSS ingester state', async () => {
+    const setStateResult = await queryAsAdminWithSuccess({
+      query: gql`
+        mutation ingestionRssFieldPatch($id: ID!, $input: [EditInput!]!) {
+          ingestionRssFieldPatch(id: $id, input: $input) {
+            id
+            current_state_date
+          }
+        }
+      `,
+      variables: {
+        id: createdRssIngesterId,
+        input: [{ key: 'current_state_date', value: ['2024-01-01T00:00:00.000Z'] }],
+      },
+    });
+    expect(setStateResult.data?.ingestionRssFieldPatch.current_state_date).toBe('2024-01-01T00:00:00.000Z');
+
+    const resetResult = await queryAsAdminWithSuccess({
+      query: gql`
+        mutation resetRssIngesterState($id: ID!) {
+          ingestionRssResetState(id: $id) {
+            id
+            current_state_date
+          }
+        }
+      `,
+      variables: { id: createdRssIngesterId },
+    });
+    expect(resetResult.data?.ingestionRssResetState.id).toBe(createdRssIngesterId);
+    expect(resetResult.data?.ingestionRssResetState.current_state_date).toBeNull();
+  });
+
   it('should delete the RSS ingester', async () => {
     const ingesterQueryResult = await queryAsAdminWithSuccess({
       query: gql`
