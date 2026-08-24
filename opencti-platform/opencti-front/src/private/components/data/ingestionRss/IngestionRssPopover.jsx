@@ -235,6 +235,9 @@ class IngestionRssPopover extends Component {
         this.setState({ resetting: false });
         this.handleCloseResetState();
       },
+      onError: () => {
+        this.setState({ resetting: false });
+      },
     });
   }
 
@@ -244,6 +247,7 @@ class IngestionRssPopover extends Component {
       <div className={classes.container}>
         <ToggleButton
           onClick={this.handleOpen.bind(this)}
+          aria-label={t('Open menu')}
           aria-haspopup="true"
           value="popover"
           color="primary"

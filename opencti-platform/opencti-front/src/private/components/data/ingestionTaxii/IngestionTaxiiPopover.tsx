@@ -209,6 +209,7 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
     <div style={{ margin: 0 }}>
       <ToggleButton
         onClick={handleOpen}
+        aria-label={t_i18n('Open menu')}
         aria-haspopup="true"
         value="popover"
         color="primary"

@@ -9,38 +9,14 @@ import {
   rssFeedAddInputFromImport,
   rssFeedExport,
 } from './ingestion-rss-domain';
-import { IngestionLogLevel, type Resolvers } from '../../generated/graphql';
+import { type Resolvers } from '../../generated/graphql';
 import { storeLoadByIds } from '../../database/middleware-loader';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import type { BasicStoreEntityMarkingDefinition } from '../../types/store';
 import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
 import { loadCreator } from '../../database/members';
-import { type IngestionLogEntry, redisGetIngestionLogHistory } from '../../database/redis';
 import type { BasicStoreEntityIngestionRss } from './ingestion-types';
-import { DatabaseError } from '../../config/errors';
-
-const levelToLevel = (level: string): IngestionLogLevel => {
-  switch (level) {
-    case 'success':
-      return IngestionLogLevel.Success;
-    case 'info':
-      return IngestionLogLevel.Info;
-    case 'warn':
-      return IngestionLogLevel.Warn;
-    case 'error':
-      return IngestionLogLevel.Error;
-    default:
-      throw DatabaseError('Unknown ingestion log level', { level });
-  }
-};
-
-const logsToLogs = (logs: IngestionLogEntry[]) => {
-  return logs.map(({ timestamp, level, ...others }) => ({
-    timestamp: new Date(timestamp),
-    level: levelToLevel(level),
-    ...others,
-  }));
-};
+import { findIngestionLogsForFeed } from './ingestion-common';
 
 const ingestionRssResolvers: Resolvers = {
   Query: {
@@ -49,8 +25,7 @@ const ingestionRssResolvers: Resolvers = {
     ingestionRssAddInputFromImport: (_, { file }) => rssFeedAddInputFromImport(file),
     ingestionRssLogs: async (_: unknown, { id }: { id: string }, context) => {
       await findById(context, context.user, id);
-      const entries = await redisGetIngestionLogHistory(id);
-      return logsToLogs(entries);
+      return findIngestionLogsForFeed(id);
     },
   },
   IngestionRss: {
@@ -59,10 +34,7 @@ const ingestionRssResolvers: Resolvers = {
     defaultMarkingDefinitions: (ingestionRss, _, context) => storeLoadByIds<BasicStoreEntityMarkingDefinition>(context, context.user, ingestionRss.object_marking_refs ?? [], ENTITY_TYPE_MARKING_DEFINITION),
     user: (ingestionRss, _, context) => loadCreator(context, context.user, ingestionRss.user_id),
     toConfigurationExport: (ingestionRss, _, context) => rssFeedExport(context, context.user, ingestionRss),
-    ingestionLogs: async (ingestionRss: BasicStoreEntityIngestionRss) => {
-      const entries = await redisGetIngestionLogHistory(ingestionRss.internal_id);
-      return logsToLogs(entries);
-    },
+    ingestionLogs: (ingestionRss: BasicStoreEntityIngestionRss) => findIngestionLogsForFeed(ingestionRss.internal_id),
   },
   Mutation: {
     ingestionRssAdd: (_, { input }, context) => {
