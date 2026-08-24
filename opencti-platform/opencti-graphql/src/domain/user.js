@@ -1070,6 +1070,23 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
 };
 
 // User related
+export const validateAndNormalizeEmailInput = async (context, userId, input) => {
+  if (input.key === 'user_email') {
+    if (!Array.isArray(input.value) || input.value.length !== 1 || typeof input.value[0] !== 'string') {
+      throw FunctionalError('The email you have provided is not valid');
+    }
+    const newEmail = input.value[0].toLowerCase().trim();
+    if (isEmptyField(newEmail)) {
+      throw FunctionalError('The email you have provided is not valid');
+    }
+    input.value = [newEmail];
+    const existingUser = await elLoadBy(context, SYSTEM_USER, 'user_email', newEmail, ENTITY_TYPE_USER);
+    if (existingUser && existingUser.internal_id !== userId) {
+      throw FunctionalError('User already exists', { user_id: existingUser.internal_id });
+    }
+  }
+};
+
 export const userEditField = async (context, user, userId, rawInputs) => {
   let inputs = [];
   const userToUpdate = await loadUserToUpdateWithAccessCheck(context, user, userId);
@@ -1086,6 +1103,8 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     if (userToUpdate.external && input.key === 'password_valid_until') {
       throw FunctionalError('Cannot force password change for external user', { userId });
     }
+    // Check user email is valid and not already used in case of email change
+    await validateAndNormalizeEmailInput(context, userId, input);
     if (input.key === 'password') {
       // orgs admins can't update other users passwords
       if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && user.id !== userId) {
