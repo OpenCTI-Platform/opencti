@@ -1,6 +1,7 @@
 import type { GraphQLError } from 'graphql';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { Client as ElkClient } from '@elastic/elasticsearch';
+import { Client as Elk9Client } from '@elastic/elasticsearch-v9';
 import { Client as OpenClient } from '@opensearch-project/opensearch';
 import { AwsSigv4Signer } from '@opensearch-project/opensearch/aws';
 import { Promise as BluePromise } from 'bluebird';
@@ -290,8 +291,20 @@ export const isImpactedRole = (type: string, fromType: string, toType: string, r
 };
 
 export let engine: ElkClient | OpenClient;
+let engineIsElk = false;
 let isRuntimeSortingEnable = false;
 let attachmentProcessorEnabled = false;
+
+const setEngine = (client: ElkClient | OpenClient, isElk: boolean) => {
+  engine = client;
+  engineIsElk = isElk;
+};
+
+// True when the selected engine is Elasticsearch, whatever the client major.
+// `instanceof ElkClient` cannot be used anymore: the 9.x client (@elastic/elasticsearch-v9)
+// is a distinct class, typed as ElkClient at creation because it exposes the same API
+// surface for every call OpenCTI makes (both majors compile against the 8.x types).
+export const isElkEngine = (_e: ElkClient | OpenClient = engine): _e is ElkClient => engineIsElk;
 
 export const isAttachmentProcessorEnabled = () => {
   return attachmentProcessorEnabled;
@@ -301,7 +314,7 @@ export const isAttachmentProcessorEnabled = () => {
 // Starting ELK8+, response are no longer inside a body envelop
 // Query wrapping is still accepted in ELK8
 export const oebp = (queryResult: any): any => {
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     return queryResult;
   }
   return queryResult.body;
@@ -309,7 +322,7 @@ export const oebp = (queryResult: any): any => {
 
 export const elConfigureAttachmentProcessor = async (): Promise<boolean> => {
   let success = true;
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     await engine.ingest.putPipeline({
       id: 'attachment',
       description: 'Extract attachment information',
@@ -461,19 +474,27 @@ export const searchEngineInit = async (): Promise<boolean> => {
   const engineSelector = conf.get('elasticsearch:engine_selector') || 'auto';
   const engineCheck = booleanConf('elasticsearch:engine_check', true);
   const elasticSearchClient = new ElkClient(elkSearchConfiguration);
+  // Single type bridge for the dual Elastic client: the 9.x instance is handled through the
+  // 8.x types everywhere (same call shapes at runtime, response envelope unchanged).
+  const elasticSearch9Client = new Elk9Client(elkSearchConfiguration) as unknown as ElkClient;
   const openSearchClient = new OpenClient(openSearchConfiguration);
+  // ES server >= 9 rejects the 8.x client requests (compatible-with=8 is only accepted one major back),
+  // so the client major must match the server major. The 8.x client still probes an ES 9 server fine
+  // (compatibility bridge), which keeps the engine_selector=elk detection path working.
+  const elkClientForVersion = (version: string) => (semver.major(semver.coerce(version) ?? '8.0.0') >= 9 ? elasticSearch9Client : elasticSearchClient);
   if (engineSelector === ELK_ENGINE) {
     logApp.info(`[SEARCH] Engine ${ELK_ENGINE} client selected by configuration`);
-    engine = elasticSearchClient;
+    setEngine(elasticSearchClient, true);
     const searchVersion = await searchEngineVersion();
     if (engineCheck && searchVersion.platform !== ELK_ENGINE) {
       throw ConfigurationError('Invalid Search engine selector', { configured: engineSelector, detected: searchVersion.platform });
     }
     enginePlatform = ELK_ENGINE;
     engineVersion = searchVersion.version;
+    setEngine(elkClientForVersion(engineVersion), true);
   } else if (engineSelector === OPENSEARCH_ENGINE) {
     logApp.info(`[SEARCH] Engine ${OPENSEARCH_ENGINE} client selected by configuration`);
-    engine = openSearchClient;
+    setEngine(openSearchClient, false);
     const searchVersion = await searchEngineVersion();
     if (engineCheck && searchVersion.platform !== OPENSEARCH_ENGINE) {
       throw ConfigurationError('Invalid Search engine selector', { configured: engineSelector, detected: searchVersion.platform });
@@ -482,12 +503,23 @@ export const searchEngineInit = async (): Promise<boolean> => {
     engineVersion = searchVersion.version;
   } else {
     logApp.info(`[SEARCH] Engine client not specified, trying to discover it with ${OPENSEARCH_ENGINE} client`);
-    engine = openSearchClient;
+    setEngine(openSearchClient, false);
     const searchVersion = await searchEngineVersion();
     enginePlatform = searchVersion.platform;
     logApp.info(`[SEARCH] Engine detected to ${enginePlatform}`);
     engineVersion = searchVersion.version;
-    engine = enginePlatform === ELK_ENGINE ? elasticSearchClient : openSearchClient;
+    if (enginePlatform === ELK_ENGINE) {
+      setEngine(elkClientForVersion(engineVersion), true);
+    } else {
+      setEngine(openSearchClient, false);
+    }
+  }
+  if (enginePlatform === ELK_ENGINE) {
+    const elkMajor = semver.major(semver.coerce(engineVersion) ?? '8.0.0');
+    logApp.info(`[SEARCH] Elasticsearch ${elkMajor}.x server detected, using the ${elkMajor >= 9 ? '9.x' : '8.x'} client`);
+    if (elkMajor < 9) {
+      logApp.warn('[SEARCH] Elasticsearch 8.x server support is deprecated and will be removed in a future release. Plan the upgrade to Elasticsearch 9.x (or OpenSearch).');
+    }
   }
   // Setup the platform runtime field option
   isRuntimeSortingEnable = enginePlatform === ELK_ENGINE && semver.satisfies(engineVersion, '>=7.12.x');
@@ -513,7 +545,7 @@ const elExecuteWithAbortSignal = async (
   if (abortSignal?.aborted) {
     throw new AbortError('The http call was aborted before el request started.');
   }
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     const r = await elkOperation({ signal: abortSignal });
     return oebp(r);
   }
@@ -662,7 +694,7 @@ export const elRawSearch = (context: AuthContext, user: AuthUser, types: string[
 
 export const elRawGet = async (args: { id: string; index: string }) => {
   const rawGetOperation = async () => {
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       const r = await engine.get(args);
       return oebp(r);
     }
@@ -673,7 +705,7 @@ export const elRawGet = async (args: { id: string; index: string }) => {
 };
 export const elRawIndex = async (args: any) => {
   const rawIndexOperation = async () => {
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       const r = await engine.index(args);
       return oebp(r);
     }
@@ -684,7 +716,7 @@ export const elRawIndex = async (args: any) => {
 };
 export const elRawDelete = async (args: any) => {
   const rawDeleteOperation = async () => {
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       const r = await engine.delete(args);
       return oebp(r);
     }
@@ -695,7 +727,7 @@ export const elRawDelete = async (args: any) => {
 };
 export const elRawDeleteByQuery = async (query: any) => {
   const rawDeleteOperation = async () => {
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       const r = await engine.deleteByQuery(query);
       return oebp(r);
     }
@@ -716,7 +748,7 @@ export const elRawBulk = async (context: AuthContext, args: any) => {
 };
 export const elRawUpdateByQuery = async (query: any) => {
   const rawUpdateOperation = async () => {
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       const r = await engine.updateByQuery(query);
       return oebp(r);
     }
@@ -727,7 +759,7 @@ export const elRawUpdateByQuery = async (query: any) => {
 };
 export const elRawReindexByQuery = async (query: any) => {
   const rawReindexOperation = async () => {
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       const r = await engine.reindex(query);
       return oebp(r);
     }
@@ -740,7 +772,7 @@ export const elRawReindexByQuery = async (query: any) => {
 const elOperationForMigration = (operation: (query: any) => Promise<any>): (message: string, index: string, body: any) => Promise<any> => {
   const elGetTask = async (taskId: string): Promise<any> => {
     const taskArgs = { task_id: taskId };
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       const r = await engine.tasks.get(taskArgs);
       return oebp(r);
     }
@@ -1011,7 +1043,7 @@ export const buildDataRestrictions = async (
 
 export const elIndexExists = async (indexName: string): Promise<boolean> => {
   const indexExistsArg = { index: indexName };
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     return engine.indices.exists(indexExistsArg);
   }
   const existOpenSearchResult = await engine.indices.exists(indexExistsArg);
@@ -1019,7 +1051,7 @@ export const elIndexExists = async (indexName: string): Promise<boolean> => {
 };
 export const elIndexGetAlias = async (indexName: string): Promise<any> => {
   const args = { index: indexName };
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     const r = await engine.indices.getAlias(args);
     return oebp(r);
   }
@@ -1028,7 +1060,7 @@ export const elIndexGetAlias = async (indexName: string): Promise<any> => {
 };
 export const elPlatformIndices = async (): Promise<any> => {
   const args = { index: `${ES_INDEX_PREFIX}*`, format: 'JSON' };
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     const r = await engine.cat.indices(args);
     return oebp(r);
   }
@@ -1036,7 +1068,7 @@ export const elPlatformIndices = async (): Promise<any> => {
   return oebp(r_1);
 };
 export const elPlatformMapping = async (index: any): Promise<Record<string, any>> => {
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     const r = await engine.indices.getMapping({ index });
     return oebp(r)[index].mappings.properties;
   }
@@ -1045,7 +1077,7 @@ export const elPlatformMapping = async (index: any): Promise<Record<string, any>
 };
 export const elIndexSetting = async (index: any): Promise<{ settings: any; rollover_alias: string }> => {
   let settings;
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     const r = await engine.indices.getSettings({ index });
     settings = oebp(r)[index].settings;
   } else {
@@ -1053,13 +1085,13 @@ export const elIndexSetting = async (index: any): Promise<{ settings: any; rollo
     settings = oebp(r_1)[index].settings;
   }
 
-  const rollover_alias = engine instanceof ElkClient ? settings.index.lifecycle?.rollover_alias
+  const rollover_alias = isElkEngine(engine) ? settings.index.lifecycle?.rollover_alias
     : settings.index.plugins?.index_state_management?.rollover_alias;
   return { settings, rollover_alias };
 };
 export const elPlatformTemplates = async (): Promise<any[]> => {
   const args = { name: `${ES_INDEX_PREFIX}*`, format: 'JSON' };
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     const r = await engine.cat.templates(args);
     return oebp(r);
   }
@@ -1067,7 +1099,7 @@ export const elPlatformTemplates = async (): Promise<any[]> => {
   return oebp(r_1);
 };
 const elCreateLifecyclePolicy = async () => {
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     await engine.ilm.putLifecycle({
       name: `${ES_INDEX_PREFIX}-ilm-policy`,
       body: {
@@ -1164,7 +1196,7 @@ const updateCoreSettings = async (): Promise<void> => {
       },
     },
   };
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     await engine.cluster.putComponentTemplate(putComponentTemplateArgs).catch((e) => {
       throw DatabaseError('Creating component template fail', { cause: e });
     });
@@ -1198,7 +1230,7 @@ const attributeMappingGenerator = (entityAttribute: AttributeDefinition): any =>
   if (entityAttribute.type === 'object') {
     // For flat object
     if (entityAttribute.format === 'flat') {
-      return { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' };
+      return { type: isElkEngine(engine) ? 'flattened' : 'flat_object' };
     }
     // For standard object
     const properties: Record<string, any> = {};
@@ -1225,7 +1257,7 @@ const ruleMappingGenerator = (): Record<string, { dynamic: string; properties: a
         explanation: shortMapping,
         dependencies: shortMapping,
         hash: shortMapping,
-        data: { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' },
+        data: { type: isElkEngine(engine) ? 'flattened' : 'flat_object' },
       },
     };
   }
@@ -1265,7 +1297,7 @@ export const engineMappingGenerator = (): Record<string, any> => {
   return { ...attributesMappingGenerator(), ...ruleMappingGenerator(), ...denormalizeRelationsMappingGenerator() };
 };
 const computeIndexSettings = (rolloverAlias: string | null | undefined): any => {
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     // Rollover alias can be undefined for platform initialized <= 5.8
     const cycle = rolloverAlias ? {
       lifecycle: {
@@ -1306,7 +1338,7 @@ const computeIndexSettings = (rolloverAlias: string | null | undefined): any => 
 // This mode let the platform initialize old mapping protection before direct stop
 // Its only useful when old platform needs to be reindex
 const getRetroCompatibleMappings = (): any => {
-  const flattenedType = engine instanceof ElkClient ? 'flattened' : 'flat_object';
+  const flattenedType = isElkEngine(engine) ? 'flattened' : 'flat_object';
   return {
     internal_id: {
       type: 'text',
@@ -1530,7 +1562,7 @@ const updateIndexTemplate = async (name: string, mapping_properties: Record<stri
       },
     },
   };
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     return engine.indices.putIndexTemplate(putIndexTemplateArg).catch((e) => {
       throw DatabaseError('Creating index template fail', { cause: e });
     });
@@ -1544,7 +1576,7 @@ const elCreateIndexTemplate = async (index: string, mappingProperties: Record<st
   // Compat with platform initiated prior 5.9.X
   const existsIndexTemplateArgs = { name: `${ES_INDEX_PREFIX}-index-template` };
   let isPriorVersionExist;
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     isPriorVersionExist = await engine.indices.existsIndexTemplate(existsIndexTemplateArgs).then((r) => oebp(r));
   } else {
     isPriorVersionExist = await engine.indices.existsIndexTemplate(existsIndexTemplateArgs).then((r) => oebp(r));
@@ -1555,7 +1587,7 @@ const elCreateIndexTemplate = async (index: string, mappingProperties: Record<st
   // Create / update template
   const existsComponentTemplateArgs = { name: `${ES_INDEX_PREFIX}-core-settings` };
   let componentTemplateExist;
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     componentTemplateExist = await engine.cluster.existsComponentTemplate(existsComponentTemplateArgs);
   } else {
     componentTemplateExist = await engine.cluster.existsComponentTemplate(existsComponentTemplateArgs);
@@ -1585,7 +1617,7 @@ export const elUpdateIndicesMappings = async (): Promise<void> => {
     const indexMappingProperties = await elPlatformMapping(index);
     const platformSettings = computeIndexSettings(rollover_alias);
     const putSettingsArgs = { index, body: platformSettings };
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       await engine.indices.putSettings(putSettingsArgs).catch((e) => {
         throw DatabaseError('Updating index settings fail', { index, cause: e });
       });
@@ -1629,7 +1661,7 @@ export const elUpdateIndicesMappings = async (): Promise<void> => {
       const properties = jsonpatch.applyPatch(indexMappingProperties, addOperations).newDocument;
       const body = { properties };
       const putMappingArgs = { index, body };
-      if (engine instanceof ElkClient) {
+      if (isElkEngine(engine)) {
         await engine.indices.putMapping(putMappingArgs).catch((e) => {
           throw DatabaseError('Updating index mapping fail', { index, cause: e });
         });
@@ -1646,7 +1678,7 @@ export const elDeleteIndex = async (index: string) => {
   try {
     let response;
     const deleteArgs = { index: Object.keys(indexesToRemove) };
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       response = await engine.indices.delete(deleteArgs);
     } else {
       response = await engine.indices.delete(deleteArgs);
@@ -1661,14 +1693,14 @@ export const elCreateIndex = async (index: string, mappingProperties: Record<str
   const indexName = `${index}${ES_INDEX_PATTERN_SUFFIX}`;
   let isExist;
   const existsArgs = { index: indexName };
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     isExist = await engine.indices.exists(existsArgs).then((r) => oebp(r));
   } else {
     isExist = await engine.indices.exists(existsArgs).then((r) => oebp(r));
   }
   if (!isExist) {
     const createArgs = { index: indexName, body: { aliases: { [index]: {} } } };
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       return engine.indices.create(createArgs);
     }
     return engine.indices.create(createArgs);
@@ -1708,7 +1740,7 @@ export const initializeSchema = async () => {
 export const elDeleteIndices = async (indexesToDelete: string[]): Promise<any[]> => {
   return Promise.all(
     indexesToDelete.map((index) => {
-      if (engine instanceof ElkClient) {
+      if (isElkEngine(engine)) {
         return engine.indices.delete({ index })
           .then((response) => oebp(response))
           .catch((err) => {
@@ -3507,7 +3539,7 @@ export const elLoadBy = async <T extends BasicStoreBase>(
 };
 
 export const elRawCount = async (query: any): Promise<number> => {
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     return engine.count(query)
       .then((data) => {
         return oebp(data).count;
@@ -4114,7 +4146,7 @@ export const elIndex = async (
   if (pipeline) {
     indexParams = { ...indexParams, pipeline };
   }
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     await engine.index(indexParams).catch((err: any) => {
       throw DatabaseError('Simple indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
     });
@@ -4188,7 +4220,7 @@ export const elDelete = (indexName: string, documentId: string) => {
       refresh: true,
     };
     try {
-      if (engine instanceof ElkClient) {
+      if (isElkEngine(engine)) {
         return await engine.delete(deleteRequest);
       }
       return await engine.delete(deleteRequest);
@@ -4448,7 +4480,7 @@ export const elReindexElements = async (
       refresh: true,
     };
     try {
-      if (engine instanceof ElkClient) {
+      if (isElkEngine(engine)) {
         return await engine.reindex(reindexParams);
       }
       return await engine.reindex(reindexParams);
@@ -5143,7 +5175,7 @@ export const elUpdateElement = async (context: AuthContext, user: AuthUser, inst
 
 export const getStats = (indices = READ_PLATFORM_INDICES) => {
   const statsOperation = async () => {
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       const engineIndicesStats = await engine.indices.stats({ index: indices });
       return oebp(engineIndicesStats)._all.primaries;
     }
