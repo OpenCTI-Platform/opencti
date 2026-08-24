@@ -73,14 +73,17 @@ const statesOnCycles = (initialState: string, adjacency: Map<string, Set<string>
  * branches from reaching that same node with a different (possibly longer) path length.
  *
  * Per-state, not whole-graph: a state's value is `null` only if that specific state lies on a
- * cycle reachable from `initialState` (see `statesOnCycles`), or if the DFS step cap was hit —
- * states unrelated to any cycle still get a concrete order even when the graph contains one
- * elsewhere. Callers must fall back to a manually supplied `order` for any state whose value here
- * is `null`.
+ * cycle reachable from `initialState` (see `statesOnCycles`), or if the DFS never reached it
+ * before the step cap was hit — states already computed before the cap was hit, and states
+ * unrelated to any cycle, still get a concrete order even when the graph contains one elsewhere.
+ * Callers must fall back to a manually supplied `order` for any state whose value here is `null`.
  */
 export const computeStateOrder = (
   initialState: string,
   transitions: OrderingTransition[],
+  // Test-only injection point: lets unit tests deterministically exercise the step-cap fallback
+  // without needing a graph large/deep enough to hit the real MAX_ORDERING_DFS_STEPS.
+  maxSteps: number = MAX_ORDERING_DFS_STEPS,
 ): Map<string, number | null> => {
   const adjacency = buildAdjacency(transitions);
 
@@ -104,7 +107,7 @@ export const computeStateOrder = (
   const dfs = (state: string, depth: number, pathVisited: Set<string>) => {
     if (capExceeded) return;
     steps += 1;
-    if (steps > MAX_ORDERING_DFS_STEPS) {
+    if (steps > maxSteps) {
       capExceeded = true;
       return;
     }
@@ -124,8 +127,11 @@ export const computeStateOrder = (
 
   const cyclicStates = statesOnCycles(initialState, adjacency);
   const result = new Map<string, number | null>();
+  // A state is null only if it's cycle-entangled, or if the DFS never computed an order for it
+  // (unreachable via any acyclic-terminating branch, or not yet visited when the step cap hit) —
+  // states that did get a real value before the cap was hit elsewhere keep that value.
   reachable.forEach((state) => {
-    result.set(state, (capExceeded || cyclicStates.has(state)) ? null : (longestOrder.get(state) ?? null));
+    result.set(state, (cyclicStates.has(state) || !longestOrder.has(state)) ? null : (longestOrder.get(state) as number));
   });
   return result;
 };

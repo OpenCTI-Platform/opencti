@@ -358,7 +358,7 @@ describe('Workflow Validation', () => {
     ]);
   });
 
-  it('should reject a declared state that is not reachable from initialState', async () => {
+  it('should reject a declared state that is not reachable from initialState, and not also flag it with a misleading MISSING_MANUAL_ORDER', async () => {
     const invalid = {
       initialState: 'existing-state',
       states: [
@@ -368,10 +368,17 @@ describe('Workflow Validation', () => {
       ],
       transitions: [
         { from: 'existing-state', to: 'in-progress', event: 'start' },
+        // Self-loop so 'orphan-state' has an incoming transition (not a second root state) while
+        // remaining genuinely unreachable from initialState.
+        { from: 'orphan-state', to: 'orphan-state', event: 'self-loop' },
       ],
     };
     const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident');
-    expect(errors.some((e) => e.type === 'STATE_UNREACHABLE' && e.message.includes('orphan-state'))).toBe(true);
+    // The definition is otherwise acyclic: 'orphan-state' must get only STATE_UNREACHABLE, not the
+    // additional MISSING_MANUAL_ORDER (whose hardcoded "contains a cycle" message would be wrong here).
+    expect(errors).toEqual([
+      { type: 'STATE_UNREACHABLE', message: expect.stringContaining('orphan-state') },
+    ]);
   });
 
   it('should require a manual order on every state when the workflow graph contains a cycle', async () => {
