@@ -7,7 +7,7 @@
     "templateCommit": "88a488552b320b6b7df4d6ae842af74355321d1d",
     "templateCommitSubject": "fix(gates): three silent-failure fixes — bridge freshness, token family ramps, Combobox native reset (#145)",
     "generatorCommit": "114854de2367e51838c3fc841f808c4ad3ba85de",
-    "runtimePin": "e3001ce1d45c21fb4325f9a08458c928fcd9e847",
+    "runtimePin": "fb8c3cc0fd085db0eab1c59ba32945610e4bc6c7",
     "note": "2026-08-24 — the divergence this note used to describe is resolved by the re-pin: the sha256 above is byte-identical to the template at the runtime pin, and at every commit between templateCommit and it, so the shipped script and the pin no longer disagree."
   },
   "product": "opencti",
