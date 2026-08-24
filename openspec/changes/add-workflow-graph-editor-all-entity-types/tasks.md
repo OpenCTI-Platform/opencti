@@ -1,9 +1,9 @@
 ## 1. Workflow editor routing generalization
 
-- [ ] 1.1 In `Root.tsx`, replace the `isDraftWorkspaceType` branch on the
+- [x] 1.1 In `Root.tsx`, replace the `isDraftWorkspaceType` branch on the
       Workflow tab route with `isWorkflowUiEnabledForType(subTypeId, isFeatureEnable)`,
       keeping `GlobalWorkflowSettingsCard` as the fallback.
-- [ ] 1.2 In `SubTypeWorkflow.tsx`, replace the hardcoded
+- [x] 1.2 In `SubTypeWorkflow.tsx`, replace the hardcoded
       `entityType: 'DraftWorkspace'` query variables with the actual `subTypeId`,
       and pass `entityType` through as a prop to `<Workflow>`.
 - [ ] 1.3 In `Workflow.tsx`, keep `allowDraft` conditioned on
