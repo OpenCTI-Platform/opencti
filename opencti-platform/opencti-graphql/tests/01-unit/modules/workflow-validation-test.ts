@@ -401,6 +401,45 @@ describe('Workflow Validation', () => {
     expect(errors).toEqual([]);
   });
 
+  it('should auto-order a state that is not entangled in any cycle even when the workflow graph has a cycle elsewhere', async () => {
+    const invalid = {
+      initialState: 'existing-state',
+      states: [
+        { statusId: 'existing-state' },
+        { statusId: 'in-progress' },
+        { statusId: 'closed' },
+      ],
+      transitions: [
+        { from: 'existing-state', to: 'in-progress', event: 'start' },
+        { from: 'in-progress', to: 'existing-state', event: 'reopen' },
+        { from: 'existing-state', to: 'closed', event: 'close' },
+      ],
+    };
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident');
+    expect(errors.some((e) => e.type === 'MISSING_MANUAL_ORDER' && e.message.includes('closed'))).toBe(false);
+  });
+
+  it('should still flag a cycle-entangled state as needing a manual order even when the definition also has unrelated acyclic states', async () => {
+    const invalid = {
+      initialState: 'existing-state',
+      states: [
+        { statusId: 'existing-state' },
+        { statusId: 'in-progress' },
+        { statusId: 'closed' },
+      ],
+      transitions: [
+        { from: 'existing-state', to: 'in-progress', event: 'start' },
+        { from: 'in-progress', to: 'existing-state', event: 'reopen' },
+        { from: 'existing-state', to: 'closed', event: 'close' },
+      ],
+    };
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident');
+    expect(errors).toEqual([
+      { type: 'MISSING_MANUAL_ORDER', message: expect.stringContaining('existing-state') },
+      { type: 'MISSING_MANUAL_ORDER', message: expect.stringContaining('in-progress') },
+    ]);
+  });
+
   it('should handle wildcard transitions', async () => {
     const valid = {
       initialState: 'existing-state',

@@ -344,20 +344,20 @@ export const validateWorkflowDefinitionData = async (
       });
     });
 
-    // Ordering: prefer topological (BFS) order derived from the transition graph. When the reachable
-    // subgraph contains a cycle, computeStateOrder returns null and every state must instead carry a
-    // manually supplied `order` value.
+    // Ordering: prefer the longest-simple-path order derived from the transition graph. Only the
+    // specific states entangled in a cycle (or affected by the DFS step cap) come back `null` from
+    // computeStateOrder — those, and only those, must instead carry a manually supplied `order` value.
     const computedOrder = computeStateOrder(initialState, transitions);
-    if (computedOrder === null) {
-      states.forEach((state: z.infer<typeof workflowSerializedStateSchema>) => {
-        if (state.order === undefined) {
-          errors.push({
-            type: 'MISSING_MANUAL_ORDER',
-            message: `State '${state.name || state.statusId}' must have a manual 'order' value: automatic ordering is ambiguous because the workflow graph contains a cycle`,
-          });
-        }
-      });
-    }
+    states.forEach((state: z.infer<typeof workflowSerializedStateSchema>) => {
+      if (!state.statusId) return;
+      const stateOrder = computedOrder.get(state.statusId);
+      if ((stateOrder === null || stateOrder === undefined) && state.order === undefined) {
+        errors.push({
+          type: 'MISSING_MANUAL_ORDER',
+          message: `State '${state.name || state.statusId}' must have a manual 'order' value: automatic ordering is ambiguous because the workflow graph contains a cycle`,
+        });
+      }
+    });
   }
 
   if (existingWorkflowId) {
