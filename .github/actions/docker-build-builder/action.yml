@@ -42,12 +42,12 @@ runs:
         images: filigran/builder
         tags: type=raw,value=${{ inputs.image_tag }}
 
-    - name: Build (builder)
+    - name: Build (builder-back)
       uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a #v7.3.0
       with:
         context: opencti-platform
         file: opencti-platform/Dockerfile${{ inputs.docker_image_suffix }}
-        target: builder
+        target: builder-back
         push: 'false'
         outputs: type=docker,dest=/tmp/opencti-builder${{ inputs.docker_image_suffix }}.tar
         tags: ${{ steps.meta.outputs.tags }}
