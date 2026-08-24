@@ -73,6 +73,7 @@ import { EMPTY_VALUE, truncate } from '../../../utils/String';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { getEntityTypeThreeFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { UserContext } from '../../../utils/hooks/useAuth';
+import useHelper from '../../../utils/hooks/useHelper';
 import {
   AUTOMATION,
   BYPASS,
@@ -94,6 +95,7 @@ import { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMar
 import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectParticipantField';
 import { vocabularyQuery } from '../common/form/OpenVocabField';
 import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
+import { isWorkflowUiEnabledForType } from '../common/workflow/workflowFeatureFlag';
 import { identitySearchIdentitiesSearchQuery } from '../common/identities/IdentitySearch';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import { killChainPhasesSearchQuery } from '../settings/KillChainPhases';
@@ -295,6 +297,16 @@ const toolBarQueryTaskAddMutation = graphql`
   }
 `;
 
+const dataTableToolBarWorkflowTransitionEventsQuery = graphql`
+  query DataTableToolBarWorkflowTransitionEventsQuery($entityType: String!) {
+    workflowDefinition(entityType: $entityType, allowDraft: false, scope: GLOBAL) {
+      transitions {
+        event
+      }
+    }
+  }
+`;
+
 const toolBarConnectorsQuery = graphql`
   query DataTableToolBarConnectorsQuery($type: String!) {
     enrichmentConnectors(type: $type) {
@@ -378,7 +390,10 @@ export const toolBarUsersLinesSearchQuery = graphql`
     }
 `;
 
-class DataTableToolBar extends Component {
+// Named export (in addition to the default hook-wrapped export below) so the class's
+// static, pure helpers (e.g. buildActionFromInput, buildTransitionEventOptions) can be
+// unit-tested directly without mounting the component.
+export class DataTableToolBar extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -409,6 +424,7 @@ class DataTableToolBar extends Component {
       containers: [],
       organizations: [],
       statuses: [],
+      transitionEvents: [],
       externalReferences: [],
       enrichConnectors: [],
       enrichSelected: [],
@@ -574,8 +590,10 @@ class DataTableToolBar extends Component {
     this.setState({ actionsInputs });
   }
 
-  handleLaunchUpdate() {
-    const { actionsInputs } = this.state;
+  // Extracted so the field-remapping logic (in particular the
+  // 'x_opencti_workflow_id_transition' UI-only sentinel -> 'x_opencti_workflow_id'
+  // wire-format remap) can be unit-tested without mounting the component.
+  static buildActionFromInput(n) {
     const categoryAttributeMapping = {
       case_severity_ov: 'severity',
       case_priority_ov: 'priority',
@@ -586,28 +604,42 @@ class DataTableToolBar extends Component {
       platforms_ov: 'x_mitre_platforms',
     };
 
-    const actions = actionsInputs.map((n) => {
-      if (categoryAttributeMapping[n.field]) {
-        return ({
-          type: n.type,
-          context: {
-            field: categoryAttributeMapping[n.field],
-            type: n.fieldType,
-            values: n.values.map((value) => value.label),
-            options: n.options,
-          },
-        });
-      }
-      return {
+    if (categoryAttributeMapping[n.field]) {
+      return ({
         type: n.type,
         context: {
-          field: n.field,
+          field: categoryAttributeMapping[n.field],
           type: n.fieldType,
-          values: n.values,
+          values: n.values.map((value) => value.label),
           options: n.options,
         },
-      };
-    });
+      });
+    }
+    if (n.field === 'x_opencti_workflow_id_transition') {
+      return ({
+        type: n.type,
+        context: {
+          field: 'x_opencti_workflow_id',
+          type: n.fieldType,
+          values: [],
+          options: n.options,
+        },
+      });
+    }
+    return {
+      type: n.type,
+      context: {
+        field: n.field,
+        type: n.fieldType,
+        values: n.values,
+        options: n.options,
+      },
+    };
+  }
+
+  handleLaunchUpdate() {
+    const { actionsInputs } = this.state;
+    const actions = actionsInputs.map((n) => this.constructor.buildActionFromInput(n));
     this.setState({ actions }, () => {
       this.handleCloseUpdate();
       this.handleOpenTask();
@@ -674,6 +706,16 @@ class DataTableToolBar extends Component {
     actionsInputs[i] = R.assoc(
       'options',
       R.assoc(key, event.target.checked, actionsInputs[i]?.options || {}),
+      actionsInputs[i] || {},
+    );
+    this.setState({ actionsInputs });
+  }
+
+  handleChangeActionInputOptionValue(i, key, event, value) {
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = R.assoc(
+      'options',
+      R.assoc(key, value, actionsInputs[i]?.options || {}),
       actionsInputs[i] || {},
     );
     this.setState({ actionsInputs });
@@ -1060,6 +1102,11 @@ class DataTableToolBar extends Component {
             label: t('Status'),
             value: 'x_opencti_workflow_id',
           },
+          selectedTypes.length === 1 && !typesWithoutStatus.includes(selectedTypes[0])
+          && isWorkflowUiEnabledForType(selectedTypes[0], this.props.isFeatureEnable) && {
+            label: t('Apply transition'),
+            value: 'x_opencti_workflow_id_transition',
+          },
         ] : []),
       ].filter(Boolean);
     }
@@ -1352,6 +1399,42 @@ class DataTableToolBar extends Component {
           .sort((a, b) => a.label.localeCompare(b.label))
           .sort((a, b) => a.order - b.order);
         this.setState({ statuses: R.union(this.state.statuses, statuses) });
+      });
+  }
+
+  // Task 11: dedupe transitions by event (a workflow can have several transitions sharing the
+  // same event name from different source states), then map/sort into Autocomplete options.
+  static buildTransitionEventOptions(transitions) {
+    const events = R.uniq((transitions ?? []).map((t) => t.event));
+    return events
+      .map((event) => ({ label: event, value: event }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }
+
+  searchTransitionEvents(i, selectedTypes, event, newValue) {
+    if (!event) return;
+    const { actionsInputs } = this.state;
+    let selectedType;
+    if (selectedTypes.length === 1) {
+      [selectedType] = selectedTypes;
+    } else {
+      throw Error('It is not possible to bulk apply a transition if more than one entity type is selected.');
+    }
+    actionsInputs[i] = R.assoc(
+      'inputValue',
+      newValue && newValue.length > 0 ? newValue : '',
+      actionsInputs[i],
+    );
+    this.setState({ actionsInputs });
+    fetchQuery(dataTableToolBarWorkflowTransitionEventsQuery, {
+      entityType: selectedType,
+    })
+      .toPromise()
+      .then((data) => {
+        const transitionEvents = this.constructor.buildTransitionEventOptions(
+          data?.workflowDefinition?.transitions,
+        );
+        this.setState({ transitionEvents: R.union(this.state.transitionEvents, transitionEvents) });
       });
   }
 
@@ -1753,6 +1836,42 @@ class DataTableToolBar extends Component {
                     {option.order}
                   </Avatar>
                 </div>
+                <div className={classes.text}>{option.label}</div>
+              </li>
+            )}
+          />
+        );
+      case 'x_opencti_workflow_id_transition':
+        return (
+          <Autocomplete
+            disabled={disabled}
+            size="small"
+            fullWidth={true}
+            selectOnFocus={true}
+            autoHighlight={true}
+            getOptionLabel={(option) => (option.label ? option.label : '')}
+            value={
+              this.state.transitionEvents.find(
+                (option) => option.value === actionsInputs[i]?.options?.eventName,
+              ) || null
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="standard"
+                label={t('Values')}
+                fullWidth={true}
+                onFocus={this.searchTransitionEvents.bind(this, i, selectedTypes)}
+                style={{ marginTop: 3 }}
+              />
+            )}
+            noOptionsText={t('No available options')}
+            options={this.state.transitionEvents}
+            onInputChange={this.searchTransitionEvents.bind(this, i, selectedTypes)}
+            inputValue={actionsInputs[i]?.inputValue || ''}
+            onChange={(event, value) => this.handleChangeActionInputOptionValue(i, 'eventName', event, value?.value ?? null)}
+            renderOption={(props, option) => (
+              <li {...props}>
                 <div className={classes.text}>{option.label}</div>
               </li>
             )}
@@ -3513,6 +3632,14 @@ DataTableToolBar.propTypes = {
   removeFromDraft: PropTypes.bool,
   markAsReadEnabled: PropTypes.bool,
   taskScope: PropTypes.string,
+  isFeatureEnable: PropTypes.func,
 };
 
-export default R.compose(inject18n, withTheme, withStyles(styles))(DataTableToolBar);
+const ComposedDataTableToolBar = R.compose(inject18n, withTheme, withStyles(styles))(DataTableToolBar);
+
+const DataTableToolBarWithHooks = (props) => {
+  const { isFeatureEnable } = useHelper();
+  return <ComposedDataTableToolBar {...props} isFeatureEnable={isFeatureEnable} />;
+};
+
+export default DataTableToolBarWithHooks;
