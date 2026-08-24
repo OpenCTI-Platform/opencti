@@ -8819,10 +8819,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html-to-pdfmake@npm:2.5.33":
-  version: 2.5.33
-  resolution: "html-to-pdfmake@npm:2.5.33"
-  checksum: 10c0/3ffd125d26c7ff09a6b4d9ac9bc8f92677ac8e31823963f286aab166b83f7479696ac8ef42d5e59855b16fd8ed84f3147fa7e2f51921d769b756f8c4a1bd47bc
+"html-to-pdfmake@npm:2.5.34":
+  version: 2.5.34
+  resolution: "html-to-pdfmake@npm:2.5.34"
+  checksum: 10c0/20554b268ae7a13fffcecf7404c103c44c8cbc641445a97900dc9fcaf484b0e29b6e18b4a614dc28b44d11b8bdab945422569bd471e01d3411fbfc1f2d98f172
   languageName: node
   linkType: hard
 
@@ -11830,7 +11830,7 @@ __metadata:
     graphql-ws: "npm:6.2.1"
     html-react-parser: "npm:6.1.7"
     html-to-image: "npm:1.11.13"
-    html-to-pdfmake: "npm:2.5.33"
+    html-to-pdfmake: "npm:2.5.34"
     i18n-auto-translation: "npm:2.2.3"
     invert-color: "npm:3.0.0"
     ipaddr.js: "npm:2.5.0"
