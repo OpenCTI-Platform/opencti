@@ -37,7 +37,7 @@ import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/sti
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { FilterMode } from '../../generated/graphql';
 import { PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT } from './components/send-email-template-component';
-import { extractBundleBaseElement } from './playbook-utils';
+import { buildPlaybookEventContext, extractBundleBaseElement } from './playbook-utils';
 import { PLAYBOOK_DATA_STREAM_PIR } from './components/data-stream-pir-component';
 import { pushAll } from '../../utils/arrayUtil';
 import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT } from './components/container-wrapper-component';
@@ -239,23 +239,24 @@ export const PLAYBOOK_MATCHING_COMPONENT: PlaybookComponent<MatchConfiguration> 
   ports: [{ id: 'out', type: 'out' }, { id: 'no-match', type: 'out' }],
   configuration_schema: PLAYBOOK_MATCHING_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_MATCHING_COMPONENT_SCHEMA,
-  executor: async ({ playbookNode, dataInstanceId, bundle }) => {
+  executor: async ({ playbookNode, dataInstanceId, bundle, event }) => {
     const context = executionContext('playbook_components');
     const { filters, all } = playbookNode.configuration;
     const jsonFilters = JSON.parse(filters);
+    const eventContext = buildPlaybookEventContext(event);
     // Checking on all bundle elements
     if (all) {
       let matchedElements = 0;
       for (let index = 0; index < bundle.objects.length; index += 1) {
         const bundleElement = bundle.objects[index];
-        const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, bundleElement, jsonFilters);
+        const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, bundleElement, jsonFilters, eventContext);
         if (isMatch) matchedElements += 1;
       }
       return { output_port: matchedElements > 0 ? 'out' : 'no-match', bundle };
     }
     // Only checking base data
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
-    const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, baseData, jsonFilters);
+    const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, baseData, jsonFilters, eventContext);
     return { output_port: isMatch ? 'out' : 'no-match', bundle };
   },
 };
@@ -281,15 +282,16 @@ export const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration>
   ports: [{ id: 'out', type: 'out' }, { id: 'unmatch', type: 'out' }],
   configuration_schema: PLAYBOOK_REDUCING_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_REDUCING_COMPONENT_SCHEMA,
-  executor: async ({ playbookNode, dataInstanceId, bundle }) => {
+  executor: async ({ playbookNode, dataInstanceId, bundle, event }) => {
     const context = executionContext('playbook_components');
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const { filters } = playbookNode.configuration;
     const jsonFilters = JSON.parse(filters);
+    const eventContext = buildPlaybookEventContext(event);
     const matchedElements = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const bundleElement = bundle.objects[index];
-      const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, bundleElement, jsonFilters);
+      const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, bundleElement, jsonFilters, eventContext);
       if (isMatch) {
         matchedElements.push(bundleElement);
       }
