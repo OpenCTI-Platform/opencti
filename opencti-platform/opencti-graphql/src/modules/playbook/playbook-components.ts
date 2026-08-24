@@ -37,7 +37,6 @@ import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/sti
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { FilterMode } from '../../generated/graphql';
 import { PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT } from './components/send-email-template-component';
-import { buildPlaybookEventContext, extractBundleBaseElement } from './playbook-utils';
 import { PLAYBOOK_DATA_STREAM_PIR } from './components/data-stream-pir-component';
 import { pushAll } from '../../utils/arrayUtil';
 import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT } from './components/container-wrapper-component';
@@ -52,6 +51,7 @@ import { PLAYBOOK_CREATE_OBSERVABLE_COMPONENT } from './components/create-observ
 import { PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT } from './components/ai-agent-component';
 import { PLAYBOOK_AI_AGENT_SEND_COMPONENT } from './components/ai-agent-send-component';
 import { PLAYBOOK_NOTIFIER_COMPONENT } from './components/notifier-component';
+import { buildPlaybookEventContext, extractBundleBaseElement } from './playbook-utils';
 
 // region built in playbook components
 interface LoggerConfiguration {
