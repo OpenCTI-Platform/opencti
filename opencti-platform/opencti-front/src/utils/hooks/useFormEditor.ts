@@ -9,7 +9,7 @@ import { FieldOption } from '../field';
 export interface GenericData {
   id: string;
   entity_type?: string;
-  confidence?: number;
+  confidence?: number | null;
   readonly objectMarking?: {
     readonly edges: ReadonlyArray<{
       readonly node: {
