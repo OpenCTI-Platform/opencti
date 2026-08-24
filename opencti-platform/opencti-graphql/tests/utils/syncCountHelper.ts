@@ -114,7 +114,7 @@ testMergedCounter['attack-pattern'] = 1;
 
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
-testDeletedCounter['attack-pattern'] = 6;
+testDeletedCounter['attack-pattern'] = 15;
 testDeletedCounter.campaign = 2;
 testDeletedCounter['case-incident'] = 7;
 testDeletedCounter['case-rfi'] = 8;

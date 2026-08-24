@@ -147,6 +147,7 @@ const SelectEntitiesToCoverStep = ({ coveredEntity, onSelectEntities }: SelectEn
   const isContainer = coveredEntity.parent_types.includes('Container');
   const initialFilters = isContainer
     ? [
+        // To get the objects contained
         {
           key: 'objects',
           values: [coveredEntity.id],
@@ -163,6 +164,7 @@ const SelectEntitiesToCoverStep = ({ coveredEntity, onSelectEntities }: SelectEn
           values: [
             { key: 'id', values: [coveredEntity.id] },
             { key: 'relationship_type', values: ['targets', 'uses'] },
+            // To keep only relationships going from the covered entity, not towards it
             { key: 'direction_forced', values: [true] },
             { key: 'direction_reverse', values: [false] },
           ],
@@ -171,7 +173,6 @@ const SelectEntitiesToCoverStep = ({ coveredEntity, onSelectEntities }: SelectEn
       ];
 
   // 2. Filters added by user
-  // const [filters, helpers] = useFiltersState(emptyFilterGroup);
   const initialValues = {
     searchTerm: '',
     sortBy: 'entity_type',
