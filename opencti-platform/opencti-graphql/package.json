@@ -107,7 +107,7 @@
     "csv-parse": "7.0.2",
     "dataloader": "2.2.3",
     "ejs": "6.0.1",
-    "eventsource": "2.0.2",
+    "eventsource": "5.1.0",
     "eventsource-parser": "4.1.0",
     "express": "5.2.1",
     "express-rate-limit": "8.6.2",
@@ -224,7 +224,6 @@
     "ioredis": "5.8.2",
     "json5": "2.2.3",
     "openid-clientv5/jose": "5.10.0",
-    "eventsource": "patch:eventsource@2.0.2#./patch/eventsource-2.0.2.patch",
     "graphql": "patch:graphql@17.0.2#./patch/graphql-17.patch",
     "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch",
     "openid-clientv5": "patch:openid-client@5.7.1#./patch/openid-client.patch"
