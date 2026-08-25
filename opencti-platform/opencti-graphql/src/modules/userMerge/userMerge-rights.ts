@@ -100,22 +100,8 @@ export const userMergeRightsDifference = (left: string[], right: string[]): stri
  * into one, and collapsing to anything but the strongest of the two would silently demote an
  * access the merge was not asked to change.
  */
-const ACCESS_RIGHT_ORDER = [MEMBER_ACCESS_RIGHT_VIEW, MEMBER_ACCESS_RIGHT_USE, MEMBER_ACCESS_RIGHT_EDIT, MEMBER_ACCESS_RIGHT_ADMIN];
+export const ACCESS_RIGHT_ORDER = [MEMBER_ACCESS_RIGHT_VIEW, MEMBER_ACCESS_RIGHT_USE, MEMBER_ACCESS_RIGHT_EDIT, MEMBER_ACCESS_RIGHT_ADMIN];
 
 export const userMergeStrongestAccessRight = (left: string, right: string): string => {
   return ACCESS_RIGHT_ORDER.indexOf(left) >= ACCESS_RIGHT_ORDER.indexOf(right) ? left : right;
-};
-
-/**
- * Group restrictions narrow an authorized member entry: the reader must belong to every listed
- * group. Two entries collapsing into one keep the intersection, which is the only combination
- * that grants neither more nor less than the two entries did separately.
- */
-export const userMergeMergedGroupsRestriction = (left: string[] | undefined, right: string[] | undefined): string[] => {
-  const leftGroups = left ?? [];
-  const rightGroups = right ?? [];
-  if (leftGroups.length === 0 || rightGroups.length === 0) {
-    return [];
-  }
-  return leftGroups.filter((group) => rightGroups.includes(group));
 };
