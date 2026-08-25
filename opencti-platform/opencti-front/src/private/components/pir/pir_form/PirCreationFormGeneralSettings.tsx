@@ -77,11 +77,12 @@ const PirCreationFormGeneralSettings = ({ redisQueryRef }: PirCreationFormGenera
         fullWidth={true}
         containerstyle={{ marginTop: 20, width: '100%' }}
         helpertext={t_i18n('How far back to rescan at creation. If the PIR engine has less history than this period, only the history period will be taken')}
+        numeric
       >
-        <SelectItem value={0}>{t_i18n('No rescan')}</SelectItem>
-        <SelectItem value={1}>{t_i18n('1 day')}</SelectItem>
-        <SelectItem value={30}>{t_i18n('1 month')}</SelectItem>
-        <SelectItem value={182}>{t_i18n('6 months')}</SelectItem>
+        <SelectItem value="0">{t_i18n('No rescan')}</SelectItem>
+        <SelectItem value="1">{t_i18n('1 day')}</SelectItem>
+        <SelectItem value="30">{t_i18n('1 month')}</SelectItem>
+        <SelectItem value="182">{t_i18n('6 months')}</SelectItem>
       </Field>
       {showRescanAlert
         && (

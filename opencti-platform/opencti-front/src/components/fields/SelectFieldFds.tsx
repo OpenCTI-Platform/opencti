@@ -37,6 +37,14 @@ export type SelectFieldFdsProps = FieldProps<string> & {
    * moment the user takes the field, which is what the context means.
    */
   onFocus?: (name: string) => void;
+  /**
+   * The field's value is a NUMBER in the form and in the API, not a string.
+   * Radix keys a Select on strings only, so the options carry stringified
+   * values and this converts back on the way out. Without it a numeric field
+   * silently starts submitting "30" where the schema wants 30 — which is what
+   * `pir_rescan_days` did the moment it was converted.
+   */
+  numeric?: boolean;
 };
 
 const SelectFieldFds = ({
@@ -53,23 +61,25 @@ const SelectFieldFds = ({
   onChange,
   onSubmit,
   onFocus,
+  numeric,
 }: SelectFieldFdsProps) => {
   const [, meta] = useField(name);
   const showError = !isNilField(meta.error) && (meta.touched || submitCount > 0);
 
   const handleValueChange = useCallback((next: string) => {
-    setFieldValue(name, next);
-    onChange?.(name, next);
+    const committed = (numeric ? Number(next) : next) as string;
+    setFieldValue(name, committed);
+    onChange?.(name, committed);
     // MUI reported the committed value on blur; a Radix Select commits on pick
     // and never fires a blur carrying it, so the submit hook moves here.
-    onSubmit?.(name, next);
+    onSubmit?.(name, committed);
     setFieldTouched(name, true);
-  }, [name, onChange, onSubmit, setFieldValue, setFieldTouched]);
+  }, [name, numeric, onChange, onSubmit, setFieldValue, setFieldTouched]);
 
   return (
     <div style={containerstyle} className={className}>
       <Select
-        value={(value ?? '') as string}
+        value={value === null || value === undefined ? '' : String(value)}
         onValueChange={handleValueChange}
         onOpenChange={(open) => {
           if (open) onFocus?.(name);

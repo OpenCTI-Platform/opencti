@@ -540,7 +540,7 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                   return (
                     <SelectItem
                       key={i}
-                      value={connector?.id}
+                      value={connector?.id ?? ''}
                       disabled={disabled || !connector?.active}
                     >
                       {connector?.name}

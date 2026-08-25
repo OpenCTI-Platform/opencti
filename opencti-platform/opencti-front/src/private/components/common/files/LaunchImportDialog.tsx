@@ -294,7 +294,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
                   return (
                     <SelectItem
                       key={connector?.id}
-                      value={connector?.id}
+                      value={connector?.id ?? ''}
                       disabled={disabled || !connector?.active || noAgents}
                     >
                       {connector?.name}

@@ -21,10 +21,15 @@ export default class SelectFieldPageModel {
   }
 
   getOption(option: string) {
-    return this.parentLocator.getByText(option);
+    return this.parentLocator.getByText(option).first();
   }
 
+  // `.first()` because the library field nests its helper text inside the same
+  // subtree the trigger hangs from, so `getByText` matches the <p> AND its
+  // wrapper — two descriptions of one string, which strict mode rejects. The
+  // adapter renders exactly one `SelectHelperText`, so there is no duplicate
+  // error message to hide here.
   getByText(input: string) {
-    return this.parentLocator.getByText(input);
+    return this.parentLocator.getByText(input).first();
   }
 }
