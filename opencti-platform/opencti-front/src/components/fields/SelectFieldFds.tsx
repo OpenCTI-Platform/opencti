@@ -83,7 +83,14 @@ const SelectFieldFds = ({
         <SelectTrigger>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
-        <SelectContent>{children}</SelectContent>
+        {/* Named after its field. Radix puts `role="listbox"` on the content,
+            and without a name every select panel in the product is anonymous —
+            the same defect `ComboboxContent` had with its "Suggestions"
+            default, found the same way, by an E2E locator that goes through the
+            accessible name exactly as a screen reader does. */}
+        <SelectContent aria-label={typeof label === 'string' ? label : undefined}>
+          {children}
+        </SelectContent>
         {(showError || helpertext) ? (
           <SelectHelperText>{showError ? meta.error : helpertext}</SelectHelperText>
         ) : null}
