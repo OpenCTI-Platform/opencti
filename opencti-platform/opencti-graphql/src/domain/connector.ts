@@ -16,9 +16,11 @@ import {
   type ConnectorHealthMetrics,
   delEditContext,
   notify,
+  redisGetConnectorErrorResetAt,
   redisGetConnectorHealthMetrics,
   redisGetWork,
   redisSetConnectorError,
+  redisSetConnectorErrorResetAt,
   redisSetConnectorHealthMetrics,
   redisSetConnectorLogs,
   setEditContext,
@@ -58,7 +60,7 @@ import type { BasicStoreCommon, StoreEntity } from '../types/store';
 import { addConnectorDeployedCount, addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '../manager/telemetryManager';
 import { computeConnectorTargetContract, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 import { getEntitiesMapFromCache } from '../database/cache';
-import { parseConnectorLogsError } from './connectorErrors';
+import { parseConnectorLogsError, NO_CONNECTOR_ERROR } from './connectorErrors';
 
 import { createOnTheFlyUser } from '../modules/user/user-domain';
 import { addDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-domain';
@@ -198,6 +200,16 @@ export const updateConnectorManagerStatus = async (context: AuthContext, user: A
   return element;
 };
 
+// Clears the connector error status and sets a watermark so that log lines
+// emitted before this instant no longer flag the connector. Called on connector
+// creation, configuration update and (re)start: a reconfigured connector must
+// start from a clean slate and only be re-flagged by genuinely new errors, even
+// when it produces no success log to clear a previous configuration error.
+export const connectorResetErrorStatus = async (connectorId: string) => {
+  await redisSetConnectorError(connectorId, NO_CONNECTOR_ERROR);
+  await redisSetConnectorErrorResetAt(connectorId, now());
+};
+
 export const managedConnectorEdit = async (
   context: AuthContext,
   user: AuthUser,
@@ -231,6 +243,9 @@ export const managedConnectorEdit = async (
     manager_contract_configuration: contractConfigurations,
   };
   const { element } = await patchAttribute(context, user, input.id, ENTITY_TYPE_CONNECTOR, patch);
+  // Reconfigured connector: clear any previous error so it is only re-flagged by
+  // new errors produced after this update.
+  await connectorResetErrorStatus(input.id);
   return element;
 };
 
@@ -299,6 +314,8 @@ export const managedConnectorAdd = async (
   };
 
   const createdConnector: any = await createEntity(context, user, connectorToCreate, ENTITY_TYPE_CONNECTOR);
+  // New connector: start from a clean error slate.
+  await connectorResetErrorStatus(createdConnector.internal_id);
   // Increment telemetry for connector deployed via composer
   await addConnectorDeployedCount();
   // Publish
@@ -423,8 +440,10 @@ const updateConnector = async (context: AuthContext, user: AuthUser, connectorId
 export const connectorUpdateLogs = async (_context: AuthContext, _user: AuthUser, input: LogsConnectorStatusInput) => {
   await redisSetConnectorLogs(input.id, input.logs);
   // Parse the freshly pushed logs to keep the compact error status up to date,
-  // so the UI does not have to fetch and parse the whole logs array.
-  const errorStatus = parseConnectorLogsError(input.logs);
+  // so the UI does not have to fetch and parse the whole logs array. Log lines
+  // predating the last reset (update/start) are ignored via the watermark.
+  const resetAt = await redisGetConnectorErrorResetAt(input.id);
+  const errorStatus = parseConnectorLogsError(input.logs, resetAt);
   await redisSetConnectorError(input.id, errorStatus);
   return input.id;
 };
@@ -464,6 +483,9 @@ export const connectorGetUptime = async (context: AuthContext, user: AuthUser, c
 
 export const updateConnectorRequestedStatus = async (context: AuthContext, user: AuthUser, input: RequestConnectorStatusInput) => {
   const ediInput: EditInput[] = [{ key: 'manager_requested_status', value: [input.status] }];
+  // Lifecycle change (start/stop/restart): clear any stale error so the status
+  // reflects the new run and is only re-flagged by new errors.
+  await connectorResetErrorStatus(input.id);
   return updateConnector(context, user, input.id, ediInput);
 };
 

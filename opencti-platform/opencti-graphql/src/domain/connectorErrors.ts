@@ -71,15 +71,34 @@ const isErrorLevel = (level: string | null): boolean => {
 /**
  * Scans a connector's raw logs (chronological, oldest first) and returns its
  * current authentication error status.
+ *
+ * @param logs the raw log lines pushed by the composer
+ * @param since optional ISO timestamp watermark: log lines strictly older than
+ *   this instant are ignored. Set when the connector is updated/started so that
+ *   stale error lines predating the change never re-flag a connector that has
+ *   just been reconfigured (a config error produces no success line to clear it).
  */
-export const parseConnectorLogsError = (logs: ReadonlyArray<string | null> | null | undefined): ConnectorErrorStatus => {
+export const parseConnectorLogsError = (
+  logs: ReadonlyArray<string | null> | null | undefined,
+  since?: string | null,
+): ConnectorErrorStatus => {
   if (!logs || logs.length === 0) return NO_CONNECTOR_ERROR;
+
+  const sinceMs = since ? new Date(since).getTime() : Number.NaN;
+  const hasWatermark = !Number.isNaN(sinceMs);
 
   let current: ConnectorErrorStatus = NO_CONNECTOR_ERROR;
   try {
     for (const raw of logs) {
       if (!raw) continue;
       const { level, message, timestamp } = parseLogLine(raw);
+
+      // Skip log lines emitted before the last reset watermark: they belong to
+      // a previous configuration and must not resurrect a cleared error.
+      if (hasWatermark && timestamp) {
+        const lineMs = new Date(timestamp).getTime();
+        if (!Number.isNaN(lineMs) && lineMs < sinceMs) continue;
+      }
 
       const code = detectAuthCode(message);
       if (code !== null && isErrorLevel(level)) {

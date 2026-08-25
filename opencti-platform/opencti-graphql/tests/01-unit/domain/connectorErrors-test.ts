@@ -72,4 +72,24 @@ describe('parseConnectorLogsError', () => {
     ]);
     expect(state.in_error).toBe(true);
   });
+
+  it('ignores error lines older than the reset watermark', () => {
+    const state = parseConnectorLogsError(
+      [jsonLog('ERROR', '401 Unauthorized', '2026-01-01T00:00:00.000Z')],
+      '2026-01-01T01:00:00.000Z',
+    );
+    expect(state.in_error).toBe(false);
+  });
+
+  it('flags an error logged after the reset watermark', () => {
+    const state = parseConnectorLogsError(
+      [
+        jsonLog('ERROR', '401 Unauthorized', '2026-01-01T00:00:00.000Z'),
+        jsonLog('ERROR', '403 Forbidden', '2026-01-01T02:00:00.000Z'),
+      ],
+      '2026-01-01T01:00:00.000Z',
+    );
+    expect(state.in_error).toBe(true);
+    expect(state.code).toBe(403);
+  });
 });

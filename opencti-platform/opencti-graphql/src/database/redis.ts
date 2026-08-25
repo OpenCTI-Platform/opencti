@@ -813,6 +813,14 @@ export const redisGetConnectorError = async (connectorId: string): Promise<Conne
   const raw = await getClientBase().get(`connector-${connectorId}-error`);
   return raw ? JSON.parse(raw) : null;
 };
+// Watermark set on connector update/start: log lines older than this instant are
+// ignored by the error parser so a reconfigured connector is not kept in error.
+export const redisSetConnectorErrorResetAt = async (connectorId: string, timestamp: string) => {
+  await getClientBase().set(`connector-${connectorId}-error-reset`, timestamp);
+};
+export const redisGetConnectorErrorResetAt = async (connectorId: string): Promise<string | null> => {
+  return getClientBase().get(`connector-${connectorId}-error-reset`);
+};
 
 const getIngestionLogKey = (feedId: string) => `ingestion-${feedId}-history`;
 
