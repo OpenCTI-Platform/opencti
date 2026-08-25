@@ -166,14 +166,6 @@ You can also control how OpenCTI validates the IdP's response using:
     openssl pkcs12 -in keystore.p12 -out newfile.pem -nodes
     ```
 
-!!! tip "Generate a signing key pair"
-
-    If you do not already have a key pair to sign your requests, you can generate a self-signed one with OpenSSL:
-    ```bash
-    openssl req -x509 -newkey rsa:2048 -keyout private_key.pem -out signing_cert.pem -days 365 -nodes \
-      -subj "/CN=your-opencti-instance"
-    ```
-    Paste the content of `private_key.pem` into the `Private key` field, and the content of `signing_cert.pem` into the `Signing certificate` field.
 
 !!! warning "Troubleshooting a signature error"
 
