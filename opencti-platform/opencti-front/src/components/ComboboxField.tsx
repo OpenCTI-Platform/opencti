@@ -208,7 +208,15 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
       >
         {label ? <ComboboxLabel>{label}</ComboboxLabel> : null}
         <FdsComboboxField>
-          {multiple ? <ComboboxChips /> : null}
+          {/* Named after the field, for the same reason ComboboxContent is:
+              ComboboxChips defaults its accessible name to the English literal
+              "Selected values", so every chip row in the product would answer
+              to one name and none to its field's. */}
+          {multiple ? (
+            <ComboboxChips
+              aria-label={typeof label === 'string' ? label : undefined}
+            />
+          ) : null}
           <ComboboxInput
             name={name}
             placeholder={placeholder}

@@ -22,9 +22,17 @@ export default class AutocompleteFieldPageModel {
   }
 
   getOption(option: string) {
-    return this.multiple
-      ? this.parentLocator.getByRole('button', { name: option })
-      : this.inputLocator;
+    if (!this.multiple) return this.inputLocator;
+    // Two DOM shapes live side by side while the migration runs. MUI renders a
+    // selected value as a BUTTON named after it; the library renders it as a
+    // list item inside a chip row named after the field. Matching either keeps
+    // this model working for converted and unconverted sites alike.
+    const muiChip = this.parentLocator.getByRole('button', { name: option });
+    const libraryChip = (this.rootLocator ?? this.page)
+      .getByRole('list', { name: this.label })
+      .getByRole('listitem')
+      .filter({ hasText: option });
+    return muiChip.or(libraryChip);
   }
 
   /**
