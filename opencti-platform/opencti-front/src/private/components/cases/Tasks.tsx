@@ -4,6 +4,7 @@ import { TasksLinesPaginationQuery, TasksLinesPaginationQuery$variables } from '
 import { TasksLines_data$data } from './__generated__/TasksLines_data.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import useAuth from '../../../utils/hooks/useAuth';
 import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
@@ -46,6 +47,16 @@ const TaskFragment = graphql`
       template {
         name
         color
+      }
+    }
+    workflowInstance {
+      id
+      currentStatus {
+        template {
+          id
+          name
+          color
+        }
       }
     }
   }
@@ -112,6 +123,7 @@ const Tasks = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Tasks | Cases'));
+  const { platformModuleHelpers: { isFeatureEnable } } = useAuth();
 
   const initialValues = {
     searchTerm: '',
@@ -151,7 +163,7 @@ const Tasks = () => {
     },
     objectAssignee: { percentWidth: 20 },
     objectLabel: { percentWidth: 20 },
-    x_opencti_workflow_id: { percentWidth: 10 },
+    ...(isFeatureEnable('ENTITIES_WORKFLOW') ? { workflowInstance: { percentWidth: 10 } } : { x_opencti_workflow_id: { percentWidth: 10 } }),
   };
 
   const preloadedPaginationProps = {
