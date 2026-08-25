@@ -1,6 +1,7 @@
 import { INDEX_DELETED_OBJECTS, READ_INDEX_DRAFT_OBJECTS, READ_PLATFORM_INDICES } from '../../database/utils';
-import type { AuthContext } from '../../types/user';
+import type { AuthContext, AuthUser } from '../../types/user';
 import type { UserMergeOptions } from './userMerge-types';
+import type { UserMergeProjectedRights, UserMergeRightsLabels } from './userMerge-rights';
 
 /**
  * Index scope of every handler, defined once here rather than per handler.
@@ -67,6 +68,29 @@ export interface UserMergeHandlerContext {
   sourceId: string;
   targetId: string;
   options: UserMergeOptions;
+  /** Both users, resolved once by the engine. Never optional: see `rights`. */
+  sourceUser: AuthUser;
+  targetUser: AuthUser;
+  /**
+   * The rights of each user, and the rights the target holds once the strategy is applied.
+   *
+   * Computed once by the engine rather than by each handler: every handler computes before any
+   * handler writes, so a handler asking the platform what the target can access would only ever
+   * get the pre-merge answer. Passing the projection keeps the read/write disjointness rule
+   * intact — the handler that writes the memberships is not read by the ones that need them.
+   *
+   * Required on purpose. A handler that had to cope with a missing projection would skip its
+   * blocking alerts while the merge carried on, which is a security check failing open; the
+   * engine aborts instead, so that shape cannot be written here.
+   */
+  rights: UserMergeRightsProjection;
+}
+
+export interface UserMergeRightsProjection {
+  source: UserMergeProjectedRights;
+  target: UserMergeProjectedRights;
+  projected: UserMergeProjectedRights;
+  labels: UserMergeRightsLabels;
 }
 
 /**
