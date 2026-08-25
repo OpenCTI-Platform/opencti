@@ -4,7 +4,8 @@ import { Label } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql } from 'react-relay';
 import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import { ComboboxChangeMeta } from '@filigran/design-system';
+import ComboboxField from '../../../../components/ComboboxField';
 import StatusTemplateCreation from '../../settings/status_templates/StatusTemplateCreation';
 import { useFormatter } from '../../../../components/i18n';
 import { StatusTemplateFieldSearchQuery$data } from './__generated__/StatusTemplateFieldSearchQuery.graphql';
@@ -111,7 +112,7 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
   return (
     <div style={{ width: '100%' }}>
       <Field
-        component={AutocompleteField}
+        component={ComboboxField}
         name={name}
         style={style}
         value={normalizedValue}
@@ -120,32 +121,25 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
             setFieldValue(name, value);
           }
         }}
-        textfieldprops={{
-          variant: 'standard',
-          label: label && t_i18n('Name'),
-          helperText: helpertext,
-          // Prevent filtering on previous status
-          onFocus: () => handleSearch(''),
-        }}
+        label={label && t_i18n('Name')}
+        helperText={helpertext}
+        // Prevent filtering on previous status
+        onFocusInput={() => handleSearch('')}
         required={required}
         noOptionsText={t_i18n('No available options')}
         options={statusTemplates}
-        onInputChange={(_event: React.FocusEvent<HTMLInputElement>, value: string) => {
-          handleSearch(value);
+        onInputChange={(value: string, meta: ComboboxChangeMeta) => {
+          if (meta.cause === 'type') handleSearch(value);
         }}
-        openCreate={handleOpenStatusTemplateCreation}
-        renderOption={(
-          { key, ...optionProps }: React.HTMLAttributes<HTMLLIElement> & { key?: string | number },
-          option: { color: string; label: string },
-        ) => (
-          <li key={key} {...optionProps}>
+        onCreateOption={handleOpenStatusTemplateCreation}
+        renderOption={(option: { color: string; label: string }) => (
+          <>
             <div className={classes.icon} style={{ color: option.color }}>
               <Label />
             </div>
             <div className={classes.text}>{option.label}</div>
-          </li>
+          </>
         )}
-        classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
       <StatusTemplateCreation
         contextual={true}
