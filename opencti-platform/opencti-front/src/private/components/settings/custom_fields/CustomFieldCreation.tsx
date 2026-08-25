@@ -5,7 +5,6 @@ import { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import InputAdornment from '@mui/material/InputAdornment';
-import MenuItem from '@mui/material/MenuItem';
 import MuiAutocomplete from '@mui/material/Autocomplete';
 import MuiTextField from '@mui/material/TextField';
 import Chip from '@mui/material/Chip';
@@ -14,7 +13,7 @@ import FormButtonContainer from '../../../../components/common/form/FormButtonCo
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { commitMutation, defaultCommitMutation, handleErrorInForm } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import { CustomFieldDefinitionAddInput } from './__generated__/CustomFieldCreationMutation.graphql';
@@ -130,21 +129,21 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
           {({ submitForm, handleReset, isSubmitting, values, setFieldValue, setFieldTouched, touched, errors, submitCount }) => (
             <Form>
               <Field
-                component={SelectField}
+                component={SelectFieldFds}
                 variant="standard"
                 name="field_type"
                 label={t_i18n('Field type')}
                 fullWidth={true}
                 containerstyle={{ width: '100%' }}
               >
-                <MenuItem value="" disabled>{t_i18n('Select a type')}</MenuItem>
-                <MenuItem value="string">{t_i18n('Text')}</MenuItem>
-                <MenuItem value="markdown">{t_i18n('Markdown')}</MenuItem>
-                <MenuItem value="integer">{t_i18n('Number')}</MenuItem>
-                <MenuItem value="boolean">{t_i18n('Boolean')}</MenuItem>
-                <MenuItem value="date">{t_i18n('Date')}</MenuItem>
-                <MenuItem value="select">{t_i18n('Selection list')}</MenuItem>
-                <MenuItem value="multi_select">{t_i18n('Multiple selection list')}</MenuItem>
+                <SelectItem value="" disabled>{t_i18n('Select a type')}</SelectItem>
+                <SelectItem value="string">{t_i18n('Text')}</SelectItem>
+                <SelectItem value="markdown">{t_i18n('Markdown')}</SelectItem>
+                <SelectItem value="integer">{t_i18n('Number')}</SelectItem>
+                <SelectItem value="boolean">{t_i18n('Boolean')}</SelectItem>
+                <SelectItem value="date">{t_i18n('Date')}</SelectItem>
+                <SelectItem value="select">{t_i18n('Selection list')}</SelectItem>
+                <SelectItem value="multi_select">{t_i18n('Multiple selection list')}</SelectItem>
               </Field>
               {values.field_type !== '' && (
                 <>

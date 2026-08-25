@@ -10,7 +10,6 @@ import { Stack } from '@mui/material';
 import CardContent from '@mui/material/CardContent';
 import DialogActions from '@mui/material/DialogActions';
 import Grid from '@mui/material/Grid2';
-import MenuItem from '@mui/material/MenuItem';
 import Step from '@mui/material/Step';
 import StepButton from '@mui/material/StepButton';
 import StepLabel from '@mui/material/StepLabel';
@@ -25,7 +24,7 @@ import React, { useEffect, useState } from 'react';
 import * as Yup from 'yup';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import Card from '../../../../components/common/card/Card';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -438,7 +437,7 @@ const StixCoreObjectFileExportForm = ({
                       )}
                       {!isBuiltInConnector(values.connector.value) && (
                         <Field
-                          component={SelectField}
+                          component={SelectFieldFds}
                           variant="standard"
                           name="type"
                           aria-label="TYPE"
@@ -446,12 +445,12 @@ const StixCoreObjectFileExportForm = ({
                           fullWidth={true}
                           containerstyle={fieldSpacingContainerStyle}
                         >
-                          <MenuItem value="simple">
+                          <SelectItem value="simple">
                             {t_i18n('Simple export (just the entity)')}
-                          </MenuItem>
-                          <MenuItem value="full">
+                          </SelectItem>
+                          <SelectItem value="full">
                             {t_i18n('Full export (entity and first neighbours)')}
-                          </MenuItem>
+                          </SelectItem>
                         </Field>
                       )}
                       {isBuiltInConnector(values.connector.value) && (

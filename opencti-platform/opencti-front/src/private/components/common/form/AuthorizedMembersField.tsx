@@ -3,7 +3,6 @@ import AlertTitle from '@mui/material/AlertTitle';
 import ObjectMembersField, { OptionMember } from '@components/common/form/ObjectMembersField';
 import FormHelperText from '@mui/material/FormHelperText';
 import { Field, FieldArray, FieldProps, Formik } from 'formik';
-import MenuItem from '@mui/material/MenuItem';
 import Button from '@common/button/Button';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
@@ -12,7 +11,7 @@ import * as Yup from 'yup';
 import { FormikHelpers } from 'formik/dist/types';
 import AuthorizedMembersFieldListItem from '@components/common/form/AuthorizedMembersFieldListItem';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../components/i18n';
 import { AccessRight, ALL_MEMBERS_AUTHORIZED_CONFIG, AuthorizedMemberOption, Creator, CREATOR_AUTHORIZED_CONFIG } from '../../../../utils/authorizedMembers';
 import SwitchField from '../../../../components/fields/SwitchField';
@@ -459,19 +458,19 @@ const AuthorizedMembersField = ({
                     </div>
                     <Field
                       name="newAccessRight"
-                      component={SelectField}
+                      component={SelectFieldFds}
                       label={t_i18n('Access right')}
                       style={{ m: 1, minWidth: 120 }}
                       size="small"
                       disabled={!values.applyAccesses}
                     >
                       {accessRights.map((accessRight) => (
-                        <MenuItem
+                        <SelectItem
                           value={accessRight.value}
                           key={accessRight.value}
                         >
                           {accessRight.label}
-                        </MenuItem>
+                        </SelectItem>
                       ))}
                     </Field>
                     <Button

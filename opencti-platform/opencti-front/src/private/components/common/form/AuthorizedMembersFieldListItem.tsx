@@ -2,13 +2,12 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Field } from 'formik';
-import MenuItem from '@mui/material/MenuItem';
 import { Delete, InfoOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
 import { Tooltip } from '@mui/material';
 import React from 'react';
 import { isGenericOption } from '@components/common/form/AuthorizedMembersField';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import ItemIcon from '../../../../components/ItemIcon';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../../components/i18n';
@@ -107,7 +106,7 @@ const AuthorizedMembersFieldListItem = ({
       />
 
       <Field
-        component={SelectField}
+        component={SelectFieldFds}
         name={name}
         sx={{ m: 1, minWidth: 120 }}
         inputProps={{ 'aria-label': 'Without label' }}
@@ -119,12 +118,12 @@ const AuthorizedMembersFieldListItem = ({
         onChange={(_: string, val: AccessRight) => onChange?.(val)}
       >
         {getAccessList(authorizedMember.value).map((accessRight) => (
-          <MenuItem
+          <SelectItem
             value={accessRight.value}
             key={accessRight.value}
           >
             {accessRight.label}
-          </MenuItem>
+          </SelectItem>
         ))}
       </Field>
 

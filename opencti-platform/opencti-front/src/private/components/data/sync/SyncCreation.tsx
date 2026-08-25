@@ -6,7 +6,6 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
-import MenuItem from '@mui/material/MenuItem';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Tooltip from '@mui/material/Tooltip';
@@ -19,7 +18,7 @@ import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { dayStartDate } from '../../../../utils/Time';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { insertNode } from '../../../../utils/store';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import EnrichedTooltip from '../../../../components/EnrichedTooltip';
@@ -324,7 +323,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                   />
                   {streams.length > 0 && (
                     <Field
-                      component={SelectField}
+                      component={SelectFieldFds}
                       variant="standard"
                       name="stream_id"
                       label={t_i18n('Remote OpenCTI stream ID')}
@@ -362,9 +361,9 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                               )}
                               placement="bottom-start"
                             >
-                              <MenuItem key={value} value={value}>
+                              <SelectItem key={value} value={value}>
                                 {label}
-                              </MenuItem>
+                              </SelectItem>
                             </EnrichedTooltip>
                           );
                         },

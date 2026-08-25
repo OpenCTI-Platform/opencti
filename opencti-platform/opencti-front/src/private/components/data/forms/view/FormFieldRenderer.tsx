@@ -4,7 +4,6 @@ import Chip from '@mui/material/Chip';
 import Box from '@mui/material/Box';
 import IconButton from '@common/button/IconButton';
 import { CloudUploadOutlined } from '@mui/icons-material';
-import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -14,7 +13,7 @@ import makeStyles from '@mui/styles/makeStyles';
 // Custom field components
 import TypesField from '@components/observations/TypesField';
 import TextField from '../../../../../components/TextField';
-import SelectField from '../../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../../components/fields/SelectFieldFds';
 import SwitchField from '../../../../../components/fields/SwitchField';
 import DateTimePickerField from '../../../../../components/DateTimePickerField';
 import MarkdownField from '../../../../../components/fields/markdownField/MarkdownField';
@@ -261,7 +260,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
       case 'select':
         return (
           <Field
-            component={SelectField}
+            component={SelectFieldFds}
             name={fieldName}
             label={displayLabel}
             fullWidth={true}
@@ -270,13 +269,13 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             variant="standard"
             helpertext={field.description}
           >
-            <MenuItem value="">
+            <SelectItem value="">
               <em>{t_i18n('None')}</em>
-            </MenuItem>
+            </SelectItem>
             {field.options?.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
+              <SelectItem key={option.value} value={option.value}>
                 {option.label}
-              </MenuItem>
+              </SelectItem>
             ))}
           </Field>
         );
@@ -284,7 +283,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
       case 'multiselect':
         return (
           <Field
-            component={SelectField}
+            component={SelectFieldFds}
             name={fieldName}
             label={displayLabel}
             fullWidth={true}
@@ -303,9 +302,9 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             )}
           >
             {field.options?.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
+              <SelectItem key={option.value} value={option.value}>
                 {option.label}
-              </MenuItem>
+              </SelectItem>
             ))}
           </Field>
         );
