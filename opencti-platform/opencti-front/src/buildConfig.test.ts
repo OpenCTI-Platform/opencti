@@ -14,7 +14,6 @@ import { describe, it, expect } from 'vitest';
  */
 
 const indexHtml = await readFile('dist/index.html', 'utf8');
-const viteConfig = await readFile('vite.config.ts', 'utf8');
 
 describe('base path build configuration', () => {
   it('index.html — contains BASE_PATH placeholder in <base href> for runtime injection', () => {
@@ -25,9 +24,5 @@ describe('base path build configuration', () => {
     expect(indexHtml).not.toMatch(/src="\/assets\//);
     expect(indexHtml).not.toMatch(/href="\/assets\//);
     expect(indexHtml).toMatch(/src="\.\/assets\//);
-  });
-
-  it('vite.config.ts — base is set to relative "./" so built assets use relative paths', () => {
-    expect(viteConfig).toMatch(/base:\s*['"]\.\/['"]/);
   });
 });
