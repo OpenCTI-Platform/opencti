@@ -7,7 +7,6 @@ import * as Yup from 'yup';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import * as R from 'ramda';
-import MenuItem from '@mui/material/MenuItem';
 import Grid from '@mui/material/Grid';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
@@ -34,7 +33,7 @@ import CreatorField from '../../common/form/CreatorField';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import SwitchField from '../../../../components/fields/SwitchField';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
@@ -561,7 +560,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         }}
                       />
                       <Field
-                        component={SelectField}
+                        component={SelectFieldFds}
                         variant="standard"
                         name="feed_date_attribute"
                         label={t_i18n('Base attribute')}
@@ -569,11 +568,11 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         multiple={false}
                         containerstyle={{ width: '100%', marginTop: 20 }}
                       >
-                        <MenuItem key="created_at" value="created_at">{t_i18n('Creation date')}</MenuItem>
-                        <MenuItem key="updated_at" value="updated_at">{t_i18n('Update date')}</MenuItem>
+                        <SelectItem key="created_at" value="created_at">{t_i18n('Creation date')}</SelectItem>
+                        <SelectItem key="updated_at" value="updated_at">{t_i18n('Update date')}</SelectItem>
                       </Field>
                       <Field
-                        component={SelectField}
+                        component={SelectFieldFds}
                         variant="standard"
                         name="feed_types"
                         onChange={(_: unknown, value: string[]) => handleSelectTypes(value)}
@@ -583,9 +582,9 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         containerstyle={{ width: '100%', marginTop: 20 }}
                       >
                         {entitiesTypes.map((type) => (
-                          <MenuItem key={type.value} value={type.value}>
+                          <SelectItem key={type.value} value={type.value}>
                             {type.label}
-                          </MenuItem>
+                          </SelectItem>
                         ))}
                       </Field>
                       <Field
@@ -653,8 +652,8 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                             value={feedAttributes[i]?.multi_match_strategy || 'list'}
                                             onChange={(event) => handleChangeMultiMatchStrategy(i, event.target.value)}
                                           >
-                                            <MenuItem value="list">{t_i18n('All (list)')}</MenuItem>
-                                            <MenuItem value="first">{t_i18n('First match')}</MenuItem>
+                                            <SelectItem value="list">{t_i18n('All (list)')}</SelectItem>
+                                            <SelectItem value="first">{t_i18n('First match')}</SelectItem>
                                           </Select>
                                         </FormControl>
                                         {(feedAttributes[i]?.multi_match_strategy || 'list') === 'list' && (
@@ -701,9 +700,9 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                                   onChange={(event) => handleChangeNeighborMapping(i, selectedType, 'relationship_type', event.target.value)}
                                                 >
                                                   {getRelationshipTypesForEntityType(selectedType, schema).sort().map((rt) => (
-                                                    <MenuItem key={rt} value={rt}>
+                                                    <SelectItem key={rt} value={rt}>
                                                       {t_i18n(`relationship_${rt}`)}
-                                                    </MenuItem>
+                                                    </SelectItem>
                                                   ))}
                                                 </Select>
                                               </FormControl>
@@ -719,9 +718,9 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                                     && getTargetTypesForRelationship(
                                                       selectedType, currentMapping.relationship_type, schema.schemaRelationsTypesMapping,
                                                     ).map((tt) => (
-                                                      <MenuItem key={tt} value={tt}>
+                                                      <SelectItem key={tt} value={tt}>
                                                         {t_i18n(`entity_${tt}`)}
-                                                      </MenuItem>
+                                                      </SelectItem>
                                                     ))}
                                                 </Select>
                                               </FormControl>
@@ -753,7 +752,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                                             onChange={(event) => handleChangeAttributeMapping(i, selectedType, event.target.value)}
                                                           >
                                                             {attributes.map((attr) => (
-                                                              <MenuItem key={attr.value} value={attr.value}>{attr.value}</MenuItem>
+                                                              <SelectItem key={attr.value} value={attr.value}>{attr.value}</SelectItem>
                                                             ))}
                                                           </Select>
                                                         );
@@ -791,7 +790,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                                       onChange={(event) => handleChangeAttributeMapping(i, selectedType, event.target.value)}
                                                     >
                                                       {attributes.map((attr) => (
-                                                        <MenuItem key={attr.value} value={attr.value}>{attr.value}</MenuItem>
+                                                        <SelectItem key={attr.value} value={attr.value}>{attr.value}</SelectItem>
                                                       ))}
                                                     </Select>
                                                   );

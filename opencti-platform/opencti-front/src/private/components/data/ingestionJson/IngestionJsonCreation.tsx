@@ -3,7 +3,6 @@ import { Field, Form, Formik, FormikErrors } from 'formik';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
-import MenuItem from '@mui/material/MenuItem';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import { FormikConfig } from 'formik/dist/types';
@@ -28,7 +27,7 @@ import TextField from '../../../../components/TextField';
 import CreatorField from '../../common/form/CreatorField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -385,15 +384,15 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
             style={fieldSpacingContainerStyle}
           />
           <Field
-            component={SelectField}
+            component={SelectFieldFds}
             variant="standard"
             name="verb"
             label={t_i18n('HTTP VERB')}
             fullWidth={true}
             containerstyle={{ width: '100%', marginTop: 20 }}
           >
-            <MenuItem value="GET">GET</MenuItem>
-            <MenuItem value="POST">POST</MenuItem>
+            <SelectItem value="GET">GET</SelectItem>
+            <SelectItem value="POST">POST</SelectItem>
           </Field>
           {values.verb === 'POST' && (
             <>
@@ -440,7 +439,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
             {!!values.pagination_with_sub_page && (
               <>
                 <Field
-                  component={SelectField}
+                  component={SelectFieldFds}
                   variant="standard"
                   name="pagination_with_sub_page_query_verb"
                   label={t_i18n('Sub pagination verb')}
@@ -450,8 +449,8 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
                     marginTop: 20,
                   }}
                 >
-                  <MenuItem value="GET">GET</MenuItem>
-                  <MenuItem value="POST">POST</MenuItem>
+                  <SelectItem value="GET">GET</SelectItem>
+                  <SelectItem value="POST">POST</SelectItem>
                 </Field>
 
                 <Field
@@ -508,7 +507,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
             )
           }
           <Field
-            component={SelectField}
+            component={SelectFieldFds}
             variant="standard"
             name="authentication_type"
             label={t_i18n('Authentication type')}
@@ -518,14 +517,14 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
               marginTop: 20,
             }}
           >
-            <MenuItem value="none">{t_i18n('None')}</MenuItem>
-            <MenuItem value="basic">
+            <SelectItem value="none">{t_i18n('None')}</SelectItem>
+            <SelectItem value="basic">
               {t_i18n('Basic user / password')}
-            </MenuItem>
-            <MenuItem value="bearer">{t_i18n('Bearer token')}</MenuItem>
-            <MenuItem value="certificate">
+            </SelectItem>
+            <SelectItem value="bearer">{t_i18n('Bearer token')}</SelectItem>
+            <SelectItem value="certificate">
               {t_i18n('Client certificate')}
-            </MenuItem>
+            </SelectItem>
           </Field>
           {values.authentication_type === 'basic' && (
             <>

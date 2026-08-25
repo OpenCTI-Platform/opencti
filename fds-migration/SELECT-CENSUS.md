@@ -22,6 +22,35 @@ banner, a source guard on the field itself, or a server refusal; this round
 already over-attributed EE once and will not do it again. 7 mounts sit in
 such files and are flagged **verify** rather than **gated**.
 
+## Correction — 2026-08-25, after converting 29 of them
+
+Two things the first pass got wrong, both found by converting rather than by
+re-reading:
+
+1. **At least one entry is not a live mount.**
+   `data/jsonMapper/representations/attributes/JsonMapperRepresentationAttributeForm.tsx`
+   has its only `component={SelectField}` inside a commented-out JSX block
+   (`{/** … * */}`). It was converted, eslint reported the new import as unused,
+   and that is how the comment was noticed. The site is reverted and stays MUI
+   because there is nothing there to convert. Every remaining row must be
+   confirmed live at the moment it is converted; a line-based scan cannot tell a
+   mount from a commented mount.
+
+2. **The totals hold, and here is the cross-check.** A second pass that masked
+   comments returned 120, which was wrong in the other direction — masking
+   `/* … */` also eats template literals and anything containing `*/`. The
+   defensible count enforces a tag boundary (`<Select` followed by whitespace,
+   `>` or end of line, which excludes `<SelectionDrag />` and `<SelectAll />`)
+   and reconciles against the work done: 114 pivot mounts, of which **29 are
+   now converted** and **85 remain**, plus **84** raw `<Select>` over 33 files.
+   114 + 84 = 198, the original total.
+
+**Converted so far (29 mounts):** DisseminationListField · Settings platform
+theme and language · RetentionCreation, RetentionEdition · AlertDigestCreation,
+AlertDigestEdition · IngestionCsv Creation/Edition · IngestionJson
+Creation/Edition · IngestionTaxii Creation/Edition · Feed Creation/Edition ·
+JsonMapperDefaultMarking.
+
 | file | line(s) | shape | verdict | EE mention in file |
 |---|---|---|---|---|
 | `components/InputSliderField.tsx` | 88, 140 | raw-MUI-Select / single | **convert → Select lib** (closed list, no typing) | — |
