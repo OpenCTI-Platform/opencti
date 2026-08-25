@@ -116,6 +116,10 @@ jobs:
             cp -a /opt/opencti/opencti-graphql/node_modules ./node_modules
             mkdir -p ./src/__generated__
             cp -a /opt/opencti/opencti-graphql/src/__generated__/. ./src/__generated__/
+            # yarn build:prod (builder-back) also runs build:types, which regenerates the tracked
+            # src/generated/graphql.ts from the current schema - copy it so check-ts/tests validate
+            # against the schema in this checkout, not a possibly-stale committed file.
+            cp -a /opt/opencti/opencti-graphql/src/generated/graphql.ts ./src/generated/graphql.ts
             # Only the safeEjs worker_thread entry point is loaded from build/ at test runtime (see
             # src/utils/safeEjs.client.ts). The rest of build/ (~1GB: back.mjs, scripts, sourcemaps)
             # is production bundle output nothing here touches - do not copy it wholesale.
@@ -262,6 +266,10 @@ jobs:
               cp -a /opt/opencti/opencti-graphql/node_modules ./node_modules
               mkdir -p ./src/__generated__
               cp -a /opt/opencti/opencti-graphql/src/__generated__/. ./src/__generated__/
+              # yarn build:prod (builder-back) also runs build:types, which regenerates the tracked
+              # src/generated/graphql.ts from the current schema - copy it so check-ts/tests validate
+              # against the schema in this checkout, not a possibly-stale committed file.
+              cp -a /opt/opencti/opencti-graphql/src/generated/graphql.ts ./src/generated/graphql.ts
               # Only the safeEjs worker_thread entry point is loaded from build/ at test runtime (see
               # src/utils/safeEjs.client.ts). The rest of build/ (~1GB: back.mjs, scripts, sourcemaps)
               # is production bundle output nothing here touches - do not copy it wholesale.
@@ -348,6 +356,10 @@ jobs:
             cp -a /opt/opencti/opencti-graphql/node_modules ./node_modules
             mkdir -p ./src/__generated__
             cp -a /opt/opencti/opencti-graphql/src/__generated__/. ./src/__generated__/
+            # yarn build:prod (builder-back) also runs build:types, which regenerates the tracked
+            # src/generated/graphql.ts from the current schema - copy it so check-ts/tests validate
+            # against the schema in this checkout, not a possibly-stale committed file.
+            cp -a /opt/opencti/opencti-graphql/src/generated/graphql.ts ./src/generated/graphql.ts
             # Only the safeEjs worker_thread entry point is loaded from build/ at test runtime (see
             # src/utils/safeEjs.client.ts). The rest of build/ (~1GB: back.mjs, scripts, sourcemaps)
             # is production bundle output nothing here touches - do not copy it wholesale.
