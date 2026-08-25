@@ -85,6 +85,19 @@ export const userMerge = async (
   return executeUserMerge(sourceId, targetId, resolvedOptions);
 };
 
+// Bounds enforced here so that a future, real journal implementation cannot be abused
+// into a heavy read regardless of what a caller (GraphQL or otherwise) requests.
+const USER_MERGE_JOURNAL_DEFAULT_FIRST = 20;
+const USER_MERGE_JOURNAL_MIN_FIRST = 1;
+const USER_MERGE_JOURNAL_MAX_FIRST = 200;
+
+export const resolveUserMergeJournalFirst = (first?: number | null): number => {
+  if (first === undefined || first === null) {
+    return USER_MERGE_JOURNAL_DEFAULT_FIRST;
+  }
+  return Math.min(Math.max(first, USER_MERGE_JOURNAL_MIN_FIRST), USER_MERGE_JOURNAL_MAX_FIRST);
+};
+
 export const userMergeJournal = async (
   _context: AuthContext,
   user: AuthUser,
@@ -92,5 +105,5 @@ export const userMergeJournal = async (
   first?: number | null,
 ): Promise<UserMergeJournalEntry[]> => {
   assertUserMergeAllowed(user);
-  return readUserMergeJournal(mergeId ?? undefined, first ?? undefined);
+  return readUserMergeJournal(mergeId ?? undefined, resolveUserMergeJournalFirst(first));
 };
