@@ -46,7 +46,12 @@ export default class AutocompleteFieldPageModel {
     await this.inputLocator.click();
     await this.inputLocator.fill(value);
     const list = this.page.getByRole('listbox', { name: this.label });
-    return list.getByText(`Create '${value}'`, { exact: false }).click();
+    // Matched by regex, not by a literal: the library's default wording comes
+    // from the Figma node and uses TYPOGRAPHIC quotes — `Create ‘x’` — so a
+    // test spelling it with apostrophes never resolves. The quote style is the
+    // library's to change, and a product test must not be coupled to it.
+    const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return list.getByText(new RegExp(`Create\\s*\\S?${escaped}`)).click();
   }
 
   getByText(input: string) {
