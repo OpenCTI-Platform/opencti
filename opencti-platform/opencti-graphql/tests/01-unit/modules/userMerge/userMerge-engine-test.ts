@@ -36,7 +36,6 @@ const mockHandler = (identifier: string, overrides: Partial<UserMergeHandler> = 
 
 const execute = (dryRun: boolean) => executeUserMerge(
   {} as never,
-  {} as never,
   'source-id',
   'target-id',
   { dryRun, rightsStrategy: UserMergeRightsStrategy.Strict },

@@ -121,14 +121,26 @@ export const toGraphQLDisposition = (disposition: UserMergeDisposition): string 
   return found;
 };
 
-/** Coverage as the API exposes it: same content, GraphQL-compatible disposition values. */
+export interface UserMergeApiCoverageRow extends Omit<UserMergeCoverageRow, 'disposition'> {
+  /**
+   * A GraphQL enum value such as `TRANSFER`, deliberately not typed with the register enum:
+   * its values are kebab-case, so a comparison against it would compile and never match.
+   */
+  disposition: string;
+}
+
+/** Coverage as the API exposes it: same content, GraphQL disposition values. */
+export interface UserMergeApiCoverage extends Omit<UserMergeCoverage, 'rows'> {
+  rows: UserMergeApiCoverageRow[];
+}
+
 export const buildApiUserMergeCoverage = (
   handlers?: UserMergeHandler[],
   disposition?: string | null,
-): UserMergeCoverage => {
+): UserMergeApiCoverage => {
   const coverage = buildUserMergeCoverage(handlers, toRegisterDisposition(disposition));
   return {
     ...coverage,
-    rows: coverage.rows.map((row) => ({ ...row, disposition: toGraphQLDisposition(row.disposition) as UserMergeDisposition })),
+    rows: coverage.rows.map((row) => ({ ...row, disposition: toGraphQLDisposition(row.disposition) })),
   };
 };

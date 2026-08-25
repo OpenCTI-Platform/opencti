@@ -5,7 +5,7 @@ import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { BasicStoreCommon } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { INTERNAL_USERS, isBypassUser } from '../../utils/access';
-import { buildApiUserMergeCoverage, type UserMergeCoverage } from './userMerge-coverage';
+import { buildApiUserMergeCoverage, type UserMergeApiCoverage } from './userMerge-coverage';
 import { executeUserMerge, readUserMergeJournal } from './userMerge-engine';
 import { type UserMergeJournalEntry, type UserMergeOptions, type UserMergeResult, UserMergeRightsStrategy } from './userMerge-types';
 
@@ -83,7 +83,7 @@ export const userMerge = async (
   await loadMergeableUser(context, user, sourceId, 'source');
   await loadMergeableUser(context, user, targetId, 'target');
   const resolvedOptions = resolveUserMergeOptions(options);
-  return executeUserMerge(context, user, sourceId, targetId, resolvedOptions);
+  return executeUserMerge(context, sourceId, targetId, resolvedOptions);
 };
 
 /**
@@ -94,7 +94,7 @@ export const userMergeCoverage = async (
   _context: AuthContext,
   user: AuthUser,
   disposition?: string | null,
-): Promise<UserMergeCoverage> => {
+): Promise<UserMergeApiCoverage> => {
   assertUserMergeAllowed(user);
   return buildApiUserMergeCoverage(undefined, disposition);
 };

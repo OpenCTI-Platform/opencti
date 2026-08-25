@@ -1,10 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
 import { logApp } from '../../config/conf';
 import { UnsupportedError } from '../../config/errors';
-import type { AuthContext, AuthUser } from '../../types/user';
+import type { AuthContext } from '../../types/user';
 import { handlerDryRun, planFingerprint, type UserMergeHandler, type UserMergeHandlerContext, type UserMergeHandlerOutcome } from './userMerge-handler';
 import { readJournalEntries, withJournalEntry } from './userMerge-journal';
-import { buildApiUserMergeCoverage, type UserMergeCoverage } from './userMerge-coverage';
+import { buildApiUserMergeCoverage, type UserMergeApiCoverage } from './userMerge-coverage';
 import { USER_MERGE_REGISTRY_VERSION } from './userMerge-register';
 import { assertHandlersAreDisjoint, userMergeHandlers } from './userMerge-registry';
 import { type UserMergeJournalEntry, type UserMergeOptions, type UserMergeResult, UserMergeStatus } from './userMerge-types';
@@ -20,15 +20,16 @@ export interface UserMergeExecutionReport {
    * Attached to every report, not only on demand. A report showing three handlers that
    * succeeded reads as a complete merge unless it also says what the register still holds.
    */
-  coverage: UserMergeCoverage;
+  coverage: UserMergeApiCoverage;
 }
 
-const buildReport = (mergeId: string, outcomes: UserMergeHandlerOutcome[]): UserMergeExecutionReport => ({
+/** Coverage is built from the handlers that actually ran, not from the registry read again. */
+const buildReport = (mergeId: string, handlers: UserMergeHandler[], outcomes: UserMergeHandlerOutcome[]): UserMergeExecutionReport => ({
   merge_id: mergeId,
   registry_version: USER_MERGE_REGISTRY_VERSION,
   handlers: outcomes,
   total_updated: outcomes.reduce((total, outcome) => total + outcome.updated, 0),
-  coverage: buildApiUserMergeCoverage(),
+  coverage: buildApiUserMergeCoverage(handlers),
 });
 
 /**
@@ -64,10 +65,12 @@ const applyHandler = async (
  *
  * The dry pass is journalled too. An operator who lost the connection mid-dry-run still has
  * a queryable trace of what was computed, and the two passes are distinguishable by dry_run.
+ *
+ * No calling user is taken: whether a merge may be asked for at all is decided in the domain
+ * layer, and a merge rewrites references the caller has no reason to be allowed to read.
  */
 export const executeUserMerge = async (
   context: AuthContext,
-  user: AuthUser,
   sourceId: string,
   targetId: string,
   options: UserMergeOptions,
@@ -98,7 +101,7 @@ export const executeUserMerge = async (
       dryOutcomes.push(outcome);
     }
     if (options.dryRun) {
-      return { ...baseResult, status: UserMergeStatus.Success, completed_at: new Date(), report: buildReport(mergeId, dryOutcomes) };
+      return { ...baseResult, status: UserMergeStatus.Success, completed_at: new Date(), report: buildReport(mergeId, handlers, dryOutcomes) };
     }
 
     const outcomes: UserMergeHandlerOutcome[] = [];
@@ -110,7 +113,7 @@ export const executeUserMerge = async (
       );
       outcomes.push(outcome);
     }
-    return { ...baseResult, status: UserMergeStatus.Success, completed_at: new Date(), report: buildReport(mergeId, outcomes) };
+    return { ...baseResult, status: UserMergeStatus.Success, completed_at: new Date(), report: buildReport(mergeId, handlers, outcomes) };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     logApp.error(`${LOG_PREFIX} merge failed`, { merge_id: mergeId, source_id: sourceId, target_id: targetId, cause: message });
