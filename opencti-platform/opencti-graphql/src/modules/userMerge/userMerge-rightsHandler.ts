@@ -2,7 +2,14 @@ import { elRawCount } from '../../database/engine';
 import { createRelation, deleteElementById } from '../../database/middleware';
 import { fullRelationsList } from '../../database/middleware-loader';
 import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../../schema/general';
-import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
+import {
+  RELATION_ACCESSES_TO,
+  RELATION_HAS_CAPABILITY,
+  RELATION_HAS_CAPABILITY_IN_DRAFT,
+  RELATION_HAS_ROLE,
+  RELATION_MEMBER_OF,
+  RELATION_PARTICIPATE_TO,
+} from '../../schema/internalRelationship';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import type { AuthContext } from '../../types/user';
 import { SYSTEM_USER } from '../../utils/access';
@@ -30,6 +37,19 @@ const MEMBERSHIP_EDGES: UserRightsEdge[] = [
   { registerRow: 'participate-to.connections', relationshipType: RELATION_PARTICIPATE_TO },
 ];
 
+/**
+ * Rights relations the platform hangs off groups and roles, never off a user. They are listed
+ * because `userAddRelation` accepts any internal relation whose source is a user, so legacy data
+ * may carry them. They are removed with the source and never reproduced on the target: copying a
+ * capability straight onto a user would grant a privilege the platform itself never grants.
+ */
+const DERIVED_EDGES: UserRightsEdge[] = [
+  { registerRow: 'has-role.connections', relationshipType: RELATION_HAS_ROLE },
+  { registerRow: 'has-capability.connections', relationshipType: RELATION_HAS_CAPABILITY },
+  { registerRow: 'has-capability-in-draft.connections', relationshipType: RELATION_HAS_CAPABILITY_IN_DRAFT },
+  { registerRow: 'accesses-to.connections', relationshipType: RELATION_ACCESSES_TO },
+];
+
 const AUTHORITIES_ROW = 'organization.authorized-authorities';
 const AUTHORITIES_FIELD = 'authorized_authorities';
 
@@ -41,7 +61,7 @@ const AUTHORITIES_FIELD = 'authorized_authorities';
 const REMOVED = 'removed from the source';
 const GRANTED = 'granted to the target';
 
-const edgePaths = MEMBERSHIP_EDGES.map((edge) => `${edge.relationshipType}.connections`);
+const edgePaths = [...MEMBERSHIP_EDGES, ...DERIVED_EDGES].map((edge) => `${edge.relationshipType}.connections`);
 const authoritiesPath = `${ENTITY_TYPE_IDENTITY_ORGANIZATION}.${AUTHORITIES_FIELD}`;
 
 interface EdgePlan {
@@ -70,6 +90,18 @@ const readEdgePlan = async (
   const granted = [...new Set(removed.map((relation) => relation.toId).filter((toId) => !held.includes(toId)))];
   return { removed, granted };
 };
+
+const readDerivedEdge = async (context: AuthContext, edge: UserRightsEdge, sourceId: string) => {
+  const relations = await fullRelationsList(context, SYSTEM_USER, edge.relationshipType, { fromId: sourceId });
+  return relations.map((relation) => relation.internal_id);
+};
+
+const derivedEdgeAlert = (edge: UserRightsEdge, count: number): UserMergeRightsAlert => ({
+  register_row_id: edge.registerRow,
+  kind: 'rights',
+  message: `${count} ${edge.relationshipType} relation(s) start from the source user, which the platform does not create;`
+    + ' they are removed and not reproduced on the target',
+});
 
 const authoritiesQuery = (sourceId: string, withoutTargetId?: string): Record<string, unknown> => ({
   bool: {
@@ -112,7 +144,7 @@ const authoritiesScript = (sourceId: string, targetId: string, strategy: UserMer
  * Merges what the source user is entitled to into the target.
  *
  * Only `member-of` and `participate-to` actually start from a user; the other rights relations
- * hang off groups and roles.
+ * hang off groups and roles, and are removed rather than transferred when found on a user.
  *
  * Relations go through the domain layer rather than a bulk rewrite: they are denormalized onto
  * both endpoints as `rel_<type>`, and a raw index write would leave those arrays describing a
@@ -120,7 +152,7 @@ const authoritiesScript = (sourceId: string, targetId: string, strategy: UserMer
  */
 export const userMergeRightsHandler: UserMergeHandler = {
   identifier: USER_MERGE_RIGHTS_HANDLER,
-  covers: [...MEMBERSHIP_EDGES.map((edge) => edge.registerRow), AUTHORITIES_ROW],
+  covers: [...MEMBERSHIP_EDGES.map((edge) => edge.registerRow), ...DERIVED_EDGES.map((edge) => edge.registerRow), AUTHORITIES_ROW],
   reads: [...edgePaths, authoritiesPath],
   writes: [...edgePaths, authoritiesPath],
   compute: async ({ context, sourceId, targetId, options }: UserMergeHandlerContext): Promise<UserMergeHandlerPlan> => {
@@ -131,6 +163,14 @@ export const userMergeRightsHandler: UserMergeHandler = {
       const plan = await readEdgePlan(context, edge, sourceId, targetId, options.rightsStrategy);
       changes.push({ register_row_id: edge.registerRow, entity_type: edge.relationshipType, count: plan.removed.length, exact: true, detail: REMOVED });
       changes.push({ register_row_id: edge.registerRow, entity_type: edge.relationshipType, count: plan.granted.length, exact: true, detail: GRANTED });
+    }
+    for (let i = 0; i < DERIVED_EDGES.length; i += 1) {
+      const edge = DERIVED_EDGES[i];
+      const relations = await readDerivedEdge(context, edge, sourceId);
+      changes.push({ register_row_id: edge.registerRow, entity_type: edge.relationshipType, count: relations.length, exact: true, detail: REMOVED });
+      if (relations.length > 0) {
+        alerts.push(derivedEdgeAlert(edge, relations.length));
+      }
     }
     const authorities = await readAuthoritiesPlan(sourceId, targetId, options.rightsStrategy);
     changes.push({ register_row_id: AUTHORITIES_ROW, entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION, count: authorities.removed, exact: true, detail: REMOVED });
@@ -148,6 +188,14 @@ export const userMergeRightsHandler: UserMergeHandler = {
       }
       for (let removed = 0; removed < edgePlan.removed.length; removed += 1) {
         await deleteElementById(context, SYSTEM_USER, edgePlan.removed[removed].id, ABSTRACT_INTERNAL_RELATIONSHIP);
+        updated += 1;
+      }
+    }
+    for (let i = 0; i < DERIVED_EDGES.length; i += 1) {
+      const edge = DERIVED_EDGES[i];
+      const relations = await readDerivedEdge(context, edge, sourceId);
+      for (let removed = 0; removed < relations.length; removed += 1) {
+        await deleteElementById(context, SYSTEM_USER, relations[removed], ABSTRACT_INTERNAL_RELATIONSHIP);
         updated += 1;
       }
     }
