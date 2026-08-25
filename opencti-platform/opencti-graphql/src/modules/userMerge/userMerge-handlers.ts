@@ -1,5 +1,6 @@
 import { assertUserMergeHandlersAreValid, registerUserMergeHandler } from './userMerge-registry';
 import { userMergePublicSharingHandler } from './userMerge-publicSharingHandler';
+import { userMergeRightsHandler } from './userMerge-rightsHandler';
 import { userMergeScalarHandler } from './userMerge-scalarHandler';
 
 /**
@@ -11,5 +12,6 @@ import { userMergeScalarHandler } from './userMerge-scalarHandler';
 export const registerUserMergeHandlers = (): void => {
   registerUserMergeHandler(userMergeScalarHandler);
   registerUserMergeHandler(userMergePublicSharingHandler);
+  registerUserMergeHandler(userMergeRightsHandler);
   assertUserMergeHandlersAreValid();
 };
