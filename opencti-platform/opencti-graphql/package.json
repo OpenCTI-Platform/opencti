@@ -107,7 +107,7 @@
     "csv-parse": "7.0.2",
     "dataloader": "2.2.3",
     "ejs": "6.0.1",
-    "eventsource": "5.1.0",
+    "eventsource": "5.1.1",
     "eventsource-parser": "4.1.0",
     "express": "5.2.1",
     "express-rate-limit": "8.6.2",
