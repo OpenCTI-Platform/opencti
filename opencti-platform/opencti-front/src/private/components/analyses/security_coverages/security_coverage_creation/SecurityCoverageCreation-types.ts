@@ -1,4 +1,5 @@
 import { FieldOption } from 'src/utils/field';
+import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 
 // Type definitions for GraphQL responses
 export interface StixCoreObjectNode {
@@ -39,4 +40,11 @@ export interface SecurityCoverageFormValues {
   duration?: string;
   type_affinity: 'ENDPOINT';
   platforms_affinity: string[];
+}
+
+export interface SelectedEntities {
+  selected_ids?: string[];
+  filters?: FilterGroup;
+  excluded_ids?: string[];
+  search?: string;
 }

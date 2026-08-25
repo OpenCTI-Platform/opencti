@@ -12,15 +12,14 @@ import { graphql } from 'react-relay';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { usePaginationLocalStorage } from 'src/utils/hooks/useLocalStorage';
 import { UsePreloadedPaginationFragment } from 'src/utils/hooks/usePreloadedPaginationFragment';
-import { StixCoreObjectNode } from './SecurityCoverageCreation-types';
+import { SelectedEntities, StixCoreObjectNode } from './SecurityCoverageCreation-types';
 import useEntityToggle from 'src/utils/hooks/useEntityToggle';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import Button from 'src/components/common/button/Button';
 import { useFormatter } from 'src/components/i18n';
-
 interface SelectEntitiesToCoverStepProps {
   coveredEntity: StixCoreObjectNode;
-  onSelectEntities: (selection: string[], selectAll: boolean) => void;
+  onSelectEntities: (selection: SelectedEntities | null) => void;
 }
 
 const LOCAL_STORAGE_KEY = 'SelectEntitiesToCoverStep';
@@ -119,7 +118,7 @@ export const selectEntitiesToCoverStepLineFragment = graphql`
   }
 `;
 
-const HAS_COVERED_TARGETS_TYPES = ['Attack-Pattern', 'Vulnerability', 'Artifact', 'Indicator'];
+const HAS_COVERED_TARGETS_TYPES = ['Attack-Pattern', 'Vulnerability', 'Artifact', 'Indicator', 'SecurityPlatform'];
 
 const DATA_COLUMNS = {
   entity_type: { percentWidth: 15 },
@@ -183,7 +182,7 @@ const SelectEntitiesToCoverStep = ({ coveredEntity, onSelectEntities }: SelectEn
     },
   };
 
-  const { viewStorage: { filters }, helpers, paginationOptions } = usePaginationLocalStorage<SelectEntitiesToCoverStepLinesQuery>(
+  const { viewStorage: { filters, searchTerm }, helpers, paginationOptions } = usePaginationLocalStorage<SelectEntitiesToCoverStepLinesQuery>(
     LOCAL_STORAGE_KEY,
     initialValues,
     true,
@@ -199,8 +198,6 @@ const SelectEntitiesToCoverStep = ({ coveredEntity, onSelectEntities }: SelectEn
 
   const queryPaginationOptions = { ...paginationOptions, filters: contextFilters };
 
-  const { selectedElements, selectAll } = useEntityToggle<StixCoreObjectNode>(LOCAL_STORAGE_KEY);
-
   const queryRef = useQueryLoading<SelectEntitiesToCoverStepLinesQueryType>(
     selectEntitiesToCoverStepLinesQuery,
     { ...queryPaginationOptions, count: 100 } as unknown as SelectEntitiesToCoverStepLinesQuery$variables,
@@ -213,6 +210,18 @@ const SelectEntitiesToCoverStep = ({ coveredEntity, onSelectEntities }: SelectEn
     nodePath: ['stixCoreObjects', 'pageInfo', 'globalCount'],
     setNumberOfElements: helpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<SelectEntitiesToCoverStepLinesQueryType>;
+
+  const { selectedElements, selectAll, deSelectedElements } = useEntityToggle<StixCoreObjectNode>(LOCAL_STORAGE_KEY);
+
+  const listOfSelectedEntities = Object.keys(selectedElements);
+  const listOfUnSelectedEntities = Object.keys(deSelectedElements);
+  const selection = selectAll
+    ? {
+        filters: contextFilters,
+        ...(listOfUnSelectedEntities.length > 0 && { excluded_ids: listOfUnSelectedEntities }),
+        ...(searchTerm && { search: searchTerm }),
+      }
+    : (listOfSelectedEntities.length > 0 ? { selected_ids: listOfSelectedEntities } : null);
 
   return (
     <>
@@ -233,7 +242,7 @@ const SelectEntitiesToCoverStep = ({ coveredEntity, onSelectEntities }: SelectEn
         />
       )}
       <FormButtonContainer>
-        <Button onClick={() => onSelectEntities(Object.keys(selectedElements), selectAll)}>
+        <Button onClick={() => onSelectEntities(selection)}>
           {t_i18n('Next')}
         </Button>
       </FormButtonContainer>

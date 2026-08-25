@@ -20,7 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import { SecurityCoverageCreationMutation } from './__generated__/SecurityCoverageCreationMutation.graphql';
 import ChooseModeStep from './ChooseModeStep';
 import SelectCoveredEntityStep from './SelectCoveredEntityStep';
-import { SecurityCoverageFormValues, SecurityCoverageMode, StepKey, StixCoreObjectNode } from './SecurityCoverageCreation-types';
+import { SecurityCoverageFormValues, SecurityCoverageMode, SelectedEntities, StepKey, StixCoreObjectNode } from './SecurityCoverageCreation-types';
 import CoverageDetailsStep from './CoverageDetailsStep';
 import SelectEntitiesToCoverStep from './SelectEntitiesToCoverStep';
 
@@ -204,12 +204,10 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
     setActiveStep(mode === SecurityCoverageMode.MANUAL ? StepKey.COMPATIBLE_ENTITIES : StepKey.COVERAGE_DETAILS);
   };
 
-  const [entitiesToCover, setEntitiesToCover] = useState<string[]>([]);
-  const [selectAllEntities, setSelectAllEntities] = useState<boolean>(false);
+  const [entitiesToCover, setEntitiesToCover] = useState<SelectedEntities | null>(null);
 
-  const handleSelectEntitiesToCover = (selection: string[], selectAll: boolean) => {
+  const handleSelectEntitiesToCover = (selection: SelectedEntities | null) => {
     setEntitiesToCover(selection);
-    setSelectAllEntities(selectAll);
     setActiveStep(StepKey.COVERAGE_DETAILS);
   };
 
@@ -260,8 +258,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       confidence: parseInt(String(values.confidence), 10),
-      add_all_related_entities: selectAllEntities,
-      entities_to_add: selectAllEntities ? [] : entitiesToCover,
+      add_related_entities: entitiesToCover,
     };
 
     commit({
