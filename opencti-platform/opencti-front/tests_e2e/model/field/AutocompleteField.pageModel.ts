@@ -32,7 +32,11 @@ export default class AutocompleteFieldPageModel {
       .getByRole('list', { name: this.label })
       .getByRole('listitem')
       .filter({ hasText: option });
-    return muiChip.or(libraryChip);
+    // .first() because on a converted field BOTH branches match the same chip:
+    // the library gives its delete control an accessible name taken from the
+    // label, so the MUI branch resolves it too. Two descriptions of one element,
+    // not two elements — without this, strict mode fails on every chip.
+    return muiChip.or(libraryChip).first();
   }
 
   /**
