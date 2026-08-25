@@ -3,10 +3,9 @@ import Chip from '@mui/material/Chip';
 import { BulkEntityTypeInfo, entityNameHeaderWidth, entityTypeHeaderWidth, matchHeaderWidth } from '@components/common/bulk/dialog/BulkRelationDialog';
 import { DeleteOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
-import { Autocomplete } from '@mui/material';
+import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxTrigger } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
 import { truncate } from '../../../../utils/String';
 import { useFormatter } from '../../../../components/i18n';
 import { RelationsToEntity } from '../../../../utils/Relation';
@@ -94,26 +93,35 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
     }}
     >
       <Box sx={{ minWidth: `${entityTypeHeaderWidth}px` }}>
-        <Autocomplete
-          autoHighlight
-          disableClearable
-          disabled={isSearchTermEmpty || isSubmitting}
-          noOptionsText={t_i18n('No available options')}
-          disablePortal
+        {/* `disablePortal` has no equivalent here and needs none: the library
+            panel always portals, and it is measured opening over this dialog
+            without closing it. `disableClearable` becomes `clearable={false}`,
+            and `autoHighlight` is the engine's unconditional behaviour. */}
+        <Combobox<autocompleteOptionsType>
           options={getAutocompleteOptions()}
-          onChange={(event, selectedOption) => {
-            handleChangeEntityType(selectedOption.value.toEntitytype);
+          value={getAutocompleteValue() ?? null}
+          onValueChange={(selectedOption) => {
+            const picked = selectedOption as autocompleteOptionsType | null;
+            if (picked) handleChangeEntityType(picked.value.toEntitytype);
           }}
-          value={getAutocompleteValue()}
+          disabled={isSearchTermEmpty || isSubmitting}
+          clearable={false}
+          getOptionLabel={(option) => option.label}
+          isOptionEqualToValue={(a, b) => a.value.toEntitytype === b.value.toEntitytype}
           groupBy={(option) => option.groupLabel}
-          sx={{ borderBottom: 'none' }}
-          renderInput={(params) => (
-            <TextField
-              sx={{ minWidth: '150px' }}
-              {...params}
-            />
-          )}
-        />
+          className="min-w-[150px]"
+        >
+          <ComboboxField>
+            <ComboboxInput aria-label={t_i18n('Entity type')} />
+            <ComboboxControls>
+              <ComboboxTrigger />
+            </ComboboxControls>
+          </ComboboxField>
+          <ComboboxContent
+            emptyMessage={t_i18n('No available options')}
+            listAriaLabel={t_i18n('Entity type')}
+          />
+        </Combobox>
       </Box>
       <Box sx={{ minWidth: `${entityNameHeaderWidth}px` }}>
         <Typography
