@@ -1,14 +1,20 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { elIndex, elRawDeleteByQuery, elRawGet } from '../../../../src/database/engine';
+import { ADMIN_USER, testContext } from '../../../utils/testQuery';
+import { addUser, userDelete } from '../../../../src/domain/user';
 import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../../../src/database/utils';
 import { executeUserMerge } from '../../../../src/modules/userMerge/userMerge-engine';
-import { registerUserMergeHandler, resetUserMergeHandlers } from '../../../../src/modules/userMerge/userMerge-registry';
+import { registerUserMergeHandler, resetUserMergeHandlers, userMergeHandlers } from '../../../../src/modules/userMerge/userMerge-registry';
+import type { UserMergeHandler } from '../../../../src/modules/userMerge/userMerge-handler';
 import { userMergeScalarHandler, USER_MERGE_SCALAR_HANDLER } from '../../../../src/modules/userMerge/userMerge-scalarHandler';
 import { UserMergeRightsStrategy, UserMergeStatus } from '../../../../src/modules/userMerge/userMerge-types';
 
-const SOURCE_ID = 'user--merge-source-0000-0000-000000000001';
-const TARGET_ID = 'user--merge-target-0000-0000-000000000002';
+const SOURCE_EMAIL = 'usermerge-scalar-source@opencti.invalid';
+const TARGET_EMAIL = 'usermerge-scalar-target@opencti.invalid';
 const OTHER_ID = 'user--merge-other-0000-0000-0000000000003';
+
+let SOURCE_ID: string;
+let TARGET_ID: string;
 
 const TEST_DOCUMENT_IDS = [
   'merge-test-sync-1',
@@ -28,7 +34,7 @@ const document = (internalId: string, entityType: string, extra: Record<string, 
 });
 
 const merge = (dryRun: boolean) => executeUserMerge(
-  {} as never,
+  testContext,
   SOURCE_ID,
   TARGET_ID,
   { dryRun, rightsStrategy: UserMergeRightsStrategy.Strict, acknowledgeExposureChange: false },
@@ -44,10 +50,17 @@ const changeFor = (report: { handlers: { handler: string; changes: { register_ro
   return handler?.changes.find((change) => change.register_row_id === rowId);
 };
 
+let registeredHandlers: UserMergeHandler[];
+
 describe('userMerge scalar handler', () => {
   beforeAll(async () => {
+    registeredHandlers = userMergeHandlers();
     resetUserMergeHandlers();
     registerUserMergeHandler(userMergeScalarHandler);
+    const source = await addUser(testContext, ADMIN_USER, { name: 'usermerge-scalar-source', password: 'usermerge', user_email: SOURCE_EMAIL, prevent_default_groups: true });
+    const target = await addUser(testContext, ADMIN_USER, { name: 'usermerge-scalar-target', password: 'usermerge', user_email: TARGET_EMAIL, prevent_default_groups: true });
+    SOURCE_ID = source.id;
+    TARGET_ID = target.id;
     await elIndex(INDEX_INTERNAL_OBJECTS, document('merge-test-sync-1', 'Sync', { user_id: SOURCE_ID }));
     await elIndex(INDEX_INTERNAL_OBJECTS, document('merge-test-sync-2', 'Sync', { user_id: OTHER_ID }));
     await elIndex(INDEX_INTERNAL_OBJECTS, document('merge-test-work-done', 'work', { user_id: SOURCE_ID, status: 'complete' }));
@@ -57,12 +70,16 @@ describe('userMerge scalar handler', () => {
   });
 
   afterAll(async () => {
+    vi.restoreAllMocks();
     resetUserMergeHandlers();
+    registeredHandlers.forEach((handler) => registerUserMergeHandler(handler));
     await elRawDeleteByQuery({
       index: READ_INDEX_INTERNAL_OBJECTS,
       refresh: true,
       body: { query: { ids: { values: TEST_DOCUMENT_IDS } } },
     });
+    await userDelete(testContext, ADMIN_USER, SOURCE_ID);
+    await userDelete(testContext, ADMIN_USER, TARGET_ID);
   });
 
   it('should count what it would rewrite without writing anything', async () => {
