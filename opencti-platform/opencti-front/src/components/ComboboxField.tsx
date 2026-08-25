@@ -14,7 +14,6 @@ import {
 } from '@filigran/design-system';
 import { FieldProps, useField } from 'formik';
 import { FieldOption } from '../utils/field';
-import { truncate } from '../utils/String';
 import { isNilField } from '../utils/utils';
 
 /**
@@ -52,6 +51,11 @@ export type ComboboxFieldProps<Value extends PossibleValue = FieldOption>
       disabled?: boolean;
       loading?: boolean;
       clearable?: boolean;
+      /**
+       * Kept for call-site compatibility and no longer used: chips and rows
+       * share one label function here, so truncating clipped the chips too.
+       * See defaultGetOptionLabel.
+       */
       optionLength?: number;
       preserveCase?: boolean;
       style?: React.CSSProperties;
@@ -113,7 +117,6 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
   disabled,
   loading,
   clearable,
-  optionLength = 40,
   style,
   className,
   groupBy,
@@ -144,11 +147,20 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
   const [, meta] = useField(name);
   const showError = !isNilField(meta.error) && (meta.touched || submitCount > 0);
 
+  // NOT truncated, deliberately, and this is a behaviour difference from the MUI
+  // pivot worth stating. `AutocompleteField` truncated here at `optionLength`,
+  // but MUI only used this function for the input text and the filter — its
+  // `renderTags` built each chip from the RAW `option.label`, so chips always
+  // showed the whole value. The library has one label function feeding both the
+  // rows and the chips, so truncating here truncates the chips too, which is a
+  // real regression: a 43-character label came back clipped at 40 and
+  // `tests_e2e/incidentResponse` caught it. The library Chip has its own
+  // overflow doctrine for long labels — it clips visually and opens a Tooltip
+  // only when the text is really cut — so the product does not need to
+  // pre-truncate at all.
   const defaultGetOptionLabel = useCallback((option: Value) => (
-    typeof option === 'object' && option !== null
-      ? truncate(option.label, optionLength)
-      : truncate(String(option), optionLength)
-  ), [optionLength]);
+    typeof option === 'object' && option !== null ? option.label : String(option)
+  ), []);
 
   const defaultIsOptionEqualToValue = useCallback((a: Value, b: Value) => {
     const aVal = typeof a === 'object' && a !== null ? a.value : a;

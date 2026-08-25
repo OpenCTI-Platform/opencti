@@ -20,7 +20,11 @@ test('Check Logo replacement', { tag: ['@ce', '@group1'] }, async ({ page }) => 
   await leftBarPage.clickOnMenu('Settings', 'Parameters');
 
   // Set platform theme to be Dark
-  await page.locator('#mui-component-select-platform_theme').click();
+  // The default-theme field is on the library Select now, so the MUI-generated
+  // `#mui-component-select-<name>` id is gone. Targeted by its accessible role
+  // and name instead, which is what a user and a screen reader both use, and
+  // which survives the next implementation change too.
+  await page.getByRole('combobox', { name: 'Default theme' }).click();
   await page.getByTestId('Dark-li').click();
 
   let logoSrc = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
