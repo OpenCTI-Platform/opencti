@@ -1,5 +1,4 @@
-import { defineConfig, loadEnv, type ViteDevServer } from 'vite';
-import type { IncomingMessage, ServerResponse } from 'node:http';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import relay from 'vite-plugin-relay';
 import monacoEditorPluginImport from 'vite-plugin-monaco-editor';
@@ -8,7 +7,7 @@ import monacoEditorPluginImport from 'vite-plugin-monaco-editor';
 const monacoEditorPlugin = (monacoEditorPluginImport as unknown as {default: typeof monacoEditorPluginImport}).default;
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   // Support APP__BASE_PATH from .env* files (via loadEnv) or from process.env (e.g. set by test scripts).
@@ -25,7 +24,7 @@ export default defineConfig(({ mode }) => {
   });
 
   return {
-    base: './',
+    base: command === 'serve' && basePath ? `${basePath}/` : './',
     build: {
       sourcemap: true,
     },
@@ -50,23 +49,8 @@ export default defineConfig(({ mode }) => {
             .replace(/%APP_SCRIPT_SNIPPET%/g,  '')
             .replace(/%APP_TITLE%/g, 'OpenCTI Dev')
             .replace(/%APP_DESCRIPTION%/g, 'OpenCTI Development platform')
-            .replace(/%APP_FAVICON%/g, `./assets/static/favicon.png`),
+            .replace(/%APP_FAVICON%/g, `${basePath}/assets/static/favicon.png`),
       },
-      // Strip basePath prefix from static asset requests (e.g. /myBasePath/assets/...)
-      // so vite dev server can resolve them from the public dir, without needing
-      // a self-proxy (with an hardcoded port).
-      ...(basePath ? [{
-        name: 'strip-base-path-for-assets',
-        apply: 'serve' as const,
-        configureServer(server: ViteDevServer) {
-          server.middlewares.use((req: IncomingMessage, _res: ServerResponse, next: () => void) => {
-            if (req.url?.startsWith(`${basePath}/assets`)) {
-              req.url = req.url.slice(basePath.length);
-            }
-            next();
-          });
-        },
-      }] : []),
       react(),
       relay,
       monacoEditorPlugin({
