@@ -4,8 +4,8 @@ import { Edge, MarkerType, Node } from 'reactflow';
 import type { Theme } from '../../../../../../components/Theme';
 import { authorizedMembersToOptions } from '../../../../../../utils/authorizedMembers';
 import { Connection, getNodes } from '../../../../../../utils/connection';
-import { SubTypeWorkflowQuery$data } from '../../__generated__/SubTypeWorkflowQuery.graphql';
 import { SubTypeWorkflowDependenciesQuery$data } from '../../__generated__/SubTypeWorkflowDependenciesQuery.graphql';
+import { SubTypeWorkflowQuery$data } from '../../__generated__/SubTypeWorkflowQuery.graphql';
 import { Action, CommentMode, CommentModeType, WorkflowNodeType } from '../utils';
 
 type ReadOnlyAction = NonNullable<NonNullable<SubTypeWorkflowQuery$data['workflowDefinition']>['states'][0]['onEnter']>[0]

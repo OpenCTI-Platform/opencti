@@ -1,13 +1,13 @@
-import { DialogActions, List, ListItem, ListItemText } from '@mui/material';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
+import { DialogActions, List, ListItem, ListItemText } from '@mui/material';
 import { FunctionComponent, useEffect } from 'react';
 import { graphql, useLazyLoadQuery, useMutation } from 'react-relay';
 import { useFormatter } from '../../../../../components/i18n';
 import { MESSAGING$ } from '../../../../../relay/environment';
 import { StatusScopeEnum } from '../../../../../utils/statusConstants';
-import type { WorkflowMigrationConfirmDialogQuery as WorkflowMigrationConfirmDialogQueryType } from './__generated__/WorkflowMigrationConfirmDialogQuery.graphql';
 import type { WorkflowMigrationConfirmDialogMutation as WorkflowMigrationConfirmDialogMutationType } from './__generated__/WorkflowMigrationConfirmDialogMutation.graphql';
+import type { WorkflowMigrationConfirmDialogQuery as WorkflowMigrationConfirmDialogQueryType } from './__generated__/WorkflowMigrationConfirmDialogQuery.graphql';
 
 export const workflowMigrationPreviewQuery = graphql`
   query WorkflowMigrationConfirmDialogQuery($entityType: String!) {
@@ -74,7 +74,6 @@ const WorkflowMigrationConfirmDialog: FunctionComponent<WorkflowMigrationConfirm
     if (!hasLegacyData) {
       onNoLegacyData();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasLegacyData]);
 
   if (!hasLegacyData) {

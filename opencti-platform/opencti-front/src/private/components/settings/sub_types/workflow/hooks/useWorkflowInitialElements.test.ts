@@ -1,8 +1,8 @@
 import { renderHook } from '@testing-library/react';
 import { MarkerType, Node } from 'reactflow';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { SubTypeWorkflowQuery$data } from '../../__generated__/SubTypeWorkflowQuery.graphql';
 import { SubTypeWorkflowDependenciesQuery$data } from '../../__generated__/SubTypeWorkflowDependenciesQuery.graphql';
+import { SubTypeWorkflowQuery$data } from '../../__generated__/SubTypeWorkflowQuery.graphql';
 import { WorkflowNodeType } from '../utils';
 import { useWorkflowInitialElements } from './useWorkflowInitialElements';
 

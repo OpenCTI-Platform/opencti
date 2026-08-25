@@ -1,17 +1,17 @@
-import Workflow from './workflow/Workflow';
-import { ReactFlowProvider } from 'reactflow';
-import { ErrorBoundary } from '../../Error';
+import { Suspense, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useOutletContext } from 'react-router-dom';
-import useQueryLoading, { useQueryLoadingWithLoadQuery } from '../../../../utils/hooks/useQueryLoading';
-import { SubTypeWorkflowQuery, SubTypeWorkflowQuery$data } from './__generated__/SubTypeWorkflowQuery.graphql';
-import { SubTypeWorkflowDependenciesQuery } from './__generated__/SubTypeWorkflowDependenciesQuery.graphql';
+import { ReactFlowProvider } from 'reactflow';
 import Loader from '../../../../components/Loader';
-import { Suspense, useCallback, useContext, useEffect, useState } from 'react';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import useQueryLoading, { useQueryLoadingWithLoadQuery } from '../../../../utils/hooks/useQueryLoading';
 import { StatusScopeEnum } from '../../../../utils/statusConstants';
 import { hasRequestAccessWorkflowConfig } from '../../common/workflow/hasRequestAccessWorkflowConfig';
+import { ErrorBoundary } from '../../Error';
+import { SubTypeWorkflowDependenciesQuery } from './__generated__/SubTypeWorkflowDependenciesQuery.graphql';
+import { SubTypeWorkflowQuery, SubTypeWorkflowQuery$data } from './__generated__/SubTypeWorkflowQuery.graphql';
 import { SubTypeOutletContext } from './SubTypeOutletContext';
+import Workflow from './workflow/Workflow';
 import WorkflowMigrationConfirmDialog from './workflow/WorkflowMigrationConfirmDialog';
 
 export const workflowQuery = graphql`
@@ -138,10 +138,20 @@ const WorkflowWithDependencies = ({ queryRef, onRefetch, entityType, canSwitchSc
 
   // Gates entry to the graph editor while `workflowDefinition` is null (no workflow authored yet
   // for this entityType/scope) and legacy `Status` data exists to migrate. Reset whenever the
-  // entityType/scope changes so a rescoped view gets its own gate.
+  // entityType/scope actually changes (not on initial mount, where the `useState(false)` default
+  // is already correct) so a rescoped view gets its own gate. Skipping the initial invocation
+  // matters: effects run children-first, so on mount the migration dialog's `onNoLegacyData`
+  // effect (which clears the gate) fires before this one — if this effect unconditionally reset
+  // the gate on mount too, it would silently overwrite that update back to `false` and get the
+  // component stuck showing nothing.
   const [migrationGateCleared, setMigrationGateCleared] = useState(false);
+  const previousScopeKey = useRef(`${entityType}|${scope}`);
   useEffect(() => {
-    setMigrationGateCleared(false);
+    const scopeKey = `${entityType}|${scope}`;
+    if (previousScopeKey.current !== scopeKey) {
+      previousScopeKey.current = scopeKey;
+      setMigrationGateCleared(false);
+    }
   }, [entityType, scope]);
 
   const depsQueryRef = useQueryLoading<SubTypeWorkflowDependenciesQuery>(workflowDependenciesQuery,
