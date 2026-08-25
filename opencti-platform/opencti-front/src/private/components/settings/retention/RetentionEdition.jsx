@@ -7,7 +7,6 @@ import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import Button from '@common/button/Button';
 import Box from '@mui/material/Box';
-import MenuItem from '@mui/material/MenuItem';
 import Alert from '@mui/material/Alert';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -23,7 +22,7 @@ import {
 import FilterIconButton from '../../../../components/FilterIconButton';
 import Drawer from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useTheme } from '@mui/material/styles';
 import SwitchField from '../../../../components/fields/SwitchField';
@@ -131,7 +130,7 @@ const RetentionEditionContainer = (props) => {
               mandatory
             />
             <Field
-              component={SelectField}
+              component={SelectFieldFds}
               variant="standard"
               name="retention_unit"
               label={t_i18n('Unit')}
@@ -139,9 +138,9 @@ const RetentionEditionContainer = (props) => {
               containerstyle={fieldSpacingContainerStyle}
               onChange={() => setVerified(false)}
             >
-              <MenuItem value="minutes">{t_i18n('minutes')}</MenuItem>
-              <MenuItem value="hours">{t_i18n('hours')}</MenuItem>
-              <MenuItem value="days">{t_i18n('days')}</MenuItem>
+              <SelectItem value="minutes">{t_i18n('minutes')}</SelectItem>
+              <SelectItem value="hours">{t_i18n('hours')}</SelectItem>
+              <SelectItem value="days">{t_i18n('days')}</SelectItem>
             </Field>
             <Field
               component={TextField}
