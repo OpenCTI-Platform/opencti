@@ -1,3 +1,5 @@
+import { BUS_TOPICS } from '../../config/conf';
+import { notify } from '../../database/redis';
 import { elRawCount, elRawSearch, ES_MAX_PAGINATION } from '../../database/engine';
 import { createRelation, deleteElementById } from '../../database/middleware';
 import { fullRelationsList } from '../../database/middleware-loader';
@@ -12,8 +14,10 @@ import {
 } from '../../schema/internalRelationship';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import type { AuthContext } from '../../types/user';
-import { SYSTEM_USER } from '../../utils/access';
+import { BYPASS, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, SYSTEM_USER } from '../../utils/access';
+import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { userMergeBulkUpdate } from './userMerge-bulk';
+import { type UserMergeProjectedRights, userMergeProjectRights, userMergeRightsDifference, type UserMergeRightsLabels, userMergeRightsNames } from './userMerge-rights';
 import {
   type UserMergeHandler,
   type UserMergeHandlerContext,
@@ -168,6 +172,45 @@ const restrictedMembersAlert = (count: number): UserMergeRightsAlert => ({
     + ' entries sharing a group restriction collapse into one keeping the strongest access right, the others are carried over as they are',
 });
 
+/**
+ * Authorized member entries are transferred whatever the strategy, so the target ends up
+ * managing elements it may not be allowed to manage. The merge is refused until the operator
+ * says so: the alternative is a silent transfer to a user who cannot see what they now hold.
+ */
+const managementCapabilityAlert = (count: number): UserMergeRightsAlert => ({
+  register_row_id: RESTRICTED_MEMBERS_ROW,
+  kind: 'rights',
+  message: `${count} element(s) list the source user as an authorized member and move to a target user without the ${KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS} capability`,
+  blocking: true,
+});
+
+const rightsGapAlerts = (
+  source: UserMergeProjectedRights,
+  target: UserMergeProjectedRights,
+  strategy: UserMergeRightsStrategy,
+  labels: UserMergeRightsLabels,
+): UserMergeRightsAlert[] => {
+  const projected = userMergeProjectRights(source, target, strategy);
+  const alerts: UserMergeRightsAlert[] = [];
+  const gainedMarkings = userMergeRightsDifference(projected.markings, target.markings);
+  const lostMarkings = userMergeRightsDifference(source.markings, projected.markings);
+  const gainedOrganizations = userMergeRightsDifference(projected.organizations, target.organizations);
+  const lostOrganizations = userMergeRightsDifference(source.organizations, projected.organizations);
+  if (gainedMarkings.length > 0) {
+    alerts.push({ register_row_id: MEMBERSHIP_EDGES[0].registerRow, kind: 'marking', message: `the target user gains ${userMergeRightsNames(labels, gainedMarkings)}` });
+  }
+  if (lostMarkings.length > 0) {
+    alerts.push({ register_row_id: MEMBERSHIP_EDGES[0].registerRow, kind: 'marking', message: `${userMergeRightsNames(labels, lostMarkings)} were reachable through the source user and no longer are` });
+  }
+  if (gainedOrganizations.length > 0) {
+    alerts.push({ register_row_id: MEMBERSHIP_EDGES[1].registerRow, kind: 'organization', message: `the target user joins ${userMergeRightsNames(labels, gainedOrganizations)}` });
+  }
+  if (lostOrganizations.length > 0) {
+    alerts.push({ register_row_id: MEMBERSHIP_EDGES[1].registerRow, kind: 'organization', message: `${userMergeRightsNames(labels, lostOrganizations)} were reachable through the source user and no longer are` });
+  }
+  return alerts;
+};
+
 const authoritiesQuery = (sourceId: string, withoutTargetId?: string): Record<string, unknown> => ({
   bool: {
     must: [
@@ -220,7 +263,7 @@ export const userMergeRightsHandler: UserMergeHandler = {
   covers: [...MEMBERSHIP_EDGES.map((edge) => edge.registerRow), ...DERIVED_EDGES.map((edge) => edge.registerRow), AUTHORITIES_ROW, RESTRICTED_MEMBERS_ROW],
   reads: [...edgePaths, authoritiesPath, FIELD_RESTRICTED_MEMBERS],
   writes: [...edgePaths, authoritiesPath, FIELD_RESTRICTED_MEMBERS],
-  compute: async ({ context, sourceId, targetId, options }: UserMergeHandlerContext): Promise<UserMergeHandlerPlan> => {
+  compute: async ({ context, sourceId, targetId, options, rights }: UserMergeHandlerContext): Promise<UserMergeHandlerPlan> => {
     const changes: UserMergePlannedChange[] = [];
     const alerts: UserMergeRightsAlert[] = [];
     for (let i = 0; i < MEMBERSHIP_EDGES.length; i += 1) {
@@ -245,9 +288,14 @@ export const userMergeRightsHandler: UserMergeHandler = {
     if (restrictedMembers.raised > 0) {
       alerts.push(restrictedMembersAlert(restrictedMembers.raised));
     }
+    alerts.push(...rightsGapAlerts(rights.source, rights.target, options.rightsStrategy, rights.labels));
+    const canManage = rights.target.capabilities.includes(BYPASS) || rights.target.capabilities.includes(KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS);
+    if (restrictedMembers.elements > 0 && !canManage) {
+      alerts.push(managementCapabilityAlert(restrictedMembers.elements));
+    }
     return { handler: USER_MERGE_RIGHTS_HANDLER, changes, alerts };
   },
-  apply: async ({ context, sourceId, targetId, options }: UserMergeHandlerContext, plan: UserMergeHandlerPlan): Promise<number> => {
+  apply: async ({ context, sourceId, targetId, options, sourceUser, targetUser }: UserMergeHandlerContext, plan: UserMergeHandlerPlan): Promise<number> => {
     let updated = 0;
     for (let i = 0; i < MEMBERSHIP_EDGES.length; i += 1) {
       const edge = MEMBERSHIP_EDGES[i];
@@ -286,6 +334,13 @@ export const userMergeRightsHandler: UserMergeHandler = {
         { query: userMergeRestrictedMembersQuery(sourceId), script: userMergeRestrictedMembersScript(sourceId, targetId) },
       );
       updated += result.updated;
+    }
+    // Memberships and organization authorities are written through the store, which does not
+    // notify: the domain helpers do it themselves, and this handler bypasses them. Without it
+    // `buildCompleteUsers` keeps serving the pre-merge groups, markings and capabilities from
+    // the cache — on this node until it restarts, and on every other node of a cluster for good.
+    if (updated > 0) {
+      await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, [sourceUser, targetUser], SYSTEM_USER);
     }
     return updated;
   },
