@@ -1456,3 +1456,29 @@ sidecar now records `3c0ef256…`. The gate would have said OK either way, which
 is the whole point of this entry.
 
 ---
+
+## 43. No token-based way for a host to tint the field shell as a product state
+
+**Backlog V2 — @sandy 2026-08-25, not this cycle.** Recorded so the next
+Combobox wave does not rediscover it as a surprise.
+
+**Needed.** A documented, token-based way for a host to tint a Combobox field's
+border and label to signal a product state.
+
+**The one site.** `private/components/settings/sub_types/custom_views/CustomViewPreviewEntitySelector.tsx:105`
+paints its `MuiOutlinedInput` fieldset AND its label
+`designSystem.tertiary.orange.400` for as long as a preview entity is selected.
+That is not decoration: it is how the screen says "you are previewing with a
+substituted entity".
+
+**Why no workaround was invented.** The library field owns its own border, so
+the tint cannot be reached from the outside; and a hardcoded colour is forbidden
+by the token rules. The conversion was written and then reverted rather than
+drop a product state signal or ship a local variant of a library component.
+
+**Status.** The site keeps MUI's Autocomplete, carrying FDS-WORKAROUND #43.
+It is the only CTI Autocomplete site held for this reason.
+
+**Removal test.** Convert that site with the new mechanism, select a preview
+entity, and confirm the field border and label both carry the state tone in
+both modes — then delete `IN_PREVIEW_SX_PROPS` and the marker.
