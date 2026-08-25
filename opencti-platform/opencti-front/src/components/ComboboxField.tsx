@@ -60,6 +60,13 @@ export type ComboboxFieldProps<Value extends PossibleValue = FieldOption>
       getOptionLabel?: (option: Value) => string;
       isOptionEqualToValue?: (a: Value, b: Value) => boolean;
       isOptionDisabled?: (option: Value) => boolean;
+    /**
+     * Per-value chip tone, from the colour the database stores. Presentation
+     * only: it never reaches the selection engine, and an option that returns
+     * nothing keeps the neutral chip, so a list mixing coloured and uncoloured
+     * values needs no branching here.
+     */
+    getChipColor?: (option: Value) => string | undefined;
       filterOptions?: (options: Value[], inputValue: string) => Value[];
       renderOption?: (option: Value, state: { selected: boolean; active: boolean }) => ReactNode;
       noOptionsText?: ReactNode;
@@ -113,6 +120,7 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
   getOptionLabel,
   isOptionEqualToValue,
   isOptionDisabled,
+  getChipColor,
   filterOptions,
   renderOption,
   noOptionsText,
@@ -182,6 +190,7 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
         getOptionLabel={getOptionLabel ?? defaultGetOptionLabel}
         isOptionEqualToValue={isOptionEqualToValue ?? defaultIsOptionEqualToValue}
         isOptionDisabled={isOptionDisabled}
+        getChipColor={getChipColor}
         filterOptions={filterOptions}
         renderOption={renderOption}
         inputValue={inputValue}

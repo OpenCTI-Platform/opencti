@@ -1,7 +1,8 @@
 import { makeStyles } from '@mui/styles';
 import { Field } from 'formik';
 import React, { FunctionComponent, useState } from 'react';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import { ComboboxChangeMeta } from '@filigran/design-system';
+import ComboboxField from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import { fetchQuery } from '../../../../relay/environment';
 import { LabelsQuerySearchQuery$data } from '../../settings/__generated__/LabelsQuerySearchQuery.graphql';
@@ -58,8 +59,7 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
   const [labels, setLabels] = useState<FieldOption[]>([]);
   const [labelInput, setLabelInput] = useState('');
 
-  const searchLabels = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = event?.target?.value ?? '';
+  const searchLabels = async (inputValue: string) => {
     setLabelInput(inputValue);
 
     const data = await fetchQuery(labelsSearchQuery, {
@@ -83,36 +83,36 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
   return (
     <>
       <Field
-        component={AutocompleteField}
+        component={ComboboxField}
         disabled={disabled}
         style={style}
         name={name}
         required={required}
         multiple={true}
-        textfieldprops={{
-          variant: 'standard',
-          label: t_i18n('Labels'),
-          helperText: helpertext,
-          onFocus: searchLabels,
-        }}
+        label={t_i18n('Labels')}
+        helperText={helpertext}
         preserveCase
         noOptionsText={t_i18n('No available options')}
         options={labels}
-        onInputChange={searchLabels}
-        openCreate={() => setLabelCreation(true)}
+        // Keystroke only — a pick or a clear used to re-query.
+        onInputChange={(search: string, meta: ComboboxChangeMeta) => {
+          if (meta.cause === 'type') searchLabels(search);
+        }}
+        onFocusInput={() => searchLabels('')}
+        // The label's own colour, straight from the database. The library caps
+        // it in a bounded wash, which is what the product's Tag renderer did by
+        // hand with alpha(color, 0.2).
+        getChipColor={(option: FieldOption) => option.color}
+        onCreateOption={() => setLabelCreation(true)}
         onChange={onChange}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: FieldOption,
-        ) => (
-          <li {...props}>
+        renderOption={(option: FieldOption) => (
+          <>
             <div className={classes.icon} style={{ color: option.color }}>
               <ItemIcon type="Label" color={option.color} />
             </div>
             <div className={classes.text}>{option.label}</div>
-          </li>
+          </>
         )}
-        classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
       <LabelCreation
         contextual={true}
