@@ -37,23 +37,21 @@ const KillChainPhasesField = ({
   const [killChainPhases, setKillChainPhases] = useState<KillChainPhaseFieldOption[]>([]);
 
   const searchKillChainPhases = (search: string) => {
-    {
-      fetchQuery(killChainPhasesSearchQuery, { search })
-        .toPromise()
-        .then((data) => {
-          const dataNodes = getNodes((data as KillChainPhasesSearchQuery$data).killChainPhases);
-          dataNodes.sort((a, b) => (a.x_opencti_order ?? 0) - (b.x_opencti_order ?? 0));
-          const kcp = dataNodes.map((node) => {
-            return {
-              label: `[${node.kill_chain_name}] ${node.phase_name}`,
-              value: node.id,
-              kill_chain_name: node.kill_chain_name,
-              phase_name: node.phase_name,
-            };
-          });
-          setKillChainPhases(union(killChainPhases, kcp));
+    fetchQuery(killChainPhasesSearchQuery, { search })
+      .toPromise()
+      .then((data) => {
+        const dataNodes = getNodes((data as KillChainPhasesSearchQuery$data).killChainPhases);
+        dataNodes.sort((a, b) => (a.x_opencti_order ?? 0) - (b.x_opencti_order ?? 0));
+        const kcp = dataNodes.map((node) => {
+          return {
+            label: `[${node.kill_chain_name}] ${node.phase_name}`,
+            value: node.id,
+            kill_chain_name: node.kill_chain_name,
+            phase_name: node.phase_name,
+          };
         });
-    }
+        setKillChainPhases(union(killChainPhases, kcp));
+      });
   };
 
   return (

@@ -332,12 +332,15 @@ test('Incident response live entities creation and relationships', { tag: ['@ce'
   await expect(incidentResponseForm.authorAutocomplete.getOption('Jeanne Mitchel')).toBeVisible();
 
   // Create label from the incident response creation form
-  await incidentResponseForm.labelsAutocomplete.openAddOptionForm();
-  await labelForm.getCreateButton().click();
-  await expect(labelForm.valueField.getByText('This field is required')).toBeVisible();
-  await expect(labelForm.colorField.getByText('This field is required')).toBeVisible();
-  await labelForm.valueField.fill(labelName);
+  // The labels field is on the library Combobox, whose create affordance is the
+  // `Create '<value>'` row rather than a persistent `+` (design nodes
+  // 6920-11382 / 6920-11841, accepted 2026-08-25). The form therefore opens
+  // carrying the typed text, so the empty-value assertion moved to the author
+  // field below, which is still on MUI.
+  await incidentResponseForm.labelsAutocomplete.createOption(labelName);
   await expect(labelForm.valueField.getByText('This field is required')).toBeHidden();
+  await labelForm.getCreateButton().click();
+  await expect(labelForm.colorField.getByText('This field is required')).toBeVisible();
   await labelForm.colorField.fill('#9d3fb8');
   await expect(labelForm.colorField.getByText('This field is required')).toBeHidden();
   await labelForm.getCreateButton().click();

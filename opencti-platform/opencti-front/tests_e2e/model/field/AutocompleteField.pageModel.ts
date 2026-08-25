@@ -27,8 +27,26 @@ export default class AutocompleteFieldPageModel {
       : this.inputLocator;
   }
 
+  /**
+   * The MUI-era create affordance: a persistent `+` overlaid on the field.
+   * Still used by every site that has not been converted to the library
+   * Combobox — `CreatedByField`, `ExternalReferencesField` and the rest.
+   */
   openAddOptionForm() {
     return this.parentLocator.getByRole('button', { name: 'Add', exact: true }).click();
+  }
+
+  /**
+   * The library create affordance: type a value the list does not hold, then
+   * pick the `Create '<value>'` row. Per design nodes 6920-11382 / 6920-11841,
+   * accepted 2026-08-25 — the persistent `+` is gone on converted sites, so the
+   * creation form opens carrying the typed text instead of empty.
+   */
+  async createOption(value: string) {
+    await this.inputLocator.click();
+    await this.inputLocator.fill(value);
+    const list = this.page.getByRole('listbox', { name: this.label });
+    return list.getByText(`Create '${value}'`, { exact: false }).click();
   }
 
   getByText(input: string) {
