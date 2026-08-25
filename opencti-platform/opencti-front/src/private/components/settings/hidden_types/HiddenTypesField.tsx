@@ -160,7 +160,6 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
         <SelectItem
           key={key}
           value={isSelectedGroup(key) ? `not-${key}` : key}
-          dense={true}
         >
           <Checkbox
             checked={isSelectedGroup(key)}
@@ -175,7 +174,6 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
           <SelectItem
             key={platformHiddenType.target_type}
             value={platformHiddenType.target_type}
-            dense={true}
           >
             <Checkbox
               checked={

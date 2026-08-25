@@ -11,6 +11,7 @@ import AutocompleteField from '../../../../components/AutocompleteField';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
+import MenuItem from '@mui/material/MenuItem';
 import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import TextField from '../../../../components/TextField';
 import TimePickerField from '../../../../components/TimePickerField';
@@ -375,14 +376,14 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
                 props: React.HTMLAttributes<HTMLLIElement>,
                 option: { value: TriggerEventType; label: string },
               ) => (
-                <SelectItem value={option.value} {...props}>
+                <MenuItem value={option.value} {...props}>
                   <Checkbox
                     checked={values.event_types
                       .map((n) => n.value)
                       .includes(option.value)}
                   />
                   <ListItemText primary={option.label} />
-                </SelectItem>
+                </MenuItem>
               )}
             />
           )}
