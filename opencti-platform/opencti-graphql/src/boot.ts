@@ -14,7 +14,7 @@ export const platformStart = async () => {
   const startTime = Date.now();
   logApp.info('[OPENCTI] Starting platform', { environment });
   if (!getBuildCommit()) {
-    logApp.warn('[OPENCTI] Build commit metadata is unavailable');
+    logApp.warn('[OPENCTI] Build commit metadata is missing or invalid');
   }
   try {
     // Start the liveness probe first so orchestrators can detect the process is alive

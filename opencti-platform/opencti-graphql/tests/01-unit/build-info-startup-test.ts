@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { platformStart } from '../../src/boot';
 import { logApp } from '../../src/config/conf';
 import * as bootUtils from '../../src/boot-utils';
@@ -36,6 +36,12 @@ vi.mock('../../src/database/redis', () => ({
 }));
 
 describe('Build commit startup warning', () => {
+  beforeEach(() => {
+    vi.spyOn(process, 'exit').mockImplementation((code) => {
+      throw new Error(`Unexpected process.exit(${code})`);
+    });
+  });
+
   afterEach(() => {
     vi.unstubAllEnvs();
     vi.restoreAllMocks();
@@ -49,7 +55,18 @@ describe('Build commit startup warning', () => {
     await platformStart();
 
     expect(warningSpy).toHaveBeenCalledOnce();
-    expect(warningSpy).toHaveBeenCalledWith('[OPENCTI] Build commit metadata is unavailable');
+    expect(warningSpy).toHaveBeenCalledWith('[OPENCTI] Build commit metadata is missing or invalid');
+  });
+
+  it('should warn once when build metadata is malformed', async () => {
+    vi.stubEnv('BUILD_COMMIT', 'not-a-commit');
+    vi.mocked(bootUtils.checkSystemDependencies).mockResolvedValue(true);
+    const warningSpy = vi.spyOn(logApp, 'warn').mockImplementation(() => logApp);
+
+    await platformStart();
+
+    expect(warningSpy).toHaveBeenCalledOnce();
+    expect(warningSpy).toHaveBeenCalledWith('[OPENCTI] Build commit metadata is missing or invalid');
   });
 
   it('should not warn when build metadata contains a valid commit', async () => {
