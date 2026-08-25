@@ -76,7 +76,7 @@ const settingsResolvers = {
     is_authentication_by_env: () => isAuthenticationForcedFromEnv(),
   },
   AppInfo: {
-    memory: getMemoryStatistics(),
+    memory: () => getMemoryStatistics(),
     dependencies: (_, __, context) => getApplicationDependencies(context),
   },
   SettingsMessage: {
