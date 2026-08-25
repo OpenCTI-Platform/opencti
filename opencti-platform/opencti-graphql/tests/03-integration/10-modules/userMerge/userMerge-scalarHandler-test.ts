@@ -1,10 +1,13 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { elIndex, elRawDeleteByQuery, elRawGet } from '../../../../src/database/engine';
+import * as cache from '../../../../src/database/cache';
 import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../../../src/database/utils';
 import { executeUserMerge } from '../../../../src/modules/userMerge/userMerge-engine';
-import { registerUserMergeHandler, resetUserMergeHandlers } from '../../../../src/modules/userMerge/userMerge-registry';
+import { registerUserMergeHandler, resetUserMergeHandlers, userMergeHandlers } from '../../../../src/modules/userMerge/userMerge-registry';
+import type { UserMergeHandler } from '../../../../src/modules/userMerge/userMerge-handler';
 import { userMergeScalarHandler, USER_MERGE_SCALAR_HANDLER } from '../../../../src/modules/userMerge/userMerge-scalarHandler';
 import { UserMergeRightsStrategy, UserMergeStatus } from '../../../../src/modules/userMerge/userMerge-types';
+import type { AuthUser } from '../../../../src/types/user';
 
 const SOURCE_ID = 'user--merge-source-0000-0000-000000000001';
 const TARGET_ID = 'user--merge-target-0000-0000-000000000002';
@@ -44,10 +47,17 @@ const changeFor = (report: { handlers: { handler: string; changes: { register_ro
   return handler?.changes.find((change) => change.register_row_id === rowId);
 };
 
+let registeredHandlers: UserMergeHandler[];
+
 describe('userMerge scalar handler', () => {
   beforeAll(async () => {
+    registeredHandlers = userMergeHandlers();
     resetUserMergeHandlers();
     registerUserMergeHandler(userMergeScalarHandler);
+    vi.spyOn(cache, 'getEntitiesMapFromCache').mockResolvedValue(new Map<string, AuthUser>([
+      [SOURCE_ID, { id: SOURCE_ID, allowed_marking: [], organizations: [], groups: [], capabilities: [] } as unknown as AuthUser],
+      [TARGET_ID, { id: TARGET_ID, allowed_marking: [], organizations: [], groups: [], capabilities: [] } as unknown as AuthUser],
+    ]));
     await elIndex(INDEX_INTERNAL_OBJECTS, document('merge-test-sync-1', 'Sync', { user_id: SOURCE_ID }));
     await elIndex(INDEX_INTERNAL_OBJECTS, document('merge-test-sync-2', 'Sync', { user_id: OTHER_ID }));
     await elIndex(INDEX_INTERNAL_OBJECTS, document('merge-test-work-done', 'work', { user_id: SOURCE_ID, status: 'complete' }));
@@ -57,7 +67,9 @@ describe('userMerge scalar handler', () => {
   });
 
   afterAll(async () => {
+    vi.restoreAllMocks();
     resetUserMergeHandlers();
+    registeredHandlers.forEach((handler) => registerUserMergeHandler(handler));
     await elRawDeleteByQuery({
       index: READ_INDEX_INTERNAL_OBJECTS,
       refresh: true,
