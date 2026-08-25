@@ -5,7 +5,7 @@ import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/
 import { BUILT_IN_INTEGRATIONS, BuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
 import { IngestionFeedsData, IngestionFeedsFormsData } from '@components/integrations/deployed/IngestionFeeds';
 import { computeConnectorStatus } from '../../../../utils/Connector';
-import { ConnectorErrorState, parseConnectorLogsError } from '../../../../utils/connectorErrors';
+import { ConnectorErrorState, NO_CONNECTOR_ERROR, toConnectorErrorState } from '../../../../utils/connectorErrors';
 
 // Mirrors the backend: every built-in feed registers a technical queue
 // connector whose id is derived from the ingestion id (uuid v5 in the OpenCTI
@@ -58,7 +58,7 @@ const toSafeNumber = (value: unknown): number => {
   return Number.isFinite(nValue) ? nValue : 0;
 };
 
-const NO_ERROR: ConnectorErrorState = { inError: false, code: null, message: null, timestamp: null };
+const NO_ERROR: ConnectorErrorState = NO_CONNECTOR_ERROR;
 
 const feedStatus = (running: boolean | null | undefined) => {
   return {
@@ -146,7 +146,7 @@ const useDeployedIntegrations = ({
         itemStatus = 'inactive';
       }
       const logoSlug = connector.manager_contract_excerpt?.slug;
-      const errorState = parseConnectorLogsError(state?.manager_connector_logs);
+      const errorState = toConnectorErrorState(state?.manager_connector_error);
       items.push({
         id: connector.id,
         kind: 'connector',

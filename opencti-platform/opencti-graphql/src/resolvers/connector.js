@@ -67,7 +67,7 @@ import {
   connectorsForWorker,
 } from '../database/repository';
 import { getConnectorQueueSize } from '../database/rabbitmq';
-import { redisGetConnectorLogs } from '../database/redis';
+import { redisGetConnectorError, redisGetConnectorLogs } from '../database/redis';
 import pjson from '../../package.json';
 import { ConnectorPriorityGroup } from '../generated/graphql';
 import { assessConnectorMigration, migrateConnectorToManaged } from '../domain/connector-migration';
@@ -109,6 +109,7 @@ const connectorResolvers = {
     },
     connector_user: (cn, _, context) => connectorUser(context, context.user, cn.connector_user_id),
     manager_connector_logs: (cn) => redisGetConnectorLogs(cn.id),
+    manager_connector_error: (cn) => redisGetConnectorError(cn.id),
     manager_health_metrics: (cn, _, context) => connectorGetHealth(context, context.user, cn.id),
     manager_connector_uptime: (cn, _, context) => connectorGetUptime(context, context.user, cn.id),
     manager_contract_hash: (cn, _, context) => computeManagerContractHash(context, context.user, cn),

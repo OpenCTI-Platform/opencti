@@ -2316,6 +2316,7 @@ type Connector implements BasicObject & InternalObject {
   manager_contract_excerpt: ManagerContractExcerpt
   manager_contract_configuration: [ManagerContractConfiguration!]
   manager_connector_logs: [String!]
+  manager_connector_error: ConnectorErrorStatus
   manager_contract_hash: String
   manager_health_metrics: ConnectorHealthMetrics
   manager_connector_uptime: Int
@@ -2352,6 +2353,13 @@ type ConnectorHealthMetrics {
   started_at: DateTime!
   last_update: DateTime!
   is_in_reboot_loop: Boolean!
+}
+
+type ConnectorErrorStatus {
+  in_error: Boolean!
+  code: Int
+  message: String
+  timestamp: DateTime
 }
 
 type ConnectorManager implements BasicObject & InternalObject {

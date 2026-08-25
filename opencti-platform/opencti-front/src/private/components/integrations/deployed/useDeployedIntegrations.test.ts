@@ -113,28 +113,22 @@ describe('useDeployedIntegrations', () => {
       expect(result.current[0].status).toBe('inactive');
     });
 
-    it('flags a connector in authentication error from its logs', () => {
+    it('flags a connector in authentication error from the backend status', () => {
       const { result } = renderIntegrations({
         connectors: [makeConnector()],
         states: [makeState({
-          manager_connector_logs: [
-            JSON.stringify({ level: 'INFO', message: 'Starting connector' }),
-            JSON.stringify({ level: 'ERROR', message: 'API returned 401 Unauthorized' }),
-          ],
+          manager_connector_error: { in_error: true, code: 401, message: 'API returned 401 Unauthorized', timestamp: null },
         })],
       });
       expect(result.current[0].errorState.inError).toBe(true);
       expect(result.current[0].errorState.code).toBe(401);
     });
 
-    it('does not flag a connector once a later success log is present', () => {
+    it('does not flag a connector when the backend reports no error', () => {
       const { result } = renderIntegrations({
         connectors: [makeConnector()],
         states: [makeState({
-          manager_connector_logs: [
-            JSON.stringify({ level: 'ERROR', message: '401 Unauthorized' }),
-            JSON.stringify({ level: 'INFO', message: 'Successfully connected' }),
-          ],
+          manager_connector_error: { in_error: false, code: null, message: null, timestamp: null },
         })],
       });
       expect(result.current[0].errorState.inError).toBe(false);

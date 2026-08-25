@@ -800,6 +800,20 @@ export const redisGetConnectorLogs = async (connectorId: string): Promise<string
   return rawLogs ? JSON.parse(rawLogs) : [];
 };
 
+export interface ConnectorErrorStatus {
+  in_error: boolean;
+  code: number | null;
+  message: string | null;
+  timestamp: string | null;
+}
+export const redisSetConnectorError = async (connectorId: string, error: ConnectorErrorStatus) => {
+  await getClientBase().set(`connector-${connectorId}-error`, JSON.stringify(error));
+};
+export const redisGetConnectorError = async (connectorId: string): Promise<ConnectorErrorStatus | null> => {
+  const raw = await getClientBase().get(`connector-${connectorId}-error`);
+  return raw ? JSON.parse(raw) : null;
+};
+
 const getIngestionLogKey = (feedId: string) => `ingestion-${feedId}-history`;
 
 const INGESTION_DEDUP_MAX_COUNT = 100;

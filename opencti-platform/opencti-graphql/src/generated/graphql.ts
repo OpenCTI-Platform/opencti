@@ -4569,6 +4569,7 @@ export type Connector = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   is_managed?: Maybe<Scalars['Boolean']['output']>;
   jwks: Scalars['String']['output'];
+  manager_connector_error?: Maybe<ConnectorErrorStatus>;
   manager_connector_logs?: Maybe<Array<Scalars['String']['output']>>;
   manager_connector_uptime?: Maybe<Scalars['Int']['output']>;
   manager_contract_configuration?: Maybe<Array<ManagerContractConfiguration>>;
@@ -4630,6 +4631,14 @@ export enum ConnectorCurrentStatus {
   Started = 'started',
   Stopped = 'stopped'
 }
+
+export type ConnectorErrorStatus = {
+  __typename?: 'ConnectorErrorStatus';
+  code?: Maybe<Scalars['Int']['output']>;
+  in_error: Scalars['Boolean']['output'];
+  message?: Maybe<Scalars['String']['output']>;
+  timestamp?: Maybe<Scalars['DateTime']['output']>;
+};
 
 export type ConnectorHealthMetrics = {
   __typename?: 'ConnectorHealthMetrics';
@@ -39977,6 +39986,7 @@ export type ResolversTypes = ResolversObject<{
   ConnectorConfiguration: ResolverTypeWrapper<ConnectorConfiguration>;
   ConnectorContractConfiguration: ResolverTypeWrapper<ConnectorContractConfiguration>;
   ConnectorCurrentStatus: ConnectorCurrentStatus;
+  ConnectorErrorStatus: ResolverTypeWrapper<ConnectorErrorStatus>;
   ConnectorHealthMetrics: ResolverTypeWrapper<ConnectorHealthMetrics>;
   ConnectorInfo: ResolverTypeWrapper<ConnectorInfo>;
   ConnectorInfoInput: ConnectorInfoInput;
@@ -41118,6 +41128,7 @@ export type ResolversParentTypes = ResolversObject<{
   ConnectorConfig: ConnectorConfig;
   ConnectorConfiguration: ConnectorConfiguration;
   ConnectorContractConfiguration: ConnectorContractConfiguration;
+  ConnectorErrorStatus: ConnectorErrorStatus;
   ConnectorHealthMetrics: ConnectorHealthMetrics;
   ConnectorInfo: ConnectorInfo;
   ConnectorInfoInput: ConnectorInfoInput;
@@ -43460,6 +43471,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_managed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   jwks?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  manager_connector_error?: Resolver<Maybe<ResolversTypes['ConnectorErrorStatus']>, ParentType, ContextType>;
   manager_connector_logs?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   manager_connector_uptime?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   manager_contract_configuration?: Resolver<Maybe<Array<ResolversTypes['ManagerContractConfiguration']>>, ParentType, ContextType>;
@@ -43508,6 +43520,13 @@ export type ConnectorContractConfigurationResolvers<ContextType = any, ParentTyp
   encrypted?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type ConnectorErrorStatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorErrorStatus'] = ResolversParentTypes['ConnectorErrorStatus']> = ResolversObject<{
+  code?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  in_error?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  timestamp?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
 }>;
 
 export type ConnectorHealthMetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorHealthMetrics'] = ResolversParentTypes['ConnectorHealthMetrics']> = ResolversObject<{
@@ -53955,6 +53974,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ConnectorConfig?: ConnectorConfigResolvers<ContextType>;
   ConnectorConfiguration?: ConnectorConfigurationResolvers<ContextType>;
   ConnectorContractConfiguration?: ConnectorContractConfigurationResolvers<ContextType>;
+  ConnectorErrorStatus?: ConnectorErrorStatusResolvers<ContextType>;
   ConnectorHealthMetrics?: ConnectorHealthMetricsResolvers<ContextType>;
   ConnectorInfo?: ConnectorInfoResolvers<ContextType>;
   ConnectorManager?: ConnectorManagerResolvers<ContextType>;

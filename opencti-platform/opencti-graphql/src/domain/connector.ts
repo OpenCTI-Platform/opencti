@@ -18,6 +18,7 @@ import {
   notify,
   redisGetConnectorHealthMetrics,
   redisGetWork,
+  redisSetConnectorError,
   redisSetConnectorHealthMetrics,
   redisSetConnectorLogs,
   setEditContext,
@@ -57,6 +58,7 @@ import type { BasicStoreCommon, StoreEntity } from '../types/store';
 import { addConnectorDeployedCount, addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '../manager/telemetryManager';
 import { computeConnectorTargetContract, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 import { getEntitiesMapFromCache } from '../database/cache';
+import { parseConnectorLogsError } from './connectorErrors';
 
 import { createOnTheFlyUser } from '../modules/user/user-domain';
 import { addDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-domain';
@@ -420,6 +422,10 @@ const updateConnector = async (context: AuthContext, user: AuthUser, connectorId
 
 export const connectorUpdateLogs = async (_context: AuthContext, _user: AuthUser, input: LogsConnectorStatusInput) => {
   await redisSetConnectorLogs(input.id, input.logs);
+  // Parse the freshly pushed logs to keep the compact error status up to date,
+  // so the UI does not have to fetch and parse the whole logs array.
+  const errorStatus = parseConnectorLogsError(input.logs);
+  await redisSetConnectorError(input.id, errorStatus);
   return input.id;
 };
 
