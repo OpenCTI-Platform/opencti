@@ -354,6 +354,41 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
     expect((malwareResult.extensions[STIX_EXT_OCTI] as any).score).toBe(42);
   });
 
+  it('should update x_opencti_score on an Incident', async () => {
+    const INCIDENT_ID = 'incident--09bd862a-f030-55f2-920a-900c4913d9aa';
+    const bundleObjects = [testBundleObject<StixDomainObject>({
+      id: INCIDENT_ID,
+      type: ENTITY_TYPE_INCIDENT,
+    })];
+
+    const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+      mainId: INCIDENT_ID,
+      bundleObjects,
+      configuration: {
+        applyToElements: 'only-main',
+        actions: [{
+          op: 'replace' as const,
+          attribute: 'x_opencti_score',
+          value: [{
+            label: 'Set score to 88',
+            value: '88',
+            patch_value: '88',
+          }],
+        }],
+      },
+    }));
+
+    const updatedIncident = result.bundle.objects.find((o) => o.id === INCIDENT_ID);
+    const objectExtensions = updatedIncident?.extensions[STIX_EXT_OCTI] as Record<string, any>;
+    if (!objectExtensions.opencti_upsert_operations || !objectExtensions.opencti_upsert_operations[0]) {
+      assert.fail('Field patch missing');
+    }
+    expect(objectExtensions.opencti_upsert_operations[0].operation).toBe('replace');
+    expect(objectExtensions.opencti_upsert_operations[0].key).toBe('x_opencti_score');
+    expect(objectExtensions.opencti_upsert_operations[0].value[0]).toBe('88');
+    expect(objectExtensions.score).toBe(88);
+  });
+
   describe('Bundle scope', () => {
     it('should add label only on main element', async () => {
       const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
