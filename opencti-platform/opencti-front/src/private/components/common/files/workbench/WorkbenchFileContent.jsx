@@ -12,7 +12,6 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
@@ -32,7 +31,7 @@ import DateTimePickerField from '../../../../../components/DateTimePickerField';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 import MarkdownField from '../../../../../components/fields/markdownField/MarkdownField';
 import RichTextField from '../../../../../components/fields/RichTextField';
-import SelectField from '../../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../../components/fields/SelectFieldFds';
 import SwitchField from '../../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../../components/i18n';
 import ItemBoolean from '../../../../../components/ItemBoolean';
@@ -3472,9 +3471,9 @@ const WorkbenchFileContentComponent = ({
                           }}
                         >
                           {translatedOrderedList.map((n) => (
-                            <MenuItem key={n.label} value={n.label}>
+                            <SelectItem key={n.label} value={n.label}>
                               {n.tlabel}
-                            </MenuItem>
+                            </SelectItem>
                           ))}
                         </Select>
                       </div>
@@ -4218,7 +4217,7 @@ const WorkbenchFileContentComponent = ({
                 </>
               )}
               <Field
-                component={SelectField}
+                component={SelectFieldFds}
                 variant="standard"
                 name="connector_id"
                 label={t_i18n('Connector')}
@@ -4227,13 +4226,13 @@ const WorkbenchFileContentComponent = ({
                 disabled={connectors.filter((n) => n.active).length === 0}
               >
                 {connectors.map((connector) => (
-                  <MenuItem
+                  <SelectItem
                     key={connector.id}
                     value={connector.id}
                     disabled={!connector.active}
                   >
                     {connector.name}
-                  </MenuItem>
+                  </SelectItem>
                 ))}
               </Field>
               <DialogActions>
@@ -4287,7 +4286,7 @@ const WorkbenchFileContentComponent = ({
                 </>
               )}
               <Field
-                component={SelectField}
+                component={SelectFieldFds}
                 variant="standard"
                 name="connector_id"
                 label={t_i18n('Connector')}
@@ -4296,13 +4295,13 @@ const WorkbenchFileContentComponent = ({
                 disabled={connectors.filter((n) => n.active).length === 0}
               >
                 {connectors.map((connector) => (
-                  <MenuItem
+                  <SelectItem
                     key={connector.id}
                     value={connector.id}
                     disabled={!connector.active}
                   >
                     {connector.name}
-                  </MenuItem>
+                  </SelectItem>
                 ))}
               </Field>
               <DialogActions>

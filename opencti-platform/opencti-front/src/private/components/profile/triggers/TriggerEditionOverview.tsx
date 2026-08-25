@@ -1,6 +1,5 @@
 import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
-import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent, useEffect, useState } from 'react';
@@ -12,7 +11,7 @@ import AutocompleteField from '../../../../components/AutocompleteField';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import TextField from '../../../../components/TextField';
 import TimePickerField from '../../../../components/TimePickerField';
 import { convertEventTypes, convertNotifiers, convertTriggers, filterEventTypesOptions, instanceEventTypesOptions } from '../../../../utils/edition';
@@ -376,14 +375,14 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
                 props: React.HTMLAttributes<HTMLLIElement>,
                 option: { value: TriggerEventType; label: string },
               ) => (
-                <MenuItem value={option.value} {...props}>
+                <SelectItem value={option.value} {...props}>
                   <Checkbox
                     checked={values.event_types
                       .map((n) => n.value)
                       .includes(option.value)}
                   />
                   <ListItemText primary={option.label} />
-                </MenuItem>
+                </SelectItem>
               )}
             />
           )}
@@ -399,7 +398,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
           )}
           {trigger.trigger_type === 'digest' && (
             <Field
-              component={SelectField}
+              component={SelectFieldFds}
               variant="standard"
               name="period"
               label={t_i18n('Period')}
@@ -407,15 +406,15 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               containerstyle={fieldSpacingContainerStyle}
               onChange={handleSubmitField}
             >
-              <MenuItem value="hour">{t_i18n('hour')}</MenuItem>
-              <MenuItem value="day">{t_i18n('day')}</MenuItem>
-              <MenuItem value="week">{t_i18n('week')}</MenuItem>
-              <MenuItem value="month">{t_i18n('month')}</MenuItem>
+              <SelectItem value="hour">{t_i18n('hour')}</SelectItem>
+              <SelectItem value="day">{t_i18n('day')}</SelectItem>
+              <SelectItem value="week">{t_i18n('week')}</SelectItem>
+              <SelectItem value="month">{t_i18n('month')}</SelectItem>
             </Field>
           )}
           {trigger.trigger_type === 'digest' && values.period === 'week' && (
             <Field
-              component={SelectField}
+              component={SelectFieldFds}
               variant="standard"
               name="day"
               label={t_i18n('Week day')}
@@ -423,18 +422,18 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               containerstyle={fieldSpacingContainerStyle}
               onChange={handleSubmitDay}
             >
-              <MenuItem value="1">{t_i18n('Monday')}</MenuItem>
-              <MenuItem value="2">{t_i18n('Tuesday')}</MenuItem>
-              <MenuItem value="3">{t_i18n('Wednesday')}</MenuItem>
-              <MenuItem value="4">{t_i18n('Thursday')}</MenuItem>
-              <MenuItem value="5">{t_i18n('Friday')}</MenuItem>
-              <MenuItem value="6">{t_i18n('Saturday')}</MenuItem>
-              <MenuItem value="7">{t_i18n('Sunday')}</MenuItem>
+              <SelectItem value="1">{t_i18n('Monday')}</SelectItem>
+              <SelectItem value="2">{t_i18n('Tuesday')}</SelectItem>
+              <SelectItem value="3">{t_i18n('Wednesday')}</SelectItem>
+              <SelectItem value="4">{t_i18n('Thursday')}</SelectItem>
+              <SelectItem value="5">{t_i18n('Friday')}</SelectItem>
+              <SelectItem value="6">{t_i18n('Saturday')}</SelectItem>
+              <SelectItem value="7">{t_i18n('Sunday')}</SelectItem>
             </Field>
           )}
           {trigger.trigger_type === 'digest' && values.period === 'month' && (
             <Field
-              component={SelectField}
+              component={SelectFieldFds}
               variant="standard"
               name="day"
               label={t_i18n('Month day')}
@@ -443,9 +442,9 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               onChange={handleSubmitDay}
             >
               {Array.from(Array(31).keys()).map((idx) => (
-                <MenuItem key={idx} value={(idx + 1).toString()}>
+                <SelectItem key={idx} value={(idx + 1).toString()}>
                   {(idx + 1).toString()}
-                </MenuItem>
+                </SelectItem>
               ))}
             </Field>
           )}
