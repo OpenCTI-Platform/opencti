@@ -1,4 +1,4 @@
-import { elRawCount } from '../../database/engine';
+import { elRawCount, elRawSearch, ES_MAX_PAGINATION } from '../../database/engine';
 import { createRelation, deleteElementById } from '../../database/middleware';
 import { fullRelationsList } from '../../database/middleware-loader';
 import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../../schema/general';
@@ -22,6 +22,14 @@ import {
   type UserMergeRightsAlert,
   USER_MERGE_TARGET_INDICES,
 } from './userMerge-handler';
+import {
+  RESTRICTED_MEMBERS_ROW,
+  type UserMergeRestrictedMember,
+  userMergeRestrictedMembersOutcome,
+  userMergeRestrictedMembersQuery,
+  userMergeRestrictedMembersScript,
+  userMergeRestrictionKey,
+} from './userMerge-restrictedMembers';
 import { UserMergeRightsStrategy } from './userMerge-types';
 
 export const USER_MERGE_RIGHTS_HANDLER = 'user-rights';
@@ -52,6 +60,7 @@ const DERIVED_EDGES: UserRightsEdge[] = [
 
 const AUTHORITIES_ROW = 'organization.authorized-authorities';
 const AUTHORITIES_FIELD = 'authorized_authorities';
+const FIELD_RESTRICTED_MEMBERS = 'restricted_members';
 
 /**
  * The two figures every row reports. They answer different questions — what the source stops
@@ -103,6 +112,62 @@ const derivedEdgeAlert = (edge: UserRightsEdge, count: number): UserMergeRightsA
     + ' they are removed and not reproduced on the target',
 });
 
+/** The target's rules as a comparable value: which restrictions, at which access right. */
+const rulesOf = (members: UserMergeRestrictedMember[], targetId: string): string => {
+  return members
+    .filter((member) => member.id === targetId)
+    .map((member) => `${userMergeRestrictionKey(member)}|${member.access_right}`)
+    .sort()
+    .join(';');
+};
+
+/**
+ * Paginated on purpose: the count feeds an operator-facing figure, and a page-bounded scan would
+ * silently under-report it on a platform where many elements list both users. Only a counter is
+ * kept, so the loop stays flat in memory whatever the volume.
+ *
+ * A document counts as raised when the entries the target ends up with differ from the ones it
+ * holds now — a stronger access right on a rule it already had, or a rule carried over from the
+ * source under a restriction the target did not have.
+ */
+const readRestrictedMembersPlan = async (context: AuthContext, sourceId: string, targetId: string) => {
+  const elements = await elRawCount({ index: USER_MERGE_TARGET_INDICES, body: { query: userMergeRestrictedMembersQuery(sourceId) } });
+  if (elements === 0) {
+    return { elements, raised: 0 };
+  }
+  let raised = 0;
+  let searchAfter;
+  let exhausted = false;
+  while (!exhausted) {
+    const overlapping = await elRawSearch(context, SYSTEM_USER, null, {
+      index: USER_MERGE_TARGET_INDICES,
+      size: ES_MAX_PAGINATION,
+      _source: [FIELD_RESTRICTED_MEMBERS],
+      body: {
+        query: userMergeRestrictedMembersQuery(sourceId, targetId),
+        sort: [{ 'internal_id.keyword': 'asc' }],
+        ...(searchAfter ? { search_after: searchAfter } : {}),
+      },
+    });
+    const hits = overlapping.hits.hits as { _source: Record<string, UserMergeRestrictedMember[]>; sort: unknown[] }[];
+    raised += hits.filter((hit) => {
+      const members = hit._source[FIELD_RESTRICTED_MEMBERS] ?? [];
+      const outcome = userMergeRestrictedMembersOutcome(members, sourceId, targetId);
+      return rulesOf(members, targetId) !== rulesOf(outcome, targetId);
+    }).length;
+    exhausted = hits.length < ES_MAX_PAGINATION;
+    searchAfter = exhausted ? undefined : hits[hits.length - 1].sort;
+  }
+  return { elements, raised };
+};
+
+const restrictedMembersAlert = (count: number): UserMergeRightsAlert => ({
+  register_row_id: RESTRICTED_MEMBERS_ROW,
+  kind: 'rights',
+  message: `${count} element(s) list both users as authorized members and the target's own access changes;`
+    + ' entries sharing a group restriction collapse into one keeping the strongest access right, the others are carried over as they are',
+});
+
 const authoritiesQuery = (sourceId: string, withoutTargetId?: string): Record<string, unknown> => ({
   bool: {
     must: [
@@ -152,9 +217,9 @@ const authoritiesScript = (sourceId: string, targetId: string, strategy: UserMer
  */
 export const userMergeRightsHandler: UserMergeHandler = {
   identifier: USER_MERGE_RIGHTS_HANDLER,
-  covers: [...MEMBERSHIP_EDGES.map((edge) => edge.registerRow), ...DERIVED_EDGES.map((edge) => edge.registerRow), AUTHORITIES_ROW],
-  reads: [...edgePaths, authoritiesPath],
-  writes: [...edgePaths, authoritiesPath],
+  covers: [...MEMBERSHIP_EDGES.map((edge) => edge.registerRow), ...DERIVED_EDGES.map((edge) => edge.registerRow), AUTHORITIES_ROW, RESTRICTED_MEMBERS_ROW],
+  reads: [...edgePaths, authoritiesPath, FIELD_RESTRICTED_MEMBERS],
+  writes: [...edgePaths, authoritiesPath, FIELD_RESTRICTED_MEMBERS],
   compute: async ({ context, sourceId, targetId, options }: UserMergeHandlerContext): Promise<UserMergeHandlerPlan> => {
     const changes: UserMergePlannedChange[] = [];
     const alerts: UserMergeRightsAlert[] = [];
@@ -175,6 +240,11 @@ export const userMergeRightsHandler: UserMergeHandler = {
     const authorities = await readAuthoritiesPlan(sourceId, targetId, options.rightsStrategy);
     changes.push({ register_row_id: AUTHORITIES_ROW, entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION, count: authorities.removed, exact: true, detail: REMOVED });
     changes.push({ register_row_id: AUTHORITIES_ROW, entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION, count: authorities.granted, exact: true, detail: GRANTED });
+    const restrictedMembers = await readRestrictedMembersPlan(context, sourceId, targetId);
+    changes.push({ register_row_id: RESTRICTED_MEMBERS_ROW, entity_type: '*', count: restrictedMembers.elements, exact: true, detail: 'transferred to the target' });
+    if (restrictedMembers.raised > 0) {
+      alerts.push(restrictedMembersAlert(restrictedMembers.raised));
+    }
     return { handler: USER_MERGE_RIGHTS_HANDLER, changes, alerts };
   },
   apply: async ({ context, sourceId, targetId, options }: UserMergeHandlerContext, plan: UserMergeHandlerPlan): Promise<number> => {
@@ -205,6 +275,15 @@ export const userMergeRightsHandler: UserMergeHandler = {
         `${USER_MERGE_RIGHTS_HANDLER}:${AUTHORITIES_ROW}`,
         USER_MERGE_TARGET_INDICES,
         { query: authoritiesQuery(sourceId), script: authoritiesScript(sourceId, targetId, options.rightsStrategy) },
+      );
+      updated += result.updated;
+    }
+    const restrictedPlanned = plan.changes.some((change) => change.register_row_id === RESTRICTED_MEMBERS_ROW && change.count > 0);
+    if (restrictedPlanned) {
+      const result = await userMergeBulkUpdate(
+        `${USER_MERGE_RIGHTS_HANDLER}:${RESTRICTED_MEMBERS_ROW}`,
+        USER_MERGE_TARGET_INDICES,
+        { query: userMergeRestrictedMembersQuery(sourceId), script: userMergeRestrictedMembersScript(sourceId, targetId) },
       );
       updated += result.updated;
     }
