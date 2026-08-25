@@ -9,9 +9,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Field } from 'formik';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
-import { RenderOption } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
 import { fetchQuery } from '../../../../relay/environment';
 import { convertMarking } from '../../../../utils/edition';
@@ -243,34 +242,33 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
       setNewMarking({ currentValues: values, valueToReplace });
     } else onChange?.(name, values);
   };
-  const renderOption: RenderOption = (props, option) => (
-    <li {...props} key={option.value}>
+  const renderOption = (option: FieldOption) => (
+    <>
       <div className={classes.icon} style={{ color: option.color }}>
         <MarkingIcon theme={theme} color={option.color} />
       </div>
       <div className={classes.text}>{option.label}</div>
-    </li>
+    </>
   );
 
   return (
     <>
       <Field
-        component={AutocompleteField}
+        component={ComboboxField}
         preserveCase
         style={style}
         name={name}
         required={required}
         multiple={true}
         disabled={disabled}
-        textfieldprops={{
-          variant: 'standard',
-          label: label ?? t_i18n('Markings'),
-          helperText: helpertext,
-        }}
+        label={label ?? t_i18n('Markings')}
+        helperText={helpertext}
         noOptionsText={t_i18n('No available options')}
         options={optionSorted}
         isOptionEqualToValue={isOptionEqualToValue}
         onChange={handleOnChange}
+        // On a marking the colour IS the classification, not decoration.
+        getChipColor={(option: FieldOption) => option.color}
         renderOption={renderOption}
       />
       <Dialog
