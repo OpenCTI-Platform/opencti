@@ -211,7 +211,18 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
             <ComboboxTrigger />
           </ComboboxControls>
         </FdsComboboxField>
-        <ComboboxContent emptyMessage={noOptionsText} loadingMessage={loadingText} />
+        <ComboboxContent
+          emptyMessage={noOptionsText}
+          loadingMessage={loadingText}
+          // The list is named after its own field. `ComboboxContent` defaults
+          // this to the English literal "Suggestions", which its own JSDoc says
+          // is a defect to localise rather than to ship — and which would give
+          // every panel in the product the same accessible name. Caught by
+          // `tests_e2e/pir` through `AutocompleteField.pageModel.ts:20`, which
+          // resolves the listbox by the field's label, exactly as a screen
+          // reader user would.
+          listAriaLabel={typeof label === 'string' ? label : undefined}
+        />
         {(showError || helperText) ? (
           <ComboboxHelperText>{showError ? meta.error : helperText}</ComboboxHelperText>
         ) : null}
