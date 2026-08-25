@@ -306,9 +306,9 @@ describe('Query.allowedTransitions resolver – comment field', () => {
 
 describe('WorkflowTriggerResult resolver – status field', () => {
   it('should return a status object derived from newState when present', () => {
-    const triggerResult = { newState: 'reviewed', instance: {}, entity: {} };
+    const triggerResult = { newState: 'reviewed', instance: { currentStateOrder: 4 }, entity: {} };
     const status = workflowResolvers.WorkflowTriggerResult.status(triggerResult);
-    expect(status).toEqual({ id: 'reviewed', template_id: 'reviewed' });
+    expect(status).toEqual({ id: 'wf-status--reviewed', template_id: 'reviewed', order: 4 });
   });
 
   it('should return null when newState is absent', () => {
@@ -725,10 +725,10 @@ describe('workflow-resolvers', () => {
     });
 
     describe('currentStatus', () => {
-      it('should return status object with id and template_id', () => {
-        const instance = { currentState: 'open' };
+      it('should return status object with namespaced id, template_id and order', () => {
+        const instance = { currentState: 'open', currentStateOrder: 2 };
         const result = workflowResolvers.WorkflowInstance.currentStatus(instance);
-        expect(result).toEqual({ id: 'open', template_id: 'open' });
+        expect(result).toEqual({ id: 'wf-status--open', template_id: 'open', order: 2 });
       });
     });
 
@@ -745,9 +745,9 @@ describe('workflow-resolvers', () => {
   describe('WorkflowTransition type resolvers', () => {
     describe('toStatus', () => {
       it('should return status object from toState', () => {
-        const transition = { toState: 'closed' };
+        const transition = { toState: 'closed', toStateOrder: 3 };
         const result = workflowResolvers.WorkflowTransition.toStatus(transition);
-        expect(result).toEqual({ id: 'closed', template_id: 'closed' });
+        expect(result).toEqual({ id: 'wf-status--closed', template_id: 'closed', order: 3 });
       });
     });
 
@@ -776,9 +776,9 @@ describe('workflow-resolvers', () => {
   describe('WorkflowTriggerResult type resolvers', () => {
     describe('status', () => {
       it('should return status object when newState is present', () => {
-        const result = { newState: 'completed' };
+        const result = { newState: 'completed', instance: { currentStateOrder: 1 } };
         const status = workflowResolvers.WorkflowTriggerResult.status(result);
-        expect(status).toEqual({ id: 'completed', template_id: 'completed' });
+        expect(status).toEqual({ id: 'wf-status--completed', template_id: 'completed', order: 1 });
       });
 
       it('should return null when newState is not present', () => {

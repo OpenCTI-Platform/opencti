@@ -712,6 +712,18 @@ export const deleteWorkflowDefinition = async (
 };
 
 /**
+ * Resolves a single state's display order the same way `ensureFullStatusMapping` computes the
+ * `order` it persists onto that state's real `Status` entity: automatic topological order, falling
+ * back to the state's manually-supplied `order` (required for states on a cycle), falling back to 0.
+ */
+const resolveStateOrder = (definitionData: WorkflowDefinitionData, stateId: string | null | undefined): number | null => {
+  if (!stateId) return null;
+  const computedOrder = computeStateOrder(definitionData.initialState, definitionData.transitions ?? []);
+  const manualOrder = definitionData.states?.find((state) => state.statusId === stateId)?.order;
+  return computedOrder.get(stateId) ?? manualOrder ?? 0;
+};
+
+/**
  * Ensures every workflow state's `statusId` (StatusTemplate reference) has a matching `Status`
  * record for this entity type in the Global scope, creating any that are missing. This is the
  * "full mapping invariant": after a successful publish, every declared state maps to a real
@@ -746,13 +758,11 @@ export const ensureFullStatusMapping = async (
   });
   const existingTemplateIds = new Set(existingStatuses.map((status) => status.template_id));
 
-  const computedOrder = computeStateOrder(definitionData.initialState, definitionData.transitions);
-
   for (const state of states) {
     if (!state.statusId || existingTemplateIds.has(state.statusId)) {
       continue;
     }
-    const order = computedOrder.get(state.statusId) ?? state.order ?? 0;
+    const order = resolveStateOrder(definitionData, state.statusId) ?? 0;
     await createStatus(executionContext, executionUser, entityType, {
       template_id: state.statusId,
       order,
@@ -1284,6 +1294,7 @@ export const getWorkflowInstance = async (
     internal_id: id,
     __typename: 'WorkflowInstance',
     currentState: currentState || '',
+    currentStateOrder: resolveStateOrder(definitionData, currentState),
     allowedTransitions,
     history: JSON.parse(instanceEntity?.history || '[]'),
     pendingStatus: instanceEntity?.pendingStatus ?? null,
@@ -1384,7 +1395,7 @@ export const getAllowedTransitions = async (
   user: AuthUser,
   entityId: string,
   prefetched?: WorkflowInstancePrefetch,
-): Promise<Array<{ event: string; toState: string; comment?: string; isClosingTransition: boolean; actions: string[]; requiresShareOrganizationInput: boolean; requiresUnshareOrganizationInput: boolean }>> => {
+): Promise<Array<{ event: string; toState: string; toStateOrder: number | null; comment?: string; isClosingTransition: boolean; actions: string[]; requiresShareOrganizationInput: boolean; requiresUnshareOrganizationInput: boolean }>> => {
   const entity = prefetched ? prefetched.entity : await storeLoadById(context, user, entityId, 'Basic-Object');
   if (!entity) {
     return [];
@@ -1423,6 +1434,7 @@ export const getAllowedTransitions = async (
       return {
         event: transition.event,
         toState: transition.to,
+        toStateOrder: resolveStateOrder(definitionData, transition.to),
         comment: transition.comment,
         // Task 11: the target state has no outgoing transitions of its own (a terminal/"closing"
         // state) — the frontend uses this to offer closing-reason capture only for transitions

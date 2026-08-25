@@ -15,6 +15,7 @@ import { Formik } from 'formik';
 import { InformationOutline } from 'mdi-material-ui';
 import * as PropTypes from 'prop-types';
 import { useState } from 'react';
+import { useFragment } from 'react-relay';
 import ItemAssignees from '../../../../components/ItemAssignees';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import ItemBoolean from '../../../../components/ItemBoolean';
@@ -36,7 +37,8 @@ import useHelper from '../../../../utils/hooks/useHelper';
 import StixCoreObjectOpinions from '../../analyses/opinions/StixCoreObjectOpinions';
 import ProcessingStatusOverview from '../../cases/case_rfis/ProcessingStatusOverview';
 import { WorkflowBypassStatus } from '../workflow/WorkflowBypassStatus';
-import { WorkflowStatusForEntity, WorkflowTransitionsForEntity } from '../workflow/WorkflowStatus';
+import { WorkflowClosingReasonForEntity, WorkflowStatusForEntity, WorkflowTransitionsForEntity } from '../workflow/WorkflowStatus';
+import { workflowStatusStixDomainObjectFragment } from '../workflow/WorkflowStatus.graphql';
 import { isWorkflowUiEnabledForType } from '../workflow/workflowFeatureFlag';
 import ObjectAssigneeField from '../form/ObjectAssigneeField';
 import ObjectParticipantField from '../form/ObjectParticipantField';
@@ -140,8 +142,13 @@ const StixDomainObjectOverview = ({
   const isRequestAccessRFI = stixDomainObject.x_opencti_request_access;
   // Task 9: entities managed by a published WorkflowDefinition (new engine) render the
   // apply-transition action + bypass-update popover instead of the legacy read-only ItemStatus.
+  // Relay masks the `...WorkflowStatusStixDomainObject_data` spread on `stixDomainObject`, so
+  // `workflowInstance` must be unmasked here via useFragment before it can be read for gating
+  // (it would otherwise always be undefined, even though WorkflowStatusForEntity below unmasks
+  // the same data correctly for its own rendering).
+  const workflowStatusData = useFragment(workflowStatusStixDomainObjectFragment, stixDomainObject);
   const isWorkflowManaged = isWorkflowUiEnabledForType(stixDomainObject.entity_type, isFeatureEnable)
-    && !!stixDomainObject.workflowInstance;
+    && !!workflowStatusData?.workflowInstance;
 
   return (
     <>
@@ -233,10 +240,18 @@ const StixDomainObjectOverview = ({
                   {t_i18n('Processing status')}
                 </Label>
                 {isWorkflowManaged ? (
-                  <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
-                    <WorkflowStatusForEntity data={stixDomainObject} entityType={stixDomainObject.entity_type} />
-                    <WorkflowTransitionsForEntity data={stixDomainObject} entityType={stixDomainObject.entity_type} />
-                    <WorkflowBypassStatus entityId={stixDomainObject.id} entityType={stixDomainObject.entity_type} />
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                      <WorkflowBypassStatus
+                        entityId={stixDomainObject.id}
+                        entityType={stixDomainObject.entity_type}
+                        currentStateId={workflowStatusData.workflowInstance?.currentState}
+                      >
+                        <WorkflowStatusForEntity data={stixDomainObject} entityType={stixDomainObject.entity_type} />
+                      </WorkflowBypassStatus>
+                      <WorkflowTransitionsForEntity data={stixDomainObject} entityType={stixDomainObject.entity_type} />
+                    </Box>
+                    <WorkflowClosingReasonForEntity data={stixDomainObject} entityType={stixDomainObject.entity_type} />
                   </Box>
                 ) : (
                   <ItemStatus

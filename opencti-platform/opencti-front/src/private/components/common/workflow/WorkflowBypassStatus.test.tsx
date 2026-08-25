@@ -39,8 +39,8 @@ const withEntitiesWorkflowFlag = (enable: boolean) => createMockUserContext({
 const mockStatusesResponse = {
   statuses: {
     edges: [
-      { node: { id: 'status-1', order: 1, type: 'Report', template: { name: 'New', color: '#ff0000' } } },
-      { node: { id: 'status-2', order: 2, type: 'Report', template: { name: 'In Progress', color: '#00ff00' } } },
+      { node: { id: 'status-1', order: 1, type: 'Report', template: { id: 'template-1', name: 'New', color: '#ff0000' } } },
+      { node: { id: 'status-2', order: 2, type: 'Report', template: { id: 'template-2', name: 'In Progress', color: '#00ff00' } } },
     ],
   },
 };
@@ -74,12 +74,40 @@ describe('WorkflowBypassStatus', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders the bypass icon button for admin users when the flag is on', () => {
+  it('renders null while the eagerly-fetched status list has not resolved yet', () => {
+    fetchQueryMock.mockReturnValue({ toPromise: () => new Promise(() => {}) });
     const { container } = testRender(
       <WorkflowBypassStatus entityId="entity-1" entityType="Report" />,
       { userContext: withEntitiesWorkflowFlag(true) },
     );
-    expect(container.firstChild).not.toBeNull();
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('renders null when there is no other status to jump to', async () => {
+    fetchQueryMock.mockReturnValue({
+      toPromise: () => Promise.resolve({
+        statuses: {
+          edges: [
+            { node: { id: 'status-1', order: 1, type: 'Report', template: { id: 'template-1', name: 'New', color: '#ff0000' } } },
+          ],
+        },
+      }),
+    });
+    const { container } = testRender(
+      <WorkflowBypassStatus entityId="entity-1" entityType="Report" currentStateId="template-1" />,
+      { userContext: withEntitiesWorkflowFlag(true) },
+    );
+    // wait for the eager fetch to settle, and confirm no trigger ever appears
+    await waitFor(() => expect(fetchQueryMock).toHaveBeenCalledOnce());
+    await waitFor(() => expect(container.firstChild).toBeNull());
+  });
+
+  it('renders the bypass chevron for admin users once the status list resolves', async () => {
+    testRender(
+      <WorkflowBypassStatus entityId="entity-1" entityType="Report" />,
+      { userContext: withEntitiesWorkflowFlag(true) },
+    );
+    expect(await screen.findByLabelText('Bypass status')).toBeDefined();
   });
 
   it('fetches and displays the status list when opened', async () => {
@@ -87,9 +115,19 @@ describe('WorkflowBypassStatus', () => {
       <WorkflowBypassStatus entityId="entity-1" entityType="Report" />,
       { userContext: withEntitiesWorkflowFlag(true) },
     );
-    await user.click(screen.getByLabelText('Bypass status'));
+    await user.click(await screen.findByLabelText('Bypass status'));
     expect(await screen.findByText('New')).toBeDefined();
     expect(screen.getByText('In Progress')).toBeDefined();
+  });
+
+  it('excludes the current status from the jump-to list', async () => {
+    const { user } = testRender(
+      <WorkflowBypassStatus entityId="entity-1" entityType="Report" currentStateId="template-1" />,
+      { userContext: withEntitiesWorkflowFlag(true) },
+    );
+    await user.click(await screen.findByLabelText('Bypass status'));
+    expect(await screen.findByText('In Progress')).toBeDefined();
+    expect(screen.queryByText('New')).toBeNull();
   });
 
   it('opens the confirm dialog with applyTransitionActions enabled by default', async () => {
@@ -97,7 +135,7 @@ describe('WorkflowBypassStatus', () => {
       <WorkflowBypassStatus entityId="entity-1" entityType="Report" />,
       { userContext: withEntitiesWorkflowFlag(true) },
     );
-    await user.click(screen.getByLabelText('Bypass status'));
+    await user.click(await screen.findByLabelText('Bypass status'));
     await user.click(await screen.findByText('New'));
     expect(await screen.findByText('Bypass status')).toBeDefined();
     const toggle = screen.getByRole('checkbox') as HTMLInputElement;
@@ -109,7 +147,7 @@ describe('WorkflowBypassStatus', () => {
       <WorkflowBypassStatus entityId="entity-1" entityType="Report" />,
       { userContext: withEntitiesWorkflowFlag(true) },
     );
-    await user.click(screen.getByLabelText('Bypass status'));
+    await user.click(await screen.findByLabelText('Bypass status'));
     await user.click(await screen.findByText('New'));
     await user.click(screen.getByRole('checkbox'));
     await user.click(screen.getByText('Apply'));
@@ -127,7 +165,7 @@ describe('WorkflowBypassStatus', () => {
       <WorkflowBypassStatus entityId="entity-1" entityType="Report" />,
       { userContext: withEntitiesWorkflowFlag(true) },
     );
-    await user.click(screen.getByLabelText('Bypass status'));
+    await user.click(await screen.findByLabelText('Bypass status'));
     await user.click(await screen.findByText('New'));
     await user.click(screen.getByText('Cancel'));
     await waitFor(() => expect(screen.queryByRole('checkbox')).toBeNull());

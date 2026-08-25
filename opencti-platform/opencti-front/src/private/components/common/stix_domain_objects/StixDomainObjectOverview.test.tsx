@@ -8,6 +8,18 @@ import StixDomainObjectOverview from './StixDomainObjectOverview';
 // / WorkflowBypassStatus) instead of the legacy read-only ItemStatus, when an entity is managed by a
 // published WorkflowDefinition. The workflow components themselves are unit-tested in
 // WorkflowStatus.test.tsx / WorkflowBypassStatus.test.tsx, so they're stubbed out here.
+//
+// `stixDomainObject` here is a plain JS object, not a real Relay fragment reference, so the
+// `useFragment(workflowStatusStixDomainObjectFragment, stixDomainObject)` call this component makes
+// to unmask `workflowInstance` (Relay data masking) must be stubbed to just return its input as-is.
+vi.mock('react-relay', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-relay')>();
+  return {
+    ...actual,
+    useFragment: (_fragment: unknown, data: unknown) => data,
+  };
+});
+
 vi.mock('../workflow/WorkflowStatus', () => ({
   WorkflowStatusForEntity: ({ entityType }: { entityType: string }) => (
     <div data-testid="workflow-status-for-entity">{entityType}</div>
@@ -15,11 +27,17 @@ vi.mock('../workflow/WorkflowStatus', () => ({
   WorkflowTransitionsForEntity: ({ entityType }: { entityType: string }) => (
     <div data-testid="workflow-transitions-for-entity">{entityType}</div>
   ),
+  WorkflowClosingReasonForEntity: ({ entityType }: { entityType: string }) => (
+    <div data-testid="workflow-closing-reason-for-entity">{entityType}</div>
+  ),
 }));
 
 vi.mock('../workflow/WorkflowBypassStatus', () => ({
-  WorkflowBypassStatus: ({ entityId }: { entityId: string }) => (
-    <div data-testid="workflow-bypass-status">{entityId}</div>
+  WorkflowBypassStatus: ({ entityId, children }: { entityId: string; children?: React.ReactNode }) => (
+    <div data-testid="workflow-bypass-status">
+      {entityId}
+      {children}
+    </div>
   ),
 }));
 

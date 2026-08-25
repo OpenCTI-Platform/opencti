@@ -16,6 +16,7 @@ export const workflowStatusFragment = graphql`
       currentState
       currentStatus {
         id
+        order
         template {
           name
           color
@@ -55,6 +56,7 @@ export const workflowStatusFragment = graphql`
         requiresUnshareOrganizationInput
         toStatus {
           id
+          order
           template {
             name
             color
@@ -77,6 +79,7 @@ export const workflowStatusStixDomainObjectFragment = graphql`
       currentState
       currentStatus {
         id
+        order
         template {
           name
           color
@@ -116,6 +119,7 @@ export const workflowStatusStixDomainObjectFragment = graphql`
         requiresUnshareOrganizationInput
         toStatus {
           id
+          order
           template {
             name
             color
@@ -155,6 +159,7 @@ export const workflowStatusTriggerMutation = graphql`
         }
         currentStatus {
           id
+          order
           template {
             name
             color
@@ -170,6 +175,7 @@ export const workflowStatusTriggerMutation = graphql`
           requiresUnshareOrganizationInput
           toStatus {
             id
+            order
             template {
               name
               color
@@ -207,6 +213,7 @@ export const workflowSetStatusMutation = graphql`
         pendingError
         currentStatus {
           id
+          order
           template {
             name
             color
@@ -222,6 +229,7 @@ export const workflowSetStatusMutation = graphql`
           requiresUnshareOrganizationInput
           toStatus {
             id
+            order
             template {
               name
               color

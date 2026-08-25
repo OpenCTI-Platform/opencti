@@ -124,7 +124,10 @@ const workflowResolvers = {
   WorkflowInstance: {
     id: (instance: any) => instance.id || instance.internal_id,
     currentState: (instance: any) => instance.currentState,
-    currentStatus: (instance: any) => ({ id: instance.currentState, template_id: instance.currentState }),
+    // `id` is namespaced because `instance.currentState` reuses the legacy StatusTemplate's
+    // internal_id (Task 1 migration); returning it as-is would make Relay's client-side store see
+    // two different __typename records (Status vs StatusTemplate) sharing the same global id.
+    currentStatus: (instance: any) => ({ id: `wf-status--${instance.currentState}`, template_id: instance.currentState, order: instance.currentStateOrder ?? null }),
     allowedTransitions: (instance: any) => instance.allowedTransitions,
     lastHistoryEntry: (instance: any) => {
       const history: Array<{ state: string; event: string; user_id: string; timestamp: string; comment?: string | null }> = instance.history ?? [];
@@ -142,7 +145,8 @@ const workflowResolvers = {
     to: (transition: any) => transition.to ?? null,
   },
   WorkflowTransition: {
-    toStatus: (transition: any) => ({ id: transition.toState, template_id: transition.toState }),
+    // See WorkflowInstance.currentStatus above for why `id` must not equal the raw state id.
+    toStatus: (transition: any) => ({ id: `wf-status--${transition.toState}`, template_id: transition.toState, order: transition.toStateOrder ?? null }),
     comment: (transition: any) => transition.comment ?? null,
     isClosingTransition: (transition: any) => transition.isClosingTransition ?? false,
     actions: (transition: any) => transition.actions ?? [],
@@ -167,7 +171,8 @@ const workflowResolvers = {
     asyncActions: (pt: any) => pt.asyncActions ?? [],
   },
   WorkflowTriggerResult: {
-    status: (result: any) => (result.newState ? { id: result.newState, template_id: result.newState } : null),
+    // See WorkflowInstance.currentStatus above for why `id` must not equal the raw state id.
+    status: (result: any) => (result.newState ? { id: `wf-status--${result.newState}`, template_id: result.newState, order: result.instance?.currentStateOrder ?? null } : null),
     instance: (result: any) => result.instance,
     entity: (result: any) => result.entity,
     executionStatus: (result: any) => result.executionStatus ?? null,

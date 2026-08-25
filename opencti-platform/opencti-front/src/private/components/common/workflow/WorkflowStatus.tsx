@@ -31,7 +31,10 @@ interface WorkflowStatusForEntityProps {
 const WorkflowStatusView: FunctionComponent<{
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   workflowInstance: any;
-}> = ({ workflowInstance }) => {
+  // The generic entity overview renders the closing reason as subtext below the status dropdown
+  // instead, so it isn't squeezed inside the clickable pill.
+  showClosingReason?: boolean;
+}> = ({ workflowInstance, showClosingReason = true }) => {
   const { t_i18n } = useFormatter();
   const [commentAnchorEl, setCommentAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [closingReasonAnchorEl, setClosingReasonAnchorEl] = useState<HTMLButtonElement | null>(null);
@@ -66,7 +69,7 @@ const WorkflowStatusView: FunctionComponent<{
           </Popover>
         </>
       )}
-      {lastClosingReason && (
+      {showClosingReason && lastClosingReason && (
         <>
           <IconButton
             aria-label={t_i18n('View closing reason')}
@@ -90,7 +93,7 @@ const WorkflowStatusView: FunctionComponent<{
           </Popover>
         </>
       )}
-      <ItemStatus status={currentStatus} />
+      <ItemStatus status={currentStatus} variant="plain" />
     </>
   );
 };
@@ -116,7 +119,51 @@ export const WorkflowStatusForEntity: FunctionComponent<WorkflowStatusForEntityP
     return null;
   }
 
-  return <WorkflowStatusView workflowInstance={entity.workflowInstance} />;
+  return <WorkflowStatusView workflowInstance={entity.workflowInstance} showClosingReason={false} />;
+};
+
+// The overview page renders this outside the status dropdown, as a link under the status +
+// actions row, instead of the icon-triggered popover used inline elsewhere (e.g. draft toolbar).
+export const WorkflowClosingReasonForEntity: FunctionComponent<WorkflowStatusForEntityProps> = ({ data, entityType }) => {
+  const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const entity = useFragment(workflowStatusStixDomainObjectFragment, data);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+
+  if (!entity.workflowInstance || !isWorkflowUiEnabledForType(entityType, isFeatureEnable)) {
+    return null;
+  }
+
+  const lastClosingReason = entity.workflowInstance.lastHistoryEntry?.closing_reason ?? null;
+  if (!lastClosingReason) {
+    return null;
+  }
+
+  return (
+    <>
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        onClick={(e) => setAnchorEl(e.currentTarget)}
+        sx={{ display: 'block', width: 'fit-content', cursor: 'pointer', textDecoration: 'underline' }}
+      >
+        {t_i18n('Closing reason')}
+      </Typography>
+      <Popover
+        open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        onClose={() => setAnchorEl(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      >
+        <Box sx={{ p: 2, maxWidth: 400 }}>
+          <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+            {lastClosingReason}
+          </Typography>
+        </Box>
+      </Popover>
+    </>
+  );
 };
 
 export default WorkflowStatus;
