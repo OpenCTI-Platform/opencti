@@ -11,6 +11,7 @@ export const connectorsStateQuery = graphql`
       auto
       manager_current_status
       manager_requested_status
+      manager_connector_logs
     }
     rabbitMQMetrics {
       queues {

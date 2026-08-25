@@ -5,6 +5,7 @@ import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/
 import { BUILT_IN_INTEGRATIONS, BuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
 import { IngestionFeedsData, IngestionFeedsFormsData } from '@components/integrations/deployed/IngestionFeeds';
 import { computeConnectorStatus } from '../../../../utils/Connector';
+import { ConnectorErrorState, parseConnectorLogsError } from '../../../../utils/connectorErrors';
 
 // Mirrors the backend: every built-in feed registers a technical queue
 // connector whose id is derived from the ingestion id (uuid v5 in the OpenCTI
@@ -33,6 +34,9 @@ export interface DeployedIntegrationItem {
   lastRunDate: string | null;
   updatedAt: string | null;
   isManaged: boolean;
+  // Authentication error (HTTP 401/403) detected in the connector runtime logs.
+  // Only set for connectors; feeds keep the default no-error state.
+  errorState: ConnectorErrorState;
   uri?: string | null;
   userName?: string | null;
   detailUrl: string;
@@ -53,6 +57,8 @@ const toSafeNumber = (value: unknown): number => {
   const nValue = Number(value);
   return Number.isFinite(nValue) ? nValue : 0;
 };
+
+const NO_ERROR: ConnectorErrorState = { inError: false, code: null, message: null, timestamp: null };
 
 const feedStatus = (running: boolean | null | undefined) => {
   return {
@@ -140,6 +146,7 @@ const useDeployedIntegrations = ({
         itemStatus = 'inactive';
       }
       const logoSlug = connector.manager_contract_excerpt?.slug;
+      const errorState = parseConnectorLogsError(state?.manager_connector_logs);
       items.push({
         id: connector.id,
         kind: 'connector',
@@ -154,6 +161,7 @@ const useDeployedIntegrations = ({
         lastRunDate: null,
         updatedAt: connector.updated_at,
         isManaged: !!connector.is_managed,
+        errorState,
         detailUrl: `/dashboard/integrations/connectors/${connector.id}`,
         searchText: buildSearchText([connector.title, connector.name, connector.connector_type]),
         connector: merged,
@@ -177,6 +185,7 @@ const useDeployedIntegrations = ({
         lastRunDate: (node.current_state_date as string | null) ?? null,
         updatedAt: null,
         isManaged: false,
+        errorState: NO_ERROR,
         uri: node.uri,
         userName: node.user?.name,
         detailUrl: `/dashboard/integrations/feeds/sync/${node.id}`,
@@ -210,6 +219,7 @@ const useDeployedIntegrations = ({
         lastRunDate: (node.last_execution_date as string | null) ?? null,
         updatedAt: (node.updated_at as string | null) ?? null,
         isManaged: false,
+        errorState: NO_ERROR,
         uri: node.uri,
         userName: node.user?.name,
         detailUrl: `/dashboard/integrations/feeds/${kind}/${node.id}`,
@@ -249,6 +259,7 @@ const useDeployedIntegrations = ({
         lastRunDate: null,
         updatedAt: (node.updated_at as string | null) ?? null,
         isManaged: false,
+        errorState: NO_ERROR,
         detailUrl: `/dashboard/integrations/feeds/form/${node.id}`,
         searchText: buildSearchText([node.name, node.description, builtInLabel('form')]),
       });

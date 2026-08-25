@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { Stack, Tooltip, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
-import { DeveloperBoardOutlined, ScheduleOutlined } from '@mui/icons-material';
+import { DeveloperBoardOutlined, ScheduleOutlined, ErrorOutlineOutlined } from '@mui/icons-material';
 import { useDeployedTypeMetadata } from '@components/integrations/deployed/DeployedFacetSidebar';
 import DeployedIntegrationPopover from '@components/integrations/deployed/DeployedIntegrationPopover';
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { connectorErrorSummary } from '../../../../utils/connectorErrors';
 
 // Shared column geometry between the header row and the lines, so every
 // section renders as a proper aligned table. Widths are percentages of the
@@ -285,9 +286,19 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
       </Box>
       {/* Status column. */}
       <Box onClick={(event) => event.stopPropagation()} sx={cellSx('status')}>
-        {item.status === 'processing'
-          ? <ItemBoolean status={undefined} label={statusText} />
-          : <ItemBoolean status={item.status === 'active'} label={statusText} />}
+        <Stack direction="row" alignItems="center" gap={0.75}>
+          {item.status === 'processing'
+            ? <ItemBoolean status={undefined} label={statusText} />
+            : <ItemBoolean status={item.status === 'active'} label={statusText} />}
+          {item.errorState.inError && (
+            <Tooltip title={t_i18n(connectorErrorSummary(item.errorState) ?? 'Authentication error')}>
+              <ErrorOutlineOutlined
+                data-testid="integration-error-indicator"
+                sx={{ fontSize: 16, color: theme.palette.error.main }}
+              />
+            </Tooltip>
+          )}
+        </Stack>
       </Box>
       {/* Actions column. */}
       <Box sx={cellSx('actions')}>

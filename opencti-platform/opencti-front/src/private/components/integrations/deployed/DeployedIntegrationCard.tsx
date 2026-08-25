@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { Stack, Tooltip, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
-import { DeveloperBoardOutlined } from '@mui/icons-material';
+import { DeveloperBoardOutlined, ErrorOutlineOutlined } from '@mui/icons-material';
 import { useDeployedTypeMetadata } from '@components/integrations/deployed/DeployedFacetSidebar';
 import DeployedIntegrationPopover from '@components/integrations/deployed/DeployedIntegrationPopover';
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
 import Card from '../../../../components/common/card/Card';
 import ItemBoolean from '../../../../components/ItemBoolean';
+import { connectorErrorSummary } from '../../../../utils/connectorErrors';
 
 interface StatusDotProps {
   item: DeployedIntegrationItem;
@@ -21,8 +22,12 @@ const StatusDot = ({ item, label }: StatusDotProps) => {
   let color = theme.palette.text.disabled;
   if (item.status === 'active') color = theme.palette.success.main;
   if (item.status === 'processing') color = theme.palette.warning.main;
+  if (item.errorState.inError) color = theme.palette.error.main;
+  const tooltip = item.errorState.inError
+    ? (connectorErrorSummary(item.errorState) ?? label)
+    : label;
   return (
-    <Tooltip title={label}>
+    <Tooltip title={tooltip}>
       <Box
         sx={{
           width: 8,
@@ -248,7 +253,17 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
             )}
           </Stack>
           <Box onClick={(event) => event.stopPropagation()}>
-            {statusChip}
+            <Stack direction="row" alignItems="center" gap={0.75}>
+              {item.errorState.inError && (
+                <Tooltip title={t_i18n(connectorErrorSummary(item.errorState) ?? 'Authentication error')}>
+                  <ErrorOutlineOutlined
+                    data-testid="integration-error-indicator"
+                    sx={{ fontSize: 16, color: theme.palette.error.main }}
+                  />
+                </Tooltip>
+              )}
+              {statusChip}
+            </Stack>
           </Box>
         </Stack>
       </Card>

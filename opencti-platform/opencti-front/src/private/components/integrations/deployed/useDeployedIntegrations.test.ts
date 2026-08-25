@@ -113,6 +113,33 @@ describe('useDeployedIntegrations', () => {
       expect(result.current[0].status).toBe('inactive');
     });
 
+    it('flags a connector in authentication error from its logs', () => {
+      const { result } = renderIntegrations({
+        connectors: [makeConnector()],
+        states: [makeState({
+          manager_connector_logs: [
+            JSON.stringify({ level: 'INFO', message: 'Starting connector' }),
+            JSON.stringify({ level: 'ERROR', message: 'API returned 401 Unauthorized' }),
+          ],
+        })],
+      });
+      expect(result.current[0].errorState.inError).toBe(true);
+      expect(result.current[0].errorState.code).toBe(401);
+    });
+
+    it('does not flag a connector once a later success log is present', () => {
+      const { result } = renderIntegrations({
+        connectors: [makeConnector()],
+        states: [makeState({
+          manager_connector_logs: [
+            JSON.stringify({ level: 'ERROR', message: '401 Unauthorized' }),
+            JSON.stringify({ level: 'INFO', message: 'Successfully connected' }),
+          ],
+        })],
+      });
+      expect(result.current[0].errorState.inError).toBe(false);
+    });
+
     it('reports a processing status while a managed connector is transitioning', () => {
       const { result } = renderIntegrations({
         connectors: [makeConnector()],
