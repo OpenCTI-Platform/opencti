@@ -25,7 +25,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../organization/organizati
 import { ENTITY_TYPE_INCIDENT } from '../../../schema/stixDomainObject';
 import { playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
 import { AUTOMATION_MANAGER_USER, executionContext } from '../../../utils/access';
-import { getParentTypes } from '../../../schema/schemaUtils';
+import { generateInternalType, getParentTypes } from '../../../schema/schemaUtils';
 import * as jsonpatch from 'fast-json-patch';
 import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
@@ -208,7 +208,7 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
           if (isNotEmptyField(octiType)) {
             return octiType;
           }
-          return element.type;
+          return generateInternalType(element);
         })();
         const elementOperations = actions
           .map((action) => {

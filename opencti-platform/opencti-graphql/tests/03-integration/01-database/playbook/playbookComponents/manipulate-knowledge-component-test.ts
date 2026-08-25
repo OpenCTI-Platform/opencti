@@ -318,7 +318,7 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
     const fallbackMalwareId = 'malware--09bd862a-f030-55f2-920a-900c4913d9ab';
     const malware = testBundleObject<StixDomainObject>({
       id: fallbackMalwareId,
-      type: 'Malware',
+      type: 'malware',
       octiExtension: {
         type: undefined,
       },
