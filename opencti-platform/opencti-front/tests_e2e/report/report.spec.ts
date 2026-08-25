@@ -343,15 +343,18 @@ test('Report live entities creation and relationships', { tag: ['@report', '@kno
   await expect(reportForm.authorAutocomplete.getOption('Jeanne Mitchel')).toBeVisible();
 
   // Create label from the report creation form
-  // The labels field is on the library Combobox, whose create affordance is the
-  // `Create '<value>'` row rather than a persistent `+` (design nodes
-  // 6920-11382 / 6920-11841, accepted 2026-08-25). The form therefore opens
-  // carrying the typed text, so the empty-value assertion moved to the author
-  // field above, which is still on MUI.
+  // Opened through the library's create row instead of the MUI `+`. The
+  // creation form still opens EMPTY: measured at the pointer on a real dialog,
+  // both `value` and `color` are '' after clicking `Create ‘…’`, so the typed
+  // text does not carry over. Why it does not is NOT established — the
+  // component does pass `enableReinitialize` — so only the observation is
+  // recorded here. The original required-field assertions hold unchanged.
   await reportForm.labelsAutocomplete.createOption(labelName);
-  await expect(labelForm.valueField.getByText('This field is required')).toBeHidden();
   await labelForm.getCreateButton().click();
+  await expect(labelForm.valueField.getByText('This field is required')).toBeVisible();
   await expect(labelForm.colorField.getByText('This field is required')).toBeVisible();
+  await labelForm.valueField.fill(labelName);
+  await expect(labelForm.valueField.getByText('This field is required')).toBeHidden();
   await labelForm.colorField.fill('#9d3fb8');
   await expect(labelForm.colorField.getByText('This field is required')).toBeHidden();
   await labelForm.getCreateButton().click();
