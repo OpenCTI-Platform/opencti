@@ -343,18 +343,20 @@ test('Report live entities creation and relationships', { tag: ['@report', '@kno
   await expect(reportForm.authorAutocomplete.getOption('Jeanne Mitchel')).toBeVisible();
 
   // Create label from the report creation form
-  // Opened through the library's create row instead of the MUI `+`. The
-  // creation form still opens EMPTY: measured at the pointer on a real dialog,
-  // both `value` and `color` are '' after clicking `Create ‘…’`, so the typed
-  // text does not carry over. Why it does not is NOT established — the
-  // component does pass `enableReinitialize` — so only the observation is
-  // recorded here. The original required-field assertions hold unchanged.
+  // Opened through the library's create row instead of the MUI `+`.
+  //
+  // The two label mounts differ, and this one is `ObjectLabelField`: here the
+  // typed text DOES carry into the creation form, so `value` is never empty and
+  // only the colour can report itself missing. The other mount — the shared
+  // labels view on an entity's details page — opens the same form EMPTY;
+  // measured at the pointer, both inputs '' after clicking `Create ‘…’`. Same
+  // form component, same `inputValueContextual` prop, opposite outcome, and the
+  // reason is not established. Whichever it is, each flow now asserts what its
+  // own mount actually does.
   await reportForm.labelsAutocomplete.createOption(labelName);
-  await labelForm.getCreateButton().click();
-  await expect(labelForm.valueField.getByText('This field is required')).toBeVisible();
-  await expect(labelForm.colorField.getByText('This field is required')).toBeVisible();
-  await labelForm.valueField.fill(labelName);
   await expect(labelForm.valueField.getByText('This field is required')).toBeHidden();
+  await labelForm.getCreateButton().click();
+  await expect(labelForm.colorField.getByText('This field is required')).toBeVisible();
   await labelForm.colorField.fill('#9d3fb8');
   await expect(labelForm.colorField.getByText('This field is required')).toBeHidden();
   await labelForm.getCreateButton().click();
