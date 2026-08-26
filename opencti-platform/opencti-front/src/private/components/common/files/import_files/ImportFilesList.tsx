@@ -1,15 +1,17 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Box, Collapse, Grid, List, ListItem, MenuItem, Select, Tooltip, Typography } from '@mui/material';
-import { IconButton } from '@filigran/design-system';
+// Aliased: the connector picker on the same row is multi-value and still MUI, so
+// both Selects live in this file until it moves to Combobox multiple.
+import { IconButton, Select as FdsSelect, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { TransitionGroup } from 'react-transition-group';
 import { DeleteOutlined, UploadFileOutlined } from '@mui/icons-material';
 import { CSV_MAPPER_NAME } from '@components/common/files/import_files/ImportFilesDialog';
-import { useTheme } from '@mui/styles';
+
 import { useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 import { ImportFilesContextQuery$data } from '@components/common/files/import_files/__generated__/ImportFilesContextQuery.graphql';
 import { useChatbot } from '@components/chatbox/ChatbotContext';
 import { useFormatter } from '../../../../../components/i18n';
-import type { Theme } from '../../../../../components/Theme';
+
 import { AgentOption, fetchAgentsForIntent, isXtmOneIntentWithoutAgents } from '../../../../../utils/ai/agentApi';
 
 interface ImportFilesListProps {
@@ -17,7 +19,6 @@ interface ImportFilesListProps {
 }
 
 const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }) => {
-  const theme = useTheme<Theme>();
   const { files, setFiles, importMode } = useImportFilesContext();
   const { t_i18n } = useFormatter();
   const { xtmOneConfigured } = useChatbot();
@@ -290,52 +291,47 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                               && (
                                 <Grid item xs={3}>
                                   {!!connectors.filter((c) => c?.name === CSV_MAPPER_NAME).length && (
-                                    <Select
-                                      variant="standard"
-                                      fullWidth
+                                    <FdsSelect
                                       value={configuration || ''}
-                                      onChange={(e) => handleMapperChange(file.name, e.target.value as string)}
+                                      onValueChange={(value) => handleMapperChange(file.name, value)}
                                       error={!configuration}
-                                      displayEmpty
-                                      sx={{
-                                        '& .MuiSelect-select': {
-                                          color: !configuration ? theme.palette.error.main : 'inherit',
-                                        },
-                                      }}
                                     >
-                                      <MenuItem value="" disabled>
-                                        {t_i18n('Select a configuration')}
-                                      </MenuItem>
-                                      {connectorsForImport
-                                        ?.find((connector) => connector?.name === CSV_MAPPER_NAME)
-                                        ?.configurations?.map((mapper) => (
-                                          <MenuItem key={mapper?.id} value={mapper?.configuration}>
-                                            {mapper?.name}
-                                          </MenuItem>
-                                        ))}
-                                    </Select>
+                                      <SelectTrigger aria-label={t_i18n('Select a configuration')}>
+                                        {/* Radix shows the placeholder for the empty value, so the
+                                            disabled empty MenuItem that stood in for it is gone. */}
+                                        <SelectValue placeholder={t_i18n('Select a configuration')} />
+                                      </SelectTrigger>
+                                      <SelectContent aria-label={t_i18n('Select a configuration')}>
+                                        {connectorsForImport
+                                          ?.find((connector) => connector?.name === CSV_MAPPER_NAME)
+                                          ?.configurations?.map((mapper) => (
+                                            <SelectItem key={mapper?.id} value={mapper?.configuration ?? ''}>
+                                              {mapper?.name}
+                                            </SelectItem>
+                                          ))}
+                                      </SelectContent>
+                                    </FdsSelect>
                                   )}
                                   {(() => {
                                     const intent = getXtmOneIntentForFile(connectors);
                                     const agents = intent ? agentsByIntent[intent] : null;
                                     if (!intent || !agents || agents.length === 0) return null;
                                     return (
-                                      <Select
-                                        variant="standard"
-                                        fullWidth
+                                      <FdsSelect
                                         value={getAgentSlugFromConfig(configuration)}
-                                        onChange={(e) => handleAgentChange(file.name, e.target.value as string)}
-                                        displayEmpty
+                                        onValueChange={(value) => handleAgentChange(file.name, value)}
                                       >
-                                        <MenuItem value="" disabled>
-                                          {t_i18n('Select agent')}
-                                        </MenuItem>
-                                        {agents.map((agent) => (
-                                          <MenuItem key={agent.id} value={agent.slug}>
-                                            {agent.name}
-                                          </MenuItem>
-                                        ))}
-                                      </Select>
+                                        <SelectTrigger aria-label={t_i18n('Select agent')}>
+                                          <SelectValue placeholder={t_i18n('Select agent')} />
+                                        </SelectTrigger>
+                                        <SelectContent aria-label={t_i18n('Select agent')}>
+                                          {agents.map((agent) => (
+                                            <SelectItem key={agent.id} value={agent.slug}>
+                                              {agent.name}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </FdsSelect>
                                     );
                                   })()}
                                 </Grid>

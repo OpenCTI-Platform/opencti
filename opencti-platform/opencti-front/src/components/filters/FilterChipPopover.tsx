@@ -1,11 +1,11 @@
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import FilterDate from '@components/common/lists/FilterDate';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
-import { Autocomplete, AutocompleteChangeReason, AutocompleteInputChangeReason, MenuItem, Select } from '@mui/material';
+import { Autocomplete, AutocompleteChangeReason, AutocompleteInputChangeReason } from '@mui/material';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import Checkbox from '@mui/material/Checkbox';
 import Chip from '@mui/material/Chip';
 import Popover from '@mui/material/Popover';
-import { SelectChangeEvent } from '@mui/material/Select';
 import { useTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
@@ -182,9 +182,8 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     }
   };
 
-  const handleChangeOperator = (event: SelectChangeEvent, fDef?: FilterDefinition) => {
+  const handleChangeOperator = (newOperator: string, fDef?: FilterDefinition) => {
     const filterType = fDef?.type;
-    const newOperator = event.target.value;
     // for date check (date in days, operator) correspond to (timestamp in seconds, operator)
     if (filterType === 'date' && filter && filter.values.length > 0) {
       const formerOperator = filter?.operator;
@@ -472,20 +471,22 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       <>
         { availableOperators.length > 0 && (
           <Select
-            labelId="change-operator-select-label"
-            id="change-operator-select"
             value={filterOperator}
-            label="Operator"
-            fullWidth={true}
-            onChange={(event) => handleChangeOperator(event, finalFilterDefinition)}
-            style={{ marginBottom: 15 }}
+            onValueChange={(value) => handleChangeOperator(value, finalFilterDefinition)}
             disabled={disabled}
           >
-            {availableOperators.map((value) => (
-              <MenuItem key={value} value={value}>
-                {t_i18n(OperatorKeyValues[value])}
-              </MenuItem>
-            ))}
+            {/* The MUI version pointed labelId at a label that does not exist, so
+                the trigger had no accessible name at all. Named here. */}
+            <SelectTrigger id="change-operator-select" aria-label={t_i18n('Operator')}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent aria-label={t_i18n('Operator')}>
+              {availableOperators.map((value) => (
+                <SelectItem key={value} value={value}>
+                  {t_i18n(OperatorKeyValues[value])}
+                </SelectItem>
+              ))}
+            </SelectContent>
           </Select>
         )}
         {isOperatorRequiringValue && isSpecificFilter(finalFilterDefinition) && (
