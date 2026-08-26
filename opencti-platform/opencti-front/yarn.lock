@@ -11992,7 +11992,7 @@ __metadata:
     moment-timezone: "npm:0.6.3"
     monocart-reporter: "npm:2.12.6"
     pdfmake: "npm:0.3.11"
-    pmtiles: "npm:4.4.1"
+    pmtiles: "npm:4.5.0"
     prop-types: "npm:15.8.1"
     qrcode: "npm:1.5.4"
     ramda: "npm:0.32.0"
@@ -12538,12 +12538,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pmtiles@npm:4.4.1":
-  version: 4.4.1
-  resolution: "pmtiles@npm:4.4.1"
+"pmtiles@npm:4.5.0":
+  version: 4.5.0
+  resolution: "pmtiles@npm:4.5.0"
   dependencies:
     fflate: "npm:^0.8.2"
-  checksum: 10c0/39a14d9ce64230ddf3586d1c402375c42c5234095915a649fb14800a95155953f13315974f181faf53e6a3e0c55d86003e281482f5e10c56565018b065ba457e
+  checksum: 10c0/4f698991c1ace17447567e05f5793f9f192f085377cb1ba94e85e67461a01848096b6cf72972479abb698e171f3e8b61547d3d7a309f7cfa3ece2d545c618dc0
   languageName: node
   linkType: hard
 
