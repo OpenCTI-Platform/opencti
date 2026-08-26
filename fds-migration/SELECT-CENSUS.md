@@ -194,3 +194,26 @@ assumed, so the next session starts from facts:
 Deliberately left for its own pass: 20 structural rewrites, each carrying a
 handler-signature change, is precisely the shape that has needed one to three
 corrective CI cycles every time this round moved in bulk.
+
+## Third count correction — 2026-08-26
+
+The raw-`<Select>` total needs tightening again, and the method matters more than
+the number.
+
+- The census figure, **84**, came from `<Select` followed by whitespace, `>` or
+  end of line, minus `SelectFieldFds`. It never checked where `Select` came
+  from.
+- Scoped to files that actually import MUI's Select — either
+  `from '@mui/material/Select'` or a `Select` specifier in a combined
+  `@mui/material` import — the live figure is **61 mounts remaining**, plus the
+  3 converted in `66b9b28`.
+
+The gap is not yet reconciled: a `<Select` line in a file that does not import
+MUI's Select is either a library Select (in a converted file), something inside a
+comment, or a match this grep should not be making. One pass with the import
+scope applied per line, rather than per file, would settle it.
+
+Recorded rather than quietly replaced. Each of the three counts was tighter than
+the last, and the pattern is always the same: a line-based grep cannot tell where
+a symbol comes from, and the number it produces is an upper bound until the
+import is checked.
