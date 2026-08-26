@@ -1465,7 +1465,15 @@ Combobox wave does not rediscover it as a surprise.
 **Needed.** A documented, token-based way for a host to tint a Combobox field's
 border and label to signal a product state.
 
-**The one site.** `private/components/settings/sub_types/custom_views/CustomViewPreviewEntitySelector.tsx:105`
+**Two sites, not one** (updated 2026-08-26 while converting the raw MUI
+Selects). The second is `components/dashboard/DashboardRelativeDateSelect.tsx`,
+whose caller `DashboardTimeFilters.tsx` passes `selectSx` to draw a border on
+the field while a relative date is active — the same state-on-the-shell signal,
+on a Select rather than an Autocomplete. So the gap is not specific to one
+component or one screen: it is how this product marks a field as "currently
+constraining the view".
+
+**The first site.** `private/components/settings/sub_types/custom_views/CustomViewPreviewEntitySelector.tsx:105`
 paints its `MuiOutlinedInput` fieldset AND its label
 `designSystem.tertiary.orange.400` for as long as a preview entity is selected.
 That is not decoration: it is how the screen says "you are previewing with a
