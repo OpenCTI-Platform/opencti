@@ -217,3 +217,29 @@ Recorded rather than quietly replaced. Each of the three counts was tighter than
 the last, and the pattern is always the same: a line-based grep cannot tell where
 a symbol comes from, and the number it produces is an upper bound until the
 import is checked.
+
+## A generic regex transform for the triple does NOT work — 2026-08-26
+
+Tried and discarded on the first file, before it could touch the other ~50.
+
+The transform matched a Select's opening tag with `<Select\b([^>]*)>`. That
+character class stops at the first `>` in the tag — and an inline handler
+contains one, in `=>`:
+
+```
+onChange={(event) => setFormat(event.target.value as ...)}
+                  ^ regex ends the tag here
+```
+
+Result on `StixCoreObjectAskAI`: props truncated after `value`, and the rest of
+the handler emitted as CHILDREN of `SelectContent`. Syntactically broken, and
+the kind of breakage a rename-shaped reading would not predict.
+
+A correct version needs paren/brace-aware scanning of the opening tag rather
+than a character class, i.e. a real JSX parse. Not worth building against ~50
+sites that each need their call sites checked anyway — the per-site discipline
+already caught two numeric selects and the `selectSx` state signal, which no
+transform would have flagged.
+
+**So the remaining raw sites go one at a time**, which is what was asked. Recorded
+so nobody rebuilds this shortcut.
