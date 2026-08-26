@@ -108,16 +108,6 @@ const DataComponentEditionOverviewFragment = graphql`
         color
       }
     }
-    workflowInstance {
-      id
-      currentStatus {
-        template {
-          id
-          name
-          color
-        }
-      }
-    }
     workflowEnabled
   }
 `;

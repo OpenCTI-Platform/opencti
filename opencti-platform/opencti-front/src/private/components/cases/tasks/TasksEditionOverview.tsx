@@ -67,16 +67,6 @@ const tasksEditionOverviewFragment = graphql`
         color
       }
     }
-    workflowInstance {
-      id
-      currentStatus {
-        template {
-          id
-          name
-          color
-        }
-      }
-    }
     workflowEnabled
     objectMarking {
       id

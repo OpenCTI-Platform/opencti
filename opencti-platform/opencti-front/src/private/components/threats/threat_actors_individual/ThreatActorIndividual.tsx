@@ -65,16 +65,6 @@ export const threatActorIndividualFragment = graphql`
         color
       }
     }
-    workflowInstance {
-      id
-      currentStatus {
-        template {
-          id
-          name
-          color
-        }
-      }
-    }
     workflowEnabled
     eye_color
     hair_color

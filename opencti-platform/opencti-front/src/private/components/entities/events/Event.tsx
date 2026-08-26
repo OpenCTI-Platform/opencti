@@ -59,16 +59,6 @@ const eventFragment = graphql`
         color
       }
     }
-    workflowInstance {
-      id
-      currentStatus {
-        template {
-          id
-          name
-          color
-        }
-      }
-    }
     workflowEnabled
     ...EventDetails_event
   }

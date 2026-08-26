@@ -33,7 +33,7 @@ describe('dataTableUtils - workflowInstance column', () => {
   });
 
   it('has percentWidth of 12', () => {
-    expect(workflowInstanceCol?.percentWidth).toBe(8);
+    expect(workflowInstanceCol?.percentWidth).toBe(12);
   });
 
   it('renders ItemStatus with disabled=true when workflowInstance is undefined', () => {

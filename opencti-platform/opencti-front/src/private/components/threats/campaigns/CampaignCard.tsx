@@ -41,26 +41,6 @@ export const CampaignCardFragment = graphql`
       value
       color
     }
-    status {
-      id
-      order
-      template {
-        id
-        name
-        color
-      }
-    }
-    workflowInstance {
-      id
-      currentStatus {
-        template {
-          id
-          name
-          color
-        }
-      }
-    }
-    workflowEnabled
     targetedCountries: stixCoreRelationships(
       relationship_type: "targets"
       toTypes: ["Country"]
