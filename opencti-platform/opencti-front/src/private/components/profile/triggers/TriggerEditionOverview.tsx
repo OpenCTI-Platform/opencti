@@ -1,5 +1,5 @@
 import Checkbox from '@mui/material/Checkbox';
-import ListItemText from '@mui/material/ListItemText';
+
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent, useEffect, useState } from 'react';
@@ -7,11 +7,11 @@ import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { Box } from '@mui/material';
 import { instanceTriggerDescription } from '@components/profile/triggers/TriggerLiveCreation';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField, { asMultiValue } from '../../../../components/ComboboxField';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
-import MenuItem from '@mui/material/MenuItem';
+
 import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import TextField from '../../../../components/TextField';
 import TimePickerField from '../../../../components/TimePickerField';
@@ -351,39 +351,32 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
           />
           {trigger.trigger_type === 'live' && (
             <Field
-              component={AutocompleteField}
+              component={ComboboxField}
               name="event_types"
               style={fieldSpacingContainerStyle}
               multiple={true}
-              textfieldprops={{
-                variant: 'standard',
-                label: t_i18n('Triggering on'),
-              }}
+              label={t_i18n('Triggering on')}
               options={
                 trigger.instance_trigger
                   ? instanceEventTypesOptions
                   : filterEventTypesOptions
               }
-              onChange={(
-                name: string,
-                value: { value: string; label: string }[],
+              onChange={asMultiValue<{ value: string; label: string }>((
+                name,
+                value,
               ) => handleSubmitField(
                 name,
                 value.map((n) => n.value),
-              )
-              }
-              renderOption={(
-                props: React.HTMLAttributes<HTMLLIElement>,
-                option: { value: TriggerEventType; label: string },
-              ) => (
-                <MenuItem value={option.value} {...props}>
+              ))}
+              renderOption={(option: { value: TriggerEventType; label: string }) => (
+                <>
                   <Checkbox
                     checked={values.event_types
                       .map((n) => n.value)
                       .includes(option.value)}
                   />
-                  <ListItemText primary={option.label} />
-                </MenuItem>
+                  <span>{option.label}</span>
+                </>
               )}
             />
           )}
