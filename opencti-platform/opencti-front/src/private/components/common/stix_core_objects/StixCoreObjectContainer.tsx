@@ -198,6 +198,11 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
           paginationKey={undefined}
           paginationOptions={undefined}
         />
+        {/* FDS-ORNAMENT: stays on MUI for this round. The field carries a create
+            IconButton in its input endAdornment, which is the gap #155 closes
+            with `adornment` on ComboboxField. This is the FOURTH ornament site,
+            alongside LocationField, StixCoreObjectsField and
+            EntitySelectWithTypes. See fds-migration/LIBRARY-FEEDBACK.md */}
         <Autocomplete
           sx={{
             '.MuiAutocomplete-inputRoot.MuiInput-root': {

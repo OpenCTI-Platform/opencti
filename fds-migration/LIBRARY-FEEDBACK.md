@@ -1597,3 +1597,24 @@ MUI-only prop dropped during a conversion, ask what the library's default is for
 that behaviour, not just whether the prop still exists.
 
 **Removal test.** None. This entry is a method note, not a defect.
+
+## 47. The field-ornament batch is FOUR sites, not three
+
+Correction to the count carried into this round. The ornament gap that #155
+closes with `startIcon` / `adornment` on `ComboboxField` was scoped to three
+sites: `LocationField`, `StixCoreObjectsField` and `EntitySelectWithTypes`.
+
+Converting the raw `<Autocomplete>` population turned up a fourth:
+`StixCoreObjectContainer` mounts a create `IconButton` inside its input's
+`endAdornment`, merged with MUI's own adornment. Same shape, same need, same
+blocker.
+
+Worth distinguishing from `onCreateOption`, which the library already has and
+which this migration used on five other fields: `onCreateOption` offers a create
+row in the panel WHEN the typed text matches nothing. This site shows a
+persistent create button regardless of input. They are not substitutes, and
+swapping one for the other would be a product UX decision rather than a
+migration.
+
+**Status.** MUI with an FDS-ORNAMENT marker, to move with the other three on
+#155's signatures.
