@@ -78,6 +78,7 @@ export default defineConfig(({ mode, command }) => {
         [`${basePath}/graphql`]: backProxy(true),
         [`${basePath}/auth`]: backProxy(),
         [`${basePath}/chatbot`]: backProxy(),
+        [`${basePath}/maps`]: backProxy(),
       },
     },
   };
