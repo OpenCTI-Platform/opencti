@@ -371,8 +371,6 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                   <FormControl style={{ display: 'flex', minWidth: 300, maxWidth: 500 }}>
                     <EntitySelect
                       multiple
-                      variant="outlined"
-                      size="small"
                       value={selectedSecurityPlatforms}
                       label={t_i18n('Compare with my security posture')}
                       types={['SecurityPlatform']}
