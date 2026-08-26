@@ -61,16 +61,6 @@ const feedbackFragment = graphql`
         color
       }
     }
-    workflowInstance {
-      id
-      currentStatus {
-        template {
-          id
-          name
-          color
-        }
-      }
-    }
     workflowEnabled
   }
 `;
@@ -137,7 +127,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Feedbacks | Cases'));
   const {
-    platformModuleHelpers: { isRuntimeFieldEnable, isFeatureEnable },
+    platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
 
   const initialValues = {
@@ -156,7 +146,6 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
     filters,
   } = viewStorage;
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-  const isWorkflowInstanceEnabled = isFeatureEnable('ENTITIES_WORKFLOW');
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {},
     rating: {},
@@ -170,7 +159,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
     created: {
       percentWidth: 10,
     },
-    ...(isWorkflowInstanceEnabled ? { workflowInstance: {} } : { x_opencti_workflow_id: {} }),
+    x_opencti_workflow_id: {},
     objectMarking: {
       isSortable: isRuntimeSort,
     },
