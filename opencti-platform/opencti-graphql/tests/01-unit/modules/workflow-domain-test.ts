@@ -7,6 +7,7 @@ import {
   isStatusTemplateUsedInWorkflows,
   publishWorkflowDefinition,
   getWorkflowDefinition,
+  hasPublishedWorkflowDefinition,
   getAllowedTransitions,
   getWorkflowInstance,
   deleteWorkflowDefinition,
@@ -821,6 +822,36 @@ describe('Workflow Domain', () => {
     expect(result).toBeDefined();
     expect(result?.name).toBe('Test Workflow'); // Entity name overrides content name
     expect(result?.initialState).toBe('open'); // From content object
+  });
+
+  // Tests for hasPublishedWorkflowDefinition
+  it('should return true when a published workflow definition exists', async () => {
+    const publishedContent = { name: 'Published', initialState: 'open', transitions: [] };
+    const publishedVersion = {
+      id: 'pub-1',
+      content: JSON.stringify(publishedContent),
+      validation_errors: [],
+    };
+
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (storeLoadById as any).mockResolvedValue({
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      published_version: publishedVersion,
+      all_versions: [publishedVersion],
+    });
+
+    const result = await hasPublishedWorkflowDefinition(mockContext, mockUser, 'Incident');
+
+    expect(result).toBe(true);
+  });
+
+  it('should return false when no published workflow definition exists', async () => {
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: null });
+
+    const result = await hasPublishedWorkflowDefinition(mockContext, mockUser, 'Incident');
+
+    expect(result).toBe(false);
   });
 
   // Tests for deleteWorkflowDefinition (line 335)
