@@ -355,6 +355,10 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
         <Fab
+          /* FAB — Sandy's UX decision pending (2026-08-26). Deliberately still
+             MUI: whether these floating action buttons keep their shape or are
+             rethought as in-page buttons is a product/UX call, not a mechanical
+             conversion, so the Button/Chip wave leaves all 9 untouched. */
           onClick={() => setOpen(true)}
           color="secondary"
           aria-label="Add"
