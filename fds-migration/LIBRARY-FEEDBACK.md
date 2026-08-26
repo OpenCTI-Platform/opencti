@@ -1618,3 +1618,9 @@ migration.
 
 **Status.** MUI with an FDS-ORNAMENT marker, to move with the other three on
 #155's signatures.
+
+Addendum to #47 — the batch is **five**. `FilterChipPopover`'s value field
+carries the search-scope selector in its input `endAdornment` for STIX object
+types. Same gap, same round. Full list: `LocationField`,
+`StixCoreObjectsField`, `EntitySelectWithTypes`, `StixCoreObjectContainer`,
+`FilterChipPopover`.

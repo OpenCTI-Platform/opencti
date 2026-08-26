@@ -2,12 +2,25 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { RefreshOutlined } from '@mui/icons-material';
 import Alert from '@mui/material/Alert';
-import Autocomplete from '@mui/material/Autocomplete';
+
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
-import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxControls,
+  ComboboxField,
+  ComboboxInput,
+  ComboboxTrigger,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@filigran/design-system';
 import TextField from '@mui/material/TextField';
 import { FunctionComponent, useEffect, useMemo, useRef, useState } from 'react';
 import ReactMde from 'react-mde';
@@ -172,7 +185,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
     setAgentExecuted(false);
   };
 
-  const handleAgentChange = (_event: unknown, newValue: AgentOption | null) => {
+  const handleAgentChange = (newValue: AgentOption | null) => {
     if (!newValue) return;
     setSelectedAgent(newValue);
     if (agentMode) {
@@ -220,36 +233,31 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   const dialogTitle = agentMode ? (
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 2 }}>
       <span>{t_i18n('Ask AI')}</span>
-      <Autocomplete<AgentOption>
-        sx={{ width: 220 }}
-        size="small"
+      <Combobox<AgentOption>
         options={agentOptions}
-        getOptionLabel={(option) => option.name}
-        value={selectedAgent}
-        onChange={handleAgentChange}
+        getOptionLabel={(option) => option?.name ?? ''}
+        value={selectedAgent ?? null}
+        onValueChange={(next) => handleAgentChange(next as AgentOption | null)}
+        // Replaces the CircularProgress hand-mounted in the input's endAdornment.
         loading={loadingAgents}
         disabled={noAgents as boolean}
-        noOptionsText={t_i18n('Ask your administrator to configure XTM One')}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            variant="outlined"
-            size="small"
-            placeholder={noAgents ? t_i18n('No agent available') : t_i18n('Select agent')}
-            InputProps={{
-              ...params.InputProps,
-              endAdornment: (
-                <>
-                  {loadingAgents ? <CircularProgress color="inherit" size={16} /> : null}
-                  {params.InputProps.endAdornment}
-                </>
-              ),
-            }}
-          />
-        )}
         isOptionEqualToValue={(option, value) => option.id === value.id}
-        clearIcon={null}
-      />
+        // `clearIcon={null}` was MUI's other way of removing the clear button.
+        clearable={false}
+      >
+        <ComboboxField>
+          <ComboboxInput
+            placeholder={noAgents ? t_i18n('No agent available') : t_i18n('Select agent')}
+          />
+          <ComboboxControls>
+            <ComboboxTrigger />
+          </ComboboxControls>
+        </ComboboxField>
+        <ComboboxContent
+          emptyMessage={t_i18n('Ask your administrator to configure XTM One')}
+          listAriaLabel={t_i18n('Select agent')}
+        />
+      </Combobox>
     </Box>
   ) : t_i18n('Ask AI');
 

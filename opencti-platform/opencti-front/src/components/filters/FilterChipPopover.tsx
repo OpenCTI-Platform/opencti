@@ -326,6 +326,10 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
 
     return (
       <Autocomplete
+        // FDS-ORNAMENT: stays on MUI for this round. Its input endAdornment
+        // carries the search-scope selector for STIX object types, which is the
+        // gap #155 closes with `adornment` on ComboboxField. FIFTH ornament site.
+        // See fds-migration/LIBRARY-FEEDBACK.md
         multiple
         key={fKey}
         value={selectedOptions}
