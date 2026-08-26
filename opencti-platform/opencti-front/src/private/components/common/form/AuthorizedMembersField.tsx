@@ -1,8 +1,21 @@
+// FDS-WORKAROUND #44: kept on MUI Select. `tests_e2e/dashboardRestriction`
+// became INTERMITTENT once this field was converted — same commit red on one
+// run and green on the re-run, failing on
+// `getByRole('listbox', { name: 'Access right' }).getByText('can view')` with
+// "visible, enabled and stable" never satisfied. Diagnosed at the pointer on
+// the real access-restriction dialog and NOT reproduced: the listbox opens
+// correctly named, the option measures 97x32 with `pointer-events: auto`, and
+// `elementFromPoint` at its centre returns the option itself. Cause unidentified,
+// so this is a revert rather than a fix — an access-rights control does not get
+// carried forward on a green re-run. Note the dialog stacks THREE Radix Selects
+// (this field plus one per member row) beside a MUI Autocomplete, which is the
+// obvious place to look next — see fds-migration/LIBRARY-FEEDBACK.md #44
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import ObjectMembersField, { OptionMember } from '@components/common/form/ObjectMembersField';
 import FormHelperText from '@mui/material/FormHelperText';
 import { Field, FieldArray, FieldProps, Formik } from 'formik';
+import MenuItem from '@mui/material/MenuItem';
 import Button from '@common/button/Button';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
@@ -11,7 +24,7 @@ import * as Yup from 'yup';
 import { FormikHelpers } from 'formik/dist/types';
 import AuthorizedMembersFieldListItem from '@components/common/form/AuthorizedMembersFieldListItem';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
+import SelectField from '../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../components/i18n';
 import { AccessRight, ALL_MEMBERS_AUTHORIZED_CONFIG, AuthorizedMemberOption, Creator, CREATOR_AUTHORIZED_CONFIG } from '../../../../utils/authorizedMembers';
 import SwitchField from '../../../../components/fields/SwitchField';
@@ -458,19 +471,19 @@ const AuthorizedMembersField = ({
                     </div>
                     <Field
                       name="newAccessRight"
-                      component={SelectFieldFds}
+                      component={SelectField}
                       label={t_i18n('Access right')}
                       style={{ m: 1, minWidth: 120 }}
                       size="small"
                       disabled={!values.applyAccesses}
                     >
                       {accessRights.map((accessRight) => (
-                        <SelectItem
+                        <MenuItem
                           value={accessRight.value}
                           key={accessRight.value}
                         >
                           {accessRight.label}
-                        </SelectItem>
+                        </MenuItem>
                       ))}
                     </Field>
                     <Button

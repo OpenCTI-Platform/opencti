@@ -1,13 +1,26 @@
+// FDS-WORKAROUND #44: kept on MUI Select. `tests_e2e/dashboardRestriction`
+// became INTERMITTENT once this field was converted — same commit red on one
+// run and green on the re-run, failing on
+// `getByRole('listbox', { name: 'Access right' }).getByText('can view')` with
+// "visible, enabled and stable" never satisfied. Diagnosed at the pointer on
+// the real access-restriction dialog and NOT reproduced: the listbox opens
+// correctly named, the option measures 97x32 with `pointer-events: auto`, and
+// `elementFromPoint` at its centre returns the option itself. Cause unidentified,
+// so this is a revert rather than a fix — an access-rights control does not get
+// carried forward on a green re-run. Note the dialog stacks THREE Radix Selects
+// (this field plus one per member row) beside a MUI Autocomplete, which is the
+// obvious place to look next — see fds-migration/LIBRARY-FEEDBACK.md #44
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Field } from 'formik';
+import MenuItem from '@mui/material/MenuItem';
 import { Delete, InfoOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
 import { Tooltip } from '@mui/material';
 import React from 'react';
 import { isGenericOption } from '@components/common/form/AuthorizedMembersField';
-import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
+import SelectField from '../../../../components/fields/SelectField';
 import ItemIcon from '../../../../components/ItemIcon';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../../components/i18n';
@@ -106,7 +119,7 @@ const AuthorizedMembersFieldListItem = ({
       />
 
       <Field
-        component={SelectFieldFds}
+        component={SelectField}
         name={name}
         sx={{ m: 1, minWidth: 120 }}
         inputProps={{ 'aria-label': 'Without label' }}
@@ -118,12 +131,12 @@ const AuthorizedMembersFieldListItem = ({
         onChange={(_: string, val: AccessRight) => onChange?.(val)}
       >
         {getAccessList(authorizedMember.value).map((accessRight) => (
-          <SelectItem
+          <MenuItem
             value={accessRight.value}
             key={accessRight.value}
           >
             {accessRight.label}
-          </SelectItem>
+          </MenuItem>
         ))}
       </Field>
 

@@ -1490,3 +1490,32 @@ It is the only CTI Autocomplete site held for this reason.
 **Removal test.** Convert that site with the new mechanism, select a preview
 entity, and confirm the field border and label both carry the state tone in
 both modes — then delete `IN_PREVIEW_SX_PROPS` and the marker.
+
+## 44. Three Radix Selects in one dialog make an access-rights test intermittent
+
+**Not a library ask yet — a reproduction request.** Recorded because the symptom
+outlived the diagnosis.
+
+**What happened.** `AuthorizedMembersField` and its per-row list item were
+converted to the library Select. `tests_e2e/dashboardRestriction` then went
+intermittent: the same commit failed one run and passed the re-run, always on
+`getByRole('listbox', { name: 'Access right' }).getByText('can view')`, with
+Playwright's "visible, enabled and stable" never satisfied inside 300s.
+
+**What the pointer says.** Driven on the real dialog of a seeded dashboard: the
+listbox opens with the right accessible name, its options measure 97x32 with
+`pointer-events: auto`, `visibility: visible`, `opacity: 1`, well inside the
+viewport, and `document.elementFromPoint` at an option's centre returns that
+option's own span. Hittable by every measure available locally. Not reproduced.
+
+**What is peculiar about this dialog**, and where the next look belongs: it
+stacks THREE Radix Selects — the field plus one per member row — next to a MUI
+Autocomplete, and the test drives the Autocomplete first. Radix Select is modal:
+it sets `pointer-events: none` on `<body>` while open. Several of those
+interacting is the untested combination.
+
+**Status.** Both files reverted to MUI with FDS-WORKAROUND #44. An access-rights
+control is not carried forward on the strength of a green re-run.
+
+**Removal test.** Convert both, then run `dashboardRestriction` ten times in a
+row. Ten greens, not one.
