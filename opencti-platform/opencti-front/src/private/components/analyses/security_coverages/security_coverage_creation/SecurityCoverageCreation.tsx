@@ -23,7 +23,7 @@ import ChooseModeStep from './ChooseModeStep';
 import SelectCoveredEntityStep from './SelectCoveredEntityStep';
 import { SecurityCoverageFormValues, SecurityCoverageMode, SelectedEntities, StepKey, StixCoreObjectNode } from './SecurityCoverageCreation-types';
 import CoverageDetailsStep from './CoverageDetailsStep';
-import SelectEntitiesToCoverStep from './SelectEntitiesToCoverStep';
+import SelectEntitiesToCoverStep from './select_entities_to_cover_step/SelectEntitiesToCoverStep';
 
 interface ConnectorsQueryProps {
   connectors?: Array<{

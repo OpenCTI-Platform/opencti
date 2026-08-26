@@ -48,3 +48,5 @@ export interface SelectedEntities {
   excluded_ids?: string[];
   search?: string;
 }
+
+export const HAS_COVERED_TARGETS_TYPES = ['Attack-Pattern', 'Vulnerability', 'Artifact', 'Indicator', 'SecurityPlatform'];

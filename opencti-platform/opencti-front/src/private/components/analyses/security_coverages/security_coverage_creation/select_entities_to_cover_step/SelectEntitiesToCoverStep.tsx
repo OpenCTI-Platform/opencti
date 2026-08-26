@@ -1,28 +1,28 @@
 import type {
   SelectEntitiesToCoverStepLinesQuery as SelectEntitiesToCoverStepLinesQueryType,
   SelectEntitiesToCoverStepLinesQuery$variables,
-  SelectEntitiesToCoverStepLinesQuery,
 } from './__generated__/SelectEntitiesToCoverStepLinesQuery.graphql';
 import type { SelectEntitiesToCoverStepLines_data$data } from './__generated__/SelectEntitiesToCoverStepLines_data.graphql';
 import DataTable from 'src/components/dataGrid/DataTable';
-import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from 'src/utils/filters/filtersUtils';
-import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
+
 import { DataTableVariant } from 'src/components/dataGrid/dataTableTypes';
 import { graphql } from 'react-relay';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
-import { usePaginationLocalStorage } from 'src/utils/hooks/useLocalStorage';
 import { UsePreloadedPaginationFragment } from 'src/utils/hooks/usePreloadedPaginationFragment';
-import { SelectedEntities, StixCoreObjectNode } from './SecurityCoverageCreation-types';
-import useEntityToggle from 'src/utils/hooks/useEntityToggle';
+import { HAS_COVERED_TARGETS_TYPES, SelectedEntities, StixCoreObjectNode } from '../SecurityCoverageCreation-types';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import Button from 'src/components/common/button/Button';
 import { useFormatter } from 'src/components/i18n';
+import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from 'src/utils/filters/filtersUtils';
+import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
+import { usePaginationLocalStorage } from 'src/utils/hooks/useLocalStorage';
+import useEntityToggle from 'src/utils/hooks/useEntityToggle';
+import { buildCoveredEntitiesFilters, buildEntitiesSelection, INITIAL_VALUES, LOCAL_STORAGE_KEY } from './SelectEntitiesToCoverStep-utils';
+
 interface SelectEntitiesToCoverStepProps {
   coveredEntity: StixCoreObjectNode;
   onSelectEntities: (selection: SelectedEntities | null) => void;
 }
-
-const LOCAL_STORAGE_KEY = 'SelectEntitiesToCoverStep';
 
 export const selectEntitiesToCoverStepLinesQuery = graphql`
   query SelectEntitiesToCoverStepLinesQuery(
@@ -118,8 +118,6 @@ export const selectEntitiesToCoverStepLineFragment = graphql`
   }
 `;
 
-const HAS_COVERED_TARGETS_TYPES = ['Attack-Pattern', 'Vulnerability', 'Artifact', 'Indicator', 'SecurityPlatform'];
-
 const DATA_COLUMNS = {
   entity_type: { percentWidth: 15 },
   name: { percentWidth: 25, isSortable: false },
@@ -132,69 +130,27 @@ const DATA_COLUMNS = {
 const SelectEntitiesToCoverStep = ({ coveredEntity, onSelectEntities }: SelectEntitiesToCoverStepProps) => {
   const { t_i18n } = useFormatter();
 
-  // Build filters
-  // 1. Default non changeable filters
-  // 1.1 Filter on has covered compatible types
-  const typeFilter = {
-    key: 'entity_type',
-    values: HAS_COVERED_TARGETS_TYPES,
-    operator: 'eq',
-    mode: 'or',
-  };
-
-  // 1.2 Filter depending on object covered type
-  const isContainer = coveredEntity.parent_types.includes('Container');
-  const initialFilters = isContainer
-    ? [
-        // To get the objects contained
-        {
-          key: 'objects',
-          values: [coveredEntity.id],
-          operator: 'eq',
-          mode: 'or',
-        },
-        typeFilter,
-      ]
-    : [
-        {
-          key: 'regardingOf',
-          operator: 'eq',
-          mode: 'or',
-          values: [
-            { key: 'id', values: [coveredEntity.id] },
-            { key: 'relationship_type', values: ['targets', 'uses'] },
-            // To keep only relationships going from the covered entity, not towards it
-            { key: 'direction_forced', values: [true] },
-            { key: 'direction_reverse', values: [false] },
-          ],
-        },
-        typeFilter,
-      ];
-
-  // 2. Filters added by user
-  const initialValues = {
-    searchTerm: '',
-    sortBy: 'entity_type',
-    orderAsc: true,
-    numberOfElements: {
-      number: 0,
-      symbol: '',
-    },
-  };
-
-  const { viewStorage: { filters, searchTerm }, helpers, paginationOptions } = usePaginationLocalStorage<SelectEntitiesToCoverStepLinesQuery>(
+  const { viewStorage: { filters, searchTerm }, helpers, paginationOptions } = usePaginationLocalStorage<SelectEntitiesToCoverStepLinesQuery$variables>(
     LOCAL_STORAGE_KEY,
-    initialValues,
+    INITIAL_VALUES,
     true,
   );
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, HAS_COVERED_TARGETS_TYPES);
+  const { selectedElements, deSelectedElements, selectAll } = useEntityToggle<StixCoreObjectNode>(LOCAL_STORAGE_KEY);
 
-  // 3. Final filter combining all previous filters
   const contextFilters: FilterGroup = {
     mode: 'and',
-    filters: initialFilters,
+    filters: buildCoveredEntitiesFilters(coveredEntity),
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
+
+  const selection = buildEntitiesSelection({
+    selectAll,
+    selectedIds: Object.keys(selectedElements),
+    excludedIds: Object.keys(deSelectedElements),
+    searchTerm,
+    filters: contextFilters,
+  });
 
   const queryPaginationOptions = { ...paginationOptions, filters: contextFilters };
 
@@ -211,18 +167,6 @@ const SelectEntitiesToCoverStep = ({ coveredEntity, onSelectEntities }: SelectEn
     setNumberOfElements: helpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<SelectEntitiesToCoverStepLinesQueryType>;
 
-  const { selectedElements, selectAll, deSelectedElements } = useEntityToggle<StixCoreObjectNode>(LOCAL_STORAGE_KEY);
-
-  const listOfSelectedEntities = Object.keys(selectedElements);
-  const listOfUnSelectedEntities = Object.keys(deSelectedElements);
-  const selection = selectAll
-    ? {
-        filters: contextFilters,
-        ...(listOfUnSelectedEntities.length > 0 && { excluded_ids: listOfUnSelectedEntities }),
-        ...(searchTerm && { search: searchTerm }),
-      }
-    : (listOfSelectedEntities.length > 0 ? { selected_ids: listOfSelectedEntities } : null);
-
   return (
     <>
       {queryRef && (
@@ -230,7 +174,7 @@ const SelectEntitiesToCoverStep = ({ coveredEntity, onSelectEntities }: SelectEn
           dataColumns={DATA_COLUMNS}
           resolvePath={(data: SelectEntitiesToCoverStepLines_data$data) => data.stixCoreObjects?.edges?.map((e) => e?.node)}
           storageKey={LOCAL_STORAGE_KEY}
-          initialValues={initialValues}
+          initialValues={INITIAL_VALUES}
           lineFragment={selectEntitiesToCoverStepLineFragment}
           preloadedPaginationProps={preloadedPaginationProps}
           entityTypes={HAS_COVERED_TARGETS_TYPES}
