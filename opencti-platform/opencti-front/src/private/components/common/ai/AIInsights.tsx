@@ -10,13 +10,13 @@ import EEChip from '@components/common/entreprise_edition/EEChip';
 import EnterpriseEditionAgreement from '@components/common/entreprise_edition/EnterpriseEditionAgreement';
 import ValidateTermsOfUseDialog from '@components/settings/ValidateTermsOfUseDialog';
 import FiligranIcon from '@components/common/FiligranIcon';
-import Autocomplete from '@mui/material/Autocomplete';
+import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxTrigger } from '@filigran/design-system';
 import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
+
 import DialogActions from '@mui/material/DialogActions';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
-import TextField from '@mui/material/TextField';
+
 import Tooltip from '@mui/material/Tooltip';
 import { createStyles } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
@@ -231,7 +231,7 @@ const AIInsights = ({
     });
   }, [useXtmOne, currentTab]);
 
-  const handleAgentChange = (_event: unknown, newValue: AgentOption | null) => {
+  const handleAgentChange = (newValue: AgentOption | null) => {
     if (newValue) {
       setSelectedAgent(newValue);
     }
@@ -348,35 +348,30 @@ const AIInsights = ({
         onClose={handleClose}
         title={t_i18n('AI Insights')}
         header={useXtmOne ? (
-          <Autocomplete<AgentOption, false, true>
-            sx={{ width: 220 }}
-            size="small"
-            disableClearable
+          <Combobox<AgentOption>
+            clearable={false}
             options={agentOptions}
-            getOptionLabel={(option) => option.name}
-            value={selectedAgent}
-            onChange={handleAgentChange}
+            getOptionLabel={(option) => option?.name ?? ''}
+            value={selectedAgent ?? null}
+            onValueChange={(next) => handleAgentChange(next as AgentOption | null)}
+            // Replaces the CircularProgress hand-mounted in the input's
+            // endAdornment: the field renders its own busy state.
             loading={loadingAgents}
             disabled={agentOptions.length === 0 || loading}
-            noOptionsText={t_i18n('No agent available')}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="outlined"
-                size="small"
+          >
+            <ComboboxField>
+              <ComboboxInput
                 placeholder={agentOptions.length === 0 ? t_i18n('No agent available') : t_i18n('Select agent')}
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: (
-                    <>
-                      {loadingAgents ? <CircularProgress color="inherit" size={16} /> : null}
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                }}
               />
-            )}
-          />
+              <ComboboxControls>
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t_i18n('No agent available')}
+              listAriaLabel={t_i18n('Select agent')}
+            />
+          </Combobox>
         ) : undefined}
       >
         <div className={classes.container}>
