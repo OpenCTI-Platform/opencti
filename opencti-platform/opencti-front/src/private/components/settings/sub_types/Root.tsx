@@ -23,6 +23,7 @@ import SubType from './SubType';
 import GlobalWorkflowSettingsCard from './global_workflow_request_access/GlobalWorkflowSettingsCard';
 import SubTypeWorkflow from './SubTypeWorkflow';
 import useHelper from '../../../../utils/hooks/useHelper';
+import { isWorkflowUiEnabledForType } from '../../common/workflow/workflowFeatureFlag';
 
 const SubTypeIndexRedirect = () => {
   const { tabs } = useSubTypeOutletContext();
@@ -48,9 +49,7 @@ const RootSubType = () => {
   if (!subTypeId) return <ErrorNotFound />;
 
   const { isFeatureEnable } = useHelper();
-  const isDraftWorkspaceType = subTypeId === 'DraftWorkspace';
   const isCustomFieldsFeatureEnabled = isFeatureEnable('CUSTOM_FIELDS');
-  const isEntitiesWorkflowEnabled = isFeatureEnable('ENTITIES_WORKFLOW');
 
   return (
     <Suspense fallback={<Loader />}>
@@ -59,7 +58,7 @@ const RootSubType = () => {
           <Route index element={<SubTypeIndexRedirect />} />
           <Route
             path={SUBTYPE_TAB_WORKFLOW}
-            element={(isDraftWorkspaceType || isEntitiesWorkflowEnabled)
+            element={isWorkflowUiEnabledForType(subTypeId, isFeatureEnable)
               ? <SubTypeWorkflow entityType={subTypeId} />
               : <GlobalWorkflowSettingsCard />}
           />
