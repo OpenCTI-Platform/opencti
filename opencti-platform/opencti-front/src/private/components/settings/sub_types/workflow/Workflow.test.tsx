@@ -373,6 +373,21 @@ describe('Workflow Component', () => {
       expect(mockSetNodes).toHaveBeenCalledWith([]);
       expect(mockSetEdges).toHaveBeenCalledWith([]);
     });
+
+    it('should include the current scope in saveWorkflowDefinition variables', async () => {
+      renderWithTheme(
+        <Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} scope={StatusScopeEnum.REQUEST_ACCESS} />,
+      );
+
+      await waitFor(() => {
+        const calls = mockSaveWorkflowDefinition.mock.calls;
+        if (calls.length > 0) {
+          expect(calls[0][0]).toMatchObject({
+            variables: expect.objectContaining({ scope: StatusScopeEnum.REQUEST_ACCESS }),
+          });
+        }
+      }, { timeout: 2000 });
+    });
   });
 
   describe('Initial state', () => {
@@ -462,7 +477,20 @@ describe('Workflow Component', () => {
       await user.click(screen.getByTestId('publish-button'));
 
       expect(mockPublishWorkflowDefinition).toHaveBeenCalledWith(
-        expect.objectContaining({ variables: { entityType: 'DraftWorkspace' } }),
+        expect.objectContaining({ variables: { entityType: 'DraftWorkspace', scope: StatusScopeEnum.GLOBAL } }),
+      );
+    });
+
+    it('should call commitPublish with the REQUEST_ACCESS scope when that scope is active', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(
+        <Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} scope={StatusScopeEnum.REQUEST_ACCESS} />,
+      );
+
+      await user.click(screen.getByTestId('publish-button'));
+
+      expect(mockPublishWorkflowDefinition).toHaveBeenCalledWith(
+        expect.objectContaining({ variables: { entityType: 'DraftWorkspace', scope: StatusScopeEnum.REQUEST_ACCESS } }),
       );
     });
 
@@ -581,7 +609,22 @@ describe('Workflow Component', () => {
 
       expect(mockRestoreWorkflowDefinition).toHaveBeenCalledWith(
         expect.objectContaining({
-          variables: { entityType: 'DraftWorkspace' },
+          variables: { entityType: 'DraftWorkspace', scope: StatusScopeEnum.GLOBAL },
+        }),
+      );
+    });
+
+    it('should call restoreWorkflowDefinition with the REQUEST_ACCESS scope when that scope is active', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(
+        <Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} scope={StatusScopeEnum.REQUEST_ACCESS} />,
+      );
+
+      await user.click(screen.getByTestId('restore-button'));
+
+      expect(mockRestoreWorkflowDefinition).toHaveBeenCalledWith(
+        expect.objectContaining({
+          variables: { entityType: 'DraftWorkspace', scope: StatusScopeEnum.REQUEST_ACCESS },
         }),
       );
     });

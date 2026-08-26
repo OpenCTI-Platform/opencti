@@ -80,8 +80,8 @@ const WorkflowValidationErrorsToastContent = ({ errors, t_i18n, statusTemplates 
 };
 
 const workflowDefinitionSetMutation = graphql`
-  mutation WorkflowDefinitionMutation($entityType: String!, $definition: String!) {
-    workflowDefinitionSet(entityType: $entityType, definition: $definition) {
+  mutation WorkflowDefinitionMutation($entityType: String!, $definition: String!, $scope: StatusScope) {
+    workflowDefinitionSet(entityType: $entityType, definition: $definition, scope: $scope) {
       id
       published
       errors {
@@ -97,8 +97,8 @@ const workflowDefinitionSetMutation = graphql`
 `;
 
 const workflowDefinitionPublishMutation = graphql`
-  mutation WorkflowPublishMutation($entityType: String!) {
-    workflowDefinitionPublish(entityType: $entityType) {
+  mutation WorkflowPublishMutation($entityType: String!, $scope: StatusScope) {
+    workflowDefinitionPublish(entityType: $entityType, scope: $scope) {
       id
       workflow_id
       published
@@ -107,8 +107,8 @@ const workflowDefinitionPublishMutation = graphql`
 `;
 
 const workflowDefinitionRestorePublishedMutation = graphql`
-  mutation WorkflowRestorePublishedMutation($entityType: String!) {
-    workflowDefinitionRestorePublished(entityType: $entityType) {
+  mutation WorkflowRestorePublishedMutation($entityType: String!, $scope: StatusScope) {
+    workflowDefinitionRestorePublished(entityType: $entityType, scope: $scope) {
       id
       published
       errors {
@@ -251,7 +251,7 @@ const Workflow = ({
     previousSchemaRef.current = schemaString;
 
     saveWorkflowDefinition({
-      variables: { entityType, definition: schemaString },
+      variables: { entityType, definition: schemaString, scope },
       onCompleted: (response) => {
         if (response.workflowDefinitionSet) {
           const { errors } = response.workflowDefinitionSet;
@@ -282,7 +282,7 @@ const Workflow = ({
     const emptySchemaString = JSON.stringify(transformToWorkflowDefinition([], [], workflowDefinition));
     previousSchemaRef.current = emptySchemaString;
     saveWorkflowDefinition({
-      variables: { entityType, definition: emptySchemaString },
+      variables: { entityType, definition: emptySchemaString, scope },
       onCompleted: (response) => {
         if (response.workflowDefinitionSet) {
           const { errors } = response.workflowDefinitionSet;
@@ -314,7 +314,7 @@ const Workflow = ({
       return;
     }
     commitPublish({
-      variables: { entityType },
+      variables: { entityType, scope },
       onCompleted: () => {
         MESSAGING$.notifySuccess(t_i18n('Workflow successfully published'));
         setWorkflowDefinitionStatus({
@@ -342,7 +342,7 @@ const Workflow = ({
   // Handle restore action — reloads the published version into the draft
   const handleRestore = () => {
     restoreWorkflowDefinition({
-      variables: { entityType },
+      variables: { entityType, scope },
       onCompleted: () => {
         // Directly reset local state to `initialNodes`/`initialEdges`.
         // The Relay store already holds the published states (only full queries update
