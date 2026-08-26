@@ -194,22 +194,11 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
 
     const patchOperations: jsonpatch.Operation[] = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {
-      const element = bundle.objects[index] as any;
+      const element = bundle.objects[index];
       const isMatchingScope = isBundleElementInScope(element, applyToElements, dataInstanceId);
       const isMatchingFilters = await isBundleElementMatchFilters(context, element, applyWithFilters, eventContext);
       if (isMatchingScope && isMatchingFilters) {
-        const { id } = element.extensions[STIX_EXT_OCTI];
-        const entityType = (() => {
-          const octiType = element.extensions?.[STIX_EXT_OCTI]?.type;
-          const stixType = octiType ?? element.type;
-          if (stixType === 'identity' && element.identity_class === 'organization') {
-            return ENTITY_TYPE_IDENTITY_ORGANIZATION;
-          }
-          if (isNotEmptyField(octiType)) {
-            return octiType;
-          }
-          return generateInternalType(element);
-        })();
+        const entityType = generateInternalType(element);
         const elementOperations = actions
           .map((action) => {
             const attrPath = computeAttributePath(entityType, action.attribute);
@@ -276,9 +265,7 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
           const operationObject = elementOperations.map((op) => {
             return { key: op.attribute, value: Array.isArray(op.value) ? op.value : [op.value], operation: op.op };
           });
-          if (id) {
-            applyOperationFieldPatch(element, operationObject);
-          }
+          applyOperationFieldPatch(element, operationObject);
           pushAll(patchOperations, elementOperations.map((e) => e.patchOperation));
         }
       }
