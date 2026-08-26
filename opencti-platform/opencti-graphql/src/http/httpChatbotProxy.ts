@@ -10,7 +10,7 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEnterpriseEditionActivePem, getEnterpriseEditionInfo } from '../modules/settings/licensing';
 import { getChatbotUrl, logApp, PLATFORM_VERSION } from '../config/conf';
 import type { BasicStoreSettings } from '../types/settings';
-import { setCookieError } from './httpUtils';
+import { isBrowserSessionRequest, setCookieError } from './httpUtils';
 import xtmOneClient from '../modules/xtm/one/xtm-one-client';
 import { issueXtmJwt } from '../domain/xtm-auth';
 import type { AuthContext } from '../types/user';
@@ -310,24 +310,6 @@ export const postChatbotMessageSteer = async (req: Express.Request, res: Express
       res.status(503).send({ status: 'error', error: message });
     }
   }
-};
-
-// Whether this request is driven by a signed-in person in a browser, as opposed
-// to an API token.
-//
-// `context.user_with_session` alone does not answer that: it only records that
-// a session cookie was present, while `authenticateUserFromRequest` returns on
-// the bearer-token branch before it ever looks at the session (`domain/user.js`).
-// A request carrying a service token *and* any user's cookie therefore
-// authenticates as the token identity while still looking session-backed — which
-// would let an agent identity approve the very call it proposed. Require that the
-// identity actually resolved from the session, by matching it against the session
-// user and refusing any request that presents an Authorization header at all.
-const isBrowserSessionRequest = (req: Express.Request, context: AuthContext): boolean => {
-  if (req.headers.authorization) return false;
-  if (!context.user_with_session) return false;
-  const sessionUserId = (req as Express.Request & { session?: { user?: { id?: string } } }).session?.user?.id;
-  return !!sessionUserId && sessionUserId === context.user?.id;
 };
 
 // ── POST /chatbot/messages/approve ──────────────────────────────────────

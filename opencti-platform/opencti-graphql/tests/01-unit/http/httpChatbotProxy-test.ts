@@ -109,7 +109,11 @@ vi.mock('../../../src/domain/xtm-auth', () => ({
   issueXtmJwt: vi.fn(() => Promise.resolve('jwt-token-123')),
 }));
 
-vi.mock('../../../src/http/httpUtils', () => ({
+// Only `setCookieError` is stubbed here. `isBrowserSessionRequest` must stay
+// the real implementation — the approval tests below exercise that guard's
+// actual logic, and a stub would assert nothing.
+vi.mock('../../../src/http/httpUtils', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/http/httpUtils')>()),
   setCookieError: vi.fn(),
 }));
 
