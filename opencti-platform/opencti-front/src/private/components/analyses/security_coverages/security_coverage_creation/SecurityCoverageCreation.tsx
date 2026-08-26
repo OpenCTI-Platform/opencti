@@ -16,6 +16,7 @@ import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../../utils/hooks/useDefaultValues';
 import useMarkdownCreationFilesInput from '../../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { insertNode } from '../../../../../utils/store';
+import { serializeFilterGroupForBackend } from '../../../../../utils/filters/filtersUtils';
 import { useNavigate } from 'react-router-dom';
 import { SecurityCoverageCreationMutation } from './__generated__/SecurityCoverageCreationMutation.graphql';
 import ChooseModeStep from './ChooseModeStep';
@@ -183,6 +184,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
 
   const handleSelectMode = (newMode: SecurityCoverageMode) => {
     setMode(newMode);
+    setEntitiesToCover(null);
     // If no preselected entity, go to entity selection (step object covered)
     // If we have a preselected entity :
     // option 1 : manual mode : go directly to covered entities selection
@@ -216,6 +218,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
     setActiveStep(StepKey.MODE);
     setMode(null);
     setSelectedEntity(null);
+    setEntitiesToCover(null);
     if (onClose) {
       onClose();
     }
@@ -258,7 +261,12 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       confidence: parseInt(String(values.confidence), 10),
-      add_related_entities: entitiesToCover,
+      add_related_entities: entitiesToCover ? {
+        ...(entitiesToCover.selected_ids ? { selected_ids: entitiesToCover.selected_ids } : {}),
+        ...(entitiesToCover.filters ? { filters: serializeFilterGroupForBackend(entitiesToCover.filters) } : {}),
+        ...(entitiesToCover.excluded_ids ? { excluded_ids: entitiesToCover.excluded_ids } : {}),
+        ...(entitiesToCover.search ? { search: entitiesToCover.search } : {}),
+      } : null,
     };
 
     commit({

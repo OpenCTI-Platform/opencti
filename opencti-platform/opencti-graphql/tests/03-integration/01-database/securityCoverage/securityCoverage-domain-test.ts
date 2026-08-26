@@ -39,7 +39,7 @@ describe('SecurityCoverage domain', () => {
     it('should create coverage result if explicitly asked for', async () => {
       const input = {
         ...BASE_INPUT(),
-        add_all_related_entities: true,
+        add_related_entities: { filters: JSON.stringify({ mode: 'and', filters: [], filterGroups: [] }) },
       };
       const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
       const results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
@@ -49,10 +49,10 @@ describe('SecurityCoverage domain', () => {
       await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
     });
 
-    it('should create coverage result if entities_to_add is provided without add_all_related_entities', async () => {
+    it('should create coverage result if add_related_entities.selected_ids is provided', async () => {
       const input = {
         ...BASE_INPUT(),
-        entities_to_add: ['attack-pattern--00000000-0000-0000-0000-000000000001'],
+        add_related_entities: { selected_ids: ['attack-pattern--00000000-0000-0000-0000-000000000001'] },
       };
       const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
       const results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
@@ -136,7 +136,7 @@ describe('SecurityCoverage domain', () => {
           coverage_name: 'prevention',
           coverage_score: 10,
         }],
-        add_all_related_entities: true,
+        add_related_entities: { filters: JSON.stringify({ mode: 'and', filters: [], filterGroups: [] }) },
       };
       const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
       let results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
@@ -149,8 +149,8 @@ describe('SecurityCoverage domain', () => {
     });
   });
 
-  describe('Function createHasCoveredRelTask() with explicit entity selection', () => {
-    it('should only target explicit entities_to_add ids, ignoring the rest of the related entities', async () => {
+  describe('Function createHasCoveredRelTask() with selected_ids', () => {
+    it('should only target explicit selected_ids, ignoring the rest of the related entities', async () => {
       const attackPattern1 = await addAttackPattern(testContext, ADMIN_USER, { name: 'SC entities_to_add AP1' });
       const attackPattern2 = await addAttackPattern(testContext, ADMIN_USER, { name: 'SC entities_to_add AP2' });
       const attackPattern3 = await addAttackPattern(testContext, ADMIN_USER, { name: 'SC entities_to_add AP3' });
@@ -170,7 +170,7 @@ describe('SecurityCoverage domain', () => {
       expect(results.length).toEqual(1);
 
       const explicitIds = [attackPattern1.standard_id, attackPattern2.standard_id];
-      const task = await createHasCoveredRelTask(testContext, ADMIN_USER, results[0].id, explicitIds);
+      const task = await createHasCoveredRelTask(testContext, ADMIN_USER, results[0].id, { selected_ids: explicitIds }) as { task_ids: string[] };
       expect(task.task_ids).toEqual(explicitIds);
       expect(task.task_ids.length).toBeLessThan(3);
 
@@ -182,7 +182,7 @@ describe('SecurityCoverage domain', () => {
     });
   });
 
-  describe('Function addSecurityCoverage() end-to-end wiring with entities_to_add', () => {
+  describe('Function addSecurityCoverage() end-to-end wiring with add_related_entities', () => {
     const findHasCoveredRelTask = async (securityCoverageResultId: string) => {
       const taskConnection = await findBackgroundTaskPaginated(testContext, ADMIN_USER, {
         orderBy: 'created_at',
@@ -195,7 +195,7 @@ describe('SecurityCoverage domain', () => {
       if (!task) {
         throw new Error(`No background task found for security coverage result ${securityCoverageResultId}`);
       }
-      return task as { description?: string; task_ids: string[] };
+      return task as { description?: string; task_ids: string[]; task_filters?: string; task_excluded_ids?: string[] };
     };
 
     const setupReportWithAttackPatterns = async (namePrefix: string) => {
@@ -224,15 +224,15 @@ describe('SecurityCoverage domain', () => {
       }
     };
 
-    it('should create a background task targeting only entities_to_add when called through addSecurityCoverage', async () => {
+    it('should create a background task targeting only selected_ids when called through addSecurityCoverage', async () => {
       const {
         attackPattern1, attackPattern2, attackPattern3, reportWithTargets,
-      } = await setupReportWithAttackPatterns('SC e2e entities_to_add');
+      } = await setupReportWithAttackPatterns('SC e2e selected_ids');
 
       const input = {
         ...BASE_INPUT(),
         objectCovered: reportWithTargets.standard_id,
-        entities_to_add: [attackPattern1.standard_id, attackPattern2.standard_id],
+        add_related_entities: { selected_ids: [attackPattern1.standard_id, attackPattern2.standard_id] },
       };
       const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
       const results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
@@ -244,28 +244,32 @@ describe('SecurityCoverage domain', () => {
       await cleanup(securityCoverage.id, reportWithTargets, [attackPattern1, attackPattern2, attackPattern3]);
     });
 
-    it('should give precedence to add_all_related_entities over entities_to_add when both are provided', async () => {
+    it('should create a QUERY background task with filters/search/excluded_ids when no selected_ids is provided', async () => {
       const {
         attackPattern1, attackPattern2, attackPattern3, reportWithTargets,
-      } = await setupReportWithAttackPatterns('SC e2e precedence');
+      } = await setupReportWithAttackPatterns('SC e2e filters');
 
+      const filters = {
+        mode: 'and',
+        filters: [{ key: ['objects'], values: [reportWithTargets.standard_id], operator: 'eq', mode: 'or' }],
+        filterGroups: [],
+      };
       const input = {
         ...BASE_INPUT(),
         objectCovered: reportWithTargets.standard_id,
-        add_all_related_entities: true,
-        entities_to_add: [attackPattern1.standard_id],
+        add_related_entities: {
+          filters: JSON.stringify(filters),
+          excluded_ids: [attackPattern3.standard_id],
+          search: '',
+        },
       };
       const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
       const results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
       expect(results.length).toEqual(1);
 
       const task = await findHasCoveredRelTask(results[0].id);
-      expect(task.task_ids.length).toEqual(3);
-      expect(task.task_ids).toEqual(expect.arrayContaining([
-        attackPattern1.id,
-        attackPattern2.id,
-        attackPattern3.id,
-      ]));
+      expect(task.task_filters).toEqual(JSON.stringify(filters));
+      expect(task.task_excluded_ids).toEqual([attackPattern3.standard_id]);
 
       await cleanup(securityCoverage.id, reportWithTargets, [attackPattern1, attackPattern2, attackPattern3]);
     });
