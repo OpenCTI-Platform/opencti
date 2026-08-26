@@ -9,7 +9,49 @@ grep -rl "component={ComboboxField}"  opencti-platform/opencti-front/src --inclu
 grep -rl "component={SelectFieldFds}" opencti-platform/opencti-front/src --include='*.tsx' --include='*.jsx' | wc -l
 # still MUI (each must appear in the table below with a reason)
 grep -rn "<Autocomplete[^A-Za-z]" opencti-platform/opencti-front/src --include='*.tsx' --include='*.jsx'
+# and the census that MUST cover BOTH import forms -- see the correction below
+cd opencti-platform/opencti-front && for f in $(grep -rl "<Select" src --include='*.jsx' --include='*.tsx'); do \
+  perl -0777 -ne 'exit(1) unless (/import\s*\{[^}]*\bSelect\b[^}]*\}\s*from\s*.\@mui\/material./s
+    or /import\s+Select\s+from\s*.\@mui\/material\/Select./s)' "$f" \
+  && echo "$(perl -0777 -ne 'my $c=()=/<Select(?![A-Za-z])/g; print $c' "$f") $f"; done | sort -rn
 ```
+
+## CORRECTION — the raw `<Select>` wave is NOT closed
+
+An earlier version of this table said it was. That was wrong, and the error was
+in the census, not in the conversions: the command only matched the **named**
+import form
+
+    import { Select } from '@mui/material';
+
+and missed the **default** form
+
+    import Select from '@mui/material/Select';
+
+which 13 files use. **39 MUI `<Select>` mounts were never counted.** They were
+found by opening the mass-edit drawer of the bulk toolbar during a pointer proof
+and seeing two `MuiSelect-select` triggers where the census claimed none: the
+DOM contradicted the count, and the DOM was right.
+
+| Screen | File | Mounts | Verdict |
+|---|---|---|---|
+| Widgets → parameters | `WidgetCreationParameters.tsx` | 9 | **NOT DONE** — never censused |
+| Data → Feeds (edit) | `FeedEdition.jsx` | 8 | **NOT DONE** — never censused |
+| Data → Feeds (create) | `FeedCreation.tsx` | 8 | **NOT DONE** — never censused |
+| Home dashboard settings | `HomeDashboardSettings.jsx` | 3 | **NOT DONE** — never censused |
+| Settings → SSO | `SecretFieldControl.tsx` | 2 | **NOT DONE** — never censused |
+| Data → bulk toolbar | `DataTableToolBar.jsx` | 2 | **NOT DONE** — action type + attribute pickers; its 18 Autocompletes ARE converted |
+| Widgets | `WidgetAttributesInput.tsx` | 1 | **NOT DONE** — never censused |
+| Entity header | `StixDomainObjectHeader.jsx` | 1 | **NOT DONE** — never censused |
+| Workbench | `WorkbenchFileContent.jsx` | 1 | **NOT DONE** — never censused |
+| List views | `ListLines.jsx`, `ListCards.jsx` | 2 | **NOT DONE** — never censused |
+| Settings → Themes | `ThemeForm.tsx` | 1 | **MUI, FEEDBACK #45** (already on this table) |
+| Import files | `ImportFilesList.tsx` | 1 | **MUI, Combobox wave** (already on this table) |
+
+Two of the 39 were already accounted for. **37 are newly surfaced work.** The
+lesson is the same one this migration keeps relearning and is worth stating once
+more: a count produced by a pattern is only as good as the pattern's coverage of
+the population, and the way to find out is to look at the rendered DOM.
 
 ## Totals
 
@@ -20,8 +62,9 @@ grep -rn "<Autocomplete[^A-Za-z]" opencti-platform/opencti-front/src --include='
 | Select — Formik pivot (`component={SelectFieldFds}`) | 63 files | 0 |
 | Select — direct composition | 17 files | 2 files |
 
-The raw `<Select>` wave is **closed**: two mounts remain and both are on this
-table with a reason.
+The raw `<Select>` wave is **NOT closed** — see the correction above. The
+*named-import* population is converted; the *default-import* population, 37
+further mounts across 11 files, was never censused and is still to do.
 
 ## Still MUI — every line has a verdict
 
