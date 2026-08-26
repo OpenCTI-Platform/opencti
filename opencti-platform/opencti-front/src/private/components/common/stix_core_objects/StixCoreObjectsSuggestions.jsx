@@ -1,7 +1,8 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { AddTaskOutlined, AssistantOutlined } from '@mui/icons-material';
-import { Badge, CircularProgress, DialogActions, IconButton, List, ListItem, ListItemText, MenuItem, Select, ToggleButton, Tooltip } from '@mui/material';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { Badge, CircularProgress, DialogActions, IconButton, List, ListItem, ListItemText, ToggleButton, Tooltip } from '@mui/material';
 import { useState } from 'react';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import { useFormatter } from '../../../../components/i18n';
@@ -91,9 +92,12 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
     return suggestions;
   };
 
-  const handleSelectEntity = (type, event) => {
-    if (event && event.target && event.target.value) {
-      setSelectedEntity({ ...selectedEntity, [type]: event.target.value });
+  // Takes the value directly. The old `event && event.target && event.target.value`
+  // guard existed because MUI fired this for reasons other than a pick; the
+  // library only calls onValueChange on an actual selection.
+  const handleSelectEntity = (type, value) => {
+    if (value) {
+      setSelectedEntity({ ...selectedEntity, [type]: value });
     }
   };
 
@@ -379,21 +383,26 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
                               />
                             )}
                           />
+                          {/* The fixed 200px sizing goes: the library field
+                              owns its geometry. Flagged for Sandy's eye on the
+                              list rendering. */}
                           <Select
-                            style={{ width: 200, minWidth: 200, margin: '0 0 0 15px' }}
-                            variant="standard"
-                            onChange={(event) => handleSelectEntity(suggestion.type, event)
-                            }
                             value={selectedEntity[suggestion.type]}
+                            onValueChange={(value) => handleSelectEntity(suggestion.type, value)}
                           >
-                            {suggestion.data.map((object) => (
-                              <MenuItem
-                                key={object.id}
-                                value={object.id}
-                              >
-                                {getMainRepresentative(object)}
-                              </MenuItem>
-                            ))}
+                            <SelectTrigger aria-label={t_i18n('Entity')}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent aria-label={t_i18n('Entity')}>
+                              {suggestion.data.map((object) => (
+                                <SelectItem
+                                  key={object.id}
+                                  value={object.id}
+                                >
+                                  {getMainRepresentative(object)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
                           </Select>
                         </ListItem>
                       ))}
