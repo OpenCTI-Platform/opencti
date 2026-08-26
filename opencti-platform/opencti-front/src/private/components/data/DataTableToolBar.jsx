@@ -24,7 +24,7 @@ import {
 } from '@mui/icons-material';
 import { DialogContentText, FormControlLabel, Switch } from '@mui/material';
 import Alert from '@mui/material/Alert';
-import Autocomplete from '@mui/material/Autocomplete';
+import { Combobox, ComboboxChips, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
 import Avatar from '@mui/material/Avatar';
 import Checkbox from '@mui/material/Checkbox';
 import Chip from '@mui/material/Chip';
@@ -654,7 +654,10 @@ class DataTableToolBar extends Component {
     this.setState({ actionsInputs });
   }
 
-  handleChangeActionInputValues(i, event, value) {
+  // Event moved last and made optional: the library reports the DOM event on
+  // ComboboxChangeMeta rather than as a positional first argument. The
+  // stopPropagation stays — this toolbar sits over clickable table rows.
+  handleChangeActionInputValues(i, value, event) {
     if (event) {
       event.stopPropagation();
       event.preventDefault();
@@ -1099,8 +1102,7 @@ class DataTableToolBar extends Component {
     );
   }
 
-  searchContainers(i, event, newValue) {
-    if (!event) return;
+  searchContainers(i, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = R.assoc(
       'inputValue',
@@ -1145,8 +1147,7 @@ class DataTableToolBar extends Component {
       });
   }
 
-  searchGroups(i, event, newValue) {
-    if (!event) return;
+  searchGroups(i, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = R.assoc(
       'inputValue',
@@ -1172,8 +1173,7 @@ class DataTableToolBar extends Component {
       });
   }
 
-  searchActionInputOrganizations(i, event, newValue) {
-    if (!event) return;
+  searchActionInputOrganizations(i, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = R.assoc(
       'inputValue',
@@ -1184,14 +1184,12 @@ class DataTableToolBar extends Component {
     this.fetchOrganizations(newValue);
   }
 
-  searchOrganizations(event, newValue) {
-    if (!event) return;
+  searchOrganizations(newValue) {
     this.setState({ organizationInput: newValue && newValue.length > 0 ? newValue : '' });
     this.fetchOrganizations(newValue);
   }
 
-  searchMarkingDefinitions(i, event, newValue) {
-    if (!event) return;
+  searchMarkingDefinitions(i, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = R.assoc(
       'inputValue',
@@ -1213,8 +1211,7 @@ class DataTableToolBar extends Component {
       });
   }
 
-  searchLabels(i, event, newValue) {
-    if (!event) return;
+  searchLabels(i, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = R.assoc(
       'inputValue',
@@ -1240,8 +1237,7 @@ class DataTableToolBar extends Component {
       });
   }
 
-  searchExternalReferences(i, event, newValue) {
-    if (!event) return;
+  searchExternalReferences(i, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = R.assoc(
       'inputValue',
@@ -1272,8 +1268,7 @@ class DataTableToolBar extends Component {
       });
   }
 
-  searchIdentities(i, event, newValue) {
-    if (!event) return;
+  searchIdentities(i, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = R.assoc(
       'inputValue',
@@ -1302,8 +1297,7 @@ class DataTableToolBar extends Component {
       });
   }
 
-  searchAccountStatus(i, event, newValue) {
-    if (!event) return;
+  searchAccountStatus(i, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = R.assoc(
       'inputValue',
@@ -1313,8 +1307,7 @@ class DataTableToolBar extends Component {
     this.setState({ actionsInputs });
   }
 
-  searchStatuses(i, selectedTypes, event, newValue) {
-    if (!event) return;
+  searchStatuses(i, selectedTypes, newValue) {
     const { actionsInputs } = this.state;
     let selectedType;
     if (selectedTypes.length === 1) {
@@ -1354,8 +1347,7 @@ class DataTableToolBar extends Component {
       });
   }
 
-  searchVocabulary(i, category, event, newValue) {
-    if (!event) return;
+  searchVocabulary(i, category, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = R.assoc(
       'inputValue',
@@ -1384,8 +1376,7 @@ class DataTableToolBar extends Component {
       });
   }
 
-  searchParticipants(i, event, newValue) {
-    if (!event) return;
+  searchParticipants(i, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = {
       ...actionsInputs[i],
@@ -1410,8 +1401,7 @@ class DataTableToolBar extends Component {
       });
   }
 
-  searchAssignees(i, event, newValue) {
-    if (!event) return;
+  searchAssignees(i, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = {
       ...actionsInputs[i],
@@ -1440,8 +1430,7 @@ class DataTableToolBar extends Component {
       });
   }
 
-  searchUsers(i, event, newValue) {
-    if (!event) return;
+  searchUsers(i, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = R.assoc(
       'inputValue',
@@ -1469,8 +1458,7 @@ class DataTableToolBar extends Component {
       });
   }
 
-  searchKillChains(i, event, newValue) {
-    if (!event) return;
+  searchKillChains(i, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = {
       ...actionsInputs[i],
@@ -1557,45 +1545,48 @@ class DataTableToolBar extends Component {
                 this.setState(({ containers }) => ({
                   containers: [...(containers ?? []), element],
                 }));
-                this.handleChangeActionInputValues(i, null, [
+                this.handleChangeActionInputValues(i, [
                   ...(actionsInputs[i]?.values ?? []),
                   element,
                 ]);
               }}
             />
-            <Autocomplete
+            <Combobox
               disabled={disabled}
-              size="small"
-              fullWidth={true}
               selectOnFocus={true}
-              autoHighlight={true}
               getOptionLabel={(option) => option.label ?? ''}
               value={actionsInputs[i]?.values || []}
               multiple={true}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  variant="standard"
-                  label={t('Values')}
-                  fullWidth={true}
-                  onFocus={this.searchContainers.bind(this, i)}
-                  style={{ marginTop: 3 }}
-                />
-              )}
-              noOptionsText={t('No available options')}
               options={this.state.containers}
-              onInputChange={this.searchContainers.bind(this, i)}
               inputValue={actionsInputs[i]?.inputValue || ''}
-              onChange={this.handleChangeActionInputValues.bind(this, i)}
-              renderOption={(props, option) => (
-                <li {...props}>
+              onInputChange={(newValue, meta) => {
+                // Keystroke only. MUI reported an input change for every reason, which
+                // is why every one of these searches opened with `if (!event) return`.
+                if (meta.cause === 'type') (this.searchContainers.bind(this, i))(newValue);
+              }}
+              onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+              renderOption={(option) => (
+                <>
                   <div className={classes.icon}>
                     <ItemIcon type={option.type} />
                   </div>
                   <div className={classes.text}>{option.label}</div>
-                </li>
+                </>
               )}
-            />
+            >
+              <ComboboxLabel>{t('Values')}</ComboboxLabel>
+              <ComboboxField>
+                <ComboboxChips aria-label={t('Values')} />
+                <ComboboxInput onFocus={() => (this.searchContainers.bind(this, i))('')} />
+                <ComboboxControls>
+                  <ComboboxTrigger />
+                </ComboboxControls>
+              </ComboboxField>
+              <ComboboxContent
+                emptyMessage={t('No available options')}
+                listAriaLabel={t('Values')}
+              />
+            </Combobox>
             <IconButton
               aria-label={t('Create')}
               onClick={() => this.setState({ containerCreation: true })}
@@ -1608,138 +1599,136 @@ class DataTableToolBar extends Component {
         );
       case 'object-marking':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                onFocus={this.searchMarkingDefinitions.bind(this, i)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
             options={this.state.markingDefinitions}
-            onInputChange={this.searchMarkingDefinitions.bind(this, i)}
             inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
+            onInputChange={(newValue, meta) => {
+              // Keystroke only. MUI reported an input change for every reason, which
+              // is why every one of these searches opened with `if (!event) return`.
+              if (meta.cause === 'type') (this.searchMarkingDefinitions.bind(this, i))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
                 <div className={classes.icon} style={{ color: option.color }}>
                   <CenterFocusStrong />
                 </div>
                 <div className={classes.text}>{option.label}</div>
-              </li>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxChips aria-label={t('Values')} />
+              <ComboboxInput onFocus={() => (this.searchMarkingDefinitions.bind(this, i))('')} />
+              <ComboboxControls>
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
         );
       case 'object-label':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                onFocus={this.searchLabels.bind(this, i)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
             options={this.state.labels}
-            onInputChange={this.searchLabels.bind(this, i)}
             inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
+            onInputChange={(newValue, meta) => {
+              // Keystroke only. MUI reported an input change for every reason, which
+              // is why every one of these searches opened with `if (!event) return`.
+              if (meta.cause === 'type') (this.searchLabels.bind(this, i))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
                 <div className={classes.icon} style={{ color: option.color }}>
                   <LabelOutline />
                 </div>
                 <div className={classes.text}>{option.label}</div>
-              </li>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxChips aria-label={t('Values')} />
+              <ComboboxInput onFocus={() => (this.searchLabels.bind(this, i))('')} />
+              <ComboboxControls>
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
         );
       case 'created-by':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values[0] || []}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                onFocus={this.searchIdentities.bind(this, i)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
             options={this.state.identities}
-            onInputChange={this.searchIdentities.bind(this, i)}
             inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
+            onInputChange={(newValue, meta) => {
+              // Keystroke only. MUI reported an input change for every reason, which
+              // is why every one of these searches opened with `if (!event) return`.
+              if (meta.cause === 'type') (this.searchIdentities.bind(this, i))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
                 <div className={classes.icon}>
                   <ItemIcon type={option.type} />
                 </div>
                 <div className={classes.text}>{option.label}</div>
-              </li>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxInput onFocus={() => (this.searchIdentities.bind(this, i))('')} />
+              <ComboboxControls>
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
         );
       case 'x_opencti_workflow_id':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values[0] || []}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                onFocus={this.searchStatuses.bind(this, i, selectedTypes)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
             options={this.state.statuses}
-            onInputChange={this.searchStatuses.bind(this, i, selectedTypes)}
             inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
+            onInputChange={(newValue, meta) => {
+              // Keystroke only. MUI reported an input change for every reason, which
+              // is why every one of these searches opened with `if (!event) return`.
+              if (meta.cause === 'type') (this.searchStatuses.bind(this, i, selectedTypes))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
                 <div className={classes.icon}>
                   <Avatar
                     variant="square"
@@ -1753,117 +1742,138 @@ class DataTableToolBar extends Component {
                   </Avatar>
                 </div>
                 <div className={classes.text}>{option.label}</div>
-              </li>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxInput onFocus={() => (this.searchStatuses.bind(this, i, selectedTypes))('')} />
+              <ComboboxControls>
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
         );
       case 'external-reference':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                onFocus={this.searchExternalReferences.bind(this, i)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
             options={this.state.externalReferences}
-            onInputChange={this.searchExternalReferences.bind(this, i)}
             inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
+            onInputChange={(newValue, meta) => {
+              // Keystroke only. MUI reported an input change for every reason, which
+              // is why every one of these searches opened with `if (!event) return`.
+              if (meta.cause === 'type') (this.searchExternalReferences.bind(this, i))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
                 <div className={classes.icon} style={{ color: option.color }}>
                   <LanguageOutlined />
                 </div>
                 <div className={classes.text}>{option.label}</div>
-              </li>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxChips aria-label={t('Values')} />
+              <ComboboxInput onFocus={() => (this.searchExternalReferences.bind(this, i))('')} />
+              <ComboboxControls>
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
         );
       case 'object-assignee':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                onFocus={this.searchAssignees.bind(this, i)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
             options={this.state.assignees}
-            onInputChange={this.searchAssignees.bind(this, i)}
             inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
+            onInputChange={(newValue, meta) => {
+              // Keystroke only. MUI reported an input change for every reason, which
+              // is why every one of these searches opened with `if (!event) return`.
+              if (meta.cause === 'type') (this.searchAssignees.bind(this, i))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
                 <div className={classes.icon}>
                   <ItemIcon type={option.type} />
                 </div>
                 <div className={classes.text}>{option.label}</div>
-              </li>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxChips aria-label={t('Values')} />
+              <ComboboxInput onFocus={() => (this.searchAssignees.bind(this, i))('')} />
+              <ComboboxControls>
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
         );
       case 'object-participant':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                onFocus={this.searchParticipants.bind(this, i)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
             options={this.state.participants}
-            onInputChange={this.searchParticipants.bind(this, i)}
             inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
+            onInputChange={(newValue, meta) => {
+              // Keystroke only. MUI reported an input change for every reason, which
+              // is why every one of these searches opened with `if (!event) return`.
+              if (meta.cause === 'type') (this.searchParticipants.bind(this, i))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
                 <div className={classes.icon}>
                   <ItemIcon type={option.type} />
                 </div>
                 <div className={classes.text}>{option.label}</div>
-              </li>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxChips aria-label={t('Values')} />
+              <ComboboxInput onFocus={() => (this.searchParticipants.bind(this, i))('')} />
+              <ComboboxControls>
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
         );
       case 'case_severity_ov':
       case 'case_priority_ov':
@@ -1871,104 +1881,111 @@ class DataTableToolBar extends Component {
       case 'request_for_information_types_ov':
       case 'request_for_takedown_types_ov':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values[0] || null}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Select Value')}
-                fullWidth={true}
-                onFocus={this.searchVocabulary.bind(this, i, selectedField)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
             options={this.state.vocabularies[selectedField] || []}
-            onInputChange={this.searchVocabulary.bind(this, i, selectedField)}
             inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
+            onInputChange={(newValue, meta) => {
+              // Keystroke only. MUI reported an input change for every reason, which
+              // is why every one of these searches opened with `if (!event) return`.
+              if (meta.cause === 'type') (this.searchVocabulary.bind(this, i, selectedField))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
                 <div className={classes.text}>{option.label}</div>
-              </li>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Select Value')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxInput onFocus={() => (this.searchVocabulary.bind(this, i, selectedField))('')} />
+              <ComboboxControls>
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Select Value')}
+            />
+          </Combobox>
         );
       case 'indicator_type_ov':
       case 'platforms_ov':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || null}
             multiple={true}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Select Value')}
-                fullWidth={true}
-                onFocus={this.searchVocabulary.bind(this, i, selectedField)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
             options={this.state.vocabularies[selectedField] || []}
-            onInputChange={this.searchVocabulary.bind(this, i, selectedField)}
             inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
+            onInputChange={(newValue, meta) => {
+              // Keystroke only. MUI reported an input change for every reason, which
+              // is why every one of these searches opened with `if (!event) return`.
+              if (meta.cause === 'type') (this.searchVocabulary.bind(this, i, selectedField))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
                 <div className={classes.text}>{option.label}</div>
-              </li>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Select Value')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxChips aria-label={t('Select Value')} />
+              <ComboboxInput onFocus={() => (this.searchVocabulary.bind(this, i, selectedField))('')} />
+              <ComboboxControls>
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Select Value')}
+            />
+          </Combobox>
         );
       case 'creator_id':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values[0] || []}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                onFocus={this.searchUsers.bind(this, i)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
             options={this.state.users}
-            onInputChange={this.searchUsers.bind(this, i)}
             inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
+            onInputChange={(newValue, meta) => {
+              // Keystroke only. MUI reported an input change for every reason, which
+              // is why every one of these searches opened with `if (!event) return`.
+              if (meta.cause === 'type') (this.searchUsers.bind(this, i))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
                 <div className={classes.icon}>
                   <ItemIcon type={option.type} />
                 </div>
                 <div className={classes.text}>{option.label}</div>
-              </li>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxInput onFocus={() => (this.searchUsers.bind(this, i))('')} />
+              <ComboboxControls>
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
         );
       case 'x_opencti_score':
       case 'confidence':
@@ -1984,39 +2001,42 @@ class DataTableToolBar extends Component {
         );
       case 'killChainPhases':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                onFocus={this.searchKillChains.bind(this, i)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
             options={this.state.killChainPhases}
-            onInputChange={this.searchKillChains.bind(this, i)}
             inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
+            onInputChange={(newValue, meta) => {
+              // Keystroke only. MUI reported an input change for every reason, which
+              // is why every one of these searches opened with `if (!event) return`.
+              if (meta.cause === 'type') (this.searchKillChains.bind(this, i))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
                 <div className={classes.icon} style={{ color: option.color }}>
                   <ItemIcon type="Kill-Chain-Phase" />
                 </div>
                 <div className={classes.text}>{option.label}</div>
-              </li>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxChips aria-label={t('Values')} />
+              <ComboboxInput onFocus={() => (this.searchKillChains.bind(this, i))('')} />
+              <ComboboxControls>
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
         );
       case 'x_opencti_detection':
         return (
@@ -2033,106 +2053,115 @@ class DataTableToolBar extends Component {
         );
       case 'organizations':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                onFocus={this.searchActionInputOrganizations.bind(this, i)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
             options={this.state.organizations}
-            onInputChange={this.searchActionInputOrganizations.bind(this, i)}
             inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
+            onInputChange={(newValue, meta) => {
+              // Keystroke only. MUI reported an input change for every reason, which
+              // is why every one of these searches opened with `if (!event) return`.
+              if (meta.cause === 'type') (this.searchActionInputOrganizations.bind(this, i))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
                 <div className={classes.icon}>
                   <ItemIcon type={option.type} />
                 </div>
                 <div className={classes.text}>{option.label}</div>
-              </li>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxChips aria-label={t('Values')} />
+              <ComboboxInput onFocus={() => (this.searchActionInputOrganizations.bind(this, i))('')} />
+              <ComboboxControls>
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
         );
       case 'groups':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                onFocus={this.searchGroups.bind(this, i)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
             options={this.state.groups}
-            onInputChange={this.searchGroups.bind(this, i)}
             inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
+            onInputChange={(newValue, meta) => {
+              // Keystroke only. MUI reported an input change for every reason, which
+              // is why every one of these searches opened with `if (!event) return`.
+              if (meta.cause === 'type') (this.searchGroups.bind(this, i))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
                 <div className={classes.icon}>
                   <ItemIcon type={option.type} />
                 </div>
                 <div className={classes.text}>{option.label}</div>
-              </li>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxChips aria-label={t('Values')} />
+              <ComboboxInput onFocus={() => (this.searchGroups.bind(this, i))('')} />
+              <ComboboxControls>
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
         );
       case 'account_status':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values[0] || []}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
             options={this.constructor.getUserStatusOptionList(userStatuses)}
-            onInputChange={this.searchAccountStatus.bind(this, i)}
             inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
+            onInputChange={(newValue, meta) => {
+              // Keystroke only. MUI reported an input change for every reason, which
+              // is why every one of these searches opened with `if (!event) return`.
+              if (meta.cause === 'type') (this.searchAccountStatus.bind(this, i))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
                 <div className={classes.text}>{option.label}</div>
-              </li>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxInput />
+              <ComboboxControls>
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
         );
       case 'account_lock_after_date':
         return (
@@ -3229,39 +3258,42 @@ class DataTableToolBar extends Component {
                     ]);
                   }}
                 />
-                <Autocomplete
-                  size="small"
-                  fullWidth={true}
+                <Combobox
                   selectOnFocus={true}
-                  autoHighlight={true}
                   getOptionLabel={(option) => (option.label ? option.label : '')}
                   value={actionsInputs[0]?.values || []}
                   multiple={true}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="standard"
-                      label={t('Values')}
-                      fullWidth={true}
-                      onFocus={this.searchContainers.bind(this, 0)}
-                      style={{ marginTop: 3 }}
-                    />
-                  )}
-                  noOptionsText={t('No available options')}
                   options={this.state.containers}
-                  onInputChange={this.searchContainers.bind(this, 0)}
                   inputValue={actionsInputs[0]?.inputValue || ''}
-                  onChange={this.handleChangeActionInputValues.bind(this, 0)}
-                  renderOption={(props, option) => (
-                    <li {...props}>
+                  onInputChange={(newValue, meta) => {
+                    // Keystroke only. MUI reported an input change for every reason, which
+                    // is why every one of these searches opened with `if (!event) return`.
+                    if (meta.cause === 'type') (this.searchContainers.bind(this, 0))(newValue);
+                  }}
+                  onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, 0))(next, meta.event)}
+                  renderOption={(option) => (
+                    <>
                       <div className={classes.icon}>
                         <ItemIcon type={option.type} />
                       </div>
                       <div className={classes.text}>{option.label}</div>
-                    </li>
+                    </>
                   )}
                   disableClearable
-                />
+                >
+                  <ComboboxLabel>{t('Values')}</ComboboxLabel>
+                  <ComboboxField>
+                    <ComboboxChips aria-label={t('Values')} />
+                    <ComboboxInput onFocus={() => (this.searchContainers.bind(this, 0))('')} />
+                    <ComboboxControls>
+                      <ComboboxTrigger />
+                    </ComboboxControls>
+                  </ComboboxField>
+                  <ComboboxContent
+                    emptyMessage={t('No available options')}
+                    listAriaLabel={t('Values')}
+                  />
+                </Combobox>
                 <FormControlLabel
                   style={{ marginTop: 20 }}
                   control={(
@@ -3341,39 +3373,42 @@ class DataTableToolBar extends Component {
                     this.setState({ shareOrganizations: [...this.state.shareOrganizations, element] });
                   }}
                 />
-                <Autocomplete
-                  size="small"
-                  fullWidth={true}
+                <Combobox
                   selectOnFocus={true}
-                  autoHighlight={true}
                   getOptionLabel={(option) => (option.label ? option.label : '')}
                   value={this.state.shareOrganizations}
                   multiple={true}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="standard"
-                      label={t('Values')}
-                      fullWidth={true}
-                      onFocus={this.searchOrganizations.bind(this)}
-                      style={{ marginTop: 3 }}
-                    />
-                  )}
-                  noOptionsText={t('No available options')}
                   options={this.state.organizations}
-                  onInputChange={this.searchOrganizations.bind(this)}
                   inputValue={this.state.organizationInput}
-                  onChange={(_, value) => this.setState({ shareOrganizations: value })}
-                  renderOption={(props, option) => (
-                    <li {...props}>
+                  onInputChange={(newValue, meta) => {
+                    // Keystroke only. MUI reported an input change for every reason, which
+                    // is why every one of these searches opened with `if (!event) return`.
+                    if (meta.cause === 'type') (this.searchOrganizations.bind(this))(newValue);
+                  }}
+                  onValueChange={(next, meta) => ((_, value) => this.setState({ shareOrganizations: value }))(next, meta.event)}
+                  renderOption={(option) => (
+                    <>
                       <div className={classes.icon}>
                         <ItemIcon type={option.type} />
                       </div>
                       <div className={classes.text}>{option.label}</div>
-                    </li>
+                    </>
                   )}
                   disableClearable
-                />
+                >
+                  <ComboboxLabel>{t('Values')}</ComboboxLabel>
+                  <ComboboxField>
+                    <ComboboxChips aria-label={t('Values')} />
+                    <ComboboxInput onFocus={() => (this.searchOrganizations.bind(this))('')} />
+                    <ComboboxControls>
+                      <ComboboxTrigger />
+                    </ComboboxControls>
+                  </ComboboxField>
+                  <ComboboxContent
+                    emptyMessage={t('No available options')}
+                    listAriaLabel={t('Values')}
+                  />
+                </Combobox>
                 <IconButton
                   aria-label={t('Create organization')}
                   onClick={() => this.setState({ organizationCreation: true })}
@@ -3411,39 +3446,42 @@ class DataTableToolBar extends Component {
                 onClose={() => this.setState({ displayUnshare: false })}
                 title={t('Unshare with organizations')}
               >
-                <Autocomplete
-                  size="small"
-                  fullWidth={true}
+                <Combobox
                   selectOnFocus={true}
-                  autoHighlight={true}
                   getOptionLabel={(option) => (option.label ? option.label : '')}
                   value={this.state.shareOrganizations}
                   multiple={true}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="standard"
-                      label={t('Values')}
-                      fullWidth={true}
-                      onFocus={this.searchOrganizations.bind(this)}
-                      style={{ marginTop: 3 }}
-                    />
-                  )}
-                  noOptionsText={t('No available options')}
                   options={this.state.organizations}
-                  onInputChange={this.searchOrganizations.bind(this)}
                   inputValue={this.state.organizationInput}
-                  onChange={(_, value) => this.setState({ shareOrganizations: value })}
-                  renderOption={(props, option) => (
-                    <li {...props}>
+                  onInputChange={(newValue, meta) => {
+                    // Keystroke only. MUI reported an input change for every reason, which
+                    // is why every one of these searches opened with `if (!event) return`.
+                    if (meta.cause === 'type') (this.searchOrganizations.bind(this))(newValue);
+                  }}
+                  onValueChange={(next, meta) => ((_, value) => this.setState({ shareOrganizations: value }))(next, meta.event)}
+                  renderOption={(option) => (
+                    <>
                       <div className={classes.icon}>
                         <ItemIcon type={option.type} />
                       </div>
                       <div className={classes.text}>{option.label}</div>
-                    </li>
+                    </>
                   )}
                   disableClearable
-                />
+                >
+                  <ComboboxLabel>{t('Values')}</ComboboxLabel>
+                  <ComboboxField>
+                    <ComboboxChips aria-label={t('Values')} />
+                    <ComboboxInput onFocus={() => (this.searchOrganizations.bind(this))('')} />
+                    <ComboboxControls>
+                      <ComboboxTrigger />
+                    </ComboboxControls>
+                  </ComboboxField>
+                  <ComboboxContent
+                    emptyMessage={t('No available options')}
+                    listAriaLabel={t('Values')}
+                  />
+                </Combobox>
                 <DialogActions>
                   <Button
                     variant="secondary"
