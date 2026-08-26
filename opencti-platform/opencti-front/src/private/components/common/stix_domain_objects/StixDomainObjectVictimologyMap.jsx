@@ -70,9 +70,8 @@ const VictimologyMap = ({ queryRef, title }) => {
   return (
     <LocationMiniMapTargets
       title={title}
-      center={[48.8566969, 2.3514616]}
-      countries={countries}
       zoom={2}
+      countries={countries}
     />
   );
 };
