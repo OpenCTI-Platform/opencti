@@ -25073,6 +25073,7 @@ export type Query = {
   vulnerability?: Maybe<Vulnerability>;
   work?: Maybe<Work>;
   workflowDefinition?: Maybe<WorkflowSchema>;
+  workflowDefinitionPublished?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   works?: Maybe<WorkConnection>;
   workspace?: Maybe<Workspace>;
@@ -28253,6 +28254,11 @@ export type QueryWorkArgs = {
 
 export type QueryWorkflowDefinitionArgs = {
   allowDraft?: InputMaybe<Scalars['Boolean']['input']>;
+  entityType: Scalars['String']['input'];
+};
+
+
+export type QueryWorkflowDefinitionPublishedArgs = {
   entityType: Scalars['String']['input'];
 };
 
@@ -50325,6 +50331,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   vulnerability?: Resolver<Maybe<ResolversTypes['Vulnerability']>, ParentType, ContextType, Partial<QueryVulnerabilityArgs>>;
   work?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<QueryWorkArgs, 'id'>>;
   workflowDefinition?: Resolver<Maybe<ResolversTypes['WorkflowSchema']>, ParentType, ContextType, RequireFields<QueryWorkflowDefinitionArgs, 'entityType'>>;
+  workflowDefinitionPublished?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryWorkflowDefinitionPublishedArgs, 'entityType'>>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType, RequireFields<QueryWorkflowInstanceArgs, 'entityId'>>;
   works?: Resolver<Maybe<ResolversTypes['WorkConnection']>, ParentType, ContextType, Partial<QueryWorksArgs>>;
   workspace?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<QueryWorkspaceArgs, 'id'>>;

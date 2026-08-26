@@ -9454,6 +9454,7 @@ type Query {
   stixObjectOrStixRelationships(first: Int, after: ID, search: String, filters: FilterGroup): StixObjectOrStixRelationshipConnection
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
   workflowDefinition(entityType: String!, allowDraft: Boolean): WorkflowSchema
+  workflowDefinitionPublished(entityType: String!): Boolean
   workflowInstance(entityId: String!): WorkflowInstance
   allowedTransitions(entityId: String!): [WorkflowTransition!]!
   csvMapperTest(configuration: String!, content: String!): CsvMapperTestResult @deprecated(reason: "[>=6.4 & <6.7]. Use `csvMapperTest mutation`.")
