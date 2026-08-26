@@ -198,12 +198,12 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
       const isMatchingScope = isBundleElementInScope(element, applyToElements, dataInstanceId);
       const isMatchingFilters = await isBundleElementMatchFilters(context, element, applyWithFilters, eventContext);
       if (isMatchingScope && isMatchingFilters) {
-        const entityType = generateInternalType(element);
+        const { type } = element.extensions[STIX_EXT_OCTI];
         const elementOperations = actions
           .map((action) => {
-            const attrPath = computeAttributePath(entityType, action.attribute);
-            const multiple = isAttributeMultiple(entityType, action.attribute);
-            const attributeType = getAttributeType(entityType, action.attribute);
+            const attrPath = computeAttributePath(type, action.attribute);
+            const multiple = isAttributeMultiple(type, action.attribute);
+            const attributeType = getAttributeType(type, action.attribute);
             return ({ action, multiple, attributeType, attrPath, path: `/objects/${index}${attrPath}` });
           })
           // Unrecognized attributes must be filtered
