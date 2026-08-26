@@ -1771,3 +1771,58 @@ Carried here as the durable record: the reproduction is
 be changed to dodge this — not a `modal` override at a call site, not a Tab
 handler, not a focus trap. A product that papers over it makes the library defect
 invisible and unfixable.
+
+## 50. `closeOnSelect` defaults to false in multiple mode, where MUI closed
+
+**The cause of the two failing E2E specs. Found, fixed, and measured — and it is
+NOT #49.** Companion to #46: same shape, a default that silently inverts a
+product behaviour.
+
+**What the specs saw.** `getByRole('button', { name: 'Update' })` resolved to a
+real, visible button and the click timed out. Reproduced on the bench, verbatim
+from `taskPopup.launchAddLabel`:
+
+```
+after picking a value:
+  openListboxes = 1                       <- the panel did not close
+  elementFromPoint(Update centre) = SPAN.flex min-w-0 flex-1 items-center pr-2
+                                          <- a library OPTION ROW covers it
+  click Update -> Timeout 6000ms exceeded
+```
+
+The panel is not modal and does not block anything globally — it simply **overlays
+the dialog's own action button**, because the mass-edit dialog is narrow and the
+option list is long.
+
+**Why.** The library documents `closeOnSelect` as **false** in multiple mode: a
+deliberate design choice, and the better one for picking several values in open
+space. But **none** of the ~30 MUI mounts this migration converted passed
+`disableCloseOnSelect` — verified against the pre-migration tree — so every one of
+them closed after each pick. The conversion flipped the behaviour everywhere and
+it only *fails a test* where the panel happens to cover something.
+
+**Fix, parity not workaround.** `ComboboxField` now defaults
+`closeOnSelect` to `!!multiple`, documented at the prop, with
+`closeOnSelect={false}` available to opt a site into the library behaviour. The
+direct `<Combobox>` compositions declare it individually. `EntitySelect` keeps
+`closeOnSelect={!multiple}` because its MUI original DID pass
+`disableCloseOnSelect={multiple}` — the one site where staying open is parity.
+
+**Measured before / after** on the mass-edit dialog:
+
+| | panel after pick | at Update centre | click |
+|---|---|---|---|
+| before | open | a library option row | Timeout |
+| after | closed | the Update button itself | **succeeded** |
+
+**Honest limit.** `backgroundTask` is proven fixed by measurement above.
+`rfis` has the identical mechanism by code reading — `ObjectParticipantField` is
+multiple, its MUI original closed on select, and `participantsForm.getAddButton()`
+is the dialog's own Add directly beneath the field — and it is covered by the same
+adapter default, but I could NOT reach that dialog on the bench with a generic
+locator, so it is fixed-by-the-same-cause and not independently exercised.
+
+**FOR SANDY:** this restores MUI behaviour, not the library's intent. If you
+prefer the library's multi-select UX (panel stays open), it is one prop —
+`closeOnSelect={false}` — and the specs that click a button under the panel would
+need the dismissal instead.

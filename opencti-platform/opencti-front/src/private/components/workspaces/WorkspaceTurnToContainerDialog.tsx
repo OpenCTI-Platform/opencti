@@ -193,6 +193,10 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
       />
       <Combobox<EntityValue>
         multiple
+        // MUI parity: none of these mounts passed disableCloseOnSelect, so the panel
+        // closed after each pick. The library keeps it open in multiple mode, which
+        // overlays the form's own action button in a dialog this narrow.
+        closeOnSelect
         options={containersFromElements}
         // `actionsInputs.value` is declared as the loose FilterOption while the
         // options are the narrower FilterOptionValue. The value only ever comes

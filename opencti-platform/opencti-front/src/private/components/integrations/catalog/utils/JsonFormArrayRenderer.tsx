@@ -58,6 +58,10 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
           which silently swallowed a value already present — is gone. */}
       <Combobox<string>
         multiple
+        // MUI parity: none of these mounts passed disableCloseOnSelect, so the panel
+        // closed after each pick. The library keeps it open in multiple mode, which
+        // overlays the form's own action button in a dialog this narrow.
+        closeOnSelect
         allowCustomValue
         createValueFromInput={(input) => input}
         options={[]}

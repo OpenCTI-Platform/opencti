@@ -83,6 +83,10 @@ const EntitySettingCustomFieldsAddDialog: FunctionComponent<EntitySettingCustomF
           replaces it one-to-one. */}
       <Combobox<CustomFieldDefinitionNode>
         multiple
+        // MUI parity: none of these mounts passed disableCloseOnSelect, so the panel
+        // closed after each pick. The library keeps it open in multiple mode, which
+        // overlays the form's own action button in a dialog this narrow.
+        closeOnSelect
         options={candidates}
         value={selected}
         onValueChange={(next) => setSelected((next ?? []) as CustomFieldDefinitionNode[])}

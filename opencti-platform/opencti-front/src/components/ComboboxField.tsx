@@ -107,6 +107,24 @@ export type ComboboxFieldProps<Value extends PossibleValue = FieldOption>
       createValueFromInput?: (input: string) => Value;
       selectOnFocus?: boolean;
       openOnFocus?: boolean;
+      /**
+       * Defaults to `true` in multiple mode, which is MUI parity rather than the
+       * library default.
+       *
+       * The library documents `closeOnSelect` as false in multiple mode — a
+       * deliberate design choice, and a better one for picking several values in
+       * open space. But NONE of the ~30 MUI mounts this migration converted
+       * passed `disableCloseOnSelect` (checked against the pre-migration tree),
+       * so every one of them closed after each pick, and these fields live in
+       * narrow dialogs and edition drawers where a long panel overlays the form's
+       * own action button. Measured on the bulk mass-edit dialog:
+       * `elementFromPoint` at the Update button's centre returned a library
+       * option row, and the click timed out — the exact CI signature.
+       *
+       * Parity is the migration's contract, so the default is declared here once
+       * instead of at each site. Pass `closeOnSelect={false}` to opt a site into
+       * the library behaviour.
+       */
       closeOnSelect?: boolean;
       keepInputOnBlur?: boolean;
     };
@@ -222,7 +240,7 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
         createValueFromInput={createValueFromInput}
         selectOnFocus={selectOnFocus}
         openOnFocus={openOnFocus}
-        closeOnSelect={closeOnSelect}
+        closeOnSelect={closeOnSelect ?? !!multiple}
         keepInputOnBlur={keepInputOnBlur}
       >
         {label ? <ComboboxLabel>{label}</ComboboxLabel> : null}

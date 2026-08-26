@@ -1557,6 +1557,12 @@ class DataTableToolBar extends Component {
               getOptionLabel={(option) => option.label ?? ''}
               value={actionsInputs[i]?.values || []}
               multiple={true}
+              // This panel opens inside the mass-edit dialog and is long enough to
+              // overlay the dialog's own Update button. The library keeps a multi-value
+              // panel open after each pick (documented `closeOnSelect` default false in
+              // multiple mode) where MUI closed it, so the action becomes unreachable.
+              // Measured: elementFromPoint at the button centre returns an option row.
+              closeOnSelect
               options={this.state.containers}
               inputValue={actionsInputs[i]?.inputValue || ''}
               onInputChange={(newValue, meta) => {
@@ -1605,6 +1611,12 @@ class DataTableToolBar extends Component {
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
+            // This panel opens inside the mass-edit dialog and is long enough to
+            // overlay the dialog's own Update button. The library keeps a multi-value
+            // panel open after each pick (documented `closeOnSelect` default false in
+            // multiple mode) where MUI closed it, so the action becomes unreachable.
+            // Measured: elementFromPoint at the button centre returns an option row.
+            closeOnSelect
             options={this.state.markingDefinitions}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
@@ -1644,6 +1656,12 @@ class DataTableToolBar extends Component {
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
+            // This panel opens inside the mass-edit dialog and is long enough to
+            // overlay the dialog's own Update button. The library keeps a multi-value
+            // panel open after each pick (documented `closeOnSelect` default false in
+            // multiple mode) where MUI closed it, so the action becomes unreachable.
+            // Measured: elementFromPoint at the button centre returns an option row.
+            closeOnSelect
             options={this.state.labels}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
@@ -1766,6 +1784,12 @@ class DataTableToolBar extends Component {
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
+            // This panel opens inside the mass-edit dialog and is long enough to
+            // overlay the dialog's own Update button. The library keeps a multi-value
+            // panel open after each pick (documented `closeOnSelect` default false in
+            // multiple mode) where MUI closed it, so the action becomes unreachable.
+            // Measured: elementFromPoint at the button centre returns an option row.
+            closeOnSelect
             options={this.state.externalReferences}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
@@ -1805,6 +1829,12 @@ class DataTableToolBar extends Component {
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
+            // This panel opens inside the mass-edit dialog and is long enough to
+            // overlay the dialog's own Update button. The library keeps a multi-value
+            // panel open after each pick (documented `closeOnSelect` default false in
+            // multiple mode) where MUI closed it, so the action becomes unreachable.
+            // Measured: elementFromPoint at the button centre returns an option row.
+            closeOnSelect
             options={this.state.assignees}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
@@ -1844,6 +1874,12 @@ class DataTableToolBar extends Component {
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
+            // This panel opens inside the mass-edit dialog and is long enough to
+            // overlay the dialog's own Update button. The library keeps a multi-value
+            // panel open after each pick (documented `closeOnSelect` default false in
+            // multiple mode) where MUI closed it, so the action becomes unreachable.
+            // Measured: elementFromPoint at the button centre returns an option row.
+            closeOnSelect
             options={this.state.participants}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
@@ -1922,6 +1958,12 @@ class DataTableToolBar extends Component {
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || null}
             multiple={true}
+            // This panel opens inside the mass-edit dialog and is long enough to
+            // overlay the dialog's own Update button. The library keeps a multi-value
+            // panel open after each pick (documented `closeOnSelect` default false in
+            // multiple mode) where MUI closed it, so the action becomes unreachable.
+            // Measured: elementFromPoint at the button centre returns an option row.
+            closeOnSelect
             options={this.state.vocabularies[selectedField] || []}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
@@ -2007,6 +2049,12 @@ class DataTableToolBar extends Component {
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
+            // This panel opens inside the mass-edit dialog and is long enough to
+            // overlay the dialog's own Update button. The library keeps a multi-value
+            // panel open after each pick (documented `closeOnSelect` default false in
+            // multiple mode) where MUI closed it, so the action becomes unreachable.
+            // Measured: elementFromPoint at the button centre returns an option row.
+            closeOnSelect
             options={this.state.killChainPhases}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
@@ -2059,6 +2107,12 @@ class DataTableToolBar extends Component {
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
+            // This panel opens inside the mass-edit dialog and is long enough to
+            // overlay the dialog's own Update button. The library keeps a multi-value
+            // panel open after each pick (documented `closeOnSelect` default false in
+            // multiple mode) where MUI closed it, so the action becomes unreachable.
+            // Measured: elementFromPoint at the button centre returns an option row.
+            closeOnSelect
             options={this.state.organizations}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
@@ -2098,6 +2152,12 @@ class DataTableToolBar extends Component {
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
+            // This panel opens inside the mass-edit dialog and is long enough to
+            // overlay the dialog's own Update button. The library keeps a multi-value
+            // panel open after each pick (documented `closeOnSelect` default false in
+            // multiple mode) where MUI closed it, so the action becomes unreachable.
+            // Measured: elementFromPoint at the button centre returns an option row.
+            closeOnSelect
             options={this.state.groups}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
@@ -3263,6 +3323,12 @@ class DataTableToolBar extends Component {
                   getOptionLabel={(option) => (option.label ? option.label : '')}
                   value={actionsInputs[0]?.values || []}
                   multiple={true}
+                  // This panel opens inside the mass-edit dialog and is long enough to
+                  // overlay the dialog's own Update button. The library keeps a multi-value
+                  // panel open after each pick (documented `closeOnSelect` default false in
+                  // multiple mode) where MUI closed it, so the action becomes unreachable.
+                  // Measured: elementFromPoint at the button centre returns an option row.
+                  closeOnSelect
                   options={this.state.containers}
                   inputValue={actionsInputs[0]?.inputValue || ''}
                   onInputChange={(newValue, meta) => {
@@ -3378,6 +3444,12 @@ class DataTableToolBar extends Component {
                   getOptionLabel={(option) => (option.label ? option.label : '')}
                   value={this.state.shareOrganizations}
                   multiple={true}
+                  // This panel opens inside the mass-edit dialog and is long enough to
+                  // overlay the dialog's own Update button. The library keeps a multi-value
+                  // panel open after each pick (documented `closeOnSelect` default false in
+                  // multiple mode) where MUI closed it, so the action becomes unreachable.
+                  // Measured: elementFromPoint at the button centre returns an option row.
+                  closeOnSelect
                   options={this.state.organizations}
                   inputValue={this.state.organizationInput}
                   onInputChange={(newValue, meta) => {
@@ -3451,6 +3523,12 @@ class DataTableToolBar extends Component {
                   getOptionLabel={(option) => (option.label ? option.label : '')}
                   value={this.state.shareOrganizations}
                   multiple={true}
+                  // This panel opens inside the mass-edit dialog and is long enough to
+                  // overlay the dialog's own Update button. The library keeps a multi-value
+                  // panel open after each pick (documented `closeOnSelect` default false in
+                  // multiple mode) where MUI closed it, so the action becomes unreachable.
+                  // Measured: elementFromPoint at the button centre returns an option row.
+                  closeOnSelect
                   options={this.state.organizations}
                   inputValue={this.state.organizationInput}
                   onInputChange={(newValue, meta) => {
