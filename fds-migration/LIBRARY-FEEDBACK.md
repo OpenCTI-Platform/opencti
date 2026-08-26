@@ -1658,7 +1658,7 @@ It is a change to the accessibility tree, and the accessibility tree is what the
 E2E suite queries. `aria-label` on a converted trigger must be checked against
 every other control in the same container, not just against the field it names.
 
-## 49. OPEN BLOCKER — "locator resolved, click timed out" after a Combobox
+## 49. Select orphans its panel on Tab — and it is NOT the CI blocker
 
 **Two E2E specs, one signature, not yet diagnosed. CI is 25/27 on
 `7e785aa8ec`; these are the two.**
@@ -1703,3 +1703,57 @@ restore in LIFO order.
 **Status.** Not converted-and-broken, not reverted: the two specs fail and the
 cause is open. Nothing on this branch should be read as "E2E green" until this
 line is closed.
+
+
+### #49 — RESOLVED as a diagnosis, and my hypothesis was wrong twice
+
+**Measured, not argued.** Reproduction in `fds-migration/repro-49/` — React plus
+the built design system, no OpenCTI code — driven by Playwright, five close paths,
+both themes.
+
+| Component | select | Escape | click outside | Tab | unmount while open |
+|---|---|---|---|---|---|
+| library `Select`   | restored | restored | restored | **LEAKS `none`** | restored |
+| library `Combobox` | untouched | untouched | untouched | untouched | untouched |
+
+**Correction 1 — wrong component.** This entry blamed Combobox. Combobox mounts
+`PopoverPrimitive.Root` with `modal: false` and therefore never reaches the code
+that writes the property; it is provably immune on all five paths. Only `Select`
+is modal. Reading the bundle would have said so before any measurement.
+
+**Correction 2 — not a failed cleanup.** The named path is a real `Tab` on an
+**open** Select: focus leaves without the panel closing —
+`stillOpen=true, triggerExpanded=true, activeElement=DIV, popperLayers=1` — so
+`react-dismissable-layer` is *correct* to keep `pointer-events: none`. The defect
+is the orphaned open panel, not the restore.
+
+**Attribution: upstream.** The identical test against raw
+`@radix-ui/react-select` behaves the same (`stillOpen=true bodyPE=none
+laterClickBlocked=true`). `SelectContent` forwards only `position`, `sideOffset`
+and `className` and disables no dismissal. The behaviour is Radix's; the design
+system's part is shipping Select on a modal primitive without mitigation while
+its own Combobox opted out. Library decision, no product workaround.
+
+**Correction 3 — it does not explain the CI failures.** `backgroundTask` and
+`rfis` contain no `Tab` press, verified by grep across both specs and their page
+models. The leak is real and independent.
+
+### The CI blocker: where the evidence actually points
+
+`taskPopup.pageModel.launchAddLabel` ends with
+`getByRole('button', { name: 'Update' }).click()`, and CI reports the locator
+resolving to `<button class="…DataTableToolBar-button-104…">Update</button>` —
+the **toolbar's** Update, which sits behind the open mass-edit dialog and is
+therefore covered, hence a resolve-then-timeout. Previously the same locator must
+have resolved to the *dialog's* Update.
+
+That page model also drives the two selects **positionally** —
+`getByRole('combobox').first()` and `.nth(1)` — which is exactly the kind of
+locator that shifts when the number or order of comboboxes on a screen changes.
+`DataTableToolBar` still holds 2 unconverted MUI Selects next to 18 converted
+Comboboxes.
+
+**Next step, ordered:** count `[role="combobox"]` in that dialog before and after
+the conversion, and check whether `getByRole('button', {name:'Update'})` matches
+more than one node once the dialog is open. Do not start from the pointer-events
+theory — it is measured and it is not this.

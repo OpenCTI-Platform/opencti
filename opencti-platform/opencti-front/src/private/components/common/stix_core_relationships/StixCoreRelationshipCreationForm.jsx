@@ -217,7 +217,7 @@ const StixCoreRelationshipCreationForm = ({
                 <br />
                 {typeof handleReverseRelation === 'function' && (
                   <Button
-                    variant="secaondary"
+                    variant="secondary"
                     onClick={handleReverseRelation}
                     size="small"
                   >
