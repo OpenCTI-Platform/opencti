@@ -265,6 +265,12 @@ export const validateWorkflowDefinitionData = async (
         validateAction(action, `transition ${transition.event} (syncActions)`);
         if (action.type === 'validateDraft') {
           hasValidateDraft = true;
+          if (entityType !== ENTITY_TYPE_DRAFT_WORKSPACE) {
+            errors.push({
+              type: 'VALIDATE_DRAFT_ACTION_NOT_ALLOWED',
+              message: `Action 'validateDraft' in transition '${transition.event}' is only allowed for DraftWorkspace workflows`,
+            });
+          }
         }
         if (action.type === 'updateAuthorizedMembers') {
           hasUpdateAuthorizedMembersAction = true;

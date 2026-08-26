@@ -775,6 +775,26 @@ describe('Workflow Validation', () => {
     await expect(validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident'))
       .rejects.toThrow("doesn't exist");
   });
+
+  it('should fail when validateDraft is used in a non-DraftWorkspace workflow', async () => {
+    const invalid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'done' }],
+      transitions: [
+        {
+          from: 'existing-state',
+          to: 'done',
+          event: 'publish',
+          syncActions: [{ type: 'validateDraft' }],
+        },
+      ],
+    };
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident');
+    expect(errors).toContainEqual(expect.objectContaining({
+      type: 'VALIDATE_DRAFT_ACTION_NOT_ALLOWED',
+      message: "Action 'validateDraft' in transition 'publish' is only allowed for DraftWorkspace workflows",
+    }));
+  });
 });
 
 describe('Workflow Validation – transition comment field', () => {
