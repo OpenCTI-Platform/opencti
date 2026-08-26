@@ -597,6 +597,12 @@ export const CUSTOM_FIELDS_FEATURE_FLAG = 'CUSTOM_FIELDS';
 
 // User merge feature flag (use isFeatureEnabled(MERGE_USERS_FEATURE_FLAG) to check activation)
 export const MERGE_USERS_FEATURE_FLAG = 'MERGE_USERS';
+
+// Extended workflow engine/UI feature flag (use isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) to
+// check activation). When disabled, only DraftWorkspace uses the workflow engine and UI; other
+// entity types with a published WorkflowDefinition behave as before this change.
+export const ENTITIES_WORKFLOW_FEATURE_FLAG = 'ENTITIES_WORKFLOW';
+
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;
 export const TOPIC_CONTEXT_PREFIX = `${REDIS_PREFIX}_OPENCTI_CONTEXT_`;
