@@ -285,4 +285,19 @@ export const asSingleValue = <T,>(
   ? (name: string, value: T | T[] | null) => fn(name, Array.isArray(value) ? (value[0] ?? null) : value)
   : undefined);
 
+/**
+ * The `multiple` counterpart of {@link asSingleValue}, for a call site that
+ * declares `onChange(name, values: T[])` with no null.
+ *
+ * The invariant is measured, not assumed: in the library bundle a clear emits
+ * `onValueChange(multiple ? [] : null, ...)`, so multiple mode never yields
+ * null. The `?? []` is therefore unreachable rather than a silent default that
+ * could swallow a real null.
+ */
+export const asMultiValue = <T,>(
+  fn?: (name: string, values: T[]) => void,
+) => (fn
+  ? (name: string, value: T | T[] | null) => fn(name, Array.isArray(value) ? value : (value ? [value] : []))
+  : undefined);
+
 export default ComboboxFieldComponent;
