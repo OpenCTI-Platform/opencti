@@ -40,9 +40,13 @@ export default class AutocompleteFieldPageModel {
   }
 
   /**
-   * The MUI-era create affordance: a persistent `+` overlaid on the field.
-   * Still used by every site that has not been converted to the library
-   * Combobox — `CreatedByField`, `ExternalReferencesField` and the rest.
+   * The MUI-era create affordance: a persistent `+` overlaid on the field,
+   * rendered by AutocompleteField's `openCreate`.
+   *
+   * Kept for the sites still on MUI — the five in the ornament batch. It named
+   * `CreatedByField` and `ExternalReferencesField` as users, and both have since
+   * been converted, which is how four call sites came to click a button that no
+   * longer exists. Use `createOption` on any converted field.
    */
   openAddOptionForm() {
     return this.parentLocator.getByRole('button', { name: 'Add', exact: true }).click();

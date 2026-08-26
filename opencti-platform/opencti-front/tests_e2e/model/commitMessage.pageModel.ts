@@ -1,15 +1,28 @@
 import { Page } from '@playwright/test';
+import AutocompleteFieldPageModel from './field/AutocompleteField.pageModel';
 
 export default class CommitMessagePage {
+  private readonly externalReferencesField: AutocompleteFieldPageModel;
+
   constructor(private page: Page) {
+    this.externalReferencesField = new AutocompleteFieldPageModel(page, 'External references', true);
   }
 
   getPage() {
     return this.page.getByTestId('commit-message-page');
   }
 
-  getAddNewReferenceButton() {
-    return this.page.getByRole('button', { name: 'Add', exact: true });
+  /**
+   * Opens the reference creation form.
+   *
+   * There is no longer a persistent `Add` button beside the field: MUI's
+   * `openCreate` rendered an IconButton labelled "Add", and the library's
+   * `onCreateOption` renders a `Create '<text>'` row inside the panel instead,
+   * so the form opens carrying the typed text rather than empty. Driving the row
+   * is therefore the only way to reach it.
+   */
+  async openNewReferenceForm(sourceName: string) {
+    return this.externalReferencesField.createOption(sourceName);
   }
 
   getNewReferenceSourceNameInput() {

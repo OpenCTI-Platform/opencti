@@ -330,12 +330,12 @@ test('Report live entities creation and relationships', { tag: ['@report', '@kno
   // ------------------------------
 
   // Create author from the report creation form
-  await reportForm.authorAutocomplete.openAddOptionForm();
+  // The form now opens from the panel's create row, carrying the typed text, so
+  // the name arrives prefilled and cannot be empty through this path. The
+  // remaining required-field assertion is the one still reachable.
+  await reportForm.authorAutocomplete.createOption('Jeanne Mitchel');
   await authorForm.getCreateButton().click();
-  await expect(authorForm.nameField.getByText('This field is required')).toBeVisible();
   await expect(authorForm.entityTypeSelect.getByText('This field is required')).toBeVisible();
-  await authorForm.nameField.fill('Jeanne Mitchel');
-  await expect(authorForm.nameField.getByText('This field is required')).toBeHidden();
   await authorForm.entityTypeSelect.selectOption('Individual');
   await expect(authorForm.entityTypeSelect.getOption('Individual')).toBeVisible();
   await authorForm.getCreateButton().click();
@@ -363,12 +363,12 @@ test('Report live entities creation and relationships', { tag: ['@report', '@kno
   await expect(reportForm.labelsAutocomplete.getOption(labelName)).toBeVisible();
 
   // Create external references
-  await reportForm.externalReferencesAutocomplete.openAddOptionForm();
+  // Opens prefilled with the source name from the create row, so only the URL
+  // validation is still reachable from here.
+  await reportForm.externalReferencesAutocomplete.createOption('external ref');
   await externalReferenceForm.urlField.fill('bad url');
   await externalReferenceForm.getCreateButton().click();
-  await expect(externalReferenceForm.sourceNameField.getByText('This field is required')).toBeVisible();
   await expect(externalReferenceForm.urlField.getByText('The value must be an URL')).toBeVisible();
-  await externalReferenceForm.sourceNameField.fill('external ref');
   await externalReferenceForm.urlField.fill('https://github.com/OpenCTI-Platform/opencti');
   await externalReferenceForm.associatedFileField.uploadContentFile(TEST_PDF_PATH);
   await expect(externalReferenceForm.associatedFileField.getByText('report.test.pdf')).toBeVisible();
