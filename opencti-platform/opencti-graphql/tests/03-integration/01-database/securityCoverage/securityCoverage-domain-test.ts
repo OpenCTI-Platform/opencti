@@ -16,6 +16,10 @@ import type { StixSecurityCoverage } from '../../../../src/modules/securityCover
 import { findBackgroundTaskPaginated } from '../../../../src/domain/backgroundTask';
 
 describe('SecurityCoverage domain', () => {
+  // Creating has-covered relationships from filters spawns a QUERY background task,
+  // which counts the impacted entities using the user carried by the context.
+  const adminContext = { ...testContext, user: ADMIN_USER };
+
   let report: StoreEntityReport;
 
   const BASE_INPUT = () => ({
@@ -41,7 +45,7 @@ describe('SecurityCoverage domain', () => {
         ...BASE_INPUT(),
         add_related_entities: { filters: JSON.stringify({ mode: 'and', filters: [], filterGroups: [] }) },
       };
-      const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
+      const securityCoverage = await addSecurityCoverage(adminContext, ADMIN_USER, input);
       const results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
       expect(results.length).toEqual(1);
       // Name should be the external_uri when it is defined
@@ -138,7 +142,7 @@ describe('SecurityCoverage domain', () => {
         }],
         add_related_entities: { filters: JSON.stringify({ mode: 'and', filters: [], filterGroups: [] }) },
       };
-      const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
+      const securityCoverage = await addSecurityCoverage(adminContext, ADMIN_USER, input);
       let results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
       expect(results.length).toEqual(1);
       // Name falls back to "Result of <name>" when no external_uri is provided
@@ -263,7 +267,7 @@ describe('SecurityCoverage domain', () => {
           search: '',
         },
       };
-      const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
+      const securityCoverage = await addSecurityCoverage(adminContext, ADMIN_USER, input);
       const results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
       expect(results.length).toEqual(1);
 
