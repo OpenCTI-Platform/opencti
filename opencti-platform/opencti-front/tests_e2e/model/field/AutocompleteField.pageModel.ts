@@ -55,8 +55,11 @@ export default class AutocompleteFieldPageModel {
   /**
    * The library create affordance: type a value the list does not hold, then
    * pick the `Create '<value>'` row. Per design nodes 6920-11382 / 6920-11841,
-   * accepted 2026-08-25 — the persistent `+` is gone on converted sites, so the
-   * creation form opens carrying the typed text instead of empty.
+   * accepted 2026-08-25 — the persistent `+` is gone on converted sites.
+   *
+   * The row OPENS the creation form; it does NOT prefill it. Measured on the real
+   * incident-response form: after the click the dialog appears with its name and
+   * source_name inputs EMPTY. Callers must still fill them.
    */
   async createOption(value: string) {
     await this.inputLocator.click();

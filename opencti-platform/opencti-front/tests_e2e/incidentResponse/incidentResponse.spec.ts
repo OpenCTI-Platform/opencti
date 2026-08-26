@@ -319,12 +319,16 @@ test('Incident response live entities creation and relationships', { tag: ['@ce'
   // ------------------------------
 
   // Create author from the incident response creation form
-  // Opens from the panel's create row carrying the typed text, so the name
-  // arrives prefilled and the only required-field assertion still reachable
-  // through this path is the entity type.
+  // The create row OPENS the form; it does not carry the typed text over.
+  // Measured on the real form: after clicking the `Create '...'` row the dialog
+  // appears with input[name="name"] EMPTY, so both required-field assertions are
+  // still reachable and the name must still be filled.
   await incidentResponseForm.authorAutocomplete.createOption('Jeanne Mitchel');
   await authorForm.getCreateButton().click();
+  await expect(authorForm.nameField.getByText('This field is required')).toBeVisible();
   await expect(authorForm.entityTypeSelect.getByText('This field is required')).toBeVisible();
+  await authorForm.nameField.fill('Jeanne Mitchel');
+  await expect(authorForm.nameField.getByText('This field is required')).toBeHidden();
   await authorForm.entityTypeSelect.selectOption('Individual');
   await expect(authorForm.entityTypeSelect.getOption('Individual')).toBeVisible();
   await authorForm.getCreateButton().click();
@@ -352,10 +356,13 @@ test('Incident response live entities creation and relationships', { tag: ['@ce'
   await expect(incidentResponseForm.labelsAutocomplete.getOption(labelName)).toBeVisible();
 
   // Create external references
+  // The create row opens the form empty — it does not carry the typed text over.
   await incidentResponseForm.externalReferencesAutocomplete.createOption('external ref incident response');
   await externalReferenceForm.urlField.fill('bad url');
   await externalReferenceForm.getCreateButton().click();
+  await expect(externalReferenceForm.sourceNameField.getByText('This field is required')).toBeVisible();
   await expect(externalReferenceForm.urlField.getByText('The value must be an URL')).toBeVisible();
+  await externalReferenceForm.sourceNameField.fill('external ref incident response');
   await externalReferenceForm.urlField.fill('https://github.com/OpenCTI-Platform/client-python');
   await externalReferenceForm.associatedFileField.uploadContentFile(TEST_PDF_PATH);
   await expect(externalReferenceForm.associatedFileField.getByText('incidentResponse.test.pdf')).toBeVisible();

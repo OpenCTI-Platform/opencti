@@ -330,12 +330,16 @@ test('Report live entities creation and relationships', { tag: ['@report', '@kno
   // ------------------------------
 
   // Create author from the report creation form
-  // The form now opens from the panel's create row, carrying the typed text, so
-  // the name arrives prefilled and cannot be empty through this path. The
-  // remaining required-field assertion is the one still reachable.
+  // The create row OPENS the form; it does not carry the typed text over.
+  // Measured on the real form: after clicking the `Create '...'` row the dialog
+  // appears with input[name="name"] EMPTY, so both required-field assertions are
+  // still reachable and the name must still be filled.
   await reportForm.authorAutocomplete.createOption('Jeanne Mitchel');
   await authorForm.getCreateButton().click();
+  await expect(authorForm.nameField.getByText('This field is required')).toBeVisible();
   await expect(authorForm.entityTypeSelect.getByText('This field is required')).toBeVisible();
+  await authorForm.nameField.fill('Jeanne Mitchel');
+  await expect(authorForm.nameField.getByText('This field is required')).toBeHidden();
   await authorForm.entityTypeSelect.selectOption('Individual');
   await expect(authorForm.entityTypeSelect.getOption('Individual')).toBeVisible();
   await authorForm.getCreateButton().click();
@@ -363,12 +367,16 @@ test('Report live entities creation and relationships', { tag: ['@report', '@kno
   await expect(reportForm.labelsAutocomplete.getOption(labelName)).toBeVisible();
 
   // Create external references
-  // Opens prefilled with the source name from the create row, so only the URL
-  // validation is still reachable from here.
+  // The create row OPENS the form; it does not prefill it. Measured on the real
+  // incident-response form: after clicking `Create ‘...’` the dialog appears with
+  // input[name="source_name"] empty. An earlier version of this block assumed the
+  // opposite and dropped the fill, which made creation fail validation silently.
   await reportForm.externalReferencesAutocomplete.createOption('external ref');
   await externalReferenceForm.urlField.fill('bad url');
   await externalReferenceForm.getCreateButton().click();
+  await expect(externalReferenceForm.sourceNameField.getByText('This field is required')).toBeVisible();
   await expect(externalReferenceForm.urlField.getByText('The value must be an URL')).toBeVisible();
+  await externalReferenceForm.sourceNameField.fill('external ref');
   await externalReferenceForm.urlField.fill('https://github.com/OpenCTI-Platform/opencti');
   await externalReferenceForm.associatedFileField.uploadContentFile(TEST_PDF_PATH);
   await expect(externalReferenceForm.associatedFileField.getByText('report.test.pdf')).toBeVisible();

@@ -17,9 +17,9 @@ export default class CommitMessagePage {
    *
    * There is no longer a persistent `Add` button beside the field: MUI's
    * `openCreate` rendered an IconButton labelled "Add", and the library's
-   * `onCreateOption` renders a `Create '<text>'` row inside the panel instead,
-   * so the form opens carrying the typed text rather than empty. Driving the row
-   * is therefore the only way to reach it.
+   * `onCreateOption` renders a `Create '<text>'` row inside the panel instead.
+   * Driving the row is the only way to reach the form — and the row OPENS the
+   * form without prefilling it, so callers still fill the source name.
    */
   async openNewReferenceForm(sourceName: string) {
     return this.externalReferencesField.createOption(sourceName);
