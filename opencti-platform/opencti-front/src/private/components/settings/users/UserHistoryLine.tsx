@@ -329,11 +329,11 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
         className={classes.content}
         style={{
           height:
-              log.context_data
-              && log.context_data.external_references
-              && log.context_data.external_references.length > 0
-                ? 'auto'
-                : 40,
+            log.context_data
+            && log.context_data.external_references
+            && log.context_data.external_references.length > 0
+              ? 'auto'
+              : 40,
         }}
       >
         <Paper classes={{ root: classes.paper }}>
