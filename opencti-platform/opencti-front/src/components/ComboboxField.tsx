@@ -60,6 +60,12 @@ export type ComboboxFieldProps<Value extends PossibleValue = FieldOption>
       preserveCase?: boolean;
       style?: React.CSSProperties;
       className?: string;
+      /**
+       * Forwarded to the input, as MUI Autocomplete did. Real call sites rely on
+       * it: ThreatActorIndividual mounts two CountryFields in one form and tells
+       * them apart with id="PlaceOfBirth" / id="Ethnicity".
+       */
+      id?: string;
       groupBy?: (option: Value) => string;
       getOptionLabel?: (option: Value) => string;
       isOptionEqualToValue?: (a: Value, b: Value) => boolean;
@@ -119,6 +125,7 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
   clearable,
   style,
   className,
+  id,
   groupBy,
   getOptionLabel,
   isOptionEqualToValue,
@@ -230,6 +237,7 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
             />
           ) : null}
           <ComboboxInput
+            id={id}
             name={name}
             placeholder={placeholder}
             onFocus={onFocusInput}
@@ -259,5 +267,22 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
     </div>
   );
 };
+
+/**
+ * Narrows the adapter's dual-mode `onChange` for a single-value call site.
+ *
+ * `ComboboxFieldProps` types `onChange` as `Value | Value[] | null` because one
+ * adapter serves both modes, while a single-value field declares its own
+ * handler as `Value | null`. Encoding the mode as a type parameter was tried and
+ * reverted: it broke every `multiple` mount relying on the default and did not
+ * narrow inside the adapter either. This keeps the invariant in one place — for
+ * a field mounted without `multiple`, the array branch is unreachable — instead
+ * of a cast repeated at each call site.
+ */
+export const asSingleValue = <T,>(
+  fn?: (name: string, value: T | null) => void,
+) => (fn
+  ? (name: string, value: T | T[] | null) => fn(name, Array.isArray(value) ? (value[0] ?? null) : value)
+  : undefined);
 
 export default ComboboxFieldComponent;

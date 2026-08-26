@@ -6,7 +6,7 @@ import { OpenInNewOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
 import { fetchQuery } from '../../../../relay/environment';
 import type { ComboboxChangeMeta } from '@filigran/design-system';
-import ComboboxField, { ComboboxFieldProps } from '../../../../components/ComboboxField';
+import ComboboxField, { asSingleValue, ComboboxFieldProps } from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import { CreatorFieldSearchQuery$data } from './__generated__/CreatorFieldSearchQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -130,11 +130,7 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
         label={label}
         helperText={helpertext}
         clearable={clearable}
-        onChange={onChange && ((n: string, v: FieldOption | FieldOption[] | null) => {
-          // Single-value field. The adapter's onChange is typed for both modes,
-          // so the array branch is unreachable here rather than cast away.
-          onChange(n, Array.isArray(v) ? (v[0] ?? null) : v);
-        })}
+        onChange={asSingleValue(onChange)}
         style={containerStyle}
         noOptionsText={t_i18n('No available options')}
         options={creatorOptions}
