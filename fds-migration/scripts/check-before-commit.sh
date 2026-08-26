@@ -19,5 +19,13 @@ echo "== tsc =="
 echo "== select-conversion guard =="
 node fds-migration/scripts/check-select-conversion.mjs || fail=1
 
+# Added after CI caught "Missing frontend key: Refresh interval". Naming a field
+# for accessibility means introducing a t_i18n key, and a key with no catalogue
+# entry is a red gate the other three do not see.
+echo "== i18n keys =="
+out=$(cd opencti-platform/opencti-front && node script/verify-translation.js 2>&1)
+printf '%s\n' "$out"
+printf '%s\n' "$out" | grep -q "^Missing" && fail=1
+
 if [ "$fail" -ne 0 ]; then echo "GATES RED — do not commit"; exit 1; fi
 echo "GATES GREEN"
