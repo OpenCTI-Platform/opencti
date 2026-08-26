@@ -38,6 +38,7 @@ import { notify } from '../database/redis';
 import { getEntitiesListFromCache } from '../database/cache';
 import { isModuleActivated } from '../database/cluster-module';
 import { publishUserAction } from '../listener/UserActionListener';
+import VulnerabilitySoftwareToInfraRule from '../rules/vulnerability-software-to-infra/VulnerabilitySoftwareToInfraRule';
 
 export const RULES_DECLARATION: Array<RuleRuntime> = [
   AttributedToAttributedRule,
@@ -66,6 +67,7 @@ export const RULES_DECLARATION: Array<RuleRuntime> = [
   ReportRefsLocationLocatedAtRule,
   ParentTechniqueUseRule,
   VulnerabilitySoftwareToSystemRule,
+  VulnerabilitySoftwareToInfraRule,
 ];
 if (DEV_MODE) {
   RULES_DECLARATION.push(RelatedToRelatedRule);
