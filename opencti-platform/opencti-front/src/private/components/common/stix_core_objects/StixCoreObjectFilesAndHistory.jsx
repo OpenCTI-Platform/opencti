@@ -5,6 +5,7 @@ import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
 import withStyles from '@mui/styles/withStyles';
 import { ConnectionHandler } from 'relay-runtime';
+import MenuItem from '@mui/material/MenuItem';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import Dialog from '@common/dialog/Dialog';
@@ -18,7 +19,7 @@ import ManageImportConnectorMessage from '../../data/import/ManageImportConnecto
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import FileExportViewer from '../files/FileExportViewer';
 import FileImportViewer from '../files/FileImportViewer';
-import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
+import SelectField from '../../../../components/fields/SelectField';
 import { commitMutation, handleError, MESSAGING$ } from '../../../../relay/environment';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectHistory from './StixCoreObjectHistory';
@@ -348,7 +349,7 @@ const StixCoreObjectFilesAndHistory = ({
               title={t_i18n('Launch an import')}
             >
               <Field
-                component={SelectFieldFds}
+                component={SelectField}
                 variant="standard"
                 name="connector_id"
                 label={t_i18n('Connector')}
@@ -364,19 +365,19 @@ const StixCoreObjectFilesAndHistory = ({
                         connector.connector_scope,
                       ));
                   return (
-                    <SelectItem
+                    <MenuItem
                       key={i}
                       value={connector.id}
                       disabled={disabled || !connector.active}
                     >
                       {connector.name}
-                    </SelectItem>
+                    </MenuItem>
                   );
                 })}
               </Field>
               {!draftContext && (
                 <Field
-                  component={SelectFieldFds}
+                  component={SelectField}
                   variant="standard"
                   name="validation_mode"
                   label={t_i18n('Validation mode')}
@@ -384,18 +385,18 @@ const StixCoreObjectFilesAndHistory = ({
                   containerstyle={{ marginTop: 20, width: '100%' }}
                   setFieldValue={setFieldValue}
                 >
-                  <SelectItem
+                  <MenuItem
                     key="draft"
                     value="draft"
                   >
                     Draft
-                  </SelectItem>
-                  <SelectItem
+                  </MenuItem>
+                  <MenuItem
                     key="workbench"
                     value="workbench"
                   >
                     Workbench
-                  </SelectItem>
+                  </MenuItem>
                 </Field>
               )}
               {values.validation_mode === 'draft' && !draftContext && (
@@ -443,7 +444,7 @@ const StixCoreObjectFilesAndHistory = ({
               {selectedConnector?.configurations?.length > 0
                 ? (
                     <Field
-                      component={SelectFieldFds}
+                      component={SelectField}
                       variant="standard"
                       name="configuration"
                       label={t_i18n('Configuration')}
@@ -453,12 +454,12 @@ const StixCoreObjectFilesAndHistory = ({
                     >
                       {selectedConnector.configurations.map((config) => {
                         return (
-                          <SelectItem
+                          <MenuItem
                             key={config.id}
                             value={config.configuration}
                           >
                             {config.name}
-                          </SelectItem>
+                          </MenuItem>
                         );
                       })}
                     </Field>
@@ -523,7 +524,7 @@ const StixCoreObjectFilesAndHistory = ({
                 )}
               >
                 <Field
-                  component={SelectFieldFds}
+                  component={SelectField}
                   variant="standard"
                   name="format"
                   label={t_i18n('Export format')}
@@ -531,29 +532,29 @@ const StixCoreObjectFilesAndHistory = ({
                   containerstyle={{ width: '100%' }}
                 >
                   {exportScopes.map((value, i) => (
-                    <SelectItem
+                    <MenuItem
                       key={i}
                       value={value}
                       disabled={!isExportActive(value)}
                     >
                       {value}
-                    </SelectItem>
+                    </MenuItem>
                   ))}
                 </Field>
                 <Field
-                  component={SelectFieldFds}
+                  component={SelectField}
                   variant="standard"
                   name="type"
                   label={t_i18n('Export type')}
                   fullWidth={true}
                   containerstyle={fieldSpacingContainerStyle}
                 >
-                  <SelectItem value="simple">
+                  <MenuItem value="simple">
                     {t_i18n('Simple export (just the entity)')}
-                  </SelectItem>
-                  <SelectItem value="full">
+                  </MenuItem>
+                  <MenuItem value="full">
                     {t_i18n('Full export (entity and first neighbours)')}
-                  </SelectItem>
+                  </MenuItem>
                 </Field>
                 <ObjectMarkingField
                   name="contentMaxMarkings"
