@@ -1,11 +1,12 @@
-import React, { FunctionComponent, ReactNode, SyntheticEvent, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useState } from 'react';
 import { graphql } from 'react-relay';
 import Box from '@mui/material/Box';
 import { Link } from 'react-router-dom';
 import { OpenInNewOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
 import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField, { AutocompleteFieldProps } from '../../../../components/AutocompleteField';
+import type { ComboboxChangeMeta } from '@filigran/design-system';
+import ComboboxField, { ComboboxFieldProps } from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import { CreatorFieldSearchQuery$data } from './__generated__/CreatorFieldSearchQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -96,9 +97,8 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
     return null;
   };
 
-  const searchCreators = (event?: SyntheticEvent<Element, Event>) => {
-    if (event?.target instanceof HTMLInputElement) {
-      const search = event.target.value ?? '';
+  const searchCreators = (search: string) => {
+    {
       fetchQuery(CreatorFieldQuery, { search })
         .toPromise()
         .then((data) => {
@@ -123,28 +123,28 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
 
   return (
     <div style={{ width: '100%' }}>
-      <Field<AutocompleteFieldProps<false>>
+      <Field<ComboboxFieldProps>
         disabled={disabled}
-        component={AutocompleteField}
+        component={ComboboxField}
         name={name}
-        textfieldprops={{
-          variant: 'standard',
-          label,
-          helperText: helpertext,
-          onFocus: searchCreators,
-        }}
-        disableClearable={!clearable}
-        onChange={onChange}
+        label={label}
+        helperText={helpertext}
+        clearable={clearable}
+        onChange={onChange && ((n: string, v: FieldOption | FieldOption[] | null) => {
+          // Single-value field. The adapter's onChange is typed for both modes,
+          // so the array branch is unreachable here rather than cast away.
+          onChange(n, Array.isArray(v) ? (v[0] ?? null) : v);
+        })}
         style={containerStyle}
         noOptionsText={t_i18n('No available options')}
         options={creatorOptions}
         isOptionEqualToValue={(option: CreatorOption, selected: CreatorOption) => option.value === selected.value}
-        onInputChange={searchCreators}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: CreatorOption,
-        ) => (
-          <li {...props}>
+        onInputChange={(search: string, meta: ComboboxChangeMeta) => {
+          if (meta.cause === 'type') searchCreators(search);
+        }}
+        onFocusInput={() => searchCreators('')}
+        renderOption={(option: CreatorOption) => (
+          <>
             <div
               style={{
                 paddingTop: 4,
@@ -173,7 +173,7 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
                 {option.extra}
               </Box>
             )}
-          </li>
+          </>
         )}
       />
     </div>

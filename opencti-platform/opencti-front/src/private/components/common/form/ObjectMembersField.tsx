@@ -6,7 +6,8 @@ import type { Theme } from '../../../../components/Theme';
 import { fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { ObjectMembersFieldSearchQuery$data } from './__generated__/ObjectMembersFieldSearchQuery.graphql';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import type { ComboboxChangeMeta } from '@filigran/design-system';
+import ComboboxField from '../../../../components/ComboboxField';
 import ItemIcon from '../../../../components/ItemIcon';
 import { FieldOption } from '../../../../utils/field';
 
@@ -22,9 +23,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     display: 'inline-block',
     flexGrow: 1,
     marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
   },
 }));
 
@@ -112,9 +110,9 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
       : []),
   ] : [];
   const [members, setMembers] = useState<OptionMember[]>(dynamicMembers);
-  const searchMembers = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const searchMembers = (search: string) => {
     fetchQuery(objectMembersFieldSearchQuery, {
-      search: event && event.target.value ? event.target.value : '',
+      search,
       first: 50,
       entityTypes,
     })
@@ -140,35 +138,33 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
   return (
     <div style={{ width: '100%' }}>
       <Field
-        component={AutocompleteField}
+        component={ComboboxField}
+        // MUI hid its clear indicator here with display:none; the library defaults
+        // clearable to true, so the affordance must be declined explicitly.
+        clearable={false}
         disabled={disabled}
         name={name}
         multiple={multiple ?? false}
-        textfieldprops={{
-          variant: 'standard',
-          label: t_i18n(label ?? 'Users, groups or organizations'),
-          helperText: helpertext,
-          onFocus: searchMembers,
-        }}
+        label={t_i18n(label ?? 'Users, groups or organizations')}
+        helperText={helpertext}
         required={required}
         onChange={(n: string, v: FieldOption[]) => onChange?.(n, v)}
         style={style}
         noOptionsText={t_i18n('No available options')}
         options={members}
         groupBy={(option: OptionMember) => option.type}
-        onInputChange={searchMembers}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: OptionMember,
-        ) => (
-          <li {...props}>
+        onInputChange={(search: string, meta: ComboboxChangeMeta) => {
+          if (meta.cause === 'type') searchMembers(search);
+        }}
+        onFocusInput={() => searchMembers('')}
+        renderOption={(option: OptionMember) => (
+          <>
             <div className={classes.icon}>
               <ItemIcon type={option.type} />
             </div>
             <div className={classes.text}>{option.label}</div>
-          </li>
+          </>
         )}
-        classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
     </div>
   );

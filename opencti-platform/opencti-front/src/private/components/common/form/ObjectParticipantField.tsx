@@ -3,7 +3,8 @@ import { Field } from 'formik';
 import { graphql } from 'react-relay';
 import { makeStyles } from '@mui/styles';
 import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import type { ComboboxChangeMeta } from '@filigran/design-system';
+import ComboboxField from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
@@ -52,9 +53,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     flexGrow: 1,
     marginLeft: 10,
   },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
 }));
 
 interface OptionParticipant extends FieldOption {
@@ -84,9 +82,9 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
   const { me } = useContext((UserContext));
   const [participants, setParticipants] = useState<OptionParticipant[]>([]);
 
-  const searchParticipants = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const searchParticipants = (search: string) => {
     fetchQuery(objectParticipantFieldMembersSearchQuery, {
-      search: (event && event.target && event.target.value) ?? '',
+      search,
       entityTypes: ['User'],
       first: 10,
     })
@@ -118,36 +116,33 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
   };
   return (
     <Field
-      component={AutocompleteField}
+      component={ComboboxField}
+      // MUI hid its clear indicator here with display:none; the library defaults
+      // clearable to true, so the affordance must be declined explicitly.
+      clearable={false}
       style={style}
       name={name}
       required={required}
       disabled={disabled}
       multiple={true}
       groupBy={(option: OptionParticipant) => option.group}
-      textfieldprops={{
-        variant: 'standard',
-        label: label ?? t_i18n('Participant(s)'),
-        required,
-        helperText: helpertext,
-        onFocus: searchParticipants,
-      }}
+      label={label ?? t_i18n('Participant(s)')}
+      helperText={helpertext}
       noOptionsText={t_i18n('No available options')}
       options={participants}
-      onInputChange={searchParticipants}
+      onInputChange={(search: string, meta: ComboboxChangeMeta) => {
+        if (meta.cause === 'type') searchParticipants(search);
+      }}
+      onFocusInput={() => searchParticipants('')}
       onChange={typeof onChange === 'function' ? onChange : null}
-      renderOption={(
-        fieldProps: React.HTMLAttributes<HTMLLIElement>,
-        option: { type: string; label: string },
-      ) => (
-        <li {...fieldProps}>
+      renderOption={(option: { type: string; label: string }) => (
+        <>
           <div className={classes.icon}>
             <ItemIcon type={option.type} />
           </div>
           <div className={classes.text}>{option.label}</div>
-        </li>
+        </>
       )}
-      classes={{ clearIndicator: classes.autoCompleteIndicator }}
     />
   );
 };
