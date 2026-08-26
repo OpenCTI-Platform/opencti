@@ -19,7 +19,7 @@ import { Grid2 as Grid, Stack } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { Field, FieldArray, useFormikContext } from 'formik';
 import type { Theme } from '../../../../../../../components/Theme';
-import AutocompleteField from '../../../../../../../components/AutocompleteField';
+import ComboboxField from '../../../../../../../components/ComboboxField';
 import Button from '../../../../../../../components/common/button/Button';
 import { useFormatter } from '../../../../../../../components/i18n';
 import { capitalizeFirstLetter } from '../../../../../../../utils/String';
@@ -125,13 +125,10 @@ const PlaybookFlowFieldActions = ({
                   <Grid container spacing={3} sx={{ width: '100%', alignItems: 'flex-end' }}>
                     <Grid size={{ xs: 3 }}>
                       <Field
-                        component={AutocompleteField}
+                        component={ComboboxField}
                         name={`actions.${i}.op`}
                         multiple={false}
-                        textfieldprops={{
-                          variant: 'standard',
-                          label: t_i18n('Action type'),
-                        }}
+                        label={t_i18n('Action type')}
                         options={operationOptions}
                         isOptionEqualToValue={(option: FieldOption, val: string | FieldOption) => option.value === (typeof val === 'string' ? val : val.value)}
                         getOptionLabel={getOptionLabel(operationOptions)}
@@ -140,14 +137,11 @@ const PlaybookFlowFieldActions = ({
                     </Grid>
                     <Grid size={{ xs: 3 }}>
                       <Field
-                        component={AutocompleteField}
+                        component={ComboboxField}
                         name={`actions.${i}.attribute`}
                         multiple={false}
                         disabled={isEmptyField(action.op)}
-                        textfieldprops={{
-                          variant: 'standard',
-                          label: t_i18n('Field'),
-                        }}
+                        label={t_i18n('Field')}
                         options={fieldOptions}
                         noOptionsText={t_i18n('None')}
                         isOptionEqualToValue={(option: FieldOption, val: string | FieldOption) => option.value === (typeof val === 'string' ? val : val.value)}
