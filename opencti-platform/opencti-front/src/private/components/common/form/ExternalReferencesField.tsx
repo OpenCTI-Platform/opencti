@@ -1,9 +1,9 @@
-import makeStyles from '@mui/styles/makeStyles';
 import { Field } from 'formik';
 import { append } from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import type { ComboboxChangeMeta } from '@filigran/design-system';
+import ComboboxField from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { fetchQuery } from '../../../../relay/environment';
@@ -19,14 +19,6 @@ import ExternalReferenceCreation from '../../analyses/external_references/Extern
 import { externalReferencesQueriesSearchQuery } from '../../analyses/external_references/ExternalReferencesQueries';
 import { FieldOption } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  autoCompleteIndicator: {
-    display: 'none',
-  },
-}));
 
 export type ExternalReferencesValues = {
   label?: string;
@@ -86,7 +78,6 @@ export const ExternalReferencesField: FunctionComponent<
   required = false,
   noCreation = false,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const [externalReferenceCreation, setExternalReferenceCreation] = useState(false);
@@ -115,9 +106,7 @@ export const ExternalReferencesField: FunctionComponent<
     setExternalReferenceCreation(false);
   };
 
-  const searchExternalReferences = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const searchExternalReferences = (search: string) => {
     let filters: ExternalReferencesQueriesSearchQuery$variables['filters'];
     if (id) {
       filters = {
@@ -127,7 +116,7 @@ export const ExternalReferencesField: FunctionComponent<
       };
     }
     fetchQuery(externalReferencesQueriesSearchQuery, {
-      search: event && event.target.value,
+      search,
       filters,
     })
       .toPromise()
@@ -163,29 +152,28 @@ export const ExternalReferencesField: FunctionComponent<
   return (
     <>
       <Field
-        component={AutocompleteField}
+        component={ComboboxField}
+        // MUI hid its clear indicator here with display:none; the library defaults
+        // clearable to true, so the affordance must be declined explicitly.
+        clearable={false}
         style={style}
         name={name}
         required={required}
         multiple={true}
-        filterOptions={(options: unknown) => (options)}
-        textfieldprops={{
-          variant: 'standard',
-          label: t_i18n('External references'),
-          helperText: helpertext,
-          onFocus: searchExternalReferences,
-          required,
-        }}
+        // Server-side search: the identity filter keeps the list as returned.
+        filterOptions={(options) => options}
+        label={t_i18n('External references')}
+        helperText={helpertext}
         noOptionsText={t_i18n('No available options')}
         options={externalReferences}
-        onInputChange={searchExternalReferences}
-        openCreate={noCreation ? undefined : handleOpenExternalReferenceCreation}
+        onInputChange={(search: string, meta: ComboboxChangeMeta) => {
+          if (meta.cause === 'type') searchExternalReferences(search);
+        }}
+        onFocusInput={() => searchExternalReferences('')}
+        onCreateOption={noCreation ? undefined : handleOpenExternalReferenceCreation}
         onChange={typeof onChange === 'function' ? onChange : null}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: FieldOption,
-        ) => (
-          <li {...props} key={option.value}>
+        renderOption={(option: FieldOption) => (
+          <>
             <div style={{
               paddingTop: 4,
               display: 'inline-block',
@@ -201,9 +189,8 @@ export const ExternalReferencesField: FunctionComponent<
             >
               {option.label}
             </div>
-          </li>
+          </>
         )}
-        classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
       {!noCreation && (
         <ExternalReferenceCreation
