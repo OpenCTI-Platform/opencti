@@ -5,6 +5,7 @@ const redisConfig = vi.hoisted(() => ({
   mode: 'cluster',
   hostname: 'redis.example.test',
   hostnames: ['node-1.example.test:6379', 'node-2.example.test:6379'],
+  tlsServername: undefined,
 }));
 
 vi.mock('../../../src/config/conf', async (importOriginal) => {
@@ -13,6 +14,7 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
     'redis:mode': redisConfig.mode,
     'redis:hostname': redisConfig.hostname,
     'redis:hostnames': redisConfig.hostnames,
+    'redis:tls_servername': redisConfig.tlsServername,
     'redis:ca': [],
     'redis:database': 0,
     'redis:port': 6379,
@@ -51,6 +53,7 @@ describe('Redis client creation', () => {
     redisConfig.mode = 'cluster';
     redisConfig.hostname = 'redis.example.test';
     redisConfig.hostnames = ['node-1.example.test:6379', 'node-2.example.test:6379'];
+    redisConfig.tlsServername = undefined;
     vi.clearAllMocks();
   });
 
@@ -73,6 +76,31 @@ describe('Redis client creation', () => {
 
     expect(client).toBeInstanceOf(Redis);
     expect(client.options.tls).toMatchObject({ ca: ['test-ca'], servername: 'redis.example.test' });
+  });
+
+  it('should use an explicit TLS servername for every cluster node', async () => {
+    redisConfig.tlsServername = 'redis-cluster.example.test';
+
+    client = await createRedisClient('test');
+
+    expect(client).toBeInstanceOf(Cluster);
+    expect(client.options.redisOptions.tls).toMatchObject({
+      ca: ['test-ca'],
+      servername: 'redis-cluster.example.test',
+    });
+  });
+
+  it('should override the hostname with an explicit TLS servername in single mode', async () => {
+    redisConfig.mode = 'single';
+    redisConfig.tlsServername = 'redis-service.example.test';
+
+    client = await createRedisClient('test');
+
+    expect(client).toBeInstanceOf(Redis);
+    expect(client.options.tls).toMatchObject({
+      ca: ['test-ca'],
+      servername: 'redis-service.example.test',
+    });
   });
 });
 

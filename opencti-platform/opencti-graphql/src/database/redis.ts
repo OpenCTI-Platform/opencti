@@ -72,7 +72,7 @@ export const generateNatMap = (mappings: string[]): Record<string, { host: strin
 };
 
 const clusterOptions = async (provider: string): Promise<ClusterOptions> => {
-  const redisOpts = await redisOptions(provider);
+  const redisOpts = await redisOptions(provider, false, conf.get('redis:tls_servername'));
   return {
     keyPrefix: REDIS_PREFIX,
     lazyConnect: true,
@@ -118,7 +118,8 @@ export const createRedisClient = async (provider: string, autoReconnect = false)
     const sentinelOpts = await sentinelOptions(provider, clusterNodes);
     client = new Redis(sentinelOpts);
   } else {
-    const singleOptions = await redisOptions(provider, autoReconnect, conf.get('redis:hostname'));
+    const tlsServername = conf.get('redis:tls_servername') || conf.get('redis:hostname');
+    const singleOptions = await redisOptions(provider, autoReconnect, tlsServername);
     client = new Redis({ ...singleOptions, db: conf.get('redis:database') ?? 0, port: conf.get('redis:port'), host: conf.get('redis:hostname') });
   }
 
