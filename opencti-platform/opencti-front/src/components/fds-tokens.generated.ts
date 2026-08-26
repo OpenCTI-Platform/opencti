@@ -6,7 +6,7 @@
  * fields. Wiring: fds-migration/TOKEN-MAPPING.md.
  *
  * Source: @filigran/design-system packages/filigran-design-system/src/tokens/theme.css
- * Theme.css content hash: sha256:3c0ef256c9d92003739f590c0d969d3aec1dcc6bcb26e00e9e5db5ca845fa20e
+ * Theme.css content hash: sha256:164d8b4367c80f4e24956aa067ca8177e1d2ddae333e68c873b0c4173df32e52
  * Regenerate (from the filigran-design-system repo, not here):
  *   pnpm generate:mui-bridge --product opencti --write-to-product
  *
@@ -18,7 +18,7 @@
 
 export const FDS_META = {
   product: "opencti",
-  themeCssHash: "sha256:3c0ef256c9d92003739f590c0d969d3aec1dcc6bcb26e00e9e5db5ca845fa20e",
+  themeCssHash: "sha256:164d8b4367c80f4e24956aa067ca8177e1d2ddae333e68c873b0c4173df32e52",
   generator: "@filigran/design-system scripts/generate-mui-bridge.ts",
 } as const;
 
@@ -90,10 +90,10 @@ const colorsDark = {
   "--border-elevation-subtle-soft-layer-0-transparency-15": "#2b4f8d26",
   "--border-elevation-subtle-soft-layer-1": "#2b4f8d",
   "--border-elevation-subtle-soft-layer-1-transparency-15": "#2b4f8d26",
-  "--border-elevation-subtle-soft-layer-2": "#2b4f8d",
-  "--border-elevation-subtle-soft-layer-2-transparency-15": "#2b4f8d26",
-  "--border-elevation-subtle-soft-layer-3": "#2b4f8d",
-  "--border-elevation-subtle-soft-layer-3-transparency-15": "#2b4f8d26",
+  "--border-elevation-subtle-soft-layer-2": "#7a9cd6",
+  "--border-elevation-subtle-soft-layer-2-transparency-15": "#7a9cd626",
+  "--border-elevation-subtle-soft-layer-3": "#7a9cd6",
+  "--border-elevation-subtle-soft-layer-3-transparency-15": "#7a9cd626",
   "--border-input-error": "#f14337",
   "--border-input-focus": "#42caff",
   "--border-input-hover": "#f2f2f3",
@@ -124,6 +124,7 @@ const colorsDark = {
   "--color-feedback-contrast-tertiary": "#ffffff0d",
   "--color-feedback-error-primary": "#f14337",
   "--color-feedback-error-secondary": "#881106",
+  "--color-feedback-error-secondary-transparency-20": "#88110633",
   "--color-feedback-error-secondary-transparency-30": "#8811064d",
   "--color-feedback-error-tertiary": "#f57266",
   "--color-feedback-info-primary": "#42caff",
@@ -147,7 +148,7 @@ const colorsDark = {
   "--color-filigran-brand-primary-transparency-10": "#42caff1a",
   "--color-filigran-brand-primary-transparency-55": "#42caff8c",
   "--color-filigran-brand-secondary": "#a8e7ff",
-  "--color-filigran-brand-tertiary": "#0079a8",
+  "--color-filigran-brand-tertiary": "#009edb",
   "--color-filigran-ia-primary": "#a47af0",
   "--color-filigran-ia-secondary": "#e3d6fa",
   "--color-filigran-ia-secondary-transparency-10": "#e3d6fa1a",
@@ -179,7 +180,7 @@ const colorsDark = {
   "--text-input-label": "#afb0b6",
   "--text-input-placeholder": "#f2f2f3",
   "--text-input-required": "#f2f2f3",
-  "--text-negative-disabled": "#2b4f8d",
+  "--text-negative-disabled": "#62636a",
   "--text-negative-primary": "#18191b",
   "--text-negative-secondary": "#494a50"
 } as const;
@@ -278,6 +279,7 @@ const colorsLight = {
   "--color-feedback-contrast-tertiary": "#0000000d",
   "--color-feedback-error-primary": "#b8180a",
   "--color-feedback-error-secondary": "#f57266",
+  "--color-feedback-error-secondary-transparency-20": "#f5726633",
   "--color-feedback-error-secondary-transparency-30": "#f572664d",
   "--color-feedback-error-tertiary": "#881106",
   "--color-feedback-info-primary": "#0079a8",
@@ -333,7 +335,7 @@ const colorsLight = {
   "--text-input-label": "#494a50",
   "--text-input-placeholder": "#18191b",
   "--text-input-required": "#18191b",
-  "--text-negative-disabled": "#a0b4e3",
+  "--text-negative-disabled": "#95969d",
   "--text-negative-primary": "#f2f2f3",
   "--text-negative-secondary": "#afb0b6"
 } as const;
