@@ -1,4 +1,52 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const redisConfig = vi.hoisted(() => ({
+  mode: 'cluster',
+  hostname: 'redis.example.test',
+  hostnames: ['node-1.example.test:6379', 'node-2.example.test:6379'],
+}));
+
+const redisClientMocks = vi.hoisted(() => {
+  const Redis = vi.fn(function Redis(options) {
+    this.options = options;
+    this.on = vi.fn().mockReturnValue(this);
+  });
+  const Cluster = vi.fn(function Cluster(nodes, options) {
+    this.nodes = nodes;
+    this.options = options;
+    this.on = vi.fn().mockReturnValue(this);
+  });
+  Redis.Cluster = Cluster;
+  return { Redis, Cluster };
+});
+
+vi.mock('ioredis', () => redisClientMocks);
+
+vi.mock('../../../src/config/conf', async (importOriginal) => {
+  const actual = await importOriginal();
+  const redisOverrides = () => ({
+    'redis:mode': redisConfig.mode,
+    'redis:hostname': redisConfig.hostname,
+    'redis:hostnames': redisConfig.hostnames,
+    'redis:ca': [],
+    'redis:database': 0,
+    'redis:port': 6379,
+    'redis:nat_map': [],
+  });
+  return {
+    ...actual,
+    default: {
+      ...actual.default,
+      get: (key) => (key in redisOverrides() ? redisOverrides()[key] : actual.default.get(key)),
+    },
+    booleanConf: (key, fallback) => (key === 'redis:use_ssl' ? true : actual.booleanConf(key, fallback)),
+    configureCA: vi.fn(() => ({ ca: ['test-ca'] })),
+  };
+});
+
+vi.mock('../../../src/config/credentials', () => ({
+  enrichWithRemoteCredentials: vi.fn(async (_service, auth) => auth),
+}));
 
 vi.mock('../../../src/schema/schema-relationsRef', () => ({
   schemaRelationsRefDefinition: {
@@ -6,10 +54,37 @@ vi.mock('../../../src/schema/schema-relationsRef', () => ({
   },
 }));
 
-import { removeResolvedRefs } from '../../../src/database/redis';
+import { createRedisClient, removeResolvedRefs } from '../../../src/database/redis';
 import { generateClusterNodes, generateNatMap } from '../../../src/database/redis';
 
 describe('redis', () => {
+  beforeEach(() => {
+    redisConfig.mode = 'cluster';
+    vi.clearAllMocks();
+  });
+
+  it('should not pin the TLS servername in cluster mode', async () => {
+    await createRedisClient('test');
+
+    expect(redisClientMocks.Cluster).toHaveBeenCalledOnce();
+    const [nodes, options] = redisClientMocks.Cluster.mock.calls[0];
+    expect(nodes).toEqual([
+      { host: 'node-1.example.test', port: 6379 },
+      { host: 'node-2.example.test', port: 6379 },
+    ]);
+    expect(options.redisOptions.tls).toEqual({ ca: ['test-ca'] });
+  });
+
+  it('should use the configured hostname as TLS servername in single mode', async () => {
+    redisConfig.mode = 'single';
+
+    await createRedisClient('test');
+
+    expect(redisClientMocks.Redis).toHaveBeenCalledOnce();
+    const [options] = redisClientMocks.Redis.mock.calls[0];
+    expect(options.tls).toEqual({ ca: ['test-ca'], servername: 'redis.example.test' });
+  });
+
   it('should cluster node configuration correctly generated', () => {
     const nodes = generateClusterNodes(['localhost:7000', 'localhost:7001']);
     expect(nodes.length).toBe(2);
