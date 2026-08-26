@@ -255,7 +255,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
     <>
       <Field
         component={ComboboxField}
-        preserveCase
+
         style={style}
         name={name}
         required={required}

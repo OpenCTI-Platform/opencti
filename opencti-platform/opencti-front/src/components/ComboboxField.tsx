@@ -57,7 +57,6 @@ export type ComboboxFieldProps<Value extends PossibleValue = FieldOption>
        * See defaultGetOptionLabel.
        */
       optionLength?: number;
-      preserveCase?: boolean;
       style?: React.CSSProperties;
       className?: string;
       /**

@@ -91,7 +91,7 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
         multiple={true}
         label={t_i18n('Labels')}
         helperText={helpertext}
-        preserveCase
+
         noOptionsText={t_i18n('No available options')}
         options={labels}
         // Keystroke only — a pick or a clear used to re-query.

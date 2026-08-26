@@ -1859,12 +1859,29 @@ rather than from the design system".
 chip falls back to its system tone and no free hex is ever painted for it. Other
 markings and labels keep their data colour, which the decision does not touch.
 
-**What the library needs for the rest.** A per-option tone hook on the Combobox
-chip row — `getChipSeverity?: (option: T) => ChipSeverity` alongside the existing
-`getChipColor` — and a casing exemption, since the geometry decision lowercases
-chip labels while TLP must stay uppercase. Until then TLP chips are toneless
-rather than correctly toned, and their casing follows the library.
+**What the library needs for the rest.** One hook: a per-option tone on the
+Combobox chip row — `getChipSeverity?: (option: T) => ChipSeverity` alongside the
+existing `getChipColor`.
 
-**Removal test.** Put a TLP marking in an `ObjectMarkingField`: the chip reads
-`TLP:GREEN` in uppercase and carries the TLP system tone, with no `#hex` anywhere
-in its computed background.
+**Casing is NOT a library ask** (Sandy, corrected): the component renders the text
+it is given, so uppercase TLP is a source-data rule, not a component capability.
+Verified on the bench — the marking definitions already carry
+`"TLP:GREEN"`, `"TLP:AMBER+STRICT"`, `"TLP:CLEAR"` etc. in uppercase, and
+`convertMarking` maps `definition` straight to the chip label. Nothing to correct
+at the source, and nothing to ask upstream.
+
+A related dead prop was removed while checking this. `preserveCase` drove MUI's
+`labelTextTransform={preserveCase ? 'none' : 'capitalize'}` — MUI capitalized chip
+labels by default and this opted out. `ComboboxField` declared the prop and never
+read it, and two mounts passed it believing it worked. The library applies no
+transform at all, so the prop is gone rather than left lying. Consequence worth
+knowing: every converted site that did NOT pass it used to have its chip labels
+capitalized by MUI and now renders them as stored — which is the geometry
+decision, applied.
+
+**Status.** Per-option tone: owner **library**, **V2**, not before the 31st. TLP
+chips are toneless until then, assumed.
+
+**Removal test.** Put a TLP marking in an `ObjectMarkingField`: the chip carries
+the TLP system tone with no `#hex` anywhere in its computed background. The
+uppercase label is already true today.
