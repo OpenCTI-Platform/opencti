@@ -156,3 +156,41 @@ JsonMapperDefaultMarking.
 | `private/components/widgets/WidgetCreationParameters.tsx` | 323, 409, 526, 564, 598, 719, 753, 802, 850 | raw-MUI-Select / single | **convert → Select lib** (closed list, no typing) | — |
 | `private/components/workspaces/dashboards/public_dashboards/PublicDashboardCreationForm.tsx` | 139 | pivot-SelectField / single | **convert → Select lib** (closed list, no typing) | — |
 | `utils/ai/ResponseDialog.tsx` | 369 | raw-MUI-Select / single | **convert → Select lib** (closed list, no typing) | — |
+
+## Raw `<Select>` — the triplet rewrite, and what it costs
+
+The pivot needed a child rename. These need a structural rewrite, and the shapes
+are now known from doing three of them (`66b9b28`):
+
+| shape | what changes |
+|---|---|
+| `FormControl` + `InputLabel` + `Select` | collapses into the library compound; `SelectLabel` takes over the association, so the hand-rolled `labelId`/`label` pair disappears rather than being translated |
+| bare `Typography` above a `Select` | becomes a real `SelectLabel` — the visible text goes from adjacent to associated, a small accessibility gain |
+| `onChange(event)` | becomes `onValueChange(value)`, which changes the HANDLER's signature too: `EntitiesDetailsRightBar.handleSelectEntity` took a `SelectChangeEvent` and read `event.target.value` |
+
+`fullWidth`, `variant`, `size` and `labelId` are all dropped: the library field
+owns its own width and geometry.
+
+**The import trap.** Three import shapes exist, and the third defeats a
+per-symbol regex: `BulkTextModal` pulled `FormControl`, `InputLabel`, `MenuItem`
+and `Select` from ONE combined `@mui/material` import. eslint reported four
+undefined components. Handle it explicitly before scaling.
+
+### `FormSchemaEditor` — characterised, not yet converted
+
+The largest single unit left: **20 mounts in one file**. Measured rather than
+assumed, so the next session starts from facts:
+
+- **18** are the uniform `FormControl` + `InputLabel` + `Select` triple; **2**
+  carry the `InputLabel` with the `FormControl` further up the tree.
+- **none** is `multiple` — the file's 29 occurrences of "multiple" belong to its
+  own subject matter, not to a select's props. So all 20 route to the library
+  `Select`, none to `Combobox`.
+- **no** real `<Menu>`, `<MenuList>` or `MuiMenu`, so the `MenuItem` rename is
+  safe here.
+- `Select` arrives through the **combined** `@mui/material` import — the trap
+  above.
+
+Deliberately left for its own pass: 20 structural rewrites, each carrying a
+handler-signature change, is precisely the shape that has needed one to three
+corrective CI cycles every time this round moved in bulk.
