@@ -56,9 +56,9 @@ There is one SBOM asset per Docker image base (for example: standard, FIPS, and 
 
 OpenCTI can be deployed using the *docker-compose* command.
 
-!!! note "Deploy FIPS 140-2 compliant components"
+!!! note "Deploy FIPS 140-3 compliant components"
 
-    We provide FIPS 140-2 compliant images. Please read the [dedicated documentation](../reference/fips.md) to understand how to deploy OpenCTI in FIPS-compliant mode.
+    We provide FIPS 140-3 compliant images. The [dedicated documentation](../reference/fips.md) explains how to deploy OpenCTI in FIPS 140-3 compliant mode and describes the exact compliance posture of these images.
 
 ### Pre-requisites
 
