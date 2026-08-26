@@ -198,7 +198,7 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
       const isMatchingScope = isBundleElementInScope(element, applyToElements, dataInstanceId);
       const isMatchingFilters = await isBundleElementMatchFilters(context, element, applyWithFilters, eventContext);
       if (isMatchingScope && isMatchingFilters) {
-        const { type } = element.extensions[STIX_EXT_OCTI];
+        const { type, id } = element.extensions[STIX_EXT_OCTI];
         const elementOperations = actions
           .map((action) => {
             const attrPath = computeAttributePath(type, action.attribute);
@@ -265,7 +265,9 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
           const operationObject = elementOperations.map((op) => {
             return { key: op.attribute, value: Array.isArray(op.value) ? op.value : [op.value], operation: op.op };
           });
-          applyOperationFieldPatch(element, operationObject);
+          if (id) {
+            applyOperationFieldPatch(element, operationObject);
+          }
           pushAll(patchOperations, elementOperations.map((e) => e.patchOperation));
         }
       }
