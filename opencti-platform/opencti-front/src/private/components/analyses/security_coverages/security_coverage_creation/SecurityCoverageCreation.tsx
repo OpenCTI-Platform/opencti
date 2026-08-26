@@ -262,10 +262,10 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
       objectLabel: values.objectLabel.map((v) => v.value),
       confidence: parseInt(String(values.confidence), 10),
       add_related_entities: entitiesToCover ? {
-        ...(entitiesToCover.selected_ids ? { selected_ids: entitiesToCover.selected_ids } : {}),
-        ...(entitiesToCover.filters ? { filters: serializeFilterGroupForBackend(entitiesToCover.filters) } : {}),
-        ...(entitiesToCover.excluded_ids ? { excluded_ids: entitiesToCover.excluded_ids } : {}),
-        ...(entitiesToCover.search ? { search: entitiesToCover.search } : {}),
+        selected_ids: entitiesToCover.selected_ids,
+        filters: entitiesToCover.filters ? serializeFilterGroupForBackend(entitiesToCover.filters) : undefined,
+        excluded_ids: entitiesToCover.excluded_ids,
+        search: entitiesToCover.search,
       } : null,
     };
 
