@@ -71,3 +71,31 @@ Stated because it would be easy to assume. `backgroundTask` and `rfis` contain n
 `Tab` press — verified by grep over both specs and their page models. This leak is
 real and worth fixing on its own; the CI failures need a separate diagnosis, and
 the current evidence for them is in LIBRARY-FEEDBACK #49.
+
+---
+
+## Also hosts the `createOption` diagnostics
+
+`create-row.spec.mjs` and `create-regex.spec.mjs` answer two questions about the
+library's create affordance, raised by `incidentResponse.spec.ts:298` failing on
+CI while `report.spec.ts` passes the same flow.
+
+**Does an identity `filterOptions` suppress the create row?** No.
+`ExternalReferencesField` passes `filterOptions={(options) => options}` because
+its search is server-side, which made this the first suspect.
+
+```
+[identity filterOptions]      options=["Create ‘brand new value’","Alpha","Bravo","Charlie"]  → PRESENT
+[default filtering (control)] options=["Create ‘brand new value’"]                            → PRESENT
+```
+
+**Does the page model's matcher fail on a multi-word value?** No. The two specs
+differ in exactly that — `'external ref'` passes, `'external ref incident
+response'` times out — so the matcher was the second suspect.
+
+```
+"Create ‘external ref’"                     regex matches: 1  click: SUCCEEDED
+"Create ‘external ref incident response’"   regex matches: 1  click: SUCCEEDED
+```
+
+Both hypotheses are dead. The cause of that spec's failure is still open.

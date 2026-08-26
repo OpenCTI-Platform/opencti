@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import * as RawSelect from '@radix-ui/react-select';
 import {
-  Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput,
+  Combobox, ComboboxChips, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput,
   ComboboxLabel, ComboboxTrigger,
   Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue,
 } from '@filigran/design-system';
@@ -21,6 +21,8 @@ function App() {
   const [cbx, setCbx] = useState(null);
   const [mountSelect, setMountSelect] = useState(true);
   const [mountCbx, setMountCbx] = useState(true);
+  const [idf, setIdf] = useState([]);
+  const [dflt, setDflt] = useState([]);
   const [theme, setTheme] = useState('dark');
 
   return (
@@ -82,6 +84,49 @@ function App() {
           </RawSelect.Content>
         </RawSelect.Portal>
       </RawSelect.Root>
+
+      {/* Does a create row still appear when filterOptions is the identity
+          function? ExternalReferencesField uses it because its search is
+          server-side, and incidentResponse fails clicking the Create row. */}
+      <h3>Combobox with identity filterOptions</h3>
+      <Combobox
+        options={OPTIONS}
+        multiple
+        value={idf}
+        onValueChange={setIdf}
+        getOptionLabel={(o) => o?.label ?? ''}
+        isOptionEqualToValue={(a, b) => a.value === b.value}
+        filterOptions={(options) => options}
+        onCreateOption={(input) => { window.__created = input; }}
+      >
+        <ComboboxLabel>Identity filter</ComboboxLabel>
+        <ComboboxField>
+          <ComboboxChips aria-label="Identity filter" />
+          <ComboboxInput id="idf-input" />
+          <ComboboxControls><ComboboxTrigger /></ComboboxControls>
+        </ComboboxField>
+        <ComboboxContent listAriaLabel="Identity filter" />
+      </Combobox>
+
+      {/* Control: same field WITHOUT filterOptions. */}
+      <h3>Combobox with default filtering</h3>
+      <Combobox
+        options={OPTIONS}
+        multiple
+        value={dflt}
+        onValueChange={setDflt}
+        getOptionLabel={(o) => o?.label ?? ''}
+        isOptionEqualToValue={(a, b) => a.value === b.value}
+        onCreateOption={(input) => { window.__created = input; }}
+      >
+        <ComboboxLabel>Default filter</ComboboxLabel>
+        <ComboboxField>
+          <ComboboxChips aria-label="Default filter" />
+          <ComboboxInput id="dflt-input" />
+          <ComboboxControls><ComboboxTrigger /></ComboboxControls>
+        </ComboboxField>
+        <ComboboxContent listAriaLabel="Default filter" />
+      </Combobox>
 
       <div id="log" />
     </div>
