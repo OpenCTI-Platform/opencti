@@ -6,11 +6,8 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import DialogActions from '@mui/material/DialogActions';
-import FormControl from '@mui/material/FormControl';
 import IconButton from '@mui/material/IconButton';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import TextField from '@mui/material/TextField';
 import { FunctionComponent, useEffect, useMemo, useRef, useState } from 'react';
 import ReactMde from 'react-mde';
@@ -364,20 +361,17 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
         {/* Agent mode: tone selector */}
         {agentMode?.action === 'tone' && (
           <Box sx={{ mb: 2 }}>
-            <FormControl size="small" fullWidth>
-              <InputLabel id="tone-label">{t_i18n('Tone')}</InputLabel>
-              <Select
-                labelId="tone-label"
-                label={t_i18n('Tone')}
-                value={tone}
-                onChange={(event) => setTone(event.target.value)}
-                size="small"
-              >
-                <MenuItem value="tactical">{t_i18n('Tactical')}</MenuItem>
-                <MenuItem value="operational">{t_i18n('Operational')}</MenuItem>
-                <MenuItem value="strategic">{t_i18n('Strategic')}</MenuItem>
-              </Select>
-            </FormControl>
+            <Select value={tone} onValueChange={setTone}>
+              <SelectLabel>{t_i18n('Tone')}</SelectLabel>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent aria-label={t_i18n('Tone')}>
+                <SelectItem value="tactical">{t_i18n('Tactical')}</SelectItem>
+                <SelectItem value="operational">{t_i18n('Operational')}</SelectItem>
+                <SelectItem value="strategic">{t_i18n('Strategic')}</SelectItem>
+              </SelectContent>
+            </Select>
           </Box>
         )}
 
