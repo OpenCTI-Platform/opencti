@@ -250,6 +250,9 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
         </Label>
 
         <Stack gap={2.5}>
+          {/* FDS-WORKAROUND #45: stays on MUI. The empty string is a real product
+              state here, and the library Select has no adornment slot nor a clear
+              part, while Combobox has ComboboxClear. See fds-migration/LIBRARY-FEEDBACK.md */}
           <Select
             value={loginAsideType}
             onChange={handleLoginAsideTypeChange}

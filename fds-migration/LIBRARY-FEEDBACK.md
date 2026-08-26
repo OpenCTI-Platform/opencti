@@ -1535,3 +1535,27 @@ control is not carried forward on the strength of a green re-run.
 
 **Removal test.** Convert both, then run `dashboardRestriction` ten times in a
 row. Ten greens, not one.
+
+## 45. Select has no clear affordance, while Combobox has `ComboboxClear`
+
+**Capability gap, one site so far.** `ThemeForm`'s "Right panel customisation"
+picks a login-aside background type among three, and the empty string is a
+legitimate product state: choosing nothing means the login page keeps its
+default panel. MUI expressed that with an `endAdornment` holding a clear
+`IconButton`, shown only while a value is set.
+
+**Why the field cannot move as it stands.** The library Select exposes no
+adornment slot and no clear part. `Combobox` has `ComboboxClear` for exactly
+this need, so the asymmetry is the finding: the same product requirement is
+served on one component and not the other. Converting anyway would mean either
+losing the ability to empty the field, or inventing a "None" option — a product
+UX decision that does not belong to a migration.
+
+Distinct from #155's `startIcon`/`adornment`, which land on `ComboboxField`.
+This one is about `Select`.
+
+**Status.** `ThemeForm` stays on MUI with FDS-WORKAROUND #45.
+
+**Removal test.** Convert the field, set a background type, clear it from the
+trigger without opening the panel, and confirm the submitted value is the empty
+string — the same three steps the MUI version passes today.
