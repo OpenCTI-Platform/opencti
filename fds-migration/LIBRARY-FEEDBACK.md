@@ -1624,3 +1624,36 @@ carries the search-scope selector in its input `endAdornment` for STIX object
 types. Same gap, same round. Full list: `LocationField`,
 `StixCoreObjectsField`, `EntitySelectWithTypes`, `StixCoreObjectContainer`,
 `FilterChipPopover`.
+
+## 48. Naming a select next to a same-named input breaks `getByLabel`
+
+**A regression I caused, and the reason is worth keeping.**
+
+`InputSliderField` (confidence, score) renders ONE value twice: a number input
+labelled with the field's label, and a select of the scale's marks. Under MUI the
+select had no accessible name at all — its `labelId` pointed at an element that
+does not exist — so I gave the converted trigger `aria-label={label}`, reasoning
+that a screen reader hearing the name twice beats an unnamed combobox.
+
+CI disagreed, precisely:
+
+```
+strict mode violation: ...getByLabel('Confidence level') resolved to 2 elements:
+  1) <input  ... name="confidence" ...>   aka getByRole('spinbutton', ...)
+  2) <button ... role="combobox" aria-label="Confidence level" ...>
+```
+
+`tests_e2e/incidentResponse` failed on the run and on the retry. Reverted: both
+triggers are unnamed again, which is what MUI shipped.
+
+**The gap is real and stays open.** Two controls for one value is the product's
+design; the library cannot fix that, and inventing a second user-visible string
+to disambiguate is a product wording decision. The options are a distinct label
+for the select ("Confidence scale"?), an `aria-labelledby` pointing at the shared
+field label with the input marked as the primary control, or accepting one
+unnamed combobox. That is Sandy's call, not a migration's.
+
+**The lesson, generalised:** adding an accessible name is not a free improvement.
+It is a change to the accessibility tree, and the accessibility tree is what the
+E2E suite queries. `aria-label` on a converted trigger must be checked against
+every other control in the same container, not just against the field it names.
