@@ -1685,7 +1685,7 @@
       "container_type": "EXTERNAL_IMPORT"
     },
     {
-      "title": "AbuseIPDB IP BlackList (V0 REMOTE)",
+      "title": "AbuseIPDB IP BlackList (V0 REMOTE changed)",
       "slug": "abuseipdb-ipblacklist",
       "description": "(V0 remote) AbuseIPDB is a community-driven project dedicated to fighting hackers, spammers, and abusive activity on the internet. Its API provides access to a comprehensive database of IP addresses reported for malicious activity.\n\nThis connector fetches the AbuseIPDB blacklist and imports the most reported malicious IP addresses into OpenCTI as IPv4/IPv6 observables, with optional STIX Indicator creation. Each object is attributed to an AbuseIPDB identity, linked to an external reference, and annotated with configurable TLP markings. Relationship creation between indicators and other STIX objects is also supported.",
       "short_description": "(V0 remote) Imports the most reported malicious IP addresses from the AbuseIPDB blacklist API into OpenCTI as IPv4/IPv6 observables and optional STIX indicators, with TLP markings and source attribution.",
