@@ -1,15 +1,15 @@
 import React, { SyntheticEvent, useState } from 'react';
+import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@common/button/IconButton';
 import { DeleteOutlined, EditOutlined } from '@mui/icons-material';
 import { SavedFiltersAutocompleteOptionType, SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
-import { Autocomplete, useTheme } from '@mui/material';
-import TextField from '@mui/material/TextField';
+
 import { useFormatter } from 'src/components/i18n';
-import { AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
+
 import SavedFilterEditDialog from './SavedFilterEditDialog';
-import type { Theme } from '../Theme';
+
 import useGranted from '../../utils/hooks/useGranted';
 
 type SavedFiltersAutocompleteProps = {
@@ -17,7 +17,7 @@ type SavedFiltersAutocompleteProps = {
   value?: SavedFiltersAutocompleteOptionType;
   inputValue?: string;
   onChange?: (selectionOption: SavedFiltersAutocompleteOptionType) => void;
-  onInputChange?: (_: SyntheticEvent, value: string, reason: AutocompleteInputChangeReason) => void;
+  onInputChange?: (value: string) => void;
   onDelete?: (value: SavedFiltersSelectionData) => void;
   options?: SavedFiltersAutocompleteOptionType[];
   localStorageKey?: string;
@@ -36,7 +36,6 @@ const SavedFiltersAutocomplete = ({
 }: SavedFiltersAutocompleteProps) => {
   const hasSharingSavedFiltersCapability = useGranted(['KNOWLEDGE_KNSHAREFILTERS']);
 
-  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [savedFilterToEdit, setSavedFilterToEdit] = useState<SavedFiltersSelectionData | undefined>();
 
@@ -54,14 +53,14 @@ const SavedFiltersAutocomplete = ({
     setSavedFilterToEdit(option);
   };
 
-  const renderOption = (params: React.HTMLAttributes<HTMLLIElement> & { key: string }, option: SavedFiltersAutocompleteOptionType) => {
+  const renderOption = (option: SavedFiltersAutocompleteOptionType) => {
     const filterLabel = option.ownerName ? `${option.label} (${option.ownerName})` : option.label;
     const filterLabelWithScope = localStorageKey
       ? filterLabel // if localStorageKey, the scope is the same for every saved filters of the list
       : `${filterLabel} - ${t_i18n('Scope')}: ${option.scope}`; // in widgets
     const canManage = option.canManage && (hasSharingSavedFiltersCapability || option.isOwner);
     return (
-      <li {...params} key={params.key}>
+      <>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Tooltip title={filterLabelWithScope} enterDelay={500}>
             <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
@@ -93,7 +92,7 @@ const SavedFiltersAutocomplete = ({
             </div>
           )}
         </div>
-      </li>
+      </>
     );
   };
 
@@ -103,43 +102,37 @@ const SavedFiltersAutocomplete = ({
 
   return (
     <>
-      <Autocomplete
+      <Combobox<SavedFiltersAutocompleteOptionType>
         key={value?.value.id}
-        disableClearable
-        value={value}
+        clearable={false}
+        value={value ?? null}
         disabled={isDisabled}
         isOptionEqualToValue={(option, v) => option?.value.id === v.value.id}
-        getOptionDisabled={(option) => !!option.disabled}
+        isOptionDisabled={(option) => !!option.disabled}
         inputValue={inputValue}
         options={options ?? []}
         groupBy={(option) => handleFiltersGroupBy(option.isOwner)}
-        sx={{ width: 200 }}
-        slotProps={{
-          listbox: {
-            sx: { paddingTop: 0 },
-          },
+        getOptionLabel={(option) => option?.label ?? ''}
+        onValueChange={(next) => onChange?.(next as SavedFiltersAutocompleteOptionType)}
+        // The callers used to filter on MUI's reason === 'input'; the cause gate
+        // is the same test, applied once here instead of in each of them.
+        onInputChange={(next, meta) => {
+          if (meta.cause === 'type') onInputChange?.(next);
         }}
-        noOptionsText={t_i18n('No available options')}
-        onChange={(_, selectedOption: SavedFiltersAutocompleteOptionType) => onChange?.(selectedOption)}
-        onInputChange={onInputChange}
         renderOption={renderOption}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            variant="outlined"
-            size="small"
-            label={t_i18n('Select saved filter')}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                backgroundColor: theme.palette.background.secondary,
-                '& fieldset': {
-                  borderColor: value ? theme.palette.border.secondary : 'transparent!important',
-                },
-              },
-            }}
-          />
-        )}
-      />
+      >
+        <ComboboxLabel>{t_i18n('Select saved filter')}</ComboboxLabel>
+        <ComboboxField>
+          <ComboboxInput />
+          <ComboboxControls>
+            <ComboboxTrigger />
+          </ComboboxControls>
+        </ComboboxField>
+        <ComboboxContent
+          emptyMessage={t_i18n('No available options')}
+          listAriaLabel={t_i18n('Select saved filter')}
+        />
+      </Combobox>
       {!!savedFilterToEdit && localStorageKey && (
         <SavedFilterEditDialog
           isOpen={!!savedFilterToEdit}
