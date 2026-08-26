@@ -1657,3 +1657,49 @@ unnamed combobox. That is Sandy's call, not a migration's.
 It is a change to the accessibility tree, and the accessibility tree is what the
 E2E suite queries. `aria-label` on a converted trigger must be checked against
 every other control in the same container, not just against the field it names.
+
+## 49. OPEN BLOCKER — "locator resolved, click timed out" after a Combobox
+
+**Two E2E specs, one signature, not yet diagnosed. CI is 25/27 on
+`7e785aa8ec`; these are the two.**
+
+```
+group1  backgroundTask.spec.ts       ✘ run and ✘ retry
+        locator resolved to <button class="…DataTableToolBar-button-104…">Update</button>
+        Error: locator.click: Test timeout of 200000ms exceeded.
+
+group0  rfis.spec.ts                 ✘ run and ✘ retry
+        locator resolved to <button class="…MuiButton-textPrimary…">Add</button>
+        Error: locator.click: Test timeout of 200000ms exceeded.
+```
+
+**Why the signature matters.** The element is FOUND — Playwright prints the
+resolved node. It then waits for the element to be actionable and never gets
+there. That is not a stale locator (which fails with "element(s) not found", the
+shape of the two failures already fixed on this branch). It is something sitting
+between the cursor and a button that exists.
+
+**The hypothesis, and it is only that.** Radix Combobox is modal: it sets
+`pointer-events: none` on `<body>` while its panel is open. Measured directly
+during the pointer proofs in this wave — `bodyPE` goes to `none` on open and back
+to `auto` after a selection. If a panel closes by a path that does NOT restore it
+— blur, Escape, unmount while open, or a second overlay closing out of order —
+every later click in the application resolves and then times out, which is
+exactly what both specs show. Both failing screens mount converted comboboxes:
+`DataTableToolBar` (18 in this wave) and the RFI creation form (author and
+external references).
+
+**Same family as #44**, where three Radix Selects in a MUI Dialog made
+`dashboardRestriction` intermittent and the mechanism was never pinned down.
+This is the second sighting and the first with a reproducible CI signature.
+
+**The next diagnostic, in order.** On a converted screen: open a panel, close it
+by each path in turn — select, Escape, click-outside, blur via Tab, and unmount
+the field while open — and after each read
+`getComputedStyle(document.body).pointerEvents`. Any path that leaves `none` is
+the bug. Then check whether two overlapping modals (MUI Drawer + Radix panel)
+restore in LIFO order.
+
+**Status.** Not converted-and-broken, not reverted: the two specs fail and the
+cause is open. Nothing on this branch should be read as "E2E green" until this
+line is closed.
