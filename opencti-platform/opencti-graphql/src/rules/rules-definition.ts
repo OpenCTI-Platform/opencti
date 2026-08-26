@@ -25,6 +25,7 @@ import SightingIncidentDefinition from './sighting-incident/SightingIncidentDefi
 import SightingIndicatorDefinition from './sighting-indicator/SightingIndicatorDefinition';
 import SightingObservableDefinition from './sighting-observable/SightingObservableDefinition';
 import ParentTechniqueUseDefinition from './parent-technique-use/ParentTechniqueUseDefinition';
+import VulnerabilitySoftwareToSystemDefinition from './vulnerability-software-to-system/VulnerabilitySoftwareToSystemDefinition';
 
 export const rule_definitions = [
   AttributedToAttributedDefinition,
@@ -53,5 +54,6 @@ export const rule_definitions = [
   SightingIndicatorDefinition,
   SightingObservableDefinition,
   ParentTechniqueUseDefinition,
+  VulnerabilitySoftwareToSystemDefinition,
 ];
 // endregion
