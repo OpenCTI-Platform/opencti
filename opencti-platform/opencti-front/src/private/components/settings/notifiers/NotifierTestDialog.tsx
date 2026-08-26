@@ -2,8 +2,7 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { DialogActions } from '@mui/material';
 import Chip from '@mui/material/Chip';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useState } from 'react';
@@ -87,19 +86,24 @@ const NotifierTestDialog: FunctionComponent<NotifierTestDialogProps> = ({
       title={t_i18n('Testing notifier')}
     >
       <div className={classes.container}>
-        <Typography>Choose target</Typography>
-        <Select
-          value={target}
-          onChange={(e) => setTarget(e.target.value)}
-          fullWidth={true}
-        >
-          <MenuItem value="default_notification">
-            {t_i18n('Sample Notification')}
-          </MenuItem>
-          <MenuItem value="default_digest">{t_i18n('Sample Digest')}</MenuItem>
-          <MenuItem value="default_activity">
-            {t_i18n('Sample Activity Alert')}
-          </MenuItem>
+        {/* The bare `Typography` label becomes `SelectLabel`, so the visible
+            text is actually ASSOCIATED with the field instead of merely sitting
+            above it. `fullWidth` goes: the library field is full-width by
+            construction. */}
+        <Select value={target} onValueChange={setTarget}>
+          <SelectLabel>{t_i18n('Choose target')}</SelectLabel>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent aria-label={t_i18n('Choose target')}>
+            <SelectItem value="default_notification">
+              {t_i18n('Sample Notification')}
+            </SelectItem>
+            <SelectItem value="default_digest">{t_i18n('Sample Digest')}</SelectItem>
+            <SelectItem value="default_activity">
+              {t_i18n('Sample Activity Alert')}
+            </SelectItem>
+          </SelectContent>
         </Select>
       </div>
       <div className={classes.container}>
