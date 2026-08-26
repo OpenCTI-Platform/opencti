@@ -1757,3 +1757,17 @@ Comboboxes.
 the conversion, and check whether `getByRole('button', {name:'Update'})` matches
 more than one node once the dialog is open. Do not start from the pointer-events
 theory — it is measured and it is not this.
+
+### #49 — STATUS: accepted as a known library defect, deferred to V2
+
+Sandy's decision: the Select fix (non-modal, or dismiss on focus-out) does **not**
+land before the 31st. Owner is the **library**, to be treated in V2.
+
+Carried here as the durable record: the reproduction is
+`fds-migration/repro-49/` and the red-before-fix test is its
+`pointer-events.spec.mjs` (10 pass, 2 fail, both `Tab blur`, one per theme).
+
+**No product workaround and no improvised mitigation.** Nothing in OpenCTI is to
+be changed to dodge this — not a `modal` override at a call site, not a Tab
+handler, not a focus trap. A product that papers over it makes the library defect
+invisible and unfixable.
