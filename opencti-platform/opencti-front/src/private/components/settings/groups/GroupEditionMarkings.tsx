@@ -17,7 +17,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { GroupEditionMarkings_group$data } from './__generated__/GroupEditionMarkings_group.graphql';
 import ComboboxField from '../../../../components/ComboboxField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { convertMarking } from '../../../../utils/edition';
+import { convertMarking, markingChipColor } from '../../../../utils/edition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { checkIsMarkingAllowed } from '../../../../utils/markings/markingsFiltering';
 import { markingDefinitionsLinesSearchQuery } from '../MarkingDefinitionsQuery';
@@ -309,9 +309,10 @@ const GroupEditionMarkingsComponent = ({
                         label={t_i18n('Default markings')}
                         noOptionsText={t_i18n('No available options')}
                         options={resolvedGroupMarkingDefinitions}
-                        // Same rule as ObjectMarkingField: on a marking the
-                        // colour is the classification.
-                        getChipColor={(option: FieldOption) => option.color}
+                        // Same rule as ObjectMarkingField: the colour is the
+                        // classification, and TLP goes through the system tones
+                        // rather than a free hex.
+                        getChipColor={markingChipColor}
                         renderOption={(option: FieldOption) => (
                           <>
                             <div

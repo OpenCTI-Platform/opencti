@@ -1826,3 +1826,45 @@ locator, so it is fixed-by-the-same-cause and not independently exercised.
 prefer the library's multi-select UX (panel stays open), it is one prop —
 `closeOnSelect={false}` — and the specs that click a button under the panel would
 need the dismissal instead.
+
+## 51. TLP chips cannot be expressed: `ComboboxChips` has no per-option tone
+
+**Sandy's chip decision, and the part of it the current API cannot carry.**
+
+The decision: library chip geometry everywhere (24px, lowercase, text width);
+**exception — TLP chips stay UPPERCASE and their colour goes through the system
+tones, never a free hex.**
+
+Two converted fields put TLP markings through `getChipColor`:
+`ObjectMarkingField` and `GroupEditionMarkings`, both as
+`(option) => option.color`, where `color` is the marking's `x_opencti_color` — a
+free hex from the database.
+
+**Why the rule cannot be fully applied.** `ComboboxChips` builds every chip as:
+
+```js
+Chip, { label: ..., color: getChipColor?.(option) }
+```
+
+`Chip` does support system tones — `severity?: ChipSeverity` is
+`"neutral" | "info" | "low" | "medium" | "high" | "critical" | "ee"` — and
+`ComboboxChipsProps` is `ComponentPropsWithoutRef<"ul"> & { aria-label }`. So
+there is **no path from an option to a `severity`**, and no per-chip control of
+the label casing. `getChipColor` IS the free-hex DATA path by construction; the
+library's own JSDoc calls it "DATA colour: a free hex … that comes from the data
+rather than from the design system".
+
+**What was applied.** The half that is expressible: `markingChipColor` in
+`utils/edition` withholds the colour for `definition_type === 'TLP'`, so a TLP
+chip falls back to its system tone and no free hex is ever painted for it. Other
+markings and labels keep their data colour, which the decision does not touch.
+
+**What the library needs for the rest.** A per-option tone hook on the Combobox
+chip row — `getChipSeverity?: (option: T) => ChipSeverity` alongside the existing
+`getChipColor` — and a casing exemption, since the geometry decision lowercases
+chip labels while TLP must stay uppercase. Until then TLP chips are toneless
+rather than correctly toned, and their casing follows the library.
+
+**Removal test.** Put a TLP marking in an `ObjectMarkingField`: the chip reads
+`TLP:GREEN` in uppercase and carries the TLP system tone, with no `#hex` anywhere
+in its computed background.
