@@ -106,17 +106,11 @@ export const sendDisseminationEmail = async (
       throw UnsupportedError(`File type in the body must be ${allowedTypesInBody}`, { id: opts.htmlToBodyFileId });
     }
     const fileContent = await getFileContent(bodyFile.id);
-    generatedEmailBody = await safeRender(emailTemplate, {
-      settings: sanitizeSettings(settings),
-      body: sanitizeHtml(fileContent ?? ''),
-    });
+    generatedEmailBody = await safeRender(emailTemplate, { settings: sanitizeSettings(settings), body: sanitizeHtml(fileContent ?? '') });
     sentFiles.push(bodyFile);
   } else {
     const emailBodyFormatted = opts.body.replaceAll('\n', '<br/>');
-    generatedEmailBody = await safeRender(emailTemplate, {
-      settings: sanitizeSettings(settings),
-      body: sanitizeHtml(emailBodyFormatted),
-    });
+    generatedEmailBody = await safeRender(emailTemplate, { settings: sanitizeSettings(settings), body: sanitizeHtml(emailBodyFormatted) });
   }
 
   const sendMailArgs: SendMailArgs = {
