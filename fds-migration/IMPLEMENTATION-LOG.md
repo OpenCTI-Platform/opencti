@@ -836,3 +836,46 @@ symbol.
 Both grafts are test-only. The rendered bar at this head is identical to the one
 measured above, so the checkpoint was not re-run: there is nothing new to look
 at, and re-photographing an unchanged bar would only look like evidence.
+
+## 2026-08-26 — Fonts were never loading, and it was the bench, not the components
+
+Reported as "the fonts look broken on ALL library components". The "all at once"
+was the tell, and it pointed at the environment, same family as L116 (a stale
+`dist`). It was broader than reported: **nothing in the app rendered in IBM Plex
+Sans — MUI components included.**
+
+**Measured before touching anything.** The declared `font-family` resolved to
+`"IBM Plex Sans"` on every element sampled, library and MUI alike, which is why
+reading the computed family alone says nothing. The decisive probe is whether
+the face is USED:
+
+| probe | before | after |
+|---|---|---|
+| `document.fonts.check('400 14px "IBM Plex Sans"')` | `false` | `true` |
+| canvas width of a fixed string in Plex | 309.31 | **339.14** |
+| same string in a deliberately bogus family | 309.31 | 309.31 |
+| face statuses | `error` / `unloaded` | `loaded` |
+
+Before, Plex measured **identical to a nonexistent font** — proof of silent
+fallback to the default serif. Every screenshot in this round had been serif and
+nobody, including me, had questioned it.
+
+**Root cause.** This worktree runs on a SHADOW `node_modules` whose entries are
+symlinks into `~/dev/paper-cti`. Vite resolves symlinks to their real path, so
+`@fontsource`'s woff2 files behind the `@font-face` rules were requested through
+the `/@fs/` escape hatch at a real path OUTSIDE the project root, and
+`server.fs.allow` denied them — **HTTP 403**, verified by curl.
+
+**Fix — environment only, no product code.** `@fontsource` was made a real
+directory inside the worktree instead of a symlink out (4.7 MB), so the resolved
+path falls inside the root and Vite serves it: 403 -> 200. A first attempt went
+through an uncommitted Vite config override widening `fs.allow`; it lost the base
+config's plugins and broke `vite-plugin-relay` ("graphql: Unexpected invocation
+at runtime"), so it was abandoned rather than patched — moving the file was the
+smaller change.
+
+**Lesson, extending L116.** The pre-judgement probe must cover FONTS, not just
+colour tokens. And the probe is not "what does `font-family` compute to" — a
+missing face leaves the declaration intact and lies. It is `document.fonts.check`
+plus a width comparison against a bogus family. A shadow `node_modules` makes
+every symlinked ASSET a candidate for the same 403, not only fonts.

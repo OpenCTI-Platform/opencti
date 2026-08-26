@@ -1457,13 +1457,28 @@ is the whole point of this entry.
 
 ---
 
-## 43. No token-based way for a host to tint the field shell as a product state
+## 43. View-constraining field: the product needs a PERCEPTIBLE state marker
 
-**Backlog V2 — @sandy 2026-08-25, not this cycle.** Recorded so the next
-Combobox wave does not rediscover it as a surprise.
+**OPEN DESIGN QUESTION — @sandy 2026-08-26, V2.** Reformulated after she visited
+the live site: **do NOT ship a library "shell tint" capability modelled on what
+exists today.**
 
-**Needed.** A documented, token-based way for a host to tint a Combobox field's
-border and label to signal a product state.
+**Why the original ask was withdrawn.** The ask used to be "let a host tint the
+field's border and label". Sandy went to the running instance and looked for the
+current signal — a 1px grey border, measured going from `0px` to
+`rgb(66,71,81)` 1px when the filter activates — and **did not notice it while
+actively looking for it.** A state marker the user cannot perceive is not doing
+its job, so copying it into the library would standardise something that does
+not work.
+
+**What is actually needed.** A perceptible marker for "this field is currently
+constraining the view". The FORM is undecided and is Sandy's to design at V2 —
+tint, icon, helper line, badge, something else. The library should not receive a
+capability request until that pattern exists.
+
+**Until then.** Both sites keep MUI with their markers. This is not a blocked
+conversion waiting on a library prop; it is a conversion waiting on a design
+decision, and the distinction matters for planning.
 
 **Two sites, not one** (updated 2026-08-26 while converting the raw MUI
 Selects). The second is `components/dashboard/DashboardRelativeDateSelect.tsx`,
@@ -1487,9 +1502,10 @@ drop a product state signal or ship a local variant of a library component.
 **Status.** The site keeps MUI's Autocomplete, carrying FDS-WORKAROUND #43.
 It is the only CTI Autocomplete site held for this reason.
 
-**Removal test.** Convert that site with the new mechanism, select a preview
-entity, and confirm the field border and label both carry the state tone in
-both modes — then delete `IN_PREVIEW_SX_PROPS` and the marker.
+**Removal test.** Not a contrast measurement — a perception one. Show the new
+marker to someone who does not know it is there and ask them what the screen is
+telling them. The old signal passed every automated check and still failed this,
+which is the whole point of the reformulation.
 
 ## 44. Three Radix Selects in one dialog make an access-rights test intermittent
 

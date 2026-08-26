@@ -16,7 +16,10 @@ interface DashboardRelativeDateSelectProps {
   labelId?: string;
 }
 
-// FDS-WORKAROUND #43 (second site): kept on MUI Select. `DashboardTimeFilters`
+// FDS-WORKAROUND #43 (second site): kept on MUI Select, waiting on a DESIGN
+// decision rather than a library prop — @sandy looked for the current 1px grey
+// border on the live screen and did not see it, so the marker is being
+// redesigned, not ported. `DashboardTimeFilters`
 // passes `selectSx` to draw a border on this field while a relative date is
 // active — a product state signal on the field shell, exactly the gap recorded
 // for CustomViewPreviewEntitySelector. The library owns the field's border and
