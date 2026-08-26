@@ -879,3 +879,50 @@ colour tokens. And the probe is not "what does `font-family` compute to" — a
 missing face leaves the declaration intact and lies. It is `document.fonts.check`
 plus a width comparison against a bogus family. A shadow `node_modules` makes
 every symlinked ASSET a candidate for the same 403, not only fonts.
+
+## 2026-08-26 — Two ways a pointer proof can lie about geometry
+
+Both cost real time today and both produced FALSE NEGATIVES: I concluded three
+times that a click "did nothing" when the click had never reached its target.
+
+**1. A plausible viewport can still be the wrong coordinate space.** The known
+lesson is "hidden panel = 0x0 viewport = invalid geometry, check before each
+series". Today the viewport read a perfectly healthy `1440x900` and was still
+unusable, because the real browser window was `400x250`:
+
+    innerWidth/innerHeight  1440 x 900      <- emulated, what every rect() uses
+    outerWidth/outerHeight   400 x 250      <- real window, what the pointer uses
+
+Every click beyond ~400x250 CSS px landed on `<html>`. Screenshots looked
+complete, `getBoundingClientRect` was consistent, `elementFromPoint` said the
+target was hittable — and the click still missed. Three separate "defects" I had
+started diagnosing (an Integrations card menu that would not open, a Retention
+create button that would not open, a converted Select that would not open) were
+all this one artefact. At `1280x800` all three work.
+
+**The check is therefore not `innerWidth > 0`.** It is:
+
+    innerWidth === outerWidth  (or a known, tested ratio)
+
+and, once per series, a positive control: install a capturing `click` listener,
+click a known element, and assert `event.target` is that element. If the target
+comes back as `HTML`, stop — the pointer is lying, nothing measured after that
+point means anything.
+
+**2. An option's own rect can be on-screen and still be clipped.** Filtering
+options by their own `getBoundingClientRect()` against the viewport is not
+enough. The library Select panel is `max-h-40` (160px) with an internal
+`overflow-y: auto`, so with 82 entity types most options have rects that sit
+inside the window while being clipped by their scroll parent:
+
+    option    (344, 149, 183, 32)   <- on screen by its own rect
+    scroll vp (344, 437, 183, 160)  <- but the container starts 288px lower
+
+`elementFromPoint` correctly returned `HTML` there, and it was right. Visibility
+of an option must be its rect INTERSECTED with the scroll container's rect. That
+intersection test is what finally produced the proof.
+
+Corollary, recorded because I asserted the opposite for a while: a synthetic
+`element.click()` succeeding where a real pointer fails proves nothing about the
+product. It only proves the handler exists. Radix Select opens on `pointerdown`
+and a synthetic click takes the `onClick` path, so the two disagree by design.
