@@ -1,5 +1,6 @@
 import React, { CSSProperties, useMemo } from 'react';
-import { Skeleton, Checkbox, IconButton, Box } from '@mui/material';
+import { Skeleton, Checkbox, Box } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import { useNavigate } from 'react-router-dom';
@@ -250,9 +251,13 @@ const DataTableLine = ({
           >
             {actions && actions(data)}
             {endsWithNavigate && (
-              <IconButton aria-label={t_i18n('Open link')} onClick={() => (link ? navigate(link) : undefined)}>
-                <KeyboardArrowRightOutlined />
-              </IconButton>
+              <IconButton
+                variant="default"
+                priority="tertiary"
+                aria-label={t_i18n('Open link')}
+                onClick={() => (link ? navigate(link) : undefined)}
+                icon={<KeyboardArrowRightOutlined />}
+              />
             )}
           </div>
         )}

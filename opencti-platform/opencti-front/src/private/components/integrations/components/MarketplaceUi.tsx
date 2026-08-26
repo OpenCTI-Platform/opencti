@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
-import { Box, Chip, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Chip, Stack, Tooltip, Typography } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { CheckCircleOutlined, ExpandMoreOutlined, Search } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -142,18 +143,21 @@ export const MarketplaceSectionHeader = ({ icon: Icon, label, count, collapsed =
       <Box sx={{ flex: 1, height: '1px', backgroundColor: alpha(theme.palette.text.primary, 0.05) }} />
       {onToggleCollapse && (
         <IconButton
-          size="small"
+          variant="default"
+          priority="tertiary"
+          size="sm"
           aria-expanded={!collapsed}
           aria-label={label}
-        >
-          <ExpandMoreOutlined
-            fontSize="small"
-            sx={{
-              transition: 'transform 0.2s ease-in-out',
-              transform: collapsed ? 'rotate(-90deg)' : 'none',
-            }}
-          />
-        </IconButton>
+          icon={(
+            <ExpandMoreOutlined
+              fontSize="small"
+              sx={{
+                transition: 'transform 0.2s ease-in-out',
+                transform: collapsed ? 'rotate(-90deg)' : 'none',
+              }}
+            />
+          )}
+        />
       )}
     </Stack>
   );
