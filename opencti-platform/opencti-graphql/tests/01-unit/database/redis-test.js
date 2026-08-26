@@ -37,7 +37,10 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
     ...actual,
     default: {
       ...actual.default,
-      get: (key) => (key in redisOverrides() ? redisOverrides()[key] : actual.default.get(key)),
+      get: (key) => {
+        const overrides = redisOverrides();
+        return key in overrides ? overrides[key] : actual.default.get(key);
+      },
     },
     booleanConf: (key, fallback) => (key === 'redis:use_ssl' ? true : actual.booleanConf(key, fallback)),
     configureCA: vi.fn(() => ({ ca: ['test-ca'] })),
