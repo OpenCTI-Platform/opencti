@@ -20,9 +20,6 @@ const useStyles = makeStyles(() => ({
     flexGrow: 1,
     marginLeft: 10,
   },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
 }));
 
 export type CsvMapperFieldOption = FieldOption & { representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[] };
@@ -74,6 +71,9 @@ const CsvMapperField: FunctionComponent<CsvMapperFieldComponentProps> = ({
     <>
       <Field
         component={ComboboxField}
+        // MUI hid its clear indicator here with display:none; the library defaults
+        // clearable to true, so the affordance must be declined explicitly.
+        clearable={false}
         style={fieldSpacingContainerStyle}
         name={name}
         multiple={false}

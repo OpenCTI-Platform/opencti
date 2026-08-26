@@ -84,6 +84,9 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
     <>
       <Field
         component={ComboboxField}
+        // MUI hid its clear indicator here with display:none; the library defaults
+        // clearable to true, so the affordance must be declined explicitly.
+        clearable={false}
         disabled={disabled}
         style={style}
         name={name}

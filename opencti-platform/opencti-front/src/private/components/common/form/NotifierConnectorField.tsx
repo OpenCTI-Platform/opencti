@@ -21,9 +21,6 @@ const useStyles = makeStyles(() => ({
     flexGrow: 1,
     marginLeft: 10,
   },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
 }));
 
 interface NotifierConnectorFieldProps {
@@ -80,6 +77,9 @@ const NotifierConnectorField: FunctionComponent<
     <div style={{ width: '100%' }}>
       <Field
         component={ComboboxField}
+        // MUI hid its clear indicator here with display:none; the library defaults
+        // clearable to true, so the affordance must be declined explicitly.
+        clearable={false}
         name={name}
         multiple={false}
         style={style}

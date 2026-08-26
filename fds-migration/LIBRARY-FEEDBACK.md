@@ -1559,3 +1559,41 @@ This one is about `Select`.
 **Removal test.** Convert the field, set a background type, clear it from the
 trigger without opening the panel, and confirm the submitted value is the empty
 string — the same three steps the MUI version passes today.
+
+## 46. `clearable` defaults to true, and the product's "no clear" was CSS
+
+**Not a bug — a default that inverts a product intention silently.** Nine
+already-converted fields lost their intended behaviour without a single line of
+the diff showing it.
+
+**How the product said "no clear button" under MUI.** Not with a prop. With a
+stylesheet:
+
+```js
+autoCompleteIndicator: { display: 'none' },
+// ...
+classes={{ clearIndicator: classes.autoCompleteIndicator }}
+```
+
+Dropping `classes` is the correct move — it is a MUI-only escape hatch. But
+`clearable` defaults to `true` in the library, so dropping it *grants* the
+affordance the product had spent CSS to remove. Nothing in the diff reads as
+"add a clear button", which is exactly why it survived review of eight commits.
+
+**Found by audit, not by chance.** Every converted mount was compared against its
+pre-migration source for `autoCompleteIndicator` or `disableClearable`, then
+against its current source for any `clearable` prop. Nine files matched the first
+and not the second: CaseTemplateField, CsvMapperField, JsonMapperField,
+NotifierConnectorField, NotifierField, ObjectLabelField, StatusTemplateField,
+StixCoreObjectOrCoreRelationshipLabelsView, ObjectAssigneeField. All nine now
+pass `clearable={false}` with a comment saying why, and their dead style rules
+are gone.
+
+**The ask.** Nothing needs to change in the library — `clearable: true` is a
+defensible default for a new component. This is recorded so the next consumer
+knows that **a MUI prop absent from the target API is not always a prop to
+delete**: sometimes it is a default to re-declare. The general form: for every
+MUI-only prop dropped during a conversion, ask what the library's default is for
+that behaviour, not just whether the prop still exists.
+
+**Removal test.** None. This entry is a method note, not a defect.
