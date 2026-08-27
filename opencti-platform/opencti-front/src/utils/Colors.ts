@@ -269,6 +269,44 @@ export const itemColor = (
   return stringToColour(normalizedType, reversed);
 };
 
+/**
+ * The library Chip's `entity` value for an OpenCTI entity type, or undefined
+ * when the type has no equivalent and should stay on the neutral tone.
+ *
+ * Nine of the twelve colour families map 1:1 by name -- the library's set was
+ * built from this list. The three that do not:
+ *  - `observables` -> `observations`: the 36 observable types share the
+ *    observation layer's colour (arbitrated 27/08). Note that
+ *    COLOR_FAMILIES.observables is dead code -- itemColor short-circuits to
+ *    stringToColour before reaching it -- so nothing is being overridden here.
+ *  - `relationships` / `restricted` -> undefined. Both are already grey
+ *    (#616161, #424242), so neutral is what they render today.
+ * A type with no family at all also returns undefined: its colour is hashed
+ * from the type name, so there is no closed value to map.
+ */
+export type ChipEntityValue
+  = | 'analyses' | 'cases' | 'events' | 'observations' | 'all-threats'
+    | 'arsenal' | 'techniques' | 'victimology' | 'location';
+
+const FAMILY_TO_CHIP_ENTITY: Partial<Record<keyof typeof COLOR_FAMILIES, ChipEntityValue>> = {
+  analyse: 'analyses',
+  cases: 'cases',
+  events: 'events',
+  observations: 'observations',
+  observables: 'observations',
+  allThreats: 'all-threats',
+  arsenal: 'arsenal',
+  techniques: 'techniques',
+  victimology: 'victimology',
+  locations: 'location',
+};
+
+export const itemEntity = (type: string | null | undefined): ChipEntityValue | undefined => {
+  if (!type) return undefined;
+  const family = ENTITY_TYPE_TO_FAMILY[type];
+  return family ? FAMILY_TO_CHIP_ENTITY[family] : undefined;
+};
+
 export const hexToRGB = (hex?: string, transp: number = 0.1) => {
   if (!hex) return `rgb(${50}, ${50}, ${50}, ${transp})`;
   const r = parseInt(hex.slice(1, 3), 16);

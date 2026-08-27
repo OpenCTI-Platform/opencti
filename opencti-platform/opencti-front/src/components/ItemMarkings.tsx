@@ -31,6 +31,16 @@ const ChipMarking = ({
   const theme = useTheme<Theme>();
 
   const getColor = () => {
+    // TLP:CLEAR / PAP:CLEAR render with the neutral default instead of their
+    // stored colour. That colour is seeded white, and white at the 20% wash
+    // measures 1.03:1 against the light surface -- the fill is simply not
+    // there. This is the ONE level that overrides `x_opencti_color`; the four
+    // others keep theirs untouched, so the sharing signal is preserved.
+    if (markingDefinition.definition === 'TLP:CLEAR'
+      || markingDefinition.definition === 'PAP:CLEAR') {
+      return undefined;
+    }
+
     let color = markingDefinition.x_opencti_color;
 
     if (color) return color;
