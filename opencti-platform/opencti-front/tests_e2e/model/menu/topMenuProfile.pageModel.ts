@@ -12,7 +12,10 @@ export default class TopMenuProfilePage {
   }
 
   async logout() {
-    await this.getMenuProfile().click();
-    return this.getLogoutButton().click();
+    const profileButton = this.getMenuProfile();
+    const isLoggedIn = await profileButton.waitFor({ state: 'visible', timeout: 5000 }).then(() => true).catch(() => false);
+    if (!isLoggedIn) return; // already logged out
+    await profileButton.click();
+    await this.getLogoutButton().click();
   }
 }

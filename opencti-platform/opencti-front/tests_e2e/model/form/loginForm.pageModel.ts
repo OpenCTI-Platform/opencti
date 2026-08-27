@@ -21,6 +21,10 @@ export default class LoginFormPageModel {
   async login(name?: string, pwd?: string) {
     await this.nameField.fill(name ?? 'admin@opencti.io');
     await this.passwordField.fill(pwd ?? 'admin');
-    return this.getSignInButton().click();
+    await this.getSignInButton().click();
+    // LoginForm.tsx does `window.location.reload()` on success, then the authenticated
+    // app client-side redirects '/' -> '/dashboard' (private/Root.tsx) - wait for that
+    // full round-trip so a subsequent direct page.goto() doesn't race the pending reload.
+    await this.page.waitForURL('**/dashboard**');
   }
 }

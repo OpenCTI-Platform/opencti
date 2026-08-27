@@ -47,11 +47,12 @@ const WorkflowEditionDrawer = ({ open, selectedElement, onClose }: WorkflowEditi
               {isStatus ? (<StatusForm />) : (<TransitionForm />)}
               <FormButtonContainer>
                 {isNewStatus ? (
-                  <Button variant="secondary" onClick={onDelete} disabled={isSubmitting}>
+                  <Button data-testid="workflow-edition-cancel-button" variant="secondary" onClick={onDelete} disabled={isSubmitting}>
                     {t_i18n('Cancel')}
                   </Button>
                 ) : (
                   <Button
+                    data-testid="workflow-edition-delete-button"
                     intent="destructive"
                     variant="secondary"
                     onClick={onDelete}
@@ -60,7 +61,7 @@ const WorkflowEditionDrawer = ({ open, selectedElement, onClose }: WorkflowEditi
                     {t_i18n('Delete')}
                   </Button>
                 )}
-                <Button color="secondary" onClick={submitForm} disabled={isSubmitting}>
+                <Button data-testid="workflow-edition-submit-button" color="secondary" onClick={submitForm} disabled={isSubmitting}>
                   {isNewStatus ? t_i18n('Add') : t_i18n('Update')}
                 </Button>
               </FormButtonContainer>

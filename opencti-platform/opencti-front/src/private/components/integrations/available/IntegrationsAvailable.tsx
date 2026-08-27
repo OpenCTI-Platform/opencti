@@ -209,6 +209,7 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
         <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Stack direction="row" alignItems="center" flexWrap="wrap" gap={2}>
             <SearchInput
+              data-testid="integrations-search-input"
               value={searchInput}
               onSubmit={handleSearchInputSubmit}
               onChange={handleSearchInputChange}
