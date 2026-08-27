@@ -118,7 +118,7 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
   // Keep the body `data-theme` attribute in sync with the MUI palette mode so
   // that CSS files targeting `body[data-theme="dark"]` / `body[data-theme="light"]`
   // apply on the very first render.
-  const themeMode = muiTheme.palette.mode;
+  const themeMode = (themeToUse?.name ?? defaultTheme.name) === 'Filigran Light' ? 'light' : 'dark';
   useDocumentThemeModifier(themeMode);
 
   return <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>;
