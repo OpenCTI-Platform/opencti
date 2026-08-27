@@ -3,6 +3,7 @@ import { Badge, Stack, Tooltip } from '@mui/material';
 import Tag from '@common/tag/Tag';
 import type { Theme } from './Theme';
 import stopEvent from '../utils/domEvent';
+import { isWashVisibleOn } from '../utils/Colors';
 import FieldOrEmpty from './FieldOrEmpty';
 
 interface Marking {
@@ -31,19 +32,17 @@ const ChipMarking = ({
   const theme = useTheme<Theme>();
 
   const getColor = () => {
-    // TLP:CLEAR / PAP:CLEAR render with the neutral default instead of their
-    // stored colour. That colour is seeded white, and white at the 20% wash
-    // measures 1.03:1 against the light surface -- the fill is simply not
-    // there. This is the ONE level that overrides `x_opencti_color`; the four
-    // others keep theirs untouched, so the sharing signal is preserved.
-    if (markingDefinition.definition === 'TLP:CLEAR'
-      || markingDefinition.definition === 'PAP:CLEAR') {
-      return undefined;
+    // The admin's colour wins whenever it can be seen. It is only replaced by
+    // the neutral default in the theme where it disappears into the surface --
+    // today that is the seeded white of TLP:CLEAR / PAP:CLEAR on the light
+    // surface. A general guard on marking colours, not a rule about one level:
+    // an admin who repaints TLP:CLEAR blue sees blue.
+    const stored = markingDefinition.x_opencti_color;
+    if (stored) {
+      return isWashVisibleOn(stored, theme.palette.background.paper) ? stored : undefined;
     }
 
-    let color = markingDefinition.x_opencti_color;
-
-    if (color) return color;
+    let color;
 
     switch (markingDefinition.definition) {
       case 'CD':

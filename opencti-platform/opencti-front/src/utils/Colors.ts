@@ -307,6 +307,64 @@ export const itemEntity = (type: string | null | undefined): ChipEntityValue | u
   return family ? FAMILY_TO_CHIP_ENTITY[family] : undefined;
 };
 
+/**
+ * True when `color`, painted as the usual 20% wash, is actually distinguishable
+ * from the surface behind it.
+ *
+ * A GENERAL guard for marking colours, not a rule about any one marking: admins
+ * choose these colours, and the product must show what they chose whenever it
+ * can be seen. The fallback only takes over when it cannot.
+ *
+ * Perceptual distance (CIE76 dE), not WCAG contrast, because contrast measures
+ * luminance alone and gives the wrong answer here: over the dark surface the
+ * real TLP colours measure 1.12-1.18:1 while white measures 1.79:1, so a
+ * luminance threshold would discard RED and keep white -- exactly backwards.
+ * dE separates them cleanly, and is evaluated against the CURRENT theme's
+ * surface, so a colour is only replaced in the theme where it disappears.
+ *
+ * Threshold 10 sits in an empty band: the four coloured TLP levels never fall
+ * below 14.1 in either theme, while white reads 1.1 on the light surface,
+ * near-white 0.8, and black 2.4 on the dark one.
+ */
+const toLab = (rgb: [number, number, number]): [number, number, number] => {
+  const inv = (v: number) => {
+    const x = v / 255;
+    return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+  };
+  const [r, g, b] = rgb.map(inv);
+  const f = (t: number) => (t > 0.008856 ? t ** (1 / 3) : 7.787 * t + 16 / 116);
+  const fx = f((r * 0.4124 + g * 0.3576 + b * 0.1805) / 0.95047);
+  const fy = f(r * 0.2126 + g * 0.7152 + b * 0.0722);
+  const fz = f((r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883);
+  return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
+};
+
+const parseHex = (hex: string): [number, number, number] | null => {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return null;
+  const n = parseInt(m[1], 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+};
+
+export const MARKING_MIN_DELTA_E = 10;
+
+export const isWashVisibleOn = (
+  color: string | null | undefined,
+  surface: string | null | undefined,
+  alpha = 0.2,
+): boolean => {
+  if (!color || !surface) return true;
+  const c = parseHex(color);
+  const s = parseHex(surface);
+  // Anything this cannot read is left exactly as it renders today.
+  if (!c || !s) return true;
+  const washed = c.map((v, i) => Math.round(v * alpha + s[i] * (1 - alpha))) as [number, number, number];
+  const a = toLab(washed);
+  const b = toLab(s);
+  const dE = Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2);
+  return dE >= MARKING_MIN_DELTA_E;
+};
+
 export const hexToRGB = (hex?: string, transp: number = 0.1) => {
   if (!hex) return `rgb(${50}, ${50}, ${50}, ${transp})`;
   const r = parseInt(hex.slice(1, 3), 16);
