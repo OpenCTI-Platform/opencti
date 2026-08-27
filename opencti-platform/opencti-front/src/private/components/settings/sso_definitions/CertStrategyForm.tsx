@@ -20,6 +20,7 @@ import AuthProviderOrganizationsFields from './AuthProviderOrganizationsFields';
 import AuthProviderUserInfoFields from './AuthProviderUserInfoFields';
 import type { CertStrategyFormQuery } from './__generated__/CertStrategyFormQuery.graphql';
 import type { CertStrategyFormMutation } from './__generated__/CertStrategyFormMutation.graphql';
+import TextareaField from '../../../../components/TextareaField';
 
 const certStrategyFormQuery = graphql`
   query CertStrategyFormQuery {
@@ -298,14 +299,11 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
                 )}
               </Box>
               <Field
-                component={TextField}
-                variant="standard"
+                component={TextareaField}
                 name="description"
                 label={t_i18n('Description')}
-                fullWidth
-                multiline
                 rows={3}
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <AuthProviderUserInfoFields
                 fieldPrefix="user_info_mapping"
