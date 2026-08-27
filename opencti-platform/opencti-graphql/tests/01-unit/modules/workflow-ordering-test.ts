@@ -40,13 +40,18 @@ describe('workflow-ordering: computeStateOrder', () => {
   });
 
   it('does not flag a cycle when it only exists on a branch not reachable from initialState', () => {
-    // 'open' -> 'closed' is a simple DAG; the unrelated cycle between 'X' and 'Y' must not affect it
+    // 'open' -> 'closed' is a simple DAG; the unrelated 'X' <-> 'Y' cycle is not reachable from
+    // 'open' and must not affect its ordering, nor appear (as null or otherwise) in the result
     // since findUnreachableStates/publish-time reachability validation handles orphaned states separately.
     const order = computeStateOrder('open', [
       { from: 'open', to: 'closed' },
+      { from: 'X', to: 'Y' },
+      { from: 'Y', to: 'X' },
     ]);
     expect(order).not.toBeNull();
     expect(Object.fromEntries(order as Map<string, number | null>)).toEqual({ open: 0, closed: 1 });
+    expect(order.has('X')).toBe(false);
+    expect(order.has('Y')).toBe(false);
   });
 
   it('only requires manual order for states entangled in a cycle, not the whole graph', () => {
