@@ -19,6 +19,7 @@ import { resolveTypesForRelationship, resolveTypesForRelationshipRef } from '../
 import { useFormatter } from '../../../../../../components/i18n';
 import { isStixCoreObjects } from '../../../../../../utils/stixTypeUtils';
 import type { Theme } from '../../../../../../components/Theme';
+import { Input } from '@filigran/design-system';
 
 export type RepresentationAttributeForm = JsonMapperRepresentationAttributeFormData | undefined;
 
@@ -271,10 +272,9 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
                   })}
                 </div>
                 <div>
-                  <MuiTextField
+                  <Input
                     label={t_i18n('JSON Path')}
-                    variant="standard"
-                    style={{ width: '100%' }}
+                    className="w-full"
                     value={identifierValue}
                     onChange={(e) => handleIdentifierChange(rep.id, e.target.value)}
                   />

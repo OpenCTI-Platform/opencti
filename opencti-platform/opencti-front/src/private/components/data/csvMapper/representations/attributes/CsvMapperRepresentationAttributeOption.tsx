@@ -1,9 +1,9 @@
-import MuiTextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import React from 'react';
 import Alert from '@mui/material/Alert';
 import { FieldProps } from 'formik';
+import { Input } from '@filigran/design-system';
 
 interface CsvMapperRepresentationAttributeOptionProps extends FieldProps<string> {
   placeholder: string;
@@ -24,12 +24,13 @@ const CsvMapperRepresentationAttributeOption = ({
   return (
     <>
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginTop: '10px' }}>
-        <MuiTextField
-          style={{ flex: 1 }}
+        <Input
+          className="flex-1"
           type="text"
           value={value ?? ''}
           onChange={(event) => setFieldValue(name, event.target.value)}
           placeholder={placeholder}
+          aria-label={placeholder}
         />
         {tooltip && (
           <Tooltip title={tooltip}>

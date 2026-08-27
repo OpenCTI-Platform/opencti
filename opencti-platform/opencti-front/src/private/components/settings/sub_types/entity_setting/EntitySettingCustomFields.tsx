@@ -28,6 +28,7 @@ import { CUSTOM_FIELD_NOW_TOKEN } from '../../../../../utils/customFieldDefaults
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import EntitySettingCustomFieldsAddDialog from './EntitySettingCustomFieldsAddDialog';
 import { EntitySettingCustomFieldsQuery, EntitySettingCustomFieldsQuery$data } from './__generated__/EntitySettingCustomFieldsQuery.graphql';
+import { Input } from '@filigran/design-system';
 
 export const entitySettingCustomFieldsQuery = graphql`
   query EntitySettingCustomFieldsQuery {
@@ -181,14 +182,12 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
         );
       case 'integer':
         return (
-          <MuiTextField
+          <Input
             type="number"
-            variant="standard"
-            fullWidth
             label={t_i18n('Default value')}
             value={defaultValue}
             onChange={(event) => setDefaultValue(event.target.value)}
-            style={{ marginTop: 20 }}
+            className="mt-5"
           />
         );
       case 'date': {
@@ -229,13 +228,11 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
         );
       default:
         return (
-          <MuiTextField
-            variant="standard"
-            fullWidth
+          <Input
             label={t_i18n('Default value')}
             value={defaultValue}
             onChange={(event) => setDefaultValue(event.target.value)}
-            style={{ marginTop: 20 }}
+            className="mt-5"
           />
         );
     }

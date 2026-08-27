@@ -4,7 +4,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import Button from '@common/button/Button';
 import { FormEditionFragment_form$key } from '@components/data/forms/__generated__/FormEditionFragment_form.graphql';
 import { FormCreationQuery } from '@components/data/forms/__generated__/FormCreationQuery.graphql';
-import TextField from '@mui/material/TextField';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { useFormatter } from '../../../../components/i18n';
@@ -16,7 +15,7 @@ import type { FormBuilderData, FormFieldAttribute } from './Form.d';
 import { convertFormBuilderDataToSchema, normalizeDraftAuthorizedMembersDefaults } from './FormUtils';
 import Loader from '../../../../components/Loader';
 import { useTheme } from '@mui/styles';
-import { Textarea } from '@filigran/design-system';
+import { Input, Textarea } from '@filigran/design-system';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {
@@ -234,10 +233,8 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
   return (
     <div className={classes.container}>
       <div className={classes.topFields}>
-        <TextField
-          variant="standard"
+        <Input
           label={t_i18n('Name')}
-          fullWidth={true}
           value={formName}
           onChange={handleNameChange}
         />

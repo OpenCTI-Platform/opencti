@@ -1,6 +1,5 @@
 import IconButton from '@common/button/IconButton';
 import { AddOutlined, CancelOutlined } from '@mui/icons-material';
-import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import WidgetFilters from '@components/widgets/WidgetFilters';
@@ -14,6 +13,7 @@ import type { WidgetPerspective } from '../../../utils/widget/widget';
 import { getCurrentCategory, getCurrentDataSelectionLimit, isWidgetUsingRelationsAggregation } from '../../../utils/widget/widgetUtils';
 import { useWidgetConfigContext } from './WidgetConfigContext';
 import Alert from '../../../components/Alert';
+import { Input } from '@filigran/design-system';
 
 type StepContainerProps = {
   perspective?: WidgetPerspective | null;
@@ -129,11 +129,10 @@ const WidgetCreationDataSelection = () => {
               </IconButton>
 
               <Stack direction="row" sx={{ width: '100%' }}>
-                <TextField
-                  style={{ flex: 1 }}
+                <Input
+                  className="flex-1"
                   label={`${t_i18n('Label')} (${dataSelection[i].perspective})`}
-                  fullWidth={true}
-                  value={dataSelection[i].label}
+                  value={dataSelection[i].label ?? ''}
                   onChange={(event) => handleChangeDataValidationLabel(i, event.target.value)}
                 />
                 {
