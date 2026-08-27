@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Drawer from '@mui/material/Drawer';
-import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -19,6 +18,7 @@ import { useSettingsMessagesBannerHeight } from '../../settings/settings_message
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import { List, ListItemButton } from '@mui/material';
 
 const stixCoreObjectKnowledgeBarFragment = graphql`
   fragment StixCoreObjectKnowledgeBar_stixCoreObject on StixCoreObject
@@ -105,7 +105,7 @@ const KnowledgeBarItem = ({ to, iconType, label, count }: KnowledgeBarProps) => 
   const { t_i18n, n } = useFormatter();
 
   return (
-    <MenuItem
+    <ListItemButton
       component={Link}
       to={to}
       selected={location.pathname === to}
@@ -116,7 +116,7 @@ const KnowledgeBarItem = ({ to, iconType, label, count }: KnowledgeBarProps) => 
         <ItemIcon size="small" type={iconType} />
       </ListItemIcon>
       <ListItemText primary={`${t_i18n(label)}${count > 0 ? ` (${n(count)})` : ''}`} />
-    </MenuItem>
+    </ListItemButton>
   );
 };
 
@@ -408,7 +408,7 @@ const StixCoreObjectKnowledgeBar = ({
       }}
     >
       <Box sx={{ ...theme.mixins.toolbar }} />
-      <MenuList
+      <List
         component="nav"
         style={{
           marginTop: bannerSettings.bannerHeightNumber + settingsMessagesBannerHeight,
@@ -424,7 +424,7 @@ const StixCoreObjectKnowledgeBar = ({
         />
         {sectionsConfig.map((section, index) => (
           section.items.length > 0 && (
-            <MenuList component="nav" key={index} style={{ paddingBlock: 0 }}>
+            <List component="nav" key={index} style={{ paddingBlock: 0 }}>
               {section.title && (
                 <ListSubheader style={{ height: 35 }}>
                   {section.title}
@@ -439,10 +439,10 @@ const StixCoreObjectKnowledgeBar = ({
                   count={count ?? 0}
                 />
               ))}
-            </MenuList>
+            </List>
           )
         ))}
-      </MenuList>
+      </List>
     </Drawer>
   );
 };
