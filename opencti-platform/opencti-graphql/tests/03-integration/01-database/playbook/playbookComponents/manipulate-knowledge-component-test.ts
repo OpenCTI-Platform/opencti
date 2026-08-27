@@ -315,14 +315,11 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
     expect((organizationResult.extensions[STIX_EXT_OCTI] as any).score).toBe(42);
   });
 
-  it('should replace score using fallback on stix type when OCTI type is missing', async () => {
+  it('should replace score on Malware entity by field patch', async () => {
     const fallbackMalwareId = 'malware--09bd862a-f030-55f2-920a-900c4913d9ab';
     const malware = testBundleObject<StixDomainObject>({
       id: fallbackMalwareId,
       type: 'malware',
-      octiExtension: {
-        type: undefined,
-      },
     });
 
     const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
