@@ -83,6 +83,7 @@ const isThemeDefaultLike = (
  *
  * - If the existing theme still matches default values, it is renamed to the Filigran name.
  * - If it was modified, a new Filigran built-in theme is created and the legacy theme is marked as non built-in.
+ * - If a theme already uses the Filigran name, it is first renamed to "<name> - custom" so the built-in name stays free.
  *
  * @param context Migration execution context.
  * @param theme Existing legacy theme (Dark/Light) if present.
@@ -101,6 +102,21 @@ const refactorTheme = async (
     await fieldPatchTheme(context, SYSTEM_USER, theme.id, input);
     logMigration.info(`[MIGRATION] ${theme.name} theme renamed in ${defaultThemeName}`);
   } else {
+    // if a theme already uses the target name, rename it to free up the Filigran built-in name
+    const existingThemes = await findThemePaginated(context, SYSTEM_USER, {
+      filters: {
+        mode: FilterMode.And,
+        filters: [{ key: ['name'], values: [defaultThemeName], operator: FilterOperator.Eq }],
+        filterGroups: [],
+      },
+    });
+    const conflictingTheme = existingThemes.edges.map((e) => e.node).find((t) => t.name === defaultThemeName);
+    if (conflictingTheme) {
+      const newName = `${defaultThemeName} - custom`;
+      const renameInput = [{ key: 'name', value: [newName] }];
+      await fieldPatchTheme(context, SYSTEM_USER, conflictingTheme.id, renameInput);
+      logMigration.info(`[MIGRATION] Existing ${defaultThemeName} theme renamed in ${newName} - custom`);
+    }
     // add Filigran theme
     await addTheme(context, SYSTEM_USER, { name: defaultThemeName, ...defaultThemeValues });
     logMigration.info(`[MIGRATION] ${defaultThemeName} theme added`);
