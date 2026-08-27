@@ -104,6 +104,7 @@ const SavedFiltersAutocomplete = ({
     <>
       <Combobox<SavedFiltersAutocompleteOptionType>
         key={value?.value.id}
+        labelPosition="none"
         clearable={false}
         value={value ?? null}
         disabled={isDisabled}
@@ -121,11 +122,6 @@ const SavedFiltersAutocomplete = ({
         }}
         renderOption={renderOption}
       >
-        {/* No ComboboxLabel: this field sits on the filter row beside a search
-            field that uses a placeholder and an add-filter control whose MUI
-            label floats inside it. A block label put this input on its own axis,
-            33px below its neighbours. The name moves to the input so the field
-            keeps an accessible name. */}
         <ComboboxField>
           <ComboboxInput aria-label={t_i18n('Select saved filter')} placeholder={t_i18n('Select saved filter')} />
           <ComboboxControls>

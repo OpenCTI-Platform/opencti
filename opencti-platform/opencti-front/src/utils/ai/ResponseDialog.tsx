@@ -234,6 +234,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 2 }}>
       <span>{t_i18n('Ask AI')}</span>
       <Combobox<AgentOption>
+        labelPosition="none"
         options={agentOptions}
         getOptionLabel={(option) => option?.name ?? ''}
         value={selectedAgent ?? null}
@@ -247,6 +248,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
       >
         <ComboboxField>
           <ComboboxInput
+            aria-label={t_i18n('Select agent')}
             placeholder={noAgents ? t_i18n('No agent available') : t_i18n('Select agent')}
           />
           <ComboboxControls>

@@ -349,6 +349,7 @@ const AIInsights = ({
         title={t_i18n('AI Insights')}
         header={useXtmOne ? (
           <Combobox<AgentOption>
+            labelPosition="none"
             clearable={false}
             options={agentOptions}
             getOptionLabel={(option) => option?.name ?? ''}
@@ -361,6 +362,7 @@ const AIInsights = ({
           >
             <ComboboxField>
               <ComboboxInput
+                aria-label={t_i18n('Select agent')}
                 placeholder={agentOptions.length === 0 ? t_i18n('No agent available') : t_i18n('Select agent')}
               />
               <ComboboxControls>

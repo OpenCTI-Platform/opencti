@@ -98,6 +98,7 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
             without closing it. `disableClearable` becomes `clearable={false}`,
             and `autoHighlight` is the engine's unconditional behaviour. */}
         <Combobox<autocompleteOptionsType>
+          labelPosition="none"
           options={getAutocompleteOptions()}
           value={getAutocompleteValue() ?? null}
           onValueChange={(selectedOption) => {

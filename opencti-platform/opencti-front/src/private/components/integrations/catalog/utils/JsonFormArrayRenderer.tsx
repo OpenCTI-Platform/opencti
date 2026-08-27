@@ -57,6 +57,7 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
           Enter path, so the local handleKeyDown that re-implemented it — and
           which silently swallowed a value already present — is gone. */}
       <Combobox<string>
+        labelPosition="none"
         multiple
         // MUI parity: none of these mounts passed disableCloseOnSelect, so the panel
         // closed after each pick. The library keeps it open in multiple mode, which
@@ -76,6 +77,7 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
         <ComboboxField>
           <ComboboxChips />
           <ComboboxInput
+            aria-label={String(label)}
             placeholder={currentValues.length === 0
               ? t_i18n('Type and press Enter to add items')
               : t_i18n('Add more items...')

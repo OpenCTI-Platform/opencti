@@ -196,10 +196,10 @@ const ListFilters = ({
       ) : (
         <>
           {/* The width lives on a wrapper: the declared 200px was shrunk to 119px
-              by the flex row, which cut the label. No ComboboxLabel — this row
-              carries no block labels, so the name is on the input. */}
+              by the flex row, which cut the label. */}
           <div style={{ width: 200, flexShrink: 0 }}>
             <Combobox<OptionType>
+              labelPosition="none"
               disabled={disabled}
               options={options as OptionType[]}
               groupBy={isNotUniqEntityTypes ? (option) => option?.groupLabel ?? '' : undefined}
