@@ -563,13 +563,10 @@ export const deleteWorkflowDefinition = async (
 
 /**
  * Ensures every workflow state's `statusId` (StatusTemplate reference) has a matching `Status`
- * record for this entity type in the Global scope, creating any that are missing. This is the
- * "full mapping invariant": after a successful publish, every declared state maps to a real
- * `Status` the legacy `status`/`x_opencti_workflow_id` field can point to.
+ * record for this entity type in the Global scope, creating any that are missing.
  *
- * Only the Global scope is reconciled here — request-access-scoped `Status` routing (a separate
- * scope on the same entity type) is out of scope until Task 7 introduces per-scope workflow
- * definitions; existing `Status` records in other scopes are left untouched.
+ * Only the Global scope is reconciled here — existing `Status` records in other scopes are
+ * left untouched.
  */
 export const ensureFullStatusMapping = async (
   context: AuthContext,
@@ -634,9 +631,8 @@ const isStatusReferencedByEntity = async (
 };
 
 /**
- * True if any EntitySetting's `request_access_workflow.{approved_workflow_id,declined_workflow_id}`
- * references this `Status` id, across ALL entity-setting configs (not just the one being
- * republished) — request-access routing is a separate reference path from workflow states.
+ * True if any EntitySetting's request-access workflow (approved/declined) references this
+ * `Status` id.
  */
 const isStatusReferencedByRequestAccessWorkflow = async (
   context: AuthContext,
@@ -651,13 +647,9 @@ const isStatusReferencedByRequestAccessWorkflow = async (
 };
 
 /**
- * On republish, reconciles `Status` records against the new definition's state→status mapping:
- * - A `Status` no longer mapped by any state, and unreferenced by any entity or request-access
- *   workflow config, is marked `to_be_deleted_at` (now + grace period) instead of being deleted
- *   immediately. The cleanup manager (a separate scheduled task) re-verifies and hard-deletes it
- *   once the grace period has elapsed.
- * - A `Status` still pending deletion that the new definition maps a state back to has its
- *   `to_be_deleted_at` mark cleared — restoring wins over a concurrent purge for the same record.
+ * On republish, marks `Status` records no longer mapped by any state (and unreferenced by any
+ * entity or request-access workflow) as `to_be_deleted_at` for later cleanup, and clears that
+ * mark on any `Status` a state maps back to.
  */
 const reconcileOrphanedStatuses = async (
   context: AuthContext,
@@ -711,10 +703,7 @@ const reconcileOrphanedStatuses = async (
 
 /**
  * Re-verifies whether a `Status` previously marked `to_be_deleted_at` is still orphaned, right
- * before the cleanup manager hard-deletes it. State can change during the grace window (a later
- * republish could remap a state back onto it, or an entity/request-access config could start
- * referencing it), so the same three checks used at mark-time are re-run here rather than trusting
- * the original mark. Used exclusively by the workflow status cleanup manager (Step 4.7).
+ * before the cleanup manager hard-deletes it, since state can change during the grace window.
  */
 export const isStatusOrphaned = async (
   context: AuthContext,
