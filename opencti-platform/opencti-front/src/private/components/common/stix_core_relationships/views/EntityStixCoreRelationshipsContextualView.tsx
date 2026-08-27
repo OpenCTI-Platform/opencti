@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import Chip from '@mui/material/Chip';
-import makeStyles from '@mui/styles/makeStyles';
+import { Chip } from '@filigran/design-system';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { Link } from 'react-router-dom';
 import ListLines from '../../../../../components/list_lines/ListLines';
@@ -23,28 +22,11 @@ import { EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject$key 
 import { EntityStixCoreRelationshipsContextualViewLinesQuery$variables } from './__generated__/EntityStixCoreRelationshipsContextualViewLinesQuery.graphql';
 import { EntityStixCoreRelationshipsContextualViewLine_node$data } from './__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
 import { isStixCoreObjects, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
-import type { Theme } from '../../../../../components/Theme';
 import { resolveLink } from '../../../../../utils/Entity';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
 import ItemEntityType from '../../../../../components/ItemEntityType';
 import { defaultRender } from '../../../../../components/dataGrid/dataTableUtils';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  chip: {
-    fontSize: 13,
-    lineHeight: '12px',
-    height: 20,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-    cursor: 'pointer',
-    '&:hover': {
-      backgroundColor: theme.palette.primary.main,
-    },
-  },
-}));
 
 const contextualViewFragment = graphql`
   fragment EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject on StixDomainObject
@@ -84,7 +66,6 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
   stixCoreObjectTypes = [],
   currentView,
 }) => {
-  const classes = useStyles();
   const { t_i18n, n, nsdt } = useFormatter();
 
   const stixDomainObject = usePreloadedFragment<
@@ -191,12 +172,14 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
         const link = `${resolveLink(stixCoreObject.entity_type)}/${stixCoreObject.id}`;
         const linkAnalyses = `${link}/analyses`;
         return (
-          <Chip
-            classes={{ root: classes.chip }}
-            label={n(stixCoreObject.containers?.edges?.length)}
-            component={Link}
-            to={linkAnalyses}
-          />
+          // The chip is wrapped in the Link rather than being the link itself:
+          // the library Chip has no `asChild`, and routing through `onClick`
+          // would cost middle-click and open-in-new-tab. The library's own
+          // hover only applies to a clickable chip, so the hand-rolled hover
+          // background is not replaced -- the anchor carries the affordance.
+          <Link to={linkAnalyses}>
+            <Chip label={String(n(stixCoreObject.containers?.edges?.length))} />
+          </Link>
         );
       },
     },
