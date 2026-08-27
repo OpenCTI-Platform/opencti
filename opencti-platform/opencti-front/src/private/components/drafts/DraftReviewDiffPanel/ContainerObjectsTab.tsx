@@ -2,7 +2,7 @@ import React, { FunctionComponent, Suspense } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import IconButton from '@mui/material/IconButton';
 import LaunchIcon from '@mui/icons-material/Launch';
 import { Link } from 'react-router-dom';
@@ -73,9 +73,7 @@ const ContainerObjectsTabComponent: FunctionComponent<ContainerObjectsTabCompone
               <Box sx={{ width: 120 }}>
                 <Chip
                   label={isAdd ? t_i18n('Added') : t_i18n('Removed')}
-                  color={isAdd ? 'success' : 'error'}
-                  size="small"
-                  sx={{ borderRadius: '4px', height: 24, fontSize: 12, fontWeight: 600 }}
+                  severity={isAdd ? 'low' : 'critical'}
                 />
               </Box>
               <Box sx={{ flex: 1, pr: 2 }}>

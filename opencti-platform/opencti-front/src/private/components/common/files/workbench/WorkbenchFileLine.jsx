@@ -11,7 +11,7 @@ import ListItemText from '@mui/material/ListItemText';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Link } from 'react-router-dom';
 import Slide from '@mui/material/Slide';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import { ListItemButton } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import ListItem from '@mui/material/ListItem';
@@ -218,9 +218,7 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
                   {file.metaData.labels_text ? file.metaData.labels_text.split(';').map((label, index) => (
                     <Chip
                       key={index}
-                      classes={{ root: classes.chipInList }}
-                      color="primary"
-                      variant="outlined"
+                      severity="info"
                       label={label.trim()}
                     />
                   )) : null}

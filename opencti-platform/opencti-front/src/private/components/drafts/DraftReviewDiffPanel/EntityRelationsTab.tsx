@@ -2,7 +2,7 @@ import React, { FunctionComponent, Suspense } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import IconButton from '@mui/material/IconButton';
 import LaunchIcon from '@mui/icons-material/Launch';
 import { Link } from 'react-router-dom';
@@ -84,9 +84,7 @@ const EntityRelationsTabComponent: FunctionComponent<EntityRelationsTabComponent
               <Box sx={{ width: 120 }}>
                 <Chip
                   label={isCreate ? t_i18n('Created') : t_i18n('Deleted')}
-                  color={isCreate ? 'success' : 'error'}
-                  size="small"
-                  sx={{ borderRadius: '4px', height: 24, fontSize: 12, fontWeight: 600 }}
+                  severity={isCreate ? 'low' : 'critical'}
                 />
               </Box>
               <Box sx={{ flex: 1, pr: 2 }}>
