@@ -1,5 +1,5 @@
 import React, { SyntheticEvent, useState } from 'react';
-import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
+import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxTrigger } from '@filigran/design-system';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@common/button/IconButton';
@@ -121,9 +121,13 @@ const SavedFiltersAutocomplete = ({
         }}
         renderOption={renderOption}
       >
-        <ComboboxLabel>{t_i18n('Select saved filter')}</ComboboxLabel>
+        {/* No ComboboxLabel: this field sits on the filter row beside a search
+            field that uses a placeholder and an add-filter control whose MUI
+            label floats inside it. A block label put this input on its own axis,
+            33px below its neighbours. The name moves to the input so the field
+            keeps an accessible name. */}
         <ComboboxField>
-          <ComboboxInput />
+          <ComboboxInput aria-label={t_i18n('Select saved filter')} placeholder={t_i18n('Select saved filter')} />
           <ComboboxControls>
             <ComboboxTrigger />
           </ComboboxControls>
