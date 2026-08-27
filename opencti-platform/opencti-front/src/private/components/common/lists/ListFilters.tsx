@@ -5,8 +5,8 @@ import Popover from '@mui/material/Popover';
 import Tooltip from '@mui/material/Tooltip';
 import { RayEndArrow, RayStartArrow } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
-import TextField from '@mui/material/TextField';
-import MUIAutocomplete from '@mui/material/Autocomplete';
+
+import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxTrigger } from '@filigran/design-system';
 import { type handleFilterHelpers } from 'src/utils/filters/filtersHelpers-types';
 import { type SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
 import { useFormatter } from '../../../../components/i18n';
@@ -195,35 +195,35 @@ const ListFilters = ({
         </Tooltip>
       ) : (
         <>
-          <MUIAutocomplete
-            disabled={disabled}
-            options={options as OptionType[]}
-            groupBy={isNotUniqEntityTypes ? (option) => option?.groupLabel ?? '' : undefined}
-            // The declared width was shrunk to 119px by the flex row, which cut the
-            // label off at 95px of the 101px it needs. flexShrink keeps it at 200.
-            sx={{ width: 200, flexShrink: 0 }}
-            value={null}
-            onChange={(_, selectOptionValue) => {
-              if (selectOptionValue?.value) handleChange(selectOptionValue.value);
-            }}
-            inputValue={inputValue}
-            onInputChange={(_, newValue, reason) => {
-              if (reason === 'reset') {
-                return;
-              }
-              setInputValue(newValue);
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="outlined"
-                size="small"
-                label={placeholder}
-                required={required}
-              />
-            )}
-            renderOption={(props, option) => <li {...props}>{option.label}</li>}
-          />
+          {/* The width lives on a wrapper: the declared 200px was shrunk to 119px
+              by the flex row, which cut the label. No ComboboxLabel — this row
+              carries no block labels, so the name is on the input. */}
+          <div style={{ width: 200, flexShrink: 0 }}>
+            <Combobox<OptionType>
+              disabled={disabled}
+              options={options as OptionType[]}
+              groupBy={isNotUniqEntityTypes ? (option) => option?.groupLabel ?? '' : undefined}
+              value={null}
+              onValueChange={(next) => {
+                const picked = next as OptionType | null;
+                if (picked?.value) handleChange(picked.value);
+              }}
+              inputValue={inputValue}
+              onInputChange={(newValue, meta) => {
+                if (meta.cause === 'type') setInputValue(newValue);
+              }}
+              getOptionLabel={(option) => option?.label ?? ''}
+              renderOption={(option) => option.label}
+            >
+              <ComboboxField>
+                <ComboboxInput aria-label={placeholder} placeholder={placeholder} required={required} />
+                <ComboboxControls>
+                  <ComboboxTrigger />
+                </ComboboxControls>
+              </ComboboxField>
+              <ComboboxContent listAriaLabel={placeholder} />
+            </Combobox>
+          </div>
           {!hideSavedFilters && isDatatable && variant === 'default' && (
             <SavedFilters
               currentSavedFilter={currentSavedFilter}
