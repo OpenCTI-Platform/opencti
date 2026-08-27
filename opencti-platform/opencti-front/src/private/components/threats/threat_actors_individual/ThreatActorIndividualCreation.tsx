@@ -14,7 +14,7 @@ import Tab from '@mui/material/Tab';
 import CountryField from '@components/common/form/CountryField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
-import TextField from '../../../../components/TextField';
+
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -47,6 +47,7 @@ import BulkTextModalButton from '../../../../components/fields/BulkTextField/Bul
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import TextareaField from '../../../../components/TextareaField';
 
 interface ErrorBadgeProps extends BadgeProps {
   errors?: FormikErrors<ThreatActorIndividualAddInput>;
@@ -545,14 +546,12 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
                 multiple={true}
               />
               <Field
-                component={TextField}
+                component={TextareaField}
                 name="goals"
                 label={t_i18n('Goals (1 / line)')}
                 required={(mandatoryAttributes.includes('goals'))}
-                fullWidth={true}
-                multiline={true}
                 rows="4"
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
             </Box>
             <Box sx={{ display: currentTab === 2 ? 'block' : 'none' }}>

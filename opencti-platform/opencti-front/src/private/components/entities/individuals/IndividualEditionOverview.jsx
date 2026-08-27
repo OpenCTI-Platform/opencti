@@ -19,6 +19,7 @@ import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeCon
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import TextareaField from '../../../../components/TextareaField';
 
 const individualMutationFieldPatch = graphql`
   mutation IndividualEditionOverviewFieldPatchMutation(
@@ -233,15 +234,12 @@ const IndividualEditionOverviewComponent = (props) => {
             variant="edit"
           />
           <Field
-            component={TextField}
-            variant="standard"
+            component={TextareaField}
             name="contact_information"
             label={t_i18n('Contact information')}
             required={(mandatoryAttributes.includes('contact_information'))}
-            fullWidth={true}
-            multiline={true}
             rows="4"
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helperText={

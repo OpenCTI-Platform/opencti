@@ -20,6 +20,7 @@ import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForE
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 import { FieldOption } from '../../../../utils/field';
+import TextareaField from '../../../../components/TextareaField';
 
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionDetailsFieldPatchMutation(
@@ -245,15 +246,12 @@ const IncidentEditionDetails: FunctionComponent<
             }
           />
           <Field
-            component={TextField}
-            variant="standard"
+            component={TextareaField}
             name="objective"
             required={(mandatoryAttributes.includes('objective'))}
             label={t_i18n('Objective')}
-            fullWidth={true}
-            multiline={true}
             rows={4}
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={

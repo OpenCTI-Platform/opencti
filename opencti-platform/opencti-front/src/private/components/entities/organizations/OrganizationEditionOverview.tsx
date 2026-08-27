@@ -22,6 +22,7 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import TextareaField from '../../../../components/TextareaField';
 
 export const organizationEditionOverviewFragment = graphql`
   fragment OrganizationEditionOverview_organization on Organization {
@@ -286,14 +287,11 @@ const OrganizationEditionOverview: FunctionComponent<OrganizationEditionOverview
             variant="edit"
           />
           <Field
-            component={TextField}
-            variant="standard"
+            component={TextareaField}
             name="contact_information"
             label={t_i18n('Contact information')}
-            fullWidth={true}
-            multiline={true}
             rows="4"
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helperText={

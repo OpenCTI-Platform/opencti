@@ -1,6 +1,5 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
 import Grid from '@mui/material/Grid';
-import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -15,6 +14,7 @@ import DataTableWithoutFragment from '../../components/dataGrid/DataTableWithout
 import { DataTableProps } from '../../components/dataGrid/dataTableTypes';
 import useDebounceCallback from '../../utils/hooks/useDebounceCallback';
 import { splitIntoLines } from '../../utils/String';
+import { Textarea } from '@filigran/design-system';
 
 const SearchBulkContainer = () => {
   const { t_i18n } = useFormatter();
@@ -55,7 +55,7 @@ const SearchBulkContainer = () => {
     setCurrentTab(value);
   };
 
-  const handleChangeTextField = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleChangeTextField = (event: ChangeEvent<HTMLTextAreaElement>) => {
     const { value } = event.target;
     const text = splitIntoLines(value);
     setTextFieldValue(text);
@@ -91,14 +91,11 @@ const SearchBulkContainer = () => {
         style={{ marginBottom: 20, marginTop: 0 }}
       >
         <Grid item xs={2} style={{ marginTop: -20 }}>
-          <TextField
+          <Textarea
             onChange={handleChangeTextField}
             value={textFieldValue}
-            multiline={true}
-            fullWidth={true}
             minRows={20}
             placeholder={t_i18n('One keyword by line or separated by commas')}
-            variant="outlined"
           />
         </Grid>
         <Grid item xs={10}>

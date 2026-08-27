@@ -16,6 +16,7 @@ import type { FormBuilderData, FormFieldAttribute } from './Form.d';
 import { convertFormBuilderDataToSchema, normalizeDraftAuthorizedMembersDefaults } from './FormUtils';
 import Loader from '../../../../components/Loader';
 import { useTheme } from '@mui/styles';
+import { Textarea } from '@filigran/design-system';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {
@@ -217,7 +218,7 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
     setFormName(event.target.value);
   };
 
-  const handleDescriptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDescriptionChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setFormDescription(event.target.value);
   };
 
@@ -240,12 +241,9 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
           value={formName}
           onChange={handleNameChange}
         />
-        <TextField
-          variant="standard"
+        <Textarea
           label={t_i18n('Description')}
-          fullWidth={true}
-          style={{ marginTop: 20 }}
-          multiline={true}
+          className="mt-5"
           rows={2}
           value={formDescription}
           onChange={handleDescriptionChange}

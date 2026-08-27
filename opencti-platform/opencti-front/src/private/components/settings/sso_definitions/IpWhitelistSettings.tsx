@@ -11,7 +11,7 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { groupSetDefaultGroupForIngestionUsersQuery } from '@components/settings/groups/GroupSetDefaultGroupForIngestionUsers';
 import SwitchField from '../../../../components/fields/SwitchField';
-import TextField from '../../../../components/TextField';
+
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -23,6 +23,7 @@ import { FieldOption } from '../../../../utils/field';
 import { IpWhitelistSettingsQuery } from './__generated__/IpWhitelistSettingsQuery.graphql';
 import type { GroupSetDefaultGroupForIngestionUsersQuery$data } from '@components/settings/groups/__generated__/GroupSetDefaultGroupForIngestionUsersQuery.graphql';
 import { OPENCTI_ADMIN_UUID } from 'src/utils/hooks/useGranted';
+import TextareaField from '../../../../components/TextareaField';
 
 const ipWhitelistSettingsQuery = graphql`
   query IpWhitelistSettingsQuery {
@@ -254,13 +255,10 @@ const IpWhitelistSettingsContent = () => {
                           {' '}{t_i18n('Excluded users, groups, or organizations bypass the IP check.')}
                         </Alert>
                         <Field
-                          component={TextField}
-                          variant="standard"
-                          style={{ marginTop: 20 }}
+                          component={TextareaField}
+                          className="mt-5"
                           name="platform_ip_whitelist"
                           label={t_i18n('Allowed IP addresses (one per line, e.g. 192.168.1.0/24)')}
-                          fullWidth={true}
-                          multiline={true}
                           rows={6}
                         />
 

@@ -18,6 +18,7 @@ import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeCon
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import TextareaField from '../../../../components/TextareaField';
 
 const courseOfActionMutationFieldPatch = graphql`
   mutation CourseOfActionEditionOverviewFieldPatchMutation(
@@ -276,14 +277,12 @@ const CourseOfActionEditionOverviewComponent = (props) => {
             )}
           />
           <Field
-            component={TextField}
+            component={TextareaField}
             name="x_opencti_log_sources"
             label={t_i18n('Log sources (1 / line)')}
             required={(mandatoryAttributes.includes('x_opencti_log_sources'))}
-            fullWidth={true}
-            multiline={true}
             rows="4"
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helperText={(
