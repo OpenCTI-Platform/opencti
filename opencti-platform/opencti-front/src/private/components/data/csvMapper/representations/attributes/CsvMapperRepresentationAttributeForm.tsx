@@ -1,7 +1,5 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import MUIAutocomplete from '@mui/material/Autocomplete';
-import MuiTextField from '@mui/material/TextField';
-import classNames from 'classnames';
+import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
 import CsvMapperRepresentationAttributeOptions from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributeOptions';
 import { alphabet } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
 import makeStyles from '@mui/styles/makeStyles';
@@ -39,11 +37,6 @@ const CsvMapperRepresentationAttributeForm: FunctionComponent<
       alignItems: 'center',
       marginTop: '10px',
       gap: '10px',
-    },
-    inputError: {
-      '& fieldset': {
-        borderColor: theme.palette.error.main,
-      },
     },
     redStar: {
       color: theme.palette.designSystem.tertiary.red[400],
@@ -105,27 +98,26 @@ const CsvMapperRepresentationAttributeForm: FunctionComponent<
         {schemaAttribute.mandatory && <span className={classes.redStar}>*</span>}
       </div>
       <div>
-        <MUIAutocomplete
+        <Combobox
           selectOnFocus
           openOnFocus
-          autoSelect={false}
-          autoHighlight
           options={options}
           // attribute might be unselected yet, but we need value=null as this is a controlled component
           value={value?.column_name ?? null}
-          onChange={(_, val) => onColumnChange(val)}
-          renderInput={(params) => (
-            <MuiTextField
-              {...params}
-              label={t_i18n('Column index')}
-              variant="outlined"
-              size="small"
-            />
-          )}
-          className={classNames({
-            [classes.inputError]: errors,
-          })}
-        />
+          onValueChange={(val) => onColumnChange(val as string | null)}
+          error={errors}
+        >
+          <ComboboxLabel>{t_i18n('Column index')}</ComboboxLabel>
+          <ComboboxField>
+            <ComboboxInput />
+            <ComboboxControls>
+              <ComboboxTrigger />
+            </ComboboxControls>
+          </ComboboxField>
+          <ComboboxContent
+            listAriaLabel={t_i18n('Column index')}
+          />
+        </Combobox>
       </div>
       <div>
         {
