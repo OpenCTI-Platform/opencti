@@ -4668,6 +4668,7 @@
   "This connector is disconnected": "Dieser Konnektor ist nicht verbunden",
   "This date will help you identify when your token will be revoked, it only serves as a reminder.": "This date will help you identify when your token will be revoked, it only serves as a reminder.",
   "This entity has several key fields, which is incompatible with bulk creation": "Diese Entität hat mehrere Schlüsselfelder, was mit der Massenerstellung nicht vereinbar ist",
+  "This entity type is managed by a workflow, status is read-only here": "Dieser Entitätstyp wird über einen Workflow verwaltet; der Status ist hier schreibgeschützt.",
   "This enumeration captures a degree of agreement with the information in a STIX Object. It is an ordered enumeration, with the earlier terms representing disagreement, the middle term neutral, and the later terms representing agreement": "Diese Aufzählung gibt den Grad der Übereinstimmung mit den Informationen in einem STIX-Objekt an. Es handelt sich um eine geordnete Aufzählung, wobei die früheren Begriffe für Uneinigkeit stehen, der mittlere Begriff für neutral und die späteren Begriffe für Zustimmung",
   "This exclusion list is too large to be displayed": "Diese Ausschlussliste ist zu groß, um angezeigt zu werden",
   "This external reference is linked to a file. If you delete it, the file will be deleted as well.": "Dieser externe Verweis ist mit einer Datei verknüpft. Wenn Sie sie löschen, wird auch die Datei gelöscht.",

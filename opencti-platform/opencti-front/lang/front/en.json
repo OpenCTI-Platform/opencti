@@ -4668,6 +4668,7 @@
   "This connector is disconnected": "This connector is disconnected",
   "This date will help you identify when your token will be revoked, it only serves as a reminder.": "This date will help you identify when your token will be revoked, it only serves as a reminder.",
   "This entity has several key fields, which is incompatible with bulk creation": "This entity has several key fields, which is incompatible with bulk creation",
+  "This entity type is managed by a workflow, status is read-only here": "This entity type is managed by a workflow, status is read-only here",
   "This enumeration captures a degree of agreement with the information in a STIX Object. It is an ordered enumeration, with the earlier terms representing disagreement, the middle term neutral, and the later terms representing agreement": "This enumeration captures a degree of agreement with the information in a STIX Object. It is an ordered enumeration, with the earlier terms representing disagreement, the middle term neutral, and the later terms representing agreement",
   "This exclusion list is too large to be displayed": "This exclusion list is too large to be displayed",
   "This external reference is linked to a file. If you delete it, the file will be deleted as well.": "This external reference is linked to a file. If you delete it, the file will be deleted as well.",

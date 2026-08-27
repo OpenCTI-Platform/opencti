@@ -4668,6 +4668,7 @@
   "This connector is disconnected": "このコネクタとの接続が切れています",
   "This date will help you identify when your token will be revoked, it only serves as a reminder.": "This date will help you identify when your token will be revoked, it only serves as a reminder.",
   "This entity has several key fields, which is incompatible with bulk creation": "このエンティティは複数のキーフィールドを持つため、一括作成とは互換性がありません。",
+  "This entity type is managed by a workflow, status is read-only here": "このエンティティタイプはワークフローによって管理されており、ここではステータスは読み取り専用です",
   "This enumeration captures a degree of agreement with the information in a STIX Object. It is an ordered enumeration, with the earlier terms representing disagreement, the middle term neutral, and the later terms representing agreement": "この列挙は、STIXオブジェクトの情報との一致度を表します。序列化された列挙であり、前の項が不一致、中間の項が中立、後の項が一致を表します。",
   "This exclusion list is too large to be displayed": "この除外リストは大きすぎて表示できません",
   "This external reference is linked to a file. If you delete it, the file will be deleted as well.": "この外部参照はファイルにリンクされています。これを削除すると、ファイルも削除されます。",

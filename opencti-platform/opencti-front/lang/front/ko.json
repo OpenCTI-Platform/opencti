@@ -4668,6 +4668,7 @@
   "This connector is disconnected": "이 커넥터는 연결이 끊어졌습니다",
   "This date will help you identify when your token will be revoked, it only serves as a reminder.": "This date will help you identify when your token will be revoked, it only serves as a reminder.",
   "This entity has several key fields, which is incompatible with bulk creation": "이 엔티티에는 대량 생성과 호환되지 않는 몇 가지 주요 필드가 있습니다",
+  "This entity type is managed by a workflow, status is read-only here": "이 엔티티 유형은 워크플로우에 의해 관리되며, 여기에서 상태는 읽기 전용입니다.",
   "This enumeration captures a degree of agreement with the information in a STIX Object. It is an ordered enumeration, with the earlier terms representing disagreement, the middle term neutral, and the later terms representing agreement": "이 열거형은 STIX 객체의 정보와 어느 정도 일치하는지를 캡처합니다. 앞의 용어는 불일치, 중간 용어는 중립, 뒤의 용어는 동의를 나타내는 정렬된 열거형입니다",
   "This exclusion list is too large to be displayed": "이 제외 목록이 너무 커서 표시할 수 없습니다",
   "This external reference is linked to a file. If you delete it, the file will be deleted as well.": "이 외부 참조는 파일에 링크되어 있습니다. 삭제하면 파일도 삭제됩니다.",
