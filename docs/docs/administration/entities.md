@@ -51,6 +51,29 @@ For now, OpenCTI has a simple workflow approach. They're represented by the "Pro
 In addition, the available statuses are defined by a collection of status templates visible in "Settings > Taxonomies > Status templates". This collection can be customized.
 
 
+### Entity status sync between platforms
+
+!!! note "Experimental feature"
+    Entity status sync is an experimental feature: its behavior may evolve in future releases.
+
+By default, when an entity is imported from another OpenCTI platform through an [OpenCTI-to-OpenCTI live stream synchronizer](../usage/import/internal-streams.md), its processing status isn't preserved: the remote platform's internal status reference isn't recognized locally, so the imported entity ends up with no visible "Processing status" udpate.
+
+Enable **Entity status sync** to keep the processing status consistent across platforms instead, provided both platforms define a Workflow with statuses that share the same name for that entity type.
+
+To enable it:
+
+1. Navigate to "Settings > Customization > Entity types > [Desired object type]".
+2. Under the "Workflow" section, turn on "Update entities' statuses by name match".
+
+Once enabled, every time this platform receives an entity of this type through a live stream synchronizer, it looks up a local status sharing the same name as the one set on the remote platform:
+
+- If a matching status is found, it's applied to the imported entity.
+- If no matching status is found, the remote status reference isn't kept: a newly created entity falls back to the entity type's default Workflow status (like any manually created entity), while an already-synced entity simply keeps its current local status unchanged.
+
+!!! note
+    This setting only affects entities received through OpenCTI-to-OpenCTI live stream synchronizers ([internal streams](../usage/import/internal-streams.md)). It has no effect on entities created or updated locally, or imported through other connectors and feeds.
+
+
 <a id="fintelTemplates-section"></a>
 ## Fintel templates
 
