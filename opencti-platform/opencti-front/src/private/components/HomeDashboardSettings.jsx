@@ -1,14 +1,10 @@
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import ListSubheader from '@mui/material/ListSubheader';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
+
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import React from 'react';
 import { graphql } from 'react-relay';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import makeStyles from '@mui/styles/makeStyles';
-import { createStyles } from '@mui/styles';
+
 import { useFormatter } from '../../components/i18n';
 import { QueryRenderer } from '../../relay/environment';
 import useAuth from '../../utils/hooks/useAuth';
@@ -19,21 +15,6 @@ import useApiMutation from '../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles(() => createStyles({
-  muiSelect: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  muiSelectIcon: {
-    minWidth: 36,
-  },
-  mainButton: ({ bannerHeightNumber }) => ({
-    position: 'fixed',
-    bottom: `${bannerHeightNumber + 30}px`,
-    right: 30,
-  }),
-}));
-
 export const PLATFORM_DASHBOARD = 'cf093b57-713f-404b-a210-a1c5c8cb3791';
 
 export const dashboardSettingsDashboardsQuery = graphql`
@@ -68,9 +49,8 @@ const dashboardSettingsMutation = graphql`
 `;
 
 const HomeDashboardSettings = () => {
-  const { bannerSettings: { bannerHeightNumber } } = useAuth();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
-  const classes = useStyles({ bannerHeightNumber });
+
   const { t_i18n } = useFormatter();
   const {
     me: {
@@ -96,19 +76,20 @@ const HomeDashboardSettings = () => {
     <Security
       needs={[EXPLORE]}
       placeholder={(
-        <FormControl style={{ width: '100%' }}>
-          <InputLabel id="timeField">{t_i18n('Date reference')}</InputLabel>
-          <Select
-            labelId="timeField"
-            value={timeField === null ? '' : timeField}
-            onChange={(event) => handleUpdate('default_time_field', event.target.value)
-            }
-            fullWidth={true}
-          >
-            <MenuItem value="technical">{t_i18n('Technical date')}</MenuItem>
-            <MenuItem value="functional">{t_i18n('Functional date')}</MenuItem>
-          </Select>
-        </FormControl>
+        <Select
+          value={timeField === null ? '' : timeField}
+          onValueChange={(value) => handleUpdate('default_time_field', value)
+          }
+        >
+          <SelectLabel>{t_i18n('Date reference')}</SelectLabel>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="technical">{t_i18n('Technical date')}</SelectItem>
+            <SelectItem value="functional">{t_i18n('Functional date')}</SelectItem>
+          </SelectContent>
+        </Select>
       )}
     >
       <QueryRenderer
@@ -135,21 +116,24 @@ const HomeDashboardSettings = () => {
                     {t_i18n('Date reference')}
                   </InputLabel>
                   <Select
-                    labelId="timeField"
                     value={timeField ?? 'technical'}
-                    onChange={(event) => handleUpdate(
+                    onValueChange={(value) => handleUpdate(
                       'default_time_field',
-                      event.target.value,
+                      value,
                     )
                     }
-                    fullWidth={true}
                   >
-                    <MenuItem value="technical">
-                      {t_i18n('Technical date')}
-                    </MenuItem>
-                    <MenuItem value="functional">
-                      {t_i18n('Functional date')}
-                    </MenuItem>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="technical">
+                        {t_i18n('Technical date')}
+                      </SelectItem>
+                      <SelectItem value="functional">
+                        {t_i18n('Functional date')}
+                      </SelectItem>
+                    </SelectContent>
                   </Select>
                 </FormControl>
                 <FormControl style={{ width: '100%', marginTop: 20 }}>
@@ -157,54 +141,44 @@ const HomeDashboardSettings = () => {
                     {t_i18n('Custom dashboard')}
                   </InputLabel>
                   <Select
-                    labelId="dashboard"
                     value={dashboard?.id ?? 'automatic'}
-                    onChange={(event) => handleUpdate(
-                      'default_dashboard',
-                      event.target.value,
-                    )
-                    }
-                    fullWidth={true}
-                    classes={{
-                      select: classes.muiSelect,
-                    }}
+                    onValueChange={(value) => handleUpdate('default_dashboard', value)}
                   >
-                    <MenuItem value="automatic">
-                      <em>{t_i18n('Default dashboard')}</em>
-                    </MenuItem>
-                    <MenuItem value={PLATFORM_DASHBOARD}>
-                      <em>{t_i18n('Platform dashboard')}</em>
-                    </MenuItem>
-                    {dashboards.length > 0 && (
-                      <ListSubheader>
-                        {t_i18n('Dashboards from your groups & organizations')}
-                      </ListSubheader>
-                    )}
-                    {dashboards.map(({ id, name }) => (
-                      <MenuItem key={id} value={id}>
-                        <ListItemIcon classes={{
-                          root: classes.muiSelectIcon,
-                        }}
-                        >
-                          <ItemIcon type="Dashboard" />
-                        </ListItemIcon>
-                        <ListItemText>{name}</ListItemText>
-                      </MenuItem>
-                    ))}
-                    {workspaces?.length > 0 && (
-                      <ListSubheader>{t_i18n('Other custom dashboards')}</ListSubheader>
-                    )}
-                    {workspaces?.map(({ node }) => (
-                      <MenuItem key={node.id} value={node.id}>
-                        <ListItemIcon classes={{
-                          root: classes.muiSelectIcon,
-                        }}
-                        >
-                          <ItemIcon type="Dashboard" />
-                        </ListItemIcon>
-                        <ListItemText>{node.name}</ListItemText>
-                      </MenuItem>
-                    ))}
+                    <SelectTrigger aria-label={t_i18n('Custom dashboard')}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent aria-label={t_i18n('Custom dashboard')}>
+                      <SelectItem value="automatic">
+                        <em>{t_i18n('Default dashboard')}</em>
+                      </SelectItem>
+                      <SelectItem value={PLATFORM_DASHBOARD}>
+                        <em>{t_i18n('Platform dashboard')}</em>
+                      </SelectItem>
+                      {dashboards.length > 0 && (
+                        <SelectGroup>
+                          <SelectLabel>
+                            {t_i18n('Dashboards from your groups & organizations')}
+                          </SelectLabel>
+                          {dashboards.map(({ id, name }) => (
+                            <SelectItem key={id} value={id}>
+                              <ItemIcon type="Dashboard" />
+                              <span>{name}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      )}
+                      {workspaces?.length > 0 && (
+                        <SelectGroup>
+                          <SelectLabel>{t_i18n('Other custom dashboards')}</SelectLabel>
+                          {workspaces.map(({ node }) => (
+                            <SelectItem key={node.id} value={node.id}>
+                              <ItemIcon type="Dashboard" />
+                              <span>{node.name}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      )}
+                    </SelectContent>
                   </Select>
                 </FormControl>
               </>
