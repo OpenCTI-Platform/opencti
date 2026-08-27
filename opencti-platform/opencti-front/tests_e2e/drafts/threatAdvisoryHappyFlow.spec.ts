@@ -1,24 +1,10 @@
 /**
- * Content of the test
- * --------------------
- * Implements the authoritative "happy flow" scenario (24 steps) from
- * `workflow-e2e-product-test-plan.md` (repo memory): a Threat Advisory Report is submitted via
- * the Form Intake as a draft, moved through every Threat Advisory workflow status by the correct
- * persona at each step (with view-only/no-access checks in between), shared to OrgB, validated
- * into a real Report, then its final authorized members (set by the "Report created" playbook)
- * are checked from every persona's point of view.
- *
- * Depends on the fixtures built by `workflow/threatAdvisoryWorkflowSetup.spec.ts` and
- * `formIntake/threatAdvisorySetup.spec.ts` (workflow + "Threat Advisories" form + playbook),
- * and the 6-user/3-org/4-group test-data matrix seeded by the `'init data'` project.
- *
- * NOTE on workflow status display names: the draft toolbar (`ItemStatus.tsx`) renders the status
- * *template* name verbatim (raw, e.g. "NEW"/"MO MANAGER REVIEW"/...) - `snakeCaseToSentenceCase`
- * is only applied in the Workflow Editor's graph nodes (`StatusNode.tsx`), not at runtime.
- *
- * NOTE on submitting the form: analysts use the "Import data" icon button in the top bar
- * (`UploadImport.tsx`), not the Integrations/Deployed catalog (which is for admins deploying
- * forms, not for submitting them) - see `ImportFilesDialogPageModel`.
+ * Authoritative "happy flow" scenario (24 steps, `workflow-e2e-product-test-plan.md`): a Threat
+ * Advisory Report is submitted as a draft, moved through every workflow status by the correct
+ * persona, shared to OrgB, validated into a real Report, then its final authorized members are
+ * checked from every persona's point of view. Depends on the fixtures built by
+ * `workflow/threatAdvisoryWorkflowSetup.spec.ts` and `formIntake/threatAdvisorySetup.spec.ts`,
+ * and the test-data matrix seeded by the `'init data'` project.
  */
 import { expect, test } from '../fixtures/baseFixtures';
 import TopMenuProfilePage from '../model/menu/topMenuProfile.pageModel';
@@ -64,12 +50,8 @@ const USERS = {
   managerOrgC: { email: 'managerorgc@filigran.test', password: 'managerorgc' },
 };
 
-// Avoid a raw numeric/date-like suffix: some views reformat name substrings that look like
-// timestamps into a human-readable date, which breaks exact-text matching later.
-// Set E2E_REPORT_NAME to re-run only the "Report access checks" test against a Report already
-// created by a previous full run, instead of waiting through steps 1-18 again:
+// Set E2E_REPORT_NAME to re-run only "Report access checks" against a Report from a previous run:
 //   E2E_REPORT_NAME="Threat Advisory E2E - <uuid>" npx playwright test threatAdvisoryHappyFlow.spec.ts -g "Report access checks"
-// If omitted when run standalone, the most recently created "Threat Advisory E2E - ..." Report is used instead.
 const REPORT_NAME_PREFIX = 'Threat Advisory E2E - ';
 let reportName: string = process.env.E2E_REPORT_NAME ?? `${REPORT_NAME_PREFIX}${crypto.randomUUID()}`;
 let draftId = '';
@@ -95,8 +77,7 @@ test.describe.serial('Threat Advisory happy flow', () => {
 
     const openDraft = async (user: { email: string; password: string }) => {
       await loginAs(user);
-      // Report is a Container-type entity, shown under the "Containers" tab, not "Entities"
-      // (the default tab excludes containers).
+      // Report is a Container-type entity, shown under the "Containers" tab, not "Entities".
       await page.goto(`/dashboard/data/import/draft/${draftId}/containers`, { waitUntil: 'domcontentloaded' });
     };
 
@@ -200,9 +181,8 @@ test.describe.serial('Threat Advisory happy flow', () => {
       await page.waitForURL('**/dashboard/data/import/draft');
     });
 
-    // Step 18 (backend/playbook): the "Report created" playbook applies the final Report-level
-    // authorized members (OrgC+OrgC Manager group=manage, Analyst/Manager/OrgC Analyst groups=view) -
-    // no direct UI action, verified indirectly in "Report access checks" below.
+    // Step 18 (backend/playbook): the "Report created" playbook sets the final authorized
+    // members - verified indirectly in "Report access checks" below.
 
     await restoreAdminSession(page);
   });
@@ -210,8 +190,7 @@ test.describe.serial('Threat Advisory happy flow', () => {
   test('Report access checks (steps 19-24): every persona\'s view of the validated Report', { tag: ['@ee', '@group1'] }, async ({ page, request }) => {
     test.setTimeout(180000); // ~6 logins across every persona
 
-    // Standalone run (e.g. from the UI test runner): "Steps 1-18" didn't run in this session,
-    // so find the most recently created matching Report instead of using a fresh random name.
+    // Standalone run: "Steps 1-18" didn't run in this session, find the latest matching Report.
     if (!draftId && !process.env.E2E_REPORT_NAME) {
       reportName = await findLatestReportName(request, REPORT_NAME_PREFIX);
     }
@@ -271,8 +250,7 @@ test.describe.serial('Threat Advisory happy flow', () => {
       await reportDetails.assertAuthor('OrgA');
     });
 
-    // "can manage" (admin access_right) inherently includes edit rights - there's no
-    // manage-only tier in the access-control model, unlike the product test plan's wording implies.
+    // "can manage" (admin access_right) inherently includes edit rights.
     await test.step('Step 24: ManagerOrgC can view and edit the Report, and can manage authorized members', async () => {
       await loginAs(USERS.managerOrgC);
       await reportPage.navigateFromMenu();

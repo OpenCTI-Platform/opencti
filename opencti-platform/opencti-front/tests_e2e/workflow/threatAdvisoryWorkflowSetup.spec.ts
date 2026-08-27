@@ -158,8 +158,6 @@ test('Build and publish the Threat Advisory draft workflow', { tag: ['@ee', '@gr
     await expect(workflowEditor.getPublishButton()).toHaveText('Published');
   });
 
-  // logout() above destroys the shared admin session server-side (req.session.destroy), which
-  // would strand every downstream 'chromium'-project spec relying on the same storageState file
-  // on the Login page. Restore a valid admin session before other specs run.
+  // logout() above destroys the shared admin session server-side - restore it for downstream specs.
   await restoreAdminSession(page);
 });
