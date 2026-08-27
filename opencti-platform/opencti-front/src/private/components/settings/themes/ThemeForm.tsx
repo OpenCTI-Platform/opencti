@@ -343,6 +343,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
                 fullWidth
                 onSubmit={handleFieldSubmit}
                 sx={{ textTransform: 'capitalize' }}
+                disabled={isDefaultTheme}
               />
             )}
           </div>
