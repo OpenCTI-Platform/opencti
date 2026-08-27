@@ -37,6 +37,10 @@ export interface DeployedIntegrationItem {
   // Authentication error (HTTP 401/403) detected in the connector runtime logs.
   // Only set for connectors; feeds keep the default no-error state.
   errorState: ConnectorErrorState;
+  // Last execution outcome of a feed ('success' | 'error'), used to render a
+  // green/red health indicator. Only set for feeds exposing last_execution_status
+  // (currently TAXII); null/undefined for connectors and other feeds.
+  executionStatus?: 'success' | 'error' | null;
   uri?: string | null;
   userName?: string | null;
   detailUrl: string;
@@ -202,10 +206,22 @@ const useDeployedIntegrations = ({
         uri?: string | null;
         ingestion_running?: boolean | null;
         last_execution_date?: string | null;
+        last_execution_status?: string | null;
         updated_at?: string | null;
         user?: { readonly name: string } | null;
       },
     ) => {
+      // Feeds report a coarse last execution outcome ('success' | 'error').
+      // An 'error' outcome flags the feed as in error (red indicator); a
+      // 'success' outcome renders a green health indicator.
+      const executionStatus = node.last_execution_status === 'error'
+        ? 'error'
+        : node.last_execution_status === 'success'
+          ? 'success'
+          : null;
+      const feedErrorState: ConnectorErrorState = executionStatus === 'error'
+        ? { inError: true, code: null, message: 'Last execution failed', timestamp: node.last_execution_date ?? null }
+        : NO_ERROR;
       items.push({
         id: node.id,
         kind,
@@ -219,7 +235,8 @@ const useDeployedIntegrations = ({
         lastRunDate: (node.last_execution_date as string | null) ?? null,
         updatedAt: (node.updated_at as string | null) ?? null,
         isManaged: false,
-        errorState: NO_ERROR,
+        errorState: feedErrorState,
+        executionStatus,
         uri: node.uri,
         userName: node.user?.name,
         detailUrl: `/dashboard/integrations/feeds/${kind}/${node.id}`,

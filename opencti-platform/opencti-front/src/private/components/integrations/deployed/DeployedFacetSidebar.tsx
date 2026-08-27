@@ -1,7 +1,7 @@
 import React, { Dispatch, SetStateAction } from 'react';
 import { alpha, useTheme } from '@mui/material/styles';
 import { Box, Stack } from '@mui/material';
-import { AutorenewOutlined, ExtensionOutlined, PauseCircleOutlined, PlayCircleOutlined, WidgetsOutlined } from '@mui/icons-material';
+import { AutorenewOutlined, ErrorOutlineOutlined, ExtensionOutlined, PauseCircleOutlined, PlayCircleOutlined, WidgetsOutlined } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import { FacetCheckbox, FacetGroupLabel, toggleValue } from '@components/integrations/catalog/IngestionCatalogFacetSidebar';
@@ -20,6 +20,7 @@ const STATUS_FACET_ICONS: Record<DeployedStatusFacet, SvgIconComponent> = {
   active: PlayCircleOutlined,
   processing: AutorenewOutlined,
   inactive: PauseCircleOutlined,
+  error: ErrorOutlineOutlined,
 };
 
 const KIND_FACET_ICONS: Record<DeployedKindFacet, SvgIconComponent> = {
@@ -71,6 +72,7 @@ const DeployedFacetSidebar = ({
   const statusLabel = (status: DeployedStatusFacet): string => {
     if (status === 'active') return t_i18n('Active');
     if (status === 'processing') return t_i18n('Processing');
+    if (status === 'error') return t_i18n('In error');
     return t_i18n('Inactive');
   };
 

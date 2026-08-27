@@ -41,7 +41,8 @@ export const toConnectorErrorState = (raw: RawConnectorError | null | undefined)
  * no error.
  */
 export const connectorErrorSummary = (state: ConnectorErrorState): string | null => {
-  if (!state.inError || state.code === null) return null;
+  if (!state.inError) return null;
+  if (state.code === null) return state.message ?? null;
   const reason = state.code === 401 ? 'Unauthorized (401)' : 'Forbidden (403)';
   return state.message ? `${reason}: ${state.message}` : reason;
 };

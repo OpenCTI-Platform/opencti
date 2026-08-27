@@ -4,11 +4,11 @@ import { DeployedIntegrationItem } from '@components/integrations/deployed/useDe
 
 export type DeployedSortMode = 'name' | 'status' | 'lastRun' | 'messages';
 
-export type DeployedStatusFacet = 'active' | 'processing' | 'inactive';
+export type DeployedStatusFacet = 'active' | 'processing' | 'inactive' | 'error';
 
 export type DeployedKindFacet = 'connector' | 'built-in';
 
-export const DEPLOYED_STATUS_FACETS: DeployedStatusFacet[] = ['active', 'processing', 'inactive'];
+export const DEPLOYED_STATUS_FACETS: DeployedStatusFacet[] = ['active', 'processing', 'inactive', 'error'];
 
 export const DEPLOYED_KIND_FACETS: DeployedKindFacet[] = ['connector', 'built-in'];
 
@@ -46,8 +46,13 @@ const itemKindFacet = (item: DeployedIntegrationItem): DeployedKindFacet => {
   return item.kind === 'connector' ? 'connector' : 'built-in';
 };
 
-const itemStatusFacet = (item: DeployedIntegrationItem): DeployedStatusFacet => {
-  return item.status;
+// The status facets an item satisfies. `error` is cross-cutting: a connector
+// can be active/inactive and in authentication error at the same time, so it is
+// added on top of the lifecycle status rather than replacing it.
+const itemStatusFacets = (item: DeployedIntegrationItem): DeployedStatusFacet[] => {
+  const facets: DeployedStatusFacet[] = [item.status];
+  if (item.errorState.inError) facets.push('error');
+  return facets;
 };
 
 type FacetGroup = 'types' | 'statuses' | 'kinds';
@@ -64,7 +69,8 @@ const matchesFilters = (
   if (skip !== 'types' && filters.types.length > 0 && !filters.types.includes(item.sectionKey)) {
     return false;
   }
-  if (skip !== 'statuses' && filters.statuses.length > 0 && !filters.statuses.includes(itemStatusFacet(item))) {
+  if (skip !== 'statuses' && filters.statuses.length > 0
+    && !itemStatusFacets(item).some((facet) => filters.statuses.includes(facet))) {
     return false;
   }
   if (skip !== 'kinds' && filters.kinds.length > 0 && !filters.kinds.includes(itemKindFacet(item))) {
@@ -126,8 +132,9 @@ const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedInte
     const counts: Record<string, number> = {};
     for (const item of items) {
       if (matchesFilters(item, filters, 'statuses')) {
-        const facet = itemStatusFacet(item);
-        counts[facet] = (counts[facet] ?? 0) + 1;
+        for (const facet of itemStatusFacets(item)) {
+          counts[facet] = (counts[facet] ?? 0) + 1;
+        }
       }
     }
     return counts;

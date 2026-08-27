@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Stack, Tooltip, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
-import { DeveloperBoardOutlined, ErrorOutlineOutlined } from '@mui/icons-material';
+import { DeveloperBoardOutlined, ErrorOutlineOutlined, CheckCircleOutlined } from '@mui/icons-material';
 import { useDeployedTypeMetadata } from '@components/integrations/deployed/DeployedFacetSidebar';
 import DeployedIntegrationPopover from '@components/integrations/deployed/DeployedIntegrationPopover';
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
@@ -259,6 +259,14 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
                   <ErrorOutlineOutlined
                     data-testid="integration-error-indicator"
                     sx={{ fontSize: 16, color: theme.palette.error.main }}
+                  />
+                </Tooltip>
+              )}
+              {!item.errorState.inError && item.executionStatus === 'success' && (
+                <Tooltip title={t_i18n('Last execution succeeded')}>
+                  <CheckCircleOutlined
+                    data-testid="integration-success-indicator"
+                    sx={{ fontSize: 16, color: theme.palette.success.main }}
                   />
                 </Tooltip>
               )}

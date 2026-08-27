@@ -2,6 +2,7 @@ import ConnectorPopover from '@components/data/connectors/ConnectorPopover';
 import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip';
 import ManagedConnectorEdition from '@components/data/connectors/ManagedConnectorEdition';
 import UpdateIcon from '@mui/icons-material/Update';
+import ErrorOutlineOutlined from '@mui/icons-material/ErrorOutlineOutlined';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
@@ -56,6 +57,7 @@ import { ListItemButton, Stack, Typography } from '@mui/material';
 import { createRefetchContainer, RelayRefetchProp } from 'react-relay';
 import { getDeprecatedDescriptorsForEdition, shouldShowDeprecatedAlert } from '@components/integrations/catalog/utils/deprecatedFields';
 import { getConnectorMetadata, getConnectorTypeIcon, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
+import { connectorErrorSummary, toConnectorErrorState } from '../../../../utils/connectorErrors';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -759,6 +761,9 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     return `${excerptTitle} - ${connectorTitle}`;
   })();
 
+  // Authentication error status (HTTP 401/403) detected from the connector logs.
+  const connectorErrorState = toConnectorErrorState(connector.manager_connector_error);
+
   // Parsed catalog contract, used to surface the marketplace overview
   // (description, links, use cases) next to the monitoring data.
   const contractDefinition = useMemo(() => {
@@ -959,6 +964,14 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
               <div style={{ display: 'inline-block', flexShrink: 0 }}>
                 <ConnectorStatusChip connector={connector} />
               </div>
+              {connectorErrorState.inError && (
+                <Tooltip title={connectorErrorSummary(connectorErrorState) ?? t_i18n('In error')}>
+                  <ErrorOutlineOutlined
+                    style={{ color: theme.palette.error.main, flexShrink: 0 }}
+                    fontSize="small"
+                  />
+                </Tooltip>
+              )}
             </TitleMainEntity>
           </Box>
         </Stack>
@@ -996,6 +1009,17 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
           </Security>
         </div>
       </div>
+
+      {connectorErrorState.inError && (
+        <Alert severity="error" variant="outlined" sx={{ mb: 3 }}>
+          {t_i18n(
+            connectorErrorState.code === 403
+              ? 'This connector is in error: access forbidden (HTTP 403). Check its configuration and credentials.'
+              : 'This connector is in error: authentication failed (HTTP 401). Check its configuration and credentials.',
+          )}
+          {connectorErrorState.message ? ` — ${connectorErrorState.message}` : ''}
+        </Alert>
+      )}
 
       <Box
         sx={{
@@ -1069,6 +1093,12 @@ const Connector = createRefetchContainer(
         manager_requested_status
         manager_contract_image
         manager_connector_logs
+        manager_connector_error {
+          in_error
+          code
+          message
+          timestamp
+        }
         manager_connector_uptime
         manager_health_metrics {
           restart_count

@@ -263,6 +263,35 @@ describe('useDeployedIntegrations', () => {
       }
     });
 
+    it('flags a TAXII feed in error when its last execution failed', () => {
+      const { result } = renderIntegrations({
+        feeds: {
+          ingestionTaxiis: {
+            pageInfo: { globalCount: 1 },
+            edges: [{ node: { id: 'taxii-err', name: 'taxii-err', description: null, uri: null, ingestion_running: true, last_execution_date: '2026-03-01T00:00:00.000Z', last_execution_status: 'error', updated_at: null, user: null } }],
+          },
+        },
+      });
+      const item = result.current[0];
+      expect(item.executionStatus).toBe('error');
+      expect(item.errorState.inError).toBe(true);
+      expect(item.errorState.code).toBeNull();
+    });
+
+    it('marks a TAXII feed as healthy when its last execution succeeded', () => {
+      const { result } = renderIntegrations({
+        feeds: {
+          ingestionTaxiis: {
+            pageInfo: { globalCount: 1 },
+            edges: [{ node: { id: 'taxii-ok', name: 'taxii-ok', description: null, uri: null, ingestion_running: true, last_execution_date: '2026-03-01T00:00:00.000Z', last_execution_status: 'success', updated_at: null, user: null } }],
+          },
+        },
+      });
+      const item = result.current[0];
+      expect(item.executionStatus).toBe('success');
+      expect(item.errorState.inError).toBe(false);
+    });
+
     it('maps form intakes with their active flag', () => {
       const { result } = renderIntegrations({
         forms: [{ id: 'form-1', name: 'Intake form', description: 'desc', active: true, updated_at: '2026-03-01T00:00:00.000Z' }],
