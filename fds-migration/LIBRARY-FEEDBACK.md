@@ -1707,9 +1707,9 @@ line is closed.
 
 ### #49 — RESOLVED as a diagnosis, and my hypothesis was wrong twice
 
-**Measured, not argued.** Reproduction in `fds-migration/repro-49/` — React plus
-the built design system, no OpenCTI code — driven by Playwright, five close paths,
-both themes.
+**Measured, not argued.** Measured on a standalone bench — React plus the built
+design system, no OpenCTI code — driven by Playwright, five close paths, both
+themes. The bench itself is not kept here; see the note under STATUS below.
 
 | Component | select | Escape | click outside | Tab | unmount while open |
 |---|---|---|---|---|---|
@@ -1763,9 +1763,17 @@ theory — it is measured and it is not this.
 Sandy's decision: the Select fix (non-modal, or dismiss on focus-out) does **not**
 land before the 31st. Owner is the **library**, to be treated in V2.
 
-Carried here as the durable record: the reproduction is
-`fds-migration/repro-49/` and the red-before-fix test is its
-`pointer-events.spec.mjs` (10 pass, 2 fail, both `Tab blur`, one per theme).
+Carried here as the durable record. The bench that produced it has been deleted
+from this branch: it is test scaffolding for a library defect and has no business
+shipping inside the product. Its verdict was 10 pass / 2 fail, both failures
+`select — close by Tab blur`, one per theme, the two Combobox rows untouched.
+
+**The library has no test covering this.** Checked at pin `fc24f4b`: the only
+`pointer-events` assertion in `Select.test.tsx` is a disabled item's class, not
+`body.style.pointerEvents` after Tab. So V2 starts by re-creating the failing
+test — a React host plus the built library, Tab out of an open `Select`, assert
+`document.body.style.pointerEvents` is not `none` — rather than by reading a
+bench that no longer exists.
 
 **No product workaround and no improvised mitigation.** Nothing in OpenCTI is to
 be changed to dodge this — not a `modal` override at a call site, not a Tab
