@@ -75,7 +75,7 @@ const themeBuilder = (
 };
 
 const defaultTheme: AppThemeType = {
-  name: 'Dark',
+  name: 'Filigran Dark',
   theme_accent: THEME_DARK_DEFAULT_ACCENT,
   theme_background: THEME_DARK_DEFAULT_BACKGROUND,
   theme_logo: '',
@@ -119,7 +119,7 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
   // attribute. This must match `theme.palette.mode` so that CSS files
   // targeting `body[data-theme="dark"]` / `body[data-theme="light"]`
   // apply on the very first render.
-  const themeMode = (themeToUse?.name ?? defaultTheme.name) === 'Light' ? 'light' : 'dark';
+  const themeMode = (themeToUse?.name ?? defaultTheme.name) === 'Filigran Light' ? 'light' : 'dark';
   useDocumentThemeModifier(themeMode);
 
   return <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>;
