@@ -57,9 +57,14 @@ export default class AutocompleteFieldPageModel {
    * pick the `Create '<value>'` row. Per design nodes 6920-11382 / 6920-11841,
    * accepted 2026-08-25 — the persistent `+` is gone on converted sites.
    *
-   * The row OPENS the creation form; it does NOT prefill it. Measured on the real
-   * incident-response form: after the click the dialog appears with its name and
-   * source_name inputs EMPTY. Callers must still fill them.
+   * The row OPENS the creation form. Whether it PREFILLS it is per-site and must
+   * be measured, not assumed — measured scoped to the dialog, since the page
+   * behind it has inputs of the same name:
+   *
+   *   CreatedByField          -> passes `inputValue={keyword}` to IdentityCreation
+   *                              -> dialog name = the typed text (PREFILLED)
+   *   ExternalReferencesField -> passes no inputValue to ExternalReferenceCreation
+   *                              -> source_name, external_id, url all EMPTY
    */
   async createOption(value: string) {
     await this.inputLocator.click();

@@ -319,16 +319,17 @@ test('Incident response live entities creation and relationships', { tag: ['@ce'
   // ------------------------------
 
   // Create author from the incident response creation form
-  // The create row OPENS the form; it does not carry the typed text over.
-  // Measured on the real form: after clicking the `Create '...'` row the dialog
-  // appears with input[name="name"] EMPTY, so both required-field assertions are
-  // still reachable and the name must still be filled.
+  // The AUTHOR dialog IS prefilled: CreatedByField passes `inputValue={keyword}`
+  // to IdentityCreation, so the create row carries the typed text over. Measured
+  // scoped to the dialog — name = "Jeanne Mitchel" — so the name can no longer be
+  // empty by this path and only the entity type is still required.
+  //
+  // Do NOT harmonise this with the external-reference block below: that dialog
+  // receives no inputValue and genuinely opens empty. The two differ in the
+  // product code, not by accident.
   await incidentResponseForm.authorAutocomplete.createOption('Jeanne Mitchel');
   await authorForm.getCreateButton().click();
-  await expect(authorForm.nameField.getByText('This field is required')).toBeVisible();
   await expect(authorForm.entityTypeSelect.getByText('This field is required')).toBeVisible();
-  await authorForm.nameField.fill('Jeanne Mitchel');
-  await expect(authorForm.nameField.getByText('This field is required')).toBeHidden();
   await authorForm.entityTypeSelect.selectOption('Individual');
   await expect(authorForm.entityTypeSelect.getOption('Individual')).toBeVisible();
   await authorForm.getCreateButton().click();
