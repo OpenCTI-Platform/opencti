@@ -8,6 +8,7 @@ import Drawer from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import ThemeType from './ThemeType';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { MESSAGING$ } from 'src/relay/environment';
 
 const editThemeMutation = graphql`
   mutation ThemeEditionMutation($id: ID!, $input: [EditInput!]!) {
@@ -51,14 +52,13 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
     undefined,
     {
       successMessage: t_i18n('Successfully updated theme'),
-      errorMessage: t_i18n('Failed to update theme'),
     },
   );
 
   const validator = themeValidationSchema(t_i18n);
 
   const updateTheme = async (values: ThemeType) => {
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<void>((resolve) => {
       commit({
         variables: {
           id: values.id,
@@ -81,7 +81,9 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
           ],
         },
         onCompleted: () => resolve(),
-        onError: (error) => reject(error),
+        onError: (error) => {
+          MESSAGING$.notifyError(error.message);
+        },
       });
     });
   };
