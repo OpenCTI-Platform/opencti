@@ -11,7 +11,7 @@ import * as R from 'ramda';
 import Grid from '@mui/material/Grid';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
+import { Select, SelectContent, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import MuiTextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import Tooltip from '@mui/material/Tooltip';
@@ -593,16 +593,19 @@ const FeedEditionContainer = (props) => {
                                   />
                                   {hasNeighborMapping && (
                                     <>
-                                      <FormControl variant="standard" sx={{ minWidth: 140 }}>
-                                        <InputLabel>{t_i18n('Multi-match')}</InputLabel>
-                                        <Select
-                                          value={feedAttributes[i]?.multi_match_strategy || 'list'}
-                                          onChange={(event) => handleChangeMultiMatchStrategy(i, event.target.value)}
-                                        >
+                                      <Select
+                                        value={feedAttributes[i]?.multi_match_strategy || 'list'}
+                                        onValueChange={(value) => handleChangeMultiMatchStrategy(i, value)}
+                                      >
+                                        <SelectLabel>{t_i18n('Multi-match')}</SelectLabel>
+                                        <SelectTrigger>
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent aria-label={t_i18n('Multi-match')}>
                                           <SelectItem value="list">{t_i18n('All (list)')}</SelectItem>
                                           <SelectItem value="first">{t_i18n('First match')}</SelectItem>
-                                        </Select>
-                                      </FormControl>
+                                        </SelectContent>
+                                      </Select>
                                       {(feedAttributes[i]?.multi_match_strategy || 'list') === 'list' && (
                                         <MuiTextField
                                           variant="standard"
@@ -640,27 +643,34 @@ const FeedEditionContainer = (props) => {
                                       {isNeighborMode ? (
                                         <Grid container spacing={2}>
                                           <Grid item xs={4}>
-                                            <FormControl variant="standard" fullWidth>
-                                              <InputLabel>{t_i18n('Relationship type')}</InputLabel>
-                                              <Select
-                                                value={currentMapping?.relationship_type || ''}
-                                                onChange={(event) => handleChangeNeighborMapping(i, selectedType, 'relationship_type', event.target.value)}
-                                              >
+                                            <Select
+                                              value={currentMapping?.relationship_type || ''}
+                                              onValueChange={(value) => handleChangeNeighborMapping(i, selectedType, 'relationship_type', value)}
+                                            >
+                                              <SelectLabel>{t_i18n('Relationship type')}</SelectLabel>
+                                              <SelectTrigger>
+                                                <SelectValue />
+                                              </SelectTrigger>
+                                              <SelectContent aria-label={t_i18n('Relationship type')}>
                                                 {getRelationshipTypesForEntityType(selectedType, schema).sort().map((rt) => (
                                                   <SelectItem key={rt} value={rt}>
                                                     {t_i18n(`relationship_${rt}`)}
                                                   </SelectItem>
                                                 ))}
-                                              </Select>
-                                            </FormControl>
+                                              </SelectContent>
+                                            </Select>
                                           </Grid>
                                           <Grid item xs={4}>
-                                            <FormControl variant="standard" fullWidth disabled={!currentMapping?.relationship_type}>
-                                              <InputLabel>{t_i18n('Target type')}</InputLabel>
-                                              <Select
-                                                value={currentMapping?.target_entity_type || ''}
-                                                onChange={(event) => handleChangeNeighborMapping(i, selectedType, 'target_entity_type', event.target.value)}
-                                              >
+                                            <Select
+                                              value={currentMapping?.target_entity_type || ''}
+                                              onValueChange={(value) => handleChangeNeighborMapping(i, selectedType, 'target_entity_type', value)}
+                                              disabled={!currentMapping?.relationship_type}
+                                            >
+                                              <SelectLabel>{t_i18n('Target type')}</SelectLabel>
+                                              <SelectTrigger>
+                                                <SelectValue />
+                                              </SelectTrigger>
+                                              <SelectContent aria-label={t_i18n('Target type')}>
                                                 {currentMapping?.relationship_type
                                                   && getTargetTypesForRelationship(
                                                     selectedType, currentMapping.relationship_type, schema.schemaRelationsTypesMapping,
@@ -669,8 +679,8 @@ const FeedEditionContainer = (props) => {
                                                       {t_i18n(`entity_${tt}`)}
                                                     </SelectItem>
                                                   ))}
-                                              </Select>
-                                            </FormControl>
+                                              </SelectContent>
+                                            </Select>
                                           </Grid>
                                           <Grid item xs={4}>
                                             <FormControl variant="standard" fullWidth disabled={!currentMapping?.target_entity_type}>
@@ -697,18 +707,23 @@ const FeedEditionContainer = (props) => {
                                                       return (
                                                         <Select
                                                           value={currentMapping?.attribute || ''}
-                                                          onChange={(event) => handleChangeAttributeMapping(i, selectedType, event.target.value)}
+                                                          onValueChange={(value) => handleChangeAttributeMapping(i, selectedType, value)}
                                                         >
-                                                          {attributes.map((attr) => (
-                                                            <SelectItem key={attr.value} value={attr.value}>{attr.value}</SelectItem>
-                                                          ))}
+                                                          <SelectTrigger>
+                                                            <SelectValue />
+                                                          </SelectTrigger>
+                                                          <SelectContent>
+                                                            {attributes.map((attr) => (
+                                                              <SelectItem key={attr.value} value={attr.value}>{attr.value}</SelectItem>
+                                                            ))}
+                                                          </SelectContent>
                                                         </Select>
                                                       );
                                                     }
-                                                    return <Select disabled value="" />;
+                                                    return <Select disabled value=""><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><></></SelectContent></Select>;
                                                   }}
                                                 />
-                                              ) : <Select disabled value="" />}
+                                              ) : <Select disabled value=""><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><></></SelectContent></Select>}
                                             </FormControl>
                                           </Grid>
                                         </Grid>
@@ -736,15 +751,20 @@ const FeedEditionContainer = (props) => {
                                                 return (
                                                   <Select
                                                     value={currentMapping?.attribute || ''}
-                                                    onChange={(event) => handleChangeAttributeMapping(i, selectedType, event.target.value)}
+                                                    onValueChange={(value) => handleChangeAttributeMapping(i, selectedType, value)}
                                                   >
-                                                    {attributes.map((attr) => (
-                                                      <SelectItem key={attr.value} value={attr.value}>{attr.value}</SelectItem>
-                                                    ))}
+                                                    <SelectTrigger>
+                                                      <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                      {attributes.map((attr) => (
+                                                        <SelectItem key={attr.value} value={attr.value}>{attr.value}</SelectItem>
+                                                      ))}
+                                                    </SelectContent>
                                                   </Select>
                                                 );
                                               }
-                                              return <Select disabled value="" />;
+                                              return <Select disabled value=""><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><></></SelectContent></Select>;
                                             }}
                                           />
                                         </FormControl>

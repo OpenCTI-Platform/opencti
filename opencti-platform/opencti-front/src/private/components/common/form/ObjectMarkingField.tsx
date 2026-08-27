@@ -13,7 +13,7 @@ import ComboboxField from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { fetchQuery } from '../../../../relay/environment';
-import { convertMarking, markingChipColor } from '../../../../utils/edition';
+import { convertMarking } from '../../../../utils/edition';
 import { FieldOption } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
 import MarkingIcon from '../../../../utils/MarkingIcon';
@@ -267,10 +267,8 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
         options={optionSorted}
         isOptionEqualToValue={isOptionEqualToValue}
         onChange={handleOnChange}
-        // On a marking the colour IS the classification, not decoration — but a
-        // TLP marking must go through the system tones, never a free hex, so its
-        // data colour is withheld here. See utils/edition markingChipColor.
-        getChipColor={markingChipColor}
+        // On a marking the colour IS the classification, not decoration.
+        getChipColor={(option: FieldOption) => option.color}
         renderOption={renderOption}
       />
       <Dialog

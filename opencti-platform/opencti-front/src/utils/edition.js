@@ -120,20 +120,3 @@ export const instanceEventTypesOptions = [
 export const convertEventTypes = (element) => element?.event_types?.map((event_type) => {
   return filterEventTypesOptions.find((o) => o.value === event_type);
 });
-
-/**
- * A TLP marking must not be painted from a free hex.
- *
- * Sandy's chip decision: TLP chips keep their system tone and their UPPERCASE
- * label; every other marking and label may carry its data colour. `getChipColor`
- * is by construction the library's DATA-colour path — `ComboboxChips` builds each
- * chip as `color: getChipColor?.(option)` and exposes no per-option `severity` —
- * so the only way to honour "never a free hex" today is to withhold the colour
- * and let the chip fall back to its system tone.
- *
- * See fds-migration/LIBRARY-FEEDBACK.md #51 for the capability this needs.
- */
-export const isTlpMarking = (option) => option?.definition_type === 'TLP';
-
-/** Data colour for a marking chip, withheld for TLP. */
-export const markingChipColor = (option) => (isTlpMarking(option) ? undefined : option?.color);

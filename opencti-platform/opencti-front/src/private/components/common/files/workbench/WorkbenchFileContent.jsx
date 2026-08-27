@@ -12,7 +12,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Select from '@mui/material/Select';
+import { Select, SelectContent, SelectTrigger, SelectValue } from '@filigran/design-system';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
@@ -766,9 +766,9 @@ const WorkbenchFileContentComponent = ({
     setSelectAll(false);
   };
 
-  const handleChangeObservableType = (id, event) => {
+  const handleChangeObservableType = (id, value) => {
     const observable = R.head(stixCyberObservables.filter((n) => n.id === id)) || {};
-    const stixType = convertToStixType(event.target.value);
+    const stixType = convertToStixType(value);
     let updatedObservable = {
       ...observable,
       id: `${stixType}--${uuid()}`,
@@ -3455,26 +3455,26 @@ const WorkbenchFileContentComponent = ({
                         style={inlineStyles.ttype}
                       >
                         <Select
-                          variant="standard"
-                          labelId="type"
                           value={convertFromStixType(object.type)}
-                          onChange={(event) => handleChangeObservableType(object.id, event)
-                          }
-                          style={{
-                            margin: 0,
-                            width: '80%',
-                            height: '100%',
-                          }}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            event.preventDefault();
-                          }}
+                          onValueChange={(value) => handleChangeObservableType(object.id, value)}
                         >
-                          {translatedOrderedList.map((n) => (
-                            <SelectItem key={n.label} value={n.label}>
-                              {n.tlabel}
-                            </SelectItem>
-                          ))}
+                          {/* The row is clickable; keep the select from activating it. */}
+                          <SelectTrigger
+                            aria-label={t_i18n('Type')}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              event.preventDefault();
+                            }}
+                          >
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent aria-label={t_i18n('Type')}>
+                            {translatedOrderedList.map((n) => (
+                              <SelectItem key={n.label} value={n.label}>
+                                {n.tlabel}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
                         </Select>
                       </div>
                       <div

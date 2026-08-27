@@ -60,6 +60,11 @@ const importsFrom = (src, name, packages) => {
 
 // `<Menu` followed by ANY whitespace or `>` — the newline case is the one the
 // manual guard missed.
+// Either MUI import form. The named one was the only one an earlier census
+// matched, which is how 37 mounts went uncounted.
+const importsMuiSelect = (src) => /import\s*\{[^}]*\bSelect\b[^}]*\}\s*from\s*['"]@mui\/material['"]/.test(src)
+  || /import\s+Select\s+from\s*['"]@mui\/material\/Select['"]/.test(src);
+
 const REAL_MENU = /<Menu[\s>]/;
 const MENU_PKGS = ['@mui/material', '@mui/material/MenuItem', '@filigran/design-system'];
 const ITEM_PKGS = ['@filigran/design-system', 'SelectFieldFds'];
@@ -82,6 +87,27 @@ for (const file of walk(ROOT)) {
   }
   if (hasRealMenu && usesSelectItem && !usesMenuItem) {
     findings.push(`${rel}: has a real <Menu> and <SelectItem> but no <MenuItem> left — the menu's own items were probably renamed`);
+  }
+
+  // A library <SelectItem> inside a MUI <Select> THROWS at runtime:
+  // "`SelectItem` must be used within `Select`" — measured, not assumed. The
+  // import check above cannot see this, because the import is legitimate: the
+  // same file often holds a converted field next to an unconverted MUI Select.
+  // Only the nesting is wrong, so the nesting is what this looks at.
+  if (usesSelectItem && importsMuiSelect(src)) {
+    for (const m of src.matchAll(/<Select(?![A-Za-z])/g)) {
+      const end = src.indexOf('</Select>', m.index);
+      if (end === -1) continue;
+      const block = src.slice(m.index, end);
+      // A LIBRARY <Select> legitimately contains <SelectItem> — it is only broken
+      // when there is no <SelectTrigger>, which every library Select has and no
+      // MUI Select does. Without this the rule fires on correctly converted code,
+      // which it did on its first run.
+      if (/<SelectItem\b/.test(block) && !/<SelectTrigger\b/.test(block)) {
+        const line = src.slice(0, m.index).split('\n').length;
+        findings.push(`${rel}:${line}: a MUI <Select> contains a library <SelectItem> — this throws "\`SelectItem\` must be used within \`Select\`" when the branch renders`);
+      }
+    }
   }
 }
 
