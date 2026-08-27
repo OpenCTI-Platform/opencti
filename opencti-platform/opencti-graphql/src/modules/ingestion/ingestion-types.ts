@@ -70,6 +70,7 @@ export interface BasicStoreEntityIngestionTaxii extends BasicStoreEntity {
   taxii_more: boolean;
   last_execution_date: string | undefined;
   last_execution_status: string | undefined;
+  last_execution_error_code: number | undefined;
   ssl_verify?: boolean;
 }
 

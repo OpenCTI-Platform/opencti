@@ -66,6 +66,7 @@ export const ingestionFeedsQuery = graphql`
           ingestion_running
           last_execution_date
           last_execution_status
+          last_execution_error_code
           created_at
           updated_at
           user {

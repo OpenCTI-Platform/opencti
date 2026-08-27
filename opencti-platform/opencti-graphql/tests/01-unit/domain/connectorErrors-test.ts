@@ -26,6 +26,18 @@ describe('parseConnectorLogsError', () => {
     expect(state.code).toBe(403);
   });
 
+  it('detects a 404 error from a JSON error log line', () => {
+    const state = parseConnectorLogsError([jsonLog('ERROR', 'Request failed: 404 Not Found for endpoint /api/v2/objects')]);
+    expect(state.in_error).toBe(true);
+    expect(state.code).toBe(404);
+  });
+
+  it('prefers auth codes over 404 when several appear on the same line', () => {
+    const state = parseConnectorLogsError([jsonLog('ERROR', 'Got 403 Forbidden then 404 Not Found')]);
+    expect(state.in_error).toBe(true);
+    expect(state.code).toBe(403);
+  });
+
   it('detects errors from plain-text (non-JSON) log lines', () => {
     const state = parseConnectorLogsError(['Traceback: requests.exceptions.HTTPError: 401 Client Error: Unauthorized']);
     expect(state.in_error).toBe(true);

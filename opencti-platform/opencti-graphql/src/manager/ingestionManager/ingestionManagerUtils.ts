@@ -48,3 +48,14 @@ export const buildIngestionErrorMeta = (e: Error): Record<string, unknown> => {
   }
   return { error: e.message };
 };
+
+// Extracts the HTTP status code (401/403/404) from a feed execution error so it
+// can be persisted and surfaced as a specific error indicator. Returns null for
+// any other status or non-HTTP error.
+export const extractIngestionHttpErrorCode = (e: Error): number | null => {
+  if (e instanceof AxiosError && e.response) {
+    const status = e.response.status;
+    if (status === 401 || status === 403 || status === 404) return status;
+  }
+  return null;
+};

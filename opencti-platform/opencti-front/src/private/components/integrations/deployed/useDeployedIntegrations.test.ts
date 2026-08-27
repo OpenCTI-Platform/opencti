@@ -292,6 +292,21 @@ describe('useDeployedIntegrations', () => {
       expect(item.errorState.inError).toBe(false);
     });
 
+    it('surfaces the specific HTTP code when a TAXII feed fails with 404', () => {
+      const { result } = renderIntegrations({
+        feeds: {
+          ingestionTaxiis: {
+            pageInfo: { globalCount: 1 },
+            edges: [{ node: { id: 'taxii-404', name: 'taxii-404', description: null, uri: null, ingestion_running: true, last_execution_date: '2026-03-01T00:00:00.000Z', last_execution_status: 'error', last_execution_error_code: 404, updated_at: null, user: null } }],
+          },
+        },
+      });
+      const item = result.current[0];
+      expect(item.executionStatus).toBe('error');
+      expect(item.errorState.inError).toBe(true);
+      expect(item.errorState.code).toBe(404);
+    });
+
     it('maps form intakes with their active flag', () => {
       const { result } = renderIntegrations({
         forms: [{ id: 'form-1', name: 'Intake form', description: 'desc', active: true, updated_at: '2026-03-01T00:00:00.000Z' }],

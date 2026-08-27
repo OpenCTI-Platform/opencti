@@ -207,20 +207,27 @@ const useDeployedIntegrations = ({
         ingestion_running?: boolean | null;
         last_execution_date?: string | null;
         last_execution_status?: string | null;
+        last_execution_error_code?: number | null;
         updated_at?: string | null;
         user?: { readonly name: string } | null;
       },
     ) => {
       // Feeds report a coarse last execution outcome ('success' | 'error').
       // An 'error' outcome flags the feed as in error (red indicator); a
-      // 'success' outcome renders a green health indicator.
+      // 'success' outcome renders a green health indicator. When the failure is
+      // an authentication/not-found HTTP error, the specific code is surfaced.
       const executionStatus = node.last_execution_status === 'error'
         ? 'error'
         : node.last_execution_status === 'success'
           ? 'success'
           : null;
+      const httpErrorCode = node.last_execution_error_code === 401
+        || node.last_execution_error_code === 403
+        || node.last_execution_error_code === 404
+        ? node.last_execution_error_code
+        : null;
       const feedErrorState: ConnectorErrorState = executionStatus === 'error'
-        ? { inError: true, code: null, message: 'Last execution failed', timestamp: node.last_execution_date ?? null }
+        ? { inError: true, code: httpErrorCode, message: 'Last execution failed', timestamp: node.last_execution_date ?? null }
         : NO_ERROR;
       items.push({
         id: node.id,

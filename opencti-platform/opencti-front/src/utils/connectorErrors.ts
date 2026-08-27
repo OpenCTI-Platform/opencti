@@ -4,7 +4,7 @@
 // consumes this small object instead of fetching and parsing the whole logs
 // array on every poll.
 
-export type ConnectorErrorCode = 401 | 403;
+export type ConnectorErrorCode = 401 | 403 | 404;
 
 export interface ConnectorErrorState {
   inError: boolean;
@@ -27,7 +27,7 @@ interface RawConnectorError {
  */
 export const toConnectorErrorState = (raw: RawConnectorError | null | undefined): ConnectorErrorState => {
   if (!raw || !raw.in_error) return NO_CONNECTOR_ERROR;
-  const code = raw.code === 401 || raw.code === 403 ? raw.code : null;
+  const code = raw.code === 401 || raw.code === 403 || raw.code === 404 ? raw.code : null;
   return {
     inError: true,
     code,
@@ -43,6 +43,9 @@ export const toConnectorErrorState = (raw: RawConnectorError | null | undefined)
 export const connectorErrorSummary = (state: ConnectorErrorState): string | null => {
   if (!state.inError) return null;
   if (state.code === null) return state.message ?? null;
-  const reason = state.code === 401 ? 'Unauthorized (401)' : 'Forbidden (403)';
+  let reason: string;
+  if (state.code === 401) reason = 'Unauthorized (401)';
+  else if (state.code === 403) reason = 'Forbidden (403)';
+  else reason = 'Not found (404)';
   return state.message ? `${reason}: ${state.message}` : reason;
 };

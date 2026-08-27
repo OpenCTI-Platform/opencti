@@ -13,7 +13,7 @@ import { logApp } from '../config/conf';
 // reports a successful operation. Configuration errors never emit a success
 // line, so the error state is kept until an explicit recovery is observed.
 
-export type ConnectorErrorCode = 401 | 403;
+export type ConnectorErrorCode = 401 | 403 | 404;
 
 export interface ConnectorErrorStatus {
   in_error: boolean;
@@ -34,6 +34,7 @@ const ERROR_LEVELS = new Set(['error', 'critical', 'fatal', 'warning', 'warn']);
 
 const AUTH_401_PATTERN = /\b401\b|\bunauthori[sz]ed\b|invalid credential|invalid or missing authentication|authentication failed|missing authentication|invalid api[-\s]?key|invalid token|expired token/i;
 const AUTH_403_PATTERN = /\b403\b|\bforbidden\b|access denied|not authori[sz]ed|insufficient permission/i;
+const HTTP_404_PATTERN = /\b404\b|\bnot found\b|resource not found|no such (?:resource|endpoint|collection)|endpoint not found/i;
 const SUCCESS_PATTERN = /\bsuccess(?:ful(?:ly)?)?\b|\bauthenticated\b|\bconnected\b|connection established|login successful|\b2\d\d\b|status_code=2\d\d|run\s+(?:complete|finished)|completed successfully/i;
 
 const parseLogLine = (raw: string): ParsedLogLine => {
@@ -56,9 +57,11 @@ const parseLogLine = (raw: string): ParsedLogLine => {
 
 const detectAuthCode = (text: string): ConnectorErrorCode | null => {
   // 403 (authenticated but not allowed) is the more specific case and wins when
-  // both codes appear on the same line.
+  // several codes appear on the same line, followed by 401 (authentication) and
+  // finally 404 (missing resource/endpoint).
   if (AUTH_403_PATTERN.test(text)) return 403;
   if (AUTH_401_PATTERN.test(text)) return 401;
+  if (HTTP_404_PATTERN.test(text)) return 404;
   return null;
 };
 

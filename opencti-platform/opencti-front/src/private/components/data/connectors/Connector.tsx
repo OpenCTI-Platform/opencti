@@ -1015,7 +1015,9 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
           {t_i18n(
             connectorErrorState.code === 403
               ? 'This connector is in error: access forbidden (HTTP 403). Check its configuration and credentials.'
-              : 'This connector is in error: authentication failed (HTTP 401). Check its configuration and credentials.',
+              : connectorErrorState.code === 404
+                ? 'This connector is in error: resource not found (HTTP 404). Check its configuration and target URL.'
+                : 'This connector is in error: authentication failed (HTTP 401). Check its configuration and credentials.',
           )}
           {connectorErrorState.message ? ` — ${connectorErrorState.message}` : ''}
         </Alert>

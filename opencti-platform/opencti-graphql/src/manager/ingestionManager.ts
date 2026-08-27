@@ -43,7 +43,7 @@ import { executeJsonQuery, findAllJsonIngestion, patchJsonIngestion } from '../m
 import { decryptIngestionCredential } from '../modules/ingestion/ingestion-common';
 import { createWorkForIngestion, pushBundleToConnectorQueue, updateBuiltInConnectorInfo } from './ingestionManager/ingestionManagerPushToQueue';
 import { INGESTION_MANAGER_SCHEDULE_TIME } from './ingestionManager/ingestionManagerConfiguration';
-import { buildIngestionErrorMeta, createIngestionLogger } from './ingestionManager/ingestionManagerUtils';
+import { buildIngestionErrorMeta, createIngestionLogger, extractIngestionHttpErrorCode } from './ingestionManager/ingestionManagerUtils';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -501,7 +501,7 @@ export const taxiiExecutor = async (context: AuthContext) => {
           .then(async ({ objectsCount }: TaxiiExecutionResult) => {
             logApp.info('[OPENCTI-MODULE] INGESTION - Taxii handler resolved', { count: objectsCount, name: ingestion.name });
             try {
-              await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_status: 'success' });
+              await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_status: 'success', last_execution_error_code: null });
             } catch (patchErr) {
               logApp.warn('[OPENCTI-MODULE] Failed to patch taxii ingestion success status', { cause: patchErr });
             }
@@ -514,7 +514,11 @@ export const taxiiExecutor = async (context: AuthContext) => {
           .catch(async (e: Error) => {
             logApp.warn('[OPENCTI-MODULE] INGESTION - Taxii handler rejected', { cause: e, name: ingestion.name });
             try {
-              await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now(), last_execution_status: 'error' });
+              await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, {
+                last_execution_date: now(),
+                last_execution_status: 'error',
+                last_execution_error_code: extractIngestionHttpErrorCode(e),
+              });
             } catch (patchErr) {
               logApp.warn('[OPENCTI-MODULE] Failed to patch taxii ingestion error status', { cause: patchErr });
             }

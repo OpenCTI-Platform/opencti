@@ -72,6 +72,7 @@ export interface TaxiiIngestionPatch {
   current_state_cursor?: string | undefined;
   last_execution_date?: string;
   last_execution_status?: string;
+  last_execution_error_code?: number | null;
   added_after_start?: string;
 }
 
