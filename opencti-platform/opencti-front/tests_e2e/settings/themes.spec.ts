@@ -80,7 +80,7 @@ test('Custom theme creation, edition, and deletion', { tag: ['@ce'] }, async ({ 
 
   // Select Dark theme again to delete custom theme
   await page.locator('#mui-component-select-platform_theme').click();
-  await page.getByTestId('Dark-li').click();
+  await page.getByTestId('Filigran Dark-li').click();
   await page.waitForTimeout(1000);
 
   // Delete theme
@@ -100,6 +100,6 @@ test('Cannot delete system theme', { tag: ['@ce'] }, async ({ page }) => {
   await leftBarPage.open();
   await leftBarPage.clickOnMenu('Settings', 'Parameters');
 
-  await page.getByTestId('Light-popover').click();
+  await page.getByTestId('Filigran Light-popover').click();
   expect(await page.getByLabel('Delete').count() === 0);
 });
