@@ -161,6 +161,7 @@ const resolveSortByWorkflowInstance = async (context: AuthContext, user: AuthUse
     ...resolvedArgs,
     first: 5000,
     orderBy: 'created_at',
+    includeAuthorities: true,
   });
 
   // 4. Sort in memory by status name (nulls last)
@@ -218,6 +219,7 @@ const resolveSortByRefUsers = async (
     ...resolvedArgs,
     first: 5000,
     orderBy: 'created_at',
+    includeAuthorities: true,
   });
 
   // 3. For each draft, get the first user name from the denormalized relation field.
@@ -274,7 +276,7 @@ export const findDraftWorkspacePaginated = async (context: AuthContext, user: Au
     return resolveSortByRefUsers(context, user, args, RELATION_OBJECT_PARTICIPANT);
   }
   const resolvedArgs = await resolveWorkflowInstanceStatusFilter(context, user, args);
-  return pageEntitiesConnection<BasicStoreEntityDraftWorkspace>(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], resolvedArgs);
+  return pageEntitiesConnection<BasicStoreEntityDraftWorkspace>(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], { ...resolvedArgs, includeAuthorities: true });
 };
 
 export const draftWorkspacesNumber = async (context: AuthContext, user: AuthUser, args: any) => {
