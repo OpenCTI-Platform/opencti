@@ -13,7 +13,7 @@ import { RELATION_BASED_ON } from '../../../schema/stixCoreRelationship';
 import type { StixRelation } from '../../../types/stix-2-1-sro';
 import { extractValidObservablesFromIndicatorPattern } from '../../../utils/syntax';
 import { type StixIndicator } from '../../indicator/indicator-types';
-import { extractBundleBaseElement, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
+import { buildPlaybookEventContext, extractBundleBaseElement, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
 import { convertStoreToStix_2_1 } from '../../../database/stix-2-1-converter';
 import { pushAll } from '../../../utils/arrayUtil';
 import { executionContext } from '../../../utils/access';
@@ -58,9 +58,10 @@ export const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObser
   ports: [{ id: 'out', type: 'out' }, { id: 'unmodified', type: 'out' }],
   configuration_schema: PLAYBOOK_CREATE_OBSERVABLE_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_CREATE_OBSERVABLE_COMPONENT_SCHEMA,
-  executor: async ({ playbookNode, dataInstanceId, bundle }) => {
+  executor: async ({ playbookNode, dataInstanceId, bundle, event }) => {
     const context = executionContext('playbook_components');
     const { applyToElements, applyWithFilters, wrap_in_container } = playbookNode.configuration;
+    const eventContext = buildPlaybookEventContext(event);
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
 
     const { type: baseDataType } = baseData.extensions[STIX_EXT_OCTI];
@@ -70,7 +71,7 @@ export const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObser
     for (let indexIndicator = 0; indexIndicator < bundle.objects.length; indexIndicator += 1) {
       const element = bundle.objects[indexIndicator];
       const isElementInScope = isBundleElementInScope(element, applyToElements, dataInstanceId);
-      const isFilteredElement = await isBundleElementMatchFilters(context, element, applyWithFilters);
+      const isFilteredElement = await isBundleElementMatchFilters(context, element, applyWithFilters, eventContext);
 
       if (isElementInScope && isFilteredElement && element.type === 'indicator') {
         const indicator = element as StixIndicator;
