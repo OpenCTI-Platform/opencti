@@ -4791,6 +4791,7 @@
   "This date will help you identify when your token will be revoked, it only serves as a reminder.": "This date will help you identify when your token will be revoked, it only serves as a reminder.",
   "This decision could not be sent. Reload the chat and try again.": "Non è stato possibile inviare questa decisione. Ricarica la chat e riprova.",
   "This entity has several key fields, which is incompatible with bulk creation": "Questa entità ha più campi chiave, che sono incompatibili con la creazione in blocco",
+  "This entity type is managed by a workflow, status is read-only here": "Questo tipo di entità è gestito da un flusso di lavoro; in questo caso lo stato è di sola lettura",
   "This enumeration captures a degree of agreement with the information in a STIX Object. It is an ordered enumeration, with the earlier terms representing disagreement, the middle term neutral, and the later terms representing agreement": "Questa enumerazione cattura un grado di accordo con le informazioni di un oggetto STIX. È un'enumerazione ordinata, con i primi termini che rappresentano il disaccordo, il termine intermedio neutro e i termini successivi che rappresentano l'accordo",
   "This exclusion list is too large to be displayed": "Questa lista di esclusione è troppo grande per essere visualizzata",
   "This external reference is linked to a file. If you delete it, the file will be deleted as well.": "Questo riferimento esterno è collegato a un file. Se lo si cancella, anche il file verrà cancellato.",

@@ -4791,6 +4791,7 @@
   "This date will help you identify when your token will be revoked, it only serves as a reminder.": "This date will help you identify when your token will be revoked, it only serves as a reminder.",
   "This decision could not be sent. Reload the chat and try again.": "无法发送此决策。请刷新聊天界面并重试。",
   "This entity has several key fields, which is incompatible with bulk creation": "该实体有几个关键字段，与批量创建不兼容",
+  "This entity type is managed by a workflow, status is read-only here": "此实体类型由工作流管理，此处的状态为只读",
   "This enumeration captures a degree of agreement with the information in a STIX Object. It is an ordered enumeration, with the earlier terms representing disagreement, the middle term neutral, and the later terms representing agreement": "该枚举表示与 STIX 对象中信息的一致程度。它是一个有序枚举，前面的术语代表不同意，中间的术语代表中立，后面的术语代表同意",
   "This exclusion list is too large to be displayed": "该排除列表太大，无法显示",
   "This external reference is linked to a file. If you delete it, the file will be deleted as well.": "此外部引用链接到一个文件。如果删除它，文件也将被删除。",
