@@ -12,7 +12,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { useTheme } from '@mui/styles';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
@@ -486,18 +486,17 @@ const StixDomainObjectHeader = (props) => {
               </InputLabel>
               <FormControl variant="outlined">
                 <Select
-                  size="small"
                   name="view-as"
                   value={viewAs}
-                  onChange={onViewAs}
-                  inputProps={{
-                    name: 'view-as',
-                    id: 'view-as',
-                  }}
-                  variant="outlined"
+                  onValueChange={onViewAs}
                 >
-                  <MenuItem value="knowledge">{t_i18n('Knowledge entity')}</MenuItem>
-                  <MenuItem value="author">{t_i18n('Author')}</MenuItem>
+                  <SelectTrigger aria-label={t_i18n('Display as')}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent aria-label={t_i18n('Display as')}>
+                    <SelectItem value="knowledge">{t_i18n('Knowledge entity')}</SelectItem>
+                    <SelectItem value="author">{t_i18n('Author')}</SelectItem>
+                  </SelectContent>
                 </Select>
               </FormControl>
             </div>
