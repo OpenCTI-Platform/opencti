@@ -28,12 +28,12 @@ every library Select has and no MUI Select does.
 | | mounts |
 |---|---|
 | Converted — Formik pivots (`SelectFieldFds` / `ComboboxField`) | 158 |
-| Converted — direct library composition (`Select` / `Combobox`) | 107 |
-| **Converted total** | **265** |
-| **Remaining on MUI** | **27** |
+| Converted — direct library composition (`Select` / `Combobox`) | 117 |
+| **Converted total** | **275** |
+| **Remaining on MUI** | **17** |
 | **Total selection fields** | **292** |
 
-## The 27 remaining, every one with a reason
+## The 17 remaining, every one with a reason
 
 ### Not a site — the two legacy adapters themselves (2)
 
@@ -44,7 +44,7 @@ They must outlive their consumers, so they are not convertible work.
 | `components/AutocompleteField.tsx` | 2 — `StixCoreObjectsField`, `LocationField` (both ornament batch) |
 | `components/fields/SelectField.tsx` | 4 — `AuthorizedMembersField` + list item (#44), `StixCoreObjectFilesAndHistory`, `JsonMapperRepresentationAttributeForm` |
 
-### Parked with a recorded reason (8)
+### Parked with a recorded reason (11)
 
 | file | mounts | reason |
 |---|---|---|
@@ -56,29 +56,21 @@ They must outlive their consumers, so they are not convertible work.
 | `ThemeForm` | 1 | FEEDBACK #45 — Select has no clear affordance |
 | `ImportFilesList` | 1 | multi-value connector picker → Combobox wave |
 | `ConnectorsStatusFilters` | 2 | EE-gated, unverifiable on this instance |
+| `AuthorizedMembersField` + list item | via `SelectField` | FEEDBACK #44 — reverted, `dashboardRestriction` went intermittent |
+| `StixCoreObjectFilesAndHistory` | via `SelectField` | its test drove MUI's hidden native select; asserts a flow a user cannot perform |
 
-### Simply not done yet (17)
+### Simply not done yet (5 sites)
 
-Surfaced by this census and never counted before. No blocker known for any of
-them; all are aliased-import Autocompletes or the default+named `Select` form.
+Each bailed for a named reason the converter refused to guess at.
 
-| file | mounts |
-|---|---|
-| `CsvMapperConditionalEntityMapping` | 2 |
-| `CsvMapperRepresentationAttributeRefForm` | 2 |
-| `CsvMapperRepresentationForm` | 1 |
-| `CsvMapperRepresentationAttributeForm` | 1 |
-| `JsonMapperRepresentationForm` | 1 |
-| `JsonMapperRepresentationAttributeRefForm` | 1 |
-| `CustomFieldCreation` | 1 |
-| `CustomFieldEdition` | 1 |
-| `ConfidenceOverrideField` | 1 |
-| `FilterAutocomplete` | 1 |
-| `AutocompleteFreeSoloField` | 1 |
-| `SecurityCoverageAttackPatterns` | 1 |
-| `StixDomainObjectAttackPatternsKillChain` | 1 |
-| `StixDomainObjectThreatKnowledge` | 1 |
-| `AuthorizedMembersField` + list item, `StixCoreObjectFilesAndHistory`, `JsonMapperRepresentationAttributeForm` | via `SelectField` adapter |
+| file | mounts | what the bail says |
+|---|---|---|
+| `CustomFieldCreation` | 1 | `freeSolo` + `renderTags` — needs a decision on custom values and chips |
+| `CustomFieldEdition` | 1 | `freeSolo` + `renderTags` — same |
+| `AutocompleteFreeSoloField` | 1 | `freeSolo` + focus/blur handlers |
+| `ConfidenceOverrideField` | 1 | renderOption destructures `key` out of props |
+| `FilterAutocomplete` | 1 | its renderInput carries `onFocus`, whose handler takes an event |
+| `JsonMapperRepresentationAttributeRefForm` | 1 | `onChange` is a bare function reference |
 
 ## Out of scope
 
