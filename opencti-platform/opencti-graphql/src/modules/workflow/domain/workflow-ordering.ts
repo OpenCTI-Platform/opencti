@@ -34,10 +34,8 @@ const buildAdjacency = (transitions: OrderingTransition[]): Map<string, Set<stri
 const MAX_ORDERING_DFS_STEPS = 5000;
 
 /**
- * Collects every state that lies on at least one cycle reachable from `initialState`, via a
- * single white/gray/black DFS from `initialState`: a back-edge to a 'gray' (currently on the
- * recursion stack) node means every state currently on the stack between that node and the
- * current one (inclusive) is part of a cycle.
+ * Collects every state that lies on at least one cycle reachable from `initialState`, using a
+ * white/gray/black DFS: a back-edge to a 'gray' node marks the whole stack segment as cyclic.
  */
 const statesOnCycles = (initialState: string, adjacency: Map<string, Set<string>>): Set<string> => {
   const color = new Map<string, 'gray' | 'black'>();
@@ -67,16 +65,11 @@ const statesOnCycles = (initialState: string, adjacency: Map<string, Set<string>
 
 /**
  * Computes a display/validation order for every state reachable from `initialState`: the length
- * of the longest *simple* path from `initialState` to it, via a DFS whose "visited" set is scoped
- * to the current path (recursion stack) rather than global — so a back-edge to a node already on
- * the current path stops just that branch (cycle avoidance) without blocking other, still-valid
- * branches from reaching that same node with a different (possibly longer) path length.
+ * of the longest simple path from `initialState` to it.
  *
- * Per-state, not whole-graph: a state's value is `null` only if that specific state lies on a
- * cycle reachable from `initialState` (see `statesOnCycles`), or if the DFS never reached it
- * before the step cap was hit — states already computed before the cap was hit, and states
- * unrelated to any cycle, still get a concrete order even when the graph contains one elsewhere.
- * Callers must fall back to a manually supplied `order` for any state whose value here is `null`.
+ * A state's value is `null` only if it lies on a cycle reachable from `initialState`, or if the
+ * DFS never reached it before the step cap was hit. Callers must fall back to a manually supplied
+ * `order` for any state whose value here is `null`.
  */
 export const computeStateOrder = (
   initialState: string,
