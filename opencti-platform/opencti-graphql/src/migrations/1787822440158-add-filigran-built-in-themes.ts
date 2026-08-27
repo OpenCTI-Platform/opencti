@@ -115,7 +115,7 @@ const refactorTheme = async (
       const newName = `${defaultThemeName} - custom`;
       const renameInput = [{ key: 'name', value: [newName] }];
       await fieldPatchTheme(context, SYSTEM_USER, conflictingTheme.id, renameInput);
-      logMigration.info(`[MIGRATION] Existing ${defaultThemeName} theme renamed in ${newName} - custom`);
+      logMigration.info(`[MIGRATION] Existing ${defaultThemeName} theme renamed in ${newName}`);
     }
     // add Filigran theme
     await addTheme(context, SYSTEM_USER, { name: defaultThemeName, ...defaultThemeValues });
