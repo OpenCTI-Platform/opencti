@@ -6,12 +6,9 @@ import LeftBarPage from '../menu/leftBar.pageModel';
 
 /**
  * Wraps the Automation (playbook) admin UI: `Playbooks.tsx` list page, `PlaybookCreation.tsx`
- * name/description drawer, and the `PlaybookFlow.tsx` react-flow graph editor (`PlaybookFlowAdd
- * Components.tsx` -> `PlaybookFlowSelectComponent.tsx` -> `PlaybookFlowForm.tsx`). Unlike the
- * Workflow graph (Phase 1), playbook nodes/edges are NOT draggable/connectable
- * (`nodesDraggable={false}`/`nodesConnectable={false}` in `PlaybookFlow.tsx`) - the whole graph is
- * built purely by repeatedly clicking the single "+" placeholder node, picking a component from the
- * list, configuring it, and submitting - no drag-connect needed at all.
+ * name/description drawer, and the `PlaybookFlow.tsx` react-flow graph editor. Unlike the
+ * Workflow graph, playbook nodes/edges are not draggable/connectable - the graph is built purely
+ * by clicking the "+" placeholder, picking a component, configuring it, and submitting.
  */
 export default class PlaybookBuilderPageModel {
   constructor(private readonly page: Page) {
@@ -62,12 +59,7 @@ export default class PlaybookBuilderPageModel {
     return new FiltersPageModel(this.page).addFilter(filterKey, filterLabel);
   }
 
-  /**
-   * The "Access restrictions" field of the `PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT` action -
-   * same underlying `AuthorizedMembersField` component as the Workflow editor (Phase 1), so the
-   * existing generic page model is reused as-is. Only one such field is ever shown per component
-   * configuration form, so scoping broadly to the whole page is safe.
-   */
+  /** The "Access restrictions" field of the `PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT` action - reuses the same `AuthorizedMembersField` component as the Workflow editor. */
   getAccessRestrictionsField() {
     return new WorkflowAuthorizedMembersPageModel(this.page, this.page.locator('body'));
   }

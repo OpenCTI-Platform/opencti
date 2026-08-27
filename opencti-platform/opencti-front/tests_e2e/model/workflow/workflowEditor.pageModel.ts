@@ -5,11 +5,8 @@ import SettingsCustomizationPage from '../settingsCustomization.pageModel';
  * Wraps the react-flow based workflow graph editor (`Workflow.tsx`,
  * Settings > Customization > Entity types > Draft > Workflow tab).
  *
- * Node lookup strategy: nodes are located by their visible label text within the generic
- * `.react-flow__node` wrapper rather than by their underlying id (a server-generated
- * StatusTemplate uuid we don't know ahead of time from the UI). This works because status/
- * transition/placeholder node ids are all unique per visible label at any point during
- * construction (newly-created, not-yet-renamed transitions always show as "New event").
+ * Nodes are located by their visible label text within the generic `.react-flow__node` wrapper
+ * rather than by their server-generated StatusTemplate id, which we don't know ahead of time.
  */
 export default class WorkflowEditorPageModel {
   constructor(private readonly page: Page) {
@@ -72,13 +69,7 @@ export default class WorkflowEditorPageModel {
     return this.getNewTransitionNode().click();
   }
 
-  /**
-   * `useWorkflowLayout`'s auto-layout + the graph's `fitView()` effect both re-run on every
-   * nodes/edges change (e.g. right after the previous drawer submit), which can still be
-   * repositioning nodes for a couple of render cycles after the action that triggered it
-   * resolves. Polls a handle's bounding box until two consecutive reads agree, so a drag started
-   * right after such a change doesn't aim at an already-stale coordinate.
-   */
+  /** Polls a handle's bounding box until two consecutive reads agree, so a drag doesn't aim at a still-repositioning node right after a layout change. */
   private async getStableBoundingBox(locator: ReturnType<Page['locator']>) {
     let previous = await locator.boundingBox();
     for (let i = 0; i < 10; i += 1) {
@@ -92,12 +83,7 @@ export default class WorkflowEditorPageModel {
     return previous;
   }
 
-  /**
-   * Drags a connection from one existing status node to another, triggering
-   * `useStatusConnection`'s Status->Status handler which auto-creates the linking transition
-   * node (default name "NEW_EVENT") and both edges. Needed only when the source status already
-   * has an outgoing edge (so no "+" placeholder is available to use instead).
-   */
+  /** Drags a connection from one status node to another, auto-creating the linking transition node. Needed only when the source status already has an outgoing edge (no "+" placeholder available). */
   async dragConnectStatuses(sourceStatusLabel: string, targetStatusLabel: string) {
     const sourceHandle = this.getNodeByLabel(sourceStatusLabel).locator('.react-flow__handle-bottom');
     const targetHandle = this.getNodeByLabel(targetStatusLabel).locator('.react-flow__handle-top');

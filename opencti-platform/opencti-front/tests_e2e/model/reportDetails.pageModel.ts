@@ -76,9 +76,7 @@ export default class ReportDetailsPage {
     return this.page.getByRole('menuitem', { name: 'Manage access restriction' });
   }
 
-  /** The "Author" section (`StixDomainObjectOverview.jsx`) shows the createdBy org's name if
-   * visible to the current user, or the literal "Restricted" chip if the org itself isn't
-   * visible to them (backend returns a stub entity named "Restricted", not null/empty). */
+  /** The "Author" section shows the createdBy org's name if visible to the current user, or "Restricted" if the org itself isn't visible to them. */
   async assertAuthor(name: string) {
     await expect(this.getTextForHeading('Author', name)).toBeVisible();
   }
@@ -87,11 +85,7 @@ export default class ReportDetailsPage {
     await expect(this.getTextForHeading('Author', 'Restricted')).toBeVisible();
   }
 
-  /**
-   * Asserts the current (already-logged-in) user's access level to this report, based on which
-   * UI affordances are visible: the report title (canView), the "Update" edit button (canEdit),
-   * and the popover's "Manage access restriction" menu item (canManageAuthorizedMembers).
-   */
+  /** Asserts the current user's access level to this report via visible UI affordances: the report title (canView), "Update" button (canEdit), and "Manage access restriction" menu item (canManageAuthorizedMembers). */
   async assertReportAccess({ name, canView = true, canEdit = false, canManageAuthorizedMembers = false }: {
     name: string;
     canView?: boolean;
@@ -110,11 +104,8 @@ export default class ReportDetailsPage {
       await this.getEditButton().waitFor({ state: 'hidden' });
     }
 
-    // The popover (`ContainerHeader.jsx`'s `displayPopoverMenu`) can also be shown for reasons
-    // unrelated to this report's access rights - e.g. "Enroll in playbook" only depends on the
-    // AUTOMATION capability, not on `currentUserAccessRight`. So its overall visibility can't be
-    // asserted here; only the "Manage access restriction" item (which IS access-right-gated) is
-    // checked, and only if the popover happens to be open.
+    // The popover can also be shown for reasons unrelated to this report's access rights (e.g.
+    // "Enroll in playbook"), so only the access-gated "Manage access restriction" item is checked.
     const popoverButton = this.page.getByRole('button', { name: 'Popover of actions' });
     if (canManageAuthorizedMembers) {
       await popoverButton.waitFor({ state: 'visible' });

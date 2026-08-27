@@ -1,26 +1,17 @@
 /**
- * "Submission of a Threat Advisory - issue with OrgSharing"
- * (`workflow-e2e-product-test-plan.md`). Starts a fresh draft and fast-forwards it to
- * ORGC MANAGER REVIEW (equivalent to happy-flow steps 1-13), instead of replaying the full happy path.
+ * "Submission of a Threat Advisory - issue with OrgSharing" (`workflow-e2e-product-test-plan.md`).
+ * Fast-forwards a fresh draft to ORGC MANAGER REVIEW (happy-flow steps 1-13).
  *
- * There is no real, deterministic way to make the "SHARE TO ORG" background task genuinely fail
- * through valid user input (picking a real, existing org will genuinely succeed) - instead, the
- * `DraftToolbarQuery` polling response (`DraftToolbar.tsx`) is intercepted and its
- * `workflowInstance.pendingStatus`/`pendingError` fields are rewritten to simulate a failure,
- * to deterministically drive the frontend into its error/retry UX (which is what this scenario
- * is really testing). There is also no distinct "Retry" button in the product - the real flow is
- * a bypass-only "Clear" button (unlocks the errored transition) followed by re-triggering
- * "SHARE TO ORG" (see `workflow-e2e-plan.md`'s Phase 0 research spike (b)).
+ * The "SHARE TO ORG" background task can't be made to genuinely fail through valid user input, so
+ * the `DraftToolbarQuery` polling response is intercepted and rewritten to simulate a failure and
+ * drive the frontend into its error/retry UX. There is no distinct "Retry" button - the real flow
+ * is a bypass-only "Clear" button followed by re-triggering "SHARE TO ORG".
  */
 import { test } from '../fixtures/baseFixtures';
 import DraftToolbarPageModel from '../model/drafts/draftToolbar.pageModel';
 import { advanceDraftToStatus, createThreatAdvisoryDraft, openDraft, USERS } from './threatAdvisoryDraftHelpers';
 
-/** Recursively finds a `workflowInstance`-shaped object with `pendingStatus: 'pending'` and
- * rewrites it to `'error'`, regardless of exactly where the `WorkflowStatus_data` fragment is
- * nested in the payload. Only rewrites genuinely in-flight transitions - leaving a `null`/absent
- * `pendingStatus` untouched, otherwise every poll (including before any transition is triggered)
- * would be forced into the error state and hide the transition buttons entirely. */
+/** Rewrites a genuinely in-flight (`pendingStatus: 'pending'`) `workflowInstance` to `'error'`; leaves other values untouched so pre-transition polls still render normally. */
 const injectPendingError = (value: unknown): void => {
   if (!value || typeof value !== 'object') return;
   const obj = value as Record<string, unknown>;

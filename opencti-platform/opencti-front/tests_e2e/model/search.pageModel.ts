@@ -14,8 +14,7 @@ export default class SearchPageModel {
     await this.addSearch(`"${searchText}"`);
   }
 
-  /** The search term is persisted to localStorage (usePaginationLocalStorage) and restored by the list
-   * on future navigations/reloads, so it must be explicitly cleared rather than just navigating away. */
+  /** The search term persists to localStorage and is restored on future navigations, so it must be explicitly cleared. */
   async clearSearch() {
     await this.page.getByPlaceholder('Search these results...').fill('');
     await this.page.getByPlaceholder('Search these results...').press('Enter');

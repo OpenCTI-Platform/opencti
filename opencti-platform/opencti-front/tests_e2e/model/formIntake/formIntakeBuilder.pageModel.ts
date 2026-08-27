@@ -7,13 +7,9 @@ export type DraftAuthorSource = 'None (no author specified)' | 'Main entity auth
 
 /**
  * Wraps the "Create a form intake" drawer (`FormCreationContainer.tsx` -> `FormCreation.tsx` ->
- * `FormSchemaEditor.tsx`, "Main Entity" tab). Covers the subset of `FormSchemaEditor`'s many
- * controls needed to define the "Threat Advisories" form (main entity type left at its "Report"
- * default, draft-by-default + draft author source + draft authorized-members override). Additional
- * entities/relationships are intentionally left untouched for this fixture. The draft
- * authorized-members override IS the source of truth for a freshly-submitted draft's initial
- * access control - `formSubmit` does not fire the Workflow's NEW-status onEnter action (unlike the
- * manual `draftWorkspaceAdd` mutation), see repo memory `workflow-e2e-progress.md`.
+ * `FormSchemaEditor.tsx`, "Main Entity" tab). Covers the subset of controls needed to define the
+ * "Threat Advisories" form: main entity type, draft-by-default, draft author source, and the
+ * draft authorized-members override.
  */
 export default class FormIntakeBuilderPageModel {
   private readonly drawer: Locator;
@@ -70,8 +66,7 @@ export default class FormIntakeBuilderPageModel {
     return this.page.getByLabel('Activate access restriction');
   }
 
-  /** Enabling always seeds a default "Creators" (admin) row - remove it via the returned field's
-   * `removeDefaultCreatorsMember()` unless it's explicitly wanted. */
+  /** Enabling always seeds a default "Creators" (admin) row - remove it via `removeDefaultCreatorsMember()` unless explicitly wanted. */
   toggleAccessRestriction() {
     return this.getAccessRestrictionToggle().click();
   }
@@ -86,9 +81,7 @@ export default class FormIntakeBuilderPageModel {
     return this.drawer.getByRole('button', { name: 'Add field' }).click();
   }
 
-  /** Sets the "Map to attribute" select for the most-recently-added main-entity field. Its
-   * InputLabel isn't aria-linked to the Select (no labelId, same quirk as `setDraftAuthorSource`)
-   * - locate it via the adjacent label text instead. `.last()` targets the latest added field. */
+  /** Sets the "Map to attribute" select for the most-recently-added main-entity field (InputLabel isn't aria-linked, so locate via the adjacent label text). */
   async setLastMainEntityFieldAttribute(attribute: string) {
     await this.drawer.getByText('Map to attribute', { exact: true }).last().locator('..').getByRole('combobox').click();
     await this.page.getByRole('listbox').getByText(attribute, { exact: true }).click();
