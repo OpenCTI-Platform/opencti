@@ -23,14 +23,23 @@ export const findThemePaginated = async (context: AuthContext, user: AuthUser, a
   return pageEntitiesConnection<BasicStoreEntityTheme>(context, user, [ENTITY_TYPE_THEME], args);
 };
 
-const checkExistingTheme = async (context: AuthContext, user: AuthUser, themeName: string) => {
+/**
+ * Checks whether a theme with the given name already exists.
+ *
+ * @param context Auth context.
+ * @param user User performing the lookup.
+ * @param themeName Theme name to search for.
+ * @param excludeThemeId Optional theme id to exclude from the match (e.g. the theme being renamed).
+ * @returns True when another theme already uses the given name.
+ */
+const checkExistingTheme = async (context: AuthContext, user: AuthUser, themeName: string, excludeThemeId?: string) => {
   const filters = {
     mode: FilterMode.And,
     filters: [{ key: ['name'], values: [themeName], operator: FilterOperator.Eq }],
     filterGroups: [],
   };
   const themes = await findThemePaginated(context, user, { filters });
-  return themes.edges.findIndex((edge) => edge.node.name === themeName) > -1;
+  return themes.edges.some((edge) => edge.node.name === themeName && edge.node.id !== excludeThemeId);
 };
 
 export const addTheme = async (context: AuthContext, user: AuthUser, input: ThemeAddInput) => {
@@ -131,6 +140,16 @@ export const fieldPatchTheme = async (context: AuthContext, user: AuthUser, them
   }
   if (theme.built_in && user.id !== SYSTEM_USER.id) { // built-in themes cannot be updated, except during internal migrations
     throw FunctionalError('System default themes cannot be updated', { themeId });
+  }
+  // check the new theme name is not already used by another theme
+  const nameInput = input.find((i) => i.key === 'name');
+  if (nameInput) {
+    const [newThemeName] = nameInput.value;
+    // exclude the current theme so renaming with its own unchanged name is not flagged as a conflict
+    const themeFound = await checkExistingTheme(context, user, newThemeName, themeId);
+    if (themeFound) {
+      throw FunctionalError('Theme name already exists');
+    }
   }
   const { element } = await updateAttribute<StoreEntityTheme>(context, user, themeId, ENTITY_TYPE_THEME, input);
   await publishUserAction({

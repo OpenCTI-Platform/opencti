@@ -270,6 +270,41 @@ describe('Themes resolver testing', () => {
     expect(updated.data?.themeFieldPatch.theme_primary).toBe('#00ff00');
   });
 
+  it('should not update a theme name to a name already used by another theme', async () => {
+    const UPDATE_INPUT = {
+      id: customThemeId,
+      input: [
+        { key: 'name', value: 'Filigran Dark' },
+      ],
+    };
+
+    const updated = await queryAsAdmin({
+      query: UPDATE_THEME_MUTATION,
+      variables: UPDATE_INPUT,
+    });
+
+    expect(updated.errors).toBeDefined();
+    expect(updated.errors?.[0].message).toContain('Theme name already exists');
+  });
+
+  it('should update a theme with its own unchanged name', async () => {
+    const UPDATE_INPUT = {
+      id: customThemeId,
+      input: [
+        { key: 'name', value: 'Updated Custom Theme' },
+        { key: 'theme_primary', value: '#123456' },
+      ],
+    };
+
+    const updated = await queryAsAdmin({
+      query: UPDATE_THEME_MUTATION,
+      variables: UPDATE_INPUT,
+    });
+
+    expect(updated.data?.themeFieldPatch.name).toBe('Updated Custom Theme');
+    expect(updated.data?.themeFieldPatch.theme_primary).toBe('#123456');
+  });
+
   it('should update theme login aside to color', async () => {
     const UPDATE_INPUT = {
       id: customThemeId,
