@@ -5,9 +5,7 @@ import { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import InputAdornment from '@mui/material/InputAdornment';
-import MuiAutocomplete from '@mui/material/Autocomplete';
-import MuiTextField from '@mui/material/TextField';
-import Chip from '@mui/material/Chip';
+import { Combobox, ComboboxChips, ComboboxContent, ComboboxControls, ComboboxField, ComboboxHelperText, ComboboxInput, ComboboxLabel } from '@filigran/design-system';
 import * as Yup from 'yup';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
@@ -193,33 +191,37 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                   )}
                   {(values.field_type === 'select' || values.field_type === 'multi_select') && (
                     <>
-                      <MuiAutocomplete
-                        multiple
-                        freeSolo
-                        options={[]}
-                        value={values.select_options}
-                        onChange={(_, newValue) => setFieldValue('select_options', newValue)}
-                        onBlur={() => setFieldTouched('select_options', true)}
-                        renderTags={(tagValue, getTagProps) => tagValue.map((option: string, index: number) => (
-                          <Chip label={option} {...getTagProps({ index })} key={option} />
-                        ))}
-                        renderInput={(params) => {
-                          const selectOptionsError = (touched.select_options || submitCount > 0) ? errors.select_options : undefined;
-                          return (
-                            <MuiTextField
-                              {...params}
-                              variant="standard"
-                              label={t_i18n('Select options')}
-                              placeholder={values.select_options.length === 0
-                                ? t_i18n('Type and press Enter to add items')
-                                : t_i18n('Add more items...')}
-                              error={Boolean(selectOptionsError)}
-                              helperText={selectOptionsError}
-                              style={{ marginTop: 20 }}
-                            />
-                          );
-                        }}
-                      />
+                      {(() => {
+                        const selectOptionsError = (touched.select_options || submitCount > 0) ? errors.select_options : undefined;
+                        return (
+                          <Combobox<string>
+                            multiple
+                            options={[]}
+                            allowCustomValue
+                            createValueFromInput={(input) => input}
+                            value={values.select_options}
+                            onValueChange={(newValue) => setFieldValue('select_options', newValue)}
+                            error={Boolean(selectOptionsError)}
+                            className="mt-5"
+                          >
+                            <ComboboxLabel>{t_i18n('Select options')}</ComboboxLabel>
+                            <ComboboxField>
+                              <ComboboxChips aria-label={t_i18n('Select options')} />
+                              <ComboboxInput
+                                placeholder={values.select_options.length === 0
+                                  ? t_i18n('Type and press Enter to add items')
+                                  : t_i18n('Add more items...')}
+                                onBlur={() => setFieldTouched('select_options', true)}
+                              />
+                              <ComboboxControls />
+                            </ComboboxField>
+                            <ComboboxContent listAriaLabel={t_i18n('Select options')} />
+                            {selectOptionsError && (
+                              <ComboboxHelperText>{selectOptionsError}</ComboboxHelperText>
+                            )}
+                          </Combobox>
+                        );
+                      })()}
                     </>
                   )}
                   <Field
