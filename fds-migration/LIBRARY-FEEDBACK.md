@@ -1885,3 +1885,49 @@ chips are toneless until then, assumed.
 **Removal test.** Put a TLP marking in an `ObjectMarkingField`: the chip carries
 the TLP system tone with no `#hex` anywhere in its computed background. The
 uppercase label is already true today.
+
+## 52. `isOptionEqualToValue` takes (selected, option) — MUI passes (option, value)
+
+**A migration trap, not a library defect.** Recorded because it is invisible in
+review and silent at runtime.
+
+From the bundle:
+
+```js
+isOptionEqualToValue(selected, option)   // library: SELECTED first
+```
+
+MUI's contract is `(option, value)`. Every identity function carried across from
+MUI therefore has its arguments **reversed**.
+
+**Why it hides.** The usual shape is symmetric — `a.value === b.value`,
+`option === value`, `a.id === b.id` — and reversing symmetric arguments changes
+nothing. Of ~20 identity functions in this migration, 17 were symmetric and
+behaved correctly by luck.
+
+**Where it bit.** Three were asymmetric, reading `.value` off the FIRST argument
+only and tolerating a raw string in the second:
+
+```js
+(o, v) => o.value === (typeof v === 'string' ? v : v?.value)
+```
+
+With the arguments reversed and a string-valued field, `o` IS the string, so
+`o.value` is `undefined` and the comparison never matches. Consequences, measured
+on the real report edit drawer:
+
+| | option row | chips after re-clicking it |
+|---|---|---|
+| before | `threat-report` — not marked selected | `["threat-report","threat-report"]` DUPLICATED |
+| after | `threat-report*` — marked selected | none — TOGGLED OFF |
+
+An option that is never "selected" cannot be deselected, so re-clicking appends.
+`report.spec` "Report types" depends on exactly that toggle.
+
+**Fixed** by deleting all three (`OpenVocabField`, `PlaybookFlowFieldActions` ×2):
+`ComboboxField`'s default already unwraps whichever side is an object and is
+order-agnostic. The prop's JSDoc now states the order and recommends omitting it.
+
+**Suggestion to the library, low cost:** name the parameters in the exported type
+— `(selectedValue: T, option: T) => boolean` rather than `(a: T, b: T) => boolean`
+— so an IDE shows the order at the call site. Nothing else needed.

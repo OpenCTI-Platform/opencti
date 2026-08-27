@@ -67,6 +67,19 @@ export type ComboboxFieldProps<Value extends PossibleValue = FieldOption>
       id?: string;
       groupBy?: (option: Value) => string;
       getOptionLabel?: (option: Value) => string;
+      /**
+       * ARGUMENT ORDER IS NOT MUI'S. The library calls
+       * `isOptionEqualToValue(selected, option)` — the SELECTED value first —
+       * while MUI's contract is `(option, value)`. Symmetric comparisons such as
+       * `a.value === b.value` are unaffected, which is why the difference hides.
+       * An asymmetric one is silently broken: reading `.value` off the first
+       * argument only meant a string-valued field never matched, so its option
+       * was never marked selected and re-clicking it APPENDED a duplicate
+       * instead of toggling it off (report.spec "Report types").
+       *
+       * Prefer omitting this prop: the default below unwraps whichever side is
+       * an object and is order-agnostic.
+       */
       isOptionEqualToValue?: (a: Value, b: Value) => boolean;
       isOptionDisabled?: (option: Value) => boolean;
       /**
