@@ -16,7 +16,6 @@ import {
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
-  ENTITY_TYPE_VULNERABILITY,
   isStixDomainObject,
   isStixDomainObjectContainer,
 } from '../../schema/stixDomainObject';
@@ -38,6 +37,7 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../schema/stixMetaObject';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/threatActorIndividual-types';
+import { ENTITY_TYPE_VULNERABILITY } from '../vulnerability/vulnerability-types';
 
 export type typeAvailableSetting = boolean | string;
 

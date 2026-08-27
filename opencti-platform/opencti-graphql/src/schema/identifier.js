@@ -228,7 +228,6 @@ const stixBaseEntityContribution = {
     [D.ENTITY_TYPE_MALWARE]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_THREAT_ACTOR_GROUP]: [{ src: NAME_FIELD }, { src: INNER_TYPE, dependencies: [NAME_FIELD] }],
     [D.ENTITY_TYPE_TOOL]: [{ src: NAME_FIELD }],
-    [D.ENTITY_TYPE_VULNERABILITY]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_INCIDENT]: [{ src: NAME_FIELD }, { src: 'created', dependencies: [NAME_FIELD] }],
     // Stix Meta
     [M.ENTITY_TYPE_MARKING_DEFINITION]: [{ src: 'definition', dependencies: ['definition_type'] }, { src: 'definition_type' }],

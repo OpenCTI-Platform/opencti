@@ -135,6 +135,7 @@ import './ingestion/ingestion-taxii-collection-graphql';
 import './ingestion/ingestion-csv-graphql';
 import './ingestion/ingestion-json-graphql';
 import './indicator/indicator-graphql';
+import './vulnerability/vulnerability-graphql';
 import './decayRule/decayRule-graphql';
 import './decayRule/exclusions/decayExclusionRule-graphql';
 import './organization/organization-graphql';

@@ -136,7 +136,8 @@ const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
 export const TAXIIAPI = 'TAXIIAPI';
 const PLATFORM_ORGANIZATION = 'settings_platform_organization';
-const PROTECTED_USER_ATTRIBUTES = [apiTokens.name, 'external'];
+// Lazily resolved to stay resilient to module initialization order (circular imports)
+const getProtectedUserAttributes = () => [apiTokens.name, 'external'];
 const PROTECTED_EXTERNAL_ATTRIBUTES = ['user_email', 'user_name'];
 const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'user_email',
@@ -1278,7 +1279,7 @@ export const meEditField = async (context, user, userId, inputs, password = null
   inputs.forEach((input) => {
     const { key } = input;
     // Check if field can be updated by the user
-    if (PROTECTED_USER_ATTRIBUTES.includes(key)) {
+    if (getProtectedUserAttributes().includes(key)) {
       throw ForbiddenAccess();
     }
     // If the user is external, some extra attributes must be protected

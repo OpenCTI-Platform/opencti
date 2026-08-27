@@ -42,9 +42,7 @@ import {
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL,
-  ENTITY_TYPE_VULNERABILITY,
 } from '../../schema/stixDomainObject';
-import { CVSS_SEVERITY_VALUES } from '../../domain/vulnerability';
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
 import { X_WORKFLOW_ID } from '../../schema/identifier';
@@ -282,65 +280,6 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>
     { name: 'tool_types', label: 'Tool types', type: 'string', format: 'vocabulary', vocabularyCategory: 'tool_types_ov', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: false, isFilterable: true },
     { name: 'tool_version', label: 'Tool version', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
-  [ENTITY_TYPE_VULNERABILITY]: [
-    iAliasedIds,
-    xOpenctiAliases,
-    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    // CVSS 3
-    { name: 'x_opencti_cvss_vector_string', label: 'CVSS3 Vector', type: 'string', format: 'short', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_base_score', label: 'CVSS3 Score', type: 'numeric', precision: 'float', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_base_severity', label: 'CVSS3 Severity', type: 'string', format: 'enum', values: CVSS_SEVERITY_VALUES, mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_attack_vector', label: 'CVSS3 Attack Vector (AV)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_attack_complexity', label: 'CVSS3 Attack Complexity (AC)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_privileges_required', label: 'CVSS3 Privileges Required (PR)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_user_interaction', label: 'CVSS3 User interaction (UI)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_scope', label: 'CVSS3 Scope (S)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_confidentiality_impact', label: 'CVSS3 Confidentiality Impact (C)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_integrity_impact', label: 'CVSS3 Integrity Impact (I)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_availability_impact', label: 'CVSS3 Availability Impact (A)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_exploit_code_maturity', label: 'CVSS3 Exploit Code Maturity (E)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_remediation_level', label: 'CVSS3 Remediation Level (RL)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_report_confidence', label: 'CVSS3 Report Confidence (RC)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_temporal_score', label: 'CVSS3 Temporal Score', type: 'numeric', precision: 'float', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    // CVSS 2
-    { name: 'x_opencti_cvss_v2_vector_string', label: 'CVSS2 Vector', type: 'string', format: 'short', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v2_base_score', label: 'CVSS2 Score', type: 'numeric', precision: 'float', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v2_access_vector', label: 'CVSS2 Access Vector (AV)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v2_access_complexity', label: 'CVSS2 Access Complexity (AC)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v2_authentication', label: 'CVSS2 Authentication (Au)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v2_confidentiality_impact', label: 'CVSS2 Confidentiality Impact (C)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v2_integrity_impact', label: 'CVSS2 Integrity Impact (I)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v2_availability_impact', label: 'CVSS2 Availability Impact (A)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v2_exploitability', label: 'CVSS2 Exploitability (E)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v2_remediation_level', label: 'CVSS2 Remediation Level (RL)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v2_report_confidence', label: 'CVSS2 Report Confidence (RC)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v2_temporal_score', label: 'CVSS2 Temporal Score', type: 'numeric', precision: 'float', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    // CVSS 4
-    { name: 'x_opencti_cvss_v4_vector_string', label: 'CVSS4 Vector', type: 'string', format: 'short', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v4_base_score', label: 'CVSS4 Score', type: 'numeric', precision: 'float', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v4_base_severity', label: 'CVSS4 Severity', type: 'string', format: 'enum', values: CVSS_SEVERITY_VALUES, mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v4_attack_vector', label: 'CVSS4 Attack Vector (AV)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v4_attack_complexity', label: 'CVSS4 Attack Complexity (AC)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v4_attack_requirements', label: 'CVSS4 Attack Requirements (AT)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v4_privileges_required', label: 'CVSS4 Privileges Required (PR)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v4_user_interaction', label: 'CVSS4 User Interaction (UI)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v4_confidentiality_impact_v', label: 'CVSS4 VS Confidentiality Impact (VC)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v4_confidentiality_impact_s', label: 'CVSS4 SS Confidentiality Impact (SC)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v4_integrity_impact_v', label: 'CVSS4 VS Integrity Impact (VI)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v4_integrity_impact_s', label: 'CVSS4 SS Integrity Impact (SI)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v4_availability_impact_v', label: 'CVSS4 VS Availability Impact (VA)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v4_availability_impact_s', label: 'CVSS4 SS Avalability Impact (SA)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_v4_exploit_maturity', label: 'CVSS4 Exploit Maturity (E)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    // Others
-    { name: 'x_opencti_cwe', label: 'Associated CWE(s)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cisa_kev', label: 'CISA KEV', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_epss_score', label: 'EPSS Score', type: 'numeric', precision: 'float', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_epss_percentile', label: 'EPSS Percentile', type: 'numeric', precision: 'float', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_score', label: 'Score', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_first_seen_active', label: 'First seen active', type: 'date', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-  ],
-
   [ENTITY_TYPE_INCIDENT]: [
     // Check Name, type, mandatory, multiple, upsert
     iAliasedIds,

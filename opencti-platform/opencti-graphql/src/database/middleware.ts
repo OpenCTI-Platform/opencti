@@ -152,7 +152,6 @@ import {
   ATTRIBUTE_ALIASES_OPENCTI,
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-  ENTITY_TYPE_VULNERABILITY,
   isStixDomainObjectIdentity,
   isStixDomainObjectShareableContainer,
   isStixObjectAliased,
@@ -281,6 +280,7 @@ import type * as S from '../types/stix-2-1-common';
 import type { StixId } from '../types/stix-2-1-common';
 import type * as S2 from '../types/stix-2-0-common';
 import type { CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
+import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
