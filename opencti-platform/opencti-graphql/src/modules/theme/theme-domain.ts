@@ -129,7 +129,7 @@ export const fieldPatchTheme = async (context: AuthContext, user: AuthUser, them
   if (!theme) {
     throw FunctionalError('Theme cannot be found', { themeId });
   }
-  if (theme.built_in) {
+  if (theme.built_in && user.id !== SYSTEM_USER.id) { // built-in themes cannot be updated, except during internal migrations
     throw FunctionalError('System default themes cannot be updated', { themeId });
   }
   const { element } = await updateAttribute<StoreEntityTheme>(context, user, themeId, ENTITY_TYPE_THEME, input);

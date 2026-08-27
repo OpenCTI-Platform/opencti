@@ -304,6 +304,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
                 variant="standard"
                 onSubmit={handleFieldSubmit}
                 sx={{ textTransform: 'capitalize' }}
+                disabled={isDefaultTheme}
               />
             )}
 
@@ -317,6 +318,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
                   variant="standard"
                   onSubmit={handleFieldSubmit}
                   sx={{ textTransform: 'capitalize' }}
+                  disabled={isDefaultTheme}
                 />
 
                 <Field
@@ -327,6 +329,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
                   variant="standard"
                   onSubmit={handleFieldSubmit}
                   sx={{ textTransform: 'capitalize' }}
+                  disabled={isDefaultTheme}
                 />
               </Stack>
             )}
