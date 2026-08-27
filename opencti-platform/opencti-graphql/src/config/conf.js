@@ -595,8 +595,6 @@ export const isFeatureEnabled = (feature) => ENABLED_FEATURE_FLAGS.includes(FEAT
 // Custom fields feature flag (use isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG) to check activation)
 export const CUSTOM_FIELDS_FEATURE_FLAG = 'CUSTOM_FIELDS';
 
-export const SYNC_WORKFLOW_STATUS_BY_NAME_FEATURE_FLAG = 'SYNC_WORKFLOW_STATUS_BY_NAME';
-
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;
 export const TOPIC_CONTEXT_PREFIX = `${REDIS_PREFIX}_OPENCTI_CONTEXT_`;

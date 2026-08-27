@@ -1,6 +1,6 @@
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import mime from 'mime-types';
-import conf, { booleanConf, isFeatureEnabled, logApp, SYNC_WORKFLOW_STATUS_BY_NAME_FEATURE_FLAG } from '../config/conf';
+import conf, { booleanConf, logApp } from '../config/conf';
 import { decryptSynchronizerCredential } from '../domain/connector-sync-crypto';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
@@ -140,7 +140,7 @@ export const transformDataWithReverseIdAndFilesData = async (sync, httpClient, d
   const remoteWorkflowStatusScope = processingData.extensions[STIX_EXT_OCTI].workflow_status_scope;
   if (remoteWorkflowId) {
     const entitySetting = await getEntitySettingFromCache(executionContext('sync_manager'), octiExtension.type);
-    const syncWorkflowStatusByName = isFeatureEnabled(SYNC_WORKFLOW_STATUS_BY_NAME_FEATURE_FLAG) && (entitySetting?.sync_workflow_status_by_name ?? false);
+    const syncWorkflowStatusByName = entitySetting?.sync_workflow_status_by_name ?? false;
     // Not opted in: keep the raw remote workflow_id untouched, same as pre-existing behavior.
     if (syncWorkflowStatusByName) {
       const localWorkflowId = await resolveSyncedWorkflowId(executionContext('sync_manager'), SYSTEM_USER, octiExtension.type, remoteWorkflowStatusScope, remoteWorkflowStatusName);
