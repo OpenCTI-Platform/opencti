@@ -5,12 +5,7 @@ import ImportFilesDialogPageModel from '../model/formIntake/importFilesDialog.pa
 import FormIntakeFillPageModel from '../model/formIntake/formIntakeFill.pageModel';
 import DraftToolbarPageModel from '../model/drafts/draftToolbar.pageModel';
 
-/**
- * Shared fixtures/helpers for the Threat Advisory rejection & org-sharing-retry variant specs
- * (`workflow-e2e-product-test-plan.md`'s "Scenario:" sections) - each variant starts from a
- * fresh draft fast-forwarded to the status it assumes, rather than replaying the full UI happy
- * path from `threatAdvisoryHappyFlow.spec.ts`.
- */
+/** Shared helpers for the Threat Advisory rejection & org-sharing-retry specs, which fast-forward a fresh draft to the status they assume instead of replaying `threatAdvisoryHappyFlow.spec.ts`. */
 export const USERS = {
   analystOrgA: { email: 'analystorga@filigran.test', password: 'analystorga' },
   managerOrgA: { email: 'managerorga@filigran.test', password: 'managerorga' },
@@ -54,10 +49,7 @@ export const createThreatAdvisoryDraft = async (page: Page, reportName: string):
 
 export type DraftStatus = 'MO MANAGER REVIEW' | 'ORGC ANALYST REVIEW' | 'ORGC MANAGER REVIEW';
 
-/**
- * Fast-forwards a fresh NEW-status draft through the minimal transitions needed to reach the
- * given target status, using the correct persona for each hop (mirrors happy-flow steps 5/8/11).
- */
+/** Fast-forwards a fresh NEW-status draft to the given target status, using the correct persona for each hop (mirrors happy-flow steps 5/8/11). */
 export const advanceDraftToStatus = async (page: Page, draftId: string, targetStatus: DraftStatus) => {
   const toolbar = new DraftToolbarPageModel(page);
 

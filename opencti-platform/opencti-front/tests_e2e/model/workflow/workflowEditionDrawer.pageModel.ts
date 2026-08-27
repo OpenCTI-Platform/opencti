@@ -5,10 +5,8 @@ import WorkflowAuthorizedMembersPageModel from './workflowAuthorizedMembers.page
 
 /**
  * Wraps the `WorkflowEditionDrawer` (StatusForm / TransitionForm), opened by clicking a
- * status/transition/placeholder node or the "Add Status" button in the workflow graph editor
- * (see `workflowEditor.pageModel.ts`). Only one such drawer is ever open at a time, so most
- * fields are looked up directly on `page` - the on-enter/on-exit/authorized-members sections use
- * dedicated container testids since they repeat the same generic field labels.
+ * status/transition/placeholder node or the "Add Status" button in the workflow graph editor.
+ * Only one such drawer is ever open at a time, so most fields are looked up directly on `page`.
  */
 export default class WorkflowEditionDrawerPageModel {
   private readonly statusTemplateAutocomplete: AutocompleteFieldPageModel;
@@ -19,11 +17,7 @@ export default class WorkflowEditionDrawerPageModel {
 
   // --- Status form -----------------------------------------------------
 
-  /**
-   * Selects an existing status template by exact name, or creates a new one (with the given
-   * color) if none matches. Status templates are a shared/global entity so an earlier test run
-   * may already have created it.
-   */
+  /** Selects an existing status template by exact name, or creates a new one with the given color if none matches. */
   async selectOrCreateStatusTemplate(name: string, color = '#0059f7') {
     const combobox = this.page.getByRole('combobox', { name: 'Status' });
     await combobox.click();
