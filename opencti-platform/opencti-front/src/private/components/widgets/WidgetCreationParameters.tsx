@@ -2,8 +2,7 @@ import TextField from '@mui/material/TextField';
 import InputLabel from '@mui/material/InputLabel';
 import ReactMde from 'react-mde';
 import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { stixCyberObservablesLinesAttributesQuery } from '@components/observations/stix_cyber_observables/StixCyberObservablesLines';
 import * as R from 'ramda';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -321,24 +320,28 @@ const WidgetCreationParameters = () => {
               {t_i18n('Attribute')}
             </InputLabel>
             <Select
-              labelId="audits-attribute"
               value={dataSelection[dataSelectionIndex].attribute ?? 'entity_type'}
-              onChange={(event) => handleChangeDataValidationParameter(
+              disabled={isAttributeSelectionDisabled}
+              onValueChange={(value) => handleChangeDataValidationParameter(
                 dataSelectionIndex,
                 'attribute',
-                event.target.value,
+                value,
               )
               }
-              disabled={isAttributeSelectionDisabled}
             >
-              {AUDIT_WIDGET_ATTRIBUTES.map((value) => (
-                <MenuItem
-                  key={value}
-                  value={value}
-                >
-                  {t_i18n(capitalizeFirstLetter(value))}
-                </MenuItem>
-              ))}
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {AUDIT_WIDGET_ATTRIBUTES.map((value) => (
+                  <SelectItem
+                    key={value}
+                    value={value}
+                  >
+                    {t_i18n(capitalizeFirstLetter(value))}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
           </FormControl>
         </Grid>
@@ -404,22 +407,23 @@ const WidgetCreationParameters = () => {
       )}
 
       {getCurrentCategory(type) === 'timeseries' && (
-        <FormControl fullWidth={true} style={{ marginTop: 20 }}>
-          <InputLabel id="relative">{t_i18n('Interval')}</InputLabel>
-          <Select
-            labelId="relative"
-            fullWidth={true}
-            value={getWidgetInterval(parameters)}
-            onChange={(event) => handleChangeParameter('interval', event.target.value)
-            }
-          >
-            <MenuItem value="day">{t_i18n('Day')}</MenuItem>
-            <MenuItem value="week">{t_i18n('Week')}</MenuItem>
-            <MenuItem value="month">{t_i18n('Month')}</MenuItem>
-            <MenuItem value="quarter">{t_i18n('Quarter')}</MenuItem>
-            <MenuItem value="year">{t_i18n('Year')}</MenuItem>
-          </Select>
-        </FormControl>
+        <Select
+          value={getWidgetInterval(parameters)}
+          onValueChange={(value) => handleChangeParameter('interval', value)
+          }
+        >
+          <SelectLabel>{t_i18n('Interval')}</SelectLabel>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="day">{t_i18n('Day')}</SelectItem>
+            <SelectItem value="week">{t_i18n('Week')}</SelectItem>
+            <SelectItem value="month">{t_i18n('Month')}</SelectItem>
+            <SelectItem value="quarter">{t_i18n('Quarter')}</SelectItem>
+            <SelectItem value="year">{t_i18n('Year')}</SelectItem>
+          </SelectContent>
+        </Select>
       )}
       {uniqueParameterEnabled(dataSelection[0].perspective, type) && dataSelection.length > 1 && (
         <Grid container sx={{ pt: 4 }} spacing={4}>
@@ -518,34 +522,33 @@ const WidgetCreationParameters = () => {
                       marginTop: 20,
                     }}
                   >
-                    <FormControl
-                      style={{ width: '100%', flex: 1 }}
-                      fullWidth={true}
+                    <Select
+                      value={dataSelection[i].sort_by ?? 'created_at'}
+                      onValueChange={(value) => handleChangeDataValidationParameter(
+                        i,
+                        'sort_by',
+                        value,
+                      )
+                      }
                     >
-                      <InputLabel>{t_i18n('Sort by')}</InputLabel>
-                      <Select
-                        fullWidth={true}
-                        value={dataSelection[i].sort_by ?? 'created_at'}
-                        onChange={(event) => handleChangeDataValidationParameter(
-                          i,
-                          'sort_by',
-                          event.target.value,
-                        )
-                        }
-                      >
+                      <SelectLabel>{t_i18n('Sort by')}</SelectLabel>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
                         {(isDraftWorkspaceFilterGroup(dataSelection[i].filters)
                           ? draftWorkspaceSortByValues
                           : sortByValues.map((v) => ({ value: v, label: capitalizeFirstLetter(v) }))
                         ).map(({ value, label }) => (
-                          <MenuItem
+                          <SelectItem
                             key={value}
                             value={value}
                           >
                             {t_i18n(label)}
-                          </MenuItem>
+                          </SelectItem>
                         ))}
-                      </Select>
-                    </FormControl>
+                      </SelectContent>
+                    </Select>
                   </div>
                 )}
 
@@ -562,18 +565,20 @@ const WidgetCreationParameters = () => {
                         {t_i18n('Sort mode')}
                       </InputLabel>
                       <Select
-                        labelId="relative"
-                        size="small"
-                        fullWidth={true}
                         value={dataSelection[i].sort_mode ?? 'desc'}
-                        onChange={(event) => handleChangeDataValidationParameter(i, 'sort_mode', event.target.value)}
+                        onValueChange={(value) => handleChangeDataValidationParameter(i, 'sort_mode', value)}
                       >
-                        <MenuItem value="asc">
-                          {t_i18n('Asc')}
-                        </MenuItem>
-                        <MenuItem value="desc">
-                          {t_i18n('Desc')}
-                        </MenuItem>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="asc">
+                            {t_i18n('Asc')}
+                          </SelectItem>
+                          <SelectItem value="desc">
+                            {t_i18n('Desc')}
+                          </SelectItem>
+                        </SelectContent>
                       </Select>
                     </FormControl>
                   </div>
@@ -596,44 +601,46 @@ const WidgetCreationParameters = () => {
                             : t_i18n('Date attribute')}
                         </InputLabel>
                         <Select
-                          labelId="relative"
-                          size="small"
-                          fullWidth={true}
                           value={dataSelection[i].date_attribute ?? 'created_at'}
-                          onChange={(event) => handleChangeDataValidationParameter(i, 'date_attribute', event.target.value)}
+                          onValueChange={(value) => handleChangeDataValidationParameter(i, 'date_attribute', value)}
                         >
-                          <MenuItem value="created_at">
-                            created_at ({t_i18n('Technical date')})
-                          </MenuItem>
-                          <MenuItem value="updated_at">
-                            updated_at ({t_i18n('Technical date')})
-                          </MenuItem>
-                          <MenuItem value="created">
-                            created ({t_i18n('Functional date')})
-                          </MenuItem>
-                          <MenuItem value="modified">
-                            modified ({t_i18n('Functional date')})
-                          </MenuItem>
-                          {getCurrentIsRelationships(type) && (
-                            <MenuItem value="start_time">
-                              start_time ({t_i18n('Functional date')})
-                            </MenuItem>
-                          )}
-                          {getCurrentIsRelationships(type) && (
-                            <MenuItem value="stop_time">
-                              stop_time ({t_i18n('Functional date')})
-                            </MenuItem>
-                          )}
-                          {getCurrentIsRelationships(type) && !isWidgetListOrTimeline(type) && (
-                            <MenuItem value="first_seen">
-                              first_seen ({t_i18n('Functional date')})
-                            </MenuItem>
-                          )}
-                          {getCurrentIsRelationships(type) && !isWidgetListOrTimeline(type) && (
-                            <MenuItem value="last_seen">
-                              last_seen ({t_i18n('Functional date')})
-                            </MenuItem>
-                          )}
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="created_at">
+                              created_at ({t_i18n('Technical date')})
+                            </SelectItem>
+                            <SelectItem value="updated_at">
+                              updated_at ({t_i18n('Technical date')})
+                            </SelectItem>
+                            <SelectItem value="created">
+                              created ({t_i18n('Functional date')})
+                            </SelectItem>
+                            <SelectItem value="modified">
+                              modified ({t_i18n('Functional date')})
+                            </SelectItem>
+                            {getCurrentIsRelationships(type) && (
+                              <SelectItem value="start_time">
+                                start_time ({t_i18n('Functional date')})
+                              </SelectItem>
+                            )}
+                            {getCurrentIsRelationships(type) && (
+                              <SelectItem value="stop_time">
+                                stop_time ({t_i18n('Functional date')})
+                              </SelectItem>
+                            )}
+                            {getCurrentIsRelationships(type) && !isWidgetListOrTimeline(type) && (
+                              <SelectItem value="first_seen">
+                                first_seen ({t_i18n('Functional date')})
+                              </SelectItem>
+                            )}
+                            {getCurrentIsRelationships(type) && !isWidgetListOrTimeline(type) && (
+                              <SelectItem value="last_seen">
+                                last_seen ({t_i18n('Functional date')})
+                              </SelectItem>
+                            )}
+                          </SelectContent>
                         </Select>
                       </FormControl>
                     </div>
@@ -717,21 +724,24 @@ const WidgetCreationParameters = () => {
                           {t_i18n('Attribute')}
                         </InputLabel>
                         <Select
-                          labelId="rel-attribute"
-                          fullWidth={true}
-                          value={dataSelection[i].attribute}
-                          onChange={(event) => handleChangeDataValidationParameter(
+                          value={dataSelection[i].attribute ?? ''}
+                          onValueChange={(value) => handleChangeDataValidationParameter(
                             i,
                             'attribute',
-                            event.target.value,
+                            value,
                           )
                           }
                         >
-                          {RELATIONSHIPS_WIDGET_ATTRIBUTES.map((n) => (
-                            <MenuItem key={n.value} value={n.value}>
-                              {t_i18n(n.label)}
-                            </MenuItem>
-                          ))}
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {RELATIONSHIPS_WIDGET_ATTRIBUTES.map((n) => (
+                              <SelectItem key={n.value} value={n.value}>
+                                {t_i18n(n.label)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
                         </Select>
                       </FormControl>
                     )}
@@ -751,23 +761,26 @@ const WidgetCreationParameters = () => {
                           </InputLabel>
                           {isDraftWorkspaceFilterGroup(dataSelection[i].filters) ? (
                             <Select
-                              labelId="entities-attribute"
-                              fullWidth={true}
-                              value={dataSelection[i].attribute}
-                              onChange={(event) => handleChangeDataValidationParameter(i, 'attribute', event.target.value)}
+                              value={dataSelection[i].attribute ?? ''}
+                              onValueChange={(value) => handleChangeDataValidationParameter(i, 'attribute', value)}
                             >
-                              {[
-                                { value: 'draft_status', label: 'Processing status' },
-                                { value: 'object-assignee.internal_id', label: 'Assignee' },
-                                { value: 'object-participant.internal_id', label: 'Participant' },
-                                { value: 'creator_id', label: 'Creator' },
-                                { value: 'created-by.internal_id', label: 'Author' },
-                                { value: 'workflowInstance', label: 'Workflow status' },
-                              ].map(({ value, label }) => (
-                                <MenuItem key={value} value={value}>
-                                  {t_i18n(label)}
-                                </MenuItem>
-                              ))}
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {[
+                                  { value: 'draft_status', label: 'Processing status' },
+                                  { value: 'object-assignee.internal_id', label: 'Assignee' },
+                                  { value: 'object-participant.internal_id', label: 'Participant' },
+                                  { value: 'creator_id', label: 'Creator' },
+                                  { value: 'created-by.internal_id', label: 'Author' },
+                                  { value: 'workflowInstance', label: 'Workflow status' },
+                                ].map(({ value, label }) => (
+                                  <SelectItem key={value} value={value}>
+                                    {t_i18n(label)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
                             </Select>
                           ) : (
                             <QueryRenderer
@@ -800,31 +813,34 @@ const WidgetCreationParameters = () => {
                                   }
                                   return (
                                     <Select
-                                      labelId="entities-attribute"
-                                      fullWidth={true}
-                                      value={dataSelection[i].attribute}
-                                      onChange={(event) => handleChangeDataValidationParameter(
+                                      value={dataSelection[i].attribute ?? ''}
+                                      onValueChange={(value) => handleChangeDataValidationParameter(
                                         i,
                                         'attribute',
-                                        event.target.value,
+                                        value,
                                       )
                                       }
                                     >
-                                      {[
-                                        ...attributesValues,
-                                        ...ENTITIES_WIDGET_COMMON_ATTRIBUTES,
-                                      ].map((value) => (
-                                        <MenuItem
-                                          key={value}
-                                          value={value}
-                                        >
-                                          {t_i18n(
-                                            capitalizeFirstLetter(
-                                              value,
-                                            ),
-                                          )}
-                                        </MenuItem>
-                                      ))}
+                                      <SelectTrigger>
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {[
+                                          ...attributesValues,
+                                          ...ENTITIES_WIDGET_COMMON_ATTRIBUTES,
+                                        ].map((value) => (
+                                          <SelectItem
+                                            key={value}
+                                            value={value}
+                                          >
+                                            {t_i18n(
+                                              capitalizeFirstLetter(
+                                                value,
+                                              ),
+                                            )}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
                                     </Select>
                                   );
                                 }
@@ -838,38 +854,33 @@ const WidgetCreationParameters = () => {
                     {dataSelection[i].perspective === 'entities'
                       && getCurrentSelectedEntityTypes(i).length === 0
                       && (
-                        <FormControl
-                          fullWidth={true}
-                          style={{
-                            flex: 1,
-                            marginRight: 20,
-                            width: '100%',
-                          }}
+                        <Select
+                          value={dataSelection[i].attribute ?? 'entity_type'}
+                          onValueChange={(value) => handleChangeDataValidationParameter(
+                            i,
+                            'attribute',
+                            value,
+                          )
+                          }
                         >
-                          <InputLabel>{t_i18n('Attribute')}</InputLabel>
-                          <Select
-                            fullWidth={true}
-                            value={dataSelection[i].attribute ?? 'entity_type'}
-                            onChange={(event) => handleChangeDataValidationParameter(
-                              i,
-                              'attribute',
-                              event.target.value,
-                            )
-                            }
-                          >
+                          <SelectLabel>{t_i18n('Attribute')}</SelectLabel>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
                             {[
                               'entity_type',
                               ...ENTITIES_WIDGET_COMMON_ATTRIBUTES,
                             ].map((value) => (
-                              <MenuItem
+                              <SelectItem
                                 key={value}
                                 value={value}
                               >
                                 {t_i18n(capitalizeFirstLetter(value))}
-                              </MenuItem>
+                              </SelectItem>
                             ))}
-                          </Select>
-                        </FormControl>
+                          </SelectContent>
+                        </Select>
                       )}
 
                     {((dataSelection[i].perspective === 'audits' && getCurrentAvailableParameters(type).includes('attribute'))
