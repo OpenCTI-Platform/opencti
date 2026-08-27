@@ -94,6 +94,38 @@ export const extractAllStatesFromDefinition = (definition: z.infer<typeof workfl
   return stateIds;
 };
 
+/**
+ * Canonical state IDs only: `initialState`, transition endpoints, and each state's `statusId`.
+ * Unlike `extractAllStatesFromDefinition`, this deliberately excludes bare `state.name` labels —
+ * `name` is a human-readable label, not an ID, so it must not be treated as a state ID for
+ * reachability purposes (name-only states without a `statusId` are already rejected elsewhere).
+ */
+export const extractCanonicalStateIds = (definition: z.infer<typeof workflowDefinitionSchema>): Set<string> => {
+  const stateIds = new Set<string>();
+
+  if (definition.initialState !== '*') {
+    stateIds.add(definition.initialState);
+  }
+
+  (definition.states ?? []).forEach((state) => {
+    if (state.statusId) stateIds.add(state.statusId);
+  });
+
+  definition.transitions.forEach((transition) => {
+    if (transition.from !== null) {
+      const fromStates = Array.isArray(transition.from) ? transition.from : [transition.from];
+      fromStates.forEach((s) => {
+        if (s !== '*') stateIds.add(s);
+      });
+    }
+    if (transition.to !== null && transition.to !== '*') {
+      stateIds.add(transition.to);
+    }
+  });
+
+  return stateIds;
+};
+
 const validateAction = (action: z.infer<typeof workflowActionConfigSchema>, source: string) => {
   const definition = ActionDefinitions[action.type];
   if (!definition) {
@@ -345,7 +377,7 @@ export const validateWorkflowDefinitionData = async (
   // transition path. An unreachable state is a definition bug (it can never be entered), not
   // something a manual order value could fix, so it is always a hard error.
   if (initialState !== '*') {
-    const allStateIds = [...extractAllStatesFromDefinition(validationResult.data)];
+    const allStateIds = [...extractCanonicalStateIds(validationResult.data)];
     const unreachableStates = findUnreachableStates(initialState, allStateIds, transitions);
     const unreachableStateIds = new Set(unreachableStates);
     unreachableStates.forEach((stateId) => {
@@ -367,7 +399,7 @@ export const validateWorkflowDefinitionData = async (
       if ((stateOrder === null || stateOrder === undefined) && state.order === undefined) {
         errors.push({
           type: 'MISSING_MANUAL_ORDER',
-          message: `State '${state.name || state.statusId}' must have a manual 'order' value: automatic ordering is ambiguous because the workflow graph contains a cycle`,
+          message: `State '${state.name || state.statusId}' must have a manual 'order' value: automatic ordering could not be determined (the workflow graph may contain a cycle, or the ordering computation hit its step limit)`,
         });
       }
     });

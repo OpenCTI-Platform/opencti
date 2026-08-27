@@ -578,7 +578,7 @@ export const ensureFullStatusMapping = async (
   if (states.length === 0) return;
 
   const executionContext = bypassDraftContext(context);
-  const executionUser = executionContext.user!;
+  const executionUser = bypassDraftUser(user);
 
   const existingStatuses = await fullEntitiesList<BasicWorkflowStatus>(executionContext, executionUser, [ENTITY_TYPE_STATUS], {
     filters: {
@@ -758,11 +758,21 @@ export const publishWorkflowDefinition = async (
     throw FunctionalError('No draft version to publish', { entityType });
   }
 
-  // Check for validation errors
-  if (draftVersion.validation_errors && draftVersion.validation_errors.length > 0) {
+  // Re-validate at publish time rather than trusting the draft's stored `validation_errors`,
+  // which were computed at save time and can be stale (e.g. new validation rules added since, or
+  // DB state — like status templates — changed after the draft was last saved). Publishing an
+  // invalid definition (e.g. missing statusId / missing manual order) must be blocked here.
+  const freshValidationErrors = await validateWorkflowDefinitionData(
+    executionContext,
+    executionUser,
+    draftVersion.content,
+    entityType,
+    entitySetting.workflow_id,
+  );
+  if (freshValidationErrors.length > 0) {
     throw FunctionalError('Cannot publish workflow with validation errors', {
       entityType,
-      errorCount: draftVersion.validation_errors.length,
+      errorCount: freshValidationErrors.length,
     });
   }
 
