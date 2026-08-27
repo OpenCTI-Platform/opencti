@@ -730,6 +730,12 @@ const createSseMiddleware = () => {
                       if (isOriginVisible && userHasAccessToUpdateEvent) {
                         const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
                         if (isValidResolution) {
+                          let objectsRefs = eventData.data.object_refs;
+                          if (objectsRefs?.length > 0) {
+                            objectsRefs = objectsRefs.filter((ref) => cache.has(ref));
+                            logApp.info('filtered objectsRefs', { objectsRefs });
+                            eventData.data.object_refs = objectsRefs;
+                          }
                           await client.sendEvent(eventId, event, eventData);
                           cache.set(stix.id, 'hit');
                         }
