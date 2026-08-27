@@ -24,7 +24,21 @@ import {
 } from '@mui/icons-material';
 import { DialogContentText, FormControlLabel, Switch } from '@mui/material';
 import Alert from '@mui/material/Alert';
-import { Combobox, ComboboxChips, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
+import {
+  Combobox,
+  ComboboxChips,
+  ComboboxContent,
+  ComboboxControls,
+  ComboboxField,
+  ComboboxInput,
+  ComboboxLabel,
+  ComboboxTrigger,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@filigran/design-system';
 import Avatar from '@mui/material/Avatar';
 import Checkbox from '@mui/material/Checkbox';
 import Chip from '@mui/material/Chip';
@@ -36,9 +50,9 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import MenuItem from '@mui/material/MenuItem';
+
 import Radio from '@mui/material/Radio';
-import Select from '@mui/material/Select';
+
 import Slide from '@mui/material/Slide';
 import MuiSwitch from '@mui/material/Switch';
 import Table from '@mui/material/Table';
@@ -613,8 +627,7 @@ class DataTableToolBar extends Component {
     });
   }
 
-  handleChangeActionInput(i, key, event) {
-    const { value } = event.target;
+  handleChangeActionInput(i, key, value) {
     const { actionsInputs } = this.state;
     const currentActionInput = actionsInputs[i] || {};
 
@@ -1073,31 +1086,35 @@ class DataTableToolBar extends Component {
 
     return (
       <Select
-        variant="standard"
         disabled={disabled}
-        value={actionsInputs[i]?.type}
-        onChange={this.handleChangeActionInput.bind(this, i, 'field')}
+        value={actionsInputs[i]?.type ?? ''}
+        onValueChange={this.handleChangeActionInput.bind(this, i, 'field')}
       >
-        {sortedOptions.length > 0 ? (
-          sortedOptions.map(
-            (n) => {
+        <SelectTrigger aria-label={t('Field')}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent aria-label={t('Field')}>
+          {sortedOptions.length > 0 ? (
+            sortedOptions.map(
+              (n) => {
               // disable some fields to prevent making several actions on the same key if one of them is a replace
-              const disableField = (replaceSelectedFields.includes(n.value) && actionsInputs[i]?.field !== n.value)
-                || (selectedFields.includes(n.value) && actionsInputs[i]?.type === 'REPLACE');
-              return (
-                <MenuItem
-                  key={n.value}
-                  value={n.value}
-                  disabled={disableField}
-                >
-                  {n.label}
-                </MenuItem>
-              );
-            },
-          )
-        ) : (
-          <MenuItem value="none">{t('None')}</MenuItem>
-        )}
+                const disableField = (replaceSelectedFields.includes(n.value) && actionsInputs[i]?.field !== n.value)
+                  || (selectedFields.includes(n.value) && actionsInputs[i]?.type === 'REPLACE');
+                return (
+                  <SelectItem
+                    key={n.value}
+                    value={n.value}
+                    disabled={disableField}
+                  >
+                    {n.label}
+                  </SelectItem>
+                );
+              },
+            )
+          ) : (
+            <SelectItem value="none">{t('None')}</SelectItem>
+          )}
+        </SelectContent>
       </Select>
     );
   }
@@ -2993,19 +3010,23 @@ class DataTableToolBar extends Component {
                             <FormControl className={classes.formControl}>
                               <InputLabel>{t('Action type')}</InputLabel>
                               <Select
-                                variant="standard"
-                                value={actionsInputs[i]?.type}
-                                onChange={this.handleChangeActionInput.bind(
+                                value={actionsInputs[i]?.type ?? ''}
+                                onValueChange={this.handleChangeActionInput.bind(
                                   this,
                                   i,
                                   'type',
                                 )}
                               >
-                                <MenuItem value="ADD">{t('Add')}</MenuItem>
-                                <MenuItem value="REPLACE">
-                                  {t('Replace')}
-                                </MenuItem>
-                                <MenuItem value="REMOVE">{t('Remove')}</MenuItem>
+                                <SelectTrigger aria-label={t('Action type')}>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent aria-label={t('Action type')}>
+                                  <SelectItem value="ADD">{t('Add')}</SelectItem>
+                                  <SelectItem value="REPLACE">
+                                    {t('Replace')}
+                                  </SelectItem>
+                                  <SelectItem value="REMOVE">{t('Remove')}</SelectItem>
+                                </SelectContent>
                               </Select>
                             </FormControl>
                           </Grid>
