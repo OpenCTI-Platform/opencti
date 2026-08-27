@@ -65,9 +65,9 @@ const securityCoverageConnectorsQuery = graphql`
   }
 `;
 
-const securityCoverageValidation = (t: (value: string) => string, isAutomated: boolean) => {
+const securityCoverageValidation = (t_i18n: (value: string) => string, isAutomated: boolean) => {
   const baseShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     external_uri: Yup.string().url().nullable(),
   };
@@ -75,10 +75,10 @@ const securityCoverageValidation = (t: (value: string) => string, isAutomated: b
   if (isAutomated) {
     return Yup.object().shape({
       ...baseShape,
-      periodicity: Yup.string().required(t('This field is required')),
-      duration: Yup.string().required(t('This field is required')),
-      type_affinity: Yup.string().required(t('This field is required')),
-      platforms_affinity: Yup.array().min(1, t('At least one platform affinity is required')),
+      periodicity: Yup.string().required(t_i18n('This field is required')),
+      duration: Yup.string().required(t_i18n('This field is required')),
+      type_affinity: Yup.string().required(t_i18n('This field is required')),
+      platforms_affinity: Yup.array().min(1, t_i18n('At least one platform affinity is required')),
     });
   }
 
@@ -86,13 +86,13 @@ const securityCoverageValidation = (t: (value: string) => string, isAutomated: b
     ...baseShape,
     coverage_information: Yup.array().of(
       Yup.object().shape({
-        coverage_name: Yup.string().required(t('This field is required')),
+        coverage_name: Yup.string().required(t_i18n('This field is required')),
         coverage_score: Yup.number()
-          .required(t('This field is required'))
-          .min(0, t('Score must be at least 0'))
-          .max(100, t('Score must be at most 100')),
+          .required(t_i18n('This field is required'))
+          .min(0, t_i18n('Score must be at least 0'))
+          .max(100, t_i18n('Score must be at most 100')),
       }),
-    ).min(1, t('At least one coverage metric is required')),
+    ).min(1, t_i18n('At least one coverage metric is required')),
   });
 };
 

@@ -43,7 +43,7 @@ describe('SecurityCoverage domain', () => {
     it('should create coverage result if explicitly asked for', async () => {
       const input = {
         ...BASE_INPUT(),
-        add_related_entities: { filters: JSON.stringify({ mode: 'and', filters: [], filterGroups: [] }) },
+        add_related_entities: { search: 'sc-covered-entities' },
       };
       const securityCoverage = await addSecurityCoverage(adminContext, ADMIN_USER, input);
       const results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
@@ -140,7 +140,7 @@ describe('SecurityCoverage domain', () => {
           coverage_name: 'prevention',
           coverage_score: 10,
         }],
-        add_related_entities: { filters: JSON.stringify({ mode: 'and', filters: [], filterGroups: [] }) },
+        add_related_entities: { search: 'sc-covered-entities' },
       };
       const securityCoverage = await addSecurityCoverage(adminContext, ADMIN_USER, input);
       let results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
@@ -183,6 +183,28 @@ describe('SecurityCoverage domain', () => {
       for (const attackPattern of [attackPattern1, attackPattern2, attackPattern3]) {
         await stixDomainObjectDelete(testContext, ADMIN_USER, attackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
       }
+    });
+  });
+
+  describe('Function createHasCoveredRelTask() without any selection', () => {
+    it('should not create a background task when no ids, filters nor search are provided', async () => {
+      const securityCoverage = await addSecurityCoverage(adminContext, ADMIN_USER, {
+        ...BASE_INPUT(),
+        add_related_entities: { selected_ids: ['attack-pattern--00000000-0000-0000-0000-000000000001'] },
+      });
+      const results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
+      expect(results.length).toEqual(1);
+
+      const emptySelections = [
+        {},
+        { selected_ids: [] },
+        { filters: JSON.stringify({ mode: 'and', filters: [], filterGroups: [] }), search: '' },
+      ];
+      for (const selection of emptySelections) {
+        await expect(() => createHasCoveredRelTask(testContext, ADMIN_USER, results[0].id, selection)).rejects.toThrow();
+      }
+
+      await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
     });
   });
 
