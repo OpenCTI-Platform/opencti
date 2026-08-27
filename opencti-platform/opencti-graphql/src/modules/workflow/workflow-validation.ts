@@ -330,9 +330,8 @@ export const validateWorkflowDefinitionData = async (
     }
   }
 
-  // Every declared state must resolve to a canonical StatusTemplate id (statusId), not a bare `name`.
-  // A name-only state cannot be mapped/projected onto a Status by Task 2/Task 8's (type, scope, statusId)
-  // keyed logic, so this is rejected here (at save time) rather than left to drift silently.
+  // Every declared state must resolve to a canonical StatusTemplate id (statusId), not a bare
+  // `name` — name-only states cannot be mapped onto a Status, so they are rejected here.
   states.forEach((state: z.infer<typeof workflowSerializedStateSchema>) => {
     if (state.name && !state.statusId) {
       errors.push({
@@ -356,11 +355,10 @@ export const validateWorkflowDefinitionData = async (
       });
     });
 
-    // Ordering: prefer the longest-simple-path order derived from the transition graph. Only the
-    // specific states entangled in a cycle (or affected by the DFS step cap) come back `null` from
-    // computeStateOrder — those, and only those, must instead carry a manually supplied `order` value.
-    // Unreachable states are excluded here: they already get STATE_UNREACHABLE above, and would
-    // otherwise also get a misleading "contains a cycle" MISSING_MANUAL_ORDER message.
+    // Ordering: prefer the longest-simple-path order derived from the transition graph. States
+    // entangled in a cycle (or unresolved due to the DFS step cap) come back `null` and must
+    // instead carry a manually supplied `order` value. Unreachable states are excluded since they
+    // already get STATE_UNREACHABLE above.
     const computedOrder = computeStateOrder(initialState, transitions);
     states.forEach((state: z.infer<typeof workflowSerializedStateSchema>) => {
       if (!state.statusId) return;
