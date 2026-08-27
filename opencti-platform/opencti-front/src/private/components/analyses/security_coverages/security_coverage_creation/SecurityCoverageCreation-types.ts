@@ -17,7 +17,7 @@ export interface StixCoreObjectNode {
 export enum StepKey {
   MODE = 'mode',
   OBJECT_COVERED = 'objectCovered',
-  COMPATIBLE_ENTITIES = 'compatibleEntities',
+  TESTED_ENTITIES = 'testedEntities',
   COVERAGE_DETAILS = 'coverageDetails',
 }
 

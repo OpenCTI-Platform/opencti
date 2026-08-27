@@ -4160,6 +4160,7 @@
   "Select Child Relationships of Selected Nodes (From)": "Выберите дочерние отношения выбранных узлов (From)",
   "Select columns to add": "Выберите столбцы для добавления",
   "Select destination": "Выберите пункт назначения",
+  "Select entities to test": "Выберите объекты для тестирования",
   "Select entity to cover": "Выберите сущность для покрытия",
   "Select file marking definitions": "Выбор определений маркировки файлов",
   "Select files": "Выберите файлы",

@@ -176,7 +176,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
   const steps = [
     { title: t_i18n('Choose type'), step: StepKey.MODE },
     ...(preSelectedEntityId ? [] : [{ title: t_i18n('Select entity to cover'), step: StepKey.OBJECT_COVERED }]),
-    ...(mode === SecurityCoverageMode.MANUAL ? [{ title: t_i18n('Select object covered entities'), step: StepKey.COMPATIBLE_ENTITIES }] : []),
+    ...(mode === SecurityCoverageMode.MANUAL ? [{ title: t_i18n('Select entities to test'), step: StepKey.TESTED_ENTITIES }] : []),
     { title: t_i18n('Coverage details'), step: StepKey.COVERAGE_DETAILS },
   ];
 
@@ -192,7 +192,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
     if (!preSelectedEntityId) {
       setActiveStep(StepKey.OBJECT_COVERED);
     } else {
-      setActiveStep(newMode === SecurityCoverageMode.MANUAL ? StepKey.COMPATIBLE_ENTITIES : StepKey.COVERAGE_DETAILS);
+      setActiveStep(newMode === SecurityCoverageMode.MANUAL ? StepKey.TESTED_ENTITIES : StepKey.COVERAGE_DETAILS);
     }
   };
 
@@ -203,7 +203,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
       setFieldValue('name', entity.representative?.main || entity.name);
     }
     // Automatically move to the select covered entities step (if manual mode) or coverage details otherwise
-    setActiveStep(mode === SecurityCoverageMode.MANUAL ? StepKey.COMPATIBLE_ENTITIES : StepKey.COVERAGE_DETAILS);
+    setActiveStep(mode === SecurityCoverageMode.MANUAL ? StepKey.TESTED_ENTITIES : StepKey.COVERAGE_DETAILS);
   };
 
   const [entitiesToCover, setEntitiesToCover] = useState<SelectedEntities | null>(null);
@@ -344,7 +344,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
           />
         );
 
-      case StepKey.COMPATIBLE_ENTITIES:
+      case StepKey.TESTED_ENTITIES:
         // Select covered entities (manual mode)
         if (!selectedEntity) return null; // unreachable: this step is only entered after an entity is selected
         return (
