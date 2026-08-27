@@ -84,7 +84,7 @@ const TransitionNode = ({ data, id }: NodeProps) => {
   const sourcePosition = isBackwardTransition ? Position.Top : Position.Bottom;
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} data-testid={`workflow-transition-node-${id}`}>
       <Handle
         type="target"
         position={targetPosition}
