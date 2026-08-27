@@ -3,6 +3,7 @@ import { STIX_EXT_OCTI } from '../../../../../src/types/stix-2-1-extensions';
 import type { StixThreatActor } from '../../../../../src/types/stix-2-1-sdo';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../../../../../src/schema/general';
 import { ENTITY_TYPE_INCIDENT } from '../../../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../../src/modules/organization/organization-types';
 import { PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT, type ManipulateConfiguration } from '../../../../../src/modules/playbook/components/manipulate-knowledge-component';
 import { testBundleObject, testExecutor } from './playbook-components-test-utils';
 import type { StixDomainObject } from '../../../../../src/types/stix-2-1-common';
@@ -276,7 +277,7 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
       id: organizationId,
       type: 'identity',
       octiExtension: {
-        type: 'identity',
+        type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
       },
     });
     (organization as any).identity_class = 'organization';
