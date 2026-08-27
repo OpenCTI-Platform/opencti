@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { injectIntl, useIntl } from 'react-intl';
+import { useIntl } from 'react-intl';
 import moment from 'moment-timezone';
 import { bytesFormat, numberFormat } from '../utils/Number';
 import { EMPTY_VALUE } from '../utils/String';
@@ -161,7 +161,11 @@ const inject18n = (WrappedComponent) => {
       );
     }
   }
-  return injectIntl(InjectIntl);
+  const WithIntl = (props) => <InjectIntl {...props} intl={useIntl()} />;
+  WithIntl.displayName = `WithIntl(${
+    WrappedComponent.displayName || WrappedComponent.name || 'Component'
+  })`;
+  return WithIntl;
 };
 
 export const useFormatter = () => {
