@@ -6,7 +6,7 @@ import { Field, Form, Formik } from 'formik';
 import { useTheme } from '@mui/styles';
 import { ThreatActorGroupEditionOverviewFocus, ThreatActorGroupMutationRelationAdd, ThreatActorGroupMutationRelationDelete } from './ThreatActorGroupEditionOverview';
 import { useFormatter } from '../../../../components/i18n';
-import TextField from '../../../../components/TextField';
+
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 import OpenVocabField from '../../common/form/OpenVocabField';
@@ -18,6 +18,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import TextareaField from '../../../../components/TextareaField';
 
 const ThreatActorGroupMutationFieldPatch = graphql`
   mutation ThreatActorGroupEditionDetailsFieldPatchMutation(
@@ -300,13 +301,11 @@ const ThreatActorGroupEditionDetailsComponent = ({
                 editContext={context}
               />
               <Field
-                component={TextField}
+                component={TextareaField}
                 name="goals"
                 label={t_i18n('Goals (1 / line)')}
-                fullWidth={true}
-                multiline={true}
                 rows="4"
-                style={{ marginTop: 20 }}
+                className="mt-5"
                 onFocus={handleChangeFocus}
                 onSubmit={handleSubmitField}
                 helperText={
