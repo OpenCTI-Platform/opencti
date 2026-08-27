@@ -28,12 +28,12 @@ every library Select has and no MUI Select does.
 | | mounts |
 |---|---|
 | Converted — Formik pivots (`SelectFieldFds` / `ComboboxField`) | 158 |
-| Converted — direct library composition (`Select` / `Combobox`) | 122 |
-| **Converted total** | **280** |
-| **Remaining on MUI** | **12** |
+| Converted — direct library composition (`Select` / `Combobox`) | 112 |
+| **Converted total** | **270** |
+| **Remaining on MUI** | **22** |
 | **Total selection fields** | **292** |
 
-## The 12 remaining, every one with a reason
+## The 22 remaining, every one with a reason
 
 ### Not a site — the two legacy adapters themselves (2)
 
@@ -48,7 +48,7 @@ They must outlive their consumers, so they are not convertible work.
 appears here: it composes the library directly and its four consumers went with
 it.
 
-### Parked with a recorded reason (10 mounts)
+### Parked with a recorded reason (20 mounts)
 
 The last two rows are consumers of the `SelectField` adapter, not MUI mounts of
 their own: their mount is already counted once at the adapter file above. They
@@ -65,6 +65,7 @@ are listed here so the four adapter consumers each carry a visible reason.
 | `ImportFilesList` | 1 | multi-value connector picker → Combobox wave |
 | `ConnectorsStatusFilters` | 2 | EE-gated, unverifiable on this instance |
 | `ListFilters` (add-filter) | 1 | reverted to MUI — see below |
+| `WidgetCreationParameters` + `WidgetAttributesInput` | 10 | reverted to MUI — see below |
 | `AuthorizedMembersField` + list item | 0 — via `SelectField` | FEEDBACK #44 — reverted, `dashboardRestriction` went intermittent |
 | `StixCoreObjectFilesAndHistory` | 0 — via `SelectField` | its test drove MUI's hidden native select; asserts a flow a user cannot perform |
 
@@ -72,7 +73,23 @@ are listed here so the four adapter consumers each carry a visible reason.
 
 Empty. Every mount that was pending a decision has been converted.
 
-2 adapters + 10 parked + 0 not done = the 12 remaining mounts.
+2 adapters + 20 parked + 0 not done = the 22 remaining mounts.
+
+#### The two e2e parkings, and what is actually known
+
+`e2e group1` runs 15 tests. A failure there SKIPS the rest of the chain, so one
+red test hides every test after it — which is why these surfaced one at a time
+rather than together.
+
+| SHA | passed | failed | skipped |
+|---|---|---|---|
+| `d9686dd4c1` | 3 | `_backgroundTask` — data entity search | 11 |
+| `cc669e9f5c` (after the ListFilters revert) | 6 | `dashboard` — Dashboard CRUD | 8 |
+| `ebb75fe246` | 6 | `dashboard` — Dashboard CRUD | 8 |
+
+The first is FIXED, not re-diagnosed: "data entity search" passes from
+`cc669e9f5c` on. Dashboard CRUD was **skipped** in the first run, never passing —
+it only became visible once the first was cleared.
 
 #### Why `ListFilters` is parked
 
@@ -97,6 +114,33 @@ So the mechanism needs the real page, not jsdom: it is not in the component's ow
 input/open/options wiring. Whoever picks this up should start from a running
 platform on Data > Entities and watch the panel's `data-state` across the fill,
 rather than re-testing the four above.
+
+#### Why the widget Attribute cluster is parked
+
+`dashboard` — Dashboard CRUD times out at
+`getByTestId('widget-params-selection-0').getByRole('combobox', { name: 'Attribute' })`:
+a name-based locator that never resolves. The failure snapshot shows a `generic`
+carrying the text "Attribute" — an orphan MUI `InputLabel` naming nothing —
+followed by a combobox with NO accessible name.
+
+Root cause NOT established. The obvious explanation does not survive: the target
+trigger already passes `aria-label={t_i18n('Attribute')}`, and `SelectTrigger`
+only sets `aria-labelledby` when a `SelectLabel` exists, so the `aria-label`
+should win. Reverted rather than guessed at.
+
+#### The real finding underneath: 24 converted Selects have no `SelectLabel`
+
+Sweeping the branch for library `Select` mounts with no `SelectLabel` found 24 —
+13 with an orphan MUI `InputLabel` left above them, which renders as a `generic`
+and names nothing, and 11 with no name at all. Independent of the e2e red, that
+is a WCAG 4.1.2 defect introduced by this migration and it makes every one of
+those fields unreachable by a name-based test.
+
+The fix is the same everywhere and is NOT a workaround: the text in the orphan
+`InputLabel` belongs in a `SelectLabel` inside the `Select`, which sets
+`hasLabel` and wires the trigger's `aria-labelledby`. The MUI original expressed
+the same association through `<Select label={...}>`. This is the next round's
+work, and it should be done before any further conversion.
 
 ## Out of scope
 
