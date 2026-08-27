@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import TextField from '@mui/material/TextField';
 import { useFormatter } from '../../../../../components/i18n';
 import { handleError, MESSAGING$ } from '../../../../../relay/environment';
 import stopEvent from '../../../../../utils/domEvent';
@@ -12,6 +11,7 @@ import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { useCustomViewsData } from '../../../custom_views/useCustomViewsData';
 import { CustomViewDuplicationDialog_DuplicateMutation } from './__generated__/CustomViewDuplicationDialog_DuplicateMutation.graphql';
 import { CustomViewDuplicationDialog_Fragment$data, CustomViewDuplicationDialog_Fragment$key } from './__generated__/CustomViewDuplicationDialog_Fragment.graphql';
+import { Input } from '@filigran/design-system';
 
 const customViewDuplicationFragment = graphql`
   fragment CustomViewDuplicationDialog_Fragment on CustomView {
@@ -110,16 +110,12 @@ const CustomViewDuplicationDialog: FunctionComponent<
       size="small"
       title={t_i18n('Duplicate the custom view')}
     >
-      <TextField
-        error={!newName}
+      <Input
+        error={!newName ? t_i18n('This field is required') : undefined}
         autoFocus
-        margin="dense"
         id="duplicated_dashboard_name"
         label={t_i18n('New name')}
         type="text"
-        fullWidth
-        variant="standard"
-        helperText={!newName ? `${t_i18n('This field is required')}` : ''}
         defaultValue={newName}
         onChange={(event) => {
           event.preventDefault();
