@@ -51,10 +51,7 @@ export const addOrganizations = async (request: APIRequestContext, organizations
 
 const getMe = () => 'query { me { id name } }';
 
-// "use" (not "view") is required so members can still SELECT this org as a Report's Author in
-// the Created By picker (`CreatedByField.jsx`'s `canUse()` filters out plain "view" access -
-// see `opencti-graphql/src/utils/authorizedMembers.ts`); "view" alone would silently hide it
-// from the autocomplete for everyone, including its own org's members.
+// "use" (not "view") is required so members can still select this org as a Report's Author (`CreatedByField.jsx`'s `canUse()` filters out plain "view" access).
 const editAuthorizedMembers = (id: string, adminId: string, viewerIds: string[]) => `
   mutation {
     stixDomainObjectEdit(id: "${id}") {
@@ -68,12 +65,7 @@ const editAuthorizedMembers = (id: string, adminId: string, viewerIds: string[])
   }
 `;
 
-/**
- * Restricts an organization's own visibility to only the given member (org/group/org) internal
- * ids (plus the current API user, required by the backend's admin-presence validation) - e.g. so
- * an Identity used as a Report's `createdBy` is only visible to specific orgs, exercising the
- * "restricted author" display for everyone else (`ItemAuthor.tsx`'s EMPTY_VALUE).
- */
+/** Restricts an organization's own visibility to only the given viewer organizations (plus the current API user, required by the backend's admin-presence validation). */
 export const restrictOrganizationVisibility = async (request: APIRequestContext, organizationName: string, viewerOrganizationNames: string[]) => {
   const nodes = await getOrganizationNodes(request);
   const targetId = nodes.find((n) => n.name === organizationName)!.id;

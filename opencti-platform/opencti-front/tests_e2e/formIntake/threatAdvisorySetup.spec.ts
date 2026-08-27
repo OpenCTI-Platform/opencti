@@ -1,15 +1,7 @@
 /**
- * Content of the test
- * --------------------
- * Create, as ManagerOrgC, the "Threat Advisories" Form Intake definition used by every downstream
- * Threat Advisory scenario spec to submit a new draft: main entity = Report, created as a draft by
- * default (author reused from the main entity), matching the authoritative product test plan's
- * step 1 ("AnalystOrgA creates a Report via Form Intake... created in a Draft with status NEW").
- *
- * See `workflow-e2e-progress.md` (repo memory) for the scope simplification made here: additional
- * entities/relationships and the form's own optional draft-authorized-members override are left
- * untouched, since draft access control is already fully covered by the Threat Advisory workflow's
- * NEW-status authorized-members rule (built in `threatAdvisoryWorkflowSetup.spec.ts`).
+ * Creates, as ManagerOrgC, the "Threat Advisories" Form Intake definition used by every
+ * downstream Threat Advisory scenario spec to submit a new draft: main entity = Report, created
+ * as a draft by default with its author reused, per the product test plan's step 1.
  */
 import { expect, test } from '../fixtures/baseFixtures';
 import TopMenuProfilePage from '../model/menu/topMenuProfile.pageModel';
@@ -47,10 +39,7 @@ test('Create the "Threat Advisories" form intake definition', { tag: ['@ee', '@g
     await builder.setName('Threat Advisories');
     await builder.setDescription('Structured intake form used by analysts to submit Threat Advisory reports for review and validation.');
     // Main entity type defaults to "Report" already - no need to change it.
-    // Add a "Created By" field on the Report itself, so the submitting analyst can pick the
-    // Report's actual author (per the product test plan's step 1: "author of Report = OrgA") -
-    // "Main entity author (reuse the same author)" below only reuses THIS value for the draft's
-    // own authorized-members computation, it doesn't set the Report's author on its own.
+    // "Created By" lets the submitting analyst pick the Report's actual author.
     await builder.addMainEntityField();
     await builder.setLastMainEntityFieldAttribute('Created By');
     await builder.toggleDraftByDefault();
@@ -59,8 +48,8 @@ test('Create the "Threat Advisories" form intake definition', { tag: ['@ee', '@g
   });
 
   await test.step('Configure the draft\'s initial authorized members (NEW-status rule: OrgA view, OrgA+Analyst edit)', async () => {
-    // formSubmit does not fire the Workflow's NEW-status onEnter action (unlike manually-created
-    // drafts), so this override IS the source of truth for a freshly-submitted draft's access.
+    // formSubmit does not fire the Workflow's NEW-status onEnter action, so this override IS
+    // the source of truth for a freshly-submitted draft's access.
     await builder.toggleAccessRestriction();
     const authorizedMembers = builder.getAuthorizedMembersField();
     await authorizedMembers.removeDefaultCreatorsMember();
@@ -133,7 +122,6 @@ test('Create and activate the Threat Advisory Report access-restrictions playboo
     await expect(page.getByText('Playbook is running')).toBeVisible();
   });
 
-  // See threatAdvisoryWorkflowSetup.spec.ts: logout() destroys the shared admin session
-  // server-side, so restore it for downstream 'chromium'-project specs.
+  // logout() above destroys the shared admin session server-side - restore it for downstream specs.
   await restoreAdminSession(page);
 });

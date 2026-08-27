@@ -97,8 +97,7 @@ export default class DraftToolbarPageModel {
     return this.page.getByRole('button', { name: 'Approve' }).click();
   }
 
-  /** Force-unlock button shown on pending/error transitions (bypass users only) - there is no
-   * literal "Retry" control, "Clear" just orphans the background task and re-enables the transition. */
+  /** Force-unlock button shown on pending/error transitions (bypass users only) - "Clear" just orphans the background task and re-enables the transition, there is no "Retry". */
   getClearButton() {
     return this.getToolbar().getByRole('button', { name: 'Clear' });
   }
@@ -123,11 +122,7 @@ export default class DraftToolbarPageModel {
     await expect(this.page.getByTestId('draft-page')).toBeVisible({ timeout: 5000 });
   }
 
-  /** The draft toolbar is mounted globally (gated on `useDraftContext()`) and a user's current
-   * draft context persists server-side across sessions - a previous, interrupted test run can
-   * leave a user "stuck" in a draft. Call after login and before navigating elsewhere.
-   * Uses a bounded wait, not an instant check: right after login the toolbar (if it's going to
-   * appear at all) hasn't mounted yet since `draftContext` resolves asynchronously. */
+  /** A previous, interrupted test run can leave a user stuck in a draft context; call after login and before navigating elsewhere. Uses a bounded wait since the toolbar mounts asynchronously. */
   async exitDraftIfPresent() {
     const isPresent = await this.getToolbar().waitFor({ state: 'visible', timeout: 5000 }).then(() => true).catch(() => false);
     if (isPresent) {

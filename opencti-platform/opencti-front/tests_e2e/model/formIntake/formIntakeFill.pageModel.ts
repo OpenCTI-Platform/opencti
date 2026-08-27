@@ -3,13 +3,9 @@ import { expect } from '../../fixtures/baseFixtures';
 
 /**
  * Wraps a Form Intake submission page (`FormView.tsx`, `/dashboard/integrations/feeds/form/:formId`).
- * Fields are dynamically rendered from the form's JSON schema (`form_schema`) as standard MUI
- * fields with a `label`, so most simple fields can be filled via `getByLabel(...)`.
- *
- * `root` scopes all locators - defaults to the whole page (standalone route), but must be passed
- * the dialog locator when the form is reached via the embedded `ImportFilesDialog` mode, since
- * `getByLabel('Name')` would otherwise also match the underlying Drafts list's "Name" column
- * header (still present in the DOM behind the dialog).
+ * `root` scopes all locators - pass the dialog locator when reached via the embedded
+ * `ImportFilesDialog` mode, since `getByLabel('Name')` would otherwise also match the underlying
+ * Drafts list's "Name" column header.
  */
 export default class FormIntakeFillPageModel {
   private readonly root: Locator | Page;
@@ -23,8 +19,7 @@ export default class FormIntakeFillPageModel {
     await this.assertLoaded();
   }
 
-  /** Waits for the dynamic schema-driven form to actually render (needed when navigating here via
-   * a UI click rather than `navigate()`, e.g. clicking a deployed-integration row). */
+  /** Waits for the dynamic schema-driven form to render (needed when navigating here via a UI click rather than `navigate()`). */
   async assertLoaded() {
     await expect(this.getSubmitButton()).toBeVisible();
   }
