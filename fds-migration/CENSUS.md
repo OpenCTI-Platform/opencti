@@ -44,7 +44,11 @@ They must outlive their consumers, so they are not convertible work.
 | `components/AutocompleteField.tsx` | 2 — `StixCoreObjectsField`, `LocationField` (both ornament batch) |
 | `components/fields/SelectField.tsx` | 4 — `AuthorizedMembersField` + list item (#44), `StixCoreObjectFilesAndHistory`, `JsonMapperRepresentationAttributeForm` |
 
-### Parked with a recorded reason (11)
+### Parked with a recorded reason (9 mounts)
+
+The last two rows are consumers of the `SelectField` adapter, not MUI mounts of
+their own: their mount is already counted once at the adapter file above. They
+are listed here so the four adapter consumers each carry a visible reason.
 
 | file | mounts | reason |
 |---|---|---|
@@ -56,10 +60,10 @@ They must outlive their consumers, so they are not convertible work.
 | `ThemeForm` | 1 | FEEDBACK #45 — Select has no clear affordance |
 | `ImportFilesList` | 1 | multi-value connector picker → Combobox wave |
 | `ConnectorsStatusFilters` | 2 | EE-gated, unverifiable on this instance |
-| `AuthorizedMembersField` + list item | via `SelectField` | FEEDBACK #44 — reverted, `dashboardRestriction` went intermittent |
-| `StixCoreObjectFilesAndHistory` | via `SelectField` | its test drove MUI's hidden native select; asserts a flow a user cannot perform |
+| `AuthorizedMembersField` + list item | 0 — via `SelectField` | FEEDBACK #44 — reverted, `dashboardRestriction` went intermittent |
+| `StixCoreObjectFilesAndHistory` | 0 — via `SelectField` | its test drove MUI's hidden native select; asserts a flow a user cannot perform |
 
-### Simply not done yet (5 sites)
+### Simply not done yet (6 mounts)
 
 Each bailed for a named reason the converter refused to guess at.
 
@@ -71,6 +75,8 @@ Each bailed for a named reason the converter refused to guess at.
 | `ConfidenceOverrideField` | 1 | renderOption destructures `key` out of props |
 | `FilterAutocomplete` | 1 | its renderInput carries `onFocus`, whose handler takes an event |
 | `JsonMapperRepresentationAttributeRefForm` | 1 | `onChange` is a bare function reference |
+
+2 adapters + 9 parked + 6 not done = the 17 remaining mounts.
 
 ## Out of scope
 
