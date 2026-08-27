@@ -24,7 +24,7 @@ import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getSettings } from '../domain/settings';
 import { isWorkAlive } from '../domain/work';
 import { computeLoaders } from './httpAuthenticatedContext';
-import { buildRateLimiterOptions } from './httpUtils';
+import { applyKeepAliveTimeout, buildRateLimiterOptions } from './httpUtils';
 import { checkDraftInContext } from './httpServer-draft';
 import ipWhitelistMiddleware from './ipWhitelistMiddleware';
 
@@ -113,6 +113,8 @@ const createHttpServer = async () => {
     logApp.info('[INIT] HTTP server initialization done.');
   }
   httpServer.setTimeout(REQ_TIMEOUT || MIN_20);
+  const keepAliveTimeout = applyKeepAliveTimeout(httpServer);
+  logApp.info(`[INIT] HTTP server keep-alive timeout set to ${keepAliveTimeout}ms`);
   // subscriptionServer
   const wsServer = new WebSocketServer({
     server: httpServer,

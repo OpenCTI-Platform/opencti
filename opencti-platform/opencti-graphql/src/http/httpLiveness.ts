@@ -1,6 +1,7 @@
 import http from 'node:http';
 import nconf from 'nconf';
 import { basePath, logApp } from '../config/conf';
+import { applyKeepAliveTimeout } from './httpUtils';
 
 let livenessServer: http.Server | undefined;
 
@@ -26,6 +27,8 @@ export const startLivenessServer = (): void => {
       res.end();
     }
   });
+  // The probe is also fronted by the load balancer, it must share the platform keep-alive timeout.
+  applyKeepAliveTimeout(livenessServer);
   livenessServer.on('error', (error: NodeJS.ErrnoException) => {
     logApp.error(`[OPENCTI] Failed to start liveness probe on port ${livenessPort} at ${livenessPath}`, { error });
     if (livenessServer && !livenessServer.listening) {
