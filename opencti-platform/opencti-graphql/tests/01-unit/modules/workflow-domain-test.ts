@@ -476,13 +476,13 @@ describe('Workflow Domain', () => {
     expect(createStatus).toHaveBeenCalledTimes(2);
     expect(createStatus).toHaveBeenCalledWith(
       mockContext,
-      mockContext.user,
+      mockUser,
       'Incident',
       { template_id: 'tpl-progress', order: 1, scope: StatusScope.Global },
     );
     expect(createStatus).toHaveBeenCalledWith(
       mockContext,
-      mockContext.user,
+      mockUser,
       'Incident',
       { template_id: 'tpl-done', order: 2, scope: StatusScope.Global },
     );
@@ -662,14 +662,14 @@ describe('Workflow Domain', () => {
 
     expect(updateAttribute).toHaveBeenCalledWith(
       mockContext,
-      mockContext.user,
+      mockUser,
       'status-b-id',
       ENTITY_TYPE_STATUS,
       [{ key: 'to_be_deleted_at', value: [expect.any(Date)] }],
     );
     expect(updateAttribute).not.toHaveBeenCalledWith(
       mockContext,
-      mockContext.user,
+      mockUser,
       'status-a-id',
       ENTITY_TYPE_STATUS,
       expect.anything(),
@@ -740,7 +740,7 @@ describe('Workflow Domain', () => {
 
     expect(updateAttribute).not.toHaveBeenCalledWith(
       mockContext,
-      mockContext.user,
+      mockUser,
       'status-b-id',
       ENTITY_TYPE_STATUS,
       expect.anything(),
@@ -805,7 +805,7 @@ describe('Workflow Domain', () => {
 
     expect(updateAttribute).toHaveBeenCalledWith(
       mockContext,
-      mockContext.user,
+      mockUser,
       'status-b-id',
       ENTITY_TYPE_STATUS,
       [{ key: 'to_be_deleted_at', value: [null] }],
@@ -818,7 +818,7 @@ describe('Workflow Domain', () => {
       timestamp: '2024-01-01T00:00:00Z',
       createdBy: 'user-1',
       content: '{"name":"Invalid Workflow","initialState":"open","states":[],"transitions":[]}',
-      validation_errors: [{ type: 'INVALID_SCHEMA', message: 'Missing required field', path: [] }],
+      validation_errors: [],
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
@@ -828,6 +828,8 @@ describe('Workflow Domain', () => {
       draft_version: draftVersion,
       all_versions: [draftVersion],
     });
+    // Publish re-validates the draft rather than trusting its stored (possibly stale) validation_errors.
+    (validateWorkflowDefinitionData as any).mockResolvedValueOnce([{ type: 'INVALID_SCHEMA', message: 'Missing required field', path: [] }]);
 
     await expect(publishWorkflowDefinition(mockContext, mockUser, 'Incident')).rejects.toThrow('Cannot publish workflow with validation errors');
     expect(telemetryManager.addWorkflowPublishCount).not.toHaveBeenCalled();
@@ -839,7 +841,7 @@ describe('Workflow Domain', () => {
       timestamp: '2024-01-01T00:00:00Z',
       createdBy: 'user-1',
       content: '{"name":"Invalid Workflow","initialState":"open","states":[],"transitions":[]}',
-      validation_errors: [{ type: 'INVALID_SCHEMA', message: 'Missing required field', path: [] }],
+      validation_errors: [],
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
@@ -849,6 +851,8 @@ describe('Workflow Domain', () => {
       draft_version: draftVersion,
       all_versions: [draftVersion],
     });
+    // Publish re-validates the draft rather than trusting its stored (possibly stale) validation_errors.
+    (validateWorkflowDefinitionData as any).mockResolvedValueOnce([{ type: 'INVALID_SCHEMA', message: 'Missing required field', path: [] }]);
 
     await expect(publishWorkflowDefinition(mockContext, mockUser, 'Incident')).rejects.toThrow('Cannot publish workflow with validation errors');
   });
