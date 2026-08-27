@@ -38,6 +38,7 @@ import { FormFieldRendererProps } from './FormFieldRenderer';
 import FormFields from './FormFields';
 import { convertFormSchemaToYupSchema, formatFormDataForSubmission } from './FormViewUtils';
 import { FormViewQuery } from './__generated__/FormViewQuery.graphql';
+import TextareaField from '../../../../../components/TextareaField';
 
 // Styles
 const useStyles = makeStyles<Theme>(() => ({
@@ -630,17 +631,13 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                         <>
                           {schema.mainEntityParseField === 'textarea' ? (
                             <Field
-                              component={TextField}
-                              className={classes.parsedField}
+                              component={TextareaField}
+                              className={`${classes.parsedField} mt-5`}
                               name="mainEntityParsed"
                               placeholder={t_i18n(schema.mainEntityParseMode === 'line'
                                 ? 'Enter values separated by new lines'
                                 : 'Enter values separated by commas')}
                               rows={10}
-                              multiline={true}
-                              fullWidth={true}
-                              variant="standard"
-                              style={{ marginTop: 20 }}
                               helperText={helperText}
                             />
                           ) : (
@@ -795,17 +792,13 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                 <>
                                   {additionalEntity.parseField === 'textarea' ? (
                                     <Field
-                                      component={TextField}
-                                      className={classes.parsedField}
+                                      component={TextareaField}
+                                      className={`${classes.parsedField} mt-5`}
                                       name={fieldName}
                                       placeholder={t_i18n(additionalEntity.parseMode === 'line'
                                         ? 'Enter values separated by new lines'
                                         : 'Enter values separated by commas')}
                                       rows={10}
-                                      multiline={true}
-                                      fullWidth={true}
-                                      variant="standard"
-                                      style={{ marginTop: 20 }}
                                       helperText={helperText}
                                     />
                                   ) : (
