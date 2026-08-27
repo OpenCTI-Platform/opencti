@@ -79,11 +79,36 @@ const isThemeDefaultLike = (
   ));
 
 /**
+ * Frees up the target Filigran name by renaming any existing theme that already uses it
+ * to "<name> - custom". This prevents the backend uniqueness check from failing when the
+ * legacy theme is renamed to, or a new built-in theme is created with, the Filigran name.
+ *
+ * @param context Migration execution context.
+ * @param defaultThemeName Target Filigran theme name (Filigran Dark / Filigran Light).
+ */
+const freeUpFiligranThemeName = async (context: AuthContext, defaultThemeName: string) => {
+  const existingThemes = await findThemePaginated(context, SYSTEM_USER, {
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: ['name'], values: [defaultThemeName], operator: FilterOperator.Eq }],
+      filterGroups: [],
+    },
+  });
+  const conflictingTheme = existingThemes.edges.map((e) => e.node).find((t) => t.name === defaultThemeName);
+  if (conflictingTheme) {
+    const newName = `${defaultThemeName} - custom`;
+    const renameInput = [{ key: 'name', value: [newName] }];
+    await fieldPatchTheme(context, SYSTEM_USER, conflictingTheme.id, renameInput);
+    logMigration.info(`[MIGRATION] Existing ${defaultThemeName} theme renamed in ${newName}`);
+  }
+};
+
+/**
  * Refactors a legacy default theme to the Filigran default theme.
  *
+ * - Any theme already using the Filigran built-in theme name is first renamed to "<name> - custom" so the built-in name stays free.
  * - If the existing theme still matches default values, it is renamed to the Filigran name.
  * - If it was modified, a new Filigran built-in theme is created and the legacy theme is marked as non built-in.
- * - If a theme already uses the Filigran name, it is first renamed to "<name> - custom" so the built-in name stays free.
  *
  * @param context Migration execution context.
  * @param theme Existing legacy theme (Dark/Light) if present.
@@ -96,27 +121,14 @@ const refactorTheme = async (
   defaultThemeValues: ThemeDefaultComparable,
   defaultThemeName: string,
 ) => {
+  // free up the Filigran built-in name before any rename/creation to avoid uniqueness conflicts
+  await freeUpFiligranThemeName(context, defaultThemeName);
   if (theme && isThemeDefaultLike(theme, defaultThemeValues)) {
     // rename theme
     const input = [{ key: 'name', value: [defaultThemeName] }];
     await fieldPatchTheme(context, SYSTEM_USER, theme.id, input);
     logMigration.info(`[MIGRATION] ${theme.name} theme renamed in ${defaultThemeName}`);
   } else {
-    // if a theme already uses the target name, rename it to free up the Filigran built-in name
-    const existingThemes = await findThemePaginated(context, SYSTEM_USER, {
-      filters: {
-        mode: FilterMode.And,
-        filters: [{ key: ['name'], values: [defaultThemeName], operator: FilterOperator.Eq }],
-        filterGroups: [],
-      },
-    });
-    const conflictingTheme = existingThemes.edges.map((e) => e.node).find((t) => t.name === defaultThemeName);
-    if (conflictingTheme) {
-      const newName = `${defaultThemeName} - custom`;
-      const renameInput = [{ key: 'name', value: [newName] }];
-      await fieldPatchTheme(context, SYSTEM_USER, conflictingTheme.id, renameInput);
-      logMigration.info(`[MIGRATION] Existing ${defaultThemeName} theme renamed in ${newName}`);
-    }
     // add Filigran theme
     await addTheme(context, SYSTEM_USER, { name: defaultThemeName, ...defaultThemeValues });
     logMigration.info(`[MIGRATION] ${defaultThemeName} theme added`);
