@@ -1,10 +1,13 @@
+import { elRawCount } from '../../database/engine';
 import { fullRelationsList } from '../../database/middleware-loader';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteRefRelation } from '../../domain/stixObjectOrStixRelationship';
-import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
+import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_OBJECT, buildRefRelationKey } from '../../schema/general';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../../schema/stixRefRelationship';
 import type { AuthContext } from '../../types/user';
 import { SYSTEM_USER } from '../../utils/access';
+import { INDEX_DELETED_OBJECTS } from '../../database/utils';
+import { userMergeBulkUpdate } from './userMerge-bulk';
 import { type UserMergeHandler, type UserMergeHandlerContext, type UserMergeHandlerPlan, type UserMergePlannedChange } from './userMerge-handler';
 
 export const USER_MERGE_OPERATIONAL_RELATIONS_HANDLER = 'operational-relations';
@@ -22,6 +25,7 @@ const OPERATIONAL_RELATIONS: OperationalRelation[] = [
 
 const REPOINTED = 're-pointed to the target';
 const DEDUPLICATED = 'already held by the target, source edge dropped';
+const TRASHED = 'rewritten in the trash';
 
 const relationPaths = OPERATIONAL_RELATIONS.map((relation) => `${relation.relationshipType}.connections`);
 
@@ -69,16 +73,58 @@ const abstractTypeOf = (entityType: string): string => {
 };
 
 /**
+ * Deleted copies, matched either as the relation itself or as the denormalized array the
+ * referencing entity carries. Restoring an element whose assignee is a user that no longer exists
+ * would re-inject the source id into live data, which is what the trash is included for.
+ */
+const trashQuery = (relation: OperationalRelation, sourceId: string): Record<string, unknown> => ({
+  bool: {
+    should: [
+      {
+        bool: {
+          must: [
+            { term: { 'entity_type.keyword': relation.relationshipType } },
+            { nested: { path: 'connections', query: { term: { 'connections.internal_id.keyword': sourceId } } } },
+          ],
+        },
+      },
+      { term: { [`${buildRefRelationKey(relation.relationshipType)}.keyword`]: sourceId } },
+    ],
+    minimum_should_match: 1,
+  },
+});
+
+/**
+ * The connections rewrite is guarded by the relation type because a document can match on the
+ * denormalized array while being a relation of another type — whose own connections belong to
+ * another handler.
+ */
+const trashScript = (relation: OperationalRelation, sourceId: string, targetId: string) => {
+  const refKey = buildRefRelationKey(relation.relationshipType);
+  return {
+    source: 'if (ctx._source.entity_type == params.type && ctx._source.connections != null) {'
+      + ' for (connection in ctx._source.connections) {'
+      + ' if (connection.internal_id == params.source) { connection.internal_id = params.target; } } }'
+      + ` if (ctx._source['${refKey}'] != null && ctx._source['${refKey}'].contains(params.source)) {`
+      + ` ctx._source['${refKey}'].removeIf(reference -> reference.equals(params.source));`
+      + ` if (!ctx._source['${refKey}'].contains(params.target)) { ctx._source['${refKey}'].add(params.target); } }`,
+    lang: 'painless',
+    params: { type: relation.relationshipType, source: sourceId, target: targetId },
+  };
+};
+
+/**
  * Re-points the operational relations of the source user onto the target.
  *
  * Assignment and participation are `multiple: true` refs, so a user merge can leave an element
  * naming the target twice. The redundant edge is dropped at plan time rather than at write time,
  * which is also what makes replaying the merge a no-op.
  *
- * Relations go through the domain layer rather than a bulk rewrite: only the entity side is
+ * Live relations go through the domain layer rather than a bulk rewrite: only the entity side is
  * denormalized — `object-assignee_to` and `object-participant_to` are declared unimpacted — and a
  * raw index write would leave `rel_object-assignee.internal_id` naming a user the relation no
- * longer points at.
+ * longer points at. Deleted copies have no domain path and are rewritten in place; deduplicating
+ * them is pointless, since a restored element is read through a `uniq` on that array.
  */
 export const userMergeOperationalRelationsHandler: UserMergeHandler = {
   identifier: USER_MERGE_OPERATIONAL_RELATIONS_HANDLER,
@@ -90,12 +136,14 @@ export const userMergeOperationalRelationsHandler: UserMergeHandler = {
     for (let i = 0; i < OPERATIONAL_RELATIONS.length; i += 1) {
       const relation = OPERATIONAL_RELATIONS[i];
       const plan = await readOperationalPlan(context, relation, sourceId, targetId);
+      const trashed = await elRawCount({ index: [INDEX_DELETED_OBJECTS], body: { query: trashQuery(relation, sourceId) } });
       changes.push({ register_row_id: relation.registerRow, entity_type: relation.relationshipType, count: plan.repointed.length, exact: true, detail: REPOINTED });
       changes.push({ register_row_id: relation.registerRow, entity_type: relation.relationshipType, count: plan.deduplicated.length, exact: true, detail: DEDUPLICATED });
+      changes.push({ register_row_id: relation.registerRow, entity_type: relation.relationshipType, count: trashed, exact: true, detail: TRASHED });
     }
     return { handler: USER_MERGE_OPERATIONAL_RELATIONS_HANDLER, changes, alerts: [] };
   },
-  apply: async ({ context, sourceId, targetId }: UserMergeHandlerContext): Promise<number> => {
+  apply: async ({ context, sourceId, targetId }: UserMergeHandlerContext, plan: UserMergeHandlerPlan): Promise<number> => {
     let updated = 0;
     for (let i = 0; i < OPERATIONAL_RELATIONS.length; i += 1) {
       const relation = OPERATIONAL_RELATIONS[i];
@@ -112,6 +160,15 @@ export const userMergeOperationalRelationsHandler: UserMergeHandler = {
         const entity = relationPlan.deduplicated[deduplicated];
         await stixObjectOrRelationshipDeleteRefRelation(context, SYSTEM_USER, entity.id, sourceId, relation.relationshipType, abstractTypeOf(entity.type));
         updated += 1;
+      }
+      const trashPlanned = plan.changes.some((change) => change.register_row_id === relation.registerRow && change.detail === TRASHED && change.count > 0);
+      if (trashPlanned) {
+        const result = await userMergeBulkUpdate(
+          `${USER_MERGE_OPERATIONAL_RELATIONS_HANDLER}:${relation.registerRow}`,
+          [INDEX_DELETED_OBJECTS],
+          { query: trashQuery(relation, sourceId), script: trashScript(relation, sourceId, targetId) },
+        );
+        updated += result.updated;
       }
     }
     return updated;
