@@ -153,12 +153,12 @@ describe('Themes resolver testing', () => {
     });
 
     const darkTheme = themes.data?.themes.edges.find(
-      (edge: any) => edge.node.name === 'Dark',
+      (edge: any) => edge.node.name === 'Filigran Dark',
     );
     darkThemeId = darkTheme?.node.id;
 
     const lightTheme = themes.data?.themes.edges.find(
-      (edge: any) => edge.node.name === 'Light',
+      (edge: any) => edge.node.name === 'Filigran Light',
     );
     lightThemeId = lightTheme?.node.id;
 
@@ -176,8 +176,8 @@ describe('Themes resolver testing', () => {
     expect(queryResult.data?.themes.edges.length).toBeGreaterThanOrEqual(2);
 
     const themeNames = queryResult.data?.themes.edges.map((edge: any) => edge.node.name);
-    expect(themeNames).toContain('Dark');
-    expect(themeNames).toContain('Light');
+    expect(themeNames).toContain('Filigran Dark');
+    expect(themeNames).toContain('Filigran Light');
   });
 
   it('should read a specific theme', async () => {
@@ -187,7 +187,7 @@ describe('Themes resolver testing', () => {
     });
 
     expect(queryResult.data?.theme).toBeDefined();
-    expect(queryResult.data?.theme.name).toBe('Dark');
+    expect(queryResult.data?.theme.name).toBe('Filigran Dark');
     expect(queryResult.data?.theme.built_in).toBe(true);
     expect(queryResult.data?.theme.theme_background).toBeDefined();
     expect(queryResult.data?.theme.theme_primary).toBeDefined();
@@ -317,6 +317,19 @@ describe('Themes resolver testing', () => {
 
     expect(queryResult.data?.themes.edges.length).toBeGreaterThanOrEqual(1);
     expect(queryResult.data?.themes.edges[0].node.name).toContain('Updated Custom');
+  });
+
+  it('should not update a built-in theme', async () => {
+    const updateResult = await queryAsAdmin({
+      query: UPDATE_THEME_MUTATION,
+      variables: {
+        id: darkThemeId,
+        input: [{ key: 'theme_primary', value: '#00ff00' }],
+      },
+    });
+
+    expect(updateResult.errors).toBeDefined();
+    expect(updateResult.errors?.[0].message).toContain('System default themes cannot be updated');
   });
 
   it('should not delete a built-in theme', async () => {
