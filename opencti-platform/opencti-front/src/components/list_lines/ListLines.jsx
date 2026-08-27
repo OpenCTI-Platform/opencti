@@ -11,8 +11,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Tooltip from '@mui/material/Tooltip';
@@ -562,19 +561,23 @@ class ListLines extends Component {
                 </InputLabel>
                 <Select
                   value={redirectionMode}
-                  onChange={(event) => handleSwitchRedirectionMode(event.target.value)
+                  onValueChange={(value) => handleSwitchRedirectionMode(value)
                   }
-                  fullWidth={true}
                 >
-                  <MenuItem value="overview">
-                    {t('Redirecting to the Overview section')}
-                  </MenuItem>
-                  <MenuItem value="knowledge">
-                    {t('Redirecting to the Knowledge section')}
-                  </MenuItem>
-                  <MenuItem value="content">
-                    {t('Redirecting to the Content section')}
-                  </MenuItem>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="overview">
+                      {t('Redirecting to the Overview section')}
+                    </SelectItem>
+                    <SelectItem value="knowledge">
+                      {t('Redirecting to the Knowledge section')}
+                    </SelectItem>
+                    <SelectItem value="content">
+                      {t('Redirecting to the Content section')}
+                    </SelectItem>
+                  </SelectContent>
                 </Select>
               </FormControl>
 
