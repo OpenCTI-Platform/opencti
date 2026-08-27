@@ -2,12 +2,9 @@ import { Locator, Page } from '@playwright/test';
 import { expect } from '../../fixtures/baseFixtures';
 
 /**
- * Wraps the "Import data" dialog opened from the top bar's upload icon (`UploadImport.tsx` ->
- * `ImportFilesDialog.tsx`), specifically its "Import using a Form" mode
- * (`ImportFilesToggleMode.tsx` -> `ImportFilesFormSelector.tsx` -> `ImportFilesFormView.tsx`).
- * `ImportFilesFormView` embeds the same `FormView.tsx` used by the standalone
- * `/dashboard/integrations/feeds/form/:formId` route, so `FormIntakeFillPageModel` is reused
- * as-is for filling/submitting once a form is selected.
+ * Wraps the "Import data" dialog's "Import using a Form" mode (`ImportFilesDialog.tsx` ->
+ * `ImportFilesFormSelector.tsx` -> `ImportFilesFormView.tsx`), which embeds the same `FormView.tsx`
+ * as the standalone form route, so `FormIntakeFillPageModel` is reused for filling/submitting.
  */
 export default class ImportFilesDialogPageModel {
   private readonly dialog: Locator;
@@ -16,8 +13,7 @@ export default class ImportFilesDialogPageModel {
     this.dialog = page.getByRole('dialog');
   }
 
-  /** Scopes locators to this dialog - pass to `FormIntakeFillPageModel` so it doesn't also
-   * match same-named elements from the underlying page behind the dialog. */
+  /** Scopes locators to this dialog so they don't match same-named elements behind it. */
   getRoot() {
     return this.dialog;
   }
