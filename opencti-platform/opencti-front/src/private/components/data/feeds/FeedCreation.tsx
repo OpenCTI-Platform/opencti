@@ -9,7 +9,6 @@ import { ConnectionHandler } from 'relay-runtime';
 import * as R from 'ramda';
 import Grid from '@mui/material/Grid';
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import { Select, SelectContent, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import MuiTextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -737,7 +736,6 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                             </Grid>
                                             <Grid item xs={4}>
                                               <FormControl variant="standard" fullWidth disabled={!currentMapping?.target_entity_type}>
-                                                <InputLabel>{t_i18n('Attribute')}</InputLabel>
                                                 {currentMapping?.target_entity_type ? (
                                                   <QueryRenderer
                                                     query={stixCyberObservablesLinesAttributesQuery}
@@ -761,6 +759,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                                             value={currentMapping?.attribute || ''}
                                                             onValueChange={(value) => handleChangeAttributeMapping(i, selectedType, value)}
                                                           >
+                                                            <SelectLabel>{t_i18n('Attribute')}</SelectLabel>
                                                             <SelectTrigger>
                                                               <SelectValue />
                                                             </SelectTrigger>
@@ -772,16 +771,15 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                                           </Select>
                                                         );
                                                       }
-                                                      return <Select disabled value=""><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><></></SelectContent></Select>;
+                                                      return <Select disabled value=""><SelectLabel>{t_i18n('Attribute')}</SelectLabel><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><></></SelectContent></Select>;
                                                     }}
                                                   />
-                                                ) : <Select disabled value=""><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><></></SelectContent></Select>}
+                                                ) : <Select disabled value=""><SelectLabel>{t_i18n('Attribute')}</SelectLabel><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><></></SelectContent></Select>}
                                               </FormControl>
                                             </Grid>
                                           </Grid>
                                         ) : (
                                           <FormControl variant="standard" fullWidth>
-                                            <InputLabel>{t_i18n('Attribute')}</InputLabel>
                                             <QueryRenderer
                                               query={stixCyberObservablesLinesAttributesQuery}
                                               variables={{ elementType: [selectedType] }}
@@ -804,6 +802,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                                       value={currentMapping?.attribute || ''}
                                                       onValueChange={(value) => handleChangeAttributeMapping(i, selectedType, value)}
                                                     >
+                                                      <SelectLabel>{t_i18n('Attribute')}</SelectLabel>
                                                       <SelectTrigger>
                                                         <SelectValue />
                                                       </SelectTrigger>
@@ -815,7 +814,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                                     </Select>
                                                   );
                                                 }
-                                                return <Select disabled value=""><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><></></SelectContent></Select>;
+                                                return <Select disabled value=""><SelectLabel>{t_i18n('Attribute')}</SelectLabel><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><></></SelectContent></Select>;
                                               }}
                                             />
                                           </FormControl>

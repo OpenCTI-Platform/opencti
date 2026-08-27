@@ -36,6 +36,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@filigran/design-system';
@@ -45,7 +46,6 @@ import Chip from '@mui/material/Chip';
 import DialogActions from '@mui/material/DialogActions';
 import FormControl from '@mui/material/FormControl';
 import Grid from '@mui/material/Grid';
-import InputLabel from '@mui/material/InputLabel';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -1090,7 +1090,8 @@ class DataTableToolBar extends Component {
         value={actionsInputs[i]?.type ?? ''}
         onValueChange={this.handleChangeActionInput.bind(this, i, 'field')}
       >
-        <SelectTrigger aria-label={t('Field')}>
+        <SelectLabel>{t('Field')}</SelectLabel>
+        <SelectTrigger>
           <SelectValue />
         </SelectTrigger>
         <SelectContent aria-label={t('Field')}>
@@ -3008,7 +3009,6 @@ class DataTableToolBar extends Component {
                         <Grid container={true} spacing={3}>
                           <Grid item xs={3}>
                             <FormControl className={classes.formControl}>
-                              <InputLabel>{t('Action type')}</InputLabel>
                               <Select
                                 value={actionsInputs[i]?.type ?? ''}
                                 onValueChange={this.handleChangeActionInput.bind(
@@ -3017,7 +3017,8 @@ class DataTableToolBar extends Component {
                                   'type',
                                 )}
                               >
-                                <SelectTrigger aria-label={t('Action type')}>
+                                <SelectLabel>{t('Action type')}</SelectLabel>
+                                <SelectTrigger>
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent aria-label={t('Action type')}>
@@ -3032,7 +3033,6 @@ class DataTableToolBar extends Component {
                           </Grid>
                           <Grid item xs={3}>
                             <FormControl className={classes.formControl}>
-                              <InputLabel>{t('Field')}</InputLabel>
                               {this.renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin)}
                             </FormControl>
                           </Grid>

@@ -17,8 +17,7 @@ import StixDomainObjectAttackPatternsKillChainMatrixInline from '@components/com
 import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
 import FiligranIcon from '@components/common/FiligranIcon';
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { attackPatternsMatrixColumnsFragment } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumns';
 import * as R from 'ramda';
 import { AttackPatternsMatrixColumns_data$key } from '@components/techniques/attack_patterns/attack_patterns_matrix/__generated__/AttackPatternsMatrixColumns_data.graphql';
@@ -318,16 +317,12 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                 gap={1}
               >
                 <Stack direction="row">
-                  <InputLabel
-                    style={{ paddingInlineEnd: 10, marginTop: 1 }}
-                  >
-                    {t_i18n('Kill chain :')}
-                  </InputLabel>
                   <FormControl>
                     <Select
                       value={selectedKillChain}
                       onValueChange={handleKillChainChange}
                     >
+                      <SelectLabel>{t_i18n('Kill chain :')}</SelectLabel>
                       <SelectTrigger aria-label={t_i18n('Kill chain')}>
                         <SelectValue />
                       </SelectTrigger>

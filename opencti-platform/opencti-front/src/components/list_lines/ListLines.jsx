@@ -6,12 +6,11 @@ import Checkbox from '@mui/material/Checkbox';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Tooltip from '@mui/material/Tooltip';
@@ -556,14 +555,12 @@ class ListLines extends Component {
               title={t('List settings')}
             >
               <FormControl style={{ width: '100%' }}>
-                <InputLabel id="redirectionMode">
-                  {t('Redirection mode')}
-                </InputLabel>
                 <Select
                   value={redirectionMode}
                   onValueChange={(value) => handleSwitchRedirectionMode(value)
                   }
                 >
+                  <SelectLabel>{t('Redirection mode')}</SelectLabel>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>

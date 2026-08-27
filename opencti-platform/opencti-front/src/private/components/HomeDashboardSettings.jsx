@@ -1,5 +1,4 @@
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import React from 'react';
@@ -112,9 +111,6 @@ const HomeDashboardSettings = () => {
             return (
               <>
                 <FormControl style={{ width: '100%' }}>
-                  <InputLabel id="timeField">
-                    {t_i18n('Date reference')}
-                  </InputLabel>
                   <Select
                     value={timeField ?? 'technical'}
                     onValueChange={(value) => handleUpdate(
@@ -123,6 +119,7 @@ const HomeDashboardSettings = () => {
                     )
                     }
                   >
+                    <SelectLabel>{t_i18n('Date reference')}</SelectLabel>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -137,14 +134,12 @@ const HomeDashboardSettings = () => {
                   </Select>
                 </FormControl>
                 <FormControl style={{ width: '100%', marginTop: 20 }}>
-                  <InputLabel id="timeField">
-                    {t_i18n('Custom dashboard')}
-                  </InputLabel>
                   <Select
                     value={dashboard?.id ?? 'automatic'}
                     onValueChange={(value) => handleUpdate('default_dashboard', value)}
                   >
-                    <SelectTrigger aria-label={t_i18n('Custom dashboard')}>
+                    <SelectLabel>{t_i18n('Custom dashboard')}</SelectLabel>
+                    <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent aria-label={t_i18n('Custom dashboard')}>

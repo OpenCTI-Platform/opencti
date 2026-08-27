@@ -9,8 +9,7 @@ import Tab from '@mui/material/Tab';
 import IconButton from '@common/button/IconButton';
 import Popover from '@mui/material/Popover';
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import makeStyles from '@mui/styles/makeStyles';
@@ -449,12 +448,12 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
             elevation={1}
           >
             <FormControl style={{ width: '100%' }}>
-              <InputLabel id="timeField">{t_i18n('Date reference')}</InputLabel>
               <Select
                 value={timeField === null ? '' : timeField}
                 onValueChange={handleChangeTimeField}
               >
-                <SelectTrigger aria-label={t_i18n('Date reference')}>
+                <SelectLabel>{t_i18n('Date reference')}</SelectLabel>
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent aria-label={t_i18n('Date reference')}>

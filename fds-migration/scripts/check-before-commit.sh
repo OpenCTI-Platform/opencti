@@ -19,6 +19,9 @@ echo "== tsc =="
 echo "== select-conversion guard =="
 node fds-migration/scripts/check-select-conversion.mjs || fail=1
 
+echo "== accessible names =="
+node fds-migration/scripts/check-accessible-names.mjs || fail=1
+
 # Added after CI caught "Missing frontend key: Refresh interval". Naming a field
 # for accessibility means introducing a t_i18n key, and a key with no catalogue
 # entry is a red gate the other three do not see.

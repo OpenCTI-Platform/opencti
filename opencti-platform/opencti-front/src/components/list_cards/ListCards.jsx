@@ -4,8 +4,7 @@ import { compose, toPairs } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@common/button/IconButton';
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import Tooltip from '@mui/material/Tooltip';
 
 import { ArrowDownward, ArrowUpward, FileDownloadOutlined, ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
@@ -109,16 +108,14 @@ class ListCards extends Component {
                   />
                 )}
                 <div className={classes.sortFieldContainer}>
-                  <InputLabel classes={{ root: classes.sortFieldLabel }}>
-                    {t('Sort by')}
-                  </InputLabel>
                   <FormControl>
                     <Select
                       name="sort-by"
                       value={sortBy}
                       onValueChange={this.sortBy.bind(this)}
                     >
-                      <SelectTrigger aria-label={t('Sort by')}>
+                      <SelectLabel>{t('Sort by')}</SelectLabel>
+                      <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent aria-label={t('Sort by')}>

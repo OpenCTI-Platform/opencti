@@ -7,12 +7,11 @@ import { Add, Close, Delete } from '@mui/icons-material';
 import { Box } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { useTheme } from '@mui/styles';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
@@ -481,16 +480,14 @@ const StixDomainObjectHeader = (props) => {
         titleRight={
           typeof onViewAs === 'function' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.5) }}>
-              <InputLabel>
-                {t_i18n('Display as')}
-              </InputLabel>
               <FormControl variant="outlined">
                 <Select
                   name="view-as"
                   value={viewAs}
                   onValueChange={onViewAs}
                 >
-                  <SelectTrigger aria-label={t_i18n('Display as')}>
+                  <SelectLabel>{t_i18n('Display as')}</SelectLabel>
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent aria-label={t_i18n('Display as')}>
