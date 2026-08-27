@@ -28,12 +28,12 @@ every library Select has and no MUI Select does.
 | | mounts |
 |---|---|
 | Converted — Formik pivots (`SelectFieldFds` / `ComboboxField`) | 158 |
-| Converted — direct library composition (`Select` / `Combobox`) | 117 |
-| **Converted total** | **275** |
-| **Remaining on MUI** | **17** |
+| Converted — direct library composition (`Select` / `Combobox`) | 123 |
+| **Converted total** | **281** |
+| **Remaining on MUI** | **11** |
 | **Total selection fields** | **292** |
 
-## The 17 remaining, every one with a reason
+## The 11 remaining, every one with a reason
 
 ### Not a site — the two legacy adapters themselves (2)
 
@@ -43,6 +43,10 @@ They must outlive their consumers, so they are not convertible work.
 |---|---|
 | `components/AutocompleteField.tsx` | 2 — `StixCoreObjectsField`, `LocationField` (both ornament batch) |
 | `components/fields/SelectField.tsx` | 4 — `AuthorizedMembersField` + list item (#44), `StixCoreObjectFilesAndHistory`, `JsonMapperRepresentationAttributeForm` |
+
+`AutocompleteFreeSoloField` was a third adapter. It is converted, so it no longer
+appears here: it composes the library directly and its four consumers went with
+it.
 
 ### Parked with a recorded reason (9 mounts)
 
@@ -63,20 +67,11 @@ are listed here so the four adapter consumers each carry a visible reason.
 | `AuthorizedMembersField` + list item | 0 — via `SelectField` | FEEDBACK #44 — reverted, `dashboardRestriction` went intermittent |
 | `StixCoreObjectFilesAndHistory` | 0 — via `SelectField` | its test drove MUI's hidden native select; asserts a flow a user cannot perform |
 
-### Simply not done yet (6 mounts)
+### Simply not done yet (0)
 
-Each bailed for a named reason the converter refused to guess at.
+Empty. Every mount that was pending a decision has been converted.
 
-| file | mounts | what the bail says |
-|---|---|---|
-| `CustomFieldCreation` | 1 | `freeSolo` + `renderTags` — needs a decision on custom values and chips |
-| `CustomFieldEdition` | 1 | `freeSolo` + `renderTags` — same |
-| `AutocompleteFreeSoloField` | 1 | `freeSolo` + focus/blur handlers |
-| `ConfidenceOverrideField` | 1 | renderOption destructures `key` out of props |
-| `FilterAutocomplete` | 1 | its renderInput carries `onFocus`, whose handler takes an event |
-| `JsonMapperRepresentationAttributeRefForm` | 1 | `onChange` is a bare function reference |
-
-2 adapters + 9 parked + 6 not done = the 17 remaining mounts.
+2 adapters + 9 parked + 0 not done = the 11 remaining mounts.
 
 ## Out of scope
 
