@@ -4758,6 +4758,7 @@
   "The various types of organizations playing a role in CTI, whether as a source of information or as a victim or source of attack, or even a way t segregate users in the platform.": "CTIで役割を果たすさまざまなタイプの組織。情報源として、あるいは攻撃の被害者や発信源として、さらにはプラットフォーム内でユーザーを分離する方法として。",
   "The widget is not called in the content": "ウィジェットはコンテンツ内で呼び出されない",
   "Theme": "テーマ",
+  "theme": "テーマ",
   "Theme successfully created": "テーマの作成に成功",
   "Themes": "テーマ",
   "THEN": "その後",
