@@ -1,7 +1,6 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import TextField from '@mui/material/TextField';
 import { Form, Formik } from 'formik';
 import { graphql } from 'react-relay';
 import { useFormatter } from 'src/components/i18n';
@@ -13,6 +12,7 @@ import { AccessRight, type AuthorizedMemberOption } from '../../utils/authorized
 import { type AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
 import SavedFilterSharingSection from './SavedFilterSharingSection';
 import Security from '../../utils/Security';
+import { Input } from '@filigran/design-system';
 
 const savedFilterFieldPatchMutation = graphql`
   mutation SavedFilterEditDialogFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
@@ -154,10 +154,9 @@ const SavedFilterEditDialog = ({
       >
         {({ submitForm, values, setFieldValue }) => (
           <Form>
-            <TextField
+            <Input
               label={t_i18n('Name')}
               placeholder={t_i18n('My saved filter')}
-              fullWidth
               value={values.name}
               onChange={(e) => setFieldValue('name', e.target.value)}
             />
