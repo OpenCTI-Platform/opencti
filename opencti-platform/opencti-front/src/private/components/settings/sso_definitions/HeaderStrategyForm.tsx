@@ -22,6 +22,7 @@ import AuthProviderOrganizationsFields from './AuthProviderOrganizationsFields';
 import AuthProviderUserInfoFields from './AuthProviderUserInfoFields';
 import type { HeaderStrategyFormQuery } from './__generated__/HeaderStrategyFormQuery.graphql';
 import type { HeaderStrategyFormMutation } from './__generated__/HeaderStrategyFormMutation.graphql';
+import TextareaField from '../../../../components/TextareaField';
 
 const headerStrategyFormQuery = graphql`
   query HeaderStrategyFormQuery {
@@ -291,14 +292,11 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
                 containerstyle={{ marginTop: 20 }}
               />
               <Field
-                component={TextField}
-                variant="standard"
+                component={TextareaField}
                 name="description"
                 label={t_i18n('Description')}
-                fullWidth
-                multiline
                 rows={3}
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <AuthProviderUserInfoFields fieldPrefix="user_info_mapping" />
               <Field

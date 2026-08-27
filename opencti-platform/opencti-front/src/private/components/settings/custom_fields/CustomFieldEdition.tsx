@@ -10,6 +10,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, handleError } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import { CustomFieldEdition_customFieldDefinition$key } from './__generated__/CustomFieldEdition_customFieldDefinition.graphql';
+import TextareaField from '../../../../components/TextareaField';
 
 export const CustomFieldEditionFragment = graphql`
   fragment CustomFieldEdition_customFieldDefinition on CustomFieldDefinition {
@@ -161,14 +162,11 @@ const CustomFieldEdition: FunctionComponent<CustomFieldEditionProps> = ({
             />
           )}
           <Field
-            component={TextField}
-            variant="standard"
+            component={TextareaField}
             name="description"
             label={t_i18n('Description')}
-            fullWidth={true}
-            multiline={true}
             rows={2}
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onSubmit={handleSubmitField}
           />
         </Form>

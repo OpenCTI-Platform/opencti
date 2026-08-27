@@ -20,7 +20,6 @@ import CssBaseline from '@mui/material/CssBaseline';
 import makeStyles from '@mui/styles/makeStyles';
 import Alert from '@mui/material/Alert';
 import FormGroup from '@mui/material/FormGroup';
-import TextField from '@mui/material/TextField';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
@@ -36,6 +35,7 @@ import useApiMutation from '../../utils/hooks/useApiMutation';
 import Message from '../../components/Message';
 import { isEmptyField } from '../../utils/utils';
 import ItemCopy from '../../components/ItemCopy';
+import { Textarea } from '@filigran/design-system';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {
@@ -120,13 +120,10 @@ const LicenseComponent: FunctionComponent<LicenseProps> = ({ settings }) => {
           </Alert>
           {isNoLicenseByConfig ? (
             <FormGroup style={{ marginTop: 15 }}>
-              <TextField
+              <Textarea
                 onChange={(event) => setEnterpriseLicense(event.target.value)}
-                multiline={true}
-                fullWidth={true}
                 minRows={10}
                 placeholder={t_i18n('Paste your Filigran OpenCTI LTS license')}
-                variant="outlined"
               />
             </FormGroup>
           ) : (
