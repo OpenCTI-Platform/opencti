@@ -34,7 +34,7 @@ interface ThemeFormProps {
   };
   errors?: Record<string, string>;
   isSubmitting: boolean;
-  isSystemDefault?: boolean | null;
+  isDefaultTheme?: boolean;
   themeId?: string;
   onSubmit: () => void;
   onCancel: () => void;
@@ -54,7 +54,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
   values,
   errors = {},
   isSubmitting,
-  isSystemDefault = false,
+  isDefaultTheme = false,
   themeId,
   onSubmit,
   onCancel,
@@ -134,7 +134,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
             )
           }
           fullWidth
-          disabled={isSystemDefault}
+          disabled={isDefaultTheme}
           required
           onSubmit={handleFieldSubmit}
         />
@@ -148,6 +148,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           variant="standard"
           required
           onSubmit={handleFieldSubmit}
+          disabled={isDefaultTheme}
         />
 
         <Field
@@ -158,6 +159,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           variant="standard"
           required
           onSubmit={handleFieldSubmit}
+          disabled={isDefaultTheme}
         />
 
         <Field
@@ -168,6 +170,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           variant="standard"
           required
           onSubmit={handleFieldSubmit}
+          disabled={isDefaultTheme}
         />
 
         <Field
@@ -178,6 +181,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           variant="standard"
           required
           onSubmit={handleFieldSubmit}
+          disabled={isDefaultTheme}
         />
 
         <Field
@@ -188,6 +192,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           variant="standard"
           required
           onSubmit={handleFieldSubmit}
+          disabled={isDefaultTheme}
         />
 
         <Field
@@ -198,6 +203,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           variant="standard"
           required
           onSubmit={handleFieldSubmit}
+          disabled={isDefaultTheme}
         />
 
         <Field
@@ -208,6 +214,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           variant="standard"
           required
           onSubmit={handleFieldSubmit}
+          disabled={isDefaultTheme}
         />
 
         {/* LOGOS */}
@@ -218,6 +225,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           label={t_i18n('Logo URL')}
           fullWidth
           onSubmit={handleFieldSubmit}
+          disabled={isDefaultTheme}
         />
 
         <Field
@@ -227,6 +235,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           label={t_i18n('Logo URL (collapsed)')}
           fullWidth
           onSubmit={handleFieldSubmit}
+          disabled={isDefaultTheme}
         />
 
         <Field
@@ -236,6 +245,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           label={t_i18n('Logo URL (login)')}
           fullWidth
           onSubmit={handleFieldSubmit}
+          disabled={isDefaultTheme}
         />
       </Stack>
 
@@ -251,6 +261,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
 
         <Stack gap={2.5}>
           <Select
+            disabled={isDefaultTheme}
             value={loginAsideType}
             onChange={handleLoginAsideTypeChange}
             fullWidth

@@ -44,6 +44,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const isDefaultTheme = theme.built_in ?? false;
 
   const [commit] = useApiMutation(
     editThemeMutation,
@@ -125,7 +126,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
 
   return (
     <Drawer
-      title={t_i18n('Update a theme')}
+      title={isDefaultTheme ? `${theme.name} ${t_i18n('theme')}` : t_i18n('Update a theme')}
       open={open}
       onClose={handleClose}
       size="medium"
@@ -142,7 +143,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
             values={values}
             errors={errors}
             isSubmitting={isSubmitting}
-            isSystemDefault={theme.system_default}
+            isDefaultTheme={isDefaultTheme}
             themeId={theme.id}
             onSubmit={submitForm}
             onCancel={handleClose}

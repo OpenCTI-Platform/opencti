@@ -65,9 +65,9 @@ export const addTheme = async (context: AuthContext, user: AuthUser, input: Them
 export const initDefaultTheme = async (context: AuthContext, user = SYSTEM_USER) => {
   logApp.info('[INIT] Theme defaults starts initialization');
 
-  // Create Dark theme with user customizations or defaults
+  // Create Filigran Dark theme
   const darkThemeInput = {
-    name: 'Dark',
+    name: 'Filigran Dark',
     theme_background: DARK_DEFAULTS.theme_background,
     theme_paper: DARK_DEFAULTS.theme_paper,
     theme_nav: DARK_DEFAULTS.theme_nav,
@@ -87,8 +87,9 @@ export const initDefaultTheme = async (context: AuthContext, user = SYSTEM_USER)
 
   const darkTheme = await addTheme(context, user, darkThemeInput);
 
+  // Create Filigran Light theme
   const lightThemeInput = {
-    name: 'Light',
+    name: 'Filigran Light',
     theme_background: LIGHT_DEFAULTS.theme_background,
     theme_paper: LIGHT_DEFAULTS.theme_paper,
     theme_nav: LIGHT_DEFAULTS.theme_nav,
@@ -115,10 +116,10 @@ export const initDefaultTheme = async (context: AuthContext, user = SYSTEM_USER)
 export const deleteTheme = async (context: AuthContext, user: AuthUser, themeId: string) => {
   const theme = await findById(context, user, themeId);
   if (!theme) {
-    throw FunctionalError(`Theme ${themeId} cannot be found`);
+    throw FunctionalError('Theme cannot be found', { themeId });
   }
   if (theme.built_in) {
-    throw FunctionalError('System default themes cannot be deleted');
+    throw FunctionalError('System default themes cannot be deleted', { themeId });
   }
   return deleteInternalObject(context, user, themeId, ENTITY_TYPE_THEME);
 };
@@ -126,7 +127,10 @@ export const deleteTheme = async (context: AuthContext, user: AuthUser, themeId:
 export const fieldPatchTheme = async (context: AuthContext, user: AuthUser, themeId: string, input: EditInput[]) => {
   const theme = await findById(context, user, themeId);
   if (!theme) {
-    throw FunctionalError(`Theme ${themeId} cannot be found`);
+    throw FunctionalError('Theme cannot be found', { themeId });
+  }
+  if (theme.built_in) {
+    throw FunctionalError('System default themes cannot be updated', { themeId });
   }
   const { element } = await updateAttribute<StoreEntityTheme>(context, user, themeId, ENTITY_TYPE_THEME, input);
   await publishUserAction({

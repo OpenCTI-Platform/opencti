@@ -69,7 +69,7 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
     theme_logo_collapsed: themeData.theme_logo_collapsed,
     theme_logo_login: themeData.theme_logo_login,
     theme_text_color: themeData.theme_text_color,
-    system_default: themeData.built_in,
+    built_in: themeData.built_in,
     theme_login_aside_color: themeData.theme_login_aside_color,
     theme_login_aside_gradient_end: themeData.theme_login_aside_gradient_end,
     theme_login_aside_gradient_start: themeData.theme_login_aside_gradient_start,
@@ -183,9 +183,14 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
         <Security needs={[SETTINGS_SETPARAMETERS]}>
           <MenuItem
             onClick={handleOpenUpdate}
-            aria-label={t_i18n('Update')}
+            aria-label={theme.built_in
+              ? t_i18n('View')
+              : t_i18n('Update')
+            }
           >
-            {t_i18n('Update')}
+            {theme.built_in
+              ? t_i18n('View')
+              : t_i18n('Update')}
           </MenuItem>
         </Security>
         <Security needs={[SETTINGS_SETPARAMETERS]}>
@@ -196,7 +201,7 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
             {t_i18n('Export')}
           </MenuItem>
         </Security>
-        {!theme.system_default && (
+        {!theme.built_in && (
           <Security needs={[SETTINGS_SETPARAMETERS]}>
             <MenuItem
               onClick={handleOpenDelete}
