@@ -28,12 +28,12 @@ every library Select has and no MUI Select does.
 | | mounts |
 |---|---|
 | Converted — Formik pivots (`SelectFieldFds` / `ComboboxField`) | 158 |
-| Converted — direct library composition (`Select` / `Combobox`) | 123 |
-| **Converted total** | **281** |
-| **Remaining on MUI** | **11** |
+| Converted — direct library composition (`Select` / `Combobox`) | 122 |
+| **Converted total** | **280** |
+| **Remaining on MUI** | **12** |
 | **Total selection fields** | **292** |
 
-## The 11 remaining, every one with a reason
+## The 12 remaining, every one with a reason
 
 ### Not a site — the two legacy adapters themselves (2)
 
@@ -48,7 +48,7 @@ They must outlive their consumers, so they are not convertible work.
 appears here: it composes the library directly and its four consumers went with
 it.
 
-### Parked with a recorded reason (9 mounts)
+### Parked with a recorded reason (10 mounts)
 
 The last two rows are consumers of the `SelectField` adapter, not MUI mounts of
 their own: their mount is already counted once at the adapter file above. They
@@ -64,6 +64,7 @@ are listed here so the four adapter consumers each carry a visible reason.
 | `ThemeForm` | 1 | FEEDBACK #45 — Select has no clear affordance |
 | `ImportFilesList` | 1 | multi-value connector picker → Combobox wave |
 | `ConnectorsStatusFilters` | 2 | EE-gated, unverifiable on this instance |
+| `ListFilters` (add-filter) | 1 | reverted to MUI — see below |
 | `AuthorizedMembersField` + list item | 0 — via `SelectField` | FEEDBACK #44 — reverted, `dashboardRestriction` went intermittent |
 | `StixCoreObjectFilesAndHistory` | 0 — via `SelectField` | its test drove MUI's hidden native select; asserts a flow a user cannot perform |
 
@@ -71,7 +72,31 @@ are listed here so the four adapter consumers each carry a visible reason.
 
 Empty. Every mount that was pending a decision has been converted.
 
-2 adapters + 9 parked + 0 not done = the 11 remaining mounts.
+2 adapters + 10 parked + 0 not done = the 12 remaining mounts.
+
+#### Why `ListFilters` is parked
+
+Its conversion is the only change on this branch that `e2e group1` can be shown
+to react to: `_backgroundTask.spec.ts` — "Verify background tasks pre-requisites
+on data entity search" — fails at `getByRole('option', { name: 'Label' })` after
+filling the add-filter field, with the panel closed and the typed text still in
+the input. Reverted so 280 converted mounts are not held behind one site.
+
+Root cause NOT established. Four candidate mechanisms were tested against the
+converted component in jsdom and all four are ruled out — each renders the panel
+open with the option present, which is the opposite of the CI state:
+
+| candidate | result |
+|---|---|
+| a single `input` event (what Playwright's `fill` does) fails to open the panel | ruled out — panel opens, option present |
+| a parent re-render (async data arriving) closes the panel | ruled out — panel stays open |
+| options arriving after the text is typed are not listed | ruled out — option appears |
+| blur closes the panel while the controlled text survives | ruled out — blur does not even close it |
+
+So the mechanism needs the real page, not jsdom: it is not in the component's own
+input/open/options wiring. Whoever picks this up should start from a running
+platform on Data > Entities and watch the panel's `data-state` across the fill,
+rather than re-testing the four above.
 
 ## Out of scope
 
