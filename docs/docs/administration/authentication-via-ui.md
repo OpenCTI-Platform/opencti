@@ -123,7 +123,7 @@ In the SAML configuration form, under the **Security & Signing** section, fill i
 
 | Field                 | Description                                                                                                                                                                                                                                                            |
 |:----------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `Private key`         | The private key (PEM format), used to sign outgoing requests. This is a secret that is stored encrypted in the database.                                                                                                                                                    |
+| `Private key`         | The private key (PEM format), used to sign outgoing requests. This is a secret that is stored encrypted in the database.                                                                                                                                               |
 | `Signing certificate` | The public certificate (PEM format) matching the private key above. This certificate is what you must also register on your IdP so it can verify the signature.                                                                                                        |
 | `Signature algorithm` | The algorithm used to sign the request, for example `sha256`. It must match what your IdP expects.                                                                                                                                                                     |
 | `Digest algorithm`    | The algorithm used to hash the signed content, for example `sha256`.                                                                                                                                                                                                   |
@@ -175,6 +175,38 @@ You can also control how OpenCTI validates the IdP's response using:
     - Confirm the `Signature algorithm` configured in OpenCTI matches what the IdP expects.
     - Confirm the `SSO Binding type` matches the binding your IdP is configured to accept.
     - If the request is rejected with an error about an unknown or invalid requester (client not found), verify that the `Issuer` value exactly matches the client/application identifier registered on your IdP, and that this client exists in the correct realm/tenant.
+
+##### Encrypt the SAML assertions
+
+Encrypting SAML assertions means that your Identity Provider (IdP) encrypts the user identity and attributes it returns, so that only OpenCTI can read them.
+This protects sensitive user data if the SAML response transits through the user's browser.
+
+Encryption always applies to the **Identity Provider to OpenCTI** direction: the IdP encrypts the assertion using your public certificate, and OpenCTI decrypts it using the matching private key.
+The authentication request sent by OpenCTI to the IdP is never encrypted, since it contains no confidential data.
+
+In the SAML configuration form, under the **Security & Signing** section, fill in the following fields:
+
+| Field                    | Description                                                                                                                                                                                                         |
+|:-------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Decryption private key` | The private key (PEM format) used to decrypt the encrypted assertions sent by the IdP. This is a secret that is stored encrypted in the database. It is mandatory to enable decryption.                             |
+| `Decryption certificate` | The public certificate (PEM format) matching the private key above. OpenCTI does not use it to decrypt: you must provide it to your IdP so it can encrypt the assertions. It can be added in SAML request metadata. |
+
+The same PEM formatting rules as for the signing fields apply (multiline with `-----BEGIN`/`-----END`, or a single line without the header and footer).
+
+On the IdP side, select algorithms supported by OpenCTI:
+
+| Setting                   | Supported values                                                               |
+|:--------------------------|:-------------------------------------------------------------------------------|
+| Assertion encryption      | `AES-128-CBC`, `AES-256-CBC`, `AES-128-GCM`, `AES-256-GCM`                     |
+| Key encryption (key wrap) | `RSA-OAEP-MGF1P` (recommended), `RSA-v1.5` (deprecated, avoid unless required) |
+
+!!! warning "Troubleshooting a decryption error"
+
+    If the login fails after the IdP has authenticated the user, with a decryption-related error:
+
+    - `key encryption algorithm ... not supported`: your IdP uses a key encryption algorithm that OpenCTI does not support. Try another one, for example `RSA-OAEP-MGF1P` on the IdP.
+    - `oaep decoding error`: either the `Decryption private key` does not match the certificate registered on the IdP, or the OAEP digest used by the IdP is not the expected one. Try another digest algorithm, for example set the OAEP digest to `SHA-1` on the IdP.
+    - `encryption algorithm ... not supported`: select one of the supported assertion encryption algorithms listed above.
 
 #### LDAP
 For LDAP, the following fields are mandatory:
