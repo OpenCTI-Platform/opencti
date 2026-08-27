@@ -65,7 +65,8 @@ export default defineConfig({
       dependencies: ['setup'],
     },
     {
-      name: 'chromium',
+      name: 'workflow setup',
+      testMatch: "workflow/threatAdvisoryWorkflowSetup.spec.ts",
       use: {
         ...devices['Desktop Chrome'],
         storageState: 'tests_e2e/.setup/.auth/user.json',
@@ -74,6 +75,34 @@ export default defineConfig({
           height: 1080
         }
       },
+      dependencies: ['init data'],
+    },
+    {
+      name: 'form intake setup',
+      testMatch: "formIntake/threatAdvisorySetup.spec.ts",
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'tests_e2e/.setup/.auth/user.json',
+        viewport: {
+          width: 1920,
+          height: 1080
+        }
+      },
+      dependencies: ['init data', 'workflow setup'],
+    },
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'tests_e2e/.setup/.auth/user.json',
+        viewport: {
+          width: 1920,
+          height: 1080
+        }
+      },      // These specs already run as their own dependency project above; without testIgnore
+      // the default spec glob would also pick them up here and run them a second time.
+      testIgnore: ['workflow/threatAdvisoryWorkflowSetup.spec.ts', 'formIntake/threatAdvisorySetup.spec.ts'],
+      // dependencies: ['init data', 'workflow setup', 'form intake setup'],
       dependencies: ['init data'],
     },
     // {

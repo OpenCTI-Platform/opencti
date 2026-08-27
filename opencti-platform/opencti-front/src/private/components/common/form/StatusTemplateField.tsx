@@ -122,7 +122,7 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
         }}
         textfieldprops={{
           variant: 'standard',
-          label: label && t_i18n('Name'),
+          label: label ? t_i18n(label) : t_i18n('Name'),
           helperText: helpertext,
           // Prevent filtering on previous status
           onFocus: () => handleSearch(''),

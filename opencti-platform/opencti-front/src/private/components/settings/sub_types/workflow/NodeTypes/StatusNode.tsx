@@ -26,6 +26,7 @@ const StatusNode = ({ id, data }: NodeProps) => {
       />
       <Chip
         key={id}
+        data-testid={`workflow-status-node-${id}`}
         style={{
           fontSize: 12,
           height: NODE_SIZE.height,

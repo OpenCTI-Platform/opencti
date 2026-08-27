@@ -28,3 +28,4 @@ venv
 
 # Copilot
 thoughts/
+.playwright-mcp/

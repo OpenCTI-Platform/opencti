@@ -103,6 +103,7 @@ const PublishButton = ({
       <Tooltip title={mainButtonTooltip} placement="top">
         <ButtonGroup ref={anchorRef} sx={{ display: 'flex' }}>
           <Button
+            data-testid="workflow-publish-button"
             startIcon={mainButtonIcon}
             variant="secondary"
             onClick={mainButtonOnClick}
@@ -112,6 +113,7 @@ const PublishButton = ({
             {!hasUnpublishedChanges && validationErrors.length === 0 ? t_i18n('Published') : t_i18n('Publish')}
           </Button>
           <Button
+            data-testid="workflow-publish-dropdown-toggle"
             variant="secondary"
             onClick={handleToggle}
             sx={{ minWidth: '32px', px: 0, borderRadius: '0 4px 4px 0' }}
@@ -140,10 +142,10 @@ const PublishButton = ({
             <Paper>
               <ClickAwayListener onClickAway={handleClose}>
                 <MenuList id="workflow-action-menu" autoFocusItem>
-                  <MenuItem onClick={handleRestoreClick} disabled={!hasUnpublishedChanges || !hasPublishedVersion}>
+                  <MenuItem data-testid="workflow-restore-published-menu-item" onClick={handleRestoreClick} disabled={!hasUnpublishedChanges || !hasPublishedVersion}>
                     {t_i18n('Restore published version')}
                   </MenuItem>
-                  <MenuItem onClick={handleResetClick}>
+                  <MenuItem data-testid="workflow-reset-menu-item" onClick={handleResetClick}>
                     {t_i18n('Reset workflow')}
                   </MenuItem>
                 </MenuList>
@@ -163,7 +165,7 @@ const PublishButton = ({
           <Button variant="secondary" onClick={() => setConfirmOpen(false)}>
             {t_i18n('Cancel')}
           </Button>
-          <Button intent="destructive" onClick={handleConfirmReset}>
+          <Button data-testid="workflow-reset-confirm-button" intent="destructive" onClick={handleConfirmReset}>
             {t_i18n('Reset')}
           </Button>
         </DialogActions>

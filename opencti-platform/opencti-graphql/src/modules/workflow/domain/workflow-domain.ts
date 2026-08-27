@@ -13,7 +13,7 @@ import { addWorkflowPublishCount } from '../../../manager/telemetryManager';
 import type { BasicStoreCommon, BasicStoreEntity } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { bypassDraftContext, getDraftContext } from '../../../utils/draftContext';
-import { SYSTEM_USER, WORKFLOW_MANAGER_USER } from '../../../utils/access';
+import { AccessOperation, SYSTEM_USER, validateUserAccessOperation, WORKFLOW_MANAGER_USER } from '../../../utils/access';
 import { findByType as findEntitySettingByType } from '../../entitySetting/entitySetting-domain';
 import { validateSetting } from '../../entitySetting/entitySetting-validators';
 import type { BasicStoreEntityEntitySetting } from '../../entitySetting/entitySetting-types';
@@ -836,6 +836,12 @@ export const getAllowedTransitions = async (
 ): Promise<Array<{ event: string; toState: string; comment?: string; actions: string[]; requiresShareOrganizationInput: boolean; requiresUnshareOrganizationInput: boolean }>> => {
   const entity = options?.entity ?? await storeLoadById(context, user, entityId, 'Basic-Object');
   if (!entity) {
+    return [];
+  }
+
+  // View access alone isn't enough to trigger a transition: a view-only user (e.g. restricted by
+  // an authorized-members group restriction) must not see any transition as available.
+  if (!validateUserAccessOperation(user, entity, AccessOperation.EDIT)) {
     return [];
   }
 

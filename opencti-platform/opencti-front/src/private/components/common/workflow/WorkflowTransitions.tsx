@@ -84,7 +84,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
     return (
       <>
         <Divider orientation="vertical" flexItem sx={{ marginRight: 1 }} />
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box data-testid="workflow-transitions-pending" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography variant="caption" noWrap>
             {pendingTransition.event}
           </Typography>
@@ -115,7 +115,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
     return (
       <>
         <Divider orientation="vertical" flexItem sx={{ marginRight: 1 }} />
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box data-testid="workflow-transitions-error" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Tooltip title={workflowInstance.pendingError ?? t_i18n('One or more async workflow actions failed')}>
             <ErrorOutline color="error" fontSize="small" />
           </Tooltip>
@@ -147,6 +147,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
   return (
     <>
       <Divider orientation="vertical" flexItem sx={{ marginRight: 1 }} />
+      <Box data-testid="workflow-transitions-actions" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
       {workflowInstance.allowedTransitions.length < 3 ? (
         <>
           {workflowInstance.allowedTransitions.map((transition) => (
@@ -197,6 +198,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
           </Menu>
         </>
       )}
+      </Box>
       {/* Step 1: org picker */}
       <Formik
         initialValues={{
