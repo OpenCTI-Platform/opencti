@@ -1,9 +1,8 @@
 import React, { FunctionComponent, Suspense } from 'react';
+import { Chip, IconButton } from '@filigran/design-system';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import { Chip } from '@filigran/design-system';
-import IconButton from '@mui/material/IconButton';
 import LaunchIcon from '@mui/icons-material/Launch';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
@@ -87,15 +86,14 @@ const ContainerObjectsTabComponent: FunctionComponent<ContainerObjectsTabCompone
                 </Typography>
                 {objectLink && (
                   <IconButton
+                    asChild
+                    variant="default"
+                    priority="tertiary"
+                    size="sm"
                     aria-label={t_i18n('Open link in new tab')}
-                    component={Link}
-                    to={objectLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    size="small"
-                    sx={{ width: 26, height: 26, borderRadius: '4px', color: 'primary.main', backgroundColor: 'action.hover', flexShrink: 0 }}
+                    icon={<LaunchIcon sx={{ fontSize: 18 }} />}
                   >
-                    <LaunchIcon sx={{ fontSize: 18 }} />
+                    <Link to={objectLink} target="_blank" rel="noopener noreferrer" />
                   </IconButton>
                 )}
               </Box>
