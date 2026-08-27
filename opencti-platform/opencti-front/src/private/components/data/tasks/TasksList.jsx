@@ -324,7 +324,7 @@ const TasksList = ({ data, options }) => {
                         }
                         {task.type === 'RULE' && (
                           <Tag
-                            label={<div>{t_i18n('All rule targets')}</div>}
+                            label={t_i18n('All rule targets')}
                           />
                         )}
                       </Stack>
@@ -336,7 +336,7 @@ const TasksList = ({ data, options }) => {
                         </Typography>
                         {task.type === 'RULE' && (
                           <Tag
-                            label={<div>{t_i18n('APPLY RULE')}</div>}
+                            label={t_i18n('APPLY RULE')}
                           />
                         )}
                         {task.actions
