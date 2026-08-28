@@ -327,9 +327,11 @@ export interface StixVulnerabilityExtension extends StixOpenctiExtension {
   cvss_v4_exploit_maturity: string;
   // Others
   cwe: string;
+  cisa_kev: boolean;
   score: number;
   epss_score: number;
   epss_percentile: number;
+  first_seen_active: StixDate;
 }
 // name, description
 export interface StixVulnerability extends StixDomainObject {
