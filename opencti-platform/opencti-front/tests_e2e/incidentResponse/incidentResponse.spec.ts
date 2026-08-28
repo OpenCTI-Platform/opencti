@@ -319,16 +319,14 @@ test('Incident response live entities creation and relationships', { tag: ['@ce'
   // ------------------------------
 
   // Create author from the incident response creation form
-  // The AUTHOR dialog IS prefilled: CreatedByField passes `inputValue={keyword}`
-  // to IdentityCreation, so the create row carries the typed text over. Measured
-  // scoped to the dialog — name = "Jeanne Mitchel" — so the name can no longer be
-  // empty by this path and only the entity type is still required.
-  //
-  // Do NOT harmonise this with the external-reference block below: that dialog
-  // receives no inputValue and genuinely opens empty. The two differ in the
-  // product code, not by accident.
-  await incidentResponseForm.authorAutocomplete.createOption('Jeanne Mitchel');
+  // CreatedByField is back on the MUI adapter, so the create affordance is the
+  // persistent `+` again and the dialog opens empty. Labels and external
+  // references below stay on the library create row — their mounts are converted.
+  await incidentResponseForm.authorAutocomplete.openAddOptionForm();
   await authorForm.getCreateButton().click();
+  await expect(authorForm.nameField.getByText('This field is required')).toBeVisible();
+  await authorForm.nameField.fill('Jeanne Mitchel');
+  await expect(authorForm.nameField.getByText('This field is required')).toBeHidden();
   await expect(authorForm.entityTypeSelect.getByText('This field is required')).toBeVisible();
   await authorForm.entityTypeSelect.selectOption('Individual');
   await expect(authorForm.entityTypeSelect.getOption('Individual')).toBeVisible();
