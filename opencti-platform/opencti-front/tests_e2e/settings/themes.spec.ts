@@ -92,14 +92,14 @@ test('Custom theme creation, logo edition, and deletion', { tag: ['@ce'] }, asyn
     await page.reload();
     const logoSrcChangedToGoogle = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
     if (logoSrcChangedToGoogle) {
-      return !logoSrcChangedToGoogle.endsWith('static/images/logo');
+      return logoSrcChangedToGoogle.includes('googlelogo');
     }
     return false;
   };
   await awaitUntilCondition(isLogoChanged);
 
   logoSrc = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
-  expect(logoSrc).not.toContain('static/images/logo');
+  expect(logoSrc).toContain('googlelogo');
 
   // Reset logo
   await openThemeEditMenu(THEME.name, page);
@@ -115,13 +115,13 @@ test('Custom theme creation, logo edition, and deletion', { tag: ['@ce'] }, asyn
     await page.reload();
     const logoSrcChangedToDefault = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
     if (logoSrcChangedToDefault) {
-      return logoSrcChangedToDefault.endsWith('static/images/logo');
+      return logoSrcChangedToDefault.includes('logo_text_dark');
     }
     return false;
   };
   await awaitUntilCondition(isLogoBackToDefault);
   logoSrc = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
-  expect(logoSrc).toContain('static/images/logo');
+  expect(logoSrc).toContain('logo_text_dark');
 
   // Select Dark theme again to delete custom theme
   await page.locator('#mui-component-select-platform_theme').click();
