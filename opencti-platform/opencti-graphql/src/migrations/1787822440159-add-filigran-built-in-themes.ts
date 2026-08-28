@@ -96,7 +96,7 @@ const freeUpFiligranThemeName = async (context: AuthContext, defaultThemeName: s
   const usedNames = new Set(existingThemesList.map((t) => t.name));
   const renames = conflictingThemes.map((conflictingTheme) => {
     let newName = `${defaultThemeName} - custom`;
-    let suffix = 0;
+    let suffix = 1;
     while (usedNames.has(newName)) {
       suffix += 1;
       newName = `${defaultThemeName} - custom ${suffix}`;
