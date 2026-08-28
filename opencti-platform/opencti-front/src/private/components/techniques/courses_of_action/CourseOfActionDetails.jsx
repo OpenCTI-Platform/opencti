@@ -1,6 +1,5 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
@@ -11,80 +10,77 @@ import { PostOutline } from 'mdi-material-ui';
 import ListItemText from '@mui/material/ListItemText';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import CoursesOfActionAttackPatterns from './CourseOfActionAttackPatterns';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Card from '@common/card/Card';
 import Label from '../../../../components/common/label/Label';
 
-class CourseOfActionDetailsComponent extends Component {
-  render() {
-    const { t, courseOfAction } = this.props;
-    return (
-      <div style={{ height: '100%' }}>
-        <Card title={t('Details')}>
-          <Grid container={true} spacing={2}>
-            <Grid item xs={12}>
-              <Label>
-                {t('Description')}
-              </Label>
-              <ExpandableMarkdown
-                source={courseOfAction.description}
-                limit={300}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <Label>
-                {t('Log sources')}
-              </Label>
-              <FieldOrEmpty source={courseOfAction.x_opencti_log_sources}>
-                <List>
-                  {(courseOfAction.x_opencti_log_sources ?? []).map((logSource, index) => (
-                    <ListItem key={`${index}:${logSource}`} dense={true} divider={true}>
-                      <ListItemIcon>
-                        <PostOutline />
-                      </ListItemIcon>
-                      <ListItemText primary={logSource} />
-                    </ListItem>
-                  ))}
-                </List>
-              </FieldOrEmpty>
-            </Grid>
-            <Grid item xs={6}>
-              <Label>
-                {t('External ID')}
-              </Label>
-              <FieldOrEmpty
-                source={courseOfAction.x_mitre_id}
-              >
-                <Chip
-                  size="small"
-                  label={courseOfAction.x_mitre_id}
-                  color="primary"
-                  style={{ borderRadius: 4 }}
-                />
-              </FieldOrEmpty>
-              <Label
-                sx={{ marginTop: 2 }}
-              >
-                {t('Threat hunting techniques')}
-              </Label>
-              <ExpandableMarkdown
-                source={courseOfAction.x_opencti_threat_hunting}
-                limit={300}
-              />
-            </Grid>
+const CourseOfActionDetailsComponent = (props) => {
+  const { t_i18n } = useFormatter();
+  const { courseOfAction } = props;
+  return (
+    <div style={{ height: '100%' }}>
+      <Card title={t_i18n('Details')}>
+        <Grid container={true} spacing={2}>
+          <Grid item xs={12}>
+            <Label>
+              {t_i18n('Description')}
+            </Label>
+            <ExpandableMarkdown
+              source={courseOfAction.description}
+              limit={300}
+            />
           </Grid>
-          <CoursesOfActionAttackPatterns courseOfAction={courseOfAction} />
-        </Card>
-      </div>
-    );
-  }
-}
+          <Grid item xs={6}>
+            <Label>
+              {t_i18n('Log sources')}
+            </Label>
+            <FieldOrEmpty source={courseOfAction.x_opencti_log_sources}>
+              <List>
+                {(courseOfAction.x_opencti_log_sources ?? []).map((logSource, index) => (
+                  <ListItem key={`${index}:${logSource}`} dense={true} divider={true}>
+                    <ListItemIcon>
+                      <PostOutline />
+                    </ListItemIcon>
+                    <ListItemText primary={logSource} />
+                  </ListItem>
+                ))}
+              </List>
+            </FieldOrEmpty>
+          </Grid>
+          <Grid item xs={6}>
+            <Label>
+              {t_i18n('External ID')}
+            </Label>
+            <FieldOrEmpty
+              source={courseOfAction.x_mitre_id}
+            >
+              <Chip
+                size="small"
+                label={courseOfAction.x_mitre_id}
+                color="primary"
+                style={{ borderRadius: 4 }}
+              />
+            </FieldOrEmpty>
+            <Label
+              sx={{ marginTop: 2 }}
+            >
+              {t_i18n('Threat hunting techniques')}
+            </Label>
+            <ExpandableMarkdown
+              source={courseOfAction.x_opencti_threat_hunting}
+              limit={300}
+            />
+          </Grid>
+        </Grid>
+        <CoursesOfActionAttackPatterns courseOfAction={courseOfAction} />
+      </Card>
+    </div>
+  );
+};
 
 CourseOfActionDetailsComponent.propTypes = {
   courseOfAction: PropTypes.object,
-  t: PropTypes.func,
-  fld: PropTypes.func,
 };
 
 const CourseOfActionDetails = createFragmentContainer(
@@ -108,4 +104,4 @@ const CourseOfActionDetails = createFragmentContainer(
   },
 );
 
-export default compose(inject18n)(CourseOfActionDetails);
+export default CourseOfActionDetails;

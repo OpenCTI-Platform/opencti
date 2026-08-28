@@ -1,10 +1,9 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
-import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixDomainObjectEditionOverview from './StixDomainObjectEditionOverview';
 import Loader from '../../../../components/Loader';
@@ -33,56 +32,54 @@ const stixDomainObjectEditionQuery = graphql`
   }
 `;
 
-class StixDomainObjectEdition extends Component {
-  render() {
-    const {
-      classes,
-      stixDomainObjectId,
-      open,
-      handleClose,
-      handleDelete,
-      variant,
-      noStoreUpdate,
-    } = this.props;
-    return (
-      <Drawer
-        open={open}
-        anchor="right"
-        elevation={0}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaperInGraph }}
-        onClose={handleClose.bind(this)}
-      >
-        {stixDomainObjectId ? (
-          <QueryRenderer
-            query={stixDomainObjectEditionQuery}
-            variables={{ id: stixDomainObjectId }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <StixDomainObjectEditionOverview
-                    variant={variant}
-                    stixDomainObject={props.stixDomainObject}
-                    handleClose={handleClose.bind(this)}
-                    handleDelete={
-                      typeof handleDelete === 'function'
-                        ? handleDelete.bind(this)
-                        : null
-                    }
-                    noStoreUpdate={noStoreUpdate}
-                  />
-                );
-              }
-              return <Loader variant="inline" />;
-            }}
-          />
-        ) : (
-          <div> &nbsp; </div>
-        )}
-      </Drawer>
-    );
-  }
-}
+const StixDomainObjectEdition = (props) => {
+  const {
+    classes,
+    stixDomainObjectId,
+    open,
+    handleClose,
+    handleDelete,
+    variant,
+    noStoreUpdate,
+  } = props;
+  return (
+    <Drawer
+      open={open}
+      anchor="right"
+      elevation={0}
+      sx={{ zIndex: 1202 }}
+      classes={{ paper: classes.drawerPaperInGraph }}
+      onClose={handleClose.bind(this)}
+    >
+      {stixDomainObjectId ? (
+        <QueryRenderer
+          query={stixDomainObjectEditionQuery}
+          variables={{ id: stixDomainObjectId }}
+          render={({ props }) => {
+            if (props) {
+              return (
+                <StixDomainObjectEditionOverview
+                  variant={variant}
+                  stixDomainObject={props.stixDomainObject}
+                  handleClose={handleClose.bind(this)}
+                  handleDelete={
+                    typeof handleDelete === 'function'
+                      ? handleDelete.bind(this)
+                      : null
+                  }
+                  noStoreUpdate={noStoreUpdate}
+                />
+              );
+            }
+            return <Loader variant="inline" />;
+          }}
+        />
+      ) : (
+        <div> &nbsp; </div>
+      )}
+    </Drawer>
+  );
+};
 
 StixDomainObjectEdition.propTypes = {
   variant: PropTypes.string,
@@ -92,8 +89,7 @@ StixDomainObjectEdition.propTypes = {
   handleDelete: PropTypes.func,
   classes: PropTypes.object,
   theme: PropTypes.object,
-  t: PropTypes.func,
   noStoreUpdate: PropTypes.bool,
 };
 
-export default compose(inject18n, withStyles(styles))(StixDomainObjectEdition);
+export default compose(withStyles(styles))(StixDomainObjectEdition);

@@ -1,8 +1,6 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer, graphql } from 'react-relay';
-import { compose } from 'ramda';
-import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipCreationFromEntityList from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityList';
 
 export const addLocationsMutationRelationDelete = graphql`
@@ -19,20 +17,18 @@ export const addLocationsMutationRelationDelete = graphql`
   }
 `;
 
-class AddLocationsLinesContainer extends Component {
-  render() {
-    const { data, intrusionSetLocations, intrusionSet } = this.props;
-    return (
-      <StixCoreRelationshipCreationFromEntityList
-        entity={intrusionSet}
-        relationshipType="originates-from"
-        availableDatas={data?.locations}
-        existingDatas={intrusionSetLocations}
-        updaterOptions={{ path: 'locations' }}
-      />
-    );
-  }
-}
+const AddLocationsLinesContainer = (props) => {
+  const { data, intrusionSetLocations, intrusionSet } = props;
+  return (
+    <StixCoreRelationshipCreationFromEntityList
+      entity={intrusionSet}
+      relationshipType="originates-from"
+      availableDatas={data?.locations}
+      existingDatas={intrusionSetLocations}
+      updaterOptions={{ path: 'locations' }}
+    />
+  );
+};
 
 AddLocationsLinesContainer.propTypes = {
   intrusionSet: PropTypes.object,
@@ -96,4 +92,4 @@ const AddLocationsLines = createPaginationContainer(
   },
 );
 
-export default compose(inject18n)(AddLocationsLines);
+export default AddLocationsLines;

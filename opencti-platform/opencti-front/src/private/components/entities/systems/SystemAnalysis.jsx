@@ -1,37 +1,31 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import * as R from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import withRouter from '../../../../utils/compat_router/withRouter';
-import inject18n from '../../../../components/i18n';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 
-class SystemAnalysisComponent extends Component {
-  render() {
-    const { system, viewAs } = this.props;
-    return (
-      <>
-        {viewAs === 'knowledge' ? (
-          <StixCoreObjectOrStixCoreRelationshipContainers
-            stixDomainObjectOrStixCoreRelationship={system}
-            viewAs={viewAs}
-          />
-        ) : (
-          <StixCoreObjectOrStixCoreRelationshipContainers
-            stixDomainObjectOrStixCoreRelationship={system}
-            authorId={system.id}
-            viewAs={viewAs}
-          />
-        )}
-      </>
-    );
-  }
-}
+const SystemAnalysisComponent = (props) => {
+  const { system, viewAs } = props;
+  return (
+    <>
+      {viewAs === 'knowledge' ? (
+        <StixCoreObjectOrStixCoreRelationshipContainers
+          stixDomainObjectOrStixCoreRelationship={system}
+          viewAs={viewAs}
+        />
+      ) : (
+        <StixCoreObjectOrStixCoreRelationshipContainers
+          stixDomainObjectOrStixCoreRelationship={system}
+          authorId={system.id}
+          viewAs={viewAs}
+        />
+      )}
+    </>
+  );
+};
 
 SystemAnalysisComponent.propTypes = {
   system: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func,
   viewAs: PropTypes.string,
 };
 
@@ -46,4 +40,4 @@ const SystemAnalysis = createFragmentContainer(SystemAnalysisComponent, {
   `,
 });
 
-export default R.compose(inject18n, withRouter)(SystemAnalysis);
+export default SystemAnalysis;

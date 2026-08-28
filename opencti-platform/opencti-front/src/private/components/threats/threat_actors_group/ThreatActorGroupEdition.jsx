@@ -1,10 +1,8 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import { graphql } from 'react-relay';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
 import ThreatActorGroupEditionContainer from './ThreatActorGroupEditionContainer';
 import { ThreatActorGroupEditionOverviewFocus } from './ThreatActorGroupEditionOverview';
 import Loader from '../../../../components/Loader';
@@ -26,47 +24,41 @@ export const ThreatActorGroupEditionQuery = graphql`
   }
 `;
 
-class ThreatActorGroupEdition extends Component {
-  handleClose() {
+const ThreatActorGroupEdition = (props) => {
+  const handleClose = () => {
     commitMutation({
       mutation: ThreatActorGroupEditionOverviewFocus,
       variables: {
-        id: this.props.threatActorGroupId,
+        id: props.threatActorGroupId,
         input: { focusOn: '' },
       },
     });
-  }
+  };
 
-  render() {
-    const { threatActorGroupId } = this.props;
-    return (
-      <QueryRenderer
-        query={ThreatActorGroupEditionQuery}
-        variables={{ id: threatActorGroupId }}
-        render={({ props }) => {
-          if (props) {
-            return (
-              <ThreatActorGroupEditionContainer
-                threatActorGroup={props.threatActorGroup}
-                handleClose={this.handleClose.bind(this)}
-                controlledDial={EditEntityControlledDial}
-              />
-            );
-          }
-          return <Loader variant="inline" />;
-        }}
-      />
-    );
-  }
-}
+  const { threatActorGroupId } = props;
+  return (
+    <QueryRenderer
+      query={ThreatActorGroupEditionQuery}
+      variables={{ id: threatActorGroupId }}
+      render={({ props }) => {
+        if (props) {
+          return (
+            <ThreatActorGroupEditionContainer
+              threatActorGroup={props.threatActorGroup}
+              handleClose={handleClose.bind(this)}
+              controlledDial={EditEntityControlledDial}
+            />
+          );
+        }
+        return <Loader variant="inline" />;
+      }}
+    />
+  );
+};
 
 ThreatActorGroupEdition.propTypes = {
   threatActorGroupId: PropTypes.string,
   theme: PropTypes.object,
-  t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(ThreatActorGroupEdition);
+export default withStyles(styles, { withTheme: true })(ThreatActorGroupEdition);

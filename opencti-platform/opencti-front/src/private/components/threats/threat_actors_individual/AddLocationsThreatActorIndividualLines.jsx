@@ -1,8 +1,6 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer, graphql } from 'react-relay';
-import { compose } from 'ramda';
-import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipCreationFromEntityList from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityList';
 
 export const addLocationsThreatActorMutationRelationDelete = graphql`
@@ -19,20 +17,18 @@ export const addLocationsThreatActorMutationRelationDelete = graphql`
   }
 `;
 
-class AddLocationsThreatActorIndividualLinesContainer extends Component {
-  render() {
-    const { data, threatActorIndividualLocations, threatActorIndividual } = this.props;
-    return (
-      <StixCoreRelationshipCreationFromEntityList
-        entity={threatActorIndividual}
-        relationshipType="located-at"
-        availableDatas={data?.locations}
-        existingDatas={threatActorIndividualLocations}
-        updaterOptions={{ path: 'locations' }}
-      />
-    );
-  }
-}
+const AddLocationsThreatActorIndividualLinesContainer = (props) => {
+  const { data, threatActorIndividualLocations, threatActorIndividual } = props;
+  return (
+    <StixCoreRelationshipCreationFromEntityList
+      entity={threatActorIndividual}
+      relationshipType="located-at"
+      availableDatas={data?.locations}
+      existingDatas={threatActorIndividualLocations}
+      updaterOptions={{ path: 'locations' }}
+    />
+  );
+};
 
 AddLocationsThreatActorIndividualLinesContainer.propTypes = {
   threatActorIndividual: PropTypes.object,
@@ -101,4 +97,4 @@ const AddLocationsThreatActorIndividualLines = createPaginationContainer(
   },
 );
 
-export default compose(inject18n)(AddLocationsThreatActorIndividualLines);
+export default AddLocationsThreatActorIndividualLines;

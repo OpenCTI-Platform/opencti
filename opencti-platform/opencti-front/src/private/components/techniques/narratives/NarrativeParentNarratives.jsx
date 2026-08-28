@@ -1,6 +1,5 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -9,48 +8,45 @@ import { SpeakerNotesOutlined } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import Label from '../../../../components/common/label/Label';
 
-class NarrativeParentNarrativesComponent extends Component {
-  render() {
-    const { t, narrative } = this.props;
-    return (
-      <div style={{ height: '100%' }}>
-        <Label>
-          {t('Parent narratives')}
-        </Label>
-        <List sx={{ py: 0 }}>
-          {narrative.parentNarratives.edges.map((parentNarrativeEdge) => {
-            const parentNarrative = parentNarrativeEdge.node;
-            return (
-              <ListItemButton
-                key={parentNarrative.id}
-                dense={true}
-                divider={true}
-                component={Link}
-                to={`/dashboard/techniques/narratives/${parentNarrative.id}`}
-              >
-                <ListItemIcon>
-                  <SpeakerNotesOutlined color="primary" />
-                </ListItemIcon>
-                <ListItemText
-                  primary={parentNarrative.name}
-                  secondary={truncate(parentNarrative.description, 50)}
-                />
-              </ListItemButton>
-            );
-          })}
-        </List>
-      </div>
-    );
-  }
-}
+const NarrativeParentNarrativesComponent = (props) => {
+  const { t_i18n } = useFormatter();
+  const { narrative } = props;
+  return (
+    <div style={{ height: '100%' }}>
+      <Label>
+        {t_i18n('Parent narratives')}
+      </Label>
+      <List sx={{ py: 0 }}>
+        {narrative.parentNarratives.edges.map((parentNarrativeEdge) => {
+          const parentNarrative = parentNarrativeEdge.node;
+          return (
+            <ListItemButton
+              key={parentNarrative.id}
+              dense={true}
+              divider={true}
+              component={Link}
+              to={`/dashboard/techniques/narratives/${parentNarrative.id}`}
+            >
+              <ListItemIcon>
+                <SpeakerNotesOutlined color="primary" />
+              </ListItemIcon>
+              <ListItemText
+                primary={parentNarrative.name}
+                secondary={truncate(parentNarrative.description, 50)}
+              />
+            </ListItemButton>
+          );
+        })}
+      </List>
+    </div>
+  );
+};
 
 NarrativeParentNarrativesComponent.propTypes = {
   classes: PropTypes.object,
-  t: PropTypes.func,
-  fld: PropTypes.func,
   attackPattern: PropTypes.object,
 };
 
@@ -74,4 +70,4 @@ const NarrativeParentNarratives = createFragmentContainer(
   },
 );
 
-export default compose(inject18n)(NarrativeParentNarratives);
+export default NarrativeParentNarratives;

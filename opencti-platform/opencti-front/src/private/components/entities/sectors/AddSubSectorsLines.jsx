@@ -1,8 +1,6 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer, graphql } from 'react-relay';
-import { compose } from 'ramda';
-import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipCreationFromEntityList from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityList';
 
 export const addSubSectorsMutationRelationDelete = graphql`
@@ -19,21 +17,19 @@ export const addSubSectorsMutationRelationDelete = graphql`
   }
 `;
 
-class AddSubSectorsLinesContainer extends Component {
-  render() {
-    const { data, sectorSubSectors, sector } = this.props;
-    return (
-      <StixCoreRelationshipCreationFromEntityList
-        entity={sector}
-        relationshipType="part-of"
-        availableDatas={data?.sectors}
-        existingDatas={sectorSubSectors}
-        updaterOptions={{ path: 'subSectors' }}
-        isRelationReversed={true}
-      />
-    );
-  }
-}
+const AddSubSectorsLinesContainer = (props) => {
+  const { data, sectorSubSectors, sector } = props;
+  return (
+    <StixCoreRelationshipCreationFromEntityList
+      entity={sector}
+      relationshipType="part-of"
+      availableDatas={data?.sectors}
+      existingDatas={sectorSubSectors}
+      updaterOptions={{ path: 'subSectors' }}
+      isRelationReversed={true}
+    />
+  );
+};
 
 AddSubSectorsLinesContainer.propTypes = {
   sector: PropTypes.object,
@@ -97,4 +93,4 @@ const AddSubSectorsLines = createPaginationContainer(
   },
 );
 
-export default compose(inject18n)(AddSubSectorsLines);
+export default AddSubSectorsLines;

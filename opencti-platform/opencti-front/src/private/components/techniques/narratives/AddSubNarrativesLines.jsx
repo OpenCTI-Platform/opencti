@@ -1,9 +1,7 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer, graphql } from 'react-relay';
-import { compose } from 'ramda';
 import StixCoreRelationshipCreationFromEntityList from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityList';
-import inject18n from '../../../../components/i18n';
 
 export const addSubNarrativesMutationRelationDelete = graphql`
   mutation AddSubNarrativesLinesRelationDeleteMutation(
@@ -19,21 +17,19 @@ export const addSubNarrativesMutationRelationDelete = graphql`
   }
 `;
 
-class AddSubNarrativesLinesContainer extends Component {
-  render() {
-    const { data, narrativeSubNarratives, narrative } = this.props;
-    return (
-      <StixCoreRelationshipCreationFromEntityList
-        entity={narrative}
-        relationshipType="subnarrative-of"
-        availableDatas={data?.narratives}
-        existingDatas={narrativeSubNarratives}
-        updaterOptions={{ path: 'subNarratives' }}
-        isRelationReversed={true}
-      />
-    );
-  }
-}
+const AddSubNarrativesLinesContainer = (props) => {
+  const { data, narrativeSubNarratives, narrative } = props;
+  return (
+    <StixCoreRelationshipCreationFromEntityList
+      entity={narrative}
+      relationshipType="subnarrative-of"
+      availableDatas={data?.narratives}
+      existingDatas={narrativeSubNarratives}
+      updaterOptions={{ path: 'subNarratives' }}
+      isRelationReversed={true}
+    />
+  );
+};
 
 AddSubNarrativesLinesContainer.propTypes = {
   narrative: PropTypes.object,
@@ -96,4 +92,4 @@ const AddSubNarrativesLines = createPaginationContainer(
   },
 );
 
-export default compose(inject18n)(AddSubNarrativesLines);
+export default AddSubNarrativesLines;

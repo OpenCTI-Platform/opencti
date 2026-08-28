@@ -1,8 +1,6 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer, graphql } from 'react-relay';
-import { compose } from 'ramda';
-import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipCreationFromEntityList from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityList';
 
 export const addSoftwaresMutationRelationDelete = graphql`
@@ -19,21 +17,19 @@ export const addSoftwaresMutationRelationDelete = graphql`
   }
 `;
 
-class AddSoftwaresLinesContainer extends Component {
-  render() {
-    const { data, vulnerabilitySoftwares, vulnerability, relationshipType } = this.props;
-    return (
-      <StixCoreRelationshipCreationFromEntityList
-        entity={vulnerability}
-        relationshipType={relationshipType}
-        availableDatas={data?.stixCyberObservables}
-        existingDatas={vulnerabilitySoftwares}
-        updaterOptions={{ path: 'softwares', params: { relationshipType, first: 10 } }}
-        isRelationReversed={true}
-      />
-    );
-  }
-}
+const AddSoftwaresLinesContainer = (props) => {
+  const { data, vulnerabilitySoftwares, vulnerability, relationshipType } = props;
+  return (
+    <StixCoreRelationshipCreationFromEntityList
+      entity={vulnerability}
+      relationshipType={relationshipType}
+      availableDatas={data?.stixCyberObservables}
+      existingDatas={vulnerabilitySoftwares}
+      updaterOptions={{ path: 'softwares', params: { relationshipType, first: 10 } }}
+      isRelationReversed={true}
+    />
+  );
+};
 
 AddSoftwaresLinesContainer.propTypes = {
   vulnerability: PropTypes.object,
@@ -104,4 +100,4 @@ const AddSoftwaresLines = createPaginationContainer(
   },
 );
 
-export default compose(inject18n)(AddSoftwaresLines);
+export default AddSoftwaresLines;

@@ -1,8 +1,6 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer, graphql } from 'react-relay';
-import { compose } from 'ramda';
-import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipCreationFromEntityList from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityList';
 
 export const addCoursesOfActionMutationRelationDelete = graphql`
@@ -19,21 +17,19 @@ export const addCoursesOfActionMutationRelationDelete = graphql`
   }
 `;
 
-class AddCoursesOfActionLinesContainer extends Component {
-  render() {
-    const { data, attackPatternCoursesOfAction, attackPattern } = this.props;
-    return (
-      <StixCoreRelationshipCreationFromEntityList
-        entity={attackPattern}
-        relationshipType="mitigates"
-        availableDatas={data?.coursesOfAction}
-        existingDatas={attackPatternCoursesOfAction}
-        updaterOptions={{ path: 'coursesOfAction' }}
-        isRelationReversed={true}
-      />
-    );
-  }
-}
+const AddCoursesOfActionLinesContainer = (props) => {
+  const { data, attackPatternCoursesOfAction, attackPattern } = props;
+  return (
+    <StixCoreRelationshipCreationFromEntityList
+      entity={attackPattern}
+      relationshipType="mitigates"
+      availableDatas={data?.coursesOfAction}
+      existingDatas={attackPatternCoursesOfAction}
+      updaterOptions={{ path: 'coursesOfAction' }}
+      isRelationReversed={true}
+    />
+  );
+};
 
 AddCoursesOfActionLinesContainer.propTypes = {
   attackPattern: PropTypes.object,
@@ -100,4 +96,4 @@ const AddCoursesOfActionLines = createPaginationContainer(
   },
 );
 
-export default compose(inject18n)(AddCoursesOfActionLines);
+export default AddCoursesOfActionLines;

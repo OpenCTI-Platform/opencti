@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
@@ -6,12 +6,10 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
-import { compose } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
 import { Link } from 'react-router-dom';
 import { ListItemButton } from '@mui/material';
 import Box from '@mui/material/Box';
-import inject18n from '../../../../components/i18n';
 import { groupsSearchQuery } from '../Groups';
 import { QueryRenderer } from '../../../../relay/environment';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
@@ -131,7 +129,6 @@ RoleLineComponent.propTypes = {
   paginationOptions: PropTypes.object,
   me: PropTypes.object,
   classes: PropTypes.object,
-  fd: PropTypes.func,
 };
 
 const RoleLineFragment = createFragmentContainer(RoleLineComponent, {
@@ -146,93 +143,85 @@ const RoleLineFragment = createFragmentContainer(RoleLineComponent, {
   `,
 });
 
-export const RoleLine = compose(
-  inject18n,
-  withStyles(styles),
-)(RoleLineFragment);
+export const RoleLine = withStyles(styles)(RoleLineFragment);
 
-class RoleLineDummyComponent extends Component {
-  render() {
-    const { classes, dataColumns } = this.props;
-    return (
-      <ListItem
-        classes={{ root: classes.item }}
-        divider={true}
-        secondaryAction={(
-          <Box sx={{ root: classes.itemIconDisabled }}>
-            <KeyboardArrowRightOutlined />
-          </Box>
-        )}
-      >
-        <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Skeleton
-            animation="wave"
-            variant="circular"
-            width={30}
-            height={30}
-          />
-        </ListItemIcon>
-        <ListItemText
-          primary={(
-            <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.groups.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created_at.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.updated_at.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-            </div>
-          )}
+const RoleLineDummyComponent = (props) => {
+  const { classes, dataColumns } = props;
+  return (
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      secondaryAction={(
+        <Box sx={{ root: classes.itemIconDisabled }}>
+          <KeyboardArrowRightOutlined />
+        </Box>
+      )}
+    >
+      <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+        <Skeleton
+          animation="wave"
+          variant="circular"
+          width={30}
+          height={30}
         />
-      </ListItem>
-    );
-  }
-}
+      </ListItemIcon>
+      <ListItemText
+        primary={(
+          <div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.name.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.groups.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.created_at.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.updated_at.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+          </div>
+        )}
+      />
+    </ListItem>
+  );
+};
 
 RoleLineDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 
-export const RoleLineDummy = compose(
-  inject18n,
-  withStyles(styles),
-)(RoleLineDummyComponent);
+export const RoleLineDummy = withStyles(styles)(RoleLineDummyComponent);

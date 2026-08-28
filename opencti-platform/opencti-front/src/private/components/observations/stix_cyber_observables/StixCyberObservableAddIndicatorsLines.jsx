@@ -1,25 +1,21 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer, graphql } from 'react-relay';
-import { compose } from 'ramda';
-import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipCreationFromEntityList from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityList';
 
-class StixCyberObservableAddIndicatorsLinesContainer extends Component {
-  render() {
-    const { data, stixCyberObservableIndicators, stixCyberObservable } = this.props;
-    return (
-      <StixCoreRelationshipCreationFromEntityList
-        entity={stixCyberObservable}
-        relationshipType="based-on"
-        availableDatas={data?.indicators}
-        existingDatas={stixCyberObservableIndicators}
-        updaterOptions={{ path: '__Pagination_stixCyberObservables_indicators_connection' }}
-        isRelationReversed={true}
-      />
-    );
-  }
-}
+const StixCyberObservableAddIndicatorsLinesContainer = (props) => {
+  const { data, stixCyberObservableIndicators, stixCyberObservable } = props;
+  return (
+    <StixCoreRelationshipCreationFromEntityList
+      entity={stixCyberObservable}
+      relationshipType="based-on"
+      availableDatas={data?.indicators}
+      existingDatas={stixCyberObservableIndicators}
+      updaterOptions={{ path: '__Pagination_stixCyberObservables_indicators_connection' }}
+      isRelationReversed={true}
+    />
+  );
+};
 
 StixCyberObservableAddIndicatorsLinesContainer.propTypes = {
   stixCyberObservable: PropTypes.object,
@@ -102,4 +98,4 @@ const StixCyberObservableAddIndicatorsLines = createPaginationContainer(
   },
 );
 
-export default compose(inject18n)(StixCyberObservableAddIndicatorsLines);
+export default StixCyberObservableAddIndicatorsLines;

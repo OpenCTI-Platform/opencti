@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer, graphql } from 'react-relay';
-import { compose, filter, head, map } from 'ramda';
+import { filter, head, map } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -10,7 +10,6 @@ import { CheckCircle } from '@mui/icons-material';
 import { ConnectionHandler } from 'relay-runtime';
 import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
-import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import ExternalReferenceCreation from './ExternalReferenceCreation';
 import { isNotEmptyField } from '../../../../utils/utils';
@@ -104,12 +103,12 @@ const sharedUpdater = (store, stixCoreObjectId, newEdge) => {
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class AddExternalReferencesLinesContainer extends Component {
-  toggleExternalReference(externalReference, onlyCreate = false) {
+const AddExternalReferencesLinesContainer = (props) => {
+  const toggleExternalReference = (externalReference, onlyCreate = false) => {
     const {
       stixCoreObjectOrStixCoreRelationshipId,
       stixCoreObjectOrStixCoreRelationshipReferences,
-    } = this.props;
+    } = props;
     const stixCoreObjectOrStixCoreRelationshipReferencesIds = map(
       (n) => n.node.id,
       stixCoreObjectOrStixCoreRelationshipReferences,
@@ -161,79 +160,56 @@ class AddExternalReferencesLinesContainer extends Component {
         },
       });
     }
-  }
+  };
 
-  render() {
-    const {
-      classes,
-      data,
-      stixCoreObjectOrStixCoreRelationshipReferences,
-      open,
-      search,
-      paginationOptions,
-      openContextual,
-      handleCloseContextual,
-    } = this.props;
-    const stixCoreObjectOrStixCoreRelationshipReferencesIds = map(
-      (n) => n.node.id,
-      stixCoreObjectOrStixCoreRelationshipReferences,
-    );
-    const computeTextItem = (externalReferenceNode) => {
-      const externalReference = externalReferenceNode.node;
-      const externalReferenceId = externalReference.external_id
-        ? `(${externalReference.external_id})`
-        : '';
-      return (
-        <ListItemText
-          primary={`${externalReference.source_name} ${externalReferenceId}`}
-          secondary={truncate(
-            externalReference.description !== null
-            && externalReference.description.length > 0
-              ? externalReference.description
-              : externalReference.url,
-            120,
-          )}
-        />
-      );
-    };
+  const {
+    classes,
+    data,
+    stixCoreObjectOrStixCoreRelationshipReferences,
+    open,
+    search,
+    paginationOptions,
+    openContextual,
+    handleCloseContextual,
+  } = props;
+  const stixCoreObjectOrStixCoreRelationshipReferencesIds = map(
+    (n) => n.node.id,
+    stixCoreObjectOrStixCoreRelationshipReferences,
+  );
+  const computeTextItem = (externalReferenceNode) => {
+    const externalReference = externalReferenceNode.node;
+    const externalReferenceId = externalReference.external_id
+      ? `(${externalReference.external_id})`
+      : '';
     return (
-      <div>
-        <List>
-          {data.externalReferences.edges.map((externalReferenceNode) => {
-            const externalReference = externalReferenceNode.node;
-            const alreadyAdded = stixCoreObjectOrStixCoreRelationshipReferencesIds.includes(
-              externalReference.id,
-            );
-            const isLinkedRef = isNotEmptyField(externalReference.fileId);
-            if (isLinkedRef) {
-              return (
-                <ListItemButton
-                  key={externalReference.id}
-                  classes={{ root: classes.menuItem }}
-                  divider={true}
-                  onClick={this.toggleExternalReference.bind(
-                    this,
-                    externalReference,
-                    false,
-                  )}
-                >
-                  <ListItemIcon>
-                    {alreadyAdded ? (
-                      <CheckCircle classes={{ root: classes.icon }} />
-                    ) : (
-                      <ItemIcon type="External-Reference" />
-                    )}
-                  </ListItemIcon>
-                  {computeTextItem(externalReferenceNode)}
-                </ListItemButton>
-              );
-            }
+      <ListItemText
+        primary={`${externalReference.source_name} ${externalReferenceId}`}
+        secondary={truncate(
+          externalReference.description !== null
+          && externalReference.description.length > 0
+            ? externalReference.description
+            : externalReference.url,
+          120,
+        )}
+      />
+    );
+  };
+  return (
+    <div>
+      <List>
+        {data.externalReferences.edges.map((externalReferenceNode) => {
+          const externalReference = externalReferenceNode.node;
+          const alreadyAdded = stixCoreObjectOrStixCoreRelationshipReferencesIds.includes(
+            externalReference.id,
+          );
+          const isLinkedRef = isNotEmptyField(externalReference.fileId);
+          if (isLinkedRef) {
             return (
               <ListItemButton
                 key={externalReference.id}
                 classes={{ root: classes.menuItem }}
                 divider={true}
-                onClick={this.toggleExternalReference.bind(
+                onClick={toggleExternalReference.bind(
                   this,
                   externalReference,
                   false,
@@ -249,21 +225,42 @@ class AddExternalReferencesLinesContainer extends Component {
                 {computeTextItem(externalReferenceNode)}
               </ListItemButton>
             );
-          })}
-        </List>
-        <ExternalReferenceCreation
-          display={open}
-          contextual={true}
-          openContextual={openContextual}
-          handleCloseContextual={handleCloseContextual}
-          inputValue={search}
-          paginationOptions={paginationOptions}
-          onCreate={this.toggleExternalReference.bind(this)}
-        />
-      </div>
-    );
-  }
-}
+          }
+          return (
+            <ListItemButton
+              key={externalReference.id}
+              classes={{ root: classes.menuItem }}
+              divider={true}
+              onClick={toggleExternalReference.bind(
+                this,
+                externalReference,
+                false,
+              )}
+            >
+              <ListItemIcon>
+                {alreadyAdded ? (
+                  <CheckCircle classes={{ root: classes.icon }} />
+                ) : (
+                  <ItemIcon type="External-Reference" />
+                )}
+              </ListItemIcon>
+              {computeTextItem(externalReferenceNode)}
+            </ListItemButton>
+          );
+        })}
+      </List>
+      <ExternalReferenceCreation
+        display={open}
+        contextual={true}
+        openContextual={openContextual}
+        handleCloseContextual={handleCloseContextual}
+        inputValue={search}
+        paginationOptions={paginationOptions}
+        onCreate={toggleExternalReference.bind(this)}
+      />
+    </div>
+  );
+};
 
 AddExternalReferencesLinesContainer.propTypes = {
   stixCoreObjectOrStixCoreRelationshipId: PropTypes.string,
@@ -271,8 +268,6 @@ AddExternalReferencesLinesContainer.propTypes = {
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
-  t: PropTypes.func,
-  fld: PropTypes.func,
   paginationOptions: PropTypes.object,
   open: PropTypes.bool,
   search: PropTypes.string,
@@ -359,7 +354,4 @@ const AddExternalReferencesLines = createPaginationContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(AddExternalReferencesLines);
+export default withStyles(styles)(AddExternalReferencesLines);

@@ -1,18 +1,17 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createPaginationContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import * as R from 'ramda';
 import { AutoFix } from 'mdi-material-ui';
 import { ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
@@ -41,96 +40,95 @@ const styles = (theme) => ({
   },
 });
 
-class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component {
-  render() {
-    const { t, classes, entityId, data, paginationOptions } = this.props;
-    return (
-      <div style={{ height: '100%' }}>
-        <Card
-          title={t('Linked entities')}
-          action={(
-            <Security
-              needs={[KNOWLEDGE_KNUPDATE]}
-              placeholder={<div style={{ height: 29 }} />}
-            >
-              <StixCoreRelationshipCreationFromRelation
-                entityId={entityId}
-                paddingRight={true}
-                variant="inLine"
-                paginationOptions={paginationOptions}
-              />
-            </Security>
-          )}
-        >
-          <List classes={{ root: classes.list }}>
-            {data.stixCoreRelationships.edges.map(
-              (stixCoreRelationshipEdge) => {
-                const stixCoreRelationship = stixCoreRelationshipEdge.node;
-                const remoteNode = stixCoreRelationship.from
-                  && stixCoreRelationship.from.id === entityId
-                  ? stixCoreRelationship.to
-                  : stixCoreRelationship.from;
-                const restricted = stixCoreRelationship.from === null || remoteNode === null;
-                const link = `${resolveLink(remoteNode.entity_type)}/${
-                  remoteNode.id
-                }`;
-                return (
-                  <ListItem
-                    key={stixCoreRelationship.id}
-                    dense={true}
-                    divider={true}
-                    disablePadding
-                    secondaryAction={stixCoreRelationship.is_inferred ? (
-                      <Tooltip
-                        title={
-                          t('Inferred knowledge based on the rule ')
-                          + R.head(stixCoreRelationship.x_opencti_inferences)
-                            .rule.name
-                        }
-                      >
-                        <AutoFix
-                          fontSize="small"
-                          style={{ marginLeft: -30 }}
-                          color="secondary"
-                        />
-                      </Tooltip>
-                    ) : (
-                      <StixCoreRelationshipPopover
-                        stixCoreRelationshipId={stixCoreRelationship.id}
-                        paginationOptions={paginationOptions}
-                      />
-                    )}
-                  >
-                    <ListItemButton
-                      component={Link}
-                      to={link}
+const StixCoreRelationshipStixCoreRelationshipsLinesContainer = (props) => {
+  const { t_i18n } = useFormatter();
+  const { classes, entityId, data, paginationOptions } = props;
+  return (
+    <div style={{ height: '100%' }}>
+      <Card
+        title={t_i18n('Linked entities')}
+        action={(
+          <Security
+            needs={[KNOWLEDGE_KNUPDATE]}
+            placeholder={<div style={{ height: 29 }} />}
+          >
+            <StixCoreRelationshipCreationFromRelation
+              entityId={entityId}
+              paddingRight={true}
+              variant="inLine"
+              paginationOptions={paginationOptions}
+            />
+          </Security>
+        )}
+      >
+        <List classes={{ root: classes.list }}>
+          {data.stixCoreRelationships.edges.map(
+            (stixCoreRelationshipEdge) => {
+              const stixCoreRelationship = stixCoreRelationshipEdge.node;
+              const remoteNode = stixCoreRelationship.from
+                && stixCoreRelationship.from.id === entityId
+                ? stixCoreRelationship.to
+                : stixCoreRelationship.from;
+              const restricted = stixCoreRelationship.from === null || remoteNode === null;
+              const link = `${resolveLink(remoteNode.entity_type)}/${
+                remoteNode.id
+              }`;
+              return (
+                <ListItem
+                  key={stixCoreRelationship.id}
+                  dense={true}
+                  divider={true}
+                  disablePadding
+                  secondaryAction={stixCoreRelationship.is_inferred ? (
+                    <Tooltip
+                      title={
+                        t_i18n('Inferred knowledge based on the rule ')
+                        + R.head(stixCoreRelationship.x_opencti_inferences)
+                          .rule.name
+                      }
                     >
-                      <ListItemIcon>
-                        <ItemIcon
-                          type={
-                            !restricted ? remoteNode.entity_type : 'restricted'
-                          }
-                        />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={
-                          remoteNode.observable_value
-                            ? remoteNode.observable_value
-                            : remoteNode.name
-                        }
-                        secondary={t(`entity_${remoteNode.entity_type}`)}
+                      <AutoFix
+                        fontSize="small"
+                        style={{ marginLeft: -30 }}
+                        color="secondary"
                       />
-                    </ListItemButton>
-                  </ListItem>
-                );
-              },
-            )}
-          </List>
-        </Card>
-      </div>
-    );
-  }
-}
+                    </Tooltip>
+                  ) : (
+                    <StixCoreRelationshipPopover
+                      stixCoreRelationshipId={stixCoreRelationship.id}
+                      paginationOptions={paginationOptions}
+                    />
+                  )}
+                >
+                  <ListItemButton
+                    component={Link}
+                    to={link}
+                  >
+                    <ListItemIcon>
+                      <ItemIcon
+                        type={
+                          !restricted ? remoteNode.entity_type : 'restricted'
+                        }
+                      />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        remoteNode.observable_value
+                          ? remoteNode.observable_value
+                          : remoteNode.name
+                      }
+                      secondary={t_i18n(`entity_${remoteNode.entity_type}`)}
+                    />
+                  </ListItemButton>
+                </ListItem>
+              );
+            },
+          )}
+        </List>
+      </Card>
+    </div>
+  );
+};
 
 StixCoreRelationshipStixCoreRelationshipsLinesContainer.propTypes = {
   entityId: PropTypes.string,
@@ -138,8 +136,6 @@ StixCoreRelationshipStixCoreRelationshipsLinesContainer.propTypes = {
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
-  t: PropTypes.func,
-  fld: PropTypes.func,
 };
 
 export const stixCoreRelationshipStixCoreRelationshipsLinesQuery = graphql`
@@ -407,7 +403,4 @@ const StixCoreRelationshipStixCoreRelationshipsLines = createPaginationContainer
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreRelationshipStixCoreRelationshipsLines);
+export default withStyles(styles)(StixCoreRelationshipStixCoreRelationshipsLines);
