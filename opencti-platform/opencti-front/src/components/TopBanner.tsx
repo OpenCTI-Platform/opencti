@@ -74,7 +74,7 @@ const TopBanner = ({
     <div style={{
       position: 'fixed',
       zIndex: 1202,
-      color: FDS.scalars['--gray-900'],
+      color: FDS.scalars['--black-1000'],
       width: '100%',
       padding: 4,
       borderRadius: 0,
@@ -96,7 +96,7 @@ const TopBanner = ({
             marginLeft: 1,
             height: '24px',
             backgroundColor: FDS.scalars['--white-1000'],
-            color: FDS.scalars['--gray-900'],
+            color: FDS.scalars['--black-1000'],
             padding: '1px 6px',
             textTransform: 'none',
             '& .MuiButton-endIcon': {
@@ -114,7 +114,7 @@ const TopBanner = ({
           aria-label="close"
           size="small"
           onClick={handleDismiss}
-          style={{ position: 'absolute', right: 8, color: FDS.scalars['--gray-900'] }}
+          style={{ position: 'absolute', right: 8, color: FDS.scalars['--black-1000'] }}
         >
           <Close fontSize="inherit" />
         </IconButton>
