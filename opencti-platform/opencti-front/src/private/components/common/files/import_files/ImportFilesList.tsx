@@ -1,8 +1,24 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, Box, Collapse, Grid, List, ListItem, MenuItem, Select, Tooltip, Typography } from '@mui/material';
-// Aliased: the connector picker on the same row is multi-value and still MUI, so
-// both Selects live in this file until it moves to Combobox multiple.
-import { IconButton, Select as FdsSelect, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { Alert, Box, Collapse, Grid, List, ListItem, Tooltip, Typography } from '@mui/material';
+// The configuration picker is single-value and the connector picker is
+// multi-value, so a library Select and a library Combobox sit on the same row;
+// the Select is aliased because the file also names a Combobox.
+import {
+  Combobox,
+  ComboboxChips,
+  ComboboxClear,
+  ComboboxContent,
+  ComboboxControls,
+  ComboboxField,
+  ComboboxInput,
+  ComboboxTrigger,
+  IconButton,
+  Select as FdsSelect,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@filigran/design-system';
 import { TransitionGroup } from 'react-transition-group';
 import { DeleteOutlined, UploadFileOutlined } from '@mui/icons-material';
 import { CSV_MAPPER_NAME } from '@components/common/files/import_files/ImportFilesDialog';
@@ -246,44 +262,37 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                           <>
                             {/* Column 3: Select - Show all connectors but disable those that haven't matching file type */}
                             <Grid item xs={3}>
-                              <Select
-                                variant="standard"
-                                fullWidth
+                              <Combobox<string>
                                 multiple
-                                displayEmpty
-                                renderValue={(selectedIds) => {
-                                  if (selectedIds.length === 0) {
-                                    return canSelectConnectors ? t_i18n('No active connectors') : t_i18n('Select a connector');
-                                  }
-
-                                  // Displays connectors name
-                                  return selectedIds
-                                    .map((id) => connectorsForImport?.find((c) => c?.id === id)?.name)
-                                    .join(', ');
+                                labelPosition="none"
+                                className="w-full"
+                                options={(connectorsForImport ?? []).map((c) => c?.id as string)}
+                                value={(connectors ?? []).map((c) => c?.id as string)}
+                                getOptionLabel={(id) => {
+                                  const c = connectorsForImport?.find((x) => x?.id === id);
+                                  return `${c?.name ?? id}${connectorMissingAgent(c?.xtm_one_intent) ? ` (${t_i18n('No agent available')})` : ''}`;
                                 }}
-                                value={connectors?.map((c) => c?.id)}
-                                onChange={(e) => handleConnectorChange(file.name, e.target.value as string[])}
+                                isOptionDisabled={(id) => {
+                                  const c = connectorsForImport?.find((x) => x?.id === id);
+                                  return !c?.active
+                                    || !c?.connector_scope?.includes(file.type)
+                                    || connectorMissingAgent(c?.xtm_one_intent);
+                                }}
+                                onValueChange={(val) => handleConnectorChange(file.name, (val ?? []) as string[])}
                               >
-                                <MenuItem value="" disabled>
-                                  {t_i18n('Select a connector')}
-                                </MenuItem>
-                                {connectorsForImport?.map((connector) => (
-                                  <MenuItem
-                                    key={connector?.id}
-                                    value={connector?.id}
-                                    disabled={
-                                      !connector?.active
-                                      || !connector?.connector_scope?.includes(file.type)
-                                      || connectorMissingAgent(connector?.xtm_one_intent)
-                                    }
-                                  >
-                                    {connector?.name}
-                                    {connectorMissingAgent(connector?.xtm_one_intent)
-                                      ? ` (${t_i18n('No agent available')})`
-                                      : ''}
-                                  </MenuItem>
-                                ))}
-                              </Select>
+                                <ComboboxField>
+                                  <ComboboxChips aria-label={t_i18n('Select a connector')} />
+                                  <ComboboxInput
+                                    aria-label={t_i18n('Select a connector')}
+                                    placeholder={canSelectConnectors ? t_i18n('No active connectors') : t_i18n('Select a connector')}
+                                  />
+                                  <ComboboxControls>
+                                    <ComboboxClear />
+                                    <ComboboxTrigger />
+                                  </ComboboxControls>
+                                </ComboboxField>
+                                <ComboboxContent listAriaLabel={t_i18n('Select a connector')} />
+                              </Combobox>
                             </Grid>
 
                             {/* Column 4: Configuration (CSV Mapper or XTM One Agent) */}
