@@ -7,6 +7,8 @@ import { FilterMode } from '../../../src/generated/graphql';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { findByType } from '../../../src/domain/status';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
+import { resetCacheForEntity } from '../../../src/database/cache';
+import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
 
 // Directly query the store for the WorkflowInstance attached to an entity,
 // mirroring the lookup used internally by workflow-domain.ts.
@@ -791,6 +793,11 @@ describe('Workflow Resolver', () => {
           query: WORKFLOW_DEFINITION_PUBLISH_MUTATION,
           variables: { entityType: 'Report' },
         });
+
+        // Publishing just created new legacy Status entities: force the cache to reload so that
+        // the fieldPatch below (validated against the cached Status list) doesn't race with the
+        // asynchronous pub/sub cache invalidation and silently drop the update.
+        resetCacheForEntity(ENTITY_TYPE_STATUS);
 
         const statuses = await findByType(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT);
         secondStatusId = statuses[1].id;
