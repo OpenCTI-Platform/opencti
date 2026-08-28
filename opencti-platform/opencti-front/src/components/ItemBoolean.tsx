@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react';
+import React, { } from 'react';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useTheme } from '@mui/styles';
@@ -8,7 +8,7 @@ import type { Theme } from './Theme';
 
 type ItemBooleanProps = {
   status: string | boolean | null | undefined;
-  label?: string | ReactElement;
+  label?: string;
   neutralLabel?: string | null | undefined;
   reverse?: boolean;
   labelTextTransform?: 'capitalize' | 'uppercase' | 'lowercase' | 'none';
@@ -59,12 +59,8 @@ const ItemBoolean = ({
     if (status === undefined) {
       return (
         <Tag
-          label={(
-            <CircularProgress
-              size={10}
-              color="primary"
-            />
-          )}
+          label=""
+          icon={<CircularProgress size={10} color="primary" />}
         />
       );
     }

@@ -119,7 +119,7 @@ const MarkingDefinitionCreation: FunctionComponent<
                 name="definition"
                 label={t_i18n('Definition')}
                 fullWidth={true}
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={ColorPickerField}
@@ -135,7 +135,7 @@ const MarkingDefinitionCreation: FunctionComponent<
                 label={t_i18n('Order')}
                 fullWidth={true}
                 type="number"
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <FormButtonContainer>
                 <Button

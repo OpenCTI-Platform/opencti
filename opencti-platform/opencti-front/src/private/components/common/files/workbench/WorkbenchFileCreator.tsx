@@ -204,20 +204,14 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
                 label: t_i18n('Labels'),
               }}
               options={[]}
-              renderOption={(
-                props: React.HTMLAttributes<HTMLLIElement>,
-                option: FieldOption,
-              ) => (
-                <li {...props}>
+              renderOption={(option: FieldOption) => (
+                <>
                   <div className={classes.icon}>
                     <ItemIcon type="Label" />
                   </div>
                   <div className={classes.text}>{option.label}</div>
-                </li>
+                </>
               )}
-              classes={{
-                clearIndicator: classes.autoCompleteIndicator,
-              }}
             />
             <ObjectMarkingField
               name="fileMarkings"

@@ -251,7 +251,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
               label={t_i18n('Number observed')}
               required={(mandatoryAttributes.includes('number_observed'))}
               fullWidth={true}
-              style={{ marginTop: 20 }}
+              className="mt-5"
               onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={(

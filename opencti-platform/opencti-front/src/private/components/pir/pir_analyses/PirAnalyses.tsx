@@ -15,7 +15,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { graphql, useFragment } from 'react-relay';
 import React, { useState } from 'react';
-import { Chip, Tooltip, Alert } from '@mui/material';
+import { Tooltip, Alert } from '@mui/material';
+import { Chip } from '@filigran/design-system';
 import { useTheme } from '@mui/material/styles';
 import { PirAnalysesContainersListQuery, PirAnalysesContainersListQuery$variables } from './__generated__/PirAnalysesContainersListQuery.graphql';
 import { PirAnalyses_ContainersFragment$data } from './__generated__/PirAnalyses_ContainersFragment.graphql';
@@ -268,9 +269,7 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
             )}
           >
             <Chip
-              size="small"
-              label={countLabel}
-              sx={{ width: 100, borderRadius: 1 }}
+              label={String(countLabel)}
             />
           </Tooltip>
         );

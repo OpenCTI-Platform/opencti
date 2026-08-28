@@ -3,7 +3,6 @@ import Drawer from '@components/common/drawer/Drawer';
 import Alert from '@mui/material/Alert';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import { Box } from '@mui/material';
 import { useFormatter } from '../../../components/i18n';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import DraftWorks from './DraftWorks';
@@ -41,26 +40,7 @@ const DraftProcessingStatus: FunctionComponent<DraftProcessingStatusProps> = ({ 
       {isCurrentDraftProcessing && (
         <Tag
           color={theme.palette.designSystem.alert.warning.primary}
-          label={(
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-              <span>{t_i18n('Processes currently running')}</span>
-              <Box
-                component="span"
-                sx={{
-                  backgroundColor: 'background.paper',
-                  borderRadius: '10px',
-                  px: 0.75,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  lineHeight: '16px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                }}
-              >
-                {currentDraftProcessingCount}
-              </Box>
-            </Box>
-          )}
+          label={`${t_i18n('Processes currently running')} ${currentDraftProcessingCount}`}
           onClick={() => {
             forceRefetch();
             setDisplayProcesses(true);

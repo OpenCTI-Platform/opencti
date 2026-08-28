@@ -4,10 +4,9 @@ import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import { AddOutlined, DeleteOutlined } from '@mui/icons-material';
 import { Paper } from '@filigran/design-system';
-import MenuItem from '@mui/material/MenuItem';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 
 interface QueryAttributeFieldAddProps {
   id: string;
@@ -55,52 +54,52 @@ export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddPro
                     }}
                   >
                     <Field
-                      component={SelectField}
+                      component={SelectFieldFds}
                       variant="standard"
                       name={`${name}.${index}.type`}
                       label={t_i18n('Resolve from')}
                       fullWidth={true}
                       containerstyle={{ width: '100%' }}
                     >
-                      <MenuItem value="data">{t_i18n('Data')}</MenuItem>
-                      <MenuItem value="header">{t_i18n('Header')}</MenuItem>
+                      <SelectItem value="data">{t_i18n('Data')}</SelectItem>
+                      <SelectItem value="header">{t_i18n('Header')}</SelectItem>
                     </Field>
 
                     <Field
-                      component={SelectField}
+                      component={SelectFieldFds}
                       variant="standard"
                       name={`${name}.${index}.exposed`}
                       label={t_i18n('Exposed attribute to')}
                       fullWidth={true}
                       containerstyle={{ width: '100%' }}
                     >
-                      <MenuItem value="body">{t_i18n('Body')}</MenuItem>
-                      <MenuItem value="query_param">{t_i18n('Query parameter')}</MenuItem>
-                      <MenuItem value="header">{t_i18n('Header')}</MenuItem>
+                      <SelectItem value="body">{t_i18n('Body')}</SelectItem>
+                      <SelectItem value="query_param">{t_i18n('Query parameter')}</SelectItem>
+                      <SelectItem value="header">{t_i18n('Header')}</SelectItem>
                     </Field>
 
                     <Field
-                      component={SelectField}
+                      component={SelectFieldFds}
                       variant="standard"
                       name={`${name}.${index}.data_operation`}
                       label={t_i18n('Resolve operation')}
                       fullWidth={true}
                       containerstyle={{ width: '100%' }}
                     >
-                      <MenuItem value="data">{t_i18n('Data')}</MenuItem>
-                      <MenuItem value="count">{t_i18n('Count')}</MenuItem>
+                      <SelectItem value="data">{t_i18n('Data')}</SelectItem>
+                      <SelectItem value="count">{t_i18n('Count')}</SelectItem>
                     </Field>
 
                     <Field
-                      component={SelectField}
+                      component={SelectFieldFds}
                       variant="standard"
                       name={`${name}.${index}.state_operation`}
                       label={t_i18n('State operation')}
                       fullWidth={true}
                       containerstyle={{ width: '100%' }}
                     >
-                      <MenuItem value="replace">{t_i18n('Replace')}</MenuItem>
-                      <MenuItem value="sum">{t_i18n('Sum')}</MenuItem>
+                      <SelectItem value="replace">{t_i18n('Replace')}</SelectItem>
+                      <SelectItem value="sum">{t_i18n('Sum')}</SelectItem>
                     </Field>
 
                     <Field

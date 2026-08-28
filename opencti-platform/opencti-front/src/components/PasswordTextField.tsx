@@ -1,9 +1,8 @@
 import React, { FunctionComponent, useState } from 'react';
-import { IconButton } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Field, useField, useFormikContext } from 'formik';
 import { useFormatter } from './i18n';
-import { fieldSpacingContainerStyle } from '../utils/field';
 import TextField from './TextField';
 
 // TODO remove any when component TextField is typescript
@@ -37,7 +36,7 @@ const PasswordTextField: FunctionComponent<PasswordTextFieldProps> = ({
         variant="standard"
         type={isVisible ? 'text' : 'password'}
         fullWidth={true}
-        style={fieldSpacingContainerStyle}
+        className="mt-5"
         {...textFieldProps}
         {...(isSecret && ({
           onSubmit: (name: string, value: string) => {
@@ -53,20 +52,14 @@ const PasswordTextField: FunctionComponent<PasswordTextFieldProps> = ({
       />
       {!isUndefinedCredential && (
         <IconButton
+          variant="default"
+          priority="tertiary"
+          size="sm"
           onClick={toggleVisibility}
           aria-label={isVisible ? t_i18n('Hide') : t_i18n('Show')}
-          style={{
-            position: 'absolute',
-            right: 1,
-            top: '60%',
-            margin: 0,
-            padding: 0,
-            zIndex: 1,
-          }}
-          disableRipple
-        >
-          {isVisible ? <VisibilityOff /> : <Visibility />}
-        </IconButton>
+          style={{ position: 'absolute', right: 1, top: '60%', zIndex: 1 }}
+          icon={isVisible ? <VisibilityOff /> : <Visibility />}
+        />
       )}
     </div>
   );

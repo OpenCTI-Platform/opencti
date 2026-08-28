@@ -120,8 +120,8 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
     );
   };
 
-  const handleChangeViewAs = (event: React.ChangeEvent<{ value: string }>) => {
-    setViewAs(event.target.value);
+  const handleChangeViewAs = (value: string) => {
+    setViewAs(value);
     saveView();
   };
 

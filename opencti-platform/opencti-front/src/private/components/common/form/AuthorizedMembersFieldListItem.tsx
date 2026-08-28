@@ -1,3 +1,15 @@
+// FDS-WORKAROUND #44: kept on MUI Select. `tests_e2e/dashboardRestriction`
+// became INTERMITTENT once this field was converted — same commit red on one
+// run and green on the re-run, failing on
+// `getByRole('listbox', { name: 'Access right' }).getByText('can view')` with
+// "visible, enabled and stable" never satisfied. Diagnosed at the pointer on
+// the real access-restriction dialog and NOT reproduced: the listbox opens
+// correctly named, the option measures 97x32 with `pointer-events: auto`, and
+// `elementFromPoint` at its centre returns the option itself. Cause unidentified,
+// so this is a revert rather than a fix — an access-rights control does not get
+// carried forward on a green re-run. Note the dialog stacks THREE Radix Selects
+// (this field plus one per member row) beside a MUI Autocomplete, which is the
+// obvious place to look next — see fds-migration/LIBRARY-FEEDBACK.md #44
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -96,7 +108,7 @@ const AuthorizedMembersFieldListItem = ({
                   {' '}({t_i18n('Groups restriction')})
                 </span>
                 <Tooltip title={`Groups restriction: ${groupsLabel}`}>
-                  <IconButton size="small" color="primary">
+                  <IconButton size="small" color="primary" aria-label={t_i18n('Information')}>
                     <InfoOutlined fontSize="small" />
                   </IconButton>
                 </Tooltip>

@@ -129,7 +129,7 @@ const AuthProviderOrganizationsFields = () => {
         label={t_i18n('Organizations splitter')}
         placeholder=","
         fullWidth
-        style={{ marginTop: 20 }}
+        className="mt-5"
       />
 
       {/* Organizations mapping (provider -> platform) */}

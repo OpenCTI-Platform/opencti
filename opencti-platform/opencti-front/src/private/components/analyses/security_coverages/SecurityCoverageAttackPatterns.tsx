@@ -4,8 +4,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import FormControl from '@mui/material/FormControl';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import React, { useEffect, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import List from '@mui/material/List';
@@ -117,8 +116,8 @@ const SecurityCoverageAttackPatterns = ({
   const killChains = Array.from(killChainsSet).sort((a, b) => a.localeCompare(b));
   const showKillChainSelector = killChains.length > 1;
 
-  const handleKillChainChange = (event: SelectChangeEvent<unknown>) => {
-    setSelectedKillChain(event.target.value as string);
+  const handleKillChainChange = (value: string) => {
+    setSelectedKillChain(value);
   };
 
   // Update selected kill chain if current one is not available
@@ -182,21 +181,23 @@ const SecurityCoverageAttackPatterns = ({
             <FormControl size="small" style={{ width: 194, height: 30 }}>
               <Select
                 value={selectedKillChain}
-                onChange={handleKillChainChange}
-                variant="outlined"
-                displayEmpty
-                style={{ height: 30 }}
+                onValueChange={handleKillChainChange}
               >
-                {killChains.map((chain) => (
-                  <MenuItem key={chain} value={chain}>
-                    {(() => {
-                      if (chain === 'mitre-attack') return 'Mitre Attack';
-                      if (chain === 'capec') return 'CAPEC';
-                      if (chain === 'disarm') return 'Disarm';
-                      return capitalizeFirstLetter(chain);
-                    })()}
-                  </MenuItem>
-                ))}
+                <SelectTrigger aria-label={t_i18n('Kill chain')}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent aria-label={t_i18n('Kill chain')}>
+                  {killChains.map((chain) => (
+                    <SelectItem key={chain} value={chain}>
+                      {(() => {
+                        if (chain === 'mitre-attack') return 'Mitre Attack';
+                        if (chain === 'capec') return 'CAPEC';
+                        if (chain === 'disarm') return 'Disarm';
+                        return capitalizeFirstLetter(chain);
+                      })()}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             </FormControl>
           )}

@@ -199,7 +199,9 @@ const ListFilters = ({
             disabled={disabled}
             options={options as OptionType[]}
             groupBy={isNotUniqEntityTypes ? (option) => option?.groupLabel ?? '' : undefined}
-            sx={{ width: 200 }}
+            // The declared width was shrunk to 119px by the flex row, which cut the
+            // label off at 95px of the 101px it needs. flexShrink keeps it at 200.
+            sx={{ width: 200, flexShrink: 0 }}
             value={null}
             onChange={(_, selectOptionValue) => {
               if (selectOptionValue?.value) handleChange(selectOptionValue.value);

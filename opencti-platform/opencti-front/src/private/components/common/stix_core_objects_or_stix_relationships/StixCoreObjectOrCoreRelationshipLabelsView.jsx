@@ -13,7 +13,7 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { filter, map, pipe } from 'ramda';
 import { useState } from 'react';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField from '../../../../components/ComboboxField';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
@@ -36,9 +36,6 @@ const useStyles = makeStyles(() => ({
     display: 'inline-block',
     flexGrow: 1,
     marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
   },
 }));
 
@@ -79,11 +76,11 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
   const handleOpenLabels = () => setOpenLabels(true);
   const handleCloseLabels = () => setOpenLabels(false);
 
-  const searchLabels = async (event) => {
-    setLabelInput(event && event.target.value !== 0 ? event.target.value : '');
+  const searchLabels = async (search) => {
+    setLabelInput(search ?? '');
 
     const data = await fetchQuery(labelsSearchQuery, {
-      search: event && event.target.value !== 0 ? event.target.value : '',
+      search: search ?? '',
       orderBy: 'value',
       orderMode: 'asc',
     }).toPromise();
@@ -266,21 +263,31 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
           >
             <Form>
               <Field
-                component={AutocompleteField}
+                component={ComboboxField}
+                // MUI hid its clear indicator here with display:none; the library defaults
+                // clearable to true, so the affordance must be declined explicitly.
                 name="new_labels"
                 multiple={true}
-                textfieldprops={{
-                  variant: 'standard',
-                  label: t_i18n('Labels'),
-                  onFocus: searchLabels,
-                }}
+                label={t_i18n('Labels')}
                 preserveCase
                 noOptionsText={t_i18n('No available options')}
                 options={stateLabels}
-                onInputChange={searchLabels}
-                openCreate={isLabelManager ? handleOpenCreate : null}
-                renderOption={(optionsProps, option) => (
-                  <li {...optionsProps}>
+                // This dialog is one field with its action bar directly under
+                // it, and the panel is portalled at --fds-z-overlay: 1400 — the
+                // level that lets it win over MUI Dialogs also lets it cover
+                // THIS dialog's own Add button. Keeping the panel open after a
+                // pick, which is the default and was MUI's behaviour, therefore
+                // leaves the submit unreachable without an Escape or a click
+                // away. Closing on each pick is what #150 added the prop for.
+                closeOnSelect
+                onInputChange={(search, meta) => {
+                  if (meta.cause === 'type') searchLabels(search);
+                }}
+                onFocusInput={() => searchLabels('')}
+                getChipColor={(option) => option.color}
+                onCreateOption={isLabelManager ? handleOpenCreate : undefined}
+                renderOption={(option) => (
+                  <>
                     <div
                       className={classes.icon}
                       style={{ color: option.color }}
@@ -288,9 +295,8 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                       <MdiLabel />
                     </div>
                     <div className={classes.text}>{option.label}</div>
-                  </li>
+                  </>
                 )}
-                classes={{ clearIndicator: classes.autoCompleteIndicator }}
               />
             </Form>
             <DialogActions>

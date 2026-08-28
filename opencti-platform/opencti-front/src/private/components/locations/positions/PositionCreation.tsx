@@ -288,7 +288,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
               label={t_i18n('Latitude')}
               required={(mandatoryAttributes.includes('latitude'))}
               fullWidth={true}
-              style={fieldSpacingContainerStyle}
+              className="mt-5"
             />
             <Field
               component={TextField}
@@ -297,7 +297,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
               label={t_i18n('Longitude')}
               required={(mandatoryAttributes.includes('longitude'))}
               fullWidth={true}
-              style={fieldSpacingContainerStyle}
+              className="mt-5"
             />
             <Field
               component={TextField}
@@ -306,7 +306,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
               label={t_i18n('Street address')}
               required={(mandatoryAttributes.includes('street_address'))}
               fullWidth={true}
-              style={fieldSpacingContainerStyle}
+              className="mt-5"
             />
             <Field
               component={TextField}
@@ -315,7 +315,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
               required={(mandatoryAttributes.includes('postal_code'))}
               label={t_i18n('Postal code')}
               fullWidth={true}
-              style={fieldSpacingContainerStyle}
+              className="mt-5"
             />
             <CreatedByField
               name="createdBy"

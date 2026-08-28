@@ -23,18 +23,18 @@ import { Field, Form, Formik } from 'formik';
 import { FileIndexingConfigurationQuery$data } from '@components/settings/file_indexing/__generated__/FileIndexingConfigurationQuery.graphql';
 import { FormikConfig } from 'formik/dist/types';
 import { fileIndexingConfigurationFieldPatch } from '@components/settings/file_indexing/FileIndexing';
-import Checkbox from '@mui/material/Checkbox';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import SwitchField from '../../../../components/fields/SwitchField';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField from '../../../../components/ComboboxField';
 import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Card from '../../../../components/common/card/Card';
+import { Checkbox } from '@filigran/design-system';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -126,10 +126,8 @@ const FileIndexingConfiguration: FunctionComponent<
                 >
                   <ListItemText primary={t_i18n(mimeType)} />
                   <Checkbox
-                    edge="start"
-                    disableRipple={true}
                     checked={values.accept_mime_types.includes(mimeType)}
-                    onChange={() => {
+                    onCheckedChange={() => {
                       if (values.accept_mime_types.includes(mimeType)) {
                         setFieldValue(
                           'accept_mime_types',
@@ -156,33 +154,26 @@ const FileIndexingConfiguration: FunctionComponent<
               label={t_i18n('Max file size (in MB)')}
               fullWidth={true}
               type="number"
-              style={{ marginBottom: 20 }}
+              className="mb-5"
               onChange={submitForm}
             />
             <Field
-              component={AutocompleteField}
+              component={ComboboxField}
               name="entity_types"
               multiple={true}
-              fullWidth={true}
-              textfieldprops={{
-                variant: 'standard',
-                label: t_i18n('Restrict to specific entity types'),
-              }}
+              label={t_i18n('Restrict to specific entity types')}
               options={availableEntityTypes}
               isOptionEqualToValue={(option: string, value: string) => option === value
               }
               style={{ marginBottom: 12 }}
               onChange={submitForm}
-              renderOption={(
-                props: React.HTMLAttributes<HTMLLIElement>,
-                option: string,
-              ) => (
-                <li {...props}>
+              renderOption={(option: string) => (
+                <>
                   <div className={classes.icon}>
                     <ItemIcon type={option} />
                   </div>
-                  <ListItemText primary={t_i18n(`entity_${option}`)} />
-                </li>
+                  <span>{t_i18n(`entity_${option}`)}</span>
+                </>
               )}
             />
             <Field

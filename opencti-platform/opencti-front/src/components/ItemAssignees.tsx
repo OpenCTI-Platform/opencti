@@ -1,4 +1,5 @@
 import { FunctionComponent } from 'react';
+import { useFormatter } from './i18n';
 import { stixDomainObjectMutation } from '@components/common/stix_domain_objects/StixDomainObjectHeader';
 import Tooltip from '@mui/material/Tooltip';
 import { truncate } from '../utils/String';
@@ -22,6 +23,7 @@ type Props = {
 };
 
 const ItemAssignees: FunctionComponent<Props> = ({ assignees, stixDomainObjectId, removeMutation = stixDomainObjectMutation, readOnly }) => {
+  const { t_i18n } = useFormatter();
   const canUpdateKnowledge = useGranted([KNOWLEDGE_KNUPDATE]);
   const handleRemoveAssignee = (removedId: string) => {
     const values = assignees.filter((assignee) => assignee.id !== removedId);
@@ -45,6 +47,7 @@ const ItemAssignees: FunctionComponent<Props> = ({ assignees, stixDomainObjectId
           <Tag
             key={assignee.id}
             label={truncate(assignee.name, 25)}
+            deleteLabel={`${t_i18n('Remove')} ${assignee.name}`}
             onDelete={!readOnly && canUpdateKnowledge ? () => (handleRemoveAssignee(assignee.id)) : undefined}
           />
         </Tooltip>

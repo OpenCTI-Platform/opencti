@@ -3,89 +3,52 @@ import React, { CSSProperties, MouseEvent, useState } from 'react';
 import FeedbackCreation from '@components/cases/feedbacks/FeedbackCreation';
 import EnterpriseEditionAgreement from '@components/common/entreprise_edition/EnterpriseEditionAgreement';
 import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { useTheme } from '@mui/material/styles';
 
-/**
- * The bar wants 8px between the label and the chip. The library button lays its
- * label out as a bare text node, so no flex gap falls between the two: the whole
- * distance is this margin. Measured, not assumed.
- */
-const EE_CHIP_EXTRA_GAP = '8px';
+/** Matches the legacy marker's `marginLeft: 6`; a call site may override it. */
+const EE_CHIP_GAP: CSSProperties = { marginInlineStart: 6 };
 
 interface EEChipProps {
   feature?: string;
+  /**
+   * Default `true`: the chip renders as a real `<button>` that opens the EE
+   * dialog. The legacy marker was a `<div>` carrying an `onClick` and no role,
+   * so it was unreachable by keyboard -- the conversion fixes that on its own.
+   *
+   * `false` is for the three sites that sit INSIDE a button, where the
+   * surrounding control owns the click and a nested button would be invalid.
+   */
   clickable?: boolean;
-  floating?: boolean;
-  /** Opt in to the library `Chip`; every other call site keeps the legacy marker. */
-  libraryChip?: boolean;
+  style?: CSSProperties;
 }
 
-const EEChip = React.forwardRef<HTMLDivElement, EEChipProps>((
-  { feature, clickable = true, floating = false, libraryChip = false },
+const EEChip = React.forwardRef<HTMLElement, EEChipProps>((
+  { feature, clickable = true, style },
   ref,
 ) => {
   const isEnterpriseEdition = useEnterpriseEdition();
-  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [displayDialog, setDisplayDialog] = useState(false);
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
   const { settings: { id: settingsId } } = useAuth();
 
-  const onClick = (e: MouseEvent<HTMLDivElement>) => {
+  const onClick = (e: MouseEvent<HTMLElement>) => {
     e.stopPropagation();
     e.preventDefault();
-    return clickable && setDisplayDialog(true);
+    setDisplayDialog(true);
   };
-  const divStyle: CSSProperties = floating
-    ? {
-        float: 'left',
-        fontSize: 'xx-small',
-        height: 18,
-        display: 'inline-flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: 21,
-        margin: '2px 0 0 6px',
-        borderRadius: theme.borderRadius,
-        border: `1px solid ${theme.palette.ee.main}`,
-        color: theme.palette.ee.main,
-        backgroundColor: theme.palette.ee.background,
-        cursor: 'pointer',
-      }
-    : {
-        fontSize: 'xx-small',
-        height: 18,
-        display: 'inline-flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: 21,
-        margin: 'auto',
-        marginLeft: 6,
-        borderRadius: theme.borderRadius,
-        border: `1px solid ${theme.palette.ee.main}`,
-        color: theme.palette.ee.main,
-        backgroundColor: theme.palette.ee.background,
-        cursor: 'pointer',
-      };
 
   return (!isEnterpriseEdition && (
     <>
-      {libraryChip ? (
-        // Decorative by design: the surrounding button owns the click — see fds-migration/LIBRARY-FEEDBACK.md #21
-        <Chip label="EE" severity="ee" style={{ marginInlineStart: EE_CHIP_EXTRA_GAP }} />
-      ) : (
-        <div
-          ref={ref}
-          style={divStyle}
-          onClick={(e) => onClick(e)}
-        >
-          EE
-        </div>
-      )}
+      <Chip
+        ref={ref}
+        label="EE"
+        severity="ee"
+        onClick={clickable ? onClick : undefined}
+        style={{ ...EE_CHIP_GAP, ...style }}
+      />
       {isAdmin ? (
         <EnterpriseEditionAgreement
           open={displayDialog}

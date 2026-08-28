@@ -12,8 +12,7 @@ import Typography from '@mui/material/Typography';
 import { useFormatter } from 'src/components/i18n';
 import useAuth from 'src/utils/hooks/useAuth';
 import { ArrowRightAlt } from '@mui/icons-material';
-import MenuItem from '@mui/material/MenuItem';
-import { Select, SelectChangeEvent } from '@mui/material';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import { StixCoreRelationshipAddInput } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationMutation.graphql';
@@ -324,8 +323,8 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
     });
     setBulkEntityList([...bulkEntityListToEdit]);
   }, [selectedRelationType]);
-  const handleChangeSelectedRelationType = (event: SelectChangeEvent) => {
-    setSelectedRelationType(event.target.value);
+  const handleChangeSelectedRelationType = (value: string) => {
+    setSelectedRelationType(value);
   };
 
   const handleChangeTextArea = async (event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -495,12 +494,17 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
                 />
               </Box>
               <Box id="relationArrow" sx={{ display: 'flex', justifyContent: 'center', padding: '0 20px', flexDirection: 'column', minWidth: '200px' }}>
-                <Select disabled={isSubmitting} onChange={handleChangeSelectedRelationType} value={selectedRelationType}>
-                  {relationListArray.sort((a, b) => (t_i18n(`relationship_${a}`) < t_i18n(`relationship_${b}`) ? -1 : 1)).map((relation) => (
-                    <MenuItem key={relation} value={relation}>
-                      {t_i18n(`relationship_${relation}`)}
-                    </MenuItem>
-                  ))}
+                <Select disabled={isSubmitting} onValueChange={handleChangeSelectedRelationType} value={selectedRelationType}>
+                  <SelectTrigger aria-label={t_i18n('Relationship type')}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent aria-label={t_i18n('Relationship type')}>
+                    {relationListArray.sort((a, b) => (t_i18n(`relationship_${a}`) < t_i18n(`relationship_${b}`) ? -1 : 1)).map((relation) => (
+                      <SelectItem key={relation} value={relation}>
+                        {t_i18n(`relationship_${relation}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
                 <ArrowRightAlt sx={{ alignSelf: 'center', margin: '10px' }} fontSize="large" />
               </Box>

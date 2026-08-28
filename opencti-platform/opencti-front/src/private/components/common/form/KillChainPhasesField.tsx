@@ -1,8 +1,9 @@
-import { CSSProperties, HTMLAttributes, ReactNode, SyntheticEvent, useState } from 'react';
+import { CSSProperties, ReactNode, useState } from 'react';
 import { union } from 'ramda';
 import { Field } from 'formik';
 import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import { ComboboxChangeMeta } from '@filigran/design-system';
+import ComboboxField from '../../../../components/ComboboxField';
 import { killChainPhasesSearchQuery } from '../../settings/KillChainPhases';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
@@ -35,51 +36,48 @@ const KillChainPhasesField = ({
   const { t_i18n } = useFormatter();
   const [killChainPhases, setKillChainPhases] = useState<KillChainPhaseFieldOption[]>([]);
 
-  const searchKillChainPhases = (event?: SyntheticEvent<Element, Event>) => {
-    if (event?.target instanceof HTMLInputElement) {
-      const search = event.target.value ?? '';
-      fetchQuery(killChainPhasesSearchQuery, { search })
-        .toPromise()
-        .then((data) => {
-          const dataNodes = getNodes((data as KillChainPhasesSearchQuery$data).killChainPhases);
-          dataNodes.sort((a, b) => (a.x_opencti_order ?? 0) - (b.x_opencti_order ?? 0));
-          const kcp = dataNodes.map((node) => {
-            return {
-              label: `[${node.kill_chain_name}] ${node.phase_name}`,
-              value: node.id,
-              kill_chain_name: node.kill_chain_name,
-              phase_name: node.phase_name,
-            };
-          });
-          setKillChainPhases(union(killChainPhases, kcp));
+  const searchKillChainPhases = (search: string) => {
+    fetchQuery(killChainPhasesSearchQuery, { search })
+      .toPromise()
+      .then((data) => {
+        const dataNodes = getNodes((data as KillChainPhasesSearchQuery$data).killChainPhases);
+        dataNodes.sort((a, b) => (a.x_opencti_order ?? 0) - (b.x_opencti_order ?? 0));
+        const kcp = dataNodes.map((node) => {
+          return {
+            label: `[${node.kill_chain_name}] ${node.phase_name}`,
+            value: node.id,
+            kill_chain_name: node.kill_chain_name,
+            phase_name: node.phase_name,
+          };
         });
-    }
+        setKillChainPhases(union(killChainPhases, kcp));
+      });
   };
 
   return (
     <Field
-      component={AutocompleteField}
+      component={ComboboxField}
       name={name}
       style={style}
       required={required}
       multiple={true}
       disabled={disabled}
-      textfieldprops={{
-        variant: 'standard',
-        label: t_i18n('Kill chain phases'),
-        helperText: helpertext,
-        onFocus: searchKillChainPhases,
-        required,
-      }}
+      label={t_i18n('Kill chain phases')}
+      helperText={helpertext}
       noOptionsText={t_i18n('No available options')}
       options={killChainPhases}
-      onInputChange={searchKillChainPhases}
-      onChange={typeof onChange === 'function' ? onChange : null}
-      renderOption={(
-        props: HTMLAttributes<HTMLLIElement>,
-        option: KillChainPhaseFieldOption,
-      ) => (
-        <li {...props} key={option.value}>
+      // No getChipColor here on purpose: this query maps label, value,
+      // kill_chain_name and phase_name and never a colour, so `option.color` is
+      // always undefined. The row's icon reads it and paints nothing, which is
+      // what it did before. In the 47 sites that COULD carry a tone, not in the
+      // 32 that build one.
+      onInputChange={(search: string, meta: ComboboxChangeMeta) => {
+        if (meta.cause === 'type') searchKillChainPhases(search);
+      }}
+      onFocusInput={() => searchKillChainPhases('')}
+      onChange={typeof onChange === 'function' ? onChange : undefined}
+      renderOption={(option: KillChainPhaseFieldOption) => (
+        <>
           <div
             style={{
               paddingTop: 4,
@@ -97,7 +95,7 @@ const KillChainPhasesField = ({
             }}
           >{option.label}
           </div>
-        </li>
+        </>
       )}
     />
   );

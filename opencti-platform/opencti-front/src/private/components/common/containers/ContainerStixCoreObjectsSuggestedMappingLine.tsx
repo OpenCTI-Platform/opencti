@@ -7,7 +7,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { CloseOutlined, MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import IconButton from '@common/button/IconButton';
 import {
   ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$data,
@@ -20,7 +20,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import { hexToRGB, itemColor } from '../../../../utils/Colors';
+import { itemEntity } from '../../../../utils/Colors';
 import { DataColumns } from '../../../../components/list_lines';
 import { EMPTY_VALUE } from '../../../../utils/String';
 
@@ -45,14 +45,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
-  },
-  chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    width: 120,
-    textTransform: 'uppercase',
-    borderRadius: 4,
   },
 }));
 
@@ -134,12 +126,7 @@ export const ContainerStixCoreObjectsSuggestedMappingLine: FunctionComponent<
                 style={{ width: dataColumns.entity_type.width }}
               >
                 <Chip
-                  classes={{ root: classes.chipInList }}
-                  style={{
-                    backgroundColor: hexToRGB(itemColor(matchedEntity.entity_type), 0.08),
-                    color: itemColor(matchedEntity.entity_type),
-                    border: `1px solid ${itemColor(matchedEntity.entity_type)}`,
-                  }}
+                  entity={itemEntity(matchedEntity.entity_type)}
                   label={t_i18n(`entity_${matchedEntity.entity_type}`)}
                 />
               </div>
@@ -176,12 +163,7 @@ export const ContainerStixCoreObjectsSuggestedMappingLine: FunctionComponent<
                 style={{ width: dataColumns.mapping.width }}
               >
                 <Chip
-                  classes={{ root: classes.chipInList }}
-                  label={
-                    contentMappingCount[matchedString]
-                      ? contentMappingCount[matchedString]
-                      : '0'
-                  }
+                  label={String(contentMappingCount[matchedString] ?? 0)}
                 />
               </div>
             </>

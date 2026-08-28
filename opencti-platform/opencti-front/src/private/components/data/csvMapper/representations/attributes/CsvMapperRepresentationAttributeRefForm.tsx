@@ -1,7 +1,5 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import classNames from 'classnames';
-import MuiTextField from '@mui/material/TextField';
-import MUIAutocomplete from '@mui/material/Autocomplete';
+import { Combobox, ComboboxChips, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
 import { representationLabel } from '@components/data/csvMapper/representations/RepresentationUtils';
 import * as R from 'ramda';
 import { getBasedOnRepresentations, getInfoForRef } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
@@ -45,11 +43,6 @@ const CsvMapperRepresentationAttributeRefForm: FunctionComponent<
       alignItems: 'center',
       marginTop: '10px',
       gap: '10px',
-    },
-    inputError: {
-      '& fieldset': {
-        borderColor: theme.palette.error.main,
-      },
     },
     redStar: {
       color: theme.palette.designSystem.tertiary.red[400],
@@ -189,11 +182,9 @@ const CsvMapperRepresentationAttributeRefForm: FunctionComponent<
       </div>
       <div>
         {multiple && (
-          <MUIAutocomplete<CsvMapperRepresentationFormData, true>
+          <Combobox<CsvMapperRepresentationFormData>
             selectOnFocus
             openOnFocus
-            autoSelect={false}
-            autoHighlight
             multiple
             getOptionLabel={(option) => {
               const optionIndex = entity_representations.indexOf(option) >= 0 ? entity_representations.indexOf(option) : relationship_representations.indexOf(option);
@@ -201,42 +192,43 @@ const CsvMapperRepresentationAttributeRefForm: FunctionComponent<
             }}
             options={options}
             value={getBasedOnRepresentations(value, options) || null}
-            onChange={(_, val) => onValueChange(val)}
-            renderInput={(params) => (
-              <MuiTextField
-                {...params}
-                label={t_i18n('Representation entity')}
-                variant="outlined"
-                size="small"
-              />
-            )}
-            className={classNames({
-              [classes.inputError]: errors,
-            })}
-          />
+            onValueChange={(val) => onValueChange(val)}
+            error={errors}
+          >
+            <ComboboxLabel>{t_i18n('Representation entity')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxChips aria-label={t_i18n('Representation entity')} />
+              <ComboboxInput />
+              <ComboboxControls>
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              listAriaLabel={t_i18n('Representation entity')}
+            />
+          </Combobox>
         )}
         {!multiple && (
-          <MUIAutocomplete<CsvMapperRepresentationFormData>
+          <Combobox<CsvMapperRepresentationFormData>
             selectOnFocus
             openOnFocus
-            autoSelect={false}
-            autoHighlight
             getOptionLabel={(option) => representationLabel(entity_representations.indexOf(option), option, t_i18n)}
             options={options}
             value={R.head(getBasedOnRepresentations(value, options)) || null}
-            onChange={(_, val) => onValueChange(val)}
-            renderInput={(params) => (
-              <MuiTextField
-                {...params}
-                label={t_i18n('Representation entity')}
-                variant="outlined"
-                size="small"
-              />
-            )}
-            className={classNames({
-              [classes.inputError]: errors,
-            })}
-          />
+            onValueChange={(val) => onValueChange(val)}
+            error={errors}
+          >
+            <ComboboxLabel>{t_i18n('Representation entity')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxInput />
+              <ComboboxControls>
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              listAriaLabel={t_i18n('Representation entity')}
+            />
+          </Combobox>
         )}
       </div>
       <div>

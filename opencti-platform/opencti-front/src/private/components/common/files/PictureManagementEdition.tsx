@@ -104,7 +104,7 @@ const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps>
             label={t_i18n('Order of Carousel')}
             fullWidth={true}
             type="number"
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           <Field
             component={SwitchField}

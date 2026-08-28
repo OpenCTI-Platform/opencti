@@ -12,7 +12,6 @@ import Grid from '@mui/material/Grid2';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import MenuItem from '@mui/material/MenuItem';
 import { useTheme } from '@mui/styles';
 import { Field, Form, Formik } from 'formik';
 import React, { ChangeEvent, useState } from 'react';
@@ -27,7 +26,7 @@ import { SubscriptionFocus } from '../../../components/Subscription';
 import TextField from '../../../components/TextField';
 import type { Theme } from '../../../components/Theme';
 import Card from '../../../components/common/card/Card';
-import SelectField from '../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
@@ -483,7 +482,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     name="platform_favicon"
                     label={t_i18n('Platform favicon URL')}
                     fullWidth
-                    style={{ marginTop: 20 }}
+                    className="mt-5"
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
                     helperText={(
@@ -500,7 +499,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     disabled={!settings.platform_email_configurable}
                     label={t_i18n('Sender email address')}
                     fullWidth
-                    style={{ marginTop: 20 }}
+                    className="mt-5"
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
                     helperText={(
@@ -512,8 +511,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                   />
 
                   <Field
-                    component={SelectField}
-                    variant="standard"
+                    component={SelectFieldFds}
                     name="platform_theme"
                     label={t_i18n('Default theme')}
                     fullWidth
@@ -530,19 +528,18 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     )}
                   >
                     {themes?.edges?.filter((node) => !!node).map(({ node }) => (
-                      <MenuItem
+                      <SelectItem
                         key={node.id}
                         value={node.id}
                         data-testid={`${node.name}-li`}
                       >
                         {node.name}
-                      </MenuItem>
+                      </SelectItem>
                     ))}
                   </Field>
 
                   <Field
-                    component={SelectField}
-                    variant="standard"
+                    component={SelectFieldFds}
                     name="platform_language"
                     label={t_i18n('Language')}
                     fullWidth
@@ -556,10 +553,10 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                       />
                     )}
                   >
-                    <MenuItem value="auto">
+                    <SelectItem value="auto">
                       <em>{t_i18n('Automatic')}</em>
-                    </MenuItem>
-                    {availableLanguage.map(({ value, label }) => <MenuItem key={value} value={value}>{label}</MenuItem>)}
+                    </SelectItem>
+                    {availableLanguage.map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
                   </Field>
                   <HiddenTypesField />
                 </Form>

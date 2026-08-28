@@ -3,7 +3,6 @@ import { Box, Tooltip } from '@mui/material';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import { OptionsFormValues } from '@components/common/files/import_files/ImportFilesDialog';
 import { Field, FormikContextType, FormikProvider } from 'formik';
-import MenuItem from '@mui/material/MenuItem';
 import StixCoreObjectsField from '@components/common/form/StixCoreObjectsField';
 import { useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 import { InformationOutline } from 'mdi-material-ui';
@@ -11,7 +10,7 @@ import AuthorizedMembersField from '@components/common/form/AuthorizedMembersFie
 import { useFormatter } from '../../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import TextField from '../../../../../components/TextField';
-import SelectField from '../../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../../components/fields/SelectFieldFds';
 import { DraftContext } from '../../../../../utils/hooks/useDraftContext';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import MarkdownField from '../../../../../components/fields/markdownField/MarkdownField';
@@ -72,7 +71,7 @@ const ImportFilesOptions = ({
           <>
             <div>
               <Field
-                component={SelectField}
+                component={SelectFieldFds}
                 variant="standard"
                 name="validationMode"
                 containerstyle={{ marginTop: 16, width: '100%', marginRight: 10 }}
@@ -92,19 +91,19 @@ const ImportFilesOptions = ({
                   </>
                 )}
               >
-                <MenuItem
+                <SelectItem
                   key="draft"
                   value="draft"
                 >
                   {t_i18n('Draft')}
-                </MenuItem>
-                <MenuItem
+                </SelectItem>
+                <SelectItem
                   key="workbench"
                   value="workbench"
                   disabled={!isWorkbenchEnabled}
                 >
                   {t_i18n('Workbench')}
-                </MenuItem>
+                </SelectItem>
               </Field>
             </div>
             {optionsFormikContext.values.validationMode === 'draft' && (

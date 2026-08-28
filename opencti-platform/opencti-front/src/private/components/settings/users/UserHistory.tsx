@@ -87,6 +87,7 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
                 to={`/dashboard/search/knowledge/?filters=${encodeURIComponent(technicalCreatorFilters)}`}
                 size="small"
                 color="primary"
+                aria-label={t_i18n('View all entities created by user')}
               >
                 <StorageOutlined fontSize="small" />
               </IconButton>
@@ -97,6 +98,7 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
                 to={`/dashboard/data/relationships/?filters=${encodeURIComponent(technicalCreatorFilters)}`}
                 size="small"
                 color="primary"
+                aria-label={t_i18n('View all relationships created by user')}
               >
                 <VectorRadius fontSize="small" />
               </IconButton>

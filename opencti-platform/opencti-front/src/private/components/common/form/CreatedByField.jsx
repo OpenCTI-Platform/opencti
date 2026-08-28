@@ -3,7 +3,7 @@ import { filter, map, pathOr, pipe, union } from 'ramda';
 import { Field } from 'formik';
 import makeStyles from '@mui/styles/makeStyles';
 import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField from '../../../../components/ComboboxField';
 import IdentityCreation from '../identities/IdentityCreation';
 import { identitySearchIdentitiesSearchQuery } from '../identities/IdentitySearch';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -21,9 +21,6 @@ const useStyles = makeStyles((theme) => ({
     display: 'inline-block',
     flexGrow: 1,
     marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
   },
 }));
 
@@ -113,9 +110,11 @@ const CreatedByField = (props) => {
     }
   }, [debouncedKeyword]);
 
-  const handleSearch = (event) => {
-    if (event && event.target && event.target.value) {
-      setKeyword(event.target.value);
+  const handleSearch = (search, meta) => {
+    // Only a keystroke moves the keyword. Selecting, clearing or reopening also
+    // report an input change, and each one used to re-run the identity search.
+    if (meta.cause === 'type' && search) {
+      setKeyword(search);
     }
   };
 
@@ -129,32 +128,28 @@ const CreatedByField = (props) => {
   return (
     <>
       <Field
-        component={AutocompleteField}
+        component={ComboboxField}
         style={style}
         name={name}
         required={required}
         disabled={disabled}
-        textfieldprops={{
-          variant: 'standard',
-          label: label ?? t_i18n('Author'),
-          helperText: helpertext,
-          onFocus: searchIdentities,
-          required,
-        }}
+        label={label ?? t_i18n('Author')}
+        helperText={helpertext}
+        clearable={clearable}
         noOptionsText={t_i18n('No available options')}
         options={identities.sort((a, b) => a.label.localeCompare(b.label))}
         onInputChange={handleSearch}
-        openCreate={handleOpenIdentityCreation}
+        onFocusInput={searchIdentities}
+        onCreateOption={handleOpenIdentityCreation}
         onChange={typeof onChange === 'function' ? onChange : null}
-        renderOption={({ key, ...innerProps }, option) => (
-          <li key={key} {...innerProps}>
+        renderOption={(option) => (
+          <>
             <div className={classes.icon}>
               <ItemIcon type={option.type} />
             </div>
             <div className={classes.text}>{option.label}</div>
-          </li>
+          </>
         )}
-        classes={{ clearIndicator: clearable ? undefined : classes.autoCompleteIndicator }}
       />
       <IdentityCreation
         contextual={true}

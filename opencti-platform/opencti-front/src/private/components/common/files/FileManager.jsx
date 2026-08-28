@@ -2,7 +2,6 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import Grid from '@mui/material/Grid';
-import MenuItem from '@mui/material/MenuItem';
 import withStyles from '@mui/styles/withStyles';
 import { Field, Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
@@ -12,7 +11,7 @@ import { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import * as Yup from 'yup';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
 import { commitMutation, handleErrorInForm, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
@@ -375,7 +374,7 @@ const FileManager = ({
                 title={t('Launch an import')}
               >
                 <Field
-                  component={SelectField}
+                  component={SelectFieldFds}
                   variant="standard"
                   name="connector_id"
                   label={t('Connector')}
@@ -391,19 +390,19 @@ const FileManager = ({
                           connector.connector_scope,
                         ));
                     return (
-                      <MenuItem
+                      <SelectItem
                         key={i}
                         value={connector.id}
                         disabled={disabled || !connector.active}
                       >
                         {connector.name}
-                      </MenuItem>
+                      </SelectItem>
                     );
                   })}
                 </Field>
                 {selectedConnector?.configurations?.length > 0 && (
                   <Field
-                    component={SelectField}
+                    component={SelectFieldFds}
                     variant="standard"
                     name="configuration"
                     label={t('Configuration')}
@@ -413,12 +412,12 @@ const FileManager = ({
                   >
                     {selectedConnector.configurations.map((config) => {
                       return (
-                        <MenuItem
+                        <SelectItem
                           key={config.id}
                           value={config.configuration}
                         >
                           {config.name}
-                        </MenuItem>
+                        </SelectItem>
                       );
                     })}
                   </Field>
@@ -496,7 +495,7 @@ const FileManager = ({
                       return (
                         <>
                           <Field
-                            component={SelectField}
+                            component={SelectFieldFds}
                             variant="standard"
                             name="format"
                             label={t('Export format')}
@@ -504,29 +503,29 @@ const FileManager = ({
                             containerstyle={{ width: '100%' }}
                           >
                             {exportScopes.map((value, i) => (
-                              <MenuItem
+                              <SelectItem
                                 key={i}
                                 value={value}
                                 disabled={!isExportActive(value)}
                               >
                                 {value}
-                              </MenuItem>
+                              </SelectItem>
                             ))}
                           </Field>
                           <Field
-                            component={SelectField}
+                            component={SelectFieldFds}
                             variant="standard"
                             name="type"
                             label={t('Export type')}
                             fullWidth={true}
                             containerstyle={fieldSpacingContainerStyle}
                           >
-                            <MenuItem value="simple">
+                            <SelectItem value="simple">
                               {t('Simple export (just the entity)')}
-                            </MenuItem>
-                            <MenuItem value="full">
+                            </SelectItem>
+                            <SelectItem value="full">
                               {t('Full export (entity and first neighbours)')}
-                            </MenuItem>
+                            </SelectItem>
                           </Field>
                           <ObjectMarkingField
                             name="contentMaxMarkings"

@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { WarningOutlined } from '@mui/icons-material';
@@ -16,6 +16,14 @@ import { useTheme } from '@mui/styles';
 import { Theme } from '../../components/Theme';
 
 // TODO, use MAX_RUNTIME_RESOLUTION_SIZE from backend
+// The prop only ever arrives as 'warning' or 'success' (WidgetFilters, 4 call
+// sites), so it maps to two tones; absent keeps the library default.
+const chipSeverity = (color?: string) => {
+  if (color === 'warning') return 'high' as const;
+  if (color === 'success') return 'low' as const;
+  return undefined;
+};
+
 const MAX_NUMBER_DYNAMIC_IDS_RESULT = 5000;
 
 export const filterValuesForDynamicSubKeyQuery = graphql`
@@ -64,7 +72,7 @@ const FilterValuesForDynamicSubKeyContainer = ({
         >
           <Chip
             label={t_i18n('Dynamic filter')}
-            color={chipColor}
+            severity={chipSeverity(chipColor)}
           />
         </Box>
       </Tooltip>

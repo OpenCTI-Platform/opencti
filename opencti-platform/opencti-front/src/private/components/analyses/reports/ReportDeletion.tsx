@@ -1,6 +1,6 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import { Alert, AlertTitle, Checkbox, DialogActions, FormControlLabel, FormGroup, Typography } from '@mui/material';
+import { Alert, AlertTitle, DialogActions, FormControlLabel, FormGroup, Typography } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
@@ -10,6 +10,7 @@ import type { Theme } from '../../../../components/Theme';
 import { QueryRenderer } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { ReportDeletionQuery$data } from './__generated__/ReportDeletionQuery.graphql';
+import { Checkbox } from '@filigran/design-system';
 
 const reportDeletionQuery = graphql`
   query ReportDeletionQuery($id: String) {
@@ -104,9 +105,8 @@ const ReportDeletion: FunctionComponent<ReportDeletionProps> = ({
                 <FormControlLabel
                   control={(
                     <Checkbox
-                      disableRipple={true}
                       checked={purgeElements}
-                      onChange={() => setPurgeElements(!purgeElements)}
+                      onCheckedChange={() => setPurgeElements(!purgeElements)}
                     />
                   )}
                   label={t_i18n('Also delete these elements')}

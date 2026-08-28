@@ -144,7 +144,7 @@ const IngestionRssEditionContainer = ({
               name="description"
               label={t('Description')}
               fullWidth={true}
-              style={fieldSpacingContainerStyle}
+              className="mt-5"
               onSubmit={handleSubmitField}
             />
             <IngestionSchedulingField handleSubmitField={handleSubmitField} />
@@ -155,7 +155,7 @@ const IngestionRssEditionContainer = ({
               label={t('RSS feed URL')}
               fullWidth={true}
               onSubmit={handleSubmitField}
-              style={fieldSpacingContainerStyle}
+              className="mt-5"
             />
             <CreatorField
               name="user_id"

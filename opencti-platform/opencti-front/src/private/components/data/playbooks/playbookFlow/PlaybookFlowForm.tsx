@@ -15,13 +15,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import Button from '@common/button/Button';
 import OpenVocabField from '@components/common/form/OpenVocabField';
-import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik, FormikConfig } from 'formik';
 import * as Yup from 'yup';
 import TextField from '../../../../../components/TextField';
 import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
 import PeriodicityField from '../../../../../components/fields/PeriodicityField';
-import SelectField from '../../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../../components/i18n';
 import { parse } from '../../../../../utils/Time';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
@@ -223,16 +222,16 @@ const PlaybookFlowForm = ({
                     return (
                       <Field
                         key={propName}
-                        component={SelectField}
+                        component={SelectFieldFds}
                         variant="standard"
                         name="type_affinity"
                         label={t_i18n('Type affinity')}
                         fullWidth={true}
                         containerstyle={{ width: '100%', marginTop: 20 }}
                       >
-                        <MenuItem key="ENDPOINT" value="ENDPOINT">
+                        <SelectItem key="ENDPOINT" value="ENDPOINT">
                           {t_i18n('Endpoint')}
-                        </MenuItem>
+                        </SelectItem>
                       </Field>
                     );
                   }

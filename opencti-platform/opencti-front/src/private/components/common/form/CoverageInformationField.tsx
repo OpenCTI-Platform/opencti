@@ -1,7 +1,7 @@
 import React, { FunctionComponent, ReactElement } from 'react';
 import { Field, FieldArray } from 'formik';
 import Button from '@common/button/Button';
-import { IconButton } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { DeleteOutlined } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import { graphql } from 'react-relay';
@@ -131,15 +131,17 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
                     />
                   </div>
                   <IconButton
+                    variant="default"
+                    priority="tertiary"
+                    size="sm"
                     id={`deleteCoverageInfo_${index}`}
                     aria-label="Delete"
                     onClick={() => {
                       arrayHelpers.remove(index);
                     }}
                     style={{ position: 'absolute', right: -10, top: 5 }}
-                  >
-                    <DeleteOutlined />
-                  </IconButton>
+                    icon={<DeleteOutlined />}
+                  />
                 </div>
               ))}
               <Button
@@ -283,28 +285,14 @@ export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformation
                   </div>
                   {(values?.length ?? 0) > 0 && (
                     <IconButton
+                      variant="default"
+                      priority="tertiary"
+                      size="sm"
                       id={`deleteCoverageInfo_${index}`}
                       aria-label="Delete"
-                      onClick={() => {
-                        arrayHelpers.remove(index);
-                        commitMutation({
-                          ...defaultCommitMutation,
-                          mutation: coverageInformationMutation,
-                          variables: {
-                            id,
-                            input: {
-                              key: 'coverage_information',
-                              object_path: `/coverage_information/${index}`,
-                              value: [],
-                              operation: 'remove',
-                            },
-                          },
-                        });
-                      }}
                       style={{ position: 'absolute', right: -10, top: 5 }}
-                    >
-                      <DeleteOutlined />
-                    </IconButton>
+                      icon={<DeleteOutlined />}
+                    />
                   )}
                 </div>
               ))}

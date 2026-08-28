@@ -7,14 +7,13 @@ import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
 import Alert from '@mui/material/Alert';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import MenuItem from '@mui/material/MenuItem';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { PublicDashboardCreationFormDashboardsQuery } from '@components/workspaces/dashboards/public_dashboards/__generated__/PublicDashboardCreationFormDashboardsQuery.graphql';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
 import SwitchField from '../../../../../components/fields/SwitchField';
-import SelectField from '../../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../../components/fields/SelectFieldFds';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { handleError, MESSAGING$ } from '../../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
@@ -136,7 +135,7 @@ const PublicDashboardCreationFormComponent = ({
       {({ isSubmitting, isValid, dirty, handleReset, submitForm, setFieldValue, values }) => (
         <Form>
           <Field
-            component={SelectField}
+            component={SelectFieldFds}
             variant="standard"
             name="dashboard_id"
             label={t_i18n('Custom dashboard')}
@@ -145,9 +144,9 @@ const PublicDashboardCreationFormComponent = ({
             disabled={!!dashboard_id}
           >
             {dashboards?.map((dashboard) => (
-              <MenuItem key={dashboard.id} value={dashboard.id}>
+              <SelectItem key={dashboard.id} value={dashboard.id}>
                 {dashboard.name}
-              </MenuItem>
+              </SelectItem>
             ))}
           </Field>
 
@@ -164,7 +163,7 @@ const PublicDashboardCreationFormComponent = ({
             component={TextField}
             variant="standard"
             label={t_i18n('Name')}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
             onChange={(_: string, val: string) => {
               setFieldValue('uri_key', generatePublicDashboardUriKey(val));
             }}

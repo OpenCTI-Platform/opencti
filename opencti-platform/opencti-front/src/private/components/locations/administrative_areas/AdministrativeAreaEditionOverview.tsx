@@ -290,7 +290,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<
           <Field
             component={TextField}
             variant="standard"
-            style={{ marginTop: 20 }}
+            className="mt-5"
             name="latitude"
             type="number"
             label={t_i18n('Latitude')}
@@ -305,7 +305,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<
           <Field
             component={TextField}
             variant="standard"
-            style={{ marginTop: 20 }}
+            className="mt-5"
             name="longitude"
             type="number"
             label={t_i18n('Longitude')}

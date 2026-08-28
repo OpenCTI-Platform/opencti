@@ -9,9 +9,7 @@ import Tab from '@mui/material/Tab';
 import IconButton from '@common/button/IconButton';
 import Popover from '@mui/material/Popover';
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import makeStyles from '@mui/styles/makeStyles';
@@ -199,8 +197,8 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
     }
   };
 
-  const handleChangeTimeField = (event: SelectChangeEvent) => {
-    setTimeField(event.target.value);
+  const handleChangeTimeField = (value: string) => {
+    setTimeField(value);
   };
 
   const handleChangeNestedRelationships = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -450,15 +448,18 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
             elevation={1}
           >
             <FormControl style={{ width: '100%' }}>
-              <InputLabel id="timeField">{t_i18n('Date reference')}</InputLabel>
               <Select
-                labelId="timeField"
                 value={timeField === null ? '' : timeField}
-                onChange={handleChangeTimeField}
-                fullWidth={true}
+                onValueChange={handleChangeTimeField}
               >
-                <MenuItem value="technical">{t_i18n('Technical date')}</MenuItem>
-                <MenuItem value="functional">{t_i18n('Functional date')}</MenuItem>
+                <SelectLabel>{t_i18n('Date reference')}</SelectLabel>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent aria-label={t_i18n('Date reference')}>
+                  <SelectItem value="technical">{t_i18n('Technical date')}</SelectItem>
+                  <SelectItem value="functional">{t_i18n('Functional date')}</SelectItem>
+                </SelectContent>
               </Select>
             </FormControl>
             <FormControlLabel

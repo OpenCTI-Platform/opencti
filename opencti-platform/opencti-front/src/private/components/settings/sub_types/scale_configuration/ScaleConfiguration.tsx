@@ -4,8 +4,8 @@ import * as Yup from 'yup';
 import { FormikErrors, FormikValues } from 'formik';
 import { clone } from 'ramda';
 import { Add } from '@mui/icons-material';
-import { FormControl, IconButton, InputLabel, MenuItem, Select, Typography } from '@mui/material';
-import { Paper } from '@filigran/design-system';
+import { Typography } from '@mui/material';
+import { IconButton, Paper, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import { allScales, customScaleName, findSelectedScaleName } from '../../../../../utils/hooks/useScale';
@@ -204,24 +204,21 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
       </Typography>
       <Paper padding={16} style={{ marginTop: 8 }}>
         <div className={classes.container}>
-          <FormControl sx={{ m: 1, minWidth: 140, margin: 0 }}>
-            <InputLabel id="scale-selector">
-              {t_i18n('Selected scale template')}
-            </InputLabel>
-            <Select
-              labelId="scale-selector"
-              value={currentScaleName}
-              onChange={(event) => selectScale(event.target.value)}
-            >
+          <Select value={currentScaleName} onValueChange={selectScale}>
+            <SelectLabel>{t_i18n('Selected scale template')}</SelectLabel>
+            <SelectTrigger className="min-w-[140px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent aria-label={t_i18n('Selected scale template')}>
               {selectorScales.map((scale, i: number) => {
                 return (
-                  <MenuItem key={i} value={scale.name}>
+                  <SelectItem key={i} value={scale.name}>
                     {scale.name}
-                  </MenuItem>
+                  </SelectItem>
                 );
               })}
-            </Select>
-          </FormControl>
+            </SelectContent>
+          </Select>
           <ScaleBar scale={tickDefinition} />
           <Typography variant="h4">{t_i18n('Customize scale')}</Typography>
           <Typography variant="h3" gutterBottom={true}>
@@ -266,13 +263,13 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
               {t_i18n('Ticks')}
             </Typography>
             <IconButton
-              color="secondary"
+              variant="default"
+              priority="tertiary"
+              className={classes.createButton}
               aria-label="Add"
               onClick={addTickRow}
-              classes={{ root: classes.createButton }}
-            >
-              <Add fontSize="small" />
-            </IconButton>
+              icon={<Add fontSize="small" />}
+            />
           </div>
           {tickDefinition.ticks.map((tick, index) => (
             <ScaleConfigurationLine

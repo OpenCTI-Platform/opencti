@@ -1,8 +1,7 @@
 import { Field, FieldProps, Formik } from 'formik';
 import React from 'react';
-import MenuItem from '@mui/material/MenuItem';
 import { useFormatter } from '../../../../components/i18n';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 
 export type EntityMarkingDefinition = {
   id: string;
@@ -72,23 +71,23 @@ const MaxShareableMarkingsSelectField = ({
             fullWidth={true}
             variant="standard"
             containerstyle={{ marginTop: i > 0 ? 20 : 5, width: '100%' }}
-            component={SelectField}
+            component={SelectFieldFds}
             onChange={changeMarking}
             displ
           >
-            <MenuItem value={ALL_ID} key={ALL_ID}>
+            <SelectItem value={ALL_ID} key={ALL_ID}>
               {t_i18n('No restrictions')}
-            </MenuItem>
-            <MenuItem value={NOT_SHAREABLE_ID} key={NOT_SHAREABLE_ID}>
+            </SelectItem>
+            <SelectItem value={NOT_SHAREABLE_ID} key={NOT_SHAREABLE_ID}>
               {t_i18n('Not shareable')}
-            </MenuItem>
+            </SelectItem>
             {markingDefinitions
               .filter((def) => def.definition_type === type)
               .sort((defA, defB) => defA.x_opencti_order - defB.x_opencti_order)
               .map((def) => (
-                <MenuItem value={def.id} key={def.id}>
+                <SelectItem value={def.id} key={def.id}>
                   {def.definition}
-                </MenuItem>
+                </SelectItem>
               ))}
           </Field>
         ))

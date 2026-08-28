@@ -6,7 +6,6 @@ import * as R from 'ramda';
 import * as Yup from 'yup';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
-import MenuItem from '@mui/material/MenuItem';
 import { Add, ArrowRightAlt, ChevronRightOutlined } from '@mui/icons-material';
 import Fab from '@mui/material/Fab';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -21,7 +20,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { minutesBefore, now, parse } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import StixNestedRefRelationCreationFromEntityLines, { stixNestedRefRelationshipCreationFromEntityLinesQuery } from './StixNestedRefRelationshipCreationFromEntityLines';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import { truncate } from '../../../../utils/String';
@@ -761,7 +760,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                 </div>
               </div>
               <Field
-                component={SelectField}
+                component={SelectFieldFds}
                 variant="standard"
                 name="relationship_type"
                 label={t_i18n('Relationship type')}
@@ -770,9 +769,9 @@ const StixNestedRefRelationshipCreationFromEntity = ({
               >
                 {R.map(
                   (type) => (
-                    <MenuItem key={type} value={type}>
+                    <SelectItem key={type} value={type}>
                       {t_i18n(`relationship_${type}`)}
-                    </MenuItem>
+                    </SelectItem>
                   ),
                   relationshipTypes,
                 )}
@@ -859,6 +858,9 @@ const StixNestedRefRelationshipCreationFromEntity = ({
         </IconButton>
       ) : (
         <Fab
+          // FDS-FAB: stays on MUI. The library ships no floating action
+          // button, so this control has nothing to convert to. Owner: the
+          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
           onClick={handleOpen}
           color="primary"
           aria-label="Add"

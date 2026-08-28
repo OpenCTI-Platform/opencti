@@ -79,6 +79,7 @@ const AttackPatternSubAttackPatternsComponent = ({ attackPattern }) => {
                     onClick={() => removeSubAttackPattern(
                       subAttackPattern,
                     )}
+                    aria-label={t_i18n('Delete relationship')}
                   >
                     <Delete />
                   </IconButton>

@@ -1,4 +1,15 @@
-import { Autocomplete, Checkbox, Chip, TextField, TextFieldProps, TextFieldVariants } from '@mui/material';
+import {
+  Checkbox,
+  Combobox,
+  ComboboxChips,
+  type ComboboxChangeMeta,
+  ComboboxContent,
+  ComboboxControls,
+  ComboboxField,
+  ComboboxInput,
+  ComboboxLabel,
+  ComboboxTrigger,
+} from '@filigran/design-system';
 import React, { Suspense, useEffect, useTransition } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { useTheme } from '@mui/styles';
@@ -9,7 +20,6 @@ import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { FieldOption } from '../../../../utils/field';
-import { truncate } from '../../../../utils/String';
 
 const entitySelectSearchQuery = graphql`
   query EntitySelectSearchQuery($search: String, $filters: FilterGroup) {
@@ -33,8 +43,7 @@ export type EntityOption = Pick<FieldOption, 'label' | 'value'> & {
 
 interface EntitySelectBaseProps {
   label: string;
-  variant?: TextFieldVariants;
-  size?: TextFieldProps['size'];
+
   onInputChange: (val: string) => void;
   queryRef: PreloadedQuery<EntitySelectSearchQuery>;
 }
@@ -48,8 +57,7 @@ interface EntitySelectComponentProps extends EntitySelectBaseProps {
 const EntitySelectComponent = ({
   label,
   value,
-  variant,
-  size,
+
   multiple = false,
   onChange,
   onInputChange,
@@ -67,34 +75,26 @@ const EntitySelectComponent = ({
   }));
 
   return (
-    <Autocomplete
+    <Combobox<EntityOption>
       value={value}
       options={options}
       multiple={multiple}
-      disableCloseOnSelect={multiple}
-      noOptionsText={t_i18n('No available options')}
+      // MUI's disableCloseOnSelect is the library's closeOnSelect inverted, and
+      // the library already defaults it to false in multiple mode.
+      closeOnSelect={!multiple}
       isOptionEqualToValue={(option, val) => option.value === val.value}
-      onInputChange={(_, val) => throttleSearch(val)}
-      onChange={(_, val) => onChange?.(val)}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          variant={variant}
-          size={size}
-          label={label}
-        />
-      )}
-      renderOption={({ key, ...props }, option) => (
-        <li
-          key={key}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: theme.spacing(1.5),
-            height: theme.spacing(6),
-            paddingInlineStart: multiple ? theme.spacing(1) : theme.spacing(2),
-          }}
-          {...props}
+      getOptionLabel={(option) => option?.label ?? ''}
+      onInputChange={(val: string, meta: ComboboxChangeMeta) => {
+        if (meta.cause === 'type') throttleSearch(val);
+      }}
+      onValueChange={(next) => onChange?.(next)}
+      renderOption={(option) => (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: theme.spacing(1.5),
+          width: '100%',
+        }}
         >
           {multiple && (
             <Checkbox
@@ -110,23 +110,26 @@ const EntitySelectComponent = ({
           >
             {option.label}
           </span>
-        </li>
+        </div>
       )}
-      renderTags={(values, getTagProps) => (
-        values.map((option, index) => (
-          <Chip
-            {...getTagProps({ index })}
-            key={option.value}
-            label={truncate(option.label, 50)}
-            size="small"
-            style={{
-              marginBlock: 0,
-              marginInline: 3,
-            }}
-          />
-        ))
-      )}
-    />
+    >
+      <ComboboxLabel>{label}</ComboboxLabel>
+      <ComboboxField>
+        {/* renderTags is gone: chips come from getOptionLabel, so the 50-char
+            truncation goes with it — the same removal as the other chip fields,
+            since one label function now serves the chip, the input and the
+            filter. */}
+        {multiple && <ComboboxChips aria-label={label} />}
+        <ComboboxInput />
+        <ComboboxControls>
+          <ComboboxTrigger />
+        </ComboboxControls>
+      </ComboboxField>
+      <ComboboxContent
+        emptyMessage={t_i18n('No available options')}
+        listAriaLabel={label}
+      />
+    </Combobox>
   );
 };
 

@@ -99,6 +99,7 @@ const SavedFilterButton = ({ currentSavedFilter, setCurrentSavedFilter }: SavedF
           onClick={handleSaveButtonClick}
           size="small"
           disabled={isDisabled}
+          aria-label={t_i18n('Save the filter')}
         >
           {!hasSameFilters && currentSavedFilter
             ? renderBadge()

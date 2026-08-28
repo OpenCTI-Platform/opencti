@@ -152,6 +152,7 @@ const StixCoreObjectContentFilesList = ({
                               color={isEnterpriseEdition ? 'primary' : 'ee'}
                               aria-label="disseminate"
                               disabled={!isEnterpriseEdition}
+                              keepMui
                             >
                               <SendOutlined fontSize="small" />
                             </IconButton>

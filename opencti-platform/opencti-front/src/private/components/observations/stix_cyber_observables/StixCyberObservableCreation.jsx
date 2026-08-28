@@ -907,7 +907,7 @@ const StixCyberObservableCreation = ({
                                 label={attribute.value}
                                 fullWidth={true}
                                 type="number"
-                                style={{ marginTop: 20 }}
+                                className="mt-5"
                               />
                             );
                           }
@@ -951,7 +951,7 @@ const StixCyberObservableCreation = ({
                                 name={attribute.value}
                                 label={t_i18n(attribute.value)}
                                 fullWidth={true}
-                                style={{ marginTop: 20 }}
+                                className="mt-5"
                                 onSubmit={setDefaultAutonomousSystemId}
                               />
                             );
@@ -965,7 +965,7 @@ const StixCyberObservableCreation = ({
                               label={attributeLabel}
                               required={isValueAttribute}
                               fullWidth={true}
-                              style={{ marginTop: 20 }}
+                              className="mt-5"
                             />
                           );
                         })}
@@ -1094,6 +1094,10 @@ const StixCyberObservableCreation = ({
       <div style={{ display: display ? 'block' : 'none' }}>
         {!speeddial && (
           <Fab
+            /* FAB — Sandy's UX decision pending (2026-08-26). Deliberately still
+               MUI: whether these floating action buttons keep their shape or are
+               rethought as in-page buttons is a product/UX call, not a mechanical
+               conversion, so the Button/Chip wave leaves all 9 untouched. */
             onClick={handleOpen}
             color="primary"
             aria-label="Add"

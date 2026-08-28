@@ -133,7 +133,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
                 name="description"
                 label={t_i18n('Description')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <Field
                 component={AutocompleteFreeSoloField}
@@ -145,15 +145,9 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
                   label: t_i18n('Aliases'),
                 }}
                 options={[]}
-                renderOption={(
-                  props: Record<string, unknown>,
-                  option: FieldOption,
-                ) => (
-                  <li {...props}>
-                    <div className={classes.text}>{option.label}</div>
-                  </li>
+                renderOption={(option: FieldOption) => (
+                  <div className={classes.text}>{option.label}</div>
                 )}
-                classes={{ clearIndicator: classes.autoCompleteIndicator }}
               />
               <Field
                 component={TextField}
@@ -162,7 +156,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
                 label={t_i18n('Order')}
                 fullWidth={true}
                 type="number"
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <div className={classes.buttons}>
                 <Button

@@ -197,7 +197,7 @@ export const ObservedDataCreationForm: FunctionComponent<
             label={t_i18n('Number observed')}
             required={(mandatoryAttributes.includes('number_observed'))}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           <ConfidenceField
             entityType="Observed-Data"

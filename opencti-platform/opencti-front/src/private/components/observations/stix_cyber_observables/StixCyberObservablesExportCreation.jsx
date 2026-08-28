@@ -4,7 +4,6 @@ import { Add, InfoOutlined } from '@mui/icons-material';
 import { Stack } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
 import Fab from '@mui/material/Fab';
-import MenuItem from '@mui/material/MenuItem';
 import Slide from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
 import withStyles from '@mui/styles/withStyles';
@@ -14,7 +13,7 @@ import { compose, filter, flatten, fromPairs, includes, map, propOr, uniq, zip }
 import React, { Component } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import * as Yup from 'yup';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import inject18n from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
@@ -158,6 +157,9 @@ class StixCyberObservablesExportCreationComponent extends Component {
                 aria-label="generate-export"
               >
                 <Fab
+                  // FDS-FAB: stays on MUI. The library ships no floating action
+                  // button, so this control has nothing to convert to. Owner: the
+                  // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
                   onClick={this.handleOpen.bind(this)}
                   color="primary"
                   aria-label="Add"
@@ -207,7 +209,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
                             return (
                               <>
                                 <Field
-                                  component={SelectField}
+                                  component={SelectFieldFds}
                                   variant="standard"
                                   name="format"
                                   label={t('Export format')}
@@ -215,31 +217,31 @@ class StixCyberObservablesExportCreationComponent extends Component {
                                   containerstyle={{ width: '100%' }}
                                 >
                                   {exportScopes.map((value, i) => (
-                                    <MenuItem
+                                    <SelectItem
                                       key={i}
                                       value={value}
                                       disabled={!isExportActive(value)}
                                     >
                                       {value}
-                                    </MenuItem>
+                                    </SelectItem>
                                   ))}
                                 </Field>
                                 <Field
-                                  component={SelectField}
+                                  component={SelectFieldFds}
                                   variant="standard"
                                   name="type"
                                   label={t('Export type')}
                                   fullWidth={true}
                                   containerstyle={fieldSpacingContainerStyle}
                                 >
-                                  <MenuItem value="simple">
+                                  <SelectItem value="simple">
                                     {t('Simple export (just the entity)')}
-                                  </MenuItem>
-                                  <MenuItem value="full">
+                                  </SelectItem>
+                                  <SelectItem value="full">
                                     {t(
                                       'Full export (entity and first neighbours)',
                                     )}
-                                  </MenuItem>
+                                  </SelectItem>
                                 </Field>
                                 <ObjectMarkingField
                                   name="contentMaxMarkings"
@@ -258,19 +260,19 @@ class StixCyberObservablesExportCreationComponent extends Component {
                                 {visibleColumnExportEnabledFormats.includes(values.format)
                                   ? (
                                       <Field
-                                        component={SelectField}
+                                        component={SelectFieldFds}
                                         variant="standard"
                                         name="columns"
                                         label={t('Choose column to export')}
                                         fullWidth={true}
                                         containerstyle={fieldSpacingContainerStyle}
                                       >
-                                        <MenuItem value="all">
+                                        <SelectItem value="all">
                                           {t('All attributes')}
-                                        </MenuItem>
-                                        <MenuItem value="view">
+                                        </SelectItem>
+                                        <SelectItem value="view">
                                           {t('Current view')}
-                                        </MenuItem>
+                                        </SelectItem>
                                       </Field>
                                     ) : undefined}
                               </>

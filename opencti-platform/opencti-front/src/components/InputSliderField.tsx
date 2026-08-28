@@ -1,6 +1,7 @@
 import { Field, FieldProps } from 'formik';
 import React, { FunctionComponent, useState } from 'react';
-import { Grid, MenuItem, Select, SelectChangeEvent, Slider } from '@mui/material';
+import { Grid, Slider } from '@mui/material';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import FormHelperText from '@mui/material/FormHelperText';
 import SimpleTextField from './SimpleTextField';
 import { SubscriptionFocus } from './Subscription';
@@ -56,9 +57,9 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
       background: `${color}`,
     },
   };
-  const updateFromSelect = (event: SelectChangeEvent) => {
-    setFieldValue(name, event.target.value);
-    onSubmit?.(name, event.target.value);
+  const updateFromSelect = (newValue: string) => {
+    setFieldValue(name, newValue);
+    onSubmit?.(name, newValue);
   };
   const currentLevel = buildScaleLevel(value, scale);
 
@@ -86,23 +87,25 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
           </Grid>
           <Grid item xs={6}>
             <Select
-              fullWidth
-              labelId={name}
               value={currentLevel.level.value?.toString() ?? ''}
-              onChange={updateFromSelect}
+              onValueChange={updateFromSelect}
               disabled={finalDisabled}
-              sx={{ marginTop: 2 }} // to align field with the number input, that has a label
             >
-              {marks.map((mark, i: number) => {
-                return (
-                  <MenuItem
-                    key={i}
-                    value={mark.value.toString()}
-                  >
-                    {mark.label}
-                  </MenuItem>
-                );
-              })}
+              <SelectTrigger aria-label={label}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent aria-label={label}>
+                {marks.map((mark, i: number) => {
+                  return (
+                    <SelectItem
+                      key={i}
+                      value={mark.value.toString()}
+                    >
+                      {mark.label}
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
             </Select>
           </Grid>
         </Grid>
@@ -138,23 +141,25 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
         </Grid>
         <Grid item xs={6}>
           <Select
-            fullWidth
-            labelId={name}
             value={currentLevel.level.value?.toString() ?? ''}
-            onChange={(event) => setFieldValue(name, event.target.value)}
+            onValueChange={(newValue) => setFieldValue(name, newValue)}
             disabled={disabled}
-            sx={{ marginTop: 2 }}
           >
-            {marks.map((mark, i: number) => {
-              return (
-                <MenuItem
-                  key={i}
-                  value={mark.value.toString()}
-                >
-                  {mark.label}
-                </MenuItem>
-              );
-            })}
+            <SelectTrigger aria-label={label}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent aria-label={label}>
+              {marks.map((mark, i: number) => {
+                return (
+                  <SelectItem
+                    key={i}
+                    value={mark.value.toString()}
+                  >
+                    {mark.label}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
           </Select>
         </Grid>
       </Grid>

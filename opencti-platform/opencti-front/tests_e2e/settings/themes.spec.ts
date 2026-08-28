@@ -81,7 +81,11 @@ test('Custom theme creation, logo edition, and deletion', { tag: ['@ce'] }, asyn
 
   try {
     // Select system default
-    await page.locator('#mui-component-select-platform_theme').click();
+    // The default-theme field is on the library Select now, so the MUI-generated
+  // `#mui-component-select-<name>` id is gone. Targeted by its accessible role
+  // and name instead, which is what a user and a screen reader both use, and
+  // which survives the next implementation change too.
+  await page.getByRole('combobox', { name: 'Default theme' }).click();
     await page.getByTestId(`${THEME.name}-li`).click();
     // The logo swap also proves the settings mutation completed
     await expect(logoImage).toHaveAttribute('src', /googlelogo/);

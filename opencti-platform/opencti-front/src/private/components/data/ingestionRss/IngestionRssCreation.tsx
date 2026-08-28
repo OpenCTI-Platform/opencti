@@ -174,7 +174,7 @@ const IngestionRssCreation: FunctionComponent<IngestionRssCreationProps> = ({ pa
                 name="description"
                 label={t_i18n('Description')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <IngestionSchedulingField />
               <Field
@@ -183,7 +183,7 @@ const IngestionRssCreation: FunctionComponent<IngestionRssCreationProps> = ({ pa
                 name="uri"
                 label={t_i18n('RSS Feed URL')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <IngestionCreationUserHandling
                 default_confidence_level={50}

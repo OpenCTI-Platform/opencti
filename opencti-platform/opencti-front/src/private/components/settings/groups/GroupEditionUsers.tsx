@@ -1,6 +1,5 @@
 import React, { FunctionComponent, ReactNode } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import Checkbox from '@mui/material/Checkbox';
 import { GroupEditionContainer_group$data } from '@components/settings/groups/__generated__/GroupEditionContainer_group.graphql';
 import { GroupUsersLinesQuery$variables } from '@components/settings/users/__generated__/GroupUsersLinesQuery.graphql';
 import { toolBarUsersLinesSearchQuery } from '@components/data/DataTableToolBar';
@@ -9,6 +8,7 @@ import { deleteNodeFromId, insertNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DataTableWithoutFragment from '../../../../components/dataGrid/DataTableWithoutFragment';
 import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
+import { Checkbox } from '@filigran/design-system';
 
 const userMutationRelationAdd = graphql`
   mutation GroupEditionUsersRelationAddMutation(
@@ -59,12 +59,12 @@ const GroupEditionUsers: FunctionComponent<GroupEditionUsersProps> = ({ group, q
 
   const [commitAddUser] = useApiMutation(userMutationRelationAdd);
   const [commitRemoveUser] = useApiMutation(userMutationRelationDelete);
-  const handleToggle = (userId: string, groupUser: { id: string } | undefined, event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleToggle = (userId: string, groupUser: { id: string } | undefined, checked: boolean) => {
     const input = {
       fromId: userId,
       relationship_type: 'member-of',
     };
-    if (event.target.checked) {
+    if (checked) {
       commitAddUser({
         variables: {
           id: groupId,
@@ -113,10 +113,11 @@ const GroupEditionUsers: FunctionComponent<GroupEditionUsersProps> = ({ group, q
         const groupUser = groupUsers.find((g) => g.id === user.id);
         return (
           <Checkbox
-            onClick={(event) => handleToggle(
+            aria-label={user.name}
+            onCheckedChange={(state) => handleToggle(
               user.id,
               groupUser,
-              event as unknown as React.ChangeEvent<HTMLInputElement>,
+              state === true,
             )}
             checked={groupUser !== undefined}
           />

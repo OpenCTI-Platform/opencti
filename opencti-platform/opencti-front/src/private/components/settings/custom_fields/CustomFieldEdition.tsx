@@ -3,9 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import { pick } from 'ramda';
 import * as Yup from 'yup';
-import Chip from '@mui/material/Chip';
-import MuiAutocomplete from '@mui/material/Autocomplete';
-import MuiTextField from '@mui/material/TextField';
+import { Combobox, ComboboxChips, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, handleError } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -103,7 +101,7 @@ const CustomFieldEdition: FunctionComponent<CustomFieldEditionProps> = ({
             label={t_i18n('Field type')}
             fullWidth={true}
             disabled
-            style={{ marginTop: 20 }}
+            className="mt-5"
           />
           <Field
             component={TextField}
@@ -111,7 +109,7 @@ const CustomFieldEdition: FunctionComponent<CustomFieldEditionProps> = ({
             name="label"
             label={t_i18n('Label')}
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onSubmit={handleSubmitField}
           />
           {data.field_type === 'integer' && (
@@ -123,7 +121,7 @@ const CustomFieldEdition: FunctionComponent<CustomFieldEditionProps> = ({
                 name="min_value"
                 label={t_i18n('Min value')}
                 fullWidth={true}
-                style={{ marginTop: 20 }}
+                className="mt-5"
                 onSubmit={handleSubmitField}
               />
               <Field
@@ -133,33 +131,33 @@ const CustomFieldEdition: FunctionComponent<CustomFieldEditionProps> = ({
                 name="max_value"
                 label={t_i18n('Max value')}
                 fullWidth={true}
-                style={{ marginTop: 20 }}
+                className="mt-5"
                 onSubmit={handleSubmitField}
               />
             </>
           )}
           {(data.field_type === 'select' || data.field_type === 'multi_select') && (
-            <MuiAutocomplete
+            <Combobox<string>
               multiple
-              freeSolo
               options={[]}
+              allowCustomValue
+              createValueFromInput={(input) => input}
               value={values.select_options ? [...values.select_options] : []}
-              onChange={(_, newValue) => handleSubmitField('select_options', newValue)}
-              renderTags={(tagValue, getTagProps) => tagValue.map((option: string, index: number) => (
-                <Chip label={option} {...getTagProps({ index })} key={option} />
-              ))}
-              renderInput={(params) => (
-                <MuiTextField
-                  {...params}
-                  variant="standard"
-                  label={t_i18n('Select options')}
+              onValueChange={(newValue) => handleSubmitField('select_options', newValue)}
+              className="mt-5"
+            >
+              <ComboboxLabel>{t_i18n('Select options')}</ComboboxLabel>
+              <ComboboxField>
+                <ComboboxChips aria-label={t_i18n('Select options')} />
+                <ComboboxInput
                   placeholder={(values.select_options ?? []).length === 0
                     ? t_i18n('Type and press Enter to add items')
                     : t_i18n('Add more items...')}
-                  style={{ marginTop: 20 }}
                 />
-              )}
-            />
+                <ComboboxControls />
+              </ComboboxField>
+              <ComboboxContent listAriaLabel={t_i18n('Select options')} />
+            </Combobox>
           )}
           <Field
             component={TextareaField}

@@ -261,7 +261,7 @@ const StixSightingRelationshipCreationForm = ({
               label={t_i18n('Count')}
               fullWidth={true}
               type="number"
-              style={{ marginTop: 20 }}
+              className="mt-5"
             />
             <ConfidenceField
               entityType="stix-sighting-relationship"

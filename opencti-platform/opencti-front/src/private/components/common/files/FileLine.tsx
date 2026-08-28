@@ -300,6 +300,8 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                   aria-haspopup="true"
                   // color={nested ? 'inherit' : 'primary'}
                   size="small"
+                  keepMui
+                  aria-label={t_i18n('Launch the import')}
                 >
                   <ProgressUpload fontSize="small" />
                 </IconButton>
@@ -322,6 +324,8 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                     aria-haspopup="true"
                     // color={nested ? 'inherit' : 'primary'}
                     size="small"
+                    keepMui
+                    aria-label={t_i18n('Download the file')}
                   >
                     <GetAppOutlined fontSize="small" />
                   </IconButton>
@@ -368,6 +372,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                           handleOpenRemove();
                         }}
                         size="small"
+                        aria-label={t_i18n('Delete the file')}
                       >
                         <DeleteOutlined fontSize="small" color={deleteFileColor} />
                       </IconButton>
@@ -385,6 +390,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                           handleOpenDelete();
                         }}
                         size="small"
+                        aria-label={t_i18n('Delete the file')}
                       >
                         <DeleteOutlined fontSize="small" color={deleteFileColor} />
                       </IconButton>

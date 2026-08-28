@@ -31,7 +31,6 @@ import { useFormatter } from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { isNotEmptyField } from '../../../../utils/utils';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { PlaybookCreationImportMutation } from './__generated__/PlaybookCreationImportMutation.graphql';
@@ -181,7 +180,7 @@ const PlaybookCreation = () => {
                   variant="standard"
                   name="description"
                   label={t_i18n('Description')}
-                  style={fieldSpacingContainerStyle}
+                  className="mt-5"
                   fullWidth
                 />
                 <FormButtonContainer>

@@ -2,14 +2,13 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { InfoOutlined } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
-import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import { useState } from 'react';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
@@ -149,7 +148,7 @@ const StixCoreObjectsExportCreation = ({
                         return (
                           <>
                             <Field
-                              component={SelectField}
+                              component={SelectFieldFds}
                               variant="standard"
                               name="format"
                               label={t_i18n('Export format')}
@@ -157,13 +156,13 @@ const StixCoreObjectsExportCreation = ({
                               containerstyle={{ width: '100%' }}
                             >
                               {exportScopes.map((value, i) => (
-                                <MenuItem
+                                <SelectItem
                                   key={i}
                                   value={value}
                                   disabled={!isExportActive(value)}
                                 >
                                   {value}
-                                </MenuItem>
+                                </SelectItem>
                               ))}
                             </Field>
                             <ObjectMarkingField
@@ -185,19 +184,19 @@ const StixCoreObjectsExportCreation = ({
                             {visibleColumnExportEnabledFormats.includes(values.format)
                               ? (
                                   <Field
-                                    component={SelectField}
+                                    component={SelectFieldFds}
                                     variant="standard"
                                     name="columns"
                                     label={t_i18n('Choose column to export')}
                                     fullWidth={true}
                                     containerstyle={fieldSpacingContainerStyle}
                                   >
-                                    <MenuItem value="all">
+                                    <SelectItem value="all">
                                       {t_i18n('All attributes')}
-                                    </MenuItem>
-                                    <MenuItem value="view">
+                                    </SelectItem>
+                                    <SelectItem value="view">
                                       {t_i18n('Current view')}
-                                    </MenuItem>
+                                    </SelectItem>
                                   </Field>
                                 ) : undefined}
                           </>

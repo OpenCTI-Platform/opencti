@@ -386,6 +386,7 @@ const ContainerAddStixCoreObjects = (props) => {
             onClick={() => setOpen(true)}
             variant="tertiary"
             size="small"
+            aria-label={t_i18n('Add an entity to this container')}
           >
             <Add />
           </IconButton>
@@ -406,6 +407,10 @@ const ContainerAddStixCoreObjects = (props) => {
     }
     return (
       <Fab
+        /* FAB — Sandy's UX decision pending (2026-08-26). Deliberately still
+           MUI: whether these floating action buttons keep their shape or are
+           rethought as in-page buttons is a product/UX call, not a mechanical
+           conversion, so the Button/Chip wave leaves all 9 untouched. */
         onClick={() => setOpen(true)}
         color="primary"
         aria-label="Add"

@@ -238,7 +238,7 @@ const IncidentEditionDetails: FunctionComponent<
             required={(mandatoryAttributes.includes('source'))}
             label={t_i18n('Source')}
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={

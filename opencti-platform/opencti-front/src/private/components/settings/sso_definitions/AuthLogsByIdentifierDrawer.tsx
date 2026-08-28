@@ -1,7 +1,7 @@
 import React, { Suspense, useState, useEffect } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
-import IconButton from '@mui/material/IconButton';
+import { IconButton } from '@filigran/design-system';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
@@ -84,12 +84,14 @@ const AuthLogsByIdentifierDrawerContent: React.FC<{
       header={(
         <Tooltip title={t_i18n('Refresh')}>
           <IconButton
-            size="small"
+            variant="default"
+            priority="tertiary"
+            size="sm"
+            aria-label={t_i18n('Refresh')}
             onClick={handleRefresh}
             disabled={refreshing}
-          >
-            <RefreshOutlined fontSize="small" sx={{ opacity: refreshing ? 0.6 : 1 }} />
-          </IconButton>
+            icon={<RefreshOutlined fontSize="small" sx={{ opacity: refreshing ? 0.6 : 1 }} />}
+          />
         </Tooltip>
       )}
     >

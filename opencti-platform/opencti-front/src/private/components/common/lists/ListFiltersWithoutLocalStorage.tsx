@@ -59,6 +59,7 @@ const ListFiltersWithoutLocalStorage = ({
           <IconButton
             onClick={handleOpenFilters}
             style={{ float: 'left', marginTop: -2 }}
+            aria-label={t_i18n('Open filters')}
           >
             {icon}
           </IconButton>

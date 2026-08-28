@@ -305,7 +305,7 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
                 name="logout_uri"
                 label={t_i18n('Logout URI')}
                 fullWidth
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               {/* Headers audit - multi-value list */}
               <FieldArray name="headers_audit">
@@ -358,7 +358,7 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
                 name="button_label_override"
                 label={t_i18n('Login button label')}
                 fullWidth
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
             </>
           )}

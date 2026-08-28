@@ -7,7 +7,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import Tooltip from '@mui/material/Tooltip';
 import { AutoFix } from 'mdi-material-ui';
 import IconButton from '@common/button/IconButton';
@@ -44,14 +44,6 @@ const useStyles = makeStyles((theme) => ({
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
-  },
-  chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    width: 120,
-    textTransform: 'uppercase',
-    borderRadius: 4,
   },
 }));
 
@@ -148,12 +140,11 @@ const ContainerStixCoreObjectLineComponent = (props) => {
                 style={{ width: dataColumns.mapping.width }}
               >
                 <Chip
-                  classes={{ root: classes.chipInList }}
-                  label={
+                  label={String(
                     (mappedString && contentMappingCount[mappedString])
                       ? contentMappingCount[mappedString]
-                      : '0'
-                  }
+                      : '0',
+                  )}
                 />
               </div>
             </>

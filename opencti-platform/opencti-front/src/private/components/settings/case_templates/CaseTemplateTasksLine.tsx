@@ -4,7 +4,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment } from 'react-relay';
-import Checkbox from '@mui/material/Checkbox';
 import Skeleton from '@mui/material/Skeleton';
 import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
@@ -12,6 +11,7 @@ import { CaseTemplateTasksLine_node$key } from './__generated__/CaseTemplateTask
 import ItemIcon from '../../../../components/ItemIcon';
 import { CaseTemplateTasksLinesPaginationQuery$data } from './__generated__/CaseTemplateTasksLinesPaginationQuery.graphql';
 import CaseTemplateTasksPopover from './CaseTemplateTasksPopover';
+import { Checkbox } from '@filigran/design-system';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -105,7 +105,9 @@ export const CaseTemplateTasksLineDummy: FunctionComponent<
         classes={{ root: classes.itemIconDisabled }}
         style={{ minWidth: 40 }}
       >
-        <Checkbox edge="start" disabled={true} disableRipple={true} />
+        <Checkbox
+          disabled={true}
+        />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />

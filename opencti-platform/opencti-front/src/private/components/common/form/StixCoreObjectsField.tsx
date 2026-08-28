@@ -8,7 +8,6 @@ import { Add, PaletteOutlined } from '@mui/icons-material';
 import Popover from '@mui/material/Popover';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
-import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import IconButton from '@common/button/IconButton';
@@ -24,6 +23,7 @@ import StixCyberObservableCreation from '../../observations/stix_cyber_observabl
 import type { Theme } from '../../../../components/Theme';
 import { FieldOption } from '../../../../utils/field';
 import { DeferredCreationContext } from '../../../../utils/hooks/useDeferredCreation';
+import { Checkbox } from '@filigran/design-system';
 
 export const stixCoreObjectsFieldSearchQuery = graphql`
   query StixCoreObjectsFieldSearchQuery($search: String, $types: [String]) {
@@ -687,7 +687,6 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
                     onClick={() => handleToggleSearchScope(name, entityType.value)}
                   >
                     <Checkbox
-                      size="small"
                       checked={(searchScope[name] || []).includes(entityType.value)}
                     />
                     <ListItemText primary={entityType.label} />

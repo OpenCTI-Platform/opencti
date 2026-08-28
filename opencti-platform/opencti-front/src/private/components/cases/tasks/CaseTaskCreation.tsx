@@ -131,7 +131,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
       {({ values, isSubmitting, handleReset, submitForm, setFieldValue }) => (
         <Form>
           <Field
-            style={{ marginBottom: 20 }}
+            className="mb-5"
             component={TextField}
             variant="standard"
             name="name"

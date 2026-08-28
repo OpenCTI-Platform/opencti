@@ -5,9 +5,18 @@ import type { FilterOption } from '@components/common/lists/FilterAutocomplete';
 import StixDomainObjectCreation from '@components/common/stix_domain_objects/StixDomainObjectCreation';
 import { WorkspaceTurnToContainerDialogMutation } from '@components/workspaces/__generated__/WorkspaceTurnToContainerDialogMutation.graphql';
 import { AddOutlined } from '@mui/icons-material';
-import Autocomplete from '@mui/material/Autocomplete';
+import {
+  Combobox,
+  ComboboxChangeMeta,
+  ComboboxChips,
+  ComboboxContent,
+  ComboboxControls,
+  ComboboxField,
+  ComboboxInput,
+  ComboboxLabel,
+  ComboboxTrigger,
+} from '@filigran/design-system';
 import DialogActions from '@mui/material/DialogActions';
-import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/styles';
 import React, { Dispatch, FunctionComponent, SyntheticEvent, useState } from 'react';
 import { graphql } from 'react-relay';
@@ -112,11 +121,15 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
     });
   };
 
+  // The `if (!event) return` guard this function used to open with is gone: the
+  // engine states the CAUSE of every change, so the call site gates on
+  // `meta.cause === 'type'` and this only ever runs for a keystroke. The event
+  // is still threaded through because the shared `searchEntities` helper reads
+  // `event.target.value` off it.
   const searchContainers = (
-    event: React.SyntheticEvent<Element, Event> | undefined,
+    event: React.SyntheticEvent<Element, Event>,
     incomingValue?: string,
   ) => {
-    if (!event) return;
     searchEntities('id', containers, setContainers, event);
     setActionsInputs({
       ...actionsInputs,
@@ -125,7 +138,7 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
   };
 
   const handleChangeActionInputValues = (
-    event: React.SyntheticEvent<Element, Event> | null,
+    event: React.SyntheticEvent<Element, Event> | null | undefined,
     value: EntityValue[],
   ) => {
     if (event) {
@@ -178,31 +191,34 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
         paginationOptions={undefined}
         // controlledDial={undefined}
       />
-      <Autocomplete
-        size="small"
-        fullWidth={true}
-        selectOnFocus={true}
-        autoHighlight={true}
-        getOptionLabel={(option) => option?.label ?? ''}
-        value={actionsInputs?.value ? [actionsInputs.value] : []}
-        multiple={true}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            variant="standard"
-            label={t_i18n('Container')}
-            fullWidth={true}
-            onFocus={(event: React.SyntheticEvent<Element, Event>) => searchContainers(event)}
-            style={{ marginTop: 3 }}
-          />
-        )}
-        noOptionsText={t_i18n('No available options')}
+      <Combobox<EntityValue>
+        multiple
+        // MUI parity: none of these mounts passed disableCloseOnSelect, so the panel
+        // closed after each pick. The library keeps it open in multiple mode, which
+        // overlays the form's own action button in a dialog this narrow.
+        closeOnSelect
         options={containersFromElements}
-        onInputChange={(event, userInput) => searchContainers(event, userInput)}
+        // `actionsInputs.value` is declared as the loose FilterOption while the
+        // options are the narrower FilterOptionValue. The value only ever comes
+        // from the options, and the MUI original cast in the same direction on
+        // its own onChange (`value as EntityValue[]`).
+        value={actionsInputs?.value ? [actionsInputs.value as EntityValue] : []}
+        onValueChange={(next, meta) => handleChangeActionInputValues(
+          meta.event,
+          (next ?? []) as EntityValue[],
+        )}
         inputValue={actionsInputs?.inputValue || ''}
-        onChange={(event, value) => handleChangeActionInputValues(event, value as EntityValue[])}
-        renderOption={(props, option) => (
-          <li {...props}>
+        // Keystroke only. The server query used to be wired to every reason MUI
+        // reported, which is why searchContainers opened with `if (!event)
+        // return` — one of the 28 sites the completion wave counted.
+        onInputChange={(userInput: string, meta: ComboboxChangeMeta) => {
+          if (meta.cause === 'type' && meta.event) searchContainers(meta.event, userInput);
+        }}
+        getOptionLabel={(option) => option?.label ?? ''}
+        isOptionEqualToValue={(a, b) => a.value === b.value}
+        clearable={false}
+        renderOption={(option) => (
+          <>
             <div style={{
               display: 'inline-block',
               paddingTop: 4,
@@ -218,10 +234,22 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
             >
               {option.label}
             </div>
-          </li>
+          </>
         )}
-        disableClearable
-      />
+      >
+        <ComboboxLabel>{t_i18n('Container')}</ComboboxLabel>
+        <ComboboxField>
+          <ComboboxChips />
+          <ComboboxInput />
+          <ComboboxControls>
+            <ComboboxTrigger />
+          </ComboboxControls>
+        </ComboboxField>
+        <ComboboxContent
+          emptyMessage={t_i18n('No available options')}
+          listAriaLabel={t_i18n('Container')}
+        />
+      </Combobox>
       <IconButton
         aria-label={t_i18n('Add')}
         onClick={() => setContainerCreation(true)}

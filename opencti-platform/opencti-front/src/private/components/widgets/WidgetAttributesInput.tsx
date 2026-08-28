@@ -1,10 +1,9 @@
 import React, { FunctionComponent, useEffect, useRef } from 'react';
-import InputLabel from '@mui/material/InputLabel';
 import Tooltip from '@mui/material/Tooltip';
-import MenuItem from '@mui/material/MenuItem';
 import MuiTextField from '@mui/material/TextField';
 import IconButton from '@common/button/IconButton';
-import Select from '@mui/material/Select';
+import InputLabel from '@mui/material/InputLabel';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import FormControl from '@mui/material/FormControl';
 import { DeleteOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
@@ -306,6 +305,7 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                                   remove(index);
                                 }
                               }}
+                              aria-label={t_i18n('Remove attribute')}
                             >
                               <DeleteOutlined fontSize="small" />
                             </IconButton>
@@ -315,14 +315,11 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
 
                       <div style={{ display: 'flex', gap: theme.spacing(2) }}>
                         <FormControl sx={{ flex: 1 }}>
-                          <InputLabel>{t_i18n('Attribute')}</InputLabel>
                           <Select
-                            label={t_i18n('Attribute')}
-                            sx={{ flex: 1 }}
                             value=""
                             disabled={!config.widget.dataSelection[0].instance_id}
-                            onChange={({ target }) => {
-                              const attribute = findAttribute(target.value as string);
+                            onValueChange={(value) => {
+                              const attribute = findAttribute(value);
                               if (attribute) {
                                 insert(values.attributes.length, {
                                   ...attribute,
@@ -331,11 +328,17 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                               }
                             }}
                           >
-                            {filteredAttributes.map((v) => (
-                              <MenuItem key={v.attribute} value={v.attribute ?? ''}>
-                                {t_i18n(v.label)}
-                              </MenuItem>
-                            ))}
+                            <SelectLabel>{t_i18n('Attribute')}</SelectLabel>
+                            <SelectTrigger className="w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent aria-label={t_i18n('Attribute')}>
+                              {filteredAttributes.map((v) => (
+                                <SelectItem key={v.attribute} value={v.attribute ?? ''}>
+                                  {t_i18n(v.label)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
                           </Select>
                           {!config.widget.dataSelection[0].instance_id && (
                             <FormHelperText>

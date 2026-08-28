@@ -161,6 +161,7 @@ const HistoryLineContent = ({
                           <IconButton
                             onClick={() => handleOpenExternalLink(externalReference.url!)}
                             color="primary"
+                            aria-label={t_i18n('Browse the link')}
                           >
                             <OpenInBrowserOutlined />
                           </IconButton>

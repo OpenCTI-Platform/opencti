@@ -8,7 +8,6 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
-import MenuItem from '@mui/material/MenuItem';
 import MuiSwitch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Accordion from '@mui/material/Accordion';
@@ -18,7 +17,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { Add, Delete, ErrorOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { insertNode } from '../../../../utils/store';
@@ -473,7 +472,7 @@ const SamlProviderForm = ({
                   label={t_i18n('Configuration name')}
                   fullWidth
                   required
-                  style={{ marginTop: 20 }}
+                  className="mt-5"
                 />
 
                 {/* Provider routing — right below Configuration name */}
@@ -580,7 +579,7 @@ const SamlProviderForm = ({
                   label={t_i18n('Issuer')}
                   fullWidth
                   required
-                  style={{ marginTop: 20 }}
+                  className="mt-5"
                 />
                 <Field
                   component={TextField}
@@ -589,7 +588,7 @@ const SamlProviderForm = ({
                   label={t_i18n('Entry point')}
                   fullWidth
                   required
-                  style={{ marginTop: 20 }}
+                  className="mt-5"
                 />
                 <Field
                   component={TextField}
@@ -619,7 +618,7 @@ const SamlProviderForm = ({
                   name="button_label_override"
                   label={t_i18n('Login button label')}
                   fullWidth
-                  style={{ marginTop: 20 }}
+                  className="mt-5"
                 />
 
                 {/* --- Security & Signing --- */}
@@ -641,17 +640,17 @@ const SamlProviderForm = ({
                       label={t_i18n('Want authn response signed')}
                     />
                     <Field
-                      component={SelectField}
+                      component={SelectFieldFds}
                       variant="standard"
                       name="signature_algorithm"
                       label={t_i18n('Signature algorithm')}
                       fullWidth
                       containerstyle={{ marginTop: 20, width: '100%' }}
                     >
-                      <MenuItem value="">{t_i18n('None')}</MenuItem>
-                      <MenuItem value="sha1">sha1</MenuItem>
-                      <MenuItem value="sha256">sha256</MenuItem>
-                      <MenuItem value="sha512">sha512</MenuItem>
+                      <SelectItem value="">{t_i18n('None')}</SelectItem>
+                      <SelectItem value="sha1">sha1</SelectItem>
+                      <SelectItem value="sha256">sha256</SelectItem>
+                      <SelectItem value="sha512">sha512</SelectItem>
                     </Field>
                     <Field
                       component={TextField}
@@ -659,7 +658,7 @@ const SamlProviderForm = ({
                       name="digest_algorithm"
                       label={t_i18n('Digest algorithm')}
                       fullWidth
-                      style={{ marginTop: 20 }}
+                      className="mt-5"
                     />
                     <Field
                       component={TextField}
@@ -667,7 +666,7 @@ const SamlProviderForm = ({
                       name="identifier_format"
                       label={t_i18n('Identifier format (NameID)')}
                       fullWidth
-                      style={{ marginTop: 20 }}
+                      className="mt-5"
                     />
                     <Field
                       component={TextField}
@@ -743,7 +742,7 @@ const SamlProviderForm = ({
                       name="authn_context"
                       label={t_i18n('Authentication context (comma-separated)')}
                       fullWidth
-                      style={{ marginTop: 20 }}
+                      className="mt-5"
                     />
                     <Field
                       component={TextField}
@@ -751,7 +750,7 @@ const SamlProviderForm = ({
                       name="sso_binding_type"
                       label={t_i18n('SSO Binding type')}
                       fullWidth
-                      style={{ marginTop: 20 }}
+                      className="mt-5"
                     />
                   </AccordionDetails>
                 </Accordion>
@@ -794,15 +793,15 @@ const SamlProviderForm = ({
                               }}
                             >
                               <Field
-                                component={SelectField}
+                                component={SelectFieldFds}
                                 variant="standard"
                                 name={`extra_conf[${index}].type`}
                                 label={t_i18n('Type')}
                                 containerstyle={{ width: '20%' }}
                               >
-                                <MenuItem value="String">String</MenuItem>
-                                <MenuItem value="Number">Number</MenuItem>
-                                <MenuItem value="Boolean">Boolean</MenuItem>
+                                <SelectItem value="String">String</SelectItem>
+                                <SelectItem value="Number">Number</SelectItem>
+                                <SelectItem value="Boolean">Boolean</SelectItem>
                               </Field>
                               <Field
                                 component={TextField}

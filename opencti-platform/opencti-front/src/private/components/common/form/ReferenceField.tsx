@@ -1,7 +1,8 @@
 import { Field } from 'formik';
 import React, { FunctionComponent, ReactElement } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import type { ComboboxChangeMeta } from '@filigran/design-system';
+import ComboboxField from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -23,7 +24,7 @@ const useStyles = makeStyles(() => ({
 interface RelationFieldProps {
   name: string;
   label: string;
-  variant?: string;
+
   helperText?: string;
   onFocus: () => void;
   noOptionsText?: string;
@@ -36,7 +37,7 @@ interface RelationFieldProps {
 const ReferenceField: FunctionComponent<RelationFieldProps> = ({
   name,
   label,
-  variant = 'standard',
+
   helperText,
   onFocus,
   noOptionsText = 'No available options',
@@ -49,27 +50,30 @@ const ReferenceField: FunctionComponent<RelationFieldProps> = ({
   const { t_i18n } = useFormatter();
   return (
     <Field
-      component={AutocompleteField}
+      component={ComboboxField}
       style={fieldSpacingContainerStyle}
       name={name}
-      textfieldprops={{
-        variant,
-        label: t_i18n(label),
-        helperText,
-        onFocus,
-      }}
+      label={t_i18n(label)}
+      helperText={helperText}
+      onFocusInput={onFocus}
       noOptionsText={t_i18n(noOptionsText)}
       options={options}
-      onInputChange={(v: InputEvent) => onInputChange(v?.data ?? null)}
+      // This used to forward `InputEvent.data` — the ONE character just typed,
+      // not the accumulated text — so ArtifactField's setSearch always held a
+      // single letter. The library hands over the full input value, which is
+      // what the consumer's name says it wants.
+      onInputChange={(search: string, meta: ComboboxChangeMeta) => {
+        if (meta.cause === 'type') onInputChange(search || null);
+      }}
       value={value}
       onChange={onChange}
-      renderOption={(props: Record<string, unknown>, option: FieldOption) => (
-        <li {...props}>
+      renderOption={(option: FieldOption) => (
+        <>
           <div className={classes.icon} style={{ color: option.color }}>
             <ItemIcon type={option.type} />
           </div>
           <div className={classes.text}>{option.label}</div>
-        </li>
+        </>
       )}
     />
   );

@@ -1,7 +1,8 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
+import { IconButton, Radio, RadioGroup } from '@filigran/design-system';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import { IconButton, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
@@ -17,7 +18,6 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { representationInitialization } from '../csvMapper/representations/RepresentationUtils';
 import { CsvMapperAddInput, formDataToCsvMapper } from '../csvMapper/CsvMapperUtils';
-import { Radio, RadioGroup } from '@filigran/design-system';
 
 const csvMapperValidation = (t_i18n: (s: string) => string) => Yup.object().shape({
   has_header: Yup.boolean().required(t_i18n('This field is required')),
@@ -235,13 +235,13 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
                   {t_i18n('Representations for entity')}
                 </Typography>
                 <IconButton
-                  color="secondary"
+                  variant="default"
+                  priority="tertiary"
                   aria-label="Add"
                   onClick={() => onAddEntityRepresentation(setFieldValue, values)
                   }
-                >
-                  <Add fontSize="small" />
-                </IconButton>
+                  icon={<Add fontSize="small" />}
+                />
               </Box>
               <FieldArray
                 name="entity_representations"
@@ -280,13 +280,13 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
                   {t_i18n('Representations for relationship')}
                 </Typography>
                 <IconButton
-                  color="secondary"
+                  variant="default"
+                  priority="tertiary"
                   aria-label="Add"
                   onClick={() => onAddRelationshipRepresentation(setFieldValue, values)
                   }
-                >
-                  <Add fontSize="small" />
-                </IconButton>
+                  icon={<Add fontSize="small" />}
+                />
               </Box>
               <FieldArray
                 name="relationship_representations"
