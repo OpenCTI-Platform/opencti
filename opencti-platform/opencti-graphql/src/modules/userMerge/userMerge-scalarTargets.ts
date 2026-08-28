@@ -5,9 +5,10 @@ import { USER_MERGE_SCALAR_COMPLEMENTS, USER_MERGE_SCALAR_DISPOSITIONS, type Use
  * How the value sits in the document, which decides the rewrite script.
  *
  * `multiple` is the one that makes idempotence non-trivial: an unguarded append duplicates
- * the target id on every replay.
+ * the target id on every replay. `serialized` covers a JSON string field, where the value is
+ * reachable neither by a term query nor by a document traversal.
  */
-export type UserMergeScalarShape = 'single' | 'multiple' | 'object-array';
+export type UserMergeScalarShape = 'single' | 'multiple' | 'object-array' | 'serialized';
 
 /**
  * Extra predicate narrowing a target to a lifecycle state.
@@ -31,6 +32,8 @@ export interface UserMergeScalarTarget {
   entityTypes?: string[];
   path: string;
   shape: UserMergeScalarShape;
+  /** JSON key holding the user id inside a `serialized` field. */
+  serializedKey?: string;
   /** Root of the Elasticsearch `nested` mapping the path lives under, if any. */
   nestedRoot?: string;
   condition?: UserMergeScalarCondition;
