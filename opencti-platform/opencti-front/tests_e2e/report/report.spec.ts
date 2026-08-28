@@ -332,20 +332,20 @@ test('Report live entities creation and relationships', { tag: ['@report', '@kno
   // Create author from the report creation form
   // The AUTHOR dialog IS prefilled: CreatedByField passes `inputValue={keyword}`
   // to IdentityCreation, so the create row carries the typed text over. Measured
-  // scoped to the dialog — name = "Jeanne Mitchel" — so the name can no longer be
+  // scoped to the dialog — name = "Jeanne Mitchel Report" — so the name can no longer be
   // empty by this path and only the entity type is still required.
   //
   // Do NOT harmonise this with the external-reference block below: that dialog
   // receives no inputValue and genuinely opens empty. The two differ in the
   // product code, not by accident.
-  await reportForm.authorAutocomplete.createOption('Jeanne Mitchel');
+  await reportForm.authorAutocomplete.createOption('Jeanne Mitchel Report');
   await authorForm.getCreateButton().click();
   await expect(authorForm.entityTypeSelect.getByText('This field is required')).toBeVisible();
   await authorForm.entityTypeSelect.selectOption('Individual');
   await expect(authorForm.entityTypeSelect.getOption('Individual')).toBeVisible();
   await authorForm.getCreateButton().click();
-  await reportForm.authorAutocomplete.selectOption('Jeanne Mitchel');
-  await expect(reportForm.authorAutocomplete.getOption('Jeanne Mitchel')).toBeVisible();
+  await reportForm.authorAutocomplete.selectOption('Jeanne Mitchel Report');
+  await expect(reportForm.authorAutocomplete.getOption('Jeanne Mitchel Report')).toBeVisible();
 
   // Create label from the report creation form
   // Opened through the library's create row instead of the MUI `+`.
@@ -395,7 +395,7 @@ test('Report live entities creation and relationships', { tag: ['@report', '@kno
   // region Control data on report details page
   // ------------------------------------------
 
-  const author = reportDetailsPage.getTextForHeading('Author', 'Jeanne Mitchel');
+  const author = reportDetailsPage.getTextForHeading('Author', 'Jeanne Mitchel Report');
   await expect(author).toBeVisible();
 
   await expect(reportDetailsPage.overview.getLabel(labelName)).toBeVisible();
