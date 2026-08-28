@@ -31,7 +31,13 @@ every library Select has and no MUI Select does.
 | Converted — direct library composition (`Select` / `Combobox`) | 122 |
 | **Converted total** | **279** |
 | **Remaining on MUI** | **12** |
-| **Total selection fields** | **292** |
+| **Total selection fields** | **291** |
+
+The denominator is DERIVED, not fixed. It was 292 while `CreatedByField` was
+converted: its own `ComboboxField` mount counted as a pivot. Reverted, that site
+consumes the `AutocompleteField` adapter, whose single mount the census counts
+once at the adapter file — so the site stops being counted on its own and the
+total drops to 291. Converting it again puts the mount, and the 292, back.
 
 ## The 12 remaining, every one with a reason
 
