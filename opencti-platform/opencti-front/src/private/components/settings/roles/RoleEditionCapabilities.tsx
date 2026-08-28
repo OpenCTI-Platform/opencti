@@ -3,7 +3,7 @@ import { createFragmentContainer, graphql, usePreloadedQuery } from 'react-relay
 import type { PreloadedQuery } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import Checkbox from '@mui/material/Checkbox';
+import MuiCheckbox from '@mui/material/Checkbox';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import LocalPoliceOutlined from '@mui/icons-material/LocalPoliceOutlined';
@@ -18,6 +18,7 @@ import { SETTINGS } from '../../../../utils/hooks/useGranted';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 import type { Theme } from '../../../../components/Theme';
 import { Stack } from '@mui/material';
+import { Checkbox } from '@filigran/design-system';
 
 const roleEditionAddCapability = graphql`
   mutation RoleEditionCapabilitiesAddCapabilityMutation(
@@ -111,10 +112,10 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
   const [commitPatchAllowSensitiveConf] = useApiMutation(roleEditionPatchAllowSensitiveConf);
   const handleToggle = (
     capabilityId: string,
-    event: React.ChangeEvent<HTMLInputElement>,
+    checked: boolean,
   ) => {
     const roleId = role.id;
-    if (event.target.checked) {
+    if (checked) {
       commitAddCapability({
         variables: {
           id: roleId,
@@ -162,7 +163,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
             divider={true}
             style={{ paddingLeft: 0 }}
             secondaryAction={(
-              <Checkbox
+              <MuiCheckbox
                 onChange={(event) => handleSensitiveToggle(event)}
                 checked={!!role.can_manage_sensitive_config}
                 style={{ color: theme.palette.dangerZone.main }}
@@ -207,7 +208,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
                 style={{ paddingLeft }}
                 secondaryAction={capability.name !== SETTINGS && (
                   <Checkbox
-                    onChange={(event) => handleToggle(capability.id, event)}
+                    onCheckedChange={(state) => handleToggle(capability.id, state === true)}
                     checked={isChecked}
                     disabled={isDisabled}
                   />

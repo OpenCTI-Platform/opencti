@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
-import { List, ListItem, ListItemIcon, ListItemText, IconButton, Checkbox, Typography, Box, AccordionDetails } from '@mui/material';
+import { List, ListItem, ListItemIcon, ListItemText, IconButton, Typography, Box, AccordionDetails } from '@mui/material';
 import { Close, DragIndicatorOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import Button from '@common/button/Button';
@@ -9,6 +9,7 @@ import { useFormatter } from 'src/components/i18n';
 import type { WidgetColumn } from 'src/utils/widget/widget';
 import { Accordion, AccordionSummary } from 'src/components/Accordion';
 import useWidgetColumnsCustomization from './useWidgetColumnsCustomization';
+import { Checkbox } from '@filigran/design-system';
 
 type WidgetConfigColumnsCustomizationProps = {
   availableColumns: WidgetColumn[];
@@ -55,7 +56,7 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
                 >
                   <Checkbox
                     checked={value.some((col) => col.attribute === column.attribute)}
-                    onChange={() => handleToggleColumn(column.attribute)}
+                    onCheckedChange={() => handleToggleColumn(column.attribute)}
                   />
                   <ListItemText primary={t_i18n(formatColumnName(column))} />
                 </ListItem>

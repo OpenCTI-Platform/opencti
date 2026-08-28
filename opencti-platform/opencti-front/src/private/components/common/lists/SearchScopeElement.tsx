@@ -4,12 +4,12 @@ import { PaletteOutlined } from '@mui/icons-material';
 import Popover, { PopoverProps } from '@mui/material/Popover';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
-import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import React, { useState } from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import { displayEntityTypeForTranslation } from '../../../../utils/String';
+import { Checkbox } from '@filigran/design-system';
 
 interface SearchScopeElementProps {
   name: string;
@@ -94,7 +94,6 @@ const SearchScopeElement = ({
               onClick={() => handleToggleSearchScope(name, entityType.value)}
             >
               <Checkbox
-                size="small"
                 checked={(searchScope[name] || []).includes(entityType.value)}
               />
               <ListItemText primary={entityType.label} />
