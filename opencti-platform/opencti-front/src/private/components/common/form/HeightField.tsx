@@ -1,7 +1,7 @@
 import React, { FunctionComponent, ReactElement } from 'react';
 import { Field, FieldArray } from 'formik';
 import Button from '@common/button/Button';
-import { IconButton } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { AddOutlined, DeleteOutlined } from '@mui/icons-material';
 import { graphql } from 'react-relay';
 import {
@@ -125,28 +125,14 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
                     />
                   </div>
                   <IconButton
+                    variant="default"
+                    priority="tertiary"
+                    size="sm"
                     id="deleteHeight"
                     aria-label="Delete"
-                    onClick={() => {
-                      arrayHelpers.remove(index);
-                      commitMutation({
-                        ...defaultCommitMutation,
-                        mutation: individualHeightMutation,
-                        variables: {
-                          id,
-                          input: {
-                            key: 'height',
-                            object_path: `/height/${height.index}`,
-                            value: [],
-                            operation: 'remove',
-                          },
-                        },
-                      });
-                    }}
                     style={{ position: 'absolute', right: -10, top: 5 }}
-                  >
-                    <DeleteOutlined />
-                  </IconButton>
+                    icon={<DeleteOutlined />}
+                  />
                 </div>
               );
             })}
@@ -235,15 +221,17 @@ export const HeightFieldAdd: FunctionComponent<HeightFieldAddProps> = ({
                     />
                   </div>
                   <IconButton
+                    variant="default"
+                    priority="tertiary"
+                    size="sm"
                     id="deleteHeight"
                     aria-label="Delete"
                     onClick={() => {
                       arrayHelpers.remove(index);
                     }}
                     style={{ position: 'absolute', right: -10, top: 5 }}
-                  >
-                    <DeleteOutlined />
-                  </IconButton>
+                    icon={<DeleteOutlined />}
+                  />
                 </div>
               ))}
               <Button
