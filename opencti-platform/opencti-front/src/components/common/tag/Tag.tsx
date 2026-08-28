@@ -83,8 +83,12 @@ const Tag = ({
   }
 
   return (
+    // The Chip is the Tooltip's direct child on purpose: an intermediate
+    // <span> makes MUI label the wrapper AND leaves the chip's own text
+    // matchable, so `getByLabel` resolves to two elements. The library Chip
+    // forwards its ref, so Tooltip can anchor on it directly.
     <Tooltip title={tooltipTitle ?? text} placement="bottom-start">
-      <span>{chip}</span>
+      {chip}
     </Tooltip>
   );
 };
