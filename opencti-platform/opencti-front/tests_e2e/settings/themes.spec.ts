@@ -85,9 +85,9 @@ test('Custom theme creation, logo edition, and deletion', { tag: ['@ce'] }, asyn
   await page
     .locator('input[name="theme_logo"]')
     .fill('https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png');
-  await page
-    .getByLabel('Close')
-    .click();
+  for (const closeBtn of await page.getByLabel('Close').all()) {
+    closeBtn.click();
+  }
   const isLogoChanged = async () => {
     await page.reload();
     const logoSrcChangedToGoogle = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
@@ -106,9 +106,9 @@ test('Custom theme creation, logo edition, and deletion', { tag: ['@ce'] }, asyn
   await page
     .locator('input[name="theme_logo"]')
     .fill('');
-  await page
-    .getByLabel('Close')
-    .click();
+  for (const closeBtn of await page.getByLabel('Close').all()) {
+    closeBtn.click();
+  }
   await page.waitForTimeout(1000);
 
   const isLogoBackToDefault = async () => {
