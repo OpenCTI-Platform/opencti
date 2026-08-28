@@ -169,11 +169,11 @@ const FeedPopover = (props) => {
       <QueryRenderer
         query={feedDuplicateQuery}
         variables={{ id: feedId }}
-        render={({ props }) => {
-          if (props) {
+        render={({ props: queryProps }) => {
+          if (queryProps) {
             return (
               <FeedCreation
-                feed={props.feed}
+                feed={queryProps.feed}
                 onDrawerClose={handleCloseDuplicate}
                 open={displayDuplicate}
                 paginationOptions={props.paginationOptions}
