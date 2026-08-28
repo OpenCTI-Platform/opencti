@@ -250,13 +250,21 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     const getEntitiesOptions = getOptionsFromEntities(entities, searchScope, fKey);
     const optionsValues = subKey ? (filterValues.find((f) => f.key === subKey)?.values ?? []) : filterValues;
 
+    const isIdFilterDefinition = (
+      filterDefinition?: FilterDefinition,
+      subKey?: string,
+    ) => {
+      if (!filterDefinition) return false;
+      return filterDefinition.type === 'id'
+        || (filterDefinition.filterKey === 'regardingOf' && subKey === 'id');
+    };
+
     const completedTypesWithFintelTemplates = typesWithFintelTemplates.concat(['Container', 'Stix-Domain-Object', 'Stix-Core-Object']);
     const shouldAddSelfIdInFintelTemplates = host?.kind === 'fintelTemplate'
-      && (filterDefinition?.type === 'id' || (filterDefinition?.filterKey === 'regardingOf' && subKey === 'id'))
       && (filterDefinition?.elementsForFilterValuesSearch ?? []).every((type) => completedTypesWithFintelTemplates.includes(type));
-    const shouldAddSelfIdInCustomViews = host?.kind === 'custom-view'
-      && (filterDefinition?.type === 'id' || (filterDefinition?.filterKey === 'regardingOf' && subKey === 'id'));
-    const shouldAddSelfId = shouldAddSelfIdInFintelTemplates || shouldAddSelfIdInCustomViews;
+    const shouldAddSelfIdInCustomViews = host?.kind === 'custom-view';
+    const shouldAddSelfId = isIdFilterDefinition(filterDefinition, subKey)
+      && (shouldAddSelfIdInFintelTemplates || shouldAddSelfIdInCustomViews);
 
     const getOptions = shouldAddSelfId
       ? [
@@ -408,6 +416,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       />
     );
   };
+
   const getSpecificFilter = (fDefinition?: FilterDefinition, subKey?: string, disabled = false): ReactNode => {
     const computedValues = filterValues.find((f) => f.key === fDefinition?.filterKey)?.values ?? filterValues;
     if (fDefinition?.type === 'date') {
@@ -435,6 +444,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           filterValues={values}
           helpers={helpers}
           disabled={disabled}
+          host={host}
         />
       );
     }
@@ -470,7 +480,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     const finalFilterDefinition = useFilterDefinition(fKey, entityTypes, subKey);
     return (
       <>
-        { availableOperators.length > 0 && (
+        {availableOperators.length > 0 && (
           <Select
             labelId="change-operator-select-label"
             id="change-operator-select"
