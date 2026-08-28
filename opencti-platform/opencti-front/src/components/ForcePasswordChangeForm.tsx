@@ -3,9 +3,7 @@ import { Field, Form, Formik } from 'formik';
 import { TextField } from 'formik-mui';
 import * as Yup from 'yup';
 import { Box, Stack } from '@mui/material';
-import { useTheme } from '@mui/styles';
 import { graphql } from 'react-relay';
-import type { Theme } from '@mui/material/styles/createTheme';
 import Button from '@common/button/Button';
 import { useFormatter } from './i18n';
 import useApiMutation from '../utils/hooks/useApiMutation';
@@ -42,7 +40,6 @@ const ForcePasswordChangeForm = ({
   secondaryAction,
   renderPolicies,
 }: ForcePasswordChangeFormProps) => {
-  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [commitMutation] = useApiMutation(forcePasswordChangeMutation);
 

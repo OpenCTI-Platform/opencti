@@ -7,8 +7,6 @@ import { FormikConfig } from 'formik/dist/types';
 import { TextField } from 'formik-mui';
 import { useCookies } from 'react-cookie';
 import { graphql } from 'react-relay';
-import { useTheme } from '@mui/styles';
-import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../components/i18n';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../relay/environment';
@@ -88,7 +86,6 @@ interface ResetPasswordProps {
 }
 
 const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
-  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
   const [transactionId, setTransactionId] = useState('');

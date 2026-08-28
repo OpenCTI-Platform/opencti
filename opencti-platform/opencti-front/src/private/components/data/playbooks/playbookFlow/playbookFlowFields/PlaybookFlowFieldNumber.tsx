@@ -15,7 +15,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { Field } from 'formik';
 import TextField from '../../../../../../components/TextField';
-import { fieldSpacingContainerStyle } from '../../../../../../utils/field';
 
 interface PlaybookFlowFieldNumberProps {
   name: string;
