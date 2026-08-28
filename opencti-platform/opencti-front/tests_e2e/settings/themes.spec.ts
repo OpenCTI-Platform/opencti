@@ -1,6 +1,7 @@
 import { Page } from '@playwright/test';
 import { expect, test } from '../fixtures/baseFixtures';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
+import { awaitUntilCondition } from 'tests_e2e/utils';
 
 const openThemeEditMenu = async (themeName: string, page: Page) => {
   await page
@@ -16,9 +17,10 @@ const openThemeEditMenu = async (themeName: string, page: Page) => {
  * MUST check visibility in list lines.
  * MUST select custom theme and validate its usage.
  * MUST edit custom theme.
+ * MUST change custom theme logo.
  * MUST delete custom theme.
  */
-test('Custom theme creation, edition, and deletion', { tag: ['@ce'] }, async ({ page }) => {
+test('Custom theme creation, logo edition, and deletion', { tag: ['@ce'] }, async ({ page }) => {
   const THEME = {
     name: `${new Date().toISOString()} Test Theme`,
     theme_background: '#e72a2a',
@@ -58,10 +60,11 @@ test('Custom theme creation, edition, and deletion', { tag: ['@ce'] }, async ({ 
   let logoSrc = await page
     .getByRole('link', { name: 'logo' })
     .locator('img').getAttribute('src');
+  expect(logoSrc).toContain('static/images/logo');
   expect(logoSrc).not.toContain('/static/images/logo_text_dark-VZM4NTMC.png');
 
   // Edit theme
-  openThemeEditMenu(THEME.name, page);
+  await openThemeEditMenu(THEME.name, page);
 
   // edit the logo url by removing the url
   await page
@@ -78,12 +81,55 @@ test('Custom theme creation, edition, and deletion', { tag: ['@ce'] }, async ({ 
     .locator('img').getAttribute('src');
   expect(logoSrc).toContain('logo_text_dark');
 
+  // Set theme logo to the Google logo
+  await openThemeEditMenu(THEME.name, page);
+  await page
+    .locator('input[name="theme_logo"]')
+    .fill('https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png');
+  await page
+    .getByLabel('Close')
+    .click();
+  const isLogoChanged = async () => {
+    await page.reload();
+    const logoSrcChangedToGoogle = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
+    if (logoSrcChangedToGoogle) {
+      return !logoSrcChangedToGoogle.endsWith('static/images/logo');
+    }
+    return false;
+  };
+  await awaitUntilCondition(isLogoChanged);
+
+  logoSrc = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
+  expect(logoSrc).not.toContain('static/images/logo');
+
+  // Reset logo
+  await openThemeEditMenu(THEME.name, page);
+  await page
+    .locator('input[name="theme_logo"]')
+    .fill('');
+  await page
+    .getByLabel('Close')
+    .click();
+  await page.waitForTimeout(1000);
+
+  const isLogoBackToDefault = async () => {
+    await page.reload();
+    const logoSrcChangedToDefault = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
+    if (logoSrcChangedToDefault) {
+      return logoSrcChangedToDefault.endsWith('static/images/logo');
+    }
+    return false;
+  };
+  await awaitUntilCondition(isLogoBackToDefault);
+  logoSrc = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
+  expect(logoSrc).toContain('static/images/logo');
+
   // Select Dark theme again to delete custom theme
   await page.locator('#mui-component-select-platform_theme').click();
   await page.getByTestId('Filigran Dark-li').click();
   await page.waitForTimeout(1000);
 
-  // Delete theme
+  // Delete custom theme
   await page.getByTestId(`${THEME.name}-popover`).click();
   await page.getByLabel('Delete').click();
   await page.getByRole('button', { name: 'Confirm' }).click();
@@ -92,8 +138,9 @@ test('Custom theme creation, edition, and deletion', { tag: ['@ce'] }, async ({ 
 
 /**
  * MUST ensure cannot delete system theme.
+ * MUST ensure cannot update system theme.
  */
-test('Cannot delete system theme', { tag: ['@ce'] }, async ({ page }) => {
+test('Cannot delete or update system theme', { tag: ['@ce'] }, async ({ page }) => {
   // Navigate to Settings
   const leftBarPage = new LeftBarPage(page);
   await page.goto('/');
@@ -102,4 +149,5 @@ test('Cannot delete system theme', { tag: ['@ce'] }, async ({ page }) => {
 
   await page.getByTestId('Filigran Light-popover').click();
   expect(await page.getByLabel('Delete').count() === 0);
+  expect(await page.getByLabel('Update').count() === 0);
 });
