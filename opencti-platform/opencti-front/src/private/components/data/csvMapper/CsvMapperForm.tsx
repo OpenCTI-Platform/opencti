@@ -3,16 +3,14 @@ import { Field, FieldArray, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import * as Yup from 'yup';
-import { IconButton, Radio, RadioGroup, Typography } from '@mui/material';
+import { IconButton, Typography } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import { FormikHelpers } from 'formik/dist/types';
-import { SelectChangeEvent } from '@mui/material/Select';
 import CsvMapperRepresentationForm, { RepresentationFormEntityOption } from '@components/data/csvMapper/representations/CsvMapperRepresentationForm';
 import { CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
 import classNames from 'classnames';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import { formDataToCsvMapper } from '@components/data/csvMapper/CsvMapperUtils';
 import { CsvMapperProvider } from '@components/data/csvMapper/CsvMapperContext';
 import type { Theme } from '../../../../components/Theme';
@@ -23,6 +21,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import { representationInitialization } from './representations/RepresentationUtils';
 import CsvMapperTestDialog from './CsvMapperTestDialog';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import { Radio, RadioGroup } from '@filigran/design-system';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -197,25 +196,13 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   <RadioGroup
                     aria-label="CSV separator"
                     name="separator"
-                    style={{ flexDirection: 'row' }}
+                    orientation="horizontal"
                     value={values.separator}
-                    onChange={(event: SelectChangeEvent) => setFieldValue('separator', event.target.value)}
+                    onValueChange={(value) => setFieldValue('separator', value)}
                   >
-                    <FormControlLabel
-                      value=","
-                      control={<Radio />}
-                      label={t_i18n('Comma')}
-                    />
-                    <FormControlLabel
-                      value=";"
-                      control={<Radio />}
-                      label={t_i18n('Semicolon')}
-                    />
-                    <FormControlLabel
-                      value="|"
-                      control={<Radio />}
-                      label={t_i18n('Pipe')}
-                    />
+                    <Radio value="," label={t_i18n('Comma')} />
+                    <Radio value=";" label={t_i18n('Semicolon')} />
+                    <Radio value="|" label={t_i18n('Pipe')} />
                   </RadioGroup>
                 </div>
               </div>
