@@ -671,6 +671,7 @@ type Status {
   order: Int!
   disabled: Boolean
   scope: StatusScope
+  to_be_deleted_at: DateTime
 }
 
 type StatusConnection {
@@ -10863,6 +10864,7 @@ type WorkflowActionConfig {
 
 type WorkflowSerializedState {
   statusId: String!
+  order: Int
   onEnter: [WorkflowActionConfig!]
   onExit: [WorkflowActionConfig!]
 }
