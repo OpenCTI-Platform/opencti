@@ -61,7 +61,7 @@ const StixDomainObjectsContainer = (props) => {
   const { t_i18n, fd } = useFormatter();
   const [expandedPanels, setExpandedPanels] = useState({});
   const handleChangePanel = (panelKey, event, expanded) => {
-    setExpandedPanels(assoc(panelKey, expanded, expandedPanels));
+    setExpandedPanels((current) => assoc(panelKey, expanded, current));
   };
 
   const isExpanded = (type, numberOfEntities, numberOfTypes) => {

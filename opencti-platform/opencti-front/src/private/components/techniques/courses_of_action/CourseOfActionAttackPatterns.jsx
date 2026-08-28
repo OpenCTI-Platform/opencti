@@ -44,7 +44,7 @@ const CourseOfActionAttackPatternComponent = (props) => {
   const { t_i18n } = useFormatter();
   const [expanded, setExpanded] = useState(false);
   const handleToggleExpand = () => {
-    setExpanded(!expanded);
+    setExpanded((current) => !current);
   };
 
   const removeAttackPattern = (attackPatternEdge) => {

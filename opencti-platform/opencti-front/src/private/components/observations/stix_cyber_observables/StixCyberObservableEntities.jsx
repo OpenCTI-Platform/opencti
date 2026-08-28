@@ -156,7 +156,7 @@ const StixCyberObservableEntities = (props) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [relationReversed, setRelationReversed] = useState(false);
   const handleReverseRelation = () => {
-    setRelationReversed(!relationReversed);
+    setRelationReversed((current) => !current);
   };
 
   const handleSort = (field, orderAsc) => {
