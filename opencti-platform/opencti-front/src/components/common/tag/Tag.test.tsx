@@ -84,9 +84,16 @@ describe('Tag tooltip', () => {
     expect(chipOf('quiet')).not.toHaveAttribute('aria-label');
   });
 
-  it('otherwise names the chip, so a clipped label stays readable', () => {
+  it('does not stack a second tooltip repeating the label', () => {
+    // the library Chip already tooltips a clipped label; wrapping every chip in
+    // another one mounted four tooltip elements on a single hover
     testRender(<Tag label="a label wider than the chip" />);
-    expect(chipOf('a label wider than the chip')).toHaveAttribute('aria-label', 'a label wider than the chip');
+    expect(chipOf('a label wider than the chip')).not.toHaveAttribute('aria-label');
+  });
+
+  it('keeps the outer tooltip when it says something the label does not', () => {
+    testRender(<Tag label="short" tooltipTitle="the long explanation" />);
+    expect(chipOf('short')).toHaveAttribute('aria-label', 'the long explanation');
   });
 });
 

@@ -93,7 +93,14 @@ const Tag = ({
     />
   );
 
-  if (disableTooltip) {
+  // The library Chip carries its own tooltip for a clipped label. Wrapping
+  // every chip in a second one stacked them: a hover on a clipped chip mounted
+  // FOUR tooltip elements, all repeating the same text. So the outer tooltip is
+  // kept only when it says something the chip cannot -- a tooltipTitle that
+  // differs from the label. Otherwise the library's truncation tooltip does the
+  // job alone.
+  const addsSomething = tooltipTitle !== undefined && tooltipTitle !== text;
+  if (disableTooltip || !addsSomething) {
     return chip;
   }
 
@@ -102,7 +109,7 @@ const Tag = ({
     // <span> makes MUI label the wrapper AND leaves the chip's own text
     // matchable, so `getByLabel` resolves to two elements. The library Chip
     // forwards its ref, so Tooltip can anchor on it directly.
-    <Tooltip title={tooltipTitle ?? text} placement="bottom-start">
+    <Tooltip title={tooltipTitle} placement="bottom-start">
       {chip}
     </Tooltip>
   );

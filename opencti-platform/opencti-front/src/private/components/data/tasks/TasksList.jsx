@@ -287,12 +287,7 @@ const TasksList = ({ data, options }) => {
                         {task.task_search && (
                           <Stack direction="row" gap={1}>
                             <Tag
-                              label={(
-                                <div>
-                                  <strong>{t_i18n('Search')}</strong>:{' '}
-                                  {task.task_search}
-                                </div>
-                              )}
+                              label={`${t_i18n('Search')}: ${task.task_search}`}
                             />
                             <Tag
                               label={t_i18n('AND')}
@@ -309,12 +304,7 @@ const TasksList = ({ data, options }) => {
                               )
                             : (
                                 <Tag
-                                  label={(
-                                    <div>
-                                      <strong>{t_i18n('List of entities')}</strong>:{' '}
-                                      {listIds}
-                                    </div>
-                                  )}
+                                  label={`${t_i18n('List of entities')}: ${listIds}`}
                                   sx={{
                                     width: 'fit-content',
                                   }}
@@ -353,25 +343,12 @@ const TasksList = ({ data, options }) => {
                                 />
                                 {action.context && (
                                   <Tag
-                                    label={(
-                                      <div>
-                                        {action.context.field && (
-                                          <span>
-                                            <strong>
-                                              {t_i18n(action.context.field)}
-                                            </strong>
-                                            :{' '}
-                                          </span>
-                                        )}
-                                        {truncate(
-                                          R.join(
-                                            ', ',
-                                            action.context.values || [],
-                                          ),
-                                          80,
-                                        )}
-                                      </div>
-                                    )}
+                                    label={[
+                                      action.context.field && `${t_i18n(action.context.field)}: `,
+                                      truncate(R.join(', ', action.context.values || []), 80),
+                                    ]
+                                      .filter(Boolean)
+                                      .join('')}
                                   />
                                 )}
                               </Stack>

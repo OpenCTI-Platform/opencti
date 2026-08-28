@@ -269,7 +269,7 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
         ref={buttonRef}
         variant="default"
         priority="tertiary"
-        size="sm"
+        size="md"
         aria-label={menuButtonLabel}
         onClick={(event) => {
           handleOpen(event);

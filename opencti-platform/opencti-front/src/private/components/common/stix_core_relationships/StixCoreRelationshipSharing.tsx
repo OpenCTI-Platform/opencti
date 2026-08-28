@@ -157,6 +157,7 @@ const StixCoreRelationshipSharing: FunctionComponent<
             <Tag
               icon={<AccountBalanceOutlined fontSize="small" />}
               label={truncate(edge.name, 15)}
+                deleteLabel={`${t_i18n('Remove')} ${edge.name}`}
               onDelete={() => removeOrganization(edge.id)}
             />
           </Tooltip>
